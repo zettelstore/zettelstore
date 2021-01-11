@@ -1,0 +1,1 @@
+[CodeBlock "if __name__ == \"main\":\n  print(\"Hello, World\")\nexit(0)"]

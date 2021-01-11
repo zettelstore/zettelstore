@@ -1,0 +1,9 @@
+[DescriptionList
+ [Term [Text "Zettel"],
+  [Description
+   [Para Text "Paper"]],
+  [Description
+   [Para Text "Note"]]],
+ [Term [Text "Zettelkasten"],
+  [Description
+   [Para Text "Slip",Space,Text "box"]]]]

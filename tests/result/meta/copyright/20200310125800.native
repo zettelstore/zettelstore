@@ -1,0 +1,6 @@
+[Title "Header Test"]
+[Role "zettel"]
+[Syntax "zmk"]
+[Header
+ [copyright "(c) 2020 Detlef Stern"],
+ [license "CC BY-SA 4.0"]]

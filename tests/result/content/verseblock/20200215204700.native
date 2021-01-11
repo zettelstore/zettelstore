@@ -1,0 +1,5 @@
+[VerseBlock
+ [[Para Text "A line",Break,Text "  another line",Break,Text "Back"],
+  [Para Text "Paragraph"],
+  [Para Text "    Spacy  Para"]],
+ [Cite Text "Author"]]

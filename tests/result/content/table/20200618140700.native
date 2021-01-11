@@ -1,0 +1,4 @@
+[Table
+ [Header [Cell Right Text "h1"],[Cell Default Text "h2"],[Cell Center Text "h3"]],
+ [Row [Cell Left Text "c1"],[Cell Default Text "c2"],[Cell Center Text "c3"]],
+ [Row [Cell Right Text "f1"],[Cell Default Text "f2"],[Cell Center Text "=f3"]]]

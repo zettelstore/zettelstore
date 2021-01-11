@@ -1,0 +1,19 @@
+title: Simple Test
+role: zettel
+
+//italic//
+//emph//{-}
+**bold**
+**strong**{-}
+__unterline__
+~~strike~~
+''monospace''
+^^superscript^^
+,,subscript,,
+""Quotes""
+<<Quotation<<
+;;small;;
+::span::
+``code``
+++input++
+==output==

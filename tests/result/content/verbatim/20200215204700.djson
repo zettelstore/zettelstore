@@ -1,0 +1,1 @@
+[{"t":"CodeBlock","l":["if __name__ == \"main\":","  print(\"Hello, World\")","exit(0)"]}]
