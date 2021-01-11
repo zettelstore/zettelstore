@@ -276,7 +276,7 @@ func calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	}
 	syntax := m.GetDefault(meta.KeySyntax, "bin")
 	switch syntax {
-	case meta.ValueSyntaxMeta, meta.ValueSyntaxZmk:
+	case meta.ValueSyntaxNone, meta.ValueSyntaxZmk:
 		return directory.MetaSpecHeader, "zettel"
 	}
 	for _, s := range runtime.GetZettelFileSyntax() {

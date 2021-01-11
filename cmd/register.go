@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -21,7 +21,7 @@ import (
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
-	_ "zettelstore.de/z/parser/meta"       // Allow to use meta parser.
+	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 	_ "zettelstore.de/z/place/constplace"  // Allow to use global internal place.

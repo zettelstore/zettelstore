@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta provides a parser for meta data.
-package meta
+// Package none provides a none-parser for meta data.
+package none
 
 import (
 	"strings"
@@ -22,7 +22,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         meta.ValueSyntaxMeta,
+		Name:         meta.ValueSyntaxNone,
 		AltNames:     []string{},
 		ParseBlocks:  parseBlocks,
 		ParseInlines: parseInlines,

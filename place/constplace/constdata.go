@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -27,7 +27,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyTitle:      "Zettelstore Runtime Configuration",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityOwner,
-			meta.KeySyntax:     meta.ValueSyntaxMeta,
+			meta.KeySyntax:     meta.ValueSyntaxNone,
 		},
 		"Zettelstore Runtime Configuration",
 	},
@@ -672,7 +672,7 @@ footer {
 			meta.KeyCredential: "",
 			meta.KeyUserID:     "",
 			meta.KeyUserRole:   meta.ValueUserRoleReader,
-			meta.KeySyntax:     meta.ValueSyntaxMeta,
+			meta.KeySyntax:     meta.ValueSyntaxNone,
 		},
 		"",
 	},

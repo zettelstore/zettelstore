@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -51,7 +51,7 @@ func (uc UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasContent
 	m.SetNow(meta.KeyModified)
 	m.YamlSep = oldZettel.Meta.YamlSep
 	if m.Zid == id.ConfigurationZid {
-		m.Set(meta.KeySyntax, meta.ValueSyntaxMeta)
+		m.Set(meta.KeySyntax, meta.ValueSyntaxNone)
 	}
 	if !hasContent {
 		zettel.Content = oldZettel.Content

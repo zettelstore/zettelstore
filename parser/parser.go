@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -88,7 +88,7 @@ func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
 	}
 	title, _ := inhMeta.Get(meta.KeyTitle)
 	parseMeta := inhMeta
-	if syntax == meta.ValueSyntaxMeta {
+	if syntax == meta.ValueSyntaxNone {
 		parseMeta = m
 	}
 	return &ast.ZettelNode{
