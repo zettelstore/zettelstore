@@ -186,7 +186,11 @@ func createSearchAllFunc(values []string, negate bool) FilterFunc {
 			keyType := meta.KeyType(p.Key)
 			match, ok := matchFuncs[keyType]
 			if !ok {
-				match = createMatchFunc(p.Key, values)
+				if keyType == meta.TypeBool {
+					match = createBoolSearchFunc(p.Key, values)
+				} else {
+					match = createMatchFunc(p.Key, values)
+				}
 				matchFuncs[keyType] = match
 			}
 			if match(p.Value) {
@@ -199,6 +203,18 @@ func createSearchAllFunc(values []string, negate bool) FilterFunc {
 		}
 		return match(m.Zid.String()) != negate
 	}
+}
+
+// createBoolSearchFunc only creates a matchFunc if the values to compare are
+// possible bool values. Otherwise every meta with a bool key could match the
+// search query.
+func createBoolSearchFunc(key string, values []string) matchFunc {
+	for _, v := range values {
+		if len(v) > 0 && !strings.ContainsRune("01tfTFynYN", rune(v[0])) {
+			return func(value string) bool { return false }
+		}
+	}
+	return createMatchFunc(key, values)
 }
 
 func sliceToLower(sl []string) []string {
