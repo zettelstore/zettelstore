@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -172,6 +172,11 @@ func addToMeta(m *Meta, key, val string) {
 		if _, err := id.Parse(v); err == nil {
 			m.Set(key, v)
 		}
+	case TypeIDSet:
+		addSet(m, key, v, func(s string) bool {
+			_, err := id.Parse(s)
+			return err == nil
+		})
 	case TypeTimestamp:
 		if _, ok := TimeValue(v); ok {
 			m.Set(key, v)

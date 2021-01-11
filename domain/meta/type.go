@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -42,6 +42,7 @@ var (
 	TypeCredential   = registerType("Credential", false)
 	TypeEmpty        = registerType("EString", false)
 	TypeID           = registerType("Identifier", false)
+	TypeIDSet        = registerType("IdentifierSet", true)
 	TypeNumber       = registerType("Number", false)
 	TypeString       = registerType("String", false)
 	TypeTagSet       = registerType("TagSet", true)

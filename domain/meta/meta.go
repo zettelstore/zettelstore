@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -98,7 +98,7 @@ var (
 	KeyNewRole           = registerKey("new-role", TypeWord, usageUser)
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser)
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed)
-	KeyPrecursor         = registerKey("precursor", TypeID, usageUser)
+	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser)
 	KeyPublished         = registerKey("published", TypeTimestamp, usageProperty)
 	KeyReadOnly          = registerKey("read-only", TypeWord, usageUser)
 	KeySiteName          = registerKey("site-name", TypeString, usageUser)

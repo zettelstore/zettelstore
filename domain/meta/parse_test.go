@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -53,6 +53,11 @@ func TestTitle(t *testing.T) {
 			t.Errorf("TC=%d: expected %q, got %q", i, tc.e, got)
 		}
 	}
+
+	m := parseMetaStr(meta.KeyTitle + ": ")
+	if title, ok := m.Get(meta.KeyTitle); ok {
+		t.Errorf("Expected a missing title key, but got %q (meta=%v)", title, m)
+	}
 }
 
 func TestNewFromInput(t *testing.T) {
@@ -101,4 +106,25 @@ func equalPairs(one, two []meta.Pair) bool {
 		}
 	}
 	return true
+}
+
+func TestPrecursorIDSet(t *testing.T) {
+	var testdata = []struct {
+		inp string
+		exp string
+	}{
+		{"", ""},
+		{"123", ""},
+		{"12345678901234", "12345678901234"},
+		{"123 12345678901234", "12345678901234"},
+		{"12345678901234 123", "12345678901234"},
+		{"01234567890123 123 12345678901234", "01234567890123 12345678901234"},
+		{"12345678901234 01234567890123", "01234567890123 12345678901234"},
+	}
+	for i, tc := range testdata {
+		m := parseMetaStr(meta.KeyPrecursor + ": " + tc.inp)
+		if got, ok := m.Get(meta.KeyPrecursor); (!ok && tc.exp != "") || tc.exp != got {
+			t.Errorf("TC=%d: expected %q, but got %q when parsing %q", i, tc.exp, got, tc.inp)
+		}
+	}
 }
