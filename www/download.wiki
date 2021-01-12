@@ -1,0 +1,24 @@
+<title>Download</title>
+<h1>Download of Zettelstore Software</h1>
+<h2>Foreword</h2>
+  *  Zettelstore is free/libre open source software, licensed under EUPL-1.2-or-later.
+  *  The software is provided as-is.
+  *  There is no guarantee that it will not damage your system.
+  *  However, it is in use by the main developer since March 2020 without any damage.
+  *  It may be useful for you. It is useful for me.
+  *  Take a look at the <a href="/manual/">manual</a> to know how to start and use it.
+
+<h2>ZIP-ped Executables</h2>
+Build: <code>v0.0.8</code> (2020-12-23).
+
+  *  <a href="../../../uv/zettelstore.zip">Linux</a> (amd64)
+  *  <a href="../../../uv/zettelstore-arm6.zip">Linux</a> (arm6, e.g. Raspberry Pi)
+  *  <a href="../../../uv/zettelstore.exe.zip">Windows</a> (amd64)
+  *  <a href="../../../uv/iZettelstore.zip">macOs</a> (amd64)
+
+Unzip the appropriate file, install and execute Zettelstore according to the manual.
+
+<h2>Zettel for the manual</h2>
+As a starter, you can download the zettel for the manual <a href="../../../uv/manual.zip">here</a>.
+Just unzip the file and put it into your zettel folder.
+You can find the newest version of the manual on <a href="https://github.com/zettelstore/zettelstore-manual">GitHub</a>.

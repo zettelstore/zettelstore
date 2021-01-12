@@ -1,0 +1,14 @@
+<title>Home</title>
+<h1>Zettelstore</h1>
+To get an initial impression, take a look at the <a href="/manual/">manual</a>.
+It is a live example of the zettelstore software, running in read-only mode.
+
+You can <a href="./download.wiki">download</a> executables of the zettelstore
+software. They are the same build as in the live example.
+
+The software and the manual are available on <a href="https://github.com/zettelstore">GitHub</a>:
+
+  *  <a href="https://github.com/zettelstore/zettelstore">https://github.com/zettelstore/zettelstore</a> (EUPL-1.2-or-later)
+  *  <a href="https://github.com/zettelstore/zettelstore-manual">https://github.com/zettelstore/zettelstore-manual</a> (EUPL-1.2-or-later)
+
+<a href="https://twitter.com/zettelstore">Stay tuned</a>&hellip;

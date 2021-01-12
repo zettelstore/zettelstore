@@ -1,0 +1,11 @@
+<title>Zettelstore: Privacy</title>
+<h1>Privacy</h1>
+<p>
+If you do not log into this site, the only personal data this web service will
+process is your IP adress. It will only be used to send the data of the website
+you requested to you.
+</p>
+<p>
+This website is hosted by <a href="https://ionos.de">!&amp;1 IONOS SE</a>.
+According to <a href="https://www.ionos.de/hilfe/datenschutz/datenverarbeitung-von-webseitenbesuchern-ihres-11-ionos-produktes/andere-11-ionos-produkte/">their information</a>, no processing of personal data is done by them.
+</p>

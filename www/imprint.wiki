@@ -1,0 +1,9 @@
+<title>Imprint</title>
+<h1>Imprint</h1>
+<p>
+Detlef Stern<br>
+Max-Planck-Str. 39<br>
+74081 Heilbronn<br>
+Phone: +49 (173) 4905619<br>
+Mail: ds (at) zettelstore.de
+</p>
