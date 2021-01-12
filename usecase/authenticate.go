@@ -13,6 +13,7 @@ package usecase
 
 import (
 	"context"
+	"math/rand"
 	"time"
 
 	"zettelstore.de/z/auth/cred"
@@ -43,16 +44,12 @@ func NewAuthenticate(port AuthenticatePort) Authenticate {
 }
 
 // Run executes the use case.
-func (uc Authenticate) Run(
-	ctx context.Context,
-	ident string,
-	credential string,
-	d time.Duration,
-	k token.Kind,
-) ([]byte, error) {
+func (uc Authenticate) Run(ctx context.Context, ident string, credential string, d time.Duration, k token.Kind) ([]byte, error) {
 	identMeta, err := uc.ucGetUser.Run(ctx, ident)
+	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
+
 	if identMeta == nil || err != nil {
-		wait()
+		compensateCompare()
 		return nil, err
 	}
 
@@ -70,12 +67,24 @@ func (uc Authenticate) Run(
 		}
 		return nil, nil
 	}
-	wait()
+	compensateCompare()
 	return nil, nil
 }
 
-// wait for same time as if password was checked, to avoid timing hints.
-func wait() {
+// compensateCompare if normal comapare is not possible, to avoid timing hints.
+func compensateCompare() {
 	cred.CompareHashAndCredential(
 		"$2a$10$WHcSO3G9afJ3zlOYQR1suuf83bCXED2jmzjti/MH4YH4l2mivDuze", id.Invalid, "", "")
+}
+
+// addDelay after credential checking to allow some CPU time for other tasks.
+// durDelay is the normal delay, if time spend for checking is smaller than
+// the minimum delay minDelay. In addition some jitter (+/- 50 ms) is added.
+func addDelay(start time.Time, durDelay, minDelay time.Duration) {
+	jitter := time.Duration(rand.Intn(100)-50) * time.Millisecond
+	if elapsed := time.Since(start); elapsed+minDelay < durDelay {
+		time.Sleep(durDelay - elapsed + jitter)
+	} else {
+		time.Sleep(minDelay + jitter)
+	}
 }

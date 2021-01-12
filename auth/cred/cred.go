@@ -13,7 +13,6 @@ package cred
 
 import (
 	"bytes"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"zettelstore.de/z/domain/id"
@@ -29,22 +28,11 @@ func HashCredential(zid id.Zid, ident string, credential string) (string, error)
 	return string(res), nil
 }
 
-const (
-	durMinWait = 500 * time.Millisecond // minimum wait time after login
-	minSleep   = 100 * time.Millisecond // minimum sleep time, even for slow credential check
-)
-
 // CompareHashAndCredential checks, whether the hashed credential is a possible
 // value when hashing the credential.
 func CompareHashAndCredential(hashed string, zid id.Zid, ident string, credential string) (bool, error) {
 	fullCredential := createFullCredential(zid, ident, credential)
-	start := time.Now()
 	err := bcrypt.CompareHashAndPassword([]byte(hashed), fullCredential)
-	if elapsed := time.Since(start); elapsed+minSleep < durMinWait {
-		time.Sleep(durMinWait - elapsed)
-	} else {
-		time.Sleep(minSleep)
-	}
 	if err == nil {
 		return true, nil
 	}
