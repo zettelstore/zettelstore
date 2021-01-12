@@ -12,11 +12,15 @@
 package place
 
 import (
+	"math/rand"
 	"sort"
 	"strconv"
 
 	"zettelstore.de/z/domain/meta"
 )
+
+// RandomOrder is a pseudo metadata key that selects a random order.
+const RandomOrder = "_random"
 
 // EnsureSorter makes sure that there is a sorter object.
 func EnsureSorter(sorter *Sorter) *Sorter {
@@ -40,13 +44,17 @@ func ApplySorter(metaList []*meta.Meta, s *Sorter) []*meta.Meta {
 			})
 		return metaList
 	}
-	var sorter sortFunc
+
 	if s.Order == "" {
-		sorter = getSortFunc(meta.KeyID, true, metaList)
+		sort.Slice(metaList, getSortFunc(meta.KeyID, true, metaList))
+	} else if s.Order == RandomOrder {
+		rand.Shuffle(len(metaList), func(i, j int) {
+			metaList[i], metaList[j] = metaList[j], metaList[i]
+		})
 	} else {
-		sorter = getSortFunc(s.Order, s.Descending, metaList)
+		sort.Slice(metaList, getSortFunc(s.Order, s.Descending, metaList))
 	}
-	sort.Slice(metaList, sorter)
+
 	if s.Offset > 0 {
 		if s.Offset > len(metaList) {
 			return nil
