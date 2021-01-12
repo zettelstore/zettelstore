@@ -11,7 +11,7 @@
 
 PACKAGE := zettelstore.de/z/cmd/zettelstore
 
-GO_LDFLAG_VERSION := -X main.buildVersion=$(shell git describe --tags --always --dirty || echo unknown)
+GO_LDFLAG_VERSION := -X main.buildVersion=$(shell go run tools/version.go || echo unknown)
 GOFLAGS_DEVELOP := -ldflags "$(GO_LDFLAG_VERSION)" -tags osusergo,netgo
 GOFLAGS_RELEASE := -ldflags "$(GO_LDFLAG_VERSION) -w" -tags osusergo,netgo
 
