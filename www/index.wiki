@@ -9,7 +9,7 @@ software. They are the same build as in the live example.
 The source code of the software is available
 <a href="../../../dir?ci=trunk">here</a> on this site.
 If you want do download the source code as a Tarball or a ZIP file, you must
-<a href="../../../">login</a> as user &quot;anonymous&quot;.
+<a href="../../../login">login</a> as user &quot;anonymous&quot;.
 You will find the appropriate links for each
 <a href="../../../info?name=trunk">Check-in</a>.
 
