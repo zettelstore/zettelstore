@@ -6,9 +6,20 @@ It is a live example of the zettelstore software, running in read-only mode.
 You can <a href="./download.wiki">download</a> executables of the zettelstore
 software. They are the same build as in the live example.
 
-The software and the manual are available on <a href="https://github.com/zettelstore">GitHub</a>:
+The source code of the software is available
+<a href="../../../dir?ci=trunk">here</a> on this site.
+If you want do download the source code as a Tarball or a ZIP file, you must
+<a href="../../../">login</a> as user &quot;anonymous&quot;.
+You will find the appropriate links for each
+<a href="../../../info?name=trunk">Check-in</a>.
 
-  *  <a href="https://github.com/zettelstore/zettelstore">https://github.com/zettelstore/zettelstore</a> (EUPL-1.2-or-later)
-  *  <a href="https://github.com/zettelstore/zettelstore-manual">https://github.com/zettelstore/zettelstore-manual</a> (EUPL-1.2-or-later)
+The source code is also mirrored on
+<a href="https://github.com/zettelstore/zettelstore">GitHub</a>.
+The <a href="https://github.com/zettelstore/zettelstore-manual">manual</a>
+is currently stored on GitHub too, but this will change in the future when the
+manual is part of the software.
+
+Both the source code and the manual is licensed under the
+<a href="../../../file?name=LICENSE.txt&ci=trunk">European Union Public License 1.2 (or later)</a>.
 
 <a href="https://twitter.com/zettelstore">Stay tuned</a>&hellip;
