@@ -36,7 +36,7 @@ func readFossilVersion() (string, error) {
 	if len(hash) < 3 {
 		return "", errors.New("No fossil hash found")
 	}
-	return hash[1 : len(hash)-2], nil
+	return hash[1 : len(hash)-1], nil
 }
 
 func main() {
