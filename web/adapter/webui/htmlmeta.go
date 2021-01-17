@@ -39,6 +39,10 @@ func writeHTMLMetaValue(
 		writeEmpty(w, m.GetDefault(key, "???e"))
 	case meta.TypeID:
 		writeIdentifier(w, m.GetDefault(key, "???i"), getTitle)
+	case meta.TypeIDSet:
+		if l, ok := m.GetList(key); ok {
+			writeIdentifierSet(w, l, getTitle)
+		}
 	case meta.TypeNumber:
 		writeNumber(w, m.GetDefault(key, "???n"))
 	case meta.TypeString:
@@ -108,7 +112,15 @@ func writeIdentifier(w io.Writer, val string, getTitle func(id.Zid, string) (str
 	case found < 0:
 		io.WriteString(w, val)
 	}
-	return
+}
+
+func writeIdentifierSet(w io.Writer, vals []string, getTitle func(id.Zid, string) (string, int)) {
+	for i, val := range vals {
+		if i > 0 {
+			io.WriteString(w, ", ")
+		}
+		writeIdentifier(w, val, getTitle)
+	}
 }
 
 func writeNumber(w io.Writer, val string) {
