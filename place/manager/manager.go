@@ -211,6 +211,32 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return nil, place.ErrNotFound
 }
 
+// FetchZids returns the set of all zettel identifer managed by the place.
+func (mgr *Manager) FetchZids(ctx context.Context) (result map[id.Zid]bool, err error) {
+	if !mgr.started {
+		return nil, place.ErrStopped
+	}
+	for _, p := range mgr.subplaces {
+		zids, err := p.FetchZids(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if result == nil {
+			result = zids
+		} else if len(result) <= len(zids) {
+			for zid := range result {
+				zids[zid] = true
+			}
+			result = zids
+		} else {
+			for zid := range zids {
+				result[zid] = true
+			}
+		}
+	}
+	return result, nil
+}
+
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
 func (mgr *Manager) SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {

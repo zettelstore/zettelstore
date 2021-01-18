@@ -50,20 +50,14 @@ type constPlace struct {
 	filter manager.MetaFilter
 }
 
-// Location returns some information where the place is located.
 func (cp *constPlace) Location() string {
 	return "const:"
 }
 
-// Start the place. Now all other functions of the place are allowed.
-// Starting an already started place is not allowed.
 func (cp *constPlace) Start(ctx context.Context) error { return nil }
 
-// Stop the started place. Now only the Start() function is allowed.
 func (cp *constPlace) Stop(ctx context.Context) error { return nil }
 
-// RegisterChangeObserver registers an observer that will be notified
-// if a zettel was found to be changed.
 // This place never changes anything. So ignore the registration.
 func (cp *constPlace) RegisterChangeObserver(f place.ObserverFunc) {}
 
@@ -74,7 +68,6 @@ func (cp *constPlace) CreateZettel(
 	return id.Invalid, place.ErrReadOnly
 }
 
-// GetZettel retrieves a specific zettel.
 func (cp *constPlace) GetZettel(
 	ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	if z, ok := cp.zettel[zid]; ok {
@@ -83,7 +76,6 @@ func (cp *constPlace) GetZettel(
 	return domain.Zettel{}, place.ErrNotFound
 }
 
-// GetMeta retrieves just the meta data of a specific zettel.
 func (cp *constPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	if z, ok := cp.zettel[zid]; ok {
 		return makeMeta(zid, z.header), nil
@@ -91,8 +83,14 @@ func (cp *constPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, erro
 	return nil, place.ErrNotFound
 }
 
-// SelectMeta returns all zettel meta data that match the selection
-// criteria. The result is ordered by descending zettel id.
+func (cp *constPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+	result := make(map[id.Zid]bool, len(cp.zettel))
+	for zid := range cp.zettel {
+		result[zid] = true
+	}
+	return result, nil
+}
+
 func (cp *constPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
 	hasMatch := place.CreateFilterFunc(f)
@@ -119,7 +117,6 @@ func (cp *constPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	return !ok
 }
 
-// Rename changes the current id to a new id.
 func (cp *constPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	if _, ok := cp.zettel[curZid]; ok {
 		return place.ErrReadOnly
@@ -128,7 +125,6 @@ func (cp *constPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) e
 }
 func (cp *constPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool { return false }
 
-// DeleteZettel removes the zettel from the place.
 func (cp *constPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if _, ok := cp.zettel[zid]; ok {
 		return place.ErrReadOnly

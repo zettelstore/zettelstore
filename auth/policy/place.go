@@ -53,19 +53,14 @@ func (pp *polPlace) Location() string {
 	return pp.place.Location()
 }
 
-// Start the place. Now all other functions of the place are allowed.
-// Starting an already started place is not allowed.
 func (pp *polPlace) Start(ctx context.Context) error {
 	return pp.place.Start(ctx)
 }
 
-// Stop the started place. Now only the Start() function is allowed.
 func (pp *polPlace) Stop(ctx context.Context) error {
 	return pp.place.Stop(ctx)
 }
 
-// RegisterChangeObserver registers an observer that will be notified
-// if a zettel was found to be changed.
 func (pp *polPlace) RegisterChangeObserver(f place.ObserverFunc) {
 	pp.place.RegisterChangeObserver(f)
 }
@@ -95,7 +90,6 @@ func (pp *polPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	return domain.Zettel{}, place.NewErrNotAllowed("GetZettel", user, zid)
 }
 
-// GetMeta retrieves just the meta data of a specific zettel.
 func (pp *polPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	m, err := pp.place.GetMeta(ctx, zid)
 	if err != nil {
@@ -108,8 +102,10 @@ func (pp *polPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return nil, place.NewErrNotAllowed("GetMeta", user, zid)
 }
 
-// SelectMeta returns all zettel meta data that match the selection
-// criteria. The result is ordered by descending zettel id.
+func (pp *polPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+	return nil, place.NewErrNotAllowed("fetch-zids", session.GetUser(ctx), id.Invalid)
+}
+
 func (pp *polPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
 	user := session.GetUser(ctx)
@@ -153,7 +149,6 @@ func (pp *polPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	return pp.place.AllowRenameZettel(ctx, zid)
 }
 
-// Rename changes the current zid to a new zid.
 func (pp *polPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	meta, err := pp.place.GetMeta(ctx, curZid)
 	if err != nil {
@@ -170,7 +165,6 @@ func (pp *polPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	return pp.place.CanDeleteZettel(ctx, zid)
 }
 
-// DeleteZettel removes the zettel from the place.
 func (pp *polPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	meta, err := pp.place.GetMeta(ctx, zid)
 	if err != nil {

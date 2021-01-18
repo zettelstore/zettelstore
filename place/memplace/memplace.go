@@ -119,6 +119,16 @@ func (mp *memPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return zettel.Meta.Clone(), nil
 }
 
+func (mp *memPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+	mp.mx.RLock()
+	result := make(map[id.Zid]bool, len(mp.zettel))
+	for zid := range mp.zettel {
+		result[zid] = true
+	}
+	mp.mx.RUnlock()
+	return result, nil
+}
+
 func (mp *memPlace) SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
 	filterFunc := place.CreateFilterFunc(f)
 	result := make([]*meta.Meta, 0, len(mp.zettel))

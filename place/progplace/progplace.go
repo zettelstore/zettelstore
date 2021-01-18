@@ -80,18 +80,10 @@ func Setup(startConfig *meta.Meta, manager place.Manager) {
 	myPlace.manager = manager
 }
 
-// Location returns some information where the place is located.
-func (pp *progPlace) Location() string { return "" }
-
-// Start the place. Now all other functions of the place are allowed.
-// Starting an already started place is not allowed.
+func (pp *progPlace) Location() string                { return "" }
 func (pp *progPlace) Start(ctx context.Context) error { return nil }
+func (pp *progPlace) Stop(ctx context.Context) error  { return nil }
 
-// Stop the started place. Now only the Start() function is allowed.
-func (pp *progPlace) Stop(ctx context.Context) error { return nil }
-
-// RegisterChangeObserver registers an observer that will be notified
-// if a zettel was found to be changed.
 func (pp *progPlace) RegisterChangeObserver(f place.ObserverFunc) {}
 
 func (pp *progPlace) CanCreateZettel(ctx context.Context) bool { return false }
@@ -101,7 +93,6 @@ func (pp *progPlace) CreateZettel(
 	return id.Invalid, place.ErrReadOnly
 }
 
-// GetZettel retrieves a specific zettel.
 func (pp *progPlace) GetZettel(
 	ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	if gen, ok := pp.zettel[zid]; ok && gen.meta != nil {
@@ -119,7 +110,6 @@ func (pp *progPlace) GetZettel(
 	return domain.Zettel{}, place.ErrNotFound
 }
 
-// GetMeta retrieves just the meta data of a specific zettel.
 func (pp *progPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	if gen, ok := pp.zettel[zid]; ok {
 		if genMeta := gen.meta; genMeta != nil {
@@ -132,8 +122,18 @@ func (pp *progPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error
 	return nil, place.ErrNotFound
 }
 
-// SelectMeta returns all zettel meta data that match the selection
-// criteria. The result is ordered by descending zettel id.
+func (pp *progPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+	result := make(map[id.Zid]bool, len(pp.zettel))
+	for zid, gen := range pp.zettel {
+		if genMeta := gen.meta; genMeta != nil {
+			if genMeta(zid) != nil {
+				result[zid] = true
+			}
+		}
+	}
+	return result, nil
+}
+
 func (pp *progPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
 	hasMatch := place.CreateFilterFunc(f)
@@ -164,7 +164,6 @@ func (pp *progPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	return !ok
 }
 
-// Rename changes the current id to a new id.
 func (pp *progPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	if _, ok := pp.zettel[curZid]; ok {
 		return place.ErrReadOnly
@@ -174,7 +173,6 @@ func (pp *progPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) er
 
 func (pp *progPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool { return false }
 
-// DeleteZettel removes the zettel from the place.
 func (pp *progPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if _, ok := pp.zettel[zid]; ok {
 		return place.ErrReadOnly

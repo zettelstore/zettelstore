@@ -69,6 +69,9 @@ type Place interface {
 	// GetMeta retrieves just the meta data of a specific zettel.
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 
+	// FetchZids returns the set of all zettel identifer managed by the place.
+	FetchZids(ctx context.Context) (map[id.Zid]bool, error)
+
 	// SelectMeta returns all zettel meta data that match the selection criteria.
 	// TODO: more docs
 	SelectMeta(ctx context.Context, f *Filter, s *Sorter) ([]*meta.Meta, error)

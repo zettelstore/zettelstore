@@ -144,9 +144,6 @@ func (dp *dirPlace) Stop(ctx context.Context) error {
 	return nil
 }
 
-// RegisterChangeObserver registers an observer that will be notified
-// if a zettel was found to be changed.
-// possibly changed.
 func (dp *dirPlace) RegisterChangeObserver(f place.ObserverFunc) {
 	dp.mxObserver.Lock()
 	dp.observers = append(dp.observers, f)
@@ -176,7 +173,6 @@ func (dp *dirPlace) CreateZettel(
 	return meta.Zid, err
 }
 
-// GetZettel reads the zettel from a file.
 func (dp *dirPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	entry := dp.dirSrv.GetEntry(zid)
 	if !entry.IsValid() {
@@ -191,7 +187,6 @@ func (dp *dirPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	return zettel, nil
 }
 
-// GetMeta retrieves just the meta data of a specific zettel.
 func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	entry := dp.dirSrv.GetEntry(zid)
 	if !entry.IsValid() {
@@ -205,8 +200,15 @@ func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return m, nil
 }
 
-// SelectMeta returns all zettel meta data that match the selection
-// criteria. The result is ordered by descending zettel id.
+func (dp *dirPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+	entries := dp.dirSrv.GetEntries()
+	result := make(map[id.Zid]bool, len(entries))
+	for _, entry := range entries {
+		result[entry.Zid] = true
+	}
+	return result, nil
+}
+
 func (dp *dirPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
 
@@ -291,7 +293,6 @@ func (dp *dirPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	return !dp.readonly
 }
 
-// Rename changes the current zettel id to a new zettel id.
 func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	if dp.readonly {
 		return place.ErrReadOnly
@@ -348,7 +349,6 @@ func (dp *dirPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	return entry.IsValid()
 }
 
-// DeleteZettel removes the zettel from the place.
 func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if dp.readonly {
 		return place.ErrReadOnly
