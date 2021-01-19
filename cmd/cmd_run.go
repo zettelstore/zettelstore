@@ -69,11 +69,12 @@ func logBeforeRun(listenAddr string, readonlyMode bool) {
 	}
 }
 
-func setupRouting(up place.Place, readonlyMode bool) http.Handler {
+func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
+	var up place.Place = mgr
 	pp, pol := policy.PlaceWithPolicy(
 		up, startup.IsSimple(), startup.WithAuth, readonlyMode, runtime.GetExpertMode,
 		startup.IsOwner, runtime.GetVisibility)
-	te := webui.NewTemplateEngine(up, pol)
+	te := webui.NewTemplateEngine(mgr, pol)
 
 	ucAuthenticate := usecase.NewAuthenticate(up)
 	ucGetMeta := usecase.NewGetMeta(pp)

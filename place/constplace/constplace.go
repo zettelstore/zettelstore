@@ -25,7 +25,7 @@ import (
 func init() {
 	manager.Register(
 		" const",
-		func(u *url.URL, mf manager.MetaFilter) (place.Place, error) {
+		func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
 			return &constPlace{zettel: constZettelMap, filter: mf}, nil
 		})
 }
@@ -57,9 +57,6 @@ func (cp *constPlace) Location() string {
 func (cp *constPlace) Start(ctx context.Context) error { return nil }
 
 func (cp *constPlace) Stop(ctx context.Context) error { return nil }
-
-// This place never changes anything. So ignore the registration.
-func (cp *constPlace) RegisterChangeObserver(f place.ObserverFunc) {}
 
 func (cp *constPlace) CanCreateZettel(ctx context.Context) bool { return false }
 

@@ -12,7 +12,6 @@
 package directory
 
 import (
-	"sync"
 	"time"
 
 	"zettelstore.de/z/domain/id"
@@ -21,20 +20,20 @@ import (
 
 // Service specifies a directory scan service.
 type Service struct {
-	dirPath     string
-	rescanTime  time.Duration
-	done        chan struct{}
-	cmds        chan dirCmd
-	changeFuncs []place.ObserverFunc
-	mxFuncs     sync.RWMutex
+	dirPath    string
+	rescanTime time.Duration
+	done       chan struct{}
+	cmds       chan dirCmd
+	observer   place.ObserverFunc
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration) *Service {
+func NewService(directoryPath string, rescanTime time.Duration, ob place.ObserverFunc) *Service {
 	srv := &Service{
 		dirPath:    directoryPath,
 		rescanTime: rescanTime,
 		cmds:       make(chan dirCmd),
+		observer:   ob,
 	}
 	return srv
 }
@@ -64,21 +63,9 @@ func (srv *Service) Stop() {
 	srv.done = nil
 }
 
-// Subscribe to invalidation events.
-func (srv *Service) Subscribe(changeFunc place.ObserverFunc) {
-	srv.mxFuncs.Lock()
-	if changeFunc != nil {
-		srv.changeFuncs = append(srv.changeFuncs, changeFunc)
-	}
-	srv.mxFuncs.Unlock()
-}
-
 func (srv *Service) notifyChange(reason place.ChangeReason, zid id.Zid) {
-	srv.mxFuncs.RLock()
-	changeFuncs := srv.changeFuncs
-	srv.mxFuncs.RUnlock()
-	for _, changeF := range changeFuncs {
-		changeF(reason, zid)
+	if ob := srv.observer; ob != nil {
+		ob(reason, zid)
 	}
 }
 

@@ -21,24 +21,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-// ChangeReason gives an indication, why the ObserverFunc was called.
-type ChangeReason int
-
-// Values for ChangeReason
-const (
-	_        ChangeReason = iota
-	OnReload              // Place was reloaded
-	OnCreate              // A new zettel is born
-	OnUpdate              // A zettel was changed
-	OnDelete              // A zettel was removed
-)
-
-// ObserverFunc is the function that will be called if something changed.
-// If the first parameter, a bool, is true, then all zettel are possibly
-// changed. If it has the value false, the given ZettelID will identify the
-// changed zettel.
-type ObserverFunc func(ChangeReason, id.Zid)
-
 // Place is implemented by all Zettel places.
 type Place interface {
 	// Location returns some information where the place is located.
@@ -51,10 +33,6 @@ type Place interface {
 
 	// Stop the started place. Now only the Start() function is allowed.
 	Stop(ctx context.Context) error
-
-	// RegisterChangeObserver registers an observer that will be notified
-	// if one or all zettel are found to be changed.
-	RegisterChangeObserver(ObserverFunc)
 
 	// CanCreateZettel returns true, if place could possibly create a new zettel.
 	CanCreateZettel(ctx context.Context) bool
@@ -102,14 +80,6 @@ type Place interface {
 	ReadStats(st *Stats)
 }
 
-// Manager is a place-managing place.
-type Manager interface {
-	Place
-
-	// NumPlaces returns the number of managed places.
-	NumPlaces() int
-}
-
 // Stats records statistics about the place.
 type Stats struct {
 	// ReadOnly indicates that the places cannot be changed
@@ -117,6 +87,36 @@ type Stats struct {
 
 	// Zettel is the number of zettel managed by the place.
 	Zettel int
+}
+
+// ChangeReason gives an indication, why the ObserverFunc was called.
+type ChangeReason int
+
+// Values for ChangeReason
+const (
+	_        ChangeReason = iota
+	OnReload              // Place was reloaded
+	OnCreate              // A new zettel is born
+	OnUpdate              // A zettel was changed
+	OnDelete              // A zettel was removed
+)
+
+// ObserverFunc is the function that will be called if something changed.
+// If the first parameter, a bool, is true, then all zettel are possibly
+// changed. If it has the value false, the given ZettelID will identify the
+// changed zettel.
+type ObserverFunc func(ChangeReason, id.Zid)
+
+// Manager is a place-managing place.
+type Manager interface {
+	Place
+
+	// RegisterChangeObserver registers an observer that will be notified
+	// if one or all zettel are found to be changed.
+	RegisterChangeObserver(ObserverFunc)
+
+	// NumPlaces returns the number of managed places.
+	NumPlaces() int
 }
 
 // ErrNotAllowed is returned if the caller is not allowed to perform the operation.

@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	manager.Register("dir", func(u *url.URL, mf manager.MetaFilter) (place.Place, error) {
+	manager.Register("dir", func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
 		path := getDirPath(u)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil, err
@@ -39,6 +39,7 @@ func init() {
 		dp := dirPlace{
 			u:        u,
 			readonly: getQueryBool(u, "readonly"),
+			observer: ob,
 			dir:      path,
 			dirRescan: time.Duration(
 				getQueryInt(u, "rescan", 60, 600, 30*24*60*60)) * time.Second,
@@ -81,17 +82,16 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 
 // dirPlace uses a directory to store zettel as files.
 type dirPlace struct {
-	u          *url.URL
-	readonly   bool
-	observers  []place.ObserverFunc
-	mxObserver sync.RWMutex
-	dir        string
-	dirRescan  time.Duration
-	dirSrv     *directory.Service
-	fSrvs      uint32
-	fCmds      []chan fileCmd
-	mxCmds     sync.RWMutex
-	filter     manager.MetaFilter
+	u         *url.URL
+	readonly  bool
+	observer  place.ObserverFunc
+	dir       string
+	dirRescan time.Duration
+	dirSrv    *directory.Service
+	fSrvs     uint32
+	fCmds     []chan fileCmd
+	mxCmds    sync.RWMutex
+	filter    manager.MetaFilter
 }
 
 func (dp *dirPlace) Location() string {
@@ -106,18 +106,14 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan)
+	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.notifyChanged)
 	dp.mxCmds.Unlock()
-	dp.dirSrv.Subscribe(dp.notifyChanged)
 	dp.dirSrv.Start()
 	return nil
 }
 
 func (dp *dirPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
-	dp.mxObserver.RLock()
-	observers := dp.observers
-	dp.mxObserver.RUnlock()
-	for _, ob := range observers {
+	if ob := dp.observer; ob != nil {
 		ob(reason, zid)
 	}
 }
@@ -142,12 +138,6 @@ func (dp *dirPlace) Stop(ctx context.Context) error {
 		close(c)
 	}
 	return nil
-}
-
-func (dp *dirPlace) RegisterChangeObserver(f place.ObserverFunc) {
-	dp.mxObserver.Lock()
-	dp.observers = append(dp.observers, f)
-	dp.mxObserver.Unlock()
 }
 
 func (dp *dirPlace) CanCreateZettel(ctx context.Context) bool {

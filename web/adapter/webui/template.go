@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -62,9 +62,9 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(p place.Place, pol policy.Policy) *TemplateEngine {
+func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
 	te := &TemplateEngine{
-		place:  p,
+		place:  mgr,
 		policy: pol,
 
 		stylesheetURL: adapter.NewURLBuilder('z').SetZid(
@@ -80,7 +80,7 @@ func NewTemplateEngine(p place.Place, pol policy.Policy) *TemplateEngine {
 		searchURL:     adapter.NewURLBuilder('s').String(),
 	}
 	te.observe(place.OnReload, id.Invalid)
-	p.RegisterChangeObserver(te.observe)
+	mgr.RegisterChangeObserver(te.observe)
 	return te
 }
 

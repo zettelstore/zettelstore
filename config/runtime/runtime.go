@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -25,11 +25,11 @@ import (
 var configStock stock.Stock
 
 // SetupConfiguration enables the configuration data.
-func SetupConfiguration(place place.Place) {
+func SetupConfiguration(mgr place.Manager) {
 	if configStock != nil {
 		panic("configStock already set")
 	}
-	configStock = stock.NewStock(place)
+	configStock = stock.NewStock(mgr)
 	if err := configStock.Subscribe(id.ConfigurationZid); err != nil {
 		panic(err)
 	}

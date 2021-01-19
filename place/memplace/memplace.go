@@ -27,21 +27,21 @@ import (
 func init() {
 	manager.Register(
 		"mem",
-		func(u *url.URL, mf manager.MetaFilter) (place.Place, error) {
-			return &memPlace{u: u, filter: mf}, nil
+		func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
+			return &memPlace{u: u, filter: mf, observer: ob}, nil
 		})
 }
 
 type memPlace struct {
-	u         *url.URL
-	zettel    map[id.Zid]domain.Zettel
-	mx        sync.RWMutex
-	observers []place.ObserverFunc
-	filter    manager.MetaFilter
+	u        *url.URL
+	zettel   map[id.Zid]domain.Zettel
+	mx       sync.RWMutex
+	observer place.ObserverFunc
+	filter   manager.MetaFilter
 }
 
 func (mp *memPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
-	for _, ob := range mp.observers {
+	if ob := mp.observer; ob != nil {
 		ob(reason, zid)
 	}
 }
@@ -62,12 +62,6 @@ func (mp *memPlace) Stop(ctx context.Context) error {
 	defer mp.mx.Unlock()
 	mp.zettel = nil
 	return nil
-}
-
-func (mp *memPlace) RegisterChangeObserver(f place.ObserverFunc) {
-	mp.mx.Lock()
-	mp.observers = append(mp.observers, f)
-	mp.mx.Unlock()
 }
 
 func (mp *memPlace) CanCreateZettel(ctx context.Context) bool { return true }

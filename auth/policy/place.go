@@ -61,10 +61,6 @@ func (pp *polPlace) Stop(ctx context.Context) error {
 	return pp.place.Stop(ctx)
 }
 
-func (pp *polPlace) RegisterChangeObserver(f place.ObserverFunc) {
-	pp.place.RegisterChangeObserver(f)
-}
-
 func (pp *polPlace) CanCreateZettel(ctx context.Context) bool {
 	return pp.place.CanCreateZettel(ctx)
 }

@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"sync"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -25,7 +26,7 @@ import (
 )
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, readonlyMode bool, f MetaFilter) (place.Place, error) {
+func Connect(rawURL string, readonlyMode bool, f MetaFilter, ob place.ObserverFunc) (place.Place, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func Connect(rawURL string, readonlyMode bool, f MetaFilter) (place.Place, error
 	}
 
 	if create, ok := registry[u.Scheme]; ok {
-		return create(u, f)
+		return create(u, f, ob)
 	}
 	return nil, &ErrInvalidScheme{u.Scheme}
 }
@@ -57,7 +58,7 @@ type ErrInvalidScheme struct{ Scheme string }
 
 func (err *ErrInvalidScheme) Error() string { return "Invalid scheme: " + err.Scheme }
 
-type createFunc func(*url.URL, MetaFilter) (place.Place, error)
+type createFunc func(*url.URL, MetaFilter, place.ObserverFunc) (place.Place, error)
 
 var registry = map[string]createFunc{}
 
@@ -81,37 +82,58 @@ func GetSchemes() []string {
 
 // Manager is a coordinating place.
 type Manager struct {
-	started   bool
-	placeURIs []url.URL
-	subplaces []place.Place
-	filter    MetaFilter
+	started    bool
+	placeURIs  []url.URL
+	subplaces  []place.Place
+	filter     MetaFilter
+	observers  []place.ObserverFunc
+	mxObserver sync.RWMutex
 }
 
 // New creates a new managing place.
 func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
 	filter := newFilter()
+	mgr := &Manager{
+		filter: filter,
+	}
 	subplaces := make([]place.Place, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
-		p, err := Connect(uri, readonlyMode, filter)
+		p, err := Connect(uri, readonlyMode, filter, mgr.observe)
 		if err != nil {
 			return nil, err
 		}
 		subplaces = append(subplaces, p)
 	}
-	constplace, err := registry[" const"](nil, filter)
+	constplace, err := registry[" const"](nil, filter, mgr.observe)
 	if err != nil {
 		return nil, err
 	}
-	progplace, err := registry[" prog"](nil, filter)
+	progplace, err := registry[" prog"](nil, filter, mgr.observe)
 	if err != nil {
 		return nil, err
 	}
 	subplaces = append(subplaces, constplace, progplace)
-	result := &Manager{
-		subplaces: subplaces,
-		filter:    filter,
+	mgr.subplaces = subplaces
+	return mgr, nil
+}
+
+// RegisterChangeObserver registers an observer that will be notified
+// if a zettel was found to be changed.
+func (mgr *Manager) RegisterChangeObserver(f place.ObserverFunc) {
+	if f != nil {
+		mgr.mxObserver.Lock()
+		mgr.observers = append(mgr.observers, f)
+		mgr.mxObserver.Unlock()
 	}
-	return result, nil
+}
+
+func (mgr *Manager) observe(reason place.ChangeReason, zid id.Zid) {
+	mgr.mxObserver.RLock()
+	observers := mgr.observers
+	mgr.mxObserver.RUnlock()
+	for _, ob := range observers {
+		ob(reason, zid)
+	}
 }
 
 // Location returns some information where the place is located.
@@ -160,14 +182,6 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	}
 	mgr.started = false
 	return err
-}
-
-// RegisterChangeObserver registers an observer that will be notified
-// if a zettel was found to be changed.
-func (mgr *Manager) RegisterChangeObserver(f place.ObserverFunc) {
-	for _, p := range mgr.subplaces {
-		p.RegisterChangeObserver(f)
-	}
 }
 
 // CanCreateZettel returns true, if place could possibly create a new zettel.

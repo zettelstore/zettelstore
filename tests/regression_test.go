@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -53,6 +53,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.Place) {
 				"dir://"+filepath.Join(root, info.Name()),
 				false,
 				&noFilter{},
+				nil,
 			)
 			if err != nil {
 				panic(err)
