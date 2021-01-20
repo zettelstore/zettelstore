@@ -22,6 +22,7 @@ func readVersionFile() (string, error) {
 }
 
 var fossilHash = regexp.MustCompile("\\[[0-9a-fA-F]+\\]")
+var dirtyPrefixes = []string{"DELETED", "ADDED", "UPDATED", "CONFLICT", "EDITED", "RENAMED"}
 
 func readFossilVersion() (string, error) {
 	var out bytes.Buffer
@@ -36,7 +37,27 @@ func readFossilVersion() (string, error) {
 	if len(hash) < 3 {
 		return "", errors.New("No fossil hash found")
 	}
-	return hash[1 : len(hash)-1], nil
+	hash = hash[1 : len(hash)-1]
+
+	out.Reset()
+	cmd = exec.Command("fossil", "status")
+	cmd.Stdin = nil
+	cmd.Stdout = &out
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	lines := strings.FieldsFunc(out.String(), func(r rune) bool {
+		return r == '\n' || r == '\r'
+	})
+	for _, line := range lines {
+		for _, prefix := range dirtyPrefixes {
+			if strings.HasPrefix(line, prefix) {
+				return hash + "-dirty", nil
+			}
+		}
+	}
+	return hash, nil
 }
 
 func main() {
@@ -49,5 +70,5 @@ func main() {
 	if err != nil {
 		fmt.Print(base)
 	}
-	fmt.Printf("%v-%v", base, fossil)
+	fmt.Printf("%v+%v", base, fossil)
 }
