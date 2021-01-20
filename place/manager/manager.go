@@ -26,7 +26,7 @@ import (
 )
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, readonlyMode bool, f MetaFilter, ob place.ObserverFunc) (place.Place, error) {
+func Connect(rawURL string, readonlyMode bool, f MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func Connect(rawURL string, readonlyMode bool, f MetaFilter, ob place.ObserverFu
 	}
 
 	if create, ok := registry[u.Scheme]; ok {
-		return create(u, f, ob)
+		return create(u, f, chci)
 	}
 	return nil, &ErrInvalidScheme{u.Scheme}
 }
@@ -58,7 +58,7 @@ type ErrInvalidScheme struct{ Scheme string }
 
 func (err *ErrInvalidScheme) Error() string { return "Invalid scheme: " + err.Scheme }
 
-type createFunc func(*url.URL, MetaFilter, place.ObserverFunc) (place.Place, error)
+type createFunc func(*url.URL, MetaFilter, chan<- place.ChangeInfo) (place.Place, error)
 
 var registry = map[string]createFunc{}
 
@@ -86,8 +86,10 @@ type Manager struct {
 	placeURIs  []url.URL
 	subplaces  []place.Place
 	filter     MetaFilter
-	observers  []place.ObserverFunc
+	observers  []func(place.ChangeInfo)
 	mxObserver sync.RWMutex
+	done       chan struct{}
+	infos      chan place.ChangeInfo
 }
 
 // New creates a new managing place.
@@ -95,20 +97,21 @@ func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
 	filter := newFilter()
 	mgr := &Manager{
 		filter: filter,
+		infos:  make(chan place.ChangeInfo, len(placeURIs)*10),
 	}
 	subplaces := make([]place.Place, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
-		p, err := Connect(uri, readonlyMode, filter, mgr.observe)
+		p, err := Connect(uri, readonlyMode, filter, mgr.infos)
 		if err != nil {
 			return nil, err
 		}
 		subplaces = append(subplaces, p)
 	}
-	constplace, err := registry[" const"](nil, filter, mgr.observe)
+	constplace, err := registry[" const"](nil, filter, mgr.infos)
 	if err != nil {
 		return nil, err
 	}
-	progplace, err := registry[" prog"](nil, filter, mgr.observe)
+	progplace, err := registry[" prog"](nil, filter, mgr.infos)
 	if err != nil {
 		return nil, err
 	}
@@ -117,9 +120,9 @@ func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
 	return mgr, nil
 }
 
-// RegisterChangeObserver registers an observer that will be notified
+// RegisterObserver registers an observer that will be notified
 // if a zettel was found to be changed.
-func (mgr *Manager) RegisterChangeObserver(f place.ObserverFunc) {
+func (mgr *Manager) RegisterObserver(f func(place.ChangeInfo)) {
 	if f != nil {
 		mgr.mxObserver.Lock()
 		mgr.observers = append(mgr.observers, f)
@@ -127,12 +130,34 @@ func (mgr *Manager) RegisterChangeObserver(f place.ObserverFunc) {
 	}
 }
 
-func (mgr *Manager) observe(reason place.ChangeReason, zid id.Zid) {
+func (mgr *Manager) notifyObserver(ci place.ChangeInfo) {
 	mgr.mxObserver.RLock()
 	observers := mgr.observers
 	mgr.mxObserver.RUnlock()
 	for _, ob := range observers {
-		ob(reason, zid)
+		ob(ci)
+	}
+}
+
+func notifier(notify func(place.ChangeInfo), infos <-chan place.ChangeInfo, done <-chan struct{}) {
+	// The call to notify may panic. Ensure a running notifier.
+	defer func() {
+		if err := recover(); err != nil {
+			go notifier(notify, infos, done)
+		}
+	}()
+
+	for {
+		select {
+		case ci, ok := <-infos:
+			if ok {
+				notify(ci)
+			}
+		case _, ok := <-done:
+			if !ok {
+				return
+			}
+		}
 	}
 }
 
@@ -158,13 +183,19 @@ func (mgr *Manager) Start(ctx context.Context) error {
 		return place.ErrStarted
 	}
 	for i := len(mgr.subplaces) - 1; i >= 0; i-- {
-		if err := mgr.subplaces[i].Start(ctx); err != nil {
-			for j := i + 1; j < len(mgr.subplaces); j++ {
-				mgr.subplaces[j].Stop(ctx)
+		if ssi, ok := mgr.subplaces[i].(place.StartStopper); ok {
+			if err := ssi.Start(ctx); err != nil {
+				for j := i + 1; j < len(mgr.subplaces); j++ {
+					if ssj, ok := mgr.subplaces[j].(place.StartStopper); ok {
+						ssj.Stop(ctx)
+					}
+				}
+				return err
 			}
-			return err
 		}
 	}
+	mgr.done = make(chan struct{})
+	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
 	mgr.started = true
 	return nil
 }
@@ -174,10 +205,14 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	if !mgr.started {
 		return place.ErrStopped
 	}
+	close(mgr.done)
+	mgr.done = nil
 	var err error
 	for _, p := range mgr.subplaces {
-		if err1 := p.Stop(ctx); err1 != nil && err == nil {
-			err = err1
+		if ss, ok := p.(place.StartStopper); ok {
+			if err1 := ss.Stop(ctx); err1 != nil && err == nil {
+				err = err1
+			}
 		}
 	}
 	mgr.started = false

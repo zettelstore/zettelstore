@@ -25,7 +25,7 @@ import (
 func init() {
 	manager.Register(
 		" const",
-		func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
+		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
 			return &constPlace{zettel: constZettelMap, filter: mf}, nil
 		})
 }
@@ -53,10 +53,6 @@ type constPlace struct {
 func (cp *constPlace) Location() string {
 	return "const:"
 }
-
-func (cp *constPlace) Start(ctx context.Context) error { return nil }
-
-func (cp *constPlace) Stop(ctx context.Context) error { return nil }
 
 func (cp *constPlace) CanCreateZettel(ctx context.Context) bool { return false }
 

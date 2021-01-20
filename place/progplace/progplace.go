@@ -26,7 +26,7 @@ import (
 func init() {
 	manager.Register(
 		" prog",
-		func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
+		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
 			return getPlace(mf), nil
 		})
 }
@@ -80,9 +80,7 @@ func Setup(startConfig *meta.Meta, manager place.Manager) {
 	myPlace.manager = manager
 }
 
-func (pp *progPlace) Location() string                { return "" }
-func (pp *progPlace) Start(ctx context.Context) error { return nil }
-func (pp *progPlace) Stop(ctx context.Context) error  { return nil }
+func (pp *progPlace) Location() string { return "" }
 
 func (pp *progPlace) CanCreateZettel(ctx context.Context) bool { return false }
 

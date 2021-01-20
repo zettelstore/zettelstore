@@ -27,13 +27,6 @@ type Place interface {
 	// Format is dependent of the place.
 	Location() string
 
-	// Start the place. Now all other functions of the place are allowed.
-	// Starting an already started place is not allowed.
-	Start(ctx context.Context) error
-
-	// Stop the started place. Now only the Start() function is allowed.
-	Stop(ctx context.Context) error
-
 	// CanCreateZettel returns true, if place could possibly create a new zettel.
 	CanCreateZettel(ctx context.Context) bool
 
@@ -89,6 +82,16 @@ type Stats struct {
 	Zettel int
 }
 
+// StartStopper performs simple lifecycle management.
+type StartStopper interface {
+	// Start the place. Now all other functions of the place are allowed.
+	// Starting an already started place is not allowed.
+	Start(ctx context.Context) error
+
+	// Stop the started place. Now only the Start() function is allowed.
+	Stop(ctx context.Context) error
+}
+
 // ChangeReason gives an indication, why the ObserverFunc was called.
 type ChangeReason int
 
@@ -96,24 +99,24 @@ type ChangeReason int
 const (
 	_        ChangeReason = iota
 	OnReload              // Place was reloaded
-	OnCreate              // A new zettel is born
-	OnUpdate              // A zettel was changed
+	OnUpdate              // A zettel was created or changed
 	OnDelete              // A zettel was removed
 )
 
-// ObserverFunc is the function that will be called if something changed.
-// If the first parameter, a bool, is true, then all zettel are possibly
-// changed. If it has the value false, the given ZettelID will identify the
-// changed zettel.
-type ObserverFunc func(ChangeReason, id.Zid)
+// ChangeInfo contains all the data about a changed zettel.
+type ChangeInfo struct {
+	Reason ChangeReason
+	Zid    id.Zid
+}
 
 // Manager is a place-managing place.
 type Manager interface {
 	Place
+	StartStopper
 
-	// RegisterChangeObserver registers an observer that will be notified
+	// RegisterObserver registers an observer that will be notified
 	// if one or all zettel are found to be changed.
-	RegisterChangeObserver(ObserverFunc)
+	RegisterObserver(func(ChangeInfo))
 
 	// NumPlaces returns the number of managed places.
 	NumPlaces() int

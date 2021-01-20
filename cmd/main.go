@@ -167,7 +167,7 @@ func getPlaces(cfg *meta.Meta) []string {
 func cleanupOperations(withPlaces bool) error {
 	if withPlaces {
 		if err := startup.PlaceManager().Stop(context.Background()); err != nil {
-			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
+			fmt.Fprintln(os.Stderr, "Unable to stop zettel place")
 			return err
 		}
 	}

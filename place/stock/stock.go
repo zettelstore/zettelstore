@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -23,9 +23,9 @@ import (
 
 // Place is a place that is used by a stock.
 type Place interface {
-	// RegisterChangeObserver registers an observer that will be notified
+	// RegisterObserver registers an observer that will be notified
 	// if all or one zettel are found to be changed.
-	RegisterChangeObserver(ob place.ObserverFunc)
+	RegisterObserver(ob func(place.ChangeInfo))
 
 	// GetZettel retrieves a specific zettel.
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
@@ -45,7 +45,7 @@ func NewStock(place Place) Stock {
 		place: place,
 		subs:  make(map[id.Zid]domain.Zettel),
 	}
-	place.RegisterChangeObserver(stock.observe)
+	place.RegisterObserver(stock.observe)
 	return stock
 }
 
@@ -56,27 +56,27 @@ type defaultStock struct {
 }
 
 // observe tracks all changes the place signals.
-func (s *defaultStock) observe(reason place.ChangeReason, zid id.Zid) {
-	if reason != place.OnReload {
-		s.mxSubs.RLock()
-		defer s.mxSubs.RUnlock()
-		if _, found := s.subs[zid]; found {
-			go func() {
-				s.mxSubs.Lock()
-				defer s.mxSubs.Unlock()
+func (s *defaultStock) observe(ci place.ChangeInfo) {
+	if ci.Reason == place.OnReload {
+		go func() {
+			s.mxSubs.Lock()
+			defer s.mxSubs.Unlock()
+			for zid := range s.subs {
 				s.update(zid)
-			}()
-		}
+			}
+		}()
 		return
 	}
 
-	go func() {
-		s.mxSubs.Lock()
-		defer s.mxSubs.Unlock()
-		for zid := range s.subs {
-			s.update(zid)
-		}
-	}()
+	s.mxSubs.RLock()
+	defer s.mxSubs.RUnlock()
+	if _, found := s.subs[ci.Zid]; found {
+		go func() {
+			s.mxSubs.Lock()
+			defer s.mxSubs.Unlock()
+			s.update(ci.Zid)
+		}()
+	}
 }
 
 func (s *defaultStock) update(zid id.Zid) {
@@ -111,7 +111,10 @@ func (s *defaultStock) GetZettel(zid id.Zid) domain.Zettel {
 // GetZettel returns the zettel Meta with the given zid, if in stock, else nil.
 func (s *defaultStock) GetMeta(zid id.Zid) *meta.Meta {
 	s.mxSubs.RLock()
-	zettel := s.subs[zid]
+	zettel, ok := s.subs[zid]
 	s.mxSubs.RUnlock()
-	return zettel.Meta
+	if ok {
+		return zettel.Meta
+	}
+	return nil
 }

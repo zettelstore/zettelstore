@@ -79,18 +79,17 @@ func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
 		reloadURL:     adapter.NewURLBuilder('c').AppendQuery("_format", "html").String(),
 		searchURL:     adapter.NewURLBuilder('s').String(),
 	}
-	te.observe(place.OnReload, id.Invalid)
-	mgr.RegisterChangeObserver(te.observe)
+	te.observe(place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid})
+	mgr.RegisterObserver(te.observe)
 	return te
 }
 
-func (te *TemplateEngine) observe(reason place.ChangeReason, zid id.Zid) {
+func (te *TemplateEngine) observe(ci place.ChangeInfo) {
 	te.mxCache.Lock()
-	if reason == place.OnReload || zid == id.BaseTemplateZid {
-		te.templateCache = make(
-			map[id.Zid]*template.Template, len(te.templateCache))
+	if ci.Reason == place.OnReload || ci.Zid == id.BaseTemplateZid {
+		te.templateCache = make(map[id.Zid]*template.Template, len(te.templateCache))
 	} else {
-		delete(te.templateCache, zid)
+		delete(te.templateCache, ci.Zid)
 	}
 	te.mxCache.Unlock()
 }

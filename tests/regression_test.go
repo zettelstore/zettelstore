@@ -134,32 +134,33 @@ func TestContentRegression(t *testing.T) {
 		panic(err)
 	}
 	root, places := getFilePlaces(wd, "content")
-	for _, place := range places {
-		if err := place.Start(context.Background()); err != nil {
+	for _, p := range places {
+		ss := p.(place.StartStopper)
+		if err := ss.Start(context.Background()); err != nil {
 			panic(err)
 		}
-		placeName := place.Location()[len("dir://")+len(root):]
-		metaList, err := place.SelectMeta(context.Background(), nil, nil)
+		placeName := p.Location()[len("dir://")+len(root):]
+		metaList, err := p.SelectMeta(context.Background(), nil, nil)
 		if err != nil {
 			panic(err)
 		}
 		for _, meta := range metaList {
-			zettel, err := place.GetZettel(context.Background(), meta.Zid)
+			zettel, err := p.GetZettel(context.Background(), meta.Zid)
 			if err != nil {
 				panic(err)
 			}
 			z := parser.ParseZettel(zettel, "")
 			for _, format := range formats {
-				t.Run(fmt.Sprintf("%s::%d(%s)", place.Location(), meta.Zid, format), func(st *testing.T) {
+				t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 					resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
 					checkBlocksFile(st, resultName, z, format)
 				})
 			}
-			t.Run(fmt.Sprintf("%s::%d", place.Location(), meta.Zid), func(st *testing.T) {
+			t.Run(fmt.Sprintf("%s::%d", p.Location(), meta.Zid), func(st *testing.T) {
 				checkZmkEncoder(st, z)
 			})
 		}
-		if err := place.Stop(context.Background()); err != nil {
+		if err := ss.Stop(context.Background()); err != nil {
 			panic(err)
 		}
 	}
@@ -183,29 +184,30 @@ func TestMetaRegression(t *testing.T) {
 		panic(err)
 	}
 	root, places := getFilePlaces(wd, "meta")
-	for _, place := range places {
-		if err := place.Start(context.Background()); err != nil {
+	for _, p := range places {
+		ss := p.(place.StartStopper)
+		if err := ss.Start(context.Background()); err != nil {
 			panic(err)
 		}
-		placeName := place.Location()[len("dir://")+len(root):]
-		metaList, err := place.SelectMeta(context.Background(), nil, nil)
+		placeName := p.Location()[len("dir://")+len(root):]
+		metaList, err := p.SelectMeta(context.Background(), nil, nil)
 		if err != nil {
 			panic(err)
 		}
 		for _, meta := range metaList {
-			zettel, err := place.GetZettel(context.Background(), meta.Zid)
+			zettel, err := p.GetZettel(context.Background(), meta.Zid)
 			if err != nil {
 				panic(err)
 			}
 			z := parser.ParseZettel(zettel, "")
 			for _, format := range formats {
-				t.Run(fmt.Sprintf("%s::%d(%s)", place.Location(), meta.Zid, format), func(st *testing.T) {
+				t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 					resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)
 					checkMetaFile(st, resultName, z, format)
 				})
 			}
 		}
-		if err := place.Stop(context.Background()); err != nil {
+		if err := ss.Stop(context.Background()); err != nil {
 			panic(err)
 		}
 	}

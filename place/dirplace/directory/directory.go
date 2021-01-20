@@ -24,16 +24,16 @@ type Service struct {
 	rescanTime time.Duration
 	done       chan struct{}
 	cmds       chan dirCmd
-	observer   place.ObserverFunc
+	infos      chan<- place.ChangeInfo
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration, ob place.ObserverFunc) *Service {
+func NewService(directoryPath string, rescanTime time.Duration, chci chan<- place.ChangeInfo) *Service {
 	srv := &Service{
 		dirPath:    directoryPath,
 		rescanTime: rescanTime,
 		cmds:       make(chan dirCmd),
-		observer:   ob,
+		infos:      chci,
 	}
 	return srv
 }
@@ -64,8 +64,8 @@ func (srv *Service) Stop() {
 }
 
 func (srv *Service) notifyChange(reason place.ChangeReason, zid id.Zid) {
-	if ob := srv.observer; ob != nil {
-		ob(reason, zid)
+	if chci := srv.infos; chci != nil {
+		chci <- place.ChangeInfo{Reason: reason, Zid: zid}
 	}
 }
 

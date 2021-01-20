@@ -53,14 +53,6 @@ func (pp *polPlace) Location() string {
 	return pp.place.Location()
 }
 
-func (pp *polPlace) Start(ctx context.Context) error {
-	return pp.place.Start(ctx)
-}
-
-func (pp *polPlace) Stop(ctx context.Context) error {
-	return pp.place.Stop(ctx)
-}
-
 func (pp *polPlace) CanCreateZettel(ctx context.Context) bool {
 	return pp.place.CanCreateZettel(ctx)
 }

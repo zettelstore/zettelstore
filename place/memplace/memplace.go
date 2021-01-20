@@ -27,22 +27,22 @@ import (
 func init() {
 	manager.Register(
 		"mem",
-		func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
-			return &memPlace{u: u, filter: mf, observer: ob}, nil
+		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
+			return &memPlace{u: u, filter: mf, infos: chci}, nil
 		})
 }
 
 type memPlace struct {
-	u        *url.URL
-	zettel   map[id.Zid]domain.Zettel
-	mx       sync.RWMutex
-	observer place.ObserverFunc
-	filter   manager.MetaFilter
+	u      *url.URL
+	zettel map[id.Zid]domain.Zettel
+	mx     sync.RWMutex
+	infos  chan<- place.ChangeInfo
+	filter manager.MetaFilter
 }
 
 func (mp *memPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
-	if ob := mp.observer; ob != nil {
-		ob(reason, zid)
+	if chci := mp.infos; chci != nil {
+		chci <- place.ChangeInfo{Reason: reason, Zid: zid}
 	}
 }
 
@@ -74,7 +74,7 @@ func (mp *memPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	meta.Zid = mp.calcNewZid()
 	zettel.Meta = meta
 	mp.zettel[meta.Zid] = zettel
-	mp.notifyChanged(place.OnCreate, meta.Zid)
+	mp.notifyChanged(place.OnUpdate, meta.Zid)
 	return meta.Zid, nil
 }
 
@@ -178,7 +178,7 @@ func (mp *memPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	mp.zettel[newZid] = zettel
 	delete(mp.zettel, curZid)
 	mp.notifyChanged(place.OnDelete, curZid)
-	mp.notifyChanged(place.OnCreate, newZid)
+	mp.notifyChanged(place.OnUpdate, newZid)
 	return nil
 }
 

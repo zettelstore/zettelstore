@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	manager.Register("dir", func(u *url.URL, mf manager.MetaFilter, ob place.ObserverFunc) (place.Place, error) {
+	manager.Register("dir", func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
 		path := getDirPath(u)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil, err
@@ -39,7 +39,7 @@ func init() {
 		dp := dirPlace{
 			u:        u,
 			readonly: getQueryBool(u, "readonly"),
-			observer: ob,
+			infos:    chci,
 			dir:      path,
 			dirRescan: time.Duration(
 				getQueryInt(u, "rescan", 60, 600, 30*24*60*60)) * time.Second,
@@ -84,7 +84,7 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 type dirPlace struct {
 	u         *url.URL
 	readonly  bool
-	observer  place.ObserverFunc
+	infos     chan<- place.ChangeInfo
 	dir       string
 	dirRescan time.Duration
 	dirSrv    *directory.Service
@@ -106,16 +106,10 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.notifyChanged)
+	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.infos)
 	dp.mxCmds.Unlock()
 	dp.dirSrv.Start()
 	return nil
-}
-
-func (dp *dirPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
-	if ob := dp.observer; ob != nil {
-		ob(reason, zid)
-	}
 }
 
 func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
@@ -158,7 +152,6 @@ func (dp *dirPlace) CreateZettel(
 	err := setZettel(dp, &entry, zettel)
 	if err == nil {
 		dp.dirSrv.UpdateEntry(&entry)
-		dp.notifyChanged(place.OnCreate, meta.Zid)
 	}
 	return meta.Zid, err
 }
@@ -248,7 +241,6 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 			dp.dirSrv.UpdateEntry(&entry)
 		}
 	}
-	dp.notifyChanged(place.OnUpdate, meta.Zid)
 	return setZettel(dp, &entry, zettel)
 }
 
@@ -326,8 +318,6 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	if err := deleteZettel(dp, &curEntry, curZid); err != nil {
 		return err
 	}
-	dp.notifyChanged(place.OnDelete, curZid)
-	dp.notifyChanged(place.OnCreate, newZid)
 	return nil
 }
 
@@ -346,12 +336,10 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 	entry := dp.dirSrv.GetEntry(zid)
 	if !entry.IsValid() {
-		dp.notifyChanged(place.OnDelete, zid)
 		return nil
 	}
 	dp.dirSrv.DeleteEntry(zid)
 	err := deleteZettel(dp, &entry, zid)
-	dp.notifyChanged(place.OnDelete, zid)
 	return err
 }
 
