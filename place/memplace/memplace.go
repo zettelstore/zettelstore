@@ -27,21 +27,20 @@ import (
 func init() {
 	manager.Register(
 		"mem",
-		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
-			return &memPlace{u: u, filter: mf, infos: chci}, nil
+		func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+			return &memPlace{u: u, cdata: *cdata}, nil
 		})
 }
 
 type memPlace struct {
 	u      *url.URL
+	cdata  manager.ConnectData
 	zettel map[id.Zid]domain.Zettel
 	mx     sync.RWMutex
-	infos  chan<- place.ChangeInfo
-	filter manager.MetaFilter
 }
 
 func (mp *memPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
-	if chci := mp.infos; chci != nil {
+	if chci := mp.cdata.Notify; chci != nil {
 		chci <- place.ChangeInfo{Reason: reason, Zid: zid}
 	}
 }
@@ -129,7 +128,7 @@ func (mp *memPlace) SelectMeta(ctx context.Context, f *place.Filter, s *place.So
 	mp.mx.RLock()
 	for _, zettel := range mp.zettel {
 		m := zettel.Meta.Clone()
-		mp.filter.UpdateProperties(m)
+		mp.cdata.Filter.UpdateProperties(m)
 		if filterFunc(m) {
 			result = append(result, m)
 		}

@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 )
@@ -25,8 +26,8 @@ import (
 func init() {
 	manager.Register(
 		" const",
-		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
-			return &constPlace{zettel: constZettelMap, filter: mf}, nil
+		func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+			return &constPlace{zettel: constZettelMap, filter: cdata.Filter}, nil
 		})
 }
 
@@ -47,7 +48,7 @@ type constZettel struct {
 
 type constPlace struct {
 	zettel map[id.Zid]constZettel
-	filter manager.MetaFilter
+	filter index.MetaFilter
 }
 
 func (cp *constPlace) Location() string {

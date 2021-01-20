@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 )
@@ -26,8 +27,8 @@ import (
 func init() {
 	manager.Register(
 		" prog",
-		func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
-			return getPlace(mf), nil
+		func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+			return getPlace(cdata.Filter), nil
 		})
 }
 
@@ -39,7 +40,7 @@ type (
 
 	progPlace struct {
 		zettel      map[id.Zid]zettelGen
-		filter      manager.MetaFilter
+		filter      index.MetaFilter
 		startConfig *meta.Meta
 		manager     place.Manager
 	}
@@ -48,7 +49,7 @@ type (
 var myPlace *progPlace
 
 // Get returns the one program place.
-func getPlace(mf manager.MetaFilter) place.Place {
+func getPlace(mf index.MetaFilter) place.Place {
 	if myPlace == nil {
 		myPlace = &progPlace{
 			zettel: map[id.Zid]zettelGen{

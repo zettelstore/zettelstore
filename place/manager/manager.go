@@ -22,11 +22,18 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 )
 
+// ConnectData contains all administration related values.
+type ConnectData struct {
+	Filter index.MetaFilter
+	Notify chan<- place.ChangeInfo
+}
+
 // Connect returns a handle to the specified place
-func Connect(rawURL string, readonlyMode bool, f MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
+func Connect(rawURL string, readonlyMode bool, cdata *ConnectData) (place.Place, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -48,7 +55,7 @@ func Connect(rawURL string, readonlyMode bool, f MetaFilter, chci chan<- place.C
 	}
 
 	if create, ok := registry[u.Scheme]; ok {
-		return create(u, f, chci)
+		return create(u, cdata)
 	}
 	return nil, &ErrInvalidScheme{u.Scheme}
 }
@@ -58,7 +65,7 @@ type ErrInvalidScheme struct{ Scheme string }
 
 func (err *ErrInvalidScheme) Error() string { return "Invalid scheme: " + err.Scheme }
 
-type createFunc func(*url.URL, MetaFilter, chan<- place.ChangeInfo) (place.Place, error)
+type createFunc func(*url.URL, *ConnectData) (place.Place, error)
 
 var registry = map[string]createFunc{}
 
@@ -85,7 +92,7 @@ type Manager struct {
 	started    bool
 	placeURIs  []url.URL
 	subplaces  []place.Place
-	filter     MetaFilter
+	filter     index.MetaFilter
 	observers  []func(place.ChangeInfo)
 	mxObserver sync.RWMutex
 	done       chan struct{}
@@ -93,25 +100,25 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
-	filter := newFilter()
+func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manager, error) {
 	mgr := &Manager{
 		filter: filter,
 		infos:  make(chan place.ChangeInfo, len(placeURIs)*10),
 	}
+	cdata := ConnectData{Filter: filter, Notify: mgr.infos}
 	subplaces := make([]place.Place, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
-		p, err := Connect(uri, readonlyMode, filter, mgr.infos)
+		p, err := Connect(uri, readonlyMode, &cdata)
 		if err != nil {
 			return nil, err
 		}
 		subplaces = append(subplaces, p)
 	}
-	constplace, err := registry[" const"](nil, filter, mgr.infos)
+	constplace, err := registry[" const"](nil, &cdata)
 	if err != nil {
 		return nil, err
 	}
-	progplace, err := registry[" prog"](nil, filter, mgr.infos)
+	progplace, err := registry[" prog"](nil, &cdata)
 	if err != nil {
 		return nil, err
 	}

@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
@@ -125,7 +126,8 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 	var mgr place.Manager
 	if withPlaces {
-		p, err := manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode))
+		filter := index.NewMetaFilter()
+		p, err := manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
 		if err != nil {
 			return err
 		}

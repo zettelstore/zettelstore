@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package manager coordinates the various places of a Zettelstore.
-package manager
+// Package index allows to search for metadata and content.
+package index
 
 import "zettelstore.de/z/domain/meta"
 
@@ -28,7 +28,8 @@ type metaFilter struct {
 	properties map[string]bool // Set of property key names
 }
 
-func newFilter() MetaFilter {
+// NewMetaFilter creates a new meta filter.
+func NewMetaFilter() MetaFilter {
 	properties := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {

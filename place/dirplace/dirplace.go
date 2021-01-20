@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	manager.Register("dir", func(u *url.URL, mf manager.MetaFilter, chci chan<- place.ChangeInfo) (place.Place, error) {
+	manager.Register("dir", func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
 		path := getDirPath(u)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil, err
@@ -39,12 +39,11 @@ func init() {
 		dp := dirPlace{
 			u:        u,
 			readonly: getQueryBool(u, "readonly"),
-			infos:    chci,
+			cdata:    *cdata,
 			dir:      path,
 			dirRescan: time.Duration(
 				getQueryInt(u, "rescan", 60, 600, 30*24*60*60)) * time.Second,
-			fSrvs:  uint32(getQueryInt(u, "worker", 1, 17, 1499)),
-			filter: mf,
+			fSrvs: uint32(getQueryInt(u, "worker", 1, 17, 1499)),
 		}
 		return &dp, nil
 	})
@@ -84,14 +83,13 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 type dirPlace struct {
 	u         *url.URL
 	readonly  bool
-	infos     chan<- place.ChangeInfo
+	cdata     manager.ConnectData
 	dir       string
 	dirRescan time.Duration
 	dirSrv    *directory.Service
 	fSrvs     uint32
 	fCmds     []chan fileCmd
 	mxCmds    sync.RWMutex
-	filter    manager.MetaFilter
 }
 
 func (dp *dirPlace) Location() string {
@@ -106,7 +104,7 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.infos)
+	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
 	dp.mxCmds.Unlock()
 	dp.dirSrv.Start()
 	return nil
@@ -205,7 +203,7 @@ func (dp *dirPlace) SelectMeta(
 			continue
 		}
 		dp.cleanupMeta(ctx, m)
-		dp.filter.UpdateProperties(m)
+		dp.cdata.Filter.UpdateProperties(m)
 
 		if hasMatch(m) {
 			res = append(res, m)
