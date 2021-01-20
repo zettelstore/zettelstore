@@ -125,8 +125,10 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 
 func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 	var mgr place.Manager
+	var idx index.Index
 	if withPlaces {
-		filter := index.NewMetaFilter()
+		idx = index.New()
+		filter := index.NewMetaFilter(idx)
 		p, err := manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
 		if err != nil {
 			return err
@@ -134,7 +136,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 		mgr = p
 	}
 
-	err := startup.SetupStartup(cfg, mgr, simple)
+	err := startup.SetupStartup(cfg, mgr, idx, simple)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to connect to specified places")
 		return err
@@ -144,8 +146,9 @@ func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
 			return err
 		}
+		idx.Start(mgr)
 		runtime.SetupConfiguration(mgr)
-		progplace.Setup(cfg, mgr)
+		progplace.Setup(cfg, mgr, idx)
 	}
 	return nil
 }
@@ -168,6 +171,7 @@ func getPlaces(cfg *meta.Meta) []string {
 
 func cleanupOperations(withPlaces bool) error {
 	if withPlaces {
+		startup.Index().Stop()
 		if err := startup.PlaceManager().Stop(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to stop zettel place")
 			return err

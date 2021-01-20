@@ -43,6 +43,7 @@ type (
 		filter      index.MetaFilter
 		startConfig *meta.Meta
 		manager     place.Manager
+		index       index.Index
 	}
 )
 
@@ -70,7 +71,7 @@ func getPlace(mf index.MetaFilter) place.Place {
 }
 
 // Setup remembers important values.
-func Setup(startConfig *meta.Meta, manager place.Manager) {
+func Setup(startConfig *meta.Meta, manager place.Manager, idx index.Index) {
 	if myPlace == nil {
 		panic("progplace.getPlace not called")
 	}
@@ -79,6 +80,7 @@ func Setup(startConfig *meta.Meta, manager place.Manager) {
 	}
 	myPlace.startConfig = startConfig.Clone()
 	myPlace.manager = manager
+	myPlace.index = idx
 }
 
 func (pp *progPlace) Location() string { return "" }
@@ -138,7 +140,7 @@ func (pp *progPlace) SelectMeta(
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
-				pp.filter.UpdateProperties(m)
+				pp.filter.Update(ctx, m)
 				if hasMatch(m) {
 					res = append(res, m)
 				}

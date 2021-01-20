@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 )
 
@@ -36,6 +37,7 @@ var config struct {
 	htmlLifetime  time.Duration
 	apiLifetime   time.Duration
 	manager       place.Manager
+	index         index.Index
 }
 
 // Predefined keys for startup zettel
@@ -53,7 +55,7 @@ const (
 )
 
 // SetupStartup initializes the startup data.
-func SetupStartup(cfg *meta.Meta, manager place.Manager, simple bool) error {
+func SetupStartup(cfg *meta.Meta, manager place.Manager, idx index.Index, simple bool) error {
 	if config.urlPrefix != "" {
 		panic("startup.config already set")
 	}
@@ -90,6 +92,7 @@ func SetupStartup(cfg *meta.Meta, manager place.Manager, simple bool) error {
 	}
 	config.simple = simple && !config.withAuth
 	config.manager = manager
+	config.index = idx
 	return nil
 }
 
@@ -172,3 +175,6 @@ func TokenLifetime() (htmlLifetime, apiLifetime time.Duration) {
 
 // PlaceManager returns the managing place.
 func PlaceManager() place.Manager { return config.manager }
+
+// Index returns the current indexer.
+func Index() index.Index { return config.index }

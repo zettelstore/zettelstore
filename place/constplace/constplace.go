@@ -90,7 +90,7 @@ func (cp *constPlace) SelectMeta(
 	hasMatch := place.CreateFilterFunc(f)
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
-		cp.filter.UpdateProperties(m)
+		cp.filter.Update(ctx, m)
 		if hasMatch(m) {
 			res = append(res, m)
 		}

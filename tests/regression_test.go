@@ -66,8 +66,8 @@ func getFilePlaces(wd string, kind string) (root string, places []place.Place) {
 
 type noFilter struct{}
 
-func (nf *noFilter) UpdateProperties(m *meta.Meta) {}
-func (nf *noFilter) RemoveProperties(m *meta.Meta) {}
+func (nf *noFilter) Update(ctx context.Context, m *meta.Meta) {}
+func (nf *noFilter) Remove(ctx context.Context, m *meta.Meta) {}
 
 func trimLastEOL(s string) string {
 	if lastPos := len(s) - 1; lastPos >= 0 && s[lastPos] == '\n' {

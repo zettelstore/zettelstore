@@ -203,7 +203,7 @@ func (dp *dirPlace) SelectMeta(
 			continue
 		}
 		dp.cleanupMeta(ctx, m)
-		dp.cdata.Filter.UpdateProperties(m)
+		dp.cdata.Filter.Update(ctx, m)
 
 		if hasMatch(m) {
 			res = append(res, m)

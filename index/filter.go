@@ -11,25 +11,32 @@
 // Package index allows to search for metadata and content.
 package index
 
-import "zettelstore.de/z/domain/meta"
+import (
+	"context"
+
+	"zettelstore.de/z/domain/meta"
+)
+
+// Remover is used to remove some metadata before they are stored in a place.
+type Remover interface {
+	// Remove removes computed properties from the given metadata.
+	// It is called by the manager place before meta data is updated.
+	Remove(ctx context.Context, m *meta.Meta)
+}
 
 // MetaFilter is used by places to filter and set computed metadata value.
 type MetaFilter interface {
-	// UpdateProperties computes additional properties and updates the given metadata.
-	// It is typically called by zettel reading methods.
-	UpdateProperties(m *meta.Meta)
-
-	// RemoveProperties removes computed properties from the given metadata.
-	// It is called by the manager place before meta data is updated.
-	RemoveProperties(m *meta.Meta)
+	Updater
+	Remover
 }
 
 type metaFilter struct {
+	index      Index
 	properties map[string]bool // Set of property key names
 }
 
 // NewMetaFilter creates a new meta filter.
-func NewMetaFilter() MetaFilter {
+func NewMetaFilter(idx Index) MetaFilter {
 	properties := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {
@@ -37,12 +44,14 @@ func NewMetaFilter() MetaFilter {
 		}
 	}
 	return &metaFilter{
+		index:      idx,
 		properties: properties,
 	}
 }
 
-func (mf *metaFilter) UpdateProperties(m *meta.Meta) {
+func (mf *metaFilter) Update(ctx context.Context, m *meta.Meta) {
 	computePublished(m)
+	mf.index.Update(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {
@@ -65,7 +74,7 @@ func computePublished(m *meta.Meta) {
 	// timestamp. In this case do not set the "published" property.
 }
 
-func (mf *metaFilter) RemoveProperties(m *meta.Meta) {
+func (mf *metaFilter) Remove(ctx context.Context, m *meta.Meta) {
 	for _, p := range m.PairsRest(true) {
 		if mf.properties[p.Key] {
 			m.Delete(p.Key)

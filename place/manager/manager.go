@@ -246,7 +246,7 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	}
 	for _, p := range mgr.subplaces {
 		if z, err := p.GetZettel(ctx, zid); err != place.ErrNotFound {
-			mgr.filter.UpdateProperties(z.Meta)
+			mgr.filter.Update(ctx, z.Meta)
 			return z, err
 		}
 	}
@@ -260,7 +260,7 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	}
 	for _, p := range mgr.subplaces {
 		if m, err := p.GetMeta(ctx, zid); err != place.ErrNotFound {
-			mgr.filter.UpdateProperties(m)
+			mgr.filter.Update(ctx, m)
 			return m, err
 		}
 	}
@@ -328,7 +328,7 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 		return place.ErrStopped
 	}
 	zettel.Meta = zettel.Meta.Clone()
-	mgr.filter.RemoveProperties(zettel.Meta)
+	mgr.filter.Remove(ctx, zettel.Meta)
 	return mgr.subplaces[0].UpdateZettel(ctx, zettel)
 }
 
