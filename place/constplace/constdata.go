@@ -475,12 +475,13 @@ article header {
   padding: 0;
   margin: 0;
 }
-h1 { font-size:2rem;    margin:.67rem 0 }
-h2 { font-size:1.5rem;  margin:.75rem 0 }
-h3 { font-size:1.17rem; margin:.83rem 0 }
-h4 { font-size:1rem;    margin:1.12rem 0 }
-h5 { font-size:.83rem;  margin:1.5rem 0 }
-h6 { font-size:.75rem;  margin:1.67rem 0 }
+h1,h2,h3,h4,h5,h6 { font-family:sans-serif; font-weight:normal }
+h1 { font-size:1.5rem;  margin:.65rem 0 }
+h2 { font-size:1.25rem; margin:.70rem 0 }
+h3 { font-size:1.15rem; margin:.75rem 0 }
+h4 { font-size:1.05rem; margin;.8rem 0; font-weight: bold }
+h5 { font-size:1.05rem; margin;.8rem 0 }
+h6 { font-size:1.05rem; margin;.8rem 0; font-weight: lighter }
 p {
   margin: .5rem 0 0 0;
 }
@@ -541,13 +542,14 @@ main form:after {
 main form div {
   margin: .5em 0 0 0
 }
-input,button,select {
+input {
+  font-family: monospace;
+}
+input[type="submit"],button,select {
   font: inherit;
 }
-label {
-  font-family: serif;
-  font-weight: bold;
-}
+label { font-family: sans-serif; font-size:.9rem }
+label::after { content:":" }
 textarea {
   font-family: monospace;
   resize: vertical;
