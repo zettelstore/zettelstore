@@ -31,12 +31,12 @@ type MetaFilter interface {
 }
 
 type metaFilter struct {
-	index      Index
+	index      Indexer
 	properties map[string]bool // Set of property key names
 }
 
 // NewMetaFilter creates a new meta filter.
-func NewMetaFilter(idx Index) MetaFilter {
+func NewMetaFilter(idx Indexer) MetaFilter {
 	properties := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {

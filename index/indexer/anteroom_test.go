@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index allows to search for metadata and content.
-package index
+// Package indexer allows to search for metadata and content.
+package indexer
 
 import (
 	"testing"

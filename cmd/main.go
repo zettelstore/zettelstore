@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
+	"zettelstore.de/z/index/indexer"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
@@ -125,9 +126,9 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 
 func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 	var mgr place.Manager
-	var idx index.Index
+	var idx index.Indexer
 	if withPlaces {
-		idx = index.New()
+		idx = indexer.New()
 		filter := index.NewMetaFilter(idx)
 		p, err := manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
 		if err != nil {
@@ -171,7 +172,7 @@ func getPlaces(cfg *meta.Meta) []string {
 
 func cleanupOperations(withPlaces bool) error {
 	if withPlaces {
-		startup.Index().Stop()
+		startup.Indexer().Stop()
 		if err := startup.PlaceManager().Stop(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to stop zettel place")
 			return err

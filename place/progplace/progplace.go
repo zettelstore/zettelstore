@@ -43,7 +43,7 @@ type (
 		filter      index.MetaFilter
 		startConfig *meta.Meta
 		manager     place.Manager
-		index       index.Index
+		indexer     index.Indexer
 	}
 )
 
@@ -71,7 +71,7 @@ func getPlace(mf index.MetaFilter) place.Place {
 }
 
 // Setup remembers important values.
-func Setup(startConfig *meta.Meta, manager place.Manager, idx index.Index) {
+func Setup(startConfig *meta.Meta, manager place.Manager, idx index.Indexer) {
 	if myPlace == nil {
 		panic("progplace.getPlace not called")
 	}
@@ -80,7 +80,7 @@ func Setup(startConfig *meta.Meta, manager place.Manager, idx index.Index) {
 	}
 	myPlace.startConfig = startConfig.Clone()
 	myPlace.manager = manager
-	myPlace.index = idx
+	myPlace.indexer = idx
 }
 
 func (pp *progPlace) Location() string { return "" }
