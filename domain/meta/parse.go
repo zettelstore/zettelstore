@@ -157,7 +157,7 @@ func addToMeta(m *Meta, key, val string) {
 		return
 	}
 
-	switch KeyType(key) {
+	switch Type(key) {
 	case TypeString, TypeZettelmarkup:
 		if v != "" {
 			addData(m, key, v)

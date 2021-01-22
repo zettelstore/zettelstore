@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -102,7 +102,7 @@ func addSelectFunc(filter *Filter, f FilterFunc) FilterFunc {
 }
 
 func createMatchFunc(key string, values []string) matchFunc {
-	switch meta.KeyType(key) {
+	switch meta.Type(key) {
 	case meta.TypeBool:
 		preValues := make([]bool, 0, len(values))
 		for _, v := range values {
@@ -183,7 +183,7 @@ func createSearchAllFunc(values []string, negate bool) FilterFunc {
 	matchFuncs := map[*meta.DescriptionType]matchFunc{}
 	return func(m *meta.Meta) bool {
 		for _, p := range m.Pairs(true) {
-			keyType := meta.KeyType(p.Key)
+			keyType := meta.Type(p.Key)
 			match, ok := matchFuncs[keyType]
 			if !ok {
 				if keyType == meta.TypeBool {
@@ -197,7 +197,7 @@ func createSearchAllFunc(values []string, negate bool) FilterFunc {
 				return !negate
 			}
 		}
-		match, ok := matchFuncs[meta.KeyType(meta.KeyID)]
+		match, ok := matchFuncs[meta.Type(meta.KeyID)]
 		if !ok {
 			match = createMatchFunc(meta.KeyID, values)
 		}

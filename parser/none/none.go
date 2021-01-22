@@ -39,7 +39,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 }
 
 func getDescription(key, value string) ast.Description {
-	makeLink := meta.KeyType(key) == meta.TypeID
+	makeLink := meta.Type(key) == meta.TypeID
 	return ast.Description{
 		Term: ast.InlineSlice{&ast.TextNode{Text: key}},
 		Descriptions: []ast.DescriptionSlice{

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -70,7 +70,7 @@ func ApplySorter(metaList []*meta.Meta, s *Sorter) []*meta.Meta {
 type sortFunc func(i, j int) bool
 
 func getSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
-	keyType := meta.KeyType(key)
+	keyType := meta.Type(key)
 	if key == meta.KeyID || keyType == meta.TypeCredential {
 		if descending {
 			return func(i, j int) bool { return ml[i].Zid > ml[j].Zid }

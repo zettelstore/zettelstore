@@ -31,6 +31,7 @@ type Updater interface {
 type Port interface {
 	RegisterObserver(func(place.ChangeInfo))
 	FetchZids(ctx context.Context) (map[id.Zid]bool, error)
+	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
 }
 

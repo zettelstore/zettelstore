@@ -57,12 +57,12 @@ var (
 // Type returns a type hint for the given key. If no type hint is specified,
 // TypeUnknown is returned.
 func (m *Meta) Type(key string) *DescriptionType {
-	return KeyType(key)
+	return Type(key)
 }
 
-// KeyType returns a type hint for the given key. If no type hint is specified,
+// Type returns a type hint for the given key. If no type hint is specified,
 // TypeUnknown is returned.
-func KeyType(key string) *DescriptionType {
+func Type(key string) *DescriptionType {
 	if k, ok := registeredKeys[key]; ok {
 		return k.Type
 	}
