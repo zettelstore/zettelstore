@@ -21,11 +21,13 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
+	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 )
 
 type indexer struct {
+	store   index.Store
 	ar      *anterooms
 	done    chan struct{}
 	observe bool
@@ -34,7 +36,8 @@ type indexer struct {
 // New creates a new indexer.
 func New() index.Indexer {
 	return &indexer{
-		ar: newAnterooms(10),
+		store: memstore.New(),
+		ar:    newAnterooms(10),
 	}
 }
 
@@ -76,6 +79,7 @@ func (idx *indexer) Update(ctx context.Context, m *meta.Meta) {
 		// -> ignore this call, do not update meta data
 		return
 	}
+	idx.store.Update(ctx, m)
 }
 
 type indexerPort interface {
@@ -141,9 +145,8 @@ type getMetaPort interface {
 }
 
 func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
-	// log.Println("INDX", "Update", zettel.Meta.Zid, zettel.Meta.GetDefault(meta.KeyTitle, "???"))
 	m := zettel.Meta
-	ix := newIndexData(m.Zid)
+	zi := index.NewZettelIndex(m.Zid)
 	for _, pair := range m.PairsRest(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -151,56 +154,60 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 		}
 		switch descr.Type {
 		case meta.TypeID:
-			updateValue(ctx, descr.Inverse, pair.Value, p, ix)
+			updateValue(ctx, descr.Inverse, pair.Value, p, zi)
 		case meta.TypeIDSet:
 			for _, val := range meta.ListFromValue(pair.Value) {
-				updateValue(ctx, descr.Inverse, val, p, ix)
+				updateValue(ctx, descr.Inverse, val, p, zi)
 			}
 		}
 	}
 	zn := parser.ParseZettel(zettel, "")
 	refs := collect.References(zn)
-	updateReferences(ctx, refs.Links, p, ix)
-	updateReferences(ctx, refs.Images, p, ix)
-	// time.Sleep(10 * time.Millisecond)
+	updateReferences(ctx, refs.Links, p, zi)
+	updateReferences(ctx, refs.Images, p, zi)
+	if zi.HasLinks() {
+		idx.store.UpdateReferences(ctx, zi)
+	}
 }
 
-func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, ix *indexData) {
+func updateValue(
+	ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
 	}
 	if _, err := p.GetMeta(ctx, zid); err != nil {
-		ix.AddDeadlink(zid)
+		zi.AddDeadRef(zid)
 		return
 	}
 	if inverse == "" {
-		ix.AddBacklink(zid)
+		zi.AddBackRef(zid)
 		return
 	}
-	ix.AddLink(inverse, zid)
+	zi.AddMetaRef(inverse, zid)
 }
 
-func updateReferences(ctx context.Context, refs []*ast.Reference, p getMetaPort, ix *indexData) {
+func updateReferences(
+	ctx context.Context, refs []*ast.Reference, p getMetaPort, zi *index.ZettelIndex) {
 	zrefs, _, _ := collect.DivideReferences(refs, false)
 	for _, ref := range zrefs {
-		updateReference(ctx, ref.Value, p, ix)
+		updateReference(ctx, ref.Value, p, zi)
 	}
 }
 
-func updateReference(ctx context.Context, value string, p getMetaPort, ix *indexData) {
+func updateReference(
+	ctx context.Context, value string, p getMetaPort, zi *index.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
 	}
 	if _, err := p.GetMeta(ctx, zid); err != nil {
-		ix.AddDeadlink(zid)
+		zi.AddDeadRef(zid)
 		return
 	}
-	ix.AddBacklink(zid)
+	zi.AddBackRef(zid)
 }
 
 func (idx *indexer) deleteZettel(zid id.Zid) {
-	// log.Println("INDX", "Delete", zid)
-	// time.Sleep(10 * time.Millisecond)
+	idx.store.DeleteZettel(context.Background(), zid)
 }

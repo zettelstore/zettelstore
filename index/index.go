@@ -30,9 +30,9 @@ type Updater interface {
 // Port contains all the used functions to access zettel to be indexed.
 type Port interface {
 	RegisterObserver(func(place.ChangeInfo))
-	FetchZids(ctx context.Context) (map[id.Zid]bool, error)
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
+	FetchZids(context.Context) (map[id.Zid]bool, error)
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
 }
 
 // Indexer contains all the functions of an index.
@@ -45,4 +45,16 @@ type Indexer interface {
 	// Stop the index. No zettel are read any more, but the current index data
 	// can stil be retrieved.
 	Stop()
+}
+
+// Store all relevant zettel data. There may be multiple implementations, i.e.
+// memory-based, file-based, based on SQLite, ...
+type Store interface {
+	Updater
+
+	// UpdateReferences for a specific zettel.
+	UpdateReferences(context.Context, *ZettelIndex)
+
+	// DeleteZettel removes index data for given zettel.
+	DeleteZettel(context.Context, id.Zid)
 }
