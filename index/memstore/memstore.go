@@ -49,7 +49,13 @@ func (ms *memStore) Update(ctx context.Context, m *meta.Meta) {
 		m.Set(meta.KeyDead, zi.dead)
 	}
 	if len(zi.backward) > 0 {
-		m.Set(meta.KeyBack, refsToString(zi.backward))
+		m.Set(meta.KeyBackward, refsToString(zi.backward))
+		if diffs := remRefs(zi.backward, zi.forward); len(diffs) > 0 {
+			m.Set(meta.KeyBack, refsToString(diffs))
+		}
+	}
+	if len(zi.forward) > 0 {
+		m.Set(meta.KeyForward, refsToString(zi.forward))
 	}
 }
 
@@ -91,6 +97,20 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 
-	// Too simple... needs elaboration
+	zi, ok := ms.idx[zid]
+	if !ok {
+		return
+	}
+
+	for _, ref := range zi.forward {
+		if fzi, ok := ms.idx[ref]; ok {
+			fzi.backward = remRef(fzi.backward, zid)
+		}
+	}
+	for _, ref := range zi.backward {
+		if bzi, ok := ms.idx[ref]; ok {
+			bzi.forward = remRef(bzi.forward, zid)
+		}
+	}
 	delete(ms.idx, zid)
 }

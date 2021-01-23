@@ -88,7 +88,7 @@ func addRef(refs []id.Zid, ref id.Zid) []id.Zid {
 }
 
 func remRefs(refs []id.Zid, rem []id.Zid) []id.Zid {
-	result := make([]id.Zid, 0, len(refs)-len(rem))
+	result := make([]id.Zid, 0, len(refs))
 	rpos, dpos := 0, 0
 	for rpos < len(refs) && dpos < len(rem) {
 		rr, dr := refs[rpos], rem[dpos]

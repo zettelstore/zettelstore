@@ -101,6 +101,7 @@ func (idx *indexer) indexer(p indexerPort) {
 		}
 	}()
 
+	timer := time.NewTimer(10 * time.Second)
 	ctx := context.WithValue(context.Background(), ctxKey, &ctxKey)
 	for {
 		for {
@@ -129,13 +130,19 @@ func (idx *indexer) indexer(p indexerPort) {
 			}
 		}
 
-		time.Sleep(time.Second)
 		select {
-		case _, ok := <-idx.done:
+		case _, ok := <-timer.C:
 			if !ok {
 				return
 			}
-		default:
+			timer.Reset(5 * time.Second)
+		case _, ok := <-idx.done:
+			if !ok {
+				if !timer.Stop() {
+					<-timer.C
+				}
+				return
+			}
 		}
 	}
 }
