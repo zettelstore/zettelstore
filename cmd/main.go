@@ -147,9 +147,9 @@ func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
 			return err
 		}
-		idx.Start(mgr)
 		runtime.SetupConfiguration(mgr)
 		progplace.Setup(cfg, mgr, idx)
+		idx.Start(mgr)
 	}
 	return nil
 }

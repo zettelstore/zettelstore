@@ -70,6 +70,7 @@ func (idx *indexer) Start(p index.Port) {
 		p.RegisterObserver(idx.observer)
 		idx.observe = true
 	}
+	idx.ar.Reset() // Ensure an initial index run
 	go idx.indexer(p)
 	idx.started = true
 }

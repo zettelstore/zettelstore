@@ -128,6 +128,19 @@ func createMatchFunc(key string, values []string) matchFunc {
 			}
 			return true
 		}
+	case meta.TypeIDSet:
+		idValues := preprocessSet(sliceToLower(values))
+		return func(value string) bool {
+			ids := meta.ListFromValue(value)
+			for _, neededIDs := range idValues {
+				for _, neededID := range neededIDs {
+					if !matchAllID(ids, neededID) {
+						return false
+					}
+				}
+			}
+			return true
+		}
 	case meta.TypeTagSet:
 		tagValues := preprocessSet(values)
 		return func(value string) bool {
@@ -250,6 +263,15 @@ func preprocessSet(set []string) [][]string {
 		}
 	}
 	return result
+}
+
+func matchAllID(zettelIDs []string, neededID string) bool {
+	for _, zt := range zettelIDs {
+		if strings.HasPrefix(zt, neededID) {
+			return true
+		}
+	}
+	return false
 }
 
 func matchAllTag(zettelTags []string, neededTag string) bool {

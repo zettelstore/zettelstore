@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -101,10 +101,8 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 			}
 		default:
 			if !forSearch && meta.KeyIsValid(key) {
-				if values := cleanQueryValues(values); len(values) > 0 {
-					filter = place.EnsureFilter(filter)
-					filter.Expr[key] = values
-				}
+				filter = place.EnsureFilter(filter)
+				filter.Expr[key] = cleanQueryValues(values)
 			}
 		}
 	}

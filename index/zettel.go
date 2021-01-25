@@ -71,6 +71,18 @@ func (zi *ZettelIndex) GetBackRefs() []id.Zid {
 	return sortedZids(zi.backrefs)
 }
 
+// GetMetaRefs returns all meta references as a map of strings to a sorted list of references
+func (zi *ZettelIndex) GetMetaRefs() map[string][]id.Zid {
+	if len(zi.metarefs) == 0 {
+		return nil
+	}
+	result := make(map[string][]id.Zid, len(zi.metarefs))
+	for key, refs := range zi.metarefs {
+		result[key] = sortedZids(refs)
+	}
+	return result
+}
+
 func sortedZids(refmap map[id.Zid]bool) []id.Zid {
 	if l := len(refmap); l > 0 {
 		result := make([]id.Zid, 0, l)
