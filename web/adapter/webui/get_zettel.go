@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -12,6 +12,7 @@
 package webui
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 
@@ -89,51 +90,61 @@ func MakeGetHTMLZettelHandler(
 		user := session.GetUser(ctx)
 		roleText := zn.Zettel.Meta.GetDefault(meta.KeyRole, "*")
 		tags := buildTagInfos(zn.Zettel.Meta)
+		getTitle := makeGetTitle(ctx, getMeta, &langOption)
 		extURL, hasExtURL := zn.Zettel.Meta.Get(meta.KeyURL)
+		backLinks := formatBackLinks(zn.InhMeta, getTitle)
 		var base baseData
 		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
 		base.MetaHeader = metaHeader
 		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
 		te.renderTemplate(ctx, w, id.DetailTemplateZid, &base, struct {
-			HTMLTitle    string
-			CanWrite     bool
-			EditURL      string
-			Zid          string
-			InfoURL      string
-			RoleText     string
-			RoleURL      string
-			HasTags      bool
-			Tags         []simpleLink
-			CanCopy      bool
-			CopyURL      string
-			CanNew       bool
-			NewURL       string
-			CanFolge     bool
-			FolgeURL     string
-			HasExtURL    bool
-			ExtURL       string
-			ExtNewWindow string
-			Content      string
+			HTMLTitle     string
+			CanWrite      bool
+			EditURL       string
+			Zid           string
+			InfoURL       string
+			RoleText      string
+			RoleURL       string
+			HasTags       bool
+			Tags          []simpleLink
+			CanCopy       bool
+			CopyURL       string
+			CanNew        bool
+			NewURL        string
+			CanFolge      bool
+			FolgeURL      string
+			FolgeRefs     string
+			PrecursorRefs string
+			HasExtURL     bool
+			ExtURL        string
+			ExtNewWindow  string
+			Content       string
+			HasBackLinks  bool
+			BackLinks     []simpleLink
 		}{
-			HTMLTitle:    htmlTitle,
-			CanWrite:     te.canWrite(ctx, user, zn.Zettel),
-			EditURL:      adapter.NewURLBuilder('e').SetZid(zid).String(),
-			Zid:          zid.String(),
-			InfoURL:      adapter.NewURLBuilder('i').SetZid(zid).String(),
-			RoleText:     roleText,
-			RoleURL:      adapter.NewURLBuilder('h').AppendQuery("role", roleText).String(),
-			HasTags:      len(tags) > 0,
-			Tags:         tags,
-			CanCopy:      canCopy,
-			CopyURL:      adapter.NewURLBuilder('c').SetZid(zid).String(),
-			CanNew:       canCopy && roleText == meta.ValueRoleNewTemplate,
-			NewURL:       adapter.NewURLBuilder('n').SetZid(zid).String(),
-			CanFolge:     base.CanCreate && !zn.Zettel.Content.IsBinary(),
-			FolgeURL:     adapter.NewURLBuilder('f').SetZid(zid).String(),
-			ExtURL:       extURL,
-			HasExtURL:    hasExtURL,
-			ExtNewWindow: htmlAttrNewWindow(newWindow && hasExtURL),
-			Content:      htmlContent,
+			HTMLTitle:     htmlTitle,
+			CanWrite:      te.canWrite(ctx, user, zn.Zettel),
+			EditURL:       adapter.NewURLBuilder('e').SetZid(zid).String(),
+			Zid:           zid.String(),
+			InfoURL:       adapter.NewURLBuilder('i').SetZid(zid).String(),
+			RoleText:      roleText,
+			RoleURL:       adapter.NewURLBuilder('h').AppendQuery("role", roleText).String(),
+			HasTags:       len(tags) > 0,
+			Tags:          tags,
+			CanCopy:       canCopy,
+			CopyURL:       adapter.NewURLBuilder('c').SetZid(zid).String(),
+			CanNew:        canCopy && roleText == meta.ValueRoleNewTemplate,
+			NewURL:        adapter.NewURLBuilder('n').SetZid(zid).String(),
+			CanFolge:      base.CanCreate && !zn.Zettel.Content.IsBinary(),
+			FolgeURL:      adapter.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeRefs:     formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
+			PrecursorRefs: formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
+			ExtURL:        extURL,
+			HasExtURL:     hasExtURL,
+			ExtNewWindow:  htmlAttrNewWindow(newWindow && hasExtURL),
+			Content:       htmlContent,
+			HasBackLinks:  len(backLinks) > 0,
+			BackLinks:     backLinks,
 		})
 	}
 }
@@ -182,4 +193,36 @@ func buildTagInfos(m *meta.Meta) []simpleLink {
 		}
 	}
 	return tagInfos
+}
+
+func formatMetaKey(m *meta.Meta, key string, getTitle getTitleFunc) string {
+	if _, ok := m.Get(key); ok {
+		var buf bytes.Buffer
+		writeHTMLMetaValue(&buf, m, key, getTitle, nil)
+		return buf.String()
+	}
+	return ""
+}
+
+func formatBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleLink {
+	values, ok := m.GetList(meta.KeyBack)
+	if !ok || len(values) == 0 {
+		return nil
+	}
+	result := make([]simpleLink, 0, len(values))
+	for _, val := range values {
+		zid, err := id.Parse(val)
+		if err != nil {
+			continue
+		}
+		if title, found := getTitle(zid, "text"); found > 0 {
+			url := adapter.NewURLBuilder('h').SetZid(zid).String()
+			if title == "" {
+				result = append(result, simpleLink{Text: val, URL: url})
+			} else {
+				result = append(result, simpleLink{Text: title, URL: url})
+			}
+		}
+	}
+	return result
 }

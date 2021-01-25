@@ -12,6 +12,7 @@
 package webui
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/url"
@@ -21,17 +22,15 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
 
 var space = []byte{' '}
 
-func writeHTMLMetaValue(
-	w io.Writer, m *meta.Meta, key string,
-	getTitle func(id.Zid, string) (string, int),
-	option encoder.Option) {
-
+func writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitleFunc, option encoder.Option) {
 	switch kt := m.Type(key); kt {
 	case meta.TypeBool:
 		writeHTMLBool(w, key, m.GetBool(key))
@@ -185,4 +184,24 @@ func writeLink(w io.Writer, key, value string) {
 		adapter.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
 	strfun.HTMLEscape(w, value, false)
 	io.WriteString(w, "</a>")
+}
+
+type getTitleFunc func(id.Zid, string) (string, int)
+
+func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, langOption encoder.Option) getTitleFunc {
+	return func(zid id.Zid, format string) (string, int) {
+		m, err := getMeta.Run(ctx, zid)
+		if err != nil {
+			if place.IsErrNotAllowed(err) {
+				return "", -1
+			}
+			return "", 0
+		}
+		astTitle := parser.ParseTitle(m.GetDefault(meta.KeyTitle, ""))
+		title, err := adapter.FormatInlines(astTitle, format, langOption)
+		if err == nil {
+			return title, 1
+		}
+		return "", 1
+	}
 }

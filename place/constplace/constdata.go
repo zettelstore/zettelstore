@@ -181,10 +181,22 @@ var constZettelMap = map[id.Zid]constZettel{
 {{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
 {{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
 {{#CanNew}}&#183; <a href="{{{NewURL}}}">New</a>{{/CanNew}}
+{{#FolgeRefs}}<br>Folge: {{{FolgeRefs}}}{{/FolgeRefs}}
+{{#PrecursorRefs}}<br>Precursor: {{{PrecursorRefs}}}{{/PrecursorRefs}}
 {{#HasExtURL}}<br>URL: <a href="{{{ExtURL}}}"{{{ExtNewWindow}}}>{{ExtURL}}</a>{{/HasExtURL}}
 </div>
 </header>
 {{{Content}}}
+{{#HasBackLinks}}
+<details>
+<summary>Links to this zettel</summary>
+<ul>
+{{#BackLinks}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/BackLinks}}
+</ul>
+</details>
+{{/HasBackLinks}}
 </article>`)},
 
 	id.InfoTemplateZid: constZettel{
@@ -633,6 +645,16 @@ kbd {
 }
 h1+.zs-meta {
   margin-top:-1rem;
+}
+details > summary {
+  width: 100%;
+  background-color: #eee;
+  font-family:sans-serif;
+}
+details > ul {
+  margin-top:0;
+  padding-left:2rem;
+  background-color: #eee;
 }
 footer {
   padding: 0 1rem;

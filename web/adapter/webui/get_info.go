@@ -22,8 +22,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -79,21 +77,8 @@ func MakeGetInfoHandler(
 		langOption := &encoder.StringOption{
 			Key:   "lang",
 			Value: runtime.GetLang(zn.InhMeta)}
-		getTitle := func(zid id.Zid, format string) (string, int) {
-			m, err := getMeta.Run(r.Context(), zid)
-			if err != nil {
-				if place.IsErrNotAllowed(err) {
-					return "", -1
-				}
-				return "", 0
-			}
-			astTitle := parser.ParseTitle(m.GetDefault(meta.KeyTitle, ""))
-			title, err := adapter.FormatInlines(astTitle, format, langOption)
-			if err == nil {
-				return title, 1
-			}
-			return "", 1
-		}
+		getTitle := makeGetTitle(r.Context(), getMeta, langOption)
+
 		summary := collect.References(zn)
 		_, locLinks, extLinks := splitIntExtLinks(getTitle, append(summary.Links, summary.Images...))
 
@@ -184,8 +169,7 @@ func MakeGetInfoHandler(
 }
 
 func splitIntExtLinks(
-	getTitle func(id.Zid, string) (string, int),
-	links []*ast.Reference,
+	getTitle getTitleFunc, links []*ast.Reference,
 ) (zetLinks []zettelReference, locLinks []string, extLinks []string) {
 	if len(links) == 0 {
 		return nil, nil, nil
