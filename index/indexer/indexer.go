@@ -29,7 +29,8 @@ import (
 type indexer struct {
 	store   index.Store
 	ar      *anterooms
-	done    chan struct{}
+	ready   chan struct{} // Signal a non-empty anteroom to background task
+	done    chan struct{} // Stop background task
 	observe bool
 }
 
@@ -38,6 +39,7 @@ func New() index.Indexer {
 	return &indexer{
 		store: memstore.New(),
 		ar:    newAnterooms(10),
+		ready: make(chan struct{}, 1),
 	}
 }
 
@@ -49,6 +51,12 @@ func (idx *indexer) observer(ci place.ChangeInfo) {
 		idx.ar.Enqueue(ci.Zid, true)
 	case place.OnDelete:
 		idx.ar.Enqueue(ci.Zid, false)
+	default:
+		return
+	}
+	select {
+	case idx.ready <- struct{}{}:
+	default:
 	}
 }
 
@@ -101,7 +109,8 @@ func (idx *indexer) indexer(p indexerPort) {
 		}
 	}()
 
-	timer := time.NewTimer(10 * time.Second)
+	timerDuration := 15 * time.Second
+	timer := time.NewTimer(timerDuration)
 	ctx := context.WithValue(context.Background(), ctxKey, &ctxKey)
 	for {
 		for {
@@ -131,11 +140,15 @@ func (idx *indexer) indexer(p indexerPort) {
 		}
 
 		select {
+		case _, ok := <-idx.ready:
+			if !ok {
+				return
+			}
 		case _, ok := <-timer.C:
 			if !ok {
 				return
 			}
-			timer.Reset(5 * time.Second)
+			timer.Reset(timerDuration)
 		case _, ok := <-idx.done:
 			if !ok {
 				if !timer.Stop() {
