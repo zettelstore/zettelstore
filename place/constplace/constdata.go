@@ -210,14 +210,6 @@ var constZettelMap = map[id.Zid]constZettel{
 <table>{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>{{/MetaData}}</table>
 {{#HasLinks}}
 <h2>References</h2>
-{{#HasZetLinks}}
-<h3>Zettel</h3>
-<ul>
-{{#ZetLinks}}
-<li>{{#HasURL}}<a href="{{{URL}}}">{{Title}}</a>{{/HasURL}}{{^HasURL}}{{Zid}}{{/HasURL}}</li>
-{{/ZetLinks}}
-</ul>
-{{/HasZetLinks}}
 {{#HasLocLinks}}
 <h3>Local</h3>
 <ul>

@@ -12,8 +12,6 @@
 package none
 
 import (
-	"strings"
-
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -39,35 +37,48 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 }
 
 func getDescription(key, value string) ast.Description {
-	makeLink := meta.Type(key) == meta.TypeID
 	return ast.Description{
 		Term: ast.InlineSlice{&ast.TextNode{Text: key}},
 		Descriptions: []ast.DescriptionSlice{
 			ast.DescriptionSlice{
 				&ast.ParaNode{
-					Inlines: convertToInlineSlice(value, makeLink),
+					Inlines: convertToInlineSlice(value, meta.Type(key)),
 				},
 			},
 		},
 	}
 }
 
-func convertToInlineSlice(value string, makeLink bool) ast.InlineSlice {
-	sl := strings.Fields(value)
-	if len(sl) == 0 {
-		return ast.InlineSlice{}
+func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlice {
+	var sliceData []string
+	if dt.IsSet {
+		sliceData = meta.ListFromValue(value)
+		if len(sliceData) == 0 {
+			return ast.InlineSlice{}
+		}
+	} else {
+		sliceData = []string{value}
+	}
+	var makeLink bool
+	switch dt {
+	case meta.TypeID, meta.TypeIDSet:
+		makeLink = true
 	}
 
-	result := make(ast.InlineSlice, 0, 2*len(sl)-1)
-	for i, s := range sl {
+	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
+	for i, val := range sliceData {
 		if i > 0 {
 			result = append(result, &ast.SpaceNode{Lexeme: " "})
 		}
-		result = append(result, &ast.TextNode{Text: s})
-	}
-	if makeLink {
-		r := ast.ParseReference(value)
-		result = ast.InlineSlice{&ast.LinkNode{Ref: r, Inlines: result}}
+		tn := &ast.TextNode{Text: val}
+		if makeLink {
+			result = append(result, &ast.LinkNode{
+				Ref:     ast.ParseReference(val),
+				Inlines: ast.InlineSlice{tn},
+			})
+		} else {
+			result = append(result, tn)
+		}
 	}
 	return result
 }

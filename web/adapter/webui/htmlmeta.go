@@ -25,6 +25,8 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
+var space = []byte{' '}
+
 func writeHTMLMetaValue(
 	w io.Writer, m *meta.Meta, key string,
 	getTitle func(id.Zid, string) (string, int),
@@ -117,7 +119,7 @@ func writeIdentifier(w io.Writer, val string, getTitle func(id.Zid, string) (str
 func writeIdentifierSet(w io.Writer, vals []string, getTitle func(id.Zid, string) (string, int)) {
 	for i, val := range vals {
 		if i > 0 {
-			io.WriteString(w, ", ")
+			w.Write(space)
 		}
 		writeIdentifier(w, val, getTitle)
 	}
@@ -134,7 +136,7 @@ func writeString(w io.Writer, val string) {
 func writeTagSet(w io.Writer, key string, tags []string) {
 	for i, tag := range tags {
 		if i > 0 {
-			io.WriteString(w, ", ")
+			w.Write(space)
 		}
 		writeLink(w, key, tag)
 	}
@@ -162,7 +164,7 @@ func writeWord(w io.Writer, key, word string) {
 func writeWordSet(w io.Writer, key string, words []string) {
 	for i, word := range words {
 		if i > 0 {
-			io.WriteString(w, ", ")
+			w.Write(space)
 		}
 		writeWord(w, key, word)
 	}

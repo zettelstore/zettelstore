@@ -95,8 +95,7 @@ func MakeGetInfoHandler(
 			return "", 1
 		}
 		summary := collect.References(zn)
-		zetLinks, locLinks, extLinks := splitIntExtLinks(
-			getTitle, append(summary.Links, summary.Images...))
+		_, locLinks, extLinks := splitIntExtLinks(getTitle, append(summary.Links, summary.Images...))
 
 		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil, langOption)
 		if err != nil {
@@ -150,8 +149,6 @@ func MakeGetInfoHandler(
 			DeleteURL    string
 			MetaData     []metaDataInfo
 			HasLinks     bool
-			HasZetLinks  bool
-			ZetLinks     []zettelReference
 			HasLocLinks  bool
 			LocLinks     []string
 			HasExtLinks  bool
@@ -175,9 +172,7 @@ func MakeGetInfoHandler(
 			CanDelete:    te.canDelete(ctx, user, zn.Zettel.Meta),
 			DeleteURL:    adapter.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
-			HasLinks:     len(zetLinks)+len(extLinks)+len(locLinks) > 0,
-			HasZetLinks:  len(zetLinks) > 0,
-			ZetLinks:     zetLinks,
+			HasLinks:     len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:  len(locLinks) > 0,
 			LocLinks:     locLinks,
 			HasExtLinks:  len(extLinks) > 0,
