@@ -89,6 +89,7 @@ func GetSchemes() []string {
 
 // Manager is a coordinating place.
 type Manager struct {
+	mx         sync.RWMutex
 	started    bool
 	placeURIs  []url.URL
 	subplaces  []place.Place
@@ -186,7 +187,9 @@ func (mgr *Manager) Location() string {
 // Start the place. Now all other functions of the place are allowed.
 // Starting an already started place is not allowed.
 func (mgr *Manager) Start(ctx context.Context) error {
+	mgr.mx.Lock()
 	if mgr.started {
+		mgr.mx.Unlock()
 		return place.ErrStarted
 	}
 	for i := len(mgr.subplaces) - 1; i >= 0; i-- {
@@ -197,6 +200,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 						ssj.Stop(ctx)
 					}
 				}
+				mgr.mx.Unlock()
 				return err
 			}
 		}
@@ -204,12 +208,15 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	mgr.done = make(chan struct{})
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
 	mgr.started = true
+	mgr.mx.Unlock()
 	mgr.infos <- place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid}
 	return nil
 }
 
 // Stop the started place. Now only the Start() function is allowed.
 func (mgr *Manager) Stop(ctx context.Context) error {
+	mgr.mx.Lock()
+	defer mgr.mx.Unlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
@@ -229,11 +236,15 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 
 // CanCreateZettel returns true, if place could possibly create a new zettel.
 func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	return mgr.started && mgr.subplaces[0].CanCreateZettel(ctx)
 }
 
 // CreateZettel creates a new zettel.
 func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return id.Invalid, place.ErrStopped
 	}
@@ -242,6 +253,8 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 
 // GetZettel retrieves a specific zettel.
 func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return domain.Zettel{}, place.ErrStopped
 	}
@@ -256,6 +269,8 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 
 // GetMeta retrieves just the meta data of a specific zettel.
 func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return nil, place.ErrStopped
 	}
@@ -270,6 +285,8 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 
 // FetchZids returns the set of all zettel identifer managed by the place.
 func (mgr *Manager) FetchZids(ctx context.Context) (result map[id.Zid]bool, err error) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return nil, place.ErrStopped
 	}
@@ -297,6 +314,8 @@ func (mgr *Manager) FetchZids(ctx context.Context) (result map[id.Zid]bool, err 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
 func (mgr *Manager) SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return nil, place.ErrStopped
 	}
@@ -320,11 +339,15 @@ func (mgr *Manager) SelectMeta(ctx context.Context, f *place.Filter, s *place.So
 
 // CanUpdateZettel returns true, if place could possibly update the given zettel.
 func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	return mgr.started && mgr.subplaces[0].CanUpdateZettel(ctx, zettel)
 }
 
 // UpdateZettel updates an existing zettel.
 func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
@@ -335,6 +358,8 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 
 // AllowRenameZettel returns true, if place will not disallow renaming the zettel.
 func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return false
 	}
@@ -348,6 +373,8 @@ func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 
 // RenameZettel changes the current zid to a new zid.
 func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
@@ -364,6 +391,8 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 
 // CanDeleteZettel returns true, if place could possibly delete the given zettel.
 func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return false
 	}
@@ -377,6 +406,8 @@ func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 
 // DeleteZettel removes the zettel from the place.
 func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
@@ -391,6 +422,8 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 // Reload clears all caches, reloads all internal data to reflect changes
 // that were possibly undetected.
 func (mgr *Manager) Reload(ctx context.Context) error {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
