@@ -95,20 +95,16 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 			filter = place.EnsureFilter(filter)
 			filter.Negate = true
 		case sQKey:
-			cleanedValues := make([]string, 0, len(values))
-			for _, val := range values {
-				if len(val) > 0 {
-					cleanedValues = append(cleanedValues, val)
-				}
-			}
-			if len(cleanedValues) > 0 {
+			if values := cleanQueryValues(values); len(values) > 0 {
 				filter = place.EnsureFilter(filter)
-				filter.Expr[""] = cleanedValues
+				filter.Expr[""] = values
 			}
 		default:
 			if !forSearch && meta.KeyIsValid(key) {
-				filter = place.EnsureFilter(filter)
-				filter.Expr[key] = values
+				if values := cleanQueryValues(values); len(values) > 0 {
+					filter = place.EnsureFilter(filter)
+					filter.Expr[key] = values
+				}
 			}
 		}
 	}
@@ -120,4 +116,15 @@ func getQueryKeys(forSearch bool) (string, string, string, string, string, strin
 		return "sort", "order", "offset", "limit", "negate", "s"
 	}
 	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
+}
+
+func cleanQueryValues(values []string) []string {
+	result := make([]string, 0, len(values))
+	for _, val := range values {
+		val = strings.TrimSpace(val)
+		if len(val) > 0 {
+			result = append(result, val)
+		}
+	}
+	return result
 }
