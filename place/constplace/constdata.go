@@ -29,7 +29,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityOwner,
 			meta.KeySyntax:     meta.ValueSyntaxNone,
 		},
-		"Zettelstore Runtime Configuration",
+		"",
 	},
 
 	id.BaseTemplateZid: constZettel{

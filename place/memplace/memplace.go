@@ -51,15 +51,15 @@ func (mp *memPlace) Location() string {
 
 func (mp *memPlace) Start(ctx context.Context) error {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
 	mp.zettel = make(map[id.Zid]domain.Zettel)
+	mp.mx.Unlock()
 	return nil
 }
 
 func (mp *memPlace) Stop(ctx context.Context) error {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
 	mp.zettel = nil
+	mp.mx.Unlock()
 	return nil
 }
 
@@ -67,12 +67,11 @@ func (mp *memPlace) CanCreateZettel(ctx context.Context) bool { return true }
 
 func (mp *memPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
-
 	meta := zettel.Meta.Clone()
 	meta.Zid = mp.calcNewZid()
 	zettel.Meta = meta
 	mp.zettel[meta.Zid] = zettel
+	mp.mx.Unlock()
 	mp.notifyChanged(place.OnUpdate, meta.Zid)
 	return meta.Zid, nil
 }
@@ -143,14 +142,13 @@ func (mp *memPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) b
 
 func (mp *memPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
-
 	meta := zettel.Meta.Clone()
 	if !meta.Zid.IsValid() {
 		return &place.ErrInvalidID{Zid: meta.Zid}
 	}
 	zettel.Meta = meta
 	mp.zettel[meta.Zid] = zettel
+	mp.mx.Unlock()
 	mp.notifyChanged(place.OnUpdate, meta.Zid)
 	return nil
 }
@@ -159,15 +157,15 @@ func (mp *memPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool { re
 
 func (mp *memPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
-
 	zettel, ok := mp.zettel[curZid]
 	if !ok {
+		mp.mx.Unlock()
 		return place.ErrNotFound
 	}
 
 	// Check that there is no zettel with newZid
 	if _, ok = mp.zettel[newZid]; ok {
+		mp.mx.Unlock()
 		return &place.ErrInvalidID{Zid: newZid}
 	}
 
@@ -176,6 +174,7 @@ func (mp *memPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	zettel.Meta = meta
 	mp.zettel[newZid] = zettel
 	delete(mp.zettel, curZid)
+	mp.mx.Unlock()
 	mp.notifyChanged(place.OnDelete, curZid)
 	mp.notifyChanged(place.OnUpdate, newZid)
 	return nil
@@ -184,18 +183,18 @@ func (mp *memPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 func (mp *memPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	mp.mx.RLock()
 	_, ok := mp.zettel[zid]
-	mp.mx.Unlock()
+	mp.mx.RUnlock()
 	return ok
 }
 
 func (mp *memPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	mp.mx.Lock()
-	defer mp.mx.Unlock()
-
 	if _, ok := mp.zettel[zid]; !ok {
+		mp.mx.Unlock()
 		return place.ErrNotFound
 	}
 	delete(mp.zettel, zid)
+	mp.mx.Unlock()
 	mp.notifyChanged(place.OnDelete, zid)
 	return nil
 }

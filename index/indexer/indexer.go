@@ -32,6 +32,7 @@ type indexer struct {
 	ready   chan struct{} // Signal a non-empty anteroom to background task
 	done    chan struct{} // Stop background task
 	observe bool
+	started bool
 }
 
 // New creates a new indexer.
@@ -61,7 +62,7 @@ func (idx *indexer) observer(ci place.ChangeInfo) {
 }
 
 func (idx *indexer) Start(p index.Port) {
-	if idx.done != nil {
+	if idx.started {
 		panic("Index already started")
 	}
 	idx.done = make(chan struct{})
@@ -70,14 +71,15 @@ func (idx *indexer) Start(p index.Port) {
 		idx.observe = true
 	}
 	go idx.indexer(p)
+	idx.started = true
 }
 
 func (idx *indexer) Stop() {
-	if idx.done == nil {
+	if !idx.started {
 		panic("Index already stopped")
 	}
 	close(idx.done)
-	idx.done = nil
+	idx.started = false
 }
 
 // Update reads all properties in the index and updates the metadata.

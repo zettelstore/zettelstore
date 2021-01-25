@@ -204,6 +204,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	mgr.done = make(chan struct{})
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
 	mgr.started = true
+	mgr.infos <- place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid}
 	return nil
 }
 
@@ -390,12 +391,16 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 // Reload clears all caches, reloads all internal data to reflect changes
 // that were possibly undetected.
 func (mgr *Manager) Reload(ctx context.Context) error {
+	if !mgr.started {
+		return place.ErrStopped
+	}
 	var err error
 	for _, p := range mgr.subplaces {
 		if err1 := p.Reload(ctx); err1 != nil && err == nil {
 			err = err1
 		}
 	}
+	mgr.infos <- place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid}
 	return err
 }
 
