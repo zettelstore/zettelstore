@@ -13,6 +13,7 @@ package index
 
 import (
 	"context"
+	"time"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -45,6 +46,21 @@ type Indexer interface {
 	// Stop the index. No zettel are read any more, but the current index data
 	// can stil be retrieved.
 	Stop()
+
+	// ReadStats populates st with indexer statistics.
+	ReadStats(st *IndexerStats)
+}
+
+// IndexerStats records statistics about the indexer.
+type IndexerStats struct {
+	// LastReload stores the timestamp when a full re-index was done.
+	LastReload time.Time
+
+	// IndexesSinceReload counts indexing a zettel since the full re-index.
+	IndexesSinceReload uint64
+
+	// Store records statistics about the underlying index store.
+	Store StoreStats
 }
 
 // Store all relevant zettel data. There may be multiple implementations, i.e.
@@ -57,4 +73,16 @@ type Store interface {
 
 	// DeleteZettel removes index data for given zettel.
 	DeleteZettel(context.Context, id.Zid)
+
+	// ReadStats populates st with store statistics.
+	ReadStats(st *StoreStats)
+}
+
+// StoreStats records statistics about the store.
+type StoreStats struct {
+	// Zettel is the number of zettel managed by the indexer.
+	Zettel int
+
+	// Updates count the number of metadata updates.
+	Updates uint64
 }

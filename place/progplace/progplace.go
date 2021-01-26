@@ -59,6 +59,7 @@ func getPlace(mf index.MetaFilter) place.Place {
 				id.Zid(3):  {genVersionOSM, genVersionOSC},
 				id.Zid(6):  {genEnvironmentM, genEnvironmentC},
 				id.Zid(8):  {genRuntimeM, genRuntimeC},
+				id.Zid(18): {genIndexerM, genIndexerC},
 				id.Zid(20): {genManagerM, genManagerC},
 				id.Zid(90): {genKeysM, genKeysC},
 				id.Zid(96): {genConfigZettelM, genConfigZettelC},

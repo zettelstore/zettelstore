@@ -35,6 +35,9 @@ type zettelIndex struct {
 type memStore struct {
 	mx  sync.RWMutex
 	idx map[id.Zid]*zettelIndex
+
+	// Stats
+	updates uint64
 }
 
 // New returns a new memory-based index store.
@@ -51,27 +54,36 @@ func (ms *memStore) Update(ctx context.Context, m *meta.Meta) {
 	if !ok {
 		return
 	}
+	var updated bool
 	if zi.dead != "" {
 		m.Set(meta.KeyDead, zi.dead)
+		updated = true
 	}
 	back := zi.backward
 	if len(zi.backward) > 0 {
 		m.Set(meta.KeyBackward, refsToString(zi.backward))
+		updated = true
 	}
 	if len(zi.forward) > 0 {
 		m.Set(meta.KeyForward, refsToString(zi.forward))
 		back = remRefs(back, zi.forward)
+		updated = true
 	}
 	if len(zi.meta) > 0 {
 		for k, refs := range zi.meta {
 			if len(refs.backward) > 0 {
 				m.Set(k, refsToString(refs.backward))
 				back = remRefs(back, refs.backward)
+				updated = true
 			}
 		}
 	}
 	if len(back) > 0 {
 		m.Set(meta.KeyBack, refsToString(back))
+		updated = true
+	}
+	if updated {
+		ms.updates++
 	}
 }
 
@@ -177,4 +189,10 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) {
 		}
 	}
 	delete(ms.idx, zid)
+}
+func (ms *memStore) ReadStats(st *index.StoreStats) {
+	ms.mx.RLock()
+	st.Zettel = len(ms.idx)
+	st.Updates = ms.updates
+	ms.mx.RUnlock()
 }

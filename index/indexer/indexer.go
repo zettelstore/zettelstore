@@ -33,6 +33,10 @@ type indexer struct {
 	done    chan struct{} // Stop background task
 	observe bool
 	started bool
+
+	// Stats data
+	lastReload  time.Time
+	sinceReload uint64
 }
 
 // New creates a new indexer.
@@ -93,6 +97,12 @@ func (idx *indexer) Update(ctx context.Context, m *meta.Meta) {
 	idx.store.Update(ctx, m)
 }
 
+func (idx *indexer) ReadStats(st *index.IndexerStats) {
+	st.LastReload = idx.lastReload
+	st.IndexesSinceReload = idx.sinceReload
+	idx.store.ReadStats(&st.Store)
+}
+
 type indexerPort interface {
 	getMetaPort
 	FetchZids(ctx context.Context) (map[id.Zid]bool, error)
@@ -119,6 +129,7 @@ func (idx *indexer) indexer(p indexerPort) {
 		for {
 			zid, val := idx.ar.Dequeue()
 			if zid.IsValid() {
+				idx.sinceReload++
 				if !val {
 					idx.deleteZettel(zid)
 					continue
@@ -139,6 +150,8 @@ func (idx *indexer) indexer(p indexerPort) {
 			zids, err := p.FetchZids(ctx)
 			if err == nil {
 				idx.ar.Reload(nil, zids)
+				idx.lastReload = time.Now()
+				idx.sinceReload = 0
 			}
 		}
 
