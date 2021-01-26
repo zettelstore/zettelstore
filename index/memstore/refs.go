@@ -54,40 +54,25 @@ func refsDiff(refsN, refsO []id.Zid) (newRefs, remRefs []id.Zid) {
 	return newRefs, remRefs
 }
 
-func addRefs(refs []id.Zid, add []id.Zid) []id.Zid {
-	result := make([]id.Zid, 0, len(refs)+len(add))
-	rpos, apos := 0, 0
-	for rpos < len(refs) && apos < len(add) {
-		rr, ra := refs[rpos], add[apos]
-		if rr < ra {
-			result = append(result, rr)
-			rpos++
-			continue
-		}
-		if ra < rr {
-			result = append(result, ra)
-			apos++
-			continue
-		}
-		result = append(result, rr)
-		rpos++
-		apos++
-	}
-	if rpos < len(refs) {
-		result = append(result, refs[rpos:]...)
-	}
-	if apos < len(add) {
-		result = append(result, add[apos:]...)
-	}
-	return result
-}
-
 func addRef(refs []id.Zid, ref id.Zid) []id.Zid {
-	// Too simple
-	return addRefs(refs, []id.Zid{ref})
+	if len(refs) == 0 {
+		return append(refs, ref)
+	}
+	for i, r := range refs {
+		if r == ref {
+			return refs
+		}
+		if r > ref {
+			return append(refs[:i], append([]id.Zid{ref}, refs[i:]...)...)
+		}
+	}
+	return append(refs, ref)
 }
 
 func remRefs(refs []id.Zid, rem []id.Zid) []id.Zid {
+	if len(refs) == 0 || len(rem) == 0 {
+		return refs
+	}
 	result := make([]id.Zid, 0, len(refs))
 	rpos, dpos := 0, 0
 	for rpos < len(refs) && dpos < len(rem) {
@@ -111,6 +96,15 @@ func remRefs(refs []id.Zid, rem []id.Zid) []id.Zid {
 }
 
 func remRef(refs []id.Zid, ref id.Zid) []id.Zid {
-	// Too simple
-	return remRefs(refs, []id.Zid{ref})
+	if refs != nil {
+		for i, r := range refs {
+			if r == ref {
+				return append(refs[:i], refs[i+1:]...)
+			}
+			if r > ref {
+				return refs
+			}
+		}
+	}
+	return refs
 }
