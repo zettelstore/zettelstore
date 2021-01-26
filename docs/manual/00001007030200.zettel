@@ -1,0 +1,147 @@
+title: Zettelmarkup: Nested Lists
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+There are thee kinds of lists that can be nested: ordered lists, unordered lists, and quotation lists.
+
+Ordered lists are specified with the number sign (""''#''"", ''U+0023''), unordered lists use the asterisk (""''*''"", ''U+002A''), and quotation lists are specified with the greater-than sing (""''>''"", ''U+003E'').
+Let's call these three characters //list characters//.
+
+Any nested list item is specified by a non-empty sequence of list characters, followed by a space character and a sequence of inline elements.
+In case of a quotation list as the last list character, the space character followed by a sequence of inline elements is optional.
+The number / count of list characters gives the nesting of the lists.
+If the following lines should also be part of the list item, exactly the same number of spaces must be given at the start the each following line as it is the lists are nested, plus one additional space character. In other words: the inline elements must start at the same column as it was on the previous line.
+
+The resulting sequence on inline elements is merged into a paragraph.
+Appropriately indented paragraphs can specified after the first one.
+Since each blocks-structured element has to be specified at the first position of a line, none of the nested list items may contain anything else than paragraphs.
+
+Some examples:
+```zmk
+# One
+# Two
+# Three
+```
+is rendered in HTML as
+:::example
+# One
+# Two
+# Three
+:::
+Similar an unordered list:
+```zmk
+* A
+* B
+* C
+```
+is rendered in HTML as
+:::example
+* A
+* B
+* C
+:::
+A quotation list is in most cases not a real list.
+Mostly, it results by copying replies from emails:
+```zmk
+> Please add some
+> more parsers to
+> the Zettelstore software.
+```
+is rendered in HTML as
+:::example
+> Please add some
+> more parsers to
+> the Zettelstore software.
+:::
+
+You can freely mix these three types of nested lists.
+And you can nest them:
+```zmk
+* A
+*# A.1
+*# A.2
+*#* A.2.a
+*#* A.2.b
+*#> Quote A.2.b.I
+*#># A.2.b.I.1
+*#># A.2.b.I.2
+*# A.3
+* B
+
+* C
+```
+is rendered in HTML as:
+:::example
+* A
+*# A.1
+*# A.2
+*#* A.2.a
+*#* A.2.b
+*#> Quote A.2.b.I
+*#># A.2.b.I.1
+*#># A.2.b.I.2
+*# A.3
+* B
+
+* C
+:::
+
+Please note that two lists cannot be separated by an empty line.
+Instead you should place a horizonal rule (""thematic break"") between them.
+You could also use a mark element or a hard line break to separate the two lists:
+```zmk
+# One
+# Two
+[!sep]
+# Uno
+# Due
+---
+# Eins
+# Zwei
+\
+# Une
+# Deux
+```
+is rendered in HTML as
+:::example
+# One
+# Two
+[!sep]
+# Uno
+# Due
+---
+# Eins
+# Zwei
+\
+# Une
+# Deux
+:::
+Here an example using multiple paragraphs:
+```zmk
+* Para A-1
+
+  Para A-2
+* Para B-1
+  (continued)
+
+  Para B-2
+** Para B.b-1
+
+   Para B.b-2
+  Para B-3
+```
+is rendered in HTML as
+:::example
+* Para A-1
+
+  Para A-2
+* Para B-1
+  (continued)
+
+  Para B-2
+** Para B.b-1
+
+   Para B.b-2
+  Para B-3
+:::

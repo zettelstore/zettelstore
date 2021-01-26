@@ -1,0 +1,38 @@
+id: 00001005090000
+title: List of predefined zettel
+role: manual
+tags: #manual #reference #zettelstore
+syntax: zmk
+modified: 20210126114739
+
+The following table lists all predefined zettel with their purpose.
+
+|= Identifier :|= Title | Purpose
+| [[00000000000001]] | Zettelstore Version | Contains the version string of the running Zettelstore
+| [[00000000000002]] | Zettelstore Host | Contains the name of the computer running the Zettelstore
+| [[00000000000003]] | Zettelstore Operating System | Contains the operating system and CPU architecture of the computer running the Zettelstore
+| [[00000000000006]] | Zettelstore Environment Values | Contains environmental data of Zettelstore executable
+| [[00000000000008]] | Zettelstore Runtime Values | Contains values that reflect the inner working; see [[here|https://golang.org/pkg/runtime/]] for a technical description of these values
+| [[00000000000018]] | Zettelstore Indexer | Provides some statistics about the index process
+| [[00000000000020]] | Zettelstore Place Manager | Contains some statistics about zettel places
+| [[00000000000090]] | Zettelstore Supported Metadata Keys | Contains all supported metadata keys, their [[types|00001006030000]], and more
+| [[00000000000096]] | Zettelstore Startup Configuration | Contains the effective values of the [[startup configuration|00001004010000]]
+| [[00000000000098]] | Zettelstore Startup Values | Contains all values computed from the [[startup configuration|00001004010000]]
+| [[00000000000100]] | Zettelstore Runtime Configuration | Allows to [[configure Zettelstore at runtime|00001004020000]]
+| [[00000000010100]] | Zettelstore Base HTML Template | Contains the general layout of the HTML view
+| [[00000000010200]] | Zettelstore Login Form HTML Template | Layout of the login form, when authentication is [[enabled|00001010040100]]
+| [[00000000010300]] | Zettelstore List Meta HTML Template | Used when displaying a list of zettel
+| [[00000000010401]] | Zettelstore Detail HTML Template | Layout for the HTML detail view of one zettel
+| [[00000000010402]] | Zettelstore Info HTML Templöate | Layout for the information view of a specific zettel
+| [[00000000010403]] | Zettelstore Form HTML Template | Form that is used to create a new or to change an existing zettel that contains text
+| [[00000000010404]] | Zettelstore Rename Form HTML Template | View that is displayed to change the [[zettel identifier|00001006050000]]
+| [[00000000010405]] | Zettelstore Delete HTML Template | View to confirm the deletion of a zettel
+| [[00000000010500]] | Zettelstore List Roles HTML Template | Layout for listing all roles
+| [[00000000010600]] | Zettelstore List Tags HTML Template | Layout of tags lists
+| [[00000000020001]] | Zettelstore Base CSS | CSS file that is included by the [[Base HTML Template|00000000010100]]
+| [[00000000091001]] | New Zettel | Template for a new zettel with role ""[[zettel|00001006020100]]""
+| [[00000000096001]] | New User | Template for a new zettel with role ""[[user|00001006020100#user]]""
+
+If a zettel is not linked, it is not accessible for the current user.
+
+**Important:** The identifier may change until a stable version of the software is released.

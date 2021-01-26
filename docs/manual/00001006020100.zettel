@@ -1,0 +1,40 @@
+title: Supported Zettel Roles
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+role: manual
+
+The [[''role'' key|00001006020000#role]] defines what kind of zettel you are writing.
+The following values are used by Zettelstore:
+
+; [!new-template]''new-template''
+: Zettel with this role are used as templates for creating new zettel.
+  Within such a zettel, the metadata key [[''new-role''|00001006020000#new-role]] is used to specify the role of the new zettel.
+; [!user]''user''
+: If you want to use [[authentication|00001010000000]], all zettel that identify users of the zettel store must have this role.
+
+Beside this, you are free to define your own roles.
+
+The role ''zettel'' is predefined as the default role, but you can [[change this|00001004020000#default-role]].
+
+Some roles are defined for technical reasons:
+
+; [!configuration]''configuration''
+: A zettel that contains some configuration data for the Zettelstore.
+  Most prominent is [[00000000000100]], as described in [[00001004020000]].
+; [!manual]''manual''
+: All zettel that document the inner workings of the Zettelstore software.
+  This role is used in this specific Zettelstore.
+
+If you adhere to the process outlined by Niklas Luhmann, a zettel could have one of the following three roles:
+
+; [!note]''note''
+: A small note, to remember something.
+  Notes are not real zettel, they just help to create a real zettel.
+  Think of them as Post-it notes.
+; [!literature]''literature''
+: Contains some remarks about a book, a paper, a web page, etc.
+  You should add a citation key for citing it.
+; [!zettel]''zettel''
+: A real zettel that contains your own thoughts.
+
+However, you are free to define additional roles, e.g. ''material'' for literature that is web-based only, ''slide'' for presentation slides, ''paper'' for the raw text of a scientific paper, ''project'' to define a project, ...

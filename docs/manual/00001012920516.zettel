@@ -1,0 +1,16 @@
+title: Raw Format
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+A zettel representation as it was loaded from the zettel content.
+
+Often used to have access to the bytes of an image.
+
+If transferred via HTTP, the content type will depend on various factors:
+
+* If the whole zettel should be transferred and it contains textual data only, ''text/plain'' will be used.
+Otherwise the content type of the whole zettel will be ''application/octet-stream''.
+* If just metadata is transferred, ''text/plain'' will be used.
+* If just the content has to be transferred, the content type depends on the actual dats.
+  A PNG image will be transferred as ''image/png'', HTML content as ''text/html'', and so on.

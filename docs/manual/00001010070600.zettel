@@ -1,0 +1,52 @@
+title: Access rules
+tags: #authorization #configuration #manual #security #zettelstore
+syntax: zmk
+role: manual
+
+Whether an operation of the Zettelstore is allowed or rejected, depends on various factors.
+
+The following rules are checked first, in this order:
+
+# In read-only mode, every operation except the ""Read"" operation is rejected.
+# If there is no owner, authentication is disabled and every operation is allowed for everybody.
+# If the user is authenticated and it is the owner, then the operation is allowed.
+
+In the second step, when authentication is enabled and the requesting user is not the owner, everything depends on the requested operation.
+
+* Read a zettel:
+** If the visibility is ""public"", the access is granted.
+** If the visibility is ""owner"", the access is rejected.
+** If the user is not authenticated, access is rejected.
+** If the zettel requested is an user zettel, reject the access if the users identification is not the same as of the ''ident'' meta key in the zettel.
+
+   In other words: only the requesting user is allowed to access its own user zettel.
+** Otherwise the user is authenticated, no sensitive zettel is requested.
+   Allow to read the zettel.
+* Create a new zettel
+** If the user is not authenticated, reject the access.
+** If the ''user-role'' of the user is ""reader"", reject the access.
+** If the user tries to create an user zettel, the access is rejected.
+
+   Only the owner is allowed to create user zettel.
+** In all other cases allow to create the zettel.
+* Change an existing zettel
+** If the user is not allowed to read the zettel (see above), reject the access.
+** If the user is not authenticated, reject the access.
+** If the zettel is the user zettel of the authenticated user, proceed as follows:
+*** If some sensitive meta values are changed (e.g. user identifier, zettel role, user role, but not hashed password), reject the access
+*** Since the user just updates some uncritical values, grant the access
+   In other words: a user is allowed to change its user zettel, even if s/he has no writer privilege and if only uncritical data is changed.
+** If the ''user-role'' of the user is ""reader"", reject the access.
+** If the user is not allowed to create a new zettel, reject the access.
+** Otherwise grant the access.
+* Rename a zettel
+** Reject the access.
+   Only the owner of the Zettelstore is currently allowed to give a new identifier for a zettel.
+* Delete a zettel
+** Reject the access.
+   Only the owner of the Zettelstore is allowed to delete a zettel.
+   This may change in the future.
+* Reload internal values
+** Reject the access.
+   Only the owner of the Zettelstore is allowed to perform a reload operation.
+   This may change in the future.

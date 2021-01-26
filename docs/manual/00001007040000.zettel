@@ -1,0 +1,66 @@
+title: Zettelmarkup: Inline-Structured Elements
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+Most characters you type is concerned with inline-structured elements.
+The content of a zettel contains is many cases just ordinary text, lightly formatted.
+Inline-structured elements allow to format your text and add some helpful links or images.
+Sometimes, you want to enter characters that have no representation on your keyboard.
+
+=== Text formatting
+Every [[text formatting|00001007040100]] element starts with two same characters at the beginning.
+It lasts until the same two characters occurred the second time.
+Some of these elements explicitly support [[attributes|00001007050000]].
+
+=== Literal-like formatting
+Sometime you want to render the text as it is.
+This is the core motivation of [[literal-like formatting|00001007040200]].
+
+=== Reference-like text
+You can reference other zettel and (external) material within one zettel.
+This kind of reference may be a link, or an images that is display inline when the zettel is rendered.
+Footnotes sometimes factor out some useful text that hinders the flow of reading text.
+Internal marks allow to reference something within a zettel.
+An important aspect of all knowledge work is to reference others work, e.g. with citation keys.
+All these elements can be subsumed under [[reference-like text|00001007040300]].
+
+=== Other inline elements
+==== Comments
+A comment is started with two consecutive percent sign characters (""''%''"", ''U+0025'').
+It ends at the end of the line where it started.
+
+==== Backslash
+The backslash character (""''\\''"", ''U+005C'') gives the next character another meaning.
+* If a space character follows, it is converted in a non-breaking space (''U+00A0'').
+* If a line ending follows the backslash character, the line break is converted from a //soft break// into a //hard break//.
+* Every other character is taken as itself, but without the interpretation of a Zettelmarkup element.
+  For example, if you want to enter a ""'']''"" into a footnote text, you should escape it with a backslash.
+
+==== Tag
+Any text that starts with a number sign character (""''#''"", ''U+0023''), followed by a non-empty sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low line character (""''_''"", ''U+005F'') is interpreted as an //inline tag//.
+They will be considered equivalent to tags in metadata.
+
+==== Entities & more
+Sometimes it is not easy to enter special characters.
+If you know the Unicode code point of that character, or its name according to the [[HTML standard|https://html.spec.whatwg.org/multipage/named-characters.html]], you can enter it by number or by name.
+
+Regardless which method you use, an entity always starts with an ampersand character (""''&''"", ''U+0026'') and ends with a semicolon character (""'';''"", ''U+003B'').
+If you know the HTML name of the character you want to enter, place it between these two character.
+Example: ``&amp;`` is rendered as ::&amp;::{=example}.
+
+If you want to enter its numeric code point, a number sign character must follow the ampersand character, followed by digits to base 10.
+Example: ``&#38;`` is rendered in HTML as ::&#38;::{=example}.
+
+You also can enter its numeric code point as a hex number, if you place the letter ""x"" after the numeric sign character.
+Example: ``&#x26;`` is rendered in HTML as ::&#x26;::{=example}.
+
+Since some Unicode character are used quite often, a special notation is introduced for them:
+
+* Two consecutive hyphen-minus characters result in an //en-dash// character.
+  It is typically used in numeric ranges.
+  ``pages 4--7`` will be rendered in HTML as: ::pages 4--7::{=example}.
+  Alternative specifications are: ``&ndash;``, ``&x8211``, and ``&#x2013``.
+* Three consecutive full stop characters (""''.''"", ''U+002E'') after a space result in an horizontal ellipsis character.
+  ``to be continued ... later`` will be rendered in HTML as: ::to be continued, ... later::{=example}.
+  Alternative specifications are: ``&hellip;``, ``&x8230``, and ``&#x2026``.

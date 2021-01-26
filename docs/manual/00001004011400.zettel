@@ -1,0 +1,57 @@
+title: Configure file directory places
+tags: #configuration #manual #zettelstore
+syntax: zmk
+role: manual
+
+Under certain circumstances, it is preferable to further configure a file directory place.
+This is done by appending query parameters after the base place URI ''dir:\//DIR''.
+
+The following parameters are supported:
+
+|= Parameter:|Description|Default value:|
+|rescan|Time (in seconds) after which the directory should be scanned fully|600
+|worker|Number of worker that can access the directory in parallel|17
+|readonly|Allow only operations that do not change a zettel or create a new zettel|n/a
+
+=== Rescan
+On most platforms, Zettelstore automatically detects changes to zettel files that originates from other software[^This includes most Linux distributions, macOS, and Windows].
+It is done on a ""best-effort"" basis.
+Under certain circumstances it is possible that Zettelstore does not detect a change done by another software.
+
+To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file diectory.
+The time interval is configured by the ''rescan'' parameter, e.g.
+```
+place-1-uri: dir:///home/zettel?rescan=300
+```
+This makes Zettelstore to re-scan the directory ''/home/zettel/'' every 300 seconds, i.e. 5 minutes.
+
+For a Zettelstore with many zettel, re-scanning the directory may take a while, especially if it is stored on a remote computer (e.g. via CIFS/SMB or NFS).
+In this case, you should adjust the parameter value.
+
+Please note that a directory re-scan invalidates all internal data of a Zettelstore.
+It might trigger a re-build of the backlink database (and other internal databases).
+Therefore a large value if preferred.
+
+=== Worker
+Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.
+The number of parallel activities is configured by the ''worker'' parameter.
+Its default value 17 is a good compromise when you think about the high variability of possible Zettelstore environments.
+
+A computer contains a limited number of internal processing units (CPU).
+Its number ranges from 1 to (currently) 128, e.g. in bigger server environments.
+Zettelstore typically runs on a system with 1 to 8 CPUs.
+Access to zettel file is ultimately managed by the underlying operating system.
+Depending on the hardware, only a limited number of parallel accesses are desireable.
+Since Zettelstore is a single-user software, the value 17 is quite reasonable, even for higher use.
+
+On smaller hardware[^In comparison to a normal desktop or laptop computer], such as the [[Raspberry Zero|https://www.raspberrypi.org/products/raspberry-pi-zero/]], a smaller value might be appropriate.
+Every worker needs some amount of main memory (RAM) and some amount of processing power.
+On bigger hardware, with some fast file services, a bigger value could result in higher performance, if needed.
+
+=== Readonly
+Sometimes you may want to provide zettel from a file directory place, but you want to disallow any changes.
+If you provide the query parameter ''readonly'' (with or without a corresponding value), the place will disallow any changes.
+```
+place-1-uri: dir:///home/zettel?readonly
+```
+If you put the whole Zettelstore in [[read-only|00001004010000]] [[mode|00001004051000]], all configured file directory places will be in read-only mode too, even if not explicitly configured.

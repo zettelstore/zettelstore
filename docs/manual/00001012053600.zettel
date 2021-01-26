@@ -1,0 +1,110 @@
+title: API: Retrieve references of an existing zettel
+tags: #api #manual #zettelstore
+syntax: zmk
+role: manual
+
+The web of zettel is one important value of a Zettelstore.
+Many zettel references other zettel, images, external/local material or, via citations, external literature.
+By using the [[endpoint|00001012920000]] ''/l/{ID}'' you are able to retrieve these references.
+
+````
+# curl http://127.0.0.1:23123/l/00001012053600
+{"id":"00001012053600","url":"/z/00001012053600","links":{"incoming":[],"outgoing":[{"id":"00001012920000","url":"/z/00001012920000"},{"id":"00001007040300","url":"/z/00001007040300#links"},{"id":"00001007040300","url":"/z/00001007040300#images"},{"id":"00001007040300","url":"/z/00001007040300#citation-key"}],"local":[],"external":[]},"images":{"outgoing":[],"local":[],"external":[]},"cites":[]}
+````
+Formatted, this translates into:
+````json
+{
+  "id": "00001012053600",
+  "url": "/z/00001012053600",
+  "links": {
+    "incoming": [],
+    "outgoing": [
+      {
+        "id": "00001012920000",
+        "url": "/z/00001012920000"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#links"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#images"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#citation-key"
+      }
+    ],
+    "local": [],
+    "external": []
+  },
+  "images": {
+    "outgoing": [],
+    "local": [],
+    "external": []
+  },
+  "cites": []
+}
+````
+=== Kind
+The following to-level JSON keys are returned:
+; ''id''
+: The zettel identifier for which the references were requested.
+; ''url''
+: The API endpoint to fetch more information about the zettel.
+; ''link''
+: A JSON object that contains information about incoming and outgoing [[links|00001007040300#links]].
+; ''image''
+: A JSON object that contains information about referenced [[images|00001007040300#images]].
+; ''cite''
+: A JSON list of [[citation keys|00001007040300#citation-key]] (as JSON strings).
+
+The query parameter ''kind'' controls which of these values is retrieved:
+
+|= ''kind'' <| Number >| Returned values
+| (nothing) | (14) |links, images, and citation keys
+| ''link'' | 2|links 
+| ''image'' | 4|images
+| ''cite'' | 8|citation keys
+| ''both'' | (6)|links and images
+| ''all'' | (14)|links, images, and citation keys
+
+The ""Number"" column gives an indication about an alternative way of specifying the kind.
+Every kind is given a number, which you also can use to specify the requested kind of reference.
+To get more than one kind, just add the numbers.
+If you want to retrieve only images and citations, which was not given a ''kind'' value, just specify ''kind=12''.
+=== Matter
+If you request to retrieve referenced links and/or referenced images, you can further control, which matter of references should be retrieved.
+This is controlled by the value of the query parameter ''matter'':
+|= ''matter''| Number >| Returned reference list
+| (nothing) | (30) | incoming, outgoing, local, and external references
+| ''incoming'' | 2|incoming reference, not allowed for images (aka ""backlinks"", not yet implemented)
+| ''outgoing'' | 4|outgoing references
+| ''local'' | 8|local references, i.e. local, non-zettel material
+| ''external'' |16| external references, i.e. on the web
+| ''zettel'' | (6)|incoming and outgoing references
+| ''material'' |(24)| local and external references
+| ''all'' | (30)| incoming, outgoing, local, and external references
+
+Incoming and outgoing references are basically zettel.
+Therefore the list elements are JSON objects with keys ''id'' and ''url''.
+Local and external references are strings.
+
+Similar to the ''kind'' query parameter, each matter is associated with a number.
+To retrieve a combination of matter values that does not have a name, just add the numbers.
+For example, if you want to retrieve only the outgoing and the external references, specify ''matter=20''.
+
+If a list is not going to retrieved, the associated value is ``null``{=json} instead of an empty list.
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the zettel identifier did not consist of exactly 14 digits or ''_format'' / ''_part'' contained illegal values.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.

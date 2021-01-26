@@ -1,0 +1,13 @@
+title: API: JSON structure of an access token
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+If the [[authentiction process|00001012050200]] was successful, an access token with some additional data is returned.
+The same is true, if the access token was [[renewed|00001012050400]].
+The response is structured as an JSON object, with the following named values:
+
+|=Name|Description
+|''access_token''|The access token itself, as string value, which is a [[JSON Web Token|https://tools.ietf.org/html/rfc7519]] (JWT, RFC 7915)
+|''token_type''|The type of the token, always set to ''"Bearer"'', as described in [[RFC 6750|https://tools.ietf.org/html/rfc6750]]
+|''expires_in''|An integer that gives a hint about the lifetime / endurance of the token, measured in seconds

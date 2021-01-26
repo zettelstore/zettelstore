@@ -1,0 +1,27 @@
+title: Layout of a Zettel
+tags: #design #manual #zettelstore
+syntax: zmk
+role: manual
+
+A zettel consists of two part: the metadata and the zettel content.
+Metadata gives some information mostly about the zettel content, how it should be interpreted, how it is sorted within Zettelstore.
+The zettel content is, well, the actual content.
+In many cases, the content is in plain text form.
+Plain text is long-lasting.
+However, content in binary format is also possible.
+
+Metadata has to conform to a [[special syntax|00001006010000]].
+It is effectively a collection of key/value pairs.
+Some keys have a [[special meaning|00001006020000]] and most of the predefined keys need values of a specific [[type|00001006030000]].
+
+Each zettel is given a unique [[identifier|00001006050000]].
+To some degree, the zettel identifier is part of the metadata..
+
+The zettel content is your valuable content.
+Zettelstore contains some predefined parsers that interpret the zettel content to the syntax of the zettel.
+This includes markup languages, like [[Zettelmarkup|00001007000000]] and [[CommonMark|https://commonmark.org/]].
+Other text formats are also supported, like CSS and HTML templates.
+Plain text content is always Unicode, encoded as UTF-8.
+Other character encodings are not supported and will never be[^This is not a real problem, since every modern software should support UTF-8 as an encoding.].
+There is support for a graphical format with a text represenation: SVG.
+And the is support for some binary image formats, like GIF, PNG, and JPEG.

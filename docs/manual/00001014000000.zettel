@@ -1,0 +1,7 @@
+title: Web user interface
+tags: #manual #webui #zettelstore
+syntax: zmk
+role: manual
+
+The Web user interface is just a secondary way to interact with a Zettelstore.
+Using external software that interacts via the [[API|00001012000000]] is the recommended way.

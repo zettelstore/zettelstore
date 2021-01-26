@@ -1,0 +1,45 @@
+id: 00001012000000
+title: API
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210112113014
+
+The API (short for ""**A**pplication **P**rogramming **I**nterface"") is the primary way to communicate with a running Zettelstore.
+Most integration with other systems and services is done through the API.
+The [[web user interface|00001014000000]] is just an alternative, secondary way of interacting with a Zettelstore.
+
+=== Background
+The API is HTTP-based and uses JSON as its main encoding format for exchanging messages between a Zettelstore and its client software.
+
+There is an [[overview zettel|00001012920000]] that shows the structure of the endpoints used by the API and gives an indication about its use.
+
+While JSON is the main encoding format, it is possible to retrieve zettel representations in other formats.
+If you want to create a new zettel or to change an existing one, you have to use JSON.
+There is an [[overview zettel for encoding formats|00001012920500]] that describes the valid formats.
+
+Various parts of a zettel can be retrieved.
+There are the [[possible values to specify zettel parts|00001012920800]].
+
+=== Authentication
+If [[authentication is enabled|00001010040100]], most API calls must include an [[access token|00001010040700]] that proves the identity of the caller.
+* [[Authenticate an user|00001012050200]] to obtain an access token
+* [[Renew an access token|00001012050400]] without costly re-authentication
+* [[Provide an access token|00001012050600]] when doing an API call
+
+=== Zettel lists
+* [[List metadata of all zettel|00001012051200]]
+* [[List all zettel, but in different encoding formats|00001012051400]]
+* [[List all zettel, but include different parts of a zettel|00001012051600]]
+* [[Shape the list of zettel metadata with filter options|00001012051800]]
+* [[Sort the list of zettel metadata|00001012052000]]
+* List all [[tags|00001006020000]] used in a Zettelstore
+* List all [[roles|00001006020100]] used in a Zettelstore.
+
+=== Working with zettel
+* Create a new zettel
+* [[Retrieve metadata and content of an existing zettel|00001012053400]]
+* [[Retrieve references of an existing zettel|00001012053600]]
+* Update metadata and content of a zettel
+* Rename a zettel
+* Delete a zettel

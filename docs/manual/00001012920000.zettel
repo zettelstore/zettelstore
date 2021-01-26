@@ -1,0 +1,27 @@
+title: Endpoints used by the API
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+All API endpoints conform to the pattern ''[PREFIX]/LETTER[/ZETTEL-ID]'', where:
+; ''PREFIX''
+: is an optional URL prefix, configured via the ''url-prefix'' [[startup configuration|00001004010000]],
+; ''LETTER''
+: is a single letter that specifies the ressource type,
+; ''ZETTEL-ID''
+: is an optional 14 digits string that uniquely [[identify a zettel|00001006050000]].
+
+The following letters are currently in use:
+
+|= Letter:| Without zettel identifier | With [[zettel identifier|00001006050000]]
+| ''a'' | POST: [[Client authentication|00001012050200]] |
+|       | PUT: [[renew access token|00001012050400]] |
+| ''l'' |  | GET: [[list references|00001012053600]]
+| ''z'' | GET: [[list zettel|00001012051200]] | GET: [[retrieve zettel|00001012053400]]
+|       | POST: add new zettel | PUT: change a zettel
+|       |  | DELETE: delete the zettel
+
+The full URL will contain either the ''http'' oder ''https'' scheme, a host name, and an optional port number.
+
+The API examples will assume the ''http'' schema, the local host ''127.0.0.1'', the default port ''23123'', and the default empty ''PREFIX''.
+Therefore, all URLs will start with ''http://127.0.0.1:23123''.

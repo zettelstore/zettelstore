@@ -1,0 +1,11 @@
+title: Native Format
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+A zettel representation shows the structure of a zettel in a more user-friendly way.
+Mostly used for debugging.
+
+If transferred via HTTP, the content type will be ''text/plain''.
+
+TODO: formal description

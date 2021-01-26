@@ -1,0 +1,68 @@
+title: Zettelmarkup: Blocks-Structured Elements
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+Every markup for blocks-structured elements (""blocks"") starts at the very first position of a line.
+
+There are five kinds of blocks: lists, one-line blocks, line-range blocks, tables, and paragraphs.
+
+=== Lists
+
+In Zettelmarkup, lists themselves are not specified, but list items.
+A sequence of list items is considered as a list.
+
+[[Description lists|00001007030100]] contain two different item types: the term to be described and the description itself.
+These cannot be combined with other lists.
+
+Ordered lists, unordered lists, and quotation lists can be combined into [[nested lists|00001007030200]].
+
+=== One-line blocks
+
+* [[Headings|00001007030300]] allow to structure the content of a zettel.
+* The [[horizontal rule|00001007030400]] signals a thematic break
+
+=== Line-range blocks
+
+This kind of blocks encompass at least two lines.
+To be useful, they encompass more lines.
+They start with at least three identical characters at the first position of the beginning line.
+They end at the line, that contains at least the same number of these identical characters, starting at the first position of that line.
+This allows line-range blocks to be nested.
+Additionally, all other blocks elements are allowed in line-range blocks.
+
+* [[Verbatim blocks|00001007030500]] do not interpret their content,
+* [[Quotation blocks|00001007030600]] specify a block-length quotation,
+* [[Verse blocks|00001007030700]] allow to enter poetry, lyrics and similar text, where line endings are important
+* [[Region blocks|00001007030800]] just mark a region, e.g. for common formatting
+* [[Comment blocks|00001007030900]] allow to enter text that will be ignored when rendered
+
+=== Tables
+
+Similar to lists are tables not specified explicitly.
+A sequence of table rows is considered a [[table|00001007031000]].
+A table row itself is a sequence of table cells.
+
+=== Paragraphs
+
+Any line that does not conform to another blocks-structured element starts a paragraph.
+This has the implication that a mistyped syntax element for a block element will be part of the paragraph. For example:
+```zmk
+= Heading
+Some text follows.
+```
+will be rendered in HTML as
+:::example
+= Heading
+Some text follows.
+:::
+This is because headings need at least three equal sign character.
+
+A paragraph is essentially a sequence of [[inline-structured elements|00001007040000]].
+Inline-structured elements cam span more than one line.
+Paragraphs are separated by empty lines.
+
+If you want to specify a second paragraph inside a list item, or if you want to continue a paragraph on a second and more line within a list item, you must start the paragraph with a certain number of space characters.
+The number of space characters depends on the kind of a list and the relevant nesting level.
+
+A line that starts with a space character and which is outside of a list or does not contain the right number of space characters is considered to be part of a paragraph.

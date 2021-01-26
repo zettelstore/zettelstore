@@ -1,0 +1,44 @@
+title: Zettelmarkup: Description Lists
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+A description list is a sequence of terms to be described together with the descriptions of each term.
+Every term can described in multiple ways.
+
+A description term (short: //term//) is specified with one semicolon (""'';''"", ''U+003B'') at the first position, followed by a space character and the described term, specified as a sequence of line elements.
+If the following lines should also be part of the term, exactly two spaces must be given at the start the each following line.
+
+The description of a term is given with one colon (""'':''"", ''U+003A'') at the first position, followed by a space character and the description itself, specified as a sequence of inline elements.
+Similar to terms, following lines can also be part of the actual description, if they start at each line with exactly two space characters.
+
+In contrast to terms, the actual descriptions are merged into a paragraph.
+This is because, an actual description can contain more than one paragraph.
+As usual, paragraphs are separated by an empty line.
+Every following paragraph of an actual description must be indented by two space characters.
+
+Example:
+```zmk
+; Zettel
+: A zettel is the basic unit
+  of Zettelstore.
+
+  Zettel can be linked together.
+; Zettelstore
+: A software that manages zettel.
+: The name of the Go implementation.
+```
+
+is rendered as:
+:::example
+; Zettel
+: A zettel is the basic unit
+  of Zettelstore.
+
+  Zettel can be linked together.
+; Zettelstore
+: A software that manages zettel.
+: The name of the Go implementation.
+:::
+
+If you look at the HTML code, you will see that ""Zettel"" has only one description with two paragraphs, while ""Zettelstore"" has two descriptions, each with one paragraph.

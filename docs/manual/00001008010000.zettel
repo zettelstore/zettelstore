@@ -1,0 +1,23 @@
+title: Use Markdown as the main markup language of Zettelstore
+tags: #manual #markdown #zettelstore
+syntax: zmk
+role: manual
+
+If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
+
+Just add the key ''default-syntax'' with a value of ''md'' or ''markdown'' to the [[configuration zettel|00000000000100]].
+Whether to use ''md'' or ''markdown'' is not just a matter to taste, but also depends on the value of ''zettel-file-syntax'' and, to some degree, on the value of ''yaml-header''.
+All key are described [[here|00001004020000]].
+
+If you set ''yaml-header'' to true, then new content is always stored in a file with the extension ''.zettel''.
+
+Otherwise ''zettel-file-syntax'' lists all syntax values, where its content should be stored in a file with the extension ''.zettel''.
+
+If neither ''yaml-header'' nor ''zettel-file-syntax'' is set, new content is stored in a file where its file name extension is the same as the syntax value of that zettel.
+In this case it makes a difference, whether you specify ''md'' or ''markdown''.
+If you specify the syntax ''md'', your content will be stored in a file with the ''.md'' extension.
+Similar for the syntax ''markdown''.
+If you want to process the files that store the zettel content, e.g. with some other Markdown tools, this may be important.
+Not every Markdown tool allows both file extensions.
+
+BTW, metadata is stored in a file with the extension ''.meta'', if neither ''yaml-header'' nor ''zettel-file-syntax'' is set.

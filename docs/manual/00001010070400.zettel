@@ -1,0 +1,18 @@
+title: Authorization and read-only mode
+tags: #authorization #configuration #manual #security #zettelstore
+syntax: zmk
+role: manual
+
+It is possible to enable both the read-only mode of the Zettelstore //and// authentication/authorization.
+Both modes are independent from each other.
+This gives four use cases:
+
+; Not read-only, no authorization
+: Zettelstore runs on your local computer and you only work with it.
+; Not read-only, with authorization
+: Zettelstore is accessed remotely.
+  You need authentication to ensure that only valid users access your Zettelstore.
+; With read-only, no authorization
+: Zettelstore present publicly its full content to everybody.
+; With read-only, with authorization
+: Nobody is allowed to change the content of the Zettelstore, but only specific zettel should be presented to the public.

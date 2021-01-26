@@ -1,0 +1,48 @@
+id: 00001012050200
+title: API: Authenticate a client
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210111190943
+
+Authentication for future API calls is done by sending a [[user identification|00001010040200]] and a password to the Zettelstore to obtain an [[access token|00001010040700]].
+This token has to be used for other API calls.
+It is valid for a relatively short amount of time, as configured with the key ''token-timeout-api'' of the [[start-up configuration|00001004010000]] (typically 10 minutes).
+
+The simplest way is to send user identification (''IDENT'') and password (''PASSWORD'') via [[HTTP Basic Authentication|https://tools.ietf.org/html/rfc7617]] and send them to the endpoint ''/a'' with a POST request:
+```sh
+# curl -X POST -u IDENT:PASSWORD http://127.0.0.1:23123/a
+{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+```
+
+Some tools, like [[curl|https://curl.haxx.se/]], also allow to specify user identification and password as part of the URL:
+```sh
+# curl -X POST http://IDENT:PASSWORD@127.0.0.1:23123/a
+{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+```
+
+If you do not want to use Basic Authentication, you can also send user identification and password as HTML form data:
+```sh
+# curl -X POST -d 'username=IDENT&password=PASSWORD' http://127.0.0.1:23123/a
+{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+```
+
+In all cases, you will receive an JSON object will all [[relevant data|00001012921000]] to be used for further API calls.
+
+**Important:** obtaining a token is a time-intensive process.
+Zettelstore will delay every request to obtain a token for a certain amount of time.
+Please take into account that this request will take approximately 500 milliseconds, under certain circumstances more.
+
+=== HTTP Status codes
+In all cases of successful authentication, a JSON object is returned, which contains the token under the key ''"token"''.
+A successful authentication is signaled with the HTTP status code 200, as usual.
+
+Other status codes possibly send by the Zettelstore:
+; ''400''
+: Unable to process the request.
+  In most cases the form data was invalid.
+; ''401''
+: Authentication failed.
+  Either the user identification is invalid or you provided the wrong password.
+; ''403''
+: Authentication is not active.

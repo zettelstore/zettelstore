@@ -1,0 +1,29 @@
+id: 00001004050400
+title: The ''version'' sub-command
+role: manual
+tags: #command #configuration #manual #zettelstore
+syntax: zmk
+modified: 20210104115659
+precursor: 00001004050000
+
+Emits some information about the Zettelstore's version.
+This allows you to check, whether your installed Zettelstore is 
+
+The name of the software (""Zettelstore"") and the build version information is given, as well as the compiler version, the name of the computer running the Zettelstore, and an indication about the operating system and the processor architecture of that computer.
+
+The build version information is a string like ''v1.0.2-34-gf567a3''.
+The part ""v1.0.2"" is the release version.
+The string ""34"" specifies the number of internal patches, after the release was published.
+""gf567a3"" is a code uniquely identify the version to the developer.
+
+Everything after the release version is optional, eg. ""v1.4.3"" is a valid build version information too.
+
+Example:
+
+```
+# zettelstore version
+Zettelstore (v0.0.4/go1.15) running on mycomputer (linux/amd64)
+```
+In this example, Zettelstore is running in the released version ""v.0.0.4"" and was compiled using [[Go, version 1.15|https://golang.org/doc/go1.15]].
+It runs on a computer named ""mycomputer"".
+The software was build for running under a Linux operating system with an ""amd64"" processor.

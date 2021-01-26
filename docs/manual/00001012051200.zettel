@@ -1,0 +1,90 @@
+title: API: List metadata of all zettel
+tags: #api #manual #zettelstore
+syntax: zmk
+role: manual
+
+To list the metadata of all zettel just send a HTTP GET request to the endpoint ''/z''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
+If successful, the output is a JSON object:
+
+```sh
+# curl http://127.0.0.1:23123/z
+{"list":[{"id":"00001012051200","url":"/z/00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050600","url":"/z/00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050400","url":"/z/00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050200","url":"/z/00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012000000","url":"/z/00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}}]}
+```
+
+The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
+These zettel JSON objects themself contains the keys ''"id"'' (value is a string containing the zettel identifier), ''"url"'' (value is a string containing the URL of the zettel), and ''"meta"'' (value ss a JSON object).
+The vlaue of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
+
+If you reformat the JSON output from the ''GET /z'' call, you'll see its structure better:
+
+```json
+{
+  "list": [
+    {
+      "id": "00001012051200",
+      "url": "/z/00001012051200",
+      "meta": {
+        "title": "API: List for all zettel some data",
+        "tags": "#api #manual #zettelstore",
+        "syntax": "zmk",
+        "role": "manual"
+      }
+    },
+    {
+      "id": "00001012050600",
+      "url": "/z/00001012050600",
+      "meta": {
+        "title": "API: Provide an access token",
+        "tags": "#api #manual #zettelstore",
+        "syntax": "zmk",
+        "role": "manual"
+      }
+    },
+    {
+      "id": "00001012050400",
+      "url": "/z/00001012050400",
+      "meta": {
+        "title": "API: Renew an access token",
+        "tags": "#api #manual #zettelstore",
+        "syntax": "zmk",
+        "role": "manual"
+      }
+    },
+    {
+      "id": "00001012050200",
+      "url": "/z/00001012050200",
+      "meta": {
+        "title": "API: Authenticate a client",
+        "tags": "#api #manual #zettelstore",
+        "syntax": "zmk",
+        "role": "manual"
+      }
+    },
+    {
+      "id": "00001012000000",
+      "url": "/z/00001012000000",
+      "meta": {
+        "title": "API",
+        "tags": "#api #manual #zettelstore",
+        "syntax": "zmk",
+        "role": "manual"
+      }
+    }
+  ]
+}
+```
+In this special case, the metadata of each zettel just contains the four default keys ''title'', ''tags'', ''syntax'', and ''role''.
+
+If you specify the request in above simple way, you will always get a JSON object that contains all zettel maintained by your Zettelstore and which contains just the metadata of each zettel.
+There are several ways to change this behavior.
+
+* [[Specify a different encoding format|00001012051400]]
+* [[Specify which detail information of a zettel should be included|00001012051600]]
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an [[appropriate JSON object|00001012921000]].
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the access bearer token was not valid.

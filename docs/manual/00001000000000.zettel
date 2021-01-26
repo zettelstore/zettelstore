@@ -1,0 +1,22 @@
+id: 00001000000000
+title: Zettelstore Manual
+role: manual
+tags: #manual #zettelstore
+syntax: zmk
+modified: 20210126174156
+
+* [[Introduction|00001001000000]]
+* [[Design goals|00001002000000]]
+* [[Installation|00001003000000]]
+* [[Configuration|00001004000000]]
+* [[Structure of Zettelstore|00001005000000]]
+* [[Layout of a zettel|00001006000000]]
+* [[Zettelmarkup|00001007000000]]
+* [[Other markup languages|00001008000000]]
+* [[Security|00001010000000]]
+* [[API|00001012000000]]
+* [[Web user interface|00001014000000]]
+* Troubleshooting
+* Frequently asked questions
+
+Licensed under the EUPL-1.2-or-later.

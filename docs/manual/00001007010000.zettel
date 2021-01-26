@@ -1,0 +1,58 @@
+title: Zettelmarkup: General Principles
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+Any document can be thought as a sequence of paragraphs and other blocks-structural elements (""blocks""), such as headings, lists, quotations, and code blocks.
+Some of these blocks can contain other blocks, for example lists may contain other lists or paragraphs.
+Other blocks contain inline-structural elements (""inlines""), such as text, links, emphasized text, and images.
+
+With the exception of lists and tables, the markup for blocks always starts at the first position of a line and starts with three or more identical characters.
+List blocks also starts at the first position of a line, but may need one or more character, plus a space character.
+Table blocks starts at the first position of a line with the character ""``|``"".
+Non-list blocks are either fully specified on that line or they span multiple lines and are delimited with the same three or more character.
+It depends on the block kind, whether blocks are specified on one line or on at least two lines.
+
+If a line does not start with an explicit block element. the line is treated as a (implicit) paragraph block element that contains inline elements.
+This paragraph ends when a block element is detected at the beginning of a next line or when an empty line occurs.
+Some blocks may also contain inline elements, e.g. a heading.
+
+Inline elements mostly starts with two non-space, often identical characters.
+With some exceptions, two identical non-space characters starts a formatting range that is ended with the same two characters.
+
+Exceptions are: links, images, edits, comments, and both the ""en-dash"" and the ""horizontal ellipsis"".
+A link is given with ``[[...]]``{=zmk}, an images with ``{{...}}``{=zmk}, and an edit formatting with ``((...))``{=zmk}.
+An inline comment, starting with the sequence ``%%``{=zmk}, always ends at the end of the line where it begins.
+The ""en-dash"" (""--"") is specified as ``--``{=zmk}, the ""horizontal ellipsis"" (""..."") as ``...``{=zmk}[^If placed at the end of non-space text.].
+
+Some inline elements do not follow the rule of two identical character, especially to specify footnotes, citation keys, and local marks.
+These elements start with one opening square bracket (""``[``""), use a character for specifying the kind of the inline, typically allow to specify some content, and end with one closing square bracket (""``]``"").
+
+One inline element that does not start with two characters is the ""entity"".
+It allows to specify any Unicode character.
+The specification of that character is placed between an ampersand character and a semicolon: ``&...;``{=zmk}.
+For exmple, an ""n-dash"" could also be specified as ``&ndash;``{==zmk}.
+
+The backslash character (""``\\``"") possibly gives the next character a special meaning.
+This allows to resolve some left ambiguities.
+For example, list of depth 2 will start a line with ``** Item 2.2``{=zmk}.
+An inline element to strongly emphasize some text start with a space will be specified as ``** Text**``{=zmk}.
+To force the inline element formatting at the start of a line, ``**\\ Text**``{=zmk} should better be specified.
+
+Many block and inline elements can be refined by additional attributes.
+Attributes resemble roughly HTML attributes and are placed near the corresponding elements by using the syntax ``{...}``{=zmk}.
+One example is to make space characters visible inside a inline literal element: ``1 + 2 = 3``{-} was specified by using the default attribute: ``\`\`1 + 2 = 3\`\`{-}``.
+
+To summarize:
+
+* With some exceptions, blocks-structural elements starts at the for position of a line with three identical characters.
+* The most important exception to this rule is the specification of lists.
+* If no block element is found, a paragraph with inline elements is assumed.
+* With some exceptions, inline-structural elements starts with two characters, quite often the same two characters.
+* The most important exceptions are links.
+* The backslash character can help to resolve possible ambiguities.
+* Attributes refine some block and inline elements.
+* Block elements have a higher priority than inline elements.
+
+These principles makes automatic recognizing zettelmarkup an (relatively) easy task.
+By looking at the reference implementation, a moderately skilled software developer should be able to create a appropriate software in a different programming language.

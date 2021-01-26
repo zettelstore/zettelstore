@@ -1,0 +1,71 @@
+id: 00001010090100
+title: External server to encrypt message transport
+role: manual
+tags: #configuration #encryption #manual #security #zettelstore
+syntax: zmk
+modified: 20210125195546
+
+Since Zettelstore does not encrypt the messages it exchanges with its clients, you may need some additional software to enable encryption.
+
+=== Public-key encryption
+To enable encryption, you probably use some kind of encryption keys.
+In most cases, you need to deploy a ""public-key encryption"" process, where your side publish a public encryption key that only works with a corresponding private decryption key.
+Technically, this is not trivial.
+Any client who wants to communicate with your Zettelstore must trust the public encryption key.
+Otherwise the client cannot be sure that it is communication with your Zettelstore.
+This problem is solved in part with [[Let's Encrypt|https://letsencrypt.org/]],
+<<a free, automated, and open certificate authority (CA), run for the public’s benefit.
+It is a service provided by the [[Internet Security Research Group|https://www.abetterinternet.org/]]<<.
+
+Alternatively, you can buy these keys for public-key encryption at ""certificate authorities"" or its dealers.
+
+=== Server software for encryption
+The solution of placing a server for encryption in front of an encryption-unaware server is a relatively old one.
+There are many different alternatives to choose.
+
+First, there are web servers.
+Business-grade web servers must enable encryption.
+Most of them allow to forward a request unencrypted to another web server.
+Some examples:
+
+* [[Apache Web Server|https://httpd.apache.org/]]: enable [[mod_proxy|http://httpd.apache.org/docs/current/mod/mod_proxy.html]] and configure a reverse proxy.
+* [[nginx|https://nginx.org/]]: set-up a reverse proxy with the [[''proxy_pass''|https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass]] directive.
+* [[Caddy|https://caddyserver.com/]]: see below for details.
+
+Other software is also possible.
+There exists software dedicated for this task of handling the encryption part.
+Some examples:
+
+* [[stunnel|https://www.stunnel.org/]] (<<a proxy designed to add TLS encryption functionality to existing clients and servers without any changes in the programs' code.<<)
+* [[Traefik|https://traefik.io/]]: set-up a [[router|https://docs.traefik.io/routing/routers/]].
+
+=== Example configuration for Caddy
+For the inexperienced owner of a Zettelstore, [[Caddy|https://caddyserver.com/]] is a good option[^In fact, the [[server-based installation procedure|00001003000000]] of Zettelstore was inspired by Caddy.].
+Caddy has the capability to automatically fetch appropriately encryption key from Let's Encrypt, without any further configuration.
+The only requirement of doing this is that the server must be publicly accessible.
+
+Here is the base configuration for the main site for Zettelstore at [[https://zettelstore.de/]]:
+```
+zettelstore.de {
+  reverse_proxy localhost:23123
+}
+```
+That's all!
+
+If you want to add some additional content on the server, you could change the configuration as follows:
+```
+zettelstore.de {
+  file_server * {
+    root /var/www/html
+  }
+  route /manual/* {
+    uri strip_prefix /manual
+    reverse_proxy localhost:23123
+  }
+}
+```
+This will forwards requests with the prefix ""/manual"" to the running Zettelstore.
+All other requests will be handled by Caddy itself.
+
+In this case you must specify the start-tp configuration key ''url-prefix'' with the value ""/manual"".
+This is to allow the Zettelstore to give you the correct URLs with the given prefix.

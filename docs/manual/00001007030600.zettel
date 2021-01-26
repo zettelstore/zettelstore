@@ -1,0 +1,39 @@
+title: Zettelmarkup: Quotation Blocks
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+A simple way to enter a quotation is to use the [[quotation list|00001007030200]].
+A quotation list loosely follows the convention of quoting text within emails.
+However, if you want to attribute the quotation to seomeone, a quotation block is more appropriately.
+
+This kind of line-range block starts with at least three less-than characters (""''<''"", ''U+003C'') at the first position of a line.
+You can add some [[attributes|00001007050000]] on the start line of a quotation block, following the initiating characters.
+The quotation does not support the default attribute, nor the generic attribute.
+Attributes are interpreted on HTML rendering.
+Any other character in this line will be ignored
+
+Text following the starting line will be interpreted, until a line starts with at least the same number of the same characters given at the starting line.
+This allows to enter a quotation block within a quotation block.
+At the ending line, you can enter some [[inline elements|00001007040000]] after the less-than characters.
+These will interpreted as some attribution text.
+
+For example:
+
+```zmk
+<<<<
+A quotation with an embedded quotation
+<<<{style=color:green}
+Embedded
+<<< Embedded Author
+<<<<
+```
+will be rendered in HTML as:
+:::example
+<<<<
+A quotation with an embedded quotation
+<<<{style=color:green}
+Embedded
+<<< Embedded Author
+<<<< Quotation Author
+:::

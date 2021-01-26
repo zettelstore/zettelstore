@@ -1,0 +1,11 @@
+title: HTML Format
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+A zettel representation in HTML.
+This representation is different form the [[web user interface|00001014000000]] as it contains the zettel representation only and no additional data such as the menu bar.
+
+It is intended to be used by external clients.
+
+If transferred via HTTP, the content type will be ''text/html''.

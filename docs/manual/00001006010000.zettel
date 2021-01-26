@@ -1,0 +1,47 @@
+title: Syntax of Metadata
+tags: #manual #syntax #zettelstore
+syntax: zmk
+role: manual
+
+The metadata of a zettel is a collection of key-value pairs.
+The syntax roughly resembles the internal header of an email ([[RFC5322|https://tools.ietf.org/html/rfc5322]]).
+
+The key is a sequence of alphanumeric characters, a hyphen-minus character (""''-''"") is also allowed.
+It starts at a new line.
+
+A key is separated from its value either by
+* a colon character (""'':''""), 
+* a non-empty sequence of space characters, 
+* a sequence of space characters, followed by a colon, followed by a sequence of space characters.
+
+A Value is a sequence of printable characters.
+If the value should be continued in the following line, that following line (//continuation line//) must start with a non-empty sequence of space characters.
+The rest of the following line will be interpreted as the next part of the value.
+There can be more than one continuation line for a value.
+
+A non-continuation line that contains a possibly empty sequence of characters, followed by the percent sign character (""''%''"") is treated as a comment line.
+It will be ignored.
+
+Parsing metadata ends, if an empty line is found or if a line with at least three hyphen-minus characters is found.
+
+Some examples:
+
+```meta
+title1:The Title
+ title-2 : Another title
+title-3: A wrapped
+ title
+title-4: A
+ wrapped
+ title
+ with
+ more
+ than
+ one
+  continuation
+ line
+% A comment line
+ % Another comment line.
+
+No metadata anymore, because of the empty line.
+```

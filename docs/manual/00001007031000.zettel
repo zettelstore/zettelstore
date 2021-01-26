@@ -1,0 +1,85 @@
+title: Zettelmarkup: Tables
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+Tables are used to show some data in a two-dimenensional fashion.
+In zettelmarkup, table are not specified explicitly, but by entering //table rows//.
+Therefore, a table can be seen as a sequence of table rows.
+A table row is nothing as a sequence of //table cells//.
+The length of a table is the number of table rows, the width of a table is the maximum length of its rows.
+
+The first cell of a row must start with the vertical bar character (""''|''"", ''U+007C'') at the first position of a line.
+The other cells of a row start with the same vertical bar character at later positions in that line.
+A cell is delimited by the vertical bar character of the next cell or by the end of the current line.
+A vertical bar character as the last character of a line will not result in a table cell.
+It will be ignored.
+Inside a cell, you can specify any [[inline elements|00001007040000]].
+
+For example:
+```zmk
+| a1 | a2 | a3|
+| b1 | b2 | b3
+| c1 | c2
+```
+will be rendered in HTML as:
+:::example
+| a1 | a2 | a3|
+| b1 | b2 | b3
+| c1 | c2
+:::
+
+If any cell in the first row of a table contains an equal sing character (""''=''"", ''U+003D'') as the very first character, then this first row will be interpreted as a //table header// row.
+
+For example:
+```zmk
+| a1 | a2 |= a3|
+| b1 | b2 | b3
+| c1 | c2
+```
+will be rendered in HTML as:
+:::example
+| a1 | a2 |= a3|
+| b1 | b2 | b3
+| c1 | c2
+:::
+
+Inside a header row, you can specify the alignment of each header cell by a given character as the last character of a cell.
+The alignment of a header cell determines the alignment of every cell in the same column.
+The following characters specify the alignment:
+
+* the colon character (""'':''"", ''U+003A'') forces a centered aligment,
+* the less-than sign character (""''<''"", ''U+0060'') specifies an alignment to the left,
+* the greater-than sign character (""''>''"", ''U+0062'') will produce right aligned cells.
+
+If no alignment character is given, a default alignment is used.
+
+For example:
+```zmk
+|=Left<|Right>|Center:|Default
+|123456|123456|123456|123456|
+|123|123|123|123
+```
+will be rendered in HTML as:
+:::example
+|=Left<|Right>|Center:|Default
+|123456|123456|123456|123456|
+|123|123|123|123
+:::
+
+To specify the alignment of an individual cell, you can enter these characters for alignment as the first character of that cell.
+
+For example:
+```zmk
+|=Left<|Right>|Center:|Default
+|>R|:C|<L
+|123456|123456|123456|123456|
+|123|123|123|123
+```
+will be rendered in HTML as:
+:::example
+|=Left<|Right>|Center:|Default
+|>R|:C|<L
+|123456|123456|123456|123456|
+|123|123|123|123
+:::

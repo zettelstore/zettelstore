@@ -1,0 +1,44 @@
+title: Zettelstore places
+tags: #configuration #manual #zettelstore
+syntax: zmk
+role: manual
+
+A Zettelstore must store its zettel somehow and somewhere.
+In most cases you want to store your zettel as files in a directory.
+Under certain circumstances you may want to store your zettel in other places.
+
+An example are the [[predefined zettel|00001005090000]] that come with a Zettelstore.
+They are stored within the software itself.
+In another situation you may want to store your zettel volatilely, e.g. if you want to provide a sandbox for experimenting.
+
+To cope with these (and more) situations, you configure Zettelstore to use one or more places.
+This is done via the ''place-X-uri'' keys of the [[start-up configuration|00001004010000#place-X-uri]] (X is a number).
+Places are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]], somehow similar to web addresses.
+
+The following place URIs are supported:
+
+; ''dir:\//DIR''
+: Specifies a directory where zettel files are stored.
+  ''DIR'' is the file path.
+  Although it is possible to use relative file paths, such as ''./zettel'' (&rarr; URI is ''dir:\//.zettel''), it is preferable to use absolute file paths, e.g. ''/home/user/zettel''.
+
+  The directory must exist before starting the Zettelstore[^There is one exception: when Zettelstore is [[started without any parameter|00001004050000]], e.g. via double-clicking its icon, an directory called ''./zettel'' will be created.].
+
+  It is possible to [[configure|00001004011400]] a directory place.
+; ''mem:''
+: Stores all its zettel in volatile memory.
+  If you stop the Zettelstore, all changes are lost.
+; ''const:''
+: Is a place of predefined, essential zettel.
+
+All places that you configure via the ''store-X-uri'' keys form a chain of places.
+If a zettel should be retrieved, a search starts in the place specified with the ''place-1-uri'' key, then ''place-2-uri'' and so on.
+If a zettel is created or changed, it is always stored in the place specified with the ''place-1-uri'' key.
+This allows to overwrite zettel from other places, e.g. the predefined zettel.
+
+If you did not configure the place of the predefined zettel (''const:'') they will automatically be appended as a last place.
+Otherwise Zettelstore will not work in certain situations.
+
+If you use the ''mem:'' place, where zettel are stored in volatile memory, it makes only sense if you configure it as ''place-1-uri''.
+Such a place will be empty when Zettelstore starts and only the place 1 will receive updates.
+You must make sure that your computer has enough RAM to store all zettel.

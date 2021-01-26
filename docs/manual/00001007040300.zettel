@@ -1,0 +1,94 @@
+title: Zettelmarkup: Reference-like text
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+
+An important aspect of knowledge work is to interconnect your zettel as well as provide links to (external) material.
+
+There are several kinds of references that are allowed in Zettelmarkup:
+* Links to other zettel.
+* Links to (external material).
+* Embed images that are stored within your Zettelstore.
+* Embed external images.
+* Reference via a footnote.
+* Reference via a citation key.
+* Put a mark within your zettel that you can reference later with a link.
+
+=== Links
+There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
+Both kinds starts with two consecutive left square bracket characters (""''[''"", ''U+005B'') and ends with two consecutive right square bracket characters (""'']''"", ''U+005D'').
+
+The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", ''U+007C''): ``[[text|linkspecification]]``.
+
+The second form just provides a link specification between the square brackets.
+Its text is derived from the link specification, e.g. by interpreting the link specification as text: ``[[linkspecification]]``.
+
+The link specification for another zettel within the same Zettelstore is just the [[zettel identifier|00001006050000]].
+To reference some content within a zettel, you can append a number sign character (""''#''"", ''U+0023'') and the name of the mark to the zettel identifier.
+The resulting reference is called ""zettel reference"".
+
+To specify some material outside the Zettelstore, just use an normal Uniform Resource Identifier (URI) as defined by [[RFC\ 3986|https://tools.ietf.org/html/rfc3986]].
+If the URL starts with the slash character (""/"", ''U+002F''), i.e. without scheme, user info, and host name, or if it starts with ""./"" or with ""../"", the reference will be treated as a ""local reference"", otherwise as an ""external reference"".
+
+The text in the second form is just a sequence of inline elements.
+
+=== Images
+To some degree, an image specification is conceptually not too far away from a link specification.
+Both contain a link specification and optionally some text.
+In contrast to a link, the link specification of an image must resolve to actual graphical image data.
+That data is read when rendered as HTML, and is embedded inside the zettel as an inline image.
+
+An image specification starts with two consecutive left curly bracket characters (""''{''"", ''U+007B'') and ends with two consecutive right curly bracket characters (""''}''"", ''U+007D'').
+The curly brackets delimits either a link specification or some text, a vertical bar character and the link specification, similar to a link.
+
+One difference to a link: if the text was not given, an empty string is assumed.
+
+The link specification must reference a graphical image representation if the image is about to be rendered.
+Supported formats are:
+
+* Portable Network Graphics (""PNG""), as defined by [[RFC\ 2083|https://tools.ietf.org/html/rfc2083]].
+* Graphics Interchange Format (""GIF"), as defined by [[https://www.w3.org/Graphics/GIF/spec-gif89a.txt]].
+* JPEG / JPG, defined by the //Joint Photographic Experts Group//.
+* Scalable Vector Graphics (SVG), defined by [[https://www.w3.org/Graphics/SVG/]]
+
+If the text is given, it will be interpreted as an alternative textual representation, to help persons with some visual disabilities.
+
+[[Attributes|00001007050000]] are supported.
+They must follow the last right curly bracket character immediately.
+One prominent example is to specify an explicit title attribute that is shown on certain web browsers when the zettel is rendered in HTML:
+
+%%Example:
+
+%%``{{External link|00000000030001}}{title=External width=30}`` is rendered as ::{{External link|00000000030001}}{title=External width=30}::{=example}.
+
+=== Footnotes
+
+A footnote starts with a left square bracket, followed by a circumflex accent (""''^''"", ''U+005E''), followed by some text, and ends with a right square bracket.
+
+Example:
+
+``Main text[^Footnote text.].`` is rendered in HTML as: ::Main text[^Footnote text.].::{=example}.
+
+=== Citation key
+
+A citation key references some external material that is part of a bibliografical collection.
+
+Currently, Zettelstore implements this only partially, it is ""work in progress"".
+
+However, the syntax is: starting with a left square bracket and followed by an at sign character (""''@''"", ''U+0040''), a the citation key is given.
+The key is typically a sequence of letters and digits.
+If a comma character (""'',''"", ''U+002C'') or a vertical bar character is given, the following is interpreted as inline elements.
+A right square bracket ends the text and the citation key element.
+
+=== Mark
+A mark allows to name a point within a zettel.
+This is useful if you want to reference some content in a bigger-sized zettel[^Other uses of marks will be given, if Zettelmarkup is extended by a concept called //transclusion//.].
+
+A mark starts with a left square bracket, followed by an exclamation mark character (""''!''"", ''U+0021'').
+Now the optional mark name follows.
+It is a (possibly empty) sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low-line character (""''_''"", ''U+005F'').
+The mark element ends with a right square bracket.
+
+Examples:
+* ``[!]`` is a mark without a name, the empty mark.
+* ``[!mark]`` is a mark with the name ""mark"".

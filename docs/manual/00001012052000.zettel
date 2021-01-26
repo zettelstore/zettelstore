@@ -1,0 +1,23 @@
+id: 00001012052000
+title: API: Sort the list of zettel metadata
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210112113839
+
+If not specified, the list of zettel is sorted descending by the value of the zettel identifier.
+The highest zettel identifier, which is a number, comes first.
+You change that with the ""''_sort''"" query parameter.
+Alternatively, you can also use the ""''_order''"" query parameter.
+It is an alias.
+
+Its value is the name of a metadata key, optionally prefixed with a hyphen-minus character (""-"", ''U+002D'').
+According to the [[type|00001006030000]] of a metadata key, the list of zettel is sorted.
+If hyphen-minus is given, the order is descending, else ascending.
+
+If you want a random list of zettel, specify the value ""_random"" in place of the metadata key.
+""''_sort=_random''"" (or ""''_order=_random''"") is the query parameter in this case.
+If can be combined with ""[[''_limit=1''|00001012051800]]"" to obtain a random zettel.
+
+Currently, only the first occurrence of ''_sort'' is recognized.
+In the future it will be possible to specify a combined sort key.

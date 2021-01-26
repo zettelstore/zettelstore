@@ -1,0 +1,41 @@
+title: Visibility rules for zettel
+role: manual
+tags: #authorization #configuration #manual #security #zettelstore
+syntax: zmk
+modified: 20201221174224
+
+For every zettel you can specify under which condition the zettel is visible to others.
+This is controlled with the metadata key [[''visibility''|00001006020000#visibility]].
+The following values are supported:
+
+; [!public]""public""
+: The zettel is visible to everybody, even if the user is not authenticated.
+; [!login]""login""
+: Only an authenticated user can access the zettel.
+
+  This is the default value for [[''default-visibility''|00001004020000#default-visibility]].
+; [!owner]""owner""
+: Only the owner of the Zettelstore can access the zettel.
+
+  This is for zettel with sensitive content, e.g. the [[configuration zettel|00001004020000]] or the various zettel that contains the templates for rendering zettel in HTML.
+; [!expert]""expert""
+: Only the owner of the Zettelstore can access the zettel, if runtime configuration [[''expert-mode''|00001004020000#expert-mode]] is set to a boolean true value.
+
+  This is for zettel with sensitive content that might irritate the owner.
+  Computed zettel with internal runtime information are examples for such a zettel.
+; [!simple-expert]""simple-expert""
+: The owner of the Zettelstore cab access the zettel, if expert mode is enabled, or if authentication is disabled and the Zettelstore is started without any command.
+
+  The reason for this is to show all computed zettel to an user that started the Zettestore in simple mode.
+  Many computed zettel should be given in error reporting and a new user might not be able to enable expert mode.
+
+When you install a Zettelstore, only two zettel have visibility ""public"".
+The first zettel is the zettel that contains CSS for displaying the web interface.
+This is to ensure that the web interface looks nice even for not authenticated users.
+The other zettel is the zettel containing the [[version|00000000000001]] of the Zettelstore.
+
+Please note: if authentication is not enabled, every user has the same rights as the owner of a Zettelstore.
+This is also true, if the Zettelstore runs additionally in [[read-only mode|00001004010000#read-only-mode]].
+In this case, the [[runtime configuration zettel|00001004020000]] is shown (its visibility is ""owner"").
+The [[startup configuration|00001004010000]] is not shown, because the associated computed zettel with identifier ''00000000000099'' is stored with the visibility ""expert"".
+If you want to show such a zettel, you must set ''expert-mode'' to true.

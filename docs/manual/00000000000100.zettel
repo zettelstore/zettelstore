@@ -1,0 +1,13 @@
+id: 00000000000100
+title: Zettelstore Runtime Configuration
+role: configuration
+syntax: none
+default-copyright: (c) 2020-2021 by Detlef Stern <ds@zettelstore.de>
+default-license: EUPL-1.2-or-later
+default-visibility: public
+footer-html: <hr><p><a href="/imprint/">Imprint</a>/<a href="/privacy/">Privacy</a></p>
+modified: 20210111182407
+site-name: Zettelstore Manual
+start: 00001000000000
+visibility: owner
+

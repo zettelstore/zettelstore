@@ -1,0 +1,18 @@
+title: Formats available by the API
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+A zettel representation can be encoded in various formats for further processing.
+
+* [[json|00001012920501]] (default)
+* [[djson|00001012920503]]
+* [[html|00001012920510]]
+* [[native|00001012920513]]
+* [[raw|00001012920516]]
+* [[text|00001012920519]]
+* [[zmk|00001012920522]]
+
+Planned formats:
+; ''pjson''
+: Encoder that emits JSON data that can be fed into [[pandoc|https://pandoc.org]] for further processing.

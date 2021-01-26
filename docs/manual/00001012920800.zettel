@@ -1,0 +1,18 @@
+title: Values to specify zettel parts
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+role: manual
+
+When working with [[zettel|00001006000000]], you could work with the whole zettel, with its metadata, or with its content:
+; [!zettel]''zettel''
+: Specifies that you work with a zettel as a whole.
+  Contains identifier, metadata, and content of a zettel.
+; [!meta]''meta''
+: Specifies that you only want to cope with the metadata of a zettel.
+  Contains identifier and metadata of a zettel.
+; [!content]''content''
+: Specifies that you are only interested in the zettel content.
+  Contains identifier and content of a zettel.
+; [!id]''id''
+: States that you just want the zettel identifier and the URL of the zettel.
+  Only valid for JSON-based encoding formats[^[[json|00001012920501]] and [[djson|00001012920503]].].

@@ -1,0 +1,57 @@
+title: API: Retrieve metadata and content of an existing zettel
+tags: #api #manual #zettelstore
+syntax: zmk
+role: manual
+
+The endpoint to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+
+For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/z/00001012053400''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
+If successful, the output is a JSON object:
+```sh
+# curl http://127.0.0.1:23123/z/00001012053400
+{"id":"00001012053400","url":"/z/00001012053400","meta":{"title":"API: Retrieve data for an exisiting zettel","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual","copyright":"(c) 2020 by Detlef Stern <ds@zettelstore.de>","lang":"en","license":"CC BY-SA 4.0"},"content":"The endpoint to work with a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).\n\nFor example, ...
+```
+Similar to listing all or some zettel, you can provide a query parameter ''_format=[[FORMAT|00001012920500]]'' to select a different encoding format.
+The default encoding format is ""[[json|00001012920501]]"".
+Others are ""[[djson|00001012920503]]"", ""[[html|00001012920510]]"", and some more.
+```sh
+# curl 'http://127.0.0.1:23123/z/00001012053400?_format=html'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>API: Retrieve data for an exisiting zettel</title>
+<meta name="keywords" content="api, manual, zettelstore">
+<meta name="zs-syntax" content="zmk">
+<meta name="zs-role" content="manual">
+<meta name="copyright" content="(c) 2020 by Detlef Stern <ds@zettelstore.de>">
+<meta name="license" content="CC BY-SA 4.0">
+</head>
+<body>
+<p>The endpoint to work with a specific zettel is <span style="font-family:monospace">/z/{ID}</span>, where <span style="font-family:monospace">{ID}</span> is a placeholder for the zettel identifier (14 digits).</p>
+...
+```
+
+You also can use the query parameter ''_part=[[PART|00001012920800]]'' to specify which parts of a zettel must be encoded.
+In this case, its default value is ''zettel''.
+```sh
+# curl 'http://192.168.17.7:23121/z/00001012053400?_format=html&_part=meta'
+<meta name="zs-title" content="API: Retrieve data for an exisiting zettel">
+<meta name="keywords" content="api, manual, zettelstore">
+<meta name="zs-syntax" content="zmk">
+<meta name="zs-role" content="manual">
+```
+(Note that metadata of the whole zettel contains some computed values, such as ''"copyright"'' and ''"license"'', while the metadata for ''_part=meta'' just contain the explicitly specified metadata.)
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the zettel identifier did not consist of exactly 14 digits or ''_format'' / ''_part'' contained illegal values.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.

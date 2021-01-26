@@ -1,0 +1,85 @@
+id: 00001004020000
+title: Configure the running Zettelstore
+role: manual
+tags: #configuration #manual #zettelstore
+syntax: zmk
+modified: 20201231131204
+
+You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
+This zettel is called ""configuration zettel"".
+The following metadata keys change the appearance / behavior of Zettelstore:
+
+; [!default-copyright]''default-copyright''
+: Copyright value to be used when rendering content.
+  Can be overwritten in a zettel with [[meta key|00001006020000]] ''copyright''.
+
+  Default: (the empty string).
+; [!default-lang]''default-lang''
+: Default language to be used when displaying content.
+  Can be overwritten in a zettel with [[meta key|00001006020000]] ''lang''. Default: ''en''.
+
+  This value is also used to specify the language for all non-zettel content,
+  e.g. lists or search results.
+
+  Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
+; [!default-license]''default-license''
+: License value to be used when rendering content.
+  Can be overwritten in a zettel with [[meta key|00001006020000]] ''license''.
+  Default: (the empty string).
+; [!default-role]''default-role''
+: Role to be used, if a zettel specifies no ''role'' [[meta key|00001006020000]].
+  Default: ''zettel''.
+; [!default-syntax]''default-syntax''
+: Syntax to be used, if a zettel specifies no ''syntax'' [[meta key|00001006020000]].
+  Default: ''zmk'' (""Zettelmarkup"").
+; [!default-title]''default-title''
+: Title to be used, if a zettel specifies no ''title'' [[meta key|00001006020000]].
+  Default: ''Untitled''.
+
+  You can use all [[inline-structured elements|00001007040000]] of Zettelmarkup.
+; [!default-visibility]''default-visibility''
+: Visibility to be used, if zettel does not specify a value for the [[''visibility''|00001006020000#visibility]] metadata key.
+  Default: ''login''.
+; [!expert-mode]''expert-mode''
+: If set to a boolean true value, all zettel with [[visibility ""expert""|00001010070200]] will be shown (to the owner, if authentication is enabled; to all, otherwise).
+  This affects most computed zettel.
+  Default: False.
+; [!footer-html]''footer-html''
+: Contains some HTML code that will be included into the footer of each Zettelstore web page.
+  It only affects the [[web user interface|00001014000000]].
+  Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
+  Default: (the empty string).
+; [!marker-external]''marker-external''
+: Some HTML code that is displayed after a reference to external material.
+  Default: ''&\#8599;&\#xfe0e;'', to display a ""&#8599;&#xfe0e;"" sign[^The string ''&\#xfe0e;'' is needed to enforce the sign on all platforms.].
+; [!list-page-size]''list-page-size''
+: If set to a value greater than zero, specifies the number of items shown in WebUI lists.
+  Basically, this is the list of all zettel (possibly restricted) and the list of search results.
+  Default: ''0''.
+; [!site-name]''site-name''
+: Name of the Zettelstore instance.
+  Will be used when displaying some lists.
+  Default: ''Zettelstore''.
+; [!start]''start''
+: Specifies the ID of the zettel, that should be presented for the default view.
+  If not given or if the ID does not identify a zettel, the list of all zettel is shown.
+; [!yaml-header]''yaml-header''
+: If true, metadata and content will be separated by ''-\--\\n'' instead of an empty line (''\\n\\n'').
+  Default: ''false''.
+
+  You will probably use this key, if you are working with another software
+  processing [[Markdown|https://daringfireball.net/projects/markdown/]] that
+  uses a subset of [[YAML|https://yaml.org/]] to specify metadata.
+; [!zettel-file-syntax]''zettel-file-syntax''
+: If you create a new zettel with a syntax different to ""meta"" and ""zmk"",
+  Zettelstore will store the zettel as two files: one for the metadata
+  (file extension ''.meta'') and one for the content (file extension based on
+  the syntax value).
+  If you want to specify alternative syntax values, for which you want new zettel to be stored in one file (file extension ''.zettel''), you can use this key.
+  All values are case-insensitive, duplicates are removed.
+
+  For example, you could use this key if you're working with Markdown syntax
+  and you want to store metadata and content in one ''.zettel'' file.
+
+  If ''yaml-header'' evaluates to true, a zettel is always stored in one
+  ''.zettel'' file.

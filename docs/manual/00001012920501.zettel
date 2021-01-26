@@ -1,0 +1,47 @@
+title: JSON Format
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+
+This is the default representation of a zettel or a list of zettel.
+Basically, user provided data is encoded as a string (zettel content and metadata values),
+The metadata and some other structuring data is encoded a JSON object.
+
+The JSON objects contains various name/value pairs, depending which content should be encoded:
+
+* ''"id"'': the [[zettel identifier|00001006050000]], as a string.
+* ''"url"'': the base URL to the zettel, as a string.
+* ''"meta"'': the metadata of the zettel, as an JSON object. See below for details.
+* ''"encoding"'' and ''"content"'': the actual content of the zettel. See below for details.
+
+''"id"'' and ''"url"'' are always sent to the client.
+It depends on the value of the required [[zettel part|00001012920800]], whether ''"meta"'' or ''"content"'' or both are sent.
+
+For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
+
+* [[../z/00001012920501?_part=id]],
+* [[../z/00001012920501?_part=zettel]],
+* [[../z/00001012920501?_part=meta]],
+* [[../z/00001012920501?_part=content]].
+
+If transferred via HTTP, the content type will be ''application/json''.
+
+=== Metadata
+This ia a JSON object, that maps [[metadata keys|00001006010000]] to their values.
+Their values are encoded as strings, even if they contain a number (or something else).
+
+You can always expect the keys ''"title"'', ''"tags"'', ''"syntax"'', and ''"role"'', together with their values.
+The Zettelstore provides default values for these values, if they are not set for a zettel.
+
+There is a list of [[supported metadata keys|00001006020000]].
+
+=== Content
+When the content is text-only, it is encoded as a plain string with an ''"encoding"'' value of ''""'' (empty string).
+
+If the content contains binary content:
+
+* ''"encoding"'' specifies the string encoding of the content.
+  Currently, only the value ''"base64"'' is supported (as described in [[RFC4648, section 4|https://tools.ietf.org/html/rfc4648#section-4]].
+* ''"value"'' is a string that contains the encoded binary content.
+
+For example, if the content just consists of three zero bytes, it will be encoded as ``(...),"encoding":"base64","value":"AAAA"``{=json}.

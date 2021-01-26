@@ -1,0 +1,45 @@
+title: Zettelmarkup: Literal-like formatting
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+role: manual
+
+There are some reasons to mark text that should be rendered as uninterpreted:
+* Mark text as literal, sometimes as part of a program.
+* Mark text as input you give into a computer via a keyboard.
+* Mark text as output from some computer, e.g. shown at the command line.
+
+=== Literal text
+Literal text somehow relates to [[verbatim blocks|00001007030500]]: their content should not be interpreted further, but may be rendered special.
+It is specified by two grave accent characters (""''`''"", ''U+0060''), followed by the text, followed by again two grave accent characters, optionally followed by an [[attribute|00001007050000]] specification.
+Similar to the verbatim block, the literal element allows also a modifier letter grave accent (""''ˋ''"", ''U+02CB'') as an alternative to the grave accent character[^On some devices, such as an iPhone / iPad, a grave accent character is harder to enter and is often confused with a modifier letter grave accent.].
+However, all four characters must be the same.
+
+The literal element supports the default attribute: when given, all spaces in the text are rendered in HTML as open box characters (""''&#x2423;''"", ''U+2423'').
+The use of a generic attribute allwos to specify a (programming) language that controls syntax colouring when rendered in HTML.
+
+If you want to specify a grave accent character in the text, either use modifier grave accent characters as delimiters for the element, or place a backslash character before the grave accent character you want to use inside the element.
+If you want to enter a backslash character, you need to enter two of these.
+
+Examples:
+* ``\`\`abc def\`\``` is rendered in HTML as ::``abc def``::{=example}.
+* ``\`\`abc def\`\`{-}`` is rendered in HTML as ::``abc def``{-}::{=example}.
+* ``\`\`abc\\\`def\`\``` is rendered in HTML as ::``abc\`def``::{=example}.
+* ``\`\`abc\\\\def\`\``` is rendered in HTML as ::``abc\\def``::{=example}.
+
+=== Keyboard input
+To mark text as input into a computer program, delimit your text with two plus sign characters (""''+''"", ''U+002B'') on each side.
+
+Example:
+* ``++STRG-C++`` renders in HTML as ::++STRG-C++::{=example}.
+* ``++STRG C++{-}`` renders in HTML as ::++STRG C++{-}::{=example}.
+
+Attributes can be specified, the default attribute has the same semantic as for literal text.
+
+=== Computer output
+To mark text as output from a computer program, delimit your text with two equal sign characters (""''=''"", ''U+003D'') on each side.
+
+Examples:
+* ``==The result is: 42==`` renders in HTML as ::==The result is: 42==::{=example}.
+* ``==The result is: 42=={-}`` renders in HTML as ::==The result is: 42=={-}::{=example}.
+
+Attributes can be specified, the default attribute has the same semantic as for literal text.
