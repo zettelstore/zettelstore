@@ -1,25 +1,26 @@
 <title>Home</title>
-<h1>Zettelstore</h1>
+
+<b>Zettelstore</b> is a software that collects and relates your notes
+(&ldquo;zettel&rdquo;) to represent and enhance your knowledge. It helps with
+many tasks of personal knowledge management by explicitly supporting the
+[href="https://en.wikipedia.org/wiki/Zettelkasten|Zettelkasten method]. The
+method is based on creating many individual notes, each with one idea or
+information, that are related to each other. Since knowledge is typically build
+up gradually, one major focus is a long-term store of these notes, hence the
+name &ldquo;Zettelstore&rdquo;.
+
 To get an initial impression, take a look at the <a href="/manual/">manual</a>.
 It is a live example of the zettelstore software, running in read-only mode.
 
-You can <a href="./download.wiki">download</a> executables of the zettelstore
-software. They are the same build as in the live example.
+The software, including the manual, is licensed under the
+[/file?name=LICENSE.txt&ci=trunk|European Union Public License 1.2 (or later)].
 
-The source code of the software is available
-<a href="../../../dir?ci=trunk">here</a> on this site.
-If you want do download the source code as a Tarball or a ZIP file, you must
-<a href="../../../login">login</a> as user &quot;anonymous&quot;.
-You will find the appropriate links for each
-<a href="../../../info?name=trunk">Check-in</a>.
-
-The source code is also mirrored on
-<a href="https://github.com/zettelstore/zettelstore">GitHub</a>.
-The <a href="https://github.com/zettelstore/zettelstore-manual">manual</a>
-is currently stored on GitHub too, but this will change in the future when the
-manual is part of the software.
-
-Both the source code and the manual is licensed under the
-<a href="../../../file?name=LICENSE.txt&ci=trunk">European Union Public License 1.2 (or later)</a>.
-
-<a href="https://twitter.com/zettelstore">Stay tuned</a>&hellip;
+[https://twitter.com/zettelstore|Stay tuned]&hellip;
+<hr>
+<h3>Latest Release: 0.0.8 (2020-12-23)</h3>
+  *  [./download.wiki|Download]
+  *  [./changes.wiki#0_0_8|Change Summary]
+  *  [./plan.wiki|Limitations and Planned Improvements]
+  *  [/dir?ci=trunk|Source Code] (mirrored on <a href="https://github.com/zettelstore/zettelstore">GitHub</a>)
+  *  [/download|Download the source code] as a Tarball or a ZIP file
+     (you must [/login|login] as user &quot;anonymous&quot;).

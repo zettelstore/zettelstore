@@ -1,0 +1,30 @@
+<title>Limitations and Planned Improvements</title>
+
+Here is a list of some shortcomings of Zettelstore.
+They are planned to be solved.
+
+<h3>Serious limitations</h3>
+  *  Content with binary data (e.g. a GIF, PNG, or JPG file) cannot be created
+     nor modified via the standard web interface. As a workaround, you should
+     place your file into the directory where your zettel are stored. Make sure
+     that the file name starts with unique 14 digits that make up the zettel
+     identifier.
+  *  Automatic lists and transclusions are not supported in Zettelmarkup.
+  *  The search function uses only the metadata of a zettel, not its content.
+  *  &hellip;
+
+<h3>Smaller limitations</h3>
+  *  Quoted attribute values are not yet supported in Zettelmarkup:
+     <code>{key="value with space"}</code>.
+  *  The <tt>file</tt> sub-command currently does not support output format
+     &ldquo;json&rdquo;.
+  *  The horizontal tab character (<tt>U+0009</tt>) is not supported.
+  *  Missing support for citation keys.
+  *  &hellip;
+
+<h3>Planned improvements</h3>
+  *  Support for mathematical content is missing, e.g. <code>$$F(x) &=
+     \\int^a_b \\frac{1}{3}x^3$$</code>.
+  *  Render zettel in <a href="https://pandoc.org">pandoc's</a> JSON version of
+     their native AST to make pandoc an external renderer for Zettelstore.
+  *  &hellip;

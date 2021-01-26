@@ -1,0 +1,215 @@
+<title>Change Log</title>
+
+<a name="0_0_9"></a>
+<h2>Changes for Version 0.0.9 (planned)</h2>
+This is the first version that is managed by [https://fossil-scm.org|Fossil] instead
+of GitHub. To access older versions, use the Git repository under
+[https://github.com/zettelstore/zettelstore-github|zettelstore-github].
+
+<h3>Server / API</h3>
+  *  (major) Support for property metadata.
+             Metadata key <tt>published</tt> is the first example of such a property.
+  *  (major) A background activity (called <i>indexer</i>) continuously monitors
+             zettel changes to establish the reverse direction of found internal links.
+             This affects the new metadata keys <tt>precursor</tt> and <tt>folge</tt>.
+             A user specifies the precursor of a zettel and the indexer computes the
+             property metadata for <a href="https://forum.zettelkasten.de/discussion/996/definition-folgezettel">Folgezettel</a>.
+             Metadata keys with type &ldquo;Identifier&rdquo; or &ldquo;IdentifierSet&rdquo;
+             that have no inverse key (like <tt>precursor</tt> and <tt>folge</tt>
+             with add to the key <tt>forward</tt> that also collects all internal
+             links within the content. The computed inverse is <tt>backward</tt>, which provides all backlinks.
+             The key <tt>back</tt> is computed as the value of <tt>backward</tt>, but without forward links.
+             Therefore, <tt>back</tt> is something like the list of &ldquo;smart backlinks&rdquo;.
+  *  (minor) If Zettelstore is being stopped, an appropriate message is written in the console log.
+  *  (minor) New computed zettel with enviromental data, the list of supported meta data keys,
+             and statistics about all configured zettel places.
+             Some other computed zettel got a new identifier (to make room for other variant).
+  *  (minor) Remove zettel <tt>00000000000004</tt>, which contained the Go version that produced the Zettelstore executable.
+             It was too specific to the current implementation.
+             This information is now included in zettel <tt>00000000000006</tt> (<i>Zettelstore Environment Values</i>).
+  *  (minor) Predefined templates for new zettel do not contain any value for attribute <tt>visibility</tt> any more.
+  *  (minor) Add a new metadata key type called &ldquo;Zettelmarkup&rdquo;.
+             It is a non-empty string, that will be formatted with Zettelmarkup.
+             <tt>title</tt> and <tt>default-title</tt> have this type.
+  *  (major) Rename zettel syntax &ldquo;meta&rdquo; to &ldquo;none&rdquo;.
+             Please update the <i>Zettelstore Runtime Configuration</i> and all other zettel that previously used the value &ldquo;meta&rdquo;.
+             Other zettel are typically user zettel, used for authentication.
+             However, there is no real harm, if you do not update these zettel.
+             In this case, the metadata is just not presented when rendered.
+             Zettelstore will still work.
+  *  (minor) Login will take at least 500 milliseconds to mitigate login attacks.
+             This affects both the API and the WebUI.
+  *  (minor) Add a sort option &ldquo;_random&rdquo; to produce a zettel list in random order.
+             <tt>_order</tt> / <tt>order</tt> are now an aliases for the query parameters <tt>_sort</tt> / <tt>sort</tt>.
+
+<h3>WebUI</h3>
+  *  (major) HTML template zettel for WebUI now use <a href="https://mustache.github.io/">Mustache</a>
+             syntax instead of previously used <a href="https://golang.org/pkg/html/template/">Go template</a> syntax.
+             This allows these zettel to be used, even when there is another Zettelstore implementation, in another programming language.
+             Mustache is available for approx. 48 programming languages, instead of only one for Go templates.
+             <b>If you modified your templates, you <i>must</i> adapt them to the new syntax.
+             Otherwise the WebUI will not work.</b>
+  *  (major) Show zettel identifier of folgezettel and precursor zettel in the header of a rendered zettel.
+             If a zettel has backlinks, they are shown at the botton of the page
+             (ldquo;Links to this zettel&rdquo;).
+  *  (minor) All property metadata, even computed metadata is shown in the info page of a zettel.
+  *  (minor) Rendering of metadata keys <tt>title</tt> and <tt>default-title</tt> in info page changed to a full HTML output for these Zettelmarkup encoded values.
+  *  (minor) Always show the zettel identifier on the zettel detail view.
+             Previously, the identifier was not shown if the zettel was not editable.
+  *  (minor) Do not show computed metadata in edit forms anymore.
+
+<a name="0_0_8"></a>
+<h2>Changes for Version 0.0.8 (2020-12-23)</h2>
+<h3>Server / API</h3>
+  *  (bug) Zettel files with extension <tt>.jpg</tt> and without metadata will get a <tt>syntax</tt> value &ldquo;jpg&rdquo;.
+           The internal data structure got the same value internally, instead of &ldquo;jpeg&rdquo;.
+           This has been fixed for all possible alternative syntax values.
+  *  (bug) If a file, e.g. an image file like <tt>20201130190200.jpg</tt>, is added to the directory place,
+  *        its metadata are just calculated from the information available.
+           Updated metadata did not find its way into the place, because the <tt>.meta</tt> file was not written.
+           This has been fixed.
+  *  (bug) If just the <tt>.meta</tt> file was deleted manually, the zettel was assumed to be missing.
+           A workaround is to restart the software.
+           This has been fixed.
+           If the <tt>.meta</tt> file is deleted, metadata is now calculated in the same way when the <tt>.meta</tt> file is non-existing at the start of the software.
+  *  (bug) A link to the current zettel, only using a fragment (e.g. <code>&#91;&#91;Title|#title]]</code>) is now handled correctly as a zettel link (and not as a link to external material).
+  *  (minor) Allow zettel to be marked as &ldquo;read only&rdquo;.
+             This is done through the metadata key <tt>read-only</tt>.
+  *  (bug) When renaming a zettel, check all places for the new zettel identifier, not just the first place.
+           Otherwise it will be possible to shadow a read-only zettel from a next place, effectively modifying it.
+  *  (minor) Add support for a configurable default value for metadata key <tt>visibility</tt>.
+  *  (bug) If <tt>list-page-size</tt> is set to a relatively small value and the authenticated user is <i>not</i> the owner,
+  *        some zettel were not shown in the list of zettel or were not returned by the API.
+  *  (minor) Add support for new visibility &ldquo;expert&rdquo;.
+             An owner becomes an expert, if the runtime configuration key <tt>expert-mode</tt> is set to true.
+  *  (major) Add support for computed zettel.
+             These zettel have an identifier less than <tt>0000000000100</tt>.
+             Most of them are only visible, if <tt>expert-mode</tt> is enabled.
+  *  (bug) Fixes a memory leak that results in too many open files after approx. 125 reload operations.
+  *  (major) Predefined templates for new zettel got an explicit value for visibility: &ldquo;login&rdquo;.
+             Please update these zettel if you modified them.
+  *  (major) Rename key <tt>readonly</tt> of <i>Zettelstore Startup Configuration</i> to <tt>read-only-mode</tt>.
+             This was done to avoid some confusion with the the zettel metadata key <tt>read-only</tt>.
+             <b>Please adapt your startup configuration.
+             Otherwise your Zettelstore will be accidentally writable.</b>
+  *  (minor) References starting with &ldquo;./&rdquo; and &ldquo;../&rdquo; are treated as a local reference.
+             Previously, only the prefix &ldquo;/&rdquo; was treated as a local reference.
+  *  (major) Metadata key <tt>modified</tt> will be set automatically to the current local time if a zettel is updated through Zettelstore.
+             <b>If you used that key previously for your own, you should rename it before you upgrade.</b>
+  *  (minor) The new visibility value &ldquo;simple-expert&rdquo; ensures that many computed zettel are shown for new users.
+             This is to enable them to send useful bug reports.
+  *  (minor) When a zettel is stored as a file, its identifier is additionally stored within the metadata.
+             This helps for better robustness in case the file names were corrupted.
+             In addition, there could be a tool that compares the identifier with the file name.
+
+<h3>WebUI</h3>
+  *  (minor) Remove list of tags in &ldquo;List Zettel&rdquo; and search results.
+             There was some feedback that the additional tags were not helpful.
+  *  (minor) Move zettel field "role" above "tags" and move "syntax" more to "content".
+  *  (minor) Rename zettel operation &ldquo;clone&rdquo; to &ldquo;copy&rdquo;.
+  *  (major) All predefined HTML templates have now a visibility value &ldquo;expert&rdquo;.
+             If you want to see them as an non-expert owner, you must temporary enable <tt>expert-mode</tt> and change the <tt>visibility</tt> metadata value.
+  *  (minor) Initial support for <a href="https://zettelkasten.de/posts/tags/folgezettel/">Folgezettel</a>.
+             If you click on &ldquo;Folge&rdquo; (detail view or info view), a new zettel is created with a reference (<tt>precursor</tt>) to the original zettel.
+             Title, role, tags, and syntax are copied from the original zettel.
+  *  (major) Most predefined zettel have a title prefix of &ldquo;Zettelstore&rdquo;.
+  *  (minor) If started in simple mode, e.g. via double click or without any command, some information for the new user is presented.
+             In the terminal, there is a hint about opening the web browser and use a specific URL.
+             A <i>Welcome zettel</i> is created, to give some more information.
+             (This change also applies to the server itself, but it is more suited to the WebUI user.)
+
+<a name="0_0_7"></a>
+<h2>Changes for Version 0.0.7 (2020-11-24)</h2>
+  *  With this version, Zettelstore and this manual got a new license, the
+     <a href="https://joinup.ec.europa.eu/collection/eupl">European Union Public Licence</a> (EUPL), version 1.2 or later.
+     Nothing else changed.
+     If you want to stay with the old licenses (AGPLv3+, CC BY-SA 4.0),
+     you are free to fork from the previous version.
+
+<a name="0_0_6"></a>
+<h2>Changes for Version 0.0.6 (2020-11-23)</h2>
+<h3>Server</h3>
+  *  (major) Rename identifier of <i>Zettelstore Runtime Configuration</i> to <tt>00000000000100</tt> (previously <tt>00000000000001</tt>).
+             This is done to gain some free identifier with smaller number to be used internally.
+             <b>If you customized this zettel, please make sure to rename it to the new identifier.</b>
+  *  (major) Rename the two essential metadata keys of a user zettel to <tt>credential</tt> and <tt>user-id</tt>.
+             The previous values were <tt>cred</tt> and <tt>ident</tt>.
+             <b>If you enabled user authentication and added some user zettel, make sure to change them accordingly.
+             Otherwise these users will not authenticated any more.</b>
+  *  (minor) Rename the scheme of the place URL where predefined zettel are stored to &ldquo;const&rdquo;.
+             The previous value was &ldquo;globals&rdquo;.
+
+<h3>Zettelmarkup</h3>
+  *  (bug) Allow to specify a <i>fragment</i> in a reference to a zettel.
+           Used to link to an internal position within a zettel.
+           This applies to CommonMark too.
+
+<h3>API</h3>
+  *  (bug) Encoding binary content in format &ldquo;json&rdquo; now results in valid JSON content.
+  *  (bug) All query parameter of filtering a list must be true, regardless if a specific key occurs more than one or not.
+  *  (minor) Encode all inherited meta values in all formats except &ldquo;raw&rdquo;.
+             A meta value is called <i>inherited</i> if there is a key starting with <tt>default-</tt> in the <i>Zettelstore Runtime Configuration</i>.
+             Applies to WebUI also.
+  *  (minor) Automatic calculated identifier for headings (only for &ldquo;html&rdquo;, &ldquo;djson&rdquo;, &ldquo;native&rdquo; format and for the Web user interface).
+             You can use this to provide a zettel reference that links to the heading, without specifying an explicit mark (<code>&#91;!mark]</code>).
+  *  (major) Allow to retrieve all references of a given zettel.
+
+<h3>Web user interface (WebUI)</h3>
+  *  (minor) Focus on the first text field on some forms (new zettel, edit zettel, rename zettel, login)
+  *  (major) Adapt all HTML templates to a simpler structure.
+  *  (bug) Rendered wrong URLs for internal links on info page.
+  *  (bug) If a zettel contains binary content it cannot be cloned.
+           For such a zettel only the metadata can be changed.
+  *  (minor) Non-zettel references that neither have an URL scheme, user info, nor host name,
+             are considered &ldquo;local references&rdquo; (in contrast to &ldquo;zettel references&rdquo; and &ldquo;external references&rdquo;).
+             When a local reference is displayed as an URL on the WebUI, it will not opened in a new window/tab.
+             They will receive a <i>local</i> marker, when encoded as &ldquo;djson&rdquo; or &ldquo;native&rdquo;.
+             Local references are listed on the <i>Info page</i> of each zettel.
+  *  (minor) Change the default value for some visual sugar placed after an external URL to <tt>&\#8599;&\#xfe0e;</tt> (&ldquo;&#8599;&#xfe0e;&rdquo;).
+             This affects the former key <tt>icon-material</tt> of the <i>Zettelstore Runtime Configuration</i>, which is renamed to <tt>marker-external</tt>.
+  *  (major) Allow multiple zettel to act as templates for creating new zettel.
+             All zettel with a role value &ldquo;new-template&rdquo; act as a template to create a new zettel.
+             The WebUI menu item &ldquo;New&rdquo; changed to a drop-down list with all those zettel, ordered by their identifier.
+             All metadata keys with the prefix <tt>new-</tt> will be translated to a new or updated keys/value without that prefix.
+             You can use this mechanism to specify a role for the new zettel, or a different title.
+             The title of the template zettel is used in the drop-down list.
+             The initial template zettel &ldquo;New Zettel&rdquo; has now a different zettel identifier
+             (now: <tt>00000000091001</tt>, was: <tt>00000000040001</tt>).
+             <b>Please update it, if you changed that zettel.</b>
+  *  (minor) When a page should be opened in a new windows (e.g. for external references),
+             the web browser is instructed to decouple the new page from the previous one for privacy and security reasons.
+             In detail, the web browser is instructed to omit referrer information and to omit a JS object linking to the page that contained the external link.
+  *  (minor) If the value of the <i>Zettelstore Runtime Configuration</i> key <tt>list-page-size</tt> is greater than zero,
+             the number of WebUI list elements will be restricted and it is possible to change to the next/previous page to list more elements.
+  *  (minor) Change CSS to enhance reading: make <code>line-height</code> a little smaller (previous: 1.6, now 1.4) and move list items to the left.
+
+<a name="0_0_5"></a>
+<h2>Changes for Version 0.0.5 (2020-10-22)</h2>
+  *  Application Programming Interface (API) to allow external software to retrieve zettel data from the Zettelstore.
+  *  Specify places, where zettel are stored, via an URL.
+  *  Add support for a custom footer.
+
+<a name="0_0_4"></a>
+<h2>Changes for Version 0.0.4 (2020-09-11)</h2>
+  *  Optional user authentication/authorization.
+  *  New sub-commands <tt>file</tt> (use Zettelstore as a command line filter), <tt>password</tt> (for authentication), and <tt>config</tt>.
+
+<a name="0_0_3"></a>
+<h2>Changes for Version 0.0.3 (2020-08-31)</h2>
+  *  Starting Zettelstore has been changed by introducing sub-commands.
+     This change is also reflected on the server installation procedures.
+  *  Limitations on renaming zettel has been relaxed.
+
+<a name="0_0_2"></a>
+<h2>Changes for Version 0.0.2 (2020-08-28)</h2>
+  *  Configuration zettel now has ID <tt>00000000000001</tt> (previously: <tt>00000000000000</tt>).
+  *  The zettel with ID <tt>00000000000000</tt> is no longer shown in any zettel list.
+     If you changed the configuration zettel, you should rename it manually in its file directory.
+  *  Creating a new zettel is now done by cloning an existing zettel.
+     To mimic the previous behaviour, a zettel with ID <tt>00000000040001</tt> is introduced.
+     You can change it if you need a different template zettel.
+
+<a name="0_0_1"></a>
+<h2>Changes for Version 0.0.1 (2020-08-21)</h2>
+  *  Initial public release.
+
