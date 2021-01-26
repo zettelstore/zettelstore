@@ -42,7 +42,7 @@ func init() {
 			cdata:    *cdata,
 			dir:      path,
 			dirRescan: time.Duration(
-				getQueryInt(u, "rescan", 60, 600, 30*24*60*60)) * time.Second,
+				getQueryInt(u, "rescan", 60, 3600, 30*24*60*60)) * time.Second,
 			fSrvs: uint32(getQueryInt(u, "worker", 1, 17, 1499)),
 		}
 		return &dp, nil
