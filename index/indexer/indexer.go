@@ -13,6 +13,7 @@ package indexer
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"zettelstore.de/z/ast"
@@ -35,8 +36,10 @@ type indexer struct {
 	started bool
 
 	// Stats data
-	lastReload  time.Time
-	sinceReload uint64
+	mx           sync.RWMutex
+	lastReload   time.Time
+	sinceReload  uint64
+	durLastIndex time.Duration
 }
 
 // New creates a new indexer.
@@ -98,8 +101,11 @@ func (idx *indexer) Update(ctx context.Context, m *meta.Meta) {
 }
 
 func (idx *indexer) ReadStats(st *index.IndexerStats) {
+	idx.mx.RLock()
 	st.LastReload = idx.lastReload
 	st.IndexesSinceReload = idx.sinceReload
+	st.DurLastIndex = idx.durLastIndex
+	idx.mx.RUnlock()
 	idx.store.ReadStats(&st.Store)
 }
 
@@ -126,10 +132,15 @@ func (idx *indexer) indexer(p indexerPort) {
 	timer := time.NewTimer(timerDuration)
 	ctx := context.WithValue(context.Background(), ctxKey, &ctxKey)
 	for {
+		start := time.Now()
+		changed := false
 		for {
 			zid, val := idx.ar.Dequeue()
 			if zid.IsValid() {
+				changed = true
+				idx.mx.Lock()
 				idx.sinceReload++
+				idx.mx.Unlock()
 				if !val {
 					idx.deleteZettel(zid)
 					continue
@@ -150,9 +161,16 @@ func (idx *indexer) indexer(p indexerPort) {
 			zids, err := p.FetchZids(ctx)
 			if err == nil {
 				idx.ar.Reload(nil, zids)
+				idx.mx.Lock()
 				idx.lastReload = time.Now()
 				idx.sinceReload = 0
+				idx.mx.Unlock()
 			}
+		}
+		if changed {
+			idx.mx.Lock()
+			idx.durLastIndex = time.Now().Sub(start)
+			idx.mx.Unlock()
 		}
 
 		select {

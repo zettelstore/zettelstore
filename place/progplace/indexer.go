@@ -41,6 +41,7 @@ func genIndexerC(*meta.Meta) string {
 	fmt.Fprintf(&sb, "|Zettel| %v\n", stats.Store.Zettel)
 	fmt.Fprintf(&sb, "|Last re-index| %v\n", stats.LastReload.Format("2006-01-02 15:04:05 -0700 MST"))
 	fmt.Fprintf(&sb, "|Indexes since last re-index| %v\n", stats.IndexesSinceReload)
+	fmt.Fprintf(&sb, "|Duration last index| %vms\n", stats.DurLastIndex.Milliseconds())
 	fmt.Fprintf(&sb, "|Zettel enrichments| %v\n", stats.Store.Updates)
 	return sb.String()
 }
