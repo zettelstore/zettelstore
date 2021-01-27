@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,14 +11,55 @@
 // Package api provides api handlers for web requests.
 package api
 
-import (
-	"net/url"
+import "net/url"
+
+type partType int
+
+const (
+	partUnknown partType = iota
+	partID
+	partMeta
+	partContent
+	partZettel
 )
 
-func getPart(q url.Values, defPart string) string {
-	part := q.Get("_part")
-	if len(part) == 0 {
-		part = defPart
+var partMap = map[string]partType{
+	"id":      partID,
+	"meta":    partMeta,
+	"content": partContent,
+	"zettel":  partZettel,
+}
+
+func getPart(q url.Values, defPart partType) partType {
+	p := q.Get("_part")
+	if len(p) == 0 {
+		return defPart
 	}
-	return part
+	if part, ok := partMap[p]; ok {
+		return part
+	}
+	return partUnknown
+}
+
+func (p partType) String() string {
+	switch p {
+	case partID:
+		return "id"
+	case partMeta:
+		return "meta"
+	case partContent:
+		return "content"
+	case partZettel:
+		return "zettel"
+	case partUnknown:
+		return "unknown"
+	}
+	return ""
+}
+
+func (p partType) DefString(defPart partType) string {
+	if p == defPart {
+		return ""
+	}
+	return p.String()
 }

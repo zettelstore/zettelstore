@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/strfun"
@@ -190,7 +191,7 @@ type getTitleFunc func(id.Zid, string) (string, int)
 
 func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, langOption encoder.Option) getTitleFunc {
 	return func(zid id.Zid, format string) (string, int) {
-		m, err := getMeta.Run(ctx, zid)
+		m, err := getMeta.Run(index.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if place.IsErrNotAllowed(err) {
 				return "", -1

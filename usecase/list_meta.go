@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -36,7 +36,6 @@ func NewListMeta(port ListMetaPort) ListMeta {
 }
 
 // Run executes the use case.
-func (uc ListMeta) Run(
-	ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+func (uc ListMeta) Run(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
 	return uc.port.SelectMeta(ctx, f, s)
 }

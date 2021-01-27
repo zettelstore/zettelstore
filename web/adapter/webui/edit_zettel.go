@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -35,7 +36,7 @@ func MakeEditGetZettelHandler(
 		}
 
 		ctx := r.Context()
-		zettel, err := getZettel.Run(ctx, zid)
+		zettel, err := getZettel.Run(index.NoEnrichContext(ctx), zid)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

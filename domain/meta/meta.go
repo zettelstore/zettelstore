@@ -68,7 +68,8 @@ func registerKey(name string, t *DescriptionType, usage keyUsage, inverse string
 	return name
 }
 
-func isComputed(name string) bool {
+// IsComputed returns true, if key denotes a computed metadata key.
+func IsComputed(name string) bool {
 	if kd, ok := registeredKeys[name]; ok {
 		return kd.IsComputed()
 	}
@@ -268,7 +269,7 @@ func (m *Meta) doPairs(first bool, allowComputed bool) []Pair {
 
 	keys := make([]string, 0, len(m.pairs)-len(result))
 	for k := range m.pairs {
-		if !firstKeySet[k] && (allowComputed || !isComputed(k)) {
+		if !firstKeySet[k] && (allowComputed || !IsComputed(k)) {
 			keys = append(keys, k)
 		}
 	}
@@ -296,7 +297,7 @@ func (m *Meta) Equal(o *Meta, allowComputed bool) bool {
 		return false
 	}
 	for k, v := range m.pairs {
-		if allowComputed || !isComputed(k) {
+		if allowComputed || !IsComputed(k) {
 			if vo, ok := o.pairs[k]; !ok || v != vo {
 				return false
 			}

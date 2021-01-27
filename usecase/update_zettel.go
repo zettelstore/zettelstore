@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 )
 
 // UpdateZettelPort is the interface used by this use case.
@@ -41,7 +42,7 @@ func NewUpdateZettel(port UpdateZettelPort) UpdateZettel {
 // Run executes the use case.
 func (uc UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasContent bool) error {
 	m := zettel.Meta
-	oldZettel, err := uc.port.GetZettel(ctx, m.Zid)
+	oldZettel, err := uc.port.GetZettel(index.NoEnrichContext(ctx), m.Zid)
 	if err != nil {
 		return err
 	}

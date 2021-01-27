@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -30,22 +31,27 @@ func MakeListMetaHandler(
 	parseZettel usecase.ParseZettel,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		q := r.URL.Query()
 		filter, sorter := adapter.GetFilterSorter(q, false)
-		metaList, err := listMeta.Run(r.Context(), filter, sorter)
+		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
+		part := getPart(q, partMeta)
+		ctx1 := ctx
+		if format == "html" || (filter == nil && sorter == nil && (part == partID || part == partContent)) {
+			ctx1 = index.NoEnrichContext(ctx1)
+		}
+		metaList, err := listMeta.Run(ctx1, filter, sorter)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
-		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
-		part := getPart(q, "meta")
 		w.Header().Set("Content-Type", format2ContentType(format))
 		switch format {
 		case "html":
 			renderListMetaHTML(w, metaList)
 		case "json", "djson":
-			renderListMetaXJSON(r.Context(), w, metaList, format, part, getMeta, parseZettel)
+			renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
 		case "native", "raw", "text", "zmk":
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", format))
 		default:

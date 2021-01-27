@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -48,9 +48,8 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		ctx := r.Context()
 		q := r.URL.Query()
-		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
+		zn, err := parseZettel.Run(r.Context(), zid, q.Get("syntax"))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

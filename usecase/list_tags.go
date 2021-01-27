@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -15,6 +15,7 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 )
 
@@ -40,7 +41,7 @@ type TagData map[string][]*meta.Meta
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
-	metas, err := uc.port.SelectMeta(ctx, nil, nil)
+	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil, nil)
 	if err != nil {
 		return nil, err
 	}

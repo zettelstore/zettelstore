@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,12 +16,12 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/input"
-
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -37,10 +37,7 @@ func MakeGetCopyZettelHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if origZettel, ok := getOrigZettel(w, r, getZettel, "Copy"); ok {
-			renderZettelForm(
-				w,
-				r,
-				te,
+			renderZettelForm(w, r, te,
 				copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
 		}
 	}
@@ -55,10 +52,7 @@ func MakeGetFolgeZettelHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if origZettel, ok := getOrigZettel(w, r, getZettel, "Folge"); ok {
-			renderZettelForm(
-				w,
-				r,
-				te,
+			renderZettelForm(w, r, te,
 				folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
 		}
 	}
@@ -87,8 +81,7 @@ func MakeGetNewZettelHandler(
 				adapter.InternalServerError(w, "Format HTML inlines for WebUI", err)
 				return
 			}
-			renderZettelForm(
-				w, r, te, newZettel.Run(origZettel), textTitle, htmlTitle)
+			renderZettelForm(w, r, te, newZettel.Run(origZettel), textTitle, htmlTitle)
 		}
 	}
 }
@@ -108,7 +101,7 @@ func getOrigZettel(
 		http.NotFound(w, r)
 		return domain.Zettel{}, false
 	}
-	origZettel, err := getZettel.Run(r.Context(), zid)
+	origZettel, err := getZettel.Run(index.NoEnrichContext(r.Context()), zid)
 	if err != nil {
 		http.NotFound(w, r)
 		return domain.Zettel{}, false
@@ -129,7 +122,7 @@ func renderZettelForm(
 	m := zettel.Meta
 	var base baseData
 	te.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
-	te.renderTemplate(r.Context(), w, id.FormTemplateZid, &base, formZettelData{
+	te.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     runtime.GetTitle(m),
 		MetaTags:      m.GetDefault(meta.KeyTags, ""),
@@ -158,8 +151,7 @@ func MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.Handler
 		if newZid, err := createZettel.Run(r.Context(), zettel); err != nil {
 			adapter.ReportUsecaseError(w, err)
 		} else {
-			http.Redirect(
-				w, r, adapter.NewURLBuilder('h').SetZid(newZid).String(), http.StatusFound)
+			http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(newZid).String(), http.StatusFound)
 		}
 	}
 }

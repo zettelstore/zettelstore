@@ -77,10 +77,9 @@ func MakeGetInfoHandler(
 		langOption := &encoder.StringOption{
 			Key:   "lang",
 			Value: runtime.GetLang(zn.InhMeta)}
-		getTitle := makeGetTitle(r.Context(), getMeta, langOption)
 
 		summary := collect.References(zn)
-		_, locLinks, extLinks := splitIntExtLinks(getTitle, append(summary.Links, summary.Images...))
+		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Images...))
 
 		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil, langOption)
 		if err != nil {
@@ -88,9 +87,9 @@ func MakeGetInfoHandler(
 			return
 		}
 
-		user := session.GetUser(ctx)
 		pairs := zn.Zettel.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, 0, len(pairs))
+		getTitle := makeGetTitle(ctx, getMeta, langOption)
 		for _, p := range pairs {
 			var html strings.Builder
 			writeHTMLMetaValue(&html, zn.Zettel.Meta, p.Key, getTitle, langOption)
@@ -114,6 +113,7 @@ func MakeGetInfoHandler(
 			}
 			matrix = append(matrix, matrixLine{row})
 		}
+		user := session.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
@@ -168,41 +168,21 @@ func MakeGetInfoHandler(
 	}
 }
 
-func splitIntExtLinks(
-	getTitle getTitleFunc, links []*ast.Reference,
-) (zetLinks []zettelReference, locLinks []string, extLinks []string) {
+func splitLocExtLinks(links []*ast.Reference) (locLinks []string, extLinks []string) {
 	if len(links) == 0 {
-		return nil, nil, nil
+		return nil, nil
 	}
 	for _, ref := range links {
 		if ref.State == ast.RefStateZettelSelf {
 			continue
 		}
 		if ref.IsZettel() {
-			zid, err := id.Parse(ref.URL.Path)
-			if err != nil {
-				panic(err)
-			}
-			title, found := getTitle(zid, "html")
-			if found >= 0 {
-				if len(title) == 0 {
-					title = ref.Value
-				}
-				var u string
-				if found == 1 {
-					ub := adapter.NewURLBuilder('h').SetZid(zid)
-					if fragment := ref.URL.EscapedFragment(); len(fragment) > 0 {
-						ub.SetFragment(fragment)
-					}
-					u = ub.String()
-				}
-				zetLinks = append(zetLinks, zettelReference{zid, title, len(u) > 0, u})
-			}
+			continue
 		} else if ref.IsExternal() {
 			extLinks = append(extLinks, ref.String())
 		} else {
 			locLinks = append(locLinks, ref.String())
 		}
 	}
-	return zetLinks, locLinks, extLinks
+	return locLinks, extLinks
 }

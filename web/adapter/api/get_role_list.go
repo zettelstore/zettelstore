@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -24,8 +24,7 @@ import (
 // MakeListRoleHandler creates a new HTTP handler for the use case "list some zettel".
 func MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		roleList, err := listRole.Run(ctx)
+		roleList, err := listRole.Run(r.Context())
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

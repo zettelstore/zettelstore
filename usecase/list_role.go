@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,6 +16,7 @@ import (
 	"sort"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 )
 
@@ -38,7 +39,7 @@ func NewListRole(port ListRolePort) ListRole {
 
 // Run executes the use case.
 func (uc ListRole) Run(ctx context.Context) ([]string, error) {
-	metas, err := uc.port.SelectMeta(ctx, nil, nil)
+	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil, nil)
 	if err != nil {
 		return nil, err
 	}

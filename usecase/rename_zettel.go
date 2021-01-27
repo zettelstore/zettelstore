@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,6 +16,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 )
 
 // RenameZettelPort is the interface used by this use case.
@@ -46,10 +47,11 @@ func NewRenameZettel(port RenameZettelPort) RenameZettel {
 
 // Run executes the use case.
 func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
-	if _, err := uc.port.GetMeta(ctx, curZid); err != nil {
+	noEnrichCtx := index.NoEnrichContext(ctx)
+	if _, err := uc.port.GetMeta(noEnrichCtx, curZid); err != nil {
 		return err
 	}
-	if _, err := uc.port.GetMeta(ctx, newZid); err == nil {
+	if _, err := uc.port.GetMeta(noEnrichCtx, newZid); err == nil {
 		return &ErrZidInUse{Zid: newZid}
 	}
 	return uc.port.RenameZettel(ctx, curZid, newZid)

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
@@ -69,6 +70,9 @@ func renderWebUIZettelList(
 	renderWebUIMetaList(
 		ctx, w, te, sorter,
 		func(sorter *place.Sorter) ([]*meta.Meta, error) {
+			if filter == nil && (sorter == nil || sorter.Order == "") {
+				ctx = index.NoEnrichContext(ctx)
+			}
 			return listMeta.Run(ctx, filter, sorter)
 		},
 		func(offset int) string {
@@ -204,6 +208,9 @@ func MakeSearchHandler(
 		renderWebUIMetaList(
 			ctx, w, te, sorter,
 			func(sorter *place.Sorter) ([]*meta.Meta, error) {
+				if filter == nil && (sorter == nil || sorter.Order == "") {
+					ctx = index.NoEnrichContext(ctx)
+				}
 				return search.Run(ctx, filter, sorter)
 			},
 			func(offset int) string {
@@ -277,8 +284,7 @@ func renderWebUIMetaList(
 	})
 }
 
-func newPageURL(
-	key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+func newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
 	urlBuilder := adapter.NewURLBuilder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {

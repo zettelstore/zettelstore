@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -14,7 +14,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -52,7 +51,7 @@ type jsonContent struct {
 	Content  interface{} `json:"content"`
 }
 
-func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part string) error {
+func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part partType) error {
 	var outData interface{}
 	idData := jsonIDURL{
 		ID:  z.Zid.String(),
@@ -60,7 +59,7 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part string) erro
 	}
 
 	switch part {
-	case "zettel":
+	case partZettel:
 		encoding, content := encodedContent(z.Zettel.Content)
 		outData = jsonZettel{
 			ID:       idData.ID,
@@ -69,13 +68,13 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part string) erro
 			Encoding: encoding,
 			Content:  content,
 		}
-	case "meta":
+	case partMeta:
 		outData = jsonMeta{
 			ID:   idData.ID,
 			URL:  idData.URL,
 			Meta: z.InhMeta.Map(),
 		}
-	case "content":
+	case partContent:
 		encoding, content := encodedContent(z.Zettel.Content)
 		outData = jsonContent{
 			ID:       idData.ID,
@@ -83,7 +82,7 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part string) erro
 			Encoding: encoding,
 			Content:  content,
 		}
-	case "id":
+	case partID:
 		outData = idData
 	default:
 		panic(part)
@@ -104,29 +103,29 @@ func writeDJSONZettel(
 	ctx context.Context,
 	w http.ResponseWriter,
 	z *ast.ZettelNode,
-	part string,
+	part, defPart partType,
 	getMeta usecase.GetMeta,
 ) (err error) {
 	switch part {
-	case "zettel":
+	case partZettel:
 		err = writeDJSONHeader(w, z.Zid)
 		if err == nil {
 			err = writeDJSONMeta(w, z)
 		}
 		if err == nil {
-			err = writeDJSONContent(ctx, w, z, part, getMeta)
+			err = writeDJSONContent(ctx, w, z, part, defPart, getMeta)
 		}
-	case "meta":
+	case partMeta:
 		err = writeDJSONHeader(w, z.Zid)
 		if err == nil {
 			err = writeDJSONMeta(w, z)
 		}
-	case "content":
+	case partContent:
 		err = writeDJSONHeader(w, z.Zid)
 		if err == nil {
-			err = writeDJSONContent(ctx, w, z, part, getMeta)
+			err = writeDJSONContent(ctx, w, z, part, defPart, getMeta)
 		}
-	case "id":
+	case partID:
 		writeDJSONHeader(w, z.Zid)
 	default:
 		panic(part)
@@ -182,14 +181,14 @@ func writeDJSONContent(
 	ctx context.Context,
 	w io.Writer,
 	z *ast.ZettelNode,
-	part string,
+	part, defPart partType,
 	getMeta usecase.GetMeta,
 ) (err error) {
 	_, err = w.Write(djsonContentHeader)
 	if err == nil {
 		err = writeContent(w, z, "djson",
 			&encoder.AdaptLinkOption{
-				Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part, "djson"),
+				Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(defPart), "djson"),
 			},
 			&encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()},
 		)
@@ -209,18 +208,19 @@ func renderListMetaXJSON(
 	ctx context.Context,
 	w http.ResponseWriter,
 	metaList []*meta.Meta,
-	format string, part string,
+	format string,
+	part, defPart partType,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
 ) {
 	var readZettel bool
 	switch part {
-	case "zettel", "content":
+	case partZettel, partContent:
 		readZettel = true
-	case "meta", "id":
+	case partMeta, partID:
 		readZettel = false
 	default:
-		adapter.BadRequest(w, fmt.Sprintf("Unknown _part=%v parameter", part))
+		adapter.BadRequest(w, "Unknown _part parameter")
 		return
 	}
 	isJSON := setJSON[format]
@@ -256,7 +256,7 @@ func renderListMetaXJSON(
 		if isJSON {
 			err = writeJSONZettel(w, zn, part)
 		} else {
-			err = writeDJSONZettel(ctx, w, zn, part, getMeta)
+			err = writeDJSONZettel(ctx, w, zn, part, defPart, getMeta)
 		}
 	}
 	if err == nil {

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -26,9 +26,8 @@ import (
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
 func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
 		iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
-		tagData, err := listTags.Run(ctx, iMinCount)
+		tagData, err := listTags.Run(r.Context(), iMinCount)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

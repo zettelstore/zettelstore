@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 )
@@ -27,8 +28,7 @@ import (
 var ErrNoSuchFormat = errors.New("no such format")
 
 // FormatInlines returns a string representation of the inline slice.
-func FormatInlines(
-	is ast.InlineSlice, format string, options ...encoder.Option) (string, error) {
+func FormatInlines(is ast.InlineSlice, format string, options ...encoder.Option) (string, error) {
 	enc := encoder.Create(format, options...)
 	if enc == nil {
 		return "", ErrNoSuchFormat
@@ -58,7 +58,7 @@ func MakeLinkAdapter(
 		if err != nil {
 			panic(err)
 		}
-		_, err = getMeta.Run(ctx, zid)
+		_, err = getMeta.Run(index.NoEnrichContext(ctx), zid)
 		newLink := *origLink
 		if err == nil {
 			u := NewURLBuilder(key).SetZid(zid)

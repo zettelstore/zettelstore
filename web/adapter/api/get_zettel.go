@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -42,20 +42,18 @@ func MakeGetZettelHandler(
 		}
 
 		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
-		part := getPart(q, "zettel")
+		part := getPart(q, partZettel)
 		switch format {
 		case "json", "djson":
-			switch part {
-			case "zettel", "meta", "content", "id":
-			default:
-				adapter.BadRequest(w, fmt.Sprintf("Unknown _part=%v parameter", part))
+			if part == partUnknown {
+				adapter.BadRequest(w, "Unknown _part parameter")
 				return
 			}
 			w.Header().Set("Content-Type", format2ContentType(format))
 			if format != "djson" {
 				err = writeJSONZettel(w, zn, part)
 			} else {
-				err = writeDJSONZettel(ctx, w, zn, part, getMeta)
+				err = writeDJSONZettel(ctx, w, zn, part, partZettel, getMeta)
 			}
 			if err != nil {
 				adapter.InternalServerError(w, "Write D/JSON", err)
@@ -65,12 +63,12 @@ func MakeGetZettelHandler(
 
 		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(zn.InhMeta)}
 		linkAdapter := encoder.AdaptLinkOption{
-			Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part, format),
+			Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
 		}
 		imageAdapter := encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()}
 
 		switch part {
-		case "zettel":
+		case partZettel:
 			inhMeta := false
 			if format != "raw" {
 				w.Header().Set("Content-Type", format2ContentType(format))
@@ -91,7 +89,7 @@ func MakeGetZettelHandler(
 			} else {
 				_, err = enc.WriteZettel(w, zn, inhMeta)
 			}
-		case "meta":
+		case partMeta:
 			w.Header().Set("Content-Type", format2ContentType(format))
 			if format == "raw" {
 				// Don't write inherited meta data, just the raw
@@ -99,7 +97,7 @@ func MakeGetZettelHandler(
 			} else {
 				err = writeMeta(w, zn.InhMeta, format)
 			}
-		case "content":
+		case partContent:
 			if format == "raw" {
 				if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Zettel.Meta)); ok {
 					w.Header().Add("Content-Type", ct)
@@ -116,7 +114,7 @@ func MakeGetZettelHandler(
 				&imageAdapter,
 			)
 		default:
-			adapter.BadRequest(w, fmt.Sprintf("Unknown _part=%v parameter", part))
+			adapter.BadRequest(w, "Unknown _part parameter")
 			return
 		}
 		if err != nil {

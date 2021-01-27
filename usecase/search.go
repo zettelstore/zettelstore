@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -15,6 +15,7 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 )
 
@@ -36,8 +37,26 @@ func NewSearch(port SearchPort) Search {
 }
 
 // Run executes the use case.
-func (uc Search) Run(
-	ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
-	// TODO: interpret f[""]. Can contain expressions for specific meta tags.
+func (uc Search) Run(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+	// TODO: interpret f.Expr[""]. Can contain expressions for specific meta tags.
+	if !usesComputedMeta(f, s) {
+		ctx = index.NoEnrichContext(ctx)
+	}
 	return uc.port.SelectMeta(ctx, f, s)
+}
+
+func usesComputedMeta(f *place.Filter, s *place.Sorter) bool {
+	if f != nil {
+		for key := range f.Expr {
+			if key == "" || meta.IsComputed(key) {
+				return true
+			}
+		}
+	}
+	if s != nil {
+		if order := s.Order; order != "" && meta.IsComputed(order) {
+			return true
+		}
+	}
+	return false
 }
