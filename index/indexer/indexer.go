@@ -215,9 +215,7 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	refs := collect.References(zn)
 	updateReferences(ctx, refs.Links, p, zi)
 	updateReferences(ctx, refs.Images, p, zi)
-	if zi.HasLinks() {
-		idx.store.UpdateReferences(ctx, zi)
-	}
+	idx.store.UpdateReferences(ctx, zi)
 }
 
 func updateValue(

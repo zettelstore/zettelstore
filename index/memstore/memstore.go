@@ -114,7 +114,14 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 
 	// Update metadata references
 	metarefs := zidx.GetMetaRefs()
+	for key, mr := range zi.meta {
+		if _, ok := metarefs[key]; ok {
+			continue
+		}
+		ms.removeInverseMeta(zidx.Zid, key, mr.forward)
+	}
 	if len(metarefs) == 0 {
+		zi.meta = nil
 		return
 	}
 	if zi.meta == nil {
@@ -127,17 +134,15 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 		zi.meta[key] = mr
 
 		for _, ref := range newRefs {
-			bzi := ms.getEntryMap(ref)
+			bzi := ms.getEntry(ref)
+			if bzi.meta == nil {
+				bzi.meta = make(map[string]metaRefs)
+			}
 			bmr := bzi.meta[key]
 			bmr.backward = addRef(bmr.backward, zidx.Zid)
 			bzi.meta[key] = bmr
 		}
-		for _, ref := range remRefs {
-			bzi := ms.getEntryMap(ref)
-			bmr := bzi.meta[key]
-			bmr.backward = remRef(bmr.backward, zidx.Zid)
-			bzi.meta[key] = bmr
-		}
+		ms.removeInverseMeta(zidx.Zid, key, remRefs)
 	}
 }
 
@@ -147,14 +152,6 @@ func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
 	}
 	zi := &zettelIndex{}
 	ms.idx[zid] = zi
-	return zi
-}
-
-func (ms *memStore) getEntryMap(zid id.Zid) *zettelIndex {
-	zi := ms.getEntry(zid)
-	if zi.meta == nil {
-		zi.meta = make(map[string]metaRefs)
-	}
 	return zi
 }
 
@@ -179,17 +176,33 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) {
 	}
 	if len(zi.meta) > 0 {
 		for key, mrefs := range zi.meta {
-			for _, ref := range mrefs.forward {
-				if fzi, ok := ms.idx[ref]; ok {
-					if fmrefs, ok := fzi.meta[key]; ok {
-						fmrefs.backward = remRef(fmrefs.backward, zid)
+			ms.removeInverseMeta(zid, key, mrefs.forward)
+		}
+	}
+	delete(ms.idx, zid)
+}
+
+func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward []id.Zid) {
+	// Must only be called if ms.mx is write-locked!
+	for _, ref := range forward {
+		if bzi, ok := ms.idx[ref]; ok {
+			if bzi.meta != nil {
+				if bmr, ok := bzi.meta[key]; ok {
+					bmr.backward = remRef(bmr.backward, zid)
+					if len(bmr.backward) > 0 || len(bmr.forward) > 0 {
+						bzi.meta[key] = bmr
+					} else {
+						delete(bzi.meta, key)
+						if len(bzi.meta) == 0 {
+							bzi.meta = nil
+						}
 					}
 				}
 			}
 		}
 	}
-	delete(ms.idx, zid)
 }
+
 func (ms *memStore) ReadStats(st *index.StoreStats) {
 	ms.mx.RLock()
 	st.Zettel = len(ms.idx)

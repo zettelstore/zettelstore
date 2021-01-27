@@ -35,11 +35,6 @@ func NewZettelIndex(zid id.Zid) *ZettelIndex {
 	}
 }
 
-// HasLinks returns true, if there are any links stored.
-func (zi *ZettelIndex) HasLinks() bool {
-	return len(zi.backrefs) > 0 || len(zi.metarefs) > 0 || len(zi.deadrefs) > 0
-}
-
 // AddBackRef adds a reference to a zettel where the current zettel links to
 // without any more information.
 func (zi *ZettelIndex) AddBackRef(zid id.Zid) {
