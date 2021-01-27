@@ -32,6 +32,13 @@ type zettelIndex struct {
 	meta     map[string]metaRefs
 }
 
+func (zi *zettelIndex) isEmpty() bool {
+	if len(zi.forward) > 0 || len(zi.backward) > 0 || zi.dead != "" {
+		return false
+	}
+	return zi.meta == nil || len(zi.meta) == 0
+}
+
 type memStore struct {
 	mx  sync.RWMutex
 	idx map[id.Zid]*zettelIndex
@@ -90,7 +97,11 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelIndex) {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
-	zi := ms.getEntry(zidx.Zid)
+	zi, ziExist := ms.idx[zidx.Zid]
+	if !ziExist || zi == nil {
+		zi = &zettelIndex{}
+		ziExist = false
+	}
 
 	// Update dead references
 	if drefs := zidx.GetDeadRefs(); len(drefs) > 0 {
@@ -122,27 +133,32 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 	}
 	if len(metarefs) == 0 {
 		zi.meta = nil
-		return
-	}
-	if zi.meta == nil {
-		zi.meta = make(map[string]metaRefs)
-	}
-	for key, mrefs := range metarefs {
-		mr := zi.meta[key]
-		newRefs, remRefs := refsDiff(mrefs, mr.forward)
-		mr.forward = mrefs
-		zi.meta[key] = mr
-
-		for _, ref := range newRefs {
-			bzi := ms.getEntry(ref)
-			if bzi.meta == nil {
-				bzi.meta = make(map[string]metaRefs)
-			}
-			bmr := bzi.meta[key]
-			bmr.backward = addRef(bmr.backward, zidx.Zid)
-			bzi.meta[key] = bmr
+	} else {
+		if zi.meta == nil {
+			zi.meta = make(map[string]metaRefs)
 		}
-		ms.removeInverseMeta(zidx.Zid, key, remRefs)
+		for key, mrefs := range metarefs {
+			mr := zi.meta[key]
+			newRefs, remRefs := refsDiff(mrefs, mr.forward)
+			mr.forward = mrefs
+			zi.meta[key] = mr
+
+			for _, ref := range newRefs {
+				bzi := ms.getEntry(ref)
+				if bzi.meta == nil {
+					bzi.meta = make(map[string]metaRefs)
+				}
+				bmr := bzi.meta[key]
+				bmr.backward = addRef(bmr.backward, zidx.Zid)
+				bzi.meta[key] = bmr
+			}
+			ms.removeInverseMeta(zidx.Zid, key, remRefs)
+		}
+	}
+
+	// Check if zi must be inserted into ms.idx
+	if !ziExist && !zi.isEmpty() {
+		ms.idx[zidx.Zid] = zi
 	}
 }
 
