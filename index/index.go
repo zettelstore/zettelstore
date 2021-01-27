@@ -21,11 +21,11 @@ import (
 	"zettelstore.de/z/place"
 )
 
-// Updater is used to update metadata by adding new properties.
-type Updater interface {
-	// Update computes additional properties and updates the given metadata.
+// Enricher is used to update metadata by adding new properties.
+type Enricher interface {
+	// Enrich computes additional properties and updates the given metadata.
 	// It is typically called by zettel reading methods.
-	Update(ctx context.Context, m *meta.Meta)
+	Enrich(ctx context.Context, m *meta.Meta)
 }
 
 // Port contains all the used functions to access zettel to be indexed.
@@ -38,7 +38,7 @@ type Port interface {
 
 // Indexer contains all the functions of an index.
 type Indexer interface {
-	Updater
+	Enricher
 
 	// Start the index. It will read all zettel and store index data for later retrieval.
 	Start(Port)
@@ -70,7 +70,7 @@ type IndexerStats struct {
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
-	Updater
+	Enricher
 
 	// UpdateReferences for a specific zettel.
 	UpdateReferences(context.Context, *ZettelIndex)

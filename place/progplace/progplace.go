@@ -141,7 +141,7 @@ func (pp *progPlace) SelectMeta(
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
-				pp.filter.Update(ctx, m)
+				pp.filter.Enrich(ctx, m)
 				if hasMatch(m) {
 					res = append(res, m)
 				}

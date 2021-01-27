@@ -90,14 +90,14 @@ func (idx *indexer) Stop() {
 	idx.started = false
 }
 
-// Update reads all properties in the index and updates the metadata.
-func (idx *indexer) Update(ctx context.Context, m *meta.Meta) {
+// Enrich reads all properties in the index and updates the metadata.
+func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 	if _, ok := ctx.Value(ctxKey).(*ctxKeyType); ok {
-		// Update is called indirectly via indexer
+		// Enrich is called indirectly via indexer
 		// -> ignore this call, do not update meta data
 		return
 	}
-	idx.store.Update(ctx, m)
+	idx.store.Enrich(ctx, m)
 }
 
 func (idx *indexer) ReadStats(st *index.IndexerStats) {

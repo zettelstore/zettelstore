@@ -26,7 +26,7 @@ type Remover interface {
 
 // MetaFilter is used by places to filter and set computed metadata value.
 type MetaFilter interface {
-	Updater
+	Enricher
 	Remover
 }
 
@@ -49,9 +49,9 @@ func NewMetaFilter(idx Indexer) MetaFilter {
 	}
 }
 
-func (mf *metaFilter) Update(ctx context.Context, m *meta.Meta) {
+func (mf *metaFilter) Enrich(ctx context.Context, m *meta.Meta) {
 	computePublished(m)
-	mf.index.Update(ctx, m)
+	mf.index.Enrich(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {

@@ -47,7 +47,7 @@ func New() index.Store {
 	}
 }
 
-func (ms *memStore) Update(ctx context.Context, m *meta.Meta) {
+func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	zi, ok := ms.idx[m.Zid]

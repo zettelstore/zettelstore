@@ -127,7 +127,7 @@ func (mp *memPlace) SelectMeta(ctx context.Context, f *place.Filter, s *place.So
 	mp.mx.RLock()
 	for _, zettel := range mp.zettel {
 		m := zettel.Meta.Clone()
-		mp.cdata.Filter.Update(ctx, m)
+		mp.cdata.Filter.Enrich(ctx, m)
 		if filterFunc(m) {
 			result = append(result, m)
 		}
