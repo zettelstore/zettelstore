@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
@@ -236,8 +237,8 @@ var templatePlaceSorter = &place.Sorter{
 	Limit:      31, // Just to be one the safe side...
 }
 
-func (te *TemplateEngine) fetchNewTemplates(
-	ctx context.Context, user *meta.Meta) []simpleLink {
+func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
+	ctx = index.NoEnrichContext(ctx)
 	templateList, err := te.place.SelectMeta(ctx, templatePlaceFilter, templatePlaceSorter)
 	if err != nil {
 		return nil

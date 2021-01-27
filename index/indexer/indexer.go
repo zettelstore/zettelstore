@@ -92,9 +92,9 @@ func (idx *indexer) Stop() {
 
 // Enrich reads all properties in the index and updates the metadata.
 func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
-	if _, ok := ctx.Value(ctxKey).(*ctxKeyType); ok {
-		// Enrich is called indirectly via indexer
-		// -> ignore this call, do not update meta data
+	if index.DoNotEnrich(ctx) {
+		// Enrich is called indirectly via indexer or enrichment is not requested
+		// because of other reasons -> ignore this call, do not update meta data
 		return
 	}
 	idx.store.Enrich(ctx, m)
@@ -115,10 +115,6 @@ type indexerPort interface {
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
 }
 
-type ctxKeyType struct{}
-
-var ctxKey ctxKeyType
-
 // indexer runs in the background and updates the index data structures.
 func (idx *indexer) indexer(p indexerPort) {
 	// Something may panic. Ensure a running indexer.
@@ -130,7 +126,7 @@ func (idx *indexer) indexer(p indexerPort) {
 
 	timerDuration := 15 * time.Second
 	timer := time.NewTimer(timerDuration)
-	ctx := context.WithValue(context.Background(), ctxKey, &ctxKey)
+	ctx := index.NoEnrichContext(context.Background())
 	for {
 		start := time.Now()
 		changed := false
