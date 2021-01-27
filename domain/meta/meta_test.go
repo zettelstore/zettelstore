@@ -186,3 +186,60 @@ func TestDelete(t *testing.T) {
 		t.Errorf("Value != %q, got: %v/%q", "", ok, got)
 	}
 }
+
+func TestEqual(t *testing.T) {
+	testcases := []struct {
+		pairs1, pairs2 []string
+		allowComputed  bool
+		exp            bool
+	}{
+		{nil, nil, true, true},
+		{nil, nil, false, true},
+		{[]string{"a", "a"}, nil, false, false},
+		{[]string{"a", "a"}, nil, true, false},
+		{[]string{KeyFolge, "0"}, nil, true, false},
+		{[]string{KeyFolge, "0"}, nil, false, true},
+		{[]string{KeyFolge, "0"}, []string{KeyFolge, "0"}, true, true},
+		{[]string{KeyFolge, "0"}, []string{KeyFolge, "0"}, false, true},
+	}
+	for i, tc := range testcases {
+		m1 := pairs2meta(tc.pairs1)
+		m2 := pairs2meta(tc.pairs2)
+		got := m1.Equal(m2, tc.allowComputed)
+		if tc.exp != got {
+			t.Errorf("%d: %v =?= %v: expected=%v, but got=%v", i, tc.pairs1, tc.pairs2, tc.exp, got)
+		}
+		got = m2.Equal(m1, tc.allowComputed)
+		if tc.exp != got {
+			t.Errorf("%d: %v =!= %v: expected=%v, but got=%v", i, tc.pairs1, tc.pairs2, tc.exp, got)
+		}
+	}
+
+	// Pathologic cases
+	var m1, m2 *Meta
+	if !m1.Equal(m2, true) {
+		t.Error("Nil metas should be treated equal")
+	}
+	m1 = New(testID)
+	if m1.Equal(m2, true) {
+		t.Error("Empty meta should not be equal to nil")
+	}
+	if m2.Equal(m1, true) {
+		t.Error("Nil meta should should not be equal to empty")
+	}
+	m2 = New(testID + 1)
+	if m1.Equal(m2, true) {
+		t.Error("Different ID should differentiate")
+	}
+	if m2.Equal(m1, true) {
+		t.Error("Different ID should differentiate")
+	}
+}
+
+func pairs2meta(pairs []string) *Meta {
+	m := New(testID)
+	for i := 0; i < len(pairs); i = i + 2 {
+		m.Set(pairs[i], pairs[i+1])
+	}
+	return m
+}

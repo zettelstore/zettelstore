@@ -296,11 +296,25 @@ func (m *Meta) Equal(o *Meta, allowComputed bool) bool {
 	if m == nil || o == nil || m.Zid != o.Zid {
 		return false
 	}
+	tested := make(map[string]bool, len(m.pairs))
 	for k, v := range m.pairs {
-		if allowComputed || !IsComputed(k) {
-			if vo, ok := o.pairs[k]; !ok || v != vo {
-				return false
-			}
+		tested[k] = true
+		if !equalValue(k, v, o, allowComputed) {
+			return false
+		}
+	}
+	for k, v := range o.pairs {
+		if !tested[k] && !equalValue(k, v, m, allowComputed) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalValue(key, val string, other *Meta, allowComputed bool) bool {
+	if allowComputed || !IsComputed(key) {
+		if valO, ok := other.pairs[key]; !ok || val != valO {
+			return false
 		}
 	}
 	return true
