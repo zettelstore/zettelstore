@@ -1,4 +1,13 @@
-<title>Zettelstore: Privacy</title>
+<title>Imprint & Privacy</title>
+<h1>Imprint</h1>
+<p>
+Detlef Stern<br>
+Max-Planck-Str. 39<br>
+74081 Heilbronn<br>
+Phone: +49 (173) 4905619<br>
+Mail: ds (at) zettelstore.de
+</p>
+
 <h1>Privacy</h1>
 <p>
 If you do not log into this site, or login as the user &quot;anonymous&quot;,

@@ -5,7 +5,7 @@ syntax: none
 default-copyright: (c) 2020-2021 by Detlef Stern <ds@zettelstore.de>
 default-license: EUPL-1.2-or-later
 default-visibility: public
-footer-html: <hr><p><a href="/imprint/">Imprint</a>/<a href="/privacy/">Privacy</a></p>
+footer-html: <hr><p><a href="/home/doc/trunk/www/impri.wiki">Imprint / Privacy</a></p>
 modified: 20210111182407
 site-name: Zettelstore Manual
 start: 00001000000000
