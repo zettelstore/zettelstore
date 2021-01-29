@@ -17,9 +17,9 @@ The software, including the manual, is licensed under the
 
 [https://twitter.com/zettelstore|Stay tuned]&hellip;
 <hr>
-<h3>Latest Release: 0.0.8 (2020-12-23)</h3>
+<h3>Latest Release: 0.0.9 (2021-01-29)</h3>
   *  [./download.wiki|Download]
-  *  [./changes.wiki#0_0_8|Change Summary]
+  *  [./changes.wiki#0_0_9|Change Summary]
   *  [./plan.wiki|Limitations and Planned Improvements]
   *  [/dir?ci=trunk|Source Code] (mirrored on <a href="https://github.com/zettelstore/zettelstore">GitHub</a>)
   *  [/download|Download the source code] as a Tarball or a ZIP file

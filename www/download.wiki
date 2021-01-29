@@ -9,7 +9,7 @@
   *  Take a look at the <a href="/manual/">manual</a> to know how to start and use it.
 
 <h2>ZIP-ped Executables</h2>
-Build: <code>v0.0.8</code> (2020-12-23).
+Build: <code>v0.0.9</code> (2021-01-29).
 
   *  [/uv/zettelstore.zip|Linux] (amd64)
   *  [/uv/zettelstore-arm6.zip|Linux] (arm6, e.g. Raspberry Pi)

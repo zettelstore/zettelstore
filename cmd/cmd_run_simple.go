@@ -86,9 +86,9 @@ func updateWelcomeZettel(p place.Place) {
 var welcomeZettelContent = `Thank you for using Zettelstore!
 
 You will find the lastest information about Zettelstore at [[https://zettelstore.de]].
-Check that website regulary for [[upgrades|https://zettelstore.de/download/]] to the latest version.
-You should consult the appropriate [[release notes|https://zettelstore.de/manual/h/00001098000000]] before upgrading.
-Sometime, you have to change some of your Zettelstore-related zettel before upgrading.
+Check that website regulary for [[upgrades|https://zettelstore.de/home/doc/trunk/www/download.wiki]] to the latest version.
+You should consult the [[change log|https://zettelstore.de/home/doc/trunk/www/changes.wiki]] before upgrading.
+Sometimes, you have to edit some of your Zettelstore-related zettel before upgrading.
 Since Zettelstore is currently in a development state, every upgrade might fix some of your problems.
 To check for versions, there is a zettel with the [[current version|00000000000001]] of your Zettelstore.
 
