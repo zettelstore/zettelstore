@@ -13,6 +13,7 @@ package index
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"zettelstore.de/z/domain"
@@ -97,6 +98,9 @@ type Store interface {
 
 	// ReadStats populates st with store statistics.
 	ReadStats(st *StoreStats)
+
+	// Write the content to a Writer
+	Write(io.Writer)
 }
 
 // StoreStats records statistics about the store.

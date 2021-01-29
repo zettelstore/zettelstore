@@ -13,6 +13,8 @@ package memstore
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"sync"
 
 	"zettelstore.de/z/domain/id"
@@ -131,29 +133,26 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 		}
 		ms.removeInverseMeta(zidx.Zid, key, mr.forward)
 	}
-	if len(metarefs) == 0 {
-		zi.meta = nil
-	} else {
-		if zi.meta == nil {
-			zi.meta = make(map[string]metaRefs)
-		}
-		for key, mrefs := range metarefs {
-			mr := zi.meta[key]
-			newRefs, remRefs := refsDiff(mrefs, mr.forward)
-			mr.forward = mrefs
-			zi.meta[key] = mr
 
-			for _, ref := range newRefs {
-				bzi := ms.getEntry(ref)
-				if bzi.meta == nil {
-					bzi.meta = make(map[string]metaRefs)
-				}
-				bmr := bzi.meta[key]
-				bmr.backward = addRef(bmr.backward, zidx.Zid)
-				bzi.meta[key] = bmr
+	if zi.meta == nil {
+		zi.meta = make(map[string]metaRefs)
+	}
+	for key, mrefs := range metarefs {
+		mr := zi.meta[key]
+		newRefs, remRefs := refsDiff(mrefs, mr.forward)
+		mr.forward = mrefs
+		zi.meta[key] = mr
+
+		for _, ref := range newRefs {
+			bzi := ms.getEntry(ref)
+			if bzi.meta == nil {
+				bzi.meta = make(map[string]metaRefs)
 			}
-			ms.removeInverseMeta(zidx.Zid, key, remRefs)
+			bmr := bzi.meta[key]
+			bmr.backward = addRef(bmr.backward, zidx.Zid)
+			bzi.meta[key] = bmr
 		}
+		ms.removeInverseMeta(zidx.Zid, key, remRefs)
 	}
 
 	// Check if zi must be inserted into ms.idx
@@ -224,4 +223,41 @@ func (ms *memStore) ReadStats(st *index.StoreStats) {
 	st.Zettel = len(ms.idx)
 	st.Updates = ms.updates
 	ms.mx.RUnlock()
+}
+
+func (ms *memStore) Write(w io.Writer) {
+	ms.mx.RLock()
+	zids := make([]id.Zid, 0, len(ms.idx))
+	for id := range ms.idx {
+		zids = append(zids, id)
+	}
+	id.Sort(zids)
+	for _, id := range zids {
+		fmt.Fprintln(w, id)
+		zi := ms.idx[id]
+		fmt.Fprintln(w, "-", zi.dead)
+		writeZidsLn(w, ">", zi.forward)
+		writeZidsLn(w, "<", zi.backward)
+		if zi.meta == nil {
+			fmt.Fprintln(w, "*NIL")
+		} else if len(zi.meta) == 0 {
+			fmt.Fprintln(w, "*(0)")
+		} else {
+			for k, fb := range zi.meta {
+				fmt.Fprintln(w, "*", k)
+				writeZidsLn(w, "]", fb.forward)
+				writeZidsLn(w, "[", fb.backward)
+			}
+		}
+	}
+	ms.mx.RUnlock()
+}
+
+func writeZidsLn(w io.Writer, prefix string, zids []id.Zid) {
+	io.WriteString(w, prefix)
+	for _, zid := range zids {
+		io.WriteString(w, " ")
+		w.Write(zid.Bytes())
+	}
+	fmt.Fprintln(w)
 }

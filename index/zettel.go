@@ -12,8 +12,6 @@
 package index
 
 import (
-	"sort"
-
 	"zettelstore.de/z/domain/id"
 )
 
@@ -84,14 +82,8 @@ func sortedZids(refmap map[id.Zid]bool) []id.Zid {
 		for zid := range refmap {
 			result = append(result, zid)
 		}
-		sort.Sort(zidSlice(result))
+		id.Sort(result)
 		return result
 	}
 	return nil
 }
-
-type zidSlice []id.Zid
-
-func (zs zidSlice) Len() int           { return len(zs) }
-func (zs zidSlice) Less(i, j int) bool { return zs[i] < zs[j] }
-func (zs zidSlice) Swap(i, j int)      { zs[i], zs[j] = zs[j], zs[i] }

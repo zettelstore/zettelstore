@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -13,6 +13,7 @@
 package id
 
 import (
+	"sort"
 	"strconv"
 	"time"
 )
@@ -101,3 +102,14 @@ func New(withSeconds bool) Zid {
 	}
 	return res
 }
+
+// Sort a slice of Zids.
+func Sort(zids []Zid) {
+	sort.Sort(zidSlice(zids))
+}
+
+type zidSlice []Zid
+
+func (zs zidSlice) Len() int           { return len(zs) }
+func (zs zidSlice) Less(i, j int) bool { return zs[i] < zs[j] }
+func (zs zidSlice) Swap(i, j int)      { zs[i], zs[j] = zs[j], zs[i] }
