@@ -51,7 +51,7 @@ of GitHub. To access older versions, use the Git repository under
              Otherwise the WebUI will not work.</b>
   *  (major) Show zettel identifier of folgezettel and precursor zettel in the header of a rendered zettel.
              If a zettel has backlinks, they are shown at the botton of the page
-             (ldquo;Links to this zettel&rdquo;).
+             (&ldquo;Links to this zettel&rdquo;).
   *  (minor) All property metadata, even computed metadata is shown in the info page of a zettel.
   *  (minor) Rendering of metadata keys <tt>title</tt> and <tt>default-title</tt> in info page changed to a full HTML output for these Zettelmarkup encoded values.
   *  (minor) Always show the zettel identifier on the zettel detail view.
