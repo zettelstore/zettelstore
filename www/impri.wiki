@@ -1,23 +1,18 @@
 <title>Imprint & Privacy</title>
 <h1>Imprint</h1>
-<p>
 Detlef Stern<br>
 Max-Planck-Str. 39<br>
 74081 Heilbronn<br>
-Phone: +49 (173) 4905619<br>
+Phone: +49 (15678) 386566<br>
 Mail: ds (at) zettelstore.de
-</p>
 
 <h1>Privacy</h1>
-<p>
 If you do not log into this site, or login as the user &quot;anonymous&quot;,
 the only personal data this web service will process is your IP adress. It will
 be used to send the data of the website you requested to you and to mitigate
 possible attacks against this website.
-</p>
-<p>
-This website is hosted by <a href="https://ionos.de">1&amp;1 IONOS SE</a>.
+
+This website is hosted by [https://ionos.de|1&amp;1 IONOS SE].
 According to
-<a href="https://www.ionos.de/hilfe/datenschutz/datenverarbeitung-von-webseitenbesuchern-ihres-11-ionos-produktes/andere-11-ionos-produkte/">their information</a>,
+[https://www.ionos.de/hilfe/datenschutz/datenverarbeitung-von-webseitenbesuchern-ihres-11-ionos-produktes/andere-11-ionos-produkte/|their information],
 no processing of personal data is done by them.
-</p>
