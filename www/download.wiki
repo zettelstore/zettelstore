@@ -6,7 +6,7 @@
   *  There is no guarantee that it will not damage your system.
   *  However, it is in use by the main developer since March 2020 without any damage.
   *  It may be useful for you. It is useful for me.
-  *  Take a look at the <a href="/manual/">manual</a> to know how to start and use it.
+  *  Take a look at the [https://zettelstore.de/manual/|manual] to know how to start and use it.
 
 <h2>ZIP-ped Executables</h2>
 Build: <code>v0.0.9</code> (2021-01-29).

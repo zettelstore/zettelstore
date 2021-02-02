@@ -13,7 +13,7 @@ of GitHub. To access older versions, use the Git repository under
              zettel changes to establish the reverse direction of found internal links.
              This affects the new metadata keys <tt>precursor</tt> and <tt>folge</tt>.
              A user specifies the precursor of a zettel and the indexer computes the
-             property metadata for <a href="https://forum.zettelkasten.de/discussion/996/definition-folgezettel">Folgezettel</a>.
+             property metadata for [https://forum.zettelkasten.de/discussion/996/definition-folgezettel|Folgezettel].
              Metadata keys with type &ldquo;Identifier&rdquo; or &ldquo;IdentifierSet&rdquo;
              that have no inverse key (like <tt>precursor</tt> and <tt>folge</tt>
              with add to the key <tt>forward</tt> that also collects all internal
@@ -43,8 +43,8 @@ of GitHub. To access older versions, use the Git repository under
              <tt>_order</tt> / <tt>order</tt> are now an aliases for the query parameters <tt>_sort</tt> / <tt>sort</tt>.
 
 <h3>WebUI</h3>
-  *  (major) HTML template zettel for WebUI now use <a href="https://mustache.github.io/">Mustache</a>
-             syntax instead of previously used <a href="https://golang.org/pkg/html/template/">Go template</a> syntax.
+  *  (major) HTML template zettel for WebUI now use [https://mustache.github.io/|Mustache]
+             syntax instead of previously used [https://golang.org/pkg/html/template/|Go template] syntax.
              This allows these zettel to be used, even when there is another Zettelstore implementation, in another programming language.
              Mustache is available for approx. 48 programming languages, instead of only one for Go templates.
              <b>If you modified your templates, you <i>must</i> adapt them to the new syntax.
@@ -109,7 +109,7 @@ of GitHub. To access older versions, use the Git repository under
   *  (minor) Rename zettel operation &ldquo;clone&rdquo; to &ldquo;copy&rdquo;.
   *  (major) All predefined HTML templates have now a visibility value &ldquo;expert&rdquo;.
              If you want to see them as an non-expert owner, you must temporary enable <tt>expert-mode</tt> and change the <tt>visibility</tt> metadata value.
-  *  (minor) Initial support for <a href="https://zettelkasten.de/posts/tags/folgezettel/">Folgezettel</a>.
+  *  (minor) Initial support for [https://zettelkasten.de/posts/tags/folgezettel/|Folgezettel].
              If you click on &ldquo;Folge&rdquo; (detail view or info view), a new zettel is created with a reference (<tt>precursor</tt>) to the original zettel.
              Title, role, tags, and syntax are copied from the original zettel.
   *  (major) Most predefined zettel have a title prefix of &ldquo;Zettelstore&rdquo;.
@@ -121,7 +121,7 @@ of GitHub. To access older versions, use the Git repository under
 <a name="0_0_7"></a>
 <h2>Changes for Version 0.0.7 (2020-11-24)</h2>
   *  With this version, Zettelstore and this manual got a new license, the
-     <a href="https://joinup.ec.europa.eu/collection/eupl">European Union Public Licence</a> (EUPL), version 1.2 or later.
+     [https://joinup.ec.europa.eu/collection/eupl|European Union Public Licence] (EUPL), version 1.2 or later.
      Nothing else changed.
      If you want to stay with the old licenses (AGPLv3+, CC BY-SA 4.0),
      you are free to fork from the previous version.

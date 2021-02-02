@@ -25,6 +25,6 @@ They are planned to be solved.
 <h3>Planned improvements</h3>
   *  Support for mathematical content is missing, e.g. <code>$$F(x) &=
      \\int^a_b \\frac{1}{3}x^3$$</code>.
-  *  Render zettel in <a href="https://pandoc.org">pandoc's</a> JSON version of
+  *  Render zettel in [https://pandoc.org|pandoc's] JSON version of
      their native AST to make pandoc an external renderer for Zettelstore.
   *  &hellip;
