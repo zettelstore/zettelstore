@@ -20,7 +20,10 @@ The software, including the manual, is licensed under the
 <h3>Latest Release: 0.0.9 (2021-01-29)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_0_9|Change Summary]
+  *  [/timeline?p=version-0.0.9&y=ci|Check-ins for version 0.0.9]
+  *  [/timeline?df=version-0.0.9&y=ci|Check-ins derived from the 0.0.9 release]
   *  [./plan.wiki|Limitations and Planned Improvements]
   *  [/dir?ci=trunk|Source Code] (mirrored on [https://github.com/zettelstore/zettelstore|GitHub])
   *  [/download|Download the source code] as a Tarball or a ZIP file
      (you must [/login|login] as user &quot;anonymous&quot;).
+  *  [/timeline?t=release|Timeline of all past releases]
