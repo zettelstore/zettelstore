@@ -22,7 +22,7 @@ const (
 )
 
 var constZettelMap = map[id.Zid]constZettel{
-	id.ConfigurationZid: constZettel{
+	id.ConfigurationZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Runtime Configuration",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -32,7 +32,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		"",
 	},
 
-	id.BaseTemplateZid: constZettel{
+	id.BaseTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -108,7 +108,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		),
 	},
 
-	id.LoginTemplateZid: constZettel{
+	id.LoginTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Login Form HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -137,7 +137,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </article>`,
 		)},
 
-	id.ListTemplateZid: constZettel{
+	id.ListTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore List Meta HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -161,7 +161,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </p>
 {{/HasPrevNext}}`)},
 
-	id.DetailTemplateZid: constZettel{
+	id.DetailTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Detail HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -199,7 +199,7 @@ var constZettelMap = map[id.Zid]constZettel{
 {{/HasBackLinks}}
 </article>`)},
 
-	id.InfoTemplateZid: constZettel{
+	id.InfoTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Info HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -251,7 +251,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </article>`),
 	},
 
-	id.FormTemplateZid: constZettel{
+	id.FormTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Form HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -290,9 +290,7 @@ var constZettelMap = map[id.Zid]constZettel{
 <div>
 {{#IsTextContent}}
 <label for="content">Content</label>
-<textarea class="zs-input zs-content" id="meta" name="content" rows="20" placeholder="Your content..">
-{{Content}}
-</textarea>
+<textarea class="zs-input zs-content" id="meta" name="content" rows="20" placeholder="Your content..">{{Content}}</textarea>
 {{/IsTextContent}}
 </div>
 <input class="zs-button" type="submit" value="Submit">
@@ -300,7 +298,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </article>`,
 	},
 
-	id.RenameTemplateZid: constZettel{
+	id.RenameTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Rename Form HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -328,7 +326,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </article>`,
 	},
 
-	id.DeleteTemplateZid: constZettel{
+	id.DeleteTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Delete HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -352,7 +350,7 @@ var constZettelMap = map[id.Zid]constZettel{
 {{end}}`,
 	},
 
-	id.RolesTemplateZid: constZettel{
+	id.RolesTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore List Roles HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -365,7 +363,7 @@ var constZettelMap = map[id.Zid]constZettel{
 {{/Roles}}</ul>`,
 	},
 
-	id.TagsTemplateZid: constZettel{
+	id.TagsTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore List Tags HTML Template",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -380,7 +378,7 @@ var constZettelMap = map[id.Zid]constZettel{
 {{/Tags}}`,
 	},
 
-	id.BaseCSSZid: constZettel{
+	id.BaseCSSZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base CSS",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -670,7 +668,7 @@ footer {
 `,
 	},
 
-	id.TemplateNewZettelZid: constZettel{
+	id.TemplateNewZettelZid: {
 		constHeader{
 			meta.KeyTitle:   "New Zettel",
 			meta.KeyRole:    meta.ValueRoleNewTemplate,
@@ -680,7 +678,7 @@ footer {
 		"",
 	},
 
-	id.TemplateNewUserZid: constZettel{
+	id.TemplateNewUserZid: {
 		constHeader{
 			meta.KeyTitle:      "New User",
 			meta.KeyRole:       meta.ValueRoleNewTemplate,

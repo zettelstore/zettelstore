@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
+	"zettelstore.de/z/strfun"
 )
 
 // UpdateZettelPort is the interface used by this use case.
@@ -55,7 +56,7 @@ func (uc UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasContent
 		m.Set(meta.KeySyntax, meta.ValueSyntaxNone)
 	}
 	if !hasContent {
-		zettel.Content = oldZettel.Content
+		zettel.Content = domain.Content(strfun.TrimSpaceRight(oldZettel.Content.AsString()))
 	}
 	return uc.port.UpdateZettel(ctx, zettel)
 }

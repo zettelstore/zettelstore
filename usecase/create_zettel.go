@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/strfun"
 )
 
 // CreateZettelPort is the interface used by this use case.
@@ -54,5 +55,6 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	}
 	m.YamlSep = runtime.GetYAMLHeader()
 
+	zettel.Content = domain.Content(strfun.TrimSpaceRight(zettel.Content.AsString()))
 	return uc.port.CreateZettel(ctx, zettel)
 }

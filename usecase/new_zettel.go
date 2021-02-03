@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -14,6 +14,7 @@ package usecase
 import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/strfun"
 )
 
 // NewZettel is the data for this use case.
@@ -36,5 +37,6 @@ func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 			}
 		}
 	}
-	return domain.Zettel{Meta: m, Content: origZettel.Content}
+	content := strfun.TrimSpaceRight(origZettel.Content.AsString())
+	return domain.Zettel{Meta: m, Content: domain.Content(content)}
 }

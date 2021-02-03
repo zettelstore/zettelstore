@@ -61,8 +61,8 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	// Owner was not found or has another ident. Try via list search.
 	filter := place.Filter{
 		Expr: map[string][]string{
-			meta.KeyRole:   []string{meta.ValueRoleUser},
-			meta.KeyUserID: []string{ident},
+			meta.KeyRole:   {meta.ValueRoleUser},
+			meta.KeyUserID: {ident},
 		},
 	}
 	metaList, err := uc.port.SelectMeta(ctx, &filter, nil)
