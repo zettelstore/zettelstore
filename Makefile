@@ -1,5 +1,5 @@
 
-## Copyright (c) 2020 Detlef Stern
+## Copyright (c) 2020-2021 Detlef Stern
 ##
 ## This file is part of zettelstore.
 ##
@@ -7,13 +7,7 @@
 ## Public License). Please see file LICENSE.txt for your rights and obligations
 ## under this license.
 
-.PHONY: test check validate race run build build-dev release clean
-
-PACKAGE := zettelstore.de/z/cmd/zettelstore
-
-GO_LDFLAG_VERSION := -X main.buildVersion=$(shell go run tools/version.go || echo unknown)
-GOFLAGS_DEVELOP := -ldflags "$(GO_LDFLAG_VERSION)" -tags osusergo,netgo
-GOFLAGS_RELEASE := -ldflags "$(GO_LDFLAG_VERSION) -w" -tags osusergo,netgo
+.PHONY: test check validate race build release clean
 
 test:
 	go test ./...
@@ -27,20 +21,14 @@ validate: test check
 race:
 	go test -race ./...
 
-build-dev:
-	mkdir -p bin
-	go build $(GOFLAGS_DEVELOP) -o bin/zettelstore $(PACKAGE)
+version:
+	@echo $(shell go run tools/build.go version)
 
 build:
-	mkdir -p bin
-	go build $(GOFLAGS_RELEASE) -o bin/zettelstore $(PACKAGE)
+	go run tools/build.go
 
 release:
-	mkdir -p releases
-	GOARCH=amd64 GOOS=linux go build $(GOFLAGS_RELEASE) -o releases/zettelstore $(PACKAGE)
-	GOARCH=arm GOARM=6 GOOS=linux go build $(GOFLAGS_RELEASE) -o releases/zettelstore-arm6 $(PACKAGE)
-	GOARCH=amd64 GOOS=darwin go build $(GOFLAGS_RELEASE) -o releases/iZettelstore $(PACKAGE)
-	GOARCH=amd64 GOOS=windows go build $(GOFLAGS_RELEASE) -o releases/zettelstore.exe $(PACKAGE)
+	go run tools/build.go release
 
 clean:
-	rm -rf bin releases
+	go run tools/build.go clean
