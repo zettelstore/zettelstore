@@ -112,7 +112,7 @@ func TestMarkdownSpec(t *testing.T) {
 					gotHTML = reHeadingID.ReplaceAllString(gotHTML, "")
 				}
 				if gotHTML != mdHTML {
-					mdHTML := strings.ReplaceAll(mdHTML, "<li>\n", "<li>")
+					mdHTML = strings.ReplaceAll(mdHTML, "<li>\n", "<li>")
 					if gotHTML != mdHTML {
 						st.Errorf("\nCMD: %q\nExp: %q\nGot: %q", tc.Markdown, mdHTML, gotHTML)
 					}

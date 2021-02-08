@@ -68,12 +68,12 @@ func MakePostRenameZettelHandler(renameZettel usecase.RenameZettel) http.Handler
 			http.NotFound(w, r)
 			return
 		}
-		if err := r.ParseForm(); err != nil {
+		if err = r.ParseForm(); err != nil {
 			adapter.BadRequest(w, "Unable to read rename zettel form")
 			return
 		}
-		if formCurZid, err := id.Parse(
-			r.PostFormValue("curzid")); err != nil || formCurZid != curZid {
+		if formCurZid, err1 := id.Parse(
+			r.PostFormValue("curzid")); err1 != nil || formCurZid != curZid {
 			adapter.BadRequest(w, "Invalid value for current zettel id in form")
 			return
 		}

@@ -198,7 +198,8 @@ func (dp *dirPlace) SelectMeta(
 	res = make([]*meta.Meta, 0, len(entries))
 	for _, entry := range entries {
 		// TODO: execute requests in parallel
-		m, err := getMeta(dp, &entry, entry.Zid)
+		m, err1 := getMeta(dp, &entry, entry.Zid)
+		err = err1
 		if err != nil {
 			continue
 		}

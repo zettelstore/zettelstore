@@ -95,9 +95,9 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 			filter = place.EnsureFilter(filter)
 			filter.Negate = true
 		case sQKey:
-			if values := cleanQueryValues(values); len(values) > 0 {
+			if vals := cleanQueryValues(values); len(vals) > 0 {
 				filter = place.EnsureFilter(filter)
-				filter.Expr[""] = values
+				filter.Expr[""] = vals
 			}
 		default:
 			if !forSearch && meta.KeyIsValid(key) {

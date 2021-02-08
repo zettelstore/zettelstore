@@ -201,10 +201,10 @@ func createZip(zsName string, zipName string, fileName string) error {
 	defer zw.Close()
 
 	hash := crc32.NewIEEE()
-	if _, err := io.Copy(hash, zsFile); err != nil {
+	if _, err = io.Copy(hash, zsFile); err != nil {
 		return err
 	}
-	if _, err := zsFile.Seek(0, os.SEEK_SET); err != nil {
+	if _, err = zsFile.Seek(0, os.SEEK_SET); err != nil {
 		return nil
 	}
 	stat, err := zsFile.Stat()

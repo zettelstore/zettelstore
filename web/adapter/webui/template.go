@@ -285,9 +285,8 @@ func (te *TemplateEngine) renderTemplate(
 	}
 	if user := session.GetUser(ctx); user != nil {
 		htmlLifetime, _ := startup.TokenLifetime()
-		t, err := token.GetToken(user, htmlLifetime, token.KindHTML)
-		if err == nil {
-			session.SetToken(w, t, htmlLifetime)
+		if tok, err1 := token.GetToken(user, htmlLifetime, token.KindHTML); err1 == nil {
+			session.SetToken(w, tok, htmlLifetime)
 		}
 	}
 	var content bytes.Buffer
