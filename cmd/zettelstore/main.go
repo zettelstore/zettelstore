@@ -16,8 +16,8 @@ import (
 )
 
 // Version variable. Will be filled by build process.
-var buildVersion string = ""
+var version string = ""
 
 func main() {
-	cmd.Main("Zettelstore", buildVersion)
+	cmd.Main("Zettelstore", version)
 }

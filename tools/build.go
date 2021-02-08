@@ -137,7 +137,7 @@ func doBuild(env []string, version string, target string) error {
 		env,
 		"go", "build",
 		"-tags", "osusergo,netgo",
-		"-ldflags", fmt.Sprintf("-X main.buildVersion=%v -w", version),
+		"-ldflags", fmt.Sprintf("-X main.version=%v -w", version),
 		"-o", target,
 		"zettelstore.de/z/cmd/zettelstore",
 	)
