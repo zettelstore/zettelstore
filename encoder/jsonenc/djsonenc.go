@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -324,13 +324,14 @@ func (v *detailVisitor) VisitBreak(bn *ast.BreakNode) {
 }
 
 var mapRefState = map[ast.RefState]string{
-	ast.RefStateInvalid:      "invalid",
-	ast.RefStateZettel:       "zettel",
-	ast.RefStateZettelSelf:   "self",
-	ast.RefStateZettelFound:  "zettel",
-	ast.RefStateZettelBroken: "broken",
-	ast.RefStateLocal:        "local",
-	ast.RefStateExternal:     "external",
+	ast.RefStateInvalid:  "invalid",
+	ast.RefStateZettel:   "zettel",
+	ast.RefStateSelf:     "self",
+	ast.RefStateFound:    "zettel",
+	ast.RefStateBroken:   "broken",
+	ast.RefStateHosted:   "local",
+	ast.RefStateBased:    "based",
+	ast.RefStateExternal: "external",
 }
 
 // VisitLink writes JSON code for links.

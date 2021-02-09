@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -82,11 +82,12 @@ type RefState int
 
 // Constants for RefState
 const (
-	RefStateInvalid      RefState = iota // Invalid URL
-	RefStateZettel                       // Valid reference to an internal zettel
-	RefStateZettelSelf                   // Valid reference to same zettel with a fragment
-	RefStateZettelFound                  // Valid reference to an existing internal zettel
-	RefStateZettelBroken                 // Valid reference to a non-existing internal zettel
-	RefStateLocal                        // Valid reference to a non-zettel, but local hosted
-	RefStateExternal                     // Valid reference to external material
+	RefStateInvalid  RefState = iota // Invalid Referende
+	RefStateZettel                   // Reference to an internal zettel
+	RefStateSelf                     // Reference to same zettel with a fragment
+	RefStateFound                    // Reference to an existing internal zettel
+	RefStateBroken                   // Reference to a non-existing internal zettel
+	RefStateHosted                   // Reference to local hosted non-Zettel, without URL change
+	RefStateBased                    // Reference to local non-Zettel, to be prefixed
+	RefStateExternal                 // Reference to external material
 )

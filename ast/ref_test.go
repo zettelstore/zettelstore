@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -55,6 +55,7 @@ func TestReferenceIsZettelMaterial(t *testing.T) {
 		{"http://zettelstore.de/z/12345678901234", false, true, false},
 		{"http://zettelstore.de/12345678901234", false, true, false},
 		{"/12345678901234", false, false, true},
+		{"//12345678901234", false, false, true},
 		{"./12345678901234", false, false, true},
 		{"../12345678901234", false, false, true},
 		{".../12345678901234", false, true, false},

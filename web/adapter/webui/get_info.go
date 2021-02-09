@@ -173,7 +173,7 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []string, extLinks []str
 		return nil, nil
 	}
 	for _, ref := range links {
-		if ref.State == ast.RefStateZettelSelf {
+		if ref.State == ast.RefStateSelf {
 			continue
 		}
 		if ref.IsZettel() {

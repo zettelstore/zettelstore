@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/index"
@@ -51,7 +52,17 @@ func MakeLinkAdapter(
 ) func(*ast.LinkNode) ast.InlineNode {
 	return func(origLink *ast.LinkNode) ast.InlineNode {
 		origRef := origLink.Ref
-		if origRef == nil || origRef.State != ast.RefStateZettel {
+		if origRef == nil {
+			return origLink
+		}
+		if origRef.State == ast.RefStateBased {
+			newLink := *origLink
+			newRef := ast.ParseReference(startup.URLPrefix() + origRef.Value[1:])
+			newRef.State = ast.RefStateHosted
+			newLink.Ref = newRef
+			return &newLink
+		}
+		if origRef.State != ast.RefStateZettel {
 			return origLink
 		}
 		zid, err := id.Parse(origRef.URL.Path)
@@ -72,7 +83,7 @@ func MakeLinkAdapter(
 				u.SetFragment(fragment)
 			}
 			newRef := ast.ParseReference(u.String())
-			newRef.State = ast.RefStateZettelFound
+			newRef.State = ast.RefStateFound
 			newLink.Ref = newRef
 			return &newLink
 		}
@@ -84,7 +95,7 @@ func MakeLinkAdapter(
 			}
 		}
 		newRef := ast.ParseReference(origRef.Value)
-		newRef.State = ast.RefStateZettelBroken
+		newRef.State = ast.RefStateBroken
 		newLink.Ref = newRef
 		return &newLink
 	}
@@ -104,7 +115,7 @@ func MakeImageAdapter() func(*ast.ImageNode) ast.InlineNode {
 		newImage.Ref = ast.ParseReference(
 			NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery(
 				"_format", "raw").String())
-		newImage.Ref.State = ast.RefStateZettelFound
+		newImage.Ref.State = ast.RefStateFound
 		return &newImage
 	}
 }

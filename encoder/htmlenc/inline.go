@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -68,9 +68,9 @@ func (v *visitor) VisitLink(ln *ast.LinkNode) {
 	defer v.lang.pop()
 
 	switch ln.Ref.State {
-	case ast.RefStateZettelSelf, ast.RefStateZettelFound, ast.RefStateLocal:
+	case ast.RefStateSelf, ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased:
 		v.writeAHref(ln.Ref, ln.Attrs, ln.Inlines)
-	case ast.RefStateZettelBroken:
+	case ast.RefStateBroken:
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("class", "zs-broken")
 		attrs = attrs.Set("title", "Zettel not found") // l10n

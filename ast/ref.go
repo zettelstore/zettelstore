@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -22,6 +22,15 @@ func ParseReference(s string) *Reference {
 	if len(s) == 0 {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
+	if state, ok := localState(s); ok {
+		if state == RefStateBased {
+			s = s[1:]
+		}
+		u, err := url.Parse(s)
+		if err == nil {
+			return &Reference{URL: u, Value: s, State: state}
+		}
+	}
 	u, err := url.Parse(s)
 	if err != nil {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
@@ -31,26 +40,26 @@ func ParseReference(s string) *Reference {
 			return &Reference{URL: u, Value: s, State: RefStateZettel}
 		}
 		if u.Path == "" && u.Fragment != "" {
-			return &Reference{URL: u, Value: s, State: RefStateZettelSelf}
-		}
-		if isLocalPath(u.Path) {
-			return &Reference{URL: u, Value: s, State: RefStateLocal}
+			return &Reference{URL: u, Value: s, State: RefStateSelf}
 		}
 	}
 	return &Reference{URL: u, Value: s, State: RefStateExternal}
 }
 
-func isLocalPath(path string) bool {
+func localState(path string) (RefState, bool) {
 	if len(path) > 0 && path[0] == '/' {
-		return true
+		if len(path) > 1 && path[1] == '/' {
+			return RefStateBased, true
+		}
+		return RefStateHosted, true
 	}
 	if len(path) > 1 && path[0] == '.' {
 		if len(path) > 2 && path[1] == '.' && path[2] == '/' {
-			return true
+			return RefStateHosted, true
 		}
-		return path[1] == '/'
+		return RefStateHosted, path[1] == '/'
 	}
-	return false
+	return RefStateInvalid, false
 }
 
 // String returns the string representation of a reference.
@@ -67,14 +76,16 @@ func (r *Reference) IsValid() bool { return r.State != RefStateInvalid }
 // IsZettel returns true if it is a referencen to a local zettel.
 func (r *Reference) IsZettel() bool {
 	switch r.State {
-	case RefStateZettel, RefStateZettelSelf, RefStateZettelFound, RefStateZettelBroken:
+	case RefStateZettel, RefStateSelf, RefStateFound, RefStateBroken:
 		return true
 	}
 	return false
 }
 
 // IsLocal returns true if reference is local
-func (r *Reference) IsLocal() bool { return r.State == RefStateLocal }
+func (r *Reference) IsLocal() bool {
+	return r.State == RefStateHosted || r.State == RefStateBased
+}
 
 // IsExternal returns true if it is a referencen to external material.
 func (r *Reference) IsExternal() bool { return r.State == RefStateExternal }

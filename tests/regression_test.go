@@ -87,6 +87,7 @@ func resultFile(file string) (data string, err error) {
 }
 
 func checkFileContent(t *testing.T, filename string, gotContent string) {
+	t.Helper()
 	wantContent, err := resultFile(filename)
 	if err != nil {
 		t.Error(err)
