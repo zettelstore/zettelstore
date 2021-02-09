@@ -7,19 +7,10 @@
 ## Public License). Please see file LICENSE.txt for your rights and obligations
 ## under this license.
 
-.PHONY: test check validate race build release clean
-
-test:
-	go test ./...
+.PHONY:  check build release clean
 
 check:
-	go vet ./...
-	~/go/bin/golint ./...
-
-validate: test check
-
-race:
-	go test -race ./...
+	go run tools/build.go check
 
 version:
 	@echo $(shell go run tools/build.go version)

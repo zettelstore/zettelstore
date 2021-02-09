@@ -45,10 +45,8 @@ func executeCommand(env []string, name string, arg ...string) (string, error) {
 	cmd.Stdin = nil
 	cmd.Stdout = &out
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-	return out.String(), nil
+	err := cmd.Run()
+	return out.String(), err
 }
 
 func readVersionFile() (string, error) {
@@ -79,10 +77,7 @@ func readFossilVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	lines := strings.FieldsFunc(s, func(r rune) bool {
-		return r == '\n' || r == '\r'
-	})
-	for _, line := range lines {
+	for _, line := range splitLines(s) {
 		for _, prefix := range dirtyPrefixes {
 			if strings.HasPrefix(line, prefix) {
 				return hash + "-dirty", nil
@@ -90,6 +85,12 @@ func readFossilVersion() (string, error) {
 		}
 	}
 	return hash, nil
+}
+
+func splitLines(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool {
+		return r == '\n' || r == '\r'
+	})
 }
 
 func getVersion() (string, string, string) {
@@ -104,12 +105,14 @@ func getVersion() (string, string, string) {
 	return base + "+" + fossil, base, fossil
 }
 
-func cmdCheck() error {
+func cmdCheck(withVCS bool) error {
 	out, err := executeCommand(nil, "go", "test", "./...")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Some tests failed")
-		if len(out) > 0 {
-			fmt.Fprintln(os.Stderr, out)
+		for _, line := range splitLines(out) {
+			if strings.HasPrefix(line, "ok") || strings.HasPrefix(line, "?") {
+				continue
+			}
+			fmt.Fprintln(os.Stderr, line)
 		}
 		return err
 	}
@@ -121,11 +124,44 @@ func cmdCheck() error {
 		}
 		return err
 	}
+	out, err = executeCommand(nil, "golint", "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some lints failed")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+		return err
+	}
+	if out, err = executeCommand(nil, "which", "shadow"); err == nil && len(out) > 0 {
+		out, err = executeCommand(nil, "go", "vet", "-vettool", strings.TrimSpace(out), "./...")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Some shadowed variables found")
+			if len(out) > 0 {
+				fmt.Fprintln(os.Stderr, out)
+			}
+			return err
+		}
+	}
+	if withVCS {
+		out, err = executeCommand(nil, "fossil", "extra")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Unable to execute 'fossil extra'")
+		} else if len(out) > 0 {
+			fmt.Fprint(os.Stderr, "Warning: unversioned file(s):")
+			for i, extra := range splitLines(out) {
+				if i > 0 {
+					fmt.Fprint(os.Stderr, ",")
+				}
+				fmt.Fprintf(os.Stderr, " %q", extra)
+			}
+			fmt.Fprintln(os.Stderr)
+		}
+	}
 	return nil
 }
 
 func cmdBuild() error {
-	if err := cmdCheck(); err != nil {
+	if err := cmdCheck(false); err != nil {
 		return err
 	}
 	version, _, _ := getVersion()
@@ -151,7 +187,7 @@ func doBuild(env []string, version string, target string) error {
 }
 
 func cmdRelease() error {
-	if err := cmdCheck(); err != nil {
+	if err := cmdCheck(true); err != nil {
 		return err
 	}
 	version, base, fossil := getVersion()
@@ -258,7 +294,7 @@ func main() {
 			version, _, _ := getVersion()
 			fmt.Print(version)
 		case "check":
-			err = cmdCheck()
+			err = cmdCheck(true)
 		default:
 			fmt.Fprintf(os.Stderr, "Unknown command %q\n", args[0])
 			os.Exit(1)
