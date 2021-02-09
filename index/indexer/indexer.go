@@ -218,8 +218,7 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	idx.store.UpdateReferences(ctx, zi)
 }
 
-func updateValue(
-	ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {
+func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
@@ -235,16 +234,14 @@ func updateValue(
 	zi.AddMetaRef(inverse, zid)
 }
 
-func updateReferences(
-	ctx context.Context, refs []*ast.Reference, p getMetaPort, zi *index.ZettelIndex) {
+func updateReferences(ctx context.Context, refs []*ast.Reference, p getMetaPort, zi *index.ZettelIndex) {
 	zrefs, _, _ := collect.DivideReferences(refs, false)
 	for _, ref := range zrefs {
-		updateReference(ctx, ref.Value, p, zi)
+		updateReference(ctx, ref.URL.Path, p, zi)
 	}
 }
 
-func updateReference(
-	ctx context.Context, value string, p getMetaPort, zi *index.ZettelIndex) {
+func updateReference(ctx context.Context, value string, p getMetaPort, zi *index.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
