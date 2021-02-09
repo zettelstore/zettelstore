@@ -27,7 +27,7 @@ func (v *visitor) VisitText(tn *ast.TextNode) {
 // VisitTag writes tag content.
 func (v *visitor) VisitTag(tn *ast.TagNode) {
 	// TODO: erst mal als span. Link wäre gut, muss man vermutlich via Callback lösen.
-	v.b.WriteString("<span class=\"zettel-tag\">")
+	v.b.WriteString("<span class=\"zettel-tag\">#")
 	v.writeHTMLEscaped(tn.Tag)
 	v.b.WriteString("</span>")
 }
