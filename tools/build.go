@@ -105,7 +105,7 @@ func getVersion() (string, string, string) {
 	return base + "+" + fossil, base, fossil
 }
 
-func cmdCheck(withVCS bool) error {
+func cmdCheck() error {
 	out, err := executeCommand(nil, "go", "test", "./...")
 	if err != nil {
 		for _, line := range splitLines(out) {
@@ -142,28 +142,23 @@ func cmdCheck(withVCS bool) error {
 			return err
 		}
 	}
-	if withVCS {
-		out, err = executeCommand(nil, "fossil", "extra")
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Unable to execute 'fossil extra'")
-		} else if len(out) > 0 {
-			fmt.Fprint(os.Stderr, "Warning: unversioned file(s):")
-			for i, extra := range splitLines(out) {
-				if i > 0 {
-					fmt.Fprint(os.Stderr, ",")
-				}
-				fmt.Fprintf(os.Stderr, " %q", extra)
+	out, err = executeCommand(nil, "fossil", "extra")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Unable to execute 'fossil extra'")
+	} else if len(out) > 0 {
+		fmt.Fprint(os.Stderr, "Warning: unversioned file(s):")
+		for i, extra := range splitLines(out) {
+			if i > 0 {
+				fmt.Fprint(os.Stderr, ",")
 			}
-			fmt.Fprintln(os.Stderr)
+			fmt.Fprintf(os.Stderr, " %q", extra)
 		}
+		fmt.Fprintln(os.Stderr)
 	}
 	return nil
 }
 
 func cmdBuild() error {
-	if err := cmdCheck(false); err != nil {
-		return err
-	}
 	version, _, _ := getVersion()
 	return doBuild(nil, version, "bin/zettelstore")
 }
@@ -187,7 +182,7 @@ func doBuild(env []string, version string, target string) error {
 }
 
 func cmdRelease() error {
-	if err := cmdCheck(true); err != nil {
+	if err := cmdCheck(); err != nil {
 		return err
 	}
 	version, base, fossil := getVersion()
@@ -294,7 +289,7 @@ func main() {
 			version, _, _ := getVersion()
 			fmt.Print(version)
 		case "check":
-			err = cmdCheck(true)
+			err = cmdCheck()
 		default:
 			fmt.Fprintf(os.Stderr, "Unknown command %q\n", args[0])
 			os.Exit(1)
