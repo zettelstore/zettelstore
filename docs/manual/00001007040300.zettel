@@ -17,7 +17,7 @@ There are several kinds of references that are allowed in Zettelmarkup:
 
 === Links
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
-Both kinds starts with two consecutive left square bracket characters (""''[''"", ''U+005B'') and ends with two consecutive right square bracket characters (""'']''"", ''U+005D'').
+Both kinds begin with two consecutive left square bracket characters (""''[''"", ''U+005B'') and ends with two consecutive right square bracket characters (""'']''"", ''U+005D'').
 
 The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", ''U+007C''): ``[[text|linkspecification]]``.
 
@@ -29,7 +29,8 @@ To reference some content within a zettel, you can append a number sign characte
 The resulting reference is called ""zettel reference"".
 
 To specify some material outside the Zettelstore, just use an normal Uniform Resource Identifier (URI) as defined by [[RFC\ 3986|https://tools.ietf.org/html/rfc3986]].
-If the URL starts with the slash character (""/"", ''U+002F''), or if it starts with ""./"" or with ""../"", i.e. without scheme, user info, and host name, the reference will be treated as a ""local reference"", otherwise as an ""external reference"". If the URL starts with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
+If the URL begins with the slash character (""/"", ''U+002F''), or if it begins with ""./"" or with ""../"", i.e. without scheme, user info, and host name, the reference will be treated as a ""local reference"", otherwise as an ""external reference"".
+If the URL begins with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
 
 The text in the second form is just a sequence of inline elements.
 
@@ -39,7 +40,7 @@ Both contain a link specification and optionally some text.
 In contrast to a link, the link specification of an image must resolve to actual graphical image data.
 That data is read when rendered as HTML, and is embedded inside the zettel as an inline image.
 
-An image specification starts with two consecutive left curly bracket characters (""''{''"", ''U+007B'') and ends with two consecutive right curly bracket characters (""''}''"", ''U+007D'').
+An image specification begins with two consecutive left curly bracket characters (""''{''"", ''U+007B'') and ends with two consecutive right curly bracket characters (""''}''"", ''U+007D'').
 The curly brackets delimits either a link specification or some text, a vertical bar character and the link specification, similar to a link.
 
 One difference to a link: if the text was not given, an empty string is assumed.
@@ -64,7 +65,7 @@ One prominent example is to specify an explicit title attribute that is shown on
 
 === Footnotes
 
-A footnote starts with a left square bracket, followed by a circumflex accent (""''^''"", ''U+005E''), followed by some text, and ends with a right square bracket.
+A footnote begins with a left square bracket, followed by a circumflex accent (""''^''"", ''U+005E''), followed by some text, and ends with a right square bracket.
 
 Example:
 
@@ -76,7 +77,7 @@ A citation key references some external material that is part of a bibliografica
 
 Currently, Zettelstore implements this only partially, it is ""work in progress"".
 
-However, the syntax is: starting with a left square bracket and followed by an at sign character (""''@''"", ''U+0040''), a the citation key is given.
+However, the syntax is: beginning with a left square bracket and followed by an at sign character (""''@''"", ''U+0040''), a the citation key is given.
 The key is typically a sequence of letters and digits.
 If a comma character (""'',''"", ''U+002C'') or a vertical bar character is given, the following is interpreted as inline elements.
 A right square bracket ends the text and the citation key element.
@@ -85,7 +86,7 @@ A right square bracket ends the text and the citation key element.
 A mark allows to name a point within a zettel.
 This is useful if you want to reference some content in a bigger-sized zettel[^Other uses of marks will be given, if Zettelmarkup is extended by a concept called //transclusion//.].
 
-A mark starts with a left square bracket, followed by an exclamation mark character (""''!''"", ''U+0021'').
+A mark begins with a left square bracket, followed by an exclamation mark character (""''!''"", ''U+0021'').
 Now the optional mark name follows.
 It is a (possibly empty) sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low-line character (""''_''"", ''U+005F'').
 The mark element ends with a right square bracket.

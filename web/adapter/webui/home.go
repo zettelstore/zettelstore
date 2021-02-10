@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/web/adapter"
 )
 
 type getRootStore interface {
@@ -26,21 +27,18 @@ type getRootStore interface {
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
-func MakeGetRootHandler(
-	s getRootStore, startNotFound, startFound http.HandlerFunc) http.HandlerFunc {
+func MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
-		startID := runtime.GetStart()
-		if startID.IsValid() {
-			if _, err := s.GetMeta(r.Context(), startID); err == nil {
-				r.URL.Path = "/" + startID.String()
-				startFound(w, r)
-				return
+		homeID := runtime.GetHomeZettel()
+		if homeID != id.DefaultHomeZid && homeID.IsValid() {
+			if _, err := s.GetMeta(r.Context(), homeID); err != nil {
+				homeID = id.DefaultHomeZid
 			}
 		}
-		startNotFound(w, r)
+		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeID).String(), http.StatusFound)
 	}
 }

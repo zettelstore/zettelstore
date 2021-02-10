@@ -1,3 +1,4 @@
+id: 00001007050100
 title: Zettelmarkup: Supported Attribute Values for Natural Languages
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
@@ -18,7 +19,7 @@ Examples:
 * ``{lang=de-de}`` for the german language dialect spoken in Germany
 
 The actual [[typographic quotations marks|00001007040100]] (``""...""``) are derived from the current language.
-The language of a zettel (meta key ''lang'') or of the whole Zettelstore (''default-lang'' of the [[configuration zettel|00001004020000]]) can be overwritten by an attribute: ``""...""{lang=fr}``{=zmk}.
+The language of a zettel (meta key ''lang'') or of the whole Zettelstore (''default-lang'' of the [[configuration zettel|00001004020000#default-lang]]) can be overwritten by an attribute: ``""...""{lang=fr}``{=zmk}.
 Currently, Zettelstore supports the following primary languages:
 
 * ''de''

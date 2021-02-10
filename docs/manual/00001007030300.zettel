@@ -1,10 +1,11 @@
+id: 00001007030300
 title: Zettelmarkup: Headings
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 role: manual
 
 To specify a (sub-) section of a zettel, you should use the headings syntax: at
-the start of a new line type at least three equal signs (""''=''"", ''U+003D''), plus at least one
+the beginning of a new line type at least three equal signs (""''=''"", ''U+003D''), plus at least one
 space and enter the text of the heading as inline elements.
 
 ```zmk

@@ -1,3 +1,4 @@
+id: 00001007031000
 title: Zettelmarkup: Tables
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
@@ -9,8 +10,8 @@ Therefore, a table can be seen as a sequence of table rows.
 A table row is nothing as a sequence of //table cells//.
 The length of a table is the number of table rows, the width of a table is the maximum length of its rows.
 
-The first cell of a row must start with the vertical bar character (""''|''"", ''U+007C'') at the first position of a line.
-The other cells of a row start with the same vertical bar character at later positions in that line.
+The first cell of a row must begin with the vertical bar character (""''|''"", ''U+007C'') at the first position of a line.
+The other cells of a row begin with the same vertical bar character at later positions in that line.
 A cell is delimited by the vertical bar character of the next cell or by the end of the current line.
 A vertical bar character as the last character of a line will not result in a table cell.
 It will be ignored.

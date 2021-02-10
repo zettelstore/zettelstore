@@ -3,7 +3,6 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20201231131204
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called ""configuration zettel"".
@@ -49,6 +48,9 @@ The following metadata keys change the appearance / behavior of Zettelstore:
   It only affects the [[web user interface|00001014000000]].
   Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
   Default: (the empty string).
+; [!home-zettel]''home-zettel''
+: Specifies the identifier of the zettel, that should be presented for the default view / home view.
+  If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
 ; [!marker-external]''marker-external''
 : Some HTML code that is displayed after a reference to external material.
   Default: ''&\#8599;&\#xfe0e;'', to display a ""&#8599;&#xfe0e;"" sign[^The string ''&\#xfe0e;'' is needed to enforce the sign on all platforms.].
@@ -60,9 +62,6 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : Name of the Zettelstore instance.
   Will be used when displaying some lists.
   Default: ''Zettelstore''.
-; [!start]''start''
-: Specifies the ID of the zettel, that should be presented for the default view.
-  If not given or if the ID does not identify a zettel, the list of all zettel is shown.
 ; [!yaml-header]''yaml-header''
 : If true, metadata and content will be separated by ''-\--\\n'' instead of an empty line (''\\n\\n'').
   Default: ''false''.

@@ -12,6 +12,12 @@
 <h3>Server</h3>
   *  (bug) A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
 
+<h3>WebUI</h3>
+  *  (major) Menu item &ldquo;Home&rdquo; now redirects to a home zettel.
+             Its default identifier is <tt>000100000000</tt>.
+             The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
+             The default home zettel contains some welcoming information for the new user.
+
 <a name="0_0_9"></a>
 <h2>Changes for Version 0.0.9 (2021-01-29)</h2>
 This is the first version that is managed by [https://fossil-scm.org|Fossil] instead
@@ -33,7 +39,7 @@ of GitHub. To access older versions, use the Git repository under
              The key <tt>back</tt> is computed as the value of <tt>backward</tt>, but without forward links.
              Therefore, <tt>back</tt> is something like the list of &ldquo;smart backlinks&rdquo;.
   *  (minor) If Zettelstore is being stopped, an appropriate message is written in the console log.
-  *  (minor) New computed zettel with enviromental data, the list of supported meta data keys,
+  *  (minor) New computed zettel with environmental data, the list of supported meta data keys,
              and statistics about all configured zettel places.
              Some other computed zettel got a new identifier (to make room for other variant).
   *  (minor) Remove zettel <tt>00000000000004</tt>, which contained the Go version that produced the Zettelstore executable.

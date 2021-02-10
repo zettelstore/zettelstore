@@ -1,3 +1,4 @@
+id: 00001007030100
 title: Zettelmarkup: Description Lists
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
@@ -7,10 +8,10 @@ A description list is a sequence of terms to be described together with the desc
 Every term can described in multiple ways.
 
 A description term (short: //term//) is specified with one semicolon (""'';''"", ''U+003B'') at the first position, followed by a space character and the described term, specified as a sequence of line elements.
-If the following lines should also be part of the term, exactly two spaces must be given at the start the each following line.
+If the following lines should also be part of the term, exactly two spaces must be given at the beginning of each following line.
 
 The description of a term is given with one colon (""'':''"", ''U+003A'') at the first position, followed by a space character and the description itself, specified as a sequence of inline elements.
-Similar to terms, following lines can also be part of the actual description, if they start at each line with exactly two space characters.
+Similar to terms, following lines can also be part of the actual description, if they begin at each line with exactly two space characters.
 
 In contrast to terms, the actual descriptions are merged into a paragraph.
 This is because, an actual description can contain more than one paragraph.

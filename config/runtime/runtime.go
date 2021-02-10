@@ -134,16 +134,16 @@ func GetSiteName() string {
 	return "Zettelstore"
 }
 
-// GetStart returns the value of the "start" key.
-func GetStart() id.Zid {
+// GetHomeZettel returns the value of the "home-zettel" key.
+func GetHomeZettel() id.Zid {
 	if config := getConfigurationMeta(); config != nil {
-		if start, ok := config.Get(meta.KeyStart); ok {
+		if start, ok := config.Get(meta.KeyHomeZettel); ok {
 			if startID, err := id.Parse(start); err == nil {
 				return startID
 			}
 		}
 	}
-	return id.Invalid
+	return id.DefaultHomeZid
 }
 
 // GetDefaultVisibility returns the default value for zettel visibility.

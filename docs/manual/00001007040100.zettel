@@ -1,16 +1,17 @@
+id: 00001007040100
 title: Zettelmarkup: Text Formatting
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 role: manual
 
 Text formatting is the way to make your text visually different.
-Every text formatting element starts with two same characters.
+Every text formatting element begins with two same characters.
 It ends when these two same characters occur the second time.
 It is possible that some [[attributes|00001007050000]] follow immediately, without any separating character.
 
 Text formatting can be nested, up to a reasonable limit.
 
-The following characters start a text formatting:
+The following characters begin a text formatting:
 
 * The slash character (""''/''"", ''U+002F'') emphasizes its text. Often, such text is rendered in italics. If the default attribute is specified, the emphasized text is not just rendered as such, but also internally marked as emphasized.
 ** Example: ``abc //def// ghi`` is rendered in HTML as: ::abc //def// ghi::{=example}.

@@ -1,3 +1,4 @@
+id: 00001007040000
 title: Zettelmarkup: Inline-Structured Elements
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
@@ -9,7 +10,7 @@ Inline-structured elements allow to format your text and add some helpful links 
 Sometimes, you want to enter characters that have no representation on your keyboard.
 
 === Text formatting
-Every [[text formatting|00001007040100]] element starts with two same characters at the beginning.
+Every [[text formatting|00001007040100]] element begins with two same characters at the beginning.
 It lasts until the same two characters occurred the second time.
 Some of these elements explicitly support [[attributes|00001007050000]].
 
@@ -27,8 +28,8 @@ All these elements can be subsumed under [[reference-like text|00001007040300]].
 
 === Other inline elements
 ==== Comments
-A comment is started with two consecutive percent sign characters (""''%''"", ''U+0025'').
-It ends at the end of the line where it started.
+A comment begins with two consecutive percent sign characters (""''%''"", ''U+0025'').
+It ends at the end of the line where it begins.
 
 ==== Backslash
 The backslash character (""''\\''"", ''U+005C'') gives the next character another meaning.
@@ -38,14 +39,14 @@ The backslash character (""''\\''"", ''U+005C'') gives the next character anothe
   For example, if you want to enter a ""'']''"" into a footnote text, you should escape it with a backslash.
 
 ==== Tag
-Any text that starts with a number sign character (""''#''"", ''U+0023''), followed by a non-empty sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low line character (""''_''"", ''U+005F'') is interpreted as an //inline tag//.
+Any text that begins with a number sign character (""''#''"", ''U+0023''), followed by a non-empty sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low line character (""''_''"", ''U+005F'') is interpreted as an //inline tag//.
 They will be considered equivalent to tags in metadata.
 
 ==== Entities & more
 Sometimes it is not easy to enter special characters.
 If you know the Unicode code point of that character, or its name according to the [[HTML standard|https://html.spec.whatwg.org/multipage/named-characters.html]], you can enter it by number or by name.
 
-Regardless which method you use, an entity always starts with an ampersand character (""''&''"", ''U+0026'') and ends with a semicolon character (""'';''"", ''U+003B'').
+Regardless which method you use, an entity always begins with an ampersand character (""''&''"", ''U+0026'') and ends with a semicolon character (""'';''"", ''U+003B'').
 If you know the HTML name of the character you want to enter, place it between these two character.
 Example: ``&amp;`` is rendered as ::&amp;::{=example}.
 

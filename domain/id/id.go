@@ -44,7 +44,7 @@ const (
 	TemplateNewZettelZid = Zid(91001)
 	TemplateNewUserZid   = Zid(96001)
 
-	WelcomeZid = Zid(19700101000000)
+	DefaultHomeZid = Zid(10000000000)
 )
 
 const maxZid = 99999999999999

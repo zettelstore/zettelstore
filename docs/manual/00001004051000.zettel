@@ -3,7 +3,6 @@ title: The ''run'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115719
 precursor: 00001004050000
 
 === ``zettelstore run``
@@ -42,6 +41,6 @@ zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
   This allows to publish your content without any risks of unauthorized changes.
 ; ''-v''
 : Be more verbose in writing logs.
-  Writes the startup configuration to stderr.
+  Writes the start-up configuration to stderr.
 
 Command line options take precedence over configuration file options.

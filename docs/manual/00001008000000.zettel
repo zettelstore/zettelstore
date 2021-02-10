@@ -3,7 +3,6 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20210111182215
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -17,7 +16,7 @@ However, with the exception of zettel titles, you can use any (markup) language 
 * Plain text, not further interpreted
 
 The [[metadata key|00001006020000#syntax]] ""''syntax''"" specifies which language should be used.
-If it is not given, the key ""''default-syntax''"" will be used (specified in the [[configuration zettel|00001004020000]]).
+If it is not given, the key ""''default-syntax''"" will be used (specified in the [[configuration zettel|00001004020000#default-syntax]]).
 The following syntax values are supported:
 
 ; [!css]''css''

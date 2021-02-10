@@ -1,3 +1,4 @@
+id: 00001012920000
 title: Endpoints used by the API
 tags: #api #manual #reference #zettelstore
 syntax: zmk
@@ -5,7 +6,7 @@ role: manual
 
 All API endpoints conform to the pattern ''[PREFIX]/LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
-: is an optional URL prefix, configured via the ''url-prefix'' [[startup configuration|00001004010000]],
+: is an optional URL prefix, configured via the ''url-prefix'' [[start-up configuration|00001004010000]],
 ; ''LETTER''
 : is a single letter that specifies the ressource type,
 ; ''ZETTEL-ID''
@@ -24,4 +25,4 @@ The following letters are currently in use:
 The full URL will contain either the ''http'' oder ''https'' scheme, a host name, and an optional port number.
 
 The API examples will assume the ''http'' schema, the local host ''127.0.0.1'', the default port ''23123'', and the default empty ''PREFIX''.
-Therefore, all URLs will start with ''http://127.0.0.1:23123''.
+Therefore, all URLs in the API documentation will begin with ''http://127.0.0.1:23123''.

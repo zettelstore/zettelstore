@@ -1,9 +1,10 @@
+id: 00001007060000
 title: Zettelmarkup: Summary of Formatting Characters
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
 role: manual
 
-The following table gives an overview about the use of all characters that start a markup element.
+The following table gives an overview about the use of all characters that begin a markup element.
 
 |= Character :|= Blocks <|= Inlines <
 | ''!''  | (free) | (free)

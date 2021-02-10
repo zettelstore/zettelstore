@@ -3,7 +3,6 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210108184053
 
 Most [[supported metadata keys|00001006020000]] conform to a type.
 
@@ -17,7 +16,7 @@ when selecting some zettel. And there is a rule, how values compare for
 sorting.
 
 |= Name | Meaning | Match | Sorting
-| Boolean | Boolean value, False if value starts with ""''0''"", ""''F''"", ""''N''"", ""''f''"", or ""''n''"" | Boolean match | False < True
+| Boolean | Boolean value, False if value begins with ""''0''"", ""''F''"", ""''N''"", ""''f''"", or ""''n''"" | Boolean match | False < True
 | Credential | Value is a credential, e.g. an encrypted password (planned) | Never matches | Uses zettel identifier for sorting
 | Timestamp | Timestamp value YYYYMMDDHHmmSS | prefix match | by number
 | EString | Any string, possibly empty | case-insensitive contains | case-sensitive

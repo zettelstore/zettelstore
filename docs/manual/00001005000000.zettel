@@ -3,7 +3,6 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20210125195908
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -23,10 +22,10 @@ For example, a more sophisticated web interface could be build, or an applicatio
 
 Your zettel are stored as files in a specific directory.
 If you have not explicitly specified the directory, a default directory will be used.
-The directory has to be specified at [[startup time|00001004010000]].
+The directory has to be specified at [[start-up time|00001004010000]].
 Nested directories are not supported (yet).
 
-Every file in this directory that should be monitored by Zettelstore must have a file name that starts with 14 digits (0-9), the [[zettel identifier|00001006050000]].
+Every file in this directory that should be monitored by Zettelstore must have a file name that begins with 14 digits (0-9), the [[zettel identifier|00001006050000]].
 If you create a new zettel via the web interface or the API, the zettel identifier will be the timestamp of the current date and time (format is ''YYYYMMDDhhmmss'').
 This allows zettel to be sorted naturally by creation time.
 
@@ -53,7 +52,7 @@ Here the ''.zettel'' extension will signal that the metadata and the zettel cont
 
 === Predefined zettel
 
-Zettelstore contains some predefined zettel to work properly.
+Zettelstore contains some [[predefined zettel|00001005090000]] to work properly.
 The [[configuration zettel|00001004020000]] is one example.
 To render the builtin web interface, some templates are used, as well as a layout specification in CSS.
 The icon that visualizes an external link is a predefined SVG image.

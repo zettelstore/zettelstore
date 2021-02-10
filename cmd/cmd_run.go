@@ -83,12 +83,9 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 	ucListMeta := usecase.NewListMeta(pp)
 	ucListRoles := usecase.NewListRole(pp)
 	ucListTags := usecase.NewListTags(pp)
-	listHTMLMetaHandler := webui.MakeListHTMLMetaHandler(te, ucListMeta)
-	getHTMLZettelHandler := webui.MakeGetHTMLZettelHandler(te, ucParseZettel, ucGetMeta)
 
 	router := router.NewRouter()
-	router.Handle("/", webui.MakeGetRootHandler(
-		pp, listHTMLMetaHandler, getHTMLZettelHandler))
+	router.Handle("/", webui.MakeGetRootHandler(pp))
 	router.AddListRoute('a', http.MethodGet, webui.MakeGetLoginHandler(te))
 	router.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
 		api.MakePostLoginHandlerAPI(ucAuthenticate),
@@ -115,8 +112,10 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 		router.AddZettelRoute('f', http.MethodPost, webui.MakePostCreateZettelHandler(
 			usecase.NewCreateZettel(pp)))
 	}
-	router.AddListRoute('h', http.MethodGet, listHTMLMetaHandler)
-	router.AddZettelRoute('h', http.MethodGet, getHTMLZettelHandler)
+	router.AddListRoute('h', http.MethodGet, webui.MakeListHTMLMetaHandler(
+		te, ucListMeta))
+	router.AddZettelRoute('h', http.MethodGet, webui.MakeGetHTMLZettelHandler(
+		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('i', http.MethodGet, webui.MakeGetInfoHandler(
 		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('k', http.MethodGet, webui.MakeWebUIListsHandler(
