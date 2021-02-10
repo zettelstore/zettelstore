@@ -1,6 +1,6 @@
 <title>Change Log</title>
 
-<a name="0_0_9"></a>
+<a name="0_0_10"></a>
 <h2>Changes for Version 0.0.10 (pending)</h2>
 <h3>Syntax</h3>
   *  (minor) A reference that starts with two slash characters (&ldquo;<code>//</code>&rdquo;)
