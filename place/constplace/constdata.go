@@ -55,6 +55,25 @@ var constZettelMap = map[id.Zid]constZettel{
 <body>
 <nav class="zs-menu">
 <a href="{{{HomeURL}}}">Home</a>
+{{#WithAuth}}
+<div class="zs-dropdown">
+<button>User</button>
+<nav class="zs-dropdown-content">
+{{#UserIsValid}}
+<a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
+{{/UserIsValid}}
+{{^UserIsValid}}
+<a href="{{{LoginURL}}}">Login</a>
+{{/UserIsValid}}
+{{#CanReload}}
+<a href="{{{ReloadURL}}}">Reload</a>
+{{/CanReload}}
+{{#UserIsValid}}
+<a href="{{{UserLogoutURL}}}">Logout</a>
+{{/UserIsValid}}
+</nav>
+</div>
+{{/WithAuth}}
 <div class="zs-dropdown">
 <button>Lists</button>
 <nav class="zs-dropdown-content">
@@ -73,23 +92,6 @@ var constZettelMap = map[id.Zid]constZettel{
 </nav>
 </div>
 {{/CanCreate}}
-{{#WithAuth}}
-<div class="zs-dropdown">
-<button>User</button>
-<nav class="zs-dropdown-content">
-{{#UserIsValid}}
-<a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
-<a href="{{{UserLogoutURL}}}">Logout</a>
-{{/UserIsValid}}
-{{^UserIsValid}}
-<a href="{{{LoginURL}}}">Login</a>
-{{/UserIsValid}}
-{{#CanReload}}
-<a href="{{{ReloadURL}}}">Reload</a>
-{{/CanReload}}
-</nav>
-</div>
-{{/WithAuth}}
 {{{Menu}}}
 <form action="{{{SearchURL}}}">
 <input type="text" placeholder="Search.." name="s">
