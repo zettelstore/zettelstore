@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,9 +16,12 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/session"
 )
 
 type getRootStore interface {
@@ -33,12 +36,26 @@ func MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		homeID := runtime.GetHomeZettel()
-		if homeID != id.DefaultHomeZid && homeID.IsValid() {
-			if _, err := s.GetMeta(r.Context(), homeID); err != nil {
-				homeID = id.DefaultHomeZid
+		ok := false
+		ctx := r.Context()
+		homeZid := runtime.GetHomeZettel()
+		if homeZid != id.DefaultHomeZid && homeZid.IsValid() {
+			if _, err := s.GetMeta(ctx, homeZid); err != nil {
+				homeZid = id.DefaultHomeZid
+			} else {
+				ok = true
 			}
 		}
-		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeID).String(), http.StatusFound)
+		if !ok {
+			if _, err := s.GetMeta(ctx, homeZid); err != nil {
+				if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
+					http.Redirect(w, r, adapter.NewURLBuilder('a').String(), http.StatusFound)
+					return
+				}
+				http.Redirect(w, r, adapter.NewURLBuilder('h').String(), http.StatusFound)
+				return
+			}
+		}
+		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
 	}
 }
