@@ -3,7 +3,6 @@ title: Zettelstore Manual
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20210126174156
 
 * [[Introduction|00001001000000]]
 * [[Design goals|00001002000000]]

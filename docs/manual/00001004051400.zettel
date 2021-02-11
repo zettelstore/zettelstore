@@ -3,7 +3,6 @@ title: The ''password'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115737
 precursor: 00001004050000
 
 This sub-command is used to create a hashed password for to be authenticated users.

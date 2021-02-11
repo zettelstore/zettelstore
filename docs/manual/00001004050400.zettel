@@ -3,7 +3,6 @@ title: The ''version'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115659
 precursor: 00001004050000
 
 Emits some information about the Zettelstore's version.

@@ -3,7 +3,6 @@ title: API: Authenticate a client
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210111190943
 
 Authentication for future API calls is done by sending a [[user identification|00001010040200]] and a password to the Zettelstore to obtain an [[access token|00001010040700]].
 This token has to be used for other API calls.

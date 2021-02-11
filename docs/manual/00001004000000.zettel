@@ -3,7 +3,6 @@ title: Configuration of Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210125195740
 
 There are two levels to change the behavior and/or the appearance of Zettelstore.
 The first level is the configuration that is needed to start the services provided by Zettelstore.

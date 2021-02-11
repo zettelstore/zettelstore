@@ -3,7 +3,6 @@ title: Command line parameters
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115555
 
 Zettelstore is not just a web service that provides services of a zettelkasten.
 It allows to some tasks to be executed at the command line.

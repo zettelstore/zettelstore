@@ -3,7 +3,6 @@ title: The ''config'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115712
 precursor: 00001004050000
 
 Shows the Zettelstore configuration, for debugging purposes.

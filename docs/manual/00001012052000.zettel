@@ -3,7 +3,6 @@ title: API: Sort the list of zettel metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210112113839
 
 If not specified, the list of zettel is sorted descending by the value of the zettel identifier.
 The highest zettel identifier, which is a number, comes first.

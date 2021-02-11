@@ -3,7 +3,6 @@ title: The ''run-simple'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115448
 precursor: 00001004050000
 
 === ``zettelstore run-simple``

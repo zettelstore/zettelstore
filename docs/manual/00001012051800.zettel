@@ -3,7 +3,6 @@ title: API: Shape the list of zettel metadata with filter options
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210112114019
 
 In most cases, it is not essential to list //all// zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.

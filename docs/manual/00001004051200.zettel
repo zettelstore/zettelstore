@@ -3,7 +3,6 @@ title: The ''file'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210104115726
 precursor: 00001004050000
 
 Reads zettel data from a file (or from standard input / stdin) and renders it to standard output / stdout.
