@@ -1,0 +1,16 @@
+id: 00001006035500
+title: Word Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a single word.
+
+=== Allowed values
+Must be a non-empty sequence of characters, but without the space character.
+
+=== Match operator
+A value matches a word value, if both value are character-wise equal.
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.

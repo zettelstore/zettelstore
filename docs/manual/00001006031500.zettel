@@ -1,0 +1,26 @@
+id: 00001006031500
+title: EString Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type are just a sequence of character, possibly an empty sequence.
+
+An EString is the most general metadata key type, as it places no restrictions to the character sequence.[^Well, there are some minor restrictions that follow from the [[metadata syntax|00001006010000]].]
+
+=== Allowed values
+All printable characters are allowed.
+
+=== Match operator
+A value matches an EString value, if the first value is part of the EString value.
+This check is done case-insensitive.
+
+For example, ""hell"" matches ""Hello"".
+
+=== Sorting
+To sort two values, the underlying encoding is used to determine which value is less than the other.
+
+Uppercase letters are typically interpreted as less than their corresponding lowercase letters, i.e. ``A < a``.
+
+Comparison is done character-wise by finding the first difference in the respective character sequence.
+For example, ``abc > aBc``.

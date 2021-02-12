@@ -1,0 +1,20 @@
+id: 00001006032000
+title: Identifier Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a [[zettel identifier|00001006050000]].
+
+=== Allowed values
+Must be a sequence of 14 digits (""0""--""9"").
+
+=== Match operator
+A value matches an identifier value, if the first value is the prefix of the identifier value.
+
+For example, ""000010"" matches ""[[00001006032000]]"".
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.
+
+If both values are identifiers, this works well because both have the same length.

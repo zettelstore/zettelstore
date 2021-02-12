@@ -1,0 +1,20 @@
+id: 00001006032500
+title: IdentifierSet Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a (sorted) set of [[zettel identifier|00001006050000]].
+
+A set is different to a list, as no duplicates are allowed.
+
+=== Allowed values
+Must be at least one sequence of 14 digits (""0""--""9""), separated by space characters.
+
+=== Match operator
+A value matches an identifier set value, if the first value is a prefix of one of the identifier value.
+
+For example, ""000010"" matches ""[[00001006032000]] [[00001006032500]]"".
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.

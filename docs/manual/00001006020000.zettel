@@ -100,9 +100,3 @@ Most keys conform to a [[type|00001006030000]].
   Its default value can be set with [[''default-visibility''|00001004020000#default-visibility]] of the configuration zettel.
 
   See [[visibility rules for zettel|00001010070200]] for more details.
-
----
-Not yet supported, but planned:
-
-; [!folge]''folge''
-: The IDs of zettel that acts as a [[Folgezettel|https://zettelkasten.de/posts/tags/folgezettel/]].

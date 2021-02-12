@@ -7,24 +7,23 @@ syntax: zmk
 Most [[supported metadata keys|00001006020000]] conform to a type.
 
 Every metadata key should conform to a type.
-Every key type is specified by a letter.
-User-defined types are normally strings (type ''e'').
+User-defined metadata keys are of type EString.
+The name of the metadata key is bound to the key type
 
-Every key type has an associated validation rule to check values of the given
-type. There is also a rule how values are matched, e.g. against a search term
-when selecting some zettel. And there is a rule, how values compare for
-sorting.
+Every key type has an associated validation rule to check values of the given type.
+There is also a rule how values are matched, e.g. against a search term when selecting some zettel.
+And there is a rule, how values compare for sorting.
 
-|= Name | Meaning | Match | Sorting
-| Boolean | Boolean value, False if value begins with ""''0''"", ""''F''"", ""''N''"", ""''f''"", or ""''n''"" | Boolean match | False < True
-| Credential | Value is a credential, e.g. an encrypted password (planned) | Never matches | Uses zettel identifier for sorting
-| Timestamp | Timestamp value YYYYMMDDHHmmSS | prefix match | by number
-| EString | Any string, possibly empty | case-insensitive contains | case-sensitive
-| Identifier | Value is a [[zettel identifier|00001006050000]] | prefix match | by number
-| Number | Integer value | exact match | by number
-| String | Any string, must not be empty | case-insensitive contains | case-sensitive
-| TagSet | Value is a space-separated list of tags | exact match for one tag | case sensitive by sorted tags
-| Word | Alfanumeric word, case-insensitive | case-insensitive equality | case-sensitive
-| WordSet | Space-separated list of alfanumeric words, case-insensitive | case-insensitive match for one word | case-sensitive by sorted words
-| URL | URL / URI | case-insensitive contains | case-sensitive
-| Zettelmarkup | Any string, must not be empty, formatted in [[Zettelmarkup|00001007000000]] | case-insensitive contains | case-sensitive
+* [[Boolean|00001006030500]]
+* [[Credential|00001006031000]]
+* [[EString|00001006031500]]
+* [[Identifier|00001006032000]]
+* [[IdentifierSet|00001006032500]]
+* [[Number|00001006033000]]
+* [[String|00001006033500]]
+* [[TagSet|00001006034000]]
+* [[Timestamp|00001006034500]]
+* [[URL|00001006035000]]
+* [[Word|00001006035500]]
+* [[WordSet|00001006036000]]
+* [[Zettelmarkup|00001006036500]]

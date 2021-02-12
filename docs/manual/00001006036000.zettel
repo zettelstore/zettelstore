@@ -1,0 +1,18 @@
+id: 00001006036000
+title: WordSet Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a (sorted) set of [[words|00001006035500]].
+
+A set is different to a list, as no duplicates are allowed.
+
+=== Allowed values
+Must be a sequence of at least one word, separated by space characters.
+
+=== Match operator
+A value matches an wordset value, if the first value is equal to one of the word values in the word set.
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.

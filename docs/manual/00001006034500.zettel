@@ -1,0 +1,27 @@
+id: 00001006034500
+title: Timestamp Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a point in time.
+
+=== Allowed values
+Must be a sequence of 14 digits (""0""--""9"") (same as an [[Identifier|00001006032000]]), with the restriction that is conforms to the pattern ""YYYYMMDDhhmmss"".
+
+* YYYY is the year,
+* MM is the month,
+* DD is the day,
+* hh is the hour,
+* mm is the minute,
+* ss is the second.
+
+=== Match operator
+A value matches an timestampvalue, if the first value is the prefix of the timestamp value.
+
+For example, ""202102"" matches ""20210212143200"".
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.
+
+If both values are timestamp values, this works well because both have the same length.

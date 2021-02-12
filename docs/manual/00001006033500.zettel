@@ -1,0 +1,25 @@
+id: 00001006033500
+title: String Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type are just a sequence of character, but not an empty sequence.
+
+=== Allowed values
+All printable characters are allowed.
+There must be at least one such character.
+
+=== Match operator
+A value matches a String value, if the first value is part of the String value.
+This check is done case-insensitive.
+
+For example, ""hell"" matches ""Hello"".
+
+=== Sorting
+To sort two values, the underlying encoding is used to determine which value is less than the other.
+
+Uppercase letters are typically interpreted as less than their corresponding lowercase letters, i.e. ``A < a``.
+
+Comparison is done character-wise by finding the first difference in the respective character sequence.
+For example, ``abc > aBc``.

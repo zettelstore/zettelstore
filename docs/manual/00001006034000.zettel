@@ -1,0 +1,19 @@
+id: 00001006034000
+title: TagSet Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a (sorted) set of tags.
+
+A set is different to a list, as no duplicates are allowed.
+
+=== Allowed values
+Every tag must must begin with the number sign character (""''#''"", ''U+0023''), followed by at least one printable character.
+Tags are separated by space characters.
+
+=== Match operator
+A value matches a tag set value, if the first value is equal to at least one tag in the tag set.
+
+=== Sorting
+Sorting is done by comparing the [[String|00001006033500]] values.

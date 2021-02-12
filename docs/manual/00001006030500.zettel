@@ -1,0 +1,21 @@
+id: 00001006030500
+title: Boolean Key Type
+role: manual
+tags: #manual #meta #reference #zettel #zettelstore
+syntax: zmk
+
+Values of this type denote a truth value.
+
+=== Allowed values
+Every character sequence that begins with a ""''0''"", ""''F''"", ""''N''"", ""''f''"", or a ""''n''"" is interpreted as the ""false"" boolean value.
+All other metadata value is interpreted as the ""true"" boolean value.
+
+=== Match operator
+The match operator is the equals operator, i.e.
+* ``(true == true) == true``
+* ``(false == false) == true``
+* ``(true == false) == false``
+* ``(false == true) == false``
+
+=== Sorting
+The ""false"" value is less than the ""true"" value: ``false < true``
