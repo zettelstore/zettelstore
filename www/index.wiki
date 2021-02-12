@@ -28,3 +28,9 @@ The software, including the manual, is licensed under the
   *  [/download|Download the source code] as a Tarball or a ZIP file
      (you must [/login|login] as user &quot;anonymous&quot;).
   *  [/timeline?t=release|Timeline of all past releases]
+
+<hr>
+<h2>Build instructions</h2>
+Just install [https://fossil-scm.org|Fossil],
+[https://golang.org/dl/|Go] and some Go-based tools. Please read the
+[./build.md|instructions] for details.
