@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func executeCommand(env []string, name string, arg ...string) (string, error) {
@@ -93,18 +94,24 @@ func splitLines(s string) []string {
 	})
 }
 
-func getVersion() (string, string, string) {
+func getVersionData() (string, string) {
 	base, err := readVersionFile()
 	if err != nil {
 		base = "dev"
 	}
 	fossil, err := readFossilVersion()
 	if err != nil {
-		return base, base, ""
+		return base, ""
 	}
-	return base + "+" + fossil, base, fossil
+	return base, fossil
 }
 
+func calcVersion(base, vcs string) string { return base + "+" + vcs }
+
+func getVersion() string {
+	base, vcs := getVersionData()
+	return calcVersion(base, vcs)
+}
 func cmdCheck() error {
 	out, err := executeCommand(nil, "go", "test", "./...")
 	if err != nil {
@@ -159,8 +166,7 @@ func cmdCheck() error {
 }
 
 func cmdBuild() error {
-	version, _, _ := getVersion()
-	return doBuild(nil, version, "bin/zettelstore")
+	return doBuild(nil, getVersion(), "bin/zettelstore")
 }
 
 func doBuild(env []string, version string, target string) error {
@@ -182,15 +188,16 @@ func doBuild(env []string, version string, target string) error {
 }
 
 func cmdRelease() error {
-	if err := cmdCheck(); err != nil {
-		return err
-	}
-	version, base, fossil := getVersion()
+	base, fossil := getVersionData()
 	if strings.HasSuffix(base, "dev") {
-		fmt.Fprintf(os.Stderr, "Warning: releasing a development version %v\n", version)
+		base = base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
 	}
 	if strings.HasSuffix(fossil, "-dirty") {
-		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", version)
+		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", fossil)
+		base = base + "-dirty"
+	}
+	if err := cmdCheck(); err != nil {
+		return err
 	}
 	releases := []struct {
 		arch string
@@ -206,11 +213,14 @@ func cmdRelease() error {
 	for _, rel := range releases {
 		env := append(rel.env, "GOARCH="+rel.arch, "GOOS="+rel.os)
 		zsName := filepath.Join("releases", rel.name)
-		if err := doBuild(env, version, zsName); err != nil {
+		if err := doBuild(env, calcVersion(base, fossil), zsName); err != nil {
 			return err
 		}
 		zipName := fmt.Sprintf("zettelstore-%v-%v-%v.zip", base, rel.os, rel.arch)
 		if err := createZip(zsName, zipName, rel.name); err != nil {
+			return err
+		}
+		if err := os.Remove(zsName); err != nil {
 			return err
 		}
 	}
@@ -266,6 +276,26 @@ func cmdClean() error {
 	return nil
 }
 
+func cmdHelp() {
+	fmt.Println(`Usage: go run tools/build.go [-v] COMMAND
+
+Options:
+  -v       Verbose output.
+
+Commands:
+  build    Build the software for local computer.
+  check    Check current working state: execute tests, static analysis tools,
+           extra files, ...
+           Is automatically done when releasing the software.
+  clean    Remove all build and release directories.
+  help     Outputs this text.
+  release  Create the software for various platforms and put them in
+           appropriate named ZIP files.
+  version  Print the current version of the software.
+
+All commands can be abbreviated as long as they remain unique.`)
+}
+
 var (
 	verbose bool
 )
@@ -276,22 +306,24 @@ func main() {
 	var err error
 	args := flag.Args()
 	if len(args) < 1 {
-		err = cmdBuild()
+		cmdHelp()
 	} else {
 		switch args[0] {
-		case "build":
+		case "b", "bu", "bui", "buil", "build":
 			err = cmdBuild()
-		case "release":
+		case "r", "re", "rel", "rele", "relea", "releas", "release":
 			err = cmdRelease()
-		case "clean":
+		case "cl", "cle", "clea", "clean":
 			err = cmdClean()
-		case "version":
-			version, _, _ := getVersion()
-			fmt.Print(version)
-		case "check":
+		case "v", "ve", "ver", "vers", "versi", "versio", "version":
+			fmt.Print(getVersion())
+		case "ch", "che", "chec", "check":
 			err = cmdCheck()
+		case "h", "he", "hel", "help":
+			cmdHelp()
 		default:
 			fmt.Fprintf(os.Stderr, "Unknown command %q\n", args[0])
+			cmdHelp()
 			os.Exit(1)
 		}
 	}
