@@ -12,8 +12,6 @@
 package runtime
 
 import (
-	"strconv"
-
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -199,10 +197,8 @@ func GetFooterHTML() string {
 // A value less or equal to zero signals no limit.
 func GetListPageSize() int {
 	if config := getConfigurationMeta(); config != nil {
-		if data, ok := config.Get(meta.KeyListPageSize); ok {
-			if value, err := strconv.Atoi(data); err == nil {
-				return value
-			}
+		if value, ok := config.GetNumber(meta.KeyListPageSize); ok && value > 0 {
+			return value
 		}
 	}
 	return 0
