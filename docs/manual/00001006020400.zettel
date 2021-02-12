@@ -4,28 +4,37 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 
-A zettel can be marked as read-only, if it contains a metadata value for key [[''read-only''|00001006020000#read-only]].
-If user authentication is [[enabled|00001010040100]], it is possible to allow some users to change the zettel, depending on their [[user role|00001010070300]].
+A zettel can be marked as read-only, if it contains a metadata value for key
+[[''read-only''|00001006020000#read-only]].
+If user authentication is [[enabled|00001010040100]], it is possible to allow some users to change the zettel,
+depending on their [[user role|00001010070300]].
 Otherwise, the read-only mark is just a binary value.
 
 === No authentication
-If there is no metadata value for key ''read-only'' or if its [[boolean value|00001006030000]] is interpreted as ""false"", anybody can modify the zettel.
+If there is no metadata value for key ''read-only'' or if its [[boolean value|00001006030500]]
+is interpreted as ""false"", anybody can modify the zettel.
 
-If the metadata value is something else (the value ""true"" is recommended), the user cannot modify the zettel through the web interface.
-However, if the zettel is stored as a file in a [[directory place|00001004011400]], the zettel could be modified using an external editor.
+If the metadata value is something else (the value ""true"" is recommended),
+the user cannot modify the zettel through the web interface.
+However, if the zettel is stored as a file in a [[directory place|00001004011400]],
+the zettel could be modified using an external editor.
 
 === Authentication enabled
-If there is no metadata value for key ''read-only'' or if its [[boolean value|00001006030000]] is interpreted as ""false"", anybody can modify the zettel.
+If there is no metadata value for key ''read-only'' or if its [[boolean value|00001006030500]]
+is interpreted as ""false"", anybody can modify the zettel.
 
-If the metadata value is the same as an explicit [[user role|00001010070300]], user with that role (or below) are not allowed to modify the zettel.
+If the metadata value is the same as an explicit [[user role|00001010070300]],
+users with that role (or a role with lower rights) are not allowed to modify the zettel.
 
-; ''reader''
+; ""reader""
 : Neither an unauthenticated user nor a user with role ""reader"" is allowed to modify the zettel.
   Users with role ""writer"" or the owner itself still can modify the zettel.
-; ''writer''
+; ""writer""
 : Neither an unauthenticated user, nor users with roles ""reader"" or ""writer"" are allowed to modify the zettel.
   Only the owner of the Zettelstore can modify the zettel.
 
-If the metadata value is something else (the value ""owner"" is recommended), no user is allowed modify the zettel through the web interface.
-However, if the zettel is accessible as a file in a [[directory place|00001004011400]], the zettel could be modified using an external editor.
-Typically the owner of a Zettelstore should have such an access.
+If the metadata value is something else (one of the values ""true"" or ""owner"" is recommended),
+no user is allowed modify the zettel through the web interface.
+However, if the zettel is accessible as a file in a [[directory place|00001004011400]],
+the zettel could be modified using an external editor.
+Typically the owner of a Zettelstore have such an access.
