@@ -16,7 +16,7 @@ version:
 	@echo $(shell go run tools/build.go version)
 
 build:
-	go run tools/build.go
+	go run tools/build.go build
 
 release:
 	go run tools/build.go release
