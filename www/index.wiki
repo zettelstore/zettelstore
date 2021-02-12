@@ -23,10 +23,7 @@ The software, including the manual, is licensed under the
   *  [/timeline?p=version-0.0.9&y=ci|Check-ins for version 0.0.9]
   *  [/timeline?df=version-0.0.9&y=ci|Check-ins derived from the 0.0.9 release],
      [/vdiff?from=version-0.0.9&to=trunk|content diff]
-  *  [./plan.wiki|Limitations and Planned Improvements]
-  *  [/dir?ci=trunk|Source Code] (mirrored on [https://github.com/zettelstore/zettelstore|GitHub])
-  *  [/download|Download the source code] as a Tarball or a ZIP file
-     (you must [/login|login] as user &quot;anonymous&quot;).
+  *  [./plan.wiki|Limitations and planned Improvements]
   *  [/timeline?t=release|Timeline of all past releases]
 
 <hr>
@@ -34,3 +31,7 @@ The software, including the manual, is licensed under the
 Just install [https://fossil-scm.org|Fossil],
 [https://golang.org/dl/|Go] and some Go-based tools. Please read the
 [./build.md|instructions] for details.
+
+  *  [/dir?ci=trunk|Source Code] (mirrored on [https://github.com/zettelstore/zettelstore|GitHub])
+  *  [/download|Download the source code] as a Tarball or a ZIP file
+     (you must [/login|login] as user &quot;anonymous&quot;).

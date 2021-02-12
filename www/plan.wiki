@@ -1,4 +1,4 @@
-<title>Limitations and Planned Improvements</title>
+<title>Limitations and planned Improvements</title>
 
 Here is a list of some shortcomings of Zettelstore.
 They are planned to be solved.
