@@ -111,9 +111,9 @@ func (mp *memPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return zettel.Meta.Clone(), nil
 }
 
-func (mp *memPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+func (mp *memPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	mp.mx.RLock()
-	result := make(map[id.Zid]bool, len(mp.zettel))
+	result := id.NewSetCap(len(mp.zettel))
 	for zid := range mp.zettel {
 		result[zid] = true
 	}

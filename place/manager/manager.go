@@ -284,7 +284,7 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
 // FetchZids returns the set of all zettel identifer managed by the place.
-func (mgr *Manager) FetchZids(ctx context.Context) (result map[id.Zid]bool, err error) {
+func (mgr *Manager) FetchZids(ctx context.Context) (result id.Set, err error) {
 	mgr.mx.RLock()
 	defer mgr.mx.RUnlock()
 	if !mgr.started {

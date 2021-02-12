@@ -181,9 +181,9 @@ func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return m, nil
 }
 
-func (dp *dirPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	entries := dp.dirSrv.GetEntries()
-	result := make(map[id.Zid]bool, len(entries))
+	result := id.NewSetCap(len(entries))
 	for _, entry := range entries {
 		result[entry.Zid] = true
 	}

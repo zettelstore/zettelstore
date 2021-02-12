@@ -77,8 +77,8 @@ func (cp *constPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, erro
 	return nil, place.ErrNotFound
 }
 
-func (cp *constPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
-	result := make(map[id.Zid]bool, len(cp.zettel))
+func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
+	result := id.NewSetCap(len(cp.zettel))
 	for zid := range cp.zettel {
 		result[zid] = true
 	}

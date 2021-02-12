@@ -19,7 +19,7 @@ import (
 
 type anteroom struct {
 	next    *anteroom
-	waiting map[id.Zid]bool
+	waiting id.Set
 	curLoad int
 	reload  bool
 }
@@ -73,7 +73,7 @@ func (ar *anterooms) makeAnteroom(zid id.Zid, val bool) *anteroom {
 	if cap == 0 {
 		cap = 100
 	}
-	waiting := make(map[id.Zid]bool, cap)
+	waiting := id.NewSetCap(cap)
 	waiting[zid] = val
 	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
@@ -85,16 +85,16 @@ func (ar *anterooms) Reset() {
 	ar.last = ar.first
 }
 
-func (ar *anterooms) Reload(delZids []id.Zid, newZids map[id.Zid]bool) {
+func (ar *anterooms) Reload(delZids []id.Zid, newZids id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	delWaiting := make(map[id.Zid]bool, len(delZids))
+	delWaiting := id.NewSetCap(len(delZids))
 	for _, zid := range delZids {
 		if zid.IsValid() {
 			delWaiting[zid] = false
 		}
 	}
-	newWaiting := make(map[id.Zid]bool, len(newZids))
+	newWaiting := id.NewSetCap(len(newZids))
 	for zid := range newZids {
 		if zid.IsValid() {
 			newWaiting[zid] = true

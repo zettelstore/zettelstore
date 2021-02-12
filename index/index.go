@@ -49,7 +49,7 @@ func DoNotEnrich(ctx context.Context) bool {
 // Port contains all the used functions to access zettel to be indexed.
 type Port interface {
 	RegisterObserver(func(place.ChangeInfo))
-	FetchZids(context.Context) (map[id.Zid]bool, error)
+	FetchZids(context.Context) (id.Set, error)
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
 }

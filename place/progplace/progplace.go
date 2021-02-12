@@ -122,8 +122,8 @@ func (pp *progPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error
 	return nil, place.ErrNotFound
 }
 
-func (pp *progPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
-	result := make(map[id.Zid]bool, len(pp.zettel))
+func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
+	result := id.NewSetCap(len(pp.zettel))
 	for zid, gen := range pp.zettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {

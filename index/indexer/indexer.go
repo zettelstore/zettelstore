@@ -111,7 +111,7 @@ func (idx *indexer) ReadStats(st *index.IndexerStats) {
 
 type indexerPort interface {
 	getMetaPort
-	FetchZids(ctx context.Context) (map[id.Zid]bool, error)
+	FetchZids(ctx context.Context) (id.Set, error)
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
 }
 

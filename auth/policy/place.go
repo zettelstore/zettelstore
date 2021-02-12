@@ -90,7 +90,7 @@ func (pp *polPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return nil, place.NewErrNotAllowed("GetMeta", user, zid)
 }
 
-func (pp *polPlace) FetchZids(ctx context.Context) (map[id.Zid]bool, error) {
+func (pp *polPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return nil, place.NewErrNotAllowed("fetch-zids", session.GetUser(ctx), id.Invalid)
 }
 

@@ -58,7 +58,7 @@ func TestReset(t *testing.T) {
 	if zid != id.Invalid && val != true {
 		t.Errorf("Expected invalid Zid, but got %v/%v", zid, val)
 	}
-	ar.Reload([]id.Zid{id.Zid(2)}, map[id.Zid]bool{id.Zid(3): true, id.Zid(4): false})
+	ar.Reload([]id.Zid{id.Zid(2)}, id.NewSet(id.Zid(3), id.Zid(4)))
 	ar.Enqueue(id.Zid(5), true)
 	ar.Enqueue(id.Zid(5), false)
 	ar.Enqueue(id.Zid(5), false)
@@ -91,7 +91,7 @@ func TestReset(t *testing.T) {
 	}
 
 	ar = newAnterooms(1)
-	ar.Reload(nil, map[id.Zid]bool{id.Zid(6): true})
+	ar.Reload(nil, id.NewSet(id.Zid(6)))
 	zid, val = ar.Dequeue()
 	if zid != id.Zid(6) || val != true {
 		t.Errorf("Expected 6/true, but got %v/%v", zid, val)
