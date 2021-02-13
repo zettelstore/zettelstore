@@ -45,7 +45,7 @@ func newAnterooms(maxLoad int) *anterooms {
 }
 
 func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
-	if !zid.IsValid() {
+	if !zid.IsValid() || action == arNothing || action == arReload {
 		return
 	}
 	ar.mx.Lock()
@@ -63,7 +63,12 @@ func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
 			if action == a {
 				return
 			}
-			room.waiting[zid] = action
+			switch action {
+			case arUpdate:
+				room.waiting[zid] = action
+			case arDelete:
+				room.waiting[zid] = action
+			}
 			return
 		}
 	}

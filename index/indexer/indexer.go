@@ -215,7 +215,8 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	refs := collect.References(zn)
 	updateReferences(ctx, refs.Links, p, zi)
 	updateReferences(ctx, refs.Images, p, zi)
-	idx.store.UpdateReferences(ctx, zi)
+	toCheck := idx.store.UpdateReferences(ctx, zi)
+	idx.checkZettel(toCheck)
 }
 
 func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {
@@ -254,5 +255,12 @@ func updateReference(ctx context.Context, value string, p getMetaPort, zi *index
 }
 
 func (idx *indexer) deleteZettel(zid id.Zid) {
-	idx.store.DeleteZettel(context.Background(), zid)
+	toCheck := idx.store.DeleteZettel(context.Background(), zid)
+	idx.checkZettel(toCheck)
+}
+
+func (idx *indexer) checkZettel(s id.Set) {
+	for zid := range s {
+		idx.ar.Enqueue(zid, arUpdate)
+	}
 }
