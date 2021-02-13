@@ -56,9 +56,9 @@ func (idx *indexer) observer(ci place.ChangeInfo) {
 	case place.OnReload:
 		idx.ar.Reset()
 	case place.OnUpdate:
-		idx.ar.Enqueue(ci.Zid, true)
+		idx.ar.Enqueue(ci.Zid, arUpdate)
 	case place.OnDelete:
-		idx.ar.Enqueue(ci.Zid, false)
+		idx.ar.Enqueue(ci.Zid, arDelete)
 	default:
 		return
 	}
@@ -130,37 +130,37 @@ func (idx *indexer) indexer(p indexerPort) {
 	for {
 		start := time.Now()
 		changed := false
+	workLoop:
 		for {
-			zid, val := idx.ar.Dequeue()
-			if zid.IsValid() {
+			switch action, zid := idx.ar.Dequeue(); action {
+			case arNothing:
+				break workLoop
+			case arReload:
+				zids, err := p.FetchZids(ctx)
+				if err == nil {
+					idx.ar.Reload(nil, zids)
+					idx.mx.Lock()
+					idx.lastReload = time.Now()
+					idx.sinceReload = 0
+					idx.mx.Unlock()
+				}
+			case arUpdate:
 				changed = true
 				idx.mx.Lock()
 				idx.sinceReload++
 				idx.mx.Unlock()
-				if !val {
-					idx.deleteZettel(zid)
-					continue
-				}
-
 				zettel, err := p.GetZettel(ctx, zid)
 				if err != nil {
 					// TODO: on some errors put the zid into a "try later" set
 					continue
 				}
 				idx.updateZettel(ctx, zettel, p)
-				continue
-			}
-
-			if val == false {
-				break
-			}
-			zids, err := p.FetchZids(ctx)
-			if err == nil {
-				idx.ar.Reload(nil, zids)
+			case arDelete:
+				changed = true
 				idx.mx.Lock()
-				idx.lastReload = time.Now()
-				idx.sinceReload = 0
+				idx.sinceReload++
 				idx.mx.Unlock()
+				idx.deleteZettel(zid)
 			}
 		}
 		if changed {

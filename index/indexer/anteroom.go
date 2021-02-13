@@ -17,9 +17,18 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
+type arAction int
+
+const (
+	arNothing arAction = iota
+	arReload
+	arUpdate
+	arDelete
+)
+
 type anteroom struct {
 	next    *anteroom
-	waiting id.Set
+	waiting map[id.Zid]arAction
 	curLoad int
 	reload  bool
 }
@@ -35,14 +44,14 @@ func newAnterooms(maxLoad int) *anterooms {
 	return &anterooms{maxLoad: maxLoad}
 }
 
-func (ar *anterooms) Enqueue(zid id.Zid, val bool) {
+func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
 	if !zid.IsValid() {
 		return
 	}
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	if ar.first == nil {
-		ar.first = ar.makeAnteroom(zid, val)
+		ar.first = ar.makeAnteroom(zid, action)
 		ar.last = ar.first
 		return
 	}
@@ -50,54 +59,54 @@ func (ar *anterooms) Enqueue(zid id.Zid, val bool) {
 		if room.reload {
 			continue // Do not place zettel in reload room
 		}
-		if v, ok := room.waiting[zid]; ok {
-			if val == v {
+		if a, ok := room.waiting[zid]; ok {
+			if action == a {
 				return
 			}
-			room.waiting[zid] = val
+			room.waiting[zid] = action
 			return
 		}
 	}
 	if room := ar.last; !room.reload && (ar.maxLoad == 0 || room.curLoad < ar.maxLoad) {
-		room.waiting[zid] = val
+		room.waiting[zid] = action
 		room.curLoad++
 		return
 	}
-	room := ar.makeAnteroom(zid, val)
+	room := ar.makeAnteroom(zid, action)
 	ar.last.next = room
 	ar.last = room
 }
 
-func (ar *anterooms) makeAnteroom(zid id.Zid, val bool) *anteroom {
+func (ar *anterooms) makeAnteroom(zid id.Zid, action arAction) *anteroom {
 	cap := ar.maxLoad
 	if cap == 0 {
 		cap = 100
 	}
-	waiting := id.NewSetCap(cap)
-	waiting[zid] = val
+	waiting := make(map[id.Zid]arAction, cap)
+	waiting[zid] = action
 	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
 
 func (ar *anterooms) Reset() {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	ar.first = ar.makeAnteroom(id.Invalid, true)
+	ar.first = ar.makeAnteroom(id.Invalid, arReload)
 	ar.last = ar.first
 }
 
 func (ar *anterooms) Reload(delZids []id.Zid, newZids id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	delWaiting := id.NewSetCap(len(delZids))
+	delWaiting := make(map[id.Zid]arAction, len(delZids))
 	for _, zid := range delZids {
 		if zid.IsValid() {
-			delWaiting[zid] = false
+			delWaiting[zid] = arDelete
 		}
 	}
-	newWaiting := id.NewSetCap(len(newZids))
+	newWaiting := make(map[id.Zid]arAction, len(newZids))
 	for zid := range newZids {
 		if zid.IsValid() {
-			newWaiting[zid] = true
+			newWaiting[zid] = arUpdate
 		}
 	}
 
@@ -136,13 +145,13 @@ func (ar *anterooms) Reload(delZids []id.Zid, newZids id.Set) {
 	}
 }
 
-func (ar *anterooms) Dequeue() (id.Zid, bool) {
+func (ar *anterooms) Dequeue() (arAction, id.Zid) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	if ar.first == nil {
-		return id.Invalid, false
+		return arNothing, id.Invalid
 	}
-	for zid, val := range ar.first.waiting {
+	for zid, action := range ar.first.waiting {
 		delete(ar.first.waiting, zid)
 		if len(ar.first.waiting) == 0 {
 			ar.first = ar.first.next
@@ -150,7 +159,7 @@ func (ar *anterooms) Dequeue() (id.Zid, bool) {
 				ar.last = nil
 			}
 		}
-		return zid, val
+		return action, zid
 	}
-	return id.Invalid, false
+	return arNothing, id.Invalid
 }
