@@ -326,11 +326,19 @@ func listTitleFilter(sb *strings.Builder, filter *place.Filter) {
 			sb.WriteString(name)
 		}
 		sb.WriteString(" MATCH ")
-		for j, val := range filter.Expr[name] {
-			if j > 0 {
-				sb.WriteString(" OR ")
+		if values := filter.Expr[name]; len(values) == 0 {
+			sb.WriteString("ANY")
+		} else {
+			for j, val := range filter.Expr[name] {
+				if j > 0 {
+					sb.WriteString(" OR ")
+				}
+				if val == "" {
+					sb.WriteString("ANY")
+				} else {
+					sb.WriteString(val)
+				}
 			}
-			sb.WriteString(val)
 		}
 	}
 	if filter.Negate {
