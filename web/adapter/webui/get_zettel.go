@@ -181,14 +181,10 @@ func formatMeta(m *meta.Meta, format string, options ...encoder.Option) (string,
 func buildTagInfos(m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
 	if tags, ok := m.GetList(meta.KeyTags); ok {
-		tagInfos = make([]simpleLink, 0, len(tags))
 		ub := adapter.NewURLBuilder('h')
-		for _, t := range tags {
-			// Cast to template.HTML is ok, because "t" is a tag name
-			// and contains only legal characters by construction.
-			tagInfos = append(
-				tagInfos,
-				simpleLink{Text: t, URL: ub.AppendQuery("tags", t).String()})
+		tagInfos = make([]simpleLink, len(tags))
+		for i, tag := range tags {
+			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", meta.CleanTag(tag)).String()}
 			ub.ClearQuery()
 		}
 	}

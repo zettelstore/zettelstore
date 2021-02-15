@@ -145,6 +145,10 @@ func createMatchFunc(key string, values []string) matchFunc {
 		tagValues := preprocessSet(values)
 		return func(value string) bool {
 			tags := meta.ListFromValue(value)
+			// Remove leading '#' from each tag
+			for i, tag := range tags {
+				tags[i] = meta.CleanTag(tag)
+			}
 			for _, neededTags := range tagValues {
 				for _, neededTag := range neededTags {
 					if !matchAllTag(tags, neededTag) {

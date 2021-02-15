@@ -80,6 +80,14 @@ func (m *Meta) SetList(key string, values []string) {
 	}
 }
 
+// CleanTag removes the number charachter ('#') from a tag value.
+func CleanTag(tag string) string {
+	if len(tag) > 1 && tag[0] == '#' {
+		return tag[1:]
+	}
+	return tag
+}
+
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
 	m.Set(key, time.Now().Format("20060102150405"))

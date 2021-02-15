@@ -10,7 +10,9 @@
              <code>&lt;a href="/manual/h">Zettel list&lt;/a></code>.
 
 <h3>Server</h3>
-  *  (bug) A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
+  *  (bug)   A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
+  *  (minor) Searching/filtering ignores the leading '#' character of tags.
+             This applies to the API and to the WebUI.
 
 <h3>WebUI</h3>
   *  (major) Menu item &ldquo;Home&rdquo; now redirects to a home zettel.

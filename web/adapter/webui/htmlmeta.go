@@ -77,9 +77,9 @@ func writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitle
 
 func writeHTMLBool(w io.Writer, key string, val bool) {
 	if val {
-		writeLink(w, key, "True")
+		writeLink(w, key, "true", "True")
 	} else {
-		writeLink(w, key, "False")
+		writeLink(w, key, "false", "False")
 	}
 }
 
@@ -144,7 +144,7 @@ func writeTagSet(w io.Writer, key string, tags []string) {
 		if i > 0 {
 			w.Write(space)
 		}
-		writeLink(w, key, tag)
+		writeLink(w, key, meta.CleanTag(tag), tag)
 	}
 }
 
@@ -164,7 +164,7 @@ func writeURL(w io.Writer, val string) {
 }
 
 func writeWord(w io.Writer, key, word string) {
-	writeLink(w, key, word)
+	writeLink(w, key, word, word)
 }
 
 func writeWordSet(w io.Writer, key string, words []string) {
@@ -185,11 +185,11 @@ func writeZettelmarkup(w io.Writer, val string, option encoder.Option) {
 	io.WriteString(w, title)
 }
 
-func writeLink(w io.Writer, key, value string) {
+func writeLink(w io.Writer, key, value, text string) {
 	fmt.Fprintf(
 		w, "<a href=\"%v?%v=%v\">",
 		adapter.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
-	strfun.HTMLEscape(w, value, false)
+	strfun.HTMLEscape(w, text, false)
 	io.WriteString(w, "</a>")
 }
 
