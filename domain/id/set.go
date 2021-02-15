@@ -45,13 +45,13 @@ func NewSetCap(cap int, zids ...Zid) Set {
 }
 
 // Sort returns the set as a sorted slice of zettel identifier.
-func (s Set) Sort() []Zid {
+func (s Set) Sort() Slice {
 	if l := len(s); l > 0 {
-		result := make([]Zid, 0, l)
+		result := make(Slice, 0, l)
 		for zid := range s {
 			result = append(result, zid)
 		}
-		Sort(result)
+		result.Sort()
 		return result
 	}
 	return nil

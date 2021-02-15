@@ -23,14 +23,14 @@ import (
 )
 
 type metaRefs struct {
-	forward  []id.Zid
-	backward []id.Zid
+	forward  id.Slice
+	backward id.Slice
 }
 
 type zettelIndex struct {
-	dead     []id.Zid
-	forward  []id.Zid
-	backward []id.Zid
+	dead     id.Slice
+	forward  id.Slice
+	backward id.Slice
 	meta     map[string]metaRefs
 }
 
@@ -44,7 +44,7 @@ func (zi *zettelIndex) isEmpty() bool {
 type memStore struct {
 	mx   sync.RWMutex
 	idx  map[id.Zid]*zettelIndex
-	dead map[id.Zid][]id.Zid // map dead refs where they occur
+	dead map[id.Zid]id.Slice // map dead refs where they occur
 
 	// Stats
 	updates uint64
@@ -54,7 +54,7 @@ type memStore struct {
 func New() index.Store {
 	return &memStore{
 		idx:  make(map[id.Zid]*zettelIndex),
-		dead: make(map[id.Zid][]id.Zid),
+		dead: make(map[id.Zid]id.Slice),
 	}
 }
 
@@ -67,30 +67,30 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 	}
 	var updated bool
 	if len(zi.dead) > 0 {
-		m.Set(meta.KeyDead, refsToString(zi.dead))
+		m.Set(meta.KeyDead, zi.dead.String())
 		updated = true
 	}
 	back := zi.backward
 	if len(zi.backward) > 0 {
-		m.Set(meta.KeyBackward, refsToString(zi.backward))
+		m.Set(meta.KeyBackward, zi.backward.String())
 		updated = true
 	}
 	if len(zi.forward) > 0 {
-		m.Set(meta.KeyForward, refsToString(zi.forward))
+		m.Set(meta.KeyForward, zi.forward.String())
 		back = remRefs(back, zi.forward)
 		updated = true
 	}
 	if len(zi.meta) > 0 {
 		for k, refs := range zi.meta {
 			if len(refs.backward) > 0 {
-				m.Set(k, refsToString(refs.backward))
+				m.Set(k, refs.backward.String())
 				back = remRefs(back, refs.backward)
 				updated = true
 			}
 		}
 	}
 	if len(back) > 0 {
-		m.Set(meta.KeyBack, refsToString(back))
+		m.Set(meta.KeyBack, back.String())
 		updated = true
 	}
 	if updated {
@@ -231,7 +231,7 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) id.Set {
 	return result
 }
 
-func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward []id.Zid) {
+func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range forward {
 		if bzi, ok := ms.idx[ref]; ok {
@@ -263,11 +263,11 @@ func (ms *memStore) Write(w io.Writer) {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 
-	zids := make([]id.Zid, 0, len(ms.idx))
+	zids := make(id.Slice, 0, len(ms.idx))
 	for id := range ms.idx {
 		zids = append(zids, id)
 	}
-	id.Sort(zids)
+	zids.Sort()
 	for _, id := range zids {
 		fmt.Fprintln(w, id)
 		zi := ms.idx[id]
@@ -287,17 +287,17 @@ func (ms *memStore) Write(w io.Writer) {
 		}
 	}
 
-	zids = make([]id.Zid, 0, len(ms.dead))
+	zids = make(id.Slice, 0, len(ms.dead))
 	for id := range ms.dead {
 		zids = append(zids, id)
 	}
-	id.Sort(zids)
+	zids.Sort()
 	for _, id := range zids {
 		fmt.Fprintln(w, "~", id, ms.dead[id])
 	}
 }
 
-func writeZidsLn(w io.Writer, prefix string, zids []id.Zid) {
+func writeZidsLn(w io.Writer, prefix string, zids id.Slice) {
 	io.WriteString(w, prefix)
 	for _, zid := range zids {
 		io.WriteString(w, " ")

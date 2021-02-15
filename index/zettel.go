@@ -55,21 +55,21 @@ func (zi *ZettelIndex) AddDeadRef(zid id.Zid) {
 }
 
 // GetDeadRefs returns all dead references as a sorted list.
-func (zi *ZettelIndex) GetDeadRefs() []id.Zid {
+func (zi *ZettelIndex) GetDeadRefs() id.Slice {
 	return zi.deadrefs.Sort()
 }
 
 // GetBackRefs returns all back references as a sorted list.
-func (zi *ZettelIndex) GetBackRefs() []id.Zid {
+func (zi *ZettelIndex) GetBackRefs() id.Slice {
 	return zi.backrefs.Sort()
 }
 
 // GetMetaRefs returns all meta references as a map of strings to a sorted list of references
-func (zi *ZettelIndex) GetMetaRefs() map[string][]id.Zid {
+func (zi *ZettelIndex) GetMetaRefs() map[string]id.Slice {
 	if len(zi.metarefs) == 0 {
 		return nil
 	}
-	result := make(map[string][]id.Zid, len(zi.metarefs))
+	result := make(map[string]id.Slice, len(zi.metarefs))
 	for key, refs := range zi.metarefs {
 		result[key] = refs.Sort()
 	}

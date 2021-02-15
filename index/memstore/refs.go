@@ -12,23 +12,10 @@
 package memstore
 
 import (
-	"bytes"
-
 	"zettelstore.de/z/domain/id"
 )
 
-func refsToString(refs []id.Zid) string {
-	var buf bytes.Buffer
-	for i, dref := range refs {
-		if i > 0 {
-			buf.WriteByte(' ')
-		}
-		buf.Write(dref.Bytes())
-	}
-	return buf.String()
-}
-
-func refsDiff(refsN, refsO []id.Zid) (newRefs, remRefs []id.Zid) {
+func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 	npos, opos := 0, 0
 	for npos < len(refsN) && opos < len(refsO) {
 		rn, ro := refsN[npos], refsO[opos]
@@ -54,7 +41,7 @@ func refsDiff(refsN, refsO []id.Zid) (newRefs, remRefs []id.Zid) {
 	return newRefs, remRefs
 }
 
-func addRef(refs []id.Zid, ref id.Zid) []id.Zid {
+func addRef(refs id.Slice, ref id.Zid) id.Slice {
 	if len(refs) == 0 {
 		return append(refs, ref)
 	}
@@ -63,17 +50,17 @@ func addRef(refs []id.Zid, ref id.Zid) []id.Zid {
 			return refs
 		}
 		if r > ref {
-			return append(refs[:i], append([]id.Zid{ref}, refs[i:]...)...)
+			return append(refs[:i], append(id.Slice{ref}, refs[i:]...)...)
 		}
 	}
 	return append(refs, ref)
 }
 
-func remRefs(refs []id.Zid, rem []id.Zid) []id.Zid {
+func remRefs(refs id.Slice, rem id.Slice) id.Slice {
 	if len(refs) == 0 || len(rem) == 0 {
 		return refs
 	}
-	result := make([]id.Zid, 0, len(refs))
+	result := make(id.Slice, 0, len(refs))
 	rpos, dpos := 0, 0
 	for rpos < len(refs) && dpos < len(rem) {
 		rr, dr := refs[rpos], rem[dpos]
@@ -95,7 +82,7 @@ func remRefs(refs []id.Zid, rem []id.Zid) []id.Zid {
 	return result
 }
 
-func remRef(refs []id.Zid, ref id.Zid) []id.Zid {
+func remRef(refs id.Slice, ref id.Zid) id.Slice {
 	if refs != nil {
 		for i, r := range refs {
 			if r == ref {

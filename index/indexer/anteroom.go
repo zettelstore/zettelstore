@@ -99,7 +99,7 @@ func (ar *anterooms) Reset() {
 	ar.last = ar.first
 }
 
-func (ar *anterooms) Reload(delZids []id.Zid, newZids id.Set) {
+func (ar *anterooms) Reload(delZids id.Slice, newZids id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	delWaiting := make(map[id.Zid]arAction, len(delZids))

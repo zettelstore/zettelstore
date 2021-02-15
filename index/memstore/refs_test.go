@@ -17,18 +17,18 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-func numsToRefs(nums []uint) []id.Zid {
+func numsToRefs(nums []uint) id.Slice {
 	if nums == nil {
 		return nil
 	}
-	refs := make([]id.Zid, 0, len(nums))
+	refs := make(id.Slice, 0, len(nums))
 	for _, n := range nums {
 		refs = append(refs, id.Zid(n))
 	}
 	return refs
 }
 
-func assertRefs(t *testing.T, i int, got []id.Zid, exp []uint) {
+func assertRefs(t *testing.T, i int, got id.Slice, exp []uint) {
 	t.Helper()
 	if got == nil && exp != nil {
 		t.Errorf("%d: got nil, but expected %v", i, exp)
@@ -45,24 +45,6 @@ func assertRefs(t *testing.T, i int, got []id.Zid, exp []uint) {
 	for p, n := range exp {
 		if got := got[p]; got != id.Zid(n) {
 			t.Errorf("%d: pos %d: expected %d, but got %d", i, p, n, got)
-		}
-	}
-}
-
-func TestRefsToString(t *testing.T) {
-	testcases := []struct {
-		in  []uint
-		exp string
-	}{
-		{nil, ""},
-		{[]uint{}, ""},
-		{[]uint{1}, "00000000000001"},
-		{[]uint{1, 2}, "00000000000001 00000000000002"},
-	}
-	for i, tc := range testcases {
-		got := refsToString(numsToRefs(tc.in))
-		if got != tc.exp {
-			t.Errorf("%d/%v: expected %q, but got %q", i, tc.in, tc.exp, got)
 		}
 	}
 }

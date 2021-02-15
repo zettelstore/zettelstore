@@ -58,7 +58,7 @@ func TestReset(t *testing.T) {
 	if action != arReload || zid != id.Invalid {
 		t.Errorf("Expected reload & invalid Zid, but got %v/%v", action, zid)
 	}
-	ar.Reload([]id.Zid{id.Zid(2)}, id.NewSet(id.Zid(3), id.Zid(4)))
+	ar.Reload(id.Slice{2}, id.NewSet(3, 4))
 	ar.Enqueue(id.Zid(5), arUpdate)
 	ar.Enqueue(id.Zid(5), arDelete)
 	ar.Enqueue(id.Zid(5), arDelete)
@@ -102,7 +102,7 @@ func TestReset(t *testing.T) {
 	}
 
 	ar = newAnterooms(1)
-	ar.Reload([]id.Zid{id.Zid(7)}, nil)
+	ar.Reload(id.Slice{7}, nil)
 	action, zid = ar.Dequeue()
 	if zid != id.Zid(7) || action != arDelete {
 		t.Errorf("Expected 7/arDelete, but got %v/%v", zid, action)
