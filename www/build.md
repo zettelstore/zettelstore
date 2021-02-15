@@ -17,6 +17,9 @@ Most of this is covered by the excellent Fossil documentation.
 1. Change into this directory: `cd $HOME/zettelstore`.
 1. Open development: `fossil open $HOME/fossil/zettelstore.fossil`.
 
+(If you are not able to use Fossil, you could try the Git mirror
+<https://github.com/zettelstore/zettelstore>.)
+
 ## The build tool
 In directory <tt>tools</tt> there is a Go file called <tt>build.go</tt>.
 It automates most aspects, (hopefully) platform-independent.

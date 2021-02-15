@@ -32,6 +32,6 @@ Just install [https://fossil-scm.org|Fossil],
 [https://golang.org/dl/|Go] and some Go-based tools. Please read the
 [./build.md|instructions] for details.
 
-  *  [/dir?ci=trunk|Source Code] (mirrored on [https://github.com/zettelstore/zettelstore|GitHub])
+  *  [/dir?ci=trunk|Source Code]
   *  [/download|Download the source code] as a Tarball or a ZIP file
      (you must [/login|login] as user &quot;anonymous&quot;).
