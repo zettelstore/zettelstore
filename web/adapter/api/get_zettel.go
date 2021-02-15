@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -35,13 +36,16 @@ func MakeGetZettelHandler(
 
 		ctx := r.Context()
 		q := r.URL.Query()
+		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
+		if format == "raw" {
+			ctx = index.NoEnrichContext(ctx)
+		}
 		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
-		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
 		part := getPart(q, partZettel)
 		switch format {
 		case "json", "djson":
