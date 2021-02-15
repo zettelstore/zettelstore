@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -89,27 +89,6 @@ func getVisibility(m *meta.Meta) meta.Visibility {
 		}
 	}
 	return meta.VisibilityLogin
-}
-
-func testReload(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, isExpert bool) {
-	t.Helper()
-	testCases := []struct {
-		user *meta.Meta
-		exp  bool
-	}{
-		{newAnon(), !withAuth},
-		{newReader(), !withAuth},
-		{newWriter(), !withAuth},
-		{newOwner(), true},
-	}
-	for _, tc := range testCases {
-		t.Run("Reload", func(tt *testing.T) {
-			got := pol.CanReload(tc.user)
-			if tc.exp != got {
-				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
-			}
-		})
-	}
 }
 
 func testCreate(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, isExpert bool) {
@@ -544,6 +523,27 @@ func testDelete(t *testing.T, pol Policy, simple bool, withAuth bool, readonly b
 	for _, tc := range testCases {
 		t.Run("Delete", func(tt *testing.T) {
 			got := pol.CanDelete(tc.user, tc.meta)
+			if tc.exp != got {
+				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
+			}
+		})
+	}
+}
+
+func testReload(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, isExpert bool) {
+	t.Helper()
+	testCases := []struct {
+		user *meta.Meta
+		exp  bool
+	}{
+		{newAnon(), !readonly && !withAuth},
+		{newReader(), !readonly && !withAuth},
+		{newWriter(), !readonly && !withAuth},
+		{newOwner(), !readonly || (withAuth && isExpert)},
+	}
+	for _, tc := range testCases {
+		t.Run("Reload", func(tt *testing.T) {
+			got := pol.CanReload(tc.user)
 			if tc.exp != got {
 				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
 			}

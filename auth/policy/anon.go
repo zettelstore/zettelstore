@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -22,10 +22,6 @@ type anonPolicy struct {
 	pre           Policy
 }
 
-func (ap *anonPolicy) CanReload(user *meta.Meta) bool {
-	return ap.pre.CanReload(user)
-}
-
 func (ap *anonPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
 	return ap.pre.CanCreate(user, newMeta)
 }
@@ -44,6 +40,10 @@ func (ap *anonPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
 
 func (ap *anonPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
 	return ap.pre.CanDelete(user, m) && ap.checkVisibility(m)
+}
+
+func (ap *anonPolicy) CanReload(user *meta.Meta) bool {
+	return ap.pre.CanReload(user)
 }
 
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {

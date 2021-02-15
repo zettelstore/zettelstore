@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -14,10 +14,6 @@ package policy
 import "zettelstore.de/z/domain/meta"
 
 type roPolicy struct{}
-
-func (p *roPolicy) CanReload(user *meta.Meta) bool {
-	return true
-}
 
 func (p *roPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
 	return false
@@ -36,5 +32,9 @@ func (p *roPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
 }
 
 func (p *roPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
+	return false
+}
+
+func (p *roPolicy) CanReload(user *meta.Meta) bool {
 	return false
 }

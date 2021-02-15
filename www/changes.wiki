@@ -17,6 +17,8 @@
              Its default identifier is <tt>000100000000</tt>.
              The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
              The default home zettel contains some welcoming information for the new user.
+  *  (minor) Allow to reload all places if not in read-only mode and disabled authentication.
+             This applies is most cases to users that started their Zettelstore via double-click.
 
 <a name="0_0_9"></a>
 <h2>Changes for Version 0.0.9 (2021-01-29)</h2>

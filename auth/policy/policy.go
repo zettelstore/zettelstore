@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -18,9 +18,6 @@ import (
 
 // Policy is an interface for checking access authorization.
 type Policy interface {
-	// User is allowed to reload a place.
-	CanReload(user *meta.Meta) bool
-
 	// User is allowed to create a new zettel.
 	CanCreate(user *meta.Meta, newMeta *meta.Meta) bool
 
@@ -35,6 +32,9 @@ type Policy interface {
 
 	// User is allowed to delete zettel
 	CanDelete(user *meta.Meta, m *meta.Meta) bool
+
+	// User is allowed to reload a place.
+	CanReload(user *meta.Meta) bool
 }
 
 // newPolicy creates a policy based on given constraints.
@@ -74,10 +74,6 @@ type prePolicy struct {
 	post Policy
 }
 
-func (p *prePolicy) CanReload(user *meta.Meta) bool {
-	return p.post.CanReload(user)
-}
-
 func (p *prePolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
 	return newMeta != nil && p.post.CanCreate(user, newMeta)
 }
@@ -97,4 +93,8 @@ func (p *prePolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
 
 func (p *prePolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
 	return m != nil && p.post.CanDelete(user, m)
+}
+
+func (p *prePolicy) CanReload(user *meta.Meta) bool {
+	return p.post.CanReload(user)
 }

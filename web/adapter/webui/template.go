@@ -156,12 +156,7 @@ type baseData struct {
 	StylesheetURL  string
 	Title          string
 	HomeURL        string
-	ListZettelURL  string
-	ListRolesURL   string
-	ListTagsURL    string
-	CanCreate      bool
-	NewZettelURL   string
-	NewZettelLinks []simpleLink
+	WithUser       bool
 	WithAuth       bool
 	UserIsValid    bool
 	UserZettelURL  string
@@ -170,6 +165,12 @@ type baseData struct {
 	LoginURL       string
 	CanReload      bool
 	ReloadURL      string
+	ListZettelURL  string
+	ListRolesURL   string
+	ListTagsURL    string
+	CanCreate      bool
+	NewZettelURL   string
+	NewZettelLinks []simpleLink
 	SearchURL      string
 	Content        string
 	FooterHTML     string
@@ -198,19 +199,20 @@ func (te *TemplateEngine) makeBaseData(
 	data.StylesheetURL = te.stylesheetURL
 	data.Title = title
 	data.HomeURL = te.homeURL
-	data.ListZettelURL = te.listZettelURL
-	data.ListRolesURL = te.listRolesURL
-	data.ListTagsURL = te.listTagsURL
-	data.CanCreate = canCreate
-	data.NewZettelLinks = newZettelLinks
 	data.WithAuth = te.withAuth
+	data.CanReload = te.policy.CanReload(user)
+	data.WithUser = data.WithAuth || data.CanReload
 	data.UserIsValid = userIsValid
 	data.UserZettelURL = userZettelURL
 	data.UserIdent = userIdent
 	data.UserLogoutURL = userLogoutURL
 	data.LoginURL = te.loginURL
-	data.CanReload = te.policy.CanReload(user)
 	data.ReloadURL = te.reloadURL
+	data.ListZettelURL = te.listZettelURL
+	data.ListRolesURL = te.listRolesURL
+	data.ListTagsURL = te.listTagsURL
+	data.CanCreate = canCreate
+	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = te.searchURL
 	data.FooterHTML = runtime.GetFooterHTML()
 }

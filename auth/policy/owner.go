@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -22,14 +22,6 @@ type ownerPolicy struct {
 	isOwner       func(id.Zid) bool
 	getVisibility func(*meta.Meta) meta.Visibility
 	pre           Policy
-}
-
-func (o *ownerPolicy) CanReload(user *meta.Meta) bool {
-	// No need to call o.pre.CanReload(user), because it will always return true.
-	// Both the default and the readonly policy allow to reload a place.
-
-	// Only the owner is allowed to reload a place
-	return o.userIsOwner(user)
 }
 
 func (o *ownerPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
@@ -152,4 +144,13 @@ func (o *ownerPolicy) userIsOwner(user *meta.Meta) bool {
 		return true
 	}
 	return false
+}
+
+func (o *ownerPolicy) CanReload(user *meta.Meta) bool {
+	if !o.pre.CanReload(user) && !o.expertMode() {
+		return false
+	}
+
+	// Only the owner is allowed to reload a place
+	return o.userIsOwner(user)
 }

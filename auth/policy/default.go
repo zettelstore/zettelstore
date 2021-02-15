@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -17,10 +17,6 @@ import (
 )
 
 type defaultPolicy struct{}
-
-func (d *defaultPolicy) CanReload(user *meta.Meta) bool {
-	return true
-}
 
 func (d *defaultPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
 	return true
@@ -66,4 +62,8 @@ func (d *defaultPolicy) canChange(user *meta.Meta, m *meta.Meta) bool {
 		return userRole > meta.UserRoleOwner
 	}
 	return !meta.BoolValue(metaRo)
+}
+
+func (d *defaultPolicy) CanReload(user *meta.Meta) bool {
+	return true
 }

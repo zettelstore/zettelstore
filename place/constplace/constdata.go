@@ -55,25 +55,29 @@ var constZettelMap = map[id.Zid]constZettel{
 <body>
 <nav class="zs-menu">
 <a href="{{{HomeURL}}}">Home</a>
-{{#WithAuth}}
+{{#WithUser}}
 <div class="zs-dropdown">
 <button>User</button>
 <nav class="zs-dropdown-content">
+{{#WithAuth}}
 {{#UserIsValid}}
 <a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
 {{/UserIsValid}}
 {{^UserIsValid}}
 <a href="{{{LoginURL}}}">Login</a>
 {{/UserIsValid}}
+{{/WithAuth}}
 {{#CanReload}}
 <a href="{{{ReloadURL}}}">Reload</a>
 {{/CanReload}}
+{{#WithAuth}}
 {{#UserIsValid}}
 <a href="{{{UserLogoutURL}}}">Logout</a>
 {{/UserIsValid}}
+{{/WithAuth}}
 </nav>
 </div>
-{{/WithAuth}}
+{{/WithUser}}
 <div class="zs-dropdown">
 <button>Lists</button>
 <nav class="zs-dropdown-content">
