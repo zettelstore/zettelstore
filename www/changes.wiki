@@ -19,6 +19,7 @@
              The default home zettel contains some welcoming information for the new user.
   *  (minor) Allow to reload all places if not in read-only mode and disabled authentication.
              This applies is most cases to users that started their Zettelstore via double-click.
+  *  (minor) When result of filtering or searching is presented, the query is written as the page heading.
 
 <a name="0_0_9"></a>
 <h2>Changes for Version 0.0.9 (2021-01-29)</h2>

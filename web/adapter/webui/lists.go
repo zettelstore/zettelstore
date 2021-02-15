@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
@@ -67,8 +68,9 @@ func renderWebUIZettelList(
 	query := r.URL.Query()
 	filter, sorter := adapter.GetFilterSorter(query, false)
 	ctx := r.Context()
+	title := listTitleFilterSorter("Filter", filter, sorter)
 	renderWebUIMetaList(
-		ctx, w, te, sorter,
+		ctx, w, te, title, sorter,
 		func(sorter *place.Sorter) ([]*meta.Meta, error) {
 			if filter == nil && (sorter == nil || sorter.Order == "") {
 				ctx = index.NoEnrichContext(ctx)
@@ -205,8 +207,9 @@ func MakeSearchHandler(
 		}
 
 		ctx := r.Context()
+		title := listTitleFilterSorter("Search", filter, sorter)
 		renderWebUIMetaList(
-			ctx, w, te, sorter,
+			ctx, w, te, title, sorter,
 			func(sorter *place.Sorter) ([]*meta.Meta, error) {
 				if filter == nil && (sorter == nil || sorter.Order == "") {
 					ctx = index.NoEnrichContext(ctx)
@@ -221,6 +224,7 @@ func MakeSearchHandler(
 
 func renderWebUIMetaList(
 	ctx context.Context, w http.ResponseWriter, te *TemplateEngine,
+	title string,
 	sorter *place.Sorter,
 	ucMetaList func(sorter *place.Sorter) ([]*meta.Meta, error),
 	pageURL func(int) string) {
@@ -274,7 +278,7 @@ func renderWebUIMetaList(
 		HasNext     bool
 		NextURL     string
 	}{
-		Title:       base.Title,
+		Title:       title,
 		Metas:       metas,
 		HasPrevNext: len(prevURL) > 0 || len(nextURL) > 0,
 		HasPrev:     len(prevURL) > 0,
@@ -282,6 +286,91 @@ func renderWebUIMetaList(
 		HasNext:     len(nextURL) > 0,
 		NextURL:     nextURL,
 	})
+}
+
+func listTitleFilterSorter(prefix string, filter *place.Filter, sorter *place.Sorter) string {
+	if filter == nil && sorter == nil {
+		return runtime.GetSiteName()
+	}
+	var sb strings.Builder
+	sb.WriteString(prefix)
+	sb.WriteString(": ")
+	if filter != nil {
+		listTitleFilter(&sb, filter)
+		if sorter != nil {
+			sb.WriteString(" | ")
+			listTitleSorter(&sb, sorter)
+		}
+	} else if sorter != nil {
+		listTitleSorter(&sb, sorter)
+	}
+	return sb.String()
+}
+
+func listTitleFilter(sb *strings.Builder, filter *place.Filter) {
+	if filter.Negate {
+		sb.WriteString("NOT (")
+	}
+	names := make([]string, 0, len(filter.Expr))
+	for name := range filter.Expr {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for i, name := range names {
+		if i > 0 {
+			sb.WriteString(" AND ")
+		}
+		if len(name) == 0 {
+			sb.WriteString("ANY")
+		} else {
+			sb.WriteString(name)
+		}
+		sb.WriteString(" MATCH ")
+		for j, val := range filter.Expr[name] {
+			if j > 0 {
+				sb.WriteString(" OR ")
+			}
+			sb.WriteString(val)
+		}
+	}
+	if filter.Negate {
+		sb.WriteByte(')')
+	}
+}
+
+func listTitleSorter(sb *strings.Builder, sorter *place.Sorter) {
+	var space bool
+	if ord := sorter.Order; len(ord) > 0 {
+		switch ord {
+		case meta.KeyID:
+			// Ignore
+		case place.RandomOrder:
+			sb.WriteString("RANDOM")
+			space = true
+		default:
+			sb.WriteString("SORT ")
+			sb.WriteString(ord)
+			if sorter.Descending {
+				sb.WriteString(" DESC")
+			}
+			space = true
+		}
+	}
+	if off := sorter.Offset; off > 0 {
+		if space {
+			sb.WriteByte(' ')
+		}
+		sb.WriteString("OFFSET ")
+		sb.WriteString(strconv.Itoa(off))
+		space = true
+	}
+	if lim := sorter.Limit; lim > 0 {
+		if space {
+			sb.WriteByte(' ')
+		}
+		sb.WriteString("LIMIT ")
+		sb.WriteString(strconv.Itoa(lim))
+	}
 }
 
 func newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
