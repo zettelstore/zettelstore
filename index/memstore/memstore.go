@@ -70,7 +70,21 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 		m.Set(meta.KeyDead, zi.dead.String())
 		updated = true
 	}
-	back := zi.backward
+	back := zi.backward.Copy()
+	for _, p := range m.PairsRest(false) {
+		switch meta.Type(p.Key) {
+		case meta.TypeID:
+			if zid, err := id.Parse(p.Value); err == nil {
+				back = remRef(back, zid)
+			}
+		case meta.TypeIDSet:
+			for _, val := range meta.ListFromValue(p.Value) {
+				if zid, err := id.Parse(val); err == nil {
+					back = remRef(back, zid)
+				}
+			}
+		}
+	}
 	if len(zi.backward) > 0 {
 		m.Set(meta.KeyBackward, zi.backward.String())
 		updated = true
