@@ -32,8 +32,8 @@ If [[authentication is enabled|00001010040100]], most API calls must include an 
 * [[List all zettel, but include different parts of a zettel|00001012051600]]
 * [[Shape the list of zettel metadata with filter options|00001012051800]]
 * [[Sort the list of zettel metadata|00001012052000]]
-* List all [[tags|00001006020000]] used in a Zettelstore
-* List all [[roles|00001006020100]] used in a Zettelstore.
+* [[List all tags|00001012052200]]
+* [[List all roles|00001012052400]]
 
 === Working with zettel
 * Create a new zettel
