@@ -33,32 +33,20 @@ import (
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
 func MakeListHTMLMetaHandler(
-	te *TemplateEngine, listMeta usecase.ListMeta) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		renderWebUIZettelList(w, r, te, listMeta)
-	}
-}
-
-// MakeWebUIListsHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeWebUIListsHandler(
 	te *TemplateEngine,
 	listMeta usecase.ListMeta,
 	listRole usecase.ListRole,
 	listTags usecase.ListTags,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		switch zid {
-		case 1:
-			renderWebUIZettelList(w, r, te, listMeta)
-		case 2:
+		query := r.URL.Query()
+		switch query.Get("_l") {
+		case "r":
 			renderWebUIRolesList(w, r, te, listRole)
-		case 3:
+		case "t":
 			renderWebUITagsList(w, r, te, listTags)
+		default:
+			renderWebUIZettelList(w, r, te, listMeta)
 		}
 	}
 }
