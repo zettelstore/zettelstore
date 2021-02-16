@@ -205,7 +205,7 @@ func MakeSearchHandler(
 				return search.Run(ctx, filter, sorter)
 			},
 			func(offset int) string {
-				return newPageURL('s', query, offset, "offset", "limit")
+				return newPageURL('f', query, offset, "offset", "limit")
 			})
 	}
 }

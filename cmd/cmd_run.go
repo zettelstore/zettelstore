@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -95,6 +95,10 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 	router.AddListRoute('c', http.MethodGet, adapter.MakeReloadHandler(
 		usecase.NewReload(pp), api.ReloadHandlerAPI, webui.ReloadHandlerHTML))
 	if !readonlyMode {
+		router.AddZettelRoute('b', http.MethodGet, webui.MakeGetRenameZettelHandler(
+			te, ucGetMeta))
+		router.AddZettelRoute('b', http.MethodPost, webui.MakePostRenameZettelHandler(
+			usecase.NewRenameZettel(pp)))
 		router.AddZettelRoute('c', http.MethodGet, webui.MakeGetCopyZettelHandler(
 			te, ucGetZettel, usecase.NewCopyZettel()))
 		router.AddZettelRoute('c', http.MethodPost, webui.MakePostCreateZettelHandler(
@@ -111,30 +115,23 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 			te, ucGetZettel, usecase.NewFolgeZettel()))
 		router.AddZettelRoute('f', http.MethodPost, webui.MakePostCreateZettelHandler(
 			usecase.NewCreateZettel(pp)))
+		router.AddZettelRoute('g', http.MethodGet, webui.MakeGetNewZettelHandler(
+			te, ucGetZettel, usecase.NewNewZettel()))
+		router.AddZettelRoute('g', http.MethodPost, webui.MakePostCreateZettelHandler(
+			usecase.NewCreateZettel(pp)))
 	}
+	router.AddListRoute('f', http.MethodGet, webui.MakeSearchHandler(
+		te, usecase.NewSearch(pp), ucGetMeta, ucGetZettel))
 	router.AddListRoute('h', http.MethodGet, webui.MakeListHTMLMetaHandler(
 		te, ucListMeta, ucListRoles, ucListTags))
 	router.AddZettelRoute('h', http.MethodGet, webui.MakeGetHTMLZettelHandler(
 		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('i', http.MethodGet, webui.MakeGetInfoHandler(
 		te, ucParseZettel, ucGetMeta))
+
 	router.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
-	if !readonlyMode {
-		router.AddZettelRoute('n', http.MethodGet, webui.MakeGetNewZettelHandler(
-			te, ucGetZettel, usecase.NewNewZettel()))
-		router.AddZettelRoute('n', http.MethodPost, webui.MakePostCreateZettelHandler(
-			usecase.NewCreateZettel(pp)))
-	}
 	router.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
-	if !readonlyMode {
-		router.AddZettelRoute('r', http.MethodGet, webui.MakeGetRenameZettelHandler(
-			te, ucGetMeta))
-		router.AddZettelRoute('r', http.MethodPost, webui.MakePostRenameZettelHandler(
-			usecase.NewRenameZettel(pp)))
-	}
 	router.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
-	router.AddListRoute('s', http.MethodGet, webui.MakeSearchHandler(
-		te, usecase.NewSearch(pp), ucGetMeta, ucGetZettel))
 	router.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(pp), ucGetMeta, ucParseZettel))
 	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(

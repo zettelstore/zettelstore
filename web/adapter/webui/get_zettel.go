@@ -134,7 +134,7 @@ func MakeGetHTMLZettelHandler(
 			CanCopy:       canCopy,
 			CopyURL:       adapter.NewURLBuilder('c').SetZid(zid).String(),
 			CanNew:        canCopy && roleText == meta.ValueRoleNewTemplate,
-			NewURL:        adapter.NewURLBuilder('n').SetZid(zid).String(),
+			NewURL:        adapter.NewURLBuilder('g').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Zettel.Content.IsBinary(),
 			FolgeURL:      adapter.NewURLBuilder('f').SetZid(zid).String(),
 			FolgeRefs:     formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),

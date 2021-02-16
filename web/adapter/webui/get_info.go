@@ -151,9 +151,9 @@ func MakeGetInfoHandler(
 			CopyURL:  adapter.NewURLBuilder('c').SetZid(zid).String(),
 			CanNew: canCopy && zn.Zettel.Meta.GetDefault(meta.KeyRole, "") ==
 				meta.ValueRoleNewTemplate,
-			NewURL:       adapter.NewURLBuilder('n').SetZid(zid).String(),
+			NewURL:       adapter.NewURLBuilder('g').SetZid(zid).String(),
 			CanRename:    te.canRename(ctx, user, zn.Zettel.Meta),
-			RenameURL:    adapter.NewURLBuilder('r').SetZid(zid).String(),
+			RenameURL:    adapter.NewURLBuilder('b').SetZid(zid).String(),
 			CanDelete:    te.canDelete(ctx, user, zn.Zettel.Meta),
 			DeleteURL:    adapter.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,

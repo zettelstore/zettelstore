@@ -51,6 +51,10 @@ func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
 	if _, err := uc.port.GetMeta(noEnrichCtx, curZid); err != nil {
 		return err
 	}
+	if newZid == curZid {
+		// Nothing to do
+		return nil
+	}
 	if _, err := uc.port.GetMeta(noEnrichCtx, newZid); err == nil {
 		return &ErrZidInUse{Zid: newZid}
 	}

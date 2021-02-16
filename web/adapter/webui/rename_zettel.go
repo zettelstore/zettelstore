@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -87,7 +87,6 @@ func MakePostRenameZettelHandler(renameZettel usecase.RenameZettel) http.Handler
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		http.Redirect(
-			w, r, adapter.NewURLBuilder('h').SetZid(newZid).String(), http.StatusFound)
+		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(newZid).String(), http.StatusFound)
 	}
 }

@@ -78,7 +78,7 @@ func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
 		withAuth:      startup.WithAuth(),
 		loginURL:      adapter.NewURLBuilder('a').String(),
 		reloadURL:     adapter.NewURLBuilder('c').AppendQuery("_format", "html").String(),
-		searchURL:     adapter.NewURLBuilder('s').String(),
+		searchURL:     adapter.NewURLBuilder('f').String(),
 	}
 	te.observe(place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(te.observe)
@@ -261,7 +261,7 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 			}
 			result = append(result, simpleLink{
 				Text: menuTitle,
-				URL:  adapter.NewURLBuilder('n').SetZid(m.Zid).String(),
+				URL:  adapter.NewURLBuilder('g').SetZid(m.Zid).String(),
 			})
 		}
 	}
