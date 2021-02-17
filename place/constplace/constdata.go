@@ -679,7 +679,7 @@ footer {
 			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
 		domain.Content(fmt.Sprintf(`This zettel lists all zettel that should act as a template for new zettel.
-These zettel will be included in the ""New"" menu of the WEBUI.
+These zettel will be included in the ""New"" menu of the WebUI.
 * [[New Zettel|%v]]
 * [[New User|%v]]`, id.TemplateNewZettelZid, id.TemplateNewUserZid)),
 	},
