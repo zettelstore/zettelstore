@@ -1,0 +1,75 @@
+id: 00001012053800
+title: API: Retrieve zettel order within an existing zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+
+Some zettel act as a ""table of contents"" for other zettel.
+The [[Home zettel|00010000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
+Every zettel with a certain internal structure can act as the ""table of contents"" for others.
+
+What is a ""table of contents""?
+Basically, it is just a list of references to other zettel.
+
+To retrieve the ""table of contents"", the software looks at first level [[list items|00001007030200]].
+If an item contains a valid reference to a zettel, this reference will be interpreted as an item in the table of contents.
+
+This applies only to first level list items (ordered or unordered list), but not to deeper levels.
+Only the first reference to a valid zettel is collected for the table of contents.
+Following references to zettel within such an list item are ignored.
+
+To retrieve the zettel order of an existing zettel, use the [[endpoint|00001012920000]] ''/o/{ID}''.
+
+````
+# curl http://127.0.0.1:23123/o/00010000000000
+{"id":"00010000000000","url":"/z/00010000000000","sequence":[{"id":"00001001000000","url":"/z/00001001000000"},{"id":"00001002000000","url":"/z/00001002000000"},{"id":"00001003000000","url":"/z/00001003000000"},{"id":"00001004000000","url":"/z/00001004000000"},...,{"id":"00001014000000","url":"/z/00001014000000"}]}
+````
+Formatted, this translates into:
+````json
+{
+  "id": "00010000000000",
+  "url": "/z/00010000000000",
+  "order": [
+    {
+      "id": "00001001000000",
+      "url": "/z/00001001000000"
+    },
+    {
+      "id": "00001002000000",
+      "url": "/z/00001002000000"
+    },
+    {
+      "id": "00001003000000",
+      "url": "/z/00001003000000"
+    },
+    {
+      "id": "00001004000000",
+      "url": "/z/00001004000000"
+    },
+    ...
+    {
+      "id": "00001014000000",
+      "url": "/z/00001014000000"
+    }
+  ]
+}
+````
+=== Kind
+The following to-level JSON keys are returned:
+; ''id''
+: The zettel identifier for which the references were requested.
+; ''url''
+: The API endpoint to fetch more information about the zettel.
+; ''order''
+: A JSON list of JSON objects with keys ''id'' and ''url'' that describe other zettel in the defined order.
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.

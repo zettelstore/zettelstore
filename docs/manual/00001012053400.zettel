@@ -1,10 +1,10 @@
 id: 00001012053400
 title: API: Retrieve metadata and content of an existing zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-role: manual
 
-The endpoint to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
 For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/z/00001012053400''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:

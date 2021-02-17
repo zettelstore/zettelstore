@@ -2,26 +2,31 @@
 
 <a name="0_0_10"></a>
 <h2>Changes for Version 0.0.10 (pending)</h2>
-<h3>Syntax</h3>
-  *  (minor) A reference that starts with two slash characters (&ldquo;<code>//</code>&rdquo;)
-             it will be interpreted relative to the value of <code>url-prefix</code>.
-             For example, if <code>url-prefix</code> has the value <code>/manual/</code>,
-             the reference <code>&lbrack;&lbrack;Zettel list|//h]]</code> will render as
-             <code>&lt;a href="/manual/h">Zettel list&lt;/a></code>.
-
-<h3>Server</h3>
-  *  (bug)   A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
-  *  (minor) Searching/filtering ignores the leading '#' character of tags.
-             This applies to the API and to the WebUI.
-
-<h3>WebUI</h3>
-  *  (major) Menu item &ldquo;Home&rdquo; now redirects to a home zettel.
-             Its default identifier is <tt>000100000000</tt>.
-             The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
-             The default home zettel contains some welcoming information for the new user.
-  *  (minor) Allow to reload all places if not in read-only mode and disabled authentication.
-             This applies is most cases to users that started their Zettelstore via double-click.
-  *  (minor) When result of filtering or searching is presented, the query is written as the page heading.
+  *  Menu item &ldquo;Home&rdquo; now redirects to a home zettel.
+     Its default identifier is <tt>000100000000</tt>.
+     The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
+     The default home zettel contains some welcoming information for the new user.
+     (major: webui)
+  *  A zettel that references other zettel within first-level list items, can act
+     as a &ldquo;table of contents&rdquo; zettel.
+     The API endpoint <tt>/o/{ID}</tt> allows to retrieve the referenced zettel in
+     the same order as they occur in the zettel.
+     (major: api)
+  *  A reference that starts with two slash characters (&ldquo;<code>//</code>&rdquo;)
+     it will be interpreted relative to the value of <code>url-prefix</code>.
+     For example, if <code>url-prefix</code> has the value <code>/manual/</code>,
+     the reference <code>&lbrack;&lbrack;Zettel list|//h]]</code> will render as
+     <code>&lt;a href="/manual/h">Zettel list&lt;/a></code>. (minor: syntax)
+  *  Searching/filtering ignores the leading '#' character of tags.
+     (minor: api, webui)
+  *  Allow to reload all places if not in read-only mode and disabled authentication.
+     This applies is most cases to users that started their Zettelstore via double-click.
+     (minor: webui)
+  *  When result of filtering or searching is presented, the query is written as the page heading.
+     (minor: webui)
+  *  A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
+     (bug: server)
+  *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 <a name="0_0_9"></a>
 <h2>Changes for Version 0.0.9 (2021-01-29)</h2>

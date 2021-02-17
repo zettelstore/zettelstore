@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 
-To list all [[roles|00001006020100]] used in the Zettelstore just send a HTTP GET request to the endpoint ''/r''.
+To list all [[roles|00001006020100]] used in the Zettelstore just send a HTTP GET request to the [[endpoint|00001012920000]] ''/r''.
 If successful, the output is a JSON object:
 
 ```sh

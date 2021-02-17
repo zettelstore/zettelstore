@@ -130,6 +130,8 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 		te, ucParseZettel, ucGetMeta))
 
 	router.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
+	router.AddZettelRoute('o', http.MethodGet, api.MakeGetOrderHandler(
+		usecase.NewZettelOrder(pp, ucParseZettel)))
 	router.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	router.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
 	router.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(

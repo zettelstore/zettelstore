@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 
-To list all [[tags|00001006020000#tags]] used in the Zettelstore just send a HTTP GET request to the endpoint ''/t''.
+To list all [[tags|00001006020000#tags]] used in the Zettelstore just send a HTTP GET request to the [[endpoint|00001012920000]] ''/t''.
 If successful, the output is a JSON object:
 
 ```sh
