@@ -9,7 +9,7 @@ If successful, the output is a JSON object:
 
 ```sh
 # curl http://127.0.0.1:23123/r
-{"role-list":["configuration","manual","new-template"]}
+{"role-list":["configuration","manual","user","zettel"]}
 ```
 
 The JSON object only contains the key ''"role-list"'' with the value of a sorted string list.

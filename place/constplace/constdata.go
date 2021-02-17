@@ -12,6 +12,8 @@
 package constplace
 
 import (
+	"fmt"
+
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -49,7 +51,6 @@ var constZettelMap = map[id.Zid]constZettel{
 <meta name="generator" content="Zettelstore">
 {{{MetaHeader}}}
 <link rel="stylesheet" href="{{{StylesheetURL}}}">
-{{{Header}}}
 <title>{{Title}}</title>
 </head>
 <body>
@@ -96,7 +97,6 @@ var constZettelMap = map[id.Zid]constZettel{
 </nav>
 </div>
 {{/CanCreate}}
-{{{Menu}}}
 <form action="{{{SearchURL}}}">
 <input type="text" placeholder="Search.." name="s">
 </form>
@@ -186,7 +186,6 @@ var constZettelMap = map[id.Zid]constZettel{
 {{#HasTags}}&#183; {{#Tags}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags}}{{/HasTags}}
 {{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
 {{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
-{{#CanNew}}&#183; <a href="{{{NewURL}}}">New</a>{{/CanNew}}
 {{#FolgeRefs}}<br>Folge: {{{FolgeRefs}}}{{/FolgeRefs}}
 {{#PrecursorRefs}}<br>Precursor: {{{PrecursorRefs}}}{{/PrecursorRefs}}
 {{#HasExtURL}}<br>URL: <a href="{{{ExtURL}}}"{{{ExtNewWindow}}}>{{ExtURL}}</a>{{/HasExtURL}}
@@ -220,7 +219,6 @@ var constZettelMap = map[id.Zid]constZettel{
 {{#CanWrite}} &#183; <a href="{{{EditURL}}}">Edit</a>{{/CanWrite}}
 {{#CanFolge}} &#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
 {{#CanCopy}} &#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
-{{#CanNew}} &#183; <a href="{{{NewURL}}}">New</a>{{/CanNew}}
 {{#CanRename}}&#183; <a href="{{{RenameURL}}}">Rename</a>{{/CanRename}}
 {{#CanDelete}}&#183; <a href="{{{DeleteURL}}}">Delete</a>{{/CanDelete}}
 </header>
@@ -674,12 +672,23 @@ footer {
 `,
 	},
 
+	id.TOCNewTemplateZid: {
+		constHeader{
+			meta.KeyTitle:  "New Menu",
+			meta.KeyRole:   meta.ValueRoleZettel,
+			meta.KeySyntax: meta.ValueSyntaxZmk,
+		},
+		domain.Content(fmt.Sprintf(`This zettel lists all zettel that should act as a template for new zettel.
+These zettel will be included in the ""New"" menu of the WEBUI.
+* [[New Zettel|%v]]
+* [[New User|%v]]`, id.TemplateNewZettelZid, id.TemplateNewUserZid)),
+	},
+
 	id.TemplateNewZettelZid: {
 		constHeader{
-			meta.KeyTitle:   "New Zettel",
-			meta.KeyRole:    meta.ValueRoleNewTemplate,
-			meta.KeyNewRole: meta.ValueRoleZettel,
-			meta.KeySyntax:  meta.ValueSyntaxZmk,
+			meta.KeyTitle:  "New Zettel",
+			meta.KeyRole:   meta.ValueRoleZettel,
+			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
 		"",
 	},
@@ -687,8 +696,7 @@ footer {
 	id.TemplateNewUserZid: {
 		constHeader{
 			meta.KeyTitle:      "New User",
-			meta.KeyRole:       meta.ValueRoleNewTemplate,
-			meta.KeyNewRole:    meta.ValueRoleUser,
+			meta.KeyRole:       meta.ValueRoleUser,
 			meta.KeyCredential: "",
 			meta.KeyUserID:     "",
 			meta.KeyUserRole:   meta.ValueUserRoleReader,

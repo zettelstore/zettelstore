@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -126,8 +125,6 @@ func MakeGetInfoHandler(
 			FolgeURL     string
 			CanCopy      bool
 			CopyURL      string
-			CanNew       bool
-			NewURL       string
 			CanRename    bool
 			RenameURL    string
 			CanDelete    bool
@@ -141,17 +138,14 @@ func MakeGetInfoHandler(
 			ExtNewWindow string
 			Matrix       []matrixLine
 		}{
-			Zid:      zid.String(),
-			WebURL:   adapter.NewURLBuilder('h').SetZid(zid).String(),
-			CanWrite: te.canWrite(ctx, user, zn.Zettel),
-			EditURL:  adapter.NewURLBuilder('e').SetZid(zid).String(),
-			CanFolge: base.CanCreate && !zn.Zettel.Content.IsBinary(),
-			FolgeURL: adapter.NewURLBuilder('f').SetZid(zid).String(),
-			CanCopy:  canCopy,
-			CopyURL:  adapter.NewURLBuilder('c').SetZid(zid).String(),
-			CanNew: canCopy && zn.Zettel.Meta.GetDefault(meta.KeyRole, "") ==
-				meta.ValueRoleNewTemplate,
-			NewURL:       adapter.NewURLBuilder('g').SetZid(zid).String(),
+			Zid:          zid.String(),
+			WebURL:       adapter.NewURLBuilder('h').SetZid(zid).String(),
+			CanWrite:     te.canWrite(ctx, user, zn.Zettel),
+			EditURL:      adapter.NewURLBuilder('e').SetZid(zid).String(),
+			CanFolge:     base.CanCreate && !zn.Zettel.Content.IsBinary(),
+			FolgeURL:     adapter.NewURLBuilder('f').SetZid(zid).String(),
+			CanCopy:      canCopy,
+			CopyURL:      adapter.NewURLBuilder('c').SetZid(zid).String(),
 			CanRename:    te.canRename(ctx, user, zn.Zettel.Meta),
 			RenameURL:    adapter.NewURLBuilder('b').SetZid(zid).String(),
 			CanDelete:    te.canDelete(ctx, user, zn.Zettel.Meta),

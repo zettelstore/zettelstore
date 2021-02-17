@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/auth/token"
+	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain"
@@ -140,6 +141,7 @@ func (te *TemplateEngine) getTemplate(
 	}
 	t, err := template.ParseString(realTemplateZettel.Content.AsString(), nil)
 	if err == nil {
+		// t.SetErrorOnMissing()
 		te.cacheSetTemplate(templateID, t)
 	}
 	return t, err
@@ -226,44 +228,42 @@ func htmlAttrNewWindow(hasURL bool) string {
 	return ""
 }
 
-var templatePlaceFilter = &place.Filter{
-	Expr: place.FilterExpr{
-		meta.KeyRole: []string{meta.ValueRoleNewTemplate},
-	},
-}
-
-var templatePlaceSorter = &place.Sorter{
-	Order:      "id",
-	Descending: false,
-	Offset:     -1,
-	Limit:      31, // Just to be one the safe side...
-}
-
 func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
 	ctx = index.NoEnrichContext(ctx)
-	templateList, err := te.place.SelectMeta(ctx, templatePlaceFilter, templatePlaceSorter)
+	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
 		return nil
 	}
-	result := make([]simpleLink, 0, len(templateList))
-	for _, m := range templateList {
-		if te.policy.CanRead(user, m) {
-			title := runtime.GetTitle(m)
-			langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(m)}
-			astTitle := parser.ParseInlines(
-				input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
-			menuTitle, err := adapter.FormatInlines(astTitle, "html", &langOption)
-			if err != nil {
-				menuTitle, err = adapter.FormatInlines(astTitle, "text", &langOption)
-				if err != nil {
-					menuTitle = title
-				}
-			}
-			result = append(result, simpleLink{
-				Text: menuTitle,
-				URL:  adapter.NewURLBuilder('g').SetZid(m.Zid).String(),
-			})
+	zn := parser.ParseZettel(menu, "")
+	refs := collect.Order(zn)
+	result := make([]simpleLink, 0, len(refs))
+	for _, ref := range refs {
+		zid, err := id.Parse(ref.URL.Path)
+		if err != nil {
+			continue
 		}
+		m, err := te.place.GetMeta(ctx, zid)
+		if err != nil {
+			continue
+		}
+		if !te.policy.CanRead(user, m) {
+			continue
+		}
+		title := runtime.GetTitle(m)
+		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(m)}
+		astTitle := parser.ParseInlines(
+			input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
+		menuTitle, err := adapter.FormatInlines(astTitle, "html", &langOption)
+		if err != nil {
+			menuTitle, err = adapter.FormatInlines(astTitle, "text", &langOption)
+			if err != nil {
+				menuTitle = title
+			}
+		}
+		result = append(result, simpleLink{
+			Text: menuTitle,
+			URL:  adapter.NewURLBuilder('g').SetZid(m.Zid).String(),
+		})
 	}
 	return result
 }
@@ -293,9 +293,11 @@ func (te *TemplateEngine) renderTemplate(
 	}
 	var content bytes.Buffer
 	err = t.Render(&content, data)
-	base.Content = content.String()
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = bt.Render(w, base)
+	if err == nil {
+		base.Content = content.String()
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		err = bt.Render(w, base)
+	}
 	if err != nil {
 		adapter.InternalServerError(w, "Unable to render template", err)
 	}

@@ -109,8 +109,6 @@ func MakeGetHTMLZettelHandler(
 			Tags          []simpleLink
 			CanCopy       bool
 			CopyURL       string
-			CanNew        bool
-			NewURL        string
 			CanFolge      bool
 			FolgeURL      string
 			FolgeRefs     string
@@ -133,8 +131,6 @@ func MakeGetHTMLZettelHandler(
 			Tags:          tags,
 			CanCopy:       canCopy,
 			CopyURL:       adapter.NewURLBuilder('c').SetZid(zid).String(),
-			CanNew:        canCopy && roleText == meta.ValueRoleNewTemplate,
-			NewURL:        adapter.NewURLBuilder('g').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Zettel.Content.IsBinary(),
 			FolgeURL:      adapter.NewURLBuilder('f').SetZid(zid).String(),
 			FolgeRefs:     formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),

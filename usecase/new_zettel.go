@@ -13,7 +13,6 @@ package usecase
 
 import (
 	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/strfun"
 )
 
@@ -28,13 +27,11 @@ func NewNewZettel() NewZettel {
 // Run executes the use case.
 func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m := origZettel.Meta.Clone()
-	if role, ok := m.Get(meta.KeyRole); ok && role == meta.ValueRoleNewTemplate {
-		const prefix = "new-"
-		for _, pair := range m.PairsRest(false) {
-			if key := pair.Key; len(key) > len(prefix) && key[0:len(prefix)] == prefix {
-				m.Set(key[len(prefix):], pair.Value)
-				m.Delete(key)
-			}
+	const prefix = "new-"
+	for _, pair := range m.PairsRest(false) {
+		if key := pair.Key; len(key) > len(prefix) && key[0:len(prefix)] == prefix {
+			m.Set(key[len(prefix):], pair.Value)
+			m.Delete(key)
 		}
 	}
 	content := strfun.TrimSpaceRight(origZettel.Content.AsString())

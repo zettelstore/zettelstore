@@ -126,7 +126,6 @@ var (
 	KeyLang              = registerKey("lang", TypeWord, usageUser, "")
 	KeyLicense           = registerKey("license", TypeEmpty, usageUser, "")
 	KeyListPageSize      = registerKey("list-page-size", TypeNumber, usageUser, "")
-	KeyNewRole           = registerKey("new-role", TypeWord, usageUser, "")
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
 	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser, KeyFolge)
@@ -145,7 +144,6 @@ var (
 const (
 	ValueRoleConfiguration = "configuration"
 	ValueRoleUser          = "user"
-	ValueRoleNewTemplate   = "new-template"
 	ValueRoleZettel        = "zettel"
 	ValueSyntaxNone        = "none"
 	ValueSyntaxZmk         = "zmk"

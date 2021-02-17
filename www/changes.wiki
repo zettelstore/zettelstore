@@ -12,6 +12,13 @@
      The API endpoint <tt>/o/{ID}</tt> allows to retrieve the referenced zettel in
      the same order as they occur in the zettel.
      (major: api)
+  *  The zettel &ldquo;New Menu&rdquo; with identifier <tt>00000000090000</tt> contains
+     a list of all zettel that should act as a template for new zettel.
+     They are listed in the WebUIs &rdquo;New&ldquo; menu.
+     This is an application of the previous item.
+     It supersedes the usage of a role <tt>new-template</tt> introduced in [#0_0_6|version 0.0.6].
+     <b>Please update your zettel if you make use of the now deprecated feature.</b>
+     (major: webui)
   *  A reference that starts with two slash characters (&ldquo;<code>//</code>&rdquo;)
      it will be interpreted relative to the value of <code>url-prefix</code>.
      For example, if <code>url-prefix</code> has the value <code>/manual/</code>,
@@ -204,6 +211,7 @@ of GitHub. To access older versions, use the Git repository under
              The initial template zettel &ldquo;New Zettel&rdquo; has now a different zettel identifier
              (now: <tt>00000000091001</tt>, was: <tt>00000000040001</tt>).
              <b>Please update it, if you changed that zettel.</b>
+             <br>Note: this feature was superseded in [#0_0_10|version 0.0.10] by the &ldquo;New Menu&rdquo; zettel.
   *  (minor) When a page should be opened in a new windows (e.g. for external references),
              the web browser is instructed to decouple the new page from the previous one for privacy and security reasons.
              In detail, the web browser is instructed to omit referrer information and to omit a JS object linking to the page that contained the external link.

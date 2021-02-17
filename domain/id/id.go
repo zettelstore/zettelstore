@@ -25,8 +25,10 @@ type Zid uint64
 
 // Some important ZettelIDs
 const (
-	Invalid           = Zid(0) // Invalid is a Zid that will never be valid
-	ConfigurationZid  = Zid(100)
+	Invalid          = Zid(0) // Invalid is a Zid that will never be valid
+	ConfigurationZid = Zid(100)
+
+	// WebUI HTML templates are in the range 10000..19999
 	BaseTemplateZid   = Zid(10100)
 	LoginTemplateZid  = Zid(10200)
 	ListTemplateZid   = Zid(10300)
@@ -37,11 +39,16 @@ const (
 	DeleteTemplateZid = Zid(10405)
 	RolesTemplateZid  = Zid(10500)
 	TagsTemplateZid   = Zid(10600)
-	BaseCSSZid        = Zid(20001)
+
+	// WebUI CSS pages are in the range 20000..29999
+	BaseCSSZid = Zid(20001)
+
+	// WebUI JS pages are in the range 30000..39999
 
 	// Range 90000...99999 is reserved for zettel templates
-	TemplateNewZettelZid = Zid(91001)
-	TemplateNewUserZid   = Zid(96001)
+	TOCNewTemplateZid    = Zid(90000)
+	TemplateNewZettelZid = Zid(90001)
+	TemplateNewUserZid   = Zid(90002)
 
 	DefaultHomeZid = Zid(10000000000)
 )
