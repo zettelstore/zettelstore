@@ -675,7 +675,7 @@ footer {
 	id.TOCNewTemplateZid: {
 		constHeader{
 			meta.KeyTitle:  "New Menu",
-			meta.KeyRole:   meta.ValueRoleZettel,
+			meta.KeyRole:   meta.ValueRoleConfiguration,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
 		domain.Content(fmt.Sprintf(`This zettel lists all zettel that should act as a template for new zettel.
