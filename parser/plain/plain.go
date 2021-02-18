@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -59,8 +59,7 @@ func readLines(inp *input.Input) (lines []string) {
 	for {
 		inp.EatEOL()
 		posL := inp.Pos
-		switch inp.Ch {
-		case input.EOS:
+		if inp.Ch == input.EOS {
 			return lines
 		}
 		inp.SkipToEOL()

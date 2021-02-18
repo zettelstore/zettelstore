@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -247,7 +247,7 @@ func (tmpl *Template) readTag(mayStandalone bool) (*tagReadingResult, error) {
 
 	//trim the close tag off the text
 	tag := strings.TrimSpace(text)
-	if len(tag) == 0 {
+	if tag == "" {
 		return nil, parseError{tmpl.curline, "empty tag"}
 	}
 
@@ -327,7 +327,6 @@ func (tmpl *Template) parseSection(section *sectionNode) error {
 		switch tag[0] {
 		case '!':
 			//ignore comment
-			break
 		case '#', '^':
 			name := strings.TrimSpace(tag[1:])
 			sn := &sectionNode{name, tag[0] == '^', tmpl.curline, []node{}}
@@ -403,7 +402,6 @@ func (tmpl *Template) parse() error {
 		switch tag[0] {
 		case '!':
 			//ignore comment
-			break
 		case '#', '^':
 			name := strings.TrimSpace(tag[1:])
 			sn := &sectionNode{name, tag[0] == '^', tmpl.curline, []node{}}
@@ -499,7 +497,7 @@ Outer:
 		}
 	}
 	if errMissing {
-		return reflect.Value{}, fmt.Errorf("Missing variable %q", name)
+		return reflect.Value{}, fmt.Errorf("missing variable %q", name)
 	}
 	return reflect.Value{}, nil
 }
@@ -517,7 +515,7 @@ func isEmpty(v reflect.Value) bool {
 	case reflect.Array, reflect.Slice:
 		return val.Len() == 0
 	case reflect.String:
-		return len(strings.TrimSpace(val.String())) == 0
+		return strings.TrimSpace(val.String()) == ""
 	default:
 		return valueInd.IsZero()
 	}

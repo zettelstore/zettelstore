@@ -83,7 +83,7 @@ func ParseTitle(title string) ast.InlineSlice {
 func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
 	m := zettel.Meta
 	inhMeta := runtime.AddDefaultValues(zettel.Meta)
-	if len(syntax) == 0 {
+	if syntax == "" {
 		syntax, _ = inhMeta.Get(meta.KeySyntax)
 	}
 	title, _ := inhMeta.Get(meta.KeyTitle)

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -275,7 +275,7 @@ func TestMissing(t *testing.T) {
 		output, err := renderString(test.tmpl, true, test.context)
 		if err == nil {
 			t.Errorf("%q expected missing variable error but got %q", test.tmpl, output)
-		} else if !strings.Contains(err.Error(), "Missing variable") {
+		} else if !strings.Contains(err.Error(), "missing variable") {
 			t.Errorf("%q expected missing variable error but got %q", test.tmpl, err.Error())
 		}
 	}

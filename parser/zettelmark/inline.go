@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -63,8 +63,7 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			}
 		case '{':
 			inp.Next()
-			switch inp.Ch {
-			case '{':
+			if inp.Ch == '{' {
 				in, success = cp.parseImage()
 			}
 		case '#':

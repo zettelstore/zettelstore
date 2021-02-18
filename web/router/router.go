@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -94,7 +94,7 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(match) == 3 {
 		key := match[1][0]
 		index := indexZettel
-		if len(match[2]) == 0 {
+		if match[2] == "" {
 			index = indexList
 		}
 		if mh, ok := rt.tables[index][key]; ok {

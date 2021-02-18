@@ -52,7 +52,7 @@ func updateEntry(de *Entry, ev *fileEvent) {
 		de.MetaPath = ev.path
 		return
 	}
-	if len(de.ContentExt) != 0 && de.ContentExt != ev.ext {
+	if de.ContentExt != "" && de.ContentExt != ev.ext {
 		de.Duplicates = true
 		return
 	}

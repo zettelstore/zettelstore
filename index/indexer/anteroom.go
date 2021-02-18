@@ -83,11 +83,11 @@ func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
 }
 
 func (ar *anterooms) makeAnteroom(zid id.Zid, action arAction) *anteroom {
-	cap := ar.maxLoad
-	if cap == 0 {
-		cap = 100
+	c := ar.maxLoad
+	if c == 0 {
+		c = 100
 	}
-	waiting := make(map[id.Zid]arAction, cap)
+	waiting := make(map[id.Zid]arAction, c)
 	waiting[zid] = action
 	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
 }

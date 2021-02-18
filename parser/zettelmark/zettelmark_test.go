@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -878,7 +878,7 @@ func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 		v := a.Attrs[k]
 		if len(v) > 0 {
 			tv.b.WriteByte('=')
-			if strings.IndexRune(v, ' ') >= 0 {
+			if strings.ContainsRune(v, ' ') {
 				tv.b.WriteByte('"')
 				tv.b.WriteString(v)
 				tv.b.WriteByte('"')

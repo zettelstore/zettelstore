@@ -32,7 +32,7 @@ var partMap = map[string]partType{
 
 func getPart(q url.Values, defPart partType) partType {
 	p := q.Get("_part")
-	if len(p) == 0 {
+	if p == "" {
 		return defPart
 	}
 	if part, ok := partMap[p]; ok {

@@ -32,29 +32,23 @@ func DivideReferences(all []*ast.Reference, duplicates bool) (zettel, local, ext
 		if ref.IsZettel() {
 			if duplicates {
 				zettel = append(zettel, ref)
-			} else {
-				if _, ok := mapZettel[s]; !ok {
-					zettel = append(zettel, ref)
-					mapZettel[s] = true
-				}
+			} else if _, ok := mapZettel[s]; !ok {
+				zettel = append(zettel, ref)
+				mapZettel[s] = true
 			}
 		} else if ref.IsExternal() {
 			if duplicates {
 				external = append(external, ref)
-			} else {
-				if _, ok := mapExternal[s]; !ok {
-					external = append(external, ref)
-					mapExternal[s] = true
-				}
+			} else if _, ok := mapExternal[s]; !ok {
+				external = append(external, ref)
+				mapExternal[s] = true
 			}
 		} else {
 			if duplicates {
 				local = append(local, ref)
-			} else {
-				if _, ok := mapLocal[s]; !ok {
-					local = append(local, ref)
-					mapLocal[s] = true
-				}
+			} else if _, ok := mapLocal[s]; !ok {
+				local = append(local, ref)
+				mapLocal[s] = true
 			}
 		}
 	}

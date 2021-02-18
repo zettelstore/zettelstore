@@ -33,8 +33,7 @@ func selectAll(m *meta.Meta) bool { return true }
 
 type matchFunc func(value string) bool
 
-func matchAlways(value string) bool { return true }
-func matchNever(value string) bool  { return false }
+func matchNever(value string) bool { return false }
 
 type matchSpec struct {
 	key   string
@@ -50,7 +49,7 @@ func CreateFilterFunc(filter *Filter) FilterFunc {
 	specs := make([]matchSpec, 0, len(filter.Expr))
 	var searchAll FilterFunc
 	for key, values := range filter.Expr {
-		if len(key) == 0 {
+		if key == "" {
 			// Special handling if searching all keys...
 			searchAll = createSearchAllFunc(values, filter.Negate)
 			continue

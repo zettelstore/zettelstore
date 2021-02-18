@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -116,7 +116,7 @@ func (cv *cleanupVisitor) VisitMark(mn *ast.MarkNode) {
 		cv.hasMark = true
 		return
 	}
-	if len(mn.Text) == 0 {
+	if mn.Text == "" {
 		mn.Text = cv.addIdentifier("*", mn)
 		return
 	}

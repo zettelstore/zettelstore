@@ -181,8 +181,6 @@ func addToMeta(m *Meta, key, val string) {
 		if _, ok := TimeValue(v); ok {
 			m.Set(key, v)
 		}
-	case TypeEmpty:
-		fallthrough
 	default:
 		addData(m, key, v)
 	}

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -35,11 +35,11 @@ type Encoder interface {
 
 // Some errors to signal when encoder methods are not implemented.
 var (
-	ErrNoWriteZettel  = errors.New("Method WriteZettel is not implemented")
-	ErrNoWriteMeta    = errors.New("Method WriteMeta is not implemented")
-	ErrNoWriteContent = errors.New("Method WriteContent is not implemented")
-	ErrNoWriteBlocks  = errors.New("Method WriteBlocks is not implemented")
-	ErrNoWriteInlines = errors.New("Method WriteInlines is not implemented")
+	ErrNoWriteZettel  = errors.New("method WriteZettel is not implemented")
+	ErrNoWriteMeta    = errors.New("method WriteMeta is not implemented")
+	ErrNoWriteContent = errors.New("method WriteContent is not implemented")
+	ErrNoWriteBlocks  = errors.New("method WriteBlocks is not implemented")
+	ErrNoWriteInlines = errors.New("method WriteInlines is not implemented")
 )
 
 // Option allows to configure an encoder

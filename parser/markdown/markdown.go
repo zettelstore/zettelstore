@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -284,7 +284,7 @@ func (p *mdP) acceptText(node *gmAst.Text) ast.InlineSlice {
 
 // splitText transform the text into a sequence of TextNode and SpaceNode
 func splitText(text string) ast.InlineSlice {
-	if len(text) == 0 {
+	if text == "" {
 		return ast.InlineSlice{}
 	}
 	result := make(ast.InlineSlice, 0, 1)
@@ -319,7 +319,7 @@ func splitText(text string) ast.InlineSlice {
 
 // cleanText removes backslashes from TextNodes and expands entities
 func cleanText(text string, cleanBS bool) string {
-	if len(text) == 0 {
+	if text == "" {
 		return ""
 	}
 	lastPos := 0
@@ -372,14 +372,13 @@ func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) ast.InlineSlice {
 }
 
 func cleanCodeSpan(text string) string {
-	if len(text) == 0 {
+	if text == "" {
 		return ""
 	}
 	lastPos := 0
 	var sb strings.Builder
 	for pos, ch := range text {
-		switch ch {
-		case '\n':
+		if ch == '\n' {
 			sb.WriteString(text[lastPos:pos])
 			if pos < len(text)-1 {
 				sb.WriteByte(' ')

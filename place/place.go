@@ -142,22 +142,22 @@ func (err *ErrNotAllowed) Error() string {
 	if err.User == nil {
 		if err.Zid.IsValid() {
 			return fmt.Sprintf(
-				"Operation %q on zettel %v not allowed for not authorized user",
+				"operation %q on zettel %v not allowed for not authorized user",
 				err.Op,
 				err.Zid.String())
 		}
-		return fmt.Sprintf("Operation %q not allowed for not authorized user", err.Op)
+		return fmt.Sprintf("operation %q not allowed for not authorized user", err.Op)
 	}
 	if err.Zid.IsValid() {
 		return fmt.Sprintf(
-			"Operation %q on zettel %v not allowed for user %v/%v",
+			"operation %q on zettel %v not allowed for user %v/%v",
 			err.Op,
 			err.Zid.String(),
 			err.User.GetDefault(meta.KeyUserID, "?"),
 			err.User.Zid.String())
 	}
 	return fmt.Sprintf(
-		"Operation %q not allowed for user %v/%v",
+		"operation %q not allowed for user %v/%v",
 		err.Op,
 		err.User.GetDefault(meta.KeyUserID, "?"),
 		err.User.Zid.String())
@@ -170,21 +170,21 @@ func IsErrNotAllowed(err error) bool {
 }
 
 // ErrStarted is returned when trying to start an already started place.
-var ErrStarted = errors.New("Place is already started")
+var ErrStarted = errors.New("place is already started")
 
 // ErrStopped is returned if calling methods on a place that was not started.
-var ErrStopped = errors.New("Place is stopped")
+var ErrStopped = errors.New("place is stopped")
 
 // ErrReadOnly is returned if there is an attepmt to write to a read-only place.
-var ErrReadOnly = errors.New("Read-only place")
+var ErrReadOnly = errors.New("read-only place")
 
 // ErrNotFound is returned if a zettel was not found in the place.
-var ErrNotFound = errors.New("Zettel not found")
+var ErrNotFound = errors.New("zettel not found")
 
 // ErrInvalidID is returned if the zettel id is not appropriate for the place operation.
 type ErrInvalidID struct{ Zid id.Zid }
 
-func (err *ErrInvalidID) Error() string { return "Invalid Zettel id: " + err.Zid.String() }
+func (err *ErrInvalidID) Error() string { return "invalid Zettel id: " + err.Zid.String() }
 
 // Filter specifies a mechanism for selecting zettel.
 type Filter struct {

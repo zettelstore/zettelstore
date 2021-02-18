@@ -314,10 +314,7 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		dp.dirSrv.RenameEntry(&newEntry, &curEntry)
 		return err
 	}
-	if err := deleteZettel(dp, &curEntry, curZid); err != nil {
-		return err
-	}
-	return nil
+	return deleteZettel(dp, &curEntry, curZid)
 }
 
 func (dp *dirPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {

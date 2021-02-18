@@ -83,14 +83,12 @@ func remRefs(refs id.Slice, rem id.Slice) id.Slice {
 }
 
 func remRef(refs id.Slice, ref id.Zid) id.Slice {
-	if refs != nil {
-		for i, r := range refs {
-			if r == ref {
-				return append(refs[:i], refs[i+1:]...)
-			}
-			if r > ref {
-				return refs
-			}
+	for i, r := range refs {
+		if r == ref {
+			return append(refs[:i], refs[i+1:]...)
+		}
+		if r > ref {
+			return refs
 		}
 	}
 	return refs

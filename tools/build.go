@@ -70,7 +70,7 @@ func readFossilVersion() (string, error) {
 	}
 	hash := fossilHash.FindString(s)
 	if len(hash) < 3 {
-		return "", errors.New("No fossil hash found")
+		return "", errors.New("no fossil hash found")
 	}
 	hash = hash[1 : len(hash)-1]
 

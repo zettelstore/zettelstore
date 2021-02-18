@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -52,7 +52,7 @@ func GetToken(ident *meta.Meta, d time.Duration, kind Kind) ([]byte, error) {
 		return nil, ErrNoUser
 	}
 	subject, ok := ident.Get(meta.KeyUserID)
-	if !ok || len(subject) == 0 {
+	if !ok || subject == "" {
 		return nil, ErrNoIdent
 	}
 
@@ -104,7 +104,7 @@ func CheckToken(token []byte, k Kind) (Data, error) {
 		return Data{}, ErrTokenExpired
 	}
 	ident := claims.Subject
-	if len(ident) == 0 {
+	if ident == "" {
 		return Data{}, ErrNoIdent
 	}
 	if zidS, ok := claims.Set["zid"].(string); ok {

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -254,8 +254,7 @@ func cleanupMeta(m *meta.Meta, entry *directory.Entry) {
 		m.Set(meta.KeyTitle, entry.Zid.String())
 	}
 
-	switch entry.MetaSpec {
-	case directory.MetaSpecFile:
+	if entry.MetaSpec == directory.MetaSpecFile {
 		if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
 			dm := entry.CalcDefaultMeta()
 			syntax, ok = dm.Get(meta.KeySyntax)

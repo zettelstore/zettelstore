@@ -380,7 +380,7 @@ func listTitleFilter(sb *strings.Builder, filter *place.Filter) {
 		if i > 0 {
 			sb.WriteString(" AND ")
 		}
-		if len(name) == 0 {
+		if name == "" {
 			sb.WriteString("ANY")
 		} else {
 			sb.WriteString(name)

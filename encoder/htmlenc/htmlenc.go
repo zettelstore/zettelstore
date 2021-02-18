@@ -56,8 +56,7 @@ func (he *htmlEncoder) SetOption(option encoder.Option) {
 			he.xhtml = opt.Value
 		}
 	case *encoder.StringsOption:
-		switch opt.Key {
-		case "no-meta":
+		if opt.Key == "no-meta" {
 			he.ignoreMeta = make(map[string]bool, len(opt.Value))
 			for _, v := range opt.Value {
 				he.ignoreMeta[v] = true

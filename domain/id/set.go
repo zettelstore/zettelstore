@@ -29,15 +29,15 @@ func NewSet(zids ...Zid) Set {
 }
 
 // NewSetCap returns a new set of identifier with the given capacity and initial values.
-func NewSetCap(cap int, zids ...Zid) Set {
+func NewSetCap(c int, zids ...Zid) Set {
 	l := len(zids)
-	if cap < l {
-		cap = l
+	if c < l {
+		c = l
 	}
-	if cap < 8 {
-		cap = 8
+	if c < 8 {
+		c = 8
 	}
-	result := make(Set, cap)
+	result := make(Set, c)
 	for _, zid := range zids {
 		result[zid] = true
 	}
