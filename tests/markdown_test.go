@@ -130,9 +130,9 @@ func TestMarkdownSpec(t *testing.T) {
 			gotSecond := sb.String()
 			sb.Reset()
 
-			if gotFirst != gotSecond {
-				//st.Errorf("\nCMD: %q\n1st: %q\n2nd: %q", tc.Markdown, gotFirst, gotSecond)
-			}
+			// if gotFirst != gotSecond {
+			// 	st.Errorf("\nCMD: %q\n1st: %q\n2nd: %q", tc.Markdown, gotFirst, gotSecond)
+			// }
 
 			testID = tc.Example*100 + 3
 			thirdAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")

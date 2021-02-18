@@ -36,22 +36,18 @@ func NewURLBuilder(key byte) *URLBuilder {
 
 // Clone an URLBuilder
 func (ub *URLBuilder) Clone() *URLBuilder {
-	copy := new(URLBuilder)
-	copy.key = ub.key
+	cpy := new(URLBuilder)
+	cpy.key = ub.key
 	if len(ub.path) > 0 {
-		copy.path = make([]string, 0, len(ub.path))
-	}
-	for _, p := range ub.path {
-		copy.path = append(copy.path, p)
+		cpy.path = make([]string, 0, len(ub.path))
+		cpy.path = append(cpy.path, ub.path...)
 	}
 	if len(ub.query) > 0 {
-		copy.query = make([]urlQuery, 0, len(ub.query))
+		cpy.query = make([]urlQuery, 0, len(ub.query))
+		cpy.query = append(cpy.query, ub.query...)
 	}
-	for _, q := range ub.query {
-		copy.query = append(copy.query, q)
-	}
-	copy.fragment = ub.fragment
-	return copy
+	cpy.fragment = ub.fragment
+	return cpy
 }
 
 // SetZid sets the zettel identifier.

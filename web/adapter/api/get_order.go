@@ -58,6 +58,6 @@ func MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
 		w.Header().Set("Content-Type", format2ContentType("json"))
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(&outData)
+		enc.Encode(&outData)
 	}
 }

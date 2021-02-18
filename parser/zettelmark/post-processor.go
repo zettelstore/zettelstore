@@ -93,9 +93,7 @@ func (pp *postProcessor) VisitTable(tn *ast.TableNode) {
 		for pos, cell := range tn.Header {
 			if inlines := cell.Inlines; len(inlines) > 0 {
 				if textNode, ok := inlines[0].(*ast.TextNode); ok {
-					if strings.HasPrefix(textNode.Text, "=") {
-						textNode.Text = textNode.Text[1:]
-					}
+					textNode.Text = strings.TrimPrefix(textNode.Text, "=")
 				}
 				if textNode, ok := inlines[len(inlines)-1].(*ast.TextNode); ok {
 					if tnl := len(textNode.Text); tnl > 0 {

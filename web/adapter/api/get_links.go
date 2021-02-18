@@ -102,7 +102,7 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 		w.Header().Set("Content-Type", format2ContentType("json"))
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
-		err = enc.Encode(&outData)
+		enc.Encode(&outData)
 	}
 }
 
@@ -203,10 +203,7 @@ func validKindMatter(kind kindType, matter matterType) bool {
 		return false
 	}
 	if kind&kindLink != 0 {
-		if matter == 0 {
-			return false
-		}
-		return true
+		return matter != 0
 	}
 	if kind&kindImage != 0 {
 		if matter == 0 || matter == matterIncoming {

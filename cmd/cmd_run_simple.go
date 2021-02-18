@@ -49,7 +49,7 @@ func runSimpleFunc(*flag.FlagSet) (int, error) {
 // or via a simple call ``./zettelstore`` on the command line.
 func runSimple() {
 	dir := "./zettel"
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
 		os.Exit(1)
 	}

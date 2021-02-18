@@ -89,7 +89,6 @@ func (inp *Input) EatEOL() {
 	case '\n':
 		inp.Next()
 	}
-	return
 }
 
 // SetPos allows to reset the read position.

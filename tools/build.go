@@ -233,7 +233,7 @@ func createZip(zsName string, zipName string, fileName string) error {
 		return err
 	}
 	defer zsFile.Close()
-	zipFile, err := os.OpenFile(filepath.Join("releases", zipName), os.O_RDWR|os.O_CREATE, 0666)
+	zipFile, err := os.OpenFile(filepath.Join("releases", zipName), os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func createZip(zsName string, zipName string, fileName string) error {
 	if _, err = io.Copy(hash, zsFile); err != nil {
 		return err
 	}
-	if _, err = zsFile.Seek(0, os.SEEK_SET); err != nil {
+	if _, err = zsFile.Seek(0, io.SeekStart); err != nil {
 		return nil
 	}
 	stat, err := zsFile.Stat()

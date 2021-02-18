@@ -165,7 +165,7 @@ func (idx *indexer) indexer(p indexerPort) {
 		}
 		if changed {
 			idx.mx.Lock()
-			idx.durLastIndex = time.Now().Sub(start)
+			idx.durLastIndex = time.Since(start)
 			idx.mx.Unlock()
 		}
 

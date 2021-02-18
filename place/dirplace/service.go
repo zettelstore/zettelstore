@@ -100,7 +100,9 @@ func (cmd *fileGetMetaContent) run() {
 	switch cmd.entry.MetaSpec {
 	case directory.MetaSpecFile:
 		m, err = parseMetaFile(cmd.entry.Zid, cmd.entry.MetaPath)
-		content, err = readFileContent(cmd.entry.ContentPath)
+		if err == nil {
+			content, err = readFileContent(cmd.entry.ContentPath)
+		}
 	case directory.MetaSpecHeader:
 		m, content, err = parseMetaContentFile(cmd.entry.Zid, cmd.entry.ContentPath)
 	default:
@@ -270,7 +272,7 @@ func cleanupMeta(m *meta.Meta, entry *directory.Entry) {
 }
 
 func openFileWrite(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 }
 
 func writeFileZid(f *os.File, zid id.Zid) error {
