@@ -147,7 +147,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		},
 		`<h1>{{Title}}</h1>
 <ul>
-{{#Metas}}<li><a href="{{{URL}}}">{{{Title}}}</a></li>
+{{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
 {{/Metas}}</ul>
 {{#HasPrevNext}}
 <p>
