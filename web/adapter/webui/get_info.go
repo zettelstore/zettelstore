@@ -119,6 +119,7 @@ func MakeGetInfoHandler(
 		te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string
 			WebURL       string
+			ContextURL   string
 			CanWrite     bool
 			EditURL      string
 			CanFolge     bool
@@ -140,6 +141,7 @@ func MakeGetInfoHandler(
 		}{
 			Zid:          zid.String(),
 			WebURL:       adapter.NewURLBuilder('h').SetZid(zid).String(),
+			ContextURL:   adapter.NewURLBuilder('j').SetZid(zid).String(),
 			CanWrite:     te.canWrite(ctx, user, zn.Zettel),
 			EditURL:      adapter.NewURLBuilder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Zettel.Content.IsBinary(),

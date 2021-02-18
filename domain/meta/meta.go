@@ -76,6 +76,14 @@ func IsComputed(name string) bool {
 	return false
 }
 
+// Inverse returns the name of the inverse key.
+func Inverse(name string) string {
+	if kd, ok := registeredKeys[name]; ok {
+		return kd.Inverse
+	}
+	return ""
+}
+
 // GetDescription returns the key description object of the given key name.
 func GetDescription(name string) DescriptionKey {
 	if d, ok := registeredKeys[name]; ok {

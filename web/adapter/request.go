@@ -21,6 +21,17 @@ import (
 	"zettelstore.de/z/place"
 )
 
+// GetInteger returns the integer value of the named query key.
+func GetInteger(q url.Values, key string) (int, bool) {
+	s := q.Get(key)
+	if s != "" {
+		if val, err := strconv.Atoi(s); err == nil {
+			return val, true
+		}
+	}
+	return 0, false
+}
+
 // GetFormat returns the data format selected by the caller.
 func GetFormat(r *http.Request, q url.Values, defFormat string) string {
 	format := q.Get("_format")

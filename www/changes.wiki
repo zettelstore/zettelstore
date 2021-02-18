@@ -7,6 +7,9 @@
      The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
      The default home zettel contains some welcoming information for the new user.
      (major: webui)
+  *  Show context of a zettel by following all backward and/or forward reference
+     up to a defined depth and list the resulting zettel.
+     (major: webui)
   *  A zettel that references other zettel within first-level list items, can act
      as a &ldquo;table of contents&rdquo; zettel.
      The API endpoint <tt>/o/{ID}</tt> allows to retrieve the referenced zettel in

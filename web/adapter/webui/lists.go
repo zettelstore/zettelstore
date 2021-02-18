@@ -210,6 +210,78 @@ func MakeSearchHandler(
 	}
 }
 
+// MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
+func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		zid, err := id.Parse(r.URL.Path[1:])
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		q := r.URL.Query()
+		dir := getZCDirection(q)
+		depth, ok := adapter.GetInteger(q, "depth")
+		if !ok || depth < 0 {
+			depth = 5
+		}
+		limit, ok := adapter.GetInteger(q, "limit")
+		if !ok || limit < 0 {
+			limit = 200
+		}
+		ctx := r.Context()
+		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
+		if err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
+		}
+		metaLinks, err := buildHTMLMetaList(metaList)
+		if err != nil {
+			adapter.InternalServerError(w, "Build HTML meta list", err)
+			return
+		}
+
+		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
+		depthLinks := make([]simpleLink, len(depths))
+		depthURL := adapter.NewURLBuilder('j').SetZid(zid)
+		for i, depth := range depths {
+			depthURL.ClearQuery()
+			switch dir {
+			case usecase.ZettelContextBackward:
+				depthURL.AppendQuery("dir", "backward")
+			case usecase.ZettelContextForward:
+				depthURL.AppendQuery("dir", "forward")
+			}
+			depthURL.AppendQuery("depth", depth)
+			depthLinks[i].Text = depth
+			depthLinks[i].URL = depthURL.String()
+		}
+		var base baseData
+		user := session.GetUser(ctx)
+		te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+		te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
+			Title  string
+			Depths []simpleLink
+			Start  simpleLink
+			Metas  []simpleLink
+		}{
+			Title:  "Zettel Context",
+			Depths: depthLinks,
+			Start:  metaLinks[0],
+			Metas:  metaLinks[1:],
+		})
+	}
+}
+
+func getZCDirection(q url.Values) usecase.ZettelContextDirection {
+	switch q.Get("dir") {
+	case "backward":
+		return usecase.ZettelContextBackward
+	case "forward":
+		return usecase.ZettelContextForward
+	}
+	return usecase.ZettelContextBoth
+}
+
 func renderWebUIMetaList(
 	ctx context.Context, w http.ResponseWriter, te *TemplateEngine,
 	title string,
@@ -259,7 +331,7 @@ func renderWebUIMetaList(
 	te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 	te.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title       string
-		Metas       []metaInfo
+		Metas       []simpleLink
 		HasPrevNext bool
 		HasPrev     bool
 		PrevURL     string
@@ -384,16 +456,11 @@ func newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey stri
 	return urlBuilder.String()
 }
 
-type metaInfo struct {
-	Title string
-	URL   string
-}
-
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func buildHTMLMetaList(metaList []*meta.Meta) ([]metaInfo, error) {
+func buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
 	langOption := encoder.StringOption{Key: "lang", Value: ""}
-	metas := make([]metaInfo, 0, len(metaList))
+	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
 		if lang, ok := m.Get(meta.KeyLang); ok {
 			langOption.Value = lang
@@ -406,9 +473,9 @@ func buildHTMLMetaList(metaList []*meta.Meta) ([]metaInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		metas = append(metas, metaInfo{
-			Title: htmlTitle,
-			URL:   adapter.NewURLBuilder('h').SetZid(m.Zid).String(),
+		metas = append(metas, simpleLink{
+			Text: htmlTitle,
+			URL:  adapter.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
 	return metas, nil

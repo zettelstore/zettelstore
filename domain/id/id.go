@@ -29,16 +29,17 @@ const (
 	ConfigurationZid = Zid(100)
 
 	// WebUI HTML templates are in the range 10000..19999
-	BaseTemplateZid   = Zid(10100)
-	LoginTemplateZid  = Zid(10200)
-	ListTemplateZid   = Zid(10300)
-	DetailTemplateZid = Zid(10401)
-	InfoTemplateZid   = Zid(10402)
-	FormTemplateZid   = Zid(10403)
-	RenameTemplateZid = Zid(10404)
-	DeleteTemplateZid = Zid(10405)
-	RolesTemplateZid  = Zid(10500)
-	TagsTemplateZid   = Zid(10600)
+	BaseTemplateZid    = Zid(10100)
+	LoginTemplateZid   = Zid(10200)
+	ListTemplateZid    = Zid(10300)
+	DetailTemplateZid  = Zid(10401)
+	InfoTemplateZid    = Zid(10402)
+	FormTemplateZid    = Zid(10403)
+	RenameTemplateZid  = Zid(10404)
+	DeleteTemplateZid  = Zid(10405)
+	ContextTemplateZid = Zid(10406)
+	RolesTemplateZid   = Zid(10500)
+	TagsTemplateZid    = Zid(10600)
 
 	// WebUI CSS pages are in the range 20000..29999
 	BaseCSSZid = Zid(20001)

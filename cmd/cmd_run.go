@@ -83,6 +83,7 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 	ucListMeta := usecase.NewListMeta(pp)
 	ucListRoles := usecase.NewListRole(pp)
 	ucListTags := usecase.NewListTags(pp)
+	ucZettelContext := usecase.NewZettelContext(pp)
 
 	router := router.NewRouter()
 	router.Handle("/", webui.MakeGetRootHandler(pp))
@@ -128,6 +129,7 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('i', http.MethodGet, webui.MakeGetInfoHandler(
 		te, ucParseZettel, ucGetMeta))
+	router.AddZettelRoute('j', http.MethodGet, webui.MakeZettelContextHandler(te, ucZettelContext))
 
 	router.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
 	router.AddZettelRoute('o', http.MethodGet, api.MakeGetOrderHandler(

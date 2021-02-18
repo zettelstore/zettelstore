@@ -41,8 +41,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		domain.NewContent(
-			`<!DOCTYPE html>
+		`<!DOCTYPE html>
 <html{{#Lang}} lang="{{Lang}}"{{/Lang}}>
 <head>
 <meta charset="utf-8">
@@ -110,9 +109,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </footer>
 {{/FooterHTML}}
 </body>
-</html>`,
-		),
-	},
+</html>`},
 
 	id.LoginTemplateZid: {
 		constHeader{
@@ -121,8 +118,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		domain.NewContent(
-			`<article>
+		`<article>
 <header>
 <h1>{{Title}}</h1>
 </header>
@@ -140,8 +136,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </div>
 <input class="zs-button" type="submit" value="Login">
 </form>
-</article>`,
-		)},
+</article>`},
 
 	id.ListTemplateZid: {
 		constHeader{
@@ -150,8 +145,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		domain.NewContent(
-			`<h1>{{Title}}</h1>
+		`<h1>{{Title}}</h1>
 <ul>
 {{#Metas}}<li><a href="{{{URL}}}">{{{Title}}}</a></li>
 {{/Metas}}</ul>
@@ -165,7 +159,7 @@ var constZettelMap = map[id.Zid]constZettel{
 <a href="{{{NextURL}}}" rel="next">Next</a>
 {{/HasNext}}
 </p>
-{{/HasPrevNext}}`)},
+{{/HasPrevNext}}`},
 
 	id.DetailTemplateZid: {
 		constHeader{
@@ -174,8 +168,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		domain.NewContent(
-			`<article>
+		`<article>
 <header>
 <h1>{{{HTMLTitle}}}</h1>
 <div class="zs-meta">
@@ -202,7 +195,7 @@ var constZettelMap = map[id.Zid]constZettel{
 </ul>
 </details>
 {{/HasBackLinks}}
-</article>`)},
+</article>`},
 
 	id.InfoTemplateZid: {
 		constHeader{
@@ -211,11 +204,11 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		domain.NewContent(
-			`<article>
+		`<article>
 <header>
 <h1>Information for Zettel {{Zid}}</h1>
 <a href="{{{WebURL}}}">Web</a>
+&#183; <a href="{{{ContextURL}}}">Context</a>
 {{#CanWrite}} &#183; <a href="{{{EditURL}}}">Edit</a>{{/CanWrite}}
 {{#CanFolge}} &#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
 {{#CanCopy}} &#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
@@ -252,8 +245,30 @@ var constZettelMap = map[id.Zid]constZettel{
 </tr>
 {{/Matrix}}
 </table>
-</article>`),
-	},
+</article>`},
+
+	id.ContextTemplateZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore Context HTML Template",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityExpert,
+			meta.KeySyntax:     syntaxTemplate,
+		},
+		`<article>
+<header>
+<h1>{{Title}}</h1>
+<div class="zs-meta">
+<a href="?dir=backward">Backward</a>
+&#183; <a href="?dir=both">Both</a>
+&#183; <a href="?dir=forward">Forward</a>
+&#183; Depth:{{#Depths}}&#x2000;<a href="{{{URL}}}">{{{Text}}}</a>{{/Depths}}
+</div>
+</header>
+<p><a href="{{{Start.URL}}}">{{{Start.Text}}}</a></p>
+<ul>
+{{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
+{{/Metas}}</ul>
+</article>`},
 
 	id.FormTemplateZid: {
 		constHeader{
@@ -669,8 +684,7 @@ footer {
     scroll-behavior: auto !important;
   }
 }
-`,
-	},
+`},
 
 	id.TOCNewTemplateZid: {
 		constHeader{
@@ -690,8 +704,7 @@ These zettel will be included in the ""New"" menu of the WebUI.
 			meta.KeyRole:   meta.ValueRoleZettel,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
-		"",
-	},
+		""},
 
 	id.TemplateNewUserZid: {
 		constHeader{
@@ -702,8 +715,7 @@ These zettel will be included in the ""New"" menu of the WebUI.
 			meta.KeyUserRole:   meta.ValueUserRoleReader,
 			meta.KeySyntax:     meta.ValueSyntaxNone,
 		},
-		"",
-	},
+		""},
 
 	id.DefaultHomeZid: {
 		constHeader{
