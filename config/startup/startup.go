@@ -104,7 +104,6 @@ func calcSecret(cfg *meta.Meta) []byte {
 	io.WriteString(h, version.Prog)
 	io.WriteString(h, version.Build)
 	io.WriteString(h, version.Hostname)
-	io.WriteString(h, version.GoVersion)
 	io.WriteString(h, version.Os)
 	io.WriteString(h, version.Arch)
 	return h.Sum(nil)
