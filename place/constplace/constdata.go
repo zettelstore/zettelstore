@@ -12,9 +12,6 @@
 package constplace
 
 import (
-	"fmt"
-
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -145,7 +142,10 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		`<h1>{{Title}}</h1>
+		`<nav>
+<header>
+<h1>{{Title}}</h1>
+</header>
 <ul>
 {{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
 {{/Metas}}</ul>
@@ -159,7 +159,8 @@ var constZettelMap = map[id.Zid]constZettel{
 <a href="{{{NextURL}}}" rel="next">Next</a>
 {{/HasNext}}
 </p>
-{{/HasPrevNext}}`},
+{{/HasPrevNext}}
+</nav>`},
 
 	id.DetailTemplateZid: {
 		constHeader{
@@ -254,7 +255,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		`<article>
+		`<nav>
 <header>
 <h1>{{Title}}</h1>
 <div class="zs-meta">
@@ -268,7 +269,7 @@ var constZettelMap = map[id.Zid]constZettel{
 <ul>
 {{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
 {{/Metas}}</ul>
-</article>`},
+</nav>`},
 
 	id.FormTemplateZid: {
 		constHeader{
@@ -376,11 +377,14 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		`<h1>Currently used roles</h1>
+		`<nav>
+<header>
+<h1>Currently used roles</h1>
+</header>
 <ul>
 {{#Roles}}<li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/Roles}}</ul>`,
-	},
+{{/Roles}}</ul>
+</nav>`},
 
 	id.TagsTemplateZid: {
 		constHeader{
@@ -389,13 +393,16 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
 		},
-		`<h1>Currently used tags</h1>
+		`<nav>
+<header>
+<h1>Currently used tags</h1>
 <div class="zs-meta">
 <a href="{{{#ListTagsURL}}}">All</a>{{#MinCounts}}, <a href="{{{URL}}}">{{Count}}</a>{{/MinCounts}}
 </div>
+</header>
 {{#Tags}} <a href="{{{URL}}}" style="font-size:{{Size}}%">{{Name}}</a><sup>{{Count}}</sup>
-{{/Tags}}`,
-	},
+{{/Tags}}
+</nav>`},
 
 	id.BaseCSSZid: {
 		constHeader{
@@ -683,8 +690,7 @@ footer {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-`},
+}`},
 
 	id.TOCNewTemplateZid: {
 		constHeader{
@@ -692,11 +698,10 @@ footer {
 			meta.KeyRole:   meta.ValueRoleConfiguration,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
-		domain.Content(fmt.Sprintf(`This zettel lists all zettel that should act as a template for new zettel.
+		`This zettel lists all zettel that should act as a template for new zettel.
 These zettel will be included in the ""New"" menu of the WebUI.
-* [[New Zettel|%v]]
-* [[New User|%v]]`, id.TemplateNewZettelZid, id.TemplateNewUserZid)),
-	},
+* [[New Zettel|00000000090001]]
+* [[New User|00000000090002]]`},
 
 	id.TemplateNewZettelZid: {
 		constHeader{

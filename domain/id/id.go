@@ -23,7 +23,10 @@ import (
 // e.g. the seconds should be zero,
 type Zid uint64
 
-// Some important ZettelIDs
+// Some important ZettelIDs.
+// Note: if you change some values, ensure that you also change them in the
+//       constant place. They are mentioned there literally, because these
+//       constants are not available there.
 const (
 	Invalid          = Zid(0) // Invalid is a Zid that will never be valid
 	ConfigurationZid = Zid(100)
