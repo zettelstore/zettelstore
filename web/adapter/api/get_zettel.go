@@ -53,7 +53,7 @@ func MakeGetZettelHandler(
 				adapter.BadRequest(w, "Unknown _part parameter")
 				return
 			}
-			w.Header().Set("Content-Type", format2ContentType(format))
+			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			if format != "djson" {
 				err = writeJSONZettel(w, zn, part)
 			} else {
@@ -75,7 +75,7 @@ func MakeGetZettelHandler(
 		case partZettel:
 			inhMeta := false
 			if format != "raw" {
-				w.Header().Set("Content-Type", format2ContentType(format))
+				w.Header().Set(adapter.ContentType, format2ContentType(format))
 				inhMeta = true
 			}
 			enc := encoder.Create(format, &langOption,
@@ -94,7 +94,7 @@ func MakeGetZettelHandler(
 				_, err = enc.WriteZettel(w, zn, inhMeta)
 			}
 		case partMeta:
-			w.Header().Set("Content-Type", format2ContentType(format))
+			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			if format == "raw" {
 				// Don't write inherited meta data, just the raw
 				err = writeMeta(w, zn.Zettel.Meta, format)
@@ -104,10 +104,10 @@ func MakeGetZettelHandler(
 		case partContent:
 			if format == "raw" {
 				if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Zettel.Meta)); ok {
-					w.Header().Add("Content-Type", ct)
+					w.Header().Add(adapter.ContentType, ct)
 				}
 			} else {
-				w.Header().Set("Content-Type", format2ContentType(format))
+				w.Header().Set(adapter.ContentType, format2ContentType(format))
 			}
 			err = writeContent(w, zn, format,
 				&langOption,

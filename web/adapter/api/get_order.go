@@ -55,7 +55,7 @@ func MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
 				},
 			)
 		}
-		w.Header().Set("Content-Type", format2ContentType("json"))
+		w.Header().Set(adapter.ContentType, format2ContentType("json"))
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		enc.Encode(&outData)

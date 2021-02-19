@@ -41,7 +41,7 @@ func (pp *postProcessor) VisitPara(pn *ast.ParaNode) {
 	}
 }
 
-// VisitVerbatim post-processes a verbatim block.
+// VisitVerbatim does nothing, no post-processing needed.
 func (pp *postProcessor) VisitVerbatim(vn *ast.VerbatimNode) {}
 
 // VisitRegion post-processes a region.
@@ -60,7 +60,7 @@ func (pp *postProcessor) VisitHeading(hn *ast.HeadingNode) {
 	hn.Inlines = pp.processInlineSlice(hn.Inlines)
 }
 
-// VisitHRule post-processes a horizontal rule.
+// VisitHRule does nothing, no post-processing needed.
 func (pp *postProcessor) VisitHRule(hn *ast.HRuleNode) {}
 
 // VisitList post-processes a list.

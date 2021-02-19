@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -27,7 +27,7 @@ import (
 func MakePostLoginHandlerAPI(auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !startup.WithAuth() {
-			w.Header().Set("Content-Type", format2ContentType("json"))
+			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
 		}
@@ -53,7 +53,7 @@ func authenticateViaJSON(
 		return
 	}
 
-	w.Header().Set("Content-Type", format2ContentType("json"))
+	w.Header().Set(adapter.ContentType, format2ContentType("json"))
 	writeJSONToken(w, string(token), authDuration)
 }
 
@@ -99,7 +99,7 @@ func MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := auth.Now.Sub(auth.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			w.Header().Set("Content-Type", format2ContentType("json"))
+			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, string(auth.Token), totalLifetime-currentLifetime)
 			return
 		}
@@ -111,7 +111,7 @@ func MakeRenewAuthHandler() http.HandlerFunc {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		w.Header().Set("Content-Type", format2ContentType("json"))
+		w.Header().Set(adapter.ContentType, format2ContentType("json"))
 		writeJSONToken(w, string(token), apiDur)
 	}
 }

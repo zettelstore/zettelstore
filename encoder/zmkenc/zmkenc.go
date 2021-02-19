@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -29,7 +29,7 @@ func init() {
 
 type zmkEncoder struct{}
 
-// SetOption sets an option for this encoder.
+// SetOption does nothing because this encoder does not recognize any option.
 func (ze *zmkEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.

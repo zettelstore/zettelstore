@@ -32,6 +32,9 @@ func GetInteger(q url.Values, key string) (int, bool) {
 	return 0, false
 }
 
+// ContentType defines the HTTP header value "Content-Type".
+const ContentType = "Content-Type"
+
 // GetFormat returns the data format selected by the caller.
 func GetFormat(r *http.Request, q url.Values, defFormat string) string {
 	format := q.Get("_format")
@@ -41,7 +44,7 @@ func GetFormat(r *http.Request, q url.Values, defFormat string) string {
 	if format, ok := getOneFormat(r, "Accept"); ok {
 		return format
 	}
-	if format, ok := getOneFormat(r, "Content-Type"); ok {
+	if format, ok := getOneFormat(r, ContentType); ok {
 		return format
 	}
 	return defFormat

@@ -467,9 +467,6 @@ func compareTags(t *testing.T, actual []template.Tag, expected []tag) {
 			compareTags(t, tag.Tags(), expected[i].Tags)
 		case template.Partial:
 			compareTags(t, tag.Tags(), expected[i].Tags)
-		case template.Invalid:
-			t.Errorf("invalid tag type: %s", tagString(tag.Type()))
-			return
 		default:
 			t.Errorf("invalid tag type: %s", tagString(tag.Type()))
 			return

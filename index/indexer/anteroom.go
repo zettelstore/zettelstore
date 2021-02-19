@@ -115,9 +115,10 @@ func (ar *anterooms) Reload(delZids id.Slice, newZids id.Set) {
 		}
 	}
 
-	// Delete previous reload rooms
+	// Delete previous reloaded rooms
 	room := ar.first
-	for ; room != nil && room.reload; room = room.next {
+	for room != nil && room.reload {
+		room = room.next
 	}
 	ar.first = room
 	if room == nil {

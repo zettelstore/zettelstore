@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -31,7 +31,7 @@ func init() {
 // is in file web/adapter/json.go
 type jsonEncoder struct{}
 
-// SetOption sets an option for the encoder
+// SetOption does nothing because this encoder does not recognize any option.
 func (je *jsonEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.

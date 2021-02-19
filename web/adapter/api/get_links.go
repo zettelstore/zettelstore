@@ -99,7 +99,7 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 			outData.Cites = stringCites(summary.Cites)
 		}
 
-		w.Header().Set("Content-Type", format2ContentType("json"))
+		w.Header().Set(adapter.ContentType, format2ContentType("json"))
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		enc.Encode(&outData)

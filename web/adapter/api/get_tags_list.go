@@ -36,7 +36,7 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 		format := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
 		case "json":
-			w.Header().Set("Content-Type", format2ContentType(format))
+			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			renderListTagsJSON(w, tagData)
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in format %q", format))

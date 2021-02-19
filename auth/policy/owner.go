@@ -31,7 +31,7 @@ func (o *ownerPolicy) CanCreate(user, newMeta *meta.Meta) bool {
 	return o.userIsOwner(user) || o.userCanCreate(user, newMeta)
 }
 
-func (o *ownerPolicy) userCanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
+func (o *ownerPolicy) userCanCreate(user, newMeta *meta.Meta) bool {
 	if runtime.GetUserRole(user) == meta.UserRoleReader {
 		return false
 	}

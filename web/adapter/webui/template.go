@@ -293,7 +293,7 @@ func (te *TemplateEngine) renderTemplate(
 	err = t.Render(&content, data)
 	if err == nil {
 		base.Content = content.String()
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set(adapter.ContentType, "text/html; charset=utf-8")
 		err = bt.Render(w, base)
 	}
 	if err != nil {

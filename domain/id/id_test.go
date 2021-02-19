@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,9 +16,6 @@ import (
 
 	"zettelstore.de/z/domain/id"
 )
-
-func TestParseZettelID(t *testing.T) {
-}
 
 func TestIsValid(t *testing.T) {
 	validIDs := []string{

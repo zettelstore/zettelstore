@@ -63,6 +63,8 @@ func readVersionFile() (string, error) {
 var fossilHash = regexp.MustCompile(`\[[0-9a-fA-F]+\]`)
 var dirtyPrefixes = []string{"DELETED", "ADDED", "UPDATED", "CONFLICT", "EDITED", "RENAMED"}
 
+const dirtySuffix = "-dirty"
+
 func readFossilVersion() (string, error) {
 	s, err := executeCommand(nil, "fossil", "timeline", "--limit", "1")
 	if err != nil {
@@ -81,7 +83,7 @@ func readFossilVersion() (string, error) {
 	for _, line := range splitLines(s) {
 		for _, prefix := range dirtyPrefixes {
 			if strings.HasPrefix(line, prefix) {
-				return hash + "-dirty", nil
+				return hash + dirtySuffix, nil
 			}
 		}
 	}
@@ -192,9 +194,9 @@ func cmdRelease() error {
 	if strings.HasSuffix(base, "dev") {
 		base = base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
 	}
-	if strings.HasSuffix(fossil, "-dirty") {
+	if strings.HasSuffix(fossil, dirtySuffix) {
 		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", fossil)
-		base = base + "-dirty"
+		base = base + dirtySuffix
 	}
 	if err := cmdCheck(); err != nil {
 		return err

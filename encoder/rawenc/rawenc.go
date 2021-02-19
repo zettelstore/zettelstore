@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -27,7 +27,7 @@ func init() {
 
 type rawEncoder struct{}
 
-// SetOption sets an option for the encoder
+// SetOption does nothing because this encoder does not recognize any option.
 func (re *rawEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.

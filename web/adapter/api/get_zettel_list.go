@@ -46,7 +46,7 @@ func MakeListMetaHandler(
 			return
 		}
 
-		w.Header().Set("Content-Type", format2ContentType(format))
+		w.Header().Set(adapter.ContentType, format2ContentType(format))
 		switch format {
 		case "html":
 			renderListMetaHTML(w, metaList)

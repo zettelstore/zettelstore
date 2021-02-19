@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -32,7 +32,7 @@ import (
 )
 
 var enabledTests = map[string]map[string]bool{
-	"comments.json": map[string]bool{
+	"comments.json": {
 		"Inline":                           true,
 		"Multiline":                        true,
 		"Standalone":                       true,
@@ -45,7 +45,7 @@ var enabledTests = map[string]map[string]bool{
 		"Indented Inline":                  true,
 		"Surrounding Whitespace":           true,
 	},
-	"delimiters.json": map[string]bool{
+	"delimiters.json": {
 		"Pair Behavior":                    true,
 		"Special Characters":               true,
 		"Sections":                         true,
@@ -61,7 +61,7 @@ var enabledTests = map[string]map[string]bool{
 		"Standalone Without Previous Line": true,
 		"Standalone Without Newline":       true,
 	},
-	"interpolation.json": map[string]bool{
+	"interpolation.json": {
 		"No Interpolation":                             true,
 		"Basic Interpolation":                          true,
 		"HTML Escaping":                                true,
@@ -93,7 +93,7 @@ var enabledTests = map[string]map[string]bool{
 		"Triple Mustache With Padding":                 true,
 		"Ampersand With Padding":                       true,
 	},
-	"inverted.json": map[string]bool{
+	"inverted.json": {
 		"Falsey":                           true,
 		"Truthy":                           true,
 		"Context":                          true,
@@ -116,7 +116,7 @@ var enabledTests = map[string]map[string]bool{
 		"Standalone Without Previous Line": true,
 		"Standalone Without Newline":       true,
 	},
-	"partials.json": map[string]bool{
+	"partials.json": {
 		"Basic Behavior":                   true,
 		"Failed Lookup":                    true,
 		"Context":                          true,
@@ -129,7 +129,7 @@ var enabledTests = map[string]map[string]bool{
 		"Standalone Indentation":           true,
 		"Padding Whitespace":               true,
 	},
-	"sections.json": map[string]bool{
+	"sections.json": {
 		"Truthy":                           true,
 		"Falsey":                           true,
 		"Context":                          true,
