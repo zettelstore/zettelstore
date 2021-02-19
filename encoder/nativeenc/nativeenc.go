@@ -135,13 +135,13 @@ func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	}
 }
 
-func (v *visitor) writeMetaString(m *meta.Meta, key string, native string) {
+func (v *visitor) writeMetaString(m *meta.Meta, key, native string) {
 	if val, ok := m.Get(key); ok && len(val) > 0 {
 		v.b.WriteStrings("\n[", native, " \"", val, "\"]")
 	}
 }
 
-func (v *visitor) writeMetaList(m *meta.Meta, key string, native string) {
+func (v *visitor) writeMetaList(m *meta.Meta, key, native string) {
 	if vals, ok := m.GetList(key); ok && len(vals) > 0 {
 		v.b.WriteStrings("\n[", native)
 		for _, val := range vals {

@@ -15,26 +15,9 @@ import "zettelstore.de/z/domain/meta"
 
 type roPolicy struct{}
 
-func (p *roPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
-	return false
-}
-
-func (p *roPolicy) CanRead(user *meta.Meta, m *meta.Meta) bool {
-	return true
-}
-
-func (p *roPolicy) CanWrite(user *meta.Meta, oldMeta, newMeta *meta.Meta) bool {
-	return false
-}
-
-func (p *roPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
-	return false
-}
-
-func (p *roPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
-	return false
-}
-
-func (p *roPolicy) CanReload(user *meta.Meta) bool {
-	return false
-}
+func (p *roPolicy) CanCreate(user, newMeta *meta.Meta) bool         { return false }
+func (p *roPolicy) CanRead(user, m *meta.Meta) bool                 { return true }
+func (p *roPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool { return false }
+func (p *roPolicy) CanRename(user, m *meta.Meta) bool               { return false }
+func (p *roPolicy) CanDelete(user, m *meta.Meta) bool               { return false }
+func (p *roPolicy) CanReload(user *meta.Meta) bool                  { return false }

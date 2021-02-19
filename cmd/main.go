@@ -124,7 +124,7 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	return cfg
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces bool, simple bool) error {
+func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
 	var mgr place.Manager
 	var idx index.Indexer
 	if withPlaces {

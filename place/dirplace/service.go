@@ -37,8 +37,8 @@ type fileCmd interface {
 // Retrieves the meta data from a zettel.
 
 func getMeta(dp *dirPlace, entry *directory.Entry, zid id.Zid) (*meta.Meta, error) {
-	rc := make(chan resGetMetaContent)
-	dp.getFileChan(zid) <- &fileGetMetaContent{entry, rc}
+	rc := make(chan resGetMeta)
+	dp.getFileChan(zid) <- &fileGetMeta{entry, rc}
 	res := <-rc
 	close(rc)
 	return res.meta, res.err

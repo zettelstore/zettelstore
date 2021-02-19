@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -19,7 +19,7 @@ import (
 )
 
 // HashCredential returns a hashed vesion of the given credential
-func HashCredential(zid id.Zid, ident string, credential string) (string, error) {
+func HashCredential(zid id.Zid, ident, credential string) (string, error) {
 	fullCredential := createFullCredential(zid, ident, credential)
 	res, err := bcrypt.GenerateFromPassword(fullCredential, bcrypt.DefaultCost)
 	if err != nil {
@@ -30,7 +30,7 @@ func HashCredential(zid id.Zid, ident string, credential string) (string, error)
 
 // CompareHashAndCredential checks, whether the hashed credential is a possible
 // value when hashing the credential.
-func CompareHashAndCredential(hashed string, zid id.Zid, ident string, credential string) (bool, error) {
+func CompareHashAndCredential(hashed string, zid id.Zid, ident, credential string) (bool, error) {
 	fullCredential := createFullCredential(zid, ident, credential)
 	err := bcrypt.CompareHashAndPassword([]byte(hashed), fullCredential)
 	if err == nil {
@@ -42,7 +42,7 @@ func CompareHashAndCredential(hashed string, zid id.Zid, ident string, credentia
 	return false, err
 }
 
-func createFullCredential(zid id.Zid, ident string, credential string) []byte {
+func createFullCredential(zid id.Zid, ident, credential string) []byte {
 	var buf bytes.Buffer
 	buf.WriteString(zid.String())
 	buf.WriteByte(' ')

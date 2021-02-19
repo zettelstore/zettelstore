@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -439,8 +439,7 @@ func (pp *postProcessor) processInlineSliceTail(ins ast.InlineSlice, toPos int) 
 
 func (pp *postProcessor) processInlineSliceInplace(ins ast.InlineSlice) {
 	for _, in := range ins {
-		switch n := in.(type) {
-		case *ast.TextNode:
+		if n, ok := in.(*ast.TextNode); ok {
 			if n.Text == "..." {
 				n.Text = "\u2026"
 			} else if len(n.Text) == 4 && strings.IndexByte(",;:!?", n.Text[3]) >= 0 && n.Text[:3] == "..." {

@@ -60,7 +60,7 @@ func readVersionFile() (string, error) {
 	}), nil
 }
 
-var fossilHash = regexp.MustCompile("\\[[0-9a-fA-F]+\\]")
+var fossilHash = regexp.MustCompile(`\[[0-9a-fA-F]+\]`)
 var dirtyPrefixes = []string{"DELETED", "ADDED", "UPDATED", "CONFLICT", "EDITED", "RENAMED"}
 
 func readFossilVersion() (string, error) {
@@ -227,7 +227,7 @@ func cmdRelease() error {
 	return nil
 }
 
-func createZip(zsName string, zipName string, fileName string) error {
+func createZip(zsName, zipName, fileName string) error {
 	zsFile, err := os.Open(zsName)
 	if err != nil {
 		return err

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -44,7 +44,7 @@ func NewAuthenticate(port AuthenticatePort) Authenticate {
 }
 
 // Run executes the use case.
-func (uc Authenticate) Run(ctx context.Context, ident string, credential string, d time.Duration, k token.Kind) ([]byte, error) {
+func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time.Duration, k token.Kind) ([]byte, error) {
 	identMeta, err := uc.ucGetUser.Run(ctx, ident)
 	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
 

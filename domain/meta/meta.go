@@ -243,7 +243,7 @@ func (m *Meta) Get(key string) (string, bool) {
 
 // GetDefault retrieves the string value of the given key. If no value was
 // stored, the given default value is returned.
-func (m *Meta) GetDefault(key string, def string) string {
+func (m *Meta) GetDefault(key, def string) string {
 	if value, ok := m.Get(key); ok {
 		return value
 	}
@@ -263,7 +263,7 @@ func (m *Meta) PairsRest(allowComputed bool) []Pair {
 	return m.doPairs(false, allowComputed)
 }
 
-func (m *Meta) doPairs(first bool, allowComputed bool) []Pair {
+func (m *Meta) doPairs(first, allowComputed bool) []Pair {
 	result := make([]Pair, 0, len(m.pairs))
 	if first {
 		for _, key := range firstKeys {

@@ -229,6 +229,10 @@ type tagReadingResult struct {
 	standalone bool
 }
 
+var skipWhitespaceTagTypes = map[byte]bool{
+	'#': true, '^': true, '/': true, '<': true, '>': true, '=': true, '!': true,
+}
+
 func (tmpl *Template) readTag(mayStandalone bool) (*tagReadingResult, error) {
 	var text string
 	var err error
@@ -261,11 +265,9 @@ func (tmpl *Template) readTag(mayStandalone bool) (*tagReadingResult, error) {
 
 	// Skip all whitespaces apeared after these types of tags until end of line if
 	// the line only contains a tag and whitespaces.
-	const skipWhitespaceTagTypes = "#^/<>=!"
-
 	standalone := true
 	if mayStandalone {
-		if !strings.Contains(skipWhitespaceTagTypes, tag[0:1]) {
+		if _, ok := skipWhitespaceTagTypes[tag[0]]; !ok {
 			standalone = false
 		} else {
 			if eow == len(tmpl.data) {

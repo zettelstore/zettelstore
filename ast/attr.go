@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -56,7 +56,7 @@ func (a *Attributes) Clone() *Attributes {
 }
 
 // Set changes the attribute that a given key has now a given value.
-func (a *Attributes) Set(key string, value string) *Attributes {
+func (a *Attributes) Set(key, value string) *Attributes {
 	if a == nil {
 		return &Attributes{map[string]string{key: value}}
 	}

@@ -22,23 +22,23 @@ type anonPolicy struct {
 	pre           Policy
 }
 
-func (ap *anonPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
+func (ap *anonPolicy) CanCreate(user, newMeta *meta.Meta) bool {
 	return ap.pre.CanCreate(user, newMeta)
 }
 
-func (ap *anonPolicy) CanRead(user *meta.Meta, m *meta.Meta) bool {
+func (ap *anonPolicy) CanRead(user, m *meta.Meta) bool {
 	return ap.pre.CanRead(user, m) && ap.checkVisibility(m)
 }
 
-func (ap *anonPolicy) CanWrite(user *meta.Meta, oldMeta, newMeta *meta.Meta) bool {
+func (ap *anonPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	return ap.pre.CanWrite(user, oldMeta, newMeta) && ap.checkVisibility(oldMeta)
 }
 
-func (ap *anonPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
+func (ap *anonPolicy) CanRename(user, m *meta.Meta) bool {
 	return ap.pre.CanRename(user, m) && ap.checkVisibility(m)
 }
 
-func (ap *anonPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
+func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 	return ap.pre.CanDelete(user, m) && ap.checkVisibility(m)
 }
 

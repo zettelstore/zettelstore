@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -371,9 +371,7 @@ loopInit:
 			lastItem := len(prevItems) - 1
 			prevItems[lastItem] = append(prevItems[lastItem], cp.lists[childPos])
 		} else {
-			cp.lists[parentPos].Items = []ast.ItemSlice{
-				ast.ItemSlice{cp.lists[childPos]},
-			}
+			cp.lists[parentPos].Items = []ast.ItemSlice{{cp.lists[childPos]}}
 		}
 	}
 	return nil, true

@@ -31,13 +31,6 @@ type metaDataInfo struct {
 	Value string
 }
 
-type zettelReference struct {
-	Zid    id.Zid
-	Title  string
-	HasURL bool
-	URL    string
-}
-
 type matrixElement struct {
 	Text   string
 	HasURL bool
@@ -164,7 +157,7 @@ func MakeGetInfoHandler(
 	}
 }
 
-func splitLocExtLinks(links []*ast.Reference) (locLinks []string, extLinks []string) {
+func splitLocExtLinks(links []*ast.Reference) (locLinks, extLinks []string) {
 	if len(links) == 0 {
 		return nil, nil
 	}

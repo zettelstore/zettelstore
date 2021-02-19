@@ -57,8 +57,7 @@ func (pp *polPlace) CanCreateZettel(ctx context.Context) bool {
 	return pp.place.CanCreateZettel(ctx)
 }
 
-func (pp *polPlace) CreateZettel(
-	ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (pp *polPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	user := session.GetUser(ctx)
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.place.CreateZettel(ctx, zettel)

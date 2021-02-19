@@ -241,15 +241,6 @@ func sliceToLower(sl []string) []string {
 	return result
 }
 
-func isEmptySlice(sl []string) bool {
-	for _, s := range sl {
-		if len(s) > 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func preprocessSet(set []string) [][]string {
 	result := make([][]string, 0, len(set))
 	for _, elem := range set {

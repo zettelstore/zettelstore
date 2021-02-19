@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -139,7 +139,7 @@ func (cp *zmkP) parseAttributeValue(
 	}
 }
 
-func updateAttrs(attrs map[string]string, key string, val string) {
+func updateAttrs(attrs map[string]string, key, val string) {
 	if prevVal := attrs[key]; len(prevVal) > 0 {
 		attrs[key] = prevVal + " " + val
 	} else {

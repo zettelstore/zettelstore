@@ -17,7 +17,7 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-func assertRefs(t *testing.T, i int, got id.Slice, exp id.Slice) {
+func assertRefs(t *testing.T, i int, got, exp id.Slice) {
 	t.Helper()
 	if got == nil && exp != nil {
 		t.Errorf("%d: got nil, but expected %v", i, exp)

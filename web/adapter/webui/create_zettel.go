@@ -114,8 +114,7 @@ func renderZettelForm(
 	r *http.Request,
 	te *TemplateEngine,
 	zettel domain.Zettel,
-	title string,
-	heading string,
+	title, heading string,
 ) {
 	ctx := r.Context()
 	user := session.GetUser(ctx)

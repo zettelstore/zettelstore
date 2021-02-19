@@ -24,7 +24,7 @@ type ownerPolicy struct {
 	pre           Policy
 }
 
-func (o *ownerPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
+func (o *ownerPolicy) CanCreate(user, newMeta *meta.Meta) bool {
 	if user == nil || !o.pre.CanCreate(user, newMeta) {
 		return false
 	}
@@ -41,7 +41,7 @@ func (o *ownerPolicy) userCanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
 	return true
 }
 
-func (o *ownerPolicy) CanRead(user *meta.Meta, m *meta.Meta) bool {
+func (o *ownerPolicy) CanRead(user, m *meta.Meta) bool {
 	// No need to call o.pre.CanRead(user, meta), because it will always return true.
 	// Both the default and the readonly policy allow to read a zettel.
 	vis := o.getVisibility(m)
@@ -51,7 +51,7 @@ func (o *ownerPolicy) CanRead(user *meta.Meta, m *meta.Meta) bool {
 	return o.userIsOwner(user) || o.userCanRead(user, m, vis)
 }
 
-func (o *ownerPolicy) userCanRead(user *meta.Meta, m *meta.Meta, vis meta.Visibility) bool {
+func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool {
 	switch vis {
 	case meta.VisibilityOwner, meta.VisibilitySimple, meta.VisibilityExpert:
 		return false
@@ -75,7 +75,7 @@ var noChangeUser = []string{
 	meta.KeyUserRole,
 }
 
-func (o *ownerPolicy) CanWrite(user *meta.Meta, oldMeta, newMeta *meta.Meta) bool {
+func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	if user == nil || !o.pre.CanWrite(user, oldMeta, newMeta) {
 		return false
 	}
@@ -105,7 +105,7 @@ func (o *ownerPolicy) CanWrite(user *meta.Meta, oldMeta, newMeta *meta.Meta) boo
 	return o.userCanCreate(user, newMeta)
 }
 
-func (o *ownerPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
+func (o *ownerPolicy) CanRename(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanRename(user, m) {
 		return false
 	}
@@ -115,7 +115,7 @@ func (o *ownerPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
 	return o.userIsOwner(user)
 }
 
-func (o *ownerPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
+func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanDelete(user, m) {
 		return false
 	}

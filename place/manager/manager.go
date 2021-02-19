@@ -91,7 +91,6 @@ func GetSchemes() []string {
 type Manager struct {
 	mx         sync.RWMutex
 	started    bool
-	placeURIs  []url.URL
 	subplaces  []place.Place
 	filter     index.MetaFilter
 	observers  []func(place.ChangeInfo)

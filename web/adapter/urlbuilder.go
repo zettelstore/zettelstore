@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -66,7 +66,7 @@ func (ub *URLBuilder) AppendPath(p string) *URLBuilder {
 }
 
 // AppendQuery adds a new query parameter
-func (ub *URLBuilder) AppendQuery(key string, value string) *URLBuilder {
+func (ub *URLBuilder) AppendQuery(key, value string) *URLBuilder {
 	ub.query = append(ub.query, urlQuery{key, value})
 	return ub
 }

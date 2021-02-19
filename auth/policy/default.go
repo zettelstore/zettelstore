@@ -18,27 +18,15 @@ import (
 
 type defaultPolicy struct{}
 
-func (d *defaultPolicy) CanCreate(user *meta.Meta, newMeta *meta.Meta) bool {
-	return true
-}
-
-func (d *defaultPolicy) CanRead(user *meta.Meta, m *meta.Meta) bool {
-	return true
-}
-
-func (d *defaultPolicy) CanWrite(user *meta.Meta, oldMeta, newMeta *meta.Meta) bool {
+func (d *defaultPolicy) CanCreate(user, newMeta *meta.Meta) bool { return true }
+func (d *defaultPolicy) CanRead(user, m *meta.Meta) bool         { return true }
+func (d *defaultPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	return d.canChange(user, oldMeta)
 }
+func (d *defaultPolicy) CanRename(user, m *meta.Meta) bool { return d.canChange(user, m) }
+func (d *defaultPolicy) CanDelete(user, m *meta.Meta) bool { return d.canChange(user, m) }
 
-func (d *defaultPolicy) CanRename(user *meta.Meta, m *meta.Meta) bool {
-	return d.canChange(user, m)
-}
-
-func (d *defaultPolicy) CanDelete(user *meta.Meta, m *meta.Meta) bool {
-	return d.canChange(user, m)
-}
-
-func (d *defaultPolicy) canChange(user *meta.Meta, m *meta.Meta) bool {
+func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
 	metaRo, ok := m.Get(meta.KeyReadOnly)
 	if !ok {
 		return true

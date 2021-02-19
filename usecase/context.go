@@ -117,16 +117,16 @@ type ztlCtx struct {
 	depth int
 }
 
-func (zc *ztlCtx) push(m *meta.Meta, depth int) {
-	if zc.depth > 0 && depth > zc.depth {
-		return
-	}
-	task := &ztlCtxTask{next: zc.first, meta: m, depth: depth}
-	zc.first = task
-	if zc.last == nil {
-		zc.last = task
-	}
-}
+// func (zc *ztlCtx) push(m *meta.Meta, depth int) {
+// 	if zc.depth > 0 && depth > zc.depth {
+// 		return
+// 	}
+// 	task := &ztlCtxTask{next: zc.first, meta: m, depth: depth}
+// 	zc.first = task
+// 	if zc.last == nil {
+// 		zc.last = task
+// 	}
+// }
 
 func (zc *ztlCtx) add(m *meta.Meta, depth int) {
 	if zc.depth > 0 && depth > zc.depth {

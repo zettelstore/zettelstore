@@ -120,13 +120,11 @@ func (te *TemplateEngine) canWrite(
 		te.place.CanUpdateZettel(ctx, zettel)
 }
 
-func (te *TemplateEngine) canRename(
-	ctx context.Context, user *meta.Meta, m *meta.Meta) bool {
+func (te *TemplateEngine) canRename(ctx context.Context, user, m *meta.Meta) bool {
 	return te.policy.CanRename(user, m) && te.place.AllowRenameZettel(ctx, m.Zid)
 }
 
-func (te *TemplateEngine) canDelete(
-	ctx context.Context, user *meta.Meta, m *meta.Meta) bool {
+func (te *TemplateEngine) canDelete(ctx context.Context, user, m *meta.Meta) bool {
 	return te.policy.CanDelete(user, m) && te.place.CanDeleteZettel(ctx, m.Zid)
 }
 
@@ -179,7 +177,7 @@ type baseData struct {
 }
 
 func (te *TemplateEngine) makeBaseData(
-	ctx context.Context, lang string, title string, user *meta.Meta, data *baseData) {
+	ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
 	var (
 		newZettelLinks []simpleLink
 		userZettelURL  string

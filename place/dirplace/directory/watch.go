@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-var validFileName = regexp.MustCompile("^(\\d{14}).*(\\.(.+))$")
+var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
 
 func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
@@ -192,21 +192,12 @@ func watchDirectory(directory string, events chan<- *fileEvent, tick <-chan stru
 		}
 	}
 
-	pause := func() bool {
-		for {
-			select {
-			case _, ok := <-tick:
-				return ok
-			}
-		}
-	}
-
 	for {
 		if !reloadFiles() {
 			return
 		}
 		if watcher == nil {
-			if !pause() {
+			if _, ok := <-tick; !ok {
 				return
 			}
 		} else {

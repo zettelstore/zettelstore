@@ -91,7 +91,7 @@ func getVisibility(m *meta.Meta) meta.Visibility {
 	return meta.VisibilityLogin
 }
 
-func testCreate(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, isExpert bool) {
+func testCreate(t *testing.T, pol Policy, simple, withAuth, readonly, isExpert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -134,7 +134,7 @@ func testCreate(t *testing.T, pol Policy, simple bool, withAuth bool, readonly b
 	}
 }
 
-func testRead(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, expert bool) {
+func testRead(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -219,7 +219,7 @@ func testRead(t *testing.T, pol Policy, simple bool, withAuth bool, readonly boo
 	}
 }
 
-func testWrite(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, expert bool) {
+func testWrite(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -360,7 +360,7 @@ func testWrite(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bo
 	}
 }
 
-func testRename(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, expert bool) {
+func testRename(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -445,7 +445,7 @@ func testRename(t *testing.T, pol Policy, simple bool, withAuth bool, readonly b
 	}
 }
 
-func testDelete(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, expert bool) {
+func testDelete(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -530,7 +530,7 @@ func testDelete(t *testing.T, pol Policy, simple bool, withAuth bool, readonly b
 	}
 }
 
-func testReload(t *testing.T, pol Policy, simple bool, withAuth bool, readonly bool, isExpert bool) {
+func testReload(t *testing.T, pol Policy, simple, withAuth, readonly, isExpert bool) {
 	t.Helper()
 	testCases := []struct {
 		user *meta.Meta
