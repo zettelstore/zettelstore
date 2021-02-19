@@ -454,60 +454,66 @@ func (cp *zmkP) parseIndent() (res ast.BlockNode, success bool) {
 		cnt++
 	}
 	if cp.lists != nil {
-		// Identation for a list?
-		if len(cp.lists) < cnt {
-			cnt = len(cp.lists)
-		}
-		cp.lists = cp.lists[:cnt]
-		if cnt == 0 {
-			return nil, false
-		}
-		ln := cp.lists[cnt-1]
-		pn := cp.parseLinePara()
-		lbn := ln.Items[len(ln.Items)-1]
-		if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-			lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
-		} else {
-			ln.Items[len(ln.Items)-1] = append(ln.Items[len(ln.Items)-1], pn)
-		}
-		return nil, true
+		return nil, cp.parseIndentForList(cnt)
 	}
 	if cp.descrl != nil {
-		// Indentation for definition list
-		defPos := len(cp.descrl.Descriptions) - 1
-		if cnt < 1 || defPos < 0 {
-			return nil, false
-		}
-		if len(cp.descrl.Descriptions[defPos].Descriptions) == 0 {
-			// Continuation of a definition term
-			for {
-				in := cp.parseInline()
-				if in == nil {
-					return nil, true
-				}
-				cp.descrl.Descriptions[defPos].Term = append(cp.descrl.Descriptions[defPos].Term, in)
-				if _, ok := in.(*ast.BreakNode); ok {
-					return nil, true
-				}
-			}
-		} else {
-			// Continuation of a definition description
-			pn := cp.parseLinePara()
-			if pn == nil {
-				return nil, false
-			}
-			descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
-			lbn := cp.descrl.Descriptions[defPos].Descriptions[descrPos]
-			if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-				lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
-			} else {
-				descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
-				cp.descrl.Descriptions[defPos].Descriptions[descrPos] = append(cp.descrl.Descriptions[defPos].Descriptions[descrPos], pn)
-			}
-			return nil, true
-		}
+		return nil, cp.parseIndentForDescription(cnt)
 	}
 	return nil, false
+}
+
+func (cp *zmkP) parseIndentForList(cnt int) bool {
+	if len(cp.lists) < cnt {
+		cnt = len(cp.lists)
+	}
+	cp.lists = cp.lists[:cnt]
+	if cnt == 0 {
+		return false
+	}
+	ln := cp.lists[cnt-1]
+	pn := cp.parseLinePara()
+	lbn := ln.Items[len(ln.Items)-1]
+	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
+		lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
+	} else {
+		ln.Items[len(ln.Items)-1] = append(ln.Items[len(ln.Items)-1], pn)
+	}
+	return true
+}
+
+func (cp *zmkP) parseIndentForDescription(cnt int) bool {
+	defPos := len(cp.descrl.Descriptions) - 1
+	if cnt < 1 || defPos < 0 {
+		return false
+	}
+	if len(cp.descrl.Descriptions[defPos].Descriptions) == 0 {
+		// Continuation of a definition term
+		for {
+			in := cp.parseInline()
+			if in == nil {
+				return true
+			}
+			cp.descrl.Descriptions[defPos].Term = append(cp.descrl.Descriptions[defPos].Term, in)
+			if _, ok := in.(*ast.BreakNode); ok {
+				return true
+			}
+		}
+	}
+
+	// Continuation of a definition description
+	pn := cp.parseLinePara()
+	if pn == nil {
+		return false
+	}
+	descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
+	lbn := cp.descrl.Descriptions[defPos].Descriptions[descrPos]
+	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
+		lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
+	} else {
+		descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
+		cp.descrl.Descriptions[defPos].Descriptions[descrPos] = append(cp.descrl.Descriptions[defPos].Descriptions[descrPos], pn)
+	}
+	return true
 }
 
 // parseLinePara parses one line of inline material.

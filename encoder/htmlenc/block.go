@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -23,7 +23,7 @@ import (
 func (v *visitor) VisitPara(pn *ast.ParaNode) {
 	v.b.WriteString("<p>")
 	v.acceptInlineSlice(pn.Inlines)
-	v.b.WriteString("</p>\n")
+	v.writeEndPara()
 }
 
 // VisitVerbatim emits HTML code for verbatim lines.
@@ -196,14 +196,14 @@ func (v *visitor) writeQuotationList(ln *ast.NestedListNode) {
 			v.acceptInlineSlice(pn.Inlines)
 		} else {
 			if inPara {
-				v.b.WriteString("</p>\n")
+				v.writeEndPara()
 				inPara = false
 			}
 			v.acceptItemSlice(item)
 		}
 	}
 	if inPara {
-		v.b.WriteString("</p>\n")
+		v.writeEndPara()
 	}
 	v.b.WriteString("</blockquote>\n")
 }
@@ -336,4 +336,8 @@ func (v *visitor) VisitBLOB(bn *ast.BLOBNode) {
 	default:
 		v.b.WriteStrings("<p class=\"error\">Unable to display BLOB with syntax '", bn.Syntax, "'.</p>\n")
 	}
+}
+
+func (v *visitor) writeEndPara() {
+	v.b.WriteString("</p>\n")
 }

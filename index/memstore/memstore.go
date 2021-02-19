@@ -248,19 +248,21 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) id.Set {
 func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range forward {
-		if bzi, ok := ms.idx[ref]; ok {
-			if bzi.meta != nil {
-				if bmr, ok := bzi.meta[key]; ok {
-					bmr.backward = remRef(bmr.backward, zid)
-					if len(bmr.backward) > 0 || len(bmr.forward) > 0 {
-						bzi.meta[key] = bmr
-					} else {
-						delete(bzi.meta, key)
-						if len(bzi.meta) == 0 {
-							bzi.meta = nil
-						}
-					}
-				}
+		bzi, ok := ms.idx[ref]
+		if !ok || bzi.meta == nil {
+			continue
+		}
+		bmr, ok := bzi.meta[key]
+		if !ok {
+			continue
+		}
+		bmr.backward = remRef(bmr.backward, zid)
+		if len(bmr.backward) > 0 || len(bmr.forward) > 0 {
+			bzi.meta[key] = bmr
+		} else {
+			delete(bzi.meta, key)
+			if len(bzi.meta) == 0 {
+				bzi.meta = nil
 			}
 		}
 	}

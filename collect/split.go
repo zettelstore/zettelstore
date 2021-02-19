@@ -11,9 +11,7 @@
 // Package collect provides functions to collect items from a syntax tree.
 package collect
 
-import (
-	"zettelstore.de/z/ast"
-)
+import "zettelstore.de/z/ast"
 
 // DivideReferences divides the given list of rederences into zettel, local, and external References.
 func DivideReferences(all []*ast.Reference, duplicates bool) (zettel, local, external []*ast.Reference) {
@@ -28,29 +26,32 @@ func DivideReferences(all []*ast.Reference, duplicates bool) (zettel, local, ext
 		if ref.State == ast.RefStateSelf {
 			continue
 		}
-		s := ref.String()
 		if ref.IsZettel() {
-			if duplicates {
-				zettel = append(zettel, ref)
-			} else if _, ok := mapZettel[s]; !ok {
-				zettel = append(zettel, ref)
-				mapZettel[s] = true
-			}
+			zettel = appendRefToList(zettel, mapZettel, ref, duplicates)
 		} else if ref.IsExternal() {
-			if duplicates {
-				external = append(external, ref)
-			} else if _, ok := mapExternal[s]; !ok {
-				external = append(external, ref)
-				mapExternal[s] = true
-			}
+			external = appendRefToList(external, mapExternal, ref, duplicates)
 		} else {
-			if duplicates {
-				local = append(local, ref)
-			} else if _, ok := mapLocal[s]; !ok {
-				local = append(local, ref)
-				mapLocal[s] = true
-			}
+			local = appendRefToList(local, mapLocal, ref, duplicates)
 		}
 	}
 	return zettel, local, external
+}
+
+func appendRefToList(
+	reflist []*ast.Reference,
+	refSet map[string]bool,
+	ref *ast.Reference,
+	duplicates bool,
+) []*ast.Reference {
+	if duplicates {
+		reflist = append(reflist, ref)
+	} else {
+		s := ref.String()
+		if _, ok := refSet[s]; !ok {
+			reflist = append(reflist, ref)
+			refSet[s] = true
+		}
+	}
+
+	return reflist
 }

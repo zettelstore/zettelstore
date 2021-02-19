@@ -59,18 +59,19 @@ func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
 		if room.reload {
 			continue // Do not place zettel in reload room
 		}
-		if a, ok := room.waiting[zid]; ok {
-			if action == a {
-				return
-			}
-			switch action {
-			case arUpdate:
-				room.waiting[zid] = action
-			case arDelete:
-				room.waiting[zid] = action
-			}
-			return
+		a, ok := room.waiting[zid]
+		if !ok {
+			continue
 		}
+		switch action {
+		case a:
+			return
+		case arUpdate:
+			room.waiting[zid] = action
+		case arDelete:
+			room.waiting[zid] = action
+		}
+		return
 	}
 	if room := ar.last; !room.reload && (ar.maxLoad == 0 || room.curLoad < ar.maxLoad) {
 		room.waiting[zid] = action
@@ -102,28 +103,9 @@ func (ar *anterooms) Reset() {
 func (ar *anterooms) Reload(delZids id.Slice, newZids id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	delWaiting := make(map[id.Zid]arAction, len(delZids))
-	for _, zid := range delZids {
-		if zid.IsValid() {
-			delWaiting[zid] = arDelete
-		}
-	}
-	newWaiting := make(map[id.Zid]arAction, len(newZids))
-	for zid := range newZids {
-		if zid.IsValid() {
-			newWaiting[zid] = arUpdate
-		}
-	}
-
-	// Delete previous reloaded rooms
-	room := ar.first
-	for room != nil && room.reload {
-		room = room.next
-	}
-	ar.first = room
-	if room == nil {
-		ar.last = nil
-	}
+	delWaiting := createWaitingSlice(delZids, arDelete)
+	newWaiting := createWaitingSet(newZids, arUpdate)
+	ar.deleteReloadedRooms()
 
 	if ds := len(delWaiting); ds > 0 {
 		if ns := len(newWaiting); ns > 0 {
@@ -132,22 +114,56 @@ func (ar *anterooms) Reload(delZids id.Slice, newZids id.Set) {
 			if roomNew.next == nil {
 				ar.last = roomNew
 			}
-		} else {
-			ar.first = &anteroom{next: ar.first, waiting: delWaiting, curLoad: ds}
-			if ar.first.next == nil {
-				ar.last = ar.first
-			}
+			return
 		}
-	} else {
-		if ns := len(newWaiting); ns > 0 {
-			ar.first = &anteroom{next: ar.first, waiting: newWaiting, curLoad: ns}
-			if ar.first.next == nil {
-				ar.last = ar.first
-			}
-		} else {
-			ar.first = nil
-			ar.last = nil
+
+		ar.first = &anteroom{next: ar.first, waiting: delWaiting, curLoad: ds}
+		if ar.first.next == nil {
+			ar.last = ar.first
 		}
+		return
+	}
+
+	if ns := len(newWaiting); ns > 0 {
+		ar.first = &anteroom{next: ar.first, waiting: newWaiting, curLoad: ns}
+		if ar.first.next == nil {
+			ar.last = ar.first
+		}
+		return
+	}
+
+	ar.first = nil
+	ar.last = nil
+}
+
+func createWaitingSlice(zids id.Slice, action arAction) map[id.Zid]arAction {
+	waitingSet := make(map[id.Zid]arAction, len(zids))
+	for _, zid := range zids {
+		if zid.IsValid() {
+			waitingSet[zid] = action
+		}
+	}
+	return waitingSet
+}
+
+func createWaitingSet(zids id.Set, action arAction) map[id.Zid]arAction {
+	waitingSet := make(map[id.Zid]arAction, len(zids))
+	for zid := range zids {
+		if zid.IsValid() {
+			waitingSet[zid] = action
+		}
+	}
+	return waitingSet
+}
+
+func (ar *anterooms) deleteReloadedRooms() {
+	room := ar.first
+	for room != nil && room.reload {
+		room = room.next
+	}
+	ar.first = room
+	if room == nil {
+		ar.last = nil
 	}
 }
 

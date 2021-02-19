@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -49,31 +49,37 @@ var mapMetaKey = map[string]string{
 
 func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	for i, pair := range m.Pairs(true) {
+		if v.enc.ignoreMeta[pair.Key] {
+			continue
+		}
 		if i == 0 { // "title" is number 0...
-			if withTitle && !v.enc.ignoreMeta[pair.Key] {
+			if withTitle {
+				// TODO: title value may contain zmk elements
 				v.b.WriteStrings("<meta name=\"zs-", pair.Key, "\" content=\"")
 				v.writeQuotedEscaped(pair.Value)
 				v.b.WriteString("\">")
 			}
 			continue
 		}
-		if !v.enc.ignoreMeta[pair.Key] {
-			if pair.Key == meta.KeyTags {
-				v.b.WriteString("\n<meta name=\"keywords\" content=\"")
-				for i, val := range meta.ListFromValue(pair.Value) {
-					if i > 0 {
-						v.b.WriteString(", ")
-					}
-					v.writeQuotedEscaped(strings.TrimPrefix(val, "#"))
-				}
-				v.b.WriteString("\">")
-			} else if key, ok := mapMetaKey[pair.Key]; ok {
-				v.writeMeta("", key, pair.Value)
-			} else {
-				v.writeMeta("zs-", pair.Key, pair.Value)
-			}
+		if pair.Key == meta.KeyTags {
+			v.writeTags(pair.Value)
+		} else if key, ok := mapMetaKey[pair.Key]; ok {
+			v.writeMeta("", key, pair.Value)
+		} else {
+			v.writeMeta("zs-", pair.Key, pair.Value)
 		}
 	}
+}
+
+func (v *visitor) writeTags(tags string) {
+	v.b.WriteString("\n<meta name=\"keywords\" content=\"")
+	for i, val := range meta.ListFromValue(tags) {
+		if i > 0 {
+			v.b.WriteString(", ")
+		}
+		v.writeQuotedEscaped(strings.TrimPrefix(val, "#"))
+	}
+	v.b.WriteString("\">")
 }
 
 func (v *visitor) writeMeta(prefix, key, value string) {

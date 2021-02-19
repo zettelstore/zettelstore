@@ -582,20 +582,24 @@ func (v *detailVisitor) writeMeta(m *meta.Meta, withTitle bool) {
 		v.b.Write(Escape(p.Key))
 		v.b.WriteString("\":")
 		if m.Type(p.Key).IsSet {
-			v.b.WriteByte('[')
-			for i, val := range meta.ListFromValue(p.Value) {
-				if i > 0 {
-					v.b.WriteByte(',')
-				}
-				v.b.WriteByte('"')
-				v.b.Write(Escape(val))
-				v.b.WriteByte('"')
-			}
-			v.b.WriteByte(']')
+			v.writeSetValue(p.Value)
 		} else {
 			v.b.WriteByte('"')
 			v.b.Write(Escape(p.Value))
 			v.b.WriteByte('"')
 		}
 	}
+}
+
+func (v *detailVisitor) writeSetValue(value string) {
+	v.b.WriteByte('[')
+	for i, val := range meta.ListFromValue(value) {
+		if i > 0 {
+			v.b.WriteByte(',')
+		}
+		v.b.WriteByte('"')
+		v.b.Write(Escape(val))
+		v.b.WriteByte('"')
+	}
+	v.b.WriteByte(']')
 }
