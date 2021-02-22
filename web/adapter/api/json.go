@@ -87,9 +87,7 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part partType) er
 	default:
 		panic(part)
 	}
-	enc := json.NewEncoder(w)
-	enc.SetEscapeHTML(false)
-	return enc.Encode(outData)
+	return encodeJSONData(w, outData, false)
 }
 
 func encodedContent(content domain.Content) (string, interface{}) {
@@ -287,4 +285,11 @@ func writeMeta(
 
 	_, err := enc.WriteMeta(w, m)
 	return err
+}
+
+func encodeJSONData(w http.ResponseWriter, data interface{}, addHeader bool) error {
+	w.Header().Set(adapter.ContentType, format2ContentType("json"))
+	enc := json.NewEncoder(w)
+	enc.SetEscapeHTML(false)
+	return enc.Encode(data)
 }

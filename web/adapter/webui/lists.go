@@ -219,7 +219,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			return
 		}
 		q := r.URL.Query()
-		dir := getZCDirection(q)
+		dir := usecase.ParseZCDirection(q.Get("dir"))
 		depth, ok := adapter.GetInteger(q, "depth")
 		if !ok || depth < 0 {
 			depth = 5
@@ -272,16 +272,6 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			Metas:   metaLinks[1:],
 		})
 	}
-}
-
-func getZCDirection(q url.Values) usecase.ZettelContextDirection {
-	switch q.Get("dir") {
-	case "backward":
-		return usecase.ZettelContextBackward
-	case "forward":
-		return usecase.ZettelContextForward
-	}
-	return usecase.ZettelContextBoth
 }
 
 func renderWebUIMetaList(

@@ -1,67 +1,73 @@
 id: 00001012053800
-title: API: Retrieve zettel order within an existing zettel
+title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210222160729
 
-Some zettel act as a ""table of contents"" for other zettel.
-The [[Home zettel|00010000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
-Every zettel with a certain internal structure can act as the ""table of contents"" for others.
+The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
+Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
+Zettel are also connected by using same [[tags|00001006020000#tags]].
 
-What is a ""table of contents""?
-Basically, it is just a list of references to other zettel.
+The context is defined by a //direction//, a //depth//, and a /limit//:
+* Direction: connections are directed.
+  For example, the metadata value of ''backward'' lists all zettel that link to the current zettel, while ''formward'' list all zettel to which the current zettel links.
+  When you are only interested in one direction, set the parameter ''dir'' either to the value ""backward"" or ""forward"".
+  All other values, including a missing value, is interpreted as ""both"".
+* Depth: a direct connection has depth 1, an indirect connection is the length of the shortest path between two zettel.
+  You should limit the depth by using the parameter ''depth''.
+  Its default value is ""5"".
+  A value of ""0"" does disable any depth check.
+* Limit: to set an upper bound for the returned context, you should use the parameter ''limit''.
+  Its default value is ""200"".
+  A value of ""0"" disables does not limit the number of elements returned.
 
-To retrieve the ""table of contents"", the software looks at first level [[list items|00001007030200]].
-If an item contains a valid reference to a zettel, this reference will be interpreted as an item in the table of contents.
+Zettel with same tags as the origin zettel are considered depth 1.
+Only for the origin zettel, tags are used to calculate a connection.
+Currently, only some of the newest zettel with a given tag are considered a connection.[^The number of zettel is given by the value of parameter ''depth''.]
+Otherwise the context would become too big and therefore unusable.
 
-This applies only to first level list items (ordered or unordered list), but not to deeper levels.
-Only the first reference to a valid zettel is collected for the table of contents.
-Following references to zettel within such an list item are ignored.
-
-To retrieve the zettel order of an existing zettel, use the [[endpoint|00001012920000]] ''/o/{ID}''.
+To retrieve the context of an existing zettel, use the [[endpoint|00001012920000]] ''/y/{ID}''.
 
 ````
-# curl http://127.0.0.1:23123/o/00010000000000
-{"id":"00010000000000","url":"/z/00010000000000","sequence":[{"id":"00001001000000","url":"/z/00001001000000"},{"id":"00001002000000","url":"/z/00001002000000"},{"id":"00001003000000","url":"/z/00001003000000"},{"id":"00001004000000","url":"/z/00001004000000"},...,{"id":"00001014000000","url":"/z/00001014000000"}]}
+# curl 'http://127.0.0.1:23123/y/00001012053800?limit=3&dir=forward&depth=2'
+{"id": "00001012053800","url": "/z/00001012053800","meta": {...},"list": [{"id": "00001012921000","url": "/z/00001012921000","meta": {...}},{"id": "00001012920800","url": "/z/00001012920800","meta": {...}},{"id": "00010000000000","url": "/z/00010000000000","meta": {...}}]}
 ````
-Formatted, this translates into:
+Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
-  "id": "00010000000000",
-  "url": "/z/00010000000000",
-  "order": [
+  "id": "00001012053800",
+  "url": "/z/00001012053800",
+  "meta": {...},
+  "list": [
     {
-      "id": "00001001000000",
-      "url": "/z/00001001000000"
+      "id": "00001012921000",
+      "url": "/z/00001012921000",
+      "meta": {...}
     },
     {
-      "id": "00001002000000",
-      "url": "/z/00001002000000"
+      "id": "00001012920800",
+      "url": "/z/00001012920800",
+      "meta": {...}
     },
     {
-      "id": "00001003000000",
-      "url": "/z/00001003000000"
-    },
-    {
-      "id": "00001004000000",
-      "url": "/z/00001004000000"
-    },
-    ...
-    {
-      "id": "00001014000000",
-      "url": "/z/00001014000000"
+      "id": "00010000000000",
+      "url": "/z/00010000000000",
+      "meta": {...}
     }
   ]
 }
 ````
-=== Kind
-The following to-level JSON keys are returned:
+=== Keys
+The following top-level JSON keys are returned:
 ; ''id''
-: The zettel identifier for which the references were requested.
+: The zettel identifier for which the context was requested.
 ; ''url''
 : The API endpoint to fetch more information about the zettel.
-; ''order''
-: A JSON list of JSON objects with keys ''id'' and ''url'' that describe other zettel in the defined order.
+; ''meta'':
+: The metadata of the zettel, encoded as a JSON object.
+; ''list''
+: A list of JSON objects with keys ''id'', ''url'' and ''meta'' that contains the zettel of the context.
 
 === HTTP Status codes
 ; ''200''

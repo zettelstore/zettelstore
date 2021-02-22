@@ -10,7 +10,7 @@
   *  Show context of a zettel by following all backward and/or forward reference
      up to a defined depth and list the resulting zettel. Additionally, some zettel
      with similar tags as the initial zettel are also taken into account.
-     (major: webui)
+     (major: api, webui)
   *  A zettel that references other zettel within first-level list items, can act
      as a &ldquo;table of contents&rdquo; zettel.
      The API endpoint <tt>/o/{ID}</tt> allows to retrieve the referenced zettel in

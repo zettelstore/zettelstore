@@ -136,6 +136,7 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 		usecase.NewZettelOrder(pp, ucParseZettel)))
 	router.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	router.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
+	router.AddZettelRoute('y', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	router.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(pp), ucGetMeta, ucParseZettel))
 	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
