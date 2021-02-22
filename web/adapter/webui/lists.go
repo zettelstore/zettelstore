@@ -391,7 +391,7 @@ func listTitleFilter(sb *strings.Builder, filter *place.Filter) {
 		} else {
 			for j, val := range filter.Expr[name] {
 				if j > 0 {
-					sb.WriteString(" OR ")
+					sb.WriteString(" AND ")
 				}
 				if val == "" {
 					sb.WriteString("ANY")
