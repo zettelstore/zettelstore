@@ -19,12 +19,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonGetOrder struct {
-	ID    string      `json:"id"`
-	URL   string      `json:"url"`
-	Order []jsonIDURL `json:"order"`
-}
-
 // MakeGetOrderHandler creates a new API handler to return zettel references
 // of a given zettel.
 func MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
@@ -35,25 +29,11 @@ func MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
 			return
 		}
 		q := r.URL.Query()
-		metas, err := zettelOrder.Run(r.Context(), zid, q.Get("syntax"))
+		start, metas, err := zettelOrder.Run(r.Context(), zid, q.Get("syntax"))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		outData := jsonGetOrder{
-			ID:    zid.String(),
-			URL:   adapter.NewURLBuilder('z').SetZid(zid).String(),
-			Order: make([]jsonIDURL, 0, len(metas)),
-		}
-		for _, m := range metas {
-			outData.Order = append(
-				outData.Order,
-				jsonIDURL{
-					ID:  m.Zid.String(),
-					URL: adapter.NewURLBuilder('z').SetZid(m.Zid).String(),
-				},
-			)
-		}
-		encodeJSONData(w, outData, true)
+		writeMetaList(w, start, metas)
 	}
 }

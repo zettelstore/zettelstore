@@ -3,7 +3,6 @@ title: Endpoints used by the API
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210222153036
 
 All API endpoints conform to the pattern ''[PREFIX]/LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''

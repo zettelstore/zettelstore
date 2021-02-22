@@ -44,6 +44,12 @@ type jsonMeta struct {
 	URL  string            `json:"url"`
 	Meta map[string]string `json:"meta"`
 }
+type jsonMetaList struct {
+	ID   string            `json:"id"`
+	URL  string            `json:"url"`
+	Meta map[string]string `json:"meta"`
+	List []jsonMeta        `json:"list"`
+}
 type jsonContent struct {
 	ID       string      `json:"id"`
 	URL      string      `json:"url"`
@@ -292,4 +298,19 @@ func encodeJSONData(w http.ResponseWriter, data interface{}, addHeader bool) err
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	return enc.Encode(data)
+}
+
+func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
+	outData := jsonMetaList{
+		ID:   m.Zid.String(),
+		URL:  adapter.NewURLBuilder('z').SetZid(m.Zid).String(),
+		Meta: m.Map(),
+		List: make([]jsonMeta, len(metaList)),
+	}
+	for i, m := range metaList {
+		outData.List[i].ID = m.Zid.String()
+		outData.List[i].URL = adapter.NewURLBuilder('z').SetZid(m.Zid).String()
+		outData.List[i].Meta = m.Map()
+	}
+	return encodeJSONData(w, outData, true)
 }

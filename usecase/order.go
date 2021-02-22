@@ -37,10 +37,12 @@ func NewZettelOrder(port ZettelOrderPort, parseZettel ParseZettel) ZettelOrder {
 }
 
 // Run executes the use case.
-func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (result []*meta.Meta, err error) {
+func (uc ZettelOrder) Run(
+	ctx context.Context, zid id.Zid, syntax string,
+) (start *meta.Meta, result []*meta.Meta, err error) {
 	zn, err := uc.parseZettel.Run(ctx, zid, syntax)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for _, ref := range collect.Order(zn) {
 		if zid, err := id.Parse(ref.URL.Path); err == nil {
@@ -49,5 +51,5 @@ func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (resul
 			}
 		}
 	}
-	return result, nil
+	return zn.Zettel.Meta, result, nil
 }

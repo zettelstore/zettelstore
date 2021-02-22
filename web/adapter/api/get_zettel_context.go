@@ -19,13 +19,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonMetaList struct {
-	ID   string            `json:"id"`
-	URL  string            `json:"url"`
-	Meta map[string]string `json:"meta"`
-	List []jsonMeta        `json:"list"`
-}
-
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
 func MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +43,6 @@ func MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		outData := jsonMetaList{
-			ID:   metaList[0].Zid.String(),
-			URL:  adapter.NewURLBuilder('z').SetZid(zid).String(),
-			Meta: metaList[0].Map(),
-			List: make([]jsonMeta, len(metaList)-1),
-		}
-		for i, m := range metaList[1:] {
-			outData.List[i].ID = m.Zid.String()
-			outData.List[i].URL = adapter.NewURLBuilder('z').SetZid(m.Zid).String()
-			outData.List[i].Meta = m.Map()
-		}
-		encodeJSONData(w, outData, true)
+		writeMetaList(w, metaList[0], metaList[1:])
 	}
 }
