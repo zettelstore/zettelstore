@@ -17,7 +17,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"hash/crc32"
 	"io"
 	"io/ioutil"
 	"os"
@@ -208,8 +207,9 @@ func cmdRelease() error {
 		name string
 	}{
 		{"amd64", "linux", nil, "zettelstore"},
-		{"arm", "linux", []string{"GOARM=6"}, "zettelstore-arm6"},
+		{"arm", "linux", []string{"GOARM=6"}, "zettelstore"},
 		{"amd64", "darwin", nil, "iZettelstore"},
+		{"arm64", "darwin", nil, "iZettelstore"},
 		{"amd64", "windows", nil, "zettelstore.exe"},
 	}
 	for _, rel := range releases {
@@ -240,27 +240,20 @@ func createZip(zsName, zipName, fileName string) error {
 		return err
 	}
 	defer zipFile.Close()
-	zw := zip.NewWriter(zipFile)
-	defer zw.Close()
 
-	hash := crc32.NewIEEE()
-	if _, err = io.Copy(hash, zsFile); err != nil {
-		return err
-	}
-	if _, err = zsFile.Seek(0, io.SeekStart); err != nil {
-		return nil
-	}
 	stat, err := zsFile.Stat()
 	if err != nil {
 		return err
 	}
-	w, err := zw.CreateHeader(&zip.FileHeader{
-		Name:               fileName,
-		Method:             zip.Deflate,
-		Modified:           stat.ModTime(),
-		CRC32:              hash.Sum32(),
-		UncompressedSize64: uint64(stat.Size()),
-	})
+	fh, err := zip.FileInfoHeader(stat)
+	if err != nil {
+		return err
+	}
+	fh.Name = fileName
+	fh.Method = zip.Deflate
+	zw := zip.NewWriter(zipFile)
+	defer zw.Close()
+	w, err := zw.CreateHeader(fh)
 	if err != nil {
 		return err
 	}

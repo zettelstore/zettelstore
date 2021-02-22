@@ -43,6 +43,8 @@
      (&ldquo;&#8599;&#65038;&rdquo;), which also needed the additional
      &ldquo;&amp;#xfe0e;&rdquo; to disable the conversion to an emoji on iPadOS.
      (minor: webui)
+  *  A pre-build binary for macOS ARM64 (also known as Apple silicon) is available.
+     (minor: infrastructure)
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 <a name="0_0_9"></a>
