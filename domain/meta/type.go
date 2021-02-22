@@ -143,6 +143,19 @@ func (m *Meta) GetList(key string) ([]string, bool) {
 	return ListFromValue(value), true
 }
 
+// GetTags returns the list of tags as a string list. Each tag does not begin
+// with the '#' character, in contrast to `GetList`.
+func (m *Meta) GetTags(key string) ([]string, bool) {
+	tags, ok := m.GetList(key)
+	if !ok {
+		return nil, false
+	}
+	for i, tag := range tags {
+		tags[i] = CleanTag(tag)
+	}
+	return tags, len(tags) > 0
+}
+
 // GetListOrNil retrieves the string list value of a given key. If there was
 // nothing stores, a nil list is returned.
 func (m *Meta) GetListOrNil(key string) []string {

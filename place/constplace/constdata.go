@@ -259,7 +259,8 @@ var constZettelMap = map[id.Zid]constZettel{
 <header>
 <h1>{{Title}}</h1>
 <div class="zs-meta">
-<a href="?dir=backward">Backward</a>
+<a href="{{{InfoURL}}}">Info</a>
+&#183; <a href="?dir=backward">Backward</a>
 &#183; <a href="?dir=both">Both</a>
 &#183; <a href="?dir=forward">Forward</a>
 &#183; Depth:{{#Depths}}&#x2000;<a href="{{{URL}}}">{{{Text}}}</a>{{/Depths}}

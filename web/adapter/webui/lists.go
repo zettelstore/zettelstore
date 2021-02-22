@@ -259,15 +259,17 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 		user := session.GetUser(ctx)
 		te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 		te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
-			Title  string
-			Depths []simpleLink
-			Start  simpleLink
-			Metas  []simpleLink
+			Title   string
+			InfoURL string
+			Depths  []simpleLink
+			Start   simpleLink
+			Metas   []simpleLink
 		}{
-			Title:  "Zettel Context",
-			Depths: depthLinks,
-			Start:  metaLinks[0],
-			Metas:  metaLinks[1:],
+			Title:   "Zettel Context",
+			InfoURL: adapter.NewURLBuilder('i').SetZid(zid).String(),
+			Depths:  depthLinks,
+			Start:   metaLinks[0],
+			Metas:   metaLinks[1:],
 		})
 	}
 }

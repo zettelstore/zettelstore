@@ -16,12 +16,15 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 )
 
 // ZettelContextPort is the interface used by this use case.
 type ZettelContextPort interface {
 	// GetMeta retrieves just the meta data of a specific zettel.
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+
+	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
 }
 
 // ZettelContext is the data for this use case.
@@ -51,9 +54,9 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 	if err != nil {
 		return nil, err
 	}
-	visited := id.NewSet()
 	tasks := ztlCtx{depth: depth}
-	tasks.add(start, 0)
+	uc.addInitialTasks(ctx, &tasks, start)
+	visited := id.NewSet()
 	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
 	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
 	for !tasks.empty() {
@@ -91,6 +94,28 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 	return result, nil
 }
 
+func (uc ZettelContext) addInitialTasks(ctx context.Context, tasks *ztlCtx, start *meta.Meta) {
+	tasks.add(start, 0)
+	tags, ok := start.GetTags(meta.KeyTags)
+	if !ok {
+		return
+	}
+	filter := place.Filter{Expr: map[string][]string{}}
+	limit := tasks.depth
+	if limit == 0 || limit > 10 {
+		limit = 10
+	}
+	sorter := place.Sorter{Limit: limit}
+	for _, tag := range tags {
+		filter.Expr[meta.KeyTags] = []string{tag}
+		if ml, err := uc.port.SelectMeta(ctx, &filter, &sorter); err == nil {
+			for _, m := range ml {
+				tasks.add(m, 1)
+			}
+		}
+	}
+}
+
 func (uc ZettelContext) addID(ctx context.Context, tasks *ztlCtx, depth int, value string) {
 	if zid, err := id.Parse(value); err == nil {
 		if m, err := uc.port.GetMeta(ctx, zid); err == nil {
@@ -116,17 +141,6 @@ type ztlCtx struct {
 	last  *ztlCtxTask
 	depth int
 }
-
-// func (zc *ztlCtx) push(m *meta.Meta, depth int) {
-// 	if zc.depth > 0 && depth > zc.depth {
-// 		return
-// 	}
-// 	task := &ztlCtxTask{next: zc.first, meta: m, depth: depth}
-// 	zc.first = task
-// 	if zc.last == nil {
-// 		zc.last = task
-// 	}
-// }
 
 func (zc *ztlCtx) add(m *meta.Meta, depth int) {
 	if zc.depth > 0 && depth > zc.depth {

@@ -8,7 +8,8 @@
      The default home zettel contains some welcoming information for the new user.
      (major: webui)
   *  Show context of a zettel by following all backward and/or forward reference
-     up to a defined depth and list the resulting zettel.
+     up to a defined depth and list the resulting zettel. Additionally, some zettel
+     with similar tags as the initial zettel are also taken into account.
      (major: webui)
   *  A zettel that references other zettel within first-level list items, can act
      as a &ldquo;table of contents&rdquo; zettel.
