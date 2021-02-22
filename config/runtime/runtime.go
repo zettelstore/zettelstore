@@ -179,7 +179,7 @@ func GetMarkerExternal() string {
 			return html
 		}
 	}
-	return "&#8599;&#xfe0e;"
+	return "&#10138;"
 }
 
 // GetFooterHTML returns HTML code that should be embedded into the footer

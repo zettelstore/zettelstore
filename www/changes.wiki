@@ -36,6 +36,12 @@
      (minor: webui)
   *  A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
      (bug: server)
+  *  Runtime configuration key <tt>marker-external</tt> now defaults to
+     &ldquo;&amp;#10138;&rdquo; (&ldquo;&#10138;&rdquo;). It is more beautiful
+     than the previous &ldquo;&amp;#8599;&amp;#xfe0e;&rdquo;
+     (&ldquo;&#8599;&#65038;&rdquo;), which also needed the additional
+     &ldquo;&amp;#xfe0e;&rdquo; to disable the conversion to an emoji on iPadOS.
+     (minor: webui)
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 <a name="0_0_9"></a>

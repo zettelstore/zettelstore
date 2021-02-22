@@ -53,7 +53,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
   If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
 ; [!marker-external]''marker-external''
 : Some HTML code that is displayed after a reference to external material.
-  Default: ''&\#8599;&\#xfe0e;'', to display a ""&#8599;&#xfe0e;"" sign[^The string ''&\#xfe0e;'' is needed to enforce the sign on all platforms.].
+  Default: ''&\#10138;'', to display a ""&#10138;"" sign.
 ; [!list-page-size]''list-page-size''
 : If set to a value greater than zero, specifies the number of items shown in WebUI lists.
   Basically, this is the list of all zettel (possibly restricted) and the list of search results.
