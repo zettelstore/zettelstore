@@ -135,51 +135,54 @@ type fileSetZettel struct {
 type resSetZettel = error
 
 func (cmd *fileSetZettel) run() {
-	var f *os.File
 	var err error
-
 	switch cmd.entry.MetaSpec {
 	case directory.MetaSpecFile:
-		f, err = openFileWrite(cmd.entry.MetaPath)
-		if err == nil {
-			err = writeFileZid(f, cmd.zettel.Meta.Zid)
-			if err == nil {
-				_, err = cmd.zettel.Meta.Write(f, true)
-				if err1 := f.Close(); err == nil {
-					err = err1
-				}
-
-				if err == nil {
-					err = writeFileContent(cmd.entry.ContentPath, cmd.zettel.Content.AsString())
-				}
-			}
-		}
-
+		err = cmd.runMetaSpecFile()
 	case directory.MetaSpecHeader:
-		f, err = openFileWrite(cmd.entry.ContentPath)
-		if err == nil {
-			err = writeFileZid(f, cmd.zettel.Meta.Zid)
-			if err == nil {
-				_, err = cmd.zettel.Meta.WriteAsHeader(f, true)
-				if err == nil {
-					_, err = f.WriteString(cmd.zettel.Content.AsString())
-					if err1 := f.Close(); err == nil {
-						err = err1
-					}
-				}
-			}
-		}
-
+		err = cmd.runMetaSpecHeader()
 	case directory.MetaSpecNone:
 		// TODO: if meta has some additional infos: write meta to new .meta;
 		// update entry in dir
-
 		err = writeFileContent(cmd.entry.ContentPath, cmd.zettel.Content.AsString())
-
 	case directory.MetaSpecUnknown:
 		panic("TODO: ???")
 	}
 	cmd.rc <- err
+}
+
+func (cmd *fileSetZettel) runMetaSpecFile() error {
+	f, err := openFileWrite(cmd.entry.MetaPath)
+	if err == nil {
+		err = writeFileZid(f, cmd.zettel.Meta.Zid)
+		if err == nil {
+			_, err = cmd.zettel.Meta.Write(f, true)
+			if err1 := f.Close(); err == nil {
+				err = err1
+			}
+			if err == nil {
+				err = writeFileContent(cmd.entry.ContentPath, cmd.zettel.Content.AsString())
+			}
+		}
+	}
+	return err
+}
+
+func (cmd *fileSetZettel) runMetaSpecHeader() error {
+	f, err := openFileWrite(cmd.entry.ContentPath)
+	if err == nil {
+		err = writeFileZid(f, cmd.zettel.Meta.Zid)
+		if err == nil {
+			_, err = cmd.zettel.Meta.WriteAsHeader(f, true)
+			if err == nil {
+				_, err = f.WriteString(cmd.zettel.Content.AsString())
+				if err1 := f.Close(); err == nil {
+					err = err1
+				}
+			}
+		}
+	}
+	return err
 }
 
 // COMMAND: deleteZettel ----------------------------------------

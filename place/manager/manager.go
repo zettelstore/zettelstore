@@ -192,17 +192,21 @@ func (mgr *Manager) Start(ctx context.Context) error {
 		return place.ErrStarted
 	}
 	for i := len(mgr.subplaces) - 1; i >= 0; i-- {
-		if ssi, ok := mgr.subplaces[i].(place.StartStopper); ok {
-			if err := ssi.Start(ctx); err != nil {
-				for j := i + 1; j < len(mgr.subplaces); j++ {
-					if ssj, ok := mgr.subplaces[j].(place.StartStopper); ok {
-						ssj.Stop(ctx)
-					}
-				}
-				mgr.mx.Unlock()
-				return err
+		ssi, ok := mgr.subplaces[i].(place.StartStopper)
+		if !ok {
+			continue
+		}
+		err := ssi.Start(ctx)
+		if err == nil {
+			continue
+		}
+		for j := i + 1; j < len(mgr.subplaces); j++ {
+			if ssj, ok := mgr.subplaces[j].(place.StartStopper); ok {
+				ssj.Stop(ctx)
 			}
 		}
+		mgr.mx.Unlock()
+		return err
 	}
 	mgr.done = make(chan struct{})
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)

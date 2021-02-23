@@ -328,28 +328,24 @@ func cleanText(text string, cleanBS bool) string {
 		if pos < lastPos {
 			continue
 		}
-		switch ch {
-		case '\\':
-			if cleanBS && pos < len(text)-1 {
-				switch b := text[pos+1]; b {
-				case '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+',
-					',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@',
-					'[', '\\', ']', '^', '_', '`', '{', '|', '}', '~':
-					sb.WriteString(text[lastPos:pos])
-					sb.WriteByte(b)
-					lastPos = pos + 2
-				default:
-				}
-			}
-		case '&':
+		if ch == '&' {
 			inp := input.NewInput(text[pos:])
-			s, ok := inp.ScanEntity()
-			if ok {
+			if s, ok := inp.ScanEntity(); ok {
 				sb.WriteString(text[lastPos:pos])
 				sb.WriteString(s)
 				lastPos = pos + inp.Pos
 			}
-		default:
+			continue
+		}
+		if cleanBS && ch == '\\' && pos < len(text)-1 {
+			switch b := text[pos+1]; b {
+			case '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+',
+				',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@',
+				'[', '\\', ']', '^', '_', '`', '{', '|', '}', '~':
+				sb.WriteString(text[lastPos:pos])
+				sb.WriteByte(b)
+				lastPos = pos + 2
+			}
 		}
 	}
 	if lastPos == 0 {

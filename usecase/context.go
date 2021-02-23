@@ -86,18 +86,23 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 				if isBackward {
 					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
 				}
-			} else if p.Key == meta.KeyForward {
+				continue
+			}
+			if p.Key == meta.KeyForward {
 				if isForward {
 					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
 				}
-			} else if p.Key != meta.KeyBack {
+				continue
+			}
+			if p.Key != meta.KeyBack {
 				hasInverse := meta.Inverse(p.Key) != ""
-				if hasInverse && isBackward || !hasInverse && isForward {
-					if t := meta.Type(p.Key); t == meta.TypeID {
-						uc.addID(ctx, &tasks, curDepth, p.Value)
-					} else if t == meta.TypeIDSet {
-						uc.addIDSet(ctx, &tasks, curDepth, p.Value)
-					}
+				if (!hasInverse || !isBackward) && (hasInverse || !isForward) {
+					continue
+				}
+				if t := meta.Type(p.Key); t == meta.TypeID {
+					uc.addID(ctx, &tasks, curDepth, p.Value)
+				} else if t == meta.TypeIDSet {
+					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
 				}
 			}
 		}
