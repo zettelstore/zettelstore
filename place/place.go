@@ -65,10 +65,6 @@ type Place interface {
 	// DeleteZettel removes the zettel from the place.
 	DeleteZettel(ctx context.Context, zid id.Zid) error
 
-	// Reload clears all caches, reloads all internal data to reflect changes
-	// that were possibly undetected.
-	Reload(ctx context.Context) error
-
 	// ReadStats populates st with place statistics
 	ReadStats(st *Stats)
 }

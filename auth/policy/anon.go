@@ -42,10 +42,6 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 	return ap.pre.CanDelete(user, m) && ap.checkVisibility(m)
 }
 
-func (ap *anonPolicy) CanReload(user *meta.Meta) bool {
-	return ap.pre.CanReload(user)
-}
-
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
 	switch ap.getVisibility(m) {
 	case meta.VisibilitySimple:

@@ -59,7 +59,6 @@ type TemplateEngine struct {
 	listTagsURL   string
 	withAuth      bool
 	loginURL      string
-	reloadURL     string
 	searchURL     string
 }
 
@@ -78,7 +77,6 @@ func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
 		listTagsURL:   adapter.NewURLBuilder('h').AppendQuery("_l", "t").String(),
 		withAuth:      startup.WithAuth(),
 		loginURL:      adapter.NewURLBuilder('a').String(),
-		reloadURL:     adapter.NewURLBuilder('c').AppendQuery("_format", "html").String(),
 		searchURL:     adapter.NewURLBuilder('f').String(),
 	}
 	te.observe(place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid})
@@ -163,8 +161,6 @@ type baseData struct {
 	UserIdent      string
 	UserLogoutURL  string
 	LoginURL       string
-	CanReload      bool
-	ReloadURL      string
 	ListZettelURL  string
 	ListRolesURL   string
 	ListTagsURL    string
@@ -200,14 +196,12 @@ func (te *TemplateEngine) makeBaseData(
 	data.Title = title
 	data.HomeURL = te.homeURL
 	data.WithAuth = te.withAuth
-	data.CanReload = te.policy.CanReload(user)
-	data.WithUser = data.WithAuth || data.CanReload
+	data.WithUser = data.WithAuth
 	data.UserIsValid = userIsValid
 	data.UserZettelURL = userZettelURL
 	data.UserIdent = userIdent
 	data.UserLogoutURL = userLogoutURL
 	data.LoginURL = te.loginURL
-	data.ReloadURL = te.reloadURL
 	data.ListZettelURL = te.listZettelURL
 	data.ListRolesURL = te.listRolesURL
 	data.ListTagsURL = te.listTagsURL

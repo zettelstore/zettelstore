@@ -63,11 +63,6 @@ var constZettelMap = map[id.Zid]constZettel{
 {{^UserIsValid}}
 <a href="{{{LoginURL}}}">Login</a>
 {{/UserIsValid}}
-{{/WithAuth}}
-{{#CanReload}}
-<a href="{{{ReloadURL}}}">Reload</a>
-{{/CanReload}}
-{{#WithAuth}}
 {{#UserIsValid}}
 <a href="{{{UserLogoutURL}}}">Logout</a>
 {{/UserIsValid}}

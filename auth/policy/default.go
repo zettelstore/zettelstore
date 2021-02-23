@@ -51,7 +51,3 @@ func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
 	}
 	return !meta.BoolValue(metaRo)
 }
-
-func (d *defaultPolicy) CanReload(user *meta.Meta) bool {
-	return true
-}

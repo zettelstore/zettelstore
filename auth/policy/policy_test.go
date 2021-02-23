@@ -60,7 +60,6 @@ func TestPolicies(t *testing.T) {
 		name := fmt.Sprintf("simple=%v/readonly=%v/withauth=%v/expert=%v",
 			ts.simple, ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
-			testReload(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
 			testCreate(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
 			testRead(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
 			testWrite(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
@@ -523,27 +522,6 @@ func testDelete(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 	for _, tc := range testCases {
 		t.Run("Delete", func(tt *testing.T) {
 			got := pol.CanDelete(tc.user, tc.meta)
-			if tc.exp != got {
-				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
-			}
-		})
-	}
-}
-
-func testReload(t *testing.T, pol Policy, simple, withAuth, readonly, isExpert bool) {
-	t.Helper()
-	testCases := []struct {
-		user *meta.Meta
-		exp  bool
-	}{
-		{newAnon(), !readonly && !withAuth},
-		{newReader(), !readonly && !withAuth},
-		{newWriter(), !readonly && !withAuth},
-		{newOwner(), !readonly || (withAuth && isExpert)},
-	}
-	for _, tc := range testCases {
-		t.Run("Reload", func(tt *testing.T) {
-			got := pol.CanReload(tc.user)
 			if tc.exp != got {
 				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
 			}

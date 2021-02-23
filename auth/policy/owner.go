@@ -145,12 +145,3 @@ func (o *ownerPolicy) userIsOwner(user *meta.Meta) bool {
 	}
 	return false
 }
-
-func (o *ownerPolicy) CanReload(user *meta.Meta) bool {
-	if !o.pre.CanReload(user) && !o.expertMode() {
-		return false
-	}
-
-	// Only the owner is allowed to reload a place
-	return o.userIsOwner(user)
-}

@@ -180,8 +180,6 @@ func (pp *progPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.ErrNotFound
 }
 
-func (pp *progPlace) Reload(ctx context.Context) error { return nil }
-
 func (pp *progPlace) ReadStats(st *place.Stats) {
 	st.ReadOnly = true
 	st.Zettel = len(pp.zettel)

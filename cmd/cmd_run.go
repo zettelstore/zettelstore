@@ -93,8 +93,6 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 		webui.MakePostLoginHandlerHTML(te, ucAuthenticate)))
 	router.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
 	router.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler())
-	router.AddListRoute('c', http.MethodGet, adapter.MakeReloadHandler(
-		usecase.NewReload(pp), api.ReloadHandlerAPI, webui.ReloadHandlerHTML))
 	if !readonlyMode {
 		router.AddZettelRoute('b', http.MethodGet, webui.MakeGetRenameZettelHandler(
 			te, ucGetMeta))

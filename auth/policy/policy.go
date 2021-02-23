@@ -32,9 +32,6 @@ type Policy interface {
 
 	// User is allowed to delete zettel
 	CanDelete(user, m *meta.Meta) bool
-
-	// User is allowed to reload a place.
-	CanReload(user *meta.Meta) bool
 }
 
 // newPolicy creates a policy based on given constraints.
@@ -93,8 +90,4 @@ func (p *prePolicy) CanRename(user, m *meta.Meta) bool {
 
 func (p *prePolicy) CanDelete(user, m *meta.Meta) bool {
 	return m != nil && p.post.CanDelete(user, m)
-}
-
-func (p *prePolicy) CanReload(user *meta.Meta) bool {
-	return p.post.CanReload(user)
 }

@@ -30,9 +30,6 @@
      <code>&lt;a href="/manual/h">Zettel list&lt;/a></code>. (minor: syntax)
   *  Searching/filtering ignores the leading '#' character of tags.
      (minor: api, webui)
-  *  Allow to reload all places if not in read-only mode and disabled authentication.
-     This applies is most cases to users that started their Zettelstore via double-click.
-     (minor: webui)
   *  When result of filtering or searching is presented, the query is written as the page heading.
      (minor: webui)
   *  A reference to a zettel that contains a URL fragment, will now be processed by the indexer.

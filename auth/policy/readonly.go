@@ -20,4 +20,3 @@ func (p *roPolicy) CanRead(user, m *meta.Meta) bool                 { return tru
 func (p *roPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool { return false }
 func (p *roPolicy) CanRename(user, m *meta.Meta) bool               { return false }
 func (p *roPolicy) CanDelete(user, m *meta.Meta) bool               { return false }
-func (p *roPolicy) CanReload(user *meta.Meta) bool                  { return false }

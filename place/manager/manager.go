@@ -418,24 +418,6 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.ErrNotFound
 }
 
-// Reload clears all caches, reloads all internal data to reflect changes
-// that were possibly undetected.
-func (mgr *Manager) Reload(ctx context.Context) error {
-	mgr.mx.RLock()
-	defer mgr.mx.RUnlock()
-	if !mgr.started {
-		return place.ErrStopped
-	}
-	var err error
-	for _, p := range mgr.subplaces {
-		if err1 := p.Reload(ctx); err1 != nil && err == nil {
-			err = err1
-		}
-	}
-	mgr.infos <- place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid}
-	return err
-}
-
 // ReadStats populates st with place statistics
 func (mgr *Manager) ReadStats(st *place.Stats) {
 	subStats := make([]place.Stats, len(mgr.subplaces))

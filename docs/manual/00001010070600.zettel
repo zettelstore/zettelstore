@@ -47,7 +47,3 @@ In the second step, when authentication is enabled and the requesting user is no
 ** Reject the access.
    Only the owner of the Zettelstore is allowed to delete a zettel.
    This may change in the future.
-* Reload internal values
-** Reject the access.
-   Only the owner of the Zettelstore is allowed to perform a reload operation.
-   This may change in the future.

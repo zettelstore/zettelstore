@@ -164,13 +164,6 @@ func (pp *polPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.NewErrNotAllowed("Delete", user, zid)
 }
 
-func (pp *polPlace) Reload(ctx context.Context) error {
-	user := session.GetUser(ctx)
-	if pp.policy.CanReload(user) {
-		return pp.place.Reload(ctx)
-	}
-	return place.NewErrNotAllowed("Reload", user, id.Invalid)
-}
 func (pp *polPlace) ReadStats(st *place.Stats) {
 	pp.place.ReadStats(st)
 }
