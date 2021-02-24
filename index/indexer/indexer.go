@@ -116,6 +116,7 @@ type indexerPort interface {
 }
 
 // indexer runs in the background and updates the index data structures.
+// This is the main service of the indexer.
 func (idx *indexer) indexer(p indexerPort) {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
@@ -129,65 +130,73 @@ func (idx *indexer) indexer(p indexerPort) {
 	ctx := index.NoEnrichContext(context.Background())
 	for {
 		start := time.Now()
-		changed := false
-	workLoop:
-		for {
-			switch action, zid := idx.ar.Dequeue(); action {
-			case arNothing:
-				break workLoop
-			case arReload:
-				zids, err := p.FetchZids(ctx)
-				if err == nil {
-					idx.ar.Reload(nil, zids)
-					idx.mx.Lock()
-					idx.lastReload = time.Now()
-					idx.sinceReload = 0
-					idx.mx.Unlock()
-				}
-			case arUpdate:
-				changed = true
-				idx.mx.Lock()
-				idx.sinceReload++
-				idx.mx.Unlock()
-				zettel, err := p.GetZettel(ctx, zid)
-				if err != nil {
-					// TODO: on some errors put the zid into a "try later" set
-					continue
-				}
-				idx.updateZettel(ctx, zettel, p)
-			case arDelete:
-				changed = true
-				idx.mx.Lock()
-				idx.sinceReload++
-				idx.mx.Unlock()
-				idx.deleteZettel(zid)
-			}
-		}
-		if changed {
+		if idx.workService(ctx, p) {
 			idx.mx.Lock()
 			idx.durLastIndex = time.Since(start)
 			idx.mx.Unlock()
 		}
-
-		select {
-		case _, ok := <-idx.ready:
-			if !ok {
-				return
-			}
-		case _, ok := <-timer.C:
-			if !ok {
-				return
-			}
-			timer.Reset(timerDuration)
-		case _, ok := <-idx.done:
-			if !ok {
-				if !timer.Stop() {
-					<-timer.C
-				}
-				return
-			}
+		if !idx.sleepService(timer, timerDuration) {
+			return
 		}
 	}
+}
+
+func (idx *indexer) workService(ctx context.Context, p indexerPort) bool {
+	changed := false
+	for {
+		switch action, zid := idx.ar.Dequeue(); action {
+		case arNothing:
+			return changed
+		case arReload:
+			zids, err := p.FetchZids(ctx)
+			if err == nil {
+				idx.ar.Reload(nil, zids)
+				idx.mx.Lock()
+				idx.lastReload = time.Now()
+				idx.sinceReload = 0
+				idx.mx.Unlock()
+			}
+		case arUpdate:
+			changed = true
+			idx.mx.Lock()
+			idx.sinceReload++
+			idx.mx.Unlock()
+			zettel, err := p.GetZettel(ctx, zid)
+			if err != nil {
+				// TODO: on some errors put the zid into a "try later" set
+				continue
+			}
+			idx.updateZettel(ctx, zettel, p)
+		case arDelete:
+			changed = true
+			idx.mx.Lock()
+			idx.sinceReload++
+			idx.mx.Unlock()
+			idx.deleteZettel(zid)
+		}
+	}
+}
+
+func (idx *indexer) sleepService(timer *time.Timer, timerDuration time.Duration) bool {
+	select {
+	case _, ok := <-idx.ready:
+		if !ok {
+			return false
+		}
+	case _, ok := <-timer.C:
+		if !ok {
+			return false
+		}
+		timer.Reset(timerDuration)
+	case _, ok := <-idx.done:
+		if !ok {
+			if !timer.Stop() {
+				<-timer.C
+			}
+			return false
+		}
+	}
+	return true
 }
 
 type getMetaPort interface {

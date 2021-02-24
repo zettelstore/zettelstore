@@ -91,15 +91,17 @@ type Store interface {
 	Enricher
 
 	// UpdateReferences for a specific zettel.
+	// Returns set of zettel identifier that must also be checked for changes.
 	UpdateReferences(context.Context, *ZettelIndex) id.Set
 
 	// DeleteZettel removes index data for given zettel.
+	// Returns set of zettel identifier that must also be checked for changes.
 	DeleteZettel(context.Context, id.Zid) id.Set
 
 	// ReadStats populates st with store statistics.
 	ReadStats(st *StoreStats)
 
-	// Write the content to a Writer
+	// Write the content to a Writer.
 	Write(io.Writer)
 }
 
