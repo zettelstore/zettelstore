@@ -211,7 +211,7 @@ var constZettelMap = map[id.Zid]constZettel{
 {{#CanRename}}&#183; <a href="{{{RenameURL}}}">Rename</a>{{/CanRename}}
 {{#CanDelete}}&#183; <a href="{{{DeleteURL}}}">Delete</a>{{/CanDelete}}
 </header>
-<h2>Interpreted Meta Data</h2>
+<h2>Interpreted Metadata</h2>
 <table>{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>{{/MetaData}}</table>
 {{#HasLinks}}
 <h2>References</h2>
