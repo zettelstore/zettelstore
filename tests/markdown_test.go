@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -19,6 +19,7 @@ import (
 	"strings"
 	"testing"
 
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/jsonenc"
@@ -66,6 +67,20 @@ var exceptions = []string{
 
 var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
 
+func TestEncoderAvailability(t *testing.T) {
+	encoderMissing := false
+	for _, format := range formats {
+		enc := encoder.Create(format)
+		if enc == nil {
+			t.Errorf("No encoder for %q found", format)
+			encoderMissing = true
+		}
+	}
+	if encoderMissing {
+		panic("At least one encoder is missing. See test log")
+	}
+}
+
 func TestMarkdownSpec(t *testing.T) {
 	content, err := ioutil.ReadFile("../testdata/markdown/spec.json")
 	if err != nil {
@@ -75,74 +90,84 @@ func TestMarkdownSpec(t *testing.T) {
 	if err = json.Unmarshal(content, &testcases); err != nil {
 		panic(err)
 	}
-	for _, format := range formats {
-		enc := encoder.Create(format)
-		if enc == nil {
-			panic(fmt.Sprintf("No encoder for %q found", format))
-		}
-	}
 	excMap := make(map[string]bool, len(exceptions))
 	for _, exc := range exceptions {
 		excMap[exc] = true
 	}
-	htmlEncoder := encoder.Create("html", &encoder.BoolOption{Key: "xhtml", Value: true})
-	zmkEncoder := encoder.Create("zmk")
-	var sb strings.Builder
 	for _, tc := range testcases {
-		testID := tc.Example*100 + 1
 		ast := parser.ParseBlocks(input.NewInput(tc.Markdown), nil, "markdown")
-
-		for _, format := range formats {
-			t.Run(fmt.Sprintf("Encode %v %v", format, testID), func(st *testing.T) {
-				encoder.Create(format).WriteBlocks(&sb, ast)
-				sb.Reset()
-			})
-		}
+		testAllEncodings(t, tc, ast)
 		if _, found := excMap[tc.Markdown]; !found {
-			t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
-				htmlEncoder.WriteBlocks(&sb, ast)
-				gotHTML := sb.String()
-				sb.Reset()
-
-				mdHTML := tc.HTML
-				mdHTML = strings.ReplaceAll(mdHTML, "\"MAILTO:", "\"mailto:")
-				gotHTML = strings.ReplaceAll(gotHTML, " class=\"zs-external\"", "")
-				gotHTML = strings.ReplaceAll(gotHTML, "%2A", "*") // url.QueryEscape
-				if strings.Count(gotHTML, "<h") > 0 {
-					gotHTML = reHeadingID.ReplaceAllString(gotHTML, "")
-				}
-				if gotHTML != mdHTML {
-					mdHTML = strings.ReplaceAll(mdHTML, "<li>\n", "<li>")
-					if gotHTML != mdHTML {
-						st.Errorf("\nCMD: %q\nExp: %q\nGot: %q", tc.Markdown, mdHTML, gotHTML)
-					}
-				}
-			})
+			testHTMLEncoding(t, tc, ast)
 		}
-		t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
-			zmkEncoder.WriteBlocks(&sb, ast)
-			gotFirst := sb.String()
+		testZmkEncoding(t, tc, ast)
+	}
+}
+
+func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+	var sb strings.Builder
+	testID := tc.Example*100 + 1
+	for _, format := range formats {
+		t.Run(fmt.Sprintf("Encode %v %v", format, testID), func(st *testing.T) {
+			encoder.Create(format).WriteBlocks(&sb, ast)
 			sb.Reset()
-
-			testID = tc.Example*100 + 2
-			secondAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-			zmkEncoder.WriteBlocks(&sb, secondAst)
-			gotSecond := sb.String()
-			sb.Reset()
-
-			// if gotFirst != gotSecond {
-			// 	st.Errorf("\nCMD: %q\n1st: %q\n2nd: %q", tc.Markdown, gotFirst, gotSecond)
-			// }
-
-			testID = tc.Example*100 + 3
-			thirdAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-			zmkEncoder.WriteBlocks(&sb, thirdAst)
-			gotThird := sb.String()
-			sb.Reset()
-
-			if gotSecond != gotThird {
-				st.Errorf("\n1st: %q\n2nd: %q", gotSecond, gotThird)
-			}
 		})
 	}
+}
+
+func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+	htmlEncoder := encoder.Create("html", &encoder.BoolOption{Key: "xhtml", Value: true})
+	var sb strings.Builder
+	testID := tc.Example*100 + 1
+	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
+		htmlEncoder.WriteBlocks(&sb, ast)
+		gotHTML := sb.String()
+		sb.Reset()
+
+		mdHTML := tc.HTML
+		mdHTML = strings.ReplaceAll(mdHTML, "\"MAILTO:", "\"mailto:")
+		gotHTML = strings.ReplaceAll(gotHTML, " class=\"zs-external\"", "")
+		gotHTML = strings.ReplaceAll(gotHTML, "%2A", "*") // url.QueryEscape
+		if strings.Count(gotHTML, "<h") > 0 {
+			gotHTML = reHeadingID.ReplaceAllString(gotHTML, "")
+		}
+		if gotHTML != mdHTML {
+			mdHTML = strings.ReplaceAll(mdHTML, "<li>\n", "<li>")
+			if gotHTML != mdHTML {
+				st.Errorf("\nCMD: %q\nExp: %q\nGot: %q", tc.Markdown, mdHTML, gotHTML)
+			}
+		}
+	})
+}
+
+func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+	zmkEncoder := encoder.Create("zmk")
+	var sb strings.Builder
+	testID := tc.Example*100 + 1
+	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
+		zmkEncoder.WriteBlocks(&sb, ast)
+		gotFirst := sb.String()
+		sb.Reset()
+
+		testID = tc.Example*100 + 2
+		secondAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
+		zmkEncoder.WriteBlocks(&sb, secondAst)
+		gotSecond := sb.String()
+		sb.Reset()
+
+		// if gotFirst != gotSecond {
+		// 	st.Errorf("\nCMD: %q\n1st: %q\n2nd: %q", tc.Markdown, gotFirst, gotSecond)
+		// }
+
+		testID = tc.Example*100 + 3
+		thirdAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
+		zmkEncoder.WriteBlocks(&sb, thirdAst)
+		gotThird := sb.String()
+		sb.Reset()
+
+		if gotSecond != gotThird {
+			st.Errorf("\n1st: %q\n2nd: %q", gotSecond, gotThird)
+		}
+	})
+
 }

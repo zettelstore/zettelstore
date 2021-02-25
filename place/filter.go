@@ -45,22 +45,7 @@ func CreateFilterFunc(filter *Filter) FilterFunc {
 	if filter == nil {
 		return selectAll
 	}
-
-	specs := make([]matchSpec, 0, len(filter.Expr))
-	var searchAll FilterFunc
-	for key, values := range filter.Expr {
-		if key == "" {
-			// Special handling if searching all keys...
-			searchAll = createSearchAllFunc(values, filter.Negate)
-			continue
-		}
-		if meta.KeyIsValid(key) {
-			match := createMatchFunc(key, values)
-			if match != nil {
-				specs = append(specs, matchSpec{key, match})
-			}
-		}
-	}
+	specs, searchAll := createFilterSpecs(filter)
 	if len(specs) == 0 {
 		if searchAll == nil {
 			if sel := filter.Select; sel != nil {
@@ -88,6 +73,25 @@ func CreateFilterFunc(filter *Filter) FilterFunc {
 	})
 }
 
+func createFilterSpecs(filter *Filter) ([]matchSpec, FilterFunc) {
+	specs := make([]matchSpec, 0, len(filter.Expr))
+	var searchAll FilterFunc
+	for key, values := range filter.Expr {
+		if key == "" {
+			// Special handling if searching all keys...
+			searchAll = createSearchAllFunc(values, filter.Negate)
+			continue
+		}
+		if meta.KeyIsValid(key) {
+			match := createMatchFunc(key, values)
+			if match != nil {
+				specs = append(specs, matchSpec{key, match})
+			}
+		}
+	}
+	return specs, searchAll
+}
+
 func addSelectFunc(filter *Filter, f FilterFunc) FilterFunc {
 	if filter == nil {
 		return f
@@ -103,86 +107,113 @@ func addSelectFunc(filter *Filter, f FilterFunc) FilterFunc {
 func createMatchFunc(key string, values []string) matchFunc {
 	switch meta.Type(key) {
 	case meta.TypeBool:
-		preValues := make([]bool, 0, len(values))
-		for _, v := range values {
-			preValues = append(preValues, meta.BoolValue(v))
-		}
-		return func(value string) bool {
-			bValue := meta.BoolValue(value)
-			for _, v := range preValues {
-				if bValue != v {
-					return false
-				}
-			}
-			return true
-		}
+		return createMatchBoolFunc(values)
 	case meta.TypeCredential:
 		return matchNever
 	case meta.TypeID, meta.TypeTimestamp: // ID and timestamp use the same layout
-		return func(value string) bool {
-			for _, v := range values {
-				if !strings.HasPrefix(value, v) {
-					return false
-				}
-			}
-			return true
-		}
+		return createMatchIDFunc(values)
 	case meta.TypeIDSet:
-		idValues := preprocessSet(sliceToLower(values))
-		return func(value string) bool {
-			ids := meta.ListFromValue(value)
-			for _, neededIDs := range idValues {
-				for _, neededID := range neededIDs {
-					if !matchAllID(ids, neededID) {
-						return false
-					}
-				}
-			}
-			return true
-		}
+		return createMatchIDSetFunc(values)
 	case meta.TypeTagSet:
-		tagValues := preprocessSet(values)
-		return func(value string) bool {
-			tags := meta.ListFromValue(value)
-			// Remove leading '#' from each tag
-			for i, tag := range tags {
-				tags[i] = meta.CleanTag(tag)
-			}
-			for _, neededTags := range tagValues {
-				for _, neededTag := range neededTags {
-					if !matchAllTag(tags, neededTag) {
-						return false
-					}
-				}
-			}
-			return true
-		}
+		return createMatchTagSetFunc(values)
 	case meta.TypeWord:
-		values = sliceToLower(values)
-		return func(value string) bool {
-			value = strings.ToLower(value)
-			for _, v := range values {
-				if value != v {
+		return createMatchWordFunc(values)
+	case meta.TypeWordSet:
+		return createMatchWordSetFunc(values)
+	}
+	return createMatchStringFunc(values)
+}
+
+func createMatchBoolFunc(values []string) matchFunc {
+	preValues := make([]bool, 0, len(values))
+	for _, v := range values {
+		preValues = append(preValues, meta.BoolValue(v))
+	}
+	return func(value string) bool {
+		bValue := meta.BoolValue(value)
+		for _, v := range preValues {
+			if bValue != v {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func createMatchIDFunc(values []string) matchFunc {
+	return func(value string) bool {
+		for _, v := range values {
+			if !strings.HasPrefix(value, v) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func createMatchIDSetFunc(values []string) matchFunc {
+	idValues := preprocessSet(sliceToLower(values))
+	return func(value string) bool {
+		ids := meta.ListFromValue(value)
+		for _, neededIDs := range idValues {
+			for _, neededID := range neededIDs {
+				if !matchAllID(ids, neededID) {
 					return false
 				}
 			}
-			return true
 		}
-	case meta.TypeWordSet:
-		wordValues := preprocessSet(sliceToLower(values))
-		return func(value string) bool {
-			words := meta.ListFromValue(value)
-			for _, neededWords := range wordValues {
-				for _, neededWord := range neededWords {
-					if !matchAllWord(words, neededWord) {
-						return false
-					}
+		return true
+	}
+}
+
+func createMatchTagSetFunc(values []string) matchFunc {
+	tagValues := preprocessSet(values)
+	return func(value string) bool {
+		tags := meta.ListFromValue(value)
+		// Remove leading '#' from each tag
+		for i, tag := range tags {
+			tags[i] = meta.CleanTag(tag)
+		}
+		for _, neededTags := range tagValues {
+			for _, neededTag := range neededTags {
+				if !matchAllTag(tags, neededTag) {
+					return false
 				}
 			}
-			return true
 		}
+		return true
 	}
+}
 
+func createMatchWordFunc(values []string) matchFunc {
+	values = sliceToLower(values)
+	return func(value string) bool {
+		value = strings.ToLower(value)
+		for _, v := range values {
+			if value != v {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func createMatchWordSetFunc(values []string) matchFunc {
+	wordValues := preprocessSet(sliceToLower(values))
+	return func(value string) bool {
+		words := meta.ListFromValue(value)
+		for _, neededWords := range wordValues {
+			for _, neededWord := range neededWords {
+				if !matchAllWord(words, neededWord) {
+					return false
+				}
+			}
+		}
+		return true
+	}
+}
+
+func createMatchStringFunc(values []string) matchFunc {
 	values = sliceToLower(values)
 	return func(value string) bool {
 		value = strings.ToLower(value)

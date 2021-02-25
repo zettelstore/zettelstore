@@ -46,13 +46,13 @@ func ApplySorter(metaList []*meta.Meta, s *Sorter) []*meta.Meta {
 	}
 
 	if s.Order == "" {
-		sort.Slice(metaList, getSortFunc(meta.KeyID, true, metaList))
+		sort.Slice(metaList, createSortFunc(meta.KeyID, true, metaList))
 	} else if s.Order == RandomOrder {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]
 		})
 	} else {
-		sort.Slice(metaList, getSortFunc(s.Order, s.Descending, metaList))
+		sort.Slice(metaList, createSortFunc(s.Order, s.Descending, metaList))
 	}
 
 	if s.Offset > 0 {
@@ -69,45 +69,58 @@ func ApplySorter(metaList []*meta.Meta, s *Sorter) []*meta.Meta {
 
 type sortFunc func(i, j int) bool
 
-func getSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
+func createSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
 	keyType := meta.Type(key)
 	if key == meta.KeyID || keyType == meta.TypeCredential {
 		if descending {
 			return func(i, j int) bool { return ml[i].Zid > ml[j].Zid }
 		}
 		return func(i, j int) bool { return ml[i].Zid < ml[j].Zid }
-	} else if keyType == meta.TypeBool {
-		if descending {
-			return func(i, j int) bool {
-				left := ml[i].GetBool(key)
-				if left == ml[j].GetBool(key) {
-					return i > j
-				}
-				return left
-			}
-		}
+	}
+	if keyType == meta.TypeBool {
+		return createSortBoolFunc(ml, key, descending)
+	}
+	if keyType == meta.TypeNumber {
+		return createSortNumberFunc(ml, key, descending)
+	}
+	return createSortStringFunc(ml, key, descending)
+}
+
+func createSortBoolFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+	if descending {
 		return func(i, j int) bool {
-			right := ml[j].GetBool(key)
-			if ml[i].GetBool(key) == right {
-				return i < j
+			left := ml[i].GetBool(key)
+			if left == ml[j].GetBool(key) {
+				return i > j
 			}
-			return right
+			return left
 		}
-	} else if keyType == meta.TypeNumber {
-		if descending {
-			return func(i, j int) bool {
-				iVal, iOk := getNum(ml[i], key)
-				jVal, jOk := getNum(ml[j], key)
-				return (iOk && (!jOk || iVal > jVal)) || !jOk
-			}
+	}
+	return func(i, j int) bool {
+		right := ml[j].GetBool(key)
+		if ml[i].GetBool(key) == right {
+			return i < j
 		}
+		return right
+	}
+}
+
+func createSortNumberFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+	if descending {
 		return func(i, j int) bool {
 			iVal, iOk := getNum(ml[i], key)
 			jVal, jOk := getNum(ml[j], key)
-			return (iOk && (!jOk || iVal < jVal)) || !jOk
+			return (iOk && (!jOk || iVal > jVal)) || !jOk
 		}
 	}
+	return func(i, j int) bool {
+		iVal, iOk := getNum(ml[i], key)
+		jVal, jOk := getNum(ml[j], key)
+		return (iOk && (!jOk || iVal < jVal)) || !jOk
+	}
+}
 
+func createSortStringFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
 	if descending {
 		return func(i, j int) bool {
 			iVal, iOk := ml[i].Get(key)

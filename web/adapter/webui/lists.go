@@ -378,23 +378,28 @@ func listTitleFilter(sb *strings.Builder, filter *place.Filter) {
 			sb.WriteString(name)
 		}
 		sb.WriteString(" MATCH ")
-		if values := filter.Expr[name]; len(values) == 0 {
-			sb.WriteString("ANY")
-		} else {
-			for j, val := range filter.Expr[name] {
-				if j > 0 {
-					sb.WriteString(" AND ")
-				}
-				if val == "" {
-					sb.WriteString("ANY")
-				} else {
-					sb.WriteString(val)
-				}
-			}
-		}
+		writeFilterExprValues(sb, filter.Expr[name])
 	}
 	if filter.Negate {
 		sb.WriteByte(')')
+	}
+}
+
+func writeFilterExprValues(sb *strings.Builder, values []string) {
+	if len(values) == 0 {
+		sb.WriteString("ANY")
+		return
+	}
+
+	for j, val := range values {
+		if j > 0 {
+			sb.WriteString(" AND ")
+		}
+		if val == "" {
+			sb.WriteString("ANY")
+		} else {
+			sb.WriteString(val)
+		}
 	}
 }
 

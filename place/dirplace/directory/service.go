@@ -115,25 +115,33 @@ func (srv *Service) directoryService(events <-chan *fileEvent, ready chan<- int)
 			case fileStatusError:
 				log.Println("DIRPLACE", "ERROR", ev.err)
 			case fileStatusUpdate:
-				if newMap != nil {
-					dirMapUpdate(newMap, ev)
-				} else {
-					dirMapUpdate(curMap, ev)
-					srv.notifyChange(place.OnUpdate, ev.zid)
-				}
+				srv.processFileUpdateEvent(ev, curMap, newMap)
 			case fileStatusDelete:
-				if newMap != nil {
-					deleteFromMap(newMap, ev)
-				} else {
-					deleteFromMap(curMap, ev)
-					srv.notifyChange(place.OnDelete, ev.zid)
-				}
+				srv.processFileDeleteEvent(ev, curMap, newMap)
 			}
 		case cmd, ok := <-srv.cmds:
 			if ok {
 				cmd.run(curMap)
 			}
 		}
+	}
+}
+
+func (srv *Service) processFileUpdateEvent(ev *fileEvent, curMap, newMap dirMap) {
+	if newMap != nil {
+		dirMapUpdate(newMap, ev)
+	} else {
+		dirMapUpdate(curMap, ev)
+		srv.notifyChange(place.OnUpdate, ev.zid)
+	}
+}
+
+func (srv *Service) processFileDeleteEvent(ev *fileEvent, curMap, newMap dirMap) {
+	if newMap != nil {
+		deleteFromMap(newMap, ev)
+	} else {
+		deleteFromMap(curMap, ev)
+		srv.notifyChange(place.OnDelete, ev.zid)
 	}
 }
 

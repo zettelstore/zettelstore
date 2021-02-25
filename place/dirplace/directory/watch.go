@@ -223,26 +223,30 @@ func addEvent(events []*fileEvent, ev *fileEvent) []*fileEvent {
 	case fileStatusReloadStart:
 		events = events[0:0]
 	case fileStatusUpdate, fileStatusDelete:
-		if len(events) == 0 {
-			return append(events, ev)
-		}
-		for i := len(events) - 1; i >= 0; i-- {
-			oev := events[i]
-			switch oev.status {
-			case fileStatusReloadStart, fileStatusReloadEnd:
-				return append(events, ev)
-			case fileStatusUpdate, fileStatusDelete:
-				if ev.path == oev.path {
-					if ev.status == oev.status {
-						return events
-					}
-					oev.status = fileStatusNone
-					return append(events, ev)
-				}
-			}
+		if len(events) > 0 && mergeEvents(events, ev) {
+			return events
 		}
 	}
 	return append(events, ev)
+}
+
+func mergeEvents(events []*fileEvent, ev *fileEvent) bool {
+	for i := len(events) - 1; i >= 0; i-- {
+		oev := events[i]
+		switch oev.status {
+		case fileStatusReloadStart, fileStatusReloadEnd:
+			return false
+		case fileStatusUpdate, fileStatusDelete:
+			if ev.path == oev.path {
+				if ev.status == oev.status {
+					return true
+				}
+				oev.status = fileStatusNone
+				return false
+			}
+		}
+	}
+	return false
 }
 
 func collectEvents(out chan<- *fileEvent, in <-chan *fileEvent) {

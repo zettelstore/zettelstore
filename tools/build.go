@@ -113,7 +113,31 @@ func getVersion() string {
 	base, vcs := getVersionData()
 	return calcVersion(base, vcs)
 }
+
+func findExec(cmd string) string {
+	if path, err := executeCommand(nil, "which", "shadow"); err == nil && path != "" {
+		return path
+	}
+	return ""
+}
+
 func cmdCheck() error {
+	if err := checkGoTest(); err != nil {
+		return err
+	}
+	if err := checkGoVet(); err != nil {
+		return err
+	}
+	if err := checkGoLint(); err != nil {
+		return err
+	}
+	if err := checkGoVetShadow(); err != nil {
+		return err
+	}
+	return checkFossilExtra()
+}
+
+func checkGoTest() error {
 	out, err := executeCommand(nil, "go", "test", "./...")
 	if err != nil {
 		for _, line := range splitLines(out) {
@@ -122,38 +146,54 @@ func cmdCheck() error {
 			}
 			fmt.Fprintln(os.Stderr, line)
 		}
-		return err
 	}
-	out, err = executeCommand(nil, "go", "vet", "./...")
+	return err
+}
+
+func checkGoVet() error {
+	out, err := executeCommand(nil, "go", "vet", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some checks failed")
 		if len(out) > 0 {
 			fmt.Fprintln(os.Stderr, out)
 		}
-		return err
 	}
-	out, err = executeCommand(nil, "golint", "./...")
+	return err
+}
+
+func checkGoLint() error {
+	out, err := executeCommand(nil, "golint", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some lints failed")
 		if len(out) > 0 {
 			fmt.Fprintln(os.Stderr, out)
 		}
-		return err
 	}
-	if out, err = executeCommand(nil, "which", "shadow"); err == nil && len(out) > 0 {
-		out, err = executeCommand(nil, "go", "vet", "-vettool", strings.TrimSpace(out), "./...")
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Some shadowed variables found")
-			if len(out) > 0 {
-				fmt.Fprintln(os.Stderr, out)
-			}
-			return err
+	return err
+}
+
+func checkGoVetShadow() error {
+	path := findExec("shadow")
+	if path == "" {
+		return nil
+	}
+	out, err := executeCommand(nil, "go", "vet", "-vettool", strings.TrimSpace(path), "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some shadowed variables found")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
 		}
 	}
-	out, err = executeCommand(nil, "fossil", "extra")
+	return err
+}
+
+func checkFossilExtra() error {
+	out, err := executeCommand(nil, "fossil", "extra")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Unable to execute 'fossil extra'")
-	} else if len(out) > 0 {
+		return err
+	}
+	if len(out) > 0 {
 		fmt.Fprint(os.Stderr, "Warning: unversioned file(s):")
 		for i, extra := range splitLines(out) {
 			if i > 0 {

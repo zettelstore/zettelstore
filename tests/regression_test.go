@@ -129,6 +129,41 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	}
 }
 
+func getPlaceName(p place.Place, root string) string {
+	return p.Location()[len("dir://")+len(root):]
+}
+
+func checkContentPlace(t *testing.T, p place.Place, wd, placeName string) {
+	ss := p.(place.StartStopper)
+	if err := ss.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	metaList, err := p.SelectMeta(context.Background(), nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	for _, meta := range metaList {
+		zettel, err := p.GetZettel(context.Background(), meta.Zid)
+		if err != nil {
+			panic(err)
+		}
+		z := parser.ParseZettel(zettel, "")
+		for _, format := range formats {
+			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
+				resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
+				checkBlocksFile(st, resultName, z, format)
+			})
+		}
+		t.Run(fmt.Sprintf("%s::%d", p.Location(), meta.Zid), func(st *testing.T) {
+			checkZmkEncoder(st, z)
+		})
+	}
+	if err := ss.Stop(context.Background()); err != nil {
+		panic(err)
+	}
+
+}
+
 func TestContentRegression(t *testing.T) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -136,34 +171,7 @@ func TestContentRegression(t *testing.T) {
 	}
 	root, places := getFilePlaces(wd, "content")
 	for _, p := range places {
-		ss := p.(place.StartStopper)
-		if err := ss.Start(context.Background()); err != nil {
-			panic(err)
-		}
-		placeName := p.Location()[len("dir://")+len(root):]
-		metaList, err := p.SelectMeta(context.Background(), nil, nil)
-		if err != nil {
-			panic(err)
-		}
-		for _, meta := range metaList {
-			zettel, err := p.GetZettel(context.Background(), meta.Zid)
-			if err != nil {
-				panic(err)
-			}
-			z := parser.ParseZettel(zettel, "")
-			for _, format := range formats {
-				t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-					resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
-					checkBlocksFile(st, resultName, z, format)
-				})
-			}
-			t.Run(fmt.Sprintf("%s::%d", p.Location(), meta.Zid), func(st *testing.T) {
-				checkZmkEncoder(st, z)
-			})
-		}
-		if err := ss.Stop(context.Background()); err != nil {
-			panic(err)
-		}
+		checkContentPlace(t, p, wd, getPlaceName(p, root))
 	}
 }
 
@@ -179,6 +187,33 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format s
 	panic(fmt.Sprintf("Unknown writer format %q", format))
 }
 
+func checkMetaPlace(t *testing.T, p place.Place, wd, placeName string) {
+	ss := p.(place.StartStopper)
+	if err := ss.Start(context.Background()); err != nil {
+		panic(err)
+	}
+	metaList, err := p.SelectMeta(context.Background(), nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	for _, meta := range metaList {
+		zettel, err := p.GetZettel(context.Background(), meta.Zid)
+		if err != nil {
+			panic(err)
+		}
+		z := parser.ParseZettel(zettel, "")
+		for _, format := range formats {
+			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
+				resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)
+				checkMetaFile(st, resultName, z, format)
+			})
+		}
+	}
+	if err := ss.Stop(context.Background()); err != nil {
+		panic(err)
+	}
+}
+
 func TestMetaRegression(t *testing.T) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -186,30 +221,6 @@ func TestMetaRegression(t *testing.T) {
 	}
 	root, places := getFilePlaces(wd, "meta")
 	for _, p := range places {
-		ss := p.(place.StartStopper)
-		if err := ss.Start(context.Background()); err != nil {
-			panic(err)
-		}
-		placeName := p.Location()[len("dir://")+len(root):]
-		metaList, err := p.SelectMeta(context.Background(), nil, nil)
-		if err != nil {
-			panic(err)
-		}
-		for _, meta := range metaList {
-			zettel, err := p.GetZettel(context.Background(), meta.Zid)
-			if err != nil {
-				panic(err)
-			}
-			z := parser.ParseZettel(zettel, "")
-			for _, format := range formats {
-				t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-					resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)
-					checkMetaFile(st, resultName, z, format)
-				})
-			}
-		}
-		if err := ss.Stop(context.Background()); err != nil {
-			panic(err)
-		}
+		checkMetaPlace(t, p, wd, getPlaceName(p, root))
 	}
 }
