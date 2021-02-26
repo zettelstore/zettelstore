@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html{{#Lang}} lang="{{Lang}}"{{/Lang}}>
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="same-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Zettelstore">
+{{{MetaHeader}}}
+<link rel="stylesheet" href="{{{StylesheetURL}}}">
+<title>{{Title}}</title>
+</head>
+<body>
+<nav class="zs-menu">
+<a href="{{{HomeURL}}}">Home</a>
+{{#WithUser}}
+<div class="zs-dropdown">
+<button>User</button>
+<nav class="zs-dropdown-content">
+{{#WithAuth}}
+{{#UserIsValid}}
+<a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
+{{/UserIsValid}}
+{{^UserIsValid}}
+<a href="{{{LoginURL}}}">Login</a>
+{{/UserIsValid}}
+{{#UserIsValid}}
+<a href="{{{UserLogoutURL}}}">Logout</a>
+{{/UserIsValid}}
+{{/WithAuth}}
+</nav>
+</div>
+{{/WithUser}}
+<div class="zs-dropdown">
+<button>Lists</button>
+<nav class="zs-dropdown-content">
+<a href="{{{ListZettelURL}}}">List Zettel</a>
+<a href="{{{ListRolesURL}}}">List Roles</a>
+<a href="{{{ListTagsURL}}}">List Tags</a>
+</nav>
+</div>
+{{#CanCreate}}
+<div class="zs-dropdown">
+<button>New</button>
+<nav class="zs-dropdown-content">
+{{#NewZettelLinks}}
+<a href="{{{URL}}}">{{Text}}</a>
+{{/NewZettelLinks}}
+</nav>
+</div>
+{{/CanCreate}}
+<form action="{{{SearchURL}}}">
+<input type="text" placeholder="Search.." name="s">
+</form>
+</nav>
+<main class="content">
+{{{Content}}}
+</main>
+{{#FooterHTML}}
+<footer>
+{{{FooterHTML}}}
+</footer>
+{{/FooterHTML}}
+</body>
+</html>

@@ -35,7 +35,7 @@ const (
 	BaseTemplateZid    = Zid(10100)
 	LoginTemplateZid   = Zid(10200)
 	ListTemplateZid    = Zid(10300)
-	DetailTemplateZid  = Zid(10401)
+	ZettelTemplateZid  = Zid(10401)
 	InfoTemplateZid    = Zid(10402)
 	FormTemplateZid    = Zid(10403)
 	RenameTemplateZid  = Zid(10404)

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,9 +11,7 @@
 // Package domain provides domain specific types, constants, and functions.
 package domain
 
-import (
-	"unicode/utf8"
-)
+import "unicode/utf8"
 
 // Content is just the uninterpreted content of a zettel.
 type Content string

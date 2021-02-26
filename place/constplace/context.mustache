@@ -1,0 +1,16 @@
+<nav>
+<header>
+<h1>{{Title}}</h1>
+<div class="zs-meta">
+<a href="{{{InfoURL}}}">Info</a>
+&#183; <a href="?dir=backward">Backward</a>
+&#183; <a href="?dir=both">Both</a>
+&#183; <a href="?dir=forward">Forward</a>
+&#183; Depth:{{#Depths}}&#x2000;<a href="{{{URL}}}">{{{Text}}}</a>{{/Depths}}
+</div>
+</header>
+<p><a href="{{{Start.URL}}}">{{{Start.Text}}}</a></p>
+<ul>
+{{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
+{{/Metas}}</ul>
+</nav>

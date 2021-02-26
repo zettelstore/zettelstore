@@ -1,0 +1,42 @@
+<article>
+<header>
+<h1>Information for Zettel {{Zid}}</h1>
+<a href="{{{WebURL}}}">Web</a>
+&#183; <a href="{{{ContextURL}}}">Context</a>
+{{#CanWrite}} &#183; <a href="{{{EditURL}}}">Edit</a>{{/CanWrite}}
+{{#CanFolge}} &#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
+{{#CanCopy}} &#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
+{{#CanRename}}&#183; <a href="{{{RenameURL}}}">Rename</a>{{/CanRename}}
+{{#CanDelete}}&#183; <a href="{{{DeleteURL}}}">Delete</a>{{/CanDelete}}
+</header>
+<h2>Interpreted Metadata</h2>
+<table>{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>{{/MetaData}}</table>
+{{#HasLinks}}
+<h2>References</h2>
+{{#HasLocLinks}}
+<h3>Local</h3>
+<ul>
+{{#LocLinks}}
+<li><a href="{{{.}}}">{{.}}</a></li>
+{{/LocLinks}}
+</ul>
+{{/HasLocLinks}}
+{{#HasExtLinks}}
+<h3>External</h3>
+<ul>
+{{#ExtLinks}}
+<li><a href="{{{.}}}"{{{ExtNewWindow}}}>{{.}}</a></li>
+{{/ExtLinks}}
+</ul>
+{{/HasExtLinks}}
+{{/HasLinks}}
+<h2>Parts and format</h3>
+<table>
+{{#Matrix}}
+<tr>
+{{#Elements}}{{#HasURL}}<td><a href="{{{URL}}}">{{Text}}</td>{{/HasURL}}{{^HasURL}}<th>{{Text}}</th>{{/HasURL}}
+{{/Elements}}
+</tr>
+{{/Matrix}}
+</table>
+</article>

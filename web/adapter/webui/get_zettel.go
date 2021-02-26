@@ -97,7 +97,7 @@ func MakeGetHTMLZettelHandler(
 		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
 		base.MetaHeader = metaHeader
 		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
-		te.renderTemplate(ctx, w, id.DetailTemplateZid, &base, struct {
+		te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			CanWrite      bool
 			EditURL       string

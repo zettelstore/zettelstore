@@ -1,0 +1,19 @@
+<article>
+<header>
+<h1>{{Title}}</h1>
+</header>
+{{#Retry}}
+<div class="zs-indication zs-error">Wrong user name / password. Try again.</div>
+{{/Retry}}
+<form method="POST" action="?_format=html">
+<div>
+<label for="username">User name</label>
+<input class="zs-input" type="text" id="username" name="username" placeholder="Your user name.." autofocus>
+</div>
+<div>
+<label for="password">Password</label>
+<input class="zs-input" type="password" id="password" name="password" placeholder="Your password..">
+</div>
+<input class="zs-button" type="submit" value="Login">
+</form>
+</article>

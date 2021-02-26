@@ -1,0 +1,15 @@
+<article>
+<header>
+<h1>Delete Zettel {{Zid}}</h1>
+</header>
+<p>Do you really want to delete this zettel?</p>
+<dl>
+{{#MetaPairs}}
+<dt>{{Key}}:</dt><dd>{{Value}}</dd>
+{{/MetaPairs}}
+</dl>
+<form method="POST">
+<input class="zs-button" type="submit" value="Delete">
+</form>
+</article>
+{{end}}

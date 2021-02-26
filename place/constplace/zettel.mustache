@@ -1,0 +1,28 @@
+<article>
+<header>
+<h1>{{{HTMLTitle}}}</h1>
+<div class="zs-meta">
+{{#CanWrite}}<a href="{{{EditURL}}}">Edit</a> &#183;{{/CanWrite}}
+{{Zid}} &#183;
+<a href="{{{InfoURL}}}">Info</a> &#183;
+(<a href="{{{RoleURL}}}">{{RoleText}}</a>)
+{{#HasTags}}&#183; {{#Tags}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags}}{{/HasTags}}
+{{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
+{{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
+{{#FolgeRefs}}<br>Folge: {{{FolgeRefs}}}{{/FolgeRefs}}
+{{#PrecursorRefs}}<br>Precursor: {{{PrecursorRefs}}}{{/PrecursorRefs}}
+{{#HasExtURL}}<br>URL: <a href="{{{ExtURL}}}"{{{ExtNewWindow}}}>{{ExtURL}}</a>{{/HasExtURL}}
+</div>
+</header>
+{{{Content}}}
+{{#HasBackLinks}}
+<details>
+<summary>Links to this zettel</summary>
+<ul>
+{{#BackLinks}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/BackLinks}}
+</ul>
+</details>
+{{/HasBackLinks}}
+</article>

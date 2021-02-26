@@ -1,0 +1,19 @@
+<article>
+<header>
+<h1>Rename Zettel {{.Zid}}</h1>
+</header>
+<p>Do you really want to rename this zettel?</p>
+<form method="POST">
+<div>
+<label for="newid">New zettel id</label>
+<input class="zs-input" type="text" id="newzid" name="newzid" placeholder="ZID.." value="{{Zid}}" autofocus>
+</div>
+<input type="hidden" id="curzid" name="curzid" value="{{Zid}}">
+<input class="zs-button" type="submit" value="Rename">
+</form>
+<dl>
+{{#MetaPairs}}
+<dt>{{Key}}:</dt><dd>{{Value}}</dd>
+{{/MetaPairs}}
+</dl>
+</article>

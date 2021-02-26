@@ -1,0 +1,38 @@
+<article>
+<header>
+<h1>{{Heading}}</h1>
+</header>
+<form method="POST">
+<div>
+<label for="title">Title</label>
+<input class="zs-input" type="text" id="title" name="title" placeholder="Title.." value="{{MetaTitle}}" autofocus>
+</div>
+<div>
+<div>
+<label for="role">Role</label>
+<input class="zs-input" type="text" id="role" name="role" placeholder="role.." value="{{MetaRole}}">
+</div>
+<label for="tags">Tags</label>
+<input class="zs-input" type="text" id="tags" name="tags" placeholder="#tag" value="{{MetaTags}}">
+</div>
+<div>
+<label for="meta">Metadata</label>
+<textarea class="zs-input" id="meta" name="meta" rows="4" placeholder="metakey: metavalue">
+{{#MetaPairsRest}}
+{{Key}}: {{Value}}
+{{/MetaPairsRest}}
+</textarea>
+</div>
+<div>
+<label for="syntax">Syntax</label>
+<input class="zs-input" type="text" id="syntax" name="syntax" placeholder="syntax.." value="{{MetaSyntax}}">
+</div>
+<div>
+{{#IsTextContent}}
+<label for="content">Content</label>
+<textarea class="zs-input zs-content" id="meta" name="content" rows="20" placeholder="Your content..">{{Content}}</textarea>
+{{/IsTextContent}}
+</div>
+<input class="zs-button" type="submit" value="Submit">
+</form>
+</article>
