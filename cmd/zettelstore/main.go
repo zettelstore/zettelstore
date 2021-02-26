@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,9 +11,7 @@
 // Package main is the starting point for the zettelstore command.
 package main
 
-import (
-	"zettelstore.de/z/cmd"
-)
+import "zettelstore.de/z/cmd"
 
 // Version variable. Will be filled by build process.
 var version string = ""
