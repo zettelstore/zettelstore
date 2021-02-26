@@ -657,11 +657,11 @@ kbd {
 }
 .zs-meta {
   font-size:.75rem;
-  color:#888;
+  color:#444;
   margin-bottom:1rem;
 }
 .zs-meta a {
-  color:#888;
+  color:#444;
 }
 h1+.zs-meta {
   margin-top:-1rem;
