@@ -43,9 +43,11 @@ func getConfigurationMeta() *meta.Meta {
 
 // GetDefaultTitle returns the current value of the "default-title" key.
 func GetDefaultTitle() string {
-	if config := getConfigurationMeta(); config != nil {
-		if title, ok := config.Get(meta.KeyDefaultTitle); ok {
-			return title
+	if configStock != nil {
+		if config := getConfigurationMeta(); config != nil {
+			if title, ok := config.Get(meta.KeyDefaultTitle); ok {
+				return title
+			}
 		}
 	}
 	return "Untitled"

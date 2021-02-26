@@ -18,7 +18,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,7 +49,7 @@ func executeCommand(env []string, name string, arg ...string) (string, error) {
 }
 
 func readVersionFile() (string, error) {
-	content, err := ioutil.ReadFile("VERSION")
+	content, err := os.ReadFile("VERSION")
 	if err != nil {
 		return "", err
 	}

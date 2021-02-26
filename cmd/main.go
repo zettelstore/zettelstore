@@ -14,7 +14,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -97,7 +96,7 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	} else {
 		configFile = defConfigfile
 	}
-	content, err := ioutil.ReadFile(configFile)
+	content, err := os.ReadFile(configFile)
 	if err != nil {
 		cfg = meta.New(id.Invalid)
 	} else {

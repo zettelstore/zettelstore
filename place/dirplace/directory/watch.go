@@ -12,7 +12,6 @@
 package directory
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -99,7 +98,7 @@ func watchDirectory(directory string, events chan<- *fileEvent, tick <-chan stru
 	reloadStartEvent := &fileEvent{status: fileStatusReloadStart}
 	reloadEndEvent := &fileEvent{status: fileStatusReloadEnd}
 	reloadFiles := func() bool {
-		files, err := ioutil.ReadDir(directory)
+		entries, err := os.ReadDir(directory)
 		if err != nil {
 			if res := sendError(err); res != sendDone {
 				return res == sendReload
@@ -121,11 +120,14 @@ func watchDirectory(directory string, events chan<- *fileEvent, tick <-chan stru
 			}
 		}
 
-		for _, file := range files {
-			if !file.Mode().IsRegular() {
+		for _, entry := range entries {
+			if entry.IsDir() {
 				continue
 			}
-			name := file.Name()
+			if info, err1 := entry.Info(); err1 != nil || !info.Mode().IsRegular() {
+				continue
+			}
+			name := entry.Name()
 			match := matchValidFileName(name)
 			if len(match) > 0 {
 				path := filepath.Join(directory, name)

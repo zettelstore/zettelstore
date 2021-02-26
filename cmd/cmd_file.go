@@ -13,7 +13,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"zettelstore.de/z/config/runtime"
@@ -59,7 +59,7 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 
 func getInput(args []string) (*meta.Meta, *input.Input, error) {
 	if len(args) < 1 {
-		src, err := ioutil.ReadAll(os.Stdin)
+		src, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -68,7 +68,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 		return m, inp, nil
 	}
 
-	src, err := ioutil.ReadFile(args[0])
+	src, err := os.ReadFile(args[0])
 	if err != nil {
 		return nil, nil, err
 	}
@@ -76,7 +76,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 	m := meta.NewFromInput(id.New(true), inp)
 
 	if len(args) > 1 {
-		src, err := ioutil.ReadFile(args[1])
+		src, err := os.ReadFile(args[1])
 		if err != nil {
 			return nil, nil, err
 		}

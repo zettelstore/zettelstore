@@ -14,7 +14,7 @@ package tests
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,16 +42,16 @@ var formats = []string{"html", "djson", "native", "text"}
 
 func getFilePlaces(wd string, kind string) (root string, places []place.Place) {
 	root = filepath.Clean(filepath.Join(wd, "..", "testdata", kind))
-	infos, err := ioutil.ReadDir(root)
+	entries, err := os.ReadDir(root)
 	if err != nil {
 		panic(err)
 	}
 
 	cdata := manager.ConnectData{Filter: &noFilter{}, Notify: nil}
-	for _, info := range infos {
-		if info.Mode().IsDir() {
+	for _, entry := range entries {
+		if entry.IsDir() {
 			place, err := manager.Connect(
-				"dir://"+filepath.Join(root, info.Name()),
+				"dir://"+filepath.Join(root, entry.Name()),
 				false,
 				&cdata,
 			)
@@ -82,7 +82,7 @@ func resultFile(file string) (data string, err error) {
 		return "", err
 	}
 	defer f.Close()
-	src, err := ioutil.ReadAll(f)
+	src, err := io.ReadAll(f)
 	return string(src), err
 }
 

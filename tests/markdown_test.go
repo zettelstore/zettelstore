@@ -14,7 +14,7 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -82,7 +82,7 @@ func TestEncoderAvailability(t *testing.T) {
 }
 
 func TestMarkdownSpec(t *testing.T) {
-	content, err := ioutil.ReadFile("../testdata/markdown/spec.json")
+	content, err := os.ReadFile("../testdata/markdown/spec.json")
 	if err != nil {
 		panic(err)
 	}
