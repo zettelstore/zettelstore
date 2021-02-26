@@ -17,12 +17,13 @@ The software, including the manual, is licensed under the
 
 [https://twitter.com/zettelstore|Stay tuned]&hellip;
 <hr>
-<h3>Latest Release: 0.0.9 (2021-01-29)</h3>
+<h3>Latest Release: 0.0.10 (2021-02-26)</h3>
   *  [./download.wiki|Download]
-  *  [./changes.wiki#0_0_9|Change Summary]
-  *  [/timeline?p=version-0.0.9&y=ci|Check-ins for version 0.0.9]
-  *  [/timeline?df=version-0.0.9&y=ci|Check-ins derived from the 0.0.9 release],
-     [/vdiff?from=version-0.0.9&to=trunk|content diff]
+  *  [./changes.wiki#0_0_10|Change Summary]
+  *  [/timeline?p=version-0.0.10&bt=version-0.0.9&y=ci|Check-ins for version 0.0.10],
+     [/vdiff?to=version-0.0.10&from=version-0.0.9|content diff]
+  *  [/timeline?df=version-0.0.10&y=ci|Check-ins derived from the 0.0.10 release],
+     [/vdiff?from=version-0.0.10&to=trunk|content diff]
   *  [./plan.wiki|Limitations and planned Improvements]
   *  [/timeline?t=release|Timeline of all past releases]
 

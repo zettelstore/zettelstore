@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_0_11"></a>
+<h2>Changes for Version 0.0.11 (pending)</h2>
+
 <a name="0_0_10"></a>
-<h2>Changes for Version 0.0.10 (pending)</h2>
+<h2>Changes for Version 0.0.10 (2021-02-26)</h2>
   *  Menu item &ldquo;Home&rdquo; now redirects to a home zettel.
      Its default identifier is <tt>000100000000</tt>.
      The identifier can be changed with configuration key <tt>home-zettel</tt>, which supersedes key <tt>start</tt>.
