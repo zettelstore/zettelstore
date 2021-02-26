@@ -179,9 +179,7 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, ok bool) {
 	inp := cp.inp
 	inp.Next()
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	hasSpace := false
 	pos := inp.Pos
 loop:
@@ -217,10 +215,8 @@ loop:
 	}
 
 	inp.SetPos(pos)
-	for inp.Ch == ' ' {
-		inp.Next()
-		pos = inp.Pos
-	}
+	cp.skipSpace()
+	pos = inp.Pos
 loop2:
 	for {
 		switch inp.Ch {
@@ -282,11 +278,9 @@ func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 }
 
 func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
-	inp := cp.inp
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	var ins ast.InlineSlice
+	inp := cp.inp
 	for inp.Ch != ']' {
 		in := cp.parseInline()
 		if in == nil {
@@ -294,8 +288,7 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 		}
 		ins = append(ins, in)
 		if _, ok := in.(*ast.BreakNode); ok {
-			ch := cp.inp.Ch
-			switch ch {
+			switch inp.Ch {
 			case input.EOS, '\n', '\r':
 				return nil, false
 			}
@@ -354,9 +347,7 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	for inp.Ch == '%' {
 		inp.Next()
 	}
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	pos := inp.Pos
 	for {
 		switch inp.Ch {

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -121,56 +121,65 @@ func (inp *Input) ScanEntity() (res string, success bool) {
 	pos := inp.Pos
 	inp.Next()
 	if inp.Ch == '#' {
-		code := 0
 		inp.Next()
 		if inp.Ch == 'x' || inp.Ch == 'X' {
-			// Base 16 code
-			inp.Next()
-			if inp.Ch == ';' {
-				return "", false
-			}
-			for {
-				switch ch := inp.Ch; ch {
-				case ';':
-					inp.Next()
-					return string(rune(code)), true
-				case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-					code = 16*code + int(ch-'0')
-				case 'a', 'b', 'c', 'd', 'e', 'f':
-					code = 16*code + int(ch-'a'+10)
-				case 'A', 'B', 'C', 'D', 'E', 'F':
-					code = 16*code + int(ch-'A'+10)
-				default:
-					return "", false
-				}
-				if code > unicode.MaxRune {
-					return "", false
-				}
-				inp.Next()
-			}
+			return inp.scanEntityBase16()
 		}
+		return inp.scanEntityBase10()
+	}
+	return inp.scanEntityNamed(pos)
+}
 
-		// Base 10 code
-		if inp.Ch == ';' {
+func (inp *Input) scanEntityBase16() (string, bool) {
+	inp.Next()
+	if inp.Ch == ';' {
+		return "", false
+	}
+	code := 0
+	for {
+		switch ch := inp.Ch; ch {
+		case ';':
+			inp.Next()
+			return string(rune(code)), true
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			code = 16*code + int(ch-'0')
+		case 'a', 'b', 'c', 'd', 'e', 'f':
+			code = 16*code + int(ch-'a'+10)
+		case 'A', 'B', 'C', 'D', 'E', 'F':
+			code = 16*code + int(ch-'A'+10)
+		default:
 			return "", false
 		}
-		for {
-			switch ch := inp.Ch; ch {
-			case ';':
-				inp.Next()
-				return string(rune(code)), true
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-				code = 10*code + int(ch-'0')
-			default:
-				return "", false
-			}
-			if code > unicode.MaxRune {
-				return "", false
-			}
-			inp.Next()
+		if code > unicode.MaxRune {
+			return "", false
 		}
+		inp.Next()
 	}
+}
 
+func (inp *Input) scanEntityBase10() (string, bool) {
+	// Base 10 code
+	if inp.Ch == ';' {
+		return "", false
+	}
+	code := 0
+	for {
+		switch ch := inp.Ch; ch {
+		case ';':
+			inp.Next()
+			return string(rune(code)), true
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			code = 10*code + int(ch-'0')
+		default:
+			return "", false
+		}
+		if code > unicode.MaxRune {
+			return "", false
+		}
+		inp.Next()
+	}
+}
+func (inp *Input) scanEntityNamed(pos int) (string, bool) {
 	for {
 		switch inp.Ch {
 		case EOS, '\n', '\r':

@@ -165,7 +165,7 @@ func (cp *zmkP) parseAttributes(sameLine bool) *ast.Attributes {
 		}
 
 		// No immediate name: skip spaces
-		cp.skipSpace(!sameLine)
+		cp.skipSpace()
 	}
 
 	pos := inp.Pos
@@ -186,7 +186,11 @@ func (cp *zmkP) doParseAttributes(sameLine bool) (res *ast.Attributes, success b
 	attrs := map[string]string{}
 loop:
 	for {
-		cp.skipSpace(!sameLine)
+		if sameLine {
+			cp.skipSpace()
+		} else {
+			cp.skipSpaceAndEOL()
+		}
 		switch inp.Ch {
 		case input.EOS:
 			return nil, false
@@ -229,22 +233,22 @@ loop:
 	return &ast.Attributes{Attrs: attrs}, true
 }
 
-func (cp *zmkP) skipSpace(eolIsSpace bool) {
-	inp := cp.inp
-	if eolIsSpace {
-		for {
-			switch inp.Ch {
-			case ' ':
-				inp.Next()
-			case '\n', '\r':
-				inp.EatEOL()
-			default:
-				return
-			}
-		}
-	}
-	for inp.Ch == ' ' {
+func (cp *zmkP) skipSpace() {
+	for inp := cp.inp; inp.Ch == ' '; {
 		inp.Next()
+	}
+}
+
+func (cp *zmkP) skipSpaceAndEOL() {
+	for inp := cp.inp; ; {
+		switch inp.Ch {
+		case ' ':
+			inp.Next()
+		case '\n', '\r':
+			inp.EatEOL()
+		default:
+			return
+		}
 	}
 }
 

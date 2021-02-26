@@ -54,18 +54,7 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 			return nil, false
 		case '\n', '\r':
 			inp.EatEOL()
-			for _, l := range cp.lists {
-				if lits := len(l.Items); lits > 0 {
-					l.Items[lits-1] = append(l.Items[lits-1], &nullItemNode{})
-				}
-			}
-			if cp.descrl != nil {
-				defPos := len(cp.descrl.Descriptions) - 1
-				if ldds := len(cp.descrl.Descriptions[defPos].Descriptions); ldds > 0 {
-					cp.descrl.Descriptions[defPos].Descriptions[ldds-1] = append(
-						cp.descrl.Descriptions[defPos].Descriptions[ldds-1], &nullDescriptionNode{})
-				}
-			}
+			cp.cleanupListsAfterEOL()
 			return nil, false
 		case ':':
 			bn, success = cp.parseColon()
@@ -110,6 +99,21 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 		return nil, true
 	}
 	return pn, false
+}
+
+func (cp *zmkP) cleanupListsAfterEOL() {
+	for _, l := range cp.lists {
+		if lits := len(l.Items); lits > 0 {
+			l.Items[lits-1] = append(l.Items[lits-1], &nullItemNode{})
+		}
+	}
+	if cp.descrl != nil {
+		defPos := len(cp.descrl.Descriptions) - 1
+		if ldds := len(cp.descrl.Descriptions[defPos].Descriptions); ldds > 0 {
+			cp.descrl.Descriptions[defPos].Descriptions[ldds-1] = append(
+				cp.descrl.Descriptions[defPos].Descriptions[ldds-1], &nullDescriptionNode{})
+		}
+	}
 }
 
 // parseColon determines which element should be parsed.
@@ -224,21 +228,8 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 		switch inp.Ch {
 		case fch:
 			if cp.countDelim(fch) >= cnt {
-				cp.clearStacked() // remove any lists defined in the region
-				for inp.Ch == ' ' {
-					inp.Next()
-				}
-				for {
-					switch inp.Ch {
-					case input.EOS, '\n', '\r':
-						return rn, true
-					}
-					in := cp.parseInline()
-					if in == nil {
-						return rn, true
-					}
-					rn.Inlines = append(rn.Inlines, in)
-				}
+				cp.parseRegionLastLine(rn)
+				return rn, true
 			}
 			inp.SetPos(posL)
 		case input.EOS:
@@ -252,6 +243,23 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 			lastPara, _ = bn.(*ast.ParaNode)
 		}
 	}
+}
+
+func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
+	cp.clearStacked() // remove any lists defined in the region
+	cp.skipSpace()
+	for {
+		switch cp.inp.Ch {
+		case input.EOS, '\n', '\r':
+			return
+		}
+		in := cp.parseInline()
+		if in == nil {
+			return
+		}
+		rn.Inlines = append(rn.Inlines, in)
+	}
+
 }
 
 // parseHeading parses a head line.
@@ -268,9 +276,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	hn = &ast.HeadingNode{Level: lvl - 1}
 	for {
 		switch inp.Ch {
@@ -308,29 +314,14 @@ var mapRuneNestedList = map[rune]ast.NestedListCode{
 	'>': ast.NestedListQuote,
 }
 
-// parseList parses a list.
+// parseNestedList parses a list.
 func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 	inp := cp.inp
-	codes := []ast.NestedListCode{}
-loopInit:
-	for {
-		code, ok := mapRuneNestedList[inp.Ch]
-		if !ok {
-			panic(fmt.Sprintf("%q is not a region char", inp.Ch))
-		}
-		codes = append(codes, code)
-		inp.Next()
-		switch inp.Ch {
-		case '*', '#', '>':
-		case ' ', input.EOS, '\n', '\r':
-			break loopInit
-		default:
-			return nil, false
-		}
+	codes := cp.parseNestedListCodes()
+	if codes == nil {
+		return nil, false
 	}
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	if codes[len(codes)-1] != ast.NestedListQuote {
 		switch inp.Ch {
 		case input.EOS, '\n', '\r':
@@ -341,8 +332,33 @@ loopInit:
 	if len(codes) < len(cp.lists) {
 		cp.lists = cp.lists[:len(codes)]
 	}
-	var ln *ast.NestedListNode
-	newLnCount := 0
+	ln, newLnCount := cp.buildNestedList(codes)
+	ln.Items = append(ln.Items, ast.ItemSlice{cp.parseLinePara()})
+	return cp.cleanupParsedNestedList(newLnCount)
+}
+
+func (cp *zmkP) parseNestedListCodes() []ast.NestedListCode {
+	inp := cp.inp
+	codes := make([]ast.NestedListCode, 0, 4)
+	for {
+		code, ok := mapRuneNestedList[inp.Ch]
+		if !ok {
+			panic(fmt.Sprintf("%q is not a region char", inp.Ch))
+		}
+		codes = append(codes, code)
+		inp.Next()
+		switch inp.Ch {
+		case '*', '#', '>':
+		case ' ', input.EOS, '\n', '\r':
+			return codes
+		default:
+			return nil
+		}
+	}
+
+}
+
+func (cp *zmkP) buildNestedList(codes []ast.NestedListCode) (ln *ast.NestedListNode, newLnCount int) {
 	for i, code := range codes {
 		if i < len(cp.lists) {
 			if cp.lists[i].Code != code {
@@ -359,7 +375,10 @@ loopInit:
 			cp.lists = append(cp.lists, ln)
 		}
 	}
-	ln.Items = append(ln.Items, ast.ItemSlice{cp.parseLinePara()})
+	return ln, newLnCount
+}
+
+func (cp *zmkP) cleanupParsedNestedList(newLnCount int) (res ast.BlockNode, success bool) {
 	listDepth := len(cp.lists)
 	for i := 0; i < newLnCount; i++ {
 		childPos := listDepth - i - 1
@@ -375,6 +394,7 @@ loopInit:
 		}
 	}
 	return nil, true
+
 }
 
 // parseDefTerm parses a term of a definition list.
@@ -385,9 +405,7 @@ func (cp *zmkP) parseDefTerm() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	descrl := cp.descrl
 	if descrl == nil {
 		descrl = &ast.DescriptionListNode{}
@@ -421,9 +439,7 @@ func (cp *zmkP) parseDefDescr() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	for inp.Ch == ' ' {
-		inp.Next()
-	}
+	cp.skipSpace()
 	descrl := cp.descrl
 	if descrl == nil || len(descrl.Descriptions) == 0 {
 		return nil, false
