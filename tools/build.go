@@ -210,11 +210,12 @@ func cmdBuild() error {
 	return doBuild(nil, getVersion(), "bin/zettelstore")
 }
 
-func doBuild(env []string, version string, target string) error {
+func doBuild(env []string, version, target string) error {
 	out, err := executeCommand(
 		env,
 		"go", "build",
 		"-tags", "osusergo,netgo",
+		"-trimpath",
 		"-ldflags", fmt.Sprintf("-X main.version=%v -w", version),
 		"-o", target,
 		"zettelstore.de/z/cmd/zettelstore",
