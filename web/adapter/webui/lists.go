@@ -167,7 +167,7 @@ func renderWebUITagsList(
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
-		minCounts = append(minCounts, countInfo{sCount, base.ListTagsURL + "?min=" + sCount})
+		minCounts = append(minCounts, countInfo{sCount, base.ListTagsURL + "&min=" + sCount})
 	}
 
 	te.renderTemplate(ctx, w, id.TagsTemplateZid, &base, struct {
