@@ -171,11 +171,13 @@ func renderWebUITagsList(
 	}
 
 	te.renderTemplate(ctx, w, id.TagsTemplateZid, &base, struct {
-		MinCounts []countInfo
-		Tags      []tagInfo
+		ListTagsURL string
+		MinCounts   []countInfo
+		Tags        []tagInfo
 	}{
-		MinCounts: minCounts,
-		Tags:      tagsList,
+		ListTagsURL: base.ListTagsURL,
+		MinCounts:   minCounts,
+		Tags:        tagsList,
 	})
 }
 
