@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/dirplace/directory"
+	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
 )
 
@@ -235,7 +236,8 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 		entry.Zid = meta.Zid
 		dp.updateEntryFromMeta(&entry, meta)
 	} else if entry.MetaSpec == directory.MetaSpecNone {
-		if defaultMeta := entry.CalcDefaultMeta(); !meta.Equal(defaultMeta, true) {
+		defaultMeta := fileplace.CalcDefaultMeta(entry.Zid, entry.ContentExt)
+		if !meta.Equal(defaultMeta, true) {
 			dp.updateEntryFromMeta(&entry, meta)
 			dp.dirSrv.UpdateEntry(&entry)
 		}

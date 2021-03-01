@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place/dirplace/directory"
+	"zettelstore.de/z/place/fileplace"
 )
 
 func fileService(num uint32, cmds <-chan fileCmd) {
@@ -53,18 +54,19 @@ type resGetMeta struct {
 }
 
 func (cmd *fileGetMeta) run() {
+	entry := cmd.entry
 	var m *meta.Meta
 	var err error
-	switch cmd.entry.MetaSpec {
+	switch entry.MetaSpec {
 	case directory.MetaSpecFile:
-		m, err = parseMetaFile(cmd.entry.Zid, cmd.entry.MetaPath)
+		m, err = parseMetaFile(entry.Zid, entry.MetaPath)
 	case directory.MetaSpecHeader:
-		m, _, err = parseMetaContentFile(cmd.entry.Zid, cmd.entry.ContentPath)
+		m, _, err = parseMetaContentFile(entry.Zid, entry.ContentPath)
 	default:
-		m = cmd.entry.CalcDefaultMeta()
+		m = fileplace.CalcDefaultMeta(entry.Zid, entry.ContentExt)
 	}
 	if err == nil {
-		cleanupMeta(m, cmd.entry)
+		cmdCleanupMeta(m, entry)
 	}
 	cmd.rc <- resGetMeta{m, err}
 }
@@ -96,20 +98,21 @@ func (cmd *fileGetMetaContent) run() {
 	var content string
 	var err error
 
-	switch cmd.entry.MetaSpec {
+	entry := cmd.entry
+	switch entry.MetaSpec {
 	case directory.MetaSpecFile:
-		m, err = parseMetaFile(cmd.entry.Zid, cmd.entry.MetaPath)
+		m, err = parseMetaFile(entry.Zid, entry.MetaPath)
 		if err == nil {
-			content, err = readFileContent(cmd.entry.ContentPath)
+			content, err = readFileContent(entry.ContentPath)
 		}
 	case directory.MetaSpecHeader:
-		m, content, err = parseMetaContentFile(cmd.entry.Zid, cmd.entry.ContentPath)
+		m, content, err = parseMetaContentFile(entry.Zid, entry.ContentPath)
 	default:
-		m = cmd.entry.CalcDefaultMeta()
-		content, err = readFileContent(cmd.entry.ContentPath)
+		m = fileplace.CalcDefaultMeta(entry.Zid, entry.ContentExt)
+		content, err = readFileContent(entry.ContentPath)
 	}
 	if err == nil {
-		cleanupMeta(m, cmd.entry)
+		cmdCleanupMeta(m, entry)
 	}
 	cmd.rc <- resGetMetaContent{m, content, err}
 }
@@ -251,25 +254,13 @@ func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, string, error) {
 	return meta, src[inp.Pos:], nil
 }
 
-func cleanupMeta(m *meta.Meta, entry *directory.Entry) {
-	if title, ok := m.Get(meta.KeyTitle); !ok || title == "" {
-		m.Set(meta.KeyTitle, entry.Zid.String())
-	}
-
-	if entry.MetaSpec == directory.MetaSpecFile {
-		if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-			dm := entry.CalcDefaultMeta()
-			syntax, ok = dm.Get(meta.KeySyntax)
-			if !ok {
-				panic("Default meta must contain syntax")
-			}
-			m.Set(meta.KeySyntax, syntax)
-		}
-	}
-
-	if entry.Duplicates {
-		m.Set(meta.KeyDuplicates, meta.ValueTrue)
-	}
+func cmdCleanupMeta(m *meta.Meta, entry *directory.Entry) {
+	fileplace.CleanupMeta(
+		m,
+		entry.Zid, entry.ContentExt,
+		entry.MetaSpec == directory.MetaSpecFile,
+		entry.Duplicates,
+	)
 }
 
 func openFileWrite(path string) (*os.File, error) {

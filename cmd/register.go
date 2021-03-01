@@ -26,5 +26,6 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 	_ "zettelstore.de/z/place/constplace"  // Allow to use global internal place.
 	_ "zettelstore.de/z/place/dirplace"    // Allow to use directory place.
+	_ "zettelstore.de/z/place/fileplace"   // Allow to use file place.
 	_ "zettelstore.de/z/place/memplace"    // Allow to use memory place.
 )

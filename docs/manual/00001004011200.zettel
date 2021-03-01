@@ -1,8 +1,8 @@
 id: 00001004011200
 title: Zettelstore places
+role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-role: manual
 
 A Zettelstore must store its zettel somehow and somewhere.
 In most cases you want to store your zettel as files in a directory.
@@ -10,7 +10,7 @@ Under certain circumstances you may want to store your zettel in other places.
 
 An example are the [[predefined zettel|00001005090000]] that come with a Zettelstore.
 They are stored within the software itself.
-In another situation you may want to store your zettel volatilely, e.g. if you want to provide a sandbox for experimenting.
+In another situation you may want to store your zettel volatile, e.g. if you want to provide a sandbox for experimenting.
 
 To cope with these (and more) situations, you configure Zettelstore to use one or more places.
 This is done via the ''place-X-uri'' keys of the [[start-up configuration|00001004010000#place-X-uri]] (X is a number).
@@ -26,11 +26,14 @@ The following place URIs are supported:
   The directory must exist before starting the Zettelstore[^There is one exception: when Zettelstore is [[started without any parameter|00001004050000]], e.g. via double-clicking its icon, an directory called ''./zettel'' will be created.].
 
   It is possible to [[configure|00001004011400]] a directory place.
+; ''file:FILE.zip'' oder ''file:/\//path/to/file.zip''
+: Specifies a ZIP file which contains files that store zettel.
+  You can create such a ZIP file, if you zip a directory full of zettel files.
+
+  This place is always read-only.
 ; ''mem:''
 : Stores all its zettel in volatile memory.
   If you stop the Zettelstore, all changes are lost.
-; ''const:''
-: Is a place of predefined, essential zettel.
 
 All places that you configure via the ''store-X-uri'' keys form a chain of places.
 If a zettel should be retrieved, a search starts in the place specified with the ''place-1-uri'' key, then ''place-2-uri'' and so on.

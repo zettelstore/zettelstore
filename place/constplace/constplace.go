@@ -58,13 +58,11 @@ func (cp *constPlace) Location() string {
 
 func (cp *constPlace) CanCreateZettel(ctx context.Context) bool { return false }
 
-func (cp *constPlace) CreateZettel(
-	ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (cp *constPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	return id.Invalid, place.ErrReadOnly
 }
 
-func (cp *constPlace) GetZettel(
-	ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (cp *constPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	if z, ok := cp.zettel[zid]; ok {
 		return domain.Zettel{Meta: makeMeta(zid, z.header), Content: z.content}, nil
 	}
@@ -88,6 +86,7 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 
 func (cp *constPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
+
 	hasMatch := place.CreateFilterFunc(f)
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)

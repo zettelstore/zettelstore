@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,12 +11,7 @@
 // Package directory manages the directory part of a dirstore.
 package directory
 
-import (
-	"strings"
-
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
-)
+import "zettelstore.de/z/domain/id"
 
 // MetaSpec defines all possibilities where meta data can be stored.
 type MetaSpec int
@@ -42,24 +37,4 @@ type Entry struct {
 // IsValid checks whether the entry is valid.
 func (e *Entry) IsValid() bool {
 	return e.Zid.IsValid()
-}
-
-var alternativeSyntax = map[string]string{
-	"htm": "html",
-}
-
-func (e *Entry) calculateSyntax() string {
-	ext := strings.ToLower(e.ContentExt)
-	if syntax, ok := alternativeSyntax[ext]; ok {
-		return syntax
-	}
-	return ext
-}
-
-// CalcDefaultMeta returns metadata with default values for the given entry.
-func (e *Entry) CalcDefaultMeta() *meta.Meta {
-	m := meta.New(e.Zid)
-	m.Set(meta.KeyTitle, e.Zid.String())
-	m.Set(meta.KeySyntax, e.calculateSyntax())
-	return m
 }

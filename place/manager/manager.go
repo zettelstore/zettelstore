@@ -112,7 +112,9 @@ func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manag
 		if err != nil {
 			return nil, err
 		}
-		subplaces = append(subplaces, p)
+		if p != nil {
+			subplaces = append(subplaces, p)
+		}
 	}
 	constplace, err := registry[" const"](nil, &cdata)
 	if err != nil {
