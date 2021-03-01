@@ -18,6 +18,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -228,7 +229,59 @@ func doBuild(env []string, version, target string) error {
 	return nil
 }
 
-func cmdRelease() error {
+func cmdManual() error {
+	base, _ := getReleaseVersionData()
+	return createManualZip(".", base)
+}
+
+func createManualZip(path, base string) error {
+	manualPath := filepath.Join("docs", "manual")
+	entries, err := os.ReadDir(manualPath)
+	if err != nil {
+		return err
+	}
+	zipName := filepath.Join(path, "manual-"+base+".zip")
+	zipFile, err := os.OpenFile(zipName, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer zipFile.Close()
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	for _, entry := range entries {
+		if err = createManualZipEntry(manualPath, entry, zipWriter); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer) error {
+	info, err := entry.Info()
+	if err != nil {
+		return err
+	}
+	fh, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return err
+	}
+	fh.Name = entry.Name()
+	fh.Method = zip.Deflate
+	w, err := zipWriter.CreateHeader(fh)
+	if err != nil {
+		return err
+	}
+	manualFile, err := os.Open(filepath.Join(path, entry.Name()))
+	if err != nil {
+		return err
+	}
+	defer manualFile.Close()
+	_, err = io.Copy(w, manualFile)
+	return err
+}
+
+func getReleaseVersionData() (string, string) {
 	base, fossil := getVersionData()
 	if strings.HasSuffix(base, "dev") {
 		base = base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
@@ -237,9 +290,14 @@ func cmdRelease() error {
 		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", fossil)
 		base = base + dirtySuffix
 	}
+	return base, fossil
+}
+
+func cmdRelease() error {
 	if err := cmdCheck(); err != nil {
 		return err
 	}
+	base, fossil := getReleaseVersionData()
 	releases := []struct {
 		arch string
 		os   string
@@ -259,17 +317,17 @@ func cmdRelease() error {
 			return err
 		}
 		zipName := fmt.Sprintf("zettelstore-%v-%v-%v.zip", base, rel.os, rel.arch)
-		if err := createZip(zsName, zipName, rel.name); err != nil {
+		if err := createZipWithFile(zsName, zipName, rel.name); err != nil {
 			return err
 		}
 		if err := os.Remove(zsName); err != nil {
 			return err
 		}
 	}
-	return nil
+	return createManualZip("releases", base)
 }
 
-func createZip(zsName, zipName, fileName string) error {
+func createZipWithFile(zsName, zipName, fileName string) error {
 	zsFile, err := os.Open(zsName)
 	if err != nil {
 		return err
@@ -324,6 +382,7 @@ Commands:
            Is automatically done when releasing the software.
   clean    Remove all build and release directories.
   help     Outputs this text.
+  manual   Create a ZIP file with all manual zettel
   release  Create the software for various platforms and put them in
            appropriate named ZIP files.
   version  Print the current version of the software.
@@ -346,6 +405,8 @@ func main() {
 		switch args[0] {
 		case "b", "bu", "bui", "buil", "build":
 			err = cmdBuild()
+		case "m", "ma", "man", "manu", "manua", "manual":
+			err = cmdManual()
 		case "r", "re", "rel", "rele", "relea", "releas", "release":
 			err = cmdRelease()
 		case "cl", "cle", "clea", "clean":
