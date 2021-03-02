@@ -83,28 +83,14 @@ func (pp *postProcessor) VisitDescriptionList(dn *ast.DescriptionListNode) {
 // VisitTable post-processes a table.
 func (pp *postProcessor) VisitTable(tn *ast.TableNode) {
 	width := tableWidth(tn)
-	tn.Align = make([]ast.Alignment, 0, width)
+	tn.Align = make([]ast.Alignment, width)
 	for i := 0; i < width; i++ {
-		tn.Align = append(tn.Align, ast.AlignDefault)
+		tn.Align[i] = ast.AlignDefault
 	}
 	if len(tn.Rows) > 0 && isHeaderRow(tn.Rows[0]) {
 		tn.Header = tn.Rows[0]
 		tn.Rows = tn.Rows[1:]
-		for pos, cell := range tn.Header {
-			if inlines := cell.Inlines; len(inlines) > 0 {
-				if textNode, ok := inlines[0].(*ast.TextNode); ok {
-					textNode.Text = strings.TrimPrefix(textNode.Text, "=")
-				}
-				if textNode, ok := inlines[len(inlines)-1].(*ast.TextNode); ok {
-					if tnl := len(textNode.Text); tnl > 0 {
-						if align := getAlignment(textNode.Text[tnl-1]); align != ast.AlignDefault {
-							tn.Align[pos] = align
-							textNode.Text = textNode.Text[0 : tnl-1]
-						}
-					}
-				}
-			}
-		}
+		pp.visitTableHeader(tn)
 	}
 	if len(tn.Header) > 0 {
 		tn.Header = appendCells(tn.Header, width, tn.Align)
@@ -112,6 +98,30 @@ func (pp *postProcessor) VisitTable(tn *ast.TableNode) {
 			pp.processCell(cell, tn.Align[i])
 		}
 	}
+	pp.visitTableRows(tn, width)
+}
+
+func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
+	for pos, cell := range tn.Header {
+		inlines := cell.Inlines
+		if len(inlines) == 0 {
+			continue
+		}
+		if textNode, ok := inlines[0].(*ast.TextNode); ok {
+			textNode.Text = strings.TrimPrefix(textNode.Text, "=")
+		}
+		if textNode, ok := inlines[len(inlines)-1].(*ast.TextNode); ok {
+			if tnl := len(textNode.Text); tnl > 0 {
+				if align := getAlignment(textNode.Text[tnl-1]); align != ast.AlignDefault {
+					tn.Align[pos] = align
+					textNode.Text = textNode.Text[0 : tnl-1]
+				}
+			}
+		}
+	}
+}
+
+func (pp *postProcessor) visitTableRows(tn *ast.TableNode, width int) {
 	for i, row := range tn.Rows {
 		tn.Rows[i] = appendCells(row, width, tn.Align)
 		row = tn.Rows[i]
@@ -119,6 +129,7 @@ func (pp *postProcessor) VisitTable(tn *ast.TableNode) {
 			pp.processCell(cell, tn.Align[i])
 		}
 	}
+
 }
 
 func tableWidth(tn *ast.TableNode) int {
@@ -369,45 +380,7 @@ func processInlineSliceHead(ins ast.InlineSlice) ast.InlineSlice {
 func (pp *postProcessor) processInlineSliceCopy(ins ast.InlineSlice) int {
 	maxPos := len(ins)
 	for {
-		again := false
-		fromPos, toPos := 0, 0
-		for fromPos < maxPos {
-			ins[toPos] = ins[fromPos]
-			fromPos++
-			switch in := ins[toPos].(type) {
-			case *ast.TextNode:
-				for fromPos < maxPos {
-					if tn, ok := ins[fromPos].(*ast.TextNode); ok {
-						in.Text = in.Text + tn.Text
-						fromPos++
-					} else {
-						break
-					}
-				}
-			case *ast.SpaceNode:
-				if fromPos < maxPos {
-					switch nn := ins[fromPos].(type) {
-					case *ast.BreakNode:
-						if len(in.Lexeme) > 1 {
-							nn.Hard = true
-							ins[toPos] = nn
-							fromPos++
-						}
-					case *ast.TextNode:
-						if pp.inVerse {
-							ins[toPos] = &ast.TextNode{Text: strings.Repeat("\u00a0", len(in.Lexeme)) + nn.Text}
-							fromPos++
-							again = true
-						}
-					}
-				}
-			case *ast.BreakNode:
-				if pp.inVerse {
-					in.Hard = true
-				}
-			}
-			toPos++
-		}
+		again, toPos := pp.processInlineSliceCopyLoop(ins, maxPos)
 		for pos := toPos; pos < maxPos; pos++ {
 			ins[pos] = nil // Allow excess nodes to be garbage collected.
 		}
@@ -416,6 +389,51 @@ func (pp *postProcessor) processInlineSliceCopy(ins ast.InlineSlice) int {
 		}
 		maxPos = toPos
 	}
+}
+
+func (pp *postProcessor) processInlineSliceCopyLoop(
+	ins ast.InlineSlice, maxPos int) (bool, int) {
+
+	again := false
+	fromPos, toPos := 0, 0
+	for fromPos < maxPos {
+		ins[toPos] = ins[fromPos]
+		fromPos++
+		switch in := ins[toPos].(type) {
+		case *ast.TextNode:
+			for fromPos < maxPos {
+				if tn, ok := ins[fromPos].(*ast.TextNode); ok {
+					in.Text = in.Text + tn.Text
+					fromPos++
+				} else {
+					break
+				}
+			}
+		case *ast.SpaceNode:
+			if fromPos < maxPos {
+				switch nn := ins[fromPos].(type) {
+				case *ast.BreakNode:
+					if len(in.Lexeme) > 1 {
+						nn.Hard = true
+						ins[toPos] = nn
+						fromPos++
+					}
+				case *ast.TextNode:
+					if pp.inVerse {
+						ins[toPos] = &ast.TextNode{Text: strings.Repeat("\u00a0", len(in.Lexeme)) + nn.Text}
+						fromPos++
+						again = true
+					}
+				}
+			}
+		case *ast.BreakNode:
+			if pp.inVerse {
+				in.Hard = true
+			}
+		}
+		toPos++
+	}
+	return again, toPos
 }
 
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.

@@ -180,34 +180,17 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, o
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
-	hasSpace := false
 	pos := inp.Pos
-loop:
-	for {
-		switch inp.Ch {
-		case input.EOS:
-			return "", nil, false
-		case '\n', '\r', ' ':
-			hasSpace = true
-		case '|', closeCh:
-			break loop
-		}
-		inp.Next()
+	hasSpace, ok := cp.readReferenceToSep(closeCh)
+	if !ok {
+		return "", nil, false
 	}
 	if inp.Ch == '|' { // First part must be inline text
 		if pos == inp.Pos { // [[| or {{|
 			return "", nil, false
 		}
 		inp.SetPos(pos)
-	loop1:
-		for {
-			switch inp.Ch {
-			case input.EOS, '|':
-				break loop1
-			}
-			in := cp.parseInline()
-			ins = append(ins, in)
-		}
+		ins = cp.parseReferenceInline()
 		inp.Next()
 		pos = inp.Pos
 	} else if hasSpace {
@@ -217,15 +200,8 @@ loop:
 	inp.SetPos(pos)
 	cp.skipSpace()
 	pos = inp.Pos
-loop2:
-	for {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r', ' ':
-			return "", nil, false
-		case closeCh:
-			break loop2
-		}
-		inp.Next()
+	if !cp.readReferenceToClose(closeCh) {
+		return "", nil, false
 	}
 	ref = inp.Src[pos:inp.Pos]
 	inp.Next()
@@ -234,6 +210,46 @@ loop2:
 	}
 	inp.Next()
 	return ref, ins, true
+}
+
+func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
+	hasSpace := false
+	inp := cp.inp
+	for {
+		switch inp.Ch {
+		case input.EOS:
+			return false, false
+		case '\n', '\r', ' ':
+			hasSpace = true
+		case '|', closeCh:
+			return hasSpace, true
+		}
+		inp.Next()
+	}
+}
+
+func (cp *zmkP) parseReferenceInline() (ins ast.InlineSlice) {
+	for {
+		switch cp.inp.Ch {
+		case input.EOS, '|':
+			return ins
+		}
+		in := cp.parseInline()
+		ins = append(ins, in)
+	}
+}
+
+func (cp *zmkP) readReferenceToClose(closeCh rune) bool {
+	inp := cp.inp
+	for {
+		switch inp.Ch {
+		case input.EOS, '\n', '\r', ' ':
+			return false
+		case closeCh:
+			return true
+		}
+		inp.Next()
+	}
 }
 
 func (cp *zmkP) parseCite() (*ast.CiteNode, bool) {
@@ -383,8 +399,12 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 	if inp.Ch != fch {
 		return nil, false
 	}
-	fn := &ast.FormatNode{Code: code}
 	inp.Next()
+	return cp.parseFormatRest(fch, &ast.FormatNode{Code: code})
+}
+
+func (cp *zmkP) parseFormatRest(fch rune, fn *ast.FormatNode) (res ast.InlineNode, success bool) {
+	inp := cp.inp
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false

@@ -68,29 +68,33 @@ func (zp *zipPlace) Start(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
-		entry := zp.zettel[zid]
-		if entry == nil {
-			entry = &zipEntry{}
-			zp.zettel[zid] = entry
-		}
-		switch ext := match[3]; ext {
-		case "zettel":
-			if entry.contentExt == "" {
-				entry.contentName = f.Name
-				entry.contentExt = ext
-				entry.metaInHeader = true
-			}
-		case "meta":
-			entry.metaName = f.Name
-			entry.metaInHeader = false
-		default:
-			if entry.contentExt == "" {
-				entry.contentExt = ext
-				entry.contentName = f.Name
-			}
-		}
+		zp.addFile(zid, f.Name, match[3])
 	}
 	return nil
+}
+
+func (zp *zipPlace) addFile(zid id.Zid, name, ext string) {
+	entry := zp.zettel[zid]
+	if entry == nil {
+		entry = &zipEntry{}
+		zp.zettel[zid] = entry
+	}
+	switch ext {
+	case "zettel":
+		if entry.contentExt == "" {
+			entry.contentName = name
+			entry.contentExt = ext
+			entry.metaInHeader = true
+		}
+	case "meta":
+		entry.metaName = name
+		entry.metaInHeader = false
+	default:
+		if entry.contentExt == "" {
+			entry.contentExt = ext
+			entry.contentName = name
+		}
+	}
 }
 
 func (zp *zipPlace) Stop(ctx context.Context) error {

@@ -317,11 +317,17 @@ func splitText(text string) ast.InlineSlice {
 	return result
 }
 
+var ignoreAfterBS = map[byte]bool{
+	'!': true, '"': true, '#': true, '$': true, '%': true, '&': true,
+	'\'': true, '(': true, ')': true, '*': true, '+': true, ',': true,
+	'-': true, '.': true, '/': true, ':': true, ';': true, '<': true,
+	'=': true, '>': true, '?': true, '@': true, '[': true, '\\': true,
+	']': true, '^': true, '_': true, '`': true, '{': true, '|': true,
+	'}': true, '~': true,
+}
+
 // cleanText removes backslashes from TextNodes and expands entities
 func cleanText(text string, cleanBS bool) string {
-	if text == "" {
-		return ""
-	}
 	lastPos := 0
 	var sb strings.Builder
 	for pos, ch := range text {
@@ -337,15 +343,10 @@ func cleanText(text string, cleanBS bool) string {
 			}
 			continue
 		}
-		if cleanBS && ch == '\\' && pos < len(text)-1 {
-			switch b := text[pos+1]; b {
-			case '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+',
-				',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@',
-				'[', '\\', ']', '^', '_', '`', '{', '|', '}', '~':
-				sb.WriteString(text[lastPos:pos])
-				sb.WriteByte(b)
-				lastPos = pos + 2
-			}
+		if cleanBS && ch == '\\' && pos < len(text)-1 && ignoreAfterBS[text[pos+1]] {
+			sb.WriteString(text[lastPos:pos])
+			sb.WriteByte(text[pos+1])
+			lastPos = pos + 2
 		}
 	}
 	if lastPos == 0 {
