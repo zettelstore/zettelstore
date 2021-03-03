@@ -5,7 +5,7 @@ tags: #api #manual #zettelstore
 syntax: zmk
 
 Some zettel act as a ""table of contents"" for other zettel.
-The [[Home zettel|00010000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
+The [[initial zettel|00001000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
 Every zettel with a certain internal structure can act as the ""table of contents"" for others.
 
 What is a ""table of contents""?
@@ -21,14 +21,14 @@ Following references to zettel within such an list item are ignored.
 To retrieve the zettel order of an existing zettel, use the [[endpoint|00001012920000]] ''/o/{ID}''.
 
 ````
-# curl http://127.0.0.1:23123/o/00010000000000
-{"id":"00010000000000","url":"/z/00010000000000","meta":{...},"list":[{"id":"00001001000000","url":"/z/00001001000000","meta":{...}},{"id":"00001002000000","url":"/z/00001002000000","meta":{...}},{"id":"00001003000000","url":"/z/00001003000000","meta":{...}},{"id":"00001004000000","url":"/z/00001004000000","meta":{...}},...,{"id":"00001014000000","url":"/z/00001014000000","meta":{...}}]}
+# curl http://127.0.0.1:23123/o/00001000000000
+{"id":"00001000000000","url":"/z/00001000000000","meta":{...},"list":[{"id":"00001001000000","url":"/z/00001001000000","meta":{...}},{"id":"00001002000000","url":"/z/00001002000000","meta":{...}},{"id":"00001003000000","url":"/z/00001003000000","meta":{...}},{"id":"00001004000000","url":"/z/00001004000000","meta":{...}},...,{"id":"00001014000000","url":"/z/00001014000000","meta":{...}}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
-  "id": "00010000000000",
-  "url": "/z/00010000000000",
+  "id": "00001000000000",
+  "url": "/z/00001000000000",
   "order": [
     {
       "id": "00001001000000",
