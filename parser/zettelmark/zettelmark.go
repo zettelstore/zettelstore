@@ -78,11 +78,8 @@ func (cp *zmkP) parseNormalAttribute(attrs map[string]string, sameLine bool) boo
 		attrs[key] = ""
 		return true
 	}
-	if sameLine {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r':
-			return false
-		}
+	if sameLine && input.IsEOLEOS(inp.Ch) {
+		return false
 	}
 	return cp.parseAttributeValue(key, attrs, sameLine)
 }
@@ -92,34 +89,7 @@ func (cp *zmkP) parseAttributeValue(
 	inp := cp.inp
 	inp.Next()
 	if inp.Ch == '"' {
-		inp.Next()
-		var val string
-		for {
-			switch inp.Ch {
-			case input.EOS:
-				return false
-			case '"':
-				updateAttrs(attrs, key, val)
-				inp.Next()
-				return true
-			case '\n', '\r':
-				if sameLine {
-					return false
-				}
-				inp.EatEOL()
-				val += " "
-			case '\\':
-				inp.Next()
-				switch inp.Ch {
-				case input.EOS, '\n', '\r':
-					return false
-				}
-				fallthrough
-			default:
-				val += string(inp.Ch)
-				inp.Next()
-			}
-		}
+		return cp.parseQuotedAttributeValue(key, attrs, sameLine)
 	}
 	posV := inp.Pos
 	for {
@@ -137,6 +107,39 @@ func (cp *zmkP) parseAttributeValue(
 		}
 		inp.Next()
 	}
+}
+
+func (cp *zmkP) parseQuotedAttributeValue(key string, attrs map[string]string, sameLine bool) bool {
+	inp := cp.inp
+	inp.Next()
+	var val string
+	for {
+		switch inp.Ch {
+		case input.EOS:
+			return false
+		case '"':
+			updateAttrs(attrs, key, val)
+			inp.Next()
+			return true
+		case '\n', '\r':
+			if sameLine {
+				return false
+			}
+			inp.EatEOL()
+			val += " "
+		case '\\':
+			inp.Next()
+			switch inp.Ch {
+			case input.EOS, '\n', '\r':
+				return false
+			}
+			fallthrough
+		default:
+			val += string(inp.Ch)
+			inp.Next()
+		}
+	}
+
 }
 
 func updateAttrs(attrs map[string]string, key, val string) {
@@ -184,18 +187,22 @@ func (cp *zmkP) doParseAttributes(sameLine bool) (res *ast.Attributes, success b
 	}
 	inp.Next()
 	attrs := map[string]string{}
-loop:
+	if !cp.parseAttributeValues(sameLine, attrs) {
+		return nil, false
+	}
+	inp.Next()
+	return &ast.Attributes{Attrs: attrs}, true
+}
+
+func (cp *zmkP) parseAttributeValues(sameLine bool, attrs map[string]string) bool {
+	inp := cp.inp
 	for {
-		if sameLine {
-			cp.skipSpace()
-		} else {
-			cp.skipSpaceAndEOL()
-		}
+		cp.skipSpaceLine(sameLine)
 		switch inp.Ch {
 		case input.EOS:
-			return nil, false
+			return false
 		case '}':
-			break loop
+			return true
 		case '.':
 			inp.Next()
 			posC := inp.Pos
@@ -203,43 +210,40 @@ loop:
 				inp.Next()
 			}
 			if posC == inp.Pos {
-				return nil, false
+				return false
 			}
 			updateAttrs(attrs, "class", inp.Src[posC:inp.Pos])
 		case '=':
 			delete(attrs, "")
 			if !cp.parseAttributeValue("", attrs, sameLine) {
-				return nil, false
+				return false
 			}
 		default:
 			if !cp.parseNormalAttribute(attrs, sameLine) {
-				return nil, false
+				return false
 			}
 		}
+
 		switch inp.Ch {
 		case '}':
-			break loop
+			return true
 		case '\n', '\r':
 			if sameLine {
-				return nil, false
+				return false
 			}
 		case ' ', ',':
 			inp.Next()
 		default:
-			return nil, false
+			return false
 		}
 	}
-	inp.Next()
-	return &ast.Attributes{Attrs: attrs}, true
 }
 
-func (cp *zmkP) skipSpace() {
-	for inp := cp.inp; inp.Ch == ' '; {
-		inp.Next()
+func (cp *zmkP) skipSpaceLine(sameLine bool) {
+	if sameLine {
+		cp.skipSpace()
+		return
 	}
-}
-
-func (cp *zmkP) skipSpaceAndEOL() {
 	for inp := cp.inp; ; {
 		switch inp.Ch {
 		case ' ':
@@ -249,6 +253,12 @@ func (cp *zmkP) skipSpaceAndEOL() {
 		default:
 			return
 		}
+	}
+}
+
+func (cp *zmkP) skipSpace() {
+	for inp := cp.inp; inp.Ch == ' '; {
+		inp.Next()
 	}
 }
 

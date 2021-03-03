@@ -77,6 +77,15 @@ func (inp *Input) PeekN(n int) rune {
 	return EOS
 }
 
+// IsEOLEOS returns true if char is either EOS or EOL.
+func IsEOLEOS(ch rune) bool {
+	switch ch {
+	case EOS, '\n', '\r':
+		return true
+	}
+	return false
+}
+
 // EatEOL transforms both "\r" and "\r\n" into "\n".
 func (inp *Input) EatEOL() {
 	switch inp.Ch {

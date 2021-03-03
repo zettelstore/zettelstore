@@ -279,8 +279,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 	cp.skipSpace()
 	hn = &ast.HeadingNode{Level: lvl - 1}
 	for {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r':
+		if input.IsEOLEOS(inp.Ch) {
 			return hn, true
 		}
 		in := cp.parseInline()
@@ -322,11 +321,8 @@ func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	cp.skipSpace()
-	if codes[len(codes)-1] != ast.NestedListQuote {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r':
-			return nil, false
-		}
+	if codes[len(codes)-1] != ast.NestedListQuote && input.IsEOLEOS(inp.Ch) {
+		return nil, false
 	}
 
 	if len(codes) < len(cp.lists) {
@@ -582,13 +578,13 @@ func (cp *zmkP) parseCell() *ast.TableCell {
 	inp := cp.inp
 	var slice ast.InlineSlice
 	for {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r':
+		if input.IsEOLEOS(inp.Ch) {
 			if len(slice) == 0 {
 				return nil
 			}
-			fallthrough
-		case '|':
+			return &ast.TableCell{Inlines: slice}
+		}
+		if inp.Ch == '|' {
 			return &ast.TableCell{Inlines: slice}
 		}
 		slice = append(slice, cp.parseInline())

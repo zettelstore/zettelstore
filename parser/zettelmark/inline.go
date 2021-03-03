@@ -125,10 +125,10 @@ func (cp *zmkP) parseBackslash() ast.InlineNode {
 
 func (cp *zmkP) parseBackslashRest() *ast.TextNode {
 	inp := cp.inp
-	switch inp.Ch {
-	case input.EOS, '\n', '\r':
+	if input.IsEOLEOS(inp.Ch) {
 		return &ast.TextNode{Text: "\\"}
-	case ' ':
+	}
+	if inp.Ch == ' ' {
 		inp.Next()
 		return &ast.TextNode{Text: "\u00a0"}
 	}
@@ -303,11 +303,8 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 			return nil, false
 		}
 		ins = append(ins, in)
-		if _, ok := in.(*ast.BreakNode); ok {
-			switch inp.Ch {
-			case input.EOS, '\n', '\r':
-				return nil, false
-			}
+		if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
+			return nil, false
 		}
 	}
 	inp.Next()
@@ -366,8 +363,7 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	cp.skipSpace()
 	pos := inp.Pos
 	for {
-		switch inp.Ch {
-		case input.EOS, '\n', '\r':
+		if input.IsEOLEOS(inp.Ch) {
 			return &ast.LiteralNode{Code: ast.LiteralComment, Text: inp.Src[pos:inp.Pos]}, true
 		}
 		inp.Next()
@@ -400,11 +396,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	return cp.parseFormatRest(fch, &ast.FormatNode{Code: code})
-}
-
-func (cp *zmkP) parseFormatRest(fch rune, fn *ast.FormatNode) (res ast.InlineNode, success bool) {
-	inp := cp.inp
+	fn := &ast.FormatNode{Code: code}
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false
@@ -418,11 +410,8 @@ func (cp *zmkP) parseFormatRest(fch rune, fn *ast.FormatNode) (res ast.InlineNod
 			}
 			fn.Inlines = append(fn.Inlines, &ast.TextNode{Text: string(fch)})
 		} else if in := cp.parseInline(); in != nil {
-			if _, ok := in.(*ast.BreakNode); ok {
-				switch inp.Ch {
-				case input.EOS, '\n', '\r':
-					return nil, false
-				}
+			if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
+				return nil, false
 			}
 			fn.Inlines = append(fn.Inlines, in)
 		}

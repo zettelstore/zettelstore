@@ -263,34 +263,38 @@ func (tmpl *Template) readTag(mayStandalone bool) (*tagReadingResult, error) {
 		}
 	}
 
-	// Skip all whitespaces apeared after these types of tags until end of line if
-	// the line only contains a tag and whitespaces.
-	standalone := true
-	if mayStandalone {
-		if _, ok := skipWhitespaceTagTypes[tag[0]]; !ok {
-			standalone = false
-		} else {
-			if eow == len(tmpl.data) {
-				standalone = true
-				tmpl.p = eow
-			} else if eow < len(tmpl.data) && tmpl.data[eow] == '\n' {
-				standalone = true
-				tmpl.p = eow + 1
-				tmpl.curline++
-			} else if eow+1 < len(tmpl.data) && tmpl.data[eow] == '\r' && tmpl.data[eow+1] == '\n' {
-				standalone = true
-				tmpl.p = eow + 2
-				tmpl.curline++
-			} else {
-				standalone = false
-			}
-		}
-	}
+	standalone := tmpl.skipWhitespaceTag(tag, eow, mayStandalone)
 
 	return &tagReadingResult{
 		tag:        tag,
 		standalone: standalone,
 	}, nil
+}
+
+func (tmpl *Template) skipWhitespaceTag(tag string, eow int, mayStandalone bool) bool {
+	if !mayStandalone {
+		return true
+	}
+	// Skip all whitespaces apeared after these types of tags until end of line if
+	// the line only contains a tag and whitespaces.
+	if _, ok := skipWhitespaceTagTypes[tag[0]]; !ok {
+		return false
+	}
+	if eow == len(tmpl.data) {
+		tmpl.p = eow
+		return true
+	}
+	if eow < len(tmpl.data) && tmpl.data[eow] == '\n' {
+		tmpl.p = eow + 1
+		tmpl.curline++
+		return true
+	}
+	if eow+1 < len(tmpl.data) && tmpl.data[eow] == '\r' && tmpl.data[eow+1] == '\n' {
+		tmpl.p = eow + 2
+		tmpl.curline++
+		return true
+	}
+	return false
 }
 
 func (tmpl *Template) parsePartial(name, indent string) (*partialNode, error) {
@@ -459,49 +463,54 @@ func lookup(stack []reflect.Value, name string, errMissing bool) (reflect.Value,
 		return lookup([]reflect.Value{v}, name[pos+1:], errMissing)
 	}
 
-Outer:
 	for i := len(stack) - 1; i >= 0; i-- {
-		v := stack[i]
-		for v.IsValid() {
-			typ := v.Type()
-			if n := v.Type().NumMethod(); n > 0 {
-				for i := 0; i < n; i++ {
-					m := typ.Method(i)
-					mtyp := m.Type
-					if m.Name == name && mtyp.NumIn() == 1 {
-						return v.Method(i).Call(nil)[0], nil
-					}
-				}
-			}
-			if name == "." {
-				return v, nil
-			}
-			switch av := v; av.Kind() {
-			case reflect.Ptr:
-				v = av.Elem()
-			case reflect.Interface:
-				v = av.Elem()
-			case reflect.Struct:
-				ret := av.FieldByName(name)
-				if ret.IsValid() {
-					return ret, nil
-				}
-				continue Outer
-			case reflect.Map:
-				ret := av.MapIndex(reflect.ValueOf(name))
-				if ret.IsValid() {
-					return ret, nil
-				}
-				continue Outer
-			default:
-				continue Outer
-			}
+		if val, ok := lookupValue(stack[i], name); ok {
+			return val, nil
 		}
 	}
 	if errMissing {
 		return reflect.Value{}, fmt.Errorf("missing variable %q", name)
 	}
 	return reflect.Value{}, nil
+}
+
+func lookupValue(v reflect.Value, name string) (reflect.Value, bool) {
+	for v.IsValid() {
+		typ := v.Type()
+		if n := v.Type().NumMethod(); n > 0 {
+			for i := 0; i < n; i++ {
+				m := typ.Method(i)
+				mtyp := m.Type
+				if m.Name == name && mtyp.NumIn() == 1 {
+					return v.Method(i).Call(nil)[0], true
+				}
+			}
+		}
+		if name == "." {
+			return v, true
+		}
+		switch av := v; av.Kind() {
+		case reflect.Ptr:
+			v = av.Elem()
+		case reflect.Interface:
+			v = av.Elem()
+		case reflect.Struct:
+			ret := av.FieldByName(name)
+			if ret.IsValid() {
+				return ret, true
+			}
+			return reflect.Value{}, false
+		case reflect.Map:
+			ret := av.MapIndex(reflect.ValueOf(name))
+			if ret.IsValid() {
+				return ret, true
+			}
+			return reflect.Value{}, false
+		default:
+			return reflect.Value{}, false
+		}
+	}
+	return reflect.Value{}, false
 }
 
 func isEmpty(v reflect.Value) bool {
@@ -545,8 +554,7 @@ func (tmpl *Template) renderSection(w io.Writer, section *sectionNode, stack []r
 	}
 
 	// if the value is nil, check if it's an inverted section
-	isEmpty := isEmpty(value)
-	if isEmpty && !section.inverted || !isEmpty && section.inverted {
+	if isEmpty := isEmpty(value); isEmpty && !section.inverted || !isEmpty && section.inverted {
 		return nil
 	}
 
@@ -554,29 +562,30 @@ func (tmpl *Template) renderSection(w io.Writer, section *sectionNode, stack []r
 		switch val := indirect(value); val.Kind() {
 		case reflect.Slice, reflect.Array:
 			valLen := val.Len()
-			enumeration := make([]reflect.Value, 0, valLen)
+			enumeration := make([]reflect.Value, valLen)
 			for i := 0; i < valLen; i++ {
-				enumeration = append(enumeration, val.Index(i))
+				enumeration[i] = val.Index(i)
 			}
 			topStack := len(stack)
 			stack = append(stack, enumeration[0])
-			defer func() { stack = stack[:topStack-1] }()
 			for _, elem := range enumeration {
 				stack[topStack] = elem
-				for _, n := range section.nodes {
-					if err := tmpl.renderNode(w, n, stack); err != nil {
-						return err
-					}
+				if err := tmpl.renderNodes(w, section.nodes, stack); err != nil {
+					return err
 				}
 			}
 			return nil
 		case reflect.Map, reflect.Struct:
-			stack = append(stack, value)
-			defer func() { stack = stack[:len(stack)-2] }()
+			return tmpl.renderNodes(w, section.nodes, append(stack, value))
 		}
+		return tmpl.renderNodes(w, section.nodes, stack)
 	}
 
-	for _, n := range section.nodes {
+	return tmpl.renderNodes(w, section.nodes, stack)
+}
+
+func (tmpl *Template) renderNodes(w io.Writer, nodes []node, stack []reflect.Value) error {
+	for _, n := range nodes {
 		if err := tmpl.renderNode(w, n, stack); err != nil {
 			return err
 		}
