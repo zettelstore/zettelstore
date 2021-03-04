@@ -36,26 +36,23 @@ func MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		ok := false
 		ctx := r.Context()
 		homeZid := runtime.GetHomeZettel()
-		if homeZid != id.DefaultHomeZid && homeZid.IsValid() {
-			if _, err := s.GetMeta(ctx, homeZid); err != nil {
-				homeZid = id.DefaultHomeZid
-			} else {
-				ok = true
-			}
-		}
-		if !ok {
-			if _, err := s.GetMeta(ctx, homeZid); err != nil {
-				if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
-					http.Redirect(w, r, adapter.NewURLBuilder('a').String(), http.StatusFound)
-					return
-				}
-				http.Redirect(w, r, adapter.NewURLBuilder('h').String(), http.StatusFound)
+		if homeZid != id.DefaultHomeZid {
+			if _, err := s.GetMeta(ctx, homeZid); err == nil {
+				http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
 				return
 			}
+			homeZid = id.DefaultHomeZid
 		}
-		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
+		_, err := s.GetMeta(ctx, homeZid)
+		if err == nil {
+			http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
+		}
+		if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
+			http.Redirect(w, r, adapter.NewURLBuilder('a').String(), http.StatusFound)
+			return
+		}
+		http.Redirect(w, r, adapter.NewURLBuilder('h').String(), http.StatusFound)
 	}
 }

@@ -495,20 +495,19 @@ func lookupValue(v reflect.Value, name string) (reflect.Value, bool) {
 		case reflect.Interface:
 			v = av.Elem()
 		case reflect.Struct:
-			ret := av.FieldByName(name)
-			if ret.IsValid() {
-				return ret, true
-			}
-			return reflect.Value{}, false
+			return sanitizeValue(av.FieldByName(name))
 		case reflect.Map:
-			ret := av.MapIndex(reflect.ValueOf(name))
-			if ret.IsValid() {
-				return ret, true
-			}
-			return reflect.Value{}, false
+			return sanitizeValue(av.MapIndex(reflect.ValueOf(name)))
 		default:
 			return reflect.Value{}, false
 		}
+	}
+	return reflect.Value{}, false
+}
+
+func sanitizeValue(v reflect.Value) (reflect.Value, bool) {
+	if v.IsValid() {
+		return v, true
 	}
 	return reflect.Value{}, false
 }
@@ -553,8 +552,8 @@ func (tmpl *Template) renderSection(w io.Writer, section *sectionNode, stack []r
 		return err
 	}
 
-	// if the value is nil, check if it's an inverted section
-	if isEmpty := isEmpty(value); isEmpty && !section.inverted || !isEmpty && section.inverted {
+	// if the value is empty, check if it's an inverted section
+	if isEmpty(value) != section.inverted {
 		return nil
 	}
 

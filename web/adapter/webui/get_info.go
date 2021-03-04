@@ -87,24 +87,7 @@ func MakeGetInfoHandler(
 			writeHTMLMetaValue(&html, zn.Zettel.Meta, p.Key, getTitle, langOption)
 			metaData = append(metaData, metaDataInfo{p.Key, html.String()})
 		}
-		formats := encoder.GetFormats()
-		defFormat := encoder.GetDefaultFormat()
-		parts := []string{"zettel", "meta", "content"}
-		matrix := make([]matrixLine, 0, len(parts))
-		u := adapter.NewURLBuilder('z').SetZid(zid)
-		for _, part := range parts {
-			row := make([]matrixElement, 0, len(formats)+1)
-			row = append(row, matrixElement{part, false, ""})
-			for _, format := range formats {
-				u.AppendQuery("_part", part)
-				if format != defFormat {
-					u.AppendQuery("_format", format)
-				}
-				row = append(row, matrixElement{format, true, u.String()})
-				u.ClearQuery()
-			}
-			matrix = append(matrix, matrixLine{row})
-		}
+
 		user := session.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
@@ -152,7 +135,7 @@ func MakeGetInfoHandler(
 			HasExtLinks:  len(extLinks) > 0,
 			ExtLinks:     extLinks,
 			ExtNewWindow: htmlAttrNewWindow(len(extLinks) > 0),
-			Matrix:       matrix,
+			Matrix:       infoAPIMatrix(zid),
 		})
 	}
 }
@@ -174,4 +157,26 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks, extLinks []string) {
 		}
 	}
 	return locLinks, extLinks
+}
+
+func infoAPIMatrix(zid id.Zid) []matrixLine {
+	formats := encoder.GetFormats()
+	defFormat := encoder.GetDefaultFormat()
+	parts := []string{"zettel", "meta", "content"}
+	matrix := make([]matrixLine, 0, len(parts))
+	u := adapter.NewURLBuilder('z').SetZid(zid)
+	for _, part := range parts {
+		row := make([]matrixElement, 0, len(formats)+1)
+		row = append(row, matrixElement{part, false, ""})
+		for _, format := range formats {
+			u.AppendQuery("_part", part)
+			if format != defFormat {
+				u.AppendQuery("_format", format)
+			}
+			row = append(row, matrixElement{format, true, u.String()})
+			u.ClearQuery()
+		}
+		matrix = append(matrix, matrixLine{row})
+	}
+	return matrix
 }
