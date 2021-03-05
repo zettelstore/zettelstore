@@ -190,7 +190,13 @@ type Filter struct {
 }
 
 // FilterExpr is the encoding of a search filter.
-type FilterExpr map[string][]string // map of keys to or-ed values
+type FilterExpr map[string][]FilterValue // map of keys to or-ed values
+
+// FilterValue is one value in a search filter.
+type FilterValue struct {
+	Value  string
+	Negate bool
+}
 
 // Sorter specifies ordering and limiting a sequnce of meta data.
 type Sorter struct {

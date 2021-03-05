@@ -12,6 +12,7 @@
 package place
 
 import (
+	"io"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -142,4 +143,40 @@ func getNum(m *meta.Meta, key string) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+// Print the sorter to a writer.
+func (s *Sorter) Print(w io.Writer) {
+	var space bool
+	if ord := s.Order; len(ord) > 0 {
+		switch ord {
+		case meta.KeyID:
+			// Ignore
+		case RandomOrder:
+			io.WriteString(w, "RANDOM")
+			space = true
+		default:
+			io.WriteString(w, "SORT ")
+			io.WriteString(w, ord)
+			if s.Descending {
+				io.WriteString(w, " DESC")
+			}
+			space = true
+		}
+	}
+	if off := s.Offset; off > 0 {
+		if space {
+			io.WriteString(w, " ")
+		}
+		io.WriteString(w, "OFFSET ")
+		io.WriteString(w, strconv.Itoa(off))
+		space = true
+	}
+	if lim := s.Limit; lim > 0 {
+		if space {
+			io.WriteString(w, " ")
+		}
+		io.WriteString(w, "LIMIT ")
+		io.WriteString(w, strconv.Itoa(lim))
+	}
 }

@@ -130,12 +130,14 @@ func getQueryKeys(forSearch bool) (string, string, string, string, string, strin
 	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
 }
 
-func cleanQueryValues(values []string) []string {
-	result := make([]string, 0, len(values))
+func cleanQueryValues(values []string) []place.FilterValue {
+	result := make([]place.FilterValue, 0, len(values))
 	for _, val := range values {
 		val = strings.TrimSpace(val)
-		if len(val) > 0 {
-			result = append(result, val)
+		if len(val) > 0 && val[0] == '!' {
+			result = append(result, place.FilterValue{Value: val[1:], Negate: true})
+		} else {
+			result = append(result, place.FilterValue{Value: val, Negate: false})
 		}
 	}
 	return result
