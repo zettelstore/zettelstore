@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -30,29 +30,30 @@ type getRootStore interface {
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
-func MakeGetRootHandler(s getRootStore) http.HandlerFunc {
+func MakeGetRootHandler(te *TemplateEngine, s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		if r.URL.Path != "/" {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
-		ctx := r.Context()
 		homeZid := runtime.GetHomeZettel()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {
-				http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
+				redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(homeZid))
 				return
 			}
 			homeZid = id.DefaultHomeZid
 		}
 		_, err := s.GetMeta(ctx, homeZid)
 		if err == nil {
-			http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(homeZid).String(), http.StatusFound)
-		}
-		if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
-			http.Redirect(w, r, adapter.NewURLBuilder('a').String(), http.StatusFound)
+			redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		http.Redirect(w, r, adapter.NewURLBuilder('h').String(), http.StatusFound)
+		if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
+			redirectFound(w, r, adapter.NewURLBuilder('a'))
+			return
+		}
+		redirectFound(w, r, adapter.NewURLBuilder('h'))
 	}
 }

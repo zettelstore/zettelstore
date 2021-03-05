@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -29,21 +30,22 @@ import (
 func MakeEditGetZettelHandler(
 	te *TemplateEngine, getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
-		ctx := r.Context()
 		zettel, err := getZettel.Run(index.NoEnrichContext(ctx), zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			adapter.BadRequest(w, fmt.Sprintf("Edit zettel %q not possible in format %q", zid.String(), format))
+			te.reportError(ctx, w, adapter.NewErrBadRequest(
+				fmt.Sprintf("Edit zettel %q not possible in format %q", zid, format)))
 			return
 		}
 
@@ -66,24 +68,25 @@ func MakeEditGetZettelHandler(
 
 // MakeEditSetZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func MakeEditSetZettelHandler(te *TemplateEngine, updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
+
 		zettel, hasContent, err := parseZettelForm(r, zid)
 		if err != nil {
-			adapter.BadRequest(w, "Unable to read zettel form")
+			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
 			return
 		}
 
 		if err := updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
-		http.Redirect(
-			w, r, adapter.NewURLBuilder('h').SetZid(zid).String(), http.StatusFound)
+		redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(zid))
 	}
 }

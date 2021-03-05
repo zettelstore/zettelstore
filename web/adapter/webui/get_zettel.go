@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -32,17 +33,17 @@ func MakeGetHTMLZettelHandler(
 	parseZettel usecase.ParseZettel,
 	getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
-		ctx := r.Context()
 		syntax := r.URL.Query().Get("syntax")
 		zn, err := parseZettel.Run(ctx, zid, syntax)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 
@@ -55,18 +56,18 @@ func MakeGetHTMLZettelHandler(
 			},
 		)
 		if err != nil {
-			adapter.InternalServerError(w, "Format meta", err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(zn.InhMeta)}
 		htmlTitle, err := adapter.FormatInlines(zn.Title, "html", &langOption)
 		if err != nil {
-			adapter.InternalServerError(w, "Format HTML inlines", err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		textTitle, err := adapter.FormatInlines(zn.Title, "text", &langOption)
 		if err != nil {
-			adapter.InternalServerError(w, "Format text inlines", err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		newWindow := true
@@ -84,7 +85,7 @@ func MakeGetHTMLZettelHandler(
 			&encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()},
 		)
 		if err != nil {
-			adapter.InternalServerError(w, "Format blocks", err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		user := session.GetUser(ctx)

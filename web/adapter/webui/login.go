@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -49,7 +49,7 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 func MakePostLoginHandlerHTML(te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !startup.WithAuth() {
-			http.Redirect(w, r, adapter.NewURLBuilder('/').String(), http.StatusFound)
+			redirectFound(w, r, adapter.NewURLBuilder('/'))
 			return
 		}
 		htmlDur, _ := startup.TokenLifetime()
@@ -64,15 +64,15 @@ func authenticateViaHTML(
 	r *http.Request,
 	authDuration time.Duration,
 ) {
+	ctx := r.Context()
 	ident, cred, ok := adapter.GetCredentialsViaForm(r)
 	if !ok {
-		adapter.BadRequest(w, "Unable to read login form")
+		te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 		return
 	}
-	ctx := r.Context()
 	token, err := auth.Run(ctx, ident, cred, authDuration, token.KindHTML)
 	if err != nil {
-		adapter.ReportUsecaseError(w, err)
+		te.reportError(ctx, w, err)
 		return
 	}
 	if token == nil {
@@ -81,18 +81,19 @@ func authenticateViaHTML(
 	}
 
 	session.SetToken(w, token, authDuration)
-	http.Redirect(w, r, adapter.NewURLBuilder('/').String(), http.StatusFound)
+	redirectFound(w, r, adapter.NewURLBuilder('/'))
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
-func MakeGetLogoutHandler() http.HandlerFunc {
+func MakeGetLogoutHandler(te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			adapter.BadRequest(w, fmt.Sprintf("Logout not possible in format %q", format))
+			te.reportError(r.Context(), w, adapter.NewErrBadRequest(
+				fmt.Sprintf("Logout not possible in format %q", format)))
 			return
 		}
 
 		session.ClearToken(r.Context(), w)
-		http.Redirect(w, r, adapter.NewURLBuilder('/').String(), http.StatusFound)
+		redirectFound(w, r, adapter.NewURLBuilder('/'))
 	}
 }

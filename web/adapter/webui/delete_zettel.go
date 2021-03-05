@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -30,21 +31,22 @@ func MakeGetDeleteZettelHandler(
 	getZettel usecase.GetZettel,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			adapter.BadRequest(w, fmt.Sprintf("Delete zettel not possible in format %q", format))
+			te.reportError(ctx, w, adapter.NewErrBadRequest(
+				fmt.Sprintf("Delete zettel not possible in format %q", format)))
 			return
 		}
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
-		ctx := r.Context()
 		zettel, err := getZettel.Run(ctx, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 
@@ -63,18 +65,19 @@ func MakeGetDeleteZettelHandler(
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc {
+func MakePostDeleteZettelHandler(te *TemplateEngine, deleteZettel usecase.DeleteZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		if err := deleteZettel.Run(r.Context(), zid); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
-		http.Redirect(w, r, adapter.NewURLBuilder('/').String(), http.StatusFound)
+		redirectFound(w, r, adapter.NewURLBuilder('/'))
 	}
 }

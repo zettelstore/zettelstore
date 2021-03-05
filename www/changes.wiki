@@ -5,6 +5,8 @@
   *  New place schema "file" allows to read zettel from a ZIP file.
      A zettel collection can now be packaged and distributed easier.
      (major: server)
+  *  Menu bar is shown when displaying error messages.
+     (minor: webui)
 
 <a name="0_0_10"></a>
 <h2>Changes for Version 0.0.10 (2021-02-26)</h2>

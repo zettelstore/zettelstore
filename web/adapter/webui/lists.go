@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -130,7 +130,7 @@ func renderWebUITagsList(
 	iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 	tagData, err := listTags.Run(ctx, iMinCount)
 	if err != nil {
-		adapter.ReportUsecaseError(w, err)
+		te.reportError(ctx, w, err)
 		return
 	}
 
@@ -192,7 +192,7 @@ func MakeSearchHandler(
 		query := r.URL.Query()
 		filter, sorter := adapter.GetFilterSorter(query, true)
 		if filter == nil || len(filter.Expr) == 0 {
-			http.Redirect(w, r, adapter.NewURLBuilder('h').String(), http.StatusFound)
+			redirectFound(w, r, adapter.NewURLBuilder('h'))
 			return
 		}
 
@@ -215,9 +215,10 @@ func MakeSearchHandler(
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
 func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 		q := r.URL.Query()
@@ -230,10 +231,9 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 		if !ok || limit < 0 {
 			limit = 200
 		}
-		ctx := r.Context()
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		metaLinks, err := buildHTMLMetaList(metaList)
@@ -294,7 +294,7 @@ func renderWebUIMetaList(
 
 		metaList, err = ucMetaList(sorter)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 		if offset := sorter.Offset; offset > 0 {
@@ -311,14 +311,14 @@ func renderWebUIMetaList(
 	} else {
 		metaList, err = ucMetaList(sorter)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 	}
 	user := session.GetUser(ctx)
 	metas, err := buildHTMLMetaList(metaList)
 	if err != nil {
-		adapter.InternalServerError(w, "Build HTML meta list", err)
+		te.reportError(ctx, w, err)
 		return
 	}
 	var base baseData

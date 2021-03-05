@@ -8,12 +8,13 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
 	"bytes"
 	"context"
+	"log"
 	"net/http"
 	"sync"
 
@@ -266,6 +267,33 @@ func (te *TemplateEngine) renderTemplate(
 	templateID id.Zid,
 	base *baseData,
 	data interface{}) {
+	te.renderTemplateStatus(ctx, w, http.StatusOK, templateID, base, data)
+}
+
+func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter, err error) {
+	code, text := adapter.CodeMessageFromError(err)
+	if code == http.StatusInternalServerError {
+		log.Printf("%v: %v", text, err)
+	}
+	user := session.GetUser(ctx)
+	var base baseData
+	te.makeBaseData(ctx, "en", "Error", user, &base)
+	te.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
+		ErrorTitle string
+		ErrorText  string
+	}{
+		ErrorTitle: http.StatusText(code),
+		ErrorText:  text,
+	})
+}
+
+func (te *TemplateEngine) renderTemplateStatus(
+	ctx context.Context,
+	w http.ResponseWriter,
+	code int,
+	templateID id.Zid,
+	base *baseData,
+	data interface{}) {
 
 	bt, err := te.getTemplate(ctx, id.BaseTemplateZid)
 	if err != nil {
@@ -288,9 +316,10 @@ func (te *TemplateEngine) renderTemplate(
 	if err == nil {
 		base.Content = content.String()
 		w.Header().Set(adapter.ContentType, "text/html; charset=utf-8")
+		w.WriteHeader(code)
 		err = bt.Render(w, base)
 	}
 	if err != nil {
-		adapter.InternalServerError(w, "Unable to render template", err)
+		log.Println("Unable to render template", err)
 	}
 }

@@ -13,6 +13,7 @@ package adapter
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"zettelstore.de/z/place"
@@ -21,25 +22,42 @@ import (
 
 // ReportUsecaseError returns an appropriate HTTP status code for errors in use cases.
 func ReportUsecaseError(w http.ResponseWriter, err error) {
+	code, text := CodeMessageFromError(err)
+	if code == http.StatusInternalServerError {
+		log.Printf("%v: %v", text, err)
+	}
+	http.Error(w, text, code)
+}
+
+// ErrBadRequest is returned if the caller made an invalid HTTP request.
+type ErrBadRequest struct {
+	Text string
+}
+
+// NewErrBadRequest creates an new bad request error.
+func NewErrBadRequest(text string) error { return &ErrBadRequest{Text: text} }
+
+func (err *ErrBadRequest) Error() string { return err.Text }
+
+// CodeMessageFromError returns an appropriate HTTP status code and text from a given error.
+func CodeMessageFromError(err error) (int, string) {
 	if err == place.ErrNotFound {
-		NotFound(w, http.StatusText(404))
-		return
+		return http.StatusNotFound, http.StatusText(http.StatusNotFound)
 	}
-	if err, ok := err.(*place.ErrNotAllowed); ok {
-		Forbidden(w, err.Error())
-		return
+	if err1, ok := err.(*place.ErrNotAllowed); ok {
+		return http.StatusForbidden, err1.Error()
 	}
-	if err, ok := err.(*place.ErrInvalidID); ok {
-		BadRequest(w, fmt.Sprintf("Zettel-ID %q not appropriate in this context.", err.Zid.String()))
-		return
+	if err1, ok := err.(*place.ErrInvalidID); ok {
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context.", err1.Zid)
 	}
-	if err, ok := err.(*usecase.ErrZidInUse); ok {
-		BadRequest(w, fmt.Sprintf("Zettel-ID %q already in use.", err.Zid.String()))
-		return
+	if err1, ok := err.(*usecase.ErrZidInUse); ok {
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use.", err1.Zid)
+	}
+	if err1, ok := err.(*ErrBadRequest); ok {
+		return http.StatusBadRequest, err1.Text
 	}
 	if err == place.ErrStopped {
-		InternalServerError(w, "Zettelstore not operational.", err)
-		return
+		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v.", err)
 	}
-	InternalServerError(w, "", err)
+	return http.StatusInternalServerError, err.Error()
 }

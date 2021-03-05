@@ -43,6 +43,7 @@ const (
 	ContextTemplateZid = Zid(10406)
 	RolesTemplateZid   = Zid(10500)
 	TagsTemplateZid    = Zid(10600)
+	ErrorTemplateZid   = Zid(10700)
 
 	// WebUI CSS pages are in the range 20000..29999
 	BaseCSSZid = Zid(20001)

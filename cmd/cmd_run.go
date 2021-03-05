@@ -86,38 +86,38 @@ func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {
 	ucZettelContext := usecase.NewZettelContext(pp)
 
 	router := router.NewRouter()
-	router.Handle("/", webui.MakeGetRootHandler(pp))
+	router.Handle("/", webui.MakeGetRootHandler(te, pp))
 	router.AddListRoute('a', http.MethodGet, webui.MakeGetLoginHandler(te))
 	router.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
 		api.MakePostLoginHandlerAPI(ucAuthenticate),
 		webui.MakePostLoginHandlerHTML(te, ucAuthenticate)))
 	router.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
-	router.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler())
+	router.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler(te))
 	if !readonlyMode {
 		router.AddZettelRoute('b', http.MethodGet, webui.MakeGetRenameZettelHandler(
 			te, ucGetMeta))
 		router.AddZettelRoute('b', http.MethodPost, webui.MakePostRenameZettelHandler(
-			usecase.NewRenameZettel(pp)))
+			te, usecase.NewRenameZettel(pp)))
 		router.AddZettelRoute('c', http.MethodGet, webui.MakeGetCopyZettelHandler(
 			te, ucGetZettel, usecase.NewCopyZettel()))
 		router.AddZettelRoute('c', http.MethodPost, webui.MakePostCreateZettelHandler(
-			usecase.NewCreateZettel(pp)))
+			te, usecase.NewCreateZettel(pp)))
 		router.AddZettelRoute('d', http.MethodGet, webui.MakeGetDeleteZettelHandler(
 			te, ucGetZettel))
 		router.AddZettelRoute('d', http.MethodPost, webui.MakePostDeleteZettelHandler(
-			usecase.NewDeleteZettel(pp)))
+			te, usecase.NewDeleteZettel(pp)))
 		router.AddZettelRoute('e', http.MethodGet, webui.MakeEditGetZettelHandler(
 			te, ucGetZettel))
 		router.AddZettelRoute('e', http.MethodPost, webui.MakeEditSetZettelHandler(
-			usecase.NewUpdateZettel(pp)))
+			te, usecase.NewUpdateZettel(pp)))
 		router.AddZettelRoute('f', http.MethodGet, webui.MakeGetFolgeZettelHandler(
 			te, ucGetZettel, usecase.NewFolgeZettel()))
 		router.AddZettelRoute('f', http.MethodPost, webui.MakePostCreateZettelHandler(
-			usecase.NewCreateZettel(pp)))
+			te, usecase.NewCreateZettel(pp)))
 		router.AddZettelRoute('g', http.MethodGet, webui.MakeGetNewZettelHandler(
 			te, ucGetZettel, usecase.NewNewZettel()))
 		router.AddZettelRoute('g', http.MethodPost, webui.MakePostCreateZettelHandler(
-			usecase.NewCreateZettel(pp)))
+			te, usecase.NewCreateZettel(pp)))
 	}
 	router.AddListRoute('f', http.MethodGet, webui.MakeSearchHandler(
 		te, usecase.NewSearch(pp), ucGetMeta, ucGetZettel))

@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides wet-UI handlers for web requests.
+// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -29,21 +30,22 @@ import (
 func MakeGetRenameZettelHandler(
 	te *TemplateEngine, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
-		ctx := r.Context()
 		m, err := getMeta.Run(ctx, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
 
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			adapter.BadRequest(w, fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), format))
+			te.reportError(ctx, w, adapter.NewErrBadRequest(
+				fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), format)))
 			return
 		}
 
@@ -61,32 +63,34 @@ func MakeGetRenameZettelHandler(
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.
-func MakePostRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
+func MakePostRenameZettelHandler(te *TemplateEngine, renameZettel usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		curZid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			http.NotFound(w, r)
+			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
+
 		if err = r.ParseForm(); err != nil {
-			adapter.BadRequest(w, "Unable to read rename zettel form")
+			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read rename zettel form"))
 			return
 		}
 		if formCurZid, err1 := id.Parse(
 			r.PostFormValue("curzid")); err1 != nil || formCurZid != curZid {
-			adapter.BadRequest(w, "Invalid value for current zettel id in form")
+			te.reportError(ctx, w, adapter.NewErrBadRequest("Invalid value for current zettel id in form"))
 			return
 		}
 		newZid, err := id.Parse(strings.TrimSpace(r.PostFormValue("newzid")))
 		if err != nil {
-			adapter.BadRequest(w, fmt.Sprintf("Invalid new zettel id %q", newZid.String()))
+			te.reportError(ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", newZid)))
 			return
 		}
 
 		if err := renameZettel.Run(r.Context(), curZid, newZid); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			te.reportError(ctx, w, err)
 			return
 		}
-		http.Redirect(w, r, adapter.NewURLBuilder('h').SetZid(newZid).String(), http.StatusFound)
+		redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(newZid))
 	}
 }

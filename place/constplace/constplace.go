@@ -230,6 +230,14 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeySyntax:     syntaxTemplate,
 		},
 		domain.NewContent(contentListTagsMustache)},
+	id.ErrorTemplateZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore Error HTML Template",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityExpert,
+			meta.KeySyntax:     syntaxTemplate,
+		},
+		domain.NewContent(contentErrorMustache)},
 	id.BaseCSSZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base CSS",
@@ -303,6 +311,9 @@ var contentListRolesMustache string
 
 //go:embed listtags.mustache
 var contentListTagsMustache string
+
+//go:embed error.mustache
+var contentErrorMustache string
 
 //go:embed base.css
 var contentBaseCSS string
