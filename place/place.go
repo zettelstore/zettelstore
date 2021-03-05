@@ -181,27 +181,3 @@ var ErrNotFound = errors.New("zettel not found")
 type ErrInvalidID struct{ Zid id.Zid }
 
 func (err *ErrInvalidID) Error() string { return "invalid Zettel id: " + err.Zid.String() }
-
-// Filter specifies a mechanism for selecting zettel.
-type Filter struct {
-	Expr   FilterExpr
-	Negate bool
-	Select func(*meta.Meta) bool
-}
-
-// FilterExpr is the encoding of a search filter.
-type FilterExpr map[string][]FilterValue // map of keys to or-ed values
-
-// FilterValue is one value in a search filter.
-type FilterValue struct {
-	Value  string
-	Negate bool
-}
-
-// Sorter specifies ordering and limiting a sequnce of meta data.
-type Sorter struct {
-	Order      string // Name of meta key. None given: use "id"
-	Descending bool   // Sort by order, but descending
-	Offset     int    // <= 0: no offset
-	Limit      int    // <= 0: no limit
-}

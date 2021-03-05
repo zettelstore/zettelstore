@@ -122,18 +122,17 @@ func (mp *memPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (mp *memPlace) SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
-	filterFunc := place.CreateFilterFunc(f)
 	result := make([]*meta.Meta, 0, len(mp.zettel))
 	mp.mx.RLock()
 	for _, zettel := range mp.zettel {
 		m := zettel.Meta.Clone()
 		mp.cdata.Filter.Enrich(ctx, m)
-		if filterFunc(m) {
+		if f.Match(m) {
 			result = append(result, m)
 		}
 	}
 	mp.mx.RUnlock()
-	return place.ApplySorter(result, s), nil
+	return s.Sort(result), nil
 }
 
 func (mp *memPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

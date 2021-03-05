@@ -194,7 +194,6 @@ func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 func (dp *dirPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
 
-	hasMatch := place.CreateFilterFunc(f)
 	entries := dp.dirSrv.GetEntries()
 	res = make([]*meta.Meta, 0, len(entries))
 	for _, entry := range entries {
@@ -207,14 +206,14 @@ func (dp *dirPlace) SelectMeta(
 		dp.cleanupMeta(ctx, m)
 		dp.cdata.Filter.Enrich(ctx, m)
 
-		if hasMatch(m) {
+		if f.Match(m) {
 			res = append(res, m)
 		}
 	}
 	if err != nil {
 		return nil, err
 	}
-	return place.ApplySorter(res, s), nil
+	return s.Sort(res), nil
 }
 
 func (dp *dirPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

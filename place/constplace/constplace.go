@@ -87,15 +87,14 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 func (cp *constPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
 
-	hasMatch := place.CreateFilterFunc(f)
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
 		cp.filter.Enrich(ctx, m)
-		if hasMatch(m) {
+		if f.Match(m) {
 			res = append(res, m)
 		}
 	}
-	return place.ApplySorter(res, s), nil
+	return s.Sort(res), nil
 }
 
 func (cp *constPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

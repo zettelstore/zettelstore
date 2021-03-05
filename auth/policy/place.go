@@ -96,7 +96,7 @@ func (pp *polPlace) FetchZids(ctx context.Context) (id.Set, error) {
 func (pp *polPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
 	user := session.GetUser(ctx)
-	f = place.EnsureFilter(f)
+	f = f.Ensure()
 	canRead := pp.policy.CanRead
 	if sel := f.Select; sel != nil {
 		f.Select = func(m *meta.Meta) bool {

@@ -20,29 +20,33 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
+// Sorter specifies ordering and limiting a sequnce of meta data.
+type Sorter struct {
+	Order      string // Name of meta key. None given: use "id"
+	Descending bool   // Sort by order, but descending
+	Offset     int    // <= 0: no offset
+	Limit      int    // <= 0: no limit
+}
+
+// Ensure makes sure that there is a sorter object.
+func (s *Sorter) Ensure() *Sorter {
+	if s == nil {
+		s = new(Sorter)
+	}
+	return s
+}
+
 // RandomOrder is a pseudo metadata key that selects a random order.
 const RandomOrder = "_random"
 
-// EnsureSorter makes sure that there is a sorter object.
-func EnsureSorter(sorter *Sorter) *Sorter {
-	if sorter == nil {
-		sorter = new(Sorter)
-	}
-	return sorter
-}
-
-// ApplySorter applies the given sorter to the slide of meta data.
-func ApplySorter(metaList []*meta.Meta, s *Sorter) []*meta.Meta {
+// Sort applies the sorter to the slice of meta data.
+func (s *Sorter) Sort(metaList []*meta.Meta) []*meta.Meta {
 	if len(metaList) == 0 {
 		return metaList
 	}
 
 	if s == nil {
-		sort.Slice(
-			metaList,
-			func(i, j int) bool {
-				return metaList[i].Zid > metaList[j].Zid
-			})
+		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
 		return metaList
 	}
 

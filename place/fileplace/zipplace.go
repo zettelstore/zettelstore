@@ -176,18 +176,17 @@ func (zp *zipPlace) SelectMeta(
 		return nil, err
 	}
 	defer reader.Close()
-	hasMatch := place.CreateFilterFunc(f)
 	for zid, entry := range zp.zettel {
 		m, err := readZipMeta(reader, zid, entry)
 		if err != nil {
 			continue
 		}
 		zp.filter.Enrich(ctx, m)
-		if hasMatch(m) {
+		if f.Match(m) {
 			res = append(res, m)
 		}
 	}
-	return place.ApplySorter(res, s), nil
+	return s.Sort(res), nil
 }
 
 func (zp *zipPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

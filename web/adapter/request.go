@@ -86,7 +86,7 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 					sortkey = sortkey[1:]
 				}
 				if meta.KeyIsValid(sortkey) || sortkey == place.RandomOrder {
-					sorter = place.EnsureSorter(sorter)
+					sorter = sorter.Ensure()
 					sorter.Order = sortkey
 					sorter.Descending = descending
 				}
@@ -94,28 +94,28 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 		case offsetQKey:
 			if len(values) > 0 {
 				if offset, err := strconv.Atoi(values[0]); err == nil {
-					sorter = place.EnsureSorter(sorter)
+					sorter = sorter.Ensure()
 					sorter.Offset = offset
 				}
 			}
 		case limitQKey:
 			if len(values) > 0 {
 				if limit, err := strconv.Atoi(values[0]); err == nil {
-					sorter = place.EnsureSorter(sorter)
+					sorter = sorter.Ensure()
 					sorter.Limit = limit
 				}
 			}
 		case negateQKey:
-			filter = place.EnsureFilter(filter)
+			filter = filter.Ensure()
 			filter.Negate = true
 		case sQKey:
 			if vals := cleanQueryValues(values); len(vals) > 0 {
-				filter = place.EnsureFilter(filter)
+				filter = filter.Ensure()
 				filter.Expr[""] = vals
 			}
 		default:
 			if !forSearch && meta.KeyIsValid(key) {
-				filter = place.EnsureFilter(filter)
+				filter = filter.Ensure()
 				filter.Expr[key] = cleanQueryValues(values)
 			}
 		}

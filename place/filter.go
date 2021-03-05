@@ -15,23 +15,54 @@ import (
 	"io"
 	"sort"
 	"strings"
+	"sync"
 
 	"zettelstore.de/z/domain/meta"
 )
 
-// EnsureFilter make sure that there is a current filter.
-func EnsureFilter(filter *Filter) *Filter {
-	if filter == nil {
-		filter = new(Filter)
-		filter.Expr = make(FilterExpr)
-	}
-	return filter
+// Filter specifies a mechanism for selecting zettel.
+type Filter struct {
+	Expr     FilterExpr
+	Negate   bool
+	Select   func(*meta.Meta) bool
+	compiled filterFunc
+	mx       sync.Mutex
 }
 
-// FilterFunc is a predicate to check if given meta must be selected.
-type FilterFunc func(*meta.Meta) bool
+// FilterExpr is the encoding of a search filter.
+type FilterExpr map[string][]FilterValue // map of keys to or-ed values
 
-func selectAll(m *meta.Meta) bool { return true }
+// FilterValue is one value in a search filter.
+type FilterValue struct {
+	Value  string
+	Negate bool
+}
+
+// Ensure make sure that there is a current filter.
+func (f *Filter) Ensure() *Filter {
+	if f == nil {
+		f = new(Filter)
+		f.Expr = make(FilterExpr)
+	}
+	return f
+}
+
+// Match checks whether the given meta matches the filter specification.
+func (f *Filter) Match(m *meta.Meta) bool {
+	if f == nil {
+		return true
+	}
+	f.mx.Lock()
+	if f.compiled == nil {
+		f.compiled = createFilterFunc(f)
+	}
+	f.mx.Unlock()
+	return f.compiled(m)
+}
+
+type filterFunc func(*meta.Meta) bool
+
+func filterNone(m *meta.Meta) bool { return true }
 
 type matchFunc func(value string) bool
 
@@ -42,10 +73,10 @@ type matchSpec struct {
 	match matchFunc
 }
 
-// CreateFilterFunc calculates a filter func based on the given filter.
-func CreateFilterFunc(filter *Filter) FilterFunc {
+// createFilterFunc calculates a filter func based on the given filter.
+func createFilterFunc(filter *Filter) filterFunc {
 	if filter == nil {
-		return selectAll
+		return filterNone
 	}
 	specs, searchAll := createFilterSpecs(filter)
 	if len(specs) == 0 {
@@ -53,7 +84,7 @@ func CreateFilterFunc(filter *Filter) FilterFunc {
 			if sel := filter.Select; sel != nil {
 				return sel
 			}
-			return selectAll
+			return filterNone
 		}
 		return addSelectFunc(filter, searchAll)
 	}
@@ -75,9 +106,9 @@ func CreateFilterFunc(filter *Filter) FilterFunc {
 	})
 }
 
-func createFilterSpecs(filter *Filter) ([]matchSpec, FilterFunc) {
+func createFilterSpecs(filter *Filter) ([]matchSpec, filterFunc) {
 	specs := make([]matchSpec, 0, len(filter.Expr))
-	var searchAll FilterFunc
+	var searchAll filterFunc
 	for key, values := range filter.Expr {
 		if key == "" {
 			// Special handling if searching all keys...
@@ -94,7 +125,7 @@ func createFilterSpecs(filter *Filter) ([]matchSpec, FilterFunc) {
 	return specs, searchAll
 }
 
-func addSelectFunc(filter *Filter, f FilterFunc) FilterFunc {
+func addSelectFunc(filter *Filter, f filterFunc) filterFunc {
 	if filter == nil {
 		return f
 	}
@@ -241,7 +272,7 @@ func createMatchStringFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createSearchAllFunc(values []FilterValue, negate bool) FilterFunc {
+func createSearchAllFunc(values []FilterValue, negate bool) filterFunc {
 	matchFuncs := map[*meta.DescriptionType]matchFunc{}
 	return func(m *meta.Meta) bool {
 		for _, p := range m.Pairs(true) {

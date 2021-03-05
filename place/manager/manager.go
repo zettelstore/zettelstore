@@ -339,7 +339,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, f *place.Filter, s *place.So
 	if s == nil {
 		return result, nil
 	}
-	return place.ApplySorter(result, s), nil
+	return s.Sort(result), nil
 }
 
 // CanUpdateZettel returns true, if place could possibly update the given zettel.

@@ -136,19 +136,18 @@ func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
 
 func (pp *progPlace) SelectMeta(
 	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
-	hasMatch := place.CreateFilterFunc(f)
 	for zid, gen := range pp.zettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
 				pp.filter.Enrich(ctx, m)
-				if hasMatch(m) {
+				if f.Match(m) {
 					res = append(res, m)
 				}
 			}
 		}
 	}
-	return place.ApplySorter(res, s), nil
+	return s.Sort(res), nil
 }
 
 func (pp *progPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
