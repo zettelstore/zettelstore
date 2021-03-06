@@ -38,7 +38,6 @@ func NewSearch(port SearchPort) Search {
 
 // Run executes the use case.
 func (uc Search) Run(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
-	// TODO: interpret f.Expr[""]. Can contain expressions for specific meta tags.
 	if !usesComputedMeta(f, s) {
 		ctx = index.NoEnrichContext(ctx)
 	}

@@ -47,18 +47,12 @@ var mapMetaKey = map[string]string{
 	meta.KeyLicense:   "license",
 }
 
-func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
-	for i, pair := range m.Pairs(true) {
+func (v *visitor) acceptMeta(m *meta.Meta) {
+	for _, pair := range m.Pairs(true) {
 		if v.enc.ignoreMeta[pair.Key] {
 			continue
 		}
-		if i == 0 { // "title" is number 0...
-			if withTitle {
-				// TODO: title value may contain zmk elements
-				v.b.WriteStrings("<meta name=\"zs-", pair.Key, "\" content=\"")
-				v.writeQuotedEscaped(pair.Value)
-				v.b.WriteString("\">")
-			}
+		if pair.Key == meta.KeyTitle {
 			continue
 		}
 		if pair.Key == meta.KeyTags {

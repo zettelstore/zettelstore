@@ -196,8 +196,8 @@ func (dp *dirPlace) SelectMeta(
 
 	entries := dp.dirSrv.GetEntries()
 	res = make([]*meta.Meta, 0, len(entries))
+	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
-		// TODO: execute requests in parallel
 		m, err1 := getMeta(dp, &entry, entry.Zid)
 		err = err1
 		if err != nil {

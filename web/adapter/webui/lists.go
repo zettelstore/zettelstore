@@ -31,7 +31,8 @@ import (
 	"zettelstore.de/z/web/session"
 )
 
-// MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
+// MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
+// zettel as HTML.
 func MakeListHTMLMetaHandler(
 	te *TemplateEngine,
 	listMeta usecase.ListMeta,
@@ -223,14 +224,8 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 		}
 		q := r.URL.Query()
 		dir := usecase.ParseZCDirection(q.Get("dir"))
-		depth, ok := adapter.GetInteger(q, "depth")
-		if !ok || depth < 0 {
-			depth = 5
-		}
-		limit, ok := adapter.GetInteger(q, "limit")
-		if !ok || limit < 0 {
-			limit = 200
-		}
+		depth := getIntParameter(q, "depth", 5)
+		limit := getIntParameter(q, "limit", 200)
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
 			te.reportError(ctx, w, err)
@@ -274,6 +269,14 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			Metas:   metaLinks[1:],
 		})
 	}
+}
+
+func getIntParameter(q url.Values, key string, minValue int) int {
+	val, ok := adapter.GetInteger(q, key)
+	if !ok || val < 0 {
+		return minValue
+	}
+	return val
 }
 
 func renderWebUIMetaList(

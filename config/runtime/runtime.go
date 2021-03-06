@@ -97,7 +97,6 @@ func GetDefaultCopyright() string {
 				return copyright
 			}
 		}
-		// TODO: get owner
 	}
 	return ""
 }

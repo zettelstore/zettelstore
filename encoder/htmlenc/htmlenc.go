@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -90,9 +91,9 @@ func (he *htmlEncoder) WriteZettel(
 	textEnc.WriteInlines(&sb, zn.Title)
 	v.b.WriteStrings("<title>", sb.String(), "</title>")
 	if inhMeta {
-		v.acceptMeta(zn.InhMeta, false)
+		v.acceptMeta(zn.InhMeta)
 	} else {
-		v.acceptMeta(zn.Zettel.Meta, false)
+		v.acceptMeta(zn.Zettel.Meta)
 	}
 	v.b.WriteString("\n</head>\n<body>\n")
 	v.acceptBlockSlice(zn.Ast)
@@ -105,7 +106,20 @@ func (he *htmlEncoder) WriteZettel(
 // WriteMeta encodes meta data as HTML5.
 func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newVisitor(he, w)
-	v.acceptMeta(m, true)
+
+	// Write title
+	if title, ok := m.Get(meta.KeyTitle); ok {
+		astTitle := parser.ParseTitle(title)
+		textEnc := encoder.Create("text")
+		var sb strings.Builder
+		textEnc.WriteInlines(&sb, astTitle)
+		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
+		v.writeQuotedEscaped(sb.String())
+		v.b.WriteString("\">")
+	}
+
+	// Write other metadata
+	v.acceptMeta(m)
 	length, err := v.b.Flush()
 	return length, err
 }
