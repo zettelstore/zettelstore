@@ -46,11 +46,9 @@ func (uc Search) Run(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*
 }
 
 func usesComputedMeta(f *place.Filter, s *place.Sorter) bool {
-	if f != nil {
-		for key := range f.Expr {
-			if key == "" || meta.IsComputed(key) {
-				return true
-			}
+	for _, key := range f.Keys() {
+		if key == "" || meta.IsComputed(key) {
+			return true
 		}
 	}
 	if s != nil {

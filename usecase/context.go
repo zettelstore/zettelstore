@@ -116,15 +116,15 @@ func (uc ZettelContext) addInitialTasks(ctx context.Context, tasks *ztlCtx, star
 	if !ok {
 		return
 	}
-	filter := place.Filter{Expr: map[string][]place.FilterValue{}}
 	limit := tasks.depth
 	if limit == 0 || limit > 10 {
 		limit = 10
 	}
 	sorter := place.Sorter{Limit: limit}
 	for _, tag := range tags {
-		filter.Expr[meta.KeyTags] = []place.FilterValue{{Value: tag, Negate: false}}
-		if ml, err := uc.port.SelectMeta(ctx, &filter, &sorter); err == nil {
+		var filter *place.Filter
+		filter = filter.AddExpr(meta.KeyTags, tag, false)
+		if ml, err := uc.port.SelectMeta(ctx, filter, &sorter); err == nil {
 			for _, m := range ml {
 				tasks.add(m, 1)
 			}

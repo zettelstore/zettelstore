@@ -191,7 +191,7 @@ func MakeSearchHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		filter, sorter := adapter.GetFilterSorter(query, true)
-		if filter == nil || len(filter.Expr) == 0 {
+		if filter == nil {
 			redirectFound(w, r, adapter.NewURLBuilder('h'))
 			return
 		}

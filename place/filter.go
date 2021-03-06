@@ -22,29 +22,73 @@ import (
 
 // Filter specifies a mechanism for selecting zettel.
 type Filter struct {
-	Expr     FilterExpr
-	Negate   bool
-	Select   func(*meta.Meta) bool
-	compiled filterFunc
-	mx       sync.Mutex
+	expr      map[string][]filterValue
+	negate    bool
+	preFilter func(*meta.Meta) bool
+	compiled  filterFunc
+	mx        sync.RWMutex
 }
 
-// FilterExpr is the encoding of a search filter.
-type FilterExpr map[string][]FilterValue // map of keys to or-ed values
-
-// FilterValue is one value in a search filter.
-type FilterValue struct {
-	Value  string
-	Negate bool
+type filterValue struct {
+	value  string
+	negate bool
 }
 
-// Ensure make sure that there is a current filter.
-func (f *Filter) Ensure() *Filter {
+// AddExpr adds a match expression to the filter.
+func (f *Filter) AddExpr(key, val string, negate bool) *Filter {
 	if f == nil {
 		f = new(Filter)
-		f.Expr = make(FilterExpr)
+	}
+	f.mx.Lock()
+	defer f.mx.Unlock()
+	if f.expr == nil {
+		f.expr = map[string][]filterValue{key: {{value: val, negate: negate}}}
+	} else {
+		f.expr[key] = append(f.expr[key], filterValue{value: val, negate: negate})
 	}
 	return f
+}
+
+// SetNegate changes the filter to reverse its selection.
+func (f *Filter) SetNegate() *Filter {
+	if f == nil {
+		f = new(Filter)
+	}
+	f.mx.Lock()
+	defer f.mx.Unlock()
+	f.negate = true
+	return f
+}
+
+// AddPreFilter adds the pre-filter selection predicate.
+func (f *Filter) AddPreFilter(preFilter func(*meta.Meta) bool) *Filter {
+	if f == nil {
+		f = new(Filter)
+	}
+	f.mx.Lock()
+	defer f.mx.Unlock()
+	if pre := f.preFilter; pre == nil {
+		f.preFilter = preFilter
+	} else {
+		f.preFilter = func(m *meta.Meta) bool {
+			return preFilter(m) && pre(m)
+		}
+	}
+	return f
+}
+
+// Keys returns the used metadata keys of this filter.
+func (f *Filter) Keys() []string {
+	if f == nil {
+		return nil
+	}
+	f.mx.RLock()
+	defer f.mx.RUnlock()
+	var result []string
+	for key := range f.expr {
+		result = append(result, key)
+	}
+	return result
 }
 
 // Match checks whether the given meta matches the filter specification.
@@ -53,11 +97,16 @@ func (f *Filter) Match(m *meta.Meta) bool {
 		return true
 	}
 	f.mx.Lock()
-	if f.compiled == nil {
-		f.compiled = createFilterFunc(f)
+	defer f.mx.Unlock()
+	if pre := f.preFilter; pre != nil {
+		if !pre(m) {
+			return false
+		}
 	}
-	f.mx.Unlock()
-	return f.compiled(m)
+	if f.compiled == nil {
+		f.compiled = compileFilter(f)
+	}
+	return f.compiled(m) != f.negate
 }
 
 type filterFunc func(*meta.Meta) bool
@@ -73,46 +122,39 @@ type matchSpec struct {
 	match matchFunc
 }
 
-// createFilterFunc calculates a filter func based on the given filter.
-func createFilterFunc(filter *Filter) filterFunc {
-	if filter == nil {
-		return filterNone
-	}
+// compileFilter calculates a filter func based on the given filter.
+func compileFilter(filter *Filter) filterFunc {
 	specs, searchAll := createFilterSpecs(filter)
 	if len(specs) == 0 {
 		if searchAll == nil {
-			if sel := filter.Select; sel != nil {
-				return sel
-			}
 			return filterNone
 		}
-		return addSelectFunc(filter, searchAll)
+		return searchAll
 	}
-	negate := filter.Negate
 	searchMeta := func(m *meta.Meta) bool {
 		for _, s := range specs {
 			value, ok := m.Get(s.key)
 			if !ok || !s.match(value) {
-				return negate
+				return false
 			}
 		}
-		return !negate
+		return true
 	}
 	if searchAll == nil {
-		return addSelectFunc(filter, searchMeta)
+		return searchMeta
 	}
-	return addSelectFunc(filter, func(meta *meta.Meta) bool {
-		return searchAll(meta) || searchMeta(meta)
-	})
+	return func(m *meta.Meta) bool {
+		return searchAll(m) || searchMeta(m)
+	}
 }
 
 func createFilterSpecs(filter *Filter) ([]matchSpec, filterFunc) {
-	specs := make([]matchSpec, 0, len(filter.Expr))
+	specs := make([]matchSpec, 0, len(filter.expr))
 	var searchAll filterFunc
-	for key, values := range filter.Expr {
+	for key, values := range filter.expr {
 		if key == "" {
 			// Special handling if searching all keys...
-			searchAll = createSearchAllFunc(values, filter.Negate)
+			searchAll = createSearchAllFunc(values, filter.negate)
 			continue
 		}
 		if meta.KeyIsValid(key) {
@@ -125,19 +167,7 @@ func createFilterSpecs(filter *Filter) ([]matchSpec, filterFunc) {
 	return specs, searchAll
 }
 
-func addSelectFunc(filter *Filter, f filterFunc) filterFunc {
-	if filter == nil {
-		return f
-	}
-	if sel := filter.Select; sel != nil {
-		return func(meta *meta.Meta) bool {
-			return sel(meta) && f(meta)
-		}
-	}
-	return f
-}
-
-func createMatchFunc(key string, values []FilterValue) matchFunc {
+func createMatchFunc(key string, values []filterValue) matchFunc {
 	switch meta.Type(key) {
 	case meta.TypeBool:
 		return createMatchBoolFunc(values)
@@ -157,11 +187,11 @@ func createMatchFunc(key string, values []FilterValue) matchFunc {
 	return createMatchStringFunc(values)
 }
 
-func createMatchBoolFunc(values []FilterValue) matchFunc {
+func createMatchBoolFunc(values []filterValue) matchFunc {
 	preValues := make([]bool, 0, len(values))
 	for _, v := range values {
-		boolValue := meta.BoolValue(v.Value)
-		if v.Negate {
+		boolValue := meta.BoolValue(v.value)
+		if v.negate {
 			boolValue = !boolValue
 		}
 		preValues = append(preValues, boolValue)
@@ -177,10 +207,10 @@ func createMatchBoolFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createMatchIDFunc(values []FilterValue) matchFunc {
+func createMatchIDFunc(values []filterValue) matchFunc {
 	return func(value string) bool {
 		for _, v := range values {
-			if strings.HasPrefix(value, v.Value) == v.Negate {
+			if strings.HasPrefix(value, v.value) == v.negate {
 				return false
 			}
 		}
@@ -188,13 +218,13 @@ func createMatchIDFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createMatchIDSetFunc(values []FilterValue) matchFunc {
+func createMatchIDSetFunc(values []filterValue) matchFunc {
 	idValues := preprocessSet(sliceToLower(values))
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
 		for _, neededIDs := range idValues {
 			for _, neededID := range neededIDs {
-				if matchAllID(ids, neededID.Value) == neededID.Negate {
+				if matchAllID(ids, neededID.value) == neededID.negate {
 					return false
 				}
 			}
@@ -212,7 +242,7 @@ func matchAllID(zettelIDs []string, neededID string) bool {
 	return false
 }
 
-func createMatchTagSetFunc(values []FilterValue) matchFunc {
+func createMatchTagSetFunc(values []filterValue) matchFunc {
 	tagValues := preprocessSet(values)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
@@ -222,7 +252,7 @@ func createMatchTagSetFunc(values []FilterValue) matchFunc {
 		}
 		for _, neededTags := range tagValues {
 			for _, neededTag := range neededTags {
-				if matchAllTag(tags, neededTag.Value) == neededTag.Negate {
+				if matchAllTag(tags, neededTag.value) == neededTag.negate {
 					return false
 				}
 			}
@@ -231,12 +261,12 @@ func createMatchTagSetFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createMatchWordFunc(values []FilterValue) matchFunc {
+func createMatchWordFunc(values []filterValue) matchFunc {
 	values = sliceToLower(values)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, v := range values {
-			if (value == v.Value) == v.Negate {
+			if (value == v.value) == v.negate {
 				return false
 			}
 		}
@@ -244,13 +274,13 @@ func createMatchWordFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createMatchWordSetFunc(values []FilterValue) matchFunc {
+func createMatchWordSetFunc(values []filterValue) matchFunc {
 	wordValues := preprocessSet(sliceToLower(values))
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
 		for _, neededWords := range wordValues {
 			for _, neededWord := range neededWords {
-				if matchAllWord(words, neededWord.Value) == neededWord.Negate {
+				if matchAllWord(words, neededWord.value) == neededWord.negate {
 					return false
 				}
 			}
@@ -259,12 +289,12 @@ func createMatchWordSetFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createMatchStringFunc(values []FilterValue) matchFunc {
+func createMatchStringFunc(values []filterValue) matchFunc {
 	values = sliceToLower(values)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, v := range values {
-			if strings.Contains(value, v.Value) == v.Negate {
+			if strings.Contains(value, v.value) == v.negate {
 				return false
 			}
 		}
@@ -272,7 +302,7 @@ func createMatchStringFunc(values []FilterValue) matchFunc {
 	}
 }
 
-func createSearchAllFunc(values []FilterValue, negate bool) filterFunc {
+func createSearchAllFunc(values []filterValue, negate bool) filterFunc {
 	matchFuncs := map[*meta.DescriptionType]matchFunc{}
 	return func(m *meta.Meta) bool {
 		for _, p := range m.Pairs(true) {
@@ -301,35 +331,35 @@ func createSearchAllFunc(values []FilterValue, negate bool) filterFunc {
 // createBoolSearchFunc only creates a matchFunc if the values to compare are
 // possible bool values. Otherwise every meta with a bool key could match the
 // search query.
-func createBoolSearchFunc(key string, values []FilterValue) matchFunc {
+func createBoolSearchFunc(key string, values []filterValue) matchFunc {
 	for _, v := range values {
-		if len(v.Value) > 0 && !strings.ContainsRune("01tfTFynYN", rune(v.Value[0])) {
-			return func(value string) bool { return false }
+		if len(v.value) > 0 && !strings.ContainsRune("01tfTFynYN", rune(v.value[0])) {
+			return matchNever
 		}
 	}
 	return createMatchFunc(key, values)
 }
 
-func sliceToLower(sl []FilterValue) []FilterValue {
-	result := make([]FilterValue, 0, len(sl))
+func sliceToLower(sl []filterValue) []filterValue {
+	result := make([]filterValue, 0, len(sl))
 	for _, s := range sl {
-		result = append(result, FilterValue{
-			Value:  strings.ToLower(s.Value),
-			Negate: s.Negate,
+		result = append(result, filterValue{
+			value:  strings.ToLower(s.value),
+			negate: s.negate,
 		})
 	}
 	return result
 }
 
-func preprocessSet(set []FilterValue) [][]FilterValue {
-	result := make([][]FilterValue, 0, len(set))
+func preprocessSet(set []filterValue) [][]filterValue {
+	result := make([][]filterValue, 0, len(set))
 	for _, elem := range set {
-		splitElems := strings.Split(elem.Value, ",")
-		valueElems := make([]FilterValue, 0, len(splitElems))
+		splitElems := strings.Split(elem.value, ",")
+		valueElems := make([]filterValue, 0, len(splitElems))
 		for _, se := range splitElems {
 			e := strings.TrimSpace(se)
 			if len(e) > 0 {
-				valueElems = append(valueElems, FilterValue{Value: e, Negate: elem.Negate})
+				valueElems = append(valueElems, filterValue{value: e, negate: elem.negate})
 			}
 		}
 		if len(valueElems) > 0 {
@@ -359,11 +389,11 @@ func matchAllWord(zettelWords []string, neededWord string) bool {
 
 // Print the filter to a writer.
 func (f *Filter) Print(w io.Writer) {
-	if f.Negate {
+	if f.negate {
 		io.WriteString(w, "NOT (")
 	}
-	names := make([]string, 0, len(f.Expr))
-	for name := range f.Expr {
+	names := make([]string, 0, len(f.expr))
+	for name := range f.expr {
 		names = append(names, name)
 	}
 	sort.Strings(names)
@@ -376,14 +406,14 @@ func (f *Filter) Print(w io.Writer) {
 		} else {
 			io.WriteString(w, name)
 		}
-		printFilterExprValues(w, f.Expr[name])
+		printFilterExprValues(w, f.expr[name])
 	}
-	if f.Negate {
+	if f.negate {
 		io.WriteString(w, ")")
 	}
 }
 
-func printFilterExprValues(w io.Writer, values []FilterValue) {
+func printFilterExprValues(w io.Writer, values []filterValue) {
 	if len(values) == 0 {
 		io.WriteString(w, " MATCH ANY")
 		return
@@ -393,14 +423,14 @@ func printFilterExprValues(w io.Writer, values []FilterValue) {
 		if j > 0 {
 			io.WriteString(w, " AND")
 		}
-		if val.Negate {
+		if val.negate {
 			io.WriteString(w, " NOT")
 		}
 		io.WriteString(w, " MATCH ")
-		if val.Value == "" {
+		if val.value == "" {
 			io.WriteString(w, "ANY")
 		} else {
-			io.WriteString(w, val.Value)
+			io.WriteString(w, val.value)
 		}
 	}
 }
