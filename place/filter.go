@@ -115,7 +115,8 @@ func filterNone(m *meta.Meta) bool { return true }
 
 type matchFunc func(value string) bool
 
-func matchNever(value string) bool { return false }
+func matchNever(value string) bool  { return false }
+func matchAlways(value string) bool { return true }
 
 type matchSpec struct {
 	key   string
@@ -124,8 +125,8 @@ type matchSpec struct {
 
 // compileFilter calculates a filter func based on the given filter.
 func compileFilter(filter *Filter) filterFunc {
-	specs, searchAll := createFilterSpecs(filter)
-	if len(specs) == 0 {
+	specs, nomatch, searchAll := createFilterSpecs(filter)
+	if len(specs) == 0 && len(nomatch) == 0 {
 		if searchAll == nil {
 			return filterNone
 		}
@@ -133,8 +134,12 @@ func compileFilter(filter *Filter) filterFunc {
 	}
 	searchMeta := func(m *meta.Meta) bool {
 		for _, s := range specs {
-			value, ok := m.Get(s.key)
-			if !ok || !s.match(value) {
+			if value, ok := m.Get(s.key); !ok || !s.match(value) {
+				return false
+			}
+		}
+		for _, key := range nomatch {
+			if _, ok := m.Get(key); ok {
 				return false
 			}
 		}
@@ -148,8 +153,9 @@ func compileFilter(filter *Filter) filterFunc {
 	}
 }
 
-func createFilterSpecs(filter *Filter) ([]matchSpec, filterFunc) {
+func createFilterSpecs(filter *Filter) ([]matchSpec, []string, filterFunc) {
 	specs := make([]matchSpec, 0, len(filter.expr))
+	var nomatch []string
 	var searchAll filterFunc
 	for key, values := range filter.expr {
 		if key == "" {
@@ -158,13 +164,39 @@ func createFilterSpecs(filter *Filter) ([]matchSpec, filterFunc) {
 			continue
 		}
 		if meta.KeyIsValid(key) {
+			if empty, negates := hasEmptyValues(values); empty {
+				if negates == 0 {
+					specs = append(specs, matchSpec{key, matchAlways})
+					continue
+				}
+				if len(values) < negates {
+					specs = append(specs, matchSpec{key, matchNever})
+					continue
+				}
+				nomatch = append(nomatch, key)
+				continue
+			}
 			match := createMatchFunc(key, values)
 			if match != nil {
 				specs = append(specs, matchSpec{key, match})
 			}
 		}
 	}
-	return specs, searchAll
+	return specs, nomatch, searchAll
+}
+
+func hasEmptyValues(values []filterValue) (bool, int) {
+	var negates int
+	for _, v := range values {
+		if v.value != "" {
+			continue
+		}
+		if !v.negate {
+			return true, 0
+		}
+		negates++
+	}
+	return negates > 0, negates
 }
 
 func createMatchFunc(key string, values []filterValue) matchFunc {

@@ -11,6 +11,10 @@
      <em>not</em> match. Previously, only the whole filter expression could be
      negated (which is still possible).
      (minor: api, webui)
+  *  You can filter a zettel list by specifying that specific metadata keys must
+     (or must not) be present.
+     (minor: api, webui)
+  *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 <a name="0_0_10"></a>
 <h2>Changes for Version 0.0.10 (2021-02-26)</h2>
