@@ -60,9 +60,9 @@ func New() index.Store {
 
 func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 	ms.mx.RLock()
-	defer ms.mx.RUnlock()
 	zi, ok := ms.idx[m.Zid]
 	if !ok {
+		ms.mx.RUnlock()
 		return
 	}
 	var updated bool
@@ -93,8 +93,11 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 		m.Set(meta.KeyBack, back.String())
 		updated = true
 	}
+	ms.mx.RUnlock()
 	if updated {
+		ms.mx.Lock()
 		ms.updates++
+		ms.mx.Unlock()
 	}
 }
 
