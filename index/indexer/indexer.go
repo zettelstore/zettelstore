@@ -16,8 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/z/ast"
-	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -220,10 +218,16 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 			}
 		}
 	}
-	zn := parser.ParseZettel(zettel, "")
-	refs := collect.References(zn)
-	updateReferences(ctx, refs.Links, p, zi)
-	updateReferences(ctx, refs.Images, p, zi)
+
+	refs := collectZettelIndexData(parser.ParseZettel(zettel, ""))
+	for ref := range refs {
+		if _, err := p.GetMeta(ctx, ref); err == nil {
+			zi.AddBackRef(ref)
+		} else {
+			zi.AddDeadRef(ref)
+		}
+	}
+
 	toCheck := idx.store.UpdateReferences(ctx, zi)
 	idx.checkZettel(toCheck)
 }
@@ -242,25 +246,6 @@ func updateValue(ctx context.Context, inverse string, value string, p getMetaPor
 		return
 	}
 	zi.AddMetaRef(inverse, zid)
-}
-
-func updateReferences(ctx context.Context, refs []*ast.Reference, p getMetaPort, zi *index.ZettelIndex) {
-	zrefs, _, _ := collect.DivideReferences(refs, false)
-	for _, ref := range zrefs {
-		updateReference(ctx, ref.URL.Path, p, zi)
-	}
-}
-
-func updateReference(ctx context.Context, value string, p getMetaPort, zi *index.ZettelIndex) {
-	zid, err := id.Parse(value)
-	if err != nil {
-		return
-	}
-	if _, err := p.GetMeta(ctx, zid); err != nil {
-		zi.AddDeadRef(zid)
-		return
-	}
-	zi.AddBackRef(zid)
 }
 
 func (idx *indexer) deleteZettel(zid id.Zid) {
