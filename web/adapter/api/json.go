@@ -176,7 +176,7 @@ func writeDJSONHeader(w http.ResponseWriter, zid id.Zid) error {
 func writeDJSONMeta(w io.Writer, z *ast.ZettelNode) error {
 	_, err := w.Write(djsonMetaHeader)
 	if err == nil {
-		err = writeMeta(w, z.InhMeta, "djson", &encoder.TitleOption{Inline: z.Title})
+		err = writeMeta(w, z.InhMeta, "djson", &encoder.Environment{Title: z.Title})
 	}
 	return err
 }
@@ -190,12 +190,9 @@ func writeDJSONContent(
 ) (err error) {
 	_, err = w.Write(djsonContentHeader)
 	if err == nil {
-		err = writeContent(w, z, "djson",
-			&encoder.AdaptLinkOption{
-				Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(defPart), "djson"),
-			},
-			&encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()},
-		)
+		err = writeContent(w, z, "djson", &encoder.Environment{
+			LinkAdapter:  adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(defPart), "djson"),
+			ImageAdapter: adapter.MakeImageAdapter()})
 	}
 	return err
 }
@@ -272,8 +269,8 @@ func renderListMetaXJSON(
 }
 
 func writeContent(
-	w io.Writer, zn *ast.ZettelNode, format string, options ...encoder.Option) error {
-	enc := encoder.Create(format, options...)
+	w io.Writer, zn *ast.ZettelNode, format string, env *encoder.Environment) error {
+	enc := encoder.Create(format, env)
 	if enc == nil {
 		return adapter.ErrNoSuchFormat
 	}
@@ -283,8 +280,8 @@ func writeContent(
 }
 
 func writeMeta(
-	w io.Writer, m *meta.Meta, format string, options ...encoder.Option) error {
-	enc := encoder.Create(format, options...)
+	w io.Writer, m *meta.Meta, format string, env *encoder.Environment) error {
+	enc := encoder.Create(format, env)
 	if enc == nil {
 		return adapter.ErrNoSuchFormat
 	}

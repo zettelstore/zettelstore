@@ -29,8 +29,8 @@ import (
 var ErrNoSuchFormat = errors.New("no such format")
 
 // FormatInlines returns a string representation of the inline slice.
-func FormatInlines(is ast.InlineSlice, format string, options ...encoder.Option) (string, error) {
-	enc := encoder.Create(format, options...)
+func FormatInlines(is ast.InlineSlice, format string, env *encoder.Environment) (string, error) {
+	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", ErrNoSuchFormat
 	}

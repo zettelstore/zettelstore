@@ -23,14 +23,11 @@ import (
 
 func init() {
 	encoder.Register("zmk", encoder.Info{
-		Create: func() encoder.Encoder { return &zmkEncoder{} },
+		Create: func(*encoder.Environment) encoder.Encoder { return &zmkEncoder{} },
 	})
 }
 
 type zmkEncoder struct{}
-
-// SetOption does nothing because this encoder does not recognize any option.
-func (ze *zmkEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.
 func (ze *zmkEncoder) WriteZettel(

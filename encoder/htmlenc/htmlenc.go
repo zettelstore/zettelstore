@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -12,7 +12,6 @@
 package htmlenc
 
 import (
-	"fmt"
 	"io"
 	"strings"
 
@@ -24,69 +23,28 @@ import (
 
 func init() {
 	encoder.Register("html", encoder.Info{
-		Create: func() encoder.Encoder { return &htmlEncoder{} },
+		Create: func(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} },
 	})
 }
 
 type htmlEncoder struct {
-	lang           string // default language
-	xhtml          bool   // use XHTML syntax instead of HTML syntax
-	markerExternal string // Marker after link to (external) material.
-	newWindow      bool   // open link in new window
-	adaptLink      func(*ast.LinkNode) ast.InlineNode
-	adaptImage     func(*ast.ImageNode) ast.InlineNode
-	adaptCite      func(*ast.CiteNode) ast.InlineNode
-	ignoreMeta     map[string]bool
-	footnotes      []*ast.FootnoteNode
-}
-
-func (he *htmlEncoder) SetOption(option encoder.Option) {
-	switch opt := option.(type) {
-	case *encoder.StringOption:
-		switch opt.Key {
-		case "lang":
-			he.lang = opt.Value
-		case meta.KeyMarkerExternal:
-			he.markerExternal = opt.Value
-		}
-	case *encoder.BoolOption:
-		switch opt.Key {
-		case "newwindow":
-			he.newWindow = opt.Value
-		case "xhtml":
-			he.xhtml = opt.Value
-		}
-	case *encoder.StringsOption:
-		if opt.Key == "no-meta" {
-			he.ignoreMeta = make(map[string]bool, len(opt.Value))
-			for _, v := range opt.Value {
-				he.ignoreMeta[v] = true
-			}
-		}
-	case *encoder.AdaptLinkOption:
-		he.adaptLink = opt.Adapter
-	case *encoder.AdaptImageOption:
-		he.adaptImage = opt.Adapter
-	case *encoder.AdaptCiteOption:
-		he.adaptCite = opt.Adapter
-	default:
-		var name string
-		if option != nil {
-			name = option.Name()
-		}
-		fmt.Println("HESO", option, name)
-	}
+	env *encoder.Environment
 }
 
 // WriteZettel encodes a full zettel as HTML5.
 func (he *htmlEncoder) WriteZettel(
 	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newVisitor(he, w)
-	if !he.xhtml {
+	if !he.env.IsXHTML() {
 		v.b.WriteString("<!DOCTYPE html>\n")
 	}
-	v.b.WriteStrings("<html lang=\"", he.lang, "\">\n<head>\n<meta charset=\"utf-8\">\n")
-	textEnc := encoder.Create("text")
+	if env := he.env; env != nil && env.Lang == "" {
+		v.b.WriteStrings("<html>\n<head>")
+	} else {
+		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
+	}
+	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
+	textEnc := encoder.Create("text", nil)
 	var sb strings.Builder
 	textEnc.WriteInlines(&sb, zn.Title)
 	v.b.WriteStrings("<title>", sb.String(), "</title>")
@@ -110,7 +68,7 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	// Write title
 	if title, ok := m.Get(meta.KeyTitle); ok {
 		astTitle := parser.ParseTitle(title)
-		textEnc := encoder.Create("text")
+		textEnc := encoder.Create("text", nil)
 		var sb strings.Builder
 		textEnc.WriteInlines(&sb, astTitle)
 		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")

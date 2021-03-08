@@ -47,43 +47,34 @@ func MakeGetHTMLZettelHandler(
 			return
 		}
 
-		metaHeader, err := formatMeta(
-			zn.InhMeta,
-			"html",
-			&encoder.StringsOption{
-				Key:   "no-meta",
-				Value: []string{meta.KeyTitle, meta.KeyLang},
-			},
-		)
+		lang := runtime.GetLang(zn.InhMeta)
+		envHTML := encoder.Environment{
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'h', getMeta, "", ""),
+			ImageAdapter:   adapter.MakeImageAdapter(),
+			CiteAdapter:    nil,
+			Lang:           lang,
+			Xhtml:          false,
+			MarkerExternal: runtime.GetMarkerExternal(),
+			NewWindow:      true,
+			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
+			Title:          nil,
+		}
+		metaHeader, err := formatMeta(zn.InhMeta, "html", &envHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(zn.InhMeta)}
-		htmlTitle, err := adapter.FormatInlines(zn.Title, "html", &langOption)
+		htmlTitle, err := adapter.FormatInlines(zn.Title, "html", &envHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		textTitle, err := adapter.FormatInlines(zn.Title, "text", &langOption)
+		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		newWindow := true
-		htmlContent, err := formatBlocks(
-			zn.Ast,
-			"html",
-			&langOption,
-			&encoder.StringOption{
-				Key:   meta.KeyMarkerExternal,
-				Value: runtime.GetMarkerExternal()},
-			&encoder.BoolOption{Key: "newwindow", Value: newWindow},
-			&encoder.AdaptLinkOption{
-				Adapter: adapter.MakeLinkAdapter(ctx, 'h', getMeta, "", ""),
-			},
-			&encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()},
-		)
+		htmlContent, err := formatBlocks(zn.Ast, "html", &envHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
@@ -91,11 +82,11 @@ func MakeGetHTMLZettelHandler(
 		user := session.GetUser(ctx)
 		roleText := zn.Zettel.Meta.GetDefault(meta.KeyRole, "*")
 		tags := buildTagInfos(zn.Zettel.Meta)
-		getTitle := makeGetTitle(ctx, getMeta, &langOption)
+		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Zettel.Meta.Get(meta.KeyURL)
 		backLinks := formatBackLinks(zn.InhMeta, getTitle)
 		var base baseData
-		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
+		te.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
 		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
 		te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
@@ -138,7 +129,7 @@ func MakeGetHTMLZettelHandler(
 			PrecursorRefs: formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
-			ExtNewWindow:  htmlAttrNewWindow(newWindow && hasExtURL),
+			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
 			Content:       htmlContent,
 			HasBackLinks:  len(backLinks) > 0,
 			BackLinks:     backLinks,
@@ -146,9 +137,8 @@ func MakeGetHTMLZettelHandler(
 	}
 }
 
-func formatBlocks(
-	bs ast.BlockSlice, format string, options ...encoder.Option) (string, error) {
-	enc := encoder.Create(format, options...)
+func formatBlocks(bs ast.BlockSlice, format string, env *encoder.Environment) (string, error) {
+	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", adapter.ErrNoSuchFormat
 	}
@@ -161,8 +151,8 @@ func formatBlocks(
 	return content.String(), nil
 }
 
-func formatMeta(m *meta.Meta, format string, options ...encoder.Option) (string, error) {
-	enc := encoder.Create(format, options...)
+func formatMeta(m *meta.Meta, format string, env *encoder.Environment) (string, error) {
+	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", adapter.ErrNoSuchFormat
 	}

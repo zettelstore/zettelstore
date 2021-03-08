@@ -21,14 +21,11 @@ import (
 
 func init() {
 	encoder.Register("raw", encoder.Info{
-		Create: func() encoder.Encoder { return &rawEncoder{} },
+		Create: func(*encoder.Environment) encoder.Encoder { return &rawEncoder{} },
 	})
 }
 
 type rawEncoder struct{}
-
-// SetOption does nothing because this encoder does not recognize any option.
-func (re *rawEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.
 func (re *rawEncoder) WriteZettel(

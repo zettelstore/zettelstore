@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -40,10 +40,7 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 		},
 		runtime.GetSyntax(meta),
 	)
-	enc := encoder.Create(
-		format,
-		&encoder.StringOption{Key: "lang", Value: runtime.GetLang(meta)},
-	)
+	enc := encoder.Create(format, &encoder.Environment{Lang: runtime.GetLang(meta)})
 	if enc == nil {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", format)
 		return 2, nil

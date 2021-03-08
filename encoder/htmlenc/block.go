@@ -142,7 +142,7 @@ func (v *visitor) VisitHeading(hn *ast.HeadingNode) {
 func (v *visitor) VisitHRule(hn *ast.HRuleNode) {
 	v.b.WriteString("<hr")
 	v.visitAttributes(hn.Attrs)
-	if v.xhtml {
+	if v.env.IsXHTML() {
 		v.b.WriteString(" />\n")
 	} else {
 		v.b.WriteString(">\n")

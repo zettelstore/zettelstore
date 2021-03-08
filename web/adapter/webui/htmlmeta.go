@@ -31,7 +31,7 @@ import (
 
 var space = []byte{' '}
 
-func writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitleFunc, option encoder.Option) {
+func writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
 	switch kt := m.Type(key); kt {
 	case meta.TypeBool:
 		writeHTMLBool(w, key, m.GetBool(key))
@@ -66,7 +66,7 @@ func writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitle
 			writeWordSet(w, key, l)
 		}
 	case meta.TypeZettelmarkup:
-		writeZettelmarkup(w, m.GetDefault(key, "???z"), option)
+		writeZettelmarkup(w, m.GetDefault(key, "???z"), env)
 	case meta.TypeUnknown:
 		writeUnknown(w, m.GetDefault(key, "???u"))
 	default:
@@ -175,9 +175,9 @@ func writeWordSet(w io.Writer, key string, words []string) {
 		writeWord(w, key, word)
 	}
 }
-func writeZettelmarkup(w io.Writer, val string, option encoder.Option) {
+func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
 	astTitle := parser.ParseTitle(val)
-	title, err := adapter.FormatInlines(astTitle, "html", option)
+	title, err := adapter.FormatInlines(astTitle, "html", env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -195,7 +195,7 @@ func writeLink(w io.Writer, key, value, text string) {
 
 type getTitleFunc func(id.Zid, string) (string, int)
 
-func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, langOption encoder.Option) getTitleFunc {
+func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Environment) getTitleFunc {
 	return func(zid id.Zid, format string) (string, int) {
 		m, err := getMeta.Run(index.NoEnrichContext(ctx), zid)
 		if err != nil {
@@ -205,7 +205,7 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, langOption encod
 			return "", 0
 		}
 		astTitle := parser.ParseTitle(m.GetDefault(meta.KeyTitle, ""))
-		title, err := adapter.FormatInlines(astTitle, format, langOption)
+		title, err := adapter.FormatInlines(astTitle, format, env)
 		if err == nil {
 			return title, 1
 		}

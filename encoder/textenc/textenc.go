@@ -21,16 +21,13 @@ import (
 
 func init() {
 	encoder.Register("text", encoder.Info{
-		Create: func() encoder.Encoder { return &textEncoder{} },
+		Create: func(*encoder.Environment) encoder.Encoder { return &textEncoder{} },
 	})
 }
 
 type textEncoder struct{}
 
-// SetOption does nothing because this encoder does not recognize any option.
-func (te *textEncoder) SetOption(option encoder.Option) {}
-
-// WriteZettel does nothing.
+// WriteZettel writes metadata and content.
 func (te *textEncoder) WriteZettel(
 	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newVisitor(w)
@@ -44,7 +41,7 @@ func (te *textEncoder) WriteZettel(
 	return length, err
 }
 
-// WriteMeta encodes meta data as text.
+// WriteMeta encodes metadata as text.
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	b := encoder.NewBufWriter(w)
 	for _, pair := range m.Pairs(true) {

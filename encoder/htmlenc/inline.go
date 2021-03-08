@@ -34,7 +34,7 @@ func (v *visitor) VisitTag(tn *ast.TagNode) {
 
 // VisitSpace emits a white space.
 func (v *visitor) VisitSpace(sn *ast.SpaceNode) {
-	if v.inVerse || v.xhtml {
+	if v.inVerse || v.env.IsXHTML() {
 		v.b.WriteString(sn.Lexeme)
 	} else {
 		v.b.WriteByte(' ')
@@ -44,7 +44,7 @@ func (v *visitor) VisitSpace(sn *ast.SpaceNode) {
 // VisitBreak writes HTML code for line breaks.
 func (v *visitor) VisitBreak(bn *ast.BreakNode) {
 	if bn.Hard {
-		if v.xhtml {
+		if v.env.IsXHTML() {
 			v.b.WriteString("<br />\n")
 		} else {
 			v.b.WriteString("<br>\n")
@@ -56,13 +56,10 @@ func (v *visitor) VisitBreak(bn *ast.BreakNode) {
 
 // VisitLink writes HTML code for links.
 func (v *visitor) VisitLink(ln *ast.LinkNode) {
-	if adapt := v.enc.adaptLink; adapt != nil {
-		n := adapt(ln)
-		var ok bool
-		if ln, ok = n.(*ast.LinkNode); !ok {
-			n.Accept(v)
-			return
-		}
+	ln, n := v.env.AdaptLink(ln)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
 	v.lang.push(ln.Attrs)
 	defer v.lang.pop()
@@ -78,11 +75,13 @@ func (v *visitor) VisitLink(ln *ast.LinkNode) {
 	case ast.RefStateExternal:
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("class", "zs-external")
-		if v.enc.newWindow {
+		if v.env.HasNewWindow() {
 			attrs = attrs.Set("target", "_blank").Set("rel", "noopener noreferrer")
 		}
 		v.writeAHref(ln.Ref, attrs, ln.Inlines)
-		v.b.WriteString(v.enc.markerExternal)
+		if v.env != nil {
+			v.b.WriteString(v.env.MarkerExternal)
+		}
 	default:
 		v.b.WriteString("<a href=\"")
 		v.writeQuotedEscaped(ln.Ref.Value)
@@ -106,15 +105,11 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.
 
 // VisitImage writes HTML code for images.
 func (v *visitor) VisitImage(in *ast.ImageNode) {
-	if adapt := v.enc.adaptImage; adapt != nil {
-		n := adapt(in)
-		var ok bool
-		if in, ok = n.(*ast.ImageNode); !ok {
-			n.Accept(v)
-			return
-		}
+	in, n := v.env.AdaptImage(in)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
-
 	v.lang.push(in.Attrs)
 	defer v.lang.pop()
 
@@ -136,7 +131,7 @@ func (v *visitor) VisitImage(in *ast.ImageNode) {
 	v.acceptInlineSlice(in.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(in.Attrs)
-	if v.xhtml {
+	if v.env.IsXHTML() {
 		v.b.WriteString(" />")
 	} else {
 		v.b.WriteByte('>')
@@ -145,14 +140,11 @@ func (v *visitor) VisitImage(in *ast.ImageNode) {
 
 // VisitCite writes code for citations.
 func (v *visitor) VisitCite(cn *ast.CiteNode) {
-	if adapt := v.enc.adaptCite; adapt != nil {
-		n := adapt(cn)
-		if n != cn {
-			n.Accept(v)
-			return
-		}
+	cn, n := v.env.AdaptCite(cn)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
-
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
 
@@ -170,8 +162,8 @@ func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
 	v.lang.push(fn.Attrs)
 	defer v.lang.pop()
 
-	v.enc.footnotes = append(v.enc.footnotes, fn)
-	n := strconv.Itoa(len(v.enc.footnotes))
+	v.footnotes = append(v.footnotes, fn)
+	n := strconv.Itoa(len(v.footnotes))
 	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a href=\"#fn:", n, "\" class=\"zs-footnote-ref\" role=\"doc-noteref\">", n, "</a></sup>")
 	// TODO: what to do with Attrs?
 }

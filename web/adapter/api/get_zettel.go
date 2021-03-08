@@ -65,12 +65,17 @@ func MakeGetZettelHandler(
 			return
 		}
 
-		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(zn.InhMeta)}
-		linkAdapter := encoder.AdaptLinkOption{
-			Adapter: adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
+		env := encoder.Environment{
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
+			ImageAdapter:   adapter.MakeImageAdapter(),
+			CiteAdapter:    nil,
+			Lang:           runtime.GetLang(zn.InhMeta),
+			Xhtml:          false,
+			MarkerExternal: "",
+			NewWindow:      false,
+			IgnoreMeta:     map[string]bool{meta.KeyLang: true},
+			Title:          nil,
 		}
-		imageAdapter := encoder.AdaptImageOption{Adapter: adapter.MakeImageAdapter()}
-
 		switch part {
 		case partZettel:
 			inhMeta := false
@@ -78,16 +83,7 @@ func MakeGetZettelHandler(
 				w.Header().Set(adapter.ContentType, format2ContentType(format))
 				inhMeta = true
 			}
-			enc := encoder.Create(format, &langOption,
-				&linkAdapter,
-				&imageAdapter,
-				&encoder.StringsOption{
-					Key: "no-meta",
-					Value: []string{
-						meta.KeyLang,
-					},
-				},
-			)
+			enc := encoder.Create(format, &env)
 			if enc == nil {
 				err = adapter.ErrNoSuchFormat
 			} else {
@@ -97,9 +93,9 @@ func MakeGetZettelHandler(
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			if format == "raw" {
 				// Don't write inherited meta data, just the raw
-				err = writeMeta(w, zn.Zettel.Meta, format)
+				err = writeMeta(w, zn.Zettel.Meta, format, nil)
 			} else {
-				err = writeMeta(w, zn.InhMeta, format)
+				err = writeMeta(w, zn.InhMeta, format, nil)
 			}
 		case partContent:
 			if format == "raw" {
@@ -109,14 +105,7 @@ func MakeGetZettelHandler(
 			} else {
 				w.Header().Set(adapter.ContentType, format2ContentType(format))
 			}
-			err = writeContent(w, zn, format,
-				&langOption,
-				&encoder.StringOption{
-					Key:   meta.KeyMarkerExternal,
-					Value: runtime.GetMarkerExternal()},
-				&linkAdapter,
-				&imageAdapter,
-			)
+			err = writeContent(w, zn, format, &env)
 		default:
 			adapter.BadRequest(w, "Unknown _part parameter")
 			return

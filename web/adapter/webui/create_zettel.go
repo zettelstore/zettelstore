@@ -82,13 +82,13 @@ func MakeGetNewZettelHandler(
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
-		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(m)}
-		textTitle, err := adapter.FormatInlines(title, "text", &langOption)
+		textTitle, err := adapter.FormatInlines(title, "text", nil)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		htmlTitle, err := adapter.FormatInlines(title, "html", &langOption)
+		env := encoder.Environment{Lang: runtime.GetLang(m)}
+		htmlTitle, err := adapter.FormatInlines(title, "html", &env)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return

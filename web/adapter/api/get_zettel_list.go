@@ -66,7 +66,7 @@ func renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta) {
 	buf.WriteStrings("<html lang=\"", runtime.GetDefaultLang(), "\">\n<body>\n<ul>\n")
 	for _, m := range metaList {
 		title := m.GetDefault(meta.KeyTitle, "")
-		htmlTitle, err := adapter.FormatInlines(parser.ParseTitle(title), "html")
+		htmlTitle, err := adapter.FormatInlines(parser.ParseTitle(title), "html", nil)
 		if err != nil {
 			adapter.InternalServerError(w, "Format HTML inlines", err)
 			return

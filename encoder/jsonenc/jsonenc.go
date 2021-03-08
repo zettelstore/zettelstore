@@ -22,7 +22,7 @@ import (
 
 func init() {
 	encoder.Register("json", encoder.Info{
-		Create:  func() encoder.Encoder { return &jsonEncoder{} },
+		Create:  func(*encoder.Environment) encoder.Encoder { return &jsonEncoder{} },
 		Default: true,
 	})
 }
@@ -30,9 +30,6 @@ func init() {
 // jsonEncoder is just a stub. It is not implemented. The real implementation
 // is in file web/adapter/json.go
 type jsonEncoder struct{}
-
-// SetOption does nothing because this encoder does not recognize any option.
-func (je *jsonEncoder) SetOption(option encoder.Option) {}
 
 // WriteZettel writes the encoded zettel to the writer.
 func (je *jsonEncoder) WriteZettel(

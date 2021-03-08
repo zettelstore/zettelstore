@@ -24,26 +24,12 @@ import (
 
 func init() {
 	encoder.Register("djson", encoder.Info{
-		Create: func() encoder.Encoder { return &jsonDetailEncoder{} },
+		Create: func(env *encoder.Environment) encoder.Encoder { return &jsonDetailEncoder{env: env} },
 	})
 }
 
 type jsonDetailEncoder struct {
-	adaptLink  func(*ast.LinkNode) ast.InlineNode
-	adaptImage func(*ast.ImageNode) ast.InlineNode
-	title      ast.InlineSlice
-}
-
-// SetOption sets an option for the encoder
-func (je *jsonDetailEncoder) SetOption(option encoder.Option) {
-	switch opt := option.(type) {
-	case *encoder.TitleOption:
-		je.title = opt.Inline
-	case *encoder.AdaptLinkOption:
-		je.adaptLink = opt.Adapter
-	case *encoder.AdaptImageOption:
-		je.adaptImage = opt.Adapter
-	}
+	env *encoder.Environment
 }
 
 // WriteZettel writes the encoded zettel to the writer.
@@ -69,12 +55,12 @@ func (je *jsonDetailEncoder) WriteZettel(
 func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteByte('{')
-	if je.title == nil {
-		v.writeMeta(m, true)
-	} else {
+	if env := je.env; env != nil && len(env.Title) > 0 {
 		v.b.WriteString("\"title\":")
-		v.acceptInlineSlice(je.title)
+		v.acceptInlineSlice(env.Title)
 		v.writeMeta(m, false)
+	} else {
+		v.writeMeta(m, true)
 	}
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
@@ -104,11 +90,11 @@ func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int,
 // detailVisitor writes the abstract syntax tree to an io.Writer.
 type detailVisitor struct {
 	b   encoder.BufWriter
-	enc *jsonDetailEncoder
+	env *encoder.Environment
 }
 
 func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
-	return &detailVisitor{b: encoder.NewBufWriter(w), enc: je}
+	return &detailVisitor{b: encoder.NewBufWriter(w), env: je.env}
 }
 
 // VisitPara emits JSON code for a paragraph.
@@ -336,13 +322,10 @@ var mapRefState = map[ast.RefState]string{
 
 // VisitLink writes JSON code for links.
 func (v *detailVisitor) VisitLink(ln *ast.LinkNode) {
-	if adapt := v.enc.adaptLink; adapt != nil {
-		n := adapt(ln)
-		var ok bool
-		if ln, ok = n.(*ast.LinkNode); !ok {
-			n.Accept(v)
-			return
-		}
+	ln, n := v.env.AdaptLink(ln)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
 	v.writeNodeStart("Link")
 	v.visitAttributes(ln.Attrs)
@@ -357,13 +340,10 @@ func (v *detailVisitor) VisitLink(ln *ast.LinkNode) {
 
 // VisitImage writes JSON code for images.
 func (v *detailVisitor) VisitImage(in *ast.ImageNode) {
-	if adapt := v.enc.adaptImage; adapt != nil {
-		n := adapt(in)
-		var ok bool
-		if in, ok = n.(*ast.ImageNode); !ok {
-			n.Accept(v)
-			return
-		}
+	in, n := v.env.AdaptImage(in)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
 	v.writeNodeStart("Image")
 	v.visitAttributes(in.Attrs)

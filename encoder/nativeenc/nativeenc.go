@@ -24,23 +24,12 @@ import (
 
 func init() {
 	encoder.Register("native", encoder.Info{
-		Create: func() encoder.Encoder { return &nativeEncoder{} },
+		Create: func(env *encoder.Environment) encoder.Encoder { return &nativeEncoder{env: env} },
 	})
 }
 
 type nativeEncoder struct {
-	adaptLink  func(*ast.LinkNode) ast.InlineNode
-	adaptImage func(*ast.ImageNode) ast.InlineNode
-}
-
-// SetOption sets one option for this encoder.
-func (ne *nativeEncoder) SetOption(option encoder.Option) {
-	switch opt := option.(type) {
-	case *encoder.AdaptLinkOption:
-		ne.adaptLink = opt.Adapter
-	case *encoder.AdaptImageOption:
-		ne.adaptImage = opt.Adapter
-	}
+	env *encoder.Environment
 }
 
 // WriteZettel encodes the zettel to the writer.
@@ -93,11 +82,11 @@ func (ne *nativeEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, err
 type visitor struct {
 	b     encoder.BufWriter
 	level int
-	enc   *nativeEncoder
+	env   *encoder.Environment
 }
 
 func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w), enc: enc}
+	return &visitor{b: encoder.NewBufWriter(w), env: enc.env}
 }
 
 var (
@@ -394,13 +383,10 @@ var mapRefState = map[ast.RefState]string{
 
 // VisitLink writes native code for links.
 func (v *visitor) VisitLink(ln *ast.LinkNode) {
-	if adapt := v.enc.adaptLink; adapt != nil {
-		n := adapt(ln)
-		var ok bool
-		if ln, ok = n.(*ast.LinkNode); !ok {
-			n.Accept(v)
-			return
-		}
+	ln, n := v.env.AdaptLink(ln)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
 	v.b.WriteString("Link")
 	v.visitAttributes(ln.Attrs)
@@ -417,13 +403,10 @@ func (v *visitor) VisitLink(ln *ast.LinkNode) {
 
 // VisitImage writes native code for images.
 func (v *visitor) VisitImage(in *ast.ImageNode) {
-	if adapt := v.enc.adaptImage; adapt != nil {
-		n := adapt(in)
-		var ok bool
-		if in, ok = n.(*ast.ImageNode); !ok {
-			n.Accept(v)
-			return
-		}
+	in, n := v.env.AdaptImage(in)
+	if n != nil {
+		n.Accept(v)
+		return
 	}
 	v.b.WriteString("Image")
 	v.visitAttributes(in.Attrs)

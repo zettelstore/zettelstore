@@ -102,7 +102,7 @@ func checkFileContent(t *testing.T, filename string, gotContent string) {
 
 func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format string) {
 	t.Helper()
-	if enc := encoder.Create(format); enc != nil {
+	if enc := encoder.Create(format, nil); enc != nil {
 		var sb strings.Builder
 		enc.WriteBlocks(&sb, zn.Ast)
 		checkFileContent(t, resultName, sb.String())
@@ -112,7 +112,7 @@ func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format
 }
 
 func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
-	zmkEncoder := encoder.Create("zmk")
+	zmkEncoder := encoder.Create("zmk", nil)
 	var sb strings.Builder
 	zmkEncoder.WriteBlocks(&sb, zn.Ast)
 	gotFirst := sb.String()
@@ -178,7 +178,7 @@ func TestContentRegression(t *testing.T) {
 func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format string) {
 	t.Helper()
 
-	if enc := encoder.Create(format); enc != nil {
+	if enc := encoder.Create(format, nil); enc != nil {
 		var sb strings.Builder
 		enc.WriteMeta(&sb, zn.Zettel.Meta)
 		checkFileContent(t, resultName, sb.String())

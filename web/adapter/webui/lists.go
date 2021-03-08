@@ -382,17 +382,17 @@ func newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey stri
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
 func buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
-	langOption := encoder.StringOption{Key: "lang", Value: ""}
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
-		if lang, ok := m.Get(meta.KeyLang); ok {
-			langOption.Value = lang
+		var lang string
+		if val, ok := m.Get(meta.KeyLang); ok {
+			lang = val
 		} else {
-			langOption.Value = defaultLang
+			lang = defaultLang
 		}
 		title, _ := m.Get(meta.KeyTitle)
-		htmlTitle, err := adapter.FormatInlines(
-			parser.ParseTitle(title), "html", &langOption)
+		env := encoder.Environment{Lang: lang}
+		htmlTitle, err := adapter.FormatInlines(parser.ParseTitle(title), "html", &env)
 		if err != nil {
 			return nil, err
 		}

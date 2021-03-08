@@ -25,7 +25,7 @@ import (
 
 func cleanupBlockSlice(bs ast.BlockSlice) {
 	cv := &cleanupVisitor{
-		textEnc: encoder.Create("text"),
+		textEnc: encoder.Create("text", nil),
 		doMark:  false,
 	}
 	t := ast.NewTopDownTraverser(cv)

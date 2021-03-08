@@ -68,31 +68,29 @@ func MakeGetInfoHandler(
 			return
 		}
 
-		langOption := &encoder.StringOption{
-			Key:   "lang",
-			Value: runtime.GetLang(zn.InhMeta)}
-
 		summary := collect.References(zn)
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Images...))
 
-		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil, langOption)
+		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
 
+		lang := runtime.GetLang(zn.InhMeta)
+		env := encoder.Environment{Lang: lang}
 		pairs := zn.Zettel.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, 0, len(pairs))
-		getTitle := makeGetTitle(ctx, getMeta, langOption)
+		getTitle := makeGetTitle(ctx, getMeta, &env)
 		for _, p := range pairs {
 			var html strings.Builder
-			writeHTMLMetaValue(&html, zn.Zettel.Meta, p.Key, getTitle, langOption)
+			writeHTMLMetaValue(&html, zn.Zettel.Meta, p.Key, getTitle, &env)
 			metaData = append(metaData, metaDataInfo{p.Key, html.String()})
 		}
 
 		user := session.GetUser(ctx)
 		var base baseData
-		te.makeBaseData(ctx, langOption.Value, textTitle, user, &base)
+		te.makeBaseData(ctx, lang, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
 		te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string

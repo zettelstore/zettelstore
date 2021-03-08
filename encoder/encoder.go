@@ -24,8 +24,6 @@ import (
 
 // Encoder is an interface that allows to encode different parts of a zettel.
 type Encoder interface {
-	SetOption(Option)
-
 	WriteZettel(io.Writer, *ast.ZettelNode, bool) (int, error)
 	WriteMeta(io.Writer, *meta.Meta) (int, error)
 	WriteContent(io.Writer, *ast.ZettelNode) (int, error)
@@ -42,26 +40,17 @@ var (
 	ErrNoWriteInlines = errors.New("method WriteInlines is not implemented")
 )
 
-// Option allows to configure an encoder
-type Option interface {
-	Name() string
-}
-
 // Create builds a new encoder with the given options.
-func Create(format string, options ...Option) Encoder {
+func Create(format string, env *Environment) Encoder {
 	if info, ok := registry[format]; ok {
-		enc := info.Create()
-		for _, opt := range options {
-			enc.SetOption(opt)
-		}
-		return enc
+		return info.Create(env)
 	}
 	return nil
 }
 
 // Info stores some data about an encoder.
 type Info struct {
-	Create  func() Encoder
+	Create  func(*Environment) Encoder
 	Default bool
 }
 

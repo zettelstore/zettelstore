@@ -25,20 +25,23 @@ import (
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	enc          *htmlEncoder
+	env          *encoder.Environment
 	b            encoder.BufWriter
 	visibleSpace bool // Show space character in raw text
 	inVerse      bool // In verse block
-	xhtml        bool // copied from enc.xhtml
 	lang         langStack
+	footnotes    []*ast.FootnoteNode
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
+	var lang string
+	if he.env != nil {
+		lang = he.env.Lang
+	}
 	return &visitor{
-		enc:   he,
-		b:     encoder.NewBufWriter(w),
-		xhtml: he.xhtml,
-		lang:  newLangStack(he.lang),
+		env:  he.env,
+		b:    encoder.NewBufWriter(w),
+		lang: newLangStack(lang),
 	}
 }
 
@@ -49,7 +52,7 @@ var mapMetaKey = map[string]string{
 
 func (v *visitor) acceptMeta(m *meta.Meta) {
 	for _, pair := range m.Pairs(true) {
-		if v.enc.ignoreMeta[pair.Key] {
+		if env := v.env; env != nil && env.IgnoreMeta[pair.Key] {
 			continue
 		}
 		if pair.Key == meta.KeyTitle {
@@ -99,12 +102,12 @@ func (v *visitor) acceptInlineSlice(ins ast.InlineSlice) {
 }
 
 func (v *visitor) writeEndnotes() {
-	if len(v.enc.footnotes) > 0 {
+	if len(v.footnotes) > 0 {
 		v.b.WriteString("<ol class=\"zs-endnotes\">\n")
-		for i := 0; i < len(v.enc.footnotes); i++ {
+		for i := 0; i < len(v.footnotes); i++ {
 			// Do not use a range loop above, because a footnote may contain
 			// a footnote. Therefore v.enc.footnote may grow during the loop.
-			fn := v.enc.footnotes[i]
+			fn := v.footnotes[i]
 			n := strconv.Itoa(i + 1)
 			v.b.WriteStrings("<li id=\"fn:", n, "\" role=\"doc-endnote\">")
 			v.acceptInlineSlice(fn.Inlines)

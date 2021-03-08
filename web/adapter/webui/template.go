@@ -243,12 +243,11 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 			continue
 		}
 		title := runtime.GetTitle(m)
-		langOption := encoder.StringOption{Key: "lang", Value: runtime.GetLang(m)}
-		astTitle := parser.ParseInlines(
-			input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
-		menuTitle, err := adapter.FormatInlines(astTitle, "html", &langOption)
+		astTitle := parser.ParseInlines(input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
+		env := encoder.Environment{Lang: runtime.GetLang(m)}
+		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
 		if err != nil {
-			menuTitle, err = adapter.FormatInlines(astTitle, "text", &langOption)
+			menuTitle, err = adapter.FormatInlines(astTitle, "text", nil)
 			if err != nil {
 				menuTitle = title
 			}

@@ -70,7 +70,7 @@ var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
 func TestEncoderAvailability(t *testing.T) {
 	encoderMissing := false
 	for _, format := range formats {
-		enc := encoder.Create(format)
+		enc := encoder.Create(format, nil)
 		if enc == nil {
 			t.Errorf("No encoder for %q found", format)
 			encoderMissing = true
@@ -109,14 +109,14 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 	testID := tc.Example*100 + 1
 	for _, format := range formats {
 		t.Run(fmt.Sprintf("Encode %v %v", format, testID), func(st *testing.T) {
-			encoder.Create(format).WriteBlocks(&sb, ast)
+			encoder.Create(format, nil).WriteBlocks(&sb, ast)
 			sb.Reset()
 		})
 	}
 }
 
 func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	htmlEncoder := encoder.Create("html", &encoder.BoolOption{Key: "xhtml", Value: true})
+	htmlEncoder := encoder.Create("html", &encoder.Environment{Xhtml: true})
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
@@ -141,7 +141,7 @@ func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	zmkEncoder := encoder.Create("zmk")
+	zmkEncoder := encoder.Create("zmk", nil)
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
