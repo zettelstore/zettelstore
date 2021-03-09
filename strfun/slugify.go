@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -12,7 +12,6 @@
 package strfun
 
 import (
-	"strings"
 	"unicode"
 
 	"golang.org/x/text/unicode/norm"
@@ -32,7 +31,6 @@ var (
 
 // Slugify returns a string that can be used as part of an URL
 func Slugify(s string) string {
-	s = strings.TrimSpace(s)
 	result := make([]rune, 0, len(s))
 	addDash := false
 	for _, r := range norm.NFKD.String(s) {
@@ -48,4 +46,22 @@ func Slugify(s string) string {
 		result = result[:i]
 	}
 	return string(result)
+}
+
+// NormalizeWords produces a word list that is normalized for better searching.
+func NormalizeWords(s string) []string {
+	result := make([]string, 0, 1)
+	word := make([]rune, 0, len(s))
+	for _, r := range norm.NFKD.String(s) {
+		if unicode.IsOneOf(useUnicode, r) {
+			word = append(word, unicode.ToLower(r))
+		} else if !unicode.IsOneOf(ignoreUnicode, r) && len(word) > 0 {
+			result = append(result, string(word))
+			word = word[:0]
+		}
+	}
+	if len(word) > 0 {
+		result = append(result, string(word))
+	}
+	return result
 }

@@ -219,7 +219,7 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 		}
 	}
 
-	refs := collectZettelIndexData(parser.ParseZettel(zettel, ""))
+	refs, _ := collectZettelIndexData(parser.ParseZettel(zettel, ""))
 	for ref := range refs {
 		if _, err := p.GetMeta(ctx, ref); err == nil {
 			zi.AddBackRef(ref)

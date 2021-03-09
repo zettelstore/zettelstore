@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -190,7 +190,7 @@ func (tn *TableNode) Accept(v Visitor) { v.VisitTable(tn) }
 
 //--------------------------------------------------------------------------
 
-// BLOBNode contains just binary data that must be interpreted accordung to
+// BLOBNode contains just binary data that must be interpreted according to
 // a syntax.
 type BLOBNode struct {
 	Title  string

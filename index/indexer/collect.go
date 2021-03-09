@@ -14,20 +14,28 @@ package indexer
 import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/strfun"
 )
 
-func collectZettelIndexData(zn *ast.ZettelNode) id.Set {
-	ixv := ixVisitor{refs: id.NewSet()}
+type wordSet map[string]int
+
+func collectZettelIndexData(zn *ast.ZettelNode) (id.Set, wordSet) {
+	ixv := ixVisitor{refs: id.NewSet(), words: make(wordSet)}
 	ast.NewTopDownTraverser(&ixv).VisitBlockSlice(zn.Ast)
-	return ixv.refs
+	return ixv.refs, ixv.words
 }
 
 type ixVisitor struct {
-	refs id.Set
+	refs  id.Set
+	words wordSet
 }
 
-// VisitVerbatim does nothing.
-func (lv *ixVisitor) VisitVerbatim(vn *ast.VerbatimNode) {}
+// VisitVerbatim collects the verbatim text in the word set.
+func (lv *ixVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
+	for _, line := range vn.Lines {
+		lv.addText(line)
+	}
+}
 
 // VisitRegion does nothing.
 func (lv *ixVisitor) VisitRegion(rn *ast.RegionNode) {}
@@ -53,11 +61,15 @@ func (lv *ixVisitor) VisitTable(tn *ast.TableNode) {}
 // VisitBLOB does nothing.
 func (lv *ixVisitor) VisitBLOB(bn *ast.BLOBNode) {}
 
-// VisitText does nothing.
-func (lv *ixVisitor) VisitText(tn *ast.TextNode) {}
+// VisitText collects the text in the word set.
+func (lv *ixVisitor) VisitText(tn *ast.TextNode) {
+	lv.addText(tn.Text)
+}
 
-// VisitTag does nothing.
-func (lv *ixVisitor) VisitTag(tn *ast.TagNode) {}
+// VisitTag collects the tag name in the word set.
+func (lv *ixVisitor) VisitTag(tn *ast.TagNode) {
+	lv.addText(tn.Tag)
+}
 
 // VisitSpace does nothing.
 func (lv *ixVisitor) VisitSpace(sn *ast.SpaceNode) {}
@@ -99,5 +111,13 @@ func (lv *ixVisitor) VisitMark(mn *ast.MarkNode) {}
 // VisitFormat does nothing.
 func (lv *ixVisitor) VisitFormat(fn *ast.FormatNode) {}
 
-// VisitLiteral does nothing.
-func (lv *ixVisitor) VisitLiteral(ln *ast.LiteralNode) {}
+// VisitLiteral collects the literal words in the word set.
+func (lv *ixVisitor) VisitLiteral(ln *ast.LiteralNode) {
+	lv.addText(ln.Text)
+}
+
+func (lv *ixVisitor) addText(s string) {
+	for _, word := range strfun.NormalizeWords(s) {
+		lv.words[word] = lv.words[word] + 1
+	}
+}
