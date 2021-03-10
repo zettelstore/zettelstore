@@ -68,32 +68,10 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 			URL: adapter.NewURLBuilder('z').SetZid(zid).String(),
 		}
 		if kind&kindLink != 0 {
-			if matter&matterIncoming != 0 {
-				// Backlinks not yet implemented
-				outData.Links.Incoming = []jsonIDURL{}
-			}
-			zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links, false)
-			if matter&matterOutgoing != 0 {
-				outData.Links.Outgoing = idURLRefs(zetRefs)
-			}
-			if matter&matterLocal != 0 {
-				outData.Links.Local = stringRefs(locRefs)
-			}
-			if matter&matterExternal != 0 {
-				outData.Links.External = stringRefs(extRefs)
-			}
+			setupLinkJSONRefs(summary, matter, &outData)
 		}
 		if kind&kindImage != 0 {
-			zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images, false)
-			if matter&matterOutgoing != 0 {
-				outData.Images.Outgoing = idURLRefs(zetRefs)
-			}
-			if matter&matterLocal != 0 {
-				outData.Images.Local = stringRefs(locRefs)
-			}
-			if matter&matterExternal != 0 {
-				outData.Images.External = stringRefs(extRefs)
-			}
+			setupImageJSONRefs(summary, matter, &outData)
 		}
 		if kind&kindCite != 0 {
 			outData.Cites = stringCites(summary.Cites)
@@ -103,6 +81,35 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 		enc := json.NewEncoder(w)
 		enc.SetEscapeHTML(false)
 		enc.Encode(&outData)
+	}
+}
+
+func setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+	if matter&matterIncoming != 0 {
+		outData.Links.Incoming = []jsonIDURL{}
+	}
+	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links, false)
+	if matter&matterOutgoing != 0 {
+		outData.Links.Outgoing = idURLRefs(zetRefs)
+	}
+	if matter&matterLocal != 0 {
+		outData.Links.Local = stringRefs(locRefs)
+	}
+	if matter&matterExternal != 0 {
+		outData.Links.External = stringRefs(extRefs)
+	}
+}
+
+func setupImageJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images, false)
+	if matter&matterOutgoing != 0 {
+		outData.Images.Outgoing = idURLRefs(zetRefs)
+	}
+	if matter&matterLocal != 0 {
+		outData.Images.Local = stringRefs(locRefs)
+	}
+	if matter&matterExternal != 0 {
+		outData.Images.External = stringRefs(extRefs)
 	}
 }
 

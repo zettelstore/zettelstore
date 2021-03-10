@@ -78,33 +78,11 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 	for key, values := range q {
 		switch key {
 		case sortQKey, orderQKey:
-			if len(values) > 0 {
-				descending := false
-				sortkey := values[0]
-				if strings.HasPrefix(sortkey, "-") {
-					descending = true
-					sortkey = sortkey[1:]
-				}
-				if meta.KeyIsValid(sortkey) || sortkey == place.RandomOrder {
-					sorter = sorter.Ensure()
-					sorter.Order = sortkey
-					sorter.Descending = descending
-				}
-			}
+			sorter = extractOrderFromQuery(values, sorter)
 		case offsetQKey:
-			if len(values) > 0 {
-				if offset, err := strconv.Atoi(values[0]); err == nil {
-					sorter = sorter.Ensure()
-					sorter.Offset = offset
-				}
-			}
+			sorter = extractOffsetFromQuery(values, sorter)
 		case limitQKey:
-			if len(values) > 0 {
-				if limit, err := strconv.Atoi(values[0]); err == nil {
-					sorter = sorter.Ensure()
-					sorter.Limit = limit
-				}
-			}
+			sorter = extractLimitFromQuery(values, sorter)
 		case negateQKey:
 			filter = filter.SetNegate()
 		case sQKey:
@@ -116,6 +94,43 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 		}
 	}
 	return filter, sorter
+}
+
+func extractOrderFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+	if len(values) > 0 {
+		descending := false
+		sortkey := values[0]
+		if strings.HasPrefix(sortkey, "-") {
+			descending = true
+			sortkey = sortkey[1:]
+		}
+		if meta.KeyIsValid(sortkey) || sortkey == place.RandomOrder {
+			sorter = sorter.Ensure()
+			sorter.Order = sortkey
+			sorter.Descending = descending
+		}
+	}
+	return sorter
+}
+
+func extractOffsetFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+	if len(values) > 0 {
+		if offset, err := strconv.Atoi(values[0]); err == nil {
+			sorter = sorter.Ensure()
+			sorter.Offset = offset
+		}
+	}
+	return sorter
+}
+
+func extractLimitFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+	if len(values) > 0 {
+		if limit, err := strconv.Atoi(values[0]); err == nil {
+			sorter = sorter.Ensure()
+			sorter.Limit = limit
+		}
+	}
+	return sorter
 }
 
 func getQueryKeys(forSearch bool) (string, string, string, string, string, string) {

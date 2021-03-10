@@ -132,19 +132,7 @@ func compileFilter(filter *Filter) filterFunc {
 		}
 		return searchAll
 	}
-	searchMeta := func(m *meta.Meta) bool {
-		for _, s := range specs {
-			if value, ok := m.Get(s.key); !ok || !s.match(value) {
-				return false
-			}
-		}
-		for _, key := range nomatch {
-			if _, ok := m.Get(key); ok {
-				return false
-			}
-		}
-		return true
-	}
+	searchMeta := makeSearchMetaFilterFunc(specs, nomatch)
 	if searchAll == nil {
 		return searchMeta
 	}
@@ -163,23 +151,24 @@ func createFilterSpecs(filter *Filter) ([]matchSpec, []string, filterFunc) {
 			searchAll = createSearchAllFunc(values, filter.negate)
 			continue
 		}
-		if meta.KeyIsValid(key) {
-			if empty, negates := hasEmptyValues(values); empty {
-				if negates == 0 {
-					specs = append(specs, matchSpec{key, matchAlways})
-					continue
-				}
-				if len(values) < negates {
-					specs = append(specs, matchSpec{key, matchNever})
-					continue
-				}
-				nomatch = append(nomatch, key)
+		if !meta.KeyIsValid(key) {
+			continue
+		}
+		if empty, negates := hasEmptyValues(values); empty {
+			if negates == 0 {
+				specs = append(specs, matchSpec{key, matchAlways})
 				continue
 			}
-			match := createMatchFunc(key, values)
-			if match != nil {
-				specs = append(specs, matchSpec{key, match})
+			if len(values) < negates {
+				specs = append(specs, matchSpec{key, matchNever})
+				continue
 			}
+			nomatch = append(nomatch, key)
+			continue
+		}
+		match := createMatchFunc(key, values)
+		if match != nil {
+			specs = append(specs, matchSpec{key, match})
 		}
 	}
 	return specs, nomatch, searchAll
@@ -357,6 +346,22 @@ func createSearchAllFunc(values []filterValue, negate bool) filterFunc {
 			match = createMatchFunc(meta.KeyID, values)
 		}
 		return match(m.Zid.String()) != negate
+	}
+}
+
+func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) filterFunc {
+	return func(m *meta.Meta) bool {
+		for _, s := range specs {
+			if value, ok := m.Get(s.key); !ok || !s.match(value) {
+				return false
+			}
+		}
+		for _, key := range nomatch {
+			if _, ok := m.Get(key); ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 

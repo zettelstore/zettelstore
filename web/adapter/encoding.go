@@ -70,23 +70,6 @@ func MakeLinkAdapter(
 			panic(err)
 		}
 		_, err = getMeta.Run(index.NoEnrichContext(ctx), zid)
-		newLink := *origLink
-		if err == nil {
-			u := NewURLBuilder(key).SetZid(zid)
-			if part != "" {
-				u.AppendQuery("_part", part)
-			}
-			if format != "" {
-				u.AppendQuery("_format", format)
-			}
-			if fragment := origRef.URL.EscapedFragment(); len(fragment) > 0 {
-				u.SetFragment(fragment)
-			}
-			newRef := ast.ParseReference(u.String())
-			newRef.State = ast.RefStateFound
-			newLink.Ref = newRef
-			return &newLink
-		}
 		if place.IsErrNotAllowed(err) {
 			return &ast.FormatNode{
 				Code:    ast.FormatSpan,
@@ -94,11 +77,32 @@ func MakeLinkAdapter(
 				Inlines: origLink.Inlines,
 			}
 		}
-		newRef := ast.ParseReference(origRef.Value)
-		newRef.State = ast.RefStateBroken
+		var newRef *ast.Reference
+		if err == nil {
+			newRef = ast.ParseReference(adaptZettelReference(key, zid, part, format, origRef.URL.EscapedFragment()))
+			newRef.State = ast.RefStateFound
+		} else {
+			newRef = ast.ParseReference(origRef.Value)
+			newRef.State = ast.RefStateBroken
+		}
+		newLink := *origLink
 		newLink.Ref = newRef
 		return &newLink
 	}
+}
+
+func adaptZettelReference(key byte, zid id.Zid, part, format, fragment string) string {
+	u := NewURLBuilder(key).SetZid(zid)
+	if part != "" {
+		u.AppendQuery("_part", part)
+	}
+	if format != "" {
+		u.AppendQuery("_format", format)
+	}
+	if fragment != "" {
+		u.SetFragment(fragment)
+	}
+	return u.String()
 }
 
 // MakeImageAdapter creates an adapter to change an image node during encoding.
