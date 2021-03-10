@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/strfun"
 )
 
 type indexer struct {
@@ -204,6 +205,14 @@ type getMetaPort interface {
 func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
 	m := zettel.Meta
 	zi := index.NewZettelIndex(m.Zid)
+	refs, words := collectZettelIndexData(parser.ParseZettel(zettel, ""))
+	for ref := range refs {
+		if _, err := p.GetMeta(ctx, ref); err == nil {
+			zi.AddBackRef(ref)
+		} else {
+			zi.AddDeadRef(ref)
+		}
+	}
 	for _, pair := range m.PairsRest(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -216,18 +225,13 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 			for _, val := range meta.ListFromValue(pair.Value) {
 				updateValue(ctx, descr.Inverse, val, p, zi)
 			}
+		default:
+			for _, word := range strfun.NormalizeWords(pair.Value) {
+				words[word] = words[word] + 1
+			}
 		}
 	}
-
-	refs, _ := collectZettelIndexData(parser.ParseZettel(zettel, ""))
-	for ref := range refs {
-		if _, err := p.GetMeta(ctx, ref); err == nil {
-			zi.AddBackRef(ref)
-		} else {
-			zi.AddDeadRef(ref)
-		}
-	}
-
+	zi.SetWords(words)
 	toCheck := idx.store.UpdateReferences(ctx, zi)
 	idx.checkZettel(toCheck)
 }

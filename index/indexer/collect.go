@@ -14,20 +14,19 @@ package indexer
 import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/index"
 	"zettelstore.de/z/strfun"
 )
 
-type wordSet map[string]int
-
-func collectZettelIndexData(zn *ast.ZettelNode) (id.Set, wordSet) {
-	ixv := ixVisitor{refs: id.NewSet(), words: make(wordSet)}
+func collectZettelIndexData(zn *ast.ZettelNode) (id.Set, index.WordSet) {
+	ixv := ixVisitor{refs: id.NewSet(), words: make(index.WordSet)}
 	ast.NewTopDownTraverser(&ixv).VisitBlockSlice(zn.Ast)
 	return ixv.refs, ixv.words
 }
 
 type ixVisitor struct {
 	refs  id.Set
-	words wordSet
+	words index.WordSet
 }
 
 // VisitVerbatim collects the verbatim text in the word set.

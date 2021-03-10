@@ -15,12 +15,16 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
+// WordSet contains the set of all words, with the count of their occurrences.
+type WordSet map[string]int
+
 // ZettelIndex contains all index data of a zettel.
 type ZettelIndex struct {
 	Zid      id.Zid            // zid of the indexed zettel
 	backrefs id.Set            // set of back references
 	metarefs map[string]id.Set // references to inverse keys
 	deadrefs id.Set            // set of dead references
+	words    WordSet
 }
 
 // NewZettelIndex creates a new zettel index.
@@ -53,6 +57,9 @@ func (zi *ZettelIndex) AddMetaRef(key string, zid id.Zid) {
 func (zi *ZettelIndex) AddDeadRef(zid id.Zid) {
 	zi.deadrefs[zid] = true
 }
+
+// SetWords sets the words to the given value.
+func (zi *ZettelIndex) SetWords(words WordSet) { zi.words = words }
 
 // GetDeadRefs returns all dead references as a sorted list.
 func (zi *ZettelIndex) GetDeadRefs() id.Slice {
