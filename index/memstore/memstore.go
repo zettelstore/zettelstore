@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"zettelstore.de/z/domain/id"
@@ -42,9 +43,10 @@ func (zi *zettelIndex) isEmpty() bool {
 }
 
 type memStore struct {
-	mx   sync.RWMutex
-	idx  map[id.Zid]*zettelIndex
-	dead map[id.Zid]id.Slice // map dead refs where they occur
+	mx    sync.RWMutex
+	idx   map[id.Zid]*zettelIndex
+	dead  map[id.Zid]id.Slice // map dead refs where they occur
+	words map[string]id.Slice
 
 	// Stats
 	updates uint64
@@ -99,6 +101,23 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 		ms.updates++
 		ms.mx.Unlock()
 	}
+}
+
+// Select all zettel that contains given words.
+func (ms *memStore) Select(words []string) id.Set {
+	result := id.NewSet()
+	for word, refs := range ms.words {
+		for _, w := range words {
+			if !strings.Contains(word, w) {
+				continue
+			}
+			for _, ref := range refs {
+				result[ref] = true
+			}
+			break
+		}
+	}
+	return result
 }
 
 func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {

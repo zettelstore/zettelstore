@@ -29,6 +29,12 @@ type Enricher interface {
 	Enrich(ctx context.Context, m *meta.Meta)
 }
 
+// Selector is used to select zettel identifier based on selection criteria.
+type Selector interface {
+	// Select all zettel that contains given words.
+	Select(words []string) id.Set
+}
+
 // NoEnrichContext will signal an enricher that nothing has to be done.
 // This is useful for an Indexer, but also for some place.Place calls, when
 // just the plain metadata is needed.
@@ -57,6 +63,7 @@ type Port interface {
 // Indexer contains all the functions of an index.
 type Indexer interface {
 	Enricher
+	Selector
 
 	// Start the index. It will read all zettel and store index data for later retrieval.
 	Start(Port)
@@ -89,6 +96,7 @@ type IndexerStats struct {
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
 	Enricher
+	Selector
 
 	// UpdateReferences for a specific zettel.
 	// Returns set of zettel identifier that must also be checked for changes.

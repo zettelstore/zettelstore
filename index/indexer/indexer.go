@@ -99,6 +99,16 @@ func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 	idx.store.Enrich(ctx, m)
 }
 
+// Select all zettel that contains given words.
+func (idx *indexer) Select(words []string) id.Set {
+	normalizedWords := make([]string, 0, len(words))
+	for _, word := range words {
+		normalizedWords = append(normalizedWords, strfun.NormalizeWords(word)...)
+	}
+	return idx.store.Select(normalizedWords)
+}
+
+// ReadStats populates st with indexer statistics.
 func (idx *indexer) ReadStats(st *index.IndexerStats) {
 	idx.mx.RLock()
 	st.LastReload = idx.lastReload
