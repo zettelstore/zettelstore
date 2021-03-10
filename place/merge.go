@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -13,7 +13,7 @@ package place
 
 import "zettelstore.de/z/domain/meta"
 
-// MergeSorted returns a merged sequence of meta data, sorted by a given Sorter.
+// MergeSorted returns a merged sequence of metadata, sorted by Zid.
 // The lists first and second must be sorted descending by Zid.
 func MergeSorted(first, second []*meta.Meta) []*meta.Meta {
 	lenFirst := len(first)
