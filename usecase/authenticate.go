@@ -20,13 +20,13 @@ import (
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // AuthenticatePort is the interface used by this use case.
 type AuthenticatePort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // Authenticate is the data for this use case.

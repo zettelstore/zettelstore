@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -169,7 +170,7 @@ func (zp *zipPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (zp *zipPlace) SelectMeta(
-	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
+	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
 
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {

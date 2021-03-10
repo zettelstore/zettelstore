@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 	"zettelstore.de/z/web/session"
 )
 
@@ -94,7 +95,7 @@ func (pp *polPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (pp *polPlace) SelectMeta(
-	ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+	ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
 	user := session.GetUser(ctx)
 	canRead := pp.policy.CanRead
 	f = f.AddPreFilter(func(m *meta.Meta) bool { return canRead(user, m) })

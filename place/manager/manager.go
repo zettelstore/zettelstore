@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // ConnectData contains all administration related values.
@@ -318,7 +319,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (result id.Set, err error) {
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
-func (mgr *Manager) SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+func (mgr *Manager) SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
 	mgr.mx.RLock()
 	defer mgr.mx.RUnlock()
 	if !mgr.started {

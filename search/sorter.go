@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package place provides a generic interface to zettel places.
-package place
+// Package search provides a zettel search.
+package search
 
 import (
 	"io"

@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/search"
 )
 
 // Place is implemented by all Zettel places.
@@ -44,8 +45,7 @@ type Place interface {
 	FetchZids(ctx context.Context) (id.Set, error)
 
 	// SelectMeta returns all zettel meta data that match the selection criteria.
-	// TODO: more docs
-	SelectMeta(ctx context.Context, f *Filter, s *Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 
 	// CanUpdateZettel returns true, if place could possibly update the given zettel.
 	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool

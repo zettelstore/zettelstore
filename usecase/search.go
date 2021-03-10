@@ -16,14 +16,14 @@ import (
 
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // SearchPort is the interface used by this use case.
 type SearchPort interface {
 	// SelectMeta returns all zettel meta data that match the selection
 	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // Search is the data for this use case.
@@ -37,14 +37,14 @@ func NewSearch(port SearchPort) Search {
 }
 
 // Run executes the use case.
-func (uc Search) Run(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error) {
+func (uc Search) Run(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
 	if !usesComputedMeta(f, s) {
 		ctx = index.NoEnrichContext(ctx)
 	}
 	return uc.port.SelectMeta(ctx, f, s)
 }
 
-func usesComputedMeta(f *place.Filter, s *place.Sorter) bool {
+func usesComputedMeta(f *search.Filter, s *search.Sorter) bool {
 	if f.HasComputedMetaKey() {
 		return true
 	}

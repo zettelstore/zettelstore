@@ -18,7 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // Use case: return user identified by meta key ident.
@@ -27,7 +27,7 @@ import (
 // GetUserPort is the interface used by this use case.
 type GetUserPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // GetUser is the data for this use case.
@@ -59,7 +59,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 		return identMeta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
-	var filter *place.Filter
+	var filter *search.Filter
 	filter = filter.AddExpr(meta.KeyRole, meta.ValueRoleUser, false)
 	filter = filter.AddExpr(meta.KeyUserID, ident, false)
 	metaList, err := uc.port.SelectMeta(ctx, filter, nil)

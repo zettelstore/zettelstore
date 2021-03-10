@@ -17,14 +17,14 @@ import (
 
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // ListRolePort is the interface used by this use case.
 type ListRolePort interface {
 	// SelectMeta returns all zettel meta data that match the selection
 	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // ListRole is the data for this use case.

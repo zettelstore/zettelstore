@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -135,7 +136,7 @@ func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (pp *progPlace) SelectMeta(
-	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
+	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
 	for zid, gen := range pp.zettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {

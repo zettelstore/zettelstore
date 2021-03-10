@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // GetInteger returns the integer value of the named query key.
@@ -73,7 +73,7 @@ func contentType2format(contentType string) (string, bool) {
 }
 
 // GetFilterSorter retrieves the specified filter and sorting options from a query.
-func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter *place.Sorter) {
+func GetFilterSorter(q url.Values, forSearch bool) (filter *search.Filter, sorter *search.Sorter) {
 	sortQKey, orderQKey, offsetQKey, limitQKey, negateQKey, sQKey := getQueryKeys(forSearch)
 	for key, values := range q {
 		switch key {
@@ -96,7 +96,7 @@ func GetFilterSorter(q url.Values, forSearch bool) (filter *place.Filter, sorter
 	return filter, sorter
 }
 
-func extractOrderFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+func extractOrderFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
 	if len(values) > 0 {
 		descending := false
 		sortkey := values[0]
@@ -104,7 +104,7 @@ func extractOrderFromQuery(values []string, sorter *place.Sorter) *place.Sorter 
 			descending = true
 			sortkey = sortkey[1:]
 		}
-		if meta.KeyIsValid(sortkey) || sortkey == place.RandomOrder {
+		if meta.KeyIsValid(sortkey) || sortkey == search.RandomOrder {
 			sorter = sorter.Ensure()
 			sorter.Order = sortkey
 			sorter.Descending = descending
@@ -113,7 +113,7 @@ func extractOrderFromQuery(values []string, sorter *place.Sorter) *place.Sorter 
 	return sorter
 }
 
-func extractOffsetFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+func extractOffsetFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
 	if len(values) > 0 {
 		if offset, err := strconv.Atoi(values[0]); err == nil {
 			sorter = sorter.Ensure()
@@ -123,7 +123,7 @@ func extractOffsetFromQuery(values []string, sorter *place.Sorter) *place.Sorter
 	return sorter
 }
 
-func extractLimitFromQuery(values []string, sorter *place.Sorter) *place.Sorter {
+func extractLimitFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
 	if len(values) > 0 {
 		if limit, err := strconv.Atoi(values[0]); err == nil {
 			sorter = sorter.Ensure()
@@ -140,7 +140,7 @@ func getQueryKeys(forSearch bool) (string, string, string, string, string, strin
 	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
 }
 
-func setCleanedQueryValues(filter *place.Filter, key string, values []string) *place.Filter {
+func setCleanedQueryValues(filter *search.Filter, key string, values []string) *search.Filter {
 	for _, val := range values {
 		val = strings.TrimSpace(val)
 		if len(val) > 0 && val[0] == '!' {

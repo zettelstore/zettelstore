@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -85,7 +86,7 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (cp *constPlace) SelectMeta(
-	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
+	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
 
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)

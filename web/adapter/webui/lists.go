@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -60,7 +61,7 @@ func renderWebUIZettelList(
 	title := listTitleFilterSorter("Filter", filter, sorter)
 	renderWebUIMetaList(
 		ctx, w, te, title, sorter,
-		func(sorter *place.Sorter) ([]*meta.Meta, error) {
+		func(sorter *search.Sorter) ([]*meta.Meta, error) {
 			if filter == nil && (sorter == nil || sorter.Order == "") {
 				ctx = index.NoEnrichContext(ctx)
 			}
@@ -185,7 +186,7 @@ func renderWebUITagsList(
 // MakeSearchHandler creates a new HTTP handler for the use case "search".
 func MakeSearchHandler(
 	te *TemplateEngine,
-	search usecase.Search,
+	ucSearch usecase.Search,
 	getMeta usecase.GetMeta,
 	getZettel usecase.GetZettel,
 ) http.HandlerFunc {
@@ -201,11 +202,11 @@ func MakeSearchHandler(
 		title := listTitleFilterSorter("Search", filter, sorter)
 		renderWebUIMetaList(
 			ctx, w, te, title, sorter,
-			func(sorter *place.Sorter) ([]*meta.Meta, error) {
+			func(sorter *search.Sorter) ([]*meta.Meta, error) {
 				if filter == nil && (sorter == nil || sorter.Order == "") {
 					ctx = index.NoEnrichContext(ctx)
 				}
-				return search.Run(ctx, filter, sorter)
+				return ucSearch.Run(ctx, filter, sorter)
 			},
 			func(offset int) string {
 				return newPageURL('f', query, offset, "offset", "limit")
@@ -282,8 +283,8 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 func renderWebUIMetaList(
 	ctx context.Context, w http.ResponseWriter, te *TemplateEngine,
 	title string,
-	sorter *place.Sorter,
-	ucMetaList func(sorter *place.Sorter) ([]*meta.Meta, error),
+	sorter *search.Sorter,
+	ucMetaList func(sorter *search.Sorter) ([]*meta.Meta, error),
 	pageURL func(int) string) {
 
 	var metaList []*meta.Meta
@@ -345,7 +346,7 @@ func renderWebUIMetaList(
 	})
 }
 
-func listTitleFilterSorter(prefix string, filter *place.Filter, sorter *place.Sorter) string {
+func listTitleFilterSorter(prefix string, filter *search.Filter, sorter *search.Sorter) string {
 	if filter == nil && sorter == nil {
 		return runtime.GetSiteName()
 	}

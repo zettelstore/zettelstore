@@ -16,14 +16,14 @@ import (
 
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/search"
 )
 
 // ListTagsPort is the interface used by this use case.
 type ListTagsPort interface {
 	// SelectMeta returns all zettel meta data that match the selection
 	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *place.Filter, s *place.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // ListTags is the data for this use case.

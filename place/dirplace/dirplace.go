@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/place/dirplace/directory"
 	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -192,7 +193,7 @@ func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (dp *dirPlace) SelectMeta(
-	ctx context.Context, f *place.Filter, s *place.Sorter) (res []*meta.Meta, err error) {
+	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
 
 	entries := dp.dirSrv.GetEntries()
 	res = make([]*meta.Meta, 0, len(entries))
