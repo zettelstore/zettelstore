@@ -14,6 +14,9 @@
   *  You can filter a zettel list by specifying that specific metadata keys must
      (or must not) be present.
      (minor: api, webui)
+  *  Context of a zettel (introduced in version 0.0.10) does not take tags into account any more.
+     Using some tags for determining the context resulted into erratic, non-deterministic context lists.
+     (minor: api,webui)
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 <a name="0_0_10"></a>

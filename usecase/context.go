@@ -16,15 +16,12 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
 )
 
 // ZettelContextPort is the interface used by this use case.
 type ZettelContextPort interface {
 	// GetMeta retrieves just the meta data of a specific zettel.
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // ZettelContext is the data for this use case.
@@ -112,24 +109,6 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 
 func (uc ZettelContext) addInitialTasks(ctx context.Context, tasks *ztlCtx, start *meta.Meta) {
 	tasks.add(start, 0)
-	tags, ok := start.GetTags(meta.KeyTags)
-	if !ok {
-		return
-	}
-	limit := tasks.depth
-	if limit == 0 || limit > 10 {
-		limit = 10
-	}
-	sorter := search.Sorter{Limit: limit}
-	for _, tag := range tags {
-		var filter *search.Filter
-		filter = filter.AddExpr(meta.KeyTags, tag, false)
-		if ml, err := uc.port.SelectMeta(ctx, filter, &sorter); err == nil {
-			for _, m := range ml {
-				tasks.add(m, 1)
-			}
-		}
-	}
 }
 
 func (uc ZettelContext) addID(ctx context.Context, tasks *ztlCtx, depth int, value string) {
