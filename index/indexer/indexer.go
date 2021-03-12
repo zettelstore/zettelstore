@@ -14,6 +14,7 @@ package indexer
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"zettelstore.de/z/domain"
@@ -167,9 +168,7 @@ func (idx *indexer) workService(ctx context.Context, p indexerPort) bool {
 			}
 		case arUpdate:
 			changed = true
-			idx.mx.Lock()
-			idx.sinceReload++
-			idx.mx.Unlock()
+			atomic.AddUint64(&idx.sinceReload, 1)
 			zettel, err := p.GetZettel(ctx, zid)
 			if err != nil {
 				// TODO: on some errors put the zid into a "try later" set
@@ -178,9 +177,7 @@ func (idx *indexer) workService(ctx context.Context, p indexerPort) bool {
 			idx.updateZettel(ctx, zettel, p)
 		case arDelete:
 			changed = true
-			idx.mx.Lock()
-			idx.sinceReload++
-			idx.mx.Unlock()
+			atomic.AddUint64(&idx.sinceReload, 1)
 			idx.deleteZettel(zid)
 		}
 	}

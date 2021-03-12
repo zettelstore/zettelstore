@@ -61,11 +61,19 @@ func New() index.Store {
 }
 
 func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
+	if ms.doEnrich(ctx, m) {
+		ms.mx.Lock()
+		ms.updates++
+		ms.mx.Unlock()
+	}
+}
+
+func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 	ms.mx.RLock()
+	defer ms.mx.RUnlock()
 	zi, ok := ms.idx[m.Zid]
 	if !ok {
-		ms.mx.RUnlock()
-		return
+		return false
 	}
 	var updated bool
 	if len(zi.dead) > 0 {
@@ -95,12 +103,7 @@ func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
 		m.Set(meta.KeyBack, back.String())
 		updated = true
 	}
-	ms.mx.RUnlock()
-	if updated {
-		ms.mx.Lock()
-		ms.updates++
-		ms.mx.Unlock()
-	}
+	return updated
 }
 
 // Select all zettel that contains given words.
