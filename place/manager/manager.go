@@ -266,7 +266,9 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	}
 	for _, p := range mgr.subplaces {
 		if z, err := p.GetZettel(ctx, zid); err != place.ErrNotFound {
-			mgr.filter.Enrich(ctx, z.Meta)
+			if err == nil {
+				mgr.filter.Enrich(ctx, z.Meta)
+			}
 			return z, err
 		}
 	}
@@ -282,7 +284,9 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	}
 	for _, p := range mgr.subplaces {
 		if m, err := p.GetMeta(ctx, zid); err != place.ErrNotFound {
-			mgr.filter.Enrich(ctx, m)
+			if err == nil {
+				mgr.filter.Enrich(ctx, m)
+			}
 			return m, err
 		}
 	}
