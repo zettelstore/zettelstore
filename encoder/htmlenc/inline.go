@@ -145,15 +145,15 @@ func (v *visitor) VisitCite(cn *ast.CiteNode) {
 		n.Accept(v)
 		return
 	}
+	if cn == nil {
+		return
+	}
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
-
-	if cn != nil {
-		v.b.WriteString(cn.Key)
-		if len(cn.Inlines) > 0 {
-			v.b.WriteString(", ")
-			v.acceptInlineSlice(cn.Inlines)
-		}
+	v.b.WriteString(cn.Key)
+	if len(cn.Inlines) > 0 {
+		v.b.WriteString(", ")
+		v.acceptInlineSlice(cn.Inlines)
 	}
 }
 
