@@ -224,7 +224,7 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	collectZettelIndexData(parser.ParseZettel(zettel, ""), refs, words)
 	m := zettel.Meta
 	zi := index.NewZettelIndex(m.Zid)
-	for _, pair := range m.PairsRest(false) {
+	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
 			continue
