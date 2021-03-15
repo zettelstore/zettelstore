@@ -74,8 +74,9 @@ func ParseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	return Get(syntax).ParseInlines(inp, syntax)
 }
 
-// ParseTitle parses the title of a zettel, always as Zettelmarkup
-func ParseTitle(title string) ast.InlineSlice {
+// ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
+// Typically used to parse the title or other metadata of type Zettelmarkup.
+func ParseMetadata(title string) ast.InlineSlice {
 	return ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
 }
 
@@ -95,7 +96,7 @@ func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
 		Zettel:  zettel,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Title:   ParseTitle(title),
+		Title:   ParseMetadata(title),
 		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax),
 	}
 }

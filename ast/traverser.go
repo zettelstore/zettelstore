@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -31,13 +31,13 @@ func (t TopDownTraverser) VisitVerbatim(vn *VerbatimNode) { t.v.VisitVerbatim(vn
 func (t TopDownTraverser) VisitRegion(rn *RegionNode) {
 	t.v.VisitRegion(rn)
 	t.VisitBlockSlice(rn.Blocks)
-	t.visitInlineSlice(rn.Inlines)
+	t.VisitInlineSlice(rn.Inlines)
 }
 
 // VisitHeading traverses the heading.
 func (t TopDownTraverser) VisitHeading(hn *HeadingNode) {
 	t.v.VisitHeading(hn)
-	t.visitInlineSlice(hn.Inlines)
+	t.VisitInlineSlice(hn.Inlines)
 }
 
 // VisitHRule traverses nothing.
@@ -56,7 +56,7 @@ func (t TopDownTraverser) VisitNestedList(ln *NestedListNode) {
 func (t TopDownTraverser) VisitDescriptionList(dn *DescriptionListNode) {
 	t.v.VisitDescriptionList(dn)
 	for _, defs := range dn.Descriptions {
-		t.visitInlineSlice(defs.Term)
+		t.VisitInlineSlice(defs.Term)
 		for _, descr := range defs.Descriptions {
 			t.visitDescriptionSlice(descr)
 		}
@@ -66,7 +66,7 @@ func (t TopDownTraverser) VisitDescriptionList(dn *DescriptionListNode) {
 // VisitPara traverses the inlines of a paragraph.
 func (t TopDownTraverser) VisitPara(pn *ParaNode) {
 	t.v.VisitPara(pn)
-	t.visitInlineSlice(pn.Inlines)
+	t.VisitInlineSlice(pn.Inlines)
 }
 
 // VisitTable traverses all cells of the header and then row-wise all cells of
@@ -74,11 +74,11 @@ func (t TopDownTraverser) VisitPara(pn *ParaNode) {
 func (t TopDownTraverser) VisitTable(tn *TableNode) {
 	t.v.VisitTable(tn)
 	for _, col := range tn.Header {
-		t.visitInlineSlice(col.Inlines)
+		t.VisitInlineSlice(col.Inlines)
 	}
 	for _, row := range tn.Rows {
 		for _, col := range row {
-			t.visitInlineSlice(col.Inlines)
+			t.VisitInlineSlice(col.Inlines)
 		}
 	}
 }
@@ -101,25 +101,25 @@ func (t TopDownTraverser) VisitBreak(bn *BreakNode) { t.v.VisitBreak(bn) }
 // VisitLink traverses the link text.
 func (t TopDownTraverser) VisitLink(ln *LinkNode) {
 	t.v.VisitLink(ln)
-	t.visitInlineSlice(ln.Inlines)
+	t.VisitInlineSlice(ln.Inlines)
 }
 
 // VisitImage traverses the image text.
 func (t TopDownTraverser) VisitImage(in *ImageNode) {
 	t.v.VisitImage(in)
-	t.visitInlineSlice(in.Inlines)
+	t.VisitInlineSlice(in.Inlines)
 }
 
 // VisitCite traverses the cite text.
 func (t TopDownTraverser) VisitCite(cn *CiteNode) {
 	t.v.VisitCite(cn)
-	t.visitInlineSlice(cn.Inlines)
+	t.VisitInlineSlice(cn.Inlines)
 }
 
 // VisitFootnote traverses the footnote text.
 func (t TopDownTraverser) VisitFootnote(fn *FootnoteNode) {
 	t.v.VisitFootnote(fn)
-	t.visitInlineSlice(fn.Inlines)
+	t.VisitInlineSlice(fn.Inlines)
 }
 
 // VisitMark traverses nothing.
@@ -128,7 +128,7 @@ func (t TopDownTraverser) VisitMark(mn *MarkNode) { t.v.VisitMark(mn) }
 // VisitFormat traverses the formatted text.
 func (t TopDownTraverser) VisitFormat(fn *FormatNode) {
 	t.v.VisitFormat(fn)
-	t.visitInlineSlice(fn.Inlines)
+	t.VisitInlineSlice(fn.Inlines)
 }
 
 // VisitLiteral traverses nothing.
@@ -153,7 +153,8 @@ func (t TopDownTraverser) visitDescriptionSlice(dns DescriptionSlice) {
 	}
 }
 
-func (t TopDownTraverser) visitInlineSlice(ins InlineSlice) {
+// VisitInlineSlice traverses a block slice.
+func (t TopDownTraverser) VisitInlineSlice(ins InlineSlice) {
 	for _, in := range ins {
 		in.Accept(t)
 	}

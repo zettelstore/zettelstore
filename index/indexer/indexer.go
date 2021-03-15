@@ -219,16 +219,11 @@ type getMetaPort interface {
 }
 
 func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
+	refs := id.NewSet()
+	words := make(index.WordSet)
+	collectZettelIndexData(parser.ParseZettel(zettel, ""), refs, words)
 	m := zettel.Meta
 	zi := index.NewZettelIndex(m.Zid)
-	refs, words := collectZettelIndexData(parser.ParseZettel(zettel, ""))
-	for ref := range refs {
-		if _, err := p.GetMeta(ctx, ref); err == nil {
-			zi.AddBackRef(ref)
-		} else {
-			zi.AddDeadRef(ref)
-		}
-	}
 	for _, pair := range m.PairsRest(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -241,10 +236,19 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 			for _, val := range meta.ListFromValue(pair.Value) {
 				updateValue(ctx, descr.Inverse, val, p, zi)
 			}
+		case meta.TypeZettelmarkup:
+			collectInlineIndexData(parser.ParseMetadata(pair.Value), refs, words)
 		default:
 			for _, word := range strfun.NormalizeWords(pair.Value) {
 				words[word] = words[word] + 1
 			}
+		}
+	}
+	for ref := range refs {
+		if _, err := p.GetMeta(ctx, ref); err == nil {
+			zi.AddBackRef(ref)
+		} else {
+			zi.AddDeadRef(ref)
 		}
 	}
 	zi.SetWords(words)

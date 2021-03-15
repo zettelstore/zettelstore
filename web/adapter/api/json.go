@@ -249,9 +249,8 @@ func renderListMetaXJSON(
 				Zettel:  domain.Zettel{Meta: m, Content: ""},
 				Zid:     m.Zid,
 				InhMeta: runtime.AddDefaultValues(m),
-				Title: parser.ParseTitle(
-					m.GetDefault(meta.KeyTitle, runtime.GetDefaultTitle())),
-				Ast: nil,
+				Title:   parser.ParseMetadata(m.GetDefault(meta.KeyTitle, runtime.GetDefaultTitle())),
+				Ast:     nil,
 			}
 		}
 		if isJSON {

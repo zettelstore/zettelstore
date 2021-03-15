@@ -67,10 +67,9 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 
 	// Write title
 	if title, ok := m.Get(meta.KeyTitle); ok {
-		astTitle := parser.ParseTitle(title)
 		textEnc := encoder.Create("text", nil)
 		var sb strings.Builder
-		textEnc.WriteInlines(&sb, astTitle)
+		textEnc.WriteInlines(&sb, parser.ParseMetadata(title))
 		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
 		v.writeQuotedEscaped(sb.String())
 		v.b.WriteString("\">")

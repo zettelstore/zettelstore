@@ -18,10 +18,14 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-func collectZettelIndexData(zn *ast.ZettelNode) (id.Set, index.WordSet) {
-	ixv := ixVisitor{refs: id.NewSet(), words: make(index.WordSet)}
+func collectZettelIndexData(zn *ast.ZettelNode, refs id.Set, words index.WordSet) {
+	ixv := ixVisitor{refs: refs, words: words}
 	ast.NewTopDownTraverser(&ixv).VisitBlockSlice(zn.Ast)
-	return ixv.refs, ixv.words
+}
+
+func collectInlineIndexData(ins ast.InlineSlice, refs id.Set, words index.WordSet) {
+	ixv := ixVisitor{refs: refs, words: words}
+	ast.NewTopDownTraverser(&ixv).VisitInlineSlice(ins)
 }
 
 type ixVisitor struct {

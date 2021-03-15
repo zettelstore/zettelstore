@@ -176,8 +176,7 @@ func writeWordSet(w io.Writer, key string, words []string) {
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	astTitle := parser.ParseTitle(val)
-	title, err := adapter.FormatInlines(astTitle, "html", env)
+	title, err := adapter.FormatInlines(parser.ParseMetadata(val), "html", env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -204,7 +203,7 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Env
 			}
 			return "", 0
 		}
-		astTitle := parser.ParseTitle(m.GetDefault(meta.KeyTitle, ""))
+		astTitle := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, ""))
 		title, err := adapter.FormatInlines(astTitle, format, env)
 		if err == nil {
 			return title, 1
