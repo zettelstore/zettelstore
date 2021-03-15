@@ -23,6 +23,7 @@ type Environment struct {
 
 	// Important for HTML encoder
 	Lang           string // default language
+	Interactive    bool   // Encoded data will be placed in interactive content
 	Xhtml          bool   // use XHTML syntax instead of HTML syntax
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
@@ -75,6 +76,12 @@ func (env *Environment) AdaptCite(cn *ast.CiteNode) (*ast.CiteNode, ast.InlineNo
 		return cn2, nil
 	}
 	return nil, n
+}
+
+// IsInteractive returns true, if Interactive is enabled and currently embedded
+// interactive encoding will take place.
+func (env *Environment) IsInteractive(inInteractive bool) bool {
+	return inInteractive && env != nil && env.Interactive
 }
 
 // IsXHTML return true, if XHTML is enabled.

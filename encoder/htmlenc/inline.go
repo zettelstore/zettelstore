@@ -83,23 +83,35 @@ func (v *visitor) VisitLink(ln *ast.LinkNode) {
 			v.b.WriteString(v.env.MarkerExternal)
 		}
 	default:
+		if v.env.IsInteractive(v.inInteractive) {
+			v.writeSpan(ln.Inlines, ln.Attrs)
+			return
+		}
 		v.b.WriteString("<a href=\"")
 		v.writeQuotedEscaped(ln.Ref.Value)
 		v.b.WriteByte('"')
 		v.visitAttributes(ln.Attrs)
 		v.b.WriteByte('>')
+		v.inInteractive = true
 		v.acceptInlineSlice(ln.Inlines)
+		v.inInteractive = false
 		v.b.WriteString("</a>")
 	}
 }
 
 func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.InlineSlice) {
+	if v.env.IsInteractive(v.inInteractive) {
+		v.writeSpan(ins, attrs)
+		return
+	}
 	v.b.WriteString("<a href=\"")
 	v.writeReference(ref)
 	v.b.WriteByte('"')
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
+	v.inInteractive = true
 	v.acceptInlineSlice(ins)
+	v.inInteractive = false
 	v.b.WriteString("</a>")
 }
 
@@ -161,6 +173,9 @@ func (v *visitor) VisitCite(cn *ast.CiteNode) {
 func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
 	v.lang.push(fn.Attrs)
 	defer v.lang.pop()
+	if v.env.IsInteractive(v.inInteractive) {
+		return
+	}
 
 	v.footnotes = append(v.footnotes, fn)
 	n := strconv.Itoa(len(v.footnotes))
@@ -170,6 +185,9 @@ func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
 
 // VisitMark writes HTML code to mark a position.
 func (v *visitor) VisitMark(mn *ast.MarkNode) {
+	if v.env.IsInteractive(v.inInteractive) {
+		return
+	}
 	if len(mn.Text) > 0 {
 		v.b.WriteStrings("<a id=\"", mn.Text, "\"></a>")
 	}
@@ -208,8 +226,8 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 	case ast.FormatSmall:
 		code = "small"
 	case ast.FormatSpan:
-		code = "span"
-		attrs = processSpanAttributes(attrs)
+		v.writeSpan(fn.Inlines, processSpanAttributes(attrs))
+		return
 	case ast.FormatMonospace:
 		code = "span"
 		attrs = attrs.Set("style", "font-family:monospace")
@@ -224,6 +242,15 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 	v.b.WriteByte('>')
 	v.acceptInlineSlice(fn.Inlines)
 	v.b.WriteStrings("</", code, ">")
+}
+
+func (v *visitor) writeSpan(ins ast.InlineSlice, attrs *ast.Attributes) {
+	v.b.WriteString("<span")
+	v.visitAttributes(attrs)
+	v.b.WriteByte('>')
+	v.acceptInlineSlice(ins)
+	v.b.WriteString("</span>")
+
 }
 
 var langQuotes = map[string][2]string{

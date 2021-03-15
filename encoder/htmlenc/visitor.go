@@ -25,12 +25,13 @@ import (
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	env          *encoder.Environment
-	b            encoder.BufWriter
-	visibleSpace bool // Show space character in raw text
-	inVerse      bool // In verse block
-	lang         langStack
-	footnotes    []*ast.FootnoteNode
+	env           *encoder.Environment
+	b             encoder.BufWriter
+	visibleSpace  bool // Show space character in raw text
+	inVerse       bool // In verse block
+	inInteractive bool // Rendered interactive HTML code
+	lang          langStack
+	footnotes     []*ast.FootnoteNode
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {

@@ -61,19 +61,19 @@ func MakeListMetaHandler(
 }
 
 func renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta) {
+	env := encoder.Environment{Interactive: true}
 	buf := encoder.NewBufWriter(w)
-
 	buf.WriteStrings("<html lang=\"", runtime.GetDefaultLang(), "\">\n<body>\n<ul>\n")
 	for _, m := range metaList {
 		title := m.GetDefault(meta.KeyTitle, "")
-		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), "html", nil)
+		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), "html", &env)
 		if err != nil {
 			adapter.InternalServerError(w, "Format HTML inlines", err)
 			return
 		}
 		buf.WriteStrings(
 			"<li><a href=\"",
-			adapter.NewURLBuilder('z').SetZid(m.Zid).AppendQuery("format", "html").String(),
+			adapter.NewURLBuilder('z').SetZid(m.Zid).AppendQuery("_format", "html").String(),
 			"\">",
 			htmlTitle,
 			"</a></li>\n")

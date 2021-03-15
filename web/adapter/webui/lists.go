@@ -392,7 +392,7 @@ func buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
 			lang = defaultLang
 		}
 		title, _ := m.Get(meta.KeyTitle)
-		env := encoder.Environment{Lang: lang}
+		env := encoder.Environment{Lang: lang, Interactive: true}
 		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), "html", &env)
 		if err != nil {
 			return nil, err

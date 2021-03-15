@@ -97,6 +97,9 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) 
 // WriteInlines writes an inline slice to the writer
 func (he *htmlEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
 	v := newVisitor(he, w)
+	if env := he.env; env != nil {
+		v.inInteractive = env.Interactive
+	}
 	v.acceptInlineSlice(is)
 	length, err := v.b.Flush()
 	return length, err
