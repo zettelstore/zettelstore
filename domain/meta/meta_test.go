@@ -20,20 +20,6 @@ import (
 
 const testID = id.Zid(98765432101234)
 
-func newMeta(title string, tags []string, syntax string) *Meta {
-	m := New(testID)
-	if title != "" {
-		m.Set(KeyTitle, title)
-	}
-	if tags != nil {
-		m.Set(KeyTags, strings.Join(tags, " "))
-	}
-	if syntax != "" {
-		m.Set(KeySyntax, syntax)
-	}
-	return m
-}
-
 func TestKeyIsValid(t *testing.T) {
 	validKeys := []string{"0", "a", "0-", "title", "title-----", strings.Repeat("r", 255)}
 	for _, key := range validKeys {

@@ -309,21 +309,6 @@ func TestMalformed(t *testing.T) {
 	}
 }
 
-type LayoutTest struct {
-	layout   string
-	tmpl     string
-	context  interface{}
-	expected string
-}
-
-var layoutTests = []LayoutTest{
-	{`Header {{content}} Footer`, `Hello World`, nil, `Header Hello World Footer`},
-	{`Header {{content}} Footer`, `Hello {{s}}`, map[string]string{"s": "World"}, `Header Hello World Footer`},
-	{`Header {{content}} Footer`, `Hello {{content}}`, map[string]string{"content": "World"}, `Header Hello World Footer`},
-	{`Header {{extra}} {{content}} Footer`, `Hello {{content}}`, map[string]string{"content": "World", "extra": "extra"}, `Header extra Hello World Footer`},
-	{`Header {{content}} {{content}} Footer`, `Hello {{content}}`, map[string]string{"content": "World"}, `Header Hello World Hello World Footer`},
-}
-
 type Person struct {
 	FirstName string
 	LastName  string
