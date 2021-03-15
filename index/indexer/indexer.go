@@ -100,13 +100,22 @@ func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 	idx.store.Enrich(ctx, m)
 }
 
-// Select all zettel that contains given words.
-func (idx *indexer) Select(words []string) id.Set {
-	normalizedWords := make([]string, 0, len(words))
-	for _, word := range words {
-		normalizedWords = append(normalizedWords, strfun.NormalizeWords(word)...)
-	}
-	return idx.store.Select(normalizedWords)
+// Select all zettel that contains the given exact word.
+// The word must be normalized through Unicode NKFD.
+func (idx *indexer) Select(word string) id.Set {
+	return idx.store.Select(word)
+}
+
+// Select all zettel that have a word with the given prefix.
+// The prefix must be normalized through Unicode NKFD.
+func (idx *indexer) SelectPrefix(prefix string) id.Set {
+	return idx.store.SelectPrefix(prefix)
+}
+
+// Select all zettel that contains the given string.
+// The string must be normalized through Unicode NKFD.
+func (idx *indexer) SelectContains(s string) id.Set {
+	return idx.store.SelectContains(s)
 }
 
 // ReadStats populates st with indexer statistics.

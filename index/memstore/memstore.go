@@ -106,18 +106,41 @@ func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 	return updated
 }
 
-// Select all zettel that contains given words.
-func (ms *memStore) Select(words []string) id.Set {
+// Select all zettel that contains the given exact word.
+// The word must be normalized through Unicode NKFD.
+func (ms *memStore) Select(word string) id.Set {
+	ms.mx.RLock()
+	defer ms.mx.RUnlock()
+	if refs, ok := ms.words[word]; ok {
+		return id.NewSet(refs...)
+	}
+	return nil
+}
+
+// Select all zettel that have a word with the given prefix.
+// The prefix must be normalized through Unicode NKFD.
+func (ms *memStore) SelectPrefix(prefix string) id.Set {
+	ms.mx.RLock()
+	defer ms.mx.RUnlock()
+	return ms.selectWithPred(prefix, strings.HasPrefix)
+}
+
+// Select all zettel that contains the given string.
+// The string must be normalized through Unicode NKFD.
+func (ms *memStore) SelectContains(s string) id.Set {
+	ms.mx.RLock()
+	defer ms.mx.RUnlock()
+	return ms.selectWithPred(s, strings.Contains)
+}
+
+func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.Set {
 	result := id.NewSet()
 	for word, refs := range ms.words {
-		for _, w := range words {
-			if !strings.Contains(word, w) {
-				continue
-			}
-			for _, ref := range refs {
-				result[ref] = true
-			}
-			break
+		if !pred(word, s) {
+			continue
+		}
+		for _, ref := range refs {
+			result[ref] = true
 		}
 	}
 	return result

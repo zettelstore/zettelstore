@@ -31,8 +31,17 @@ type Enricher interface {
 
 // Selector is used to select zettel identifier based on selection criteria.
 type Selector interface {
-	// Select all zettel that contains given words.
-	Select(words []string) id.Set
+	// Select all zettel that contains the given exact word.
+	// The word must be normalized through Unicode NKFD.
+	Select(word string) id.Set
+
+	// Select all zettel that have a word with the given prefix.
+	// The prefix must be normalized through Unicode NKFD.
+	SelectPrefix(prefix string) id.Set
+
+	// Select all zettel that contains the given string.
+	// The string must be normalized through Unicode NKFD.
+	SelectContains(s string) id.Set
 }
 
 // NoEnrichContext will signal an enricher that nothing has to be done.
