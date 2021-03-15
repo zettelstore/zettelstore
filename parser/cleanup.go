@@ -18,9 +18,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/strfun"
-
-	// Ensure that the text encoder is available
-	_ "zettelstore.de/z/encoder/textenc"
 )
 
 func cleanupBlockSlice(bs ast.BlockSlice) {

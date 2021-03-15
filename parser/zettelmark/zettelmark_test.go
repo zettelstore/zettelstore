@@ -21,6 +21,10 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+
+	// Ensure that the text encoder is available.
+	// Needed by parser/cleanup.go
+	_ "zettelstore.de/z/encoder/textenc"
 )
 
 type TestCase struct{ source, want string }

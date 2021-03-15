@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -28,8 +29,7 @@ func init() {
 type textEncoder struct{}
 
 // WriteZettel writes metadata and content.
-func (te *textEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newVisitor(w)
 	if inhMeta {
 		te.WriteMeta(&v.b, zn.InhMeta)
@@ -45,7 +45,25 @@ func (te *textEncoder) WriteZettel(
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	b := encoder.NewBufWriter(w)
 	for _, pair := range m.Pairs(true) {
-		b.WriteString(pair.Value)
+		switch meta.Type(pair.Key) {
+		case meta.TypeBool:
+			if meta.BoolValue(pair.Value) {
+				b.WriteString("true")
+			} else {
+				b.WriteString("false")
+			}
+		case meta.TypeTagSet:
+			for i, tag := range meta.ListFromValue(pair.Value) {
+				if i > 0 {
+					b.WriteByte(' ')
+				}
+				b.WriteString(meta.CleanTag(tag))
+			}
+		case meta.TypeZettelmarkup:
+			te.WriteInlines(w, parser.ParseMetadata(pair.Value))
+		default:
+			b.WriteString(pair.Value)
+		}
 		b.WriteByte('\n')
 	}
 	length, err := b.Flush()
