@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
@@ -68,7 +68,7 @@ func cmdPassword(fs *flag.FlagSet) (int, error) {
 
 func getPassword(prompt string) (string, error) {
 	fmt.Fprintf(os.Stderr, "%s: ", prompt)
-	password, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Fprintln(os.Stderr)
 	return string(password), err
 }
