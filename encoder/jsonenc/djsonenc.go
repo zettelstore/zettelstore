@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/encfun"
 )
 
 func init() {
@@ -33,15 +34,14 @@ type jsonDetailEncoder struct {
 }
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *jsonDetailEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"meta\":{\"title\":")
-	v.acceptInlineSlice(zn.Title)
+	v.acceptInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
 	if inhMeta {
-		v.writeMeta(zn.InhMeta, false)
+		v.writeMeta(zn.InhMeta)
 	} else {
-		v.writeMeta(zn.Zettel.Meta, false)
+		v.writeMeta(zn.Meta)
 	}
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
@@ -54,14 +54,9 @@ func (je *jsonDetailEncoder) WriteZettel(
 // WriteMeta encodes meta data as JSON.
 func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteByte('{')
-	if env := je.env; env != nil && len(env.Title) > 0 {
-		v.b.WriteString("\"title\":")
-		v.acceptInlineSlice(env.Title)
-		v.writeMeta(m, false)
-	} else {
-		v.writeMeta(m, true)
-	}
+	v.b.WriteString("{\"title\":")
+	v.acceptInlineSlice(encfun.MetaAsInlineSlice(m, meta.KeyTitle))
+	v.writeMeta(m)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
@@ -547,18 +542,12 @@ func (v *detailVisitor) writeContentStart(code rune) {
 	panic("Unknown content code " + strconv.Itoa(int(code)))
 }
 
-func (v *detailVisitor) writeMeta(m *meta.Meta, withTitle bool) {
-	first := withTitle
+func (v *detailVisitor) writeMeta(m *meta.Meta) {
 	for _, p := range m.Pairs(true) {
-		if p.Key == "title" && !withTitle {
+		if p.Key == meta.KeyTitle {
 			continue
 		}
-		if first {
-			v.b.WriteByte('"')
-			first = false
-		} else {
-			v.b.WriteString(",\"")
-		}
+		v.b.WriteString(",\"")
 		v.b.Write(Escape(p.Key))
 		v.b.WriteString("\":")
 		if m.Type(p.Key).IsSet {

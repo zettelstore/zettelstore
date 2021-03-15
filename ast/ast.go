@@ -22,11 +22,12 @@ import (
 // ZettelNode is the root node of the abstract syntax tree.
 // It is *not* part of the visitor pattern.
 type ZettelNode struct {
-	Zettel  domain.Zettel
-	Zid     id.Zid      // Zettel identification.
-	InhMeta *meta.Meta  // Meta data of the zettel, with inherited values.
-	Title   InlineSlice // Zettel title is a sequence of inline nodes.
-	Ast     BlockSlice  // Zettel abstract syntax tree is a sequence of block nodes.
+	// Zettel  domain.Zettel
+	Meta    *meta.Meta     // Original metadata
+	Content domain.Content // Original content
+	Zid     id.Zid         // Zettel identification.
+	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
+	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.
 }
 
 // Node is the interface, all nodes must implement.

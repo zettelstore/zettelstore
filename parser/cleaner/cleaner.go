@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package parser provides a generic interface to a range of different parsers.
-package parser
+// Package cleaner provides funxtions to clean up the parsed AST.
+package cleaner
 
 import (
 	"strconv"
@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-func cleanupBlockSlice(bs ast.BlockSlice) {
+func CleanupBlockSlice(bs ast.BlockSlice) {
 	cv := &cleanupVisitor{
 		textEnc: encoder.Create("text", nil),
 		doMark:  false,

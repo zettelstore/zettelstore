@@ -1,1 +1,1 @@
-{"title":"Header Test","role":"zettel","syntax":"zmk","copyright":"(c) 2020 Detlef Stern","license":"CC BY-SA 4.0"}
+{"title":[{"t":"Text","s":"Header"},{"t":"Space"},{"t":"Text","s":"Test"}],"role":"zettel","syntax":"zmk","copyright":"(c) 2020 Detlef Stern","license":"CC BY-SA 4.0"}

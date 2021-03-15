@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/parser"
 )
 
@@ -38,12 +39,12 @@ func (ne *nativeEncoder) WriteZettel(
 	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newVisitor(w, ne)
 	v.b.WriteString("[Title ")
-	v.acceptInlineSlice(zn.Title)
+	v.acceptInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
 	v.b.WriteByte(']')
 	if inhMeta {
 		v.acceptMeta(zn.InhMeta, false)
 	} else {
-		v.acceptMeta(zn.Zettel.Meta, false)
+		v.acceptMeta(zn.Meta, false)
 	}
 	v.b.WriteByte('\n')
 	v.acceptBlockSlice(zn.Ast)

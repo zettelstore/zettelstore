@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/manager"
 
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/jsonenc"
@@ -35,7 +36,6 @@ import (
 	_ "zettelstore.de/z/parser/blob"
 	_ "zettelstore.de/z/parser/zettelmark"
 	_ "zettelstore.de/z/place/dirplace"
-	"zettelstore.de/z/place/manager"
 )
 
 var formats = []string{"html", "djson", "native", "text"}
@@ -119,7 +119,7 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	sb.Reset()
 
 	newZettel := parser.ParseZettel(domain.Zettel{
-		Meta: zn.Zettel.Meta, Content: domain.NewContent("\n" + gotFirst)}, "")
+		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "")
 	zmkEncoder.WriteBlocks(&sb, newZettel.Ast)
 	gotSecond := sb.String()
 	sb.Reset()
@@ -180,7 +180,7 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format s
 
 	if enc := encoder.Create(format, nil); enc != nil {
 		var sb strings.Builder
-		enc.WriteMeta(&sb, zn.Zettel.Meta)
+		enc.WriteMeta(&sb, zn.Meta)
 		checkFileContent(t, resultName, sb.String())
 		return
 	}

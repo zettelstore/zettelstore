@@ -20,7 +20,9 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -71,27 +73,22 @@ func MakeGetInfoHandler(
 		summary := collect.References(zn)
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Images...))
 
-		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil)
-		if err != nil {
-			te.reportError(ctx, w, err)
-			return
-		}
-
 		lang := runtime.GetLang(zn.InhMeta)
 		env := encoder.Environment{Lang: lang}
-		pairs := zn.Zettel.Meta.Pairs(true)
+		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, 0, len(pairs))
 		getTitle := makeGetTitle(ctx, getMeta, &env)
 		for _, p := range pairs {
 			var html strings.Builder
-			writeHTMLMetaValue(&html, zn.Zettel.Meta, p.Key, getTitle, &env)
+			writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
 			metaData = append(metaData, metaDataInfo{p.Key, html.String()})
 		}
 
+		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
 		user := session.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, lang, textTitle, user, &base)
-		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
+		canCopy := base.CanCreate && !zn.Content.IsBinary()
 		te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string
 			WebURL       string
@@ -118,15 +115,15 @@ func MakeGetInfoHandler(
 			Zid:          zid.String(),
 			WebURL:       adapter.NewURLBuilder('h').SetZid(zid).String(),
 			ContextURL:   adapter.NewURLBuilder('j').SetZid(zid).String(),
-			CanWrite:     te.canWrite(ctx, user, zn.Zettel),
+			CanWrite:     te.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:      adapter.NewURLBuilder('e').SetZid(zid).String(),
-			CanFolge:     base.CanCreate && !zn.Zettel.Content.IsBinary(),
+			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
 			FolgeURL:     adapter.NewURLBuilder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
 			CopyURL:      adapter.NewURLBuilder('c').SetZid(zid).String(),
-			CanRename:    te.canRename(ctx, user, zn.Zettel.Meta),
+			CanRename:    te.canRename(ctx, user, zn.Meta),
 			RenameURL:    adapter.NewURLBuilder('b').SetZid(zid).String(),
-			CanDelete:    te.canDelete(ctx, user, zn.Zettel.Meta),
+			CanDelete:    te.canDelete(ctx, user, zn.Meta),
 			DeleteURL:    adapter.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,

@@ -74,7 +74,6 @@ func MakeGetZettelHandler(
 			MarkerExternal: "",
 			NewWindow:      false,
 			IgnoreMeta:     map[string]bool{meta.KeyLang: true},
-			Title:          nil,
 		}
 		switch part {
 		case partZettel:
@@ -93,13 +92,13 @@ func MakeGetZettelHandler(
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			if format == "raw" {
 				// Don't write inherited meta data, just the raw
-				err = writeMeta(w, zn.Zettel.Meta, format, nil)
+				err = writeMeta(w, zn.Meta, format, nil)
 			} else {
 				err = writeMeta(w, zn.InhMeta, format, nil)
 			}
 		case partContent:
 			if format == "raw" {
-				if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Zettel.Meta)); ok {
+				if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Meta)); ok {
 					w.Header().Add(adapter.ContentType, ct)
 				}
 			} else {

@@ -36,7 +36,7 @@ func (ze *zmkEncoder) WriteZettel(
 	if inhMeta {
 		zn.InhMeta.WriteAsHeader(&v.b, true)
 	} else {
-		zn.Zettel.Meta.WriteAsHeader(&v.b, true)
+		zn.Meta.WriteAsHeader(&v.b, true)
 	}
 	v.acceptBlockSlice(zn.Ast)
 	length, err := v.b.Flush()

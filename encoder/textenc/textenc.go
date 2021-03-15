@@ -34,7 +34,7 @@ func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool
 	if inhMeta {
 		te.WriteMeta(&v.b, zn.InhMeta)
 	} else {
-		te.WriteMeta(&v.b, zn.Zettel.Meta)
+		te.WriteMeta(&v.b, zn.Meta)
 	}
 	v.acceptBlockSlice(zn.Ast)
 	length, err := v.b.Flush()

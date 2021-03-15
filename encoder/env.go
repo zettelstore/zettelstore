@@ -28,9 +28,6 @@ type Environment struct {
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
 	IgnoreMeta     map[string]bool
-
-	// Important for DJSON encoder
-	Title ast.InlineSlice
 }
 
 // AdaptLink helps to call the link adapter.

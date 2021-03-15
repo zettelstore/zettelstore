@@ -34,10 +34,10 @@ func (re *rawEncoder) WriteZettel(
 	if inhMeta {
 		zn.InhMeta.Write(&b, true)
 	} else {
-		zn.Zettel.Meta.Write(&b, true)
+		zn.Meta.Write(&b, true)
 	}
 	b.WriteByte('\n')
-	b.WriteString(zn.Zettel.Content.AsString())
+	b.WriteString(zn.Content.AsString())
 	length, err := b.Flush()
 	return length, err
 }
@@ -52,7 +52,7 @@ func (re *rawEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 
 func (re *rawEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	b := encoder.NewBufWriter(w)
-	b.WriteString(zn.Zettel.Content.AsString())
+	b.WriteString(zn.Content.AsString())
 	length, err := b.Flush()
 	return length, err
 }

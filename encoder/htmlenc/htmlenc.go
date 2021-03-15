@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/parser"
 )
 
@@ -32,8 +33,7 @@ type htmlEncoder struct {
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *htmlEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newVisitor(he, w)
 	if !he.env.IsXHTML() {
 		v.b.WriteString("<!DOCTYPE html>\n")
@@ -44,14 +44,11 @@ func (he *htmlEncoder) WriteZettel(
 		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
-	textEnc := encoder.Create("text", nil)
-	var sb strings.Builder
-	textEnc.WriteInlines(&sb, zn.Title)
-	v.b.WriteStrings("<title>", sb.String(), "</title>")
+	v.b.WriteStrings("<title>", encfun.MetaAsText(zn.InhMeta, meta.KeyTitle), "</title>")
 	if inhMeta {
 		v.acceptMeta(zn.InhMeta)
 	} else {
-		v.acceptMeta(zn.Zettel.Meta)
+		v.acceptMeta(zn.Meta)
 	}
 	v.b.WriteString("\n</head>\n<body>\n")
 	v.acceptBlockSlice(zn.Ast)

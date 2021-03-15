@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -57,19 +58,14 @@ func MakeGetHTMLZettelHandler(
 			MarkerExternal: runtime.GetMarkerExternal(),
 			NewWindow:      true,
 			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
-			Title:          nil,
 		}
 		metaHeader, err := formatMeta(zn.InhMeta, "html", &envHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		htmlTitle, err := adapter.FormatInlines(zn.Title, "html", &envHTML)
-		if err != nil {
-			te.reportError(ctx, w, err)
-			return
-		}
-		textTitle, err := adapter.FormatInlines(zn.Title, "text", nil)
+		htmlTitle, err := adapter.FormatInlines(
+			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), "html", &envHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
@@ -79,16 +75,17 @@ func MakeGetHTMLZettelHandler(
 			te.reportError(ctx, w, err)
 			return
 		}
+		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
 		user := session.GetUser(ctx)
-		roleText := zn.Zettel.Meta.GetDefault(meta.KeyRole, "*")
-		tags := buildTagInfos(zn.Zettel.Meta)
+		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
+		tags := buildTagInfos(zn.Meta)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
-		extURL, hasExtURL := zn.Zettel.Meta.Get(meta.KeyURL)
+		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
 		backLinks := formatBackLinks(zn.InhMeta, getTitle)
 		var base baseData
 		te.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
-		canCopy := base.CanCreate && !zn.Zettel.Content.IsBinary()
+		canCopy := base.CanCreate && !zn.Content.IsBinary()
 		te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			CanWrite      bool
@@ -113,7 +110,7 @@ func MakeGetHTMLZettelHandler(
 			BackLinks     []simpleLink
 		}{
 			HTMLTitle:     htmlTitle,
-			CanWrite:      te.canWrite(ctx, user, zn.Zettel),
+			CanWrite:      te.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:       adapter.NewURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
 			InfoURL:       adapter.NewURLBuilder('i').SetZid(zid).String(),
@@ -123,7 +120,7 @@ func MakeGetHTMLZettelHandler(
 			Tags:          tags,
 			CanCopy:       canCopy,
 			CopyURL:       adapter.NewURLBuilder('c').SetZid(zid).String(),
-			CanFolge:      base.CanCreate && !zn.Zettel.Content.IsBinary(),
+			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
 			FolgeURL:      adapter.NewURLBuilder('f').SetZid(zid).String(),
 			FolgeRefs:     formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
 			PrecursorRefs: formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),

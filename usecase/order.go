@@ -51,5 +51,5 @@ func (uc ZettelOrder) Run(
 			}
 		}
 	}
-	return zn.Zettel.Meta, result, nil
+	return zn.Meta, result, nil
 }

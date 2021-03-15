@@ -115,9 +115,9 @@ func (te *TemplateEngine) canCreate(ctx context.Context, user *meta.Meta) bool {
 }
 
 func (te *TemplateEngine) canWrite(
-	ctx context.Context, user *meta.Meta, zettel domain.Zettel) bool {
-	return te.policy.CanWrite(user, zettel.Meta, zettel.Meta) &&
-		te.place.CanUpdateZettel(ctx, zettel)
+	ctx context.Context, user, meta *meta.Meta, content domain.Content) bool {
+	return te.policy.CanWrite(user, meta, meta) &&
+		te.place.CanUpdateZettel(ctx, domain.Zettel{Meta: meta, Content: content})
 }
 
 func (te *TemplateEngine) canRename(ctx context.Context, user, m *meta.Meta) bool {

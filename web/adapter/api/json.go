@@ -23,7 +23,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -66,7 +65,7 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part partType) er
 
 	switch part {
 	case partZettel:
-		encoding, content := encodedContent(z.Zettel.Content)
+		encoding, content := encodedContent(z.Content)
 		outData = jsonZettel{
 			ID:       idData.ID,
 			URL:      idData.URL,
@@ -81,7 +80,7 @@ func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part partType) er
 			Meta: z.InhMeta.Map(),
 		}
 	case partContent:
-		encoding, content := encodedContent(z.Zettel.Content)
+		encoding, content := encodedContent(z.Content)
 		outData = jsonContent{
 			ID:       idData.ID,
 			URL:      idData.URL,
@@ -176,7 +175,7 @@ func writeDJSONHeader(w http.ResponseWriter, zid id.Zid) error {
 func writeDJSONMeta(w io.Writer, z *ast.ZettelNode) error {
 	_, err := w.Write(djsonMetaHeader)
 	if err == nil {
-		err = writeMeta(w, z.InhMeta, "djson", &encoder.Environment{Title: z.Title})
+		err = writeMeta(w, z.InhMeta, "djson", nil)
 	}
 	return err
 }
@@ -246,10 +245,10 @@ func renderListMetaXJSON(
 			zn = z
 		} else {
 			zn = &ast.ZettelNode{
-				Zettel:  domain.Zettel{Meta: m, Content: ""},
+				Meta:    m,
+				Content: "",
 				Zid:     m.Zid,
 				InhMeta: runtime.AddDefaultValues(m),
-				Title:   parser.ParseMetadata(m.GetDefault(meta.KeyTitle, runtime.GetDefaultTitle())),
 				Ast:     nil,
 			}
 		}

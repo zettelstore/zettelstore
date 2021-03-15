@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/parser/cleaner"
 )
 
 // Info describes a single parser.
@@ -65,7 +66,7 @@ func Get(name string) *Info {
 // ParseBlocks parses some input and returns a slice of block nodes.
 func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	bs := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleanupBlockSlice(bs)
+	cleaner.CleanupBlockSlice(bs)
 	return bs
 }
 
@@ -83,20 +84,19 @@ func ParseMetadata(title string) ast.InlineSlice {
 // ParseZettel parses the zettel based on the syntax.
 func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
 	m := zettel.Meta
-	inhMeta := runtime.AddDefaultValues(zettel.Meta)
+	inhMeta := runtime.AddDefaultValues(m)
 	if syntax == "" {
 		syntax, _ = inhMeta.Get(meta.KeySyntax)
 	}
-	title, _ := inhMeta.Get(meta.KeyTitle)
 	parseMeta := inhMeta
 	if syntax == meta.ValueSyntaxNone {
 		parseMeta = m
 	}
 	return &ast.ZettelNode{
-		Zettel:  zettel,
+		Meta:    m,
+		Content: zettel.Content,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Title:   ParseMetadata(title),
 		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax),
 	}
 }
