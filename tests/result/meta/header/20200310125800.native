@@ -1,4 +1,4 @@
-[Title "Header Test"]
+[Title Text "Header",Space,Text "Test"]
 [Role "zettel"]
 [Syntax "zmk"]
 [Header

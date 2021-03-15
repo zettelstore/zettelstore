@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -50,7 +51,7 @@ func (ne *nativeEncoder) WriteZettel(
 	return length, err
 }
 
-// WriteMeta encodes meta data as HTML5.
+// WriteMeta encodes meta data in native format.
 func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newVisitor(w, ne)
 	v.acceptMeta(m, true)
@@ -97,31 +98,31 @@ var (
 
 func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	if withTitle {
-		v.b.WriteString("[Title \"")
-		v.writeEscaped(m.GetDefault(meta.KeyTitle, ""))
-		v.b.WriteString("\"]")
+		v.b.WriteString("[Title ")
+		v.acceptInlineSlice(parser.ParseMetadata(m.GetDefault(meta.KeyTitle, "")))
+		v.b.WriteByte(']')
 	}
 	v.writeMetaString(m, meta.KeyRole, "Role")
 	v.writeMetaList(m, meta.KeyTags, "Tags")
 	v.writeMetaString(m, meta.KeySyntax, "Syntax")
-	if pairs := m.PairsRest(true); len(pairs) > 0 {
-		v.b.WriteString("\n[Header")
-		first := true
-		v.level++
-		for _, p := range pairs {
-			if !first {
-				v.b.WriteByte(',')
-			}
-			v.writeNewLine()
-			v.b.WriteByte('[')
-			v.b.WriteStrings(p.Key, " \"")
-			v.writeEscaped(p.Value)
-			v.b.WriteString("\"]")
-			first = false
-		}
-		v.level--
-		v.b.WriteByte(']')
+	pairs := m.PairsRest(true)
+	if len(pairs) == 0 {
+		return
 	}
+	v.b.WriteString("\n[Header")
+	v.level++
+	for i, p := range pairs {
+		if i > 0 {
+			v.b.WriteByte(',')
+		}
+		v.writeNewLine()
+		v.b.WriteByte('[')
+		v.b.WriteStrings(p.Key, " \"")
+		v.writeEscaped(p.Value)
+		v.b.WriteString("\"]")
+	}
+	v.level--
+	v.b.WriteByte(']')
 }
 
 func (v *visitor) writeMetaString(m *meta.Meta, key, native string) {

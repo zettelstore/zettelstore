@@ -1,3 +1,3 @@
-[Title "A \"\"Title\"\" with //Markup//, ``Zettelmarkup``{=zmk}"]
+[Title Text "A",Space,Quote [Text "Title"],Space,Text "with",Space,Italic [Text "Markup"],Text ",",Space,Code ("zmk",[]) "Zettelmarkup"]
 [Role "zettel"]
 [Syntax "zmk"]
