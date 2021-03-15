@@ -134,6 +134,9 @@ func cmdCheck() error {
 	if err := checkGoVetShadow(); err != nil {
 		return err
 	}
+	if err := checkStaticcheck(); err != nil {
+		return err
+	}
 	return checkFossilExtra()
 }
 
@@ -180,6 +183,16 @@ func checkGoVetShadow() error {
 	out, err := executeCommand(nil, "go", "vet", "-vettool", strings.TrimSpace(path), "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some shadowed variables found")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+	}
+	return err
+}
+func checkStaticcheck() error {
+	out, err := executeCommand(nil, "staticcheck", "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some staticcheck problems found")
 		if len(out) > 0 {
 			fmt.Fprintln(os.Stderr, out)
 		}

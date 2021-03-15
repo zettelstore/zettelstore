@@ -18,6 +18,7 @@
 // located. See file LICENSE.
 //-----------------------------------------------------------------------------
 
+// Package template implements the Mustache templating language.
 package template
 
 import (
