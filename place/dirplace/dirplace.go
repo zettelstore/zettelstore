@@ -33,7 +33,7 @@ import (
 )
 
 func init() {
-	manager.Register("dir", func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+	manager.Register("dir", func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
 		path := getDirPath(u)
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil, err
@@ -192,9 +192,7 @@ func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (dp *dirPlace) SelectMeta(
-	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
-
+func (dp *dirPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
 	entries := dp.dirSrv.GetEntries()
 	res = make([]*meta.Meta, 0, len(entries))
 	// The following loop could be parallelized if needed for performance.
@@ -214,7 +212,7 @@ func (dp *dirPlace) SelectMeta(
 	if err != nil {
 		return nil, err
 	}
-	return s.Sort(res), nil
+	return res, nil
 }
 
 func (dp *dirPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

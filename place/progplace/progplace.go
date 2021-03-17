@@ -28,7 +28,7 @@ import (
 func init() {
 	manager.Register(
 		" prog",
-		func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
 			return getPlace(cdata.Filter), nil
 		})
 }
@@ -51,7 +51,7 @@ type (
 var myPlace *progPlace
 
 // Get returns the one program place.
-func getPlace(mf index.MetaFilter) place.Place {
+func getPlace(mf index.MetaFilter) place.ManagedPlace {
 	if myPlace == nil {
 		myPlace = &progPlace{
 			zettel: map[id.Zid]zettelGen{
@@ -94,8 +94,7 @@ func (pp *progPlace) CreateZettel(
 	return id.Invalid, place.ErrReadOnly
 }
 
-func (pp *progPlace) GetZettel(
-	ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (pp *progPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	if gen, ok := pp.zettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
@@ -135,8 +134,7 @@ func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (pp *progPlace) SelectMeta(
-	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
+func (pp *progPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
 	for zid, gen := range pp.zettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
@@ -148,7 +146,7 @@ func (pp *progPlace) SelectMeta(
 			}
 		}
 	}
-	return s.Sort(res), nil
+	return res, nil
 }
 
 func (pp *progPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

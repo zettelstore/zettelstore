@@ -34,7 +34,7 @@ type ConnectData struct {
 }
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, readonlyMode bool, cdata *ConnectData) (place.Place, error) {
+func Connect(rawURL string, readonlyMode bool, cdata *ConnectData) (place.ManagedPlace, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ type ErrInvalidScheme struct{ Scheme string }
 
 func (err *ErrInvalidScheme) Error() string { return "Invalid scheme: " + err.Scheme }
 
-type createFunc func(*url.URL, *ConnectData) (place.Place, error)
+type createFunc func(*url.URL, *ConnectData) (place.ManagedPlace, error)
 
 var registry = map[string]createFunc{}
 
@@ -92,7 +92,7 @@ func GetSchemes() []string {
 type Manager struct {
 	mx         sync.RWMutex
 	started    bool
-	subplaces  []place.Place
+	subplaces  []place.ManagedPlace
 	filter     index.MetaFilter
 	observers  []func(place.ChangeInfo)
 	mxObserver sync.RWMutex
@@ -107,7 +107,7 @@ func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manag
 		infos:  make(chan place.ChangeInfo, len(placeURIs)*10),
 	}
 	cdata := ConnectData{Filter: filter, Notify: mgr.infos}
-	subplaces := make([]place.Place, 0, len(placeURIs)+2)
+	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
 		p, err := Connect(uri, readonlyMode, &cdata)
 		if err != nil {
@@ -331,10 +331,11 @@ func (mgr *Manager) SelectMeta(ctx context.Context, f *search.Filter, s *search.
 	}
 	var result []*meta.Meta
 	for _, p := range mgr.subplaces {
-		selected, err := p.SelectMeta(ctx, f, nil)
+		selected, err := p.SelectMeta(ctx, f)
 		if err != nil {
 			return nil, err
 		}
+		sort.Slice(selected, func(i, j int) bool { return selected[i].Zid > selected[j].Zid })
 		if len(result) == 0 {
 			result = selected
 		} else {

@@ -22,8 +22,8 @@ import (
 	"zettelstore.de/z/search"
 )
 
-// Place is implemented by all Zettel places.
-type Place interface {
+// BasePlace is implemented by all Zettel places.
+type BasePlace interface {
 	// Location returns some information where the place is located.
 	// Format is dependent of the place.
 	Location() string
@@ -43,9 +43,6 @@ type Place interface {
 
 	// FetchZids returns the set of all zettel identifer managed by the place.
 	FetchZids(ctx context.Context) (id.Set, error)
-
-	// SelectMeta returns all zettel meta data that match the selection criteria.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 
 	// CanUpdateZettel returns true, if place could possibly update the given zettel.
 	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool
@@ -67,6 +64,13 @@ type Place interface {
 
 	// ReadStats populates st with place statistics
 	ReadStats(st *Stats)
+}
+
+// ManagedPlace is the interface of managed places.
+type ManagedPlace interface {
+	BasePlace
+	// SelectMeta returns all zettel meta data that match the selection criteria.
+	SelectMeta(ctx context.Context, f *search.Filter) ([]*meta.Meta, error)
 }
 
 // Stats records statistics about the place.
@@ -103,6 +107,14 @@ const (
 type ChangeInfo struct {
 	Reason ChangeReason
 	Zid    id.Zid
+}
+
+// Place is a place to be used outside the place package and its descendants.
+type Place interface {
+	BasePlace
+
+	// SelectMeta returns a list of metadata that comply to the given selection criteria.
+	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 }
 
 // Manager is a place-managing place.

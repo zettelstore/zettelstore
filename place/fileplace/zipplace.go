@@ -169,9 +169,7 @@ func (zp *zipPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (zp *zipPlace) SelectMeta(
-	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
-
+func (zp *zipPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
 		return nil, err
@@ -187,7 +185,7 @@ func (zp *zipPlace) SelectMeta(
 			res = append(res, m)
 		}
 	}
-	return s.Sort(res), nil
+	return res, nil
 }
 
 func (zp *zipPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

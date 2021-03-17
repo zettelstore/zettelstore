@@ -40,7 +40,7 @@ import (
 
 var formats = []string{"html", "djson", "native", "text"}
 
-func getFilePlaces(wd string, kind string) (root string, places []place.Place) {
+func getFilePlaces(wd string, kind string) (root string, places []place.ManagedPlace) {
 	root = filepath.Clean(filepath.Join(wd, "..", "testdata", kind))
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -129,16 +129,16 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	}
 }
 
-func getPlaceName(p place.Place, root string) string {
+func getPlaceName(p place.ManagedPlace, root string) string {
 	return p.Location()[len("dir://")+len(root):]
 }
 
-func checkContentPlace(t *testing.T, p place.Place, wd, placeName string) {
+func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 	ss := p.(place.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), nil, nil)
+	metaList, err := p.SelectMeta(context.Background(), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -187,12 +187,12 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format s
 	panic(fmt.Sprintf("Unknown writer format %q", format))
 }
 
-func checkMetaPlace(t *testing.T, p place.Place, wd, placeName string) {
+func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 	ss := p.(place.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), nil, nil)
+	metaList, err := p.SelectMeta(context.Background(), nil)
 	if err != nil {
 		panic(err)
 	}

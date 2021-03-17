@@ -28,7 +28,7 @@ import (
 func init() {
 	manager.Register(
 		" const",
-		func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
 			return &constPlace{zettel: constZettelMap, filter: cdata.Filter}, nil
 		})
 }
@@ -85,9 +85,7 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (cp *constPlace) SelectMeta(
-	ctx context.Context, f *search.Filter, s *search.Sorter) (res []*meta.Meta, err error) {
-
+func (cp *constPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
 		cp.filter.Enrich(ctx, m)
@@ -95,7 +93,7 @@ func (cp *constPlace) SelectMeta(
 			res = append(res, m)
 		}
 	}
-	return s.Sort(res), nil
+	return res, nil
 }
 
 func (cp *constPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

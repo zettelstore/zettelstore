@@ -24,7 +24,7 @@ import (
 )
 
 func init() {
-	manager.Register("file", func(u *url.URL, cdata *manager.ConnectData) (place.Place, error) {
+	manager.Register("file", func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
 		path := getFilepathFromURL(u)
 		ext := strings.ToLower(filepath.Ext(path))
 		if ext != ".zip" {
