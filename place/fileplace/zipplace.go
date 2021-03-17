@@ -169,7 +169,7 @@ func (zp *zipPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (zp *zipPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
+func (zp *zipPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func (zp *zipPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*me
 			continue
 		}
 		zp.filter.Enrich(ctx, m)
-		if f.Match(m) {
+		if match(m) {
 			res = append(res, m)
 		}
 	}

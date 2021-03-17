@@ -138,8 +138,7 @@ func (dp *dirPlace) CanCreateZettel(ctx context.Context) bool {
 	return !dp.readonly
 }
 
-func (dp *dirPlace) CreateZettel(
-	ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	if dp.readonly {
 		return id.Invalid, place.ErrReadOnly
 	}
@@ -192,7 +191,7 @@ func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (dp *dirPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
+func (dp *dirPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	entries := dp.dirSrv.GetEntries()
 	res = make([]*meta.Meta, 0, len(entries))
 	// The following loop could be parallelized if needed for performance.
@@ -205,7 +204,7 @@ func (dp *dirPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*me
 		dp.cleanupMeta(ctx, m)
 		dp.cdata.Filter.Enrich(ctx, m)
 
-		if f.Match(m) {
+		if match(m) {
 			res = append(res, m)
 		}
 	}

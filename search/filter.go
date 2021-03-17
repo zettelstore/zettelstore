@@ -20,16 +20,17 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-type filterFunc func(*meta.Meta) bool
+// MetaMatchFunc is a function determine whethe some metadata should be filtered or not.
+type MetaMatchFunc func(*meta.Meta) bool
 
 // Filter specifies a mechanism for selecting zettel.
 type Filter struct {
 	mx        sync.RWMutex          // Protects other attributes
-	preFilter filterFunc            // Filter to be executed first
+	preFilter MetaMatchFunc         // Filter to be executed first
 	tags      map[string][]expValue // Expected values for a tag
 	search    []expValue            // Search string
 	negate    bool                  // Negate the result of the whole filtering process
-	compiled  filterFunc            // Compiled function that implements above spec data
+	compiled  MetaMatchFunc         // Compiled function that implements above spec data
 }
 
 type expValue struct {
@@ -66,7 +67,7 @@ func (f *Filter) SetNegate() *Filter {
 }
 
 // AddPreFilter adds the pre-filter selection predicate.
-func (f *Filter) AddPreFilter(preFilter filterFunc) *Filter {
+func (f *Filter) AddPreFilter(preFilter MetaMatchFunc) *Filter {
 	if f == nil {
 		f = new(Filter)
 	}
@@ -129,7 +130,7 @@ type matchSpec struct {
 }
 
 // compileFilter calculates a filter func based on the given filter.
-func compileFilter(filter *Filter) filterFunc {
+func compileFilter(filter *Filter) MetaMatchFunc {
 	searchAll := createSearchAllFunc(filter.search, filter.negate)
 	specs, nomatch := createFilterSpecs(filter.tags)
 	if len(specs) == 0 && len(nomatch) == 0 {
@@ -321,7 +322,7 @@ func createMatchStringFunc(values []expValue) matchFunc {
 	}
 }
 
-func createSearchAllFunc(values []expValue, negate bool) filterFunc {
+func createSearchAllFunc(values []expValue, negate bool) MetaMatchFunc {
 	if len(values) == 0 {
 		return nil
 	}
@@ -350,7 +351,7 @@ func createSearchAllFunc(values []expValue, negate bool) filterFunc {
 	}
 }
 
-func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) filterFunc {
+func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) MetaMatchFunc {
 	return func(m *meta.Meta) bool {
 		for _, s := range specs {
 			if value, ok := m.Get(s.key); !ok || !s.match(value) {

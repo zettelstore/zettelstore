@@ -122,13 +122,13 @@ func (mp *memPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (mp *memPlace) SelectMeta(ctx context.Context, f *search.Filter) ([]*meta.Meta, error) {
+func (mp *memPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) ([]*meta.Meta, error) {
 	result := make([]*meta.Meta, 0, len(mp.zettel))
 	mp.mx.RLock()
 	for _, zettel := range mp.zettel {
 		m := zettel.Meta.Clone()
 		mp.cdata.Filter.Enrich(ctx, m)
-		if f.Match(m) {
+		if match(m) {
 			result = append(result, m)
 		}
 	}

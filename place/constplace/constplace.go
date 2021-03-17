@@ -85,11 +85,11 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (cp *constPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
+func (cp *constPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
 		cp.filter.Enrich(ctx, m)
-		if f.Match(m) {
+		if match(m) {
 			res = append(res, m)
 		}
 	}

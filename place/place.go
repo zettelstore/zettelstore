@@ -69,8 +69,9 @@ type BasePlace interface {
 // ManagedPlace is the interface of managed places.
 type ManagedPlace interface {
 	BasePlace
+
 	// SelectMeta returns all zettel meta data that match the selection criteria.
-	SelectMeta(ctx context.Context, f *search.Filter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, match search.MetaMatchFunc) ([]*meta.Meta, error)
 }
 
 // Stats records statistics about the place.

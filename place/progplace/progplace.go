@@ -134,13 +134,13 @@ func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (pp *progPlace) SelectMeta(ctx context.Context, f *search.Filter) (res []*meta.Meta, err error) {
+func (pp *progPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	for zid, gen := range pp.zettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
 				pp.filter.Enrich(ctx, m)
-				if f.Match(m) {
+				if match(m) {
 					res = append(res, m)
 				}
 			}
