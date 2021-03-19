@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
+// CleanupBlockSlice cleans the given block slice.
 func CleanupBlockSlice(bs ast.BlockSlice) {
 	cv := &cleanupVisitor{
 		textEnc: encoder.Create("text", nil),
