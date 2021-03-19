@@ -133,12 +133,14 @@ func getPlaceName(p place.ManagedPlace, root string) string {
 	return p.Location()[len("dir://")+len(root):]
 }
 
+func match(*meta.Meta) bool { return true }
+
 func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 	ss := p.(place.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), nil)
+	metaList, err := p.SelectMeta(context.Background(), match)
 	if err != nil {
 		panic(err)
 	}
@@ -161,7 +163,6 @@ func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string)
 	if err := ss.Stop(context.Background()); err != nil {
 		panic(err)
 	}
-
 }
 
 func TestContentRegression(t *testing.T) {
@@ -192,7 +193,7 @@ func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), nil)
+	metaList, err := p.SelectMeta(context.Background(), match)
 	if err != nil {
 		panic(err)
 	}
