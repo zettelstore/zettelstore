@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/strfun"
 )
 
@@ -50,13 +50,13 @@ func New() index.Indexer {
 	}
 }
 
-func (idx *indexer) observer(ci place.ChangeInfo) {
+func (idx *indexer) observer(ci change.Info) {
 	switch ci.Reason {
-	case place.OnReload:
+	case change.OnReload:
 		idx.ar.Reset()
-	case place.OnUpdate:
+	case change.OnUpdate:
 		idx.ar.Enqueue(ci.Zid, arUpdate)
-	case place.OnDelete:
+	case change.OnDelete:
 		idx.ar.Enqueue(ci.Zid, arDelete)
 	default:
 		return

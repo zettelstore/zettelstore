@@ -17,6 +17,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 )
 
 // ping sends every tick a signal to reload the directory list
@@ -111,7 +112,7 @@ func (srv *Service) directoryService(events <-chan *fileEvent, ready chan<- int)
 					close(ready)
 					ready = nil
 				}
-				srv.notifyChange(place.OnReload, id.Invalid)
+				srv.notifyChange(change.OnReload, id.Invalid)
 			case fileStatusError:
 				log.Println("DIRPLACE", "ERROR", ev.err)
 			case fileStatusUpdate:
@@ -132,7 +133,7 @@ func (srv *Service) processFileUpdateEvent(ev *fileEvent, curMap, newMap dirMap)
 		dirMapUpdate(newMap, ev)
 	} else {
 		dirMapUpdate(curMap, ev)
-		srv.notifyChange(place.OnUpdate, ev.zid)
+		srv.notifyChange(change.OnUpdate, ev.zid)
 	}
 }
 
@@ -141,7 +142,7 @@ func (srv *Service) processFileDeleteEvent(ev *fileEvent, curMap, newMap dirMap)
 		deleteFromMap(newMap, ev)
 	} else {
 		deleteFromMap(curMap, ev)
-		srv.notifyChange(place.OnDelete, ev.zid)
+		srv.notifyChange(change.OnDelete, ev.zid)
 	}
 }
 

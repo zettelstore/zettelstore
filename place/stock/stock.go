@@ -18,14 +18,12 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 )
 
 // Place is a place that is used by a stock.
 type Place interface {
-	// RegisterObserver registers an observer that will be notified
-	// if all or one zettel are found to be changed.
-	RegisterObserver(ob func(place.ChangeInfo))
+	change.Subject
 
 	// GetZettel retrieves a specific zettel.
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
@@ -40,7 +38,6 @@ type Stock interface {
 
 // NewStock creates a new stock that operates on the given place.
 func NewStock(place Place) Stock {
-	//RegisterChangeObserver(func(domain.Zid))
 	stock := &defaultStock{
 		place: place,
 		subs:  make(map[id.Zid]domain.Zettel),
@@ -56,8 +53,8 @@ type defaultStock struct {
 }
 
 // observe tracks all changes the place signals.
-func (s *defaultStock) observe(ci place.ChangeInfo) {
-	if ci.Reason == place.OnReload {
+func (s *defaultStock) observe(ci change.Info) {
+	if ci.Reason == change.OnReload {
 		go func() {
 			s.mxSubs.Lock()
 			defer s.mxSubs.Unlock()

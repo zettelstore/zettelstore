@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 )
 
 // Service specifies a directory scan service.
@@ -24,11 +24,11 @@ type Service struct {
 	rescanTime time.Duration
 	done       chan struct{}
 	cmds       chan dirCmd
-	infos      chan<- place.ChangeInfo
+	infos      chan<- change.Info
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration, chci chan<- place.ChangeInfo) *Service {
+func NewService(directoryPath string, rescanTime time.Duration, chci chan<- change.Info) *Service {
 	srv := &Service{
 		dirPath:    directoryPath,
 		rescanTime: rescanTime,
@@ -63,9 +63,9 @@ func (srv *Service) Stop() {
 	srv.done = nil
 }
 
-func (srv *Service) notifyChange(reason place.ChangeReason, zid id.Zid) {
+func (srv *Service) notifyChange(reason change.Reason, zid id.Zid) {
 	if chci := srv.infos; chci != nil {
-		chci <- place.ChangeInfo{Reason: reason, Zid: zid}
+		chci <- change.Info{Reason: reason, Zid: zid}
 	}
 }
 

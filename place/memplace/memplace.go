@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/search"
 )
@@ -40,9 +41,9 @@ type memPlace struct {
 	mx     sync.RWMutex
 }
 
-func (mp *memPlace) notifyChanged(reason place.ChangeReason, zid id.Zid) {
+func (mp *memPlace) notifyChanged(reason change.Reason, zid id.Zid) {
 	if chci := mp.cdata.Notify; chci != nil {
-		chci <- place.ChangeInfo{Reason: reason, Zid: zid}
+		chci <- change.Info{Reason: reason, Zid: zid}
 	}
 }
 
@@ -73,7 +74,7 @@ func (mp *memPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	zettel.Meta = meta
 	mp.zettel[meta.Zid] = zettel
 	mp.mx.Unlock()
-	mp.notifyChanged(place.OnUpdate, meta.Zid)
+	mp.notifyChanged(change.OnUpdate, meta.Zid)
 	return meta.Zid, nil
 }
 
@@ -149,7 +150,7 @@ func (mp *memPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	zettel.Meta = meta
 	mp.zettel[meta.Zid] = zettel
 	mp.mx.Unlock()
-	mp.notifyChanged(place.OnUpdate, meta.Zid)
+	mp.notifyChanged(change.OnUpdate, meta.Zid)
 	return nil
 }
 
@@ -175,8 +176,8 @@ func (mp *memPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	mp.zettel[newZid] = zettel
 	delete(mp.zettel, curZid)
 	mp.mx.Unlock()
-	mp.notifyChanged(place.OnDelete, curZid)
-	mp.notifyChanged(place.OnUpdate, newZid)
+	mp.notifyChanged(change.OnDelete, curZid)
+	mp.notifyChanged(change.OnUpdate, newZid)
 	return nil
 }
 
@@ -195,7 +196,7 @@ func (mp *memPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	}
 	delete(mp.zettel, zid)
 	mp.mx.Unlock()
-	mp.notifyChanged(place.OnDelete, zid)
+	mp.notifyChanged(change.OnDelete, zid)
 	return nil
 }
 

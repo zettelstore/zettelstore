@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/search"
 )
 
@@ -93,23 +94,6 @@ type StartStopper interface {
 	Stop(ctx context.Context) error
 }
 
-// ChangeReason gives an indication, why the ObserverFunc was called.
-type ChangeReason int
-
-// Values for ChangeReason
-const (
-	_        ChangeReason = iota
-	OnReload              // Place was reloaded
-	OnUpdate              // A zettel was created or changed
-	OnDelete              // A zettel was removed
-)
-
-// ChangeInfo contains all the data about a changed zettel.
-type ChangeInfo struct {
-	Reason ChangeReason
-	Zid    id.Zid
-}
-
 // Place is a place to be used outside the place package and its descendants.
 type Place interface {
 	BasePlace
@@ -122,10 +106,7 @@ type Place interface {
 type Manager interface {
 	Place
 	StartStopper
-
-	// RegisterObserver registers an observer that will be notified
-	// if one or all zettel are found to be changed.
-	RegisterObserver(func(ChangeInfo))
+	change.Subject
 
 	// NumPlaces returns the number of managed places.
 	NumPlaces() int

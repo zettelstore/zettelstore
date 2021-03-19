@@ -31,6 +31,7 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
@@ -81,14 +82,14 @@ func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
 		loginURL:      adapter.NewURLBuilder('a').String(),
 		searchURL:     adapter.NewURLBuilder('f').String(),
 	}
-	te.observe(place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid})
+	te.observe(change.Info{Reason: change.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(te.observe)
 	return te
 }
 
-func (te *TemplateEngine) observe(ci place.ChangeInfo) {
+func (te *TemplateEngine) observe(ci change.Info) {
 	te.mxCache.Lock()
-	if ci.Reason == place.OnReload || ci.Zid == id.BaseTemplateZid {
+	if ci.Reason == change.OnReload || ci.Zid == id.BaseTemplateZid {
 		te.templateCache = make(map[id.Zid]*template.Template, len(te.templateCache))
 	} else {
 		delete(te.templateCache, ci.Zid)

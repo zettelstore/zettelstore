@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 )
 
 // Enricher is used to update metadata by adding new properties.
@@ -63,7 +63,7 @@ func DoNotEnrich(ctx context.Context) bool {
 
 // Port contains all the used functions to access zettel to be indexed.
 type Port interface {
-	RegisterObserver(func(place.ChangeInfo))
+	RegisterObserver(change.Func)
 	FetchZids(context.Context) (id.Set, error)
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)

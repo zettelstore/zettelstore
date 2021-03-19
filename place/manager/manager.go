@@ -24,13 +24,14 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/search"
 )
 
 // ConnectData contains all administration related values.
 type ConnectData struct {
 	Filter index.MetaFilter
-	Notify chan<- place.ChangeInfo
+	Notify chan<- change.Info
 }
 
 // Connect returns a handle to the specified place
@@ -94,17 +95,17 @@ type Manager struct {
 	started    bool
 	subplaces  []place.ManagedPlace
 	filter     index.MetaFilter
-	observers  []func(place.ChangeInfo)
+	observers  []change.Func
 	mxObserver sync.RWMutex
 	done       chan struct{}
-	infos      chan place.ChangeInfo
+	infos      chan change.Info
 }
 
 // New creates a new managing place.
 func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manager, error) {
 	mgr := &Manager{
 		filter: filter,
-		infos:  make(chan place.ChangeInfo, len(placeURIs)*10),
+		infos:  make(chan change.Info, len(placeURIs)*10),
 	}
 	cdata := ConnectData{Filter: filter, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
@@ -132,7 +133,7 @@ func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manag
 
 // RegisterObserver registers an observer that will be notified
 // if a zettel was found to be changed.
-func (mgr *Manager) RegisterObserver(f func(place.ChangeInfo)) {
+func (mgr *Manager) RegisterObserver(f change.Func) {
 	if f != nil {
 		mgr.mxObserver.Lock()
 		mgr.observers = append(mgr.observers, f)
@@ -140,7 +141,7 @@ func (mgr *Manager) RegisterObserver(f func(place.ChangeInfo)) {
 	}
 }
 
-func (mgr *Manager) notifyObserver(ci place.ChangeInfo) {
+func (mgr *Manager) notifyObserver(ci change.Info) {
 	mgr.mxObserver.RLock()
 	observers := mgr.observers
 	mgr.mxObserver.RUnlock()
@@ -149,7 +150,7 @@ func (mgr *Manager) notifyObserver(ci place.ChangeInfo) {
 	}
 }
 
-func notifier(notify func(place.ChangeInfo), infos <-chan place.ChangeInfo, done <-chan struct{}) {
+func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}) {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
 		if err := recover(); err != nil {
@@ -215,7 +216,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
 	mgr.started = true
 	mgr.mx.Unlock()
-	mgr.infos <- place.ChangeInfo{Reason: place.OnReload, Zid: id.Invalid}
+	mgr.infos <- change.Info{Reason: change.OnReload, Zid: id.Invalid}
 	return nil
 }
 
