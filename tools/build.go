@@ -166,11 +166,9 @@ func checkGoVet() error {
 
 func checkGoLint() error {
 	out, err := executeCommand(nil, "golint", "./...")
-	if err != nil {
+	if out != "" {
 		fmt.Fprintln(os.Stderr, "Some lints failed")
-		if len(out) > 0 {
-			fmt.Fprintln(os.Stderr, out)
-		}
+		fmt.Fprint(os.Stderr, out)
 	}
 	return err
 }
