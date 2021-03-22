@@ -12,65 +12,10 @@
 package search
 
 import (
-	"io"
-	"math/rand"
-	"sort"
 	"strconv"
 
 	"zettelstore.de/z/domain/meta"
 )
-
-// Sorter specifies ordering and limiting a sequnce of meta data.
-type Sorter struct {
-	Order      string // Name of meta key. None given: use "id"
-	Descending bool   // Sort by order, but descending
-	Offset     int    // <= 0: no offset
-	Limit      int    // <= 0: no limit
-}
-
-// Ensure makes sure that there is a sorter object.
-func (s *Sorter) Ensure() *Sorter {
-	if s == nil {
-		s = new(Sorter)
-	}
-	return s
-}
-
-// RandomOrder is a pseudo metadata key that selects a random order.
-const RandomOrder = "_random"
-
-// Sort applies the sorter to the slice of meta data.
-func (s *Sorter) Sort(metaList []*meta.Meta) []*meta.Meta {
-	if len(metaList) == 0 {
-		return metaList
-	}
-
-	if s == nil {
-		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
-		return metaList
-	}
-
-	if s.Order == "" {
-		sort.Slice(metaList, createSortFunc(meta.KeyID, true, metaList))
-	} else if s.Order == RandomOrder {
-		rand.Shuffle(len(metaList), func(i, j int) {
-			metaList[i], metaList[j] = metaList[j], metaList[i]
-		})
-	} else {
-		sort.Slice(metaList, createSortFunc(s.Order, s.Descending, metaList))
-	}
-
-	if s.Offset > 0 {
-		if s.Offset > len(metaList) {
-			return nil
-		}
-		metaList = metaList[s.Offset:]
-	}
-	if s.Limit > 0 && s.Limit < len(metaList) {
-		metaList = metaList[:s.Limit]
-	}
-	return metaList
-}
 
 type sortFunc func(i, j int) bool
 
@@ -147,40 +92,4 @@ func getNum(m *meta.Meta, key string) (int, bool) {
 		}
 	}
 	return 0, false
-}
-
-// Print the sorter to a writer.
-func (s *Sorter) Print(w io.Writer) {
-	var space bool
-	if ord := s.Order; len(ord) > 0 {
-		switch ord {
-		case meta.KeyID:
-			// Ignore
-		case RandomOrder:
-			io.WriteString(w, "RANDOM")
-			space = true
-		default:
-			io.WriteString(w, "SORT ")
-			io.WriteString(w, ord)
-			if s.Descending {
-				io.WriteString(w, " DESC")
-			}
-			space = true
-		}
-	}
-	if off := s.Offset; off > 0 {
-		if space {
-			io.WriteString(w, " ")
-		}
-		io.WriteString(w, "OFFSET ")
-		io.WriteString(w, strconv.Itoa(off))
-		space = true
-	}
-	if lim := s.Limit; lim > 0 {
-		if space {
-			io.WriteString(w, " ")
-		}
-		io.WriteString(w, "LIMIT ")
-		io.WriteString(w, strconv.Itoa(lim))
-	}
 }
