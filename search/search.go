@@ -29,7 +29,6 @@ type Filter struct {
 	tags      map[string][]expValue // Expected values for a tag
 	search    []expValue            // Search string
 	negate    bool                  // Negate the result of the whole filtering process
-	compiled  MetaMatchFunc         // Compiled function that implements above spec data
 }
 
 type expValue struct {
@@ -98,22 +97,25 @@ func (f *Filter) HasComputedMetaKey() bool {
 	return false
 }
 
-// Match checks whether the given meta matches the filter specification.
-func (f *Filter) Match(m *meta.Meta) bool {
+// CompileMatch returns a function to match meta data based on filter specification.
+func (f *Filter) CompileMatch() MetaMatchFunc {
 	if f == nil {
-		return true
+		return filterNone
 	}
 	f.mx.Lock()
 	defer f.mx.Unlock()
+	comp := compileFilter(f)
 	if pre := f.preFilter; pre != nil {
-		if !pre(m) {
-			return false
+		return func(m *meta.Meta) bool {
+			if !pre(m) {
+				return false
+			}
+			return comp(m) != f.negate
 		}
 	}
-	if f.compiled == nil {
-		f.compiled = compileFilter(f)
+	return func(m *meta.Meta) bool {
+		return comp(m) != f.negate
 	}
-	return f.compiled(m) != f.negate
 }
 
 // Sorter specifies ordering and limiting a sequnce of meta data.

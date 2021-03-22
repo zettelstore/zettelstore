@@ -331,8 +331,9 @@ func (mgr *Manager) SelectMeta(ctx context.Context, f *search.Filter, s *search.
 		return nil, place.ErrStopped
 	}
 	var result []*meta.Meta
+	match := f.CompileMatch()
 	for _, p := range mgr.subplaces {
-		selected, err := p.SelectMeta(ctx, f.Match)
+		selected, err := p.SelectMeta(ctx, match)
 		if err != nil {
 			return nil, err
 		}
