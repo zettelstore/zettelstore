@@ -30,7 +30,7 @@ type matchSpec struct {
 }
 
 // compileFilter calculates a filter func based on the given filter.
-func compileFilter(filter *Filter) MetaMatchFunc {
+func compileFilter(filter *Search) MetaMatchFunc {
 	searchAll := createSearchAllFunc(filter.search, filter.negate)
 	specs, nomatch := createFilterSpecs(filter.tags)
 	if len(specs) == 0 && len(nomatch) == 0 {

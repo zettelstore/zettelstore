@@ -20,31 +20,59 @@ import (
 )
 
 // Print the filter to a writer.
-func (f *Filter) Print(w io.Writer) {
-	if f.negate {
+func (s *Search) Print(w io.Writer) {
+	if s.negate {
 		io.WriteString(w, "NOT (")
 	}
-	useAnd := false
-	if len(f.search) > 0 {
+	space := false
+	if len(s.search) > 0 {
 		io.WriteString(w, "ANY")
-		printFilterExprValues(w, f.search)
-		useAnd = true
+		printFilterExprValues(w, s.search)
+		space = true
 	}
-	names := make([]string, 0, len(f.tags))
-	for name := range f.tags {
+	names := make([]string, 0, len(s.tags))
+	for name := range s.tags {
 		names = append(names, name)
 	}
 	sort.Strings(names)
 	for _, name := range names {
-		if useAnd {
+		if space {
 			io.WriteString(w, " AND ")
 		}
 		io.WriteString(w, name)
-		printFilterExprValues(w, f.tags[name])
-		useAnd = true
+		printFilterExprValues(w, s.tags[name])
+		space = true
 	}
-	if f.negate {
+	if s.negate {
 		io.WriteString(w, ")")
+		space = true
+	}
+
+	if ord := s.order; len(ord) > 0 {
+		switch ord {
+		case meta.KeyID:
+			// Ignore
+		case RandomOrder:
+			space = printSpace(w, space)
+			io.WriteString(w, "RANDOM")
+		default:
+			space = printSpace(w, space)
+			io.WriteString(w, "SORT ")
+			io.WriteString(w, ord)
+			if s.descending {
+				io.WriteString(w, " DESC")
+			}
+		}
+	}
+	if off := s.offset; off > 0 {
+		space = printSpace(w, space)
+		io.WriteString(w, "OFFSET ")
+		io.WriteString(w, strconv.Itoa(off))
+	}
+	if lim := s.limit; lim > 0 {
+		_ = printSpace(w, space)
+		io.WriteString(w, "LIMIT ")
+		io.WriteString(w, strconv.Itoa(lim))
 	}
 }
 
@@ -70,38 +98,9 @@ func printFilterExprValues(w io.Writer, values []expValue) {
 	}
 }
 
-// Print the sorter to a writer.
-func (s *Sorter) Print(w io.Writer) {
-	var space bool
-	if ord := s.Order; len(ord) > 0 {
-		switch ord {
-		case meta.KeyID:
-			// Ignore
-		case RandomOrder:
-			io.WriteString(w, "RANDOM")
-			space = true
-		default:
-			io.WriteString(w, "SORT ")
-			io.WriteString(w, ord)
-			if s.Descending {
-				io.WriteString(w, " DESC")
-			}
-			space = true
-		}
+func printSpace(w io.Writer, space bool) bool {
+	if space {
+		io.WriteString(w, " ")
 	}
-	if off := s.Offset; off > 0 {
-		if space {
-			io.WriteString(w, " ")
-		}
-		io.WriteString(w, "OFFSET ")
-		io.WriteString(w, strconv.Itoa(off))
-		space = true
-	}
-	if lim := s.Limit; lim > 0 {
-		if space {
-			io.WriteString(w, " ")
-		}
-		io.WriteString(w, "LIMIT ")
-		io.WriteString(w, strconv.Itoa(lim))
-	}
+	return true
 }

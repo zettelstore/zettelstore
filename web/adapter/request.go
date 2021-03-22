@@ -72,31 +72,31 @@ func contentType2format(contentType string) (string, bool) {
 	return format, ok
 }
 
-// GetFilterSorter retrieves the specified filter and sorting options from a query.
-func GetFilterSorter(q url.Values, forSearch bool) (filter *search.Filter, sorter *search.Sorter) {
+// GetSearch retrieves the specified filter and sorting options from a query.
+func GetSearch(q url.Values, forSearch bool) (s *search.Search) {
 	sortQKey, orderQKey, offsetQKey, limitQKey, negateQKey, sQKey := getQueryKeys(forSearch)
 	for key, values := range q {
 		switch key {
 		case sortQKey, orderQKey:
-			sorter = extractOrderFromQuery(values, sorter)
+			s = extractOrderFromQuery(values, s)
 		case offsetQKey:
-			sorter = extractOffsetFromQuery(values, sorter)
+			s = extractOffsetFromQuery(values, s)
 		case limitQKey:
-			sorter = extractLimitFromQuery(values, sorter)
+			s = extractLimitFromQuery(values, s)
 		case negateQKey:
-			filter = filter.SetNegate()
+			s = s.SetNegate()
 		case sQKey:
-			filter = setCleanedQueryValues(filter, "", values)
+			s = setCleanedQueryValues(s, "", values)
 		default:
 			if !forSearch && meta.KeyIsValid(key) {
-				filter = setCleanedQueryValues(filter, key, values)
+				s = setCleanedQueryValues(s, key, values)
 			}
 		}
 	}
-	return filter, sorter
+	return s
 }
 
-func extractOrderFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
+func extractOrderFromQuery(values []string, s *search.Search) *search.Search {
 	if len(values) > 0 {
 		descending := false
 		sortkey := values[0]
@@ -105,32 +105,28 @@ func extractOrderFromQuery(values []string, sorter *search.Sorter) *search.Sorte
 			sortkey = sortkey[1:]
 		}
 		if meta.KeyIsValid(sortkey) || sortkey == search.RandomOrder {
-			sorter = sorter.Ensure()
-			sorter.Order = sortkey
-			sorter.Descending = descending
+			s = s.AddOrder(sortkey, descending)
 		}
 	}
-	return sorter
+	return s
 }
 
-func extractOffsetFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
+func extractOffsetFromQuery(values []string, s *search.Search) *search.Search {
 	if len(values) > 0 {
 		if offset, err := strconv.Atoi(values[0]); err == nil {
-			sorter = sorter.Ensure()
-			sorter.Offset = offset
+			s = s.SetOffset(offset)
 		}
 	}
-	return sorter
+	return s
 }
 
-func extractLimitFromQuery(values []string, sorter *search.Sorter) *search.Sorter {
+func extractLimitFromQuery(values []string, s *search.Search) *search.Search {
 	if len(values) > 0 {
 		if limit, err := strconv.Atoi(values[0]); err == nil {
-			sorter = sorter.Ensure()
-			sorter.Limit = limit
+			s = s.SetLimit(limit)
 		}
 	}
-	return sorter
+	return s
 }
 
 func getQueryKeys(forSearch bool) (string, string, string, string, string, string) {
@@ -140,7 +136,7 @@ func getQueryKeys(forSearch bool) (string, string, string, string, string, strin
 	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
 }
 
-func setCleanedQueryValues(filter *search.Filter, key string, values []string) *search.Filter {
+func setCleanedQueryValues(filter *search.Search, key string, values []string) *search.Search {
 	for _, val := range values {
 		val = strings.TrimSpace(val)
 		if len(val) > 0 && val[0] == '!' {

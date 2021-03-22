@@ -32,7 +32,6 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
-	"zettelstore.de/z/search"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/session"
@@ -42,7 +41,6 @@ type templatePlace interface {
 	CanCreateZettel(ctx context.Context) bool
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
 	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool
 	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
 	CanDeleteZettel(ctx context.Context, zid id.Zid) bool

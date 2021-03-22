@@ -22,14 +22,25 @@ import (
 // MetaMatchFunc is a function determine whethe some metadata should be filtered or not.
 type MetaMatchFunc func(*meta.Meta) bool
 
-// Filter specifies a mechanism for selecting zettel.
-type Filter struct {
-	mx        sync.RWMutex          // Protects other attributes
-	preFilter MetaMatchFunc         // Filter to be executed first
-	tags      map[string][]expValue // Expected values for a tag
-	search    []expValue            // Search string
-	negate    bool                  // Negate the result of the whole filtering process
+// Search specifies a mechanism for selecting zettel.
+type Search struct {
+	mx sync.RWMutex // Protects other attributes
+
+	// Fields to be used for filtering
+	preMatch MetaMatchFunc         // Match that must be true
+	tags     map[string][]expValue // Expected values for a tag
+	search   []expValue            // Search string
+	negate   bool                  // Negate the result of the whole filtering process
+
+	// Fields to be used for sorting
+	order      string // Name of meta key. None given: use "id"
+	descending bool   // Sort by order, but descending
+	offset     int    // <= 0: no offset
+	limit      int    // <= 0: no limit
 }
+
+// RandomOrder is a pseudo metadata key that selects a random order.
+const RandomOrder = "_random"
 
 type expValue struct {
 	value  string
@@ -37,108 +48,155 @@ type expValue struct {
 }
 
 // AddExpr adds a match expression to the filter.
-func (f *Filter) AddExpr(key, val string, negate bool) *Filter {
-	if f == nil {
-		f = new(Filter)
+func (s *Search) AddExpr(key, val string, negate bool) *Search {
+	if s == nil {
+		s = new(Search)
 	}
-	f.mx.Lock()
-	defer f.mx.Unlock()
+	s.mx.Lock()
+	defer s.mx.Unlock()
 	if key == "" {
-		f.search = append(f.search, expValue{value: val, negate: negate})
-	} else if f.tags == nil {
-		f.tags = map[string][]expValue{key: {{value: val, negate: negate}}}
+		s.search = append(s.search, expValue{value: val, negate: negate})
+	} else if s.tags == nil {
+		s.tags = map[string][]expValue{key: {{value: val, negate: negate}}}
 	} else {
-		f.tags[key] = append(f.tags[key], expValue{value: val, negate: negate})
+		s.tags[key] = append(s.tags[key], expValue{value: val, negate: negate})
 	}
-	return f
+	return s
 }
 
 // SetNegate changes the filter to reverse its selection.
-func (f *Filter) SetNegate() *Filter {
-	if f == nil {
-		f = new(Filter)
+func (s *Search) SetNegate() *Search {
+	if s == nil {
+		s = new(Search)
 	}
-	f.mx.Lock()
-	defer f.mx.Unlock()
-	f.negate = true
-	return f
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	s.negate = true
+	return s
 }
 
-// AddPreFilter adds the pre-filter selection predicate.
-func (f *Filter) AddPreFilter(preFilter MetaMatchFunc) *Filter {
-	if f == nil {
-		f = new(Filter)
+// AddPreMatch adds the pre-filter selection predicate.
+func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
+	if s == nil {
+		s = new(Search)
 	}
-	f.mx.Lock()
-	defer f.mx.Unlock()
-	if pre := f.preFilter; pre == nil {
-		f.preFilter = preFilter
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	if pre := s.preMatch; pre == nil {
+		s.preMatch = preMatch
 	} else {
-		f.preFilter = func(m *meta.Meta) bool {
-			return preFilter(m) && pre(m)
+		s.preMatch = func(m *meta.Meta) bool {
+			return preMatch(m) && pre(m)
 		}
 	}
-	return f
+	return s
+}
+
+// AddOrder adds the given order to the search object.
+func (s *Search) AddOrder(key string, descending bool) *Search {
+	if s == nil {
+		s = new(Search)
+	}
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	if s.order != "" {
+		panic("order field already set: " + s.order)
+	}
+	s.order = key
+	s.descending = descending
+	return s
+}
+
+// SetOffset sets the given offset of the search object.
+func (s *Search) SetOffset(offset int) *Search {
+	if s == nil {
+		s = new(Search)
+	}
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	if offset < 0 {
+		offset = 0
+	}
+	s.offset = offset
+	return s
+}
+
+// GetOffset returns the current offset value.
+func (s *Search) GetOffset() int {
+	if s == nil {
+		return 0
+	}
+	s.mx.RLock()
+	defer s.mx.RUnlock()
+	return s.offset
+}
+
+// SetLimit sets the given limit of the search object.
+func (s *Search) SetLimit(limit int) *Search {
+	if s == nil {
+		s = new(Search)
+	}
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	if limit < 0 {
+		limit = 0
+	}
+	s.limit = limit
+	return s
+}
+
+// GetLimit returns the current offset value.
+func (s *Search) GetLimit() int {
+	if s == nil {
+		return 0
+	}
+	s.mx.RLock()
+	defer s.mx.RUnlock()
+	return s.limit
 }
 
 // HasComputedMetaKey returns true, if the filter references a metadata key which
 // a computed value.
-func (f *Filter) HasComputedMetaKey() bool {
-	if f == nil {
+func (s *Search) HasComputedMetaKey() bool {
+	if s == nil {
 		return false
 	}
-	f.mx.RLock()
-	defer f.mx.RUnlock()
-	for key := range f.tags {
+	s.mx.RLock()
+	defer s.mx.RUnlock()
+	for key := range s.tags {
 		if meta.IsComputed(key) {
 			return true
 		}
+	}
+	if order := s.order; order != "" && meta.IsComputed(order) {
+		return true
 	}
 	return false
 }
 
 // CompileMatch returns a function to match meta data based on filter specification.
-func (f *Filter) CompileMatch() MetaMatchFunc {
-	if f == nil {
+func (s *Search) CompileMatch() MetaMatchFunc {
+	if s == nil {
 		return filterNone
 	}
-	f.mx.Lock()
-	defer f.mx.Unlock()
-	comp := compileFilter(f)
-	if pre := f.preFilter; pre != nil {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	comp := compileFilter(s)
+	if pre := s.preMatch; pre != nil {
 		return func(m *meta.Meta) bool {
 			if !pre(m) {
 				return false
 			}
-			return comp(m) != f.negate
+			return comp(m) != s.negate
 		}
 	}
 	return func(m *meta.Meta) bool {
-		return comp(m) != f.negate
+		return comp(m) != s.negate
 	}
 }
-
-// Sorter specifies ordering and limiting a sequnce of meta data.
-type Sorter struct {
-	Order      string // Name of meta key. None given: use "id"
-	Descending bool   // Sort by order, but descending
-	Offset     int    // <= 0: no offset
-	Limit      int    // <= 0: no limit
-}
-
-// Ensure makes sure that there is a sorter object.
-func (s *Sorter) Ensure() *Sorter {
-	if s == nil {
-		s = new(Sorter)
-	}
-	return s
-}
-
-// RandomOrder is a pseudo metadata key that selects a random order.
-const RandomOrder = "_random"
 
 // Sort applies the sorter to the slice of meta data.
-func (s *Sorter) Sort(metaList []*meta.Meta) []*meta.Meta {
+func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
 	if len(metaList) == 0 {
 		return metaList
 	}
@@ -148,24 +206,24 @@ func (s *Sorter) Sort(metaList []*meta.Meta) []*meta.Meta {
 		return metaList
 	}
 
-	if s.Order == "" {
+	if s.order == "" {
 		sort.Slice(metaList, createSortFunc(meta.KeyID, true, metaList))
-	} else if s.Order == RandomOrder {
+	} else if s.order == RandomOrder {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]
 		})
 	} else {
-		sort.Slice(metaList, createSortFunc(s.Order, s.Descending, metaList))
+		sort.Slice(metaList, createSortFunc(s.order, s.descending, metaList))
 	}
 
-	if s.Offset > 0 {
-		if s.Offset > len(metaList) {
+	if s.offset > 0 {
+		if s.offset > len(metaList) {
 			return nil
 		}
-		metaList = metaList[s.Offset:]
+		metaList = metaList[s.offset:]
 	}
-	if s.Limit > 0 && s.Limit < len(metaList) {
-		metaList = metaList[:s.Limit]
+	if s.limit > 0 && s.limit < len(metaList) {
+		metaList = metaList[:s.limit]
 	}
 	return metaList
 }

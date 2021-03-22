@@ -20,9 +20,8 @@ import (
 
 // ListMetaPort is the interface used by this use case.
 type ListMetaPort interface {
-	// SelectMeta returns all zettel meta data that match the selection
-	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
+	// SelectMeta returns all zettel meta data that match the selection criteria.
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // ListMeta is the data for this use case.
@@ -36,6 +35,6 @@ func NewListMeta(port ListMetaPort) ListMeta {
 }
 
 // Run executes the use case.
-func (uc ListMeta) Run(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
-	return uc.port.SelectMeta(ctx, f, s)
+func (uc ListMeta) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+	return uc.port.SelectMeta(ctx, s)
 }

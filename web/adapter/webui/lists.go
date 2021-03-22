@@ -56,16 +56,15 @@ func MakeListHTMLMetaHandler(
 func renderWebUIZettelList(
 	w http.ResponseWriter, r *http.Request, te *TemplateEngine, listMeta usecase.ListMeta) {
 	query := r.URL.Query()
-	filter, sorter := adapter.GetFilterSorter(query, false)
+	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
-	title := listTitleFilterSorter("Filter", filter, sorter)
+	title := listTitleSearch("Filter", s)
 	renderWebUIMetaList(
-		ctx, w, te, title, sorter,
-		func(sorter *search.Sorter) ([]*meta.Meta, error) {
-			if filter == nil && (sorter == nil || sorter.Order == "") {
+		ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
+			if !s.HasComputedMetaKey() {
 				ctx = index.NoEnrichContext(ctx)
 			}
-			return listMeta.Run(ctx, filter, sorter)
+			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
 			return newPageURL('h', query, offset, "_offset", "_limit")
@@ -192,21 +191,20 @@ func MakeSearchHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
-		filter, sorter := adapter.GetFilterSorter(query, true)
-		if filter == nil {
+		s := adapter.GetSearch(query, true)
+		if s == nil {
 			redirectFound(w, r, adapter.NewURLBuilder('h'))
 			return
 		}
 
 		ctx := r.Context()
-		title := listTitleFilterSorter("Search", filter, sorter)
+		title := listTitleSearch("Search", s)
 		renderWebUIMetaList(
-			ctx, w, te, title, sorter,
-			func(sorter *search.Sorter) ([]*meta.Meta, error) {
-				if filter == nil && (sorter == nil || sorter.Order == "") {
+			ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
+				if !s.HasComputedMetaKey() {
 					ctx = index.NoEnrichContext(ctx)
 				}
-				return ucSearch.Run(ctx, filter, sorter)
+				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
 				return newPageURL('f', query, offset, "offset", "limit")
@@ -283,37 +281,36 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 func renderWebUIMetaList(
 	ctx context.Context, w http.ResponseWriter, te *TemplateEngine,
 	title string,
-	sorter *search.Sorter,
-	ucMetaList func(sorter *search.Sorter) ([]*meta.Meta, error),
+	s *search.Search,
+	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
 	pageURL func(int) string) {
 
 	var metaList []*meta.Meta
 	var err error
 	var prevURL, nextURL string
 	if lps := runtime.GetListPageSize(); lps > 0 {
-		sorter = sorter.Ensure()
-		if sorter.Limit < lps {
-			sorter.Limit = lps + 1
+		if s.GetLimit() < lps {
+			s.SetLimit(lps + 1)
 		}
 
-		metaList, err = ucMetaList(sorter)
+		metaList, err = ucMetaList(s)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
 		}
-		if offset := sorter.Offset; offset > 0 {
+		if offset := s.GetOffset(); offset > 0 {
 			offset -= lps
 			if offset < 0 {
 				offset = 0
 			}
 			prevURL = pageURL(offset)
 		}
-		if len(metaList) >= sorter.Limit {
-			nextURL = pageURL(sorter.Offset + lps)
+		if len(metaList) >= s.GetLimit() {
+			nextURL = pageURL(s.GetOffset() + lps)
 			metaList = metaList[:len(metaList)-1]
 		}
 	} else {
-		metaList, err = ucMetaList(sorter)
+		metaList, err = ucMetaList(s)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
@@ -346,21 +343,15 @@ func renderWebUIMetaList(
 	})
 }
 
-func listTitleFilterSorter(prefix string, filter *search.Filter, sorter *search.Sorter) string {
-	if filter == nil && sorter == nil {
+func listTitleSearch(prefix string, s *search.Search) string {
+	if s == nil {
 		return runtime.GetSiteName()
 	}
 	var sb strings.Builder
 	sb.WriteString(prefix)
-	sb.WriteString(": ")
-	if filter != nil {
-		filter.Print(&sb)
-		if sorter != nil {
-			sb.WriteString(" | ")
-			sorter.Print(&sb)
-		}
-	} else if sorter != nil {
-		sorter.Print(&sb)
+	if s != nil {
+		sb.WriteString(": ")
+		s.Print(&sb)
 	}
 	return sb.String()
 }

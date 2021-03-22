@@ -21,9 +21,8 @@ import (
 
 // SearchPort is the interface used by this use case.
 type SearchPort interface {
-	// SelectMeta returns all zettel meta data that match the selection
-	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
+	// SelectMeta returns all zettel meta data that match the selection criteria.
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // Search is the data for this use case.
@@ -37,21 +36,9 @@ func NewSearch(port SearchPort) Search {
 }
 
 // Run executes the use case.
-func (uc Search) Run(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
-	if !usesComputedMeta(f, s) {
+func (uc Search) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+	if !s.HasComputedMetaKey() {
 		ctx = index.NoEnrichContext(ctx)
 	}
-	return uc.port.SelectMeta(ctx, f, s)
-}
-
-func usesComputedMeta(f *search.Filter, s *search.Sorter) bool {
-	if f.HasComputedMetaKey() {
-		return true
-	}
-	if s != nil {
-		if order := s.Order; order != "" && meta.IsComputed(order) {
-			return true
-		}
-	}
-	return false
+	return uc.port.SelectMeta(ctx, s)
 }

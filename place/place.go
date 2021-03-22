@@ -99,7 +99,7 @@ type Place interface {
 	BasePlace
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // Manager is a place-managing place.

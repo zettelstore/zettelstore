@@ -21,9 +21,8 @@ import (
 
 // ListTagsPort is the interface used by this use case.
 type ListTagsPort interface {
-	// SelectMeta returns all zettel meta data that match the selection
-	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
+	// SelectMeta returns all zettel meta data that match the selection criteria.
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // ListTags is the data for this use case.
@@ -41,7 +40,7 @@ type TagData map[string][]*meta.Meta
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
-	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil, nil)
+	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil)
 	if err != nil {
 		return nil, err
 	}

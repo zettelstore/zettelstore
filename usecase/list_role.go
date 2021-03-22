@@ -22,9 +22,8 @@ import (
 
 // ListRolePort is the interface used by this use case.
 type ListRolePort interface {
-	// SelectMeta returns all zettel meta data that match the selection
-	// criteria. The result is ordered by descending zettel id.
-	SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error)
+	// SelectMeta returns all zettel meta data that match the selection criteria.
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // ListRole is the data for this use case.
@@ -39,7 +38,7 @@ func NewListRole(port ListRolePort) ListRole {
 
 // Run executes the use case.
 func (uc ListRole) Run(ctx context.Context) ([]string, error) {
-	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil, nil)
+	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil)
 	if err != nil {
 		return nil, err
 	}

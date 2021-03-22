@@ -324,14 +324,14 @@ func (mgr *Manager) FetchZids(ctx context.Context) (result id.Set, err error) {
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
-func (mgr *Manager) SelectMeta(ctx context.Context, f *search.Filter, s *search.Sorter) ([]*meta.Meta, error) {
+func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
 	mgr.mx.RLock()
 	defer mgr.mx.RUnlock()
 	if !mgr.started {
 		return nil, place.ErrStopped
 	}
 	var result []*meta.Meta
-	match := f.CompileMatch()
+	match := s.CompileMatch()
 	for _, p := range mgr.subplaces {
 		selected, err := p.SelectMeta(ctx, match)
 		if err != nil {

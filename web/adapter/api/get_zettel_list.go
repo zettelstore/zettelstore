@@ -33,14 +33,14 @@ func MakeListMetaHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		filter, sorter := adapter.GetFilterSorter(q, false)
+		s := adapter.GetSearch(q, false)
 		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
 		part := getPart(q, partMeta)
 		ctx1 := ctx
-		if format == "html" || (filter == nil && sorter == nil && (part == partID || part == partContent)) {
+		if format == "html" || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
 			ctx1 = index.NoEnrichContext(ctx1)
 		}
-		metaList, err := listMeta.Run(ctx1, filter, sorter)
+		metaList, err := listMeta.Run(ctx1, s)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
