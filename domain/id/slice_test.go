@@ -18,11 +18,12 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-func TestSort(t *testing.T) {
+func TestSliceSort(t *testing.T) {
 	zs := id.Slice{9, 4, 6, 1, 7}
 	zs.Sort()
-	if zs[0] != 1 || zs[1] != 4 || zs[2] != 6 || zs[3] != 7 || zs[4] != 9 {
-		t.Errorf("Slice.Sort did not work. Expected %v, got %v", id.Slice{1, 4, 6, 7, 9}, zs)
+	exp := id.Slice{1, 4, 6, 7, 9}
+	if !zs.Equal(exp) {
+		t.Errorf("Slice.Sort did not work. Expected %v, got %v", exp, zs)
 	}
 }
 
@@ -34,11 +35,37 @@ func TestCopy(t *testing.T) {
 	}
 	orig = id.Slice{9, 4, 6, 1, 7}
 	got = orig.Copy()
-	if len(got) != len(orig) || got[0] != 9 || got[1] != 4 || got[2] != 6 || got[3] != 1 || got[4] != 7 {
+	if !orig.Equal(got) {
 		t.Errorf("Slice.Copy did not work. Expected %v, got %v", orig, got)
 	}
 }
-func TestString(t *testing.T) {
+
+func TestSliceEqual(t *testing.T) {
+	testcases := []struct {
+		s1, s2 id.Slice
+		exp    bool
+	}{
+		{nil, nil, true},
+		{nil, id.Slice{}, true},
+		{nil, id.Slice{1}, false},
+		{id.Slice{1}, id.Slice{1}, true},
+		{id.Slice{1}, id.Slice{2}, false},
+		{id.Slice{1, 2}, id.Slice{2, 1}, false},
+		{id.Slice{1, 2}, id.Slice{1, 2}, true},
+	}
+	for i, tc := range testcases {
+		got := tc.s1.Equal(tc.s2)
+		if got != tc.exp {
+			t.Errorf("%d/%v.Equal(%v)==%v, but got %v", i, tc.s1, tc.s2, tc.exp, got)
+		}
+		got = tc.s2.Equal(tc.s1)
+		if got != tc.exp {
+			t.Errorf("%d/%v.Equal(%v)==%v, but got %v", i, tc.s2, tc.s1, tc.exp, got)
+		}
+	}
+}
+
+func TestSliceString(t *testing.T) {
 	testcases := []struct {
 		in  id.Slice
 		exp string

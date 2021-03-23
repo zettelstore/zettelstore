@@ -63,12 +63,12 @@ func (zi *ZettelIndex) SetWords(words WordSet) { zi.words = words }
 
 // GetDeadRefs returns all dead references as a sorted list.
 func (zi *ZettelIndex) GetDeadRefs() id.Slice {
-	return zi.deadrefs.Sort()
+	return zi.deadrefs.Sorted()
 }
 
 // GetBackRefs returns all back references as a sorted list.
 func (zi *ZettelIndex) GetBackRefs() id.Slice {
-	return zi.backrefs.Sort()
+	return zi.backrefs.Sorted()
 }
 
 // GetMetaRefs returns all meta references as a map of strings to a sorted list of references
@@ -78,7 +78,7 @@ func (zi *ZettelIndex) GetMetaRefs() map[string]id.Slice {
 	}
 	result := make(map[string]id.Slice, len(zi.metarefs))
 	for key, refs := range zi.metarefs {
-		result[key] = refs.Sort()
+		result[key] = refs.Sorted()
 	}
 	return result
 }

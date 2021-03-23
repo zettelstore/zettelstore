@@ -37,6 +37,23 @@ func (zs Slice) Copy() Slice {
 	return result
 }
 
+// Equal reports whether zs and other are the same length and contain the samle zettel
+// identifier. A nil argument is equivalent to an empty slice.
+func (zs Slice) Equal(other Slice) bool {
+	if len(zs) != len(other) {
+		return false
+	}
+	if len(zs) == 0 {
+		return true
+	}
+	for i, e := range zs {
+		if e != other[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func (zs Slice) String() string {
 	if len(zs) == 0 {
 		return ""

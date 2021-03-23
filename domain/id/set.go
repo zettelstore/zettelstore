@@ -44,8 +44,8 @@ func NewSetCap(c int, zids ...Zid) Set {
 	return result
 }
 
-// Sort returns the set as a sorted slice of zettel identifier.
-func (s Set) Sort() Slice {
+// Sorted returns the set as a sorted slice of zettel identifier.
+func (s Set) Sorted() Slice {
 	if l := len(s); l > 0 {
 		result := make(Slice, 0, l)
 		for zid := range s {
@@ -55,4 +55,24 @@ func (s Set) Sort() Slice {
 		return result
 	}
 	return nil
+}
+
+// Intersect removes all zettel identifier that are not in the other set.
+// Both sets can be modified by this method. One of them is the set returned.
+// It contains the intersection of both.
+func (s Set) Intersect(other Set) Set {
+	if len(s) > len(other) {
+		s, other = other, s
+	}
+	for zid, inSet := range s {
+		if !inSet {
+			delete(s, zid)
+			continue
+		}
+		otherInSet, otherOk := other[zid]
+		if !otherInSet || !otherOk {
+			delete(s, zid)
+		}
+	}
+	return s
 }
