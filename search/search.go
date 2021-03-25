@@ -17,6 +17,7 @@ import (
 	"sync"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/index"
 )
 
 // MetaMatchFunc is a function determine whethe some metadata should be filtered or not.
@@ -27,10 +28,10 @@ type Search struct {
 	mx sync.RWMutex // Protects other attributes
 
 	// Fields to be used for filtering
-	preMatch MetaMatchFunc         // Match that must be true
-	tags     map[string][]expValue // Expected values for a tag
-	search   []expValue            // Search string
-	negate   bool                  // Negate the result of the whole filtering process
+	preMatch MetaMatchFunc // Match that must be true
+	tags     expTagValues  // Expected values for a tag
+	search   []expValue    // Search string
+	negate   bool          // Negate the result of the whole filtering process
 
 	// Fields to be used for sorting
 	order      string // Name of meta key. None given: use "id"
@@ -38,6 +39,8 @@ type Search struct {
 	offset     int    // <= 0: no offset
 	limit      int    // <= 0: no limit
 }
+
+type expTagValues map[string][]expValue
 
 // RandomOrder is a pseudo metadata key that selects a random order.
 const RandomOrder = "_random"
@@ -57,7 +60,7 @@ func (s *Search) AddExpr(key, val string, negate bool) *Search {
 	if key == "" {
 		s.search = append(s.search, expValue{value: val, negate: negate})
 	} else if s.tags == nil {
-		s.tags = map[string][]expValue{key: {{value: val, negate: negate}}}
+		s.tags = expTagValues{key: {{value: val, negate: negate}}}
 	} else {
 		s.tags[key] = append(s.tags[key], expValue{value: val, negate: negate})
 	}
@@ -175,24 +178,69 @@ func (s *Search) HasComputedMetaKey() bool {
 }
 
 // CompileMatch returns a function to match meta data based on filter specification.
-func (s *Search) CompileMatch() MetaMatchFunc {
+func (s *Search) CompileMatch(idx index.Indexer) MetaMatchFunc {
 	if s == nil {
 		return filterNone
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
-	comp := compileFilter(s)
-	if pre := s.preMatch; pre != nil {
-		return func(m *meta.Meta) bool {
-			if !pre(m) {
-				return false
-			}
-			return comp(m) != s.negate
+
+	compMeta := compileFilter(s.tags)
+	compSearch := createSearchAllFunc(s.search)
+
+	if preMatch := s.preMatch; preMatch != nil {
+		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)
+	}
+	return compileNoPreMatch(compMeta, compSearch, s.negate)
+}
+
+func filterNone(m *meta.Meta) bool { return true }
+
+func compilePreMatch(preMatch, compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
+	if compMeta == nil {
+		if compSearch == nil {
+			return preMatch
 		}
+		if negate {
+			return func(m *meta.Meta) bool { return preMatch(m) && !compSearch(m) }
+		}
+		return func(m *meta.Meta) bool { return preMatch(m) && compSearch(m) }
 	}
-	return func(m *meta.Meta) bool {
-		return comp(m) != s.negate
+	if compSearch == nil {
+		if negate {
+			return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
+		}
+		return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
 	}
+	if negate {
+		return func(m *meta.Meta) bool { return preMatch(m) && (!compMeta(m) || !compSearch(m)) }
+	}
+	return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) && compSearch(m) }
+}
+
+func compileNoPreMatch(compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
+	if compMeta == nil {
+		if compSearch == nil {
+			if negate {
+				return func(m *meta.Meta) bool { return false }
+			}
+			return filterNone
+		}
+		if negate {
+			return func(m *meta.Meta) bool { return !compSearch(m) }
+		}
+		return compSearch
+	}
+	if compSearch == nil {
+		if negate {
+			return func(m *meta.Meta) bool { return !compMeta(m) }
+		}
+		return compMeta
+	}
+	if negate {
+		return func(m *meta.Meta) bool { return !compMeta(m) || !compSearch(m) }
+	}
+	return func(m *meta.Meta) bool { return compMeta(m) && compSearch(m) }
 }
 
 // Sort applies the sorter to the slice of meta data.

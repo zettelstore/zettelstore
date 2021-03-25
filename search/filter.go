@@ -17,8 +17,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func filterNone(m *meta.Meta) bool { return true }
-
 type matchFunc func(value string) bool
 
 func matchNever(value string) bool  { return false }
@@ -30,20 +28,12 @@ type matchSpec struct {
 }
 
 // compileFilter calculates a filter func based on the given filter.
-func compileFilter(filter *Search) MetaMatchFunc {
-	searchAll := createSearchAllFunc(filter.search, filter.negate)
-	specs, nomatch := createFilterSpecs(filter.tags)
+func compileFilter(tags expTagValues) MetaMatchFunc {
+	specs, nomatch := createFilterSpecs(tags)
 	if len(specs) == 0 && len(nomatch) == 0 {
-		if searchAll == nil {
-			return filterNone
-		}
-		return searchAll
+		return nil
 	}
-	searchMeta := makeSearchMetaFilterFunc(specs, nomatch)
-	if searchAll == nil {
-		return searchMeta
-	}
-	return func(m *meta.Meta) bool { return searchAll(m) && searchMeta(m) }
+	return makeSearchMetaFilterFunc(specs, nomatch)
 }
 
 func createFilterSpecs(tags map[string][]expValue) ([]matchSpec, []string) {
@@ -222,7 +212,7 @@ func createMatchStringFunc(values []expValue) matchFunc {
 	}
 }
 
-func createSearchAllFunc(values []expValue, negate bool) MetaMatchFunc {
+func createSearchAllFunc(values []expValue) MetaMatchFunc {
 	if len(values) == 0 {
 		return nil
 	}
@@ -240,14 +230,14 @@ func createSearchAllFunc(values []expValue, negate bool) MetaMatchFunc {
 				matchFuncs[keyType] = match
 			}
 			if match(p.Value) {
-				return !negate
+				return true
 			}
 		}
 		match, ok := matchFuncs[meta.Type(meta.KeyID)]
 		if !ok {
 			match = createMatchFunc(meta.KeyID, values)
 		}
-		return match(m.Zid.String()) != negate
+		return match(m.Zid.String())
 	}
 }
 
