@@ -129,4 +129,7 @@ type StoreStats struct {
 
 	// Updates count the number of metadata updates.
 	Updates uint64
+
+	// Words count the different words stored in the store.
+	Words uint64
 }

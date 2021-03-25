@@ -43,5 +43,6 @@ func genIndexerC(*meta.Meta) string {
 	fmt.Fprintf(&sb, "|Indexes since last re-index| %v\n", stats.IndexesSinceReload)
 	fmt.Fprintf(&sb, "|Duration last index| %vms\n", stats.DurLastIndex.Milliseconds())
 	fmt.Fprintf(&sb, "|Zettel enrichments| %v\n", stats.Store.Updates)
+	fmt.Fprintf(&sb, "|Indexed words| %v\n", stats.Store.Words)
 	return sb.String()
 }

@@ -82,3 +82,6 @@ func (zi *ZettelIndex) GetMetaRefs() map[string]id.Slice {
 	}
 	return result
 }
+
+// GetWords returns a reference to the WordSet. It must not be modified.
+func (zi *ZettelIndex) GetWords() WordSet { return zi.words }

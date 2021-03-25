@@ -178,7 +178,7 @@ func (s *Search) HasComputedMetaKey() bool {
 }
 
 // CompileMatch returns a function to match meta data based on filter specification.
-func (s *Search) CompileMatch(idx index.Indexer) MetaMatchFunc {
+func (s *Search) CompileMatch(selector index.Selector) MetaMatchFunc {
 	if s == nil {
 		return filterNone
 	}
@@ -186,7 +186,8 @@ func (s *Search) CompileMatch(idx index.Indexer) MetaMatchFunc {
 	defer s.mx.Unlock()
 
 	compMeta := compileFilter(s.tags)
-	compSearch := createSearchAllFunc(s.search)
+	//compSearch := createSearchAllFunc(s.search)
+	compSearch := compileSearch(selector, s.search)
 
 	if preMatch := s.preMatch; preMatch != nil {
 		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)

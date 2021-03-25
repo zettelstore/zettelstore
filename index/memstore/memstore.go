@@ -55,8 +55,9 @@ type memStore struct {
 // New returns a new memory-based index store.
 func New() index.Store {
 	return &memStore{
-		idx:  make(map[id.Zid]*zettelIndex),
-		dead: make(map[id.Zid]id.Slice),
+		idx:   make(map[id.Zid]*zettelIndex),
+		dead:  make(map[id.Zid]id.Slice),
+		words: make(map[string]id.Slice),
 	}
 }
 
@@ -184,6 +185,7 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 	ms.updateDeadReferences(zidx, zi)
 	ms.updateForwardBackwardReferences(zidx, zi)
 	ms.updateMetadataReferences(zidx, zi)
+	ms.updateWords(zidx)
 
 	// Check if zi must be inserted into ms.idx
 	if !ziExist && !zi.isEmpty() {
@@ -249,6 +251,18 @@ func (ms *memStore) updateMetadataReferences(zidx *index.ZettelIndex, zi *zettel
 			bzi.meta[key] = bmr
 		}
 		ms.removeInverseMeta(zidx.Zid, key, remRefs)
+	}
+}
+
+func (ms *memStore) updateWords(zidx *index.ZettelIndex) {
+	// Must only be called if ms.mx is write-locked!
+	words := zidx.GetWords()
+	for word := range words {
+		if refs, ok := ms.words[word]; ok {
+			ms.words[word] = addRef(refs, zidx.Zid)
+			continue
+		}
+		ms.words[word] = id.Slice{zidx.Zid}
 	}
 }
 
@@ -343,6 +357,7 @@ func (ms *memStore) ReadStats(st *index.StoreStats) {
 	ms.mx.RLock()
 	st.Zettel = len(ms.idx)
 	st.Updates = ms.updates
+	st.Words = uint64(len(ms.words))
 	ms.mx.RUnlock()
 }
 
