@@ -33,10 +33,11 @@ type zettelIndex struct {
 	forward  id.Slice
 	backward id.Slice
 	meta     map[string]metaRefs
+	words    index.WordSet
 }
 
 func (zi *zettelIndex) isEmpty() bool {
-	if len(zi.forward) > 0 || len(zi.backward) > 0 || len(zi.dead) > 0 {
+	if len(zi.forward) > 0 || len(zi.backward) > 0 || len(zi.dead) > 0 || len(zi.words) > 0 {
 		return false
 	}
 	return zi.meta == nil || len(zi.meta) == 0
@@ -185,7 +186,7 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 	ms.updateDeadReferences(zidx, zi)
 	ms.updateForwardBackwardReferences(zidx, zi)
 	ms.updateMetadataReferences(zidx, zi)
-	ms.updateWords(zidx)
+	ms.updateWords(zidx, zi)
 
 	// Check if zi must be inserted into ms.idx
 	if !ziExist && !zi.isEmpty() {
@@ -254,16 +255,30 @@ func (ms *memStore) updateMetadataReferences(zidx *index.ZettelIndex, zi *zettel
 	}
 }
 
-func (ms *memStore) updateWords(zidx *index.ZettelIndex) {
+func (ms *memStore) updateWords(zidx *index.ZettelIndex, zi *zettelIndex) {
 	// Must only be called if ms.mx is write-locked!
 	words := zidx.GetWords()
-	for word := range words {
+	newWords, removeWords := words.Diff(zi.words)
+	for _, word := range newWords {
 		if refs, ok := ms.words[word]; ok {
 			ms.words[word] = addRef(refs, zidx.Zid)
 			continue
 		}
 		ms.words[word] = id.Slice{zidx.Zid}
 	}
+	for _, word := range removeWords {
+		refs, ok := ms.words[word]
+		if !ok {
+			continue
+		}
+		refs2 := remRef(refs, zidx.Zid)
+		if len(refs2) == 0 {
+			delete(ms.words, word)
+			continue
+		}
+		ms.words[word] = refs2
+	}
+	zi.words = words
 }
 
 func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
@@ -292,6 +307,7 @@ func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) id.Set {
 			ms.removeInverseMeta(zid, key, mrefs.forward)
 		}
 	}
+	ms.deleteWords(zid, zi.words)
 	delete(ms.idx, zid)
 	return toCheck
 }
@@ -350,6 +366,22 @@ func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) 
 				bzi.meta = nil
 			}
 		}
+	}
+}
+
+func (ms *memStore) deleteWords(zid id.Zid, words index.WordSet) {
+	// Must only be called if ms.mx is write-locked!
+	for word := range words {
+		refs, ok := ms.words[word]
+		if !ok {
+			continue
+		}
+		refs2 := remRef(refs, zid)
+		if len(refs2) == 0 {
+			delete(ms.words, word)
+			continue
+		}
+		ms.words[word] = refs2
 	}
 }
 

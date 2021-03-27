@@ -15,9 +15,6 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-// WordSet contains the set of all words, with the count of their occurrences.
-type WordSet map[string]int
-
 // ZettelIndex contains all index data of a zettel.
 type ZettelIndex struct {
 	Zid      id.Zid            // zid of the indexed zettel

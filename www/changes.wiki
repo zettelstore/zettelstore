@@ -5,6 +5,11 @@
   *  New place schema "file" allows to read zettel from a ZIP file.
      A zettel collection can now be packaged and distributed easier.
      (major: server)
+  *  Non-restricted search is a full-text search. The search string will
+     be normalized according to Unicode NFKD. Every character that is not a letter
+     or a number will be ignored for the search. It is sufficient if the words
+     to be searched are part of words inside a zettel, both content and metadata.
+     (major: api, webui)
   *  Menu bar is shown when displaying error messages.
      (minor: webui)
   *  When filtering a list of zettel, it can be specified that a given value should

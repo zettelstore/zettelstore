@@ -61,8 +61,8 @@ The query parameter ""''_offset''"" allows to list not only the first elements, 
 ```
 
 === General filter
-The query parameter ""''_s''"" allows to provide a string, which will be searched for in all metadata.
-While searching, the [[type|00001006030000]] of each metadata key will be respected.
+The query parameter ""''_s''"" allows to provide a string for a full-text search of all zettel.
+The search string will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
 
 You are allowed to specify this query parameter more than once.
 All results will be intersected, i.e. a zettel will be included into the list if both of the provided values match.
