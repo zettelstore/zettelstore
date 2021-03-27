@@ -212,35 +212,6 @@ func createMatchStringFunc(values []expValue) matchFunc {
 	}
 }
 
-func createSearchAllFunc(values []expValue) MetaMatchFunc {
-	if len(values) == 0 {
-		return nil
-	}
-	matchFuncs := map[*meta.DescriptionType]matchFunc{}
-	return func(m *meta.Meta) bool {
-		for _, p := range m.Pairs(true) {
-			keyType := meta.Type(p.Key)
-			match, ok := matchFuncs[keyType]
-			if !ok {
-				if keyType == meta.TypeBool {
-					match = createBoolSearchFunc(p.Key, values)
-				} else {
-					match = createMatchFunc(p.Key, values)
-				}
-				matchFuncs[keyType] = match
-			}
-			if match(p.Value) {
-				return true
-			}
-		}
-		match, ok := matchFuncs[meta.Type(meta.KeyID)]
-		if !ok {
-			match = createMatchFunc(meta.KeyID, values)
-		}
-		return match(m.Zid.String())
-	}
-}
-
 func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) MetaMatchFunc {
 	return func(m *meta.Meta) bool {
 		for _, s := range specs {
@@ -255,18 +226,6 @@ func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) MetaMatchFunc
 		}
 		return true
 	}
-}
-
-// createBoolSearchFunc only creates a matchFunc if the values to compare are
-// possible bool values. Otherwise every meta with a bool key could match the
-// search query.
-func createBoolSearchFunc(key string, values []expValue) matchFunc {
-	for _, v := range values {
-		if len(v.value) > 0 && !strings.ContainsRune("01tfTFynYN", rune(v.value[0])) {
-			return matchNever
-		}
-	}
-	return createMatchFunc(key, values)
 }
 
 func sliceToLower(sl []expValue) []expValue {
