@@ -13,6 +13,8 @@ package indexer
 
 import (
 	"context"
+	"log"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -138,7 +140,9 @@ type indexerPort interface {
 func (idx *indexer) indexer(p indexerPort) {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
-		if err := recover(); err != nil {
+		if r := recover(); r != nil {
+			log.Println("recovered from:", r)
+			debug.PrintStack()
 			go idx.indexer(p)
 		}
 	}()

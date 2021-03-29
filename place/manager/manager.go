@@ -15,6 +15,7 @@ import (
 	"context"
 	"log"
 	"net/url"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -154,7 +155,9 @@ func (mgr *Manager) notifyObserver(ci change.Info) {
 func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}) {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
-		if err := recover(); err != nil {
+		if r := recover(); r != nil {
+			log.Println("recovered from:", r)
+			debug.PrintStack()
 			go notifier(notify, infos, done)
 		}
 	}()
