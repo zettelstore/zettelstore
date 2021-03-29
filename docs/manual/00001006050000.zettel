@@ -21,7 +21,7 @@ Anybody is free to assign a ""non-timestamp"" identifier to a zettel, e.g. with
 a month part of ""35"" or with ""99"" as the last two digits.
 In fact, all identifiers of zettel initially provided by an empty Zettelstore
 begin with ""000000"", except the home zettel ''00010000000000''.
-The identifiers of zettel if this manual have be chosen to begin with ""000010"".
+Zettel identifier of this manual have be chosen to begin with ""000010"".
 
 A zettel can have any identifier that contains 14 digits and that is not in use
 by another zettel managed by the same Zettelstore.
