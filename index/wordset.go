@@ -28,24 +28,26 @@ func (ws WordSet) Words() []string {
 
 // Diff calculates the word slice to be added and to be removed from oldWords
 // to get the given word set.
-func (ws WordSet) Diff(oldWords WordSet) (newWords, removeWords []string) {
+func (ws WordSet) Diff(oldWords []string) (newWords, removeWords []string) {
 	if len(ws) == 0 {
-		return nil, oldWords.Words()
+		return nil, oldWords
 	}
 	if len(oldWords) == 0 {
 		return ws.Words(), nil
 	}
-	for w := range ws {
-		if _, ok := oldWords[w]; ok {
-			continue
-		}
-		newWords = append(newWords, w)
-	}
-	for ow := range oldWords {
+	oldSet := make(WordSet, len(oldWords))
+	for _, ow := range oldWords {
 		if _, ok := ws[ow]; ok {
+			oldSet[ow] = 1
 			continue
 		}
 		removeWords = append(removeWords, ow)
+	}
+	for w := range ws {
+		if _, ok := oldSet[w]; ok {
+			continue
+		}
+		newWords = append(newWords, w)
 	}
 	return newWords, removeWords
 }

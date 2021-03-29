@@ -53,14 +53,16 @@ func TestWordsWords(t *testing.T) {
 
 func TestWordsDiff(t *testing.T) {
 	testcases := []struct {
-		cur, old   index.WordSet
+		cur        index.WordSet
+		old        []string
 		expN, expR []string
 	}{
 		{nil, nil, nil, nil},
-		{index.WordSet{}, index.WordSet{}, nil, nil},
-		{index.WordSet{"a": 1}, index.WordSet{}, []string{"a"}, nil},
-		{index.WordSet{"a": 1}, index.WordSet{"b": 2}, []string{"a"}, []string{"b"}},
-		{index.WordSet{"a": 1}, index.WordSet{"a": 2}, nil, nil},
+		{index.WordSet{}, []string{}, nil, nil},
+		{index.WordSet{"a": 1}, []string{}, []string{"a"}, nil},
+		{index.WordSet{"a": 1}, []string{"b"}, []string{"a"}, []string{"b"}},
+		{index.WordSet{}, []string{"b"}, nil, []string{"b"}},
+		{index.WordSet{"a": 1}, []string{"a"}, nil, nil},
 	}
 	for i, tc := range testcases {
 		gotN, gotR := tc.cur.Diff(tc.old)

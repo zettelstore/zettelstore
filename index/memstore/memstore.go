@@ -33,7 +33,7 @@ type zettelIndex struct {
 	forward  id.Slice
 	backward id.Slice
 	meta     map[string]metaRefs
-	words    index.WordSet
+	words    []string
 }
 
 func (zi *zettelIndex) isEmpty() bool {
@@ -278,7 +278,7 @@ func (ms *memStore) updateWords(zidx *index.ZettelIndex, zi *zettelIndex) {
 		}
 		ms.words[word] = refs2
 	}
-	zi.words = words
+	zi.words = words.Words()
 }
 
 func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
@@ -369,9 +369,9 @@ func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) 
 	}
 }
 
-func (ms *memStore) deleteWords(zid id.Zid, words index.WordSet) {
+func (ms *memStore) deleteWords(zid id.Zid, words []string) {
 	// Must only be called if ms.mx is write-locked!
-	for word := range words {
+	for _, word := range words {
 		refs, ok := ms.words[word]
 		if !ok {
 			continue
