@@ -31,7 +31,6 @@ type visitor struct {
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack
-	footnotes     []*ast.FootnoteNode
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
@@ -103,12 +102,13 @@ func (v *visitor) acceptInlineSlice(ins ast.InlineSlice) {
 }
 
 func (v *visitor) writeEndnotes() {
-	if len(v.footnotes) > 0 {
+	footnotes := v.env.GetCleanFootnotes()
+	if len(footnotes) > 0 {
 		v.b.WriteString("<ol class=\"zs-endnotes\">\n")
-		for i := 0; i < len(v.footnotes); i++ {
+		for i := 0; i < len(footnotes); i++ {
 			// Do not use a range loop above, because a footnote may contain
 			// a footnote. Therefore v.enc.footnote may grow during the loop.
-			fn := v.footnotes[i]
+			fn := footnotes[i]
 			n := strconv.Itoa(i + 1)
 			v.b.WriteStrings("<li id=\"fn:", n, "\" role=\"doc-endnote\">")
 			v.acceptInlineSlice(fn.Inlines)

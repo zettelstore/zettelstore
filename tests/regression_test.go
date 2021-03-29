@@ -102,7 +102,8 @@ func checkFileContent(t *testing.T, filename string, gotContent string) {
 
 func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format string) {
 	t.Helper()
-	if enc := encoder.Create(format, nil); enc != nil {
+	var env encoder.Environment
+	if enc := encoder.Create(format, &env); enc != nil {
 		var sb strings.Builder
 		enc.WriteBlocks(&sb, zn.Ast)
 		checkFileContent(t, resultName, sb.String())

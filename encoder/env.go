@@ -28,6 +28,7 @@ type Environment struct {
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
 	IgnoreMeta     map[string]bool
+	footnotes      []*ast.FootnoteNode // Stores footnotes detected while encoding
 }
 
 // AdaptLink helps to call the link adapter.
@@ -89,4 +90,23 @@ func (env *Environment) IsXHTML() bool {
 // HasNewWindow retruns true, if a new browser windows should be opened.
 func (env *Environment) HasNewWindow() bool {
 	return env != nil && env.NewWindow
+}
+
+// AddFootnote adds a footnote node to the environment and returns the number of that footnote.
+func (env *Environment) AddFootnote(fn *ast.FootnoteNode) int {
+	if env == nil {
+		return 0
+	}
+	env.footnotes = append(env.footnotes, fn)
+	return len(env.footnotes)
+}
+
+// GetCleanFootnotes returns the list of remembered footnote and forgets about them.
+func (env *Environment) GetCleanFootnotes() []*ast.FootnoteNode {
+	if env == nil {
+		return nil
+	}
+	result := env.footnotes
+	env.footnotes = nil
+	return result
 }

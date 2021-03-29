@@ -177,8 +177,7 @@ func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
 		return
 	}
 
-	v.footnotes = append(v.footnotes, fn)
-	n := strconv.Itoa(len(v.footnotes))
+	n := strconv.Itoa(v.env.AddFootnote(fn))
 	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a href=\"#fn:", n, "\" class=\"zs-footnote-ref\" role=\"doc-noteref\">", n, "</a></sup>")
 	// TODO: what to do with Attrs?
 }

@@ -83,6 +83,10 @@ func MakeGetInfoHandler(
 			writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
+		endnotes, err := formatBlocks(nil, "html", &env)
+		if err != nil {
+			endnotes = ""
+		}
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
 		user := session.GetUser(ctx)
@@ -111,6 +115,7 @@ func MakeGetInfoHandler(
 			ExtLinks     []string
 			ExtNewWindow string
 			Matrix       []matrixLine
+			Endnotes     string
 		}{
 			Zid:          zid.String(),
 			WebURL:       adapter.NewURLBuilder('h').SetZid(zid).String(),
@@ -133,6 +138,7 @@ func MakeGetInfoHandler(
 			ExtLinks:     extLinks,
 			ExtNewWindow: htmlAttrNewWindow(len(extLinks) > 0),
 			Matrix:       infoAPIMatrix(zid),
+			Endnotes:     endnotes,
 		})
 	}
 }
