@@ -168,7 +168,7 @@ func buildTagInfos(m *meta.Meta) []simpleLink {
 		ub := adapter.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
-			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", meta.CleanTag(tag)).String()}
+			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", tag).String()}
 			ub.ClearQuery()
 		}
 	}

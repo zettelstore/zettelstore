@@ -48,7 +48,6 @@ func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
 	for _, m := range metas {
 		if tl, ok := m.GetList(meta.KeyTags); ok && len(tl) > 0 {
 			for _, t := range tl {
-				t = meta.CleanTag(t)
 				result[t] = append(result[t], m)
 			}
 		}

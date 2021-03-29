@@ -76,12 +76,12 @@ func MakeGetInfoHandler(
 		lang := runtime.GetLang(zn.InhMeta)
 		env := encoder.Environment{Lang: lang}
 		pairs := zn.Meta.Pairs(true)
-		metaData := make([]metaDataInfo, 0, len(pairs))
+		metaData := make([]metaDataInfo, len(pairs))
 		getTitle := makeGetTitle(ctx, getMeta, &env)
-		for _, p := range pairs {
+		for i, p := range pairs {
 			var html strings.Builder
 			writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
-			metaData = append(metaData, metaDataInfo{p.Key, html.String()})
+			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)

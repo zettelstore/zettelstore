@@ -153,7 +153,7 @@ func matchAllID(zettelIDs []string, neededID string) bool {
 }
 
 func createMatchTagSetFunc(values []expValue) matchFunc {
-	tagValues := preprocessSet(values)
+	tagValues := processTagSet(preprocessSet(values))
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
 		// Remove leading '#' from each tag
@@ -162,13 +162,53 @@ func createMatchTagSetFunc(values []expValue) matchFunc {
 		}
 		for _, neededTags := range tagValues {
 			for _, neededTag := range neededTags {
-				if matchAllTag(tags, neededTag.value) == neededTag.negate {
+				if matchAllTag(tags, neededTag.value, neededTag.equal) == neededTag.negate {
 					return false
 				}
 			}
 		}
 		return true
 	}
+}
+
+type tagQueryValue struct {
+	value  string
+	negate bool
+	equal  bool // not equal == prefix
+}
+
+func processTagSet(valueSet [][]expValue) [][]tagQueryValue {
+	result := make([][]tagQueryValue, len(valueSet))
+	for i, values := range valueSet {
+		tags := make([]tagQueryValue, len(values))
+		for j, val := range values {
+			if tval := val.value; tval != "" && tval[0] == '#' {
+				tval = meta.CleanTag(tval)
+				tags[j] = tagQueryValue{value: tval, negate: val.negate, equal: true}
+			} else {
+				tags[j] = tagQueryValue{value: tval, negate: val.negate, equal: false}
+			}
+		}
+		result[i] = tags
+	}
+	return result
+}
+
+func matchAllTag(zettelTags []string, neededTag string, equal bool) bool {
+	if equal {
+		for _, zt := range zettelTags {
+			if zt == neededTag {
+				return true
+			}
+		}
+	} else {
+		for _, zt := range zettelTags {
+			if strings.HasPrefix(zt, neededTag) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func createMatchWordFunc(values []expValue) matchFunc {
@@ -255,15 +295,6 @@ func preprocessSet(set []expValue) [][]expValue {
 		}
 	}
 	return result
-}
-
-func matchAllTag(zettelTags []string, neededTag string) bool {
-	for _, zt := range zettelTags {
-		if zt == neededTag {
-			return true
-		}
-	}
-	return false
 }
 
 func matchAllWord(zettelWords []string, neededWord string) bool {

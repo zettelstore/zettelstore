@@ -144,7 +144,7 @@ func writeTagSet(w io.Writer, key string, tags []string) {
 		if i > 0 {
 			w.Write(space)
 		}
-		writeLink(w, key, meta.CleanTag(tag), tag)
+		writeLink(w, key, tag, tag)
 	}
 }
 
