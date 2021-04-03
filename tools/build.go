@@ -328,7 +328,7 @@ func cmdRelease() error {
 			return err
 		}
 		zipName := fmt.Sprintf("zettelstore-%v-%v-%v.zip", base, rel.os, rel.arch)
-		if err := createZipWithFile(zsName, zipName, rel.name); err != nil {
+		if err := createReleaseZip(zsName, zipName, rel.name); err != nil {
 			return err
 		}
 		if err := os.Remove(zsName); err != nil {
@@ -338,18 +338,32 @@ func cmdRelease() error {
 	return createManualZip("releases", base)
 }
 
-func createZipWithFile(zsName, zipName, fileName string) error {
-	zsFile, err := os.Open(zsName)
-	if err != nil {
-		return err
-	}
-	defer zsFile.Close()
+func createReleaseZip(zsName, zipName, fileName string) error {
 	zipFile, err := os.OpenFile(filepath.Join("releases", zipName), os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 	defer zipFile.Close()
+	zw := zip.NewWriter(zipFile)
+	defer zw.Close()
+	err = addFileToZip(zw, zsName, fileName)
+	if err != nil {
+		return err
+	}
+	err = addFileToZip(zw, "LICENSE.txt", "LICENSE.txt")
+	if err != nil {
+		return err
+	}
+	err = addFileToZip(zw, "docs/readmezip.txt", "README.txt")
+	return err
+}
 
+func addFileToZip(zipFile *zip.Writer, filepath, filename string) error {
+	zsFile, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer zsFile.Close()
 	stat, err := zsFile.Stat()
 	if err != nil {
 		return err
@@ -358,11 +372,9 @@ func createZipWithFile(zsName, zipName, fileName string) error {
 	if err != nil {
 		return err
 	}
-	fh.Name = fileName
+	fh.Name = filename
 	fh.Method = zip.Deflate
-	zw := zip.NewWriter(zipFile)
-	defer zw.Close()
-	w, err := zw.CreateHeader(fh)
+	w, err := zipFile.CreateHeader(fh)
 	if err != nil {
 		return err
 	}
