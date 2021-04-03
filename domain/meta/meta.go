@@ -136,6 +136,7 @@ var (
 	KeyListPageSize      = registerKey("list-page-size", TypeNumber, usageUser, "")
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
+	KeyNoIndex           = registerKey("no-index", TypeBool, usageUser, "")
 	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser, KeyFolge)
 	KeyPublished         = registerKey("published", TypeTimestamp, usageProperty, "")
 	KeyReadOnly          = registerKey("read-only", TypeWord, usageUser, "")

@@ -10,6 +10,9 @@
      or a number will be ignored for the search. It is sufficient if the words
      to be searched are part of words inside a zettel, both content and metadata.
      (major: api, webui)
+  *  A zettel can be excluded from being indexed (and excluded from being found
+     in a search) if it contains the metadata <tt>no-index: true</tt>.
+     (minor: api, webui)
   *  Menu bar is shown when displaying error messages.
      (minor: webui)
   *  When filtering a list of zettel, it can be specified that a given value should

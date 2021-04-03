@@ -184,6 +184,7 @@ func (pp *progPlace) ReadStats(st *place.Stats) {
 }
 
 func updateMeta(m *meta.Meta) {
+	m.Set(meta.KeyNoIndex, meta.ValueTrue)
 	m.Set(meta.KeySyntax, meta.ValueSyntaxZmk)
 	m.Set(meta.KeyRole, meta.ValueRoleConfiguration)
 	m.Set(meta.KeyReadOnly, meta.ValueTrue)

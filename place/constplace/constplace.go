@@ -138,6 +138,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityOwner,
 			meta.KeySyntax:     meta.ValueSyntaxNone,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		""},
 	id.BaseTemplateZid: {
@@ -146,6 +147,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentBaseMustache)},
 	id.LoginTemplateZid: {
@@ -154,6 +156,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentLoginMustache)},
 	id.ZettelTemplateZid: {
@@ -162,6 +165,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentZettelMustache)},
 	id.InfoTemplateZid: {
@@ -170,6 +174,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentInfoMustache)},
 	id.ContextTemplateZid: {
@@ -178,6 +183,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentContextMustache)},
 	id.FormTemplateZid: {
@@ -186,6 +192,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentFormMustache)},
 	id.RenameTemplateZid: {
@@ -194,6 +201,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentRenameMustache)},
 	id.DeleteTemplateZid: {
@@ -202,6 +210,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentDeleteMustache)},
 	id.ListTemplateZid: {
@@ -210,6 +219,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentListZettelMustache)},
 	id.RolesTemplateZid: {
@@ -218,6 +228,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentListRolesMustache)},
 	id.TagsTemplateZid: {
@@ -226,6 +237,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentListTagsMustache)},
 	id.ErrorTemplateZid: {
@@ -234,6 +246,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 			meta.KeySyntax:     syntaxTemplate,
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentErrorMustache)},
 	id.BaseCSSZid: {
@@ -242,6 +255,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:       meta.ValueRoleConfiguration,
 			meta.KeyVisibility: meta.ValueVisibilityPublic,
 			meta.KeySyntax:     "css",
+			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentBaseCSS)},
 	id.TOCNewTemplateZid: {

@@ -226,10 +226,16 @@ type getMetaPort interface {
 }
 
 func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
+	m := zettel.Meta
+	if m.GetBool(meta.KeyNoIndex) {
+		// Zettel maybe in index
+		toCheck := idx.store.DeleteZettel(ctx, m.Zid)
+		idx.checkZettel(toCheck)
+		return
+	}
 	refs := id.NewSet()
 	words := make(index.WordSet)
 	collectZettelIndexData(parser.ParseZettel(zettel, ""), refs, words)
-	m := zettel.Meta
 	zi := index.NewZettelIndex(m.Zid)
 	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
