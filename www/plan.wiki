@@ -10,7 +10,6 @@ They are planned to be solved.
      that the file name starts with unique 14 digits that make up the zettel
      identifier.
   *  Automatic lists and transclusions are not supported in Zettelmarkup.
-  *  The search function uses only the metadata of a zettel, not its content.
   *  &hellip;
 
 <h3>Smaller limitations</h3>

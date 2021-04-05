@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_0_12"></a>
+<h2>Changes for Version 0.0.12 (pending)</h2>
+
 <a name="0_0_11"></a>
-<h2>Changes for Version 0.0.11 (pending)</h2>
+<h2>Changes for Version 0.0.11 (2021-04-05)</h2>
   *  New place schema "file" allows to read zettel from a ZIP file.
      A zettel collection can now be packaged and distributed easier.
      (major: server)
@@ -31,6 +34,15 @@
      just matches the prefix of only one of its tags.
      (minor: api, webui)
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
+
+A note for users of macOS: in the current release and with macOS's default values,
+a zettel directory place must not contain more than approx. 250 files. There are four options
+to mitigate this limitation temporarily:
+  #  You [https://zettelstore.de/manual/h/00001004010000|re-configure] your Zettelstore to use more
+     than one directory place.
+  #  You update the per-process limit of open files on macOS.
+  #  You setup a virtualization environment to run Zettelstore on Linux or Windows.
+  #  You wait for version 0.0.12 which addresses this issue.
 
 <a name="0_0_10"></a>
 <h2>Changes for Version 0.0.10 (2021-02-26)</h2>
