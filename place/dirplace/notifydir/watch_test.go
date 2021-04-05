@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package directory manages the directory part of a directory place.
-package directory
+// Package notifydir manages the notified directory part of a dirstore.
+package notifydir
 
 import (
 	"testing"

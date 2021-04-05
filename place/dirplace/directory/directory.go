@@ -8,113 +8,46 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package directory manages the directory part of a dirstore.
+// Package directory manages the directory interface of a dirstore.
 package directory
 
-import (
-	"time"
+import "zettelstore.de/z/domain/id"
 
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place/change"
+// Service is the interface of a directory service.
+type Service interface {
+	Start() error
+	Stop() error
+	NumEntries() (int, error)
+	GetEntries() ([]Entry, error)
+	GetEntry(zid id.Zid) (Entry, error)
+	GetNew() (Entry, error)
+	UpdateEntry(entry *Entry) error
+	RenameEntry(curEntry, newEntry *Entry) error
+	DeleteEntry(zid id.Zid) error
+}
+
+// MetaSpec defines all possibilities where meta data can be stored.
+type MetaSpec int
+
+// Constants for MetaSpec
+const (
+	_              MetaSpec = iota
+	MetaSpecNone            // no meta information
+	MetaSpecFile            // meta information is in meta file
+	MetaSpecHeader          // meta information is in header
 )
 
-// Service specifies a directory scan service.
-type Service struct {
-	dirPath    string
-	rescanTime time.Duration
-	done       chan struct{}
-	cmds       chan dirCmd
-	infos      chan<- change.Info
+// Entry stores everything for a directory entry.
+type Entry struct {
+	Zid         id.Zid
+	MetaSpec    MetaSpec // location of meta information
+	MetaPath    string   // file path of meta information
+	ContentPath string   // file path of zettel content
+	ContentExt  string   // (normalized) file extension of zettel content
+	Duplicates  bool     // multiple content files
 }
 
-// NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration, chci chan<- change.Info) *Service {
-	srv := &Service{
-		dirPath:    directoryPath,
-		rescanTime: rescanTime,
-		cmds:       make(chan dirCmd),
-		infos:      chci,
-	}
-	return srv
-}
-
-// Start makes the directory service operational.
-func (srv *Service) Start() {
-	tick := make(chan struct{})
-	rawEvents := make(chan *fileEvent)
-	events := make(chan *fileEvent)
-
-	ready := make(chan int)
-	go srv.directoryService(events, ready)
-	go collectEvents(events, rawEvents)
-	go watchDirectory(srv.dirPath, rawEvents, tick)
-
-	if srv.done != nil {
-		panic("src.done already set")
-	}
-	srv.done = make(chan struct{})
-	go ping(tick, srv.rescanTime, srv.done)
-	<-ready
-}
-
-// Stop stops the directory service.
-func (srv *Service) Stop() {
-	close(srv.done)
-	srv.done = nil
-}
-
-func (srv *Service) notifyChange(reason change.Reason, zid id.Zid) {
-	if chci := srv.infos; chci != nil {
-		chci <- change.Info{Reason: reason, Zid: zid}
-	}
-}
-
-// NumEntries returns the number of managed zettel.
-func (srv *Service) NumEntries() int {
-	resChan := make(chan resNumEntries)
-	srv.cmds <- &cmdNumEntries{resChan}
-	return <-resChan
-}
-
-// GetEntries returns an unsorted list of all current directory entries.
-func (srv *Service) GetEntries() []Entry {
-	resChan := make(chan resGetEntries)
-	srv.cmds <- &cmdGetEntries{resChan}
-	return <-resChan
-}
-
-// GetEntry returns the entry with the specified zettel id. If there is no such
-// zettel id, an empty entry is returned.
-func (srv *Service) GetEntry(zid id.Zid) Entry {
-	resChan := make(chan resGetEntry)
-	srv.cmds <- &cmdGetEntry{zid, resChan}
-	return <-resChan
-}
-
-// GetNew returns an entry with a new zettel id.
-func (srv *Service) GetNew() Entry {
-	resChan := make(chan resNewEntry)
-	srv.cmds <- &cmdNewEntry{resChan}
-	return <-resChan
-}
-
-// UpdateEntry notifies the directory of an updated entry.
-func (srv *Service) UpdateEntry(entry *Entry) {
-	resChan := make(chan struct{})
-	srv.cmds <- &cmdUpdateEntry{entry, resChan}
-	<-resChan
-}
-
-// RenameEntry notifies the directory of an renamed entry.
-func (srv *Service) RenameEntry(curEntry, newEntry *Entry) error {
-	resChan := make(chan resRenameEntry)
-	srv.cmds <- &cmdRenameEntry{curEntry, newEntry, resChan}
-	return <-resChan
-}
-
-// DeleteEntry removes a zettel id from the directory of entries.
-func (srv *Service) DeleteEntry(zid id.Zid) {
-	resChan := make(chan struct{})
-	srv.cmds <- &cmdDeleteEntry{zid, resChan}
-	<-resChan
+// IsValid checks whether the entry is valid.
+func (e *Entry) IsValid() bool {
+	return e.Zid.IsValid()
 }

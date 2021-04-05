@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/dirplace/directory"
+	"zettelstore.de/z/place/dirplace/notifydir"
 	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/search"
@@ -88,7 +89,7 @@ type dirPlace struct {
 	cdata     manager.ConnectData
 	dir       string
 	dirRescan time.Duration
-	dirSrv    *directory.Service
+	dirSrv    directory.Service
 	fSrvs     uint32
 	fCmds     []chan fileCmd
 	mxCmds    sync.RWMutex
@@ -106,10 +107,9 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = directory.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+	dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
 	dp.mxCmds.Unlock()
-	dp.dirSrv.Start()
-	return nil
+	return dp.dirSrv.Start()
 }
 
 func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
@@ -127,11 +127,11 @@ func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
 func (dp *dirPlace) Stop(ctx context.Context) error {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil
-	dirSrv.Stop()
+	err := dirSrv.Stop()
 	for _, c := range dp.fCmds {
 		close(c)
 	}
-	return nil
+	return err
 }
 
 func (dp *dirPlace) CanCreateZettel(ctx context.Context) bool {
@@ -143,12 +143,15 @@ func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 		return id.Invalid, place.ErrReadOnly
 	}
 
+	entry, err := dp.dirSrv.GetNew()
+	if err != nil {
+		return id.Invalid, err
+	}
 	meta := zettel.Meta
-	entry := dp.dirSrv.GetNew()
 	meta.Zid = entry.Zid
 	dp.updateEntryFromMeta(&entry, meta)
 
-	err := setZettel(dp, &entry, zettel)
+	err = setZettel(dp, &entry, zettel)
 	if err == nil {
 		dp.dirSrv.UpdateEntry(&entry)
 	}
@@ -156,8 +159,8 @@ func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 }
 
 func (dp *dirPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
-	entry := dp.dirSrv.GetEntry(zid)
-	if !entry.IsValid() {
+	entry, err := dp.dirSrv.GetEntry(zid)
+	if err != nil || !entry.IsValid() {
 		return domain.Zettel{}, place.ErrNotFound
 	}
 	m, c, err := getMetaContent(dp, &entry, zid)
@@ -170,8 +173,8 @@ func (dp *dirPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 }
 
 func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry := dp.dirSrv.GetEntry(zid)
-	if !entry.IsValid() {
+	entry, err := dp.dirSrv.GetEntry(zid)
+	if err != nil || !entry.IsValid() {
 		return nil, place.ErrNotFound
 	}
 	m, err := getMeta(dp, &entry, zid)
@@ -183,7 +186,10 @@ func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
 func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
-	entries := dp.dirSrv.GetEntries()
+	entries, err := dp.dirSrv.GetEntries()
+	if err != nil {
+		return nil, err
+	}
 	result := id.NewSetCap(len(entries))
 	for _, entry := range entries {
 		result[entry.Zid] = true
@@ -192,7 +198,10 @@ func (dp *dirPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (dp *dirPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
-	entries := dp.dirSrv.GetEntries()
+	entries, err := dp.dirSrv.GetEntries()
+	if err != nil {
+		return nil, err
+	}
 	res = make([]*meta.Meta, 0, len(entries))
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
@@ -227,7 +236,10 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	if !meta.Zid.IsValid() {
 		return &place.ErrInvalidID{Zid: meta.Zid}
 	}
-	entry := dp.dirSrv.GetEntry(meta.Zid)
+	entry, err := dp.dirSrv.GetEntry(meta.Zid)
+	if err != nil {
+		return err
+	}
 	if !entry.IsValid() {
 		// Existing zettel, but new in this place.
 		entry.Zid = meta.Zid
@@ -280,13 +292,13 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	if curZid == newZid {
 		return nil
 	}
-	curEntry := dp.dirSrv.GetEntry(curZid)
-	if !curEntry.IsValid() {
+	curEntry, err := dp.dirSrv.GetEntry(curZid)
+	if err != nil || !curEntry.IsValid() {
 		return place.ErrNotFound
 	}
 
 	// Check whether zettel with new ID already exists in this place
-	if _, err := dp.GetMeta(ctx, newZid); err == nil {
+	if _, err = dp.GetMeta(ctx, newZid); err == nil {
 		return &place.ErrInvalidID{Zid: newZid}
 	}
 
@@ -320,8 +332,8 @@ func (dp *dirPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	if dp.readonly {
 		return false
 	}
-	entry := dp.dirSrv.GetEntry(zid)
-	return entry.IsValid()
+	entry, err := dp.dirSrv.GetEntry(zid)
+	return err == nil && entry.IsValid()
 }
 
 func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
@@ -329,18 +341,17 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		return place.ErrReadOnly
 	}
 
-	entry := dp.dirSrv.GetEntry(zid)
-	if !entry.IsValid() {
+	entry, err := dp.dirSrv.GetEntry(zid)
+	if err != nil || !entry.IsValid() {
 		return nil
 	}
 	dp.dirSrv.DeleteEntry(zid)
-	err := deleteZettel(dp, &entry, zid)
-	return err
+	return deleteZettel(dp, &entry, zid)
 }
 
 func (dp *dirPlace) ReadStats(st *place.Stats) {
 	st.ReadOnly = dp.readonly
-	st.Zettel = dp.dirSrv.NumEntries()
+	st.Zettel, _ = dp.dirSrv.NumEntries()
 }
 
 func (dp *dirPlace) cleanupMeta(ctx context.Context, m *meta.Meta) {

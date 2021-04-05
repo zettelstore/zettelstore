@@ -147,7 +147,7 @@ func (cmd *fileSetZettel) run() {
 		// TODO: if meta has some additional infos: write meta to new .meta;
 		// update entry in dir
 		err = writeFileContent(cmd.entry.ContentPath, cmd.zettel.Content.AsString())
-	case directory.MetaSpecUnknown:
+	default:
 		panic("TODO: ???")
 	}
 	cmd.rc <- err
@@ -219,7 +219,7 @@ func (cmd *fileDeleteZettel) run() {
 		err = os.Remove(cmd.entry.ContentPath)
 	case directory.MetaSpecNone:
 		err = os.Remove(cmd.entry.ContentPath)
-	case directory.MetaSpecUnknown:
+	default:
 		panic("TODO: ???")
 	}
 	cmd.rc <- err

@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package directory manages the directory part of a directory place.
-package directory
+// Package notifydir manages the notified directory part of a dirstore.
+package notifydir
 
 import (
 	"log"
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/place/dirplace/directory"
 )
 
 // ping sends every tick a signal to reload the directory list
@@ -40,16 +41,16 @@ func ping(tick chan<- struct{}, rescanTime time.Duration, done <-chan struct{}) 
 	}
 }
 
-func newEntry(ev *fileEvent) *Entry {
-	de := new(Entry)
+func newEntry(ev *fileEvent) *directory.Entry {
+	de := new(directory.Entry)
 	de.Zid = ev.zid
 	updateEntry(de, ev)
 	return de
 }
 
-func updateEntry(de *Entry, ev *fileEvent) {
+func updateEntry(de *directory.Entry, ev *fileEvent) {
 	if ev.ext == "meta" {
-		de.MetaSpec = MetaSpecFile
+		de.MetaSpec = directory.MetaSpecFile
 		de.MetaPath = ev.path
 		return
 	}
@@ -57,18 +58,18 @@ func updateEntry(de *Entry, ev *fileEvent) {
 		de.Duplicates = true
 		return
 	}
-	if de.MetaSpec != MetaSpecFile {
+	if de.MetaSpec != directory.MetaSpecFile {
 		if ev.ext == "zettel" {
-			de.MetaSpec = MetaSpecHeader
+			de.MetaSpec = directory.MetaSpecHeader
 		} else {
-			de.MetaSpec = MetaSpecNone
+			de.MetaSpec = directory.MetaSpecNone
 		}
 	}
 	de.ContentPath = ev.path
 	de.ContentExt = ev.ext
 }
 
-type dirMap map[id.Zid]*Entry
+type dirMap map[id.Zid]*directory.Entry
 
 func dirMapUpdate(dm dirMap, ev *fileEvent) {
 	de := dm[ev.zid]
@@ -82,8 +83,8 @@ func dirMapUpdate(dm dirMap, ev *fileEvent) {
 func deleteFromMap(dm dirMap, ev *fileEvent) {
 	if ev.ext == "meta" {
 		if entry, ok := dm[ev.zid]; ok {
-			if entry.MetaSpec == MetaSpecFile {
-				entry.MetaSpec = MetaSpecNone
+			if entry.MetaSpec == directory.MetaSpecFile {
+				entry.MetaSpec = directory.MetaSpecNone
 				return
 			}
 		}
@@ -92,7 +93,7 @@ func deleteFromMap(dm dirMap, ev *fileEvent) {
 }
 
 // directoryService is the main service.
-func (srv *Service) directoryService(events <-chan *fileEvent, ready chan<- int) {
+func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<- int) {
 	curMap := make(dirMap)
 	var newMap dirMap
 	for {
@@ -128,7 +129,7 @@ func (srv *Service) directoryService(events <-chan *fileEvent, ready chan<- int)
 	}
 }
 
-func (srv *Service) processFileUpdateEvent(ev *fileEvent, curMap, newMap dirMap) {
+func (srv *notifyService) processFileUpdateEvent(ev *fileEvent, curMap, newMap dirMap) {
 	if newMap != nil {
 		dirMapUpdate(newMap, ev)
 	} else {
@@ -137,7 +138,7 @@ func (srv *Service) processFileUpdateEvent(ev *fileEvent, curMap, newMap dirMap)
 	}
 }
 
-func (srv *Service) processFileDeleteEvent(ev *fileEvent, curMap, newMap dirMap) {
+func (srv *notifyService) processFileDeleteEvent(ev *fileEvent, curMap, newMap dirMap) {
 	if newMap != nil {
 		deleteFromMap(newMap, ev)
 	} else {
@@ -162,10 +163,10 @@ func (cmd *cmdNumEntries) run(m dirMap) {
 type cmdGetEntries struct {
 	result chan<- resGetEntries
 }
-type resGetEntries []Entry
+type resGetEntries []directory.Entry
 
 func (cmd *cmdGetEntries) run(m dirMap) {
-	res := make([]Entry, 0, len(m))
+	res := make([]directory.Entry, 0, len(m))
 	for _, de := range m {
 		res = append(res, *de)
 	}
@@ -176,12 +177,12 @@ type cmdGetEntry struct {
 	zid    id.Zid
 	result chan<- resGetEntry
 }
-type resGetEntry = Entry
+type resGetEntry = directory.Entry
 
 func (cmd *cmdGetEntry) run(m dirMap) {
 	entry := m[cmd.zid]
 	if entry == nil {
-		cmd.result <- Entry{Zid: id.Invalid}
+		cmd.result <- directory.Entry{Zid: id.Invalid}
 	} else {
 		cmd.result <- *entry
 	}
@@ -190,12 +191,12 @@ func (cmd *cmdGetEntry) run(m dirMap) {
 type cmdNewEntry struct {
 	result chan<- resNewEntry
 }
-type resNewEntry = Entry
+type resNewEntry = directory.Entry
 
 func (cmd *cmdNewEntry) run(m dirMap) {
 	zid := id.New(false)
 	if _, ok := m[zid]; !ok {
-		entry := &Entry{Zid: zid, MetaSpec: MetaSpecUnknown}
+		entry := &directory.Entry{Zid: zid}
 		m[zid] = entry
 		cmd.result <- *entry
 		return
@@ -203,7 +204,7 @@ func (cmd *cmdNewEntry) run(m dirMap) {
 	for {
 		zid = id.New(true)
 		if _, ok := m[zid]; !ok {
-			entry := &Entry{Zid: zid, MetaSpec: MetaSpecUnknown}
+			entry := &directory.Entry{Zid: zid}
 			m[zid] = entry
 			cmd.result <- *entry
 			return
@@ -214,7 +215,7 @@ func (cmd *cmdNewEntry) run(m dirMap) {
 }
 
 type cmdUpdateEntry struct {
-	entry  *Entry
+	entry  *directory.Entry
 	result chan<- struct{}
 }
 
@@ -225,8 +226,8 @@ func (cmd *cmdUpdateEntry) run(m dirMap) {
 }
 
 type cmdRenameEntry struct {
-	curEntry *Entry
-	newEntry *Entry
+	curEntry *directory.Entry
+	newEntry *directory.Entry
 	result   chan<- resRenameEntry
 }
 
