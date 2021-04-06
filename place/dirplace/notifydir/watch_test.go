@@ -8,12 +8,12 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
+// +build linux windows
+
 // Package notifydir manages the notified directory part of a dirstore.
 package notifydir
 
-import (
-	"testing"
-)
+import "testing"
 
 func sameStringSlices(sl1, sl2 []string) bool {
 	if len(sl1) != len(sl2) {

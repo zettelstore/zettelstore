@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/dirplace/directory"
-	"zettelstore.de/z/place/dirplace/notifydir"
 	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/search"
@@ -107,8 +106,11 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+	dp.dirSrv = makeDirService(dp.dir, dp.dirRescan, dp.cdata.Notify)
 	dp.mxCmds.Unlock()
+	if dp.dirSrv == nil {
+		panic("No directory service")
+	}
 	return dp.dirSrv.Start()
 }
 
