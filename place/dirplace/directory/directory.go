@@ -18,9 +18,9 @@ type Service interface {
 	Start() error
 	Stop() error
 	NumEntries() (int, error)
-	GetEntries() ([]Entry, error)
-	GetEntry(zid id.Zid) (Entry, error)
-	GetNew() (Entry, error)
+	GetEntries() ([]*Entry, error)
+	GetEntry(zid id.Zid) (*Entry, error)
+	GetNew() (*Entry, error)
 	UpdateEntry(entry *Entry) error
 	RenameEntry(curEntry, newEntry *Entry) error
 	DeleteEntry(zid id.Zid) error

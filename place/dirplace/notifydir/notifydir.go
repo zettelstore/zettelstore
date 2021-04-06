@@ -80,7 +80,7 @@ func (srv *notifyService) NumEntries() (int, error) {
 }
 
 // GetEntries returns an unsorted list of all current directory entries.
-func (srv *notifyService) GetEntries() ([]directory.Entry, error) {
+func (srv *notifyService) GetEntries() ([]*directory.Entry, error) {
 	resChan := make(chan resGetEntries)
 	srv.cmds <- &cmdGetEntries{resChan}
 	return <-resChan, nil
@@ -88,14 +88,14 @@ func (srv *notifyService) GetEntries() ([]directory.Entry, error) {
 
 // GetEntry returns the entry with the specified zettel id. If there is no such
 // zettel id, an empty entry is returned.
-func (srv *notifyService) GetEntry(zid id.Zid) (directory.Entry, error) {
+func (srv *notifyService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 	resChan := make(chan resGetEntry)
 	srv.cmds <- &cmdGetEntry{zid, resChan}
 	return <-resChan, nil
 }
 
 // GetNew returns an entry with a new zettel id.
-func (srv *notifyService) GetNew() (directory.Entry, error) {
+func (srv *notifyService) GetNew() (*directory.Entry, error) {
 	resChan := make(chan resNewEntry)
 	srv.cmds <- &cmdNewEntry{resChan}
 	return <-resChan, nil

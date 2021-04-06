@@ -163,12 +163,15 @@ func (cmd *cmdNumEntries) run(m dirMap) {
 type cmdGetEntries struct {
 	result chan<- resGetEntries
 }
-type resGetEntries []directory.Entry
+type resGetEntries []*directory.Entry
 
 func (cmd *cmdGetEntries) run(m dirMap) {
-	res := make([]directory.Entry, 0, len(m))
+	res := make([]*directory.Entry, len(m))
+	i := 0
 	for _, de := range m {
-		res = append(res, *de)
+		entry := *de
+		res[i] = &entry
+		i++
 	}
 	cmd.result <- res
 }
@@ -177,28 +180,30 @@ type cmdGetEntry struct {
 	zid    id.Zid
 	result chan<- resGetEntry
 }
-type resGetEntry = directory.Entry
+type resGetEntry = *directory.Entry
 
 func (cmd *cmdGetEntry) run(m dirMap) {
 	entry := m[cmd.zid]
 	if entry == nil {
-		cmd.result <- directory.Entry{Zid: id.Invalid}
+		cmd.result <- &directory.Entry{Zid: id.Invalid}
 	} else {
-		cmd.result <- *entry
+		result := *entry
+		cmd.result <- &result
 	}
 }
 
 type cmdNewEntry struct {
 	result chan<- resNewEntry
 }
-type resNewEntry = directory.Entry
+type resNewEntry = *directory.Entry
 
 func (cmd *cmdNewEntry) run(m dirMap) {
 	zid := id.New(false)
 	if _, ok := m[zid]; !ok {
 		entry := &directory.Entry{Zid: zid}
 		m[zid] = entry
-		cmd.result <- *entry
+		result := *entry
+		cmd.result <- &result
 		return
 	}
 	for {
@@ -206,7 +211,8 @@ func (cmd *cmdNewEntry) run(m dirMap) {
 		if _, ok := m[zid]; !ok {
 			entry := &directory.Entry{Zid: zid}
 			m[zid] = entry
-			cmd.result <- *entry
+			result := *entry
+			cmd.result <- &result
 			return
 		}
 		// TODO: do not wait here, but in a non-blocking goroutine.

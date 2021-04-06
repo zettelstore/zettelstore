@@ -149,11 +149,11 @@ func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	}
 	meta := zettel.Meta
 	meta.Zid = entry.Zid
-	dp.updateEntryFromMeta(&entry, meta)
+	dp.updateEntryFromMeta(entry, meta)
 
-	err = setZettel(dp, &entry, zettel)
+	err = setZettel(dp, entry, zettel)
 	if err == nil {
-		dp.dirSrv.UpdateEntry(&entry)
+		dp.dirSrv.UpdateEntry(entry)
 	}
 	return meta.Zid, err
 }
@@ -163,7 +163,7 @@ func (dp *dirPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	if err != nil || !entry.IsValid() {
 		return domain.Zettel{}, place.ErrNotFound
 	}
-	m, c, err := getMetaContent(dp, &entry, zid)
+	m, c, err := getMetaContent(dp, entry, zid)
 	if err != nil {
 		return domain.Zettel{}, err
 	}
@@ -177,7 +177,7 @@ func (dp *dirPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if err != nil || !entry.IsValid() {
 		return nil, place.ErrNotFound
 	}
-	m, err := getMeta(dp, &entry, zid)
+	m, err := getMeta(dp, entry, zid)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (dp *dirPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) 
 	res = make([]*meta.Meta, 0, len(entries))
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
-		m, err1 := getMeta(dp, &entry, entry.Zid)
+		m, err1 := getMeta(dp, entry, entry.Zid)
 		err = err1
 		if err != nil {
 			continue
@@ -243,15 +243,15 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	if !entry.IsValid() {
 		// Existing zettel, but new in this place.
 		entry.Zid = meta.Zid
-		dp.updateEntryFromMeta(&entry, meta)
+		dp.updateEntryFromMeta(entry, meta)
 	} else if entry.MetaSpec == directory.MetaSpecNone {
 		defaultMeta := fileplace.CalcDefaultMeta(entry.Zid, entry.ContentExt)
 		if !meta.Equal(defaultMeta, true) {
-			dp.updateEntryFromMeta(&entry, meta)
-			dp.dirSrv.UpdateEntry(&entry)
+			dp.updateEntryFromMeta(entry, meta)
+			dp.dirSrv.UpdateEntry(entry)
 		}
 	}
-	return setZettel(dp, &entry, zettel)
+	return setZettel(dp, entry, zettel)
 }
 
 func (dp *dirPlace) updateEntryFromMeta(entry *directory.Entry, meta *meta.Meta) {
@@ -302,7 +302,7 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		return &place.ErrInvalidID{Zid: newZid}
 	}
 
-	oldMeta, oldContent, err := getMetaContent(dp, &curEntry, curZid)
+	oldMeta, oldContent, err := getMetaContent(dp, curEntry, curZid)
 	if err != nil {
 		return err
 	}
@@ -315,17 +315,17 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		ContentExt:  curEntry.ContentExt,
 	}
 
-	if err := dp.dirSrv.RenameEntry(&curEntry, &newEntry); err != nil {
+	if err := dp.dirSrv.RenameEntry(curEntry, &newEntry); err != nil {
 		return err
 	}
 	oldMeta.Zid = newZid
 	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
 	if err := setZettel(dp, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
-		dp.dirSrv.RenameEntry(&newEntry, &curEntry)
+		dp.dirSrv.RenameEntry(&newEntry, curEntry)
 		return err
 	}
-	return deleteZettel(dp, &curEntry, curZid)
+	return deleteZettel(dp, curEntry, curZid)
 }
 
 func (dp *dirPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
@@ -346,7 +346,7 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		return nil
 	}
 	dp.dirSrv.DeleteEntry(zid)
-	return deleteZettel(dp, &entry, zid)
+	return deleteZettel(dp, entry, zid)
 }
 
 func (dp *dirPlace) ReadStats(st *place.Stats) {
