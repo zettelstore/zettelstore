@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/dirplace/directory"
 	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
@@ -83,15 +84,16 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 
 // dirPlace uses a directory to store zettel as files.
 type dirPlace struct {
-	u         *url.URL
-	readonly  bool
-	cdata     manager.ConnectData
-	dir       string
-	dirRescan time.Duration
-	dirSrv    directory.Service
-	fSrvs     uint32
-	fCmds     []chan fileCmd
-	mxCmds    sync.RWMutex
+	u          *url.URL
+	readonly   bool
+	cdata      manager.ConnectData
+	dir        string
+	dirRescan  time.Duration
+	dirSrv     directory.Service
+	mustNotify bool
+	fSrvs      uint32
+	fCmds      []chan fileCmd
+	mxCmds     sync.RWMutex
 }
 
 func (dp *dirPlace) Location() string {
@@ -111,7 +113,46 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 	if dp.dirSrv == nil {
 		panic("No directory service")
 	}
-	return dp.dirSrv.Start()
+	err := dp.dirSrv.Start()
+	if err == nil && dp.mustNotify {
+		go dp.rescanner()
+	}
+	return err
+}
+
+func (dp *dirPlace) rescanner() {
+	if !dp.mustNotify {
+		return
+	}
+	for {
+		dp.notifyChanged(change.OnReload, id.Invalid)
+		time.Sleep(dp.dirRescan) // TODO: rework to stop faster if dirRescan is too high
+
+		dp.mxCmds.RLock()
+		hasDir := dp.dirSrv != nil
+		dp.mxCmds.RUnlock()
+		if !hasDir {
+			return
+		}
+	}
+}
+
+func (dp *dirPlace) Stop(ctx context.Context) error {
+	dirSrv := dp.dirSrv
+	dp.dirSrv = nil
+	err := dirSrv.Stop()
+	for _, c := range dp.fCmds {
+		close(c)
+	}
+	return err
+}
+
+func (dp *dirPlace) notifyChanged(reason change.Reason, zid id.Zid) {
+	if dp.mustNotify {
+		if chci := dp.cdata.Notify; chci != nil {
+			chci <- change.Info{Reason: reason, Zid: zid}
+		}
+	}
 }
 
 func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
@@ -124,16 +165,6 @@ func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
 	dp.mxCmds.RLock()
 	defer dp.mxCmds.RUnlock()
 	return dp.fCmds[sum%dp.fSrvs]
-}
-
-func (dp *dirPlace) Stop(ctx context.Context) error {
-	dirSrv := dp.dirSrv
-	dp.dirSrv = nil
-	err := dirSrv.Stop()
-	for _, c := range dp.fCmds {
-		close(c)
-	}
-	return err
 }
 
 func (dp *dirPlace) CanCreateZettel(ctx context.Context) bool {
@@ -157,6 +188,7 @@ func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	if err == nil {
 		dp.dirSrv.UpdateEntry(entry)
 	}
+	dp.notifyChanged(change.OnUpdate, meta.Zid)
 	return meta.Zid, err
 }
 
@@ -253,7 +285,11 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 			dp.dirSrv.UpdateEntry(entry)
 		}
 	}
-	return setZettel(dp, entry, zettel)
+	err = setZettel(dp, entry, zettel)
+	if err == nil {
+		dp.notifyChanged(change.OnUpdate, meta.Zid)
+	}
+	return err
 }
 
 func (dp *dirPlace) updateEntryFromMeta(entry *directory.Entry, meta *meta.Meta) {
@@ -327,7 +363,12 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		dp.dirSrv.RenameEntry(&newEntry, curEntry)
 		return err
 	}
-	return deleteZettel(dp, curEntry, curZid)
+	err = deleteZettel(dp, curEntry, curZid)
+	if err == nil {
+		dp.notifyChanged(change.OnDelete, curZid)
+		dp.notifyChanged(change.OnUpdate, newZid)
+	}
+	return err
 }
 
 func (dp *dirPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
@@ -348,7 +389,11 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		return nil
 	}
 	dp.dirSrv.DeleteEntry(zid)
-	return deleteZettel(dp, entry, zid)
+	err = deleteZettel(dp, entry, zid)
+	if err == nil {
+		dp.notifyChanged(change.OnDelete, zid)
+	}
+	return err
 }
 
 func (dp *dirPlace) ReadStats(st *place.Stats) {
