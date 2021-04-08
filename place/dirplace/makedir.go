@@ -13,10 +13,16 @@
 // Package dirplace provides a directory-based zettel place.
 package dirplace
 
-import "zettelstore.de/z/place/dirplace/notifydir"
+import (
+	"zettelstore.de/z/place/dirplace/notifydir"
+	"zettelstore.de/z/place/dirplace/plaindir"
+)
 
 func (dp *dirPlace) setupDirService() {
 	switch dp.dirSrvType {
+	case "plain":
+		dp.dirSrv = plaindir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+		dp.mustNotify = true
 	default:
 		dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
 		dp.mustNotify = false

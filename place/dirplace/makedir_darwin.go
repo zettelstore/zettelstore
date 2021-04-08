@@ -14,5 +14,6 @@
 package dirplace
 
 func (dp *dirPlace) setupDirService() {
-	dp.dirSrv = nil
+	dp.dirSrv = plaindir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+	dp.mustNotify = true
 }
