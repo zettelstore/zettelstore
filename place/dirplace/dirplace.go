@@ -353,12 +353,12 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		ContentExt:  curEntry.ContentExt,
 	}
 
-	if err := dp.dirSrv.RenameEntry(curEntry, &newEntry); err != nil {
+	if err = dp.dirSrv.RenameEntry(curEntry, &newEntry); err != nil {
 		return err
 	}
 	oldMeta.Zid = newZid
 	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
-	if err := setZettel(dp, &newEntry, newZettel); err != nil {
+	if err = setZettel(dp, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
 		dp.dirSrv.RenameEntry(&newEntry, curEntry)
 		return err
