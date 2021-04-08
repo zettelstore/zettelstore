@@ -13,13 +13,6 @@
 // Package dirplace provides a directory-based zettel place.
 package dirplace
 
-import (
-	"time"
-
-	"zettelstore.de/z/place/change"
-	"zettelstore.de/z/place/dirplace/directory"
-)
-
-func makeDirService(dir string, dirRescan time.Duration, notify chan<- change.Info) directory.Service {
-	return nil
+func (dp *dirPlace) setupDirService() {
+	dp.dirSrv = nil
 }

@@ -40,13 +40,13 @@ func init() {
 			return nil, err
 		}
 		dp := dirPlace{
-			u:        u,
-			readonly: getQueryBool(u, "readonly"),
-			cdata:    *cdata,
-			dir:      path,
-			dirRescan: time.Duration(
-				getQueryInt(u, "rescan", 60, 3600, 30*24*60*60)) * time.Second,
-			fSrvs: uint32(getQueryInt(u, "worker", 1, 17, 1499)),
+			location:   u.String(),
+			readonly:   getQueryBool(u, "readonly"),
+			cdata:      *cdata,
+			dir:        path,
+			dirRescan:  time.Duration(getQueryInt(u, "rescan", 60, 3600, 30*24*60*60)) * time.Second,
+			dirSrvType: u.Query().Get("type"),
+			fSrvs:      uint32(getQueryInt(u, "worker", 1, 17, 1499)),
 		}
 		return &dp, nil
 	})
@@ -84,11 +84,12 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 
 // dirPlace uses a directory to store zettel as files.
 type dirPlace struct {
-	u          *url.URL
+	location   string
 	readonly   bool
 	cdata      manager.ConnectData
 	dir        string
 	dirRescan  time.Duration
+	dirSrvType string
 	dirSrv     directory.Service
 	mustNotify bool
 	fSrvs      uint32
@@ -97,7 +98,7 @@ type dirPlace struct {
 }
 
 func (dp *dirPlace) Location() string {
-	return dp.u.String()
+	return dp.location
 }
 
 func (dp *dirPlace) Start(ctx context.Context) error {
@@ -108,7 +109,7 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 		go fileService(i, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.dirSrv = makeDirService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+	dp.setupDirService()
 	dp.mxCmds.Unlock()
 	if dp.dirSrv == nil {
 		panic("No directory service")
