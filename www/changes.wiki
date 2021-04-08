@@ -36,10 +36,8 @@
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
 A note for users of macOS: in the current release and with macOS's default values,
-a zettel directory place must not contain more than approx. 250 files. There are four options
+a zettel directory place must not contain more than approx. 250 files. There are three options
 to mitigate this limitation temporarily:
-  #  You [https://zettelstore.de/manual/h/00001004010000|re-configure] your Zettelstore to use more
-     than one directory place.
   #  You update the per-process limit of open files on macOS.
   #  You setup a virtualization environment to run Zettelstore on Linux or Windows.
   #  You wait for version 0.0.12 which addresses this issue.
