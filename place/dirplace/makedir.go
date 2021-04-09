@@ -21,7 +21,7 @@ import (
 func (dp *dirPlace) setupDirService() {
 	switch dp.dirSrvType {
 	case "plain":
-		dp.dirSrv = plaindir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+		dp.dirSrv = plaindir.NewService(dp.dir)
 		dp.mustNotify = true
 	default:
 		dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)

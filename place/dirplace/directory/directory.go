@@ -49,5 +49,5 @@ type Entry struct {
 
 // IsValid checks whether the entry is valid.
 func (e *Entry) IsValid() bool {
-	return e.Zid.IsValid()
+	return e != nil && e.Zid.IsValid()
 }

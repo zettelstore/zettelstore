@@ -114,28 +114,7 @@ func (dp *dirPlace) Start(ctx context.Context) error {
 	if dp.dirSrv == nil {
 		panic("No directory service")
 	}
-	err := dp.dirSrv.Start()
-	if err == nil && dp.mustNotify {
-		go dp.rescanner()
-	}
-	return err
-}
-
-func (dp *dirPlace) rescanner() {
-	if !dp.mustNotify {
-		return
-	}
-	for {
-		dp.notifyChanged(change.OnReload, id.Invalid)
-		time.Sleep(dp.dirRescan) // TODO: rework to stop faster if dirRescan is too high
-
-		dp.mxCmds.RLock()
-		hasDir := dp.dirSrv != nil
-		dp.mxCmds.RUnlock()
-		if !hasDir {
-			return
-		}
-	}
+	return dp.dirSrv.Start()
 }
 
 func (dp *dirPlace) Stop(ctx context.Context) error {

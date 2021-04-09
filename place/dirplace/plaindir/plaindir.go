@@ -12,63 +12,179 @@
 package plaindir
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"sync"
 	"time"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/dirplace/directory"
 )
 
 // plainService specifies a directory service without scanning.
 type plainService struct {
-	dirPath    string
-	rescanTime time.Duration
-	infos      chan<- change.Info
+	dirPath string
+	mx      sync.Mutex
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration, chci chan<- change.Info) directory.Service {
+func NewService(directoryPath string) directory.Service {
 	return &plainService{
-		dirPath:    directoryPath,
-		rescanTime: rescanTime,
-		infos:      chci,
+		dirPath: directoryPath,
 	}
 }
 
 func (ps *plainService) Start() error {
-	return nil
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+	_, err := os.ReadDir(ps.dirPath)
+	return err
 }
 
 func (ps *plainService) Stop() error {
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
 	return nil
 }
 
 func (ps *plainService) NumEntries() (int, error) {
-	return 0, nil
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+	entries, err := ps.getEntries()
+	if err == nil {
+		return len(entries), nil
+	}
+	return 0, err
 }
 
 func (ps *plainService) GetEntries() ([]*directory.Entry, error) {
-	return nil, nil
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+	entrySet, err := ps.getEntries()
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*directory.Entry, 0, len(entrySet))
+	for _, entry := range entrySet {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+func (ps *plainService) getEntries() (map[id.Zid]*directory.Entry, error) {
+	dirEntries, err := os.ReadDir(ps.dirPath)
+	if err != nil {
+		return nil, err
+	}
+	entrySet := make(map[id.Zid]*directory.Entry)
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			continue
+		}
+		if info, err1 := dirEntry.Info(); err1 != nil || !info.Mode().IsRegular() {
+			continue
+		}
+		name := dirEntry.Name()
+		match := matchValidFileName(name)
+		if len(match) == 0 {
+			continue
+		}
+		zid, err := id.Parse(match[1])
+		if err != nil {
+			continue
+		}
+		var entry *directory.Entry
+		if e, ok := entrySet[zid]; ok {
+			entry = e
+		} else {
+			entry = &directory.Entry{Zid: zid}
+			entrySet[zid] = entry
+		}
+		ext := match[3]
+		path := filepath.Join(ps.dirPath, name)
+		if ext == "meta" {
+			entry.MetaSpec = directory.MetaSpecFile
+			entry.MetaPath = path
+		} else if entry.ContentExt != "" && entry.ContentExt != ext {
+			entry.Duplicates = true
+		} else {
+			if entry.MetaSpec != directory.MetaSpecFile {
+				if ext == "zettel" {
+					entry.MetaSpec = directory.MetaSpecHeader
+				} else {
+					entry.MetaSpec = directory.MetaSpecNone
+				}
+			}
+			entry.ContentPath = path
+			entry.ContentExt = ext
+		}
+	}
+	return entrySet, nil
+}
+
+var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
+
+func matchValidFileName(name string) []string {
+	return validFileName.FindStringSubmatch(name)
 }
 
 func (ps *plainService) GetEntry(zid id.Zid) (*directory.Entry, error) {
-	return nil, fmt.Errorf("NYI")
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+	return ps.getEntry(zid)
+}
+func (ps *plainService) getEntry(zid id.Zid) (*directory.Entry, error) {
+	// Too simple implementation, but it should work.
+	entries, err := ps.getEntries()
+	if err != nil {
+		return nil, err
+	}
+	entry, ok := entries[zid]
+	if !ok {
+		return nil, nil
+	}
+	return entry, nil
 }
 
 func (ps *plainService) GetNew() (*directory.Entry, error) {
-	return nil, fmt.Errorf("NYI")
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+	zid := id.New(false)
+	if entry, err := ps.getEntry(zid); entry == nil && err == nil {
+		return &directory.Entry{Zid: zid}, nil
+	}
+	for {
+		zid = id.New(true)
+		if entry, err := ps.getEntry(zid); entry == nil && err == nil {
+			return &directory.Entry{Zid: zid}, nil
+		} else if err != nil {
+			return nil, err
+		}
+		// TODO: do not wait here, but in a non-blocking goroutine.
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 func (ps *plainService) UpdateEntry(entry *directory.Entry) error {
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+
+	// Noting to to, since the actual file update is done by dirplace
 	return nil
 }
 
 func (ps *plainService) RenameEntry(curEntry, newEntry *directory.Entry) error {
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+
+	// Noting to to, since the actual file rename is done by dirplace
 	return nil
 }
 
 func (ps *plainService) DeleteEntry(zid id.Zid) error {
+	ps.mx.Lock()
+	defer ps.mx.Unlock()
+
 	// Noting to to, since the actual file delete is done by dirplace
 	return nil
 }
