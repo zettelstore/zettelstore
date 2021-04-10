@@ -100,24 +100,7 @@ func (ps *plainService) getEntries() (map[id.Zid]*directory.Entry, error) {
 			entry = &directory.Entry{Zid: zid}
 			entrySet[zid] = entry
 		}
-		ext := match[3]
-		path := filepath.Join(ps.dirPath, name)
-		if ext == "meta" {
-			entry.MetaSpec = directory.MetaSpecFile
-			entry.MetaPath = path
-		} else if entry.ContentExt != "" && entry.ContentExt != ext {
-			entry.Duplicates = true
-		} else {
-			if entry.MetaSpec != directory.MetaSpecFile {
-				if ext == "zettel" {
-					entry.MetaSpec = directory.MetaSpecHeader
-				} else {
-					entry.MetaSpec = directory.MetaSpecNone
-				}
-			}
-			entry.ContentPath = path
-			entry.ContentExt = ext
-		}
+		updateEntry(entry, filepath.Join(ps.dirPath, name), match[3])
 	}
 	return entrySet, nil
 }
@@ -128,20 +111,46 @@ func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
 }
 
+func updateEntry(entry *directory.Entry, path, ext string) {
+	if ext == "meta" {
+		entry.MetaSpec = directory.MetaSpecFile
+		entry.MetaPath = path
+	} else if entry.ContentExt != "" && entry.ContentExt != ext {
+		entry.Duplicates = true
+	} else {
+		if entry.MetaSpec != directory.MetaSpecFile {
+			if ext == "zettel" {
+				entry.MetaSpec = directory.MetaSpecHeader
+			} else {
+				entry.MetaSpec = directory.MetaSpecNone
+			}
+		}
+		entry.ContentPath = path
+		entry.ContentExt = ext
+	}
+}
+
 func (ps *plainService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 	ps.mx.Lock()
 	defer ps.mx.Unlock()
 	return ps.getEntry(zid)
 }
 func (ps *plainService) getEntry(zid id.Zid) (*directory.Entry, error) {
-	// Too simple implementation, but it should work.
-	entries, err := ps.getEntries()
+	pattern := filepath.Join(ps.dirPath, zid.String()) + "*.*"
+	paths, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
 	}
-	entry, ok := entries[zid]
-	if !ok {
+	if len(paths) == 0 {
 		return nil, nil
+	}
+	entry := &directory.Entry{Zid: zid}
+	for _, path := range paths {
+		ext := filepath.Ext(path)
+		if len(ext) > 0 && ext[0] == '.' {
+			ext = ext[1:]
+		}
+		updateEntry(entry, path, ext)
 	}
 	return entry, nil
 }
