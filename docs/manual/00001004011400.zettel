@@ -1,8 +1,8 @@
 id: 00001004011400
 title: Configure file directory places
+role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-role: manual
 
 Under certain circumstances, it is preferable to further configure a file directory place.
 This is done by appending query parameters after the base place URI ''dir:\//DIR''.
@@ -10,12 +10,36 @@ This is done by appending query parameters after the base place URI ''dir:\//DIR
 The following parameters are supported:
 
 |= Parameter:|Description|Default value:|
+|type|(Sub-) Type of the directory service|(depends on operating system)
 |rescan|Time (in seconds) after which the directory should be scanned fully|600
-|worker|Number of worker that can access the directory in parallel|17
+|worker|Number of worker that can access the directory in parallel|(depends on type)
 |readonly|Allow only operations that do not change a zettel or create a new zettel|n/a
 
+=== Type
+On some operating systems, Zettelstore tries to detect changes to zettel files outside of Zettelstore's control[^This includes Linux and Windows.].
+On other operating systems, this is not possible, due to technical limitations[^This currently includes macOS.].
+Automatic detection of external changes is also not possible, if zettel files are placed on an external service, such as a file server accessed via SMD/CIFS or NFS.
+
+To cope with this uncertainty, Zettelstore provides various internal implementations of a directory place.
+The default values should match the needs of different users, as explained in the [[installation part|00001003000000]] of this manual.
+The following values are supported:
+
+; simple:
+: Is not able to detect external changes.
+  Works on all platforms.
+  Is a little slower than other implementations (up to three times slower).
+
+  Activated as default on: macOS.
+; notify:
+: Automatically detect external changes.
+  Tries to optimize performance, at a little cost of main memory (RAM).
+
+  Activated as default on: Linux, Windows.
+
+  Is not available on: macOS.
+
 === Rescan
-On most platforms, Zettelstore automatically detects changes to zettel files that originates from other software[^This includes most Linux distributions, macOS, and Windows].
+On some platforms, Zettelstore automatically detects changes to zettel files that originates from other software[^This includes Linux and Windows].
 It is done on a ""best-effort"" basis.
 Under certain circumstances it is possible that Zettelstore does not detect a change done by another software.
 
@@ -33,21 +57,26 @@ Please note that a directory re-scan invalidates all internal data of a Zettelst
 It might trigger a re-build of the backlink database (and other internal databases).
 Therefore a large value if preferred.
 
+This value is ignored for directory place type ""simple"".
+
 === Worker
 Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.
 The number of parallel activities is configured by the ''worker'' parameter.
-Its default value 17 is a good compromise when you think about the high variability of possible Zettelstore environments.
 
 A computer contains a limited number of internal processing units (CPU).
 Its number ranges from 1 to (currently) 128, e.g. in bigger server environments.
 Zettelstore typically runs on a system with 1 to 8 CPUs.
 Access to zettel file is ultimately managed by the underlying operating system.
-Depending on the hardware, only a limited number of parallel accesses are desireable.
-Since Zettelstore is a single-user software, the value 17 is quite reasonable, even for higher use.
+Depending on the hardware and on the type of the directory place, only a limited number of parallel accesses are desirable.
 
 On smaller hardware[^In comparison to a normal desktop or laptop computer], such as the [[Raspberry Zero|https://www.raspberrypi.org/products/raspberry-pi-zero/]], a smaller value might be appropriate.
 Every worker needs some amount of main memory (RAM) and some amount of processing power.
 On bigger hardware, with some fast file services, a bigger value could result in higher performance, if needed.
+
+For a directory place of type ""notify"", the default value is: 7.
+The directory place type ""simple"" limits the value to a maximum of 1, i.e. no concurrency is possible with this type of directory place.
+
+For various reasons, the value should be a prime number, with a maximum value of 1499.
 
 === Readonly
 Sometimes you may want to provide zettel from a file directory place, but you want to disallow any changes.

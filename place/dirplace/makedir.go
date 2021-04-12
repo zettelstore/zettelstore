@@ -15,13 +15,13 @@ package dirplace
 
 import (
 	"zettelstore.de/z/place/dirplace/notifydir"
-	"zettelstore.de/z/place/dirplace/plaindir"
+	"zettelstore.de/z/place/dirplace/simpledir"
 )
 
 func (dp *dirPlace) setupDirService() {
 	switch dp.dirSrvType {
-	case "plain":
-		dp.dirSrv = plaindir.NewService(dp.dir)
+	case "simple":
+		dp.dirSrv = simpledir.NewService(dp.dir)
 		dp.mustNotify = true
 	default:
 		dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)

@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package plaindir manages the directory part of a dirstore.
-package plaindir
+// Package simpledir manages the directory part of a dirstore.
+package simpledir
 
 import (
 	"os"
@@ -22,46 +22,44 @@ import (
 	"zettelstore.de/z/place/dirplace/directory"
 )
 
-// plainService specifies a directory service without scanning.
-type plainService struct {
+// simpleService specifies a directory service without scanning.
+type simpleService struct {
 	dirPath string
 	mx      sync.Mutex
 }
 
 // NewService creates a new directory service.
 func NewService(directoryPath string) directory.Service {
-	return &plainService{
+	return &simpleService{
 		dirPath: directoryPath,
 	}
 }
 
-func (ps *plainService) Start() error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-	_, err := os.ReadDir(ps.dirPath)
+func (ss *simpleService) Start() error {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	_, err := os.ReadDir(ss.dirPath)
 	return err
 }
 
-func (ps *plainService) Stop() error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
+func (ss *simpleService) Stop() error {
 	return nil
 }
 
-func (ps *plainService) NumEntries() (int, error) {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-	entries, err := ps.getEntries()
+func (ss *simpleService) NumEntries() (int, error) {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	entries, err := ss.getEntries()
 	if err == nil {
 		return len(entries), nil
 	}
 	return 0, err
 }
 
-func (ps *plainService) GetEntries() ([]*directory.Entry, error) {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-	entrySet, err := ps.getEntries()
+func (ss *simpleService) GetEntries() ([]*directory.Entry, error) {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	entrySet, err := ss.getEntries()
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +69,8 @@ func (ps *plainService) GetEntries() ([]*directory.Entry, error) {
 	}
 	return result, nil
 }
-func (ps *plainService) getEntries() (map[id.Zid]*directory.Entry, error) {
-	dirEntries, err := os.ReadDir(ps.dirPath)
+func (ss *simpleService) getEntries() (map[id.Zid]*directory.Entry, error) {
+	dirEntries, err := os.ReadDir(ss.dirPath)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +98,7 @@ func (ps *plainService) getEntries() (map[id.Zid]*directory.Entry, error) {
 			entry = &directory.Entry{Zid: zid}
 			entrySet[zid] = entry
 		}
-		updateEntry(entry, filepath.Join(ps.dirPath, name), match[3])
+		updateEntry(entry, filepath.Join(ss.dirPath, name), match[3])
 	}
 	return entrySet, nil
 }
@@ -130,13 +128,13 @@ func updateEntry(entry *directory.Entry, path, ext string) {
 	}
 }
 
-func (ps *plainService) GetEntry(zid id.Zid) (*directory.Entry, error) {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-	return ps.getEntry(zid)
+func (ss *simpleService) GetEntry(zid id.Zid) (*directory.Entry, error) {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	return ss.getEntry(zid)
 }
-func (ps *plainService) getEntry(zid id.Zid) (*directory.Entry, error) {
-	pattern := filepath.Join(ps.dirPath, zid.String()) + "*.*"
+func (ss *simpleService) getEntry(zid id.Zid) (*directory.Entry, error) {
+	pattern := filepath.Join(ss.dirPath, zid.String()) + "*.*"
 	paths, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
@@ -155,16 +153,16 @@ func (ps *plainService) getEntry(zid id.Zid) (*directory.Entry, error) {
 	return entry, nil
 }
 
-func (ps *plainService) GetNew() (*directory.Entry, error) {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
+func (ss *simpleService) GetNew() (*directory.Entry, error) {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
 	zid := id.New(false)
-	if entry, err := ps.getEntry(zid); entry == nil && err == nil {
+	if entry, err := ss.getEntry(zid); entry == nil && err == nil {
 		return &directory.Entry{Zid: zid}, nil
 	}
 	for {
 		zid = id.New(true)
-		if entry, err := ps.getEntry(zid); entry == nil && err == nil {
+		if entry, err := ss.getEntry(zid); entry == nil && err == nil {
 			return &directory.Entry{Zid: zid}, nil
 		} else if err != nil {
 			return nil, err
@@ -174,26 +172,17 @@ func (ps *plainService) GetNew() (*directory.Entry, error) {
 	}
 }
 
-func (ps *plainService) UpdateEntry(entry *directory.Entry) error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-
+func (ss *simpleService) UpdateEntry(entry *directory.Entry) error {
 	// Noting to to, since the actual file update is done by dirplace
 	return nil
 }
 
-func (ps *plainService) RenameEntry(curEntry, newEntry *directory.Entry) error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-
+func (ss *simpleService) RenameEntry(curEntry, newEntry *directory.Entry) error {
 	// Noting to to, since the actual file rename is done by dirplace
 	return nil
 }
 
-func (ps *plainService) DeleteEntry(zid id.Zid) error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-
+func (ss *simpleService) DeleteEntry(zid id.Zid) error {
 	// Noting to to, since the actual file delete is done by dirplace
 	return nil
 }
