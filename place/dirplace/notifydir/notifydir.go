@@ -100,7 +100,8 @@ func (srv *notifyService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 func (srv *notifyService) GetNew() (*directory.Entry, error) {
 	resChan := make(chan resNewEntry)
 	srv.cmds <- &cmdNewEntry{resChan}
-	return <-resChan, nil
+	result := <-resChan
+	return result.entry, result.err
 }
 
 // UpdateEntry notifies the directory of an updated entry.

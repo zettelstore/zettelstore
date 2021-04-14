@@ -197,29 +197,23 @@ func (cmd *cmdGetEntry) run(m dirMap) {
 type cmdNewEntry struct {
 	result chan<- resNewEntry
 }
-type resNewEntry = *directory.Entry
+type resNewEntry struct {
+	entry *directory.Entry
+	err   error
+}
 
 func (cmd *cmdNewEntry) run(m dirMap) {
-	zid := id.New(false)
-	if _, ok := m[zid]; !ok {
-		entry := &directory.Entry{Zid: zid}
-		m[zid] = entry
-		result := *entry
-		cmd.result <- &result
+	zid, err := place.GetNewZid(func(zid id.Zid) (bool, error) {
+		_, ok := m[zid]
+		return !ok, nil
+	})
+	if err != nil {
+		cmd.result <- resNewEntry{nil, err}
 		return
 	}
-	for {
-		zid = id.New(true)
-		if _, ok := m[zid]; !ok {
-			entry := &directory.Entry{Zid: zid}
-			m[zid] = entry
-			result := *entry
-			cmd.result <- &result
-			return
-		}
-		// TODO: do not wait here, but in a non-blocking goroutine.
-		time.Sleep(100 * time.Millisecond)
-	}
+	entry := &directory.Entry{Zid: zid}
+	m[zid] = entry
+	cmd.result <- resNewEntry{&directory.Entry{Zid: zid}, nil}
 }
 
 type cmdUpdateEntry struct {

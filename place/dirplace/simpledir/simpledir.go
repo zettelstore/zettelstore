@@ -16,9 +16,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
-	"time"
 
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/dirplace/directory"
 )
 
@@ -156,20 +156,17 @@ func (ss *simpleService) getEntry(zid id.Zid) (*directory.Entry, error) {
 func (ss *simpleService) GetNew() (*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	zid := id.New(false)
-	if entry, err := ss.getEntry(zid); entry == nil && err == nil {
-		return &directory.Entry{Zid: zid}, nil
-	}
-	for {
-		zid = id.New(true)
-		if entry, err := ss.getEntry(zid); entry == nil && err == nil {
-			return &directory.Entry{Zid: zid}, nil
-		} else if err != nil {
-			return nil, err
+	zid, err := place.GetNewZid(func(zid id.Zid) (bool, error) {
+		entry, err := ss.getEntry(zid)
+		if err != nil {
+			return false, nil
 		}
-		// TODO: do not wait here, but in a non-blocking goroutine.
-		time.Sleep(100 * time.Millisecond)
+		return !entry.IsValid(), nil
+	})
+	if err != nil {
+		return nil, err
 	}
+	return &directory.Entry{Zid: zid}, nil
 }
 
 func (ss *simpleService) UpdateEntry(entry *directory.Entry) error {

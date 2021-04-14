@@ -15,7 +15,6 @@ import (
 	"context"
 	"net/url"
 	"sync"
-	"time"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -69,27 +68,21 @@ func (mp *memPlace) CanCreateZettel(ctx context.Context) bool { return true }
 
 func (mp *memPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	mp.mx.Lock()
+	zid, err := place.GetNewZid(func(zid id.Zid) (bool, error) {
+		_, ok := mp.zettel[zid]
+		return !ok, nil
+	})
+	if err != nil {
+		mp.mx.Unlock()
+		return id.Invalid, err
+	}
 	meta := zettel.Meta.Clone()
-	meta.Zid = mp.calcNewZid()
+	meta.Zid = zid
 	zettel.Meta = meta
-	mp.zettel[meta.Zid] = zettel
+	mp.zettel[zid] = zettel
 	mp.mx.Unlock()
-	mp.notifyChanged(change.OnUpdate, meta.Zid)
-	return meta.Zid, nil
-}
-
-func (mp *memPlace) calcNewZid() id.Zid {
-	zid := id.New(false)
-	if _, ok := mp.zettel[zid]; !ok {
-		return zid
-	}
-	for {
-		zid = id.New(true)
-		if _, ok := mp.zettel[zid]; !ok {
-			return zid
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
+	mp.notifyChanged(change.OnUpdate, zid)
+	return zid, nil
 }
 
 func (mp *memPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
