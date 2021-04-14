@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
+// GetNewZid calculates a new and unused zettel identifier, based on the current date and time.
 func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
 	zid := id.New(false)
 	found, err := testZid(zid)
