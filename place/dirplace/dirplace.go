@@ -39,18 +39,28 @@ func init() {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil, err
 		}
+		dirSrvSpec, defWorker, maxWorker := getDirSrvInfo(u.Query().Get("type"))
 		dp := dirPlace{
 			location:   u.String(),
 			readonly:   getQueryBool(u, "readonly"),
 			cdata:      *cdata,
 			dir:        path,
 			dirRescan:  time.Duration(getQueryInt(u, "rescan", 60, 3600, 30*24*60*60)) * time.Second,
-			dirSrvType: u.Query().Get("type"),
-			fSrvs:      uint32(getQueryInt(u, "worker", 1, 17, 1499)),
+			dirSrvSpec: dirSrvSpec,
+			fSrvs:      uint32(getQueryInt(u, "worker", 1, defWorker, maxWorker)),
 		}
 		return &dp, nil
 	})
 }
+
+type directoryServiceSpec int
+
+const (
+	_ directoryServiceSpec = iota
+	dirSrvAny
+	dirSrvSimple
+	dirSrvNotify
+)
 
 func getDirPath(u *url.URL) string {
 	if u.Opaque != "" {
@@ -89,7 +99,7 @@ type dirPlace struct {
 	cdata      manager.ConnectData
 	dir        string
 	dirRescan  time.Duration
-	dirSrvType string
+	dirSrvSpec directoryServiceSpec
 	dirSrv     directory.Service
 	mustNotify bool
 	fSrvs      uint32

@@ -18,9 +18,18 @@ import (
 	"zettelstore.de/z/place/dirplace/simpledir"
 )
 
-func (dp *dirPlace) setupDirService() {
-	switch dp.dirSrvType {
+func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
+	switch dirType {
 	case "simple":
+		return dirSrvSimple, 1, 1
+	default:
+		return dirSrvNotify, 7, 1499
+	}
+}
+
+func (dp *dirPlace) setupDirService() {
+	switch dp.dirSrvSpec {
+	case dirSrvSimple:
 		dp.dirSrv = simpledir.NewService(dp.dir)
 		dp.mustNotify = true
 	default:

@@ -15,6 +15,10 @@ package dirplace
 
 import "zettelstore.de/z/place/dirplace/simpledir"
 
+func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
+	return dirSrvSimple, 1, 1
+}
+
 func (dp *dirPlace) setupDirService() {
 	dp.dirSrv = simpledir.NewService(dp.dir)
 	dp.mustNotify = true
