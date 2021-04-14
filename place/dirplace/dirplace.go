@@ -266,7 +266,7 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	}
 	if !entry.IsValid() {
 		// Existing zettel, but new in this place.
-		entry.Zid = meta.Zid
+		entry = &directory.Entry{Zid: meta.Zid}
 		dp.updateEntryFromMeta(entry, meta)
 	} else if entry.MetaSpec == directory.MetaSpecNone {
 		defaultMeta := fileplace.CalcDefaultMeta(entry.Zid, entry.ContentExt)

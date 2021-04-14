@@ -187,7 +187,7 @@ type resGetEntry = *directory.Entry
 func (cmd *cmdGetEntry) run(m dirMap) {
 	entry := m[cmd.zid]
 	if entry == nil {
-		cmd.result <- &directory.Entry{Zid: id.Invalid}
+		cmd.result <- nil
 	} else {
 		result := *entry
 		cmd.result <- &result
