@@ -171,6 +171,10 @@ var ErrReadOnly = errors.New("read-only place")
 // ErrNotFound is returned if a zettel was not found in the place.
 var ErrNotFound = errors.New("zettel not found")
 
+// ErrTimeout is returned if a place operation takes too long.
+// One example: if calculating a new zettel identifier takes too long.
+var ErrTimeout = errors.New("timeout")
+
 // ErrInvalidID is returned if the zettel id is not appropriate for the place operation.
 type ErrInvalidID struct{ Zid id.Zid }
 

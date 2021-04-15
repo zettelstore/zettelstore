@@ -19,16 +19,9 @@ import (
 
 // GetNewZid calculates a new and unused zettel identifier, based on the current date and time.
 func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
-	zid := id.New(false)
-	found, err := testZid(zid)
-	if err != nil {
-		return id.Invalid, err
-	}
-	if found {
-		return zid, nil
-	}
-	for {
-		zid = id.New(true)
+	withSeconds := false
+	for i := 0; i < 90; i++ { // Must be completed within 9 seconds (less than web/server.writeTimeout)
+		zid := id.New(withSeconds)
 		found, err := testZid(zid)
 		if err != nil {
 			return id.Invalid, err
@@ -36,7 +29,9 @@ func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
 		if found {
 			return zid, nil
 		}
-		// TODO: do not wait here, but in a non-blocking goroutine.
+		// TODO: do not wait here unconditionally.
 		time.Sleep(100 * time.Millisecond)
+		withSeconds = true
 	}
+	return id.Invalid, ErrTimeout
 }

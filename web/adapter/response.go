@@ -59,5 +59,8 @@ func CodeMessageFromError(err error) (int, string) {
 	if err == place.ErrStopped {
 		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v.", err)
 	}
+	if err == place.ErrTimeout {
+		return http.StatusLoopDetected, "Zettelstore operation took too long"
+	}
 	return http.StatusInternalServerError, err.Error()
 }
