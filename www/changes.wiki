@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_0_13"></a>
+<h2>Changes for Version 0.0.13 (pending)</h2>
+
 <a name="0_0_12"></a>
-<h2>Changes for Version 0.0.12 (pending)</h2>
+<h2>Changes for Version 0.0.12 (2021-04-16)</h2>
   *  Raise the per-process limit of open files on macOS to 1.048.576. This
      allows most macOS users to use at least 500.000 zettel. That should be
      enough for the near future.
