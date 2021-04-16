@@ -10,40 +10,34 @@ This is done by appending query parameters after the base place URI ''dir:\//DIR
 The following parameters are supported:
 
 |= Parameter:|Description|Default value:|
-|type|(Sub-) Type of the directory service|(depends on operating system)
+|type|(Sub-) Type of the directory service|(value of ''[[default-dir-place-type|00001004010000#default-dir-place-type]]'')
 |rescan|Time (in seconds) after which the directory should be scanned fully|600
 |worker|Number of worker that can access the directory in parallel|(depends on type)
 |readonly|Allow only operations that do not change a zettel or create a new zettel|n/a
 
 === Type
-On some operating systems, Zettelstore tries to detect changes to zettel files outside of Zettelstore's control[^This includes Linux and Windows.].
-On other operating systems, this is not possible, due to technical limitations[^This currently includes macOS.].
+On some operating systems, Zettelstore tries to detect changes to zettel files outside of Zettelstore's control[^This includes Linux, Windows, and macOS.].
+On other operating systems, this may be not possible, due to technical limitations.
 Automatic detection of external changes is also not possible, if zettel files are placed on an external service, such as a file server accessed via SMD/CIFS or NFS.
 
 To cope with this uncertainty, Zettelstore provides various internal implementations of a directory place.
 The default values should match the needs of different users, as explained in the [[installation part|00001003000000]] of this manual.
 The following values are supported:
 
-; simple:
+; simple
 : Is not able to detect external changes.
   Works on all platforms.
   Is a little slower than other implementations (up to three times slower).
-
-  Activated as default on: macOS.
-; notify:
+; notify
 : Automatically detect external changes.
   Tries to optimize performance, at a little cost of main memory (RAM).
 
-  Activated as default on: Linux, Windows.
-
-  Is not available on: macOS.
-
 === Rescan
-On some platforms, Zettelstore automatically detects changes to zettel files that originates from other software[^This includes Linux and Windows].
+When the parameter ''type'' is set to ""notify"", Zettelstore automatically detects changes to zettel files that originates from other software.
 It is done on a ""best-effort"" basis.
 Under certain circumstances it is possible that Zettelstore does not detect a change done by another software.
 
-To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file diectory.
+To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file directory.
 The time interval is configured by the ''rescan'' parameter, e.g.
 ```
 place-1-uri: dir:///home/zettel?rescan=300
@@ -57,7 +51,7 @@ Please note that a directory re-scan invalidates all internal data of a Zettelst
 It might trigger a re-build of the backlink database (and other internal databases).
 Therefore a large value if preferred.
 
-This value is ignored for directory place type ""simple"".
+This value is ignored for other directory place type, such as ""simple"".
 
 === Worker
 Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.

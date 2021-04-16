@@ -24,42 +24,52 @@ import (
 )
 
 var config struct {
-	simple        bool // was started without run command
-	verbose       bool
-	readonlyMode  bool
-	urlPrefix     string
-	listenAddress string
-	owner         id.Zid
-	withAuth      bool
-	secret        []byte
-	insecCookie   bool
-	persistCookie bool
-	htmlLifetime  time.Duration
-	apiLifetime   time.Duration
-	manager       place.Manager
-	indexer       index.Indexer
+	// Set in SetupStartupConfig
+	verbose             bool
+	readonlyMode        bool
+	urlPrefix           string
+	listenAddress       string
+	defaultDirPlaceType string
+	owner               id.Zid
+	withAuth            bool
+	secret              []byte
+	insecCookie         bool
+	persistCookie       bool
+	htmlLifetime        time.Duration
+	apiLifetime         time.Duration
+
+	// Set in SetupStartupService
+	simple  bool // was started without run command
+	manager place.Manager
+	indexer index.Indexer
 }
 
 // Predefined keys for startup zettel
 const (
-	KeyInsecureCookie    = "insecure-cookie"
-	KeyListenAddress     = "listen-addr"
-	KeyOwner             = "owner"
-	KeyPersistentCookie  = "persistent-cookie"
-	KeyPlaceOneURI       = "place-1-uri"
-	KeyReadOnlyMode      = "read-only-mode"
-	KeyTokenLifetimeHTML = "token-lifetime-html"
-	KeyTokenLifetimeAPI  = "token-lifetime-api"
-	KeyURLPrefix         = "url-prefix"
-	KeyVerbose           = "verbose"
+	KeyDefaultDirPlaceType = "default-dir-place-type"
+	KeyInsecureCookie      = "insecure-cookie"
+	KeyListenAddress       = "listen-addr"
+	KeyOwner               = "owner"
+	KeyPersistentCookie    = "persistent-cookie"
+	KeyPlaceOneURI         = "place-1-uri"
+	KeyReadOnlyMode        = "read-only-mode"
+	KeyTokenLifetimeHTML   = "token-lifetime-html"
+	KeyTokenLifetimeAPI    = "token-lifetime-api"
+	KeyURLPrefix           = "url-prefix"
+	KeyVerbose             = "verbose"
 )
 
-// SetupStartup initializes the startup data.
-func SetupStartup(cfg *meta.Meta, manager place.Manager, idx index.Indexer, simple bool) error {
+// Important values for some keys.
+const (
+	ValueDirPlaceTypeNotify = "notify"
+	ValueDirPlaceTypeSimple = "simple"
+)
+
+// SetupStartupConfig initializes the startup data with content of config file.
+func SetupStartupConfig(cfg *meta.Meta) {
 	if config.urlPrefix != "" {
 		panic("startup.config already set")
 	}
-	config.simple = simple
 	config.verbose = cfg.GetBool(KeyVerbose)
 	config.readonlyMode = cfg.GetBool(KeyReadOnlyMode)
 	config.urlPrefix = cfg.GetDefault(KeyURLPrefix, "/")
@@ -73,6 +83,17 @@ func SetupStartup(cfg *meta.Meta, manager place.Manager, idx index.Indexer, simp
 		config.listenAddress = val // TODO: check for valid string
 	} else {
 		config.listenAddress = "127.0.0.1:23123"
+	}
+	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
+		switch defaultType {
+		case ValueDirPlaceTypeNotify:
+		case ValueDirPlaceTypeSimple:
+		default:
+			defaultType = ValueDirPlaceTypeNotify
+		}
+		config.defaultDirPlaceType = defaultType
+	} else {
+		config.defaultDirPlaceType = ValueDirPlaceTypeNotify
 	}
 	config.owner = id.Invalid
 	if owner, ok := cfg.Get(KeyOwner); ok {
@@ -90,10 +111,16 @@ func SetupStartup(cfg *meta.Meta, manager place.Manager, idx index.Indexer, simp
 		config.apiLifetime = getDuration(
 			cfg, KeyTokenLifetimeAPI, 10*time.Minute, 0, 1*time.Hour)
 	}
+}
+
+// SetupStartupService initializes the startup data with internal services.
+func SetupStartupService(manager place.Manager, idx index.Indexer, simple bool) {
+	if config.urlPrefix == "" {
+		panic("startup.config not set")
+	}
 	config.simple = simple && !config.withAuth
 	config.manager = manager
 	config.indexer = idx
-	return nil
 }
 
 func calcSecret(cfg *meta.Meta) []byte {
@@ -143,6 +170,9 @@ func URLPrefix() string { return config.urlPrefix }
 // ListenAddress returns the string that specifies the the network card and the ip port
 // where the server listens for requests
 func ListenAddress() string { return config.listenAddress }
+
+// DefaultDirPlaceType returns the default value for a directory place type.
+func DefaultDirPlaceType() string { return config.defaultDirPlaceType }
 
 // WithAuth returns true if user authentication is enabled.
 func WithAuth() bool { return config.withAuth }

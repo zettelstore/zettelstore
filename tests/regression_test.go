@@ -15,12 +15,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -51,7 +53,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 	for _, entry := range entries {
 		if entry.IsDir() {
 			place, err := manager.Connect(
-				"dir://"+filepath.Join(root, entry.Name()),
+				"dir://"+filepath.Join(root, entry.Name())+"?type="+startup.ValueDirPlaceTypeSimple,
 				false,
 				&cdata,
 			)
@@ -131,7 +133,11 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 }
 
 func getPlaceName(p place.ManagedPlace, root string) string {
-	return p.Location()[len("dir://")+len(root):]
+	u, err := url.Parse(p.Location())
+	if err != nil {
+		panic("Unable to parse URL '" + p.Location() + "': " + err.Error())
+	}
+	return u.Path[len(root):]
 }
 
 func match(*meta.Meta) bool { return true }

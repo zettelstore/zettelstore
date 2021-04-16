@@ -12,6 +12,12 @@
      does not notify Zettelstore when some of the underlying Zettel files
      change.
      (major)
+  *  Add new startup configuration <tt>default-dir-place-type</tt>, which gives
+     the default value for specifying a directory place type. The default value
+     is &ldquo;notify&rdquo;. On macOS, the default value may be changed
+     &ldquo;simple&rdquo; if some errors occur while raising the per-process
+     limit of open files.
+     (minor)
 
 <a name="0_0_11"></a>
 <h2>Changes for Version 0.0.11 (2021-04-05)</h2>

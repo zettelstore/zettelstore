@@ -131,22 +131,21 @@ func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
 		err := raiseFdLimit()
 		if err != nil {
 			log.Println("Raising some limitions did not work:", err)
-			log.Println("Prepare to encounter errors. Most of them can be mitigated.")
-			log.Println("See the manual for details")
+			log.Println("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			cfg.Set(startup.KeyDefaultDirPlaceType, startup.ValueDirPlaceTypeSimple)
 		}
+		startup.SetupStartupConfig(cfg)
 		idx = indexer.New()
 		filter := index.NewMetaFilter(idx)
 		mgr, err = manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
 		if err != nil {
 			return err
 		}
+	} else {
+		startup.SetupStartupConfig(cfg)
 	}
 
-	err := startup.SetupStartup(cfg, mgr, idx, simple)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Unable to connect to specified places")
-		return err
-	}
+	startup.SetupStartupService(mgr, idx, simple)
 	if withPlaces {
 		if err := mgr.Start(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
