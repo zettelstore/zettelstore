@@ -81,5 +81,6 @@ func genConfigC(m *meta.Meta) string {
 	html, api := startup.TokenLifetime()
 	fmt.Fprintf(&sb, "|API Token lifetime|%v\n", api)
 	fmt.Fprintf(&sb, "|HTML Token lifetime|%v\n", html)
+	fmt.Fprintf(&sb, "|Default directory place type|%v", startup.DefaultDirPlaceType())
 	return sb.String()
 }
