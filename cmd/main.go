@@ -14,6 +14,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -127,13 +128,18 @@ func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
 	var mgr place.Manager
 	var idx index.Indexer
 	if withPlaces {
+		err := raiseFdLimit()
+		if err != nil {
+			log.Println("Raising some limitions did not work:", err)
+			log.Println("Prepare to encounter errors. Most of them can be mitigated.")
+			log.Println("See the manual for details")
+		}
 		idx = indexer.New()
 		filter := index.NewMetaFilter(idx)
-		p, err := manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
+		mgr, err = manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
 		if err != nil {
 			return err
 		}
-		mgr = p
 	}
 
 	err := startup.SetupStartup(cfg, mgr, idx, simple)

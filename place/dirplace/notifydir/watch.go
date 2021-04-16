@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// +build linux windows
-
 // Package notifydir manages the notified directory part of a dirstore.
 package notifydir
 

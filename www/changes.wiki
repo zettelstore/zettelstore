@@ -2,11 +2,15 @@
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (pending)</h2>
+  *  Raise the per-process limit of open files on macOS to 1.048.576. This
+     allows most macOS users to use at least 500.000 zettel. That should be
+     enough for the near future.
+     (major)
   *  Mitigate the shortcomings of the macOS version by introducing types of
-     directory places. The original directory place type is now called
-     "notify" (default on Linux and Windows, not available on macOS). There is
-     a new type called "simple" (default on macOS). This new type does not
-     notify Zettelstore when some of the underlying Zettel files change.
+     directory places. The original directory place type is now called "notify"
+     (the default value). There is a new type called "simple". This new type
+     does not notify Zettelstore when some of the underlying Zettel files
+     change.
      (major)
 
 <a name="0_0_11"></a>

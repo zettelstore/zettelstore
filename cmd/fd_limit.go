@@ -8,18 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// +build darwin
+// +build !darwin
 
-// Package dirplace provides a directory-based zettel place.
-package dirplace
+package cmd
 
-import "zettelstore.de/z/place/dirplace/simpledir"
-
-func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
-	return dirSrvSimple, 1, 1
-}
-
-func (dp *dirPlace) setupDirService() {
-	dp.dirSrv = simpledir.NewService(dp.dir)
-	dp.mustNotify = true
-}
+func raiseFdLimit() error { return nil }

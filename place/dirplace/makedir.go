@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// +build linux windows
-
 // Package dirplace provides a directory-based zettel place.
 package dirplace
 
