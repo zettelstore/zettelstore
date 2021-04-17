@@ -48,19 +48,19 @@ func CodeMessageFromError(err error) (int, string) {
 		return http.StatusForbidden, err1.Error()
 	}
 	if err1, ok := err.(*place.ErrInvalidID); ok {
-		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context.", err1.Zid)
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context", err1.Zid)
 	}
 	if err1, ok := err.(*usecase.ErrZidInUse); ok {
-		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use.", err1.Zid)
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use", err1.Zid)
 	}
 	if err1, ok := err.(*ErrBadRequest); ok {
 		return http.StatusBadRequest, err1.Text
 	}
 	if err == place.ErrStopped {
-		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v.", err)
+		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v", err)
 	}
-	if err == place.ErrTimeout {
-		return http.StatusLoopDetected, "Zettelstore operation took too long"
+	if err == place.ErrConflict {
+		return http.StatusConflict, "Zettelstore operations conflicted"
 	}
 	return http.StatusInternalServerError, err.Error()
 }

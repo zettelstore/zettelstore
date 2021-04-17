@@ -33,5 +33,5 @@ func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
 		time.Sleep(100 * time.Millisecond)
 		withSeconds = true
 	}
-	return id.Invalid, ErrTimeout
+	return id.Invalid, ErrConflict
 }
