@@ -22,9 +22,7 @@ func NewSet(zids ...Zid) Set {
 		l = 8
 	}
 	result := make(Set, l)
-	for _, zid := range zids {
-		result[zid] = true
-	}
+	result.AddSlice(zids)
 	return result
 }
 
@@ -38,10 +36,15 @@ func NewSetCap(c int, zids ...Zid) Set {
 		c = 8
 	}
 	result := make(Set, c)
-	for _, zid := range zids {
-		result[zid] = true
-	}
+	result.AddSlice(zids)
 	return result
+}
+
+// AddSlice adds all identifier of the given slice to the set.
+func (s Set) AddSlice(sl Slice) {
+	for _, zid := range sl {
+		s[zid] = true
+	}
 }
 
 // Sorted returns the set as a sorted slice of zettel identifier.

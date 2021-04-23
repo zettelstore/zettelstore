@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -111,28 +112,71 @@ func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 // Select all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD.
 func (ms *memStore) Select(word string) id.Set {
+	if word == "" {
+		return nil
+	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
+	result := id.NewSet()
 	if refs, ok := ms.words[word]; ok {
-		return id.NewSet(refs...)
+		result.AddSlice(refs)
 	}
-	return nil
+	zid, err := id.Parse(word)
+	if err != nil {
+		return result
+	}
+	zi, ok := ms.idx[zid]
+	if !ok {
+		return result
+	}
+
+	result[zid] = true
+	result.AddSlice(zi.backward)
+	for _, mref := range zi.meta {
+		result.AddSlice(mref.backward)
+	}
+	return result
 }
 
 // Select all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD.
 func (ms *memStore) SelectPrefix(prefix string) id.Set {
+	if prefix == "" {
+		return nil
+	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	return ms.selectWithPred(prefix, strings.HasPrefix)
+	result := ms.selectWithPred(prefix, strings.HasPrefix)
+	if l := len(prefix); l <= 14 {
+		lowZid, err := strconv.ParseUint(prefix+"00000000000000"[:14-l], 10, 47)
+		if err != nil {
+			return result
+		}
+		highZid, err := strconv.ParseUint(prefix+"99999999999999"[:14-l], 10, 47)
+		if err != nil {
+			return result
+		}
+		ms.addPrefixZids(result, id.Zid(lowZid), id.Zid(highZid))
+	}
+	return result
 }
 
 // Select all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD.
 func (ms *memStore) SelectContains(s string) id.Set {
+	if s == "" {
+		return nil
+	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	return ms.selectWithPred(s, strings.Contains)
+	result := ms.selectWithPred(s, strings.Contains)
+	if len(s) <= 14 {
+		if _, err := strconv.ParseUint(s, 10, 47); err != nil {
+			return result
+		}
+		ms.addContainedZids(result, s)
+	}
+	return result
 }
 
 func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.Set {
@@ -141,11 +185,51 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 		if !pred(word, s) {
 			continue
 		}
-		for _, ref := range refs {
-			result[ref] = true
-		}
+		result.AddSlice(refs)
 	}
 	return result
+}
+
+func (ms *memStore) addPrefixZids(result id.Set, lowZid, highZid id.Zid) {
+	for zid, zi := range ms.idx {
+		if zid < lowZid || highZid < zid {
+			continue
+		}
+		result[zid] = true
+		for _, ref := range zi.backward {
+			if lowZid <= ref && ref <= highZid {
+				result[ref] = true
+			}
+		}
+		for _, mref := range zi.meta {
+			for _, ref := range mref.backward {
+				if lowZid <= ref && ref <= highZid {
+					result[ref] = true
+				}
+			}
+		}
+	}
+}
+
+func (ms *memStore) addContainedZids(result id.Set, s string) {
+	for zid, zi := range ms.idx {
+		if !strings.Contains(zid.String(), s) {
+			continue
+		}
+		result[zid] = true
+		for _, ref := range zi.backward {
+			if strings.Contains(ref.String(), s) {
+				result[ref] = true
+			}
+		}
+		for _, mref := range zi.meta {
+			for _, ref := range mref.backward {
+				if strings.Contains(ref.String(), s) {
+					result[ref] = true
+				}
+			}
+		}
+	}
 }
 
 func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
