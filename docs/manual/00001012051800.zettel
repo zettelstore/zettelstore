@@ -64,7 +64,30 @@ The query parameter ""''_offset''"" allows to list not only the first elements, 
 The query parameter ""''_s''"" allows to provide a string for a full-text search of all zettel.
 The search string will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
 
+If the search string starts with the character ""''!''"", it will be removed and the query matches all zettel that **does not match** the search string.
+
+In the next step, the first character of the search string will be inspected.
+If it contains one of the characters ""'':''"", ""''=''"", ""''>''"", or ""''~''"", this will modify how the search will be performed.
+The character will be removed from the start of the search string.
+
+For example, assume the search string is ""def"":
+
+; ""'':''"", ""''~''"" (or none of these characters)[^""'':''"" is always the character for specifying the default comparison. In this case, it is equal to ""''~''"". If you omit a comparison character, the default comparison is used.]
+: The zettel must contain a word that contains the search string.
+  ""def"", ""defghi"", and ""abcdefghi"" are matching the search string.
+; ""''=''""
+: The zettel must contain a word that is equal to the search string.
+  Only the word ""def"" matches the search string.
+; ""''>''""
+: The zettel must contain a word with the search string as a prefix.
+  A word like ""def"" or ""defghi"" matches the search string.
+
+If you want to include an initial ""''!''"" into the search string, you must prefix that with the escape character ""''\\''"".
+For example ""\\!abc"" will search for zettel that contains the string ""!abc"".
+A similar rule applies to the characters that specify the way how the search will be done.
+For example, ""!\\=abc"" will search for zettel that do not contains the string ""=abc"".
+
 You are allowed to specify this query parameter more than once.
-All results will be intersected, i.e. a zettel will be included into the list if both of the provided values match.
+All results will be intersected, i.e. a zettel will be included into the list if all of the provided values match.
 
 This parameter loosely resembles the search box of the web user interface.

@@ -136,14 +136,9 @@ func getQueryKeys(forSearch bool) (string, string, string, string, string, strin
 	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
 }
 
-func setCleanedQueryValues(filter *search.Search, key string, values []string) *search.Search {
+func setCleanedQueryValues(s *search.Search, key string, values []string) *search.Search {
 	for _, val := range values {
-		val = strings.TrimSpace(val)
-		if len(val) > 0 && val[0] == '!' {
-			filter = filter.AddExpr(key, val[1:], true)
-		} else {
-			filter = filter.AddExpr(key, val, false)
-		}
+		s = s.AddExpr(key, val)
 	}
-	return filter
+	return s
 }

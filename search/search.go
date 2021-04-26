@@ -14,6 +14,7 @@ package search
 import (
 	"math/rand"
 	"sort"
+	"strings"
 	"sync"
 
 	"zettelstore.de/z/domain/meta"
@@ -45,26 +46,70 @@ type expTagValues map[string][]expValue
 // RandomOrder is a pseudo metadata key that selects a random order.
 const RandomOrder = "_random"
 
+type compareOp uint8
+
+const (
+	cmpDefault compareOp = iota
+	cmpEqual
+	cmpPrefix
+	cmpContains
+)
+
 type expValue struct {
 	value  string
+	op     compareOp
 	negate bool
 }
 
 // AddExpr adds a match expression to the filter.
-func (s *Search) AddExpr(key, val string, negate bool) *Search {
+func (s *Search) AddExpr(key, val string) *Search {
+	val, negate, op := parseOp(strings.TrimSpace(val))
+	if val == "" {
+		return s
+	}
 	if s == nil {
 		s = new(Search)
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if key == "" {
-		s.search = append(s.search, expValue{value: val, negate: negate})
+		s.search = append(s.search, expValue{value: val, op: op, negate: negate})
 	} else if s.tags == nil {
-		s.tags = expTagValues{key: {{value: val, negate: negate}}}
+		s.tags = expTagValues{key: {{value: val, op: op, negate: negate}}}
 	} else {
-		s.tags[key] = append(s.tags[key], expValue{value: val, negate: negate})
+		s.tags[key] = append(s.tags[key], expValue{value: val, op: op, negate: negate})
 	}
 	return s
+}
+
+func parseOp(s string) (r string, negate bool, op compareOp) {
+	if s == "" {
+		return s, false, cmpDefault
+	}
+	if s[0] == '\\' {
+		return s[1:], false, cmpDefault
+	}
+	if s[0] == '!' {
+		negate = true
+		s = s[1:]
+	}
+	if s == "" {
+		return s, negate, cmpDefault
+	}
+	if s[0] == '\\' {
+		return s[1:], negate, cmpDefault
+	}
+	switch s[0] {
+	case ':':
+		return s[1:], negate, cmpDefault
+	case '=':
+		return s[1:], negate, cmpEqual
+	case '>':
+		return s[1:], negate, cmpPrefix
+	case '~':
+		return s[1:], negate, cmpContains
+	}
+	return s, negate, cmpDefault
 }
 
 // SetNegate changes the filter to reverse its selection.
@@ -186,9 +231,7 @@ func (s *Search) CompileMatch(selector index.Selector) MetaMatchFunc {
 	defer s.mx.Unlock()
 
 	compMeta := compileFilter(s.tags)
-	//compSearch := createSearchAllFunc(s.search)
 	compSearch := compileSearch(selector, s.search)
-
 	if preMatch := s.preMatch; preMatch != nil {
 		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)
 	}

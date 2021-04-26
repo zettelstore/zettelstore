@@ -60,8 +60,8 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	}
 	// Owner was not found or has another ident. Try via list search.
 	var s *search.Search
-	s = s.AddExpr(meta.KeyRole, meta.ValueRoleUser, false)
-	s = s.AddExpr(meta.KeyUserID, ident, false)
+	s = s.AddExpr(meta.KeyRole, meta.ValueRoleUser)
+	s = s.AddExpr(meta.KeyUserID, ident)
 	metaList, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err

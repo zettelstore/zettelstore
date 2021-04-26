@@ -109,9 +109,9 @@ func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 	return updated
 }
 
-// Select all zettel that contains the given exact word.
+// SelectEqual all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD.
-func (ms *memStore) Select(word string) id.Set {
+func (ms *memStore) SelectEqual(word string) id.Set {
 	if word == "" {
 		return nil
 	}

@@ -101,10 +101,10 @@ func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 	idx.store.Enrich(ctx, m)
 }
 
-// Select all zettel that contains the given exact word.
+// SelectEqual all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD.
-func (idx *indexer) Select(word string) id.Set {
-	return idx.store.Select(word)
+func (idx *indexer) SelectEqual(word string) id.Set {
+	return idx.store.SelectEqual(word)
 }
 
 // Select all zettel that have a word with the given prefix.

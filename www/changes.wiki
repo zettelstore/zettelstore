@@ -2,6 +2,10 @@
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (pending)</h2>
+  *  Full-text search can be a prefix search or a search for equal words, in
+     addition to the search whether a word just contains word of the search
+     term.
+     (minor: api, webui)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>
