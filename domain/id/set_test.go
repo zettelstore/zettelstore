@@ -61,3 +61,28 @@ func TestSetIntersection(t *testing.T) {
 		}
 	}
 }
+
+func TestSetRemove(t *testing.T) {
+	testcases := []struct {
+		s1, s2 id.Set
+		exp    id.Slice
+	}{
+		{nil, nil, nil},
+		{id.NewSet(), nil, nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, id.Slice{1}},
+		{id.NewSet(1), id.NewSet(), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(2), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(1), id.Slice{}},
+	}
+	for i, tc := range testcases {
+		sl1 := tc.s1.Sorted()
+		sl2 := tc.s2.Sorted()
+		newS1 := id.NewSet(sl1...)
+		newS1.Remove(tc.s2)
+		got := newS1.Sorted()
+		if !got.Equal(tc.exp) {
+			t.Errorf("%d: %v.Remove(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
+		}
+	}
+}

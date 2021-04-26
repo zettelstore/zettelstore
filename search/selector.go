@@ -66,28 +66,37 @@ func normalizeSearchValues(search []expValue) (positives, negatives []expValue) 
 }
 
 func makePosOnlySearch(selector index.Selector, poss []expValue) MetaMatchFunc {
+	var ids id.Set
 	return func(m *meta.Meta) bool {
-		ids := retrieveZids(selector, poss)
+		if ids == nil {
+			ids = retrieveZids(selector, poss)
+		}
 		_, ok := ids[m.Zid]
 		return ok
 	}
 }
 
 func makeNegOnlySearch(selector index.Selector, negs []expValue) MetaMatchFunc {
+	var ids id.Set
 	return func(m *meta.Meta) bool {
-		ids := retrieveZids(selector, negs)
+		if ids == nil {
+			ids = retrieveZids(selector, negs)
+		}
 		_, ok := ids[m.Zid]
 		return !ok
 	}
 }
 
 func makePosNegSearch(selector index.Selector, poss, negs []expValue) MetaMatchFunc {
+	var idsPos id.Set
 	return func(m *meta.Meta) bool {
-		idsPos := retrieveZids(selector, poss)
+		if idsPos == nil {
+			idsPos = retrieveZids(selector, poss)
+			idsNeg := retrieveZids(selector, negs)
+			idsPos.Remove(idsNeg)
+		}
 		_, okPos := idsPos[m.Zid]
-		idsNeg := retrieveZids(selector, negs)
-		_, okNeg := idsNeg[m.Zid]
-		return okPos && !okNeg
+		return okPos
 	}
 }
 
@@ -111,9 +120,6 @@ func retrieveZids(selector index.Selector, vals []expValue) id.Set {
 			continue
 		}
 		result = result.Intersect(ids)
-	}
-	if len(result) == 0 {
-		return nil
 	}
 	return result
 }

@@ -79,3 +79,15 @@ func (s Set) Intersect(other Set) Set {
 	}
 	return s
 }
+
+// Remove all zettel identifier from 's' that are in the set 'other'.
+func (s Set) Remove(other Set) {
+	if s == nil || other == nil {
+		return
+	}
+	for zid, inSet := range other {
+		if inSet {
+			delete(s, zid)
+		}
+	}
+}
