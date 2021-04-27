@@ -102,19 +102,25 @@ func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 }
 
 // SelectEqual all zettel that contains the given exact word.
-// The word must be normalized through Unicode NKFD.
+// The word must be normalized through Unicode NKFD, trimmed and not empty.
 func (idx *indexer) SelectEqual(word string) id.Set {
 	return idx.store.SelectEqual(word)
 }
 
 // Select all zettel that have a word with the given prefix.
-// The prefix must be normalized through Unicode NKFD.
+// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
 func (idx *indexer) SelectPrefix(prefix string) id.Set {
 	return idx.store.SelectPrefix(prefix)
 }
 
+// Select all zettel that have a word with the given suffix.
+// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
+func (idx *indexer) SelectSuffix(suffix string) id.Set {
+	return idx.store.SelectSuffix(suffix)
+}
+
 // Select all zettel that contains the given string.
-// The string must be normalized through Unicode NKFD.
+// The string must be normalized through Unicode NKFD, trimmed and not empty.
 func (idx *indexer) SelectContains(s string) id.Set {
 	return idx.store.SelectContains(s)
 }

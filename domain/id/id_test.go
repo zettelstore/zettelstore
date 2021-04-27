@@ -53,14 +53,14 @@ func TestIsValid(t *testing.T) {
 	invalidIDs := []string{
 		"", "0", "a",
 		"00000000000000",
+		"0000000000000a",
 		"000000000000000",
-		"99999999999999a",
 		"20200310T195100",
 	}
 
-	for i, zid := range invalidIDs {
-		if _, err := id.Parse(zid); err == nil {
-			t.Errorf("i=%d: zid=%q is valid, but should not be", i, zid)
+	for i, sid := range invalidIDs {
+		if zid, err := id.Parse(sid); err == nil {
+			t.Errorf("i=%d: sid=%q is valid (zid=%s), but should not be", i, sid, zid)
 		}
 	}
 }

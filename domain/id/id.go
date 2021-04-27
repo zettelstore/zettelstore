@@ -60,18 +60,28 @@ const (
 
 const maxZid = 99999999999999
 
+// ParseUint interprets a string as a possible zettel identifier
+// and returns its integer value.
+func ParseUint(s string) (uint64, error) {
+	res, err := strconv.ParseUint(s, 10, 47)
+	if err != nil {
+		return 0, err
+	}
+	if res == 0 || res > maxZid {
+		return res, strconv.ErrRange
+	}
+	return res, nil
+}
+
 // Parse interprets a string as a zettel identification and
-// returns its integer value.
+// returns its value.
 func Parse(s string) (Zid, error) {
 	if len(s) != 14 {
 		return Invalid, strconv.ErrSyntax
 	}
-	res, err := strconv.ParseUint(s, 10, 47)
+	res, err := ParseUint(s)
 	if err != nil {
 		return Invalid, err
-	}
-	if res == 0 {
-		return Invalid, strconv.ErrRange
 	}
 	return Zid(res), nil
 }

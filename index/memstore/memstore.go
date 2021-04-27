@@ -15,7 +15,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -110,11 +109,8 @@ func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 }
 
 // SelectEqual all zettel that contains the given exact word.
-// The word must be normalized through Unicode NKFD.
+// The word must be normalized through Unicode NKFD, trimmed and not empty.
 func (ms *memStore) SelectEqual(word string) id.Set {
-	if word == "" {
-		return nil
-	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
@@ -130,56 +126,84 @@ func (ms *memStore) SelectEqual(word string) id.Set {
 		return result
 	}
 
-	result[zid] = true
-	result.AddSlice(zi.backward)
-	for _, mref := range zi.meta {
-		result.AddSlice(mref.backward)
-	}
+	addBackwardZids(result, zid, zi)
 	return result
 }
 
 // Select all zettel that have a word with the given prefix.
-// The prefix must be normalized through Unicode NKFD.
+// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
 func (ms *memStore) SelectPrefix(prefix string) id.Set {
-	if prefix == "" {
-		return nil
-	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(prefix, strings.HasPrefix)
-	if l := len(prefix); l <= 14 {
-		lowZid, err := strconv.ParseUint(prefix+"00000000000000"[:14-l], 10, 47)
-		if err != nil {
-			return result
+	l := len(prefix)
+	if l > 14 {
+		return result
+	}
+	minZid, err := id.Parse(prefix + "00000000000000"[:14-l])
+	if err != nil {
+		return result
+	}
+	maxZid, err := id.Parse(prefix + "99999999999999"[:14-l])
+	if err != nil {
+		return result
+	}
+	for zid, zi := range ms.idx {
+		if minZid <= zid && zid <= maxZid {
+			addBackwardZids(result, zid, zi)
 		}
-		highZid, err := strconv.ParseUint(prefix+"99999999999999"[:14-l], 10, 47)
-		if err != nil {
-			return result
+	}
+	return result
+}
+
+// Select all zettel that have a word with the given suffix.
+// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
+func (ms *memStore) SelectSuffix(suffix string) id.Set {
+	ms.mx.RLock()
+	defer ms.mx.RUnlock()
+	result := ms.selectWithPred(suffix, strings.HasSuffix)
+	l := len(suffix)
+	if l > 14 {
+		return result
+	}
+	val, err := id.ParseUint(suffix)
+	if err != nil {
+		return result
+	}
+	modulo := uint64(1)
+	for i := 0; i < l; i++ {
+		modulo *= 10
+	}
+	for zid, zi := range ms.idx {
+		if uint64(zid)%modulo == val {
+			addBackwardZids(result, zid, zi)
 		}
-		ms.addPrefixZids(result, id.Zid(lowZid), id.Zid(highZid))
 	}
 	return result
 }
 
 // Select all zettel that contains the given string.
-// The string must be normalized through Unicode NKFD.
+// The string must be normalized through Unicode NKFD, trimmed and not empty.
 func (ms *memStore) SelectContains(s string) id.Set {
-	if s == "" {
-		return nil
-	}
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(s, strings.Contains)
-	if len(s) <= 14 {
-		if _, err := strconv.ParseUint(s, 10, 47); err != nil {
-			return result
+	if len(s) > 14 {
+		return result
+	}
+	if _, err := id.ParseUint(s); err != nil {
+		return result
+	}
+	for zid, zi := range ms.idx {
+		if strings.Contains(zid.String(), s) {
+			addBackwardZids(result, zid, zi)
 		}
-		ms.addContainedZids(result, s)
 	}
 	return result
 }
 
 func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.Set {
+	// Must only be called if ms.mx is read-locked!
 	result := id.NewSet()
 	for word, refs := range ms.words {
 		if !pred(word, s) {
@@ -190,45 +214,12 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 	return result
 }
 
-func (ms *memStore) addPrefixZids(result id.Set, lowZid, highZid id.Zid) {
-	for zid, zi := range ms.idx {
-		if zid < lowZid || highZid < zid {
-			continue
-		}
-		result[zid] = true
-		for _, ref := range zi.backward {
-			if lowZid <= ref && ref <= highZid {
-				result[ref] = true
-			}
-		}
-		for _, mref := range zi.meta {
-			for _, ref := range mref.backward {
-				if lowZid <= ref && ref <= highZid {
-					result[ref] = true
-				}
-			}
-		}
-	}
-}
-
-func (ms *memStore) addContainedZids(result id.Set, s string) {
-	for zid, zi := range ms.idx {
-		if !strings.Contains(zid.String(), s) {
-			continue
-		}
-		result[zid] = true
-		for _, ref := range zi.backward {
-			if strings.Contains(ref.String(), s) {
-				result[ref] = true
-			}
-		}
-		for _, mref := range zi.meta {
-			for _, ref := range mref.backward {
-				if strings.Contains(ref.String(), s) {
-					result[ref] = true
-				}
-			}
-		}
+func addBackwardZids(result id.Set, zid id.Zid, zi *zettelIndex) {
+	// Must only be called if ms.mx is read-locked!
+	result[zid] = true
+	result.AddSlice(zi.backward)
+	for _, mref := range zi.meta {
+		result.AddSlice(mref.backward)
 	}
 }
 

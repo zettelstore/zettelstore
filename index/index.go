@@ -32,15 +32,19 @@ type Enricher interface {
 // Selector is used to select zettel identifier based on selection criteria.
 type Selector interface {
 	// Select all zettel that contains the given exact word.
-	// The word must be normalized through Unicode NKFD.
+	// The word must be normalized through Unicode NKFD, trimmed and not empty.
 	SelectEqual(word string) id.Set
 
 	// Select all zettel that have a word with the given prefix.
-	// The prefix must be normalized through Unicode NKFD.
+	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
 	SelectPrefix(prefix string) id.Set
 
+	// Select all zettel that have a word with the given suffix.
+	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
+	SelectSuffix(suffix string) id.Set
+
 	// Select all zettel that contains the given string.
-	// The string must be normalized through Unicode NKFD.
+	// The string must be normalized through Unicode NKFD, trimmed and not empty.
 	SelectContains(s string) id.Set
 }
 

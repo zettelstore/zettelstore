@@ -103,6 +103,9 @@ func makePosNegSearch(selector index.Selector, poss, negs []expValue) MetaMatchF
 func retrieveZids(selector index.Selector, vals []expValue) id.Set {
 	var result id.Set
 	for i, val := range vals {
+		if val.value == "" {
+			continue
+		}
 		var ids id.Set
 
 		switch val.op {
@@ -112,6 +115,8 @@ func retrieveZids(selector index.Selector, vals []expValue) id.Set {
 			ids = selector.SelectEqual(val.value)
 		case cmpPrefix:
 			ids = selector.SelectPrefix(val.value)
+		case cmpSuffix:
+			ids = selector.SelectSuffix(val.value)
 		default:
 			panic(fmt.Sprintf("Unexpected value of comparison operation: %v (word: %q)", val.op, val.value))
 		}

@@ -89,7 +89,20 @@ func printFilterExprValues(w io.Writer, values []expValue) {
 		if val.negate {
 			io.WriteString(w, " NOT")
 		}
-		io.WriteString(w, " MATCH ")
+		switch val.op {
+		case cmpDefault:
+			io.WriteString(w, " MATCH ")
+		case cmpEqual:
+			io.WriteString(w, " HAS ")
+		case cmpPrefix:
+			io.WriteString(w, " PREFIX ")
+		case cmpSuffix:
+			io.WriteString(w, " SUFFIX ")
+		case cmpContains:
+			io.WriteString(w, " CONTAINS ")
+		default:
+			io.WriteString(w, " MaTcH ")
+		}
 		if val.value == "" {
 			io.WriteString(w, "ANY")
 		} else {

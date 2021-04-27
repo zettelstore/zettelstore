@@ -52,6 +52,7 @@ const (
 	cmpDefault compareOp = iota
 	cmpEqual
 	cmpPrefix
+	cmpSuffix
 	cmpContains
 )
 
@@ -106,6 +107,8 @@ func parseOp(s string) (r string, negate bool, op compareOp) {
 		return s[1:], negate, cmpEqual
 	case '>':
 		return s[1:], negate, cmpPrefix
+	case '<':
+		return s[1:], negate, cmpSuffix
 	case '~':
 		return s[1:], negate, cmpContains
 	}
