@@ -414,6 +414,7 @@ func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: p.acceptInlineSlice(node),
+			OnlyRef: false,
 			Attrs:   attrs,
 		},
 	}
@@ -464,6 +465,7 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: ast.InlineSlice{&ast.TextNode{Text: string(label)}},
+			OnlyRef: true,
 			Attrs:   nil, //TODO
 		},
 	}
