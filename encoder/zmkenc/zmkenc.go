@@ -272,6 +272,7 @@ func (v *visitor) VisitText(tn *ast.TextNode) {
 				for j := 0; j < len(s); j++ {
 					v.b.WriteBytes('\\', s[j])
 				}
+				i++
 				last = i + 1
 				continue
 			}
