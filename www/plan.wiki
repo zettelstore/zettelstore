@@ -19,6 +19,7 @@ They are planned to be solved.
      &ldquo;json&rdquo;.
   *  The horizontal tab character (<tt>U+0009</tt>) is not supported.
   *  Missing support for citation keys.
+  *  Changing the content syntax is not reflected in file extension.
   *  &hellip;
 
 <h3>Planned improvements</h3>
