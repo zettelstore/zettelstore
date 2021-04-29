@@ -441,11 +441,14 @@ func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
 	_, err := p.textEnc.WriteInlines(&sb, ins)
 	if err != nil {
 		panic(err)
-		//return ins
+	}
+	text := sb.String()
+	if len(text) == 0 {
+		return nil
 	}
 	return ast.InlineSlice{
 		&ast.TextNode{
-			Text: sb.String(),
+			Text: text,
 		},
 	}
 }
