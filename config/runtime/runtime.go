@@ -86,7 +86,7 @@ func GetDefaultLang() string {
 			}
 		}
 	}
-	return "en"
+	return meta.ValueLangEN
 }
 
 // GetDefaultCopyright returns the current value of the "default-copyright" key.

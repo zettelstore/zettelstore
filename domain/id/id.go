@@ -28,8 +28,23 @@ type Zid uint64
 //       constant place. They are mentioned there literally, because these
 //       constants are not available there.
 const (
-	Invalid          = Zid(0) // Invalid is a Zid that will never be valid
-	ConfigurationZid = Zid(100)
+	Invalid = Zid(0) // Invalid is a Zid that will never be valid
+
+	// System zettel
+	VersionZid              = Zid(1)
+	HostZid                 = Zid(2)
+	OperatingSystemZid      = Zid(3)
+	LicenseZid              = Zid(4)
+	AuthorsZid              = Zid(5)
+	DependenciesZid         = Zid(6)
+	EnvironmentZid          = Zid(10)
+	MetricsZid              = Zid(12)
+	IndexerZid              = Zid(18)
+	PlaceManagerZid         = Zid(20)
+	MetadataKeyZid          = Zid(90)
+	StartupConfigurationZid = Zid(96)
+	StartupValuesZid        = Zid(98)
+	ConfigurationZid        = Zid(100)
 
 	// WebUI HTML templates are in the range 10000..19999
 	BaseTemplateZid    = Zid(10100)

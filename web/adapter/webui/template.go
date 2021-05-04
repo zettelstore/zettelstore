@@ -276,7 +276,7 @@ func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter
 	}
 	user := session.GetUser(ctx)
 	var base baseData
-	te.makeBaseData(ctx, "en", "Error", user, &base)
+	te.makeBaseData(ctx, meta.ValueLangEN, "Error", user, &base)
 	te.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
 		ErrorTitle string
 		ErrorText  string

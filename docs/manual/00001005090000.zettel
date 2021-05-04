@@ -10,8 +10,11 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000000001]] | Zettelstore Version | Contains the version string of the running Zettelstore
 | [[00000000000002]] | Zettelstore Host | Contains the name of the computer running the Zettelstore
 | [[00000000000003]] | Zettelstore Operating System | Contains the operating system and CPU architecture of the computer running the Zettelstore
-| [[00000000000006]] | Zettelstore Environment Values | Contains environmental data of Zettelstore executable
-| [[00000000000008]] | Zettelstore Runtime Values | Contains values that reflect the inner working; see [[here|https://golang.org/pkg/runtime/]] for a technical description of these values
+| [[00000000000004]] | Zettelstore License | Lists the license of Zettelstore
+| [[00000000000005]] | Zettelstore Contributors | Lists all contributors of Zettelstore
+| [[00000000000006]] | Zettelstore Dependencies | Lists all licensed content
+| [[00000000000010]] | Zettelstore Environment Values | Contains environmental data of Zettelstore executable
+| [[00000000000012]] | Zettelstore Runtime Metrics | Contains values that reflect the inner working; see [[here|https://golang.org/pkg/runtime/]] for a technical description of these values
 | [[00000000000018]] | Zettelstore Indexer | Provides some statistics about the index process
 | [[00000000000020]] | Zettelstore Place Manager | Contains some statistics about zettel places
 | [[00000000000090]] | Zettelstore Supported Metadata Keys | Contains all supported metadata keys, their [[types|00001006030000]], and more

@@ -55,16 +55,16 @@ func getPlace(mf index.MetaFilter) place.ManagedPlace {
 	if myPlace == nil {
 		myPlace = &progPlace{
 			zettel: map[id.Zid]zettelGen{
-				id.Zid(1):  {genVersionBuildM, genVersionBuildC},
-				id.Zid(2):  {genVersionHostM, genVersionHostC},
-				id.Zid(3):  {genVersionOSM, genVersionOSC},
-				id.Zid(6):  {genEnvironmentM, genEnvironmentC},
-				id.Zid(8):  {genRuntimeM, genRuntimeC},
-				id.Zid(18): {genIndexerM, genIndexerC},
-				id.Zid(20): {genManagerM, genManagerC},
-				id.Zid(90): {genKeysM, genKeysC},
-				id.Zid(96): {genConfigZettelM, genConfigZettelC},
-				id.Zid(98): {genConfigM, genConfigC},
+				id.VersionZid:              {genVersionBuildM, genVersionBuildC},
+				id.HostZid:                 {genVersionHostM, genVersionHostC},
+				id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
+				id.EnvironmentZid:          {genEnvironmentM, genEnvironmentC},
+				id.MetricsZid:              {genRuntimeM, genRuntimeC},
+				id.IndexerZid:              {genIndexerM, genIndexerC},
+				id.PlaceManagerZid:         {genManagerM, genManagerC},
+				id.MetadataKeyZid:          {genKeysM, genKeysC},
+				id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
+				id.StartupValuesZid:        {genConfigM, genConfigC},
 			},
 			filter: mf,
 		}
@@ -187,6 +187,7 @@ func updateMeta(m *meta.Meta) {
 	m.Set(meta.KeyNoIndex, meta.ValueTrue)
 	m.Set(meta.KeySyntax, meta.ValueSyntaxZmk)
 	m.Set(meta.KeyRole, meta.ValueRoleConfiguration)
+	m.Set(meta.KeyLang, meta.ValueLangEN)
 	m.Set(meta.KeyReadOnly, meta.ValueTrue)
 	if _, ok := m.Get(meta.KeyVisibility); !ok {
 		m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)

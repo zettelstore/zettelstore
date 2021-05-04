@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/domain/meta"
 )
 
 // VisitText writes text content.
@@ -253,9 +254,9 @@ func (v *visitor) writeSpan(ins ast.InlineSlice, attrs *ast.Attributes) {
 }
 
 var langQuotes = map[string][2]string{
-	"en": {"&ldquo;", "&rdquo;"},
-	"de": {"&bdquo;", "&ldquo;"},
-	"fr": {"&laquo;&nbsp;", "&nbsp;&raquo;"},
+	meta.ValueLangEN: {"&ldquo;", "&rdquo;"},
+	"de":             {"&bdquo;", "&ldquo;"},
+	"fr":             {"&laquo;&nbsp;", "&nbsp;&raquo;"},
 }
 
 func getQuotes(lang string) (string, string) {

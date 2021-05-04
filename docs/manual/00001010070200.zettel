@@ -29,10 +29,11 @@ The following values are supported:
   The reason for this is to show all computed zettel to an user that started the Zettestore in simple mode.
   Many computed zettel should be given in error reporting and a new user might not be able to enable expert mode.
 
-When you install a Zettelstore, only two zettel have visibility ""public"".
-The first zettel is the zettel that contains CSS for displaying the web interface.
+When you install a Zettelstore, only some zettel have visibility ""public"".
+One is the zettel that contains CSS for displaying the web interface.
 This is to ensure that the web interface looks nice even for not authenticated users.
-The other zettel is the zettel containing the [[version|00000000000001]] of the Zettelstore.
+Another is the zettel containing the [[version|00000000000001]] of the Zettelstore.
+Yet other zettel lists the Zettelstore [[license|00000000000004]], its [[contributors|00000000000005]], and external, licensed [[dependencies|00000000000006]], such as program code written by others or graphics designed by others.
 
 Please note: if authentication is not enabled, every user has the same rights as the owner of a Zettelstore.
 This is also true, if the Zettelstore runs additionally in [[read-only mode|00001004010000#read-only-mode]].

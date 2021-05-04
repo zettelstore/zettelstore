@@ -141,6 +141,36 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		""},
+	id.LicenseZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore License",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     meta.ValueSyntaxText,
+			meta.KeyLang:       meta.ValueLangEN,
+			meta.KeyReadOnly:   meta.ValueTrue,
+		},
+		domain.NewContent(contentLicense)},
+	id.AuthorsZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore Contributors",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     meta.ValueSyntaxZmk,
+			meta.KeyLang:       meta.ValueLangEN,
+			meta.KeyReadOnly:   meta.ValueTrue,
+		},
+		domain.NewContent(contentContributors)},
+	id.DependenciesZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore Dependencies",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     meta.ValueSyntaxZmk,
+			meta.KeyLang:       meta.ValueLangEN,
+			meta.KeyReadOnly:   meta.ValueTrue,
+		},
+		domain.NewContent(contentDependencies)},
 	id.BaseTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base HTML Template",
@@ -263,6 +293,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyTitle:  "New Menu",
 			meta.KeyRole:   meta.ValueRoleConfiguration,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
+			meta.KeyLang:   meta.ValueLangEN,
 		},
 		domain.NewContent(contentNewTOCZettel)},
 	id.TemplateNewZettelZid: {
@@ -287,9 +318,19 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyTitle:  "Home",
 			meta.KeyRole:   meta.ValueRoleZettel,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
+			meta.KeyLang:   meta.ValueLangEN,
 		},
 		domain.NewContent(contentHomeZettel)},
 }
+
+//go:embed license.txt
+var contentLicense string
+
+//go:embed contributors.zettel
+var contentContributors string
+
+//go:embed dependencies.zettel
+var contentDependencies string
 
 //go:embed base.mustache
 var contentBaseMustache string
