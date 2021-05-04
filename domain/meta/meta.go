@@ -155,6 +155,7 @@ const (
 	ValueRoleUser          = "user"
 	ValueRoleZettel        = "zettel"
 	ValueSyntaxNone        = "none"
+	ValueSyntaxGif         = "gif"
 	ValueSyntaxText        = "text"
 	ValueSyntaxZmk         = "zmk"
 	ValueTrue              = "true"

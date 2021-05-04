@@ -171,6 +171,14 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyReadOnly:   meta.ValueTrue,
 		},
 		domain.NewContent(contentDependencies)},
+	id.EmojiZid: {
+		constHeader{
+			meta.KeyTitle:      "Generic Emoji",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     meta.ValueSyntaxGif,
+		},
+		domain.NewContent(contentEmoji)},
 	id.BaseTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base HTML Template",
@@ -331,6 +339,9 @@ var contentContributors string
 
 //go:embed dependencies.zettel
 var contentDependencies string
+
+//go:embed emoji_spin.gif
+var contentEmoji string
 
 //go:embed base.mustache
 var contentBaseMustache string
