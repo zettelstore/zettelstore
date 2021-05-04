@@ -153,6 +153,10 @@ func TestLink(t *testing.T) {
 		{"[[a]]go", "(PARA (LINK a a) go)"},
 		{"[[a]]{go}", "(PARA (LINK a a)[ATTR go])"},
 		{"[[[[a]]|b]]", "(PARA (LINK [[a [[a) |b]])"},
+		{"[[a[b]c|d]]", "(PARA (LINK d a[b]c))"},
+		{"[[[b]c|d]]", "(PARA (LINK d [b]c))"},
+		{"[[a[]c|d]]", "(PARA (LINK d a[]c))"},
+		{"[[a[b]|d]]", "(PARA (LINK d a[b]))"},
 	})
 }
 

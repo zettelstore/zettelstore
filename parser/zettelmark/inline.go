@@ -189,8 +189,11 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, o
 		if pos == inp.Pos { // [[| or {{|
 			return "", nil, false
 		}
+		sepPos := inp.Pos
 		inp.SetPos(pos)
-		ins = cp.parseReferenceInline()
+		for inp.Pos < sepPos {
+			ins = append(ins, cp.parseInline())
+		}
 		inp.Next()
 		pos = inp.Pos
 	} else if hasSpace {
@@ -221,21 +224,16 @@ func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
 			return false, false
 		case '\n', '\r', ' ':
 			hasSpace = true
-		case '|', closeCh:
+		case '|':
 			return hasSpace, true
+		case closeCh:
+			inp.Next()
+			if inp.Ch == closeCh {
+				return hasSpace, true
+			}
+			continue
 		}
 		inp.Next()
-	}
-}
-
-func (cp *zmkP) parseReferenceInline() (ins ast.InlineSlice) {
-	for {
-		switch cp.inp.Ch {
-		case input.EOS, '|':
-			return ins
-		}
-		in := cp.parseInline()
-		ins = append(ins, in)
 	}
 }
 
