@@ -28,6 +28,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/place/progplace"
+	"zettelstore.de/z/service"
 )
 
 const (
@@ -185,21 +186,21 @@ func cleanupOperations(withPlaces bool) error {
 	return nil
 }
 
-func executeCommand(name string, args ...string) {
+func executeCommand(name string, args ...string) int {
 	command, ok := Get(name)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
-		os.Exit(1)
+		return 1
 	}
 	fs := command.GetFlags()
 	if err := fs.Parse(args); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: unable to parse flags: %v %v\n", name, args, err)
-		os.Exit(1)
+		return 1
 	}
 	cfg := getConfig(fs)
 	if err := setupOperations(cfg, command.Places, command.Simple); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
-		os.Exit(2)
+		return 2
 	}
 
 	exitCode, err := command.Func(fs)
@@ -209,17 +210,20 @@ func executeCommand(name string, args ...string) {
 	if err := cleanupOperations(command.Places); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
-	if exitCode != 0 {
-		os.Exit(exitCode)
-	}
+	return exitCode
 }
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) {
 	startup.SetupVersion(progName, buildVersion)
+	var exitCode int
 	if len(os.Args) <= 1 {
-		runSimple()
+		exitCode = runSimple()
 	} else {
-		executeCommand(os.Args[1], os.Args[2:]...)
+		exitCode = executeCommand(os.Args[1], os.Args[2:]...)
+	}
+	service.Main.Stop()
+	if exitCode != 0 {
+		os.Exit(exitCode)
 	}
 }

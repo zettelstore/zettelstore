@@ -15,10 +15,9 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
+
+	"zettelstore.de/z/service"
 )
 
 // Server timeout values
@@ -66,11 +65,9 @@ func (srv *Server) SetDebug() {
 
 // Run starts the web server and wait for its completion.
 func (srv *Server) Run() error {
-	waitInterrupt := make(chan os.Signal)
 	waitError := make(chan error)
-	signal.Notify(waitInterrupt, os.Interrupt, syscall.SIGTERM)
-
 	go func() {
+		waitInterrupt := service.Main.Notifier()
 		select {
 		case <-waitInterrupt:
 		case <-srv.waitShutdown:
@@ -78,7 +75,7 @@ func (srv *Server) Run() error {
 		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 
-		log.Println("Stopping Zettelstore...")
+		log.Println("Stopping Zettelstore ...")
 		if err := srv.Shutdown(ctx); err != nil {
 			waitError <- err
 			return

@@ -47,11 +47,11 @@ func runSimpleFunc(*flag.FlagSet) (int, error) {
 
 // runSimple is called, when the user just starts the software via a double click
 // or via a simple call ``./zettelstore`` on the command line.
-func runSimple() {
+func runSimple() int {
 	dir := "./zettel"
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
 		os.Exit(1)
 	}
-	executeCommand("run-simple", "-d", dir)
+	return executeCommand("run-simple", "-d", dir)
 }
