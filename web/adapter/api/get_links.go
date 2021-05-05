@@ -88,7 +88,7 @@ func setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *json
 	if matter&matterIncoming != 0 {
 		outData.Links.Incoming = []jsonIDURL{}
 	}
-	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links, false)
+	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 	if matter&matterOutgoing != 0 {
 		outData.Links.Outgoing = idURLRefs(zetRefs)
 	}
@@ -101,7 +101,7 @@ func setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *json
 }
 
 func setupImageJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
-	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images, false)
+	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images)
 	if matter&matterOutgoing != 0 {
 		outData.Images.Outgoing = idURLRefs(zetRefs)
 	}

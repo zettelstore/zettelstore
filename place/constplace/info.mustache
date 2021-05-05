@@ -17,7 +17,8 @@
 <h3>Local</h3>
 <ul>
 {{#LocLinks}}
-<li><a href="{{{.}}}">{{.}}</a></li>
+{{#Valid}}<li><a href="{{{Zid}}}">{{Zid}}</a></li>{{/Valid}}
+{{^Valid}}<li>{{Zid}}</li>{{/Valid}}
 {{/LocLinks}}
 </ul>
 {{/HasLocLinks}}

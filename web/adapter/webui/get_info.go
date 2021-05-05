@@ -110,7 +110,7 @@ func MakeGetInfoHandler(
 			MetaData     []metaDataInfo
 			HasLinks     bool
 			HasLocLinks  bool
-			LocLinks     []string
+			LocLinks     []localLink
 			HasExtLinks  bool
 			ExtLinks     []string
 			ExtNewWindow string
@@ -143,7 +143,12 @@ func MakeGetInfoHandler(
 	}
 }
 
-func splitLocExtLinks(links []*ast.Reference) (locLinks, extLinks []string) {
+type localLink struct {
+	Valid bool
+	Zid   string
+}
+
+func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []string) {
 	if len(links) == 0 {
 		return nil, nil
 	}
@@ -153,11 +158,12 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks, extLinks []string) {
 		}
 		if ref.IsZettel() {
 			continue
-		} else if ref.IsExternal() {
-			extLinks = append(extLinks, ref.String())
-		} else {
-			locLinks = append(locLinks, ref.String())
 		}
+		if ref.IsExternal() {
+			extLinks = append(extLinks, ref.String())
+			continue
+		}
+		locLinks = append(locLinks, localLink{ref.IsValid(), ref.String()})
 	}
 	return locLinks, extLinks
 }

@@ -14,7 +14,7 @@ package collect
 import "zettelstore.de/z/ast"
 
 // DivideReferences divides the given list of rederences into zettel, local, and external References.
-func DivideReferences(all []*ast.Reference, duplicates bool) (zettel, local, external []*ast.Reference) {
+func DivideReferences(all []*ast.Reference) (zettel, local, external []*ast.Reference) {
 	if len(all) == 0 {
 		return nil, nil, nil
 	}
@@ -27,31 +27,21 @@ func DivideReferences(all []*ast.Reference, duplicates bool) (zettel, local, ext
 			continue
 		}
 		if ref.IsZettel() {
-			zettel = appendRefToList(zettel, mapZettel, ref, duplicates)
+			zettel = appendRefToList(zettel, mapZettel, ref)
 		} else if ref.IsExternal() {
-			external = appendRefToList(external, mapExternal, ref, duplicates)
+			external = appendRefToList(external, mapExternal, ref)
 		} else {
-			local = appendRefToList(local, mapLocal, ref, duplicates)
+			local = appendRefToList(local, mapLocal, ref)
 		}
 	}
 	return zettel, local, external
 }
 
-func appendRefToList(
-	reflist []*ast.Reference,
-	refSet map[string]bool,
-	ref *ast.Reference,
-	duplicates bool,
-) []*ast.Reference {
-	if duplicates {
+func appendRefToList(reflist []*ast.Reference, refSet map[string]bool, ref *ast.Reference) []*ast.Reference {
+	s := ref.String()
+	if _, ok := refSet[s]; !ok {
 		reflist = append(reflist, ref)
-	} else {
-		s := ref.String()
-		if _, ok := refSet[s]; !ok {
-			reflist = append(reflist, ref)
-			refSet[s] = true
-		}
+		refSet[s] = true
 	}
-
 	return reflist
 }
