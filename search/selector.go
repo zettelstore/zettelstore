@@ -26,9 +26,18 @@ import (
 func compileFullSearch(selector index.Selector, search []expValue) MetaMatchFunc {
 	normSearch := compileNormalizedSearch(selector, search)
 	plainSearch := compilePlainSearch(selector, search)
-	return func(m *meta.Meta) bool {
-		return normSearch(m) || plainSearch(m)
+	if normSearch != nil && plainSearch != nil {
+		return func(m *meta.Meta) bool {
+			return normSearch(m) || plainSearch(m)
+		}
 	}
+	if normSearch != nil {
+		return normSearch
+	}
+	if plainSearch != nil {
+		return plainSearch
+	}
+	return nil
 }
 
 func compileNormalizedSearch(selector index.Selector, search []expValue) MetaMatchFunc {
