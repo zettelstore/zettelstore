@@ -51,6 +51,8 @@ func TestNormalizeWord(t *testing.T) {
 		in  string
 		exp []string
 	}{
+		{"", []string{}},
+		{" ", []string{}},
 		{"simple test", []string{"simple", "test"}},
 		{"I'm a go developer", []string{"i", "m", "a", "go", "developer"}},
 		{"-!->simple   test<-!-", []string{"simple", "test"}},

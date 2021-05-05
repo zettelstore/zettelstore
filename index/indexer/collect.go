@@ -12,115 +12,134 @@
 package indexer
 
 import (
+	"strings"
+
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/strfun"
 )
 
-func collectZettelIndexData(zn *ast.ZettelNode, refs id.Set, words index.WordSet) {
-	ixv := ixVisitor{refs: refs, words: words}
-	ast.NewTopDownTraverser(&ixv).VisitBlockSlice(zn.Ast)
-}
-
-func collectInlineIndexData(ins ast.InlineSlice, refs id.Set, words index.WordSet) {
-	ixv := ixVisitor{refs: refs, words: words}
-	ast.NewTopDownTraverser(&ixv).VisitInlineSlice(ins)
-}
-
-type ixVisitor struct {
+type collectData struct {
 	refs  id.Set
 	words index.WordSet
+	urls  index.WordSet
+}
+
+func (data *collectData) initialize() {
+	data.refs = id.NewSet()
+	data.words = index.NewWordSet()
+	data.urls = index.NewWordSet()
+}
+
+func collectZettelIndexData(zn *ast.ZettelNode, data *collectData) {
+	ast.NewTopDownTraverser(data).VisitBlockSlice(zn.Ast)
+}
+
+func collectInlineIndexData(ins ast.InlineSlice, data *collectData) {
+	ast.NewTopDownTraverser(data).VisitInlineSlice(ins)
 }
 
 // VisitVerbatim collects the verbatim text in the word set.
-func (lv *ixVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
+func (data *collectData) VisitVerbatim(vn *ast.VerbatimNode) {
 	for _, line := range vn.Lines {
-		lv.addText(line)
+		data.addText(line)
 	}
 }
 
 // VisitRegion does nothing.
-func (lv *ixVisitor) VisitRegion(rn *ast.RegionNode) {}
+func (data *collectData) VisitRegion(rn *ast.RegionNode) {}
 
 // VisitHeading does nothing.
-func (lv *ixVisitor) VisitHeading(hn *ast.HeadingNode) {}
+func (data *collectData) VisitHeading(hn *ast.HeadingNode) {}
 
 // VisitHRule does nothing.
-func (lv *ixVisitor) VisitHRule(hn *ast.HRuleNode) {}
+func (data *collectData) VisitHRule(hn *ast.HRuleNode) {}
 
 // VisitList does nothing.
-func (lv *ixVisitor) VisitNestedList(ln *ast.NestedListNode) {}
+func (data *collectData) VisitNestedList(ln *ast.NestedListNode) {}
 
 // VisitDescriptionList does nothing.
-func (lv *ixVisitor) VisitDescriptionList(dn *ast.DescriptionListNode) {}
+func (data *collectData) VisitDescriptionList(dn *ast.DescriptionListNode) {}
 
 // VisitPara does nothing.
-func (lv *ixVisitor) VisitPara(pn *ast.ParaNode) {}
+func (data *collectData) VisitPara(pn *ast.ParaNode) {}
 
 // VisitTable does nothing.
-func (lv *ixVisitor) VisitTable(tn *ast.TableNode) {}
+func (data *collectData) VisitTable(tn *ast.TableNode) {}
 
 // VisitBLOB does nothing.
-func (lv *ixVisitor) VisitBLOB(bn *ast.BLOBNode) {}
+func (data *collectData) VisitBLOB(bn *ast.BLOBNode) {}
 
 // VisitText collects the text in the word set.
-func (lv *ixVisitor) VisitText(tn *ast.TextNode) {
-	lv.addText(tn.Text)
+func (data *collectData) VisitText(tn *ast.TextNode) {
+	data.addText(tn.Text)
 }
 
 // VisitTag collects the tag name in the word set.
-func (lv *ixVisitor) VisitTag(tn *ast.TagNode) {
-	lv.addText(tn.Tag)
+func (data *collectData) VisitTag(tn *ast.TagNode) {
+	data.addText(tn.Tag)
 }
 
 // VisitSpace does nothing.
-func (lv *ixVisitor) VisitSpace(sn *ast.SpaceNode) {}
+func (data *collectData) VisitSpace(sn *ast.SpaceNode) {}
 
 // VisitBreak does nothing.
-func (lv *ixVisitor) VisitBreak(bn *ast.BreakNode) {}
+func (data *collectData) VisitBreak(bn *ast.BreakNode) {}
 
 // VisitLink collects the given link as a reference.
-func (lv *ixVisitor) VisitLink(ln *ast.LinkNode) {
+func (data *collectData) VisitLink(ln *ast.LinkNode) {
 	ref := ln.Ref
-	if ref == nil || !ref.IsZettel() {
+	if ref == nil {
+		return
+	}
+	if ref.IsExternal() {
+		data.urls.Add(strings.ToLower(ref.Value))
+	}
+	if !ref.IsZettel() {
 		return
 	}
 	if zid, err := id.Parse(ref.URL.Path); err == nil {
-		lv.refs[zid] = true
+		data.refs[zid] = true
 	}
 }
 
 // VisitImage collects the image links as a reference.
-func (lv *ixVisitor) VisitImage(in *ast.ImageNode) {
+func (data *collectData) VisitImage(in *ast.ImageNode) {
 	ref := in.Ref
-	if ref == nil || !ref.IsZettel() {
+	if ref == nil {
+		return
+	}
+	if ref.IsExternal() {
+		data.urls.Add(strings.ToLower(ref.Value))
+	}
+	if !ref.IsZettel() {
 		return
 	}
 	if zid, err := id.Parse(ref.URL.Path); err == nil {
-		lv.refs[zid] = true
+		data.refs[zid] = true
 	}
 }
 
 // VisitCite does nothing.
-func (lv *ixVisitor) VisitCite(cn *ast.CiteNode) {}
+func (data *collectData) VisitCite(cn *ast.CiteNode) {}
 
 // VisitFootnote does nothing.
-func (lv *ixVisitor) VisitFootnote(fn *ast.FootnoteNode) {}
+func (data *collectData) VisitFootnote(fn *ast.FootnoteNode) {}
 
 // VisitMark does nothing.
-func (lv *ixVisitor) VisitMark(mn *ast.MarkNode) {}
+func (data *collectData) VisitMark(mn *ast.MarkNode) {}
 
 // VisitFormat does nothing.
-func (lv *ixVisitor) VisitFormat(fn *ast.FormatNode) {}
+func (data *collectData) VisitFormat(fn *ast.FormatNode) {}
 
 // VisitLiteral collects the literal words in the word set.
-func (lv *ixVisitor) VisitLiteral(ln *ast.LiteralNode) {
-	lv.addText(ln.Text)
+func (data *collectData) VisitLiteral(ln *ast.LiteralNode) {
+	data.addText(ln.Text)
 }
 
-func (lv *ixVisitor) addText(s string) {
+func (data *collectData) addText(s string) {
 	for _, word := range strfun.NormalizeWords(s) {
-		lv.words[word] = lv.words[word] + 1
+		data.words.Add(word)
 	}
 }

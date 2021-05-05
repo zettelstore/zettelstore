@@ -22,6 +22,7 @@ type ZettelIndex struct {
 	metarefs map[string]id.Set // references to inverse keys
 	deadrefs id.Set            // set of dead references
 	words    WordSet
+	urls     WordSet
 }
 
 // NewZettelIndex creates a new zettel index.
@@ -58,6 +59,9 @@ func (zi *ZettelIndex) AddDeadRef(zid id.Zid) {
 // SetWords sets the words to the given value.
 func (zi *ZettelIndex) SetWords(words WordSet) { zi.words = words }
 
+// SetUrls sets the words to the given value.
+func (zi *ZettelIndex) SetUrls(urls WordSet) { zi.urls = urls }
+
 // GetDeadRefs returns all dead references as a sorted list.
 func (zi *ZettelIndex) GetDeadRefs() id.Slice {
 	return zi.deadrefs.Sorted()
@@ -80,5 +84,8 @@ func (zi *ZettelIndex) GetMetaRefs() map[string]id.Slice {
 	return result
 }
 
-// GetWords returns a reference to the WordSet. It must not be modified.
+// GetWords returns a reference to the set of words. It must not be modified.
 func (zi *ZettelIndex) GetWords() WordSet { return zi.words }
+
+// GetUrls returns a reference to the set of URLs. It must not be modified.
+func (zi *ZettelIndex) GetUrls() WordSet { return zi.urls }

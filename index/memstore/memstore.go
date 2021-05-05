@@ -34,6 +34,7 @@ type zettelIndex struct {
 	backward id.Slice
 	meta     map[string]metaRefs
 	words    []string
+	urls     []string
 }
 
 func (zi *zettelIndex) isEmpty() bool {
@@ -43,11 +44,14 @@ func (zi *zettelIndex) isEmpty() bool {
 	return zi.meta == nil || len(zi.meta) == 0
 }
 
+type stringRefs map[string]id.Slice
+
 type memStore struct {
 	mx    sync.RWMutex
 	idx   map[id.Zid]*zettelIndex
 	dead  map[id.Zid]id.Slice // map dead refs where they occur
-	words map[string]id.Slice
+	words stringRefs
+	urls  stringRefs
 
 	// Stats
 	updates uint64
@@ -58,7 +62,8 @@ func New() index.Store {
 	return &memStore{
 		idx:   make(map[id.Zid]*zettelIndex),
 		dead:  make(map[id.Zid]id.Slice),
-		words: make(map[string]id.Slice),
+		words: make(stringRefs),
+		urls:  make(stringRefs),
 	}
 }
 
@@ -115,6 +120,9 @@ func (ms *memStore) SelectEqual(word string) id.Set {
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
 	if refs, ok := ms.words[word]; ok {
+		result.AddSlice(refs)
+	}
+	if refs, ok := ms.urls[word]; ok {
 		result.AddSlice(refs)
 	}
 	zid, err := id.Parse(word)
@@ -211,6 +219,12 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 		}
 		result.AddSlice(refs)
 	}
+	for u, refs := range ms.urls {
+		if !pred(u, s) {
+			continue
+		}
+		result.AddSlice(refs)
+	}
 	return result
 }
 
@@ -261,7 +275,8 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 	ms.updateDeadReferences(zidx, zi)
 	ms.updateForwardBackwardReferences(zidx, zi)
 	ms.updateMetadataReferences(zidx, zi)
-	ms.updateWords(zidx, zi)
+	zi.words = updateWordSet(zidx.Zid, ms.words, zi.words, zidx.GetWords())
+	zi.urls = updateWordSet(zidx.Zid, ms.urls, zi.urls, zidx.GetUrls())
 
 	// Check if zi must be inserted into ms.idx
 	if !ziExist && !zi.isEmpty() {
@@ -330,30 +345,30 @@ func (ms *memStore) updateMetadataReferences(zidx *index.ZettelIndex, zi *zettel
 	}
 }
 
-func (ms *memStore) updateWords(zidx *index.ZettelIndex, zi *zettelIndex) {
+func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next index.WordSet) []string {
 	// Must only be called if ms.mx is write-locked!
-	words := zidx.GetWords()
-	newWords, removeWords := words.Diff(zi.words)
+	//words := zidx.GetWords()
+	newWords, removeWords := next.Diff(prev)
 	for _, word := range newWords {
-		if refs, ok := ms.words[word]; ok {
-			ms.words[word] = addRef(refs, zidx.Zid)
+		if refs, ok := srefs[word]; ok {
+			srefs[word] = addRef(refs, zid)
 			continue
 		}
-		ms.words[word] = id.Slice{zidx.Zid}
+		srefs[word] = id.Slice{zid}
 	}
 	for _, word := range removeWords {
-		refs, ok := ms.words[word]
+		refs, ok := srefs[word]
 		if !ok {
 			continue
 		}
-		refs2 := remRef(refs, zidx.Zid)
+		refs2 := remRef(refs, zid)
 		if len(refs2) == 0 {
-			delete(ms.words, word)
+			delete(srefs, word)
 			continue
 		}
-		ms.words[word] = refs2
+		srefs[word] = refs2
 	}
-	zi.words = words.Words()
+	return next.Words()
 }
 
 func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
@@ -465,6 +480,7 @@ func (ms *memStore) ReadStats(st *index.StoreStats) {
 	st.Zettel = len(ms.idx)
 	st.Updates = ms.updates
 	st.Words = uint64(len(ms.words))
+	st.Urls = uint64(len(ms.urls))
 	ms.mx.RUnlock()
 }
 

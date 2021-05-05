@@ -136,4 +136,7 @@ type StoreStats struct {
 
 	// Words count the different words stored in the store.
 	Words uint64
+
+	// Urls count the different URLs stored in the store.
+	Urls uint64
 }

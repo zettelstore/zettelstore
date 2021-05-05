@@ -234,7 +234,7 @@ func (s *Search) CompileMatch(selector index.Selector) MetaMatchFunc {
 	defer s.mx.Unlock()
 
 	compMeta := compileFilter(s.tags)
-	compSearch := compileSearch(selector, s.search)
+	compSearch := compileFullSearch(selector, s.search)
 	if preMatch := s.preMatch; preMatch != nil {
 		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)
 	}

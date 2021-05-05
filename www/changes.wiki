@@ -6,6 +6,8 @@
      addition to the search whether a word just contains word of the search
      term.
      (minor: api, webui)
+  *  Full-text search for URLs, with above additional operators.
+     (minor: api, webui)
   *  Add system zettel about license, contributors, and dependencies (and their
      license).
      For a nicer layout of zettel identifier, the zettel about environment

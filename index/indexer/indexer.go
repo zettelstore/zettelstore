@@ -14,6 +14,7 @@ package indexer
 import (
 	"context"
 	"log"
+	"net/url"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -239,9 +240,10 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 		idx.checkZettel(toCheck)
 		return
 	}
-	refs := id.NewSet()
-	words := make(index.WordSet)
-	collectZettelIndexData(parser.ParseZettel(zettel, ""), refs, words)
+
+	var cData collectData
+	cData.initialize()
+	collectZettelIndexData(parser.ParseZettel(zettel, ""), &cData)
 	zi := index.NewZettelIndex(m.Zid)
 	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
@@ -256,21 +258,26 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 				updateValue(ctx, descr.Inverse, val, p, zi)
 			}
 		case meta.TypeZettelmarkup:
-			collectInlineIndexData(parser.ParseMetadata(pair.Value), refs, words)
+			collectInlineIndexData(parser.ParseMetadata(pair.Value), &cData)
+		case meta.TypeURL:
+			if _, err := url.Parse(pair.Value); err == nil {
+				cData.urls.Add(pair.Value)
+			}
 		default:
 			for _, word := range strfun.NormalizeWords(pair.Value) {
-				words[word] = words[word] + 1
+				cData.words.Add(word)
 			}
 		}
 	}
-	for ref := range refs {
+	for ref := range cData.refs {
 		if _, err := p.GetMeta(ctx, ref); err == nil {
 			zi.AddBackRef(ref)
 		} else {
 			zi.AddDeadRef(ref)
 		}
 	}
-	zi.SetWords(words)
+	zi.SetWords(cData.words)
+	zi.SetUrls(cData.urls)
 	toCheck := idx.store.UpdateReferences(ctx, zi)
 	idx.checkZettel(toCheck)
 }

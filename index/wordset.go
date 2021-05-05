@@ -14,6 +14,14 @@ package index
 // WordSet contains the set of all words, with the count of their occurrences.
 type WordSet map[string]int
 
+// NewWordSet returns a new WordSet.
+func NewWordSet() WordSet { return make(WordSet) }
+
+// Add one word to the set
+func (ws WordSet) Add(s string) {
+	ws[s] = ws[s] + 1
+}
+
 // Words gives the slice of all words in the set.
 func (ws WordSet) Words() []string {
 	if len(ws) == 0 {
