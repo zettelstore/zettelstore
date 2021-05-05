@@ -37,7 +37,6 @@ const (
 	LicenseZid              = Zid(4)
 	AuthorsZid              = Zid(5)
 	DependenciesZid         = Zid(6)
-	EmojiZid                = Zid(9)
 	EnvironmentZid          = Zid(10)
 	MetricsZid              = Zid(12)
 	IndexerZid              = Zid(18)
@@ -61,10 +60,13 @@ const (
 	TagsTemplateZid    = Zid(10600)
 	ErrorTemplateZid   = Zid(10700)
 
-	// WebUI CSS pages are in the range 20000..29999
+	// WebUI CSS zettel are in the range 20000..29999
 	BaseCSSZid = Zid(20001)
 
-	// WebUI JS pages are in the range 30000..39999
+	// WebUI JS zettel are in the range 30000..39999
+
+	// WebUI image zettel are in the range 40000..49999
+	EmojiZid = Zid(40001)
 
 	// Range 90000...99999 is reserved for zettel templates
 	TOCNewTemplateZid    = Zid(90000)

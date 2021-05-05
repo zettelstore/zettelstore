@@ -443,7 +443,7 @@ func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
 		panic(err)
 	}
 	text := sb.String()
-	if len(text) == 0 {
+	if text == "" {
 		return nil
 	}
 	return ast.InlineSlice{

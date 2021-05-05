@@ -171,14 +171,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyReadOnly:   meta.ValueTrue,
 		},
 		domain.NewContent(contentDependencies)},
-	id.EmojiZid: {
-		constHeader{
-			meta.KeyTitle:      "Generic Emoji",
-			meta.KeyRole:       meta.ValueRoleConfiguration,
-			meta.KeyVisibility: meta.ValueVisibilityPublic,
-			meta.KeySyntax:     meta.ValueSyntaxGif,
-		},
-		domain.NewContent(contentEmoji)},
 	id.BaseTemplateZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base HTML Template",
@@ -296,6 +288,15 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentBaseCSS)},
+	id.EmojiZid: {
+		constHeader{
+			meta.KeyTitle:      "Generic Emoji",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     meta.ValueSyntaxGif,
+			meta.KeyReadOnly:   meta.ValueTrue,
+		},
+		domain.NewContent(contentEmoji)},
 	id.TOCNewTemplateZid: {
 		constHeader{
 			meta.KeyTitle:  "New Menu",
@@ -340,9 +341,6 @@ var contentContributors string
 //go:embed dependencies.zettel
 var contentDependencies string
 
-//go:embed emoji_spin.gif
-var contentEmoji string
-
 //go:embed base.mustache
 var contentBaseMustache string
 
@@ -381,6 +379,9 @@ var contentErrorMustache string
 
 //go:embed base.css
 var contentBaseCSS string
+
+//go:embed emoji_spin.gif
+var contentEmoji string
 
 //go:embed newtoc.zettel
 var contentNewTOCZettel string

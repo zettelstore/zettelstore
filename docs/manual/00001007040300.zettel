@@ -61,7 +61,7 @@ One prominent example is to specify an explicit title attribute that is shown on
 
 Example:
 
-``{{Spinning Emoji|00000000000009}}{title=Emoji width=30}`` is rendered as ::{{Spinning Emoji|00000000000009}}{title=Emoji width=30}::{=example}.
+``{{Spinning Emoji|00000000040001}}{title=Emoji width=30}`` is rendered as ::{{Spinning Emoji|00000000040001}}{title=Emoji width=30}::{=example}.
 
 %% The above animated image is also a placeholder for a non-existent image: ``{{00000000000000}}`` will be rendered as ::{{00000000000000}}::{=example}.
 
