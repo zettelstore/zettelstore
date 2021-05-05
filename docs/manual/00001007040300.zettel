@@ -59,11 +59,11 @@ If the text is given, it will be interpreted as an alternative textual represent
 They must follow the last right curly bracket character immediately.
 One prominent example is to specify an explicit title attribute that is shown on certain web browsers when the zettel is rendered in HTML:
 
-Example:
-
-``{{Spinning Emoji|00000000040001}}{title=Emoji width=30}`` is rendered as ::{{Spinning Emoji|00000000040001}}{title=Emoji width=30}::{=example}.
-
-%% The above animated image is also a placeholder for a non-existent image: ``{{00000000000000}}`` will be rendered as ::{{00000000000000}}::{=example}.
+Examples:
+* ``{{Spinning Emoji|00000000040001}}{title=Emoji width=30}`` is rendered as ::{{Spinning Emoji|00000000040001}}{title=Emoji width=30}::{=example}.
+* The above image is also a placeholder for a non-existent image:
+** ``{{00000000000000}}`` will be rendered as ::{{00000000000000}}::{=example}.
+** ``{{00000000009999}}`` will be rendered as ::{{00000000009999}}::{=example}.
 
 === Footnotes
 

@@ -106,20 +106,34 @@ func adaptZettelReference(key byte, zid id.Zid, part, format, fragment string) s
 }
 
 // MakeImageAdapter creates an adapter to change an image node during encoding.
-func MakeImageAdapter() func(*ast.ImageNode) ast.InlineNode {
+func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.ImageNode) ast.InlineNode {
 	return func(origImage *ast.ImageNode) ast.InlineNode {
-		if origImage.Ref == nil || origImage.Ref.State != ast.RefStateZettel {
+		if origImage.Ref == nil {
 			return origImage
 		}
-		newImage := *origImage
-		zid, err := id.Parse(newImage.Ref.Value)
-		if err != nil {
-			panic(err)
+		switch origImage.Ref.State {
+		case ast.RefStateInvalid:
+			return createZettelImage(origImage, id.EmojiZid, ast.RefStateInvalid)
+		case ast.RefStateZettel:
+			zid, err := id.Parse(origImage.Ref.Value)
+			if err != nil {
+				panic(err)
+			}
+			_, err = getMeta.Run(index.NoEnrichContext(ctx), zid)
+			if err != nil {
+				return createZettelImage(origImage, id.EmojiZid, ast.RefStateBroken)
+			}
+			return createZettelImage(origImage, zid, ast.RefStateFound)
 		}
-		newImage.Ref = ast.ParseReference(
-			NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery(
-				"_format", "raw").String())
-		newImage.Ref.State = ast.RefStateFound
-		return &newImage
+		return origImage
 	}
+}
+
+func createZettelImage(origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
+	newImage := *origImage
+	newImage.Ref = ast.ParseReference(
+		NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery(
+			"_format", "raw").String())
+	newImage.Ref.State = state
+	return &newImage
 }

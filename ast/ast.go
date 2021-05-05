@@ -83,7 +83,7 @@ type RefState int
 
 // Constants for RefState
 const (
-	RefStateInvalid  RefState = iota // Invalid Referende
+	RefStateInvalid  RefState = iota // Invalid Reference
 	RefStateZettel                   // Reference to an internal zettel
 	RefStateSelf                     // Reference to same zettel with a fragment
 	RefStateFound                    // Reference to an existing internal zettel

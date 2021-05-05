@@ -8,11 +8,14 @@
      (minor: api, webui)
   *  Add system zettel about license, contributors, and dependencies (and their
      license).
-     (minor)
-
      For a nicer layout of zettel identifier, the zettel about environment
      values and about runtime metrics got new zettel identifier. This affects
      only user that referenced those zettel.
+     (minor)
+  *  Local images that cannot be read (not found or no access rights) are
+     substituted with the new default image, a spinning emoji.
+     See [/file?name=place/constplace/emoji_spin.gif].
+     (minor: webui)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>

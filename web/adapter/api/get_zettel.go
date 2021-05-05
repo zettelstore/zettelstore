@@ -67,7 +67,7 @@ func MakeGetZettelHandler(
 
 		env := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
-			ImageAdapter:   adapter.MakeImageAdapter(),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
 			CiteAdapter:    nil,
 			Lang:           runtime.GetLang(zn.InhMeta),
 			Xhtml:          false,

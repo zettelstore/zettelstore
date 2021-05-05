@@ -191,7 +191,7 @@ func writeDJSONContent(
 	if err == nil {
 		err = writeContent(w, z, "djson", &encoder.Environment{
 			LinkAdapter:  adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(defPart), "djson"),
-			ImageAdapter: adapter.MakeImageAdapter()})
+			ImageAdapter: adapter.MakeImageAdapter(ctx, getMeta)})
 	}
 	return err
 }

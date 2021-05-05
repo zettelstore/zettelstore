@@ -19,7 +19,8 @@ import (
 
 // ParseReference parses a string and returns a reference.
 func ParseReference(s string) *Reference {
-	if s == "" {
+	switch s {
+	case "", "00000000000000":
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
 	if state, ok := localState(s); ok {

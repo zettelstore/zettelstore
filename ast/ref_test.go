@@ -48,6 +48,7 @@ func TestReferenceIsZettelMaterial(t *testing.T) {
 		isLocal    bool
 	}{
 		{"", false, false, false},
+		{"00000000000000", false, false, false},
 		{"http://zettelstore.de/z/ast", false, true, false},
 		{"12345678901234", true, false, false},
 		{"12345678901234#local", true, false, false},

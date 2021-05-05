@@ -51,7 +51,7 @@ func MakeGetHTMLZettelHandler(
 		lang := runtime.GetLang(zn.InhMeta)
 		envHTML := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'h', getMeta, "", ""),
-			ImageAdapter:   adapter.MakeImageAdapter(),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,
