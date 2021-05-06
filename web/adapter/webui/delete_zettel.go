@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -78,6 +79,7 @@ func MakePostDeleteZettelHandler(te *TemplateEngine, deleteZettel usecase.Delete
 			te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, adapter.NewURLBuilder('/'))
+		builder := router.GetURLBuilderFunc(ctx)
+		redirectFound(w, r, builder('/'))
 	}
 }

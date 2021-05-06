@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -87,6 +88,7 @@ func MakeEditSetZettelHandler(te *TemplateEngine, updateZettel usecase.UpdateZet
 			te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(zid))
+		builder := router.GetURLBuilderFunc(ctx)
+		redirectFound(w, r, builder('h').SetZid(zid))
 	}
 }

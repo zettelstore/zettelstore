@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -78,9 +79,10 @@ func MakeGetInfoHandler(
 		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, len(pairs))
 		getTitle := makeGetTitle(ctx, getMeta, &env)
+		builder := router.GetURLBuilderFunc(ctx)
 		for i, p := range pairs {
 			var html strings.Builder
-			writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
+			writeHTMLMetaValue(&html, builder, zn.Meta, p.Key, getTitle, &env)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		endnotes, err := formatBlocks(nil, "html", &env)
@@ -118,18 +120,18 @@ func MakeGetInfoHandler(
 			Endnotes     string
 		}{
 			Zid:          zid.String(),
-			WebURL:       adapter.NewURLBuilder('h').SetZid(zid).String(),
-			ContextURL:   adapter.NewURLBuilder('j').SetZid(zid).String(),
+			WebURL:       builder('h').SetZid(zid).String(),
+			ContextURL:   builder('j').SetZid(zid).String(),
 			CanWrite:     te.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:      adapter.NewURLBuilder('e').SetZid(zid).String(),
+			EditURL:      builder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:     adapter.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:     builder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
-			CopyURL:      adapter.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:      builder('c').SetZid(zid).String(),
 			CanRename:    te.canRename(ctx, user, zn.Meta),
-			RenameURL:    adapter.NewURLBuilder('b').SetZid(zid).String(),
+			RenameURL:    builder('b').SetZid(zid).String(),
 			CanDelete:    te.canDelete(ctx, user, zn.Meta),
-			DeleteURL:    adapter.NewURLBuilder('d').SetZid(zid).String(),
+			DeleteURL:    builder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:  len(locLinks) > 0,
@@ -137,7 +139,7 @@ func MakeGetInfoHandler(
 			HasExtLinks:  len(extLinks) > 0,
 			ExtLinks:     extLinks,
 			ExtNewWindow: htmlAttrNewWindow(len(extLinks) > 0),
-			Matrix:       infoAPIMatrix(zid),
+			Matrix:       infoAPIMatrix(builder, zid),
 			Endnotes:     endnotes,
 		})
 	}
@@ -168,12 +170,12 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 	return locLinks, extLinks
 }
 
-func infoAPIMatrix(zid id.Zid) []matrixLine {
+func infoAPIMatrix(builder router.URLBuilderFunc, zid id.Zid) []matrixLine {
 	formats := encoder.GetFormats()
 	defFormat := encoder.GetDefaultFormat()
 	parts := []string{"zettel", "meta", "content"}
 	matrix := make([]matrixLine, 0, len(parts))
-	u := adapter.NewURLBuilder('z').SetZid(zid)
+	u := builder('z').SetZid(zid)
 	for _, part := range parts {
 		row := make([]matrixElement, 0, len(formats)+1)
 		row = append(row, matrixElement{part, false, ""})

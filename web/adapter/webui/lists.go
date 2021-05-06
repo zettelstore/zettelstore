@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -59,6 +60,7 @@ func renderWebUIZettelList(
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
 	title := listTitleSearch("Filter", s)
+	builder := router.GetURLBuilderFunc(ctx)
 	renderWebUIMetaList(
 		ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
 			if !s.HasComputedMetaKey() {
@@ -67,7 +69,7 @@ func renderWebUIZettelList(
 			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
-			return newPageURL('h', query, offset, "_offset", "_limit")
+			return newPageURL(builder, 'h', query, offset, "_offset", "_limit")
 		})
 }
 
@@ -89,11 +91,12 @@ func renderWebUIRolesList(
 		return
 	}
 
+	builder := router.GetURLBuilderFunc(ctx)
 	roleInfos := make([]roleInfo, 0, len(roleList))
-	for _, r := range roleList {
+	for _, role := range roleList {
 		roleInfos = append(
 			roleInfos,
-			roleInfo{r, adapter.NewURLBuilder('h').AppendQuery("role", r).String()})
+			roleInfo{role, builder('h').AppendQuery("role", role).String()})
 	}
 
 	user := session.GetUser(ctx)
@@ -138,7 +141,8 @@ func renderWebUITagsList(
 	user := session.GetUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	baseTagListURL := adapter.NewURLBuilder('h')
+	builder := router.GetURLBuilderFunc(ctx)
+	baseTagListURL := builder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
 		countMap[count]++
@@ -191,13 +195,15 @@ func MakeSearchHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
+		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			redirectFound(w, r, adapter.NewURLBuilder('h'))
+			builder := router.GetURLBuilderFunc(ctx)
+			redirectFound(w, r, builder('h'))
 			return
 		}
 
-		ctx := r.Context()
+		builder := router.GetURLBuilderFunc(ctx)
 		title := listTitleSearch("Search", s)
 		renderWebUIMetaList(
 			ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
@@ -207,7 +213,7 @@ func MakeSearchHandler(
 				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
-				return newPageURL('f', query, offset, "offset", "limit")
+				return newPageURL(builder, 'f', query, offset, "offset", "limit")
 			})
 	}
 }
@@ -230,7 +236,8 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			te.reportError(ctx, w, err)
 			return
 		}
-		metaLinks, err := buildHTMLMetaList(metaList)
+		builder := router.GetURLBuilderFunc(ctx)
+		metaLinks, err := buildHTMLMetaList(builder, metaList)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
 			return
@@ -238,7 +245,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := adapter.NewURLBuilder('j').SetZid(zid)
+		depthURL := builder('j').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -262,7 +269,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: adapter.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL: builder('i').SetZid(zid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],
@@ -317,7 +324,8 @@ func renderWebUIMetaList(
 		}
 	}
 	user := session.GetUser(ctx)
-	metas, err := buildHTMLMetaList(metaList)
+	builder := router.GetURLBuilderFunc(ctx)
+	metas, err := buildHTMLMetaList(builder, metaList)
 	if err != nil {
 		te.reportError(ctx, w, err)
 		return
@@ -356,23 +364,23 @@ func listTitleSearch(prefix string, s *search.Search) string {
 	return sb.String()
 }
 
-func newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
-	urlBuilder := adapter.NewURLBuilder(key)
+func newPageURL(builder router.URLBuilderFunc, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+	ub := builder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {
 			for _, val := range values {
-				urlBuilder.AppendQuery(key, val)
+				ub.AppendQuery(key, val)
 			}
 		}
 	}
 	if offset > 0 {
-		urlBuilder.AppendQuery(offsetKey, strconv.Itoa(offset))
+		ub.AppendQuery(offsetKey, strconv.Itoa(offset))
 	}
-	return urlBuilder.String()
+	return ub.String()
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
+func buildHTMLMetaList(builder router.URLBuilderFunc, metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
@@ -390,7 +398,7 @@ func buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
 		}
 		metas = append(metas, simpleLink{
 			Text: htmlTitle,
-			URL:  adapter.NewURLBuilder('h').SetZid(m.Zid).String(),
+			URL:  builder('h').SetZid(m.Zid).String(),
 		})
 	}
 	return metas, nil

@@ -14,9 +14,9 @@ package webui
 import (
 	"net/http"
 
-	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 )
 
-func redirectFound(w http.ResponseWriter, r *http.Request, ub *adapter.URLBuilder) {
+func redirectFound(w http.ResponseWriter, r *http.Request, ub *router.URLBuilder) {
 	http.Redirect(w, r, ub.String(), http.StatusFound)
 }

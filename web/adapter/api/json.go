@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 )
 
 type jsonIDURL struct {
@@ -56,11 +57,11 @@ type jsonContent struct {
 	Content  interface{} `json:"content"`
 }
 
-func writeJSONZettel(w http.ResponseWriter, z *ast.ZettelNode, part partType) error {
+func writeJSONZettel(w http.ResponseWriter, builder router.URLBuilderFunc, z *ast.ZettelNode, part partType) error {
 	var outData interface{}
 	idData := jsonIDURL{
 		ID:  z.Zid.String(),
-		URL: adapter.NewURLBuilder('z').SetZid(z.Zid).String(),
+		URL: builder('z').SetZid(z.Zid).String(),
 	}
 
 	switch part {
@@ -110,9 +111,10 @@ func writeDJSONZettel(
 	part, defPart partType,
 	getMeta usecase.GetMeta,
 ) (err error) {
+	builder := router.GetURLBuilderFunc(ctx)
 	switch part {
 	case partZettel:
-		err = writeDJSONHeader(w, z.Zid)
+		err = writeDJSONHeader(w, builder, z.Zid)
 		if err == nil {
 			err = writeDJSONMeta(w, z)
 		}
@@ -120,17 +122,17 @@ func writeDJSONZettel(
 			err = writeDJSONContent(ctx, w, z, urlPrefix, part, defPart, getMeta)
 		}
 	case partMeta:
-		err = writeDJSONHeader(w, z.Zid)
+		err = writeDJSONHeader(w, builder, z.Zid)
 		if err == nil {
 			err = writeDJSONMeta(w, z)
 		}
 	case partContent:
-		err = writeDJSONHeader(w, z.Zid)
+		err = writeDJSONHeader(w, builder, z.Zid)
 		if err == nil {
 			err = writeDJSONContent(ctx, w, z, urlPrefix, part, defPart, getMeta)
 		}
 	case partID:
-		writeDJSONHeader(w, z.Zid)
+		writeDJSONHeader(w, builder, z.Zid)
 	default:
 		panic(part)
 	}
@@ -150,7 +152,7 @@ var (
 	djsonFooter        = []byte("}")
 )
 
-func writeDJSONHeader(w http.ResponseWriter, zid id.Zid) error {
+func writeDJSONHeader(w http.ResponseWriter, builder router.URLBuilderFunc, zid id.Zid) error {
 	_, err := w.Write(djsonHeader1)
 	if err == nil {
 		_, err = w.Write(zid.Bytes())
@@ -159,7 +161,7 @@ func writeDJSONHeader(w http.ResponseWriter, zid id.Zid) error {
 		_, err = w.Write(djsonHeader2)
 	}
 	if err == nil {
-		_, err = io.WriteString(w, adapter.NewURLBuilder('z').SetZid(zid).String())
+		_, err = io.WriteString(w, builder('z').SetZid(zid).String())
 	}
 	if err == nil {
 		_, err = w.Write(djsonHeader3)
@@ -256,7 +258,7 @@ func renderListMetaXJSON(
 			}
 		}
 		if isJSON {
-			err = writeJSONZettel(w, zn, part)
+			err = writeJSONZettel(w, router.GetURLBuilderFunc(ctx), zn, part)
 		} else {
 			err = writeDJSONZettel(ctx, w, zn, urlPrefix, part, defPart, getMeta)
 		}
@@ -298,16 +300,16 @@ func encodeJSONData(w http.ResponseWriter, data interface{}, addHeader bool) err
 	return enc.Encode(data)
 }
 
-func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
+func writeMetaList(w http.ResponseWriter, builder router.URLBuilderFunc, m *meta.Meta, metaList []*meta.Meta) error {
 	outData := jsonMetaList{
 		ID:   m.Zid.String(),
-		URL:  adapter.NewURLBuilder('z').SetZid(m.Zid).String(),
+		URL:  builder('z').SetZid(m.Zid).String(),
 		Meta: m.Map(),
 		List: make([]jsonMeta, len(metaList)),
 	}
 	for i, m := range metaList {
 		outData.List[i].ID = m.Zid.String()
-		outData.List[i].URL = adapter.NewURLBuilder('z').SetZid(m.Zid).String()
+		outData.List[i].URL = builder('z').SetZid(m.Zid).String()
 		outData.List[i].Meta = m.Map()
 	}
 	return encodeJSONData(w, outData, true)

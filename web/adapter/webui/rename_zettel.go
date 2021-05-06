@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -91,6 +92,7 @@ func MakePostRenameZettelHandler(te *TemplateEngine, renameZettel usecase.Rename
 			te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, adapter.NewURLBuilder('h').SetZid(newZid))
+		builder := router.GetURLBuilderFunc(ctx)
+		redirectFound(w, r, builder('h').SetZid(newZid))
 	}
 }

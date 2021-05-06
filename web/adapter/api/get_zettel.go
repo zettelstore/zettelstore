@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a rendered zettel.
@@ -55,7 +56,7 @@ func MakeGetZettelHandler(
 			}
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			if format != "djson" {
-				err = writeJSONZettel(w, zn, part)
+				err = writeJSONZettel(w, router.GetURLBuilderFunc(ctx), zn, part)
 			} else {
 				err = writeDJSONZettel(ctx, w, zn, urlPrefix, part, partZettel, getMeta)
 			}

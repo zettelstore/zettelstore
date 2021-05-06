@@ -8,30 +8,25 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package adapter provides handlers for web requests.
-package adapter
+// Package router provides a router for web requests.
+package router
 
 import (
 	"net/url"
 	"strings"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/service"
 )
 
 type urlQuery struct{ key, val string }
 
 // URLBuilder should be used to create zettelstore URLs.
 type URLBuilder struct {
+	router   *Router
 	key      byte
 	path     []string
 	query    []urlQuery
 	fragment string
-}
-
-// NewURLBuilder creates a new URLBuilder.
-func NewURLBuilder(key byte) *URLBuilder {
-	return &URLBuilder{key: key}
 }
 
 // Clone an URLBuilder
@@ -88,7 +83,7 @@ func (ub *URLBuilder) SetFragment(s string) *URLBuilder {
 func (ub *URLBuilder) String() string {
 	var sb strings.Builder
 
-	sb.WriteString(service.Main.GetConfig(service.SubWeb, service.WebURLPrefix))
+	sb.WriteString(ub.router.urlPrefix)
 	if ub.key != '/' {
 		sb.WriteByte(ub.key)
 	}

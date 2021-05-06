@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -49,7 +50,8 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 func MakePostLoginHandlerHTML(te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !startup.WithAuth() {
-			redirectFound(w, r, adapter.NewURLBuilder('/'))
+			builder := router.GetURLBuilderFunc(r.Context())
+			redirectFound(w, r, builder('/'))
 			return
 		}
 		htmlDur, _ := startup.TokenLifetime()
@@ -81,19 +83,22 @@ func authenticateViaHTML(
 	}
 
 	session.SetToken(w, token, authDuration)
-	redirectFound(w, r, adapter.NewURLBuilder('/'))
+	builder := router.GetURLBuilderFunc(ctx)
+	redirectFound(w, r, builder('/'))
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
 func MakeGetLogoutHandler(te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			te.reportError(r.Context(), w, adapter.NewErrBadRequest(
+			te.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Logout not possible in format %q", format)))
 			return
 		}
 
-		session.ClearToken(r.Context(), w)
-		redirectFound(w, r, adapter.NewURLBuilder('/'))
+		session.ClearToken(ctx, w)
+		builder := router.GetURLBuilderFunc(ctx)
+		redirectFound(w, r, builder('/'))
 	}
 }

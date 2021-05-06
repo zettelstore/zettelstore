@@ -34,6 +34,7 @@ import (
 	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/router"
 	"zettelstore.de/z/web/session"
 )
 
@@ -64,21 +65,21 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(mgr place.Manager, pol policy.Policy) *TemplateEngine {
+func NewTemplateEngine(mgr place.Manager, pol policy.Policy, builder router.URLBuilderFunc) *TemplateEngine {
 	te := &TemplateEngine{
 		place:  mgr,
 		policy: pol,
 
-		stylesheetURL: adapter.NewURLBuilder('z').SetZid(
+		stylesheetURL: builder('z').SetZid(
 			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery(
 			"_part", "content").String(),
-		homeURL:       adapter.NewURLBuilder('/').String(),
-		listZettelURL: adapter.NewURLBuilder('h').String(),
-		listRolesURL:  adapter.NewURLBuilder('h').AppendQuery("_l", "r").String(),
-		listTagsURL:   adapter.NewURLBuilder('h').AppendQuery("_l", "t").String(),
+		homeURL:       builder('/').String(),
+		listZettelURL: builder('h').String(),
+		listRolesURL:  builder('h').AppendQuery("_l", "r").String(),
+		listTagsURL:   builder('h').AppendQuery("_l", "t").String(),
 		withAuth:      startup.WithAuth(),
-		loginURL:      adapter.NewURLBuilder('a').String(),
-		searchURL:     adapter.NewURLBuilder('f').String(),
+		loginURL:      builder('a').String(),
+		searchURL:     builder('f').String(),
 	}
 	te.observe(change.Info{Reason: change.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(te.observe)
@@ -187,9 +188,10 @@ func (te *TemplateEngine) makeBaseData(
 	}
 	userIsValid := user != nil
 	if userIsValid {
-		userZettelURL = adapter.NewURLBuilder('h').SetZid(user.Zid).String()
+		builder := router.GetURLBuilderFunc(ctx)
+		userZettelURL = builder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
-		userLogoutURL = adapter.NewURLBuilder('a').SetZid(user.Zid).String()
+		userLogoutURL = builder('a').SetZid(user.Zid).String()
 	}
 
 	data.Lang = lang
@@ -222,6 +224,7 @@ func htmlAttrNewWindow(hasURL bool) string {
 }
 
 func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
+	builder := router.GetURLBuilderFunc(ctx)
 	ctx = index.NoEnrichContext(ctx)
 	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
@@ -254,7 +257,7 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 		}
 		result = append(result, simpleLink{
 			Text: menuTitle,
-			URL:  adapter.NewURLBuilder('g').SetZid(m.Zid).String(),
+			URL:  builder('g').SetZid(m.Zid).String(),
 		})
 	}
 	return result

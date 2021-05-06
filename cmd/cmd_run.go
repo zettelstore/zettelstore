@@ -78,8 +78,7 @@ func doRun(debug bool) (int, error) {
 
 	srvm.SetDebug(debug)
 	srvm.WebSetConfig(func(urlPrefix string) http.Handler {
-		_, handler := setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
-		return handler
+		return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
 	})
 	if err := srvm.WebStart(); err != nil {
 		return 1, err
@@ -88,12 +87,13 @@ func doRun(debug bool) (int, error) {
 
 }
 
-func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) (*router.Router, http.Handler) {
+func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.Handler {
+	router := router.NewRouter(urlPrefix)
 	var up place.Place = mgr
 	pp, pol := policy.PlaceWithPolicy(
 		up, startup.IsSimple(), startup.WithAuth, readonlyMode, runtime.GetExpertMode,
 		startup.IsOwner, runtime.GetVisibility)
-	te := webui.NewTemplateEngine(mgr, pol)
+	te := webui.NewTemplateEngine(mgr, pol, router.NewURLBuilder)
 
 	ucAuthenticate := usecase.NewAuthenticate(up)
 	ucGetMeta := usecase.NewGetMeta(pp)
@@ -104,7 +104,6 @@ func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) (*rout
 	ucListTags := usecase.NewListTags(pp)
 	ucZettelContext := usecase.NewZettelContext(pp)
 
-	router := router.NewRouter(urlPrefix)
 	router.Handle("/", webui.MakeGetRootHandler(te, pp))
 	router.AddListRoute('a', http.MethodGet, webui.MakeGetLoginHandler(te))
 	router.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
@@ -158,5 +157,5 @@ func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) (*rout
 		urlPrefix, usecase.NewListMeta(pp), ucGetMeta, ucParseZettel))
 	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
 		urlPrefix, ucParseZettel, ucGetMeta))
-	return router, session.NewHandler(router, usecase.NewGetUserByZid(up))
+	return session.NewHandler(router, usecase.NewGetUserByZid(up))
 }

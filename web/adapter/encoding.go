@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/router"
 )
 
 // ErrNoSuchFormat signals an unsupported encoding format
@@ -79,7 +80,18 @@ func MakeLinkAdapter(
 		}
 		var newRef *ast.Reference
 		if err == nil {
-			newRef = ast.ParseReference(adaptZettelReference(key, zid, part, format, origRef.URL.EscapedFragment()))
+			ub := router.GetURLBuilderFunc(ctx)(key).SetZid(zid)
+			if part != "" {
+				ub.AppendQuery("_part", part)
+			}
+			if format != "" {
+				ub.AppendQuery("_format", format)
+			}
+			if fragment := origRef.URL.EscapedFragment(); fragment != "" {
+				ub.SetFragment(fragment)
+			}
+
+			newRef = ast.ParseReference(ub.String())
 			newRef.State = ast.RefStateFound
 		} else {
 			newRef = ast.ParseReference(origRef.Value)
@@ -91,29 +103,16 @@ func MakeLinkAdapter(
 	}
 }
 
-func adaptZettelReference(key byte, zid id.Zid, part, format, fragment string) string {
-	u := NewURLBuilder(key).SetZid(zid)
-	if part != "" {
-		u.AppendQuery("_part", part)
-	}
-	if format != "" {
-		u.AppendQuery("_format", format)
-	}
-	if fragment != "" {
-		u.SetFragment(fragment)
-	}
-	return u.String()
-}
-
 // MakeImageAdapter creates an adapter to change an image node during encoding.
 func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.ImageNode) ast.InlineNode {
 	return func(origImage *ast.ImageNode) ast.InlineNode {
 		if origImage.Ref == nil {
 			return origImage
 		}
+		builder := router.GetURLBuilderFunc(ctx)
 		switch origImage.Ref.State {
 		case ast.RefStateInvalid:
-			return createZettelImage(origImage, id.EmojiZid, ast.RefStateInvalid)
+			return createZettelImage(builder, origImage, id.EmojiZid, ast.RefStateInvalid)
 		case ast.RefStateZettel:
 			zid, err := id.Parse(origImage.Ref.Value)
 			if err != nil {
@@ -121,19 +120,18 @@ func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.Im
 			}
 			_, err = getMeta.Run(index.NoEnrichContext(ctx), zid)
 			if err != nil {
-				return createZettelImage(origImage, id.EmojiZid, ast.RefStateBroken)
+				return createZettelImage(builder, origImage, id.EmojiZid, ast.RefStateBroken)
 			}
-			return createZettelImage(origImage, zid, ast.RefStateFound)
+			return createZettelImage(builder, origImage, zid, ast.RefStateFound)
 		}
 		return origImage
 	}
 }
 
-func createZettelImage(origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
+func createZettelImage(builder router.URLBuilderFunc, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
 	newImage := *origImage
 	newImage.Ref = ast.ParseReference(
-		NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery(
-			"_format", "raw").String())
+		builder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery("_format", "raw").String())
 	newImage.Ref.State = state
 	return &newImage
 }

@@ -12,6 +12,7 @@
 package router
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 )
@@ -23,11 +24,12 @@ type (
 
 // Router handles all routing for zettelstore.
 type Router struct {
-	minKey byte
-	maxKey byte
-	reURL  *regexp.Regexp
-	tables [2]routingTable
-	mux    *http.ServeMux
+	urlPrefix string
+	minKey    byte
+	maxKey    byte
+	reURL     *regexp.Regexp
+	tables    [2]routingTable
+	mux       *http.ServeMux
 }
 
 const (
@@ -38,10 +40,11 @@ const (
 // NewRouter creates a new, empty router with the given root handler.
 func NewRouter(urlPrefix string) *Router {
 	router := &Router{
-		minKey: 255,
-		maxKey: 0,
-		reURL:  regexp.MustCompile("^$"),
-		mux:    http.NewServeMux(),
+		urlPrefix: urlPrefix,
+		minKey:    255,
+		maxKey:    0,
+		reURL:     regexp.MustCompile("^$"),
+		mux:       http.NewServeMux(),
 	}
 	router.tables[indexList] = make(routingTable)
 	router.tables[indexZettel] = make(routingTable)
@@ -84,6 +87,29 @@ func (rt *Router) AddZettelRoute(key byte, httpMethod string, handler http.Handl
 	rt.addRoute(key, httpMethod, handler, indexZettel)
 }
 
+// NewURLBuilder creates a new URL builder.
+func (rt *Router) NewURLBuilder(key byte) *URLBuilder { return &URLBuilder{router: rt, key: key} }
+
+// URLBuilderFunc creates a new URLBuilder.
+type URLBuilderFunc func(key byte) *URLBuilder
+
+type ctxKeyType struct{}
+
+var ctxKey ctxKeyType
+
+func (rt *Router) updateRequest(r *http.Request) *http.Request {
+	ctx := r.Context()
+	return r.WithContext(context.WithValue(ctx, ctxKey, rt))
+}
+
+// GetURLBuilderFunc returns a function that creates an URL builder.
+func GetURLBuilderFunc(ctx context.Context) URLBuilderFunc {
+	if rt, ok := ctx.Value(ctxKey).(*Router); ok {
+		return rt.NewURLBuilder
+	}
+	return nil
+}
+
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
 func (rt *Router) Handle(pattern string, handler http.Handler) {
 	rt.mux.Handle(pattern, handler)
@@ -100,12 +126,12 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if mh, ok := rt.tables[index][key]; ok {
 			if handler, ok := mh[r.Method]; ok {
 				r.URL.Path = "/" + match[2]
-				handler.ServeHTTP(w, r)
+				handler.ServeHTTP(w, rt.updateRequest(r))
 				return
 			}
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 	}
-	rt.mux.ServeHTTP(w, r)
+	rt.mux.ServeHTTP(w, rt.updateRequest(r))
 }
