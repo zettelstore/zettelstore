@@ -28,7 +28,6 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/place/progplace"
-	"zettelstore.de/z/service"
 )
 
 const (
@@ -222,7 +221,6 @@ func Main(progName, buildVersion string) {
 	} else {
 		exitCode = executeCommand(os.Args[1], os.Args[2:]...)
 	}
-	service.Main.Shutdown()
 	if exitCode != 0 {
 		os.Exit(exitCode)
 	}

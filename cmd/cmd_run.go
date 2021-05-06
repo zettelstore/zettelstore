@@ -19,12 +19,12 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/api"
 	"zettelstore.de/z/web/adapter/webui"
 	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/web/session"
 )
 
@@ -39,26 +39,20 @@ func flgRun(fs *flag.FlagSet) {
 	fs.Bool("debug", false, "debug mode")
 }
 
-func enableDebug(fs *flag.FlagSet, srv *server.Server) {
-	if dbg := fs.Lookup("debug"); dbg != nil && dbg.Value.String() == "true" {
-		srv.SetDebug()
-	}
+func withDebug(fs *flag.FlagSet) bool {
+	dbg := fs.Lookup("debug")
+	return dbg != nil && dbg.Value.String() == "true"
 }
 
 func runFunc(fs *flag.FlagSet) (int, error) {
 	listenAddr := startup.ListenAddress()
-	readonlyMode := startup.IsReadOnlyMode()
-	logBeforeRun(listenAddr, readonlyMode)
-	handler := setupRouting(startup.PlaceManager(), readonlyMode)
-	srv := server.New(listenAddr, handler)
-	enableDebug(fs, srv)
-	if err := srv.Run(); err != nil {
-		return 1, err
-	}
-	return 0, nil
+	exitCode, err := doRun(withDebug(fs), listenAddr)
+	service.Main.WaitForShutdown()
+	return exitCode, err
 }
 
-func logBeforeRun(listenAddr string, readonlyMode bool) {
+func doRun(debug bool, listenAddr string) (int, error) {
+	readonlyMode := startup.IsReadOnlyMode()
 	v := startup.GetVersion()
 	log.Printf("%v %v (%v@%v/%v)", v.Prog, v.Build, v.GoVersion, v.Os, v.Arch)
 	log.Println("Licensed under the latest version of the EUPL (European Union Public License)")
@@ -67,6 +61,16 @@ func logBeforeRun(listenAddr string, readonlyMode bool) {
 	if readonlyMode {
 		log.Println("Read-only mode")
 	}
+	handler := setupRouting(startup.PlaceManager(), readonlyMode)
+
+	srvm := service.Main
+	srvm.SetDebug(debug)
+	srvm.WebSetConfig(listenAddr, handler)
+	if err := srvm.WebStart(); err != nil {
+		return 1, err
+	}
+	return 0, nil
+
 }
 
 func setupRouting(mgr place.Manager, readonlyMode bool) http.Handler {

@@ -13,7 +13,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
@@ -63,36 +62,20 @@ func (srv *Server) SetDebug() {
 	srv.IdleTimeout = 0
 }
 
-// Run starts the web server and wait for its completion.
-func (srv *Server) Run() error {
+// Run starts the web server, but does not wait for its completion.
+func (srv *Server) Run() {
 	service.Main.Log("Start Zettelstore Web Service")
-	waitError := make(chan error, 1)
-	defer close(waitError)
 	go func() {
-		waitShutdown := service.Main.ShutdownNotifier()
-		select {
-		case <-waitShutdown:
-		case <-srv.waitStop:
-		}
-		service.Main.IgnoreShutdown(waitShutdown)
-		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancel()
-
-		service.Main.Log("Stopping Zettelstore Web Service ...")
-		if err := srv.Shutdown(ctx); err != nil {
-			waitError <- err
-			return
-		}
-		waitError <- nil
+		srv.ListenAndServe()
 	}()
-
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return err
-	}
-	return <-waitError
 }
 
 // Stop the web server.
-func (srv *Server) Stop() {
-	close(srv.waitStop)
+func (srv *Server) Stop() error {
+	// close(srv.waitStop)
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+
+	service.Main.Log("Stopping Zettelstore Web Service ...")
+	return srv.Shutdown(ctx)
 }

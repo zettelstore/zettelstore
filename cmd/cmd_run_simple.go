@@ -18,31 +18,26 @@ import (
 	"strings"
 
 	"zettelstore.de/z/config/startup"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/service"
 )
 
 func flgSimpleRun(fs *flag.FlagSet) {
 	fs.String("d", "", "zettel directory")
 }
 
-func runSimpleFunc(*flag.FlagSet) (int, error) {
+func runSimpleFunc(fs *flag.FlagSet) (int, error) {
 	listenAddr := startup.ListenAddress()
-	readonlyMode := startup.IsReadOnlyMode()
-	logBeforeRun(listenAddr, readonlyMode)
+	exitCode, err := doRun(withDebug(fs), listenAddr)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 		log.Println()
 		log.Println("--------------------------")
 		log.Printf("Open your browser and enter the following URL:")
 		log.Println()
 		log.Printf("    http://localhost%v", listenAddr[idx:])
+		log.Println()
 	}
-
-	handler := setupRouting(startup.PlaceManager(), readonlyMode)
-	srv := server.New(listenAddr, handler)
-	if err := srv.Run(); err != nil {
-		return 1, err
-	}
-	return 0, nil
+	service.Main.WaitForShutdown()
+	return exitCode, err
 }
 
 // runSimple is called, when the user just starts the software via a double click
