@@ -27,7 +27,7 @@ func cmdConfig(*flag.FlagSet, *meta.Meta) (int, error) {
 	fmt.Printf("  Read-only mode    = %v\n", startup.IsReadOnlyMode())
 	fmt.Println("Web")
 	fmt.Printf("  Listen address    = %q\n", service.Main.GetConfig(service.SubWeb, service.WebListenAddress))
-	fmt.Printf("  URL prefix        = %q\n", startup.URLPrefix())
+	fmt.Printf("  URL prefix        = %q\n", service.Main.GetConfig(service.SubWeb, service.WebURLPrefix))
 	if startup.WithAuth() {
 		fmt.Println("Auth")
 		fmt.Printf("  Owner             = %v\n", startup.Owner())

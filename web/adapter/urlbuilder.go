@@ -15,8 +15,8 @@ import (
 	"net/url"
 	"strings"
 
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/service"
 )
 
 type urlQuery struct{ key, val string }
@@ -88,7 +88,7 @@ func (ub *URLBuilder) SetFragment(s string) *URLBuilder {
 func (ub *URLBuilder) String() string {
 	var sb strings.Builder
 
-	sb.WriteString(startup.URLPrefix())
+	sb.WriteString(service.Main.GetConfig(service.SubWeb, service.WebURLPrefix))
 	if ub.key != '/' {
 		sb.WriteByte(ub.key)
 	}

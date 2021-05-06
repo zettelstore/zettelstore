@@ -79,4 +79,4 @@ const (
 )
 
 // CreateHandlerFunc is called to create a new web service handler.
-type CreateHandlerFunc func() http.Handler
+type CreateHandlerFunc func(urlPrefix string) http.Handler

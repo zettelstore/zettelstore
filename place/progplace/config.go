@@ -73,7 +73,7 @@ func genConfigC(m *meta.Meta) string {
 	fmt.Fprintf(&sb, "|Simple|%v\n", startup.IsSimple())
 	fmt.Fprintf(&sb, "|Verbose|%v\n", startup.IsVerbose())
 	fmt.Fprintf(&sb, "|Read-only|%v\n", startup.IsReadOnlyMode())
-	fmt.Fprintf(&sb, "|URL prefix|%v\n", startup.URLPrefix())
+	fmt.Fprintf(&sb, "|URL prefix|%v\n", service.Main.GetConfig(service.SubWeb, service.WebURLPrefix))
 	// There must be a space before the next "%v". Listen address may start with a ":"
 	fmt.Fprintf(&sb, "|Listen address| %v\n", service.Main.GetConfig(service.SubWeb, service.WebListenAddress))
 	fmt.Fprintf(&sb, "|Authentication enabled|%v\n", startup.WithAuth())

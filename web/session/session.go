@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 )
 
@@ -30,7 +31,7 @@ func SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
 	cookie := http.Cookie{
 		Name:     sessionName,
 		Value:    string(token),
-		Path:     startup.URLPrefix(),
+		Path:     service.Main.GetConfig(service.SubWeb, service.WebURLPrefix),
 		Secure:   startup.SecureCookie(),
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,

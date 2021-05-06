@@ -34,21 +34,28 @@ var (
 )
 
 func (srv *myService) WebStart() error {
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
+	srv.mx.RLock()
 	if srv.web.srvw != nil {
+		srv.mx.RUnlock()
 		return errAlreadyStarted
 	}
 	createHandler := srv.web.createHandler
 	if createHandler == nil {
+		srv.mx.RUnlock()
 		return errConfigMissing
 	}
-	srvw := server.New(srv.config.GetConfig(service.SubWeb, service.WebListenAddress), createHandler())
+	listenAddr := srv.config.GetConfig(service.SubWeb, service.WebListenAddress)
+	urlPrefix := srv.config.GetConfig(service.SubWeb, service.WebURLPrefix)
+	srv.mx.RUnlock()
+	handler := createHandler(urlPrefix)
+	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
 	}
 	srvw.Run()
-	srv.switchNextToCur(service.SubWeb)
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
+	srv.config.switchNextToCur(service.SubWeb)
 	srv.web.srvw = srvw
 	return nil
 }

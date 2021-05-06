@@ -39,13 +39,6 @@ func (srv *myService) GetConfig(subsrv service.Subservice, key string) string {
 	return ""
 }
 
-func (srv *myService) switchNextToCur(subsrv service.Subservice) {
-	switch subsrv {
-	case service.SubWeb:
-		srv.config.webCur = srv.config.webNext.Clone()
-	}
-}
-
 type stringMap map[string]string
 
 func (m stringMap) Clone() stringMap {
@@ -69,6 +62,7 @@ func (cfg *srvConfig) Initialize() {
 	cfg.sys = make(stringMap)
 	cfg.webNext = stringMap{
 		service.WebListenAddress: "127.0.0.1:23123",
+		service.WebURLPrefix:     "/",
 	}
 }
 func (cfg *srvConfig) SetConfig(subsrv service.Subservice, key, value string) {
@@ -91,4 +85,10 @@ func (cfg *srvConfig) GetConfig(subsrv service.Subservice, key string) string {
 		return cfg.webCur[key]
 	}
 	return ""
+}
+func (cfg *srvConfig) switchNextToCur(subsrv service.Subservice) {
+	switch subsrv {
+	case service.SubWeb:
+		cfg.webCur = cfg.webNext.Clone()
+	}
 }

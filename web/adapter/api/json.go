@@ -106,6 +106,7 @@ func writeDJSONZettel(
 	ctx context.Context,
 	w http.ResponseWriter,
 	z *ast.ZettelNode,
+	urlPrefix string,
 	part, defPart partType,
 	getMeta usecase.GetMeta,
 ) (err error) {
@@ -116,7 +117,7 @@ func writeDJSONZettel(
 			err = writeDJSONMeta(w, z)
 		}
 		if err == nil {
-			err = writeDJSONContent(ctx, w, z, part, defPart, getMeta)
+			err = writeDJSONContent(ctx, w, z, urlPrefix, part, defPart, getMeta)
 		}
 	case partMeta:
 		err = writeDJSONHeader(w, z.Zid)
@@ -126,7 +127,7 @@ func writeDJSONZettel(
 	case partContent:
 		err = writeDJSONHeader(w, z.Zid)
 		if err == nil {
-			err = writeDJSONContent(ctx, w, z, part, defPart, getMeta)
+			err = writeDJSONContent(ctx, w, z, urlPrefix, part, defPart, getMeta)
 		}
 	case partID:
 		writeDJSONHeader(w, z.Zid)
@@ -184,13 +185,14 @@ func writeDJSONContent(
 	ctx context.Context,
 	w io.Writer,
 	z *ast.ZettelNode,
+	urlPrefix string,
 	part, defPart partType,
 	getMeta usecase.GetMeta,
 ) (err error) {
 	_, err = w.Write(djsonContentHeader)
 	if err == nil {
 		err = writeContent(w, z, "djson", &encoder.Environment{
-			LinkAdapter:  adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(defPart), "djson"),
+			LinkAdapter:  adapter.MakeLinkAdapter(ctx, urlPrefix, 'z', getMeta, part.DefString(defPart), "djson"),
 			ImageAdapter: adapter.MakeImageAdapter(ctx, getMeta)})
 	}
 	return err
@@ -208,6 +210,7 @@ func renderListMetaXJSON(
 	ctx context.Context,
 	w http.ResponseWriter,
 	metaList []*meta.Meta,
+	urlPrefix string,
 	format string,
 	part, defPart partType,
 	getMeta usecase.GetMeta,
@@ -255,7 +258,7 @@ func renderListMetaXJSON(
 		if isJSON {
 			err = writeJSONZettel(w, zn, part)
 		} else {
-			err = writeDJSONZettel(ctx, w, zn, part, defPart, getMeta)
+			err = writeDJSONZettel(ctx, w, zn, urlPrefix, part, defPart, getMeta)
 		}
 	}
 	if err == nil {

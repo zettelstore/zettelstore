@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/index"
@@ -46,6 +45,7 @@ func FormatInlines(is ast.InlineSlice, format string, env *encoder.Environment) 
 // MakeLinkAdapter creates an adapter to change a link node during encoding.
 func MakeLinkAdapter(
 	ctx context.Context,
+	urlPrefix string,
 	key byte,
 	getMeta usecase.GetMeta,
 	part, format string,
@@ -57,7 +57,7 @@ func MakeLinkAdapter(
 		}
 		if origRef.State == ast.RefStateBased {
 			newLink := *origLink
-			newRef := ast.ParseReference(startup.URLPrefix() + origRef.Value[1:])
+			newRef := ast.ParseReference(urlPrefix + origRef.Value[1:])
 			newRef.State = ast.RefStateHosted
 			newLink.Ref = newRef
 			return &newLink

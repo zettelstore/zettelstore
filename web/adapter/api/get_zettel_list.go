@@ -26,6 +26,7 @@ import (
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
 func MakeListMetaHandler(
+	urlPrefix string,
 	listMeta usecase.ListMeta,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
@@ -51,7 +52,7 @@ func MakeListMetaHandler(
 		case "html":
 			renderListMetaHTML(w, metaList)
 		case "json", "djson":
-			renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
+			renderListMetaXJSON(ctx, w, metaList, urlPrefix, format, part, partMeta, getMeta, parseZettel)
 		case "native", "raw", "text", "zmk":
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", format))
 		default:

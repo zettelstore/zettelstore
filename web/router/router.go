@@ -36,7 +36,7 @@ const (
 )
 
 // NewRouter creates a new, empty router with the given root handler.
-func NewRouter() *Router {
+func NewRouter(urlPrefix string) *Router {
 	router := &Router{
 		minKey: 255,
 		maxKey: 0,

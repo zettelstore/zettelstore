@@ -27,7 +27,6 @@ var config struct {
 	// Set in SetupStartupConfig
 	verbose             bool
 	readonlyMode        bool
-	urlPrefix           string
 	defaultDirPlaceType string
 	owner               id.Zid
 	withAuth            bool
@@ -53,7 +52,6 @@ const (
 	KeyReadOnlyMode        = "read-only-mode"
 	KeyTokenLifetimeHTML   = "token-lifetime-html"
 	KeyTokenLifetimeAPI    = "token-lifetime-api"
-	KeyURLPrefix           = "url-prefix"
 	KeyVerbose             = "verbose"
 )
 
@@ -65,18 +63,11 @@ const (
 
 // SetupStartupConfig initializes the startup data with content of config file.
 func SetupStartupConfig(cfg *meta.Meta) {
-	if config.urlPrefix != "" {
+	if config.defaultDirPlaceType != "" {
 		panic("startup.config already set")
 	}
 	config.verbose = cfg.GetBool(KeyVerbose)
 	config.readonlyMode = cfg.GetBool(KeyReadOnlyMode)
-	config.urlPrefix = cfg.GetDefault(KeyURLPrefix, "/")
-	if prefix, ok := cfg.Get(KeyURLPrefix); ok &&
-		len(prefix) > 0 && prefix[0] == '/' && prefix[len(prefix)-1] == '/' {
-		config.urlPrefix = prefix
-	} else {
-		config.urlPrefix = "/"
-	}
 	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
 		switch defaultType {
 		case ValueDirPlaceTypeNotify:
@@ -108,7 +99,7 @@ func SetupStartupConfig(cfg *meta.Meta) {
 
 // SetupStartupService initializes the startup data with internal services.
 func SetupStartupService(manager place.Manager, idx index.Indexer, simple bool) {
-	if config.urlPrefix == "" {
+	if config.defaultDirPlaceType == "" {
 		panic("startup.config not set")
 	}
 	config.simple = simple && !config.withAuth
@@ -155,10 +146,6 @@ func IsVerbose() bool { return config.verbose }
 
 // IsReadOnlyMode returns whether the system is in read-only mode or not.
 func IsReadOnlyMode() bool { return config.readonlyMode }
-
-// URLPrefix returns the configured prefix to be used when providing URL to
-// the service.
-func URLPrefix() string { return config.urlPrefix }
 
 // DefaultDirPlaceType returns the default value for a directory place type.
 func DefaultDirPlaceType() string { return config.defaultDirPlaceType }

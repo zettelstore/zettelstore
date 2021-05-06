@@ -26,7 +26,7 @@ import (
 
 // MakeGetZettelHandler creates a new HTTP handler to return a rendered zettel.
 func MakeGetZettelHandler(
-	parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+	urlPrefix string, parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -57,7 +57,7 @@ func MakeGetZettelHandler(
 			if format != "djson" {
 				err = writeJSONZettel(w, zn, part)
 			} else {
-				err = writeDJSONZettel(ctx, w, zn, part, partZettel, getMeta)
+				err = writeDJSONZettel(ctx, w, zn, urlPrefix, part, partZettel, getMeta)
 			}
 			if err != nil {
 				adapter.InternalServerError(w, "Write D/JSON", err)
@@ -66,7 +66,7 @@ func MakeGetZettelHandler(
 		}
 
 		env := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, urlPrefix, 'z', getMeta, part.DefString(partZettel), format),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
 			CiteAdapter:    nil,
 			Lang:           runtime.GetLang(zn.InhMeta),
