@@ -15,16 +15,18 @@ import (
 	"fmt"
 
 	"zettelstore.de/z/config/startup"
+	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/service"
 )
 
 // ---------- Subcommand: config ---------------------------------------------
 
-func cmdConfig(*flag.FlagSet) (int, error) {
+func cmdConfig(*flag.FlagSet, *meta.Meta) (int, error) {
 	fmtVersion()
 	fmt.Println("Stores")
 	fmt.Printf("  Read-only mode    = %v\n", startup.IsReadOnlyMode())
 	fmt.Println("Web")
-	fmt.Printf("  Listen address    = %q\n", startup.ListenAddress())
+	fmt.Printf("  Listen address    = %q\n", service.Main.GetConfig(service.SubWeb, service.WebListenAddress))
 	fmt.Printf("  URL prefix        = %q\n", startup.URLPrefix())
 	if startup.WithAuth() {
 		fmt.Println("Auth")

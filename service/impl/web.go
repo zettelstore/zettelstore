@@ -13,24 +13,18 @@ package impl
 
 import (
 	"errors"
-	"net/http"
 
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
 )
 
 type webService struct {
-	srvw       *server.Server
-	curConfig  *webServiceConfig
-	nextConfig *webServiceConfig
+	srvw          *server.Server
+	createHandler service.CreateHandlerFunc
 }
 
-type webServiceConfig struct {
-	addrListen string
-	handler    http.Handler
-}
-
-func (srv *myService) WebSetConfig(addrListen string, handler http.Handler) {
-	srv.web.nextConfig = &webServiceConfig{addrListen, handler}
+func (srv *myService) WebSetConfig(createHandler service.CreateHandlerFunc) {
+	srv.web.createHandler = createHandler
 }
 
 var (
@@ -45,16 +39,16 @@ func (srv *myService) WebStart() error {
 	if srv.web.srvw != nil {
 		return errAlreadyStarted
 	}
-	config := srv.web.nextConfig
-	if config == nil {
+	createHandler := srv.web.createHandler
+	if createHandler == nil {
 		return errConfigMissing
 	}
-	srvw := server.New(config.addrListen, config.handler)
+	srvw := server.New(srv.config.GetConfig(service.SubWeb, service.WebListenAddress), createHandler())
 	if srv.debug {
 		srvw.SetDebug()
 	}
 	srvw.Run()
-	srv.web.curConfig = config
+	srv.switchNextToCur(service.SubWeb)
 	srv.web.srvw = srvw
 	return nil
 }

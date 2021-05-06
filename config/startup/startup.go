@@ -28,7 +28,6 @@ var config struct {
 	verbose             bool
 	readonlyMode        bool
 	urlPrefix           string
-	listenAddress       string
 	defaultDirPlaceType string
 	owner               id.Zid
 	withAuth            bool
@@ -48,7 +47,6 @@ var config struct {
 const (
 	KeyDefaultDirPlaceType = "default-dir-place-type"
 	KeyInsecureCookie      = "insecure-cookie"
-	KeyListenAddress       = "listen-addr"
 	KeyOwner               = "owner"
 	KeyPersistentCookie    = "persistent-cookie"
 	KeyPlaceOneURI         = "place-1-uri"
@@ -78,11 +76,6 @@ func SetupStartupConfig(cfg *meta.Meta) {
 		config.urlPrefix = prefix
 	} else {
 		config.urlPrefix = "/"
-	}
-	if val, ok := cfg.Get(KeyListenAddress); ok {
-		config.listenAddress = val // TODO: check for valid string
-	} else {
-		config.listenAddress = "127.0.0.1:23123"
 	}
 	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
 		switch defaultType {
@@ -166,10 +159,6 @@ func IsReadOnlyMode() bool { return config.readonlyMode }
 // URLPrefix returns the configured prefix to be used when providing URL to
 // the service.
 func URLPrefix() string { return config.urlPrefix }
-
-// ListenAddress returns the string that specifies the the network card and the ip port
-// where the server listens for requests
-func ListenAddress() string { return config.listenAddress }
 
 // DefaultDirPlaceType returns the default value for a directory place type.
 func DefaultDirPlaceType() string { return config.defaultDirPlaceType }

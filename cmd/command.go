@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -13,6 +13,8 @@ package cmd
 import (
 	"flag"
 	"sort"
+
+	"zettelstore.de/z/domain/meta"
 )
 
 // Command stores information about commands / sub-commands.
@@ -29,7 +31,7 @@ type Command struct {
 // CommandFunc is the function that executes the command.
 // It accepts the parsed command line parameters.
 // It returns the exit code and an error.
-type CommandFunc func(*flag.FlagSet) (int, error)
+type CommandFunc func(*flag.FlagSet, *meta.Meta) (int, error)
 
 // GetFlags return the flag.FlagSet defined for the command.
 func (c *Command) GetFlags() *flag.FlagSet { return c.flags }

@@ -24,7 +24,7 @@ import (
 
 // ---------- Subcommand: password -------------------------------------------
 
-func cmdPassword(fs *flag.FlagSet) (int, error) {
+func cmdPassword(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	if fs.NArg() == 0 {
 		fmt.Fprintln(os.Stderr, "User name and user zettel identification missing")
 		return 2, nil

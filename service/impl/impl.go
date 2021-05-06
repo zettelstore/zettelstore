@@ -33,7 +33,8 @@ type myService struct {
 	observer  []chan service.Unit
 	debug     bool
 
-	web webService
+	config srvConfig
+	web    webService
 }
 
 // create and start a new service.
@@ -48,6 +49,7 @@ func createAndStart() service.Service {
 		commands:  make(chan workerCommand),
 		interrupt: make(chan os.Signal, 5),
 	}
+	srv.config.Initialize()
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
@@ -167,10 +169,11 @@ func (srv *myService) doLog(args ...interface{}) {
 }
 
 // LogRecover outputs some information about the previous panic.
-func (srv *myService) LogRecover(name string, recoverInfo interface{}) {
-	srv.doLogRecover(name, recoverInfo)
+func (srv *myService) LogRecover(name string, recoverInfo interface{}) bool {
+	return srv.doLogRecover(name, recoverInfo)
 }
-func (srv *myService) doLogRecover(name string, recoverInfo interface{}) {
+func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {
 	srv.Log(name, "recovered from:", recoverInfo)
 	debug.PrintStack()
+	return true
 }

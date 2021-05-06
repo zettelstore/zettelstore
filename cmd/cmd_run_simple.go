@@ -17,7 +17,7 @@ import (
 	"os"
 	"strings"
 
-	"zettelstore.de/z/config/startup"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/service"
 )
 
@@ -25,9 +25,11 @@ func flgSimpleRun(fs *flag.FlagSet) {
 	fs.String("d", "", "zettel directory")
 }
 
-func runSimpleFunc(fs *flag.FlagSet) (int, error) {
-	listenAddr := startup.ListenAddress()
-	exitCode, err := doRun(withDebug(fs), listenAddr)
+func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
+	srvm := service.Main
+	setupWebConfig(cfg)
+	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress)
+	exitCode, err := doRun(false)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 		log.Println()
 		log.Println("--------------------------")
@@ -36,7 +38,7 @@ func runSimpleFunc(fs *flag.FlagSet) (int, error) {
 		log.Printf("    http://localhost%v", listenAddr[idx:])
 		log.Println()
 	}
-	service.Main.WaitForShutdown()
+	srvm.WaitForShutdown()
 	return exitCode, err
 }
 

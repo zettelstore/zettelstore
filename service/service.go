@@ -34,15 +34,23 @@ type Service interface {
 	Log(args ...interface{})
 
 	// LogRecover outputs some information about the previous panic.
-	LogRecover(name string, recoverInfo interface{})
+	LogRecover(name string, recoverInfo interface{}) bool
+
+	// SetConfig stores a configuration value.
+	SetConfig(subsrv Subservice, key, value string)
+
+	// GetConfig returns a configuration value.
+	GetConfig(subsrv Subservice, key string) string
 
 	// --- Web server related methods ----------------------------------------
 
 	// WebSetConfig store the configuration data for the next start of the web server.
-	WebSetConfig(addrListen string, handler http.Handler)
+	WebSetConfig(CreateHandlerFunc)
 
+	// WebStart the web service.
 	WebStart() error
 
+	// WebStop the web service.
 	WebStop() error
 }
 
@@ -54,3 +62,21 @@ type Unit struct{}
 
 // ShutdownChan is a channel used to signal a system shutdown.
 type ShutdownChan <-chan Unit
+
+// Subservice specifies an sub-service of the main service, e.g. web, ...
+type Subservice uint8
+
+// Constants for type Subservice.
+const (
+	SubMain Subservice = iota
+	SubWeb
+)
+
+// Constants for web subservice key.
+const (
+	WebListenAddress = "listen"
+	WebURLPrefix     = "prefix"
+)
+
+// CreateHandlerFunc is called to create a new web service handler.
+type CreateHandlerFunc func() http.Handler

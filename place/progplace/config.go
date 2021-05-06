@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/service"
 )
 
 func genConfigZettelM(zid id.Zid) *meta.Meta {
@@ -74,7 +75,7 @@ func genConfigC(m *meta.Meta) string {
 	fmt.Fprintf(&sb, "|Read-only|%v\n", startup.IsReadOnlyMode())
 	fmt.Fprintf(&sb, "|URL prefix|%v\n", startup.URLPrefix())
 	// There must be a space before the next "%v". Listen address may start with a ":"
-	fmt.Fprintf(&sb, "|Listen address| %v\n", startup.ListenAddress())
+	fmt.Fprintf(&sb, "|Listen address| %v\n", service.Main.GetConfig(service.SubWeb, service.WebListenAddress))
 	fmt.Fprintf(&sb, "|Authentication enabled|%v\n", startup.WithAuth())
 	fmt.Fprintf(&sb, "|Secure cookie|%v\n", startup.SecureCookie())
 	fmt.Fprintf(&sb, "|Persistent Cookie|%v\n", startup.PersistentCookie())

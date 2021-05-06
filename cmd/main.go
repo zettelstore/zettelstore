@@ -37,7 +37,7 @@ const (
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
-		Func: func(*flag.FlagSet) (int, error) {
+		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
 			fmt.Println("Available commands:")
 			for _, name := range List() {
 				fmt.Printf("- %q\n", name)
@@ -47,7 +47,7 @@ func init() {
 	})
 	RegisterCommand(Command{
 		Name: "version",
-		Func: func(*flag.FlagSet) (int, error) {
+		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
 			fmtVersion()
 			return 0, nil
 		},
@@ -106,7 +106,7 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
-			cfg.Set(startup.KeyListenAddress, "127.0.0.1:"+flg.Value.String())
+			cfg.Set("listen-addr", "127.0.0.1:"+flg.Value.String())
 		case "d":
 			val := flg.Value.String()
 			if strings.HasPrefix(val, "/") {
@@ -202,7 +202,7 @@ func executeCommand(name string, args ...string) int {
 		return 2
 	}
 
-	exitCode, err := command.Func(fs)
+	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
