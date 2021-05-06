@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -27,9 +27,10 @@ type Service struct {
 	mx        sync.RWMutex
 	commands  chan workerCommand
 	interrupt chan os.Signal
-	observer  []chan void
+	observer  []chan Unit
 }
 
+// Main references the main service.
 var Main = create()
 
 // create and start a new service.
@@ -54,7 +55,8 @@ func (srv *Service) isStarted() bool {
 // start a worker.
 func (srv *Service) start() {
 	if srv.isStarted() {
-		log.Println("Restart internal service")
+		srv.doLog("Trying to restart main service")
+		return
 	}
 	go srv.worker()
 	srv.mx.Lock()
@@ -77,8 +79,7 @@ func (srv *Service) worker() {
 	// Something may panic. Ensure a running worker.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("recovered from:", r)
-			debug.PrintStack()
+			srv.doLogRecover("Main", r)
 			srv.start()
 		}
 	}()
@@ -93,7 +94,8 @@ func (srv *Service) worker() {
 			}
 			cmd.run(srv)
 		case <-srv.interrupt:
-			cmd := stopCommand{}
+			srv.doLog("Shut down Zettelstore ...")
+			cmd := shutdownCommand{}
 			cmd.execute(srv)
 		case _, ok := <-timer.C:
 			if !ok {
@@ -104,17 +106,20 @@ func (srv *Service) worker() {
 	}
 }
 
-type void struct{}
+// Unit is a type with just one value.
+type Unit struct{}
 
-// Stop the service. Waits for all concurrent activity to stop.
-func (srv *Service) Stop() {
+// --- Shutdown operation ----------------------------------------------------
+
+// Shutdown the service. Waits for all concurrent activity to stop.
+func (srv *Service) Shutdown() {
 	if !srv.isStarted() {
 		return
 	}
 
 	// Send the stop command
-	rc := make(chan stopResult)
-	srv.send(&stopCommand{rc})
+	rc := make(chan shutdownResult)
+	srv.send(&shutdownCommand{rc})
 	<-rc
 	close(rc)
 
@@ -125,32 +130,71 @@ func (srv *Service) Stop() {
 }
 
 type (
-	stopCommand struct {
-		result chan<- stopResult
+	shutdownCommand struct {
+		result chan<- shutdownResult
 	}
-	stopResult = void
+	shutdownResult = Unit
 )
 
-func (cmd *stopCommand) run(srv *Service) {
+func (cmd *shutdownCommand) run(srv *Service) {
 	cmd.execute(srv)
-	cmd.result <- void{}
+	cmd.result <- Unit{}
 }
 
-func (cmd *stopCommand) execute(srv *Service) {
+func (cmd *shutdownCommand) execute(srv *Service) {
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
 	for _, ob := range srv.observer {
-		ob <- void{}
+		ob <- Unit{}
 		close(ob)
 	}
 	srv.observer = nil
 }
 
-// Notifier returns a channel where the caller gets notified to stop.
-func (srv *Service) Notifier() <-chan void {
+// ShutdownChan is a channel used to signal a system shutdown.
+type ShutdownChan <-chan Unit
+
+// ShutdownNotifier returns a channel where the caller gets notified to stop.
+func (srv *Service) ShutdownNotifier() ShutdownChan {
 	srv.mx.Lock()
-	result := make(chan void, 1)
+	result := make(chan Unit, 1)
 	srv.observer = append(srv.observer, result)
 	srv.mx.Unlock()
 	return result
+}
+
+// IgnoreShutdown marks the given channel as to be ignored on shutdown.
+func (srv *Service) IgnoreShutdown(ob ShutdownChan) {
+	srv.mx.Lock()
+	lastIndex := len(srv.observer) - 1
+	for i := 0; i <= lastIndex; i++ {
+		if srv.observer[i] != ob {
+			continue
+		}
+		close(srv.observer[i])
+		srv.observer[i] = srv.observer[lastIndex]
+		srv.observer[lastIndex] = nil
+		srv.observer = srv.observer[:lastIndex]
+		break
+	}
+	srv.mx.Unlock()
+}
+
+// --- Log operation ---------------------------------------------------------
+
+// Log some activity.
+func (srv *Service) Log(args ...interface{}) {
+	srv.doLog(args...)
+}
+func (srv *Service) doLog(args ...interface{}) {
+	log.Println(args...)
+}
+
+// LogRecover outputs some information about the previous panic.
+func (srv *Service) LogRecover(name string, recoverInfo interface{}) {
+	srv.doLogRecover(name, recoverInfo)
+}
+func (srv *Service) doLogRecover(name string, recoverInfo interface{}) {
+	srv.Log(name, "recovered from:", recoverInfo)
+	debug.PrintStack()
 }

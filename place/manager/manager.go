@@ -13,9 +13,9 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/url"
-	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -28,6 +28,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/search"
+	"zettelstore.de/z/service"
 )
 
 // ConnectData contains all administration related values.
@@ -156,8 +157,7 @@ func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("recovered from:", r)
-			debug.PrintStack()
+			service.Main.LogRecover("Manager", r)
 			go notifier(notify, infos, done)
 		}
 	}()
@@ -168,10 +168,8 @@ func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}
 			if ok {
 				notify(ci)
 			}
-		case _, ok := <-done:
-			if !ok {
-				return
-			}
+		case <-done:
+			return
 		}
 	}
 }
@@ -396,7 +394,8 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		return place.ErrStopped
 	}
 	for i, p := range mgr.subplaces {
-		if err := p.RenameZettel(ctx, curZid, newZid); err != nil && err != place.ErrNotFound {
+		err := p.RenameZettel(ctx, curZid, newZid)
+		if err != nil && !errors.Is(err, place.ErrNotFound) {
 			for j := 0; j < i; j++ {
 				mgr.subplaces[j].RenameZettel(ctx, newZid, curZid)
 			}
@@ -429,7 +428,11 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		return place.ErrStopped
 	}
 	for _, p := range mgr.subplaces {
-		if err := p.DeleteZettel(ctx, zid); err != place.ErrNotFound && err != place.ErrReadOnly {
+		err := p.DeleteZettel(ctx, zid)
+		if err == nil {
+			return nil
+		}
+		if !errors.Is(err, place.ErrNotFound) && !errors.Is(err, place.ErrReadOnly) {
 			return err
 		}
 	}
@@ -438,6 +441,8 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 // ReadStats populates st with place statistics
 func (mgr *Manager) ReadStats(st *place.Stats) {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
 	subStats := make([]place.Stats, len(mgr.subplaces))
 	for i, p := range mgr.subplaces {
 		p.ReadStats(&subStats[i])
@@ -455,4 +460,8 @@ func (mgr *Manager) ReadStats(st *place.Stats) {
 }
 
 // NumPlaces returns the number of managed places.
-func (mgr *Manager) NumPlaces() int { return len(mgr.subplaces) }
+func (mgr *Manager) NumPlaces() int {
+	mgr.mx.RLock()
+	defer mgr.mx.RUnlock()
+	return len(mgr.subplaces)
+}

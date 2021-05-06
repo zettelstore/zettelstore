@@ -13,9 +13,7 @@ package indexer
 
 import (
 	"context"
-	"log"
 	"net/url"
-	"runtime/debug"
 	"sync"
 	"time"
 
@@ -26,6 +24,7 @@ import (
 	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
 
@@ -148,8 +147,7 @@ func (idx *indexer) indexer(p indexerPort) {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("recovered from:", r)
-			debug.PrintStack()
+			service.Main.LogRecover("Indexer", r)
 			go idx.indexer(p)
 		}
 	}()
@@ -217,13 +215,11 @@ func (idx *indexer) sleepService(timer *time.Timer, timerDuration time.Duration)
 			return false
 		}
 		timer.Reset(timerDuration)
-	case _, ok := <-idx.done:
-		if !ok {
-			if !timer.Stop() {
-				<-timer.C
-			}
-			return false
+	case <-idx.done:
+		if !timer.Stop() {
+			<-timer.C
 		}
+		return false
 	}
 	return true
 }

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -13,7 +13,7 @@ package server
 
 import (
 	"context"
-	"log"
+	"errors"
 	"net/http"
 	"time"
 
@@ -31,7 +31,7 @@ const (
 // Server is a HTTP server.
 type Server struct {
 	*http.Server
-	waitShutdown chan struct{}
+	waitStop chan struct{}
 }
 
 // New creates a new HTTP server object.
@@ -49,7 +49,7 @@ func New(addr string, handler http.Handler) *Server {
 			WriteTimeout: writeTimeout,
 			IdleTimeout:  idleTimeout,
 		},
-		waitShutdown: make(chan struct{}),
+		waitStop: make(chan struct{}),
 	}
 	return srv
 }
@@ -65,17 +65,20 @@ func (srv *Server) SetDebug() {
 
 // Run starts the web server and wait for its completion.
 func (srv *Server) Run() error {
-	waitError := make(chan error)
+	service.Main.Log("Start Zettelstore Web Service")
+	waitError := make(chan error, 1)
+	defer close(waitError)
 	go func() {
-		waitInterrupt := service.Main.Notifier()
+		waitShutdown := service.Main.ShutdownNotifier()
 		select {
-		case <-waitInterrupt:
-		case <-srv.waitShutdown:
+		case <-waitShutdown:
+		case <-srv.waitStop:
 		}
+		service.Main.IgnoreShutdown(waitShutdown)
 		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 
-		log.Println("Stopping Zettelstore ...")
+		service.Main.Log("Stopping Zettelstore Web Service ...")
 		if err := srv.Shutdown(ctx); err != nil {
 			waitError <- err
 			return
@@ -83,7 +86,7 @@ func (srv *Server) Run() error {
 		waitError <- nil
 	}()
 
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return <-waitError
@@ -91,5 +94,5 @@ func (srv *Server) Run() error {
 
 // Stop the web server.
 func (srv *Server) Stop() {
-	close(srv.waitShutdown)
+	close(srv.waitStop)
 }
