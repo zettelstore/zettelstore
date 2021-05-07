@@ -22,12 +22,12 @@ import (
 // ---------- Subcommand: config ---------------------------------------------
 
 func cmdConfig(*flag.FlagSet, *meta.Meta) (int, error) {
-	fmtVersion()
+	srvm := service.Main
 	fmt.Println("Stores")
-	fmt.Printf("  Read-only mode    = %v\n", startup.IsReadOnlyMode())
+	fmt.Printf("  Read-only mode    = %v\n", srvm.GetConfig(service.SubMain, service.MainReadonly))
 	fmt.Println("Web")
-	fmt.Printf("  Listen address    = %q\n", service.Main.GetConfig(service.SubWeb, service.WebListenAddress))
-	fmt.Printf("  URL prefix        = %q\n", service.Main.GetConfig(service.SubWeb, service.WebURLPrefix))
+	fmt.Printf("  Listen address    = %q\n", srvm.GetConfig(service.SubWeb, service.WebListenAddress))
+	fmt.Printf("  URL prefix        = %q\n", srvm.GetConfig(service.SubWeb, service.WebURLPrefix))
 	if startup.WithAuth() {
 		fmt.Println("Auth")
 		fmt.Printf("  Owner             = %v\n", startup.Owner())

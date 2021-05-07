@@ -64,7 +64,6 @@ func (srv *Server) SetDebug() {
 
 // Run starts the web server, but does not wait for its completion.
 func (srv *Server) Run() {
-	service.Main.Log("Start Zettelstore Web Service")
 	go func() {
 		srv.ListenAndServe()
 	}()

@@ -6,7 +6,7 @@ syntax: zmk
 precursor: 00001004050000
 
 Shows the Zettelstore configuration, for debugging purposes.
-Currently, only the [[start-up configuration|00001004010000]] is shown.
+Currently, only the [[startup configuration|00001004010000]] is shown.
 
 This sub-command uses the same command line parameters as [[``zettelstore run``|00001004051000]].
 

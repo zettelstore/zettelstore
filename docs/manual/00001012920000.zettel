@@ -6,7 +6,7 @@ syntax: zmk
 
 All API endpoints conform to the pattern ''[PREFIX]/LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
-: is an optional URL prefix, configured via the ''url-prefix'' [[start-up configuration|00001004010000]],
+: is an optional URL prefix, configured via the ''url-prefix'' [[startup configuration|00001004010000]],
 ; ''LETTER''
 : is a single letter that specifies the ressource type,
 ; ''ZETTEL-ID''

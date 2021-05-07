@@ -7,7 +7,7 @@ syntax: zmk
 There are two levels to change the behavior and/or the appearance of Zettelstore.
 The first level is the configuration that is needed to start the services provided by Zettelstore.
 For example, this includes the URI under which your Zettelstore is accessible.
-* [[Zettelstore start-up configuration|00001004010000]]
+* [[Zettelstore startup configuration|00001004010000]]
 
 The second level is configuring the running Zettelstore.
 For example, you can configure the default language of your Zettelstore.

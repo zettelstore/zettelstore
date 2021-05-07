@@ -14,9 +14,9 @@ package progplace
 import (
 	"fmt"
 
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/service"
 )
 
 func getVersionMeta(zid id.Zid, title string) *meta.Meta {
@@ -31,17 +31,24 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m.Set(meta.KeyVisibility, meta.ValueVisibilityPublic)
 	return m
 }
-func genVersionBuildC(*meta.Meta) string { return startup.GetVersion().Build }
+func genVersionBuildC(*meta.Meta) string {
+	return service.Main.GetConfig(service.SubMain, service.MainVersion).(string)
+}
 
 func genVersionHostM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Host")
 }
-func genVersionHostC(*meta.Meta) string { return startup.GetVersion().Hostname }
+func genVersionHostC(*meta.Meta) string {
+	return service.Main.GetConfig(service.SubMain, service.MainHostname).(string)
+}
 
 func genVersionOSM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Operating System")
 }
 func genVersionOSC(*meta.Meta) string {
-	v := startup.GetVersion()
-	return fmt.Sprintf("%v/%v", v.Os, v.Arch)
+	return fmt.Sprintf(
+		"%v/%v",
+		service.Main.GetConfig(service.SubMain, service.MainGoOS).(string),
+		service.Main.GetConfig(service.SubMain, service.MainGoArch).(string),
+	)
 }

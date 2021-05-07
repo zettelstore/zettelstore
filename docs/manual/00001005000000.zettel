@@ -22,7 +22,7 @@ For example, a more sophisticated web interface could be build, or an applicatio
 
 Your zettel are stored as files in a specific directory.
 If you have not explicitly specified the directory, a default directory will be used.
-The directory has to be specified at [[start-up time|00001004010000]].
+The directory has to be specified at [[startup time|00001004010000]].
 Nested directories are not supported (yet).
 
 Every file in this directory that should be monitored by Zettelstore must have a file name that begins with 14 digits (0-9), the [[zettel identifier|00001006050000]].

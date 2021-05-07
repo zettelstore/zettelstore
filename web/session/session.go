@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -31,7 +31,7 @@ func SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
 	cookie := http.Cookie{
 		Name:     sessionName,
 		Value:    string(token),
-		Path:     service.Main.GetConfig(service.SubWeb, service.WebURLPrefix),
+		Path:     service.Main.GetConfig(service.SubWeb, service.WebURLPrefix).(string),
 		Secure:   startup.SecureCookie(),
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,

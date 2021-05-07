@@ -17,9 +17,9 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/service"
 )
 
 func genEnvironmentM(zid id.Zid) *meta.Meta {
@@ -47,7 +47,7 @@ func genEnvironmentC(*meta.Meta) string {
 	sb.WriteString("|=Name|=Value>\n")
 	fmt.Fprintf(&sb, "|Working directory| %v\n", workDir)
 	fmt.Fprintf(&sb, "|Executable| %v\n", execName)
-	fmt.Fprintf(&sb, "|Build with| %v\n", startup.GetVersion().GoVersion)
+	fmt.Fprintf(&sb, "|Build with| %v\n", service.Main.GetConfig(service.SubMain, service.MainGoVersion))
 
 	sb.WriteString("=== Environment\n")
 	sb.WriteString("|=Key>|=Value<\n")

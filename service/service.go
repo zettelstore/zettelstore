@@ -15,6 +15,9 @@ import "net/http"
 
 // Service is the main internal service.
 type Service interface {
+	// Start the service.
+	Start(headline bool)
+
 	// WaitForShutdown blocks the call until Shutdown is called.
 	WaitForShutdown()
 
@@ -37,10 +40,13 @@ type Service interface {
 	LogRecover(name string, recoverInfo interface{}) bool
 
 	// SetConfig stores a configuration value.
-	SetConfig(subsrv Subservice, key, value string)
+	SetConfig(subsrv Subservice, key, value string) bool
 
 	// GetConfig returns a configuration value.
-	GetConfig(subsrv Subservice, key string) string
+	GetConfig(subsrv Subservice, key string) interface{}
+
+	// GetConfigList returns a sorted list of configuration data.
+	GetConfigList(subsrv Subservice) []KeyDescrValue
 
 	// --- Web server related methods ----------------------------------------
 
@@ -72,11 +78,25 @@ const (
 	SubWeb
 )
 
+// Constants for core system.
+const (
+	MainGoArch    = "go-arch"
+	MainGoOS      = "go-os"
+	MainGoVersion = "go-version"
+	MainHostname  = "hostname"
+	MainProgname  = "progname"
+	MainReadonly  = "readonly"
+	MainVersion   = "version"
+)
+
 // Constants for web subservice key.
 const (
 	WebListenAddress = "listen"
 	WebURLPrefix     = "prefix"
 )
 
+// KeyDescrValue is a triple of config data.
+type KeyDescrValue struct{ Key, Descr, Value string }
+
 // CreateHandlerFunc is called to create a new web service handler.
-type CreateHandlerFunc func(urlPrefix string) http.Handler
+type CreateHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler

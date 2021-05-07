@@ -13,7 +13,7 @@ They are stored within the software itself.
 In another situation you may want to store your zettel volatile, e.g. if you want to provide a sandbox for experimenting.
 
 To cope with these (and more) situations, you configure Zettelstore to use one or more places.
-This is done via the ''place-X-uri'' keys of the [[start-up configuration|00001004010000#place-X-uri]] (X is a number).
+This is done via the ''place-X-uri'' keys of the [[startup configuration|00001004010000#place-X-uri]] (X is a number).
 Places are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]], somehow similar to web addresses.
 
 The following place URIs are supported:

@@ -39,5 +39,5 @@ The [[default image|00000000040001]], used if an image reference is invalid,is a
 Please note: if authentication is not enabled, every user has the same rights as the owner of a Zettelstore.
 This is also true, if the Zettelstore runs additionally in [[read-only mode|00001004010000#read-only-mode]].
 In this case, the [[runtime configuration zettel|00001004020000]] is shown (its visibility is ""owner"").
-The [[start-up configuration|00001004010000]] is not shown, because the associated computed zettel with identifier ''00000000000098'' is stored with the visibility ""expert"".
+The [[startup configuration|00001004010000]] is not shown, because the associated computed zettel with identifier ''00000000000098'' is stored with the visibility ""expert"".
 If you want to show such a zettel, you must set ''expert-mode'' to true.

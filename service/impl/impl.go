@@ -12,6 +12,7 @@
 package impl
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -50,10 +51,34 @@ func createAndStart() service.Service {
 		interrupt: make(chan os.Signal, 5),
 	}
 	srv.config.Initialize()
+	return srv
+}
+
+func (srv *myService) Start(headline bool) {
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
-	return srv
+
+	if hn, err := os.Hostname(); err == nil {
+		srv.config.SetConfig(service.SubMain, service.MainHostname, hn)
+	}
+
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
+	if headline {
+		srv.doLog(fmt.Sprintf(
+			"%v %v (%v@%v/%v)",
+			srv.config.GetConfig(service.SubMain, service.MainProgname),
+			srv.config.GetConfig(service.SubMain, service.MainVersion),
+			srv.config.GetConfig(service.SubMain, service.MainGoVersion),
+			srv.config.GetConfig(service.SubMain, service.MainGoOS),
+			srv.config.GetConfig(service.SubMain, service.MainGoArch),
+		))
+		srv.doLog("Licensed under the latest version of the EUPL (European Union Public License)")
+		if srv.config.GetConfig(service.SubMain, service.MainReadonly).(bool) {
+			srv.doLog("Read-only mode")
+		}
+	}
 }
 
 // workerCommand encapsulates a command sent to the worker.
@@ -162,6 +187,8 @@ func (srv *myService) IgnoreShutdown(ob service.ShutdownChan) {
 
 // Log some activity.
 func (srv *myService) Log(args ...interface{}) {
+	// srv.mx.Lock()
+	// defer srv.mx.Unlock()
 	srv.doLog(args...)
 }
 func (srv *myService) doLog(args ...interface{}) {
@@ -170,6 +197,8 @@ func (srv *myService) doLog(args ...interface{}) {
 
 // LogRecover outputs some information about the previous panic.
 func (srv *myService) LogRecover(name string, recoverInfo interface{}) bool {
+	// srv.mx.Lock()
+	// defer srv.mx.Unlock()
 	return srv.doLogRecover(name, recoverInfo)
 }
 func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {

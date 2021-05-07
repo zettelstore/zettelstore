@@ -21,12 +21,12 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/service"
 )
 
 var config struct {
 	// Set in SetupStartupConfig
 	verbose             bool
-	readonlyMode        bool
 	defaultDirPlaceType string
 	owner               id.Zid
 	withAuth            bool
@@ -49,7 +49,6 @@ const (
 	KeyOwner               = "owner"
 	KeyPersistentCookie    = "persistent-cookie"
 	KeyPlaceOneURI         = "place-1-uri"
-	KeyReadOnlyMode        = "read-only-mode"
 	KeyTokenLifetimeHTML   = "token-lifetime-html"
 	KeyTokenLifetimeAPI    = "token-lifetime-api"
 	KeyVerbose             = "verbose"
@@ -67,7 +66,6 @@ func SetupStartupConfig(cfg *meta.Meta) {
 		panic("startup.config already set")
 	}
 	config.verbose = cfg.GetBool(KeyVerbose)
-	config.readonlyMode = cfg.GetBool(KeyReadOnlyMode)
 	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
 		switch defaultType {
 		case ValueDirPlaceTypeNotify:
@@ -107,16 +105,22 @@ func SetupStartupService(manager place.Manager, idx index.Indexer, simple bool) 
 	config.indexer = idx
 }
 
+var configKeys = []string{
+	service.MainProgname,
+	service.MainGoVersion,
+	service.MainHostname,
+	service.MainGoOS,
+	service.MainGoArch,
+}
+
 func calcSecret(cfg *meta.Meta) []byte {
 	h := fnv.New128()
 	if secret, ok := cfg.Get("secret"); ok {
 		io.WriteString(h, secret)
 	}
-	io.WriteString(h, version.Prog)
-	io.WriteString(h, version.Build)
-	io.WriteString(h, version.Hostname)
-	io.WriteString(h, version.Os)
-	io.WriteString(h, version.Arch)
+	for _, key := range configKeys {
+		io.WriteString(h, service.Main.GetConfig(service.SubMain, key).(string))
+	}
 	return h.Sum(nil)
 }
 
@@ -143,9 +147,6 @@ func IsSimple() bool { return config.simple }
 
 // IsVerbose returns whether the system should be more chatty about its operations.
 func IsVerbose() bool { return config.verbose }
-
-// IsReadOnlyMode returns whether the system is in read-only mode or not.
-func IsReadOnlyMode() bool { return config.readonlyMode }
 
 // DefaultDirPlaceType returns the default value for a directory place type.
 func DefaultDirPlaceType() string { return config.defaultDirPlaceType }

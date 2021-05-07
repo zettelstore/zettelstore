@@ -12,7 +12,7 @@ package cmd
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"net/http"
 
 	"zettelstore.de/z/auth/policy"
@@ -46,45 +46,22 @@ func withDebug(fs *flag.FlagSet) bool {
 }
 
 func runFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
-	setupWebConfig(cfg)
 	exitCode, err := doRun(withDebug(fs))
 	service.Main.WaitForShutdown()
 	return exitCode, err
 }
 
-func setupWebConfig(cfg *meta.Meta) {
-	srvm := service.Main
-	if val, ok := cfg.Get("listen-addr"); ok {
-		srvm.SetConfig(service.SubWeb, service.WebListenAddress, val)
-	}
-	prefix, ok := cfg.Get("url-prefix")
-	if ok && len(prefix) > 0 && prefix[0] == '/' && prefix[len(prefix)-1] == '/' {
-		srvm.SetConfig(service.SubWeb, service.WebURLPrefix, prefix)
-	}
-
-}
-
 func doRun(debug bool) (int, error) {
 	srvm := service.Main
-	readonlyMode := startup.IsReadOnlyMode()
-	v := startup.GetVersion()
-	log.Printf("%v %v (%v@%v/%v)", v.Prog, v.Build, v.GoVersion, v.Os, v.Arch)
-	log.Println("Licensed under the latest version of the EUPL (European Union Public License)")
-	log.Printf("Listening on %v", srvm.GetConfig(service.SubWeb, service.WebListenAddress))
-	log.Printf("Zettel location [%v]", startup.PlaceManager().Location())
-	if readonlyMode {
-		log.Println("Read-only mode")
-	}
-
+	srvm.Log(fmt.Sprintf("Zettel location [%v]", startup.PlaceManager().Location()))
 	srvm.SetDebug(debug)
-	srvm.WebSetConfig(func(urlPrefix string) http.Handler {
+	srvm.WebSetConfig(func(urlPrefix string, readonlyMode bool) http.Handler {
 		return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
 	})
 	if err := srvm.WebStart(); err != nil {
 		return 1, err
 	}
 	return 0, nil
-
 }
 
 func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.Handler {

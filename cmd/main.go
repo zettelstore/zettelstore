@@ -12,6 +12,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -28,6 +29,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/place/progplace"
+	"zettelstore.de/z/service"
 )
 
 const (
@@ -46,16 +48,15 @@ func init() {
 		},
 	})
 	RegisterCommand(Command{
-		Name: "version",
-		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
-			fmtVersion()
-			return 0, nil
-		},
+		Name:   "version",
+		Func:   func(*flag.FlagSet, *meta.Meta) (int, error) { return 0, nil },
+		Header: true,
 	})
 	RegisterCommand(Command{
 		Name:   "run",
 		Func:   runFunc,
 		Places: true,
+		Header: true,
 		Flags:  flgRun,
 	})
 	RegisterCommand(Command{
@@ -63,12 +64,14 @@ func init() {
 		Func:   runSimpleFunc,
 		Places: true,
 		Simple: true,
+		Header: true,
 		Flags:  flgSimpleRun,
 	})
 	RegisterCommand(Command{
-		Name:  "config",
-		Func:  cmdConfig,
-		Flags: flgRun,
+		Name:   "config",
+		Func:   cmdConfig,
+		Flags:  flgRun,
+		Header: true,
 	})
 	RegisterCommand(Command{
 		Name: "file",
@@ -81,13 +84,6 @@ func init() {
 		Name: "password",
 		Func: cmdPassword,
 	})
-}
-
-func fmtVersion() {
-	version := startup.GetVersion()
-	fmt.Printf("%v (%v/%v) running on %v (%v/%v)\n",
-		version.Prog, version.Build, version.GoVersion,
-		version.Hostname, version.Os, version.Arch)
 }
 
 func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
@@ -106,7 +102,7 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
-			cfg.Set("listen-addr", "127.0.0.1:"+flg.Value.String())
+			cfg.Set(keyListenAddr, "127.0.0.1:"+flg.Value.String())
 		case "d":
 			val := flg.Value.String()
 			if strings.HasPrefix(val, "/") {
@@ -116,12 +112,35 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 			}
 			cfg.Set(startup.KeyPlaceOneURI, val)
 		case "r":
-			cfg.Set(startup.KeyReadOnlyMode, flg.Value.String())
+			cfg.Set(keyReadOnly, flg.Value.String())
 		case "v":
 			cfg.Set(startup.KeyVerbose, flg.Value.String())
 		}
 	})
 	return cfg
+}
+
+const (
+	keyListenAddr = "listen-addr"
+	keyReadOnly   = "read-only-mode"
+	keyURLPrefix  = "url-prefix"
+)
+
+func setServiceConfig(cfg *meta.Meta) error {
+	ok := setConfigValue(true, service.SubMain, service.MainReadonly, cfg.GetBool(keyReadOnly))
+	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
+	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
+	if !ok {
+		return errors.New("unable to set configuration")
+	}
+	return nil
+}
+
+func setConfigValue(ok bool, subsys service.Subservice, key string, val interface{}) bool {
+	if !ok {
+		return false
+	}
+	return service.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
 }
 
 func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
@@ -135,9 +154,10 @@ func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
 			cfg.Set(startup.KeyDefaultDirPlaceType, startup.ValueDirPlaceTypeSimple)
 		}
 		startup.SetupStartupConfig(cfg)
+		readonlyMode := service.Main.GetConfig(service.SubMain, service.MainReadonly).(bool)
 		idx = indexer.New()
 		filter := index.NewMetaFilter(idx)
-		mgr, err = manager.New(getPlaces(cfg), cfg.GetBool(startup.KeyReadOnlyMode), filter)
+		mgr, err = manager.New(getPlaces(cfg), readonlyMode, filter)
 		if err != nil {
 			return err
 		}
@@ -197,10 +217,15 @@ func executeCommand(name string, args ...string) int {
 		return 1
 	}
 	cfg := getConfig(fs)
+	if err := setServiceConfig(cfg); err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
+		return 2
+	}
 	if err := setupOperations(cfg, command.Places, command.Simple); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
+	service.Main.Start(command.Header)
 
 	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
@@ -214,7 +239,8 @@ func executeCommand(name string, args ...string) int {
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) {
-	startup.SetupVersion(progName, buildVersion)
+	service.Main.SetConfig(service.SubMain, service.MainProgname, progName)
+	service.Main.SetConfig(service.SubMain, service.MainVersion, buildVersion)
 	var exitCode int
 	if len(os.Args) <= 1 {
 		exitCode = runSimple()

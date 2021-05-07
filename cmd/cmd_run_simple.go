@@ -27,8 +27,7 @@ func flgSimpleRun(fs *flag.FlagSet) {
 
 func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	srvm := service.Main
-	setupWebConfig(cfg)
-	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress)
+	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress).(string)
 	exitCode, err := doRun(false)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 		log.Println()

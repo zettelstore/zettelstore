@@ -1,9 +1,9 @@
 id: 00001010040100
 title: Enable authentication
+role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
-role: manual
 
 To enable authentication, you must create a zettel that stores [[authentication data|00001010040200]] for the owner.
-Then you must reference this zettel within the [[start-up configuration|00001004010000#owner]] under the key ''owner''.
-Once the start-up configuration contains a valid [[zettel identifier|00001006050000]] under that key, authentication is enabled.
+Then you must reference this zettel within the [[startup configuration|00001004010000#owner]] under the key ''owner''.
+Once the startup configuration contains a valid [[zettel identifier|00001006050000]] under that key, authentication is enabled.

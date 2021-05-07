@@ -13,7 +13,7 @@ zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
 ```
 
 ; ''-c CONFIGFILE''
-: Specifies ''CONFIGFILE'' as a file, where [[start-up configuration data|00001004010000]] is read.
+: Specifies ''CONFIGFILE'' as a file, where [[startup configuration data|00001004010000]] is read.
   It is ignored, when the given file is not available, nor readable.
 
   Default: ''./.zscfg''. (''.\\.zscfg'' on Windows)), where ''.'' denotes the ""current directory"".
@@ -41,6 +41,6 @@ zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
   This allows to publish your content without any risks of unauthorized changes.
 ; ''-v''
 : Be more verbose in writing logs.
-  Writes the start-up configuration to stderr.
+  Writes the startup configuration to stderr.
 
 Command line options take precedence over configuration file options.

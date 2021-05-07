@@ -44,14 +44,17 @@ func (srv *myService) WebStart() error {
 		srv.mx.RUnlock()
 		return errConfigMissing
 	}
-	listenAddr := srv.config.GetConfig(service.SubWeb, service.WebListenAddress)
-	urlPrefix := srv.config.GetConfig(service.SubWeb, service.WebURLPrefix)
+	listenAddr := srv.config.GetConfig(service.SubWeb, service.WebListenAddress).(string)
+	urlPrefix := srv.config.GetConfig(service.SubWeb, service.WebURLPrefix).(string)
+	readonlyMode := srv.config.GetConfig(service.SubMain, service.MainReadonly).(bool)
 	srv.mx.RUnlock()
-	handler := createHandler(urlPrefix)
+	handler := createHandler(urlPrefix, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
 	}
+	srv.doLog("Start Zettelstore Web Service")
+	srv.doLog("Listening on", listenAddr)
 	srvw.Run()
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
