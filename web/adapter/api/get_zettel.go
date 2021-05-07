@@ -22,12 +22,10 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a rendered zettel.
-func MakeGetZettelHandler(
-	urlPrefix string, parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -48,18 +46,14 @@ func MakeGetZettelHandler(
 		}
 
 		part := getPart(q, partZettel)
+		if part == partUnknown {
+			adapter.BadRequest(w, "Unknown _part parameter")
+			return
+		}
 		switch format {
 		case "json", "djson":
-			if part == partUnknown {
-				adapter.BadRequest(w, "Unknown _part parameter")
-				return
-			}
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			if format != "djson" {
-				err = writeJSONZettel(w, router.GetURLBuilderFunc(ctx), zn, part)
-			} else {
-				err = writeDJSONZettel(ctx, w, zn, urlPrefix, part, partZettel, getMeta)
-			}
+			err = getWriteMetaZettelFunc(ctx, format, part, partZettel, getMeta)(w, zn)
 			if err != nil {
 				adapter.InternalServerError(w, "Write D/JSON", err)
 			}
@@ -67,7 +61,7 @@ func MakeGetZettelHandler(
 		}
 
 		env := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, urlPrefix, 'z', getMeta, part.DefString(partZettel), format),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
 			CiteAdapter:    nil,
 			Lang:           runtime.GetLang(zn.InhMeta),
@@ -91,11 +85,14 @@ func MakeGetZettelHandler(
 			}
 		case partMeta:
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			if format == "raw" {
-				// Don't write inherited meta data, just the raw
-				err = writeMeta(w, zn.Meta, format, nil)
+			if enc := encoder.Create(format, nil); enc != nil {
+				if format == "raw" {
+					_, err = enc.WriteMeta(w, zn.Meta)
+				} else {
+					_, err = enc.WriteMeta(w, zn.InhMeta)
+				}
 			} else {
-				err = writeMeta(w, zn.InhMeta, format, nil)
+				err = adapter.ErrNoSuchFormat
 			}
 		case partContent:
 			if format == "raw" {
@@ -106,9 +103,6 @@ func MakeGetZettelHandler(
 				w.Header().Set(adapter.ContentType, format2ContentType(format))
 			}
 			err = writeContent(w, zn, format, &env)
-		default:
-			adapter.BadRequest(w, "Unknown _part parameter")
-			return
 		}
 		if err != nil {
 			if err == adapter.ErrNoSuchFormat {

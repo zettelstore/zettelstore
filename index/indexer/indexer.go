@@ -241,6 +241,13 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(zettel, ""), &cData)
 	zi := index.NewZettelIndex(m.Zid)
+	collectFromMeta(ctx, m, zi, &cData, p)
+	processData(ctx, zi, &cData, p)
+	toCheck := idx.store.UpdateReferences(ctx, zi)
+	idx.checkZettel(toCheck)
+}
+
+func collectFromMeta(ctx context.Context, m *meta.Meta, zi *index.ZettelIndex, cData *collectData, p getMetaPort) {
 	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -254,7 +261,7 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 				updateValue(ctx, descr.Inverse, val, p, zi)
 			}
 		case meta.TypeZettelmarkup:
-			collectInlineIndexData(parser.ParseMetadata(pair.Value), &cData)
+			collectInlineIndexData(parser.ParseMetadata(pair.Value), cData)
 		case meta.TypeURL:
 			if _, err := url.Parse(pair.Value); err == nil {
 				cData.urls.Add(pair.Value)
@@ -265,6 +272,9 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 			}
 		}
 	}
+}
+
+func processData(ctx context.Context, zi *index.ZettelIndex, cData *collectData, p getMetaPort) {
 	for ref := range cData.refs {
 		if _, err := p.GetMeta(ctx, ref); err == nil {
 			zi.AddBackRef(ref)
@@ -274,8 +284,6 @@ func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	}
 	zi.SetWords(cData.words)
 	zi.SetUrls(cData.urls)
-	toCheck := idx.store.UpdateReferences(ctx, zi)
-	idx.checkZettel(toCheck)
 }
 
 func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {

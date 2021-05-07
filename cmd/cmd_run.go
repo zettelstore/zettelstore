@@ -142,7 +142,7 @@ func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.H
 	router.AddListRoute('h', http.MethodGet, webui.MakeListHTMLMetaHandler(
 		te, ucListMeta, ucListRoles, ucListTags))
 	router.AddZettelRoute('h', http.MethodGet, webui.MakeGetHTMLZettelHandler(
-		urlPrefix, te, ucParseZettel, ucGetMeta))
+		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('i', http.MethodGet, webui.MakeGetInfoHandler(
 		te, ucParseZettel, ucGetMeta))
 	router.AddZettelRoute('j', http.MethodGet, webui.MakeZettelContextHandler(te, ucZettelContext))
@@ -154,8 +154,7 @@ func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.H
 	router.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
 	router.AddZettelRoute('y', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	router.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
-		urlPrefix, usecase.NewListMeta(pp), ucGetMeta, ucParseZettel))
-	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
-		urlPrefix, ucParseZettel, ucGetMeta))
+		usecase.NewListMeta(pp), ucGetMeta, ucParseZettel))
+	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(ucParseZettel, ucGetMeta))
 	return session.NewHandler(router, usecase.NewGetUserByZid(up))
 }

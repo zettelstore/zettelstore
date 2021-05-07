@@ -31,7 +31,6 @@ import (
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
 func MakeGetHTMLZettelHandler(
-	urlPrefix string,
 	te *TemplateEngine,
 	parseZettel usecase.ParseZettel,
 	getMeta usecase.GetMeta) http.HandlerFunc {
@@ -52,7 +51,7 @@ func MakeGetHTMLZettelHandler(
 
 		lang := runtime.GetLang(zn.InhMeta)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, urlPrefix, 'h', getMeta, "", ""),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'h', getMeta, "", ""),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,

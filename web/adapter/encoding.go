@@ -46,7 +46,6 @@ func FormatInlines(is ast.InlineSlice, format string, env *encoder.Environment) 
 // MakeLinkAdapter creates an adapter to change a link node during encoding.
 func MakeLinkAdapter(
 	ctx context.Context,
-	urlPrefix string,
 	key byte,
 	getMeta usecase.GetMeta,
 	part, format string,
@@ -58,6 +57,7 @@ func MakeLinkAdapter(
 		}
 		if origRef.State == ast.RefStateBased {
 			newLink := *origLink
+			urlPrefix := router.GetURLPrefix(ctx)
 			newRef := ast.ParseReference(urlPrefix + origRef.Value[1:])
 			newRef.State = ast.RefStateHosted
 			newLink.Ref = newRef

@@ -27,7 +27,6 @@ import (
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
 func MakeListMetaHandler(
-	urlPrefix string,
 	listMeta usecase.ListMeta,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
@@ -38,6 +37,10 @@ func MakeListMetaHandler(
 		s := adapter.GetSearch(q, false)
 		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
 		part := getPart(q, partMeta)
+		if part == partUnknown {
+			adapter.BadRequest(w, "Unknown _part parameter")
+			return
+		}
 		ctx1 := ctx
 		if format == "html" || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
 			ctx1 = index.NoEnrichContext(ctx1)
@@ -53,7 +56,7 @@ func MakeListMetaHandler(
 		case "html":
 			renderListMetaHTML(w, router.GetURLBuilderFunc(ctx), metaList)
 		case "json", "djson":
-			renderListMetaXJSON(ctx, w, metaList, urlPrefix, format, part, partMeta, getMeta, parseZettel)
+			renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
 		case "native", "raw", "text", "zmk":
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", format))
 		default:

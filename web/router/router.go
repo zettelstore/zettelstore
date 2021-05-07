@@ -102,6 +102,14 @@ func (rt *Router) updateRequest(r *http.Request) *http.Request {
 	return r.WithContext(context.WithValue(ctx, ctxKey, rt))
 }
 
+// GetURLPrefix returns the URL prefix.
+func GetURLPrefix(ctx context.Context) string {
+	if rt, ok := ctx.Value(ctxKey).(*Router); ok {
+		return rt.urlPrefix
+	}
+	return "/"
+}
+
 // GetURLBuilderFunc returns a function that creates an URL builder.
 func GetURLBuilderFunc(ctx context.Context) URLBuilderFunc {
 	if rt, ok := ctx.Value(ctxKey).(*Router); ok {
