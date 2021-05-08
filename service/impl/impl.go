@@ -55,13 +55,10 @@ func createAndStart() service.Service {
 }
 
 func (srv *myService) Start(headline bool) {
+	srv.config.frozen = true
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
-
-	if hn, err := os.Hostname(); err == nil {
-		srv.config.SetConfig(service.SubMain, service.MainHostname, hn)
-	}
 
 	srv.mx.Lock()
 	defer srv.mx.Unlock()

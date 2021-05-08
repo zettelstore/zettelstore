@@ -13,6 +13,7 @@ package impl
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"sort"
 
@@ -38,8 +39,9 @@ func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDesc
 }
 
 type descriptionMap map[string]struct {
-	text  string
-	parse func(string) interface{}
+	text    string
+	parse   func(string) interface{}
+	canList bool
 }
 type interfaceMap map[string]interface{}
 
@@ -55,39 +57,53 @@ func (m interfaceMap) Clone() interfaceMap {
 }
 
 type srvConfig struct {
-	sysDescr descriptionMap
-	sys      interfaceMap
-	webDescr descriptionMap
-	webCur   interfaceMap
-	webNext  interfaceMap
+	frozen    bool
+	mainDescr descriptionMap
+	mainCur   interfaceMap
+	webDescr  descriptionMap
+	webCur    interfaceMap
+	webNext   interfaceMap
 }
 
 func (cfg *srvConfig) Initialize() {
-	cfg.sysDescr = descriptionMap{
-		service.MainGoArch:    {"Go processor architecture", nil},
-		service.MainGoOS:      {"Go Operating System", nil},
-		service.MainGoVersion: {"Go Version", nil},
-		service.MainHostname:  {"Host name", nil},
-		service.MainProgname:  {"Program name", nil},
-		service.MainReadonly:  {"Read-only mode", parseBool},
+	cfg.mainDescr = descriptionMap{
+		service.MainGoArch:    {"Go processor architecture", nil, false},
+		service.MainGoOS:      {"Go Operating System", nil, false},
+		service.MainGoVersion: {"Go Version", nil, false},
+		service.MainHostname:  {"Host name", nil, false},
+		service.MainProgname:  {"Program name", nil, false},
+		service.MainReadonly:  {"Read-only mode", parseBool, true},
 		service.MainVersion: {"Version", func(val string) interface{} {
+			if cfg.frozen {
+				return nil
+			}
 			if val == "" {
 				return "unknown"
 			}
 			return val
-		}},
+		}, false},
 	}
-
-	cfg.sys = interfaceMap{
+	cfg.mainCur = interfaceMap{
 		service.MainGoArch:    runtime.GOARCH,
 		service.MainGoOS:      runtime.GOOS,
 		service.MainGoVersion: runtime.Version(),
 		service.MainHostname:  "*unknwon host*",
 		service.MainReadonly:  false,
 	}
+	if hn, err := os.Hostname(); err == nil {
+		cfg.mainCur[service.MainHostname] = hn
+	}
+
 	cfg.webDescr = descriptionMap{
-		service.WebListenAddress: {"Listen address, format [IP_ADDRESS]:PORT", nil},
-		service.WebURLPrefix:     {"URL prefix under which the web server runs", parseURLPrefix},
+		service.WebListenAddress: {"Listen address, format [IP_ADDRESS]:PORT", parseString, true},
+		service.WebURLPrefix: {
+			"URL prefix under which the web server runs",
+			func(val string) interface{} {
+				if val != "" && val[0] == '/' && val[len(val)-1] == '/' {
+					return val
+				}
+				return nil
+			}, true},
 	}
 	cfg.webNext = interfaceMap{
 		service.WebListenAddress: "127.0.0.1:23123",
@@ -95,6 +111,7 @@ func (cfg *srvConfig) Initialize() {
 	}
 }
 
+func parseString(val string) interface{} { return val }
 func parseBool(val string) interface{} {
 	if val == "" {
 		return false
@@ -105,43 +122,42 @@ func parseBool(val string) interface{} {
 	}
 	return true
 }
-func parseURLPrefix(val string) interface{} {
-	if val != "" && val[0] == '/' && val[len(val)-1] == '/' {
-		return val
-	}
-	return nil
-}
 
 func (cfg *srvConfig) SetConfig(subsrv service.Subservice, key, value string) bool {
 	switch subsrv {
 	case service.SubMain:
-		return storeConfig(cfg.sys, key, value, cfg.sysDescr)
+		return cfg.storeConfig(cfg.mainCur, key, value, cfg.mainDescr)
 	case service.SubWeb:
-		return storeConfig(cfg.webNext, key, value, cfg.webDescr)
+		return cfg.storeConfig(cfg.webNext, key, value, cfg.webDescr)
 	}
 	return false
 }
 
-func storeConfig(iMap interfaceMap, key, value string, dMap descriptionMap) bool {
-	if descr, ok := dMap[key]; ok {
-		if parse := descr.parse; parse != nil {
-			if iVal := parse(value); iVal != nil {
-				iMap[key] = iVal
-			} else {
-				return false
-			}
-		} else {
-			iMap[key] = value
+func (cfg *srvConfig) storeConfig(iMap interfaceMap, key, value string, dMap descriptionMap) bool {
+	descr, ok := dMap[key]
+	if !ok {
+		return false
+	}
+	parse := descr.parse
+	if parse == nil {
+		if cfg.frozen {
+			return false
 		}
+		iMap[key] = value
 		return true
 	}
-	return false
+	iVal := parse(value)
+	if iVal == nil {
+		return false
+	}
+	iMap[key] = iVal
+	return true
 }
 
 func (cfg *srvConfig) GetConfig(subsrv service.Subservice, key string) interface{} {
 	switch subsrv {
 	case service.SubMain:
-		return cfg.sys[key]
+		return cfg.mainCur[key]
 	case service.SubWeb:
 		if cfg.webCur == nil {
 			return cfg.webNext[key]
@@ -155,7 +171,7 @@ func (cfg *srvConfig) getConfigList(subsrv service.Subservice) []service.KeyDesc
 	var descrMap descriptionMap
 	switch subsrv {
 	case service.SubMain:
-		descrMap = cfg.sysDescr
+		descrMap = cfg.mainDescr
 	case service.SubWeb:
 		descrMap = cfg.webDescr
 	}
@@ -163,8 +179,10 @@ func (cfg *srvConfig) getConfigList(subsrv service.Subservice) []service.KeyDesc
 		return nil
 	}
 	keys := make([]string, 0, len(descrMap))
-	for k := range descrMap {
-		keys = append(keys, k)
+	for k, descr := range descrMap {
+		if descr.canList {
+			keys = append(keys, k)
+		}
 	}
 	sort.Strings(keys)
 	result := make([]service.KeyDescrValue, 0, len(keys))
