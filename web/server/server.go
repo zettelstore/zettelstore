@@ -15,8 +15,6 @@ import (
 	"context"
 	"net/http"
 	"time"
-
-	"zettelstore.de/z/service"
 )
 
 // Server timeout values
@@ -71,10 +69,8 @@ func (srv *Server) Run() {
 
 // Stop the web server.
 func (srv *Server) Stop() error {
-	// close(srv.waitStop)
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	service.Main.Log("Stopping Zettelstore Web Service ...")
 	return srv.Shutdown(ctx)
 }

@@ -67,9 +67,13 @@ func (srv *myService) WebStart() error {
 func (srv *myService) WebStop() error {
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
+	return srv.doWebStop()
+}
+func (srv *myService) doWebStop() error {
 	srvw := srv.web.srvw
 	if srvw == nil {
 		return errAlreadyStopped
 	}
+	srv.doLog("Stopping Zettelstore Web Service ...")
 	return srvw.Stop()
 }

@@ -126,7 +126,7 @@ func (srv *myService) shutdown() {
 	srv.observer = nil
 	srv.started = false
 	if srv.web.srvw != nil {
-		srv.web.srvw.Stop()
+		srv.doWebStop()
 	}
 }
 
@@ -184,8 +184,8 @@ func (srv *myService) IgnoreShutdown(ob service.ShutdownChan) {
 
 // Log some activity.
 func (srv *myService) Log(args ...interface{}) {
-	// srv.mx.Lock()
-	// defer srv.mx.Unlock()
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
 	srv.doLog(args...)
 }
 func (srv *myService) doLog(args ...interface{}) {
