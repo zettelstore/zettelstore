@@ -15,7 +15,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -121,22 +120,27 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 }
 
 const (
-	keyListenAddr = "listen-addr"
-	keyReadOnly   = "read-only-mode"
-	keyVerbose    = "verbose"
-	keyURLPrefix  = "url-prefix"
+	keyDefaultDirPlaceType = "default-dir-place-type"
+	keyListenAddr          = "listen-addr"
+	keyReadOnly            = "read-only-mode"
+	keyVerbose             = "verbose"
+	keyURLPrefix           = "url-prefix"
 )
 
 func setServiceConfig(cfg *meta.Meta, simple bool) error {
 	ok := setConfigValue(true, service.SubMain, service.MainVerbose, cfg.GetBool(keyVerbose))
 
-	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
-	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
-
 	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
 	// AuthSimple must be set last, when it is known to have authentication or not.
 	// Previous code: 	config.simple = simple && !config.withAuth
 	ok = setConfigValue(ok, service.SubAuth, service.AuthSimple, simple)
+
+	ok = setConfigValue(
+		ok, service.SubPlace, service.PlaceDefaultDirType,
+		cfg.GetDefault(keyDefaultDirPlaceType, service.PlaceDirTypeNotify))
+
+	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
+	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
 
 	if !ok {
 		return errors.New("unable to set configuration")
@@ -157,9 +161,10 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	if withPlaces {
 		err := raiseFdLimit()
 		if err != nil {
-			log.Println("Raising some limitions did not work:", err)
-			log.Println("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
-			cfg.Set(startup.KeyDefaultDirPlaceType, startup.ValueDirPlaceTypeSimple)
+			srvm := service.Main
+			srvm.Log("Raising some limitions did not work:", err)
+			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			srvm.SetConfig(service.SubPlace, service.PlaceDefaultDirType, service.PlaceDirTypeSimple)
 		}
 		startup.SetupStartupConfig(cfg)
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)

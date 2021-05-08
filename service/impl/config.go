@@ -58,15 +58,18 @@ func (m interfaceMap) Clone() interfaceMap {
 }
 
 type srvConfig struct {
-	frozen    bool
-	mainDescr descriptionMap
-	mainCur   interfaceMap
-	authDescr descriptionMap
-	authCur   interfaceMap
-	authNext  interfaceMap
-	webDescr  descriptionMap
-	webCur    interfaceMap
-	webNext   interfaceMap
+	frozen     bool
+	mainDescr  descriptionMap
+	mainCur    interfaceMap
+	authDescr  descriptionMap
+	authCur    interfaceMap
+	authNext   interfaceMap
+	placeDescr descriptionMap
+	placeCur   interfaceMap
+	placeNext  interfaceMap
+	webDescr   descriptionMap
+	webCur     interfaceMap
+	webNext    interfaceMap
 }
 
 func (cfg *srvConfig) Initialize() {
@@ -106,6 +109,23 @@ func (cfg *srvConfig) Initialize() {
 	cfg.authNext = interfaceMap{
 		service.AuthReadonly: false,
 		service.AuthSimple:   false,
+	}
+
+	cfg.placeDescr = descriptionMap{
+		service.PlaceDefaultDirType: {
+			"Default directory place type",
+			cfg.noFrozen(func(val string) interface{} {
+				switch val {
+				case service.PlaceDirTypeNotify, service.PlaceDirTypeSimple:
+					return val
+				}
+				return nil
+			}),
+			true,
+		},
+	}
+	cfg.placeNext = interfaceMap{
+		service.PlaceDefaultDirType: service.PlaceDirTypeNotify,
 	}
 
 	cfg.webDescr = descriptionMap{
@@ -153,6 +173,8 @@ func (cfg *srvConfig) SetConfig(subsrv service.Subservice, key, value string) bo
 		return cfg.storeConfig(cfg.mainCur, key, value, cfg.mainDescr)
 	case service.SubAuth:
 		return cfg.storeConfig(cfg.authNext, key, value, cfg.authDescr)
+	case service.SubPlace:
+		return cfg.storeConfig(cfg.placeNext, key, value, cfg.placeDescr)
 	case service.SubWeb:
 		return cfg.storeConfig(cfg.webNext, key, value, cfg.webDescr)
 	}
@@ -186,6 +208,8 @@ func (cfg *srvConfig) GetConfig(subsrv service.Subservice, key string) interface
 		return cfg.mainCur[key]
 	case service.SubAuth:
 		return fetchConfig(cfg.authCur, cfg.authNext, key)
+	case service.SubPlace:
+		return fetchConfig(cfg.placeCur, cfg.placeNext, key)
 	case service.SubWeb:
 		return fetchConfig(cfg.webCur, cfg.webNext, key)
 	}
@@ -205,6 +229,8 @@ func (cfg *srvConfig) getConfigList(subsrv service.Subservice) []service.KeyDesc
 		descrMap = cfg.mainDescr
 	case service.SubAuth:
 		descrMap = cfg.authDescr
+	case service.SubPlace:
+		descrMap = cfg.placeDescr
 	case service.SubWeb:
 		descrMap = cfg.webDescr
 	}

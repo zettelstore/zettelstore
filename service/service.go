@@ -76,6 +76,7 @@ type Subservice uint8
 const (
 	SubMain Subservice = iota
 	SubAuth
+	SubPlace
 	SubWeb
 )
 
@@ -94,6 +95,17 @@ const (
 const (
 	AuthReadonly = "readonly"
 	AuthSimple   = "simple"
+)
+
+// Constants for place subservice keys.
+const (
+	PlaceDefaultDirType = "defdirtype"
+)
+
+// Allowed values for PlaceDefaultDirType
+const (
+	PlaceDirTypeNotify = "notify"
+	PlaceDirTypeSimple = "simple"
 )
 
 // Constants for web subservice keys.

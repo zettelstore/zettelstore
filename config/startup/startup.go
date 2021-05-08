@@ -26,14 +26,13 @@ import (
 
 var config struct {
 	// Set in SetupStartupConfig
-	defaultDirPlaceType string
-	owner               id.Zid
-	withAuth            bool
-	secret              []byte
-	insecCookie         bool
-	persistCookie       bool
-	htmlLifetime        time.Duration
-	apiLifetime         time.Duration
+	owner         id.Zid
+	withAuth      bool
+	secret        []byte
+	insecCookie   bool
+	persistCookie bool
+	htmlLifetime  time.Duration
+	apiLifetime   time.Duration
 
 	// Set in SetupStartupService
 	manager place.Manager
@@ -42,37 +41,16 @@ var config struct {
 
 // Predefined keys for startup zettel
 const (
-	KeyDefaultDirPlaceType = "default-dir-place-type"
-	KeyInsecureCookie      = "insecure-cookie"
-	KeyOwner               = "owner"
-	KeyPersistentCookie    = "persistent-cookie"
-	KeyPlaceOneURI         = "place-1-uri"
-	KeyTokenLifetimeHTML   = "token-lifetime-html"
-	KeyTokenLifetimeAPI    = "token-lifetime-api"
-)
-
-// Important values for some keys.
-const (
-	ValueDirPlaceTypeNotify = "notify"
-	ValueDirPlaceTypeSimple = "simple"
+	KeyInsecureCookie    = "insecure-cookie"
+	KeyOwner             = "owner"
+	KeyPersistentCookie  = "persistent-cookie"
+	KeyPlaceOneURI       = "place-1-uri"
+	KeyTokenLifetimeHTML = "token-lifetime-html"
+	KeyTokenLifetimeAPI  = "token-lifetime-api"
 )
 
 // SetupStartupConfig initializes the startup data with content of config file.
 func SetupStartupConfig(cfg *meta.Meta) {
-	if config.defaultDirPlaceType != "" {
-		panic("startup.config already set")
-	}
-	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
-		switch defaultType {
-		case ValueDirPlaceTypeNotify:
-		case ValueDirPlaceTypeSimple:
-		default:
-			defaultType = ValueDirPlaceTypeNotify
-		}
-		config.defaultDirPlaceType = defaultType
-	} else {
-		config.defaultDirPlaceType = ValueDirPlaceTypeNotify
-	}
 	config.owner = id.Invalid
 	if owner, ok := cfg.Get(KeyOwner); ok {
 		if zid, err := id.Parse(owner); err == nil {
@@ -93,9 +71,6 @@ func SetupStartupConfig(cfg *meta.Meta) {
 
 // SetupStartupService initializes the startup data with internal services.
 func SetupStartupService(manager place.Manager, idx index.Indexer) {
-	if config.defaultDirPlaceType == "" {
-		panic("startup.config not set")
-	}
 	config.manager = manager
 	config.indexer = idx
 }
@@ -136,9 +111,6 @@ func getDuration(
 	}
 	return defDur
 }
-
-// DefaultDirPlaceType returns the default value for a directory place type.
-func DefaultDirPlaceType() string { return config.defaultDirPlaceType }
 
 // WithAuth returns true if user authentication is enabled.
 func WithAuth() bool { return config.withAuth }

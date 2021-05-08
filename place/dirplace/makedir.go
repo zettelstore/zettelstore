@@ -12,20 +12,20 @@
 package dirplace
 
 import (
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/place/dirplace/notifydir"
 	"zettelstore.de/z/place/dirplace/simpledir"
+	"zettelstore.de/z/service"
 )
 
 func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
 	for count := 0; count < 2; count++ {
 		switch dirType {
-		case startup.ValueDirPlaceTypeNotify:
+		case service.PlaceDirTypeNotify:
 			return dirSrvNotify, 7, 1499
-		case startup.ValueDirPlaceTypeSimple:
+		case service.PlaceDirTypeSimple:
 			return dirSrvSimple, 1, 1
 		default:
-			dirType = startup.DefaultDirPlaceType()
+			dirType = service.Main.GetConfig(service.SubPlace, service.PlaceDefaultDirType).(string)
 		}
 	}
 	panic("unable to set default dir place type: " + dirType)
