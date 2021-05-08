@@ -46,9 +46,10 @@ func (srv *myService) WebStart() error {
 	}
 	listenAddr := srv.config.GetConfig(service.SubWeb, service.WebListenAddress).(string)
 	urlPrefix := srv.config.GetConfig(service.SubWeb, service.WebURLPrefix).(string)
+	simple := srv.config.GetConfig(service.SubMain, service.MainSimple).(bool)
 	readonlyMode := srv.config.GetConfig(service.SubMain, service.MainReadonly).(bool)
 	srv.mx.RUnlock()
-	handler := createHandler(urlPrefix, readonlyMode)
+	handler := createHandler(urlPrefix, simple, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()

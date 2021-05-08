@@ -114,7 +114,7 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 		case "r":
 			cfg.Set(keyReadOnly, flg.Value.String())
 		case "v":
-			cfg.Set(startup.KeyVerbose, flg.Value.String())
+			cfg.Set(keyVerbose, flg.Value.String())
 		}
 	})
 	return cfg
@@ -123,13 +123,21 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 const (
 	keyListenAddr = "listen-addr"
 	keyReadOnly   = "read-only-mode"
+	keyVerbose    = "verbose"
 	keyURLPrefix  = "url-prefix"
 )
 
-func setServiceConfig(cfg *meta.Meta) error {
+func setServiceConfig(cfg *meta.Meta, simple bool) error {
 	ok := setConfigValue(true, service.SubMain, service.MainReadonly, cfg.GetBool(keyReadOnly))
+	ok = setConfigValue(ok, service.SubMain, service.MainVerbose, cfg.GetBool(keyVerbose))
+
 	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
+
+	// MainSimple must be set last, when it is known to have authentication or not.
+	// Previous code: 	config.simple = simple && !config.withAuth
+	ok = setConfigValue(ok, service.SubMain, service.MainSimple, simple)
+
 	if !ok {
 		return errors.New("unable to set configuration")
 	}
@@ -143,7 +151,7 @@ func setConfigValue(ok bool, subsys service.Subservice, key string, val interfac
 	return service.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
+func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	var mgr place.Manager
 	var idx index.Indexer
 	if withPlaces {
@@ -165,7 +173,7 @@ func setupOperations(cfg *meta.Meta, withPlaces, simple bool) error {
 		startup.SetupStartupConfig(cfg)
 	}
 
-	startup.SetupStartupService(mgr, idx, simple)
+	startup.SetupStartupService(mgr, idx)
 	if withPlaces {
 		if err := mgr.Start(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
@@ -217,11 +225,11 @@ func executeCommand(name string, args ...string) int {
 		return 1
 	}
 	cfg := getConfig(fs)
-	if err := setServiceConfig(cfg); err != nil {
+	if err := setServiceConfig(cfg, command.Simple); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	if err := setupOperations(cfg, command.Places, command.Simple); err != nil {
+	if err := setupOperations(cfg, command.Places); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}

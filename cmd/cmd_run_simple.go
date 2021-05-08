@@ -13,7 +13,6 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -30,12 +29,12 @@ func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress).(string)
 	exitCode, err := doRun(false)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
-		log.Println()
-		log.Println("--------------------------")
-		log.Printf("Open your browser and enter the following URL:")
-		log.Println()
-		log.Printf("    http://localhost%v", listenAddr[idx:])
-		log.Println()
+		srvm.Log()
+		srvm.Log("--------------------------")
+		srvm.Log("Open your browser and enter the following URL:")
+		srvm.Log()
+		srvm.Log(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
+		srvm.Log()
 	}
 	srvm.WaitForShutdown()
 	return exitCode, err

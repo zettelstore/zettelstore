@@ -86,6 +86,8 @@ const (
 	MainHostname  = "hostname"
 	MainProgname  = "progname"
 	MainReadonly  = "readonly"
+	MainSimple    = "simple"
+	MainVerbose   = "verbose"
 	MainVersion   = "version"
 )
 
@@ -99,4 +101,4 @@ const (
 type KeyDescrValue struct{ Key, Descr, Value string }
 
 // CreateHandlerFunc is called to create a new web service handler.
-type CreateHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler
+type CreateHandlerFunc func(urlPrefix string, simple, readonlyMode bool) http.Handler

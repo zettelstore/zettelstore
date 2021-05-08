@@ -38,9 +38,10 @@ func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDesc
 	return srv.config.getConfigList(subsrv)
 }
 
+type parseFunc func(string) interface{}
 type descriptionMap map[string]struct {
 	text    string
-	parse   func(string) interface{}
+	parse   parseFunc
 	canList bool
 }
 type interfaceMap map[string]interface{}
@@ -73,15 +74,18 @@ func (cfg *srvConfig) Initialize() {
 		service.MainHostname:  {"Host name", nil, false},
 		service.MainProgname:  {"Program name", nil, false},
 		service.MainReadonly:  {"Read-only mode", parseBool, true},
-		service.MainVersion: {"Version", func(val string) interface{} {
-			if cfg.frozen {
-				return nil
-			}
-			if val == "" {
-				return "unknown"
-			}
-			return val
-		}, false},
+		service.MainSimple:    {"Run in simple mode", cfg.noFrozen(parseBool), true},
+		service.MainVerbose:   {"Verbose output", parseBool, true},
+		service.MainVersion: {
+			"Version",
+			cfg.noFrozen(func(val string) interface{} {
+				if val == "" {
+					return "unknown"
+				}
+				return val
+			}),
+			false,
+		},
 	}
 	cfg.mainCur = interfaceMap{
 		service.MainGoArch:    runtime.GOARCH,
@@ -89,6 +93,8 @@ func (cfg *srvConfig) Initialize() {
 		service.MainGoVersion: runtime.Version(),
 		service.MainHostname:  "*unknwon host*",
 		service.MainReadonly:  false,
+		service.MainSimple:    false,
+		service.MainVerbose:   false,
 	}
 	if hn, err := os.Hostname(); err == nil {
 		cfg.mainCur[service.MainHostname] = hn
@@ -103,7 +109,9 @@ func (cfg *srvConfig) Initialize() {
 					return val
 				}
 				return nil
-			}, true},
+			},
+			true,
+		},
 	}
 	cfg.webNext = interfaceMap{
 		service.WebListenAddress: "127.0.0.1:23123",
@@ -111,6 +119,14 @@ func (cfg *srvConfig) Initialize() {
 	}
 }
 
+func (cfg *srvConfig) noFrozen(parse parseFunc) parseFunc {
+	return func(val string) interface{} {
+		if cfg.frozen {
+			return nil
+		}
+		return parse(val)
+	}
+}
 func parseString(val string) interface{} { return val }
 func parseBool(val string) interface{} {
 	if val == "" {

@@ -70,8 +70,6 @@ func genConfigM(zid id.Zid) *meta.Meta {
 func genConfigC(m *meta.Meta) string {
 	var sb strings.Builder
 	sb.WriteString("|=Name|=Value>\n")
-	fmt.Fprintf(&sb, "|Simple|%v\n", startup.IsSimple())
-	fmt.Fprintf(&sb, "|Verbose|%v\n", startup.IsVerbose())
 	fmt.Fprintf(&sb, "|Authentication enabled|%v\n", startup.WithAuth())
 	fmt.Fprintf(&sb, "|Secure cookie|%v\n", startup.SecureCookie())
 	fmt.Fprintf(&sb, "|Persistent Cookie|%v\n", startup.PersistentCookie())

@@ -26,7 +26,6 @@ import (
 
 var config struct {
 	// Set in SetupStartupConfig
-	verbose             bool
 	defaultDirPlaceType string
 	owner               id.Zid
 	withAuth            bool
@@ -37,7 +36,6 @@ var config struct {
 	apiLifetime         time.Duration
 
 	// Set in SetupStartupService
-	simple  bool // was started without run command
 	manager place.Manager
 	indexer index.Indexer
 }
@@ -51,7 +49,6 @@ const (
 	KeyPlaceOneURI         = "place-1-uri"
 	KeyTokenLifetimeHTML   = "token-lifetime-html"
 	KeyTokenLifetimeAPI    = "token-lifetime-api"
-	KeyVerbose             = "verbose"
 )
 
 // Important values for some keys.
@@ -65,7 +62,6 @@ func SetupStartupConfig(cfg *meta.Meta) {
 	if config.defaultDirPlaceType != "" {
 		panic("startup.config already set")
 	}
-	config.verbose = cfg.GetBool(KeyVerbose)
 	if defaultType, ok := cfg.Get(KeyDefaultDirPlaceType); ok {
 		switch defaultType {
 		case ValueDirPlaceTypeNotify:
@@ -96,11 +92,10 @@ func SetupStartupConfig(cfg *meta.Meta) {
 }
 
 // SetupStartupService initializes the startup data with internal services.
-func SetupStartupService(manager place.Manager, idx index.Indexer, simple bool) {
+func SetupStartupService(manager place.Manager, idx index.Indexer) {
 	if config.defaultDirPlaceType == "" {
 		panic("startup.config not set")
 	}
-	config.simple = simple && !config.withAuth
 	config.manager = manager
 	config.indexer = idx
 }
@@ -140,13 +135,6 @@ func getDuration(
 	}
 	return defDur
 }
-
-// IsSimple returns true if Zettelstore was not started with command "run"
-// and authentication is disabled.
-func IsSimple() bool { return config.simple }
-
-// IsVerbose returns whether the system should be more chatty about its operations.
-func IsVerbose() bool { return config.verbose }
 
 // DefaultDirPlaceType returns the default value for a directory place type.
 func DefaultDirPlaceType() string { return config.defaultDirPlaceType }
