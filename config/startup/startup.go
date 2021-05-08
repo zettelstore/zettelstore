@@ -106,6 +106,7 @@ var configKeys = []string{
 	service.MainHostname,
 	service.MainGoOS,
 	service.MainGoArch,
+	service.MainVersion,
 }
 
 func calcSecret(cfg *meta.Meta) []byte {
