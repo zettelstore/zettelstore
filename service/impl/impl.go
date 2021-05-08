@@ -72,7 +72,7 @@ func (srv *myService) Start(headline bool) {
 			srv.config.GetConfig(service.SubMain, service.MainGoArch),
 		))
 		srv.doLog("Licensed under the latest version of the EUPL (European Union Public License)")
-		if srv.config.GetConfig(service.SubMain, service.MainReadonly).(bool) {
+		if srv.config.GetConfig(service.SubAuth, service.AuthReadonly).(bool) {
 			srv.doLog("Read-only mode")
 		}
 	}

@@ -61,6 +61,9 @@ type srvConfig struct {
 	frozen    bool
 	mainDescr descriptionMap
 	mainCur   interfaceMap
+	authDescr descriptionMap
+	authCur   interfaceMap
+	authNext  interfaceMap
 	webDescr  descriptionMap
 	webCur    interfaceMap
 	webNext   interfaceMap
@@ -73,8 +76,6 @@ func (cfg *srvConfig) Initialize() {
 		service.MainGoVersion: {"Go Version", nil, false},
 		service.MainHostname:  {"Host name", nil, false},
 		service.MainProgname:  {"Program name", nil, false},
-		service.MainReadonly:  {"Read-only mode", parseBool, true},
-		service.MainSimple:    {"Run in simple mode", cfg.noFrozen(parseBool), true},
 		service.MainVerbose:   {"Verbose output", parseBool, true},
 		service.MainVersion: {
 			"Version",
@@ -92,12 +93,19 @@ func (cfg *srvConfig) Initialize() {
 		service.MainGoOS:      runtime.GOOS,
 		service.MainGoVersion: runtime.Version(),
 		service.MainHostname:  "*unknwon host*",
-		service.MainReadonly:  false,
-		service.MainSimple:    false,
 		service.MainVerbose:   false,
 	}
 	if hn, err := os.Hostname(); err == nil {
 		cfg.mainCur[service.MainHostname] = hn
+	}
+
+	cfg.authDescr = descriptionMap{
+		service.AuthReadonly: {"Read-only mode", parseBool, true},
+		service.AuthSimple:   {"Simple user mode", cfg.noFrozen(parseBool), true},
+	}
+	cfg.authNext = interfaceMap{
+		service.AuthReadonly: false,
+		service.AuthSimple:   false,
 	}
 
 	cfg.webDescr = descriptionMap{
@@ -143,6 +151,8 @@ func (cfg *srvConfig) SetConfig(subsrv service.Subservice, key, value string) bo
 	switch subsrv {
 	case service.SubMain:
 		return cfg.storeConfig(cfg.mainCur, key, value, cfg.mainDescr)
+	case service.SubAuth:
+		return cfg.storeConfig(cfg.authNext, key, value, cfg.authDescr)
 	case service.SubWeb:
 		return cfg.storeConfig(cfg.webNext, key, value, cfg.webDescr)
 	}
@@ -174,13 +184,18 @@ func (cfg *srvConfig) GetConfig(subsrv service.Subservice, key string) interface
 	switch subsrv {
 	case service.SubMain:
 		return cfg.mainCur[key]
+	case service.SubAuth:
+		return fetchConfig(cfg.authCur, cfg.authNext, key)
 	case service.SubWeb:
-		if cfg.webCur == nil {
-			return cfg.webNext[key]
-		}
-		return cfg.webCur[key]
+		return fetchConfig(cfg.webCur, cfg.webNext, key)
 	}
-	return ""
+	return nil
+}
+func fetchConfig(curMap, nextMap interfaceMap, key string) interface{} {
+	if curMap == nil {
+		return nextMap[key]
+	}
+	return curMap[key]
 }
 
 func (cfg *srvConfig) getConfigList(subsrv service.Subservice) []service.KeyDescrValue {
@@ -188,6 +203,8 @@ func (cfg *srvConfig) getConfigList(subsrv service.Subservice) []service.KeyDesc
 	switch subsrv {
 	case service.SubMain:
 		descrMap = cfg.mainDescr
+	case service.SubAuth:
+		descrMap = cfg.authDescr
 	case service.SubWeb:
 		descrMap = cfg.webDescr
 	}

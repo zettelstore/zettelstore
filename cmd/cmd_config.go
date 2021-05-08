@@ -23,13 +23,12 @@ import (
 
 func cmdConfig(*flag.FlagSet, *meta.Meta) (int, error) {
 	srvm := service.Main
-	fmt.Println("Stores")
-	fmt.Printf("  Read-only mode    = %v\n", srvm.GetConfig(service.SubMain, service.MainReadonly))
 	fmt.Println("Web")
 	fmt.Printf("  Listen address    = %q\n", srvm.GetConfig(service.SubWeb, service.WebListenAddress))
 	fmt.Printf("  URL prefix        = %q\n", srvm.GetConfig(service.SubWeb, service.WebURLPrefix))
+	fmt.Println("Auth")
+	fmt.Printf("  Read-only mode    = %v\n", srvm.GetConfig(service.SubAuth, service.AuthReadonly))
 	if startup.WithAuth() {
-		fmt.Println("Auth")
 		fmt.Printf("  Owner             = %v\n", startup.Owner())
 		fmt.Printf("  Secure cookie     = %v\n", startup.SecureCookie())
 		fmt.Printf("  Persistent cookie = %v\n", startup.PersistentCookie())

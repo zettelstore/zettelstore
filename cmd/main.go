@@ -128,15 +128,15 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta, simple bool) error {
-	ok := setConfigValue(true, service.SubMain, service.MainReadonly, cfg.GetBool(keyReadOnly))
-	ok = setConfigValue(ok, service.SubMain, service.MainVerbose, cfg.GetBool(keyVerbose))
+	ok := setConfigValue(true, service.SubMain, service.MainVerbose, cfg.GetBool(keyVerbose))
 
 	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
 
-	// MainSimple must be set last, when it is known to have authentication or not.
+	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
+	// AuthSimple must be set last, when it is known to have authentication or not.
 	// Previous code: 	config.simple = simple && !config.withAuth
-	ok = setConfigValue(ok, service.SubMain, service.MainSimple, simple)
+	ok = setConfigValue(ok, service.SubAuth, service.AuthSimple, simple)
 
 	if !ok {
 		return errors.New("unable to set configuration")
@@ -162,7 +162,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			cfg.Set(startup.KeyDefaultDirPlaceType, startup.ValueDirPlaceTypeSimple)
 		}
 		startup.SetupStartupConfig(cfg)
-		readonlyMode := service.Main.GetConfig(service.SubMain, service.MainReadonly).(bool)
+		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
 		idx = indexer.New()
 		filter := index.NewMetaFilter(idx)
 		mgr, err = manager.New(getPlaces(cfg), readonlyMode, filter)

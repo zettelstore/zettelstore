@@ -75,23 +75,28 @@ type Subservice uint8
 // Constants for type Subservice.
 const (
 	SubMain Subservice = iota
+	SubAuth
 	SubWeb
 )
 
-// Constants for core system.
+// Constants for main system keys.
 const (
 	MainGoArch    = "go-arch"
 	MainGoOS      = "go-os"
 	MainGoVersion = "go-version"
 	MainHostname  = "hostname"
 	MainProgname  = "progname"
-	MainReadonly  = "readonly"
-	MainSimple    = "simple"
 	MainVerbose   = "verbose"
 	MainVersion   = "version"
 )
 
-// Constants for web subservice key.
+// Constants for authentication subservice keys.
+const (
+	AuthReadonly = "readonly"
+	AuthSimple   = "simple"
+)
+
+// Constants for web subservice keys.
 const (
 	WebListenAddress = "listen"
 	WebURLPrefix     = "prefix"
