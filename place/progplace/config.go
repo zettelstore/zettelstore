@@ -76,7 +76,7 @@ func genConfigC(m *meta.Meta) string {
 	html, api := startup.TokenLifetime()
 	fmt.Fprintf(&sb, "|API Token lifetime|%v\n", api)
 	fmt.Fprintf(&sb, "|HTML Token lifetime|%v\n", html)
-	writeSubsrvConfig(&sb, service.SubMain, "Main")
+	writeSubsrvConfig(&sb, service.SubCore, "Main")
 	writeSubsrvConfig(&sb, service.SubAuth, "Authentication")
 	writeSubsrvConfig(&sb, service.SubPlace, "Zettel places")
 	writeSubsrvConfig(&sb, service.SubWeb, "Web")

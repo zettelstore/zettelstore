@@ -18,37 +18,44 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
-type webService struct {
+type webSub struct {
+	subConfig
 	srvw          *server.Server
 	createHandler service.CreateHandlerFunc
 }
 
-func (srv *myService) WebSetConfig(createHandler service.CreateHandlerFunc) {
-	srv.web.createHandler = createHandler
+func (ws *webSub) Initialize() {
+	ws.descr = descriptionMap{
+		service.WebListenAddress: {"Listen address, format [IP_ADDRESS]:PORT", parseString, true},
+		service.WebURLPrefix: {
+			"URL prefix under which the web server runs",
+			func(val string) interface{} {
+				if val != "" && val[0] == '/' && val[len(val)-1] == '/' {
+					return val
+				}
+				return nil
+			},
+			true,
+		},
+	}
+	ws.next = interfaceMap{
+		service.WebListenAddress: "127.0.0.1:23123",
+		service.WebURLPrefix:     "/",
+	}
 }
 
-var (
-	errAlreadyStarted = errors.New("already started")
-	errConfigMissing  = errors.New("no configuration")
-	errAlreadyStopped = errors.New("already stopped")
-)
-
-func (srv *myService) WebStart() error {
-	srv.mx.RLock()
+func (ws *webSub) Start(srv *myService) error {
 	if srv.web.srvw != nil {
-		srv.mx.RUnlock()
 		return errAlreadyStarted
 	}
 	createHandler := srv.web.createHandler
 	if createHandler == nil {
-		srv.mx.RUnlock()
 		return errConfigMissing
 	}
-	listenAddr := srv.config.GetConfig(service.SubWeb, service.WebListenAddress).(string)
-	urlPrefix := srv.config.GetConfig(service.SubWeb, service.WebURLPrefix).(string)
-	simple := srv.config.GetConfig(service.SubAuth, service.AuthSimple).(bool)
-	readonlyMode := srv.config.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-	srv.mx.RUnlock()
+	listenAddr := ws.GetConfig(service.WebListenAddress).(string)
+	urlPrefix := ws.GetConfig(service.WebURLPrefix).(string)
+	simple := srv.auth.GetConfig(service.AuthSimple).(bool)
+	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
 	handler := createHandler(urlPrefix, simple, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
@@ -60,23 +67,25 @@ func (srv *myService) WebStart() error {
 	}
 	srv.doLog("Start Zettelstore Web Service")
 	srv.doLog("Listening on", listenAddr)
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
-	srv.config.switchNextToCur(service.SubWeb)
-	srv.web.srvw = srvw
+	ws.srvw = srvw
 	return nil
 }
 
-func (srv *myService) WebStop() error {
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
-	return srv.doWebStop()
-}
-func (srv *myService) doWebStop() error {
-	srvw := srv.web.srvw
+func (ws *webSub) Stop(srv *myService) error {
+	srvw := ws.srvw
 	if srvw == nil {
 		return errAlreadyStopped
 	}
 	srv.doLog("Stopping Zettelstore Web Service ...")
 	return srvw.Stop()
 }
+
+func (srv *myService) WebSetConfig(createHandler service.CreateHandlerFunc) {
+	srv.web.createHandler = createHandler
+}
+
+var (
+	errAlreadyStarted = errors.New("already started")
+	errConfigMissing  = errors.New("no configuration")
+	errAlreadyStopped = errors.New("already stopped")
+)

@@ -32,14 +32,14 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	return m
 }
 func genVersionBuildC(*meta.Meta) string {
-	return service.Main.GetConfig(service.SubMain, service.MainVersion).(string)
+	return service.Main.GetConfig(service.SubCore, service.CoreVersion).(string)
 }
 
 func genVersionHostM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Host")
 }
 func genVersionHostC(*meta.Meta) string {
-	return service.Main.GetConfig(service.SubMain, service.MainHostname).(string)
+	return service.Main.GetConfig(service.SubCore, service.CoreHostname).(string)
 }
 
 func genVersionOSM(zid id.Zid) *meta.Meta {
@@ -48,7 +48,7 @@ func genVersionOSM(zid id.Zid) *meta.Meta {
 func genVersionOSC(*meta.Meta) string {
 	return fmt.Sprintf(
 		"%v/%v",
-		service.Main.GetConfig(service.SubMain, service.MainGoOS).(string),
-		service.Main.GetConfig(service.SubMain, service.MainGoArch).(string),
+		service.Main.GetConfig(service.SubCore, service.CoreGoOS).(string),
+		service.Main.GetConfig(service.SubCore, service.CoreGoArch).(string),
 	)
 }

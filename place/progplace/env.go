@@ -47,7 +47,7 @@ func genEnvironmentC(*meta.Meta) string {
 	sb.WriteString("|=Name|=Value>\n")
 	fmt.Fprintf(&sb, "|Working directory| %v\n", workDir)
 	fmt.Fprintf(&sb, "|Executable| %v\n", execName)
-	fmt.Fprintf(&sb, "|Build with| %v\n", service.Main.GetConfig(service.SubMain, service.MainGoVersion))
+	fmt.Fprintf(&sb, "|Build with| %v\n", service.Main.GetConfig(service.SubCore, service.CoreGoVersion))
 
 	sb.WriteString("=== Environment\n")
 	sb.WriteString("|=Key>|=Value<\n")

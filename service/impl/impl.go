@@ -34,8 +34,10 @@ type myService struct {
 	observer  []chan service.Unit
 	debug     bool
 
-	config srvConfig
-	web    webService
+	core  coreSub
+	auth  authSub
+	place placeSub
+	web   webSub
 }
 
 // create and start a new service.
@@ -50,12 +52,18 @@ func createAndStart() service.Service {
 		commands:  make(chan workerCommand),
 		interrupt: make(chan os.Signal, 5),
 	}
-	srv.config.Initialize()
+	srv.core.Initialize()
+	srv.auth.Initialize()
+	srv.place.Initialize()
+	srv.web.Initialize()
 	return srv
 }
 
 func (srv *myService) Start(headline bool) {
-	srv.config.frozen = true
+	srv.core.frozen = true
+	srv.auth.frozen = true
+	srv.place.frozen = true
+	srv.web.frozen = true
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
@@ -65,14 +73,14 @@ func (srv *myService) Start(headline bool) {
 	if headline {
 		srv.doLog(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
-			srv.config.GetConfig(service.SubMain, service.MainProgname),
-			srv.config.GetConfig(service.SubMain, service.MainVersion),
-			srv.config.GetConfig(service.SubMain, service.MainGoVersion),
-			srv.config.GetConfig(service.SubMain, service.MainGoOS),
-			srv.config.GetConfig(service.SubMain, service.MainGoArch),
+			srv.core.GetConfig(service.CoreProgname),
+			srv.core.GetConfig(service.CoreVersion),
+			srv.core.GetConfig(service.CoreGoVersion),
+			srv.core.GetConfig(service.CoreGoOS),
+			srv.core.GetConfig(service.CoreGoArch),
 		))
 		srv.doLog("Licensed under the latest version of the EUPL (European Union Public License)")
-		if srv.config.GetConfig(service.SubAuth, service.AuthReadonly).(bool) {
+		if srv.auth.GetConfig(service.AuthReadonly).(bool) {
 			srv.doLog("Read-only mode")
 		}
 	}
@@ -126,7 +134,7 @@ func (srv *myService) shutdown() {
 	srv.observer = nil
 	srv.started = false
 	if srv.web.srvw != nil {
-		srv.doWebStop()
+		srv.web.Stop(srv)
 	}
 }
 
@@ -202,4 +210,85 @@ func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {
 	srv.Log(name, "recovered from:", recoverInfo)
 	debug.PrintStack()
 	return true
+}
+
+// --- Sub-service handling --------------------------------------------------
+
+func (srv *myService) getSubservice(subsrv service.Subservice) subService {
+	switch subsrv {
+	case service.SubCore:
+		return &srv.core
+	case service.SubAuth:
+		return &srv.auth
+	case service.SubPlace:
+		return &srv.place
+	case service.SubWeb:
+		return &srv.web
+	}
+	return nil
+}
+
+func (srv *myService) SetConfig(subsrv service.Subservice, key, value string) bool {
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
+	if sub := srv.getSubservice(subsrv); sub != nil {
+		return sub.SetConfig(key, value)
+	}
+	return false
+}
+
+func (srv *myService) GetConfig(subsrv service.Subservice, key string) interface{} {
+	srv.mx.RLock()
+	defer srv.mx.RUnlock()
+	if sub := srv.getSubservice(subsrv); sub != nil {
+		return sub.GetConfig(key)
+	}
+	return nil
+}
+
+func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDescrValue {
+	srv.mx.RLock()
+	defer srv.mx.RUnlock()
+	if sub := srv.getSubservice(subsrv); sub != nil {
+		return sub.GetConfigList()
+	}
+	return nil
+}
+
+func (srv *myService) StartSub(subsrv service.Subservice) error {
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
+	if sub := srv.getSubservice(subsrv); sub != nil {
+		if err := sub.Start(srv); err != nil {
+			return err
+		}
+		sub.SwitchNextToCur()
+	}
+	return nil
+}
+func (srv *myService) StopSub(subsrv service.Subservice) error {
+	return nil
+}
+
+type subService interface {
+	// Initialize the data for the sub-service.
+	Initialize()
+
+	// SetConfig stores a configuration value.
+	SetConfig(key, value string) bool
+
+	// GetConfig returns a configuration value.
+	GetConfig(key string) interface{}
+
+	// GetConfigList returns a sorted list of configuration data.
+	GetConfigList() []service.KeyDescrValue
+
+	// Start start the given sub-service.
+	Start(srv *myService) error
+
+	// SwitchNextToCur moves next config data to current.
+	SwitchNextToCur()
+
+	// Stop stop the given sub-service.
+	Stop(srv *myService) error
 }

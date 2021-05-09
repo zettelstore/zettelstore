@@ -48,16 +48,16 @@ type Service interface {
 	// GetConfigList returns a sorted list of configuration data.
 	GetConfigList(subsrv Subservice) []KeyDescrValue
 
+	// StartSub start the given sub-service.
+	StartSub(subsrv Subservice) error
+
+	// StopSub stop the given sub-service.
+	StopSub(subsrv Subservice) error
+
 	// --- Web server related methods ----------------------------------------
 
 	// WebSetConfig store the configuration data for the next start of the web server.
 	WebSetConfig(CreateHandlerFunc)
-
-	// WebStart the web service.
-	WebStart() error
-
-	// WebStop the web service.
-	WebStop() error
 }
 
 // Main references the main service.
@@ -74,21 +74,21 @@ type Subservice uint8
 
 // Constants for type Subservice.
 const (
-	SubMain Subservice = iota
+	SubCore Subservice = iota
 	SubAuth
 	SubPlace
 	SubWeb
 )
 
-// Constants for main system keys.
+// Constants for core subservice system keys.
 const (
-	MainGoArch    = "go-arch"
-	MainGoOS      = "go-os"
-	MainGoVersion = "go-version"
-	MainHostname  = "hostname"
-	MainProgname  = "progname"
-	MainVerbose   = "verbose"
-	MainVersion   = "version"
+	CoreGoArch    = "go-arch"
+	CoreGoOS      = "go-os"
+	CoreGoVersion = "go-version"
+	CoreHostname  = "hostname"
+	CoreProgname  = "progname"
+	CoreVerbose   = "verbose"
+	CoreVersion   = "version"
 )
 
 // Constants for authentication subservice keys.

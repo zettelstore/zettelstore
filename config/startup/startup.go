@@ -76,12 +76,12 @@ func SetupStartupService(manager place.Manager, idx index.Indexer) {
 }
 
 var configKeys = []string{
-	service.MainProgname,
-	service.MainGoVersion,
-	service.MainHostname,
-	service.MainGoOS,
-	service.MainGoArch,
-	service.MainVersion,
+	service.CoreProgname,
+	service.CoreGoVersion,
+	service.CoreHostname,
+	service.CoreGoOS,
+	service.CoreGoArch,
+	service.CoreVersion,
 }
 
 func calcSecret(cfg *meta.Meta) []byte {
@@ -90,7 +90,7 @@ func calcSecret(cfg *meta.Meta) []byte {
 		io.WriteString(h, secret)
 	}
 	for _, key := range configKeys {
-		io.WriteString(h, service.Main.GetConfig(service.SubMain, key).(string))
+		io.WriteString(h, service.Main.GetConfig(service.SubCore, key).(string))
 	}
 	return h.Sum(nil)
 }

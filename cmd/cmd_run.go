@@ -58,7 +58,7 @@ func doRun(debug bool) (int, error) {
 	srvm.WebSetConfig(func(urlPrefix string, simple, readonlyMode bool) http.Handler {
 		return setupRouting(urlPrefix, startup.PlaceManager(), simple, readonlyMode)
 	})
-	if err := srvm.WebStart(); err != nil {
+	if err := srvm.StartSub(service.SubWeb); err != nil {
 		return 1, err
 	}
 	return 0, nil

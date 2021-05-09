@@ -128,7 +128,7 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta, simple bool) error {
-	ok := setConfigValue(true, service.SubMain, service.MainVerbose, cfg.GetBool(keyVerbose))
+	ok := setConfigValue(true, service.SubCore, service.CoreVerbose, cfg.GetBool(keyVerbose))
 
 	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
 	// AuthSimple must be set last, when it is known to have authentication or not.
@@ -252,8 +252,8 @@ func executeCommand(name string, args ...string) int {
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) {
-	service.Main.SetConfig(service.SubMain, service.MainProgname, progName)
-	service.Main.SetConfig(service.SubMain, service.MainVersion, buildVersion)
+	service.Main.SetConfig(service.SubCore, service.CoreProgname, progName)
+	service.Main.SetConfig(service.SubCore, service.CoreVersion, buildVersion)
 	var exitCode int
 	if len(os.Args) <= 1 {
 		exitCode = runSimple()
