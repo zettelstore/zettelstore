@@ -13,6 +13,7 @@ package server
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 )
@@ -61,10 +62,14 @@ func (srv *Server) SetDebug() {
 }
 
 // Run starts the web server, but does not wait for its completion.
-func (srv *Server) Run() {
-	go func() {
-		srv.ListenAndServe()
-	}()
+func (srv *Server) Run() error {
+	ln, err := net.Listen("tcp", srv.Addr)
+	if err != nil {
+		return err
+	}
+
+	go func() { srv.Serve(ln) }()
+	return nil
 }
 
 // Stop the web server.

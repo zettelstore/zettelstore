@@ -54,9 +54,12 @@ func (srv *myService) WebStart() error {
 	if srv.debug {
 		srvw.SetDebug()
 	}
+	if err := srvw.Run(); err != nil {
+		srv.doLog("Unable to start Zettelstore Web Service:", err)
+		return err
+	}
 	srv.doLog("Start Zettelstore Web Service")
 	srv.doLog("Listening on", listenAddr)
-	srvw.Run()
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
 	srv.config.switchNextToCur(service.SubWeb)
