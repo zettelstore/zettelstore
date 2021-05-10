@@ -68,10 +68,9 @@ func (ws *webSub) Start(srv *myService) error {
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
 
-	simple := srv.auth.GetConfig(service.AuthSimple).(bool)
 	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
 
-	handler := createHandler(urlPrefix, simple, readonlyMode)
+	handler := createHandler(urlPrefix, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()

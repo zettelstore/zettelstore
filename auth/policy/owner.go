@@ -53,7 +53,7 @@ func (o *ownerPolicy) CanRead(user, m *meta.Meta) bool {
 
 func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool {
 	switch vis {
-	case meta.VisibilityOwner, meta.VisibilitySimple, meta.VisibilityExpert:
+	case meta.VisibilityOwner, meta.VisibilityExpert:
 		return false
 	case meta.VisibilityPublic:
 		return true
@@ -127,7 +127,7 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 
 func (o *ownerPolicy) checkVisibility(user *meta.Meta, vis meta.Visibility) (bool, bool) {
 	switch vis {
-	case meta.VisibilitySimple, meta.VisibilityExpert:
+	case meta.VisibilityExpert:
 		return o.userIsOwner(user) && o.expertMode(), true
 	}
 	return false, false

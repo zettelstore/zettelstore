@@ -11,7 +11,7 @@ If you have problems concerning Zettelstore,
 do not hesitate to get in [[contact with the main developer|mailto:ds@zettelstore.de]].
 
 === Reporting errors
-If you have encountered an error, please include the content of the following zettel in your mail:
+If you have encountered an error, please include the content of the following zettel in your mail (if possible):
 * [[Zettelstore Version|00000000000001]]
 * [[Zettelstore Operating System|00000000000003]]
 * [[Zettelstore Startup Configuration|00000000000096]]

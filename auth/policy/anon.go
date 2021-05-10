@@ -11,12 +11,9 @@
 // Package policy provides some interfaces and implementation for authorization policies.
 package policy
 
-import (
-	"zettelstore.de/z/domain/meta"
-)
+import "zettelstore.de/z/domain/meta"
 
 type anonPolicy struct {
-	simpleMode    bool
 	expertMode    func() bool
 	getVisibility func(*meta.Meta) meta.Visibility
 	pre           Policy
@@ -44,8 +41,6 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
 	switch ap.getVisibility(m) {
-	case meta.VisibilitySimple:
-		return ap.simpleMode || ap.expertMode()
 	case meta.VisibilityExpert:
 		return ap.expertMode()
 	}

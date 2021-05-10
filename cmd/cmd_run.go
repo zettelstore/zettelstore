@@ -56,8 +56,8 @@ func doRun(debug bool) (int, error) {
 	srvm := service.Main
 	srvm.Log(fmt.Sprintf("Zettel location [%v]", startup.PlaceManager().Location()))
 	srvm.SetDebug(debug)
-	srvm.WebSetConfig(func(urlPrefix string, simple, readonlyMode bool) http.Handler {
-		return setupRouting(urlPrefix, startup.PlaceManager(), simple, readonlyMode)
+	srvm.WebSetConfig(func(urlPrefix string, readonlyMode bool) http.Handler {
+		return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
 	})
 	if err := srvm.StartSub(service.SubWeb); err != nil {
 		return 1, err
@@ -65,11 +65,11 @@ func doRun(debug bool) (int, error) {
 	return 0, nil
 }
 
-func setupRouting(urlPrefix string, mgr place.Manager, simple, readonlyMode bool) http.Handler {
+func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.Handler {
 	router := router.NewRouter(urlPrefix)
 	var up place.Place = mgr
 	pp, pol := policy.PlaceWithPolicy(
-		up, simple, startup.WithAuth, readonlyMode, runtime.GetExpertMode,
+		up, startup.WithAuth, readonlyMode, runtime.GetExpertMode,
 		startup.IsOwner, runtime.GetVisibility)
 	te := webui.NewTemplateEngine(mgr, pol, router.NewURLBuilder)
 

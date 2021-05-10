@@ -24,7 +24,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	}
 	m := meta.New(zid)
 	m.Set(meta.KeyTitle, "Zettelstore Startup Configuration")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilitySimple)
+	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
 	return m
 }
 

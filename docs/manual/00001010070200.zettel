@@ -3,7 +3,7 @@ title: Visibility rules for zettel
 role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20210510150043
+modified: 20210510194652
 
 For every zettel you can specify under which condition the zettel is visible to others.
 This is controlled with the metadata key [[''visibility''|00001006020000#visibility]].
@@ -24,11 +24,6 @@ The following values are supported:
 
   This is for zettel with sensitive content that might irritate the owner.
   Computed zettel with internal runtime information are examples for such a zettel.
-; [!simple-expert]""simple-expert""
-: The owner of the Zettelstore can access the zettel, if expert mode is enabled, or if authentication is disabled and the Zettelstore is started without any command.
-
-  The reason for this is to show all computed zettel to an user that started the Zettestore in simple mode.
-  Many computed zettel should be given in error reporting and a new user might not be able to enable expert mode.
 
 When you install a Zettelstore, only some zettel have visibility ""public"".
 One is the zettel that contains CSS for displaying the web interface.

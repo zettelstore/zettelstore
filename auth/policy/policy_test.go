@@ -21,27 +21,18 @@ import (
 
 func TestPolicies(t *testing.T) {
 	testScene := []struct {
-		simple   bool
 		readonly bool
 		withAuth bool
 		expert   bool
 	}{
-		{true, true, true, true},
-		{true, true, true, false},
-		{true, true, false, true},
-		{true, true, false, false},
-		{true, false, true, true},
-		{true, false, true, false},
-		{true, false, false, true},
-		{true, false, false, false},
-		{false, true, true, true},
-		{false, true, true, false},
-		{false, true, false, true},
-		{false, true, false, false},
-		{false, false, true, true},
-		{false, false, true, false},
-		{false, false, false, true},
-		{false, false, false, false},
+		{true, true, true},
+		{true, true, false},
+		{true, false, true},
+		{true, false, false},
+		{false, true, true},
+		{false, true, false},
+		{false, false, true},
+		{false, false, false},
 	}
 	for _, ts := range testScene {
 		var authFunc func() bool
@@ -56,15 +47,15 @@ func TestPolicies(t *testing.T) {
 		} else {
 			expertFunc = noExpertMode
 		}
-		pol := newPolicy(ts.simple, authFunc, ts.readonly, expertFunc, isOwner, getVisibility)
-		name := fmt.Sprintf("simple=%v/readonly=%v/withauth=%v/expert=%v",
-			ts.simple, ts.readonly, ts.withAuth, ts.expert)
+		pol := newPolicy(authFunc, ts.readonly, expertFunc, isOwner, getVisibility)
+		name := fmt.Sprintf("readonly=%v/withauth=%v/expert=%v",
+			ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
-			testCreate(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
-			testRead(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
-			testWrite(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
-			testRename(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
-			testDelete(tt, pol, ts.simple, ts.withAuth, ts.readonly, ts.expert)
+			testCreate(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testRead(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testWrite(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testRename(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testDelete(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 		})
 	}
 }
@@ -83,14 +74,12 @@ func getVisibility(m *meta.Meta) meta.Visibility {
 			return meta.VisibilityOwner
 		case meta.ValueVisibilityExpert:
 			return meta.VisibilityExpert
-		case meta.ValueVisibilitySimple:
-			return meta.VisibilitySimple
 		}
 	}
 	return meta.VisibilityLogin
 }
 
-func testCreate(t *testing.T, pol Policy, simple, withAuth, readonly, isExpert bool) {
+func testCreate(t *testing.T, pol Policy, withAuth, readonly, isExpert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -133,7 +122,7 @@ func testCreate(t *testing.T, pol Policy, simple, withAuth, readonly, isExpert b
 	}
 }
 
-func testRead(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
+func testRead(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -145,7 +134,6 @@ func testRead(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool)
 	loginZettel := newLoginZettel()
 	ownerZettel := newOwnerZettel()
 	expertZettel := newExpertZettel()
-	simpleZettel := newSimpleZettel()
 	userZettel := newUserZettel()
 	testCases := []struct {
 		user *meta.Meta
@@ -188,12 +176,6 @@ func testRead(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool)
 		{writer, expertZettel, !withAuth && expert},
 		{owner, expertZettel, expert},
 		{owner2, expertZettel, expert},
-		// Simple expert zettel
-		{anonUser, simpleZettel, !withAuth && (simple || expert)},
-		{reader, simpleZettel, !withAuth && (simple || expert)},
-		{writer, simpleZettel, !withAuth && (simple || expert)},
-		{owner, simpleZettel, (!withAuth && simple) || expert},
-		{owner2, simpleZettel, (!withAuth && simple) || expert},
 		// Other user zettel
 		{anonUser, userZettel, !withAuth},
 		{reader, userZettel, !withAuth},
@@ -218,7 +200,7 @@ func testRead(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool)
 	}
 }
 
-func testWrite(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
+func testWrite(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -230,7 +212,6 @@ func testWrite(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool
 	loginZettel := newLoginZettel()
 	ownerZettel := newOwnerZettel()
 	expertZettel := newExpertZettel()
-	simpleZettel := newSimpleZettel()
 	userZettel := newUserZettel()
 	writerNew := writer.Clone()
 	writerNew.Set(meta.KeyUserRole, owner.GetDefault(meta.KeyUserRole, ""))
@@ -299,12 +280,6 @@ func testWrite(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool
 		{writer, expertZettel, expertZettel, !withAuth && !readonly && expert},
 		{owner, expertZettel, expertZettel, !readonly && expert},
 		{owner2, expertZettel, expertZettel, !readonly && expert},
-		// Simple expert zettel
-		{anonUser, simpleZettel, expertZettel, !withAuth && !readonly && (simple || expert)},
-		{reader, simpleZettel, expertZettel, !withAuth && !readonly && (simple || expert)},
-		{writer, simpleZettel, expertZettel, !withAuth && !readonly && (simple || expert)},
-		{owner, simpleZettel, expertZettel, !readonly && ((!withAuth && simple) || expert)},
-		{owner2, simpleZettel, expertZettel, !readonly && ((!withAuth && simple) || expert)},
 		// Other user zettel
 		{anonUser, userZettel, userZettel, !withAuth && !readonly},
 		{reader, userZettel, userZettel, !withAuth && !readonly},
@@ -359,7 +334,7 @@ func testWrite(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool
 	}
 }
 
-func testRename(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
+func testRename(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -368,7 +343,6 @@ func testRename(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 	owner2 := newOwner2()
 	zettel := newZettel()
 	expertZettel := newExpertZettel()
-	simpleZettel := newSimpleZettel()
 	roFalse := newRoFalseZettel()
 	roTrue := newRoTrueZettel()
 	roReader := newRoReaderZettel()
@@ -397,12 +371,6 @@ func testRename(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 		{writer, expertZettel, !withAuth && !readonly && expert},
 		{owner, expertZettel, !readonly && expert},
 		{owner2, expertZettel, !readonly && expert},
-		// Simple expert zettel
-		{anonUser, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{reader, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{writer, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{owner, simpleZettel, !readonly && ((!withAuth && simple) || expert)},
-		{owner2, simpleZettel, !readonly && ((!withAuth && simple) || expert)},
 		// No r/o zettel
 		{anonUser, roFalse, !withAuth && !readonly},
 		{reader, roFalse, !withAuth && !readonly},
@@ -444,7 +412,7 @@ func testRename(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 	}
 }
 
-func testDelete(t *testing.T, pol Policy, simple, withAuth, readonly, expert bool) {
+func testDelete(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -453,7 +421,6 @@ func testDelete(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 	owner2 := newOwner2()
 	zettel := newZettel()
 	expertZettel := newExpertZettel()
-	simpleZettel := newSimpleZettel()
 	roFalse := newRoFalseZettel()
 	roTrue := newRoTrueZettel()
 	roReader := newRoReaderZettel()
@@ -482,12 +449,6 @@ func testDelete(t *testing.T, pol Policy, simple, withAuth, readonly, expert boo
 		{writer, expertZettel, !withAuth && !readonly && expert},
 		{owner, expertZettel, !readonly && expert},
 		{owner2, expertZettel, !readonly && expert},
-		// Simple expert zettel
-		{anonUser, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{reader, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{writer, simpleZettel, !withAuth && !readonly && (simple || expert)},
-		{owner, simpleZettel, !readonly && ((!withAuth && simple) || expert)},
-		{owner2, simpleZettel, !readonly && ((!withAuth && simple) || expert)},
 		// No r/o zettel
 		{anonUser, roFalse, !withAuth && !readonly},
 		{reader, roFalse, !withAuth && !readonly},
@@ -595,12 +556,6 @@ func newExpertZettel() *meta.Meta {
 	m := meta.New(visZid)
 	m.Set(meta.KeyTitle, "Expert Zettel")
 	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
-	return m
-}
-func newSimpleZettel() *meta.Meta {
-	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Simple Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilitySimple)
 	return m
 }
 func newRoFalseZettel() *meta.Meta {

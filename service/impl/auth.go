@@ -22,11 +22,9 @@ type authSub struct {
 func (as *authSub) Initialize() {
 	as.descr = descriptionMap{
 		service.AuthReadonly: {"Read-only mode", parseBool, true},
-		service.AuthSimple:   {"Simple user mode", as.noFrozen(parseBool), true},
 	}
 	as.next = interfaceMap{
 		service.AuthReadonly: false,
-		service.AuthSimple:   false,
 	}
 }
 

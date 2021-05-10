@@ -64,7 +64,6 @@ func init() {
 		Name:   "run-simple",
 		Func:   runSimpleFunc,
 		Places: true,
-		Simple: true,
 		Header: true,
 		Flags:  flgSimpleRun,
 	})
@@ -145,16 +144,13 @@ const (
 	keyURLPrefix           = "url-prefix"
 )
 
-func setServiceConfig(cfg *meta.Meta, simple bool) error {
+func setServiceConfig(cfg *meta.Meta) error {
 	ok := setConfigValue(true, service.SubCore, service.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
 		ok = setConfigValue(ok, service.SubCore, service.CorePort, val)
 	}
 
 	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
-	// AuthSimple must be set last, when it is known to have authentication or not.
-	// Previous code: 	config.simple = simple && !config.withAuth
-	ok = setConfigValue(ok, service.SubAuth, service.AuthSimple, simple)
 
 	ok = setConfigValue(
 		ok, service.SubPlace, service.PlaceDefaultDirType,
@@ -254,7 +250,7 @@ func executeCommand(name string, args ...string) int {
 		return 1
 	}
 	cfg := getConfig(fs)
-	if err := setServiceConfig(cfg, command.Simple); err != nil {
+	if err := setServiceConfig(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}

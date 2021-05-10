@@ -22,7 +22,7 @@ import (
 func getVersionMeta(zid id.Zid, title string) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(meta.KeyTitle, title)
-	m.Set(meta.KeyVisibility, meta.ValueVisibilitySimple)
+	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
 	return m
 }
 

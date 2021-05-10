@@ -95,7 +95,6 @@ const (
 // Constants for authentication subservice keys.
 const (
 	AuthReadonly = "readonly"
-	AuthSimple   = "simple"
 )
 
 // Constants for place subservice keys.
@@ -119,4 +118,4 @@ const (
 type KeyDescrValue struct{ Key, Descr, Value string }
 
 // CreateHandlerFunc is called to create a new web service handler.
-type CreateHandlerFunc func(urlPrefix string, simple, readonlyMode bool) http.Handler
+type CreateHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler

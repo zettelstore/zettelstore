@@ -22,6 +22,11 @@
      on systems with a single user or with trusted users. It is disabled by
      default.
      (major: core)
+  *  Remove visibility value &ldquo;simple-expert&rdquo; introduced in
+     [#0_0_8|version 0.0.8]. It was too complicated, esp. authorization. There
+     was a name collision with the &ldquo;simple&rdquo; directory place
+     sub-type.
+     (major)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>
