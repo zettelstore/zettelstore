@@ -71,9 +71,9 @@ func (sess *cmdSession) printTable(table [][]string) {
 			if colno >= len(maxLen) {
 				maxLen = append(maxLen, 0)
 			}
-			if len(column) > maxLen[colno] {
-				if len(column) < sess.colwidth {
-					maxLen[colno] = len(column)
+			if colLen := strfun.Length(column); colLen > maxLen[colno] {
+				if colLen < sess.colwidth {
+					maxLen[colno] = colLen
 				} else {
 					maxLen[colno] = sess.colwidth
 				}

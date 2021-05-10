@@ -49,6 +49,22 @@ func TestTrimSpaceRight(t *testing.T) {
 	}
 }
 
+func TestLength(t *testing.T) {
+	testcases := []struct {
+		in  string
+		exp int
+	}{
+		{"", 0},
+		{"äbc", 3},
+	}
+	for i, tc := range testcases {
+		got := strfun.Length(tc.in)
+		if got != tc.exp {
+			t.Errorf("%d/%q: expected %v, got %v", i, tc.in, tc.exp, got)
+		}
+	}
+}
+
 func TestJustifyLeft(t *testing.T) {
 	testcases := []struct {
 		in  string

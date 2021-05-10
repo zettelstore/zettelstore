@@ -14,12 +14,18 @@ package strfun
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // TrimSpaceRight returns a slice of the string s, with all trailing white space removed,
 // as defined by Unicode.
 func TrimSpaceRight(s string) string {
 	return strings.TrimRightFunc(s, unicode.IsSpace)
+}
+
+// Length returns the number of runes in the given string.
+func Length(s string) int {
+	return utf8.RuneCountInString(s)
 }
 
 // JustifyLeft ensures that the string has a defined length.
