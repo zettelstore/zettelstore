@@ -3,14 +3,20 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+modified: 20210510183542
 
 ; ''bye''
 : Closes the connection to the administrator console.
 ; ''echo''
 : Toggles the echo mode, where each command is printed before execution
+; ''env''
+: Display environment values.
 ; ''help''
 : Displays a list of all available commands.
 ; ''list-config''
 : Displays internal configuration data.
+; ''metrics''
+: Displays some values that reflect the inner working of Zettelstore.
+  See [[here|https://golang.org/pkg/runtime/metrics/]] for a technical description of these values.
 ; ''shutdown''
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).

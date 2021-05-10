@@ -21,3 +21,27 @@ import (
 func TrimSpaceRight(s string) string {
 	return strings.TrimRightFunc(s, unicode.IsSpace)
 }
+
+// JustifyLeft ensures that the string has a defined length.
+func JustifyLeft(s string, maxLen int, pad rune) string {
+	if maxLen < 1 {
+		return ""
+	}
+	runes := make([]rune, 0, len(s))
+	for _, r := range s {
+		runes = append(runes, r)
+	}
+	if len(runes) > maxLen {
+		runes = runes[:maxLen]
+		runes[maxLen-1] = '\u2025'
+	}
+
+	var sb strings.Builder
+	for _, r := range runes {
+		sb.WriteRune(r)
+	}
+	for i := 0; i < maxLen-len(runes); i++ {
+		sb.WriteRune(pad)
+	}
+	return sb.String()
+}

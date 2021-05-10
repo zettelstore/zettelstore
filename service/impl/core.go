@@ -110,7 +110,16 @@ func (cs *coreSub) serve(ln net.Listener, srv *myService) {
 }
 
 func handleConnection(conn net.Conn, srv *myService) {
-	cmds := cmdSession{w: conn, srv: srv}
+	// Something may panic. Ensure a running connection.
+	defer func() {
+		if r := recover(); r != nil {
+			srv.doLogRecover("LineConn", r)
+			go handleConnection(conn, srv)
+		}
+	}()
+
+	cmds := cmdSession{}
+	cmds.initialize(conn, srv)
 	s := bufio.NewScanner(conn)
 	for s.Scan() {
 		line := s.Text()

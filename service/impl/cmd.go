@@ -12,17 +12,30 @@
 package impl
 
 import (
+	"fmt"
 	"io"
+	"os"
+	"runtime/metrics"
 	"sort"
 	"strings"
 
 	"zettelstore.de/z/service"
+	"zettelstore.de/z/strfun"
 )
 
 type cmdSession struct {
-	w    io.Writer
-	srv  *myService
-	echo bool
+	w        io.Writer
+	srv      *myService
+	echo     bool
+	header   bool
+	colwidth int
+}
+
+func (sess *cmdSession) initialize(w io.Writer, srv *myService) {
+	sess.w = w
+	sess.srv = srv
+	sess.header = true
+	sess.colwidth = 80
 }
 
 func (sess *cmdSession) executeLine(line string) bool {
@@ -51,7 +64,7 @@ func (sess *cmdSession) println(args ...string) {
 	io.WriteString(sess.w, "\n")
 }
 
-func (sess *cmdSession) printTable(table [][]string, withHeader bool) {
+func (sess *cmdSession) printTable(table [][]string) {
 	maxLen := make([]int, 0)
 	for _, row := range table {
 		for colno, column := range row {
@@ -59,26 +72,29 @@ func (sess *cmdSession) printTable(table [][]string, withHeader bool) {
 				maxLen = append(maxLen, 0)
 			}
 			if len(column) > maxLen[colno] {
-				maxLen[colno] = len(column)
+				if len(column) < sess.colwidth {
+					maxLen[colno] = len(column)
+				} else {
+					maxLen[colno] = sess.colwidth
+				}
 			}
 		}
 	}
 	if len(maxLen) == 0 {
 		return
 	}
-	if withHeader {
+	if sess.header {
 		sess.printRow(table[0], maxLen)
 		for colno := range table[0] {
 			if colno > 0 {
 				io.WriteString(sess.w, "-+-")
 			}
-			io.WriteString(sess.w, ljust("", maxLen[colno], '-'))
+			io.WriteString(sess.w, strfun.JustifyLeft("", maxLen[colno], '-'))
 		}
 		io.WriteString(sess.w, "\n")
-		table = table[1:]
 	}
 
-	for _, row := range table {
+	for _, row := range table[1:] {
 		sess.printRow(row, maxLen)
 	}
 }
@@ -87,22 +103,9 @@ func (sess *cmdSession) printRow(row []string, maxLen []int) {
 		if colno > 0 {
 			io.WriteString(sess.w, " | ")
 		}
-		io.WriteString(sess.w, ljust(column, maxLen[colno], ' '))
+		io.WriteString(sess.w, strfun.JustifyLeft(column, maxLen[colno], ' '))
 	}
 	io.WriteString(sess.w, "\n")
-}
-
-func ljust(s string, l int, fill byte) string {
-	if l <= len(s) {
-		return s
-	}
-	var sb strings.Builder
-	sb.Grow(l)
-	sb.WriteString(s)
-	for i := 0; i < l-len(s); i++ {
-		sb.WriteByte(fill)
-	}
-	return sb.String()
 }
 
 func splitLine(line string) (string, []string) {
@@ -138,8 +141,23 @@ var commands = map[string]command{
 				sess.println("echo is off")
 			}
 			return true
-		}},
+		},
+	},
+	"header": {
+		"toggle table header",
+		func(sess *cmdSession, cmd string, args []string) bool {
+			sess.header = !sess.header
+			if sess.header {
+				sess.println("header are on")
+			} else {
+				sess.println("header are off")
+			}
+			return true
+		},
+	},
+	"env":         {"show environment values", cmdEnvironment},
 	"list-config": {"list configuration data", cmdListConfig},
+	"metrics":     {"show Go runtime metrics", cmdMetrics},
 }
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
@@ -185,5 +203,73 @@ func listSubConfig(sess *cmdSession, subsrv service.Subservice) {
 	for _, kdv := range l {
 		table = append(table, []string{kdv.Key, kdv.Value, kdv.Descr})
 	}
-	sess.printTable(table, true)
+	sess.printTable(table)
+}
+
+func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
+	var samples []metrics.Sample
+	all := metrics.All()
+	for _, d := range all {
+		if d.Kind == metrics.KindFloat64Histogram {
+			continue
+		}
+		samples = append(samples, metrics.Sample{Name: d.Name})
+	}
+	metrics.Read(samples)
+
+	table := [][]string{{"Value", "Description"}}
+	i := 0
+	for _, d := range all {
+		if d.Kind == metrics.KindFloat64Histogram {
+			continue
+		}
+		descr := d.Description
+		if pos := strings.IndexByte(descr, '.'); pos > 0 {
+			descr = descr[:pos]
+		}
+		value := samples[i].Value
+		i++
+		var sVal string
+		switch value.Kind() {
+		case metrics.KindUint64:
+			sVal = fmt.Sprintf("%v", value.Uint64())
+		case metrics.KindFloat64:
+			sVal = fmt.Sprintf("%v", value.Float64())
+		case metrics.KindFloat64Histogram:
+			sVal = "(Histogramm)"
+		case metrics.KindBad:
+			sVal = "BAD"
+		default:
+			sVal = fmt.Sprintf("(unexpected metric kind: %v)", value.Kind())
+		}
+		table = append(table, []string{sVal, descr})
+	}
+	sess.printTable(table)
+	return true
+}
+
+func cmdEnvironment(sess *cmdSession, cmd string, args []string) bool {
+	workDir, err := os.Getwd()
+	if err != nil {
+		workDir = err.Error()
+	}
+	execName, err := os.Executable()
+	if err != nil {
+		execName = err.Error()
+	}
+	envs := os.Environ()
+	sort.Strings(envs)
+
+	table := [][]string{
+		{"Key", "Value"},
+		{"workdir", workDir},
+		{"executable", execName},
+	}
+	for _, env := range envs {
+		if pos := strings.IndexByte(env, '='); pos >= 0 && pos < len(env) {
+			table = append(table, []string{env[:pos], env[pos+1:]})
+		}
+	}
+	sess.printTable(table)
+	return true
 }

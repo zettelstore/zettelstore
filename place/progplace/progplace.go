@@ -58,8 +58,6 @@ func getPlace(mf index.MetaFilter) place.ManagedPlace {
 				id.VersionZid:              {genVersionBuildM, genVersionBuildC},
 				id.HostZid:                 {genVersionHostM, genVersionHostC},
 				id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
-				id.EnvironmentZid:          {genEnvironmentM, genEnvironmentC},
-				id.MetricsZid:              {genRuntimeM, genRuntimeC},
 				id.IndexerZid:              {genIndexerM, genIndexerC},
 				id.PlaceManagerZid:         {genManagerM, genManagerC},
 				id.MetadataKeyZid:          {genKeysM, genKeysC},

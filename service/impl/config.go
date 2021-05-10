@@ -14,6 +14,7 @@ package impl
 import (
 	"fmt"
 	"sort"
+	"sync"
 
 	"zettelstore.de/z/service"
 )
@@ -38,6 +39,7 @@ func (m interfaceMap) Clone() interfaceMap {
 }
 
 type subConfig struct {
+	mx     sync.RWMutex
 	frozen bool
 	descr  descriptionMap
 	cur    interfaceMap
@@ -54,6 +56,8 @@ func (cfg *subConfig) noFrozen(parse parseFunc) parseFunc {
 }
 
 func (cfg *subConfig) SetConfig(key, value string) bool {
+	cfg.mx.Lock()
+	defer cfg.mx.Unlock()
 	descr, ok := cfg.descr[key]
 	if !ok {
 		return false
@@ -75,6 +79,8 @@ func (cfg *subConfig) SetConfig(key, value string) bool {
 }
 
 func (cfg *subConfig) GetConfig(key string) interface{} {
+	cfg.mx.RLock()
+	defer cfg.mx.RUnlock()
 	if cfg.cur == nil {
 		return cfg.next[key]
 	}
@@ -82,6 +88,8 @@ func (cfg *subConfig) GetConfig(key string) interface{} {
 }
 
 func (cfg *subConfig) GetNextConfig(key string) interface{} {
+	cfg.mx.RLock()
+	defer cfg.mx.RUnlock()
 	return cfg.next[key]
 }
 
@@ -112,6 +120,8 @@ func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
 }
 
 func (cfg *subConfig) SwitchNextToCur() {
+	cfg.mx.Lock()
+	defer cfg.mx.Unlock()
 	cfg.cur = cfg.next.Clone()
 }
 
