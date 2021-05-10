@@ -3,6 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+modified: 20210510153258
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -15,6 +16,13 @@ The file for startup configuration must be created via a text editor in advance.
 The syntax of the configuration file is the same as for any zettel metadata.
 The following keys are supported:
 
+; [!admin-port]''admin-port''
+: Specifies the TCP port through which you can reach the [[administrator console|00001004100000]].
+  A value of ''0'' (the default) disables the administrators console.
+
+  On most operating systems, the value must be greater than ''1024'' unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
+
+  Default: ''0''
 ; [!default-dir-place-type]''default-dir-place-type''
 : Specifies the default value for the (sub-) type of [[directory places|00001004011400#type]].
   Zettel are typically stored in such places.

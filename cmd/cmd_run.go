@@ -33,7 +33,8 @@ import (
 
 func flgRun(fs *flag.FlagSet) {
 	fs.String("c", defConfigfile, "configuration file")
-	fs.Uint("p", 23123, "port number")
+	fs.Uint("a", 0, "port number core service (0=disable)")
+	fs.Uint("p", 23123, "port number web service")
 	fs.String("d", "", "zettel directory")
 	fs.Bool("r", false, "system-wide read-only mode")
 	fs.Bool("v", false, "verbose mode")

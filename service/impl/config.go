@@ -81,13 +81,17 @@ func (cfg *subConfig) GetConfig(key string) interface{} {
 	return cfg.cur[key]
 }
 
-func (cfg *subConfig) GetConfigList() []service.KeyDescrValue {
+func (cfg *subConfig) GetNextConfig(key string) interface{} {
+	return cfg.next[key]
+}
+
+func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
 	if len(cfg.descr) == 0 {
 		return nil
 	}
 	keys := make([]string, 0, len(cfg.descr))
 	for k, descr := range cfg.descr {
-		if descr.canList {
+		if all || descr.canList {
 			keys = append(keys, k)
 		}
 	}
@@ -111,7 +115,7 @@ func (cfg *subConfig) SwitchNextToCur() {
 	cfg.cur = cfg.next.Clone()
 }
 
-func parseString(val string) interface{} { return val }
+// func parseString(val string) interface{} { return val }
 func parseBool(val string) interface{} {
 	if val == "" {
 		return false

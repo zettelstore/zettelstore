@@ -86,6 +86,7 @@ const (
 	CoreGoOS      = "go-os"
 	CoreGoVersion = "go-version"
 	CoreHostname  = "hostname"
+	CorePort      = "port"
 	CoreProgname  = "progname"
 	CoreVerbose   = "verbose"
 	CoreVersion   = "version"

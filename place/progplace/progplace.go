@@ -64,7 +64,6 @@ func getPlace(mf index.MetaFilter) place.ManagedPlace {
 				id.PlaceManagerZid:         {genManagerM, genManagerC},
 				id.MetadataKeyZid:          {genKeysM, genKeysC},
 				id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
-				id.StartupValuesZid:        {genConfigM, genConfigC},
 			},
 			filter: mf,
 		}

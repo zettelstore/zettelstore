@@ -43,7 +43,6 @@ const (
 	PlaceManagerZid         = Zid(20)
 	MetadataKeyZid          = Zid(90)
 	StartupConfigurationZid = Zid(96)
-	StartupValuesZid        = Zid(98)
 	ConfigurationZid        = Zid(100)
 
 	// WebUI HTML templates are in the range 10000..19999

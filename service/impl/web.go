@@ -13,6 +13,7 @@ package impl
 
 import (
 	"errors"
+	"net"
 
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
@@ -26,7 +27,19 @@ type webSub struct {
 
 func (ws *webSub) Initialize() {
 	ws.descr = descriptionMap{
-		service.WebListenAddress: {"Listen address, format [IP_ADDRESS]:PORT", parseString, true},
+		service.WebListenAddress: {
+			"Listen address",
+			func(val string) interface{} {
+				host, port, err := net.SplitHostPort(val)
+				if err != nil {
+					return nil
+				}
+				if _, err := net.LookupPort("tcp", port); err != nil {
+					return nil
+				}
+				return net.JoinHostPort(host, port)
+			},
+			true},
 		service.WebURLPrefix: {
 			"URL prefix under which the web server runs",
 			func(val string) interface{} {
@@ -52,20 +65,23 @@ func (ws *webSub) Start(srv *myService) error {
 	if createHandler == nil {
 		return errConfigMissing
 	}
-	listenAddr := ws.GetConfig(service.WebListenAddress).(string)
-	urlPrefix := ws.GetConfig(service.WebURLPrefix).(string)
+	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
+	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
+
 	simple := srv.auth.GetConfig(service.AuthSimple).(bool)
 	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
+
 	handler := createHandler(urlPrefix, simple, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
 	}
+	progname := srv.core.GetConfig(service.CoreProgname).(string)
 	if err := srvw.Run(); err != nil {
-		srv.doLog("Unable to start Zettelstore Web Service:", err)
+		srv.doLog("Unable to start", progname, "Web Service:", err)
 		return err
 	}
-	srv.doLog("Start Zettelstore Web Service")
+	srv.doLog("Start", progname, "Web Service")
 	srv.doLog("Listening on", listenAddr)
 	ws.srvw = srvw
 	return nil
@@ -76,7 +92,7 @@ func (ws *webSub) Stop(srv *myService) error {
 	if srvw == nil {
 		return errAlreadyStopped
 	}
-	srv.doLog("Stopping Zettelstore Web Service ...")
+	srv.doLog("Stopping", srv.core.GetConfig(service.CoreProgname).(string), "Web Service ...")
 	return srvw.Stop()
 }
 

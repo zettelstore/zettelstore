@@ -3,6 +3,7 @@ title: The ''run'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
+modified: 20210510153318
 precursor: 00001004050000
 
 === ``zettelstore run``
@@ -12,12 +13,15 @@ This starts the web service.
 zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
 ```
 
-; ''-c CONFIGFILE''
+; [!a]''-a PORT''
+: Specifies the TCP port through which you can reach the [[administrator console|00001004100000]].
+  See the explanation of [[''admin-port''|00001004010000#admin-port]] for more details.
+; [!c]''-c CONFIGFILE''
 : Specifies ''CONFIGFILE'' as a file, where [[startup configuration data|00001004010000]] is read.
   It is ignored, when the given file is not available, nor readable.
 
   Default: ''./.zscfg''. (''.\\.zscfg'' on Windows)), where ''.'' denotes the ""current directory"".
-; ''-d DIR''
+; [!d]''-d DIR''
 : Specifies ''DIR'' as the directory that contains all zettel.
 
   Default is ''./zettel'' (''.\\zettel'' on Windows), where ''.'' denotes the ""current directory"".
@@ -27,20 +31,19 @@ zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
   Especially do not enable it for a production server.
 
   [[https://blog.cloudflare.com/exposing-go-on-the-internet/#timeouts]] contains a good explanation for the usefulness of sensitive timeout values.
-; ''-p PORT''
-: Specifies the integer value ''PORT'' as the TCP port, where the Zettelstore service listens for requests.
+; [!p]''-p PORT''
+: Specifies the integer value ''PORT'' as the TCP port, where the Zettelstore web server listens for requests.
 
   Default: 23123.
 
   Zettelstore listens only on ''127.0.0.1'', e.g. only requests from the current computer will be processed.
-  If you want to listen on network card to process requests from other computer, please use ''listen-addr'' of the configuration file as described below.
-; ''-r''
+  If you want to listen on network card to process requests from other computer, please use [[''listen-addr''|00001004010000#listen-addr]] of the configuration file as described below.
+; [!r]''-r''
 : Puts the Zettelstore in read-only mode.
   No changes are possible via the web interface / via the API.
 
   This allows to publish your content without any risks of unauthorized changes.
-; ''-v''
+; [!v]''-v''
 : Be more verbose in writing logs.
-  Writes the startup configuration to stderr.
 
-Command line options take precedence over configuration file options.
+Command line options take precedence over [[configuration file|00001004010000]] options.

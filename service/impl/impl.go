@@ -67,6 +67,7 @@ func (srv *myService) Start(headline bool) {
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
+	srv.StartSub(service.SubCore)
 
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
@@ -250,7 +251,7 @@ func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDesc
 	srv.mx.RLock()
 	defer srv.mx.RUnlock()
 	if sub := srv.getSubservice(subsrv); sub != nil {
-		return sub.GetConfigList()
+		return sub.GetConfigList(false)
 	}
 	return nil
 }
@@ -277,11 +278,14 @@ type subService interface {
 	// SetConfig stores a configuration value.
 	SetConfig(key, value string) bool
 
-	// GetConfig returns a configuration value.
+	// GetConfig returns the current configuration value.
 	GetConfig(key string) interface{}
 
+	// GetNextConfig returns the next configuration value.
+	GetNextConfig(key string) interface{}
+
 	// GetConfigList returns a sorted list of configuration data.
-	GetConfigList() []service.KeyDescrValue
+	GetConfigList(all bool) []service.KeyDescrValue
 
 	// Start start the given sub-service.
 	Start(srv *myService) error

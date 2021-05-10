@@ -15,7 +15,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
 	"os"
+	"strconv"
 	"strings"
 
 	"zettelstore.de/z/config/runtime"
@@ -101,7 +103,13 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
-			cfg.Set(keyListenAddr, "127.0.0.1:"+flg.Value.String())
+			if portStr, err := parsePort(flg.Value.String()); err == nil {
+				cfg.Set(keyListenAddr, net.JoinHostPort("127.0.0.1", portStr))
+			}
+		case "a":
+			if portStr, err := parsePort(flg.Value.String()); err == nil {
+				cfg.Set(keyAdminPort, portStr)
+			}
 		case "d":
 			val := flg.Value.String()
 			if strings.HasPrefix(val, "/") {
@@ -119,7 +127,17 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	return cfg
 }
 
+func parsePort(s string) (string, error) {
+	port, err := net.LookupPort("tcp", s)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Wrong port specification: %q", s)
+		return "", err
+	}
+	return strconv.Itoa(port), nil
+}
+
 const (
+	keyAdminPort           = "admin-port"
 	keyDefaultDirPlaceType = "default-dir-place-type"
 	keyListenAddr          = "listen-addr"
 	keyReadOnly            = "read-only-mode"
@@ -129,6 +147,9 @@ const (
 
 func setServiceConfig(cfg *meta.Meta, simple bool) error {
 	ok := setConfigValue(true, service.SubCore, service.CoreVerbose, cfg.GetBool(keyVerbose))
+	if val, found := cfg.Get(keyAdminPort); found {
+		ok = setConfigValue(ok, service.SubCore, service.CorePort, val)
+	}
 
 	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
 	// AuthSimple must be set last, when it is known to have authentication or not.
@@ -139,7 +160,9 @@ func setServiceConfig(cfg *meta.Meta, simple bool) error {
 		ok, service.SubPlace, service.PlaceDefaultDirType,
 		cfg.GetDefault(keyDefaultDirPlaceType, service.PlaceDirTypeNotify))
 
-	ok = setConfigValue(ok, service.SubWeb, service.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
+	ok = setConfigValue(
+		ok, service.SubWeb, service.WebListenAddress,
+		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
 
 	if !ok {
@@ -149,10 +172,11 @@ func setServiceConfig(cfg *meta.Meta, simple bool) error {
 }
 
 func setConfigValue(ok bool, subsys service.Subservice, key string, val interface{}) bool {
-	if !ok {
-		return false
+	done := service.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
+	if !done {
+		service.Main.Log("unable to set configuration:", key, val)
 	}
-	return service.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
+	return ok && done
 }
 
 func setupOperations(cfg *meta.Meta, withPlaces bool) error {

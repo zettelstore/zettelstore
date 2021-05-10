@@ -18,6 +18,12 @@
      substituted with the new default image, a spinning emoji.
      See [/file?name=place/constplace/emoji_spin.gif].
      (minor: webui)
+  *  Administrator console (only optional accessible locally). Currently, it
+     allows to show internal configuration data (replaces expert zettel
+     &ldquo;Zettelstore Start-up Values&rdquo;) and to terminate Zettelstore.
+     Enable it only on systems with a single user of with trusted users. It is
+     disabled by default.
+     (major: core)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>

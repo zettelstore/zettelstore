@@ -3,6 +3,7 @@ title: API: Shape the list of zettel metadata with filter options
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210510150129
 
 In most cases, it is not essential to list //all// zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.
@@ -24,7 +25,7 @@ However, if you want all zettel that does //not// match a given value, you must 
 For example, if you want to retrieve all zettel that do not contain the string ""API"" in their title, your request will be:
 ```sh
 # curl 'http://127.0.0.1:23123/z?title=!API'
-{"list":[{"id":"00010000000000","url":"/z/00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000098 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","url":"/z/00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
+{"list":[{"id":"00010000000000","url":"/z/00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","url":"/z/00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
 ...
 ```
 The empty query parameter values matches all zettel that contain the given metadata key.

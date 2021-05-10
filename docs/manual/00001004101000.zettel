@@ -1,0 +1,16 @@
+id: 00001004101000
+title: List of supported commands of the administrator console
+role: manual
+tags: #configuration #manual #zettelstore
+syntax: zmk
+
+; ''bye''
+: Closes the connection to the administrator console.
+; ''echo''
+: Toggles the echo mode, where each command is printed before execution
+; ''help''
+: Displays a list of all available commands.
+; ''list-config''
+: Displays internal configuration data.
+; ''shutdown''
+: Terminate the Zettelstore itself (and closes the connection to the administrator console).

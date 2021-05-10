@@ -1,0 +1,25 @@
+id: 00001004100000
+title: Zettelstore Administrator Console
+role: manual
+tags: #configuration #manual #zettelstore
+syntax: zmk
+modified: 20210510155859
+
+The administrator console is a service accessible only on the same computer on which Zettelstore is running.
+It allows an experienced user to monitor and control some of the inner workings of Zettelstore.
+
+You enable the administrator console by specifying a TCP port number greater than zero (better: greater than 1024) for it, either via the [[command-line parameter ''-a''|00001004051000#a]] or via the ''admin-port'' key of the [[startup configuration file|00001004010000#admin-port]].
+
+After you enable the administrator console, you can use tools such as [[PuTTY|https://www.chiark.greenend.org.uk/~sgtatham/putty/]] or other telnet software to connect to the administrator console.
+In fact, the administrator console is //not// a full telnet service.
+It is merely a simple line-oriented service where each input line is interpreted separately.
+Therefore, you can also use tools like [[netcat|https://nc110.sourceforge.io/]], [[socat|http://www.dest-unreach.org/socat/]], etc.
+
+After connecting to the administrator console, there is no further authentication.
+It is not needed because you must be logged in on the same computer where Zettelstore is running.
+You cannot connect to the administrator console if you are on a different computer.
+Of course, on multi-user systems with untrusted users, you should not enable the administrator console.
+
+* Enable via [[command line|00001004051000#a]]
+* Enable via [[configuration file|00001004010000#admin-port]]
+* [[List of supported commands|00001004101000]]
