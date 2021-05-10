@@ -119,6 +119,12 @@ func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
 	return result
 }
 
+func (cfg *subConfig) Freeze() {
+	cfg.mx.Lock()
+	cfg.frozen = true
+	cfg.mx.Unlock()
+}
+
 func (cfg *subConfig) SwitchNextToCur() {
 	cfg.mx.Lock()
 	defer cfg.mx.Unlock()

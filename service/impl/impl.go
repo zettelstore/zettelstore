@@ -34,10 +34,18 @@ type myService struct {
 	observer  []chan service.Unit
 	debug     bool
 
-	core  coreSub
-	auth  authSub
-	place placeSub
-	web   webSub
+	core     coreSub
+	auth     authSub
+	place    placeSub
+	index    indexSub
+	web      webSub
+	subs     map[service.Subservice]subServceDescr
+	subNames map[string]subService
+}
+
+type subServceDescr struct {
+	sub  subService
+	name string
 }
 
 // create and start a new service.
@@ -52,18 +60,28 @@ func createAndStart() service.Service {
 		commands:  make(chan workerCommand),
 		interrupt: make(chan os.Signal, 5),
 	}
-	srv.core.Initialize()
-	srv.auth.Initialize()
-	srv.place.Initialize()
-	srv.web.Initialize()
+	srv.subs = map[service.Subservice]subServceDescr{
+		service.SubCore:  {&srv.core, "core"},
+		service.SubAuth:  {&srv.auth, "auth"},
+		service.SubPlace: {&srv.place, "place"},
+		service.SubIndex: {&srv.index, "index"},
+		service.SubWeb:   {&srv.web, "web"},
+	}
+	srv.subNames = make(map[string]subService, len(srv.subs))
+	for key, subDescr := range srv.subs {
+		if sub, ok := srv.subNames[subDescr.name]; ok {
+			panic(fmt.Sprintf("Key %q already given for sub-service %v", key, sub))
+		}
+		srv.subNames[subDescr.name] = subDescr.sub
+		subDescr.sub.Initialize()
+	}
 	return srv
 }
 
 func (srv *myService) Start(headline bool) {
-	srv.core.frozen = true
-	srv.auth.frozen = true
-	srv.place.frozen = true
-	srv.web.frozen = true
+	for _, sub := range srv.subs {
+		sub.sub.Freeze()
+	}
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
@@ -216,15 +234,8 @@ func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {
 // --- Sub-service handling --------------------------------------------------
 
 func (srv *myService) getSubservice(subsrv service.Subservice) subService {
-	switch subsrv {
-	case service.SubCore:
-		return &srv.core
-	case service.SubAuth:
-		return &srv.auth
-	case service.SubPlace:
-		return &srv.place
-	case service.SubWeb:
-		return &srv.web
+	if sub, ok := srv.subs[subsrv]; ok {
+		return sub.sub
 	}
 	return nil
 }
@@ -286,6 +297,9 @@ type subService interface {
 
 	// GetConfigList returns a sorted list of configuration data.
 	GetConfigList(all bool) []service.KeyDescrValue
+
+	// Freeze disallows to change some fixed configuration values.
+	Freeze()
 
 	// Start start the given sub-service.
 	Start(srv *myService) error

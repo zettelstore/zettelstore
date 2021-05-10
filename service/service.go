@@ -77,6 +77,7 @@ const (
 	SubCore Subservice = iota
 	SubAuth
 	SubPlace
+	SubIndex
 	SubWeb
 )
 

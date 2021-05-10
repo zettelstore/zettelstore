@@ -156,7 +156,8 @@ var commands = map[string]command{
 		},
 	},
 	"env":         {"show environment values", cmdEnvironment},
-	"list-config": {"list configuration data", cmdListConfig},
+	"show-config": {"show configuration data", cmdListConfig},
+	"subsystems":  {"show available subsystems", cmdSubsystems},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 }
 
@@ -167,19 +168,15 @@ func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
 		if key == "" {
 			continue
 		}
-		if len(key) > maxLen {
-			maxLen = len(key)
+		if keyLen := strfun.Length(key); keyLen > maxLen {
+			maxLen = keyLen
 		}
 		cmds = append(cmds, key)
 	}
 	sort.Strings(cmds)
 	sess.println("Available commands:")
 	for _, cmd := range cmds {
-		cmdName := cmd
-		for len(cmdName) < maxLen {
-			cmdName += " "
-		}
-		sess.println("-", cmdName, commands[cmd].Text)
+		sess.println("-", strfun.JustifyLeft(cmd, maxLen, ' '), commands[cmd].Text)
 	}
 	return true
 }
@@ -204,6 +201,19 @@ func listSubConfig(sess *cmdSession, subsrv service.Subservice) {
 		table = append(table, []string{kdv.Key, kdv.Value, kdv.Descr})
 	}
 	sess.printTable(table)
+}
+
+func cmdSubsystems(sess *cmdSession, cmd string, args []string) bool {
+	names := make([]string, 0, len(sess.srv.subNames))
+	for name := range sess.srv.subNames {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	sess.println("Available sub-systems:")
+	for _, name := range names {
+		sess.println("-", name)
+	}
+	return true
 }
 
 func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
