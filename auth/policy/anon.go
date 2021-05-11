@@ -40,8 +40,7 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 }
 
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
-	switch ap.getVisibility(m) {
-	case meta.VisibilityExpert:
+	if ap.getVisibility(m) == meta.VisibilityExpert {
 		return ap.expertMode()
 	}
 	return true

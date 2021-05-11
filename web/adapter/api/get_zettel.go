@@ -12,9 +12,11 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -72,44 +74,56 @@ func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMe
 		}
 		switch part {
 		case partZettel:
-			inhMeta := false
-			if format != "raw" {
-				w.Header().Set(adapter.ContentType, format2ContentType(format))
-				inhMeta = true
-			}
-			enc := encoder.Create(format, &env)
-			if enc == nil {
-				err = adapter.ErrNoSuchFormat
-			} else {
-				_, err = enc.WriteZettel(w, zn, inhMeta)
-			}
+			err = writeZettelPartZettel(w, zn, format, env)
 		case partMeta:
-			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			if enc := encoder.Create(format, nil); enc != nil {
-				if format == "raw" {
-					_, err = enc.WriteMeta(w, zn.Meta)
-				} else {
-					_, err = enc.WriteMeta(w, zn.InhMeta)
-				}
-			} else {
-				err = adapter.ErrNoSuchFormat
-			}
+			err = writeZettelPartMeta(w, zn, format)
 		case partContent:
-			if format == "raw" {
-				if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Meta)); ok {
-					w.Header().Add(adapter.ContentType, ct)
-				}
-			} else {
-				w.Header().Set(adapter.ContentType, format2ContentType(format))
-			}
-			err = writeContent(w, zn, format, &env)
+			err = writeZettelPartContent(w, zn, format, env)
 		}
 		if err != nil {
-			if err == adapter.ErrNoSuchFormat {
+			if errors.Is(err, adapter.ErrNoSuchFormat) {
 				adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in format %q", zid.String(), format))
 				return
 			}
 			adapter.InternalServerError(w, "Get zettel", err)
 		}
 	}
+}
+
+func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
+	enc := encoder.Create(format, &env)
+	if enc == nil {
+		return adapter.ErrNoSuchFormat
+	}
+	inhMeta := false
+	if format != "raw" {
+		w.Header().Set(adapter.ContentType, format2ContentType(format))
+		inhMeta = true
+	}
+	_, err := enc.WriteZettel(w, zn, inhMeta)
+	return err
+}
+
+func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format string) error {
+	w.Header().Set(adapter.ContentType, format2ContentType(format))
+	if enc := encoder.Create(format, nil); enc != nil {
+		if format == "raw" {
+			_, err := enc.WriteMeta(w, zn.Meta)
+			return err
+		}
+		_, err := enc.WriteMeta(w, zn.InhMeta)
+		return err
+	}
+	return adapter.ErrNoSuchFormat
+}
+
+func writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
+	if format == "raw" {
+		if ct, ok := syntax2contentType(runtime.GetSyntax(zn.Meta)); ok {
+			w.Header().Add(adapter.ContentType, ct)
+		}
+	} else {
+		w.Header().Set(adapter.ContentType, format2ContentType(format))
+	}
+	return writeContent(w, zn, format, &env)
 }

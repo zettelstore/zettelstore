@@ -126,8 +126,7 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 }
 
 func (o *ownerPolicy) checkVisibility(user *meta.Meta, vis meta.Visibility) (bool, bool) {
-	switch vis {
-	case meta.VisibilityExpert:
+	if vis == meta.VisibilityExpert {
 		return o.userIsOwner(user) && o.expertMode(), true
 	}
 	return false, false

@@ -65,45 +65,48 @@ func (sess *cmdSession) println(args ...string) {
 }
 
 func (sess *cmdSession) printTable(table [][]string) {
+	maxLen := sess.calcMaxLen(table)
+	if len(maxLen) == 0 {
+		return
+	}
+	if sess.header {
+		sess.printRow(table[0], maxLen, " | ", ' ')
+		hLine := make([]string, len(table[0]))
+		sess.printRow(hLine, maxLen, "-+-", '-')
+	}
+
+	for _, row := range table[1:] {
+		sess.printRow(row, maxLen, " | ", ' ')
+	}
+}
+
+func (sess *cmdSession) calcMaxLen(table [][]string) []int {
 	maxLen := make([]int, 0)
 	for _, row := range table {
 		for colno, column := range row {
 			if colno >= len(maxLen) {
 				maxLen = append(maxLen, 0)
 			}
-			if colLen := strfun.Length(column); colLen > maxLen[colno] {
-				if colLen < sess.colwidth {
-					maxLen[colno] = colLen
-				} else {
-					maxLen[colno] = sess.colwidth
-				}
+			colLen := strfun.Length(column)
+			if colLen <= maxLen[colno] {
+				continue
+			}
+			if colLen < sess.colwidth {
+				maxLen[colno] = colLen
+			} else {
+				maxLen[colno] = sess.colwidth
 			}
 		}
 	}
-	if len(maxLen) == 0 {
-		return
-	}
-	if sess.header {
-		sess.printRow(table[0], maxLen)
-		for colno := range table[0] {
-			if colno > 0 {
-				io.WriteString(sess.w, "-+-")
-			}
-			io.WriteString(sess.w, strfun.JustifyLeft("", maxLen[colno], '-'))
-		}
-		io.WriteString(sess.w, "\n")
-	}
-
-	for _, row := range table[1:] {
-		sess.printRow(row, maxLen)
-	}
+	return maxLen
 }
-func (sess *cmdSession) printRow(row []string, maxLen []int) {
+
+func (sess *cmdSession) printRow(row []string, maxLen []int, delim string, pad rune) {
 	for colno, column := range row {
 		if colno > 0 {
-			io.WriteString(sess.w, " | ")
+			io.WriteString(sess.w, delim)
 		}
-		io.WriteString(sess.w, strfun.JustifyLeft(column, maxLen[colno], ' '))
+		io.WriteString(sess.w, strfun.JustifyLeft(column, maxLen[colno], pad))
 	}
 	io.WriteString(sess.w, "\n")
 }

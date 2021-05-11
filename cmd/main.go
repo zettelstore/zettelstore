@@ -86,7 +86,7 @@ func init() {
 	})
 }
 
-func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
+func readConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	var configFile string
 	if configFlag := fs.Lookup("c"); configFlag != nil {
 		configFile = configFlag.Value.String()
@@ -95,10 +95,13 @@ func getConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	}
 	content, err := os.ReadFile(configFile)
 	if err != nil {
-		cfg = meta.New(id.Invalid)
-	} else {
-		cfg = meta.NewFromInput(id.Invalid, input.NewInput(string(content)))
+		return meta.New(id.Invalid)
 	}
+	return meta.NewFromInput(id.Invalid, input.NewInput(string(content)))
+}
+
+func getConfig(fs *flag.FlagSet) *meta.Meta {
+	cfg := readConfig(fs)
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
