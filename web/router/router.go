@@ -124,6 +124,13 @@ func (rt *Router) Handle(pattern string, handler http.Handler) {
 }
 
 func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
+		if len(r.URL.Path) < prefixLen || r.URL.Path[:prefixLen] != rt.urlPrefix {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		r.URL.Path = r.URL.Path[prefixLen-1:]
+	}
 	match := rt.reURL.FindStringSubmatch(r.URL.Path)
 	if len(match) == 3 {
 		key := match[1][0]

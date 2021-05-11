@@ -3,6 +3,7 @@ title: External server to encrypt message transport
 role: manual
 tags: #configuration #encryption #manual #security #zettelstore
 syntax: zmk
+modified: 20210511131719
 
 Since Zettelstore does not encrypt the messages it exchanges with its clients, you may need some additional software to enable encryption.
 
@@ -58,13 +59,12 @@ zettelstore.de {
     root /var/www/html
   }
   route /manual/* {
-    uri strip_prefix /manual
     reverse_proxy localhost:23123
   }
 }
 ```
-This will forwards requests with the prefix ""/manual"" to the running Zettelstore.
+This will forwards requests with the prefix ""/manual/"" to the running Zettelstore.
 All other requests will be handled by Caddy itself.
 
-In this case you must specify the startup configuration key ''url-prefix'' with the value ""/manual"".
-This is to allow the Zettelstore to give you the correct URLs with the given prefix.
+In this case you must specify the [[startup configuration key ''url-prefix''|00001004010000#url-prefix]] with the value ""/manual/"".
+This is to allow Zettelstore ignore the prefix while reading web requests and to give the correct URLs with the given prefix when sending a web response.

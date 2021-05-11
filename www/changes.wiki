@@ -27,6 +27,9 @@
      was a name collision with the &ldquo;simple&rdquo; directory place
      sub-type.
      (major)
+  *  Web server processes startup configuration <tt>url-prefix</tt>. There is
+     no need for stripping the prefix by a front-end web server any more.
+     (minor: webui, api)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>

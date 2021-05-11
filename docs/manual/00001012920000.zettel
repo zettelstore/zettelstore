@@ -3,10 +3,11 @@ title: Endpoints used by the API
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
+modified: 20210511131339
 
-All API endpoints conform to the pattern ''[PREFIX]/LETTER[/ZETTEL-ID]'', where:
+All API endpoints conform to the pattern ''[PREFIX]LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
-: is an optional URL prefix, configured via the ''url-prefix'' [[startup configuration|00001004010000]],
+: is the URL prefix (default: ''/''), configured via the ''url-prefix'' [[startup configuration|00001004010000]],
 ; ''LETTER''
 : is a single letter that specifies the ressource type,
 ; ''ZETTEL-ID''

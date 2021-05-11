@@ -3,6 +3,7 @@ title: Timestamp Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20210511131903
 
 Values of this type denote a point in time.
 
@@ -17,7 +18,7 @@ Must be a sequence of 14 digits (""0""--""9"") (same as an [[Identifier|00001006
 * ss is the second.
 
 === Match operator
-A value matches an timestampvalue, if the first value is the prefix of the timestamp value.
+A value matches a timestamp value, if the first value is the prefix of the timestamp value.
 
 For example, ""202102"" matches ""20210212143200"".
 
