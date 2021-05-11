@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index contains general index data for a zettel index.
-package index
+// Package store contains general index data for storing a zettel index.
+package store
 
 import "zettelstore.de/z/domain/id"
 

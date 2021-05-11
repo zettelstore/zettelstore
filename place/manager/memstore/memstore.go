@@ -20,7 +20,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place/manager/index"
+	"zettelstore.de/z/place/manager/store"
 )
 
 type metaRefs struct {
@@ -58,7 +58,7 @@ type memStore struct {
 }
 
 // New returns a new memory-based index store.
-func New() index.Store {
+func New() store.Store {
 	return &memStore{
 		idx:   make(map[id.Zid]*zettelIndex),
 		dead:  make(map[id.Zid]id.Slice),
@@ -255,7 +255,7 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 	return back
 }
 
-func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelIndex) id.Set {
+func (ms *memStore) UpdateReferences(ctx context.Context, zidx *store.ZettelIndex) id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	zi, ziExist := ms.idx[zidx.Zid]
@@ -286,7 +286,7 @@ func (ms *memStore) UpdateReferences(ctx context.Context, zidx *index.ZettelInde
 	return toCheck
 }
 
-func (ms *memStore) updateDeadReferences(zidx *index.ZettelIndex, zi *zettelIndex) {
+func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
 	// Must only be called if ms.mx is write-locked!
 	drefs := zidx.GetDeadRefs()
 	newRefs, remRefs := refsDiff(drefs, zi.dead)
@@ -299,7 +299,7 @@ func (ms *memStore) updateDeadReferences(zidx *index.ZettelIndex, zi *zettelInde
 	}
 }
 
-func (ms *memStore) updateForwardBackwardReferences(zidx *index.ZettelIndex, zi *zettelIndex) {
+func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := refsDiff(brefs, zi.forward)
@@ -314,7 +314,7 @@ func (ms *memStore) updateForwardBackwardReferences(zidx *index.ZettelIndex, zi 
 	}
 }
 
-func (ms *memStore) updateMetadataReferences(zidx *index.ZettelIndex, zi *zettelIndex) {
+func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
 	// Must only be called if ms.mx is write-locked!
 	metarefs := zidx.GetMetaRefs()
 	for key, mr := range zi.meta {
@@ -345,7 +345,7 @@ func (ms *memStore) updateMetadataReferences(zidx *index.ZettelIndex, zi *zettel
 	}
 }
 
-func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next index.WordSet) []string {
+func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
 	// Must only be called if ms.mx is write-locked!
 	//words := zidx.GetWords()
 	newWords, removeWords := next.Diff(prev)
@@ -475,7 +475,7 @@ func (ms *memStore) deleteWords(zid id.Zid, words []string) {
 	}
 }
 
-func (ms *memStore) ReadStats(st *index.Stats) {
+func (ms *memStore) ReadStats(st *store.Stats) {
 	ms.mx.RLock()
 	st.Zettel = len(ms.idx)
 	st.Updates = ms.updates

@@ -16,20 +16,20 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place/manager/index"
+	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/strfun"
 )
 
 type collectData struct {
 	refs  id.Set
-	words index.WordSet
-	urls  index.WordSet
+	words store.WordSet
+	urls  store.WordSet
 }
 
 func (data *collectData) initialize() {
 	data.refs = id.NewSet()
-	data.words = index.NewWordSet()
-	data.urls = index.NewWordSet()
+	data.words = store.NewWordSet()
+	data.urls = store.NewWordSet()
 }
 
 func collectZettelIndexData(zn *ast.ZettelNode, data *collectData) {

@@ -8,14 +8,14 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index contains general index data for a zettel index.
-package index_test
+// Package store contains general index data for storing a zettel index.
+package store_test
 
 import (
 	"sort"
 	"testing"
 
-	"zettelstore.de/z/place/manager/index"
+	"zettelstore.de/z/place/manager/store"
 )
 
 func equalWordList(exp, got []string) bool {
@@ -36,12 +36,12 @@ func equalWordList(exp, got []string) bool {
 
 func TestWordsWords(t *testing.T) {
 	testcases := []struct {
-		words index.WordSet
+		words store.WordSet
 		exp   []string
 	}{
 		{nil, nil},
-		{index.WordSet{}, nil},
-		{index.WordSet{"a": 1, "b": 2}, []string{"a", "b"}},
+		{store.WordSet{}, nil},
+		{store.WordSet{"a": 1, "b": 2}, []string{"a", "b"}},
 	}
 	for i, tc := range testcases {
 		got := tc.words.Words()
@@ -53,16 +53,16 @@ func TestWordsWords(t *testing.T) {
 
 func TestWordsDiff(t *testing.T) {
 	testcases := []struct {
-		cur        index.WordSet
+		cur        store.WordSet
 		old        []string
 		expN, expR []string
 	}{
 		{nil, nil, nil, nil},
-		{index.WordSet{}, []string{}, nil, nil},
-		{index.WordSet{"a": 1}, []string{}, []string{"a"}, nil},
-		{index.WordSet{"a": 1}, []string{"b"}, []string{"a"}, []string{"b"}},
-		{index.WordSet{}, []string{"b"}, nil, []string{"b"}},
-		{index.WordSet{"a": 1}, []string{"a"}, nil, nil},
+		{store.WordSet{}, []string{}, nil, nil},
+		{store.WordSet{"a": 1}, []string{}, []string{"a"}, nil},
+		{store.WordSet{"a": 1}, []string{"b"}, []string{"a"}, []string{"b"}},
+		{store.WordSet{}, []string{"b"}, nil, []string{"b"}},
+		{store.WordSet{"a": 1}, []string{"a"}, nil, nil},
 	}
 	for i, tc := range testcases {
 		gotN, gotR := tc.cur.Diff(tc.old)

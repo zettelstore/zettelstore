@@ -23,15 +23,15 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/place/manager/memstore"
+	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
 
 // Indexer is the process that collect asyncronous zettel data for faster search.
 type Indexer struct {
-	store   index.Store
+	store   store.Store
 	ar      *anterooms
 	ready   chan struct{} // Signal a non-empty anteroom to background task
 	done    chan struct{} // Stop background task
@@ -129,7 +129,7 @@ func (idx *Indexer) SelectContains(s string) id.Set {
 
 // readStats populates st with indexer statistics.
 func (idx *Indexer) readStats(st *place.Stats) {
-	var storeSt index.Stats
+	var storeSt store.Stats
 	idx.mx.RLock()
 	defer idx.mx.RUnlock()
 	idx.store.ReadStats(&storeSt)
@@ -248,14 +248,14 @@ func (idx *Indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	var cData collectData
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(zettel, ""), &cData)
-	zi := index.NewZettelIndex(m.Zid)
+	zi := store.NewZettelIndex(m.Zid)
 	collectFromMeta(ctx, m, zi, &cData, p)
 	processData(ctx, zi, &cData, p)
 	toCheck := idx.store.UpdateReferences(ctx, zi)
 	idx.checkZettel(toCheck)
 }
 
-func collectFromMeta(ctx context.Context, m *meta.Meta, zi *index.ZettelIndex, cData *collectData, p getMetaPort) {
+func collectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData, p getMetaPort) {
 	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -282,7 +282,7 @@ func collectFromMeta(ctx context.Context, m *meta.Meta, zi *index.ZettelIndex, c
 	}
 }
 
-func processData(ctx context.Context, zi *index.ZettelIndex, cData *collectData, p getMetaPort) {
+func processData(ctx context.Context, zi *store.ZettelIndex, cData *collectData, p getMetaPort) {
 	for ref := range cData.refs {
 		if _, err := p.GetMeta(ctx, ref); err == nil {
 			zi.AddBackRef(ref)
@@ -294,7 +294,7 @@ func processData(ctx context.Context, zi *index.ZettelIndex, cData *collectData,
 	zi.SetUrls(cData.urls)
 }
 
-func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *index.ZettelIndex) {
+func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *store.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
