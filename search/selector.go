@@ -19,11 +19,10 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/strfun"
 )
 
-func compileFullSearch(selector index.Selector, search []expValue) MetaMatchFunc {
+func compileFullSearch(selector Selector, search []expValue) MetaMatchFunc {
 	normSearch := compileNormalizedSearch(selector, search)
 	plainSearch := compilePlainSearch(selector, search)
 	if normSearch == nil {
@@ -40,7 +39,7 @@ func compileFullSearch(selector index.Selector, search []expValue) MetaMatchFunc
 	}
 }
 
-func compileNormalizedSearch(selector index.Selector, search []expValue) MetaMatchFunc {
+func compileNormalizedSearch(selector Selector, search []expValue) MetaMatchFunc {
 	var positives, negatives []expValue
 	posSet := make(map[string]bool)
 	negSet := make(map[string]bool)
@@ -69,7 +68,7 @@ func compileNormalizedSearch(selector index.Selector, search []expValue) MetaMat
 	}
 	return compileSearch(selector, positives, negatives)
 }
-func compilePlainSearch(selector index.Selector, search []expValue) MetaMatchFunc {
+func compilePlainSearch(selector Selector, search []expValue) MetaMatchFunc {
 	var positives, negatives []expValue
 	for _, val := range search {
 		if val.negate {
@@ -89,7 +88,7 @@ func compilePlainSearch(selector index.Selector, search []expValue) MetaMatchFun
 	return compileSearch(selector, positives, negatives)
 }
 
-func compileSearch(selector index.Selector, poss, negs []expValue) MetaMatchFunc {
+func compileSearch(selector Selector, poss, negs []expValue) MetaMatchFunc {
 	if len(poss) == 0 {
 		if len(negs) == 0 {
 			return nil
@@ -102,7 +101,7 @@ func compileSearch(selector index.Selector, poss, negs []expValue) MetaMatchFunc
 	return makePosNegSearch(selector, poss, negs)
 }
 
-func makePosOnlySearch(selector index.Selector, poss []expValue) MetaMatchFunc {
+func makePosOnlySearch(selector Selector, poss []expValue) MetaMatchFunc {
 	retrievePos := compileRetrieveZids(selector, poss)
 	var ids id.Set
 	return func(m *meta.Meta) bool {
@@ -114,7 +113,7 @@ func makePosOnlySearch(selector index.Selector, poss []expValue) MetaMatchFunc {
 	}
 }
 
-func makeNegOnlySearch(selector index.Selector, negs []expValue) MetaMatchFunc {
+func makeNegOnlySearch(selector Selector, negs []expValue) MetaMatchFunc {
 	retrieveNeg := compileRetrieveZids(selector, negs)
 	var ids id.Set
 	return func(m *meta.Meta) bool {
@@ -126,7 +125,7 @@ func makeNegOnlySearch(selector index.Selector, negs []expValue) MetaMatchFunc {
 	}
 }
 
-func makePosNegSearch(selector index.Selector, poss, negs []expValue) MetaMatchFunc {
+func makePosNegSearch(selector Selector, poss, negs []expValue) MetaMatchFunc {
 	retrievePos := compileRetrieveZids(selector, poss)
 	retrieveNeg := compileRetrieveZids(selector, negs)
 	var ids id.Set
@@ -140,7 +139,7 @@ func makePosNegSearch(selector index.Selector, poss, negs []expValue) MetaMatchF
 	}
 }
 
-func compileRetrieveZids(selector index.Selector, values []expValue) func() id.Set {
+func compileRetrieveZids(selector Selector, values []expValue) func() id.Set {
 	selFuncs := make([]selectorFunc, 0, len(values))
 	stringVals := make([]string, 0, len(values))
 	for _, val := range values {
@@ -164,7 +163,7 @@ func compileRetrieveZids(selector index.Selector, values []expValue) func() id.S
 
 type selectorFunc func(string) id.Set
 
-func compileSelectOp(selector index.Selector, op compareOp) selectorFunc {
+func compileSelectOp(selector Selector, op compareOp) selectorFunc {
 	switch op {
 	case cmpDefault, cmpContains:
 		return selector.SelectContains

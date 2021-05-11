@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/search"
 )
 
@@ -29,7 +28,7 @@ func init() {
 	manager.Register(
 		" const",
 		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
-			return &constPlace{zettel: constZettelMap, filter: cdata.Filter}, nil
+			return &constPlace{zettel: constZettelMap, enricher: cdata.Enricher}, nil
 		})
 }
 
@@ -49,8 +48,8 @@ type constZettel struct {
 }
 
 type constPlace struct {
-	zettel map[id.Zid]constZettel
-	filter index.MetaFilter
+	zettel   map[id.Zid]constZettel
+	enricher place.Enricher
 }
 
 func (cp *constPlace) Location() string {
@@ -88,7 +87,7 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 func (cp *constPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
-		cp.filter.Enrich(ctx, m)
+		cp.enricher.Enrich(ctx, m)
 		if match(m) {
 			res = append(res, m)
 		}

@@ -184,9 +184,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		}
 		startup.SetupStartupConfig(cfg)
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-		idx = manager.NewIndexer()
-		filter := index.NewMetaFilter(idx)
-		mgr, err = manager.New(getPlaces(cfg), readonlyMode, filter)
+		mgr, idx, err = manager.New(getPlaces(cfg), readonlyMode)
 		if err != nil {
 			return err
 		}

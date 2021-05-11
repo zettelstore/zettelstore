@@ -17,9 +17,28 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place/manager/index"
 )
+
+// Selector is used to select zettel identifier based on selection criteria.
+type Selector interface {
+	// Select all zettel that contains the given exact word.
+	// The word must be normalized through Unicode NKFD, trimmed and not empty.
+	SelectEqual(word string) id.Set
+
+	// Select all zettel that have a word with the given prefix.
+	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
+	SelectPrefix(prefix string) id.Set
+
+	// Select all zettel that have a word with the given suffix.
+	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
+	SelectSuffix(suffix string) id.Set
+
+	// Select all zettel that contains the given string.
+	// The string must be normalized through Unicode NKFD, trimmed and not empty.
+	SelectContains(s string) id.Set
+}
 
 // MetaMatchFunc is a function determine whethe some metadata should be filtered or not.
 type MetaMatchFunc func(*meta.Meta) bool
@@ -223,7 +242,7 @@ func (s *Search) HasComputedMetaKey() bool {
 }
 
 // CompileMatch returns a function to match meta data based on filter specification.
-func (s *Search) CompileMatch(selector index.Selector) MetaMatchFunc {
+func (s *Search) CompileMatch(selector Selector) MetaMatchFunc {
 	if s == nil {
 		return filterNone
 	}

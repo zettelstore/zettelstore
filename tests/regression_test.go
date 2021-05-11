@@ -49,7 +49,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 		panic(err)
 	}
 
-	cdata := manager.ConnectData{Filter: &noFilter{}, Notify: nil}
+	cdata := manager.ConnectData{Enricher: &noEnrich{}, Notify: nil}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			place, err := manager.Connect(
@@ -66,10 +66,10 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 	return root, places
 }
 
-type noFilter struct{}
+type noEnrich struct{}
 
-func (nf *noFilter) Enrich(ctx context.Context, m *meta.Meta) {}
-func (nf *noFilter) Remove(ctx context.Context, m *meta.Meta) {}
+func (nf *noEnrich) Enrich(ctx context.Context, m *meta.Meta) {}
+func (nf *noEnrich) Remove(ctx context.Context, m *meta.Meta) {}
 
 func trimLastEOL(s string) string {
 	if lastPos := len(s) - 1; lastPos >= 0 && s[lastPos] == '\n' {

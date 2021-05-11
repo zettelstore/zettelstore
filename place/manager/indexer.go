@@ -29,7 +29,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-type indexer struct {
+// Indexer is the process that collect asyncronous zettel data for faster search.
+type Indexer struct {
 	store   index.Store
 	ar      *anterooms
 	ready   chan struct{} // Signal a non-empty anteroom to background task
@@ -45,15 +46,15 @@ type indexer struct {
 }
 
 // NewIndexer creates a new indexer.
-func NewIndexer() index.Indexer {
-	return &indexer{
+func NewIndexer() *Indexer {
+	return &Indexer{
 		store: memstore.New(),
 		ar:    newAnterooms(10),
 		ready: make(chan struct{}, 1),
 	}
 }
 
-func (idx *indexer) observer(ci change.Info) {
+func (idx *Indexer) observer(ci change.Info) {
 	switch ci.Reason {
 	case change.OnReload:
 		idx.ar.Reset()
@@ -70,7 +71,8 @@ func (idx *indexer) observer(ci change.Info) {
 	}
 }
 
-func (idx *indexer) Start(p index.IndexerPort) {
+// Start the indexer.
+func (idx *Indexer) Start(p index.IndexerPort) {
 	if idx.started {
 		panic("Index already started")
 	}
@@ -84,7 +86,8 @@ func (idx *indexer) Start(p index.IndexerPort) {
 	idx.started = true
 }
 
-func (idx *indexer) Stop() {
+// Stop the indexer.
+func (idx *Indexer) Stop() {
 	if !idx.started {
 		panic("Index already stopped")
 	}
@@ -93,7 +96,7 @@ func (idx *indexer) Stop() {
 }
 
 // Enrich reads all properties in the index and updates the metadata.
-func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
+func (idx *Indexer) Enrich(ctx context.Context, m *meta.Meta) {
 	if place.DoNotEnrich(ctx) {
 		// Enrich is called indirectly via indexer or enrichment is not requested
 		// because of other reasons -> ignore this call, do not update meta data
@@ -104,30 +107,30 @@ func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
 
 // SelectEqual all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *indexer) SelectEqual(word string) id.Set {
+func (idx *Indexer) SelectEqual(word string) id.Set {
 	return idx.store.SelectEqual(word)
 }
 
-// Select all zettel that have a word with the given prefix.
+// SelectPrefix all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *indexer) SelectPrefix(prefix string) id.Set {
+func (idx *Indexer) SelectPrefix(prefix string) id.Set {
 	return idx.store.SelectPrefix(prefix)
 }
 
-// Select all zettel that have a word with the given suffix.
+// SelectSuffix all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *indexer) SelectSuffix(suffix string) id.Set {
+func (idx *Indexer) SelectSuffix(suffix string) id.Set {
 	return idx.store.SelectSuffix(suffix)
 }
 
-// Select all zettel that contains the given string.
+// SelectContains all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *indexer) SelectContains(s string) id.Set {
+func (idx *Indexer) SelectContains(s string) id.Set {
 	return idx.store.SelectContains(s)
 }
 
 // ReadStats populates st with indexer statistics.
-func (idx *indexer) ReadStats(st *index.IndexerStats) {
+func (idx *Indexer) ReadStats(st *index.IndexerStats) {
 	idx.mx.RLock()
 	st.LastReload = idx.lastReload
 	st.IndexesSinceReload = idx.sinceReload
@@ -144,7 +147,7 @@ type indexerPort interface {
 
 // indexer runs in the background and updates the index data structures.
 // This is the main service of the indexer.
-func (idx *indexer) indexer(p indexerPort) {
+func (idx *Indexer) indexer(p indexerPort) {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
 		if r := recover(); r != nil {
@@ -169,7 +172,7 @@ func (idx *indexer) indexer(p indexerPort) {
 	}
 }
 
-func (idx *indexer) workService(ctx context.Context, p indexerPort) bool {
+func (idx *Indexer) workService(ctx context.Context, p indexerPort) bool {
 	changed := false
 	for {
 		switch action, zid := idx.ar.Dequeue(); action {
@@ -205,7 +208,7 @@ func (idx *indexer) workService(ctx context.Context, p indexerPort) bool {
 	}
 }
 
-func (idx *indexer) sleepService(timer *time.Timer, timerDuration time.Duration) bool {
+func (idx *Indexer) sleepService(timer *time.Timer, timerDuration time.Duration) bool {
 	select {
 	case _, ok := <-idx.ready:
 		if !ok {
@@ -229,7 +232,7 @@ type getMetaPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
-func (idx *indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
+func (idx *Indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
 	m := zettel.Meta
 	if m.GetBool(meta.KeyNoIndex) {
 		// Zettel maybe in index
@@ -303,12 +306,12 @@ func updateValue(ctx context.Context, inverse string, value string, p getMetaPor
 	zi.AddMetaRef(inverse, zid)
 }
 
-func (idx *indexer) deleteZettel(zid id.Zid) {
+func (idx *Indexer) deleteZettel(zid id.Zid) {
 	toCheck := idx.store.DeleteZettel(context.Background(), zid)
 	idx.checkZettel(toCheck)
 }
 
-func (idx *indexer) checkZettel(s id.Set) {
+func (idx *Indexer) checkZettel(s id.Set) {
 	for zid := range s {
 		idx.ar.Enqueue(zid, arUpdate)
 	}

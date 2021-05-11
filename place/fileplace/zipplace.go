@@ -23,7 +23,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/search"
 )
 
@@ -41,9 +40,9 @@ type zipEntry struct {
 }
 
 type zipPlace struct {
-	name   string
-	filter index.MetaFilter
-	zettel map[id.Zid]*zipEntry // no lock needed, because read-only after creation
+	name     string
+	enricher place.Enricher
+	zettel   map[id.Zid]*zipEntry // no lock needed, because read-only after creation
 }
 
 func (zp *zipPlace) Location() string {
@@ -180,7 +179,7 @@ func (zp *zipPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) 
 		if err != nil {
 			continue
 		}
-		zp.filter.Enrich(ctx, m)
+		zp.enricher.Enrich(ctx, m)
 		if match(m) {
 			res = append(res, m)
 		}

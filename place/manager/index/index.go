@@ -19,34 +19,10 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/search"
 )
-
-// Enricher is used to update metadata by adding new properties.
-type Enricher interface {
-	// Enrich computes additional properties and updates the given metadata.
-	// It is typically called by zettel reading methods.
-	Enrich(ctx context.Context, m *meta.Meta)
-}
-
-// Selector is used to select zettel identifier based on selection criteria.
-type Selector interface {
-	// Select all zettel that contains the given exact word.
-	// The word must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectEqual(word string) id.Set
-
-	// Select all zettel that have a word with the given prefix.
-	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectPrefix(prefix string) id.Set
-
-	// Select all zettel that have a word with the given suffix.
-	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectSuffix(suffix string) id.Set
-
-	// Select all zettel that contains the given string.
-	// The string must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectContains(s string) id.Set
-}
 
 // IndexerPort contains all the used functions to access zettel to be indexed.
 type IndexerPort interface {
@@ -58,8 +34,8 @@ type IndexerPort interface {
 
 // Indexer contains all the functions of an index.
 type Indexer interface {
-	Enricher
-	Selector
+	place.Enricher
+	search.Selector
 
 	// Start the index. It will read all zettel and store index data for later retrieval.
 	Start(IndexerPort)
@@ -106,8 +82,8 @@ type StoreStats struct {
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
-	Enricher
-	Selector
+	place.Enricher
+	search.Selector
 
 	// UpdateReferences for a specific zettel.
 	// Returns set of zettel identifier that must also be checked for changes.

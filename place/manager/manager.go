@@ -26,15 +26,14 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/service"
 )
 
 // ConnectData contains all administration related values.
 type ConnectData struct {
-	Filter index.MetaFilter
-	Notify chan<- change.Info
+	Enricher place.Enricher
+	Notify   chan<- change.Info
 }
 
 // Connect returns a handle to the specified place
@@ -94,28 +93,39 @@ func GetSchemes() []string {
 
 // Manager is a coordinating place.
 type Manager struct {
-	mx         sync.RWMutex
-	started    bool
-	subplaces  []place.ManagedPlace
-	filter     index.MetaFilter
-	observers  []change.Func
-	mxObserver sync.RWMutex
-	done       chan struct{}
-	infos      chan change.Info
+	mx           sync.RWMutex
+	started      bool
+	subplaces    []place.ManagedPlace
+	indexer      *Indexer
+	enricher     place.Enricher
+	observers    []change.Func
+	mxObserver   sync.RWMutex
+	done         chan struct{}
+	infos        chan change.Info
+	propertyKeys map[string]bool // Set of property key names
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manager, error) {
-	mgr := &Manager{
-		filter: filter,
-		infos:  make(chan change.Info, len(placeURIs)*10),
+func New(placeURIs []string, readonlyMode bool) (*Manager, *Indexer, error) {
+	propertyKeys := make(map[string]bool)
+	for _, kd := range meta.GetSortedKeyDescriptions() {
+		if kd.IsProperty() {
+			propertyKeys[kd.Name] = true
+		}
 	}
-	cdata := ConnectData{Filter: filter, Notify: mgr.infos}
+	idx := NewIndexer()
+	mgr := &Manager{
+		indexer:      idx,
+		enricher:     NewEnricher(idx),
+		infos:        make(chan change.Info, len(placeURIs)*10),
+		propertyKeys: propertyKeys,
+	}
+	cdata := ConnectData{Enricher: mgr.enricher, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
 		p, err := Connect(uri, readonlyMode, &cdata)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if p != nil {
 			subplaces = append(subplaces, p)
@@ -123,15 +133,15 @@ func New(placeURIs []string, readonlyMode bool, filter index.MetaFilter) (*Manag
 	}
 	constplace, err := registry[" const"](nil, &cdata)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	progplace, err := registry[" prog"](nil, &cdata)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	subplaces = append(subplaces, constplace, progplace)
 	mgr.subplaces = subplaces
-	return mgr, nil
+	return mgr, idx, nil
 }
 
 // RegisterObserver registers an observer that will be notified
@@ -270,7 +280,7 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	for _, p := range mgr.subplaces {
 		if z, err := p.GetZettel(ctx, zid); err != place.ErrNotFound {
 			if err == nil {
-				mgr.filter.Enrich(ctx, z.Meta)
+				mgr.enricher.Enrich(ctx, z.Meta)
 			}
 			return z, err
 		}
@@ -288,7 +298,7 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	for _, p := range mgr.subplaces {
 		if m, err := p.GetMeta(ctx, zid); err != place.ErrNotFound {
 			if err == nil {
-				mgr.filter.Enrich(ctx, m)
+				mgr.enricher.Enrich(ctx, m)
 			}
 			return m, err
 		}
@@ -366,8 +376,13 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	if !mgr.started {
 		return place.ErrStopped
 	}
+	// Remove all (computed) properties from metadata before storing the zettel.
 	zettel.Meta = zettel.Meta.Clone()
-	mgr.filter.Remove(ctx, zettel.Meta)
+	for _, p := range zettel.Meta.PairsRest(true) {
+		if mgr.propertyKeys[p.Key] {
+			zettel.Meta.Delete(p.Key)
+		}
+	}
 	return mgr.subplaces[0].UpdateZettel(ctx, zettel)
 }
 

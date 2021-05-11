@@ -235,7 +235,7 @@ func (dp *dirPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) 
 			continue
 		}
 		dp.cleanupMeta(ctx, m)
-		dp.cdata.Filter.Enrich(ctx, m)
+		dp.cdata.Enricher.Enrich(ctx, m)
 
 		if match(m) {
 			res = append(res, m)

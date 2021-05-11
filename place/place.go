@@ -112,6 +112,13 @@ type Manager interface {
 	NumPlaces() int
 }
 
+// Enricher is used to update metadata by adding new properties.
+type Enricher interface {
+	// Enrich computes additional properties and updates the given metadata.
+	// It is typically called by zettel reading methods.
+	Enrich(ctx context.Context, m *meta.Meta)
+}
+
 // NoEnrichContext will signal an enricher that nothing has to be done.
 // This is useful for an Indexer, but also for some place.Place calls, when
 // just the plain metadata is needed.

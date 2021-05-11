@@ -29,7 +29,7 @@ func init() {
 	manager.Register(
 		" prog",
 		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
-			return getPlace(cdata.Filter), nil
+			return getPlace(cdata.Enricher), nil
 		})
 }
 
@@ -41,7 +41,7 @@ type (
 
 	progPlace struct {
 		zettel      map[id.Zid]zettelGen
-		filter      index.MetaFilter
+		filter      place.Enricher
 		startConfig *meta.Meta
 		manager     place.Manager
 		indexer     index.Indexer
@@ -51,7 +51,7 @@ type (
 var myPlace *progPlace
 
 // Get returns the one program place.
-func getPlace(mf index.MetaFilter) place.ManagedPlace {
+func getPlace(mf place.Enricher) place.ManagedPlace {
 	if myPlace == nil {
 		myPlace = &progPlace{
 			zettel: map[id.Zid]zettelGen{
