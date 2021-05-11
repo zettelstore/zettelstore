@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
@@ -113,7 +112,7 @@ func getOrigZettel(
 	if err != nil {
 		return domain.Zettel{}, place.ErrNotFound
 	}
-	origZettel, err := getZettel.Run(index.NoEnrichContext(ctx), zid)
+	origZettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
 	if err != nil {
 		return domain.Zettel{}, place.ErrNotFound
 	}

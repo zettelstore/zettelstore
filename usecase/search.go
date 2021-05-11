@@ -15,7 +15,7 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
 )
 
@@ -38,7 +38,7 @@ func NewSearch(port SearchPort) Search {
 // Run executes the use case.
 func (uc Search) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
 	if !s.HasComputedMetaKey() {
-		ctx = index.NoEnrichContext(ctx)
+		ctx = place.NoEnrichContext(ctx)
 	}
 	return uc.port.SelectMeta(ctx, s)
 }

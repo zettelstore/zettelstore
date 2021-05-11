@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/index"
 	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
@@ -93,7 +94,7 @@ func (idx *indexer) Stop() {
 
 // Enrich reads all properties in the index and updates the metadata.
 func (idx *indexer) Enrich(ctx context.Context, m *meta.Meta) {
-	if index.DoNotEnrich(ctx) {
+	if place.DoNotEnrich(ctx) {
 		// Enrich is called indirectly via indexer or enrichment is not requested
 		// because of other reasons -> ignore this call, do not update meta data
 		return
@@ -154,7 +155,7 @@ func (idx *indexer) indexer(p indexerPort) {
 
 	timerDuration := 15 * time.Second
 	timer := time.NewTimer(timerDuration)
-	ctx := index.NoEnrichContext(context.Background())
+	ctx := place.NoEnrichContext(context.Background())
 	for {
 		start := time.Now()
 		if idx.workService(ctx, p) {

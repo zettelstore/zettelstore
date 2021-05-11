@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
@@ -225,7 +224,7 @@ func htmlAttrNewWindow(hasURL bool) string {
 
 func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
 	builder := router.GetURLBuilderFunc(ctx)
-	ctx = index.NoEnrichContext(ctx)
+	ctx = place.NoEnrichContext(ctx)
 	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
 		return nil

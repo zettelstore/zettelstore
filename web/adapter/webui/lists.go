@@ -23,7 +23,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
@@ -62,9 +61,10 @@ func renderWebUIZettelList(
 	title := listTitleSearch("Filter", s)
 	builder := router.GetURLBuilderFunc(ctx)
 	renderWebUIMetaList(
-		ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
+		ctx, w, te, title, s,
+		func(s *search.Search) ([]*meta.Meta, error) {
 			if !s.HasComputedMetaKey() {
-				ctx = index.NoEnrichContext(ctx)
+				ctx = place.NoEnrichContext(ctx)
 			}
 			return listMeta.Run(ctx, s)
 		},
@@ -208,7 +208,7 @@ func MakeSearchHandler(
 		renderWebUIMetaList(
 			ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
 				if !s.HasComputedMetaKey() {
-					ctx = index.NoEnrichContext(ctx)
+					ctx = place.NoEnrichContext(ctx)
 				}
 				return ucSearch.Run(ctx, s)
 			},

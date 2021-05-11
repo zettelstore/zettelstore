@@ -15,7 +15,7 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
 )
 
@@ -40,7 +40,7 @@ type TagData map[string][]*meta.Meta
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
-	metas, err := uc.port.SelectMeta(index.NoEnrichContext(ctx), nil)
+	metas, err := uc.port.SelectMeta(place.NoEnrichContext(ctx), nil)
 	if err != nil {
 		return nil, err
 	}

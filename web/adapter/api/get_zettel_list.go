@@ -18,8 +18,8 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/router"
@@ -43,7 +43,7 @@ func MakeListMetaHandler(
 		}
 		ctx1 := ctx
 		if format == "html" || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
-			ctx1 = index.NoEnrichContext(ctx1)
+			ctx1 = place.NoEnrichContext(ctx1)
 		}
 		metaList, err := listMeta.Run(ctx1, s)
 		if err != nil {

@@ -112,6 +112,23 @@ type Manager interface {
 	NumPlaces() int
 }
 
+// NoEnrichContext will signal an enricher that nothing has to be done.
+// This is useful for an Indexer, but also for some place.Place calls, when
+// just the plain metadata is needed.
+func NoEnrichContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, ctxNoEnrichKey, &ctxNoEnrichKey)
+}
+
+type ctxNoEnrichType struct{}
+
+var ctxNoEnrichKey ctxNoEnrichType
+
+// DoNotEnrich determines if the context is marked to not enrich metadata.
+func DoNotEnrich(ctx context.Context) bool {
+	_, ok := ctx.Value(ctxNoEnrichKey).(*ctxNoEnrichType)
+	return ok
+}
+
 // ErrNotAllowed is returned if the caller is not allowed to perform the operation.
 type ErrNotAllowed struct {
 	Op   string

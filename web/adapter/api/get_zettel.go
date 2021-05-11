@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -39,7 +39,7 @@ func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMe
 		q := r.URL.Query()
 		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
 		if format == "raw" {
-			ctx = index.NoEnrichContext(ctx)
+			ctx = place.NoEnrichContext(ctx)
 		}
 		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
 		if err != nil {

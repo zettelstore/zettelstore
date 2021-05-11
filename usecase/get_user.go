@@ -17,7 +17,7 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
 )
 
@@ -45,7 +45,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	if !startup.WithAuth() {
 		return nil, nil
 	}
-	ctx = index.NoEnrichContext(ctx)
+	ctx = place.NoEnrichContext(ctx)
 
 	// It is important to try first with the owner. First, because another user
 	// could give herself the same ''ident''. Second, in most cases the owner
@@ -92,7 +92,7 @@ func NewGetUserByZid(port GetUserByZidPort) GetUserByZid {
 
 // Run executes the use case.
 func (uc GetUserByZid) Run(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error) {
-	userMeta, err := uc.port.GetMeta(index.NoEnrichContext(ctx), zid)
+	userMeta, err := uc.port.GetMeta(place.NoEnrichContext(ctx), zid)
 	if err != nil {
 		return nil, err
 	}

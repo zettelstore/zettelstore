@@ -16,7 +16,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place"
 )
 
 // RenameZettelPort is the interface used by this use case.
@@ -47,7 +47,7 @@ func NewRenameZettel(port RenameZettelPort) RenameZettel {
 
 // Run executes the use case.
 func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
-	noEnrichCtx := index.NoEnrichContext(ctx)
+	noEnrichCtx := place.NoEnrichContext(ctx)
 	if _, err := uc.port.GetMeta(noEnrichCtx, curZid); err != nil {
 		return err
 	}

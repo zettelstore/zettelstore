@@ -18,7 +18,6 @@ import (
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -38,7 +37,7 @@ func MakeEditGetZettelHandler(
 			return
 		}
 
-		zettel, err := getZettel.Run(index.NoEnrichContext(ctx), zid)
+		zettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
