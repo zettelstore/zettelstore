@@ -17,11 +17,14 @@ import (
 	"net/url"
 	"sort"
 	"sync"
+	"time"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/place/manager/memstore"
+	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/service"
 )
 
@@ -88,15 +91,27 @@ func GetSchemes() []string {
 
 // Manager is a coordinating place.
 type Manager struct {
-	mx           sync.RWMutex
+	mgrMx        sync.RWMutex
 	started      bool
 	subplaces    []place.ManagedPlace
-	indexer      *Indexer
 	observers    []change.Func
 	mxObserver   sync.RWMutex
 	done         chan struct{}
 	infos        chan change.Info
 	propertyKeys map[string]bool // Set of property key names
+
+	// Indexer data
+	idxStore   store.Store
+	idxAr      *anterooms
+	idxReady   chan struct{} // Signal a non-empty anteroom to background task
+	idxDone    chan struct{} // Stop background task
+	idxObserve bool
+
+	// Indexer stats data
+	idxMx           sync.RWMutex
+	idxLastReload   time.Time
+	idxSinceReload  uint64
+	idxDurLastIndex time.Duration
 }
 
 // New creates a new managing place.
@@ -107,11 +122,13 @@ func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
 			propertyKeys[kd.Name] = true
 		}
 	}
-	idx := newIndexer()
 	mgr := &Manager{
-		indexer:      idx,
 		infos:        make(chan change.Info, len(placeURIs)*10),
 		propertyKeys: propertyKeys,
+
+		idxStore: memstore.New(),
+		idxAr:    newAnterooms(10),
+		idxReady: make(chan struct{}, 1),
 	}
 	cdata := ConnectData{Enricher: mgr, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
@@ -180,9 +197,9 @@ func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}
 // Start the place. Now all other functions of the place are allowed.
 // Starting an already started place is not allowed.
 func (mgr *Manager) Start(ctx context.Context) error {
-	mgr.mx.Lock()
+	mgr.mgrMx.Lock()
 	if mgr.started {
-		mgr.mx.Unlock()
+		mgr.mgrMx.Unlock()
 		return place.ErrStarted
 	}
 	for i := len(mgr.subplaces) - 1; i >= 0; i-- {
@@ -199,26 +216,34 @@ func (mgr *Manager) Start(ctx context.Context) error {
 				ssj.Stop(ctx)
 			}
 		}
-		mgr.mx.Unlock()
+		mgr.mgrMx.Unlock()
 		return err
 	}
 	mgr.done = make(chan struct{})
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
-	mgr.indexer.startIndexer(mgr)
+	mgr.idxDone = make(chan struct{})
+	if !mgr.idxObserve {
+		mgr.RegisterObserver(mgr.idxObserver)
+		mgr.idxObserve = true
+	}
+	mgr.idxAr.Reset() // Ensure an initial index run
+	go mgr.idxIndexer()
+
+	// mgr.startIndexer(mgr)
 	mgr.started = true
-	mgr.mx.Unlock()
+	mgr.mgrMx.Unlock()
 	mgr.infos <- change.Info{Reason: change.OnReload, Zid: id.Invalid}
 	return nil
 }
 
 // Stop the started place. Now only the Start() function is allowed.
 func (mgr *Manager) Stop(ctx context.Context) error {
-	mgr.mx.Lock()
-	defer mgr.mx.Unlock()
+	mgr.mgrMx.Lock()
+	defer mgr.mgrMx.Unlock()
 	if !mgr.started {
 		return place.ErrStopped
 	}
-	mgr.indexer.stopIndexer()
+	close(mgr.idxDone)
 	close(mgr.done)
 	mgr.done = nil
 	var err error
@@ -235,8 +260,8 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 
 // ReadStats populates st with place statistics
 func (mgr *Manager) ReadStats(st *place.Stats) {
-	mgr.mx.RLock()
-	defer mgr.mx.RUnlock()
+	mgr.mgrMx.RLock()
+	defer mgr.mgrMx.RUnlock()
 	subStats := make([]place.ManagedPlaceStats, len(mgr.subplaces))
 	for i, p := range mgr.subplaces {
 		p.ReadStats(&subStats[i])
@@ -252,12 +277,23 @@ func (mgr *Manager) ReadStats(st *place.Stats) {
 	}
 	st.ZettelTotal = sumZettel
 
-	mgr.indexer.readStats(st)
+	var storeSt store.Stats
+	mgr.idxMx.RLock()
+	defer mgr.idxMx.RUnlock()
+	mgr.idxStore.ReadStats(&storeSt)
+
+	st.LastReload = mgr.idxLastReload
+	st.IndexesSinceReload = mgr.idxSinceReload
+	st.DurLastIndex = mgr.idxDurLastIndex
+	st.ZettelIndexed = storeSt.Zettel
+	st.IndexUpdates = storeSt.Updates
+	st.IndexedWords = storeSt.Words
+	st.IndexedUrls = storeSt.Urls
 }
 
 // NumPlaces returns the number of managed places.
 func (mgr *Manager) NumPlaces() int {
-	mgr.mx.RLock()
-	defer mgr.mx.RUnlock()
+	mgr.mgrMx.RLock()
+	defer mgr.mgrMx.RUnlock()
 	return len(mgr.subplaces)
 }

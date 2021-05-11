@@ -26,7 +26,7 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta) {
 		return
 	}
 	computePublished(m)
-	mgr.indexer.store.Enrich(ctx, m)
+	mgr.idxStore.Enrich(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {

@@ -14,7 +14,6 @@ package manager
 import (
 	"context"
 	"net/url"
-	"sync"
 	"time"
 
 	"zettelstore.de/z/domain"
@@ -23,140 +22,60 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
-	"zettelstore.de/z/place/manager/memstore"
 	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
 
-// Indexer is the process that collect asyncronous zettel data for faster search.
-type Indexer struct {
-	store   store.Store
-	ar      *anterooms
-	ready   chan struct{} // Signal a non-empty anteroom to background task
-	done    chan struct{} // Stop background task
-	observe bool
-	started bool
-
-	// Stats data
-	mx           sync.RWMutex
-	lastReload   time.Time
-	sinceReload  uint64
-	durLastIndex time.Duration
-}
-
-// newIndexer creates a new indexer.
-func newIndexer() *Indexer {
-	return &Indexer{
-		store: memstore.New(),
-		ar:    newAnterooms(10),
-		ready: make(chan struct{}, 1),
-	}
-}
-
-func (idx *Indexer) observer(ci change.Info) {
+func (mgr *Manager) idxObserver(ci change.Info) {
 	switch ci.Reason {
 	case change.OnReload:
-		idx.ar.Reset()
+		mgr.idxAr.Reset()
 	case change.OnUpdate:
-		idx.ar.Enqueue(ci.Zid, arUpdate)
+		mgr.idxAr.Enqueue(ci.Zid, arUpdate)
 	case change.OnDelete:
-		idx.ar.Enqueue(ci.Zid, arDelete)
+		mgr.idxAr.Enqueue(ci.Zid, arDelete)
 	default:
 		return
 	}
 	select {
-	case idx.ready <- struct{}{}:
+	case mgr.idxReady <- struct{}{}:
 	default:
 	}
 }
 
-// indexerPort contains all the used functions to access zettel to be indexed.
-type indexerPort interface {
-	RegisterObserver(change.Func)
-	FetchZids(context.Context) (id.Set, error)
-	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
-	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
-}
-
-// Start the indexer.
-func (idx *Indexer) startIndexer(p indexerPort) {
-	if idx.started {
-		panic("Index already started")
-	}
-	idx.done = make(chan struct{})
-	if !idx.observe {
-		p.RegisterObserver(idx.observer)
-		idx.observe = true
-	}
-	idx.ar.Reset() // Ensure an initial index run
-	go idx.indexer(p)
-	idx.started = true
-}
-
-// Stop the indexer.
-func (idx *Indexer) stopIndexer() {
-	if !idx.started {
-		panic("Index already stopped")
-	}
-	close(idx.done)
-	idx.started = false
-}
-
 // SelectEqual all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *Indexer) SelectEqual(word string) id.Set {
-	return idx.store.SelectEqual(word)
+func (mgr *Manager) SelectEqual(word string) id.Set {
+	return mgr.idxStore.SelectEqual(word)
 }
 
 // SelectPrefix all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *Indexer) SelectPrefix(prefix string) id.Set {
-	return idx.store.SelectPrefix(prefix)
+func (mgr *Manager) SelectPrefix(prefix string) id.Set {
+	return mgr.idxStore.SelectPrefix(prefix)
 }
 
 // SelectSuffix all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *Indexer) SelectSuffix(suffix string) id.Set {
-	return idx.store.SelectSuffix(suffix)
+func (mgr *Manager) SelectSuffix(suffix string) id.Set {
+	return mgr.idxStore.SelectSuffix(suffix)
 }
 
 // SelectContains all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (idx *Indexer) SelectContains(s string) id.Set {
-	return idx.store.SelectContains(s)
+func (mgr *Manager) SelectContains(s string) id.Set {
+	return mgr.idxStore.SelectContains(s)
 }
 
-// readStats populates st with indexer statistics.
-func (idx *Indexer) readStats(st *place.Stats) {
-	var storeSt store.Stats
-	idx.mx.RLock()
-	defer idx.mx.RUnlock()
-	idx.store.ReadStats(&storeSt)
-
-	st.LastReload = idx.lastReload
-	st.IndexesSinceReload = idx.sinceReload
-	st.DurLastIndex = idx.durLastIndex
-	st.ZettelIndexed = storeSt.Zettel
-	st.IndexUpdates = storeSt.Updates
-	st.IndexedWords = storeSt.Words
-	st.IndexedUrls = storeSt.Urls
-}
-
-type indexWorkerPort interface {
-	getMetaPort
-	FetchZids(ctx context.Context) (id.Set, error)
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
-}
-
-// indexer runs in the background and updates the index data structures.
-// This is the main service of the indexer.
-func (idx *Indexer) indexer(p indexWorkerPort) {
+// idxIndexer runs in the background and updates the index data structures.
+// This is the main service of the idxIndexer.
+func (mgr *Manager) idxIndexer() {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
 		if r := recover(); r != nil {
 			service.Main.LogRecover("Indexer", r)
-			go idx.indexer(p)
+			go mgr.idxIndexer()
 		}
 	}()
 
@@ -165,56 +84,56 @@ func (idx *Indexer) indexer(p indexWorkerPort) {
 	ctx := place.NoEnrichContext(context.Background())
 	for {
 		start := time.Now()
-		if idx.workService(ctx, p) {
-			idx.mx.Lock()
-			idx.durLastIndex = time.Since(start)
-			idx.mx.Unlock()
+		if mgr.idxWorkService(ctx) {
+			mgr.idxMx.Lock()
+			mgr.idxDurLastIndex = time.Since(start)
+			mgr.idxMx.Unlock()
 		}
-		if !idx.sleepService(timer, timerDuration) {
+		if !mgr.idxSleepService(timer, timerDuration) {
 			return
 		}
 	}
 }
 
-func (idx *Indexer) workService(ctx context.Context, p indexWorkerPort) bool {
+func (mgr *Manager) idxWorkService(ctx context.Context) bool {
 	changed := false
 	for {
-		switch action, zid := idx.ar.Dequeue(); action {
+		switch action, zid := mgr.idxAr.Dequeue(); action {
 		case arNothing:
 			return changed
 		case arReload:
-			zids, err := p.FetchZids(ctx)
+			zids, err := mgr.FetchZids(ctx)
 			if err == nil {
-				idx.ar.Reload(nil, zids)
-				idx.mx.Lock()
-				idx.lastReload = time.Now()
-				idx.sinceReload = 0
-				idx.mx.Unlock()
+				mgr.idxAr.Reload(nil, zids)
+				mgr.idxMx.Lock()
+				mgr.idxLastReload = time.Now()
+				mgr.idxSinceReload = 0
+				mgr.idxMx.Unlock()
 			}
 		case arUpdate:
 			changed = true
-			idx.mx.Lock()
-			idx.sinceReload++
-			idx.mx.Unlock()
-			zettel, err := p.GetZettel(ctx, zid)
+			mgr.idxMx.Lock()
+			mgr.idxSinceReload++
+			mgr.idxMx.Unlock()
+			zettel, err := mgr.GetZettel(ctx, zid)
 			if err != nil {
 				// TODO: on some errors put the zid into a "try later" set
 				continue
 			}
-			idx.updateZettel(ctx, zettel, p)
+			mgr.idxUpdateZettel(ctx, zettel)
 		case arDelete:
 			changed = true
-			idx.mx.Lock()
-			idx.sinceReload++
-			idx.mx.Unlock()
-			idx.deleteZettel(zid)
+			mgr.idxMx.Lock()
+			mgr.idxSinceReload++
+			mgr.idxMx.Unlock()
+			mgr.idxDeleteZettel(zid)
 		}
 	}
 }
 
-func (idx *Indexer) sleepService(timer *time.Timer, timerDuration time.Duration) bool {
+func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Duration) bool {
 	select {
-	case _, ok := <-idx.ready:
+	case _, ok := <-mgr.idxReady:
 		if !ok {
 			return false
 		}
@@ -223,7 +142,7 @@ func (idx *Indexer) sleepService(timer *time.Timer, timerDuration time.Duration)
 			return false
 		}
 		timer.Reset(timerDuration)
-	case <-idx.done:
+	case <-mgr.idxDone:
 		if !timer.Stop() {
 			<-timer.C
 		}
@@ -232,16 +151,12 @@ func (idx *Indexer) sleepService(timer *time.Timer, timerDuration time.Duration)
 	return true
 }
 
-type getMetaPort interface {
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-}
-
-func (idx *Indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p getMetaPort) {
+func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
 	m := zettel.Meta
 	if m.GetBool(meta.KeyNoIndex) {
 		// Zettel maybe in index
-		toCheck := idx.store.DeleteZettel(ctx, m.Zid)
-		idx.checkZettel(toCheck)
+		toCheck := mgr.idxStore.DeleteZettel(ctx, m.Zid)
+		mgr.idxCheckZettel(toCheck)
 		return
 	}
 
@@ -249,13 +164,13 @@ func (idx *Indexer) updateZettel(ctx context.Context, zettel domain.Zettel, p ge
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(zettel, ""), &cData)
 	zi := store.NewZettelIndex(m.Zid)
-	collectFromMeta(ctx, m, zi, &cData, p)
-	processData(ctx, zi, &cData, p)
-	toCheck := idx.store.UpdateReferences(ctx, zi)
-	idx.checkZettel(toCheck)
+	mgr.idxCollectFromMeta(ctx, m, zi, &cData)
+	mgr.idxProcessData(ctx, zi, &cData)
+	toCheck := mgr.idxStore.UpdateReferences(ctx, zi)
+	mgr.idxCheckZettel(toCheck)
 }
 
-func collectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData, p getMetaPort) {
+func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData) {
 	for _, pair := range m.Pairs(false) {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
@@ -263,10 +178,10 @@ func collectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, c
 		}
 		switch descr.Type {
 		case meta.TypeID:
-			updateValue(ctx, descr.Inverse, pair.Value, p, zi)
+			mgr.idxUpdateValue(ctx, descr.Inverse, pair.Value, zi)
 		case meta.TypeIDSet:
 			for _, val := range meta.ListFromValue(pair.Value) {
-				updateValue(ctx, descr.Inverse, val, p, zi)
+				mgr.idxUpdateValue(ctx, descr.Inverse, val, zi)
 			}
 		case meta.TypeZettelmarkup:
 			collectInlineIndexData(parser.ParseMetadata(pair.Value), cData)
@@ -282,9 +197,9 @@ func collectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, c
 	}
 }
 
-func processData(ctx context.Context, zi *store.ZettelIndex, cData *collectData, p getMetaPort) {
+func (mgr *Manager) idxProcessData(ctx context.Context, zi *store.ZettelIndex, cData *collectData) {
 	for ref := range cData.refs {
-		if _, err := p.GetMeta(ctx, ref); err == nil {
+		if _, err := mgr.GetMeta(ctx, ref); err == nil {
 			zi.AddBackRef(ref)
 		} else {
 			zi.AddDeadRef(ref)
@@ -294,12 +209,12 @@ func processData(ctx context.Context, zi *store.ZettelIndex, cData *collectData,
 	zi.SetUrls(cData.urls)
 }
 
-func updateValue(ctx context.Context, inverse string, value string, p getMetaPort, zi *store.ZettelIndex) {
+func (mgr *Manager) idxUpdateValue(ctx context.Context, inverse string, value string, zi *store.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
 	}
-	if _, err := p.GetMeta(ctx, zid); err != nil {
+	if _, err := mgr.GetMeta(ctx, zid); err != nil {
 		zi.AddDeadRef(zid)
 		return
 	}
@@ -310,13 +225,13 @@ func updateValue(ctx context.Context, inverse string, value string, p getMetaPor
 	zi.AddMetaRef(inverse, zid)
 }
 
-func (idx *Indexer) deleteZettel(zid id.Zid) {
-	toCheck := idx.store.DeleteZettel(context.Background(), zid)
-	idx.checkZettel(toCheck)
+func (mgr *Manager) idxDeleteZettel(zid id.Zid) {
+	toCheck := mgr.idxStore.DeleteZettel(context.Background(), zid)
+	mgr.idxCheckZettel(toCheck)
 }
 
-func (idx *Indexer) checkZettel(s id.Set) {
+func (mgr *Manager) idxCheckZettel(s id.Set) {
 	for zid := range s {
-		idx.ar.Enqueue(zid, arUpdate)
+		mgr.idxAr.Enqueue(zid, arUpdate)
 	}
 }
