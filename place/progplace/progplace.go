@@ -15,13 +15,13 @@ package progplace
 import (
 	"context"
 	"net/url"
+	"sync"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/search"
 )
 
@@ -43,22 +43,23 @@ type (
 		zettel      map[id.Zid]zettelGen
 		filter      place.Enricher
 		startConfig *meta.Meta
-		manager     place.Manager
-		indexer     index.Indexer
 	}
 )
 
-var myPlace *progPlace
+var (
+	myPlace *progPlace
+	myMx    sync.RWMutex
+)
 
 // Get returns the one program place.
 func getPlace(mf place.Enricher) place.ManagedPlace {
+	myMx.Lock()
 	if myPlace == nil {
 		myPlace = &progPlace{
 			zettel: map[id.Zid]zettelGen{
 				id.VersionZid:              {genVersionBuildM, genVersionBuildC},
 				id.HostZid:                 {genVersionHostM, genVersionHostC},
 				id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
-				id.IndexerZid:              {genIndexerM, genIndexerC},
 				id.PlaceManagerZid:         {genManagerM, genManagerC},
 				id.MetadataKeyZid:          {genKeysM, genKeysC},
 				id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
@@ -66,20 +67,21 @@ func getPlace(mf place.Enricher) place.ManagedPlace {
 			filter: mf,
 		}
 	}
+	myMx.Unlock()
 	return myPlace
 }
 
 // Setup remembers important values.
-func Setup(startConfig *meta.Meta, manager place.Manager, idx index.Indexer) {
+func Setup(startConfig *meta.Meta) {
+	myMx.Lock()
+	defer myMx.Unlock()
 	if myPlace == nil {
 		panic("progplace.getPlace not called")
 	}
-	if myPlace.startConfig != nil || myPlace.manager != nil {
+	if myPlace.startConfig != nil {
 		panic("progplace.Setup already called")
 	}
 	myPlace.startConfig = startConfig.Clone()
-	myPlace.manager = manager
-	myPlace.indexer = idx
 }
 
 func (pp *progPlace) Location() string { return "" }

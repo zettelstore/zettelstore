@@ -15,22 +15,11 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/manager/index"
 )
 
-type metaEnricher struct {
-	index index.Indexer
-}
-
-// NewEnricher creates a new meta filter.
-func NewEnricher(idx index.Indexer) place.Enricher {
-	return &metaEnricher{index: idx}
-}
-
-func (mf *metaEnricher) Enrich(ctx context.Context, m *meta.Meta) {
+func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta) {
 	computePublished(m)
-	mf.index.Enrich(ctx, m)
+	mgr.indexer.Enrich(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {

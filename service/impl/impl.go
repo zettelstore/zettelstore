@@ -37,7 +37,6 @@ type myService struct {
 	core     coreSub
 	auth     authSub
 	place    placeSub
-	index    indexSub
 	web      webSub
 	subs     map[service.Subservice]subServceDescr
 	subNames map[string]subService
@@ -64,7 +63,6 @@ func createAndStart() service.Service {
 		service.SubCore:  {&srv.core, "core"},
 		service.SubAuth:  {&srv.auth, "auth"},
 		service.SubPlace: {&srv.place, "place"},
-		service.SubIndex: {&srv.index, "index"},
 		service.SubWeb:   {&srv.web, "web"},
 	}
 	srv.subNames = make(map[string]subService, len(srv.subs))

@@ -37,7 +37,6 @@ const (
 	LicenseZid              = Zid(4)
 	AuthorsZid              = Zid(5)
 	DependenciesZid         = Zid(6)
-	IndexerZid              = Zid(18)
 	PlaceManagerZid         = Zid(20)
 	MetadataKeyZid          = Zid(90)
 	StartupConfigurationZid = Zid(96)

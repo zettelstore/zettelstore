@@ -199,8 +199,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			return err
 		}
 		runtime.SetupConfiguration(mgr)
-		progplace.Setup(cfg, mgr, idx)
-		idx.Start(mgr)
+		progplace.Setup(cfg)
 	}
 	return nil
 }

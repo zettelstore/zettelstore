@@ -45,8 +45,8 @@ type Indexer struct {
 	durLastIndex time.Duration
 }
 
-// NewIndexer creates a new indexer.
-func NewIndexer() *Indexer {
+// newIndexer creates a new indexer.
+func newIndexer() *Indexer {
 	return &Indexer{
 		store: memstore.New(),
 		ar:    newAnterooms(10),

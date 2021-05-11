@@ -19,6 +19,8 @@ import (
 )
 
 func genConfigZettelM(zid id.Zid) *meta.Meta {
+	myMx.RLock()
+	defer myMx.RUnlock()
 	if myPlace.startConfig == nil {
 		return nil
 	}
