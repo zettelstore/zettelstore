@@ -193,7 +193,7 @@ func (mp *memPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return nil
 }
 
-func (mp *memPlace) ReadStats(st *place.Stats) {
+func (mp *memPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = false
 	mp.mx.RLock()
 	st.Zettel = len(mp.zettel)

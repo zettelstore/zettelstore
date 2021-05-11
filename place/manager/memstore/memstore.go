@@ -475,7 +475,7 @@ func (ms *memStore) deleteWords(zid id.Zid, words []string) {
 	}
 }
 
-func (ms *memStore) ReadStats(st *index.StoreStats) {
+func (ms *memStore) ReadStats(st *index.Stats) {
 	ms.mx.RLock()
 	st.Zettel = len(ms.idx)
 	st.Updates = ms.updates

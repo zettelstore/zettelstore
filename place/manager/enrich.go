@@ -15,11 +15,18 @@ import (
 	"context"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/place"
 )
 
+// Enrich computes additional properties and updates the given metadata.
 func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta) {
+	if place.DoNotEnrich(ctx) {
+		// Enrich is called indirectly via indexer or enrichment is not requested
+		// because of other reasons -> ignore this call, do not update meta data
+		return
+	}
 	computePublished(m)
-	mgr.indexer.Enrich(ctx, m)
+	mgr.indexer.store.Enrich(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {

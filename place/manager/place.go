@@ -17,7 +17,6 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -132,7 +131,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, place.ErrStopped
 	}
 	var result []*meta.Meta
-	match := s.CompileMatch(startup.Indexer())
+	match := s.CompileMatch(mgr.indexer)
 	for _, p := range mgr.subplaces {
 		selected, err := p.SelectMeta(ctx, match)
 		if err != nil {

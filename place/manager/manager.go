@@ -100,7 +100,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, readonlyMode bool) (*Manager, *Indexer, error) {
+func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {
@@ -118,7 +118,7 @@ func New(placeURIs []string, readonlyMode bool) (*Manager, *Indexer, error) {
 	for _, uri := range placeURIs {
 		p, err := Connect(uri, readonlyMode, &cdata)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		if p != nil {
 			subplaces = append(subplaces, p)
@@ -126,15 +126,15 @@ func New(placeURIs []string, readonlyMode bool) (*Manager, *Indexer, error) {
 	}
 	constplace, err := registry[" const"](nil, &cdata)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	progplace, err := registry[" prog"](nil, &cdata)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	subplaces = append(subplaces, constplace, progplace)
 	mgr.subplaces = subplaces
-	return mgr, idx, nil
+	return mgr, nil
 }
 
 // RegisterObserver registers an observer that will be notified
@@ -204,7 +204,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	}
 	mgr.done = make(chan struct{})
 	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
-	mgr.indexer.Start(mgr)
+	mgr.indexer.startIndexer(mgr)
 	mgr.started = true
 	mgr.mx.Unlock()
 	mgr.infos <- change.Info{Reason: change.OnReload, Zid: id.Invalid}
@@ -218,6 +218,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	if !mgr.started {
 		return place.ErrStopped
 	}
+	mgr.indexer.stopIndexer()
 	close(mgr.done)
 	mgr.done = nil
 	var err error
@@ -236,7 +237,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 func (mgr *Manager) ReadStats(st *place.Stats) {
 	mgr.mx.RLock()
 	defer mgr.mx.RUnlock()
-	subStats := make([]place.Stats, len(mgr.subplaces))
+	subStats := make([]place.ManagedPlaceStats, len(mgr.subplaces))
 	for i, p := range mgr.subplaces {
 		p.ReadStats(&subStats[i])
 	}
@@ -249,7 +250,9 @@ func (mgr *Manager) ReadStats(st *place.Stats) {
 		}
 		sumZettel += sst.Zettel
 	}
-	st.Zettel = sumZettel
+	st.ZettelTotal = sumZettel
+
+	mgr.indexer.readStats(st)
 }
 
 // NumPlaces returns the number of managed places.

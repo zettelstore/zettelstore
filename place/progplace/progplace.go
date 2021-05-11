@@ -177,7 +177,7 @@ func (pp *progPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.ErrNotFound
 }
 
-func (pp *progPlace) ReadStats(st *place.Stats) {
+func (pp *progPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = true
 	st.Zettel = len(pp.zettel)
 }

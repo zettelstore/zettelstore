@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/place/progplace"
 	"zettelstore.de/z/service"
 )
@@ -173,7 +172,6 @@ func setConfigValue(ok bool, subsys service.Subservice, key string, val interfac
 
 func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	var mgr place.Manager
-	var idx index.Indexer
 	if withPlaces {
 		err := raiseFdLimit()
 		if err != nil {
@@ -184,7 +182,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		}
 		startup.SetupStartupConfig(cfg)
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-		mgr, idx, err = manager.New(getPlaces(cfg), readonlyMode)
+		mgr, err = manager.New(getPlaces(cfg), readonlyMode)
 		if err != nil {
 			return err
 		}
@@ -192,14 +190,14 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		startup.SetupStartupConfig(cfg)
 	}
 
-	startup.SetupStartupService(mgr, idx)
+	startup.SetupStartupService(mgr)
 	if withPlaces {
+		progplace.Setup(cfg)
 		if err := mgr.Start(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
 			return err
 		}
 		runtime.SetupConfiguration(mgr)
-		progplace.Setup(cfg)
 	}
 	return nil
 }
@@ -222,7 +220,6 @@ func getPlaces(cfg *meta.Meta) []string {
 
 func cleanupOperations(withPlaces bool) error {
 	if withPlaces {
-		startup.Indexer().Stop()
 		if err := startup.PlaceManager().Stop(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to stop zettel place")
 			return err

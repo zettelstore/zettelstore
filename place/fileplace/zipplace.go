@@ -216,7 +216,7 @@ func (zp *zipPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.ErrNotFound
 }
 
-func (zp *zipPlace) ReadStats(st *place.Stats) {
+func (zp *zipPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = true
 	st.Zettel = len(zp.zettel)
 }

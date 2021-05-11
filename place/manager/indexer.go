@@ -71,8 +71,16 @@ func (idx *Indexer) observer(ci change.Info) {
 	}
 }
 
+// indexerPort contains all the used functions to access zettel to be indexed.
+type indexerPort interface {
+	RegisterObserver(change.Func)
+	FetchZids(context.Context) (id.Set, error)
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
+}
+
 // Start the indexer.
-func (idx *Indexer) Start(p index.IndexerPort) {
+func (idx *Indexer) startIndexer(p indexerPort) {
 	if idx.started {
 		panic("Index already started")
 	}
@@ -87,22 +95,12 @@ func (idx *Indexer) Start(p index.IndexerPort) {
 }
 
 // Stop the indexer.
-func (idx *Indexer) Stop() {
+func (idx *Indexer) stopIndexer() {
 	if !idx.started {
 		panic("Index already stopped")
 	}
 	close(idx.done)
 	idx.started = false
-}
-
-// Enrich reads all properties in the index and updates the metadata.
-func (idx *Indexer) Enrich(ctx context.Context, m *meta.Meta) {
-	if place.DoNotEnrich(ctx) {
-		// Enrich is called indirectly via indexer or enrichment is not requested
-		// because of other reasons -> ignore this call, do not update meta data
-		return
-	}
-	idx.store.Enrich(ctx, m)
 }
 
 // SelectEqual all zettel that contains the given exact word.
@@ -129,17 +127,23 @@ func (idx *Indexer) SelectContains(s string) id.Set {
 	return idx.store.SelectContains(s)
 }
 
-// ReadStats populates st with indexer statistics.
-func (idx *Indexer) ReadStats(st *index.IndexerStats) {
+// readStats populates st with indexer statistics.
+func (idx *Indexer) readStats(st *place.Stats) {
+	var storeSt index.Stats
 	idx.mx.RLock()
+	defer idx.mx.RUnlock()
+	idx.store.ReadStats(&storeSt)
+
 	st.LastReload = idx.lastReload
 	st.IndexesSinceReload = idx.sinceReload
 	st.DurLastIndex = idx.durLastIndex
-	idx.mx.RUnlock()
-	idx.store.ReadStats(&st.Store)
+	st.ZettelIndexed = storeSt.Zettel
+	st.IndexUpdates = storeSt.Updates
+	st.IndexedWords = storeSt.Words
+	st.IndexedUrls = storeSt.Urls
 }
 
-type indexerPort interface {
+type indexWorkerPort interface {
 	getMetaPort
 	FetchZids(ctx context.Context) (id.Set, error)
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
@@ -147,7 +151,7 @@ type indexerPort interface {
 
 // indexer runs in the background and updates the index data structures.
 // This is the main service of the indexer.
-func (idx *Indexer) indexer(p indexerPort) {
+func (idx *Indexer) indexer(p indexWorkerPort) {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
 		if r := recover(); r != nil {
@@ -172,7 +176,7 @@ func (idx *Indexer) indexer(p indexerPort) {
 	}
 }
 
-func (idx *Indexer) workService(ctx context.Context, p indexerPort) bool {
+func (idx *Indexer) workService(ctx context.Context, p indexWorkerPort) bool {
 	changed := false
 	for {
 		switch action, zid := idx.ar.Dequeue(); action {

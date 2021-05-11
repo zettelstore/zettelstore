@@ -123,7 +123,7 @@ func (cp *constPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return place.ErrNotFound
 }
 
-func (cp *constPlace) ReadStats(st *place.Stats) {
+func (cp *constPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = true
 	st.Zettel = len(cp.zettel)
 }

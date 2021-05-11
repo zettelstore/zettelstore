@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -62,9 +63,6 @@ type BasePlace interface {
 
 	// DeleteZettel removes the zettel from the place.
 	DeleteZettel(ctx context.Context, zid id.Zid) error
-
-	// ReadStats populates st with place statistics
-	ReadStats(st *Stats)
 }
 
 // ManagedPlace is the interface of managed places.
@@ -73,10 +71,13 @@ type ManagedPlace interface {
 
 	// SelectMeta returns all zettel meta data that match the selection criteria.
 	SelectMeta(ctx context.Context, match search.MetaMatchFunc) ([]*meta.Meta, error)
+
+	// ReadStats populates st with place statistics
+	ReadStats(st *ManagedPlaceStats)
 }
 
-// Stats records statistics about the place.
-type Stats struct {
+// ManagedPlaceStats records statistics about the place.
+type ManagedPlaceStats struct {
 	// ReadOnly indicates that the places cannot be changed
 	ReadOnly bool
 
@@ -100,6 +101,41 @@ type Place interface {
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
 	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+
+	// ReadStats populates st with place statistics
+	ReadStats(st *Stats)
+}
+
+// Stats record stattistics about a full place.
+type Stats struct {
+	// ReadOnly indicates that the places cannot be changed
+	ReadOnly bool
+
+	// Zettel is the number of zettel managed by the place, including
+	// duplicates across managed places.
+	ZettelTotal int
+
+	// LastReload stores the timestamp when a full re-index was done.
+	LastReload time.Time
+
+	// IndexesSinceReload counts indexing a zettel since the full re-index.
+	IndexesSinceReload uint64
+
+	// DurLastIndex is the duration of the last index run. This could be a
+	// full re-index or a re-index of a single zettel.
+	DurLastIndex time.Duration
+
+	// ZettelIndexed is the number of zettel managed by the indexer.
+	ZettelIndexed int
+
+	// IndexUpdates count the number of metadata updates.
+	IndexUpdates uint64
+
+	// IndexedWords count the different words indexed.
+	IndexedWords uint64
+
+	// IndexedUrls count the different URLs indexed.
+	IndexedUrls uint64
 }
 
 // Manager is a place-managing place.

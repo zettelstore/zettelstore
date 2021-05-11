@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/service"
 )
 
@@ -36,7 +35,6 @@ var config struct {
 
 	// Set in SetupStartupService
 	manager place.Manager
-	indexer index.Indexer
 }
 
 // Predefined keys for startup zettel
@@ -70,9 +68,8 @@ func SetupStartupConfig(cfg *meta.Meta) {
 }
 
 // SetupStartupService initializes the startup data with internal services.
-func SetupStartupService(manager place.Manager, idx index.Indexer) {
+func SetupStartupService(manager place.Manager) {
 	config.manager = manager
-	config.indexer = idx
 }
 
 var configKeys = []string{
@@ -142,6 +139,3 @@ func TokenLifetime() (htmlLifetime, apiLifetime time.Duration) {
 
 // PlaceManager returns the managing place.
 func PlaceManager() place.Manager { return config.manager }
-
-// Indexer returns the current indexer.
-func Indexer() index.Indexer { return config.indexer }

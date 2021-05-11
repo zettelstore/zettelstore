@@ -386,7 +386,7 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return err
 }
 
-func (dp *dirPlace) ReadStats(st *place.Stats) {
+func (dp *dirPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = dp.readonly
 	st.Zettel, _ = dp.dirSrv.NumEntries()
 }
