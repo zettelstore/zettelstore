@@ -48,8 +48,8 @@ type Selector interface {
 	SelectContains(s string) id.Set
 }
 
-// Port contains all the used functions to access zettel to be indexed.
-type Port interface {
+// IndexerPort contains all the used functions to access zettel to be indexed.
+type IndexerPort interface {
 	RegisterObserver(change.Func)
 	FetchZids(context.Context) (id.Set, error)
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
@@ -62,7 +62,7 @@ type Indexer interface {
 	Selector
 
 	// Start the index. It will read all zettel and store index data for later retrieval.
-	Start(Port)
+	Start(IndexerPort)
 
 	// Stop the index. No zettel are read any more, but the current index data
 	// can stil be retrieved.

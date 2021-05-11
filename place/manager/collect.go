@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package indexer allows to search for metadata and content.
-package indexer
+// Package manager coordinates the various places and indexes of a Zettelstore.
+package manager
 
 import (
 	"strings"

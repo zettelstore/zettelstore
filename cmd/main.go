@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/index/indexer"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
@@ -185,7 +184,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		}
 		startup.SetupStartupConfig(cfg)
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-		idx = indexer.New()
+		idx = manager.NewIndexer()
 		filter := index.NewMetaFilter(idx)
 		mgr, err = manager.New(getPlaces(cfg), readonlyMode, filter)
 		if err != nil {

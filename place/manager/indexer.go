@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package indexer allows to search for metadata and content.
-package indexer
+// Package manager coordinates the various places and indexes of a Zettelstore.
+package manager
 
 import (
 	"context"
@@ -21,10 +21,10 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/index"
-	"zettelstore.de/z/index/memstore"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/place/manager/memstore"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
@@ -44,8 +44,8 @@ type indexer struct {
 	durLastIndex time.Duration
 }
 
-// New creates a new indexer.
-func New() index.Indexer {
+// NewIndexer creates a new indexer.
+func NewIndexer() index.Indexer {
 	return &indexer{
 		store: memstore.New(),
 		ar:    newAnterooms(10),
@@ -70,7 +70,7 @@ func (idx *indexer) observer(ci change.Info) {
 	}
 }
 
-func (idx *indexer) Start(p index.Port) {
+func (idx *indexer) Start(p index.IndexerPort) {
 	if idx.started {
 		panic("Index already started")
 	}
