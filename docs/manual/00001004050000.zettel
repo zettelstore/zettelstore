@@ -3,6 +3,7 @@ title: Command line parameters
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
+modified: 20210511140731
 
 Zettelstore is not just a web service that provides services of a zettelkasten.
 It allows to some tasks to be executed at the command line.
@@ -21,7 +22,6 @@ Typically this is done by starting Zettelstore via a graphical user interface by
 === Sub-commands
 * [[``zettelstore help``|00001004050200]] lists all available sub-commands.
 * [[``zettelstore version``|00001004050400]] to display version information of Zettelstore.
-* [[``zettelstore config``|00001004050600]] to show the currently active [[configuration|00001004000000]].
 * [[``zettelstore run``|00001004051000]] to start the web-based Zettelstore service.
 * [[``zettelstore run-simple``|00001004051100]] is typically called, when you start Zettelstore by a double.click in your GUI.
 * [[``zettelstore file``|00001004051200]] to render files manually without activated/running Zettelstore services.

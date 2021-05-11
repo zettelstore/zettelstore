@@ -68,12 +68,6 @@ func init() {
 		Flags:  flgSimpleRun,
 	})
 	RegisterCommand(Command{
-		Name:   "config",
-		Func:   cmdConfig,
-		Flags:  flgRun,
-		Header: true,
-	})
-	RegisterCommand(Command{
 		Name: "file",
 		Func: cmdFile,
 		Flags: func(fs *flag.FlagSet) {
