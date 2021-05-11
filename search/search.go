@@ -65,9 +65,6 @@ type expValue struct {
 // AddExpr adds a match expression to the filter.
 func (s *Search) AddExpr(key, val string) *Search {
 	val, negate, op := parseOp(strings.TrimSpace(val))
-	if val == "" {
-		return s
-	}
 	if s == nil {
 		s = new(Search)
 	}
