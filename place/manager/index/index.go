@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index allows to search for metadata and content.
+// Package index contains general index data for a zettel index.
 package index
 
 import (
@@ -88,6 +88,21 @@ type IndexerStats struct {
 	Store StoreStats
 }
 
+// StoreStats records statistics about the store.
+type StoreStats struct {
+	// Zettel is the number of zettel managed by the indexer.
+	Zettel int
+
+	// Updates count the number of metadata updates.
+	Updates uint64
+
+	// Words count the different words stored in the store.
+	Words uint64
+
+	// Urls count the different URLs stored in the store.
+	Urls uint64
+}
+
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
@@ -107,19 +122,4 @@ type Store interface {
 
 	// Write the content to a Writer.
 	Write(io.Writer)
-}
-
-// StoreStats records statistics about the store.
-type StoreStats struct {
-	// Zettel is the number of zettel managed by the indexer.
-	Zettel int
-
-	// Updates count the number of metadata updates.
-	Updates uint64
-
-	// Words count the different words stored in the store.
-	Words uint64
-
-	// Urls count the different URLs stored in the store.
-	Urls uint64
 }

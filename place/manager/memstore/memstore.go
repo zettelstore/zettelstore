@@ -20,7 +20,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place/manager/index"
 )
 
 type metaRefs struct {

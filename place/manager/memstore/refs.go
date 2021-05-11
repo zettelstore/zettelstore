@@ -11,9 +11,7 @@
 // Package memstore stored the index in main memory.
 package memstore
 
-import (
-	"zettelstore.de/z/domain/id"
-)
+import "zettelstore.de/z/domain/id"
 
 func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 	npos, opos := 0, 0

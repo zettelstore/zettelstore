@@ -8,12 +8,10 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index allows to search for metadata and content.
+// Package index contains general index data for a zettel index.
 package index
 
-import (
-	"zettelstore.de/z/domain/id"
-)
+import "zettelstore.de/z/domain/id"
 
 // ZettelIndex contains all index data of a zettel.
 type ZettelIndex struct {

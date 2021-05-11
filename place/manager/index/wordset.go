@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index allows to search for metadata and content.
+// Package index contains general index data for a zettel index.
 package index
 
 // WordSet contains the set of all words, with the count of their occurrences.

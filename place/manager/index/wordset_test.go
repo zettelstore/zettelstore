@@ -8,14 +8,14 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package index allows to search for metadata and content.
+// Package index contains general index data for a zettel index.
 package index_test
 
 import (
 	"sort"
 	"testing"
 
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place/manager/index"
 )
 
 func equalWordList(exp, got []string) bool {

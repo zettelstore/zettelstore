@@ -24,10 +24,10 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
+	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/place/progplace"
 	"zettelstore.de/z/service"
 )

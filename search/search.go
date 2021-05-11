@@ -18,7 +18,7 @@ import (
 	"sync"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place/manager/index"
 )
 
 // MetaMatchFunc is a function determine whethe some metadata should be filtered or not.

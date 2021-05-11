@@ -16,7 +16,7 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/index"
+	"zettelstore.de/z/place/manager/index"
 	"zettelstore.de/z/strfun"
 )
 
