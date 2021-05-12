@@ -237,6 +237,12 @@ func (srv *myService) getSubservice(subsrv service.Subservice) subService {
 	}
 	return nil
 }
+func (srv *myService) getSubserviceByName(name string) subService {
+	if sub, ok := srv.subNames[name]; ok {
+		return sub
+	}
+	return nil
+}
 
 func (srv *myService) SetConfig(subsrv service.Subservice, key, value string) bool {
 	srv.mx.Lock()

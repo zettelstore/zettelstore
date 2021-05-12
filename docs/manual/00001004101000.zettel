@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210510203026
+modified: 20210512200508
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -13,8 +13,14 @@ modified: 20210510203026
 : Display environment values.
 ; ''help''
 : Displays a list of all available commands.
-; ''show-config''
+; ''get-config''
 : Displays internal configuration data.
+
+  ``get-config`` shows all configuration data.
+
+  ``get-config SUBSYS`` shows only the configuration data of the given sub-system.
+
+  ``get-config SUBSYS KEY`` shows the configuration data for the given sub-system and key.
 ; ''metrics''
 : Displays some values that reflect the inner working of Zettelstore.
   See [[here|https://golang.org/pkg/runtime/metrics/]] for a technical description of these values.
