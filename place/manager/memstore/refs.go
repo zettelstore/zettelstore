@@ -54,7 +54,7 @@ func addRef(refs id.Slice, ref id.Zid) id.Slice {
 	return append(refs, ref)
 }
 
-func remRefs(refs id.Slice, rem id.Slice) id.Slice {
+func remRefs(refs, rem id.Slice) id.Slice {
 	if len(refs) == 0 || len(rem) == 0 {
 		return refs
 	}

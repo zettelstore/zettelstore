@@ -11,12 +11,10 @@
 // Package change provides definition for place changes.
 package change
 
-import (
-	"zettelstore.de/z/domain/id"
-)
+import "zettelstore.de/z/domain/id"
 
 // Reason gives an indication, why the ObserverFunc was called.
-type Reason int
+type Reason uint8
 
 // Values for Reason
 const (

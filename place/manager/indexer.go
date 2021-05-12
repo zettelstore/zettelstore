@@ -21,28 +21,10 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
-
-func (mgr *Manager) idxObserver(ci change.Info) {
-	switch ci.Reason {
-	case change.OnReload:
-		mgr.idxAr.Reset()
-	case change.OnUpdate:
-		mgr.idxAr.Enqueue(ci.Zid, arUpdate)
-	case change.OnDelete:
-		mgr.idxAr.Enqueue(ci.Zid, arDelete)
-	default:
-		return
-	}
-	select {
-	case mgr.idxReady <- struct{}{}:
-	default:
-	}
-}
 
 // SelectEqual all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
@@ -142,7 +124,7 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 			return false
 		}
 		timer.Reset(timerDuration)
-	case <-mgr.idxDone:
+	case <-mgr.done:
 		if !timer.Stop() {
 			<-timer.C
 		}

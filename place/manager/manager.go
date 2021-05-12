@@ -101,11 +101,9 @@ type Manager struct {
 	propertyKeys map[string]bool // Set of property key names
 
 	// Indexer data
-	idxStore   store.Store
-	idxAr      *anterooms
-	idxReady   chan struct{} // Signal a non-empty anteroom to background task
-	idxDone    chan struct{} // Stop background task
-	idxObserve bool
+	idxStore store.Store
+	idxAr    *anterooms
+	idxReady chan struct{} // Signal a non-empty anteroom to background task
 
 	// Indexer stats data
 	idxMx           sync.RWMutex
@@ -173,24 +171,42 @@ func (mgr *Manager) notifyObserver(ci change.Info) {
 	}
 }
 
-func notifier(notify change.Func, infos <-chan change.Info, done <-chan struct{}) {
+func (mgr *Manager) notifier() {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
 		if r := recover(); r != nil {
-			service.Main.LogRecover("Manager", r)
-			go notifier(notify, infos, done)
+			service.Main.LogRecover("Notifier", r)
+			go mgr.notifier()
 		}
 	}()
 
 	for {
 		select {
-		case ci, ok := <-infos:
+		case ci, ok := <-mgr.infos:
 			if ok {
-				notify(ci)
+				mgr.idxEnqueue(ci)
+				mgr.notifyObserver(ci)
 			}
-		case <-done:
+		case <-mgr.done:
 			return
 		}
+	}
+}
+
+func (mgr *Manager) idxEnqueue(ci change.Info) {
+	switch ci.Reason {
+	case change.OnReload:
+		mgr.idxAr.Reset()
+	case change.OnUpdate:
+		mgr.idxAr.Enqueue(ci.Zid, arUpdate)
+	case change.OnDelete:
+		mgr.idxAr.Enqueue(ci.Zid, arDelete)
+	default:
+		return
+	}
+	select {
+	case mgr.idxReady <- struct{}{}:
+	default:
 	}
 }
 
@@ -219,14 +235,9 @@ func (mgr *Manager) Start(ctx context.Context) error {
 		mgr.mgrMx.Unlock()
 		return err
 	}
-	mgr.done = make(chan struct{})
-	go notifier(mgr.notifyObserver, mgr.infos, mgr.done)
-	mgr.idxDone = make(chan struct{})
-	if !mgr.idxObserve {
-		mgr.RegisterObserver(mgr.idxObserver)
-		mgr.idxObserve = true
-	}
 	mgr.idxAr.Reset() // Ensure an initial index run
+	mgr.done = make(chan struct{})
+	go mgr.notifier()
 	go mgr.idxIndexer()
 
 	// mgr.startIndexer(mgr)
@@ -243,9 +254,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	if !mgr.started {
 		return place.ErrStopped
 	}
-	close(mgr.idxDone)
 	close(mgr.done)
-	mgr.done = nil
 	var err error
 	for _, p := range mgr.subplaces {
 		if ss, ok := p.(place.StartStopper); ok {
