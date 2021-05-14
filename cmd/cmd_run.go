@@ -46,20 +46,20 @@ func withDebug(fs *flag.FlagSet) bool {
 	return dbg != nil && dbg.Value.String() == "true"
 }
 
-func runFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
-	exitCode, err := doRun(withDebug(fs))
+func runFunc(fs *flag.FlagSet, cfg *meta.Meta, mgr place.Manager) (int, error) {
+	exitCode, err := doRun(mgr, withDebug(fs))
 	service.Main.WaitForShutdown()
 	return exitCode, err
 }
 
-func doRun(debug bool) (int, error) {
+func doRun(mgr place.Manager, debug bool) (int, error) {
 	srvm := service.Main
-	srvm.Log(fmt.Sprintf("Zettel location [%v]", startup.PlaceManager().Location()))
+	srvm.Log(fmt.Sprintf("Zettel location [%v]", mgr.Location()))
 	srvm.SetDebug(debug)
 	srvm.SetCreators(
-		nil,
+		func() place.Manager { return mgr },
 		func(urlPrefix string, readonlyMode bool) http.Handler {
-			return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
+			return setupRouting(urlPrefix, mgr, readonlyMode)
 		},
 	)
 	if err := srvm.StartSub(service.SubWeb); err != nil {

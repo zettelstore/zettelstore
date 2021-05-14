@@ -277,6 +277,14 @@ func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDesc
 	}
 	return nil
 }
+func (srv *myService) GetSubStatistics(subsrv service.Subservice) []service.KeyValue {
+	srv.mx.RLock()
+	defer srv.mx.RUnlock()
+	if subD, ok := srv.subs[subsrv]; ok {
+		return subD.sub.GetStatistics()
+	}
+	return nil
+}
 
 func (srv *myService) StartSub(subsrv service.Subservice) error {
 	srv.mx.Lock()
@@ -361,6 +369,9 @@ type subService interface {
 
 	// GetNextConfigList returns a sorted list of next configuration data.
 	GetNextConfigList() []service.KeyDescrValue
+
+	// GetStatistics returns a key/value list of statistical data.
+	GetStatistics() []service.KeyValue
 
 	// Freeze disallows to change some fixed configuration values.
 	Freeze()

@@ -16,10 +16,9 @@ import (
 	"fmt"
 	"strings"
 
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/service"
 )
 
 func genManagerM(zid id.Zid) *meta.Meta {
@@ -29,22 +28,14 @@ func genManagerM(zid id.Zid) *meta.Meta {
 }
 
 func genManagerC(*meta.Meta) string {
-	mgr := startup.PlaceManager()
-
-	var mStats place.Stats
-	mgr.ReadStats(&mStats)
-
+	kvl := service.Main.GetSubStatistics(service.SubPlace)
+	if len(kvl) == 0 {
+		return "No statistics available"
+	}
 	var sb strings.Builder
 	sb.WriteString("|=Name|=Value>\n")
-	fmt.Fprintf(&sb, "|Read-only| %v\n", mStats.ReadOnly)
-	fmt.Fprintf(&sb, "|Sub-places| %v\n", mgr.NumPlaces())
-	fmt.Fprintf(&sb, "|Zettel (total)| %v\n", mStats.ZettelTotal)
-	fmt.Fprintf(&sb, "|Zettel (indexable)| %v\n", mStats.ZettelIndexed)
-	fmt.Fprintf(&sb, "|Last re-index| %v\n", mStats.LastReload.Format("2006-01-02 15:04:05 -0700 MST"))
-	fmt.Fprintf(&sb, "|Indexes since last re-index| %v\n", mStats.IndexesSinceReload)
-	fmt.Fprintf(&sb, "|Duration last index| %vms\n", mStats.DurLastIndex.Milliseconds())
-	fmt.Fprintf(&sb, "|Indexed words| %v\n", mStats.IndexedWords)
-	fmt.Fprintf(&sb, "|Indexed URLs| %v\n", mStats.IndexedUrls)
-	fmt.Fprintf(&sb, "|Zettel enrichments| %v\n", mStats.IndexUpdates)
+	for _, kv := range kvl {
+		fmt.Fprintf(&sb, "| %v | %v\n", kv.Key, kv.Value)
+	}
 	return sb.String()
 }

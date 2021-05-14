@@ -38,7 +38,7 @@ const (
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
-		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
+		Func: func(*flag.FlagSet, *meta.Meta, place.Manager) (int, error) {
 			fmt.Println("Available commands:")
 			for _, name := range List() {
 				fmt.Printf("- %q\n", name)
@@ -48,7 +48,7 @@ func init() {
 	})
 	RegisterCommand(Command{
 		Name:   "version",
-		Func:   func(*flag.FlagSet, *meta.Meta) (int, error) { return 0, nil },
+		Func:   func(*flag.FlagSet, *meta.Meta, place.Manager) (int, error) { return 0, nil },
 		Header: true,
 	})
 	RegisterCommand(Command{
@@ -170,7 +170,7 @@ func setConfigValue(ok bool, subsys service.Subservice, key string, val interfac
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces bool) error {
+func setupOperations(cfg *meta.Meta, withPlaces bool) (place.Manager, error) {
 	var mgr place.Manager
 	if withPlaces {
 		err := raiseFdLimit()
@@ -184,22 +184,21 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
 		mgr, err = manager.New(getPlaces(cfg), readonlyMode)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
 		startup.SetupStartupConfig(cfg)
 	}
 
-	startup.SetupStartupService(mgr)
-	if withPlaces {
+	if mgr != nil {
 		progplace.Setup(cfg)
 		if err := mgr.Start(context.Background()); err != nil {
 			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
-			return err
+			return nil, err
 		}
 		runtime.SetupConfiguration(mgr)
 	}
-	return nil
+	return mgr, nil
 }
 
 func getPlaces(cfg *meta.Meta) []string {
@@ -218,16 +217,6 @@ func getPlaces(cfg *meta.Meta) []string {
 	return result
 }
 
-func cleanupOperations(withPlaces bool) error {
-	if withPlaces {
-		if err := startup.PlaceManager().Stop(context.Background()); err != nil {
-			fmt.Fprintln(os.Stderr, "Unable to stop zettel place")
-			return err
-		}
-	}
-	return nil
-}
-
 func executeCommand(name string, args ...string) int {
 	command, ok := Get(name)
 	if !ok {
@@ -244,17 +233,18 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	if err := setupOperations(cfg, command.Places); err != nil {
+	mgr, err := setupOperations(cfg, command.Places)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
 	service.Main.Start(command.Header)
 
-	exitCode, err := command.Func(fs, cfg)
+	exitCode, err := command.Func(fs, cfg, mgr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
-	if err := cleanupOperations(command.Places); err != nil {
+	if err := service.Main.StopSub(service.SubPlace); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
 	return exitCode

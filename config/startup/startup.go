@@ -19,7 +19,6 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
 
@@ -32,9 +31,6 @@ var config struct {
 	persistCookie bool
 	htmlLifetime  time.Duration
 	apiLifetime   time.Duration
-
-	// Set in SetupStartupService
-	manager place.Manager
 }
 
 // Predefined keys for startup zettel
@@ -65,11 +61,6 @@ func SetupStartupConfig(cfg *meta.Meta) {
 		config.apiLifetime = getDuration(
 			cfg, KeyTokenLifetimeAPI, 10*time.Minute, 0, 1*time.Hour)
 	}
-}
-
-// SetupStartupService initializes the startup data with internal services.
-func SetupStartupService(manager place.Manager) {
-	config.manager = manager
 }
 
 var configKeys = []string{
@@ -136,6 +127,3 @@ func Secret() []byte { return config.secret }
 func TokenLifetime() (htmlLifetime, apiLifetime time.Duration) {
 	return config.htmlLifetime, config.apiLifetime
 }
-
-// PlaceManager returns the managing place.
-func PlaceManager() place.Manager { return config.manager }

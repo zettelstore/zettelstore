@@ -90,3 +90,7 @@ func (ws *webSub) Stop(srv *myService) error {
 	ws.srvw = nil
 	return err
 }
+
+func (ws *webSub) GetStatistics() []service.KeyValue {
+	return nil
+}

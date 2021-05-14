@@ -58,6 +58,9 @@ type Service interface {
 	// StopSub stop the given sub-service.
 	StopSub(subsrv Subservice) error
 
+	// GetSubStatistics returns a key/value list with statistical data.
+	GetSubStatistics(subsrv Subservice) []KeyValue
+
 	// SetCreators store the configuration data for the next start of the web server.
 	SetCreators(CreatePlaceManagerFunc, CreateWebHandlerFunc)
 }
@@ -119,6 +122,9 @@ const (
 
 // KeyDescrValue is a triple of config data.
 type KeyDescrValue struct{ Key, Descr, Value string }
+
+// KeyValue is a pair of key and value.
+type KeyValue struct{ Key, Value string }
 
 // CreatePlaceManagerFunc is called to create a new place manager.
 type CreatePlaceManagerFunc func() place.Manager

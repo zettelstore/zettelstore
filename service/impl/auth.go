@@ -48,3 +48,7 @@ func (as *authSub) Stop(srv *myService) error {
 	as.started = false
 	return nil
 }
+
+func (as *authSub) GetStatistics() []service.KeyValue {
+	return nil
+}

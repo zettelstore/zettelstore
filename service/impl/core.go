@@ -132,3 +132,7 @@ func handleConnection(conn net.Conn, srv *myService) {
 	}
 	conn.Close()
 }
+
+func (cs *coreSub) GetStatistics() []service.KeyValue {
+	return nil
+}

@@ -130,10 +130,6 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
-	"shutdown": {
-		"shutdown Zettelstore",
-		func(sess *cmdSession, cmd string, args []string) bool { sess.srv.Shutdown(); return false },
-	},
 	"echo": {
 		"toggle echo mode",
 		func(sess *cmdSession, cmd string, args []string) bool {
@@ -146,6 +142,8 @@ var commands = map[string]command{
 			return true
 		},
 	},
+	"env":        {"show environment values", cmdEnvironment},
+	"get-config": {"show current configuration data", cmdGetConfig},
 	"header": {
 		"toggle table header",
 		func(sess *cmdSession, cmd string, args []string) bool {
@@ -158,16 +156,17 @@ var commands = map[string]command{
 			return true
 		},
 	},
-	"env":         {"show environment values", cmdEnvironment},
-	"get-config":  {"show current configuration data", cmdGetConfig},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
 	"set-config":  {"set next configuration data", cmdSetConfig},
-	"subservices": {"show available subservices", cmdServices},
+	"shutdown": {
+		"shutdown Zettelstore",
+		func(sess *cmdSession, cmd string, args []string) bool { sess.srv.Shutdown(); return false },
+	},
 	"start":       {"start subservice", cmdStart},
-	// "status":      {"subservice status", nil},
-	"stop": {"stop subservice", cmdStop},
-	// "stat":        {"show subservice statistics", nil},
+	"stat":        {"show subservice statistics", cmdStat},
+	"stop":        {"stop subservice", cmdStop},
+	"subservices": {"show available subservices", cmdServices},
 }
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
@@ -300,6 +299,28 @@ func cmdStop(sess *cmdSession, cmd string, args []string) bool {
 	if err != nil {
 		sess.println(err.Error())
 	}
+	return true
+}
+
+func cmdStat(sess *cmdSession, cmd string, args []string) bool {
+	if len(args) == 0 {
+		sess.println("Usage:", cmd, "SUBSERVICE")
+		return true
+	}
+	subD, ok := sess.srv.subNames[args[0]]
+	if !ok {
+		sess.println("Unknown subservice", args[0])
+		return true
+	}
+	kvl := subD.sub.GetStatistics()
+	if len(kvl) == 0 {
+		return true
+	}
+	table := [][]string{{"Key", "Value"}}
+	for _, kv := range kvl {
+		table = append(table, []string{kv.Key, kv.Value})
+	}
+	sess.printTable(table)
 	return true
 }
 
