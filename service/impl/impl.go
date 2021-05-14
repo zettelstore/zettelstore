@@ -299,8 +299,11 @@ type subService interface {
 	// GetNextConfig returns the next configuration value.
 	GetNextConfig(key string) interface{}
 
-	// GetConfigList returns a sorted list of configuration data.
+	// GetConfigList returns a sorted list of current configuration data.
 	GetConfigList(all bool) []service.KeyDescrValue
+
+	// GetNextConfigList returns a sorted list of next configuration data.
+	GetNextConfigList() []service.KeyDescrValue
 
 	// Freeze disallows to change some fixed configuration values.
 	Freeze()

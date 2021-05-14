@@ -158,10 +158,12 @@ var commands = map[string]command{
 			return true
 		},
 	},
-	"env":        {"show environment values", cmdEnvironment},
-	"get-config": {"show configuration data", cmdGetConfig},
-	"subsystems": {"show available subsystems", cmdSubsystems},
-	"metrics":    {"show Go runtime metrics", cmdMetrics},
+	"env":         {"show environment values", cmdEnvironment},
+	"get-config":  {"show current configuration data", cmdGetConfig},
+	"next-config": {"show next configuration data", cmdNextConfig},
+	"set-config":  {"set next configuration data", cmdSetConfig},
+	"subsystems":  {"show available subsystems", cmdSubsystems},
+	"metrics":     {"show Go runtime metrics", cmdMetrics},
 }
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
@@ -185,14 +187,62 @@ func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdGetConfig(sess *cmdSession, cmd string, args []string) bool {
+	showConfig(sess, args,
+		listSubConfig, func(sub subService, key string) interface{} { return sub.GetConfig(key) })
+	return true
+}
+func cmdNextConfig(sess *cmdSession, cmd string, args []string) bool {
+	showConfig(sess, args,
+		listNextConfig, func(sub subService, key string) interface{} { return sub.GetNextConfig(key) })
+	return true
+}
+func showConfig(sess *cmdSession, args []string,
+	listConfig func(*cmdSession, subService), getConfig func(subService, string) interface{}) {
+
 	if len(args) == 0 {
 		for subsrv := service.SubCore; subsrv <= service.SubWeb; subsrv++ {
 			if subsrv > service.SubCore {
 				sess.println()
 			}
 			sub := sess.srv.getSubservice(subsrv)
-			listSubConfig(sess, sub)
+			listConfig(sess, sub)
 		}
+		return
+	}
+	sub := sess.srv.getSubserviceByName(args[0])
+	if sub == nil {
+		sess.println("Unknown sub-system:", args[0])
+		return
+	}
+	if len(args) == 1 {
+		listConfig(sess, sub)
+		return
+	}
+	val := getConfig(sub, args[1])
+	if val == nil {
+		sess.println("Unknown key", args[1], "for sub-system", args[0])
+		return
+	}
+	sess.println(fmt.Sprintf("%v", val))
+}
+func listSubConfig(sess *cmdSession, sub subService) {
+	listConfig(sess, func() []service.KeyDescrValue { return sub.GetConfigList(true) })
+}
+func listNextConfig(sess *cmdSession, sub subService) {
+	listConfig(sess, sub.GetNextConfigList)
+}
+func listConfig(sess *cmdSession, getConfigList func() []service.KeyDescrValue) {
+	l := getConfigList()
+	table := [][]string{{"Key", "Value", "Description"}}
+	for _, kdv := range l {
+		table = append(table, []string{kdv.Key, kdv.Value, kdv.Descr})
+	}
+	sess.printTable(table)
+}
+
+func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
+	if len(args) < 3 {
+		sess.println("Usage:", cmd, "SUB-SYSTEM KEY VALUE")
 		return true
 	}
 	sub := sess.srv.getSubserviceByName(args[0])
@@ -200,25 +250,10 @@ func cmdGetConfig(sess *cmdSession, cmd string, args []string) bool {
 		sess.println("Unknown sub-system:", args[0])
 		return true
 	}
-	if len(args) == 1 {
-		listSubConfig(sess, sub)
-		return true
+	if !sub.SetConfig(args[1], args[2]) {
+		sess.println("Unable to set key", args[1], "to value", args[2])
 	}
-	val := sub.GetConfig(args[1])
-	if val == nil {
-		sess.println("Unknown key", args[1], "for sub-system", args[0])
-		return true
-	}
-	sess.println(fmt.Sprintf("%v", val))
 	return true
-}
-func listSubConfig(sess *cmdSession, sub subService) {
-	l := sub.GetConfigList(true)
-	table := [][]string{{"Key", "Value", "Description"}}
-	for _, kdv := range l {
-		table = append(table, []string{kdv.Key, kdv.Value, kdv.Descr})
-	}
-	sess.printTable(table)
 }
 
 func cmdSubsystems(sess *cmdSession, cmd string, args []string) bool {

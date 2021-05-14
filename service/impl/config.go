@@ -94,6 +94,12 @@ func (cfg *subConfig) GetNextConfig(key string) interface{} {
 }
 
 func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
+	return cfg.getConfigList(all, cfg.GetConfig)
+}
+func (cfg *subConfig) GetNextConfigList() []service.KeyDescrValue {
+	return cfg.getConfigList(true, cfg.GetNextConfig)
+}
+func (cfg *subConfig) getConfigList(all bool, getConfig func(string) interface{}) []service.KeyDescrValue {
 	if len(cfg.descr) == 0 {
 		return nil
 	}
@@ -106,7 +112,7 @@ func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
 	sort.Strings(keys)
 	result := make([]service.KeyDescrValue, 0, len(keys))
 	for _, k := range keys {
-		val := cfg.GetConfig(k)
+		val := getConfig(k)
 		if val == nil {
 			continue
 		}
