@@ -17,6 +17,7 @@ import (
 
 type authSub struct {
 	subConfig
+	started bool
 }
 
 func (as *authSub) Initialize() {
@@ -28,5 +29,22 @@ func (as *authSub) Initialize() {
 	}
 }
 
-func (as *authSub) Start(srv *myService) error { return nil }
-func (as *authSub) Stop(srv *myService) error  { return nil }
+func (as *authSub) Start(srv *myService) error {
+	as.mx.Lock()
+	defer as.mx.Unlock()
+	as.started = true
+	return nil
+}
+
+func (as *authSub) IsStarted() bool {
+	as.mx.RLock()
+	defer as.mx.RUnlock()
+	return as.started
+}
+
+func (as *authSub) Stop(srv *myService) error {
+	as.mx.Lock()
+	defer as.mx.Unlock()
+	as.started = false
+	return nil
+}

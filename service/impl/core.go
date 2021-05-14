@@ -23,6 +23,7 @@ import (
 
 type coreSub struct {
 	subConfig
+	started bool
 }
 
 func (cs *coreSub) Initialize() {
@@ -82,8 +83,10 @@ func (cs *coreSub) Start(srv *myService) error {
 	}
 	srv.doLog("Start", srvname, "on", listenAddr)
 	go func() { cs.serve(ln, srv) }()
+	cs.started = true
 	return nil
 }
+func (cs *coreSub) IsStarted() bool { return cs.started }
 func (cs *coreSub) Stop(srv *myService) error {
 	return nil
 }

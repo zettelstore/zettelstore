@@ -12,11 +12,14 @@
 package impl
 
 import (
+	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
 
 type placeSub struct {
 	subConfig
+	manager       *place.Manager
+	createManager service.CreatePlaceManagerFunc
 }
 
 func (ps *placeSub) Initialize() {
@@ -38,5 +41,14 @@ func (ps *placeSub) Initialize() {
 	}
 }
 
-func (ps *placeSub) Start(srv *myService) error { return nil }
-func (ps *placeSub) Stop(srv *myService) error  { return nil }
+func (ps *placeSub) Start(srv *myService) error {
+	return nil
+}
+func (ps *placeSub) IsStarted() bool {
+	ps.mx.RLock()
+	defer ps.mx.RUnlock()
+	return ps.manager != nil
+}
+func (ps *placeSub) Stop(srv *myService) error {
+	return nil
+}

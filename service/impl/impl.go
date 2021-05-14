@@ -39,13 +39,21 @@ type myService struct {
 	place    placeSub
 	web      webSub
 	subs     map[service.Subservice]subServceDescr
-	subNames map[string]subService
+	subNames map[string]subServiceData
+	depStart subServiceDependency
+	depStop  subServiceDependency // reverse of depStart
 }
 
 type subServceDescr struct {
 	sub  subService
 	name string
 }
+type subServiceData struct {
+	sub    subService
+	subsrv service.Subservice
+}
+
+type subServiceDependency map[service.Subservice][]service.Subservice
 
 // create and start a new service.
 func init() {
@@ -65,13 +73,25 @@ func createAndStart() service.Service {
 		service.SubPlace: {&srv.place, "place"},
 		service.SubWeb:   {&srv.web, "web"},
 	}
-	srv.subNames = make(map[string]subService, len(srv.subs))
+	srv.subNames = make(map[string]subServiceData, len(srv.subs))
 	for key, subDescr := range srv.subs {
 		if sub, ok := srv.subNames[subDescr.name]; ok {
 			panic(fmt.Sprintf("Key %q already given for sub-service %v", key, sub))
 		}
-		srv.subNames[subDescr.name] = subDescr.sub
+		srv.subNames[subDescr.name] = subServiceData{subDescr.sub, key}
 		subDescr.sub.Initialize()
+	}
+	srv.depStart = subServiceDependency{
+		// service.SubCore:  nil,
+		// service.SubAuth:  nil,
+		service.SubPlace: {service.SubAuth},
+		service.SubWeb:   {service.SubAuth, service.SubPlace},
+	}
+	srv.depStop = make(subServiceDependency, len(srv.depStart))
+	for sub, deps := range srv.depStart {
+		for _, dep := range deps {
+			srv.depStop[dep] = append(srv.depStop[dep], sub)
+		}
 	}
 	return srv
 }
@@ -231,24 +251,11 @@ func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {
 
 // --- Sub-service handling --------------------------------------------------
 
-func (srv *myService) getSubservice(subsrv service.Subservice) subService {
-	if sub, ok := srv.subs[subsrv]; ok {
-		return sub.sub
-	}
-	return nil
-}
-func (srv *myService) getSubserviceByName(name string) subService {
-	if sub, ok := srv.subNames[name]; ok {
-		return sub
-	}
-	return nil
-}
-
 func (srv *myService) SetConfig(subsrv service.Subservice, key, value string) bool {
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
-	if sub := srv.getSubservice(subsrv); sub != nil {
-		return sub.SetConfig(key, value)
+	if subD, ok := srv.subs[subsrv]; ok {
+		return subD.sub.SetConfig(key, value)
 	}
 	return false
 }
@@ -256,8 +263,8 @@ func (srv *myService) SetConfig(subsrv service.Subservice, key, value string) bo
 func (srv *myService) GetConfig(subsrv service.Subservice, key string) interface{} {
 	srv.mx.RLock()
 	defer srv.mx.RUnlock()
-	if sub := srv.getSubservice(subsrv); sub != nil {
-		return sub.GetConfig(key)
+	if subD, ok := srv.subs[subsrv]; ok {
+		return subD.sub.GetConfig(key)
 	}
 	return nil
 }
@@ -265,8 +272,8 @@ func (srv *myService) GetConfig(subsrv service.Subservice, key string) interface
 func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDescrValue {
 	srv.mx.RLock()
 	defer srv.mx.RUnlock()
-	if sub := srv.getSubservice(subsrv); sub != nil {
-		return sub.GetConfigList(false)
+	if subD, ok := srv.subs[subsrv]; ok {
+		return subD.sub.GetConfigList(false)
 	}
 	return nil
 }
@@ -274,7 +281,15 @@ func (srv *myService) GetConfigList(subsrv service.Subservice) []service.KeyDesc
 func (srv *myService) StartSub(subsrv service.Subservice) error {
 	srv.mx.Lock()
 	defer srv.mx.Unlock()
-	if sub := srv.getSubservice(subsrv); sub != nil {
+	return srv.doStartSub(subsrv)
+}
+func (srv *myService) doStartSub(subsrv service.Subservice) error {
+	for _, subnum := range srv.sortDependency(subsrv, srv.depStart, true) {
+		subD, ok := srv.subs[subnum]
+		if !ok {
+			continue
+		}
+		sub := subD.sub
 		if err := sub.Start(srv); err != nil {
 			return err
 		}
@@ -282,8 +297,50 @@ func (srv *myService) StartSub(subsrv service.Subservice) error {
 	}
 	return nil
 }
+
 func (srv *myService) StopSub(subsrv service.Subservice) error {
+	srv.mx.Lock()
+	defer srv.mx.Unlock()
+	return srv.doStopSub(subsrv)
+}
+func (srv *myService) doStopSub(subsrv service.Subservice) error {
+	for _, subnum := range srv.sortDependency(subsrv, srv.depStop, false) {
+		subD, ok := srv.subs[subnum]
+		if !ok {
+			continue
+		}
+		if err := subD.sub.Stop(srv); err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (srv *myService) sortDependency(
+	subsrv service.Subservice,
+	srvdeps subServiceDependency,
+	isStarted bool,
+) []service.Subservice {
+	sub, ok := srv.subs[subsrv]
+	if !ok {
+		return nil
+	}
+	if sub.sub.IsStarted() == isStarted {
+		return nil
+	}
+	deps := srvdeps[subsrv]
+	found := make(map[service.Subservice]bool, 4)
+	result := make([]service.Subservice, 0, 4)
+	for _, dep := range deps {
+		subDeps := srv.sortDependency(dep, srvdeps, isStarted)
+		for _, sdep := range subDeps {
+			if !found[sdep] {
+				result = append(result, sdep)
+				found[sdep] = true
+			}
+		}
+	}
+	return append(result, subsrv)
 }
 
 type subService interface {
@@ -314,6 +371,17 @@ type subService interface {
 	// SwitchNextToCur moves next config data to current.
 	SwitchNextToCur()
 
+	// IsStarted returns true if the sub-service was started successfully.
+	IsStarted() bool
+
 	// Stop stop the given sub-service.
 	Stop(srv *myService) error
+}
+
+func (srv *myService) SetCreators(
+	createManager service.CreatePlaceManagerFunc,
+	createHandler service.CreateWebHandlerFunc,
+) {
+	srv.place.createManager = createManager
+	srv.web.createHandler = createHandler
 }

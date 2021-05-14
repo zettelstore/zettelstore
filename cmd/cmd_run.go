@@ -56,9 +56,12 @@ func doRun(debug bool) (int, error) {
 	srvm := service.Main
 	srvm.Log(fmt.Sprintf("Zettel location [%v]", startup.PlaceManager().Location()))
 	srvm.SetDebug(debug)
-	srvm.WebSetConfig(func(urlPrefix string, readonlyMode bool) http.Handler {
-		return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
-	})
+	srvm.SetCreators(
+		nil,
+		func(urlPrefix string, readonlyMode bool) http.Handler {
+			return setupRouting(urlPrefix, startup.PlaceManager(), readonlyMode)
+		},
+	)
 	if err := srvm.StartSub(service.SubWeb); err != nil {
 		return 1, err
 	}

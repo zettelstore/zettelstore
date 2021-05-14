@@ -160,10 +160,14 @@ var commands = map[string]command{
 	},
 	"env":         {"show environment values", cmdEnvironment},
 	"get-config":  {"show current configuration data", cmdGetConfig},
+	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
 	"set-config":  {"set next configuration data", cmdSetConfig},
-	"subsystems":  {"show available subsystems", cmdSubsystems},
-	"metrics":     {"show Go runtime metrics", cmdMetrics},
+	"subservices": {"show available subservices", cmdServices},
+	"start":       {"start subservice", cmdStart},
+	// "status":      {"subservice status", nil},
+	"stop": {"stop subservice", cmdStop},
+	// "stat":        {"show subservice statistics", nil},
 }
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
@@ -204,23 +208,23 @@ func showConfig(sess *cmdSession, args []string,
 			if subsrv > service.SubCore {
 				sess.println()
 			}
-			sub := sess.srv.getSubservice(subsrv)
+			sub := sess.srv.subs[subsrv].sub
 			listConfig(sess, sub)
 		}
 		return
 	}
-	sub := sess.srv.getSubserviceByName(args[0])
-	if sub == nil {
-		sess.println("Unknown sub-system:", args[0])
+	subD, ok := sess.srv.subNames[args[0]]
+	if !ok {
+		sess.println("Unknown subservice:", args[0])
 		return
 	}
 	if len(args) == 1 {
-		listConfig(sess, sub)
+		listConfig(sess, subD.sub)
 		return
 	}
-	val := getConfig(sub, args[1])
+	val := getConfig(subD.sub, args[1])
 	if val == nil {
-		sess.println("Unknown key", args[1], "for sub-system", args[0])
+		sess.println("Unknown key", args[1], "for subservice", args[0])
 		return
 	}
 	sess.println(fmt.Sprintf("%v", val))
@@ -242,31 +246,74 @@ func listConfig(sess *cmdSession, getConfigList func() []service.KeyDescrValue) 
 
 func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) < 3 {
-		sess.println("Usage:", cmd, "SUB-SYSTEM KEY VALUE")
+		sess.println("Usage:", cmd, "SUBSERIVCE KEY VALUE")
 		return true
 	}
-	sub := sess.srv.getSubserviceByName(args[0])
-	if sub == nil {
-		sess.println("Unknown sub-system:", args[0])
+	subD, ok := sess.srv.subNames[args[0]]
+	if !ok {
+		sess.println("Unknown subservice:", args[0])
 		return true
 	}
-	if !sub.SetConfig(args[1], args[2]) {
+	if !subD.sub.SetConfig(args[1], args[2]) {
 		sess.println("Unable to set key", args[1], "to value", args[2])
 	}
 	return true
 }
 
-func cmdSubsystems(sess *cmdSession, cmd string, args []string) bool {
+func cmdServices(sess *cmdSession, cmd string, args []string) bool {
 	names := make([]string, 0, len(sess.srv.subNames))
 	for name := range sess.srv.subNames {
 		names = append(names, name)
 	}
 	sort.Strings(names)
-	sess.println("Available sub-systems:")
+
+	table := [][]string{{"Subservice", "Status"}}
 	for _, name := range names {
-		sess.println("-", name)
+		if sess.srv.subNames[name].sub.IsStarted() {
+			table = append(table, []string{name, "started"})
+		} else {
+			table = append(table, []string{name, "stopped"})
+		}
+	}
+	sess.printTable(table)
+	return true
+}
+
+func cmdStart(sess *cmdSession, cmd string, args []string) bool {
+	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	if !ok {
+		return true
+	}
+	err := sess.srv.doStartSub(subsrv)
+	if err != nil {
+		sess.println(err.Error())
 	}
 	return true
+}
+
+func cmdStop(sess *cmdSession, cmd string, args []string) bool {
+	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	if !ok {
+		return true
+	}
+	err := sess.srv.doStopSub(subsrv)
+	if err != nil {
+		sess.println(err.Error())
+	}
+	return true
+}
+
+func lookupSubsrv(sess *cmdSession, cmd string, args []string) (service.Subservice, bool) {
+	if len(args) == 0 {
+		sess.println("Usage:", cmd, "SUBSERVICE")
+		return 0, false
+	}
+	subD, ok := sess.srv.subNames[args[0]]
+	if !ok {
+		sess.println("Unknown subservice", args[0])
+		return 0, false
+	}
+	return subD.subsrv, true
 }
 
 func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {

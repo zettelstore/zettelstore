@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210514160710
+modified: 20210514190004
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -18,29 +18,31 @@ modified: 20210514160710
 
   ``get-config`` shows all current configuration data.
 
-  ``get-config SUBSYS`` shows only the current configuration data of the given sub-system.
+  ``get-config SUBSERVICE`` shows only the current configuration data of the given subservice.
 
-  ``get-config SUBSYS KEY`` shows the current configuration data for the given sub-system and key.
+  ``get-config SUBSERVICE KEY`` shows the current configuration data for the given subservice and key.
 ; ''header''
 : Toggles the header mode, where each table is show with a header nor not. 
 ; ''metrics''
-: Displays some values that reflect the inner working of Zettelstore.
+: Displays some values that reflect the inner workings of Zettelstore.
   See [[here|https://golang.org/pkg/runtime/metrics/]] for a technical description of these values.
 ; ''next-config''
 : Displays next configuration data.
   It will be current, if the corresponding services is restarted.
 
-  ``nextt-config`` shows all current configuration data.
+  ``next-config`` shows all current configuration data.
 
-  ``next-config SUBSYS`` shows only the nextt configuration data of the given sub-system.
+  ``next-config SUBSERVICE`` shows only the next configuration data of the given subservice.
 
-  ``next-config SUBSYS KEY`` shows the next configuration data for the given sub-system and key.
-; ''set-config''
-: Sets a single configuration value for the next configuration of a given service.
+  ``next-config SUBSERVICE KEY`` shows the next configuration data for the given subservice and key.
+; ''set-config SUBSERVICE KEY VALUE''
+: Sets a single configuration value for the next configuration of a given subservice.
   It will become effective if the service is restarted.
-
-  ``set-config SUBSYS KEY VALUE``.
 ; ''shutdown''
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).
-; ''subsystems''
-: Displays s list of all available sub-systems.
+; ''start SUBSERVICE''
+: Start the given subservice and all dependent subservices.
+; ''stop SUBSERVICE''
+: Stop the given subservice and all other that depend on this.
+; ''subservices''
+: Displays s list of all available subservices and their current status.

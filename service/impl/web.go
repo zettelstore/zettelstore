@@ -12,7 +12,6 @@
 package impl
 
 import (
-	"errors"
 	"net"
 
 	"zettelstore.de/z/service"
@@ -22,7 +21,7 @@ import (
 type webSub struct {
 	subConfig
 	srvw          *server.Server
-	createHandler service.CreateHandlerFunc
+	createHandler service.CreateWebHandlerFunc
 }
 
 func (ws *webSub) Initialize() {
@@ -58,19 +57,12 @@ func (ws *webSub) Initialize() {
 }
 
 func (ws *webSub) Start(srv *myService) error {
-	if srv.web.srvw != nil {
-		return errAlreadyStarted
-	}
-	createHandler := srv.web.createHandler
-	if createHandler == nil {
-		return errConfigMissing
-	}
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
 
 	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
 
-	handler := createHandler(urlPrefix, readonlyMode)
+	handler := srv.web.createHandler(urlPrefix, readonlyMode)
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
@@ -86,21 +78,15 @@ func (ws *webSub) Start(srv *myService) error {
 	return nil
 }
 
+func (ws *webSub) IsStarted() bool {
+	ws.mx.RLock()
+	defer ws.mx.RUnlock()
+	return ws.srvw != nil
+}
+
 func (ws *webSub) Stop(srv *myService) error {
-	srvw := ws.srvw
-	if srvw == nil {
-		return errAlreadyStopped
-	}
 	srv.doLog("Stopping", srv.core.GetConfig(service.CoreProgname).(string), "Web Service ...")
-	return srvw.Stop()
+	err := ws.srvw.Stop()
+	ws.srvw = nil
+	return err
 }
-
-func (srv *myService) WebSetConfig(createHandler service.CreateHandlerFunc) {
-	srv.web.createHandler = createHandler
-}
-
-var (
-	errAlreadyStarted = errors.New("already started")
-	errConfigMissing  = errors.New("no configuration")
-	errAlreadyStopped = errors.New("already stopped")
-)

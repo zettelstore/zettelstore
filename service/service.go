@@ -11,7 +11,11 @@
 // Package service provides the main internal service.
 package service
 
-import "net/http"
+import (
+	"net/http"
+
+	"zettelstore.de/z/place"
+)
 
 // Service is the main internal service.
 type Service interface {
@@ -54,10 +58,8 @@ type Service interface {
 	// StopSub stop the given sub-service.
 	StopSub(subsrv Subservice) error
 
-	// --- Web server related methods ----------------------------------------
-
-	// WebSetConfig store the configuration data for the next start of the web server.
-	WebSetConfig(CreateHandlerFunc)
+	// SetCreators store the configuration data for the next start of the web server.
+	SetCreators(CreatePlaceManagerFunc, CreateWebHandlerFunc)
 }
 
 // Main references the main service.
@@ -74,7 +76,8 @@ type Subservice uint8
 
 // Constants for type Subservice.
 const (
-	SubCore Subservice = iota
+	_ Subservice = iota
+	SubCore
 	SubAuth
 	SubPlace
 	SubWeb
@@ -117,5 +120,8 @@ const (
 // KeyDescrValue is a triple of config data.
 type KeyDescrValue struct{ Key, Descr, Value string }
 
-// CreateHandlerFunc is called to create a new web service handler.
-type CreateHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler
+// CreatePlaceManagerFunc is called to create a new place manager.
+type CreatePlaceManagerFunc func() place.Manager
+
+// CreateWebHandlerFunc is called to create a new web service handler.
+type CreateWebHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler
