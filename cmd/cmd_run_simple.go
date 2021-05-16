@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
 
@@ -25,10 +24,10 @@ func flgSimpleRun(fs *flag.FlagSet) {
 	fs.String("d", "", "zettel directory")
 }
 
-func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta, mgr place.Manager) (int, error) {
+func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	srvm := service.Main
 	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress).(string)
-	exitCode, err := doRun(mgr, false)
+	exitCode, err := doRun(false)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 		srvm.Log()
 		srvm.Log("--------------------------")

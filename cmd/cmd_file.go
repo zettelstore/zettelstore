@@ -23,12 +23,11 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 )
 
 // ---------- Subcommand: file -----------------------------------------------
 
-func cmdFile(fs *flag.FlagSet, cfg *meta.Meta, mgr place.Manager) (int, error) {
+func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	format := fs.Lookup("t").Value.String()
 	meta, inp, err := getInput(fs.Args())
 	if meta == nil {

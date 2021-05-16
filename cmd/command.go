@@ -15,7 +15,6 @@ import (
 	"sort"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 )
 
 // Command stores information about commands / sub-commands.
@@ -32,7 +31,7 @@ type Command struct {
 // CommandFunc is the function that executes the command.
 // It accepts the parsed command line parameters.
 // It returns the exit code and an error.
-type CommandFunc func(*flag.FlagSet, *meta.Meta, place.Manager) (int, error)
+type CommandFunc func(*flag.FlagSet, *meta.Meta) (int, error)
 
 // GetFlags return the flag.FlagSet defined for the command.
 func (c *Command) GetFlags() *flag.FlagSet { return c.flags }

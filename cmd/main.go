@@ -11,23 +11,21 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
-	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/place/progplace"
 	"zettelstore.de/z/service"
 )
 
@@ -38,7 +36,7 @@ const (
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
-		Func: func(*flag.FlagSet, *meta.Meta, place.Manager) (int, error) {
+		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
 			fmt.Println("Available commands:")
 			for _, name := range List() {
 				fmt.Printf("- %q\n", name)
@@ -48,7 +46,7 @@ func init() {
 	})
 	RegisterCommand(Command{
 		Name:   "version",
-		Func:   func(*flag.FlagSet, *meta.Meta, place.Manager) (int, error) { return 0, nil },
+		Func:   func(*flag.FlagSet, *meta.Meta) (int, error) { return 0, nil },
 		Header: true,
 	})
 	RegisterCommand(Command{
@@ -170,8 +168,9 @@ func setConfigValue(ok bool, subsys service.Subservice, key string, val interfac
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces bool) (place.Manager, error) {
-	var mgr place.Manager
+func setupOperations(cfg *meta.Meta, withPlaces bool) error {
+	var createManager service.CreatePlaceManagerFunc
+	// var mgr place.Manager
 	if withPlaces {
 		err := raiseFdLimit()
 		if err != nil {
@@ -180,25 +179,22 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) (place.Manager, error) {
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(service.SubPlace, service.PlaceDefaultDirType, service.PlaceDirTypeSimple)
 		}
-		startup.SetupStartupConfig(cfg)
 		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-		mgr, err = manager.New(getPlaces(cfg), readonlyMode)
-		if err != nil {
-			return nil, err
+		createManager = func() (place.Manager, error) {
+			return manager.New(getPlaces(cfg), cfg, readonlyMode)
 		}
 	} else {
-		startup.SetupStartupConfig(cfg)
+		createManager = func() (place.Manager, error) { return nil, nil }
 	}
+	startup.SetupStartupConfig(cfg)
 
-	if mgr != nil {
-		progplace.Setup(cfg)
-		if err := mgr.Start(context.Background()); err != nil {
-			fmt.Fprintln(os.Stderr, "Unable to start zettel place")
-			return nil, err
-		}
-		runtime.SetupConfiguration(mgr)
-	}
-	return mgr, nil
+	service.Main.SetCreators(
+		createManager,
+		func(urlPrefix string, manager place.Manager, readonlyMode bool) (http.Handler, error) {
+			return setupRouting(urlPrefix, manager, readonlyMode), nil
+		},
+	)
+	return nil
 }
 
 func getPlaces(cfg *meta.Meta) []string {
@@ -233,14 +229,14 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	mgr, err := setupOperations(cfg, command.Places)
-	if err != nil {
+	if err := setupOperations(cfg, command.Places); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
+
 	service.Main.Start(command.Header)
 
-	exitCode, err := command.Func(fs, cfg, mgr)
+	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}

@@ -28,5 +28,6 @@ import (
 	_ "zettelstore.de/z/place/dirplace"    // Allow to use directory place.
 	_ "zettelstore.de/z/place/fileplace"   // Allow to use file place.
 	_ "zettelstore.de/z/place/memplace"    // Allow to use memory place.
+	_ "zettelstore.de/z/place/progplace"   // Allow to use computed place.
 	_ "zettelstore.de/z/service/impl"      // Allow service implementation to create itself
 )

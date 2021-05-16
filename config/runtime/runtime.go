@@ -12,6 +12,8 @@
 package runtime
 
 import (
+	"sync"
+
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -20,13 +22,15 @@ import (
 
 // --- Configuration zettel --------------------------------------------------
 
-var configStock stock.Stock
+var (
+	configStock stock.Stock
+	mxConfig    sync.RWMutex
+)
 
 // SetupConfiguration enables the configuration data.
 func SetupConfiguration(mgr place.Manager) {
-	if configStock != nil {
-		panic("configStock already set")
-	}
+	mxConfig.Lock()
+	defer mxConfig.Unlock()
 	configStock = stock.NewStock(mgr)
 	if err := configStock.Subscribe(id.ConfigurationZid); err != nil {
 		panic(err)
@@ -35,6 +39,8 @@ func SetupConfiguration(mgr place.Manager) {
 
 // getConfigurationMeta returns the meta data of the configuration zettel.
 func getConfigurationMeta() *meta.Meta {
+	mxConfig.RLock()
+	defer mxConfig.RUnlock()
 	if configStock == nil {
 		panic("configStock not set")
 	}

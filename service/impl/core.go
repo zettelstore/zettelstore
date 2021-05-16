@@ -74,14 +74,13 @@ func (cs *coreSub) Start(srv *myService) error {
 	if port <= 0 {
 		return nil
 	}
-	srvname := cs.GetNextConfig(service.CoreProgname).(string) + " Core Service"
 	listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		srv.doLog("Unable to start", srvname, err)
+		srv.doLog("Unable to start Core Service:", err)
 		return err
 	}
-	srv.doLog("Start", srvname, "on", listenAddr)
+	srv.doLog("Start Core Service:", listenAddr)
 	go func() { cs.serve(ln, srv) }()
 	cs.started = true
 	return nil

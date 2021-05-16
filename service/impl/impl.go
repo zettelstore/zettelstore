@@ -103,10 +103,7 @@ func (srv *myService) Start(headline bool) {
 	srv.wg.Add(1)
 	signal.Notify(srv.interrupt, os.Interrupt, syscall.SIGTERM)
 	go srv.worker()
-	srv.StartSub(service.SubCore)
 
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
 	if headline {
 		srv.doLog(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
@@ -121,6 +118,7 @@ func (srv *myService) Start(headline bool) {
 			srv.doLog("Read-only mode")
 		}
 	}
+	srv.StartSub(service.SubCore)
 }
 
 // workerCommand encapsulates a command sent to the worker.
@@ -287,8 +285,8 @@ func (srv *myService) GetSubStatistics(subsrv service.Subservice) []service.KeyV
 }
 
 func (srv *myService) StartSub(subsrv service.Subservice) error {
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
+	srv.mx.RLock()
+	defer srv.mx.RUnlock()
 	return srv.doStartSub(subsrv)
 }
 func (srv *myService) doStartSub(subsrv service.Subservice) error {
@@ -307,8 +305,8 @@ func (srv *myService) doStartSub(subsrv service.Subservice) error {
 }
 
 func (srv *myService) StopSub(subsrv service.Subservice) error {
-	srv.mx.Lock()
-	defer srv.mx.Unlock()
+	srv.mx.RLock()
+	defer srv.mx.RUnlock()
 	return srv.doStopSub(subsrv)
 }
 func (srv *myService) doStopSub(subsrv service.Subservice) error {

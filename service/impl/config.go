@@ -39,11 +39,11 @@ func (m interfaceMap) Clone() interfaceMap {
 }
 
 type subConfig struct {
-	mx     sync.RWMutex
-	frozen bool
-	descr  descriptionMap
-	cur    interfaceMap
-	next   interfaceMap
+	mxConfig sync.RWMutex
+	frozen   bool
+	descr    descriptionMap
+	cur      interfaceMap
+	next     interfaceMap
 }
 
 func (cfg *subConfig) noFrozen(parse parseFunc) parseFunc {
@@ -56,8 +56,8 @@ func (cfg *subConfig) noFrozen(parse parseFunc) parseFunc {
 }
 
 func (cfg *subConfig) SetConfig(key, value string) bool {
-	cfg.mx.Lock()
-	defer cfg.mx.Unlock()
+	cfg.mxConfig.Lock()
+	defer cfg.mxConfig.Unlock()
 	descr, ok := cfg.descr[key]
 	if !ok {
 		return false
@@ -79,8 +79,8 @@ func (cfg *subConfig) SetConfig(key, value string) bool {
 }
 
 func (cfg *subConfig) GetConfig(key string) interface{} {
-	cfg.mx.RLock()
-	defer cfg.mx.RUnlock()
+	cfg.mxConfig.RLock()
+	defer cfg.mxConfig.RUnlock()
 	if cfg.cur == nil {
 		return cfg.next[key]
 	}
@@ -88,8 +88,8 @@ func (cfg *subConfig) GetConfig(key string) interface{} {
 }
 
 func (cfg *subConfig) GetNextConfig(key string) interface{} {
-	cfg.mx.RLock()
-	defer cfg.mx.RUnlock()
+	cfg.mxConfig.RLock()
+	defer cfg.mxConfig.RUnlock()
 	return cfg.next[key]
 }
 
@@ -126,14 +126,14 @@ func (cfg *subConfig) getConfigList(all bool, getConfig func(string) interface{}
 }
 
 func (cfg *subConfig) Freeze() {
-	cfg.mx.Lock()
+	cfg.mxConfig.Lock()
 	cfg.frozen = true
-	cfg.mx.Unlock()
+	cfg.mxConfig.Unlock()
 }
 
 func (cfg *subConfig) SwitchNextToCur() {
-	cfg.mx.Lock()
-	defer cfg.mx.Unlock()
+	cfg.mxConfig.Lock()
+	defer cfg.mxConfig.Unlock()
 	cfg.cur = cfg.next.Clone()
 }
 

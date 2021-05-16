@@ -127,7 +127,7 @@ type KeyDescrValue struct{ Key, Descr, Value string }
 type KeyValue struct{ Key, Value string }
 
 // CreatePlaceManagerFunc is called to create a new place manager.
-type CreatePlaceManagerFunc func() place.Manager
+type CreatePlaceManagerFunc func() (place.Manager, error)
 
 // CreateWebHandlerFunc is called to create a new web service handler.
-type CreateWebHandlerFunc func(urlPrefix string, readonlyMode bool) http.Handler
+type CreateWebHandlerFunc func(urlPrefix string, manager place.Manager, readonlyMode bool) (http.Handler, error)

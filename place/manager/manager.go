@@ -113,7 +113,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, readonlyMode bool) (*Manager, error) {
+func New(placeURIs []string, cfg *meta.Meta, readonlyMode bool) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {

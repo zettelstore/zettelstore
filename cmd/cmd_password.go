@@ -20,12 +20,11 @@ import (
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 )
 
 // ---------- Subcommand: password -------------------------------------------
 
-func cmdPassword(fs *flag.FlagSet, cfg *meta.Meta, mgr place.Manager) (int, error) {
+func cmdPassword(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	if fs.NArg() == 0 {
 		fmt.Fprintln(os.Stderr, "User name and user zettel identification missing")
 		return 2, nil

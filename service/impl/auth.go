@@ -12,12 +12,15 @@
 package impl
 
 import (
+	"sync"
+
 	"zettelstore.de/z/service"
 )
 
 type authSub struct {
 	subConfig
-	started bool
+	mxService sync.RWMutex
+	started   bool
 }
 
 func (as *authSub) Initialize() {
@@ -30,21 +33,21 @@ func (as *authSub) Initialize() {
 }
 
 func (as *authSub) Start(srv *myService) error {
-	as.mx.Lock()
-	defer as.mx.Unlock()
+	as.mxService.Lock()
+	defer as.mxService.Unlock()
 	as.started = true
 	return nil
 }
 
 func (as *authSub) IsStarted() bool {
-	as.mx.RLock()
-	defer as.mx.RUnlock()
+	as.mxService.RLock()
+	defer as.mxService.RUnlock()
 	return as.started
 }
 
 func (as *authSub) Stop(srv *myService) error {
-	as.mx.Lock()
-	defer as.mx.Unlock()
+	as.mxService.Lock()
+	defer as.mxService.Unlock()
 	as.started = false
 	return nil
 }

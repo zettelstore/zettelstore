@@ -14,13 +14,16 @@ package impl
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
 
 type placeSub struct {
 	subConfig
+	mxService     sync.RWMutex
 	manager       place.Manager
 	createManager service.CreatePlaceManagerFunc
 }
@@ -45,35 +48,46 @@ func (ps *placeSub) Initialize() {
 }
 
 func (ps *placeSub) Start(srv *myService) error {
-	ps.mx.Lock()
-	defer ps.mx.Unlock()
-	ps.manager = ps.createManager()
+	ps.mxService.Lock()
+	defer ps.mxService.Unlock()
+	mgr, err := ps.createManager()
+	if err != nil {
+		srv.doLog("Unable to create place manager:", err)
+		return err
+	}
+	srv.doLog("Start Place Manager:", mgr.Location())
+	if err := mgr.Start(context.Background()); err != nil {
+		srv.doLog("Unable to start place manager:", err)
+	}
+	runtime.SetupConfiguration(mgr)
+	ps.manager = mgr
 	return nil
 }
 
 func (ps *placeSub) IsStarted() bool {
-	ps.mx.RLock()
-	defer ps.mx.RUnlock()
+	ps.mxService.RLock()
+	defer ps.mxService.RUnlock()
 	return ps.manager != nil
 }
 
 func (ps *placeSub) Stop(srv *myService) error {
-	ps.mx.RLock()
+	srv.doLog("Stop Place Manager")
+	ps.mxService.RLock()
 	mgr := ps.manager
-	ps.mx.RUnlock()
+	ps.mxService.RUnlock()
 	err := mgr.Stop(context.Background())
-	ps.mx.Lock()
+	ps.mxService.Lock()
 	ps.manager = nil
-	ps.mx.Unlock()
+	ps.mxService.Unlock()
 	return err
 }
 
 func (ps *placeSub) GetStatistics() []service.KeyValue {
 	var st place.Stats
-	ps.mx.RLock()
+	ps.mxService.RLock()
 	ps.manager.ReadStats(&st)
 	numPlaces := ps.manager.NumPlaces()
-	ps.mx.RUnlock()
+	ps.mxService.RUnlock()
 	return []service.KeyValue{
 		{Key: "Read-only", Value: fmt.Sprintf("%v", st.ReadOnly)},
 		{Key: "Sub-places", Value: fmt.Sprintf("%v", numPlaces)},

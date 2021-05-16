@@ -13,6 +13,7 @@ package impl
 
 import (
 	"net"
+	"sync"
 
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
@@ -20,6 +21,7 @@ import (
 
 type webSub struct {
 	subConfig
+	mxService     sync.RWMutex
 	srvw          *server.Server
 	createHandler service.CreateWebHandlerFunc
 }
@@ -62,32 +64,38 @@ func (ws *webSub) Start(srv *myService) error {
 
 	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
 
-	handler := srv.web.createHandler(urlPrefix, readonlyMode)
+	handler, err := srv.web.createHandler(urlPrefix, srv.place.manager, readonlyMode)
+	if err != nil {
+		srv.doLog("Unable to create handler for Web Service:", err)
+		return err
+	}
 	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
 	}
-	progname := srv.core.GetConfig(service.CoreProgname).(string)
 	if err := srvw.Run(); err != nil {
-		srv.doLog("Unable to start", progname, "Web Service:", err)
+		srv.doLog("Unable to start Web Service:", err)
 		return err
 	}
-	srv.doLog("Start", progname, "Web Service")
-	srv.doLog("Listening on", listenAddr)
+	srv.doLog("Start Web Service:", listenAddr)
+	ws.mxService.Lock()
 	ws.srvw = srvw
+	ws.mxService.Unlock()
 	return nil
 }
 
 func (ws *webSub) IsStarted() bool {
-	ws.mx.RLock()
-	defer ws.mx.RUnlock()
+	ws.mxService.RLock()
+	defer ws.mxService.RUnlock()
 	return ws.srvw != nil
 }
 
 func (ws *webSub) Stop(srv *myService) error {
-	srv.doLog("Stopping", srv.core.GetConfig(service.CoreProgname).(string), "Web Service ...")
+	srv.doLog("Stop Web Service")
 	err := ws.srvw.Stop()
+	ws.mxService.Lock()
 	ws.srvw = nil
+	ws.mxService.Unlock()
 	return err
 }
 
