@@ -70,13 +70,13 @@ func (sess *cmdSession) printTable(table [][]string) {
 		return
 	}
 	if sess.header {
-		sess.printRow(table[0], maxLen, " | ", ' ')
+		sess.printRow(table[0], maxLen, "|=", " | ", ' ')
 		hLine := make([]string, len(table[0]))
-		sess.printRow(hLine, maxLen, "-+-", '-')
+		sess.printRow(hLine, maxLen, "%%", "-+-", '-')
 	}
 
 	for _, row := range table[1:] {
-		sess.printRow(row, maxLen, " | ", ' ')
+		sess.printRow(row, maxLen, "| ", " | ", ' ')
 	}
 }
 
@@ -101,11 +101,10 @@ func (sess *cmdSession) calcMaxLen(table [][]string) []int {
 	return maxLen
 }
 
-func (sess *cmdSession) printRow(row []string, maxLen []int, delim string, pad rune) {
+func (sess *cmdSession) printRow(row []string, maxLen []int, prefix, delim string, pad rune) {
 	for colno, column := range row {
-		if colno > 0 {
-			io.WriteString(sess.w, delim)
-		}
+		io.WriteString(sess.w, prefix)
+		prefix = delim
 		io.WriteString(sess.w, strfun.JustifyLeft(column, maxLen[colno], pad))
 	}
 	io.WriteString(sess.w, "\n")
