@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210514190004
+modified: 20210517145920
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -35,6 +35,8 @@ modified: 20210514190004
   ``next-config SUBSERVICE`` shows only the next configuration data of the given subservice.
 
   ``next-config SUBSERVICE KEY`` shows the next configuration data for the given subservice and key.
+; ''restart SUBSERVICE''
+: Restart the given subservice and all other that depend on this.
 ; ''set-config SUBSERVICE KEY VALUE''
 : Sets a single configuration value for the next configuration of a given subservice.
   It will become effective if the service is restarted.
@@ -42,6 +44,8 @@ modified: 20210514190004
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).
 ; ''start SUBSERVICE''
 : Start the given subservice and all dependent subservices.
+; ''stat SUBSERVICE''
+: Display some statistical values for the given subservice.
 ; ''stop SUBSERVICE''
 : Stop the given subservice and all other that depend on this.
 ; ''subservices''
