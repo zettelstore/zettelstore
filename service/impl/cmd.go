@@ -129,6 +129,7 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
+	"dump-index": {"Writes the content of the index", cmdDumpIndex},
 	"echo": {
 		"toggle echo mode",
 		func(sess *cmdSession, cmd string, args []string) bool {
@@ -388,6 +389,11 @@ func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
 		table = append(table, []string{sVal, descr})
 	}
 	sess.printTable(table)
+	return true
+}
+
+func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
+	sess.srv.place.manager.Dump(sess.w)
 	return true
 }
 

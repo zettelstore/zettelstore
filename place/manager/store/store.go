@@ -52,6 +52,6 @@ type Store interface {
 	// ReadStats populates st with store statistics.
 	ReadStats(st *Stats)
 
-	// Write the content to a Writer.
-	Write(io.Writer)
+	// Dump the content to a Writer.
+	Dump(io.Writer)
 }

@@ -13,6 +13,7 @@ package manager
 
 import (
 	"context"
+	"io"
 	"log"
 	"net/url"
 	"sort"
@@ -285,6 +286,7 @@ func (mgr *Manager) ReadStats(st *place.Stats) {
 		}
 		sumZettel += sst.Zettel
 	}
+	st.NumManagedPlaces = len(mgr.subplaces)
 	st.ZettelTotal = sumZettel
 
 	var storeSt store.Stats
@@ -301,9 +303,7 @@ func (mgr *Manager) ReadStats(st *place.Stats) {
 	st.IndexedUrls = storeSt.Urls
 }
 
-// NumPlaces returns the number of managed places.
-func (mgr *Manager) NumPlaces() int {
-	mgr.mgrMx.RLock()
-	defer mgr.mgrMx.RUnlock()
-	return len(mgr.subplaces)
+// Dump internal data structures to a Writer.
+func (mgr *Manager) Dump(w io.Writer) {
+	mgr.idxStore.Dump(w)
 }

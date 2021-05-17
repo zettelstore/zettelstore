@@ -86,11 +86,10 @@ func (ps *placeSub) GetStatistics() []service.KeyValue {
 	var st place.Stats
 	ps.mxService.RLock()
 	ps.manager.ReadStats(&st)
-	numPlaces := ps.manager.NumPlaces()
 	ps.mxService.RUnlock()
 	return []service.KeyValue{
 		{Key: "Read-only", Value: fmt.Sprintf("%v", st.ReadOnly)},
-		{Key: "Sub-places", Value: fmt.Sprintf("%v", numPlaces)},
+		{Key: "Sub-places", Value: fmt.Sprintf("%v", st.NumManagedPlaces)},
 		{Key: "Zettel (total)", Value: fmt.Sprintf("%v", st.ZettelTotal)},
 		{Key: "Zettel (indexable)", Value: fmt.Sprintf("%v", st.ZettelIndexed)},
 		{Key: "Last re-index", Value: st.LastReload.Format("2006-01-02 15:04:05 -0700 MST")},

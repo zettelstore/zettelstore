@@ -3,10 +3,12 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210517145920
+modified: 20210517180009
 
 ; ''bye''
 : Closes the connection to the administrator console.
+; ''dump-index''
+: Displays the content of the internal search index.
 ; ''echo''
 : Toggles the echo mode, where each command is printed before execution
 ; ''env''

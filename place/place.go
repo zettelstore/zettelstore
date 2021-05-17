@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"zettelstore.de/z/domain"
@@ -104,12 +105,18 @@ type Place interface {
 
 	// ReadStats populates st with place statistics
 	ReadStats(st *Stats)
+
+	// Dump internal data to a Writer.
+	Dump(w io.Writer)
 }
 
 // Stats record stattistics about a full place.
 type Stats struct {
 	// ReadOnly indicates that the places cannot be changed
 	ReadOnly bool
+
+	// NumManagedPlaces is the number of places managed.
+	NumManagedPlaces int
 
 	// Zettel is the number of zettel managed by the place, including
 	// duplicates across managed places.
@@ -143,9 +150,6 @@ type Manager interface {
 	Place
 	StartStopper
 	change.Subject
-
-	// NumPlaces returns the number of managed places.
-	NumPlaces() int
 }
 
 // Enricher is used to update metadata by adding new properties.

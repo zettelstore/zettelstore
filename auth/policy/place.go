@@ -13,6 +13,7 @@ package policy
 
 import (
 	"context"
+	"io"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain"
@@ -154,4 +155,8 @@ func (pp *polPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 func (pp *polPlace) ReadStats(st *place.Stats) {
 	pp.place.ReadStats(st)
+}
+
+func (pp *polPlace) Dump(w io.Writer) {
+	pp.place.Dump(w)
 }
