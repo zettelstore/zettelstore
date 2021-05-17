@@ -151,7 +151,9 @@ loop:
 		case <-timer.C:
 			timer.Reset(timerDuration)
 		case sig := <-srv.interrupt:
-			srv.doLog("Shut down Zettelstore:", sig, "...")
+			if strSig := sig.String(); strSig != "" {
+				srv.doLog("Shut down Zettelstore:", strSig)
+			}
 			srv.shutdown()
 			break loop
 		}
@@ -168,8 +170,10 @@ func (srv *myService) shutdown() {
 	}
 	srv.observer = nil
 	srv.started = false
-	if srv.web.IsStarted() {
-		srv.web.Stop(srv)
+	for _, subD := range srv.subs {
+		if sub := subD.sub; sub.IsStarted() {
+			sub.Stop(srv)
+		}
 	}
 }
 
@@ -188,14 +192,23 @@ func (srv *myService) SetDebug(enable bool) bool {
 // --- Shutdown operation ----------------------------------------------------
 
 // Shutdown the service. Waits for all concurrent activity to stop.
-func (srv *myService) Shutdown() {
-	srv.interrupt <- &shutdownSignal{}
+func (srv *myService) Shutdown(silent bool) {
+	if silent {
+		srv.interrupt <- &silentSignal{}
+	} else {
+		srv.interrupt <- &shutdownSignal{}
+	}
 }
 
 type shutdownSignal struct{}
 
 func (s *shutdownSignal) String() string { return "shutdown" }
 func (s *shutdownSignal) Signal()        { /* Just a signal */ }
+
+type silentSignal struct{}
+
+func (s *silentSignal) String() string { return "" }
+func (s *silentSignal) Signal()        { /* Just a signal */ }
 
 // ShutdownNotifier returns a channel where the caller gets notified to stop.
 func (srv *myService) ShutdownNotifier() service.ShutdownChan {
@@ -237,8 +250,6 @@ func (srv *myService) doLog(args ...interface{}) {
 
 // LogRecover outputs some information about the previous panic.
 func (srv *myService) LogRecover(name string, recoverInfo interface{}) bool {
-	// srv.mx.Lock()
-	// defer srv.mx.Unlock()
 	return srv.doLogRecover(name, recoverInfo)
 }
 func (srv *myService) doLogRecover(name string, recoverInfo interface{}) bool {
@@ -290,12 +301,24 @@ func (srv *myService) StartSub(subsrv service.Subservice) error {
 	return srv.doStartSub(subsrv)
 }
 func (srv *myService) doStartSub(subsrv service.Subservice) error {
-	for _, subnum := range srv.sortDependency(subsrv, srv.depStart, true) {
-		subD, ok := srv.subs[subnum]
-		if !ok {
-			continue
+	for _, sub := range srv.sortDependency(subsrv, srv.depStart, true) {
+		if err := sub.Start(srv); err != nil {
+			return err
 		}
-		sub := subD.sub
+		sub.SwitchNextToCur()
+	}
+	return nil
+}
+
+func (srv *myService) doRestartSub(subsrv service.Subservice) error {
+	deps := srv.sortDependency(subsrv, srv.depStop, false)
+	for _, sub := range deps {
+		if err := sub.Stop(srv); err != nil {
+			return err
+		}
+	}
+	for i := len(deps) - 1; i >= 0; i-- {
+		sub := deps[i]
 		if err := sub.Start(srv); err != nil {
 			return err
 		}
@@ -310,12 +333,8 @@ func (srv *myService) StopSub(subsrv service.Subservice) error {
 	return srv.doStopSub(subsrv)
 }
 func (srv *myService) doStopSub(subsrv service.Subservice) error {
-	for _, subnum := range srv.sortDependency(subsrv, srv.depStop, false) {
-		subD, ok := srv.subs[subnum]
-		if !ok {
-			continue
-		}
-		if err := subD.sub.Stop(srv); err != nil {
+	for _, sub := range srv.sortDependency(subsrv, srv.depStop, false) {
+		if err := sub.Stop(srv); err != nil {
 			return err
 		}
 	}
@@ -326,7 +345,7 @@ func (srv *myService) sortDependency(
 	subsrv service.Subservice,
 	srvdeps subServiceDependency,
 	isStarted bool,
-) []service.Subservice {
+) []subService {
 	sub, ok := srv.subs[subsrv]
 	if !ok {
 		return nil
@@ -335,8 +354,8 @@ func (srv *myService) sortDependency(
 		return nil
 	}
 	deps := srvdeps[subsrv]
-	found := make(map[service.Subservice]bool, 4)
-	result := make([]service.Subservice, 0, 4)
+	found := make(map[subService]bool, 4)
+	result := make([]subService, 0, 4)
 	for _, dep := range deps {
 		subDeps := srv.sortDependency(dep, srvdeps, isStarted)
 		for _, sdep := range subDeps {
@@ -346,7 +365,7 @@ func (srv *myService) sortDependency(
 			}
 		}
 	}
-	return append(result, subsrv)
+	return append(result, sub.sub)
 }
 
 type subService interface {

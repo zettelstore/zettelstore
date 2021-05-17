@@ -31,7 +31,7 @@ type Service interface {
 	SetDebug(enable bool) bool
 
 	// Shutdown the service. Waits for all concurrent activities to stop.
-	Shutdown()
+	Shutdown(silent bool)
 
 	// ShutdownNotifier returns a channel where the caller gets notified to stop.
 	ShutdownNotifier() ShutdownChan

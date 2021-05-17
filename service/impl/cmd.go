@@ -158,10 +158,11 @@ var commands = map[string]command{
 	},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
+	"restart":     {"restart subservice", cmdRestart},
 	"set-config":  {"set next configuration data", cmdSetConfig},
 	"shutdown": {
 		"shutdown Zettelstore",
-		func(sess *cmdSession, cmd string, args []string) bool { sess.srv.Shutdown(); return false },
+		func(sess *cmdSession, cmd string, args []string) bool { sess.srv.Shutdown(false); return false },
 	},
 	"start":       {"start subservice", cmdStart},
 	"stat":        {"show subservice statistics", cmdStat},
@@ -284,6 +285,18 @@ func cmdStart(sess *cmdSession, cmd string, args []string) bool {
 		return true
 	}
 	err := sess.srv.doStartSub(subsrv)
+	if err != nil {
+		sess.println(err.Error())
+	}
+	return true
+}
+
+func cmdRestart(sess *cmdSession, cmd string, args []string) bool {
+	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	if !ok {
+		return true
+	}
+	err := sess.srv.doRestartSub(subsrv)
 	if err != nil {
 		sess.println(err.Error())
 	}

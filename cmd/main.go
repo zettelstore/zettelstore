@@ -246,9 +246,7 @@ func executeCommand(name string, args ...string) int {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
-	if err := service.Main.StopSub(service.SubPlace); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
-	}
+	service.Main.Shutdown(true)
 	return exitCode
 }
 
