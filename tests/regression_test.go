@@ -54,7 +54,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 		if entry.IsDir() {
 			place, err := manager.Connect(
 				"dir://"+filepath.Join(root, entry.Name())+"?type="+service.PlaceDirTypeSimple,
-				false,
+				&noAuth{},
 				&cdata,
 			)
 			if err != nil {
@@ -70,6 +70,10 @@ type noEnrich struct{}
 
 func (nf *noEnrich) Enrich(ctx context.Context, m *meta.Meta) {}
 func (nf *noEnrich) Remove(ctx context.Context, m *meta.Meta) {}
+
+type noAuth struct{}
+
+func (na *noAuth) IsReadonly() bool { return false }
 
 func trimLastEOL(s string) string {
 	if lastPos := len(s) - 1; lastPos >= 0 && s[lastPos] == '\n' {

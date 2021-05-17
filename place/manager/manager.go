@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -35,7 +36,7 @@ type ConnectData struct {
 }
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, readonlyMode bool, cdata *ConnectData) (place.ManagedPlace, error) {
+func Connect(rawURL string, authManager auth.Manager, cdata *ConnectData) (place.ManagedPlace, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func Connect(rawURL string, readonlyMode bool, cdata *ConnectData) (place.Manage
 	if u.Scheme == "" {
 		u.Scheme = "dir"
 	}
-	if readonlyMode {
+	if authManager.IsReadonly() {
 		// TODO: the following is wrong under some circumstances:
 		// 1. fragment is set
 		if q := u.Query(); len(q) == 0 {
@@ -113,7 +114,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, cfg *meta.Meta, readonlyMode bool) (*Manager, error) {
+func New(placeURIs []string, cfg *meta.Meta, authManager auth.Manager) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {
@@ -131,7 +132,7 @@ func New(placeURIs []string, cfg *meta.Meta, readonlyMode bool) (*Manager, error
 	cdata := ConnectData{Enricher: mgr, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
-		p, err := Connect(uri, readonlyMode, &cdata)
+		p, err := Connect(uri, authManager, &cdata)
 		if err != nil {
 			return nil, err
 		}

@@ -168,7 +168,7 @@ func (srv *myService) shutdown() {
 	}
 	srv.observer = nil
 	srv.started = false
-	if srv.web.srvw != nil {
+	if srv.web.IsStarted() {
 		srv.web.Stop(srv)
 	}
 }
@@ -388,9 +388,11 @@ type subService interface {
 }
 
 func (srv *myService) SetCreators(
-	createManager service.CreatePlaceManagerFunc,
-	createHandler service.CreateWebHandlerFunc,
+	createAuthManager service.CreateAuthManagerFunc,
+	createPlaceManager service.CreatePlaceManagerFunc,
+	createWebHandler service.CreateWebHandlerFunc,
 ) {
-	srv.place.createManager = createManager
-	srv.web.createHandler = createHandler
+	srv.auth.createManager = createAuthManager
+	srv.place.createManager = createPlaceManager
+	srv.web.createHandler = createWebHandler
 }

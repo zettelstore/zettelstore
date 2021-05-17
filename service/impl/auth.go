@@ -14,13 +14,15 @@ package impl
 import (
 	"sync"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/service"
 )
 
 type authSub struct {
 	subConfig
-	mxService sync.RWMutex
-	started   bool
+	mxService     sync.RWMutex
+	manager       auth.Manager
+	createManager service.CreateAuthManagerFunc
 }
 
 func (as *authSub) Initialize() {
@@ -35,20 +37,28 @@ func (as *authSub) Initialize() {
 func (as *authSub) Start(srv *myService) error {
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
-	as.started = true
+	readonlyMode := as.GetNextConfig(service.AuthReadonly).(bool)
+	authMgr, err := as.createManager(readonlyMode)
+	if err != nil {
+		srv.doLog("Unable to create auth manager:", err)
+		return err
+	}
+	srv.doLog("Start Auth Manager")
+	as.manager = authMgr
 	return nil
 }
 
 func (as *authSub) IsStarted() bool {
 	as.mxService.RLock()
 	defer as.mxService.RUnlock()
-	return as.started
+	return as.manager != nil
 }
 
 func (as *authSub) Stop(srv *myService) error {
+	srv.doLog("Stop Auth Manager")
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
-	as.started = false
+	as.manager = nil
 	return nil
 }
 

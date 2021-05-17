@@ -14,6 +14,7 @@ package service
 import (
 	"net/http"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/place"
 )
 
@@ -62,7 +63,7 @@ type Service interface {
 	GetSubStatistics(subsrv Subservice) []KeyValue
 
 	// SetCreators store the configuration data for the next start of the web server.
-	SetCreators(CreatePlaceManagerFunc, CreateWebHandlerFunc)
+	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, CreateWebHandlerFunc)
 }
 
 // Main references the main service.
@@ -126,8 +127,14 @@ type KeyDescrValue struct{ Key, Descr, Value string }
 // KeyValue is a pair of key and value.
 type KeyValue struct{ Key, Value string }
 
+// CreateAuthManagerFunc is called to create a new auth manager.
+type CreateAuthManagerFunc func(readonly bool) (auth.Manager, error)
+
 // CreatePlaceManagerFunc is called to create a new place manager.
-type CreatePlaceManagerFunc func() (place.Manager, error)
+type CreatePlaceManagerFunc func(authManager auth.Manager) (place.Manager, error)
 
 // CreateWebHandlerFunc is called to create a new web service handler.
-type CreateWebHandlerFunc func(urlPrefix string, manager place.Manager, readonlyMode bool) (http.Handler, error)
+type CreateWebHandlerFunc func(
+	urlPrefix string,
+	placeManager place.Manager,
+	authManager auth.Manager) (http.Handler, error)

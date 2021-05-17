@@ -62,9 +62,7 @@ func (ws *webSub) Start(srv *myService) error {
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
 
-	readonlyMode := srv.auth.GetConfig(service.AuthReadonly).(bool)
-
-	handler, err := srv.web.createHandler(urlPrefix, srv.place.manager, readonlyMode)
+	handler, err := srv.web.createHandler(urlPrefix, srv.place.manager, srv.auth.manager)
 	if err != nil {
 		srv.doLog("Unable to create handler for Web Service:", err)
 		return err

@@ -20,6 +20,8 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/auth"
+	"zettelstore.de/z/auth/impl"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -170,7 +172,6 @@ func setConfigValue(ok bool, subsys service.Subservice, key string, val interfac
 
 func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	var createManager service.CreatePlaceManagerFunc
-	// var mgr place.Manager
 	if withPlaces {
 		err := raiseFdLimit()
 		if err != nil {
@@ -179,19 +180,19 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(service.SubPlace, service.PlaceDefaultDirType, service.PlaceDirTypeSimple)
 		}
-		readonlyMode := service.Main.GetConfig(service.SubAuth, service.AuthReadonly).(bool)
-		createManager = func() (place.Manager, error) {
-			return manager.New(getPlaces(cfg), cfg, readonlyMode)
+		createManager = func(authManager auth.Manager) (place.Manager, error) {
+			return manager.New(getPlaces(cfg), cfg, authManager)
 		}
 	} else {
-		createManager = func() (place.Manager, error) { return nil, nil }
+		createManager = func(authManager auth.Manager) (place.Manager, error) { return nil, nil }
 	}
 	startup.SetupStartupConfig(cfg)
 
 	service.Main.SetCreators(
+		func(readonly bool) (auth.Manager, error) { return impl.New(readonly), nil },
 		createManager,
-		func(urlPrefix string, manager place.Manager, readonlyMode bool) (http.Handler, error) {
-			return setupRouting(urlPrefix, manager, readonlyMode), nil
+		func(urlPrefix string, plMgr place.Manager, authMgr auth.Manager) (http.Handler, error) {
+			return setupRouting(urlPrefix, plMgr, authMgr), nil
 		},
 	)
 	return nil

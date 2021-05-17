@@ -14,6 +14,7 @@ import (
 	"flag"
 	"net/http"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
@@ -60,11 +61,11 @@ func doRun(debug bool) (int, error) {
 	return 0, nil
 }
 
-func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.Handler {
+func setupRouting(urlPrefix string, mgr place.Manager, authManager auth.Manager) http.Handler {
 	router := router.NewRouter(urlPrefix)
 	var up place.Place = mgr
 	pp, pol := policy.PlaceWithPolicy(
-		up, startup.WithAuth, readonlyMode, runtime.GetExpertMode,
+		up, startup.WithAuth, authManager.IsReadonly(), runtime.GetExpertMode,
 		startup.IsOwner, runtime.GetVisibility)
 	te := webui.NewTemplateEngine(mgr, pol, router.NewURLBuilder)
 
@@ -84,7 +85,7 @@ func setupRouting(urlPrefix string, mgr place.Manager, readonlyMode bool) http.H
 		webui.MakePostLoginHandlerHTML(te, ucAuthenticate)))
 	router.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
 	router.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler(te))
-	if !readonlyMode {
+	if !authManager.IsReadonly() {
 		router.AddZettelRoute('b', http.MethodGet, webui.MakeGetRenameZettelHandler(
 			te, ucGetMeta))
 		router.AddZettelRoute('b', http.MethodPost, webui.MakePostRenameZettelHandler(

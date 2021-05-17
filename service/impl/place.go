@@ -50,7 +50,7 @@ func (ps *placeSub) Initialize() {
 func (ps *placeSub) Start(srv *myService) error {
 	ps.mxService.Lock()
 	defer ps.mxService.Unlock()
-	mgr, err := ps.createManager()
+	mgr, err := ps.createManager(srv.auth.manager)
 	if err != nil {
 		srv.doLog("Unable to create place manager:", err)
 		return err
