@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
 )
 
@@ -101,6 +102,7 @@ const (
 
 // Constants for authentication subservice keys.
 const (
+	AuthOwner    = "owner"
 	AuthReadonly = "readonly"
 )
 
@@ -128,7 +130,7 @@ type KeyDescrValue struct{ Key, Descr, Value string }
 type KeyValue struct{ Key, Value string }
 
 // CreateAuthManagerFunc is called to create a new auth manager.
-type CreateAuthManagerFunc func(readonly bool) (auth.Manager, error)
+type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)
 
 // CreatePlaceManagerFunc is called to create a new place manager.
 type CreatePlaceManagerFunc func(authManager auth.Manager) (place.Manager, error)

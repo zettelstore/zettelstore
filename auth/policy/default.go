@@ -12,11 +12,13 @@
 package policy
 
 import (
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/meta"
 )
 
-type defaultPolicy struct{}
+type defaultPolicy struct {
+	manager auth.AuthzManager
+}
 
 func (d *defaultPolicy) CanCreate(user, newMeta *meta.Meta) bool { return true }
 func (d *defaultPolicy) CanRead(user, m *meta.Meta) bool         { return true }
@@ -40,7 +42,7 @@ func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
 		return metaRo != meta.ValueUserRoleOwner && !meta.BoolValue(metaRo)
 	}
 
-	userRole := runtime.GetUserRole(user)
+	userRole := d.manager.GetUserRole(user)
 	switch metaRo {
 	case meta.ValueUserRoleReader:
 		return userRole > meta.UserRoleReader

@@ -16,6 +16,7 @@ import (
 	"sort"
 	"sync"
 
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/service"
 )
 
@@ -147,4 +148,11 @@ func parseBool(val string) interface{} {
 		return false
 	}
 	return true
+}
+
+func parseZid(val string) interface{} {
+	if zid, err := id.Parse(val); err == nil {
+		return zid
+	}
+	return id.Invalid
 }

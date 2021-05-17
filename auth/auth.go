@@ -12,6 +12,7 @@
 package auth
 
 import (
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 )
@@ -22,9 +23,27 @@ type BaseManager interface {
 	IsReadonly() bool
 }
 
+// AuthzManager provides methods for authorization.
+type AuthzManager interface {
+	BaseManager
+
+	// Owner returns the zettel identifier of the owner.
+	Owner() id.Zid
+
+	// IsOwner returns true, if the given zettel identifier is that of the owner.
+	IsOwner(zid id.Zid) bool
+
+	// Returns true if authorization is enabled.
+	WithAuth() bool
+
+	// GetUserRole role returns the user role of the given user zettel.
+	GetUserRole(user *meta.Meta) meta.UserRole
+}
+
 // Manager is the main interface for providing the service.
 type Manager interface {
 	BaseManager
+	AuthzManager
 
 	PlaceWithPolicy(unprotectedPlace place.Place) (place.Place, Policy)
 }

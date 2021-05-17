@@ -17,14 +17,12 @@ import (
 	"strconv"
 	"time"
 
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/service"
 )
 
 var config struct {
 	// Set in SetupStartupConfig
-	owner         id.Zid
 	withAuth      bool
 	secret        []byte
 	insecCookie   bool
@@ -36,31 +34,20 @@ var config struct {
 // Predefined keys for startup zettel
 const (
 	KeyInsecureCookie    = "insecure-cookie"
-	KeyOwner             = "owner"
 	KeyPersistentCookie  = "persistent-cookie"
-	KeyPlaceOneURI       = "place-1-uri"
 	KeyTokenLifetimeHTML = "token-lifetime-html"
 	KeyTokenLifetimeAPI  = "token-lifetime-api"
 )
 
 // SetupStartupConfig initializes the startup data with content of config file.
 func SetupStartupConfig(cfg *meta.Meta) {
-	config.owner = id.Invalid
-	if owner, ok := cfg.Get(KeyOwner); ok {
-		if zid, err := id.Parse(owner); err == nil {
-			config.owner = zid
-			config.withAuth = true
-		}
-	}
-	if config.withAuth {
-		config.insecCookie = cfg.GetBool(KeyInsecureCookie)
-		config.persistCookie = cfg.GetBool(KeyPersistentCookie)
-		config.secret = calcSecret(cfg)
-		config.htmlLifetime = getDuration(
-			cfg, KeyTokenLifetimeHTML, 1*time.Hour, 1*time.Minute, 30*24*time.Hour)
-		config.apiLifetime = getDuration(
-			cfg, KeyTokenLifetimeAPI, 10*time.Minute, 0, 1*time.Hour)
-	}
+	config.insecCookie = cfg.GetBool(KeyInsecureCookie)
+	config.persistCookie = cfg.GetBool(KeyPersistentCookie)
+	config.secret = calcSecret(cfg)
+	config.htmlLifetime = getDuration(
+		cfg, KeyTokenLifetimeHTML, 1*time.Hour, 1*time.Minute, 30*24*time.Hour)
+	config.apiLifetime = getDuration(
+		cfg, KeyTokenLifetimeAPI, 10*time.Minute, 0, 1*time.Hour)
 }
 
 var configKeys = []string{
@@ -100,22 +87,12 @@ func getDuration(
 	return defDur
 }
 
-// WithAuth returns true if user authentication is enabled.
-func WithAuth() bool { return config.withAuth }
-
 // SecureCookie returns whether the web app should set cookies to secure mode.
 func SecureCookie() bool { return config.withAuth && !config.insecCookie }
 
 // PersistentCookie returns whether the web app should set persistent cookies
 // (instead of temporary).
 func PersistentCookie() bool { return config.persistCookie }
-
-// Owner returns the zid of the zettelkasten's owner.
-// If there is no owner defined, the value ZettelID(0) is returned.
-func Owner() id.Zid { return config.owner }
-
-// IsOwner returns true, if the given user is the owner of the Zettelstore.
-func IsOwner(zid id.Zid) bool { return zid.IsValid() && zid == config.owner }
 
 // Secret returns the interal application secret. It is typically used to
 // encrypt session values.

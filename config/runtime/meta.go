@@ -12,7 +12,6 @@
 package runtime
 
 import (
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
 )
 
@@ -85,23 +84,4 @@ func GetVisibility(m *meta.Meta) meta.Visibility {
 		}
 	}
 	return GetDefaultVisibility()
-}
-
-// GetUserRole role returns the user role of the given user zettel.
-func GetUserRole(user *meta.Meta) meta.UserRole {
-	if user == nil {
-		if startup.WithAuth() {
-			return meta.UserRoleUnknown
-		}
-		return meta.UserRoleOwner
-	}
-	if startup.IsOwner(user.Zid) {
-		return meta.UserRoleOwner
-	}
-	if val, ok := user.Get(meta.KeyUserRole); ok {
-		if ur := meta.GetUserRole(val); ur != meta.UserRoleUnknown {
-			return ur
-		}
-	}
-	return meta.UserRoleReader
 }

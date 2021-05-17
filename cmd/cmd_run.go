@@ -61,9 +61,9 @@ func doRun(debug bool) (int, error) {
 func setupRouting(urlPrefix string, placeManager place.Manager, authManager auth.Manager) http.Handler {
 	router := router.NewRouter(urlPrefix)
 	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(placeManager)
-	te := webui.NewTemplateEngine(placeManager, authPolicy, router.NewURLBuilder)
+	te := webui.NewTemplateEngine(authManager, placeManager, authPolicy, router.NewURLBuilder)
 
-	ucAuthenticate := usecase.NewAuthenticate(placeManager)
+	ucAuthenticate := usecase.NewAuthenticate(authManager, placeManager)
 	ucGetMeta := usecase.NewGetMeta(protectedPlaceManager)
 	ucGetZettel := usecase.NewGetZettel(protectedPlaceManager)
 	ucParseZettel := usecase.NewParseZettel(ucGetZettel)
@@ -72,11 +72,11 @@ func setupRouting(urlPrefix string, placeManager place.Manager, authManager auth
 	ucListTags := usecase.NewListTags(protectedPlaceManager)
 	ucZettelContext := usecase.NewZettelContext(protectedPlaceManager)
 
-	router.Handle("/", webui.MakeGetRootHandler(te, protectedPlaceManager))
+	router.Handle("/", webui.MakeGetRootHandler(authManager, te, protectedPlaceManager))
 	router.AddListRoute('a', http.MethodGet, webui.MakeGetLoginHandler(te))
 	router.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
-		api.MakePostLoginHandlerAPI(ucAuthenticate),
-		webui.MakePostLoginHandlerHTML(te, ucAuthenticate)))
+		api.MakePostLoginHandlerAPI(authManager, ucAuthenticate),
+		webui.MakePostLoginHandlerHTML(authManager, te, ucAuthenticate)))
 	router.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
 	router.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler(te))
 	if !authManager.IsReadonly() {

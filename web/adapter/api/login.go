@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/usecase"
@@ -24,9 +25,9 @@ import (
 )
 
 // MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
-func MakePostLoginHandlerAPI(auth usecase.Authenticate) http.HandlerFunc {
+func MakePostLoginHandlerAPI(authz auth.AuthzManager, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !startup.WithAuth() {
+		if !authz.WithAuth() {
 			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return

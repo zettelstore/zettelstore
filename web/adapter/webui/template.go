@@ -64,7 +64,7 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(mgr place.Manager, pol auth.Policy, builder router.URLBuilderFunc) *TemplateEngine {
+func NewTemplateEngine(authz auth.AuthzManager, mgr place.Manager, pol auth.Policy, builder router.URLBuilderFunc) *TemplateEngine {
 	te := &TemplateEngine{
 		place:  mgr,
 		policy: pol,
@@ -76,7 +76,7 @@ func NewTemplateEngine(mgr place.Manager, pol auth.Policy, builder router.URLBui
 		listZettelURL: builder('h').String(),
 		listRolesURL:  builder('h').AppendQuery("_l", "r").String(),
 		listTagsURL:   builder('h').AppendQuery("_l", "t").String(),
-		withAuth:      startup.WithAuth(),
+		withAuth:      authz.WithAuth(),
 		loginURL:      builder('a').String(),
 		searchURL:     builder('f').String(),
 	}

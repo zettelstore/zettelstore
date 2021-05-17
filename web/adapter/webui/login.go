@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
@@ -47,9 +48,9 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 }
 
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
-func MakePostLoginHandlerHTML(te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
+func MakePostLoginHandlerHTML(authz auth.AuthzManager, te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !startup.WithAuth() {
+		if !authz.WithAuth() {
 			builder := router.GetURLBuilderFunc(r.Context())
 			redirectFound(w, r, builder('/'))
 			return

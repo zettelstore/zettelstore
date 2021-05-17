@@ -13,14 +13,12 @@ package policy
 
 import (
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config/runtime"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
 
 type ownerPolicy struct {
+	manager       auth.AuthzManager
 	expertMode    func() bool
-	isOwner       func(id.Zid) bool
 	getVisibility func(*meta.Meta) meta.Visibility
 	pre           auth.Policy
 }
@@ -33,7 +31,7 @@ func (o *ownerPolicy) CanCreate(user, newMeta *meta.Meta) bool {
 }
 
 func (o *ownerPolicy) userCanCreate(user, newMeta *meta.Meta) bool {
-	if runtime.GetUserRole(user) == meta.UserRoleReader {
+	if o.manager.GetUserRole(user) == meta.UserRoleReader {
 		return false
 	}
 	if role, ok := newMeta.Get(meta.KeyRole); ok && role == meta.ValueRoleUser {
@@ -100,7 +98,7 @@ func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 		}
 		return true
 	}
-	if runtime.GetUserRole(user) == meta.UserRoleReader {
+	if o.manager.GetUserRole(user) == meta.UserRoleReader {
 		return false
 	}
 	return o.userCanCreate(user, newMeta)
@@ -137,7 +135,7 @@ func (o *ownerPolicy) userIsOwner(user *meta.Meta) bool {
 	if user == nil {
 		return false
 	}
-	if o.isOwner(user.Zid) {
+	if o.manager.IsOwner(user.Zid) {
 		return true
 	}
 	if val, ok := user.Get(meta.KeyUserRole); ok && val == meta.ValueUserRoleOwner {

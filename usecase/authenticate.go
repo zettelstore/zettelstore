@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"time"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/domain/id"
@@ -36,10 +37,10 @@ type Authenticate struct {
 }
 
 // NewAuthenticate creates a new use case.
-func NewAuthenticate(port AuthenticatePort) Authenticate {
+func NewAuthenticate(authz auth.AuthzManager, port AuthenticatePort) Authenticate {
 	return Authenticate{
 		port:      port,
-		ucGetUser: NewGetUser(port),
+		ucGetUser: NewGetUser(authz, port),
 	}
 }
 

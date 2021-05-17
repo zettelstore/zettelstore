@@ -36,19 +36,17 @@ func TestPolicies(t *testing.T) {
 		{false, false, false},
 	}
 	for _, ts := range testScene {
-		var authFunc func() bool
-		if ts.withAuth {
-			authFunc = withAuth
-		} else {
-			authFunc = withoutAuth
-		}
 		var expertFunc func() bool
 		if ts.expert {
 			expertFunc = expertMode
 		} else {
 			expertFunc = noExpertMode
 		}
-		pol := newPolicy(authFunc, ts.readonly, expertFunc, isOwner, getVisibility)
+		authzManager := &testAuthzManager{
+			readOnly: ts.readonly,
+			withAuth: ts.withAuth,
+		}
+		pol := newPolicy(authzManager, expertFunc, getVisibility)
 		name := fmt.Sprintf("readonly=%v/withauth=%v/expert=%v",
 			ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
@@ -61,11 +59,37 @@ func TestPolicies(t *testing.T) {
 	}
 }
 
-func withAuth() bool          { return true }
-func withoutAuth() bool       { return false }
-func expertMode() bool        { return true }
-func noExpertMode() bool      { return false }
-func isOwner(zid id.Zid) bool { return zid == ownerZid }
+type testAuthzManager struct {
+	readOnly bool
+	withAuth bool
+}
+
+func (a *testAuthzManager) IsReadonly() bool        { return a.readOnly }
+func (a *testAuthzManager) Owner() id.Zid           { return ownerZid }
+func (a *testAuthzManager) IsOwner(zid id.Zid) bool { return zid == ownerZid }
+
+func (a *testAuthzManager) WithAuth() bool { return a.withAuth }
+
+func (a *testAuthzManager) GetUserRole(user *meta.Meta) meta.UserRole {
+	if user == nil {
+		if a.WithAuth() {
+			return meta.UserRoleUnknown
+		}
+		return meta.UserRoleOwner
+	}
+	if a.IsOwner(user.Zid) {
+		return meta.UserRoleOwner
+	}
+	if val, ok := user.Get(meta.KeyUserRole); ok {
+		if ur := meta.GetUserRole(val); ur != meta.UserRoleUnknown {
+			return ur
+		}
+	}
+	return meta.UserRoleReader
+}
+
+func expertMode() bool   { return true }
+func noExpertMode() bool { return false }
 func getVisibility(m *meta.Meta) meta.Visibility {
 	if vis, ok := m.Get(meta.KeyVisibility); ok {
 		switch vis {

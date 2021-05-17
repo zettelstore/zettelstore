@@ -15,8 +15,8 @@ import (
 	"context"
 	"net/http"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config/runtime"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -30,7 +30,7 @@ type getRootStore interface {
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
-func MakeGetRootHandler(te *TemplateEngine, s getRootStore) http.HandlerFunc {
+func MakeGetRootHandler(authz auth.AuthzManager, te *TemplateEngine, s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if r.URL.Path != "/" {
@@ -51,7 +51,7 @@ func MakeGetRootHandler(te *TemplateEngine, s getRootStore) http.HandlerFunc {
 			redirectFound(w, r, builder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && startup.WithAuth() && session.GetUser(ctx) == nil {
+		if place.IsErrNotAllowed(err) && authz.WithAuth() && session.GetUser(ctx) == nil {
 			redirectFound(w, r, builder('a'))
 			return
 		}

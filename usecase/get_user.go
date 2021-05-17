@@ -14,7 +14,7 @@ package usecase
 import (
 	"context"
 
-	"zettelstore.de/z/config/startup"
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -32,17 +32,18 @@ type GetUserPort interface {
 
 // GetUser is the data for this use case.
 type GetUser struct {
-	port GetUserPort
+	authz auth.AuthzManager
+	port  GetUserPort
 }
 
 // NewGetUser creates a new use case.
-func NewGetUser(port GetUserPort) GetUser {
-	return GetUser{port: port}
+func NewGetUser(authz auth.AuthzManager, port GetUserPort) GetUser {
+	return GetUser{authz: authz, port: port}
 }
 
 // Run executes the use case.
 func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
-	if !startup.WithAuth() {
+	if !uc.authz.WithAuth() {
 		return nil, nil
 	}
 	ctx = place.NoEnrichContext(ctx)
@@ -50,7 +51,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	// It is important to try first with the owner. First, because another user
 	// could give herself the same ''ident''. Second, in most cases the owner
 	// will authenticate.
-	identMeta, err := uc.port.GetMeta(ctx, startup.Owner())
+	identMeta, err := uc.port.GetMeta(ctx, uc.authz.Owner())
 	if err == nil && identMeta.GetDefault(meta.KeyUserID, "") == ident {
 		if role, ok := identMeta.Get(meta.KeyRole); !ok ||
 			role != meta.ValueRoleUser {

@@ -111,7 +111,7 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			} else {
 				val = "dir:" + val
 			}
-			cfg.Set(startup.KeyPlaceOneURI, val)
+			cfg.Set(keyPlaceOneURI, val)
 		case "r":
 			cfg.Set(keyReadOnly, flg.Value.String())
 		case "v":
@@ -134,6 +134,8 @@ const (
 	keyAdminPort           = "admin-port"
 	keyDefaultDirPlaceType = "default-dir-place-type"
 	keyListenAddr          = "listen-addr"
+	keyOwner               = "owner"
+	keyPlaceOneURI         = "place-1-uri"
 	keyReadOnly            = "read-only-mode"
 	keyVerbose             = "verbose"
 	keyURLPrefix           = "url-prefix"
@@ -145,6 +147,7 @@ func setServiceConfig(cfg *meta.Meta) error {
 		ok = setConfigValue(ok, service.SubCore, service.CorePort, val)
 	}
 
+	ok = setConfigValue(ok, service.SubAuth, service.AuthOwner, cfg.GetDefault(keyOwner, ""))
 	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
 
 	ok = setConfigValue(
@@ -189,7 +192,9 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	startup.SetupStartupConfig(cfg)
 
 	service.Main.SetCreators(
-		func(readonly bool) (auth.Manager, error) { return impl.New(readonly), nil },
+		func(readonly bool, owner id.Zid) (auth.Manager, error) {
+			return impl.New(readonly, owner), nil
+		},
 		createManager,
 		func(urlPrefix string, plMgr place.Manager, authMgr auth.Manager) (http.Handler, error) {
 			return setupRouting(urlPrefix, plMgr, authMgr), nil

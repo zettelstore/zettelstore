@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/service"
 )
 
@@ -27,9 +28,11 @@ type authSub struct {
 
 func (as *authSub) Initialize() {
 	as.descr = descriptionMap{
+		service.AuthOwner:    {"Owner's zettel id", parseZid, false},
 		service.AuthReadonly: {"Read-only mode", parseBool, true},
 	}
 	as.next = interfaceMap{
+		service.AuthOwner:    id.Invalid,
 		service.AuthReadonly: false,
 	}
 }
@@ -38,7 +41,8 @@ func (as *authSub) Start(srv *myService) error {
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
 	readonlyMode := as.GetNextConfig(service.AuthReadonly).(bool)
-	authMgr, err := as.createManager(readonlyMode)
+	owner := as.GetNextConfig(service.AuthOwner).(id.Zid)
+	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
 		srv.doLog("Unable to create auth manager:", err)
 		return err
