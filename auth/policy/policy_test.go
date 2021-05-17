@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"testing"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -79,7 +80,7 @@ func getVisibility(m *meta.Meta) meta.Visibility {
 	return meta.VisibilityLogin
 }
 
-func testCreate(t *testing.T, pol Policy, withAuth, readonly, isExpert bool) {
+func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -122,7 +123,7 @@ func testCreate(t *testing.T, pol Policy, withAuth, readonly, isExpert bool) {
 	}
 }
 
-func testRead(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
+func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -200,7 +201,7 @@ func testRead(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	}
 }
 
-func testWrite(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
+func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -335,7 +336,7 @@ func testWrite(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	}
 }
 
-func testRename(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
+func testRename(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()
@@ -414,7 +415,7 @@ func testRename(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
 	}
 }
 
-func testDelete(t *testing.T, pol Policy, withAuth, readonly, expert bool) {
+func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	reader := newReader()

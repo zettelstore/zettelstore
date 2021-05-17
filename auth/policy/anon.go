@@ -11,12 +11,15 @@
 // Package policy provides some interfaces and implementation for authorization policies.
 package policy
 
-import "zettelstore.de/z/domain/meta"
+import (
+	"zettelstore.de/z/auth"
+	"zettelstore.de/z/domain/meta"
+)
 
 type anonPolicy struct {
 	expertMode    func() bool
 	getVisibility func(*meta.Meta) meta.Visibility
-	pre           Policy
+	pre           auth.Policy
 }
 
 func (ap *anonPolicy) CanCreate(user, newMeta *meta.Meta) bool {

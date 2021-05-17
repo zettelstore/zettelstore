@@ -36,7 +36,7 @@ type ConnectData struct {
 }
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, authManager auth.Manager, cdata *ConnectData) (place.ManagedPlace, error) {
+func Connect(rawURL string, authManager auth.BaseManager, cdata *ConnectData) (place.ManagedPlace, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, cfg *meta.Meta, authManager auth.Manager) (*Manager, error) {
+func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {

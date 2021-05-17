@@ -12,6 +12,7 @@
 package policy
 
 import (
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -21,7 +22,7 @@ type ownerPolicy struct {
 	expertMode    func() bool
 	isOwner       func(id.Zid) bool
 	getVisibility func(*meta.Meta) meta.Visibility
-	pre           Policy
+	pre           auth.Policy
 }
 
 func (o *ownerPolicy) CanCreate(user, newMeta *meta.Meta) bool {

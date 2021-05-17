@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"sync"
 
-	"zettelstore.de/z/auth/policy"
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
@@ -51,7 +51,7 @@ type TemplateEngine struct {
 	place         templatePlace
 	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
-	policy        policy.Policy
+	policy        auth.Policy
 
 	stylesheetURL string
 	homeURL       string
@@ -64,7 +64,7 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(mgr place.Manager, pol policy.Policy, builder router.URLBuilderFunc) *TemplateEngine {
+func NewTemplateEngine(mgr place.Manager, pol auth.Policy, builder router.URLBuilderFunc) *TemplateEngine {
 	te := &TemplateEngine{
 		place:  mgr,
 		policy: pol,

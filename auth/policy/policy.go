@@ -12,27 +12,10 @@
 package policy
 
 import (
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
-
-// Policy is an interface for checking access authorization.
-type Policy interface {
-	// User is allowed to create a new zettel.
-	CanCreate(user, newMeta *meta.Meta) bool
-
-	// User is allowed to read zettel
-	CanRead(user, m *meta.Meta) bool
-
-	// User is allowed to write zettel.
-	CanWrite(user, oldMeta, newMeta *meta.Meta) bool
-
-	// User is allowed to rename zettel
-	CanRename(user, m *meta.Meta) bool
-
-	// User is allowed to delete zettel
-	CanDelete(user, m *meta.Meta) bool
-}
 
 // newPolicy creates a policy based on given constraints.
 func newPolicy(
@@ -41,8 +24,8 @@ func newPolicy(
 	expertMode func() bool,
 	isOwner func(id.Zid) bool,
 	getVisibility func(*meta.Meta) meta.Visibility,
-) Policy {
-	var pol Policy
+) auth.Policy {
+	var pol auth.Policy
 	if isReadOnlyMode {
 		pol = &roPolicy{}
 	} else {
@@ -66,7 +49,7 @@ func newPolicy(
 }
 
 type prePolicy struct {
-	post Policy
+	post auth.Policy
 }
 
 func (p *prePolicy) CanCreate(user, newMeta *meta.Meta) bool {

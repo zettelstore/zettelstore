@@ -14,6 +14,7 @@ package policy
 import (
 	"context"
 
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -30,7 +31,7 @@ func PlaceWithPolicy(
 	expertMode func() bool,
 	isOwner func(id.Zid) bool,
 	getVisibility func(*meta.Meta) meta.Visibility,
-) (place.Place, Policy) {
+) (place.Place, auth.Policy) {
 	pol := newPolicy(withAuth, isReadOnlyMode, expertMode, isOwner, getVisibility)
 	return newPlace(place, pol), pol
 }
@@ -38,11 +39,11 @@ func PlaceWithPolicy(
 // polPlace implements a policy place.
 type polPlace struct {
 	place  place.Place
-	policy Policy
+	policy auth.Policy
 }
 
 // newPlace creates a new policy place.
-func newPlace(place place.Place, policy Policy) place.Place {
+func newPlace(place place.Place, policy auth.Policy) place.Place {
 	return &polPlace{
 		place:  place,
 		policy: policy,

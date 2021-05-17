@@ -11,7 +11,13 @@
 // Package impl provides services for authentification / authorization.
 package impl
 
-import "zettelstore.de/z/auth"
+import (
+	"zettelstore.de/z/auth"
+	"zettelstore.de/z/auth/policy"
+	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config/startup"
+	"zettelstore.de/z/place"
+)
 
 type myAuth struct {
 	readonly bool
@@ -26,3 +32,9 @@ func New(readonly bool) auth.Manager {
 
 // IsReadonly returns true, if the systems is configured to run in read-only-mode.
 func (a *myAuth) IsReadonly() bool { return a.readonly }
+
+func (a *myAuth) PlaceWithPolicy(unprotectedPlace place.Place) (place.Place, auth.Policy) {
+	return policy.PlaceWithPolicy(
+		unprotectedPlace, startup.WithAuth, a.IsReadonly(), runtime.GetExpertMode,
+		startup.IsOwner, runtime.GetVisibility)
+}
