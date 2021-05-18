@@ -25,7 +25,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 type jsonIDURL struct {
@@ -74,7 +74,7 @@ var (
 	djsonFooter        = []byte("}")
 )
 
-func writeDJSONHeader(w io.Writer, builder impl.URLBuilderFunc, zid id.Zid) error {
+func writeDJSONHeader(w io.Writer, b server.Builder, zid id.Zid) error {
 	_, err := w.Write(djsonHeader1)
 	if err == nil {
 		_, err = w.Write(zid.Bytes())
@@ -83,7 +83,7 @@ func writeDJSONHeader(w io.Writer, builder impl.URLBuilderFunc, zid id.Zid) erro
 		_, err = w.Write(djsonHeader2)
 	}
 	if err == nil {
-		_, err = io.WriteString(w, builder('z').SetZid(zid).String())
+		_, err = io.WriteString(w, b.NewURLBuilder('z').SetZid(zid).String())
 	}
 	if err == nil {
 		_, err = w.Write(djsonHeader3)
@@ -100,6 +100,7 @@ func writeDJSONHeader(w io.Writer, builder impl.URLBuilderFunc, zid id.Zid) erro
 func renderListMetaXJSON(
 	ctx context.Context,
 	w http.ResponseWriter,
+	b server.Builder,
 	metaList []*meta.Meta,
 	format string,
 	part, defPart partType,
@@ -107,7 +108,7 @@ func renderListMetaXJSON(
 	parseZettel usecase.ParseZettel,
 ) {
 	prepareZettel := getPrepareZettelFunc(ctx, parseZettel, part)
-	writeZettel := getWriteMetaZettelFunc(ctx, format, part, defPart, getMeta)
+	writeZettel := getWriteMetaZettelFunc(ctx, b, format, part, defPart, getMeta)
 	err := writeListXJSON(w, metaList, prepareZettel, writeZettel)
 	if err != nil {
 		adapter.InternalServerError(w, "Get list", err)
@@ -138,31 +139,30 @@ func getPrepareZettelFunc(ctx context.Context, parseZettel usecase.ParseZettel, 
 
 type writeZettelFunc func(io.Writer, *ast.ZettelNode) error
 
-func getWriteMetaZettelFunc(ctx context.Context, format string,
+func getWriteMetaZettelFunc(ctx context.Context, b server.Builder, format string,
 	part, defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
 	switch part {
 	case partZettel:
-		return getWriteZettelFunc(ctx, format, defPart, getMeta)
+		return getWriteZettelFunc(ctx, b, format, defPart, getMeta)
 	case partMeta:
-		return getWriteMetaFunc(ctx, format)
+		return getWriteMetaFunc(ctx, b, format)
 	case partContent:
-		return getWriteContentFunc(ctx, format, defPart, getMeta)
+		return getWriteContentFunc(ctx, b, format, defPart, getMeta)
 	case partID:
-		return getWriteIDFunc(ctx, format)
+		return getWriteIDFunc(ctx, b, format)
 	default:
 		panic(part)
 	}
 }
 
-func getWriteZettelFunc(ctx context.Context, format string,
+func getWriteZettelFunc(ctx context.Context, b server.Builder, format string,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
 			return encodeJSONData(w, jsonZettel{
 				ID:       zn.Zid.String(),
-				URL:      builder('z').SetZid(zn.Zid).String(),
+				URL:      b.NewURLBuilder('z').SetZid(zn.Zid).String(),
 				Meta:     zn.InhMeta.Map(),
 				Encoding: encoding,
 				Content:  content,
@@ -174,7 +174,7 @@ func getWriteZettelFunc(ctx context.Context, format string,
 		panic("no DJSON encoder found")
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
-		err := writeDJSONHeader(w, builder, zn.Zid)
+		err := writeDJSONHeader(w, b, zn.Zid)
 		if err != nil {
 			return err
 		}
@@ -191,8 +191,8 @@ func getWriteZettelFunc(ctx context.Context, format string,
 			return err
 		}
 		err = writeContent(w, zn, "djson", &encoder.Environment{
-			LinkAdapter:  adapter.MakeLinkAdapter(ctx, 'z', getMeta, partZettel.DefString(defPart), "djson"),
-			ImageAdapter: adapter.MakeImageAdapter(ctx, getMeta)})
+			LinkAdapter:  adapter.MakeLinkAdapter(ctx, b, 'z', getMeta, partZettel.DefString(defPart), "djson"),
+			ImageAdapter: adapter.MakeImageAdapter(ctx, b, getMeta)})
 		if err != nil {
 			return err
 		}
@@ -200,13 +200,12 @@ func getWriteZettelFunc(ctx context.Context, format string,
 		return err
 	}
 }
-func getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
-	builder := impl.GetURLBuilderFunc(ctx)
+func getWriteMetaFunc(ctx context.Context, b server.Builder, format string) writeZettelFunc {
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonMeta{
 				ID:   zn.Zid.String(),
-				URL:  builder('z').SetZid(zn.Zid).String(),
+				URL:  b.NewURLBuilder('z').SetZid(zn.Zid).String(),
 				Meta: zn.InhMeta.Map(),
 			})
 		}
@@ -216,7 +215,7 @@ func getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
 		panic("no DJSON encoder found")
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
-		err := writeDJSONHeader(w, builder, zn.Zid)
+		err := writeDJSONHeader(w, b, zn.Zid)
 		if err != nil {
 			return err
 		}
@@ -232,22 +231,21 @@ func getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
 		return err
 	}
 }
-func getWriteContentFunc(ctx context.Context, format string,
+func getWriteContentFunc(ctx context.Context, b server.Builder, format string,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
 			return encodeJSONData(w, jsonContent{
 				ID:       zn.Zid.String(),
-				URL:      builder('z').SetZid(zn.Zid).String(),
+				URL:      b.NewURLBuilder('z').SetZid(zn.Zid).String(),
 				Encoding: encoding,
 				Content:  content,
 			})
 		}
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
-		err := writeDJSONHeader(w, builder, zn.Zid)
+		err := writeDJSONHeader(w, b, zn.Zid)
 		if err != nil {
 			return err
 		}
@@ -256,8 +254,8 @@ func getWriteContentFunc(ctx context.Context, format string,
 			return err
 		}
 		err = writeContent(w, zn, "djson", &encoder.Environment{
-			LinkAdapter:  adapter.MakeLinkAdapter(ctx, 'z', getMeta, partContent.DefString(defPart), "djson"),
-			ImageAdapter: adapter.MakeImageAdapter(ctx, getMeta)})
+			LinkAdapter:  adapter.MakeLinkAdapter(ctx, b, 'z', getMeta, partContent.DefString(defPart), "djson"),
+			ImageAdapter: adapter.MakeImageAdapter(ctx, b, getMeta)})
 		if err != nil {
 			return err
 		}
@@ -265,18 +263,17 @@ func getWriteContentFunc(ctx context.Context, format string,
 		return err
 	}
 }
-func getWriteIDFunc(ctx context.Context, format string) writeZettelFunc {
-	builder := impl.GetURLBuilderFunc(ctx)
+func getWriteIDFunc(ctx context.Context, b server.Builder, format string) writeZettelFunc {
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonIDURL{
 				ID:  zn.Zid.String(),
-				URL: builder('z').SetZid(zn.Zid).String(),
+				URL: b.NewURLBuilder('z').SetZid(zn.Zid).String(),
 			})
 		}
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
-		err := writeDJSONHeader(w, builder, zn.Zid)
+		err := writeDJSONHeader(w, b, zn.Zid)
 		if err != nil {
 			return err
 		}
@@ -331,16 +328,16 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
-func writeMetaList(w http.ResponseWriter, builder impl.URLBuilderFunc, m *meta.Meta, metaList []*meta.Meta) error {
+func writeMetaList(w http.ResponseWriter, b server.Builder, m *meta.Meta, metaList []*meta.Meta) error {
 	outData := jsonMetaList{
 		ID:   m.Zid.String(),
-		URL:  builder('z').SetZid(m.Zid).String(),
+		URL:  b.NewURLBuilder('z').SetZid(m.Zid).String(),
 		Meta: m.Map(),
 		List: make([]jsonMeta, len(metaList)),
 	}
 	for i, m := range metaList {
 		outData.List[i].ID = m.Zid.String()
-		outData.List[i].URL = builder('z').SetZid(m.Zid).String()
+		outData.List[i].URL = b.NewURLBuilder('z').SetZid(m.Zid).String()
 		outData.List[i].Meta = m.Map()
 	}
 	w.Header().Set(adapter.ContentType, format2ContentType("json"))

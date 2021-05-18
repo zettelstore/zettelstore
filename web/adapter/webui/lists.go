@@ -28,39 +28,45 @@ import (
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
 // zettel as HTML.
 func MakeListHTMLMetaHandler(
+	ab server.AuthBuilder,
 	te *TemplateEngine,
 	listMeta usecase.ListMeta,
 	listRole usecase.ListRole,
 	listTags usecase.ListTags,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		rwl := renderWebList{w: w, ab: ab, te: te}
 		query := r.URL.Query()
 		switch query.Get("_l") {
 		case "r":
-			renderWebUIRolesList(w, r, te, listRole)
+			rwl.renderRolesList(r, listRole)
 		case "t":
-			renderWebUITagsList(w, r, te, listTags)
+			rwl.renderTagsList(r, listTags)
 		default:
-			renderWebUIZettelList(w, r, te, listMeta)
+			rwl.renderZettelList(r, listMeta)
 		}
 	}
 }
 
-func renderWebUIZettelList(
-	w http.ResponseWriter, r *http.Request, te *TemplateEngine, listMeta usecase.ListMeta) {
+type renderWebList struct {
+	w  http.ResponseWriter
+	ab server.AuthBuilder
+	te *TemplateEngine
+}
+
+func (rwl *renderWebList) renderZettelList(r *http.Request, listMeta usecase.ListMeta) {
 	query := r.URL.Query()
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
 	title := listTitleSearch("Filter", s)
-	builder := impl.GetURLBuilderFunc(ctx)
-	renderWebUIMetaList(
-		ctx, w, te, title, s,
+	rwl.renderMetaList(
+		ctx, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
 			if !s.HasComputedMetaKey() {
 				ctx = place.NoEnrichContext(ctx)
@@ -68,7 +74,7 @@ func renderWebUIZettelList(
 			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
-			return newPageURL(builder, 'h', query, offset, "_offset", "_limit")
+			return newPageURL(rwl.ab, 'h', query, offset, "_offset", "_limit")
 		})
 }
 
@@ -77,31 +83,25 @@ type roleInfo struct {
 	URL  string
 }
 
-func renderWebUIRolesList(
-	w http.ResponseWriter,
-	r *http.Request,
-	te *TemplateEngine,
-	listRole usecase.ListRole,
-) {
+func (rwl *renderWebList) renderRolesList(r *http.Request, listRole usecase.ListRole) {
 	ctx := r.Context()
 	roleList, err := listRole.Run(ctx)
 	if err != nil {
-		adapter.ReportUsecaseError(w, err)
+		adapter.ReportUsecaseError(rwl.w, err)
 		return
 	}
 
-	builder := impl.GetURLBuilderFunc(ctx)
 	roleInfos := make([]roleInfo, 0, len(roleList))
 	for _, role := range roleList {
 		roleInfos = append(
 			roleInfos,
-			roleInfo{role, builder('h').AppendQuery("role", role).String()})
+			roleInfo{role, rwl.ab.NewURLBuilder('h').AppendQuery("role", role).String()})
 	}
 
-	user := impl.GetUser(ctx)
+	user := rwl.ab.GetUser(ctx)
 	var base baseData
-	te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-	te.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
+	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	rwl.te.renderTemplate(ctx, rwl.w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
 		Roles: roleInfos,
@@ -123,25 +123,19 @@ type tagInfo struct {
 
 var fontSizes = [...]int{75, 83, 100, 117, 150, 200}
 
-func renderWebUITagsList(
-	w http.ResponseWriter,
-	r *http.Request,
-	te *TemplateEngine,
-	listTags usecase.ListTags,
-) {
+func (rwl *renderWebList) renderTagsList(r *http.Request, listTags usecase.ListTags) {
 	ctx := r.Context()
 	iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 	tagData, err := listTags.Run(ctx, iMinCount)
 	if err != nil {
-		te.reportError(ctx, w, err)
+		rwl.te.reportError(ctx, rwl.w, err)
 		return
 	}
 
-	user := impl.GetUser(ctx)
+	user := rwl.ab.GetUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	builder := impl.GetURLBuilderFunc(ctx)
-	baseTagListURL := builder('h')
+	baseTagListURL := rwl.ab.NewURLBuilder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
 		countMap[count]++
@@ -167,14 +161,14 @@ func renderWebUITagsList(
 	}
 
 	var base baseData
-	te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
 		minCounts = append(minCounts, countInfo{sCount, base.ListTagsURL + "&min=" + sCount})
 	}
 
-	te.renderTemplate(ctx, w, id.TagsTemplateZid, &base, struct {
+	rwl.te.renderTemplate(ctx, rwl.w, id.TagsTemplateZid, &base, struct {
 		ListTagsURL string
 		MinCounts   []countInfo
 		Tags        []tagInfo
@@ -187,6 +181,7 @@ func renderWebUITagsList(
 
 // MakeSearchHandler creates a new HTTP handler for the use case "search".
 func MakeSearchHandler(
+	ab server.AuthBuilder,
 	te *TemplateEngine,
 	ucSearch usecase.Search,
 	getMeta usecase.GetMeta,
@@ -197,28 +192,28 @@ func MakeSearchHandler(
 		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			builder := impl.GetURLBuilderFunc(ctx)
-			redirectFound(w, r, builder('h'))
+			redirectFound(w, r, ab.NewURLBuilder('h'))
 			return
 		}
 
-		builder := impl.GetURLBuilderFunc(ctx)
+		rwl := renderWebList{w: w, ab: ab, te: te}
 		title := listTitleSearch("Search", s)
-		renderWebUIMetaList(
-			ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
+		rwl.renderMetaList(
+			ctx, title, s, func(s *search.Search) ([]*meta.Meta, error) {
 				if !s.HasComputedMetaKey() {
 					ctx = place.NoEnrichContext(ctx)
 				}
 				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
-				return newPageURL(builder, 'f', query, offset, "offset", "limit")
+				return newPageURL(ab, 'f', query, offset, "offset", "limit")
 			})
 	}
 }
 
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
-func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelContext) http.HandlerFunc {
+func MakeZettelContextHandler(
+	ab server.AuthBuilder, te *TemplateEngine, getContext usecase.ZettelContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -235,8 +230,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
-		metaLinks, err := buildHTMLMetaList(builder, metaList)
+		metaLinks, err := buildHTMLMetaList(ab, metaList)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
 			return
@@ -244,7 +238,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := builder('j').SetZid(zid)
+		depthURL := ab.NewURLBuilder('j').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -258,7 +252,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			depthLinks[i].URL = depthURL.String()
 		}
 		var base baseData
-		user := impl.GetUser(ctx)
+		user := ab.GetUser(ctx)
 		te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 		te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
@@ -268,7 +262,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: builder('i').SetZid(zid).String(),
+			InfoURL: ab.NewURLBuilder('i').SetZid(zid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],
@@ -284,8 +278,8 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 	return val
 }
 
-func renderWebUIMetaList(
-	ctx context.Context, w http.ResponseWriter, te *TemplateEngine,
+func (rwl *renderWebList) renderMetaList(
+	ctx context.Context,
 	title string,
 	s *search.Search,
 	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
@@ -301,7 +295,7 @@ func renderWebUIMetaList(
 
 		metaList, err = ucMetaList(s)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			rwl.te.reportError(ctx, rwl.w, err)
 			return
 		}
 		if offset := s.GetOffset(); offset > 0 {
@@ -318,20 +312,19 @@ func renderWebUIMetaList(
 	} else {
 		metaList, err = ucMetaList(s)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			rwl.te.reportError(ctx, rwl.w, err)
 			return
 		}
 	}
-	user := impl.GetUser(ctx)
-	builder := impl.GetURLBuilderFunc(ctx)
-	metas, err := buildHTMLMetaList(builder, metaList)
+	user := rwl.ab.GetUser(ctx)
+	metas, err := buildHTMLMetaList(rwl.ab, metaList)
 	if err != nil {
-		te.reportError(ctx, w, err)
+		rwl.te.reportError(ctx, rwl.w, err)
 		return
 	}
 	var base baseData
-	te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-	te.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
+	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	rwl.te.renderTemplate(ctx, rwl.w, id.ListTemplateZid, &base, struct {
 		Title       string
 		Metas       []simpleLink
 		HasPrevNext bool
@@ -363,8 +356,8 @@ func listTitleSearch(prefix string, s *search.Search) string {
 	return sb.String()
 }
 
-func newPageURL(builder impl.URLBuilderFunc, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
-	ub := builder(key)
+func newPageURL(b server.Builder, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+	ub := b.NewURLBuilder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {
 			for _, val := range values {
@@ -379,7 +372,7 @@ func newPageURL(builder impl.URLBuilderFunc, key byte, query url.Values, offset 
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func buildHTMLMetaList(builder impl.URLBuilderFunc, metaList []*meta.Meta) ([]simpleLink, error) {
+func buildHTMLMetaList(b server.Builder, metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
@@ -397,7 +390,7 @@ func buildHTMLMetaList(builder impl.URLBuilderFunc, metaList []*meta.Meta) ([]si
 		}
 		metas = append(metas, simpleLink{
 			Text: htmlTitle,
-			URL:  builder('h').SetZid(m.Zid).String(),
+			URL:  b.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
 	return metas, nil

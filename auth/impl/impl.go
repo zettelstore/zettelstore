@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/web/server"
 )
 
 type myAuth struct {
@@ -63,7 +64,7 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 	return meta.UserRoleReader
 }
 
-func (a *myAuth) PlaceWithPolicy(unprotectedPlace place.Place) (place.Place, auth.Policy) {
+func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place) (place.Place, auth.Policy) {
 	return policy.PlaceWithPolicy(
-		a, unprotectedPlace, runtime.GetExpertMode, runtime.GetVisibility)
+		auth, a, unprotectedPlace, runtime.GetExpertMode, runtime.GetVisibility)
 }

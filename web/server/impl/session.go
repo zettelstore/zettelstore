@@ -12,108 +12,29 @@
 package impl
 
 import (
-	"context"
 	"net/http"
 	"strings"
-	"time"
 
 	"zettelstore.de/z/auth/token"
-	"zettelstore.de/z/config/startup"
-	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
 )
 
-const sessionName = "zsession"
-
-// SetToken sets the session cookie for later user identification.
-func SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
-	cookie := http.Cookie{
-		Name:     sessionName,
-		Value:    string(token),
-		Path:     service.Main.GetConfig(service.SubWeb, service.WebURLPrefix).(string),
-		Secure:   startup.SecureCookie(),
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}
-	if startup.PersistentCookie() && d > 0 {
-		cookie.Expires = time.Now().Add(d).Add(30 * time.Second).UTC()
-	}
-	http.SetCookie(w, &cookie)
-}
-
-// ClearToken invalidates the session cookie by sending an empty one.
-func ClearToken(ctx context.Context, w http.ResponseWriter) context.Context {
-	if w != nil {
-		SetToken(w, nil, 0)
-	}
-	return updateContext(ctx, nil, nil)
-}
-
-// Handler enriches the request context with optional user information.
-type Handler struct {
+// sessionHandler enriches the request context with optional user information.
+type sessionHandler struct {
 	next         http.Handler
 	getUserByZid server.UserRetriever
 }
 
-// NewHandler creates a new handler.
-func NewHandler(next http.Handler, getUserByZid server.UserRetriever) *Handler {
-	return &Handler{
+// newSessionHandler creates a new handler.
+func newSessionHandler(next http.Handler, getUserByZid server.UserRetriever) *sessionHandler {
+	return &sessionHandler{
 		next:         next,
 		getUserByZid: getUserByZid,
 	}
 }
 
-type ctxKeyTypeSession struct{}
-
-var ctxKeySession ctxKeyTypeSession
-
-// AuthData stores all relevant authentication data for a context.
-type AuthData struct {
-	User    *meta.Meta
-	Token   []byte
-	Now     time.Time
-	Issued  time.Time
-	Expires time.Time
-}
-
-// GetAuthData returns the full authentication data from the context.
-func GetAuthData(ctx context.Context) *AuthData {
-	data, ok := ctx.Value(ctxKeySession).(*AuthData)
-	if ok {
-		return data
-	}
-	return nil
-
-}
-
-// GetUser returns the user meta data from the context, if there is one. Else return nil.
-func GetUser(ctx context.Context) *meta.Meta {
-	if data := GetAuthData(ctx); data != nil {
-		return data.User
-	}
-	return nil
-}
-
-func updateContext(
-	ctx context.Context, user *meta.Meta, data *token.Data) context.Context {
-	if data == nil {
-		return context.WithValue(ctx, ctxKeySession, &AuthData{User: user})
-	}
-	return context.WithValue(
-		ctx,
-		ctxKeySession,
-		&AuthData{
-			User:    user,
-			Token:   data.Token,
-			Now:     data.Now,
-			Issued:  data.Issued,
-			Expires: data.Expires,
-		})
-}
-
 // ServeHTTP processes one HTTP request.
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *sessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	k := token.KindJSON
 	t := getHeaderToken(r)
 	if t == nil {

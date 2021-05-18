@@ -21,12 +21,13 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
 func MakeGetDeleteZettelHandler(
+	auth server.Auth,
 	te *TemplateEngine,
 	getZettel usecase.GetZettel,
 ) http.HandlerFunc {
@@ -50,7 +51,7 @@ func MakeGetDeleteZettelHandler(
 			return
 		}
 
-		user := impl.GetUser(ctx)
+		user := auth.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
@@ -65,7 +66,8 @@ func MakeGetDeleteZettelHandler(
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func MakePostDeleteZettelHandler(te *TemplateEngine, deleteZettel usecase.DeleteZettel) http.HandlerFunc {
+func MakePostDeleteZettelHandler(
+	auth server.Auth, te *TemplateEngine, deleteZettel usecase.DeleteZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -78,7 +80,6 @@ func MakePostDeleteZettelHandler(te *TemplateEngine, deleteZettel usecase.Delete
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
-		redirectFound(w, r, builder('/'))
+		redirectFound(w, r, te.authBuilder.NewURLBuilder('/'))
 	}
 }

@@ -24,10 +24,11 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a rendered zettel.
-func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+func MakeGetZettelHandler(b server.Builder, parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -55,7 +56,7 @@ func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMe
 		switch format {
 		case "json", "djson":
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			err = getWriteMetaZettelFunc(ctx, format, part, partZettel, getMeta)(w, zn)
+			err = getWriteMetaZettelFunc(ctx, b, format, part, partZettel, getMeta)(w, zn)
 			if err != nil {
 				adapter.InternalServerError(w, "Write D/JSON", err)
 			}
@@ -63,8 +64,8 @@ func MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMe
 		}
 
 		env := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'z', getMeta, part.DefString(partZettel), format),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, b, 'z', getMeta, part.DefString(partZettel), format),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, b, getMeta),
 			CiteAdapter:    nil,
 			Lang:           runtime.GetLang(zn.InhMeta),
 			Xhtml:          false,

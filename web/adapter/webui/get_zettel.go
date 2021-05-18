@@ -25,11 +25,12 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
 func MakeGetHTMLZettelHandler(
+	ab server.AuthBuilder,
 	te *TemplateEngine,
 	parseZettel usecase.ParseZettel,
 	getMeta usecase.GetMeta) http.HandlerFunc {
@@ -50,8 +51,8 @@ func MakeGetHTMLZettelHandler(
 
 		lang := runtime.GetLang(zn.InhMeta)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, 'h', getMeta, "", ""),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, getMeta),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, ab, 'h', getMeta, "", ""),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, ab, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,
@@ -76,13 +77,12 @@ func MakeGetHTMLZettelHandler(
 			return
 		}
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := impl.GetUser(ctx)
-		builder := impl.GetURLBuilderFunc(ctx)
+		user := ab.GetUser(ctx)
 		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
-		tags := buildTagInfos(builder, zn.Meta)
+		tags := buildTagInfos(ab, zn.Meta)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		backLinks := formatBackLinks(builder, zn.InhMeta, getTitle)
+		backLinks := formatBackLinks(ab, zn.InhMeta, getTitle)
 		var base baseData
 		te.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -112,19 +112,19 @@ func MakeGetHTMLZettelHandler(
 		}{
 			HTMLTitle:     htmlTitle,
 			CanWrite:      te.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       builder('e').SetZid(zid).String(),
+			EditURL:       ab.NewURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
-			InfoURL:       builder('i').SetZid(zid).String(),
+			InfoURL:       ab.NewURLBuilder('i').SetZid(zid).String(),
 			RoleText:      roleText,
-			RoleURL:       builder('h').AppendQuery("role", roleText).String(),
+			RoleURL:       ab.NewURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCopy,
-			CopyURL:       builder('c').SetZid(zid).String(),
+			CopyURL:       ab.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:      builder('f').SetZid(zid).String(),
-			FolgeRefs:     formatMetaKey(zn.InhMeta, builder, meta.KeyFolge, getTitle),
-			PrecursorRefs: formatMetaKey(zn.InhMeta, builder, meta.KeyPrecursor, getTitle),
+			FolgeURL:      ab.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeRefs:     formatMetaKey(zn.InhMeta, ab, meta.KeyFolge, getTitle),
+			PrecursorRefs: formatMetaKey(zn.InhMeta, ab, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
@@ -163,10 +163,10 @@ func formatMeta(m *meta.Meta, format string, env *encoder.Environment) (string, 
 	return content.String(), nil
 }
 
-func buildTagInfos(builder impl.URLBuilderFunc, m *meta.Meta) []simpleLink {
+func buildTagInfos(b server.Builder, m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
 	if tags, ok := m.GetList(meta.KeyTags); ok {
-		ub := builder('h')
+		ub := b.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
 			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", tag).String()}
@@ -176,16 +176,16 @@ func buildTagInfos(builder impl.URLBuilderFunc, m *meta.Meta) []simpleLink {
 	return tagInfos
 }
 
-func formatMetaKey(m *meta.Meta, builder impl.URLBuilderFunc, key string, getTitle getTitleFunc) string {
+func formatMetaKey(m *meta.Meta, b server.Builder, key string, getTitle getTitleFunc) string {
 	if _, ok := m.Get(key); ok {
 		var buf bytes.Buffer
-		writeHTMLMetaValue(&buf, builder, m, key, getTitle, nil)
+		writeHTMLMetaValue(&buf, b, m, key, getTitle, nil)
 		return buf.String()
 	}
 	return ""
 }
 
-func formatBackLinks(builder impl.URLBuilderFunc, m *meta.Meta, getTitle getTitleFunc) []simpleLink {
+func formatBackLinks(b server.Builder, m *meta.Meta, getTitle getTitleFunc) []simpleLink {
 	values, ok := m.GetList(meta.KeyBack)
 	if !ok || len(values) == 0 {
 		return nil
@@ -197,7 +197,7 @@ func formatBackLinks(builder impl.URLBuilderFunc, m *meta.Meta, getTitle getTitl
 			continue
 		}
 		if title, found := getTitle(zid, "text"); found > 0 {
-			url := builder('h').SetZid(zid).String()
+			url := b.NewURLBuilder('h').SetZid(zid).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})
 			} else {

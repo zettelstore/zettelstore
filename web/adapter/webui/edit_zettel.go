@@ -21,13 +21,13 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
 func MakeEditGetZettelHandler(
-	te *TemplateEngine, getZettel usecase.GetZettel) http.HandlerFunc {
+	auth server.Auth, te *TemplateEngine, getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -48,7 +48,7 @@ func MakeEditGetZettelHandler(
 			return
 		}
 
-		user := impl.GetUser(ctx)
+		user := auth.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
@@ -67,7 +67,8 @@ func MakeEditGetZettelHandler(
 
 // MakeEditSetZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func MakeEditSetZettelHandler(te *TemplateEngine, updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func MakeEditSetZettelHandler(
+	b server.Builder, te *TemplateEngine, updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -86,7 +87,6 @@ func MakeEditSetZettelHandler(te *TemplateEngine, updateZettel usecase.UpdateZet
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
-		redirectFound(w, r, builder('h').SetZid(zid))
+		redirectFound(w, r, b.NewURLBuilder('h').SetZid(zid))
 	}
 }

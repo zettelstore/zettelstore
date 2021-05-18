@@ -22,11 +22,12 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
 func MakeListMetaHandler(
+	b server.Builder,
 	listMeta usecase.ListMeta,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
@@ -54,9 +55,9 @@ func MakeListMetaHandler(
 		w.Header().Set(adapter.ContentType, format2ContentType(format))
 		switch format {
 		case "html":
-			renderListMetaHTML(w, impl.GetURLBuilderFunc(ctx), metaList)
+			renderListMetaHTML(w, b, metaList)
 		case "json", "djson":
-			renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
+			renderListMetaXJSON(ctx, w, b, metaList, format, part, partMeta, getMeta, parseZettel)
 		case "native", "raw", "text", "zmk":
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", format))
 		default:
@@ -65,7 +66,7 @@ func MakeListMetaHandler(
 	}
 }
 
-func renderListMetaHTML(w http.ResponseWriter, builder impl.URLBuilderFunc, metaList []*meta.Meta) {
+func renderListMetaHTML(w http.ResponseWriter, b server.Builder, metaList []*meta.Meta) {
 	env := encoder.Environment{Interactive: true}
 	buf := encoder.NewBufWriter(w)
 	buf.WriteStrings("<html lang=\"", runtime.GetDefaultLang(), "\">\n<body>\n<ul>\n")
@@ -78,7 +79,7 @@ func renderListMetaHTML(w http.ResponseWriter, builder impl.URLBuilderFunc, meta
 		}
 		buf.WriteStrings(
 			"<li><a href=\"",
-			builder('z').SetZid(m.Zid).AppendQuery("_format", "html").String(),
+			b.NewURLBuilder('z').SetZid(m.Zid).AppendQuery("_format", "html").String(),
 			"\">",
 			htmlTitle,
 			"</a></li>\n")

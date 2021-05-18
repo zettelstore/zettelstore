@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
+// URLBuilder builds URLs.
 type URLBuilder interface {
 	// Clone an URLBuilder
 	Clone() URLBuilder
@@ -56,17 +57,44 @@ type Router interface {
 	SetUserRetriever(ur UserRetriever)
 }
 
+// Builder allows to build new URLs for the web service.
+type Builder interface {
+	GetURLPrefix() string
+	NewURLBuilder(key byte) URLBuilder
+}
+
 // Auth is.
 type Auth interface {
 	GetUser(context.Context) *meta.Meta
-	NewURLBuilder(key byte) URLBuilder
 	SetToken(w http.ResponseWriter, token []byte, d time.Duration)
+
+	// ClearToken invalidates the session cookie by sending an empty one.
+	ClearToken(ctx context.Context, w http.ResponseWriter) context.Context
+
+	// GetAuthData returns the full authentication data from the context.
+	GetAuthData(ctx context.Context) *AuthData
+}
+
+// AuthData stores all relevant authentication data for a context.
+type AuthData struct {
+	User    *meta.Meta
+	Token   []byte
+	Now     time.Time
+	Issued  time.Time
+	Expires time.Time
+}
+
+// AuthBuilder is a Builder that also allows to execute authentication functions.
+type AuthBuilder interface {
+	Auth
+	Builder
 }
 
 // Server is the main web server for accessing Zettelstore via HTTP.
 type Server interface {
 	Router
 	Auth
+	Builder
 
 	SetDebug()
 	Run() error

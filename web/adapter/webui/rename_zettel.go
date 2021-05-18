@@ -22,13 +22,13 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
 // HTML rename view of a zettel.
 func MakeGetRenameZettelHandler(
-	te *TemplateEngine, getMeta usecase.GetMeta) http.HandlerFunc {
+	auth server.Auth, te *TemplateEngine, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -49,7 +49,7 @@ func MakeGetRenameZettelHandler(
 			return
 		}
 
-		user := impl.GetUser(ctx)
+		user := auth.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
 		te.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
@@ -63,7 +63,8 @@ func MakeGetRenameZettelHandler(
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.
-func MakePostRenameZettelHandler(te *TemplateEngine, renameZettel usecase.RenameZettel) http.HandlerFunc {
+func MakePostRenameZettelHandler(
+	b server.Builder, te *TemplateEngine, renameZettel usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		curZid, err := id.Parse(r.URL.Path[1:])
@@ -91,7 +92,6 @@ func MakePostRenameZettelHandler(te *TemplateEngine, renameZettel usecase.Rename
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
-		redirectFound(w, r, builder('h').SetZid(newZid))
+		redirectFound(w, r, b.NewURLBuilder('h').SetZid(newZid))
 	}
 }

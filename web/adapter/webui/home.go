@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 type getRootStore interface {
@@ -29,31 +29,30 @@ type getRootStore interface {
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
-func MakeGetRootHandler(authz auth.AuthzManager, te *TemplateEngine, s getRootStore) http.HandlerFunc {
+func MakeGetRootHandler(ab server.AuthBuilder, authz auth.AuthzManager, te *TemplateEngine, s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if r.URL.Path != "/" {
 			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
 		homeZid := runtime.GetHomeZettel()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {
-				redirectFound(w, r, builder('h').SetZid(homeZid))
+				redirectFound(w, r, ab.NewURLBuilder('h').SetZid(homeZid))
 				return
 			}
 			homeZid = id.DefaultHomeZid
 		}
 		_, err := s.GetMeta(ctx, homeZid)
 		if err == nil {
-			redirectFound(w, r, builder('h').SetZid(homeZid))
+			redirectFound(w, r, ab.NewURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && authz.WithAuthz() && impl.GetUser(ctx) == nil {
-			redirectFound(w, r, builder('a'))
+		if place.IsErrNotAllowed(err) && authz.WithAuthz() && ab.GetUser(ctx) == nil {
+			redirectFound(w, r, ab.NewURLBuilder('a'))
 			return
 		}
-		redirectFound(w, r, builder('h'))
+		redirectFound(w, r, ab.NewURLBuilder('h'))
 	}
 }

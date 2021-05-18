@@ -15,6 +15,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/web/server"
 )
 
 // BaseManager allows to check some base auth modes.
@@ -45,7 +46,7 @@ type Manager interface {
 	BaseManager
 	AuthzManager
 
-	PlaceWithPolicy(unprotectedPlace place.Place) (place.Place, Policy)
+	PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place) (place.Place, Policy)
 }
 
 // Policy is an interface for checking access authorization.

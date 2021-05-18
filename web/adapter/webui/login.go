@@ -24,13 +24,13 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetLoginHandler creates a new HTTP handler to display the HTML login view.
-func MakeGetLoginHandler(te *TemplateEngine) http.HandlerFunc {
+func MakeGetLoginHandler(auth server.Auth, te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		renderLoginForm(impl.ClearToken(r.Context(), w), w, te, false)
+		renderLoginForm(auth.ClearToken(r.Context(), w), w, te, false)
 	}
 }
 
@@ -47,21 +47,21 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 }
 
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
-func MakePostLoginHandlerHTML(authz auth.AuthzManager, te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
+func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te *TemplateEngine, ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !authz.WithAuthz() {
-			builder := impl.GetURLBuilderFunc(r.Context())
-			redirectFound(w, r, builder('/'))
+			redirectFound(w, r, ab.NewURLBuilder('/'))
 			return
 		}
 		htmlDur, _ := startup.TokenLifetime()
-		authenticateViaHTML(te, auth, w, r, htmlDur)
+		authenticateViaHTML(ab, te, ucAuth, w, r, htmlDur)
 	}
 }
 
 func authenticateViaHTML(
+	ab server.AuthBuilder,
 	te *TemplateEngine,
-	auth usecase.Authenticate,
+	ucAuth usecase.Authenticate,
 	w http.ResponseWriter,
 	r *http.Request,
 	authDuration time.Duration,
@@ -72,23 +72,22 @@ func authenticateViaHTML(
 		te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 		return
 	}
-	token, err := auth.Run(ctx, ident, cred, authDuration, token.KindHTML)
+	token, err := ucAuth.Run(ctx, ident, cred, authDuration, token.KindHTML)
 	if err != nil {
 		te.reportError(ctx, w, err)
 		return
 	}
 	if token == nil {
-		renderLoginForm(impl.ClearToken(ctx, w), w, te, true)
+		renderLoginForm(ab.ClearToken(ctx, w), w, te, true)
 		return
 	}
 
-	impl.SetToken(w, token, authDuration)
-	builder := impl.GetURLBuilderFunc(ctx)
-	redirectFound(w, r, builder('/'))
+	ab.SetToken(w, token, authDuration)
+	redirectFound(w, r, ab.NewURLBuilder('/'))
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
-func MakeGetLogoutHandler(te *TemplateEngine) http.HandlerFunc {
+func MakeGetLogoutHandler(ab server.AuthBuilder, te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
@@ -97,8 +96,7 @@ func MakeGetLogoutHandler(te *TemplateEngine) http.HandlerFunc {
 			return
 		}
 
-		impl.ClearToken(ctx, w)
-		builder := impl.GetURLBuilderFunc(ctx)
-		redirectFound(w, r, builder('/'))
+		ab.ClearToken(ctx, w)
+		redirectFound(w, r, ab.NewURLBuilder('/'))
 	}
 }

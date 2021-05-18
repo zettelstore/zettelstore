@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 type jsonGetLinks struct {
@@ -42,7 +42,7 @@ type jsonGetLinks struct {
 }
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
+func MakeGetLinksHandler(b server.Builder, parseZettel usecase.ParseZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -65,16 +65,15 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 			return
 		}
 
-		builder := impl.GetURLBuilderFunc(ctx)
 		outData := jsonGetLinks{
 			ID:  zid.String(),
-			URL: builder('z').SetZid(zid).String(),
+			URL: b.NewURLBuilder('z').SetZid(zid).String(),
 		}
 		if kind&kindLink != 0 {
-			setupLinkJSONRefs(builder, summary, matter, &outData)
+			setupLinkJSONRefs(b, summary, matter, &outData)
 		}
 		if kind&kindImage != 0 {
-			setupImageJSONRefs(builder, summary, matter, &outData)
+			setupImageJSONRefs(b, summary, matter, &outData)
 		}
 		if kind&kindCite != 0 {
 			outData.Cites = stringCites(summary.Cites)
@@ -87,13 +86,13 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 	}
 }
 
-func setupLinkJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func setupLinkJSONRefs(b server.Builder, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
 	if matter&matterIncoming != 0 {
 		outData.Links.Incoming = []jsonIDURL{}
 	}
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 	if matter&matterOutgoing != 0 {
-		outData.Links.Outgoing = idURLRefs(builder, zetRefs)
+		outData.Links.Outgoing = idURLRefs(b, zetRefs)
 	}
 	if matter&matterLocal != 0 {
 		outData.Links.Local = stringRefs(locRefs)
@@ -103,10 +102,10 @@ func setupLinkJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, mat
 	}
 }
 
-func setupImageJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func setupImageJSONRefs(b server.Builder, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images)
 	if matter&matterOutgoing != 0 {
-		outData.Images.Outgoing = idURLRefs(builder, zetRefs)
+		outData.Images.Outgoing = idURLRefs(b, zetRefs)
 	}
 	if matter&matterLocal != 0 {
 		outData.Images.Local = stringRefs(locRefs)
@@ -116,11 +115,11 @@ func setupImageJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, ma
 	}
 }
 
-func idURLRefs(builder impl.URLBuilderFunc, refs []*ast.Reference) []jsonIDURL {
+func idURLRefs(b server.Builder, refs []*ast.Reference) []jsonIDURL {
 	result := make([]jsonIDURL, 0, len(refs))
 	for _, ref := range refs {
 		path := ref.URL.Path
-		ub := builder('z').AppendPath(path)
+		ub := b.NewURLBuilder('z').AppendPath(path)
 		if fragment := ref.URL.Fragment; len(fragment) > 0 {
 			ub.SetFragment(fragment)
 		}

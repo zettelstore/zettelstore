@@ -16,6 +16,8 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/auth/token"
+	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
 )
@@ -45,10 +47,10 @@ func (srv *myServer) AddZettelRoute(key byte, httpMethod string, handler http.Ha
 	srv.router.AddZettelRoute(key, httpMethod, handler)
 }
 func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
-	srv.server.Handler = NewHandler(srv.router, ur)
+	srv.server.Handler = newSessionHandler(srv.router, ur)
 }
 func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
-	if data := GetAuthData(ctx); data != nil {
+	if data := srv.GetAuthData(ctx); data != nil {
 		return data.User
 	}
 	return nil
@@ -56,9 +58,64 @@ func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
 func (srv *myServer) NewURLBuilder(key byte) server.URLBuilder {
 	return srv.router.NewURLBuilder(key)
 }
-func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
-	SetToken(w, token, d)
+func (srv *myServer) GetURLPrefix() string {
+	return srv.router.urlPrefix
 }
+
+const sessionName = "zsession"
+
+func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
+	cookie := http.Cookie{
+		Name:     sessionName,
+		Value:    string(token),
+		Path:     srv.GetURLPrefix(),
+		Secure:   startup.SecureCookie(),
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	if startup.PersistentCookie() && d > 0 {
+		cookie.Expires = time.Now().Add(d).Add(30 * time.Second).UTC()
+	}
+	http.SetCookie(w, &cookie)
+}
+
+// ClearToken invalidates the session cookie by sending an empty one.
+func (srv *myServer) ClearToken(ctx context.Context, w http.ResponseWriter) context.Context {
+	if w != nil {
+		srv.SetToken(w, nil, 0)
+	}
+	return updateContext(ctx, nil, nil)
+}
+
+// GetAuthData returns the full authentication data from the context.
+func (srv *myServer) GetAuthData(ctx context.Context) *server.AuthData {
+	data, ok := ctx.Value(ctxKeySession).(*server.AuthData)
+	if ok {
+		return data
+	}
+	return nil
+}
+
+type ctxKeyTypeSession struct{}
+
+var ctxKeySession ctxKeyTypeSession
+
+func updateContext(ctx context.Context, user *meta.Meta, data *token.Data) context.Context {
+	if data == nil {
+		return context.WithValue(ctx, ctxKeySession, &server.AuthData{User: user})
+	}
+	return context.WithValue(
+		ctx,
+		ctxKeySession,
+		&server.AuthData{
+			User:    user,
+			Token:   data.Token,
+			Now:     data.Now,
+			Issued:  data.Issued,
+			Expires: data.Expires,
+		})
+}
+
 func (srv *myServer) SetDebug()   { srv.server.SetDebug() }
 func (srv *myServer) Run() error  { return srv.server.Run() }
 func (srv *myServer) Stop() error { return srv.server.Stop() }

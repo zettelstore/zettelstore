@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // ErrNoSuchFormat signals an unsupported encoding format
@@ -45,6 +45,7 @@ func FormatInlines(is ast.InlineSlice, format string, env *encoder.Environment) 
 // MakeLinkAdapter creates an adapter to change a link node during encoding.
 func MakeLinkAdapter(
 	ctx context.Context,
+	b server.Builder,
 	key byte,
 	getMeta usecase.GetMeta,
 	part, format string,
@@ -56,7 +57,7 @@ func MakeLinkAdapter(
 		}
 		if origRef.State == ast.RefStateBased {
 			newLink := *origLink
-			urlPrefix := impl.GetURLPrefix(ctx)
+			urlPrefix := b.GetURLPrefix()
 			newRef := ast.ParseReference(urlPrefix + origRef.Value[1:])
 			newRef.State = ast.RefStateHosted
 			newLink.Ref = newRef
@@ -79,7 +80,7 @@ func MakeLinkAdapter(
 		}
 		var newRef *ast.Reference
 		if err == nil {
-			ub := impl.GetURLBuilderFunc(ctx)(key).SetZid(zid)
+			ub := b.NewURLBuilder(key).SetZid(zid)
 			if part != "" {
 				ub.AppendQuery("_part", part)
 			}
@@ -103,15 +104,14 @@ func MakeLinkAdapter(
 }
 
 // MakeImageAdapter creates an adapter to change an image node during encoding.
-func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.ImageNode) ast.InlineNode {
+func MakeImageAdapter(ctx context.Context, b server.Builder, getMeta usecase.GetMeta) func(*ast.ImageNode) ast.InlineNode {
 	return func(origImage *ast.ImageNode) ast.InlineNode {
 		if origImage.Ref == nil {
 			return origImage
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
 		switch origImage.Ref.State {
 		case ast.RefStateInvalid:
-			return createZettelImage(builder, origImage, id.EmojiZid, ast.RefStateInvalid)
+			return createZettelImage(b, origImage, id.EmojiZid, ast.RefStateInvalid)
 		case ast.RefStateZettel:
 			zid, err := id.Parse(origImage.Ref.Value)
 			if err != nil {
@@ -119,18 +119,18 @@ func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.Im
 			}
 			_, err = getMeta.Run(place.NoEnrichContext(ctx), zid)
 			if err != nil {
-				return createZettelImage(builder, origImage, id.EmojiZid, ast.RefStateBroken)
+				return createZettelImage(b, origImage, id.EmojiZid, ast.RefStateBroken)
 			}
-			return createZettelImage(builder, origImage, zid, ast.RefStateFound)
+			return createZettelImage(b, origImage, zid, ast.RefStateFound)
 		}
 		return origImage
 	}
 }
 
-func createZettelImage(builder impl.URLBuilderFunc, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
+func createZettelImage(b server.Builder, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
 	newImage := *origImage
 	newImage.Ref = ast.ParseReference(
-		builder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery("_format", "raw").String())
+		b.NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery("_format", "raw").String())
 	newImage.Ref.State = state
 	return &newImage
 }

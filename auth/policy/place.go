@@ -21,29 +21,32 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // PlaceWithPolicy wraps the given place inside a policy place.
 func PlaceWithPolicy(
+	auth server.Auth,
 	manager auth.AuthzManager,
 	place place.Place,
 	expertMode func() bool,
 	getVisibility func(*meta.Meta) meta.Visibility,
 ) (place.Place, auth.Policy) {
 	pol := newPolicy(manager, expertMode, getVisibility)
-	return newPlace(place, pol), pol
+	return newPlace(auth, place, pol), pol
 }
 
 // polPlace implements a policy place.
 type polPlace struct {
+	auth   server.Auth
 	place  place.Place
 	policy auth.Policy
 }
 
 // newPlace creates a new policy place.
-func newPlace(place place.Place, policy auth.Policy) place.Place {
+func newPlace(auth server.Auth, place place.Place, policy auth.Policy) place.Place {
 	return &polPlace{
+		auth:   auth,
 		place:  place,
 		policy: policy,
 	}
@@ -58,7 +61,7 @@ func (pp *polPlace) CanCreateZettel(ctx context.Context) bool {
 }
 
 func (pp *polPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.place.CreateZettel(ctx, zettel)
 	}
@@ -70,7 +73,7 @@ func (pp *polPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	if err != nil {
 		return domain.Zettel{}, err
 	}
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if pp.policy.CanRead(user, zettel.Meta) {
 		return zettel, nil
 	}
@@ -82,7 +85,7 @@ func (pp *polPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if err != nil {
 		return nil, err
 	}
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if pp.policy.CanRead(user, m) {
 		return m, nil
 	}
@@ -90,11 +93,11 @@ func (pp *polPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
 func (pp *polPlace) FetchZids(ctx context.Context) (id.Set, error) {
-	return nil, place.NewErrNotAllowed("fetch-zids", impl.GetUser(ctx), id.Invalid)
+	return nil, place.NewErrNotAllowed("fetch-zids", pp.auth.GetUser(ctx), id.Invalid)
 }
 
 func (pp *polPlace) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	canRead := pp.policy.CanRead
 	s = s.AddPreMatch(func(m *meta.Meta) bool { return canRead(user, m) })
 	return pp.place.SelectMeta(ctx, s)
@@ -106,7 +109,7 @@ func (pp *polPlace) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) b
 
 func (pp *polPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
 	zid := zettel.Meta.Zid
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if !zid.IsValid() {
 		return &place.ErrInvalidID{Zid: zid}
 	}
@@ -130,7 +133,7 @@ func (pp *polPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	if err != nil {
 		return err
 	}
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if pp.policy.CanRename(user, meta) {
 		return pp.place.RenameZettel(ctx, curZid, newZid)
 	}
@@ -146,7 +149,7 @@ func (pp *polPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if err != nil {
 		return err
 	}
-	user := impl.GetUser(ctx)
+	user := pp.auth.GetUser(ctx)
 	if pp.policy.CanDelete(user, meta) {
 		return pp.place.DeleteZettel(ctx, zid)
 	}

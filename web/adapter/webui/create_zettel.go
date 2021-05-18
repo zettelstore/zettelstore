@@ -26,12 +26,13 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetCopyZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a copied zettel.
 func MakeGetCopyZettelHandler(
+	auth server.Auth,
 	te *TemplateEngine,
 	getZettel usecase.GetZettel,
 	copyZettel usecase.CopyZettel,
@@ -43,13 +44,14 @@ func MakeGetCopyZettelHandler(
 			te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, te, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
+		renderZettelForm(w, r, auth, te, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
 	}
 }
 
 // MakeGetFolgeZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a follow-up zettel.
 func MakeGetFolgeZettelHandler(
+	auth server.Auth,
 	te *TemplateEngine,
 	getZettel usecase.GetZettel,
 	folgeZettel usecase.FolgeZettel,
@@ -61,13 +63,14 @@ func MakeGetFolgeZettelHandler(
 			te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, te, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
+		renderZettelForm(w, r, auth, te, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
 	}
 }
 
 // MakeGetNewZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
 func MakeGetNewZettelHandler(
+	auth server.Auth,
 	te *TemplateEngine,
 	getZettel usecase.GetZettel,
 	newZettel usecase.NewZettel,
@@ -92,7 +95,7 @@ func MakeGetNewZettelHandler(
 			te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, te, newZettel.Run(origZettel), textTitle, htmlTitle)
+		renderZettelForm(w, r, auth, te, newZettel.Run(origZettel), textTitle, htmlTitle)
 	}
 }
 
@@ -121,12 +124,13 @@ func getOrigZettel(
 func renderZettelForm(
 	w http.ResponseWriter,
 	r *http.Request,
+	auth server.Auth,
 	te *TemplateEngine,
 	zettel domain.Zettel,
 	title, heading string,
 ) {
 	ctx := r.Context()
-	user := impl.GetUser(ctx)
+	user := auth.GetUser(ctx)
 	m := zettel.Meta
 	var base baseData
 	te.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
@@ -144,7 +148,8 @@ func renderZettelForm(
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func MakePostCreateZettelHandler(te *TemplateEngine, createZettel usecase.CreateZettel) http.HandlerFunc {
+func MakePostCreateZettelHandler(
+	b server.Builder, te *TemplateEngine, createZettel usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zettel, hasContent, err := parseZettelForm(r, id.Invalid)
@@ -162,7 +167,6 @@ func MakePostCreateZettelHandler(te *TemplateEngine, createZettel usecase.Create
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := impl.GetURLBuilderFunc(ctx)
-		redirectFound(w, r, builder('h').SetZid(newZid))
+		redirectFound(w, r, b.NewURLBuilder('h').SetZid(newZid))
 	}
 }
