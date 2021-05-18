@@ -24,14 +24,13 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetLoginHandler creates a new HTTP handler to display the HTML login view.
 func MakeGetLoginHandler(te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		renderLoginForm(session.ClearToken(r.Context(), w), w, te, false)
+		renderLoginForm(server.ClearToken(r.Context(), w), w, te, false)
 	}
 }
 
@@ -51,7 +50,7 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 func MakePostLoginHandlerHTML(authz auth.AuthzManager, te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !authz.WithAuth() {
-			builder := router.GetURLBuilderFunc(r.Context())
+			builder := server.GetURLBuilderFunc(r.Context())
 			redirectFound(w, r, builder('/'))
 			return
 		}
@@ -79,12 +78,12 @@ func authenticateViaHTML(
 		return
 	}
 	if token == nil {
-		renderLoginForm(session.ClearToken(ctx, w), w, te, true)
+		renderLoginForm(server.ClearToken(ctx, w), w, te, true)
 		return
 	}
 
-	session.SetToken(w, token, authDuration)
-	builder := router.GetURLBuilderFunc(ctx)
+	server.SetToken(w, token, authDuration)
+	builder := server.GetURLBuilderFunc(ctx)
 	redirectFound(w, r, builder('/'))
 }
 
@@ -98,8 +97,8 @@ func MakeGetLogoutHandler(te *TemplateEngine) http.HandlerFunc {
 			return
 		}
 
-		session.ClearToken(ctx, w)
-		builder := router.GetURLBuilderFunc(ctx)
+		server.ClearToken(ctx, w)
+		builder := server.GetURLBuilderFunc(ctx)
 		redirectFound(w, r, builder('/'))
 	}
 }

@@ -22,8 +22,7 @@ import (
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/api"
 	"zettelstore.de/z/web/adapter/webui"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // ---------- Subcommand: run ------------------------------------------------
@@ -59,7 +58,7 @@ func doRun(debug bool) (int, error) {
 }
 
 func setupRouting(urlPrefix string, placeManager place.Manager, authManager auth.Manager) http.Handler {
-	router := router.NewRouter(urlPrefix)
+	router := server.NewRouter(urlPrefix)
 	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(placeManager)
 	te := webui.NewTemplateEngine(authManager, placeManager, authPolicy, router.NewURLBuilder)
 
@@ -124,5 +123,5 @@ func setupRouting(urlPrefix string, placeManager place.Manager, authManager auth
 	router.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(protectedPlaceManager), ucGetMeta, ucParseZettel))
 	router.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(ucParseZettel, ucGetMeta))
-	return session.NewHandler(router, usecase.NewGetUserByZid(placeManager))
+	return server.NewHandler(router, usecase.NewGetUserByZid(placeManager))
 }

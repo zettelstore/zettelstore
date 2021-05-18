@@ -28,8 +28,7 @@ import (
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
@@ -59,7 +58,7 @@ func renderWebUIZettelList(
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
 	title := listTitleSearch("Filter", s)
-	builder := router.GetURLBuilderFunc(ctx)
+	builder := server.GetURLBuilderFunc(ctx)
 	renderWebUIMetaList(
 		ctx, w, te, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
@@ -91,7 +90,7 @@ func renderWebUIRolesList(
 		return
 	}
 
-	builder := router.GetURLBuilderFunc(ctx)
+	builder := server.GetURLBuilderFunc(ctx)
 	roleInfos := make([]roleInfo, 0, len(roleList))
 	for _, role := range roleList {
 		roleInfos = append(
@@ -99,7 +98,7 @@ func renderWebUIRolesList(
 			roleInfo{role, builder('h').AppendQuery("role", role).String()})
 	}
 
-	user := session.GetUser(ctx)
+	user := server.GetUser(ctx)
 	var base baseData
 	te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 	te.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
@@ -138,10 +137,10 @@ func renderWebUITagsList(
 		return
 	}
 
-	user := session.GetUser(ctx)
+	user := server.GetUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	builder := router.GetURLBuilderFunc(ctx)
+	builder := server.GetURLBuilderFunc(ctx)
 	baseTagListURL := builder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
@@ -198,12 +197,12 @@ func MakeSearchHandler(
 		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			builder := router.GetURLBuilderFunc(ctx)
+			builder := server.GetURLBuilderFunc(ctx)
 			redirectFound(w, r, builder('h'))
 			return
 		}
 
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		title := listTitleSearch("Search", s)
 		renderWebUIMetaList(
 			ctx, w, te, title, s, func(s *search.Search) ([]*meta.Meta, error) {
@@ -236,7 +235,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		metaLinks, err := buildHTMLMetaList(builder, metaList)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
@@ -259,7 +258,7 @@ func MakeZettelContextHandler(te *TemplateEngine, getContext usecase.ZettelConte
 			depthLinks[i].URL = depthURL.String()
 		}
 		var base baseData
-		user := session.GetUser(ctx)
+		user := server.GetUser(ctx)
 		te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 		te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
@@ -323,8 +322,8 @@ func renderWebUIMetaList(
 			return
 		}
 	}
-	user := session.GetUser(ctx)
-	builder := router.GetURLBuilderFunc(ctx)
+	user := server.GetUser(ctx)
+	builder := server.GetURLBuilderFunc(ctx)
 	metas, err := buildHTMLMetaList(builder, metaList)
 	if err != nil {
 		te.reportError(ctx, w, err)
@@ -364,7 +363,7 @@ func listTitleSearch(prefix string, s *search.Search) string {
 	return sb.String()
 }
 
-func newPageURL(builder router.URLBuilderFunc, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+func newPageURL(builder server.URLBuilderFunc, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
 	ub := builder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {
@@ -380,7 +379,7 @@ func newPageURL(builder router.URLBuilderFunc, key byte, query url.Values, offse
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func buildHTMLMetaList(builder router.URLBuilderFunc, metaList []*meta.Meta) ([]simpleLink, error) {
+func buildHTMLMetaList(builder server.URLBuilderFunc, metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {

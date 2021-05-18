@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
@@ -54,7 +54,7 @@ func MakeListMetaHandler(
 		w.Header().Set(adapter.ContentType, format2ContentType(format))
 		switch format {
 		case "html":
-			renderListMetaHTML(w, router.GetURLBuilderFunc(ctx), metaList)
+			renderListMetaHTML(w, server.GetURLBuilderFunc(ctx), metaList)
 		case "json", "djson":
 			renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
 		case "native", "raw", "text", "zmk":
@@ -65,7 +65,7 @@ func MakeListMetaHandler(
 	}
 }
 
-func renderListMetaHTML(w http.ResponseWriter, builder router.URLBuilderFunc, metaList []*meta.Meta) {
+func renderListMetaHTML(w http.ResponseWriter, builder server.URLBuilderFunc, metaList []*meta.Meta) {
 	env := encoder.Environment{Interactive: true}
 	buf := encoder.NewBufWriter(w)
 	buf.WriteStrings("<html lang=\"", runtime.GetDefaultLang(), "\">\n<body>\n<ul>\n")

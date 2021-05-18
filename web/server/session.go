@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package session provides utilities for using sessions.
-package session
+// Package server provides the Zettelstore web service.
+package server
 
 import (
 	"context"
@@ -64,9 +64,9 @@ func NewHandler(next http.Handler, getUserByZid usecase.GetUserByZid) *Handler {
 	}
 }
 
-type ctxKeyType struct{}
+type ctxKeyTypeSession struct{}
 
-var ctxKey ctxKeyType
+var ctxKeySession ctxKeyTypeSession
 
 // AuthData stores all relevant authentication data for a context.
 type AuthData struct {
@@ -79,7 +79,7 @@ type AuthData struct {
 
 // GetAuthData returns the full authentication data from the context.
 func GetAuthData(ctx context.Context) *AuthData {
-	data, ok := ctx.Value(ctxKey).(*AuthData)
+	data, ok := ctx.Value(ctxKeySession).(*AuthData)
 	if ok {
 		return data
 	}
@@ -98,11 +98,11 @@ func GetUser(ctx context.Context) *meta.Meta {
 func updateContext(
 	ctx context.Context, user *meta.Meta, data *token.Data) context.Context {
 	if data == nil {
-		return context.WithValue(ctx, ctxKey, &AuthData{User: user})
+		return context.WithValue(ctx, ctxKeySession, &AuthData{User: user})
 	}
 	return context.WithValue(
 		ctx,
-		ctxKey,
+		ctxKeySession,
 		&AuthData{
 			User:    user,
 			Token:   data.Token,

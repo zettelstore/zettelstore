@@ -20,8 +20,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 type getRootStore interface {
@@ -37,7 +36,7 @@ func MakeGetRootHandler(authz auth.AuthzManager, te *TemplateEngine, s getRootSt
 			te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		homeZid := runtime.GetHomeZettel()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {
@@ -51,7 +50,7 @@ func MakeGetRootHandler(authz auth.AuthzManager, te *TemplateEngine, s getRootSt
 			redirectFound(w, r, builder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && authz.WithAuth() && session.GetUser(ctx) == nil {
+		if place.IsErrNotAllowed(err) && authz.WithAuth() && server.GetUser(ctx) == nil {
 			redirectFound(w, r, builder('a'))
 			return
 		}

@@ -26,12 +26,12 @@ import (
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
+	"zettelstore.de/z/web/server"
 )
 
 var space = []byte{' '}
 
-func writeHTMLMetaValue(w io.Writer, builder router.URLBuilderFunc, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
+func writeHTMLMetaValue(w io.Writer, builder server.URLBuilderFunc, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
 	switch kt := m.Type(key); kt {
 	case meta.TypeBool:
 		writeHTMLBool(w, builder, key, m.GetBool(key))
@@ -75,7 +75,7 @@ func writeHTMLMetaValue(w io.Writer, builder router.URLBuilderFunc, m *meta.Meta
 	}
 }
 
-func writeHTMLBool(w io.Writer, builder router.URLBuilderFunc, key string, val bool) {
+func writeHTMLBool(w io.Writer, builder server.URLBuilderFunc, key string, val bool) {
 	if val {
 		writeLink(w, builder, key, "true", "True")
 	} else {
@@ -91,7 +91,7 @@ func writeEmpty(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func writeIdentifier(w io.Writer, builder router.URLBuilderFunc, val string, getTitle func(id.Zid, string) (string, int)) {
+func writeIdentifier(w io.Writer, builder server.URLBuilderFunc, val string, getTitle func(id.Zid, string) (string, int)) {
 	zid, err := id.Parse(val)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
@@ -112,7 +112,7 @@ func writeIdentifier(w io.Writer, builder router.URLBuilderFunc, val string, get
 	}
 }
 
-func writeIdentifierSet(w io.Writer, builder router.URLBuilderFunc, vals []string, getTitle func(id.Zid, string) (string, int)) {
+func writeIdentifierSet(w io.Writer, builder server.URLBuilderFunc, vals []string, getTitle func(id.Zid, string) (string, int)) {
 	for i, val := range vals {
 		if i > 0 {
 			w.Write(space)
@@ -133,7 +133,7 @@ func writeUnknown(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func writeTagSet(w io.Writer, builder router.URLBuilderFunc, key string, tags []string) {
+func writeTagSet(w io.Writer, builder server.URLBuilderFunc, key string, tags []string) {
 	for i, tag := range tags {
 		if i > 0 {
 			w.Write(space)
@@ -157,11 +157,11 @@ func writeURL(w io.Writer, val string) {
 	io.WriteString(w, "</a>")
 }
 
-func writeWord(w io.Writer, builder router.URLBuilderFunc, key, word string) {
+func writeWord(w io.Writer, builder server.URLBuilderFunc, key, word string) {
 	writeLink(w, builder, key, word, word)
 }
 
-func writeWordSet(w io.Writer, builder router.URLBuilderFunc, key string, words []string) {
+func writeWordSet(w io.Writer, builder server.URLBuilderFunc, key string, words []string) {
 	for i, word := range words {
 		if i > 0 {
 			w.Write(space)
@@ -178,7 +178,7 @@ func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
 	io.WriteString(w, title)
 }
 
-func writeLink(w io.Writer, builder router.URLBuilderFunc, key, value, text string) {
+func writeLink(w io.Writer, builder server.URLBuilderFunc, key, value, text string) {
 	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", builder('h'), url.QueryEscape(key), url.QueryEscape(value))
 	strfun.HTMLEscape(w, text, false)
 	io.WriteString(w, "</a>")

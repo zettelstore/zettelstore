@@ -33,8 +33,7 @@ import (
 	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 type templatePlace interface {
@@ -64,7 +63,7 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(authz auth.AuthzManager, mgr place.Manager, pol auth.Policy, builder router.URLBuilderFunc) *TemplateEngine {
+func NewTemplateEngine(authz auth.AuthzManager, mgr place.Manager, pol auth.Policy, builder server.URLBuilderFunc) *TemplateEngine {
 	te := &TemplateEngine{
 		place:  mgr,
 		policy: pol,
@@ -187,7 +186,7 @@ func (te *TemplateEngine) makeBaseData(
 	}
 	userIsValid := user != nil
 	if userIsValid {
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		userZettelURL = builder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
 		userLogoutURL = builder('a').SetZid(user.Zid).String()
@@ -223,7 +222,7 @@ func htmlAttrNewWindow(hasURL bool) string {
 }
 
 func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
-	builder := router.GetURLBuilderFunc(ctx)
+	builder := server.GetURLBuilderFunc(ctx)
 	ctx = place.NoEnrichContext(ctx)
 	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
@@ -276,7 +275,7 @@ func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter
 	if code == http.StatusInternalServerError {
 		log.Printf("%v: %v", text, err)
 	}
-	user := session.GetUser(ctx)
+	user := server.GetUser(ctx)
 	var base baseData
 	te.makeBaseData(ctx, meta.ValueLangEN, "Error", user, &base)
 	te.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
@@ -306,10 +305,10 @@ func (te *TemplateEngine) renderTemplateStatus(
 		adapter.InternalServerError(w, "Unable to get template", err)
 		return
 	}
-	if user := session.GetUser(ctx); user != nil {
+	if user := server.GetUser(ctx); user != nil {
 		htmlLifetime, _ := startup.TokenLifetime()
 		if tok, err1 := token.GetToken(user, htmlLifetime, token.KindHTML); err1 == nil {
-			session.SetToken(w, tok, htmlLifetime)
+			server.SetToken(w, tok, htmlLifetime)
 		}
 	}
 	var content bytes.Buffer

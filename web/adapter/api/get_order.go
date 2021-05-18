@@ -17,7 +17,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetOrderHandler creates a new API handler to return zettel references
@@ -36,6 +36,6 @@ func MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		writeMetaList(w, router.GetURLBuilderFunc(ctx), start, metas)
+		writeMetaList(w, server.GetURLBuilderFunc(ctx), start, metas)
 	}
 }

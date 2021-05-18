@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package router provides a router for web requests.
-package router
+// Package server provides the Zettelstore web service.
+package server
 
 import (
 	"net/url"

@@ -21,8 +21,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
@@ -49,7 +48,7 @@ func MakeEditGetZettelHandler(
 			return
 		}
 
-		user := session.GetUser(ctx)
+		user := server.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
@@ -87,7 +86,7 @@ func MakeEditSetZettelHandler(te *TemplateEngine, updateZettel usecase.UpdateZet
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		redirectFound(w, r, builder('h').SetZid(zid))
 	}
 }

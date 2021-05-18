@@ -21,8 +21,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
@@ -51,7 +50,7 @@ func MakeGetDeleteZettelHandler(
 			return
 		}
 
-		user := session.GetUser(ctx)
+		user := server.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
@@ -79,7 +78,7 @@ func MakePostDeleteZettelHandler(te *TemplateEngine, deleteZettel usecase.Delete
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		redirectFound(w, r, builder('/'))
 	}
 }

@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package router provides a router for web requests.
-package router
+// Package server provides the Zettelstore web service.
+package server
 
 import (
 	"context"
@@ -93,18 +93,18 @@ func (rt *Router) NewURLBuilder(key byte) *URLBuilder { return &URLBuilder{route
 // URLBuilderFunc creates a new URLBuilder.
 type URLBuilderFunc func(key byte) *URLBuilder
 
-type ctxKeyType struct{}
+type ctxKeyTypeRouter struct{}
 
-var ctxKey ctxKeyType
+var ctxKeyRouter ctxKeyTypeRouter
 
 func (rt *Router) updateRequest(r *http.Request) *http.Request {
 	ctx := r.Context()
-	return r.WithContext(context.WithValue(ctx, ctxKey, rt))
+	return r.WithContext(context.WithValue(ctx, ctxKeyRouter, rt))
 }
 
 // GetURLPrefix returns the URL prefix.
 func GetURLPrefix(ctx context.Context) string {
-	if rt, ok := ctx.Value(ctxKey).(*Router); ok {
+	if rt, ok := ctx.Value(ctxKeyRouter).(*Router); ok {
 		return rt.urlPrefix
 	}
 	return "/"
@@ -112,7 +112,7 @@ func GetURLPrefix(ctx context.Context) string {
 
 // GetURLBuilderFunc returns a function that creates an URL builder.
 func GetURLBuilderFunc(ctx context.Context) URLBuilderFunc {
-	if rt, ok := ctx.Value(ctxKey).(*Router); ok {
+	if rt, ok := ctx.Value(ctxKeyRouter).(*Router); ok {
 		return rt.NewURLBuilder
 	}
 	return nil

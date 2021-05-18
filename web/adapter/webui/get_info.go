@@ -26,8 +26,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/router"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 type metaDataInfo struct {
@@ -79,7 +78,7 @@ func MakeGetInfoHandler(
 		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, len(pairs))
 		getTitle := makeGetTitle(ctx, getMeta, &env)
-		builder := router.GetURLBuilderFunc(ctx)
+		builder := server.GetURLBuilderFunc(ctx)
 		for i, p := range pairs {
 			var html strings.Builder
 			writeHTMLMetaValue(&html, builder, zn.Meta, p.Key, getTitle, &env)
@@ -91,7 +90,7 @@ func MakeGetInfoHandler(
 		}
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := session.GetUser(ctx)
+		user := server.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, lang, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
@@ -170,7 +169,7 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 	return locLinks, extLinks
 }
 
-func infoAPIMatrix(builder router.URLBuilderFunc, zid id.Zid) []matrixLine {
+func infoAPIMatrix(builder server.URLBuilderFunc, zid id.Zid) []matrixLine {
 	formats := encoder.GetFormats()
 	defFormat := encoder.GetDefaultFormat()
 	parts := []string{"zettel", "meta", "content"}

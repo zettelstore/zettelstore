@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package server provides a web server.
+// Package server provides the Zettelstore web service.
 package server
 
 import (

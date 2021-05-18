@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/session"
+	"zettelstore.de/z/web/server"
 )
 
 // MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
@@ -91,7 +91,7 @@ func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration)
 func MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		auth := session.GetAuthData(ctx)
+		auth := server.GetAuthData(ctx)
 		if auth == nil || auth.Token == nil || auth.User == nil {
 			adapter.BadRequest(w, "Not authenticated")
 			return
