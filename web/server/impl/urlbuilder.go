@@ -8,14 +8,15 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package server provides the Zettelstore web service.
-package server
+// Package impl provides the Zettelstore web service.
+package impl
 
 import (
 	"net/url"
 	"strings"
 
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/web/server"
 )
 
 type urlQuery struct{ key, val string }
@@ -30,7 +31,7 @@ type URLBuilder struct {
 }
 
 // Clone an URLBuilder
-func (ub *URLBuilder) Clone() *URLBuilder {
+func (ub *URLBuilder) Clone() server.URLBuilder {
 	cpy := new(URLBuilder)
 	cpy.key = ub.key
 	if len(ub.path) > 0 {
@@ -46,7 +47,7 @@ func (ub *URLBuilder) Clone() *URLBuilder {
 }
 
 // SetZid sets the zettel identifier.
-func (ub *URLBuilder) SetZid(zid id.Zid) *URLBuilder {
+func (ub *URLBuilder) SetZid(zid id.Zid) server.URLBuilder {
 	if len(ub.path) > 0 {
 		panic("Cannot add Zid")
 	}
@@ -55,26 +56,26 @@ func (ub *URLBuilder) SetZid(zid id.Zid) *URLBuilder {
 }
 
 // AppendPath adds a new path element
-func (ub *URLBuilder) AppendPath(p string) *URLBuilder {
+func (ub *URLBuilder) AppendPath(p string) server.URLBuilder {
 	ub.path = append(ub.path, p)
 	return ub
 }
 
 // AppendQuery adds a new query parameter
-func (ub *URLBuilder) AppendQuery(key, value string) *URLBuilder {
+func (ub *URLBuilder) AppendQuery(key, value string) server.URLBuilder {
 	ub.query = append(ub.query, urlQuery{key, value})
 	return ub
 }
 
 // ClearQuery removes all query parameters.
-func (ub *URLBuilder) ClearQuery() *URLBuilder {
+func (ub *URLBuilder) ClearQuery() server.URLBuilder {
 	ub.query = nil
 	ub.fragment = ""
 	return ub
 }
 
 // SetFragment stores the fragment
-func (ub *URLBuilder) SetFragment(s string) *URLBuilder {
+func (ub *URLBuilder) SetFragment(s string) server.URLBuilder {
 	ub.fragment = s
 	return ub
 }

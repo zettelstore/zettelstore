@@ -25,7 +25,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -76,8 +76,8 @@ func MakeGetHTMLZettelHandler(
 			return
 		}
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := server.GetUser(ctx)
-		builder := server.GetURLBuilderFunc(ctx)
+		user := impl.GetUser(ctx)
+		builder := impl.GetURLBuilderFunc(ctx)
 		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
 		tags := buildTagInfos(builder, zn.Meta)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
@@ -163,7 +163,7 @@ func formatMeta(m *meta.Meta, format string, env *encoder.Environment) (string, 
 	return content.String(), nil
 }
 
-func buildTagInfos(builder server.URLBuilderFunc, m *meta.Meta) []simpleLink {
+func buildTagInfos(builder impl.URLBuilderFunc, m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
 	if tags, ok := m.GetList(meta.KeyTags); ok {
 		ub := builder('h')
@@ -176,7 +176,7 @@ func buildTagInfos(builder server.URLBuilderFunc, m *meta.Meta) []simpleLink {
 	return tagInfos
 }
 
-func formatMetaKey(m *meta.Meta, builder server.URLBuilderFunc, key string, getTitle getTitleFunc) string {
+func formatMetaKey(m *meta.Meta, builder impl.URLBuilderFunc, key string, getTitle getTitleFunc) string {
 	if _, ok := m.Get(key); ok {
 		var buf bytes.Buffer
 		writeHTMLMetaValue(&buf, builder, m, key, getTitle, nil)
@@ -185,7 +185,7 @@ func formatMetaKey(m *meta.Meta, builder server.URLBuilderFunc, key string, getT
 	return ""
 }
 
-func formatBackLinks(builder server.URLBuilderFunc, m *meta.Meta, getTitle getTitleFunc) []simpleLink {
+func formatBackLinks(builder impl.URLBuilderFunc, m *meta.Meta, getTitle getTitleFunc) []simpleLink {
 	values, ok := m.GetList(meta.KeyBack)
 	if !ok || len(values) == 0 {
 		return nil

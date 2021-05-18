@@ -409,9 +409,9 @@ type subService interface {
 func (srv *myService) SetCreators(
 	createAuthManager service.CreateAuthManagerFunc,
 	createPlaceManager service.CreatePlaceManagerFunc,
-	createWebHandler service.CreateWebHandlerFunc,
+	setupWebServer service.SetupWebServerFunc,
 ) {
 	srv.auth.createManager = createAuthManager
 	srv.place.createManager = createPlaceManager
-	srv.web.createHandler = createWebHandler
+	srv.web.setupServer = setupWebServer
 }

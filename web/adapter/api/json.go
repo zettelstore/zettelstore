@@ -25,7 +25,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 type jsonIDURL struct {
@@ -74,7 +74,7 @@ var (
 	djsonFooter        = []byte("}")
 )
 
-func writeDJSONHeader(w io.Writer, builder server.URLBuilderFunc, zid id.Zid) error {
+func writeDJSONHeader(w io.Writer, builder impl.URLBuilderFunc, zid id.Zid) error {
 	_, err := w.Write(djsonHeader1)
 	if err == nil {
 		_, err = w.Write(zid.Bytes())
@@ -156,7 +156,7 @@ func getWriteMetaZettelFunc(ctx context.Context, format string,
 
 func getWriteZettelFunc(ctx context.Context, format string,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	builder := server.GetURLBuilderFunc(ctx)
+	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
@@ -201,7 +201,7 @@ func getWriteZettelFunc(ctx context.Context, format string,
 	}
 }
 func getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
-	builder := server.GetURLBuilderFunc(ctx)
+	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonMeta{
@@ -234,7 +234,7 @@ func getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
 }
 func getWriteContentFunc(ctx context.Context, format string,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	builder := server.GetURLBuilderFunc(ctx)
+	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
@@ -266,7 +266,7 @@ func getWriteContentFunc(ctx context.Context, format string,
 	}
 }
 func getWriteIDFunc(ctx context.Context, format string) writeZettelFunc {
-	builder := server.GetURLBuilderFunc(ctx)
+	builder := impl.GetURLBuilderFunc(ctx)
 	if format == "json" {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonIDURL{
@@ -331,7 +331,7 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
-func writeMetaList(w http.ResponseWriter, builder server.URLBuilderFunc, m *meta.Meta, metaList []*meta.Meta) error {
+func writeMetaList(w http.ResponseWriter, builder impl.URLBuilderFunc, m *meta.Meta, metaList []*meta.Meta) error {
 	outData := jsonMetaList{
 		ID:   m.Zid.String(),
 		URL:  builder('z').SetZid(m.Zid).String(),

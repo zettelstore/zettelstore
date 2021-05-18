@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 // ErrNoSuchFormat signals an unsupported encoding format
@@ -56,7 +56,7 @@ func MakeLinkAdapter(
 		}
 		if origRef.State == ast.RefStateBased {
 			newLink := *origLink
-			urlPrefix := server.GetURLPrefix(ctx)
+			urlPrefix := impl.GetURLPrefix(ctx)
 			newRef := ast.ParseReference(urlPrefix + origRef.Value[1:])
 			newRef.State = ast.RefStateHosted
 			newLink.Ref = newRef
@@ -79,7 +79,7 @@ func MakeLinkAdapter(
 		}
 		var newRef *ast.Reference
 		if err == nil {
-			ub := server.GetURLBuilderFunc(ctx)(key).SetZid(zid)
+			ub := impl.GetURLBuilderFunc(ctx)(key).SetZid(zid)
 			if part != "" {
 				ub.AppendQuery("_part", part)
 			}
@@ -108,7 +108,7 @@ func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.Im
 		if origImage.Ref == nil {
 			return origImage
 		}
-		builder := server.GetURLBuilderFunc(ctx)
+		builder := impl.GetURLBuilderFunc(ctx)
 		switch origImage.Ref.State {
 		case ast.RefStateInvalid:
 			return createZettelImage(builder, origImage, id.EmojiZid, ast.RefStateInvalid)
@@ -127,7 +127,7 @@ func MakeImageAdapter(ctx context.Context, getMeta usecase.GetMeta) func(*ast.Im
 	}
 }
 
-func createZettelImage(builder server.URLBuilderFunc, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
+func createZettelImage(builder impl.URLBuilderFunc, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
 	newImage := *origImage
 	newImage.Ref = ast.ParseReference(
 		builder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery("_format", "raw").String())

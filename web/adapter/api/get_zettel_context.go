@@ -17,7 +17,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
@@ -44,6 +44,6 @@ func MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		writeMetaList(w, server.GetURLBuilderFunc(ctx), metaList[0], metaList[1:])
+		writeMetaList(w, impl.GetURLBuilderFunc(ctx), metaList[0], metaList[1:])
 	}
 }

@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 type jsonGetLinks struct {
@@ -65,7 +65,7 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 			return
 		}
 
-		builder := server.GetURLBuilderFunc(ctx)
+		builder := impl.GetURLBuilderFunc(ctx)
 		outData := jsonGetLinks{
 			ID:  zid.String(),
 			URL: builder('z').SetZid(zid).String(),
@@ -87,7 +87,7 @@ func MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 	}
 }
 
-func setupLinkJSONRefs(builder server.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func setupLinkJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
 	if matter&matterIncoming != 0 {
 		outData.Links.Incoming = []jsonIDURL{}
 	}
@@ -103,7 +103,7 @@ func setupLinkJSONRefs(builder server.URLBuilderFunc, summary collect.Summary, m
 	}
 }
 
-func setupImageJSONRefs(builder server.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func setupImageJSONRefs(builder impl.URLBuilderFunc, summary collect.Summary, matter matterType, outData *jsonGetLinks) {
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images)
 	if matter&matterOutgoing != 0 {
 		outData.Images.Outgoing = idURLRefs(builder, zetRefs)
@@ -116,7 +116,7 @@ func setupImageJSONRefs(builder server.URLBuilderFunc, summary collect.Summary, 
 	}
 }
 
-func idURLRefs(builder server.URLBuilderFunc, refs []*ast.Reference) []jsonIDURL {
+func idURLRefs(builder impl.URLBuilderFunc, refs []*ast.Reference) []jsonIDURL {
 	result := make([]jsonIDURL, 0, len(refs))
 	for _, ref := range refs {
 		path := ref.URL.Path

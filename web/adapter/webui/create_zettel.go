@@ -26,7 +26,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 // MakeGetCopyZettelHandler creates a new HTTP handler to display the
@@ -126,7 +126,7 @@ func renderZettelForm(
 	title, heading string,
 ) {
 	ctx := r.Context()
-	user := server.GetUser(ctx)
+	user := impl.GetUser(ctx)
 	m := zettel.Meta
 	var base baseData
 	te.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
@@ -162,7 +162,7 @@ func MakePostCreateZettelHandler(te *TemplateEngine, createZettel usecase.Create
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := server.GetURLBuilderFunc(ctx)
+		builder := impl.GetURLBuilderFunc(ctx)
 		redirectFound(w, r, builder('h').SetZid(newZid))
 	}
 }

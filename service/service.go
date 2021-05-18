@@ -12,11 +12,10 @@
 package service
 
 import (
-	"net/http"
-
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/web/server"
 )
 
 // Service is the main internal service.
@@ -64,7 +63,7 @@ type Service interface {
 	GetSubStatistics(subsrv Subservice) []KeyValue
 
 	// SetCreators store the configuration data for the next start of the web server.
-	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, CreateWebHandlerFunc)
+	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, SetupWebServerFunc)
 }
 
 // Main references the main service.
@@ -135,8 +134,8 @@ type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, erro
 // CreatePlaceManagerFunc is called to create a new place manager.
 type CreatePlaceManagerFunc func(authManager auth.Manager) (place.Manager, error)
 
-// CreateWebHandlerFunc is called to create a new web service handler.
-type CreateWebHandlerFunc func(
-	urlPrefix string,
+// SetupWebServerFunc is called to create a new web service handler.
+type SetupWebServerFunc func(
+	webServer server.Server,
 	placeManager place.Manager,
-	authManager auth.Manager) (http.Handler, error)
+	authManager auth.Manager) error

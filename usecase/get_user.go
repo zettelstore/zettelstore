@@ -91,8 +91,8 @@ func NewGetUserByZid(port GetUserByZidPort) GetUserByZid {
 	return GetUserByZid{port: port}
 }
 
-// Run executes the use case.
-func (uc GetUserByZid) Run(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error) {
+// GetUser executes the use case.
+func (uc GetUserByZid) GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error) {
 	userMeta, err := uc.port.GetMeta(place.NoEnrichContext(ctx), zid)
 	if err != nil {
 		return nil, err

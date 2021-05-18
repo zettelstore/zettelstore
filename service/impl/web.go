@@ -17,13 +17,14 @@ import (
 
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 type webSub struct {
 	subConfig
-	mxService     sync.RWMutex
-	srvw          *server.Server
-	createHandler service.CreateWebHandlerFunc
+	mxService   sync.RWMutex
+	srvw        server.Server
+	setupServer service.SetupWebServerFunc
 }
 
 func (ws *webSub) Initialize() {
@@ -62,12 +63,12 @@ func (ws *webSub) Start(srv *myService) error {
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
 
-	handler, err := srv.web.createHandler(urlPrefix, srv.place.manager, srv.auth.manager)
+	srvw := impl.New(listenAddr, urlPrefix)
+	err := srv.web.setupServer(srvw, srv.place.manager, srv.auth.manager)
 	if err != nil {
-		srv.doLog("Unable to create handler for Web Service:", err)
+		srv.doLog("Unable to create Web Server:", err)
 		return err
 	}
-	srvw := server.New(listenAddr, handler)
 	if srv.debug {
 		srvw.SetDebug()
 	}

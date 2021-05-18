@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/web/server/impl"
 )
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
@@ -49,7 +49,7 @@ func MakeGetRenameZettelHandler(
 			return
 		}
 
-		user := server.GetUser(ctx)
+		user := impl.GetUser(ctx)
 		var base baseData
 		te.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
 		te.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
@@ -91,7 +91,7 @@ func MakePostRenameZettelHandler(te *TemplateEngine, renameZettel usecase.Rename
 			te.reportError(ctx, w, err)
 			return
 		}
-		builder := server.GetURLBuilderFunc(ctx)
+		builder := impl.GetURLBuilderFunc(ctx)
 		redirectFound(w, r, builder('h').SetZid(newZid))
 	}
 }

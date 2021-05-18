@@ -15,7 +15,6 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
 	"zettelstore.de/z/service"
+	"zettelstore.de/z/web/server"
 )
 
 const (
@@ -196,8 +196,9 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			return impl.New(readonly, owner), nil
 		},
 		createManager,
-		func(urlPrefix string, plMgr place.Manager, authMgr auth.Manager) (http.Handler, error) {
-			return setupRouting(urlPrefix, plMgr, authMgr), nil
+		func(srv server.Server, plMgr place.Manager, authMgr auth.Manager) error {
+			setupRouting(srv, plMgr, authMgr)
+			return nil
 		},
 	)
 	return nil

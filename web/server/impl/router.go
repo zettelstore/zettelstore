@@ -8,13 +8,15 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package server provides the Zettelstore web service.
-package server
+// Package impl provides the Zettelstore web service.
+package impl
 
 import (
 	"context"
 	"net/http"
 	"regexp"
+
+	"zettelstore.de/z/web/server"
 )
 
 type (
@@ -88,10 +90,12 @@ func (rt *Router) AddZettelRoute(key byte, httpMethod string, handler http.Handl
 }
 
 // NewURLBuilder creates a new URL builder.
-func (rt *Router) NewURLBuilder(key byte) *URLBuilder { return &URLBuilder{router: rt, key: key} }
+func (rt *Router) NewURLBuilder(key byte) server.URLBuilder {
+	return &URLBuilder{router: rt, key: key}
+}
 
 // URLBuilderFunc creates a new URLBuilder.
-type URLBuilderFunc func(key byte) *URLBuilder
+type URLBuilderFunc func(key byte) server.URLBuilder
 
 type ctxKeyTypeRouter struct{}
 

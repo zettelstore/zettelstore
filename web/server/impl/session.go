@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package server provides the Zettelstore web service.
-package server
+// Package impl provides the Zettelstore web service.
+package impl
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/service"
-	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/server"
 )
 
 const sessionName = "zsession"
@@ -53,11 +53,11 @@ func ClearToken(ctx context.Context, w http.ResponseWriter) context.Context {
 // Handler enriches the request context with optional user information.
 type Handler struct {
 	next         http.Handler
-	getUserByZid usecase.GetUserByZid
+	getUserByZid server.UserRetriever
 }
 
 // NewHandler creates a new handler.
-func NewHandler(next http.Handler, getUserByZid usecase.GetUserByZid) *Handler {
+func NewHandler(next http.Handler, getUserByZid server.UserRetriever) *Handler {
 	return &Handler{
 		next:         next,
 		getUserByZid: getUserByZid,
@@ -130,7 +130,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	user, err := h.getUserByZid.Run(ctx, tokenData.Zid, tokenData.Ident)
+	user, err := h.getUserByZid.GetUser(ctx, tokenData.Zid, tokenData.Ident)
 	if err != nil {
 		h.next.ServeHTTP(w, r)
 		return

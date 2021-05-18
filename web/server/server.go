@@ -13,69 +13,59 @@ package server
 
 import (
 	"context"
-	"net"
 	"net/http"
-	"time"
+
+	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 )
 
-// Server timeout values
-const (
-	shutdownTimeout = 5 * time.Second
-	readTimeout     = 5 * time.Second
-	writeTimeout    = 10 * time.Second
-	idleTimeout     = 120 * time.Second
-)
+type URLBuilder interface {
+	// Clone an URLBuilder
+	Clone() URLBuilder
 
-// Server is a HTTP server.
-type Server struct {
-	*http.Server
-	waitStop chan struct{}
+	// SetZid sets the zettel identifier.
+	SetZid(zid id.Zid) URLBuilder
+
+	// AppendPath adds a new path element
+	AppendPath(p string) URLBuilder
+
+	// AppendQuery adds a new query parameter
+	AppendQuery(key, value string) URLBuilder
+
+	// ClearQuery removes all query parameters.
+	ClearQuery() URLBuilder
+
+	// SetFragment stores the fragment
+	SetFragment(s string) URLBuilder
+
+	// String produces a string value.
+	String() string
 }
 
-// New creates a new HTTP server object.
-func New(addr string, handler http.Handler) *Server {
-	if addr == "" {
-		addr = ":http"
-	}
-	srv := &Server{
-		Server: &http.Server{
-			Addr:    addr,
-			Handler: handler,
-
-			// See: https://blog.cloudflare.com/exposing-go-on-the-internet/
-			ReadTimeout:  readTimeout,
-			WriteTimeout: writeTimeout,
-			IdleTimeout:  idleTimeout,
-		},
-		waitStop: make(chan struct{}),
-	}
-	return srv
+// UserRetriever allows to retrieve user data based on a given zettel identifier.
+type UserRetriever interface {
+	GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error)
 }
 
-// SetDebug enables debugging goroutines that are started by the server.
-// Basically, just the timeout values are reset. This method should be called
-// before running the server.
-func (srv *Server) SetDebug() {
-	srv.ReadTimeout = 0
-	srv.WriteTimeout = 0
-	srv.IdleTimeout = 0
+// Router allows to state routes for various URL paths.
+type Router interface {
+	Handle(pattern string, handler http.Handler)
+	AddListRoute(key byte, httpMethod string, handler http.Handler)
+	AddZettelRoute(key byte, httpMethod string, handler http.Handler)
+	SetUserRetriever(ur UserRetriever)
 }
 
-// Run starts the web server, but does not wait for its completion.
-func (srv *Server) Run() error {
-	ln, err := net.Listen("tcp", srv.Addr)
-	if err != nil {
-		return err
-	}
-
-	go func() { srv.Serve(ln) }()
-	return nil
+// Auth is.
+type Auth interface {
+	NewURLBuilder(key byte) URLBuilder
 }
 
-// Stop the web server.
-func (srv *Server) Stop() error {
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
+// Server is the main web server for accessing Zettelstore via HTTP.
+type Server interface {
+	Router
+	Auth
 
-	return srv.Shutdown(ctx)
+	SetDebug()
+	Run() error
+	Stop() error
 }
