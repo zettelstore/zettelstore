@@ -33,7 +33,7 @@ import (
 	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server/impl"
+	"zettelstore.de/z/web/server"
 )
 
 type templatePlace interface {
@@ -47,6 +47,7 @@ type templatePlace interface {
 
 // TemplateEngine is the way to render HTML templates.
 type TemplateEngine struct {
+	auth          server.Auth
 	place         templatePlace
 	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
@@ -63,21 +64,22 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(authz auth.AuthzManager, mgr place.Manager, pol auth.Policy, builder impl.URLBuilderFunc) *TemplateEngine {
+func NewTemplateEngine(auth server.Auth, authz auth.AuthzManager, mgr place.Manager, pol auth.Policy) *TemplateEngine {
 	te := &TemplateEngine{
+		auth:   auth,
 		place:  mgr,
 		policy: pol,
 
-		stylesheetURL: builder('z').SetZid(
+		stylesheetURL: auth.NewURLBuilder('z').SetZid(
 			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery(
 			"_part", "content").String(),
-		homeURL:       builder('/').String(),
-		listZettelURL: builder('h').String(),
-		listRolesURL:  builder('h').AppendQuery("_l", "r").String(),
-		listTagsURL:   builder('h').AppendQuery("_l", "t").String(),
-		withAuth:      authz.WithAuth(),
-		loginURL:      builder('a').String(),
-		searchURL:     builder('f').String(),
+		homeURL:       auth.NewURLBuilder('/').String(),
+		listZettelURL: auth.NewURLBuilder('h').String(),
+		listRolesURL:  auth.NewURLBuilder('h').AppendQuery("_l", "r").String(),
+		listTagsURL:   auth.NewURLBuilder('h').AppendQuery("_l", "t").String(),
+		withAuth:      authz.WithAuthz(),
+		loginURL:      auth.NewURLBuilder('a').String(),
+		searchURL:     auth.NewURLBuilder('f').String(),
 	}
 	te.observe(change.Info{Reason: change.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(te.observe)
@@ -186,10 +188,9 @@ func (te *TemplateEngine) makeBaseData(
 	}
 	userIsValid := user != nil
 	if userIsValid {
-		builder := impl.GetURLBuilderFunc(ctx)
-		userZettelURL = builder('h').SetZid(user.Zid).String()
+		userZettelURL = te.auth.NewURLBuilder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
-		userLogoutURL = builder('a').SetZid(user.Zid).String()
+		userLogoutURL = te.auth.NewURLBuilder('a').SetZid(user.Zid).String()
 	}
 
 	data.Lang = lang
@@ -222,7 +223,6 @@ func htmlAttrNewWindow(hasURL bool) string {
 }
 
 func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
-	builder := impl.GetURLBuilderFunc(ctx)
 	ctx = place.NoEnrichContext(ctx)
 	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
@@ -255,7 +255,7 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 		}
 		result = append(result, simpleLink{
 			Text: menuTitle,
-			URL:  builder('g').SetZid(m.Zid).String(),
+			URL:  te.auth.NewURLBuilder('g').SetZid(m.Zid).String(),
 		})
 	}
 	return result
@@ -275,7 +275,7 @@ func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter
 	if code == http.StatusInternalServerError {
 		log.Printf("%v: %v", text, err)
 	}
-	user := impl.GetUser(ctx)
+	user := te.auth.GetUser(ctx)
 	var base baseData
 	te.makeBaseData(ctx, meta.ValueLangEN, "Error", user, &base)
 	te.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
@@ -305,10 +305,10 @@ func (te *TemplateEngine) renderTemplateStatus(
 		adapter.InternalServerError(w, "Unable to get template", err)
 		return
 	}
-	if user := impl.GetUser(ctx); user != nil {
+	if user := te.auth.GetUser(ctx); user != nil {
 		htmlLifetime, _ := startup.TokenLifetime()
 		if tok, err1 := token.GetToken(user, htmlLifetime, token.KindHTML); err1 == nil {
-			impl.SetToken(w, tok, htmlLifetime)
+			te.auth.SetToken(w, tok, htmlLifetime)
 		}
 	}
 	var content bytes.Buffer

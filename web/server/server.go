@@ -14,6 +14,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -57,7 +58,9 @@ type Router interface {
 
 // Auth is.
 type Auth interface {
+	GetUser(context.Context) *meta.Meta
 	NewURLBuilder(key byte) URLBuilder
+	SetToken(w http.ResponseWriter, token []byte, d time.Duration)
 }
 
 // Server is the main web server for accessing Zettelstore via HTTP.

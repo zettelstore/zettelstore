@@ -12,8 +12,11 @@
 package impl
 
 import (
+	"context"
 	"net/http"
+	"time"
 
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
 )
 
@@ -44,8 +47,17 @@ func (srv *myServer) AddZettelRoute(key byte, httpMethod string, handler http.Ha
 func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
 	srv.server.Handler = NewHandler(srv.router, ur)
 }
+func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
+	if data := GetAuthData(ctx); data != nil {
+		return data.User
+	}
+	return nil
+}
 func (srv *myServer) NewURLBuilder(key byte) server.URLBuilder {
 	return srv.router.NewURLBuilder(key)
+}
+func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Duration) {
+	SetToken(w, token, d)
 }
 func (srv *myServer) SetDebug()   { srv.server.SetDebug() }
 func (srv *myServer) Run() error  { return srv.server.Run() }

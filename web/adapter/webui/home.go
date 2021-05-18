@@ -50,7 +50,7 @@ func MakeGetRootHandler(authz auth.AuthzManager, te *TemplateEngine, s getRootSt
 			redirectFound(w, r, builder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && authz.WithAuth() && impl.GetUser(ctx) == nil {
+		if place.IsErrNotAllowed(err) && authz.WithAuthz() && impl.GetUser(ctx) == nil {
 			redirectFound(w, r, builder('a'))
 			return
 		}

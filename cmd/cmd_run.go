@@ -59,7 +59,7 @@ func doRun(debug bool) (int, error) {
 
 func setupRouting(webSrv server.Server, placeManager place.Manager, authManager auth.Manager) {
 	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(placeManager)
-	te := webui.NewTemplateEngine(authManager, placeManager, authPolicy, webSrv.NewURLBuilder)
+	te := webui.NewTemplateEngine(webSrv, authManager, placeManager, authPolicy)
 
 	ucAuthenticate := usecase.NewAuthenticate(authManager, placeManager)
 	ucGetMeta := usecase.NewGetMeta(protectedPlaceManager)

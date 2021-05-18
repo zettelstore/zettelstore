@@ -27,7 +27,7 @@ import (
 // MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
 func MakePostLoginHandlerAPI(authz auth.AuthzManager, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authz.WithAuth() {
+		if !authz.WithAuthz() {
 			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return

@@ -43,7 +43,7 @@ func NewGetUser(authz auth.AuthzManager, port GetUserPort) GetUser {
 
 // Run executes the use case.
 func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
-	if !uc.authz.WithAuth() {
+	if !uc.authz.WithAuthz() {
 		return nil, nil
 	}
 	ctx = place.NoEnrichContext(ctx)

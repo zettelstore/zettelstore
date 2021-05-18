@@ -49,7 +49,7 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
 func MakePostLoginHandlerHTML(authz auth.AuthzManager, te *TemplateEngine, auth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authz.WithAuth() {
+		if !authz.WithAuthz() {
 			builder := impl.GetURLBuilderFunc(r.Context())
 			redirectFound(w, r, builder('/'))
 			return
