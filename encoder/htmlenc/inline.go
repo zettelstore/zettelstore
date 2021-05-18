@@ -302,7 +302,9 @@ func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
 		v.writeHTMLEscaped(ln.Text) // writeCommentEscaped
 		v.b.WriteString(" -->")
 	case ast.LiteralHTML:
-		v.b.WriteString(ln.Text)
+		if !ignoreHTMLText(ln.Text) {
+			v.b.WriteString(ln.Text)
+		}
 	default:
 		panic(fmt.Sprintf("Unknown literal code %v", ln.Code))
 	}

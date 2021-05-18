@@ -43,7 +43,9 @@ type markdownTestCase struct {
 
 // exceptions lists all CommonMark tests that should not be tested for identical HTML output
 var exceptions = []string{
-	" - foo\n   - bar\n\t - baz\n",                             // 9
+	" - foo\n   - bar\n\t - baz\n", // 9
+	"<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\nokay\n", // 140
+	"<script>\nfoo\n</script>1. *bar*\n",                       // 147
 	"- foo\n  - bar\n    - baz\n      - boo\n",                 // 264
 	"10) foo\n    - bar\n",                                     // 266
 	"- # Foo\n- Bar\n  ---\n  baz\n",                           // 270

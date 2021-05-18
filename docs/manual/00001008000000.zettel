@@ -3,16 +3,17 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
+modified: 20210518101643
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
 Of course, Zettelmarkup plays an important role.
 However, with the exception of zettel titles, you can use any (markup) language that is supported:
 
-* Markdown
-* Images: GIF, PNG, JPEG, SVG
 * CSS
 * HTML template data
+* Image formats: GIF, PNG, JPEG, SVG
+* Markdown
 * Plain text, not further interpreted
 
 The [[metadata key|00001006020000#syntax]] ""''syntax''"" specifies which language should be used.
@@ -27,7 +28,7 @@ The following syntax values are supported:
 ; [!markdown]''markdown'', [!md]''md''
 : For those who desperately need [[Markdown|https://daringfireball.net/projects/markdown/]].
   Since the world of Markdown is so diverse, a [[CommonMark|https://commonmark.org]] parser is used.
-  See [[Use Markdown as the main markup language of Zettelstore|00001008010000]].
+  See [[Use Markdown within Zettelstore|00001008010000]].
 ; [!mustache]''mustache''
 : A [[Mustache template|https://mustache.github.io/]], used when rendering a zettel as HTML.
 ; [!none]''none''

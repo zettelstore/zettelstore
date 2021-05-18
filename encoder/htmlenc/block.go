@@ -56,11 +56,30 @@ func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
 
 	case ast.VerbatimHTML:
 		for _, line := range vn.Lines {
-			v.b.WriteStrings(line, "\n")
+			if !ignoreHTMLText(line) {
+				v.b.WriteStrings(line, "\n")
+			}
 		}
 	default:
 		panic(fmt.Sprintf("Unknown verbatim code %v", vn.Code))
 	}
+}
+
+var htmlSnippetsIgnore = []string{
+	"<script",
+	"</script",
+	"<iframe",
+	"</iframe",
+}
+
+func ignoreHTMLText(s string) bool {
+	lower := strings.ToLower(s)
+	for _, snippet := range htmlSnippetsIgnore {
+		if strings.Contains(lower, snippet) {
+			return true
+		}
+	}
+	return false
 }
 
 var specialSpanAttr = map[string]bool{
