@@ -12,10 +12,11 @@
 package impl
 
 import (
-	"context"
 	"net/http"
 	"regexp"
+	"strings"
 
+	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/web/server"
 )
 
@@ -24,36 +25,30 @@ type (
 	routingTable  map[byte]methodHandler
 )
 
-// Router handles all routing for zettelstore.
-type Router struct {
-	urlPrefix string
-	minKey    byte
-	maxKey    byte
-	reURL     *regexp.Regexp
-	tables    [2]routingTable
-	mux       *http.ServeMux
+// httpRouter handles all routing for zettelstore.
+type httpRouter struct {
+	urlPrefix   string
+	minKey      byte
+	maxKey      byte
+	reURL       *regexp.Regexp
+	listTable   routingTable
+	zettelTable routingTable
+	ur          server.UserRetriever
+	mux         *http.ServeMux
 }
 
-const (
-	indexList   = 0
-	indexZettel = 1
-)
-
-// NewRouter creates a new, empty router with the given root handler.
-func NewRouter(urlPrefix string) *Router {
-	router := &Router{
-		urlPrefix: urlPrefix,
-		minKey:    255,
-		maxKey:    0,
-		reURL:     regexp.MustCompile("^$"),
-		mux:       http.NewServeMux(),
-	}
-	router.tables[indexList] = make(routingTable)
-	router.tables[indexZettel] = make(routingTable)
-	return router
+// initializeRouter creates a new, empty router with the given root handler.
+func (rt *httpRouter) initializeRouter(urlPrefix string) {
+	rt.urlPrefix = urlPrefix
+	rt.minKey = 255
+	rt.maxKey = 0
+	rt.reURL = regexp.MustCompile("^$")
+	rt.mux = http.NewServeMux()
+	rt.listTable = make(routingTable)
+	rt.zettelTable = make(routingTable)
 }
 
-func (rt *Router) addRoute(key byte, httpMethod string, handler http.Handler, index int) {
+func (rt *httpRouter) addRoute(key byte, httpMethod string, handler http.Handler, table routingTable) {
 	// Set minKey and maxKey; re-calculate regexp.
 	if key < rt.minKey || rt.maxKey < key {
 		if key < rt.minKey {
@@ -66,68 +61,35 @@ func (rt *Router) addRoute(key byte, httpMethod string, handler http.Handler, in
 			"^/(?:([" + string(rt.minKey) + "-" + string(rt.maxKey) + "])(?:/(?:([0-9]{14})/?)?)?)$")
 	}
 
-	mh, hasKey := rt.tables[index][key]
+	mh, hasKey := table[key]
 	if !hasKey {
 		mh = make(methodHandler)
-		rt.tables[index][key] = mh
+		table[key] = mh
 	}
 	mh[httpMethod] = handler
 	if httpMethod == http.MethodGet {
-		if _, hasHead := rt.tables[index][key][http.MethodHead]; !hasHead {
-			rt.tables[index][key][http.MethodHead] = handler
+		if _, hasHead := table[key][http.MethodHead]; !hasHead {
+			table[key][http.MethodHead] = handler
 		}
 	}
 }
 
-// AddListRoute adds a route for the given key and HTTP method to work with a list.
-func (rt *Router) AddListRoute(key byte, httpMethod string, handler http.Handler) {
-	rt.addRoute(key, httpMethod, handler, indexList)
+// addListRoute adds a route for the given key and HTTP method to work with a list.
+func (rt *httpRouter) addListRoute(key byte, httpMethod string, handler http.Handler) {
+	rt.addRoute(key, httpMethod, handler, rt.listTable)
 }
 
-// AddZettelRoute adds a route for the given key and HTTP method to work with a zettel.
-func (rt *Router) AddZettelRoute(key byte, httpMethod string, handler http.Handler) {
-	rt.addRoute(key, httpMethod, handler, indexZettel)
-}
-
-// NewURLBuilder creates a new URL builder.
-func (rt *Router) NewURLBuilder(key byte) server.URLBuilder {
-	return &URLBuilder{router: rt, key: key}
-}
-
-// URLBuilderFunc creates a new URLBuilder.
-type URLBuilderFunc func(key byte) server.URLBuilder
-
-type ctxKeyTypeRouter struct{}
-
-var ctxKeyRouter ctxKeyTypeRouter
-
-func (rt *Router) updateRequest(r *http.Request) *http.Request {
-	ctx := r.Context()
-	return r.WithContext(context.WithValue(ctx, ctxKeyRouter, rt))
-}
-
-// GetURLPrefix returns the URL prefix.
-func GetURLPrefix(ctx context.Context) string {
-	if rt, ok := ctx.Value(ctxKeyRouter).(*Router); ok {
-		return rt.urlPrefix
-	}
-	return "/"
-}
-
-// GetURLBuilderFunc returns a function that creates an URL builder.
-func GetURLBuilderFunc(ctx context.Context) URLBuilderFunc {
-	if rt, ok := ctx.Value(ctxKeyRouter).(*Router); ok {
-		return rt.NewURLBuilder
-	}
-	return nil
+// addZettelRoute adds a route for the given key and HTTP method to work with a zettel.
+func (rt *httpRouter) addZettelRoute(key byte, httpMethod string, handler http.Handler) {
+	rt.addRoute(key, httpMethod, handler, rt.zettelTable)
 }
 
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
-func (rt *Router) Handle(pattern string, handler http.Handler) {
+func (rt *httpRouter) Handle(pattern string, handler http.Handler) {
 	rt.mux.Handle(pattern, handler)
 }
 
-func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
 		if len(r.URL.Path) < prefixLen || r.URL.Path[:prefixLen] != rt.urlPrefix {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -138,19 +100,72 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	match := rt.reURL.FindStringSubmatch(r.URL.Path)
 	if len(match) == 3 {
 		key := match[1][0]
-		index := indexZettel
+		table := rt.zettelTable
 		if match[2] == "" {
-			index = indexList
+			table = rt.listTable
 		}
-		if mh, ok := rt.tables[index][key]; ok {
+		if mh, ok := table[key]; ok {
 			if handler, ok := mh[r.Method]; ok {
 				r.URL.Path = "/" + match[2]
-				handler.ServeHTTP(w, rt.updateRequest(r))
+				handler.ServeHTTP(w, addUserContext(r, rt.ur))
 				return
 			}
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 	}
-	rt.mux.ServeHTTP(w, rt.updateRequest(r))
+	rt.mux.ServeHTTP(w, addUserContext(r, rt.ur))
+}
+
+func addUserContext(r *http.Request, ur server.UserRetriever) *http.Request {
+	if ur == nil {
+		return r
+	}
+	k := token.KindJSON
+	t := getHeaderToken(r)
+	if len(t) == 0 {
+		k = token.KindHTML
+		t = getSessionToken(r)
+	}
+	if len(t) == 0 {
+		return r
+	}
+	tokenData, err := token.CheckToken(t, k)
+	if err != nil {
+		return r
+	}
+	ctx := r.Context()
+	user, err := ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
+	if err != nil {
+		return r
+	}
+	return r.WithContext(updateContext(ctx, user, &tokenData))
+}
+
+func getSessionToken(r *http.Request) []byte {
+	cookie, err := r.Cookie(sessionName)
+	if err != nil {
+		return nil
+	}
+	return []byte(cookie.Value)
+}
+
+func getHeaderToken(r *http.Request) []byte {
+	h := r.Header["Authorization"]
+	if h == nil {
+		return nil
+	}
+
+	// “Multiple message-header fields with the same field-name MAY be
+	// present in a message if and only if the entire field-value for that
+	// header field is defined as a comma-separated list.”
+	// — “Hypertext Transfer Protocol” RFC 2616, subsection 4.2
+	auth := strings.Join(h, ", ")
+
+	const prefix = "Bearer "
+	// RFC 2617, subsection 1.2 defines the scheme token as case-insensitive.
+	if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
+		return nil
+	}
+	return []byte(auth[len(prefix):])
 }

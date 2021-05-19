@@ -23,7 +23,7 @@ type urlQuery struct{ key, val string }
 
 // URLBuilder should be used to create zettelstore URLs.
 type URLBuilder struct {
-	router   *Router
+	router   *httpRouter
 	key      byte
 	path     []string
 	query    []urlQuery

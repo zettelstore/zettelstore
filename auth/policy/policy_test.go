@@ -68,11 +68,11 @@ func (a *testAuthzManager) IsReadonly() bool        { return a.readOnly }
 func (a *testAuthzManager) Owner() id.Zid           { return ownerZid }
 func (a *testAuthzManager) IsOwner(zid id.Zid) bool { return zid == ownerZid }
 
-func (a *testAuthzManager) WithAuthz() bool { return a.withAuth }
+func (a *testAuthzManager) WithAuth() bool { return a.withAuth }
 
 func (a *testAuthzManager) GetUserRole(user *meta.Meta) meta.UserRole {
 	if user == nil {
-		if a.WithAuthz() {
+		if a.WithAuth() {
 			return meta.UserRoleUnknown
 		}
 		return meta.UserRoleOwner

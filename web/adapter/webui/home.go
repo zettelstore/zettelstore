@@ -49,7 +49,7 @@ func MakeGetRootHandler(ab server.AuthBuilder, authz auth.AuthzManager, te *Temp
 			redirectFound(w, r, ab.NewURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && authz.WithAuthz() && ab.GetUser(ctx) == nil {
+		if place.IsErrNotAllowed(err) && authz.WithAuth() && ab.GetUser(ctx) == nil {
 			redirectFound(w, r, ab.NewURLBuilder('a'))
 			return
 		}

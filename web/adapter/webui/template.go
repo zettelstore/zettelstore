@@ -77,7 +77,7 @@ func NewTemplateEngine(ab server.AuthBuilder, authz auth.AuthzManager, mgr place
 		listZettelURL: ab.NewURLBuilder('h').String(),
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
-		withAuth:      authz.WithAuthz(),
+		withAuth:      authz.WithAuth(),
 		loginURL:      ab.NewURLBuilder('a').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}

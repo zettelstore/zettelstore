@@ -126,5 +126,7 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 	webSrv.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
 		webSrv, ucParseZettel, ucGetMeta))
 
-	webSrv.SetUserRetriever(usecase.NewGetUserByZid(placeManager))
+	if authManager.WithAuth() {
+		webSrv.SetUserRetriever(usecase.NewGetUserByZid(placeManager))
+	}
 }

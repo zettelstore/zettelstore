@@ -13,9 +13,7 @@ package webui
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"time"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/token"
@@ -49,54 +47,36 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
 func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te *TemplateEngine, ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authz.WithAuthz() {
+		if !authz.WithAuth() {
 			redirectFound(w, r, ab.NewURLBuilder('/'))
 			return
 		}
 		htmlDur, _ := startup.TokenLifetime()
-		authenticateViaHTML(ab, te, ucAuth, w, r, htmlDur)
-	}
-}
+		ctx := r.Context()
+		ident, cred, ok := adapter.GetCredentialsViaForm(r)
+		if !ok {
+			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
+			return
+		}
+		token, err := ucAuth.Run(ctx, ident, cred, htmlDur, token.KindHTML)
+		if err != nil {
+			te.reportError(ctx, w, err)
+			return
+		}
+		if token == nil {
+			renderLoginForm(ab.ClearToken(ctx, w), w, te, true)
+			return
+		}
 
-func authenticateViaHTML(
-	ab server.AuthBuilder,
-	te *TemplateEngine,
-	ucAuth usecase.Authenticate,
-	w http.ResponseWriter,
-	r *http.Request,
-	authDuration time.Duration,
-) {
-	ctx := r.Context()
-	ident, cred, ok := adapter.GetCredentialsViaForm(r)
-	if !ok {
-		te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
-		return
+		ab.SetToken(w, token, htmlDur)
+		redirectFound(w, r, ab.NewURLBuilder('/'))
 	}
-	token, err := ucAuth.Run(ctx, ident, cred, authDuration, token.KindHTML)
-	if err != nil {
-		te.reportError(ctx, w, err)
-		return
-	}
-	if token == nil {
-		renderLoginForm(ab.ClearToken(ctx, w), w, te, true)
-		return
-	}
-
-	ab.SetToken(w, token, authDuration)
-	redirectFound(w, r, ab.NewURLBuilder('/'))
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
 func MakeGetLogoutHandler(ab server.AuthBuilder, te *TemplateEngine) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			te.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Logout not possible in format %q", format)))
-			return
-		}
-
-		ab.ClearToken(ctx, w)
+		ab.ClearToken(r.Context(), w)
 		redirectFound(w, r, ab.NewURLBuilder('/'))
 	}
 }

@@ -23,31 +23,29 @@ import (
 )
 
 type myServer struct {
-	server *HTTPServer
-	router *Router
+	server httpServer
+	router httpRouter
 }
 
 // New creates a new web server.
 func New(listenAddr, urlPrefix string) server.Server {
-	router := NewRouter(urlPrefix)
-	srv := &myServer{
-		server: NewHTTPServer(listenAddr, router),
-		router: router,
-	}
-	return srv
+	srv := myServer{}
+	srv.router.initializeRouter(urlPrefix)
+	srv.server.initializeHTTPServer(listenAddr, &srv.router)
+	return &srv
 }
 
 func (srv *myServer) Handle(pattern string, handler http.Handler) {
 	srv.router.Handle(pattern, handler)
 }
 func (srv *myServer) AddListRoute(key byte, httpMethod string, handler http.Handler) {
-	srv.router.AddListRoute(key, httpMethod, handler)
+	srv.router.addListRoute(key, httpMethod, handler)
 }
 func (srv *myServer) AddZettelRoute(key byte, httpMethod string, handler http.Handler) {
-	srv.router.AddZettelRoute(key, httpMethod, handler)
+	srv.router.addZettelRoute(key, httpMethod, handler)
 }
 func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
-	srv.server.Handler = newSessionHandler(srv.router, ur)
+	srv.router.ur = ur
 }
 func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
 	if data := srv.GetAuthData(ctx); data != nil {
@@ -56,7 +54,7 @@ func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
 	return nil
 }
 func (srv *myServer) NewURLBuilder(key byte) server.URLBuilder {
-	return srv.router.NewURLBuilder(key)
+	return &URLBuilder{router: &srv.router, key: key}
 }
 func (srv *myServer) GetURLPrefix() string {
 	return srv.router.urlPrefix

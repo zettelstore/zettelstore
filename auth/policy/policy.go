@@ -28,7 +28,7 @@ func newPolicy(
 	} else {
 		pol = &defaultPolicy{manager}
 	}
-	if manager.WithAuthz() {
+	if manager.WithAuth() {
 		pol = &ownerPolicy{
 			manager:       manager,
 			expertMode:    expertMode,

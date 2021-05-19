@@ -26,43 +26,40 @@ const (
 	idleTimeout     = 120 * time.Second
 )
 
-// HTTPServer is a HTTP server.
-type HTTPServer struct {
-	*http.Server
+// httpServer is a HTTP server.
+type httpServer struct {
+	http.Server
 	waitStop chan struct{}
 }
 
-// NewHTTPServer creates a new HTTP server object.
-func NewHTTPServer(addr string, handler http.Handler) *HTTPServer {
+// initializeHTTPServer creates a new HTTP server object.
+func (srv *httpServer) initializeHTTPServer(addr string, handler http.Handler) {
 	if addr == "" {
 		addr = ":http"
 	}
-	srv := &HTTPServer{
-		Server: &http.Server{
-			Addr:    addr,
-			Handler: handler,
+	srv.Server = http.Server{
+		Addr:    addr,
+		Handler: handler,
 
-			// See: https://blog.cloudflare.com/exposing-go-on-the-internet/
-			ReadTimeout:  readTimeout,
-			WriteTimeout: writeTimeout,
-			IdleTimeout:  idleTimeout,
-		},
-		waitStop: make(chan struct{}),
+		// See: https://blog.cloudflare.com/exposing-go-on-the-internet/
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
 	}
-	return srv
+	srv.waitStop = make(chan struct{})
 }
 
 // SetDebug enables debugging goroutines that are started by the server.
 // Basically, just the timeout values are reset. This method should be called
 // before running the server.
-func (srv *HTTPServer) SetDebug() {
+func (srv *httpServer) SetDebug() {
 	srv.ReadTimeout = 0
 	srv.WriteTimeout = 0
 	srv.IdleTimeout = 0
 }
 
 // Run starts the web server, but does not wait for its completion.
-func (srv *HTTPServer) Run() error {
+func (srv *httpServer) Run() error {
 	ln, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
 		return err
@@ -73,7 +70,7 @@ func (srv *HTTPServer) Run() error {
 }
 
 // Stop the web server.
-func (srv *HTTPServer) Stop() error {
+func (srv *httpServer) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
