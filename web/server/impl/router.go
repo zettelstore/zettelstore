@@ -41,6 +41,7 @@ type httpRouter struct {
 // initializeRouter creates a new, empty router with the given root handler.
 func (rt *httpRouter) initializeRouter(urlPrefix string, auth auth.TokenManager) {
 	rt.urlPrefix = urlPrefix
+	rt.auth = auth
 	rt.minKey = 255
 	rt.maxKey = 0
 	rt.reURL = regexp.MustCompile("^$")
