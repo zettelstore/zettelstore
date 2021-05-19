@@ -16,7 +16,6 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
@@ -58,7 +57,7 @@ func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te
 			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
-		token, err := ucAuth.Run(ctx, ident, cred, htmlDur, token.KindHTML)
+		token, err := ucAuth.Run(ctx, ident, cred, htmlDur, auth.KindHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return

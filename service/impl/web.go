@@ -63,7 +63,7 @@ func (ws *webSub) Start(srv *myService) error {
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
 
-	srvw := impl.New(listenAddr, urlPrefix)
+	srvw := impl.New(listenAddr, urlPrefix, srv.auth.manager)
 	err := srv.web.setupServer(srvw, srv.place.manager, srv.auth.manager)
 	if err != nil {
 		srv.doLog("Unable to create Web Server:", err)

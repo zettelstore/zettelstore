@@ -12,6 +12,8 @@
 package auth
 
 import (
+	"time"
+
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -22,6 +24,36 @@ import (
 type BaseManager interface {
 	// IsReadonly returns true, if the systems is configured to run in read-only-mode.
 	IsReadonly() bool
+}
+
+// TokenManager provides methods to create authentication
+type TokenManager interface {
+
+	// GetToken produces a authentication token.
+	GetToken(ident *meta.Meta, d time.Duration, kind TokenKind) ([]byte, error)
+
+	// CheckToken checks the validity of the token and returns relevant data.
+	CheckToken(token []byte, k TokenKind) (TokenData, error)
+}
+
+// TokenKind specifies for which application / usage a token is/was requested.
+type TokenKind int
+
+// Allowed values of token kind
+const (
+	_ TokenKind = iota
+	KindJSON
+	KindHTML
+)
+
+// TokenData contains some important elements from a token.
+type TokenData struct {
+	Token   []byte
+	Now     time.Time
+	Issued  time.Time
+	Expires time.Time
+	Ident   string
+	Zid     id.Zid
 }
 
 // AuthzManager provides methods for authorization.
@@ -43,7 +75,7 @@ type AuthzManager interface {
 
 // Manager is the main interface for providing the service.
 type Manager interface {
-	BaseManager
+	TokenManager
 	AuthzManager
 
 	PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place) (place.Place, Policy)

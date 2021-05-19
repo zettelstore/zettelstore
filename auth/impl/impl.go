@@ -12,9 +12,15 @@
 package impl
 
 import (
+	"errors"
+	"time"
+
+	"github.com/pascaldekloe/jwt"
+
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -36,6 +42,91 @@ func New(readonly bool, owner id.Zid) auth.Manager {
 
 // IsReadonly returns true, if the systems is configured to run in read-only-mode.
 func (a *myAuth) IsReadonly() bool { return a.readonly }
+
+const reqHash = jwt.HS512
+
+// ErrNoUser signals that the meta data has no role value 'user'.
+var ErrNoUser = errors.New("auth: meta is no user")
+
+// ErrNoIdent signals that the 'ident' key is missing.
+var ErrNoIdent = errors.New("auth: missing ident")
+
+// ErrOtherKind signals that the token was defined for another token kind.
+var ErrOtherKind = errors.New("auth: wrong token kind")
+
+// ErrNoZid signals that the 'zid' key is missing.
+var ErrNoZid = errors.New("auth: missing zettel id")
+
+// GetToken returns a token to be used for authentification.
+func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind) ([]byte, error) {
+	if role, ok := ident.Get(meta.KeyRole); !ok || role != meta.ValueRoleUser {
+		return nil, ErrNoUser
+	}
+	subject, ok := ident.Get(meta.KeyUserID)
+	if !ok || subject == "" {
+		return nil, ErrNoIdent
+	}
+
+	now := time.Now().Round(time.Second)
+	claims := jwt.Claims{
+		Registered: jwt.Registered{
+			Subject: subject,
+			Expires: jwt.NewNumericTime(now.Add(d)),
+			Issued:  jwt.NewNumericTime(now),
+		},
+		Set: map[string]interface{}{
+			"zid": ident.Zid.String(),
+			"_tk": int(kind),
+		},
+	}
+	token, err := claims.HMACSign(reqHash, startup.Secret())
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+// ErrTokenExpired signals an exired token
+var ErrTokenExpired = errors.New("auth: token expired")
+
+// CheckToken checks the validity of the token and returns relevant data.
+func (a *myAuth) CheckToken(token []byte, k auth.TokenKind) (auth.TokenData, error) {
+	h, err := jwt.NewHMAC(reqHash, startup.Secret())
+	if err != nil {
+		return auth.TokenData{}, err
+	}
+	claims, err := h.Check(token)
+	if err != nil {
+		return auth.TokenData{}, err
+	}
+	now := time.Now().Round(time.Second)
+	expires := claims.Expires.Time()
+	if expires.Before(now) {
+		return auth.TokenData{}, ErrTokenExpired
+	}
+	ident := claims.Subject
+	if ident == "" {
+		return auth.TokenData{}, ErrNoIdent
+	}
+	if zidS, ok := claims.Set["zid"].(string); ok {
+		if zid, err := id.Parse(zidS); err == nil {
+			if kind, ok := claims.Set["_tk"].(float64); ok {
+				if auth.TokenKind(kind) == k {
+					return auth.TokenData{
+						Token:   token,
+						Now:     now,
+						Issued:  claims.Issued.Time(),
+						Expires: expires,
+						Ident:   ident,
+						Zid:     zid,
+					}, nil
+				}
+			}
+			return auth.TokenData{}, ErrOtherKind
+		}
+	}
+	return auth.TokenData{}, ErrNoZid
+}
 
 func (a *myAuth) Owner() id.Zid { return a.owner }
 

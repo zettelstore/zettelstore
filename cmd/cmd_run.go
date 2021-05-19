@@ -59,9 +59,9 @@ func doRun(debug bool) (int, error) {
 
 func setupRouting(webSrv server.Server, placeManager place.Manager, authManager auth.Manager) {
 	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, placeManager)
-	te := webui.NewTemplateEngine(webSrv, authManager, placeManager, authPolicy)
+	te := webui.NewTemplateEngine(webSrv, authManager, authManager, placeManager, authPolicy)
 
-	ucAuthenticate := usecase.NewAuthenticate(authManager, placeManager)
+	ucAuthenticate := usecase.NewAuthenticate(authManager, authManager, placeManager)
 	ucGetMeta := usecase.NewGetMeta(protectedPlaceManager)
 	ucGetZettel := usecase.NewGetZettel(protectedPlaceManager)
 	ucParseZettel := usecase.NewParseZettel(ucGetZettel)
@@ -75,7 +75,7 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 	webSrv.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
 		api.MakePostLoginHandlerAPI(authManager, ucAuthenticate),
 		webui.MakePostLoginHandlerHTML(webSrv, authManager, te, ucAuthenticate)))
-	webSrv.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler(webSrv))
+	webSrv.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler(authManager, webSrv))
 	webSrv.AddZettelRoute('a', http.MethodGet, webui.MakeGetLogoutHandler(webSrv, te))
 	if !authManager.IsReadonly() {
 		webSrv.AddZettelRoute('b', http.MethodGet, webui.MakeGetRenameZettelHandler(

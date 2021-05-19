@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -59,7 +58,7 @@ func authenticateViaJSON(
 }
 
 func authenticateForJSON(
-	auth usecase.Authenticate,
+	ucAuth usecase.Authenticate,
 	w http.ResponseWriter,
 	r *http.Request,
 	authDuration time.Duration,
@@ -70,7 +69,7 @@ func authenticateForJSON(
 			return nil, nil
 		}
 	}
-	token, err := auth.Run(r.Context(), ident, cred, authDuration, token.KindJSON)
+	token, err := ucAuth.Run(r.Context(), ident, cred, authDuration, auth.KindJSON)
 	return token, err
 }
 
@@ -88,26 +87,26 @@ func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration)
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
-func MakeRenewAuthHandler(auth server.Auth) http.HandlerFunc {
+func MakeRenewAuthHandler(token auth.TokenManager, authS server.Auth) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		auth := auth.GetAuthData(ctx)
-		if auth == nil || auth.Token == nil || auth.User == nil {
+		authData := authS.GetAuthData(ctx)
+		if authData == nil || authData.Token == nil || authData.User == nil {
 			adapter.BadRequest(w, "Not authenticated")
 			return
 		}
-		totalLifetime := auth.Expires.Sub(auth.Issued)
-		currentLifetime := auth.Now.Sub(auth.Issued)
+		totalLifetime := authData.Expires.Sub(authData.Issued)
+		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
 			w.Header().Set(adapter.ContentType, format2ContentType("json"))
-			writeJSONToken(w, string(auth.Token), totalLifetime-currentLifetime)
+			writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			return
 		}
 
 		// Toke is a little bit aged. Create a new one
 		_, apiDur := startup.TokenLifetime()
-		token, err := token.GetToken(auth.User, apiDur, token.KindJSON)
+		token, err := token.GetToken(authData.User, apiDur, auth.KindJSON)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

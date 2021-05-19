@@ -18,7 +18,6 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/cred"
-	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
@@ -32,20 +31,22 @@ type AuthenticatePort interface {
 
 // Authenticate is the data for this use case.
 type Authenticate struct {
+	token     auth.TokenManager
 	port      AuthenticatePort
 	ucGetUser GetUser
 }
 
 // NewAuthenticate creates a new use case.
-func NewAuthenticate(authz auth.AuthzManager, port AuthenticatePort) Authenticate {
+func NewAuthenticate(token auth.TokenManager, authz auth.AuthzManager, port AuthenticatePort) Authenticate {
 	return Authenticate{
+		token:     token,
 		port:      port,
 		ucGetUser: NewGetUser(authz, port),
 	}
 }
 
 // Run executes the use case.
-func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time.Duration, k token.Kind) ([]byte, error) {
+func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time.Duration, k auth.TokenKind) ([]byte, error) {
 	identMeta, err := uc.ucGetUser.Run(ctx, ident)
 	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
 
@@ -60,7 +61,7 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 			return nil, err
 		}
 		if ok {
-			token, err := token.GetToken(identMeta, d, k)
+			token, err := uc.token.GetToken(identMeta, d, k)
 			if err != nil {
 				return nil, err
 			}

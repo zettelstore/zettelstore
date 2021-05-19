@@ -19,7 +19,6 @@ import (
 	"sync"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/auth/token"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/config/startup"
@@ -48,6 +47,7 @@ type templatePlace interface {
 // TemplateEngine is the way to render HTML templates.
 type TemplateEngine struct {
 	authBuilder   server.AuthBuilder
+	token         auth.TokenManager
 	place         templatePlace
 	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
@@ -64,9 +64,12 @@ type TemplateEngine struct {
 }
 
 // NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(ab server.AuthBuilder, authz auth.AuthzManager, mgr place.Manager, pol auth.Policy) *TemplateEngine {
+func NewTemplateEngine(
+	ab server.AuthBuilder, authz auth.AuthzManager, token auth.TokenManager,
+	mgr place.Manager, pol auth.Policy) *TemplateEngine {
 	te := &TemplateEngine{
 		authBuilder: ab,
+		token:       token,
 		place:       mgr,
 		policy:      pol,
 
@@ -307,7 +310,7 @@ func (te *TemplateEngine) renderTemplateStatus(
 	}
 	if user := te.authBuilder.GetUser(ctx); user != nil {
 		htmlLifetime, _ := startup.TokenLifetime()
-		if tok, err1 := token.GetToken(user, htmlLifetime, token.KindHTML); err1 == nil {
+		if tok, err1 := te.token.GetToken(user, htmlLifetime, auth.KindHTML); err1 == nil {
 			te.authBuilder.SetToken(w, tok, htmlLifetime)
 		}
 	}

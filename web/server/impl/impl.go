@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/z/auth/token"
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
@@ -28,9 +28,9 @@ type myServer struct {
 }
 
 // New creates a new web server.
-func New(listenAddr, urlPrefix string) server.Server {
+func New(listenAddr, urlPrefix string, auth auth.TokenManager) server.Server {
 	srv := myServer{}
-	srv.router.initializeRouter(urlPrefix)
+	srv.router.initializeRouter(urlPrefix, auth)
 	srv.server.initializeHTTPServer(listenAddr, &srv.router)
 	return &srv
 }
@@ -98,7 +98,7 @@ type ctxKeyTypeSession struct{}
 
 var ctxKeySession ctxKeyTypeSession
 
-func updateContext(ctx context.Context, user *meta.Meta, data *token.Data) context.Context {
+func updateContext(ctx context.Context, user *meta.Meta, data *auth.TokenData) context.Context {
 	if data == nil {
 		return context.WithValue(ctx, ctxKeySession, &server.AuthData{User: user})
 	}

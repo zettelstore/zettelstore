@@ -16,7 +16,7 @@ import (
 	"regexp"
 	"strings"
 
-	"zettelstore.de/z/auth/token"
+	"zettelstore.de/z/auth"
 	"zettelstore.de/z/web/server"
 )
 
@@ -28,6 +28,7 @@ type (
 // httpRouter handles all routing for zettelstore.
 type httpRouter struct {
 	urlPrefix   string
+	auth        auth.TokenManager
 	minKey      byte
 	maxKey      byte
 	reURL       *regexp.Regexp
@@ -38,7 +39,7 @@ type httpRouter struct {
 }
 
 // initializeRouter creates a new, empty router with the given root handler.
-func (rt *httpRouter) initializeRouter(urlPrefix string) {
+func (rt *httpRouter) initializeRouter(urlPrefix string, auth auth.TokenManager) {
 	rt.urlPrefix = urlPrefix
 	rt.minKey = 255
 	rt.maxKey = 0
@@ -107,35 +108,35 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if mh, ok := table[key]; ok {
 			if handler, ok := mh[r.Method]; ok {
 				r.URL.Path = "/" + match[2]
-				handler.ServeHTTP(w, addUserContext(r, rt.ur))
+				handler.ServeHTTP(w, rt.addUserContext(r))
 				return
 			}
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 	}
-	rt.mux.ServeHTTP(w, addUserContext(r, rt.ur))
+	rt.mux.ServeHTTP(w, rt.addUserContext(r))
 }
 
-func addUserContext(r *http.Request, ur server.UserRetriever) *http.Request {
-	if ur == nil {
+func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
+	if rt.ur == nil {
 		return r
 	}
-	k := token.KindJSON
+	k := auth.KindJSON
 	t := getHeaderToken(r)
 	if len(t) == 0 {
-		k = token.KindHTML
+		k = auth.KindHTML
 		t = getSessionToken(r)
 	}
 	if len(t) == 0 {
 		return r
 	}
-	tokenData, err := token.CheckToken(t, k)
+	tokenData, err := rt.auth.CheckToken(t, k)
 	if err != nil {
 		return r
 	}
 	ctx := r.Context()
-	user, err := ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
+	user, err := rt.ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
 	if err != nil {
 		return r
 	}
