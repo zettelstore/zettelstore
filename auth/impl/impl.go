@@ -13,6 +13,8 @@ package impl
 
 import (
 	"errors"
+	"hash/fnv"
+	"io"
 	"time"
 
 	"github.com/pascaldekloe/jwt"
@@ -20,24 +22,46 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/config/runtime"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
 )
 
 type myAuth struct {
 	readonly bool
 	owner    id.Zid
+	secret   []byte
 }
 
 // New creates a new auth object.
-func New(readonly bool, owner id.Zid) auth.Manager {
+func New(readonly bool, owner id.Zid, extSecret string) auth.Manager {
 	return &myAuth{
 		readonly: readonly,
 		owner:    owner,
+		secret:   calcSecret(extSecret),
 	}
+}
+
+var configKeys = []string{
+	service.CoreProgname,
+	service.CoreGoVersion,
+	service.CoreHostname,
+	service.CoreGoOS,
+	service.CoreGoArch,
+	service.CoreVersion,
+}
+
+func calcSecret(extSecret string) []byte {
+	h := fnv.New128()
+	if extSecret != "" {
+		io.WriteString(h, extSecret)
+	}
+	for _, key := range configKeys {
+		io.WriteString(h, service.Main.GetConfig(service.SubCore, key).(string))
+	}
+	return h.Sum(nil)
 }
 
 // IsReadonly returns true, if the systems is configured to run in read-only-mode.
@@ -79,7 +103,7 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 			"_tk": int(kind),
 		},
 	}
-	token, err := claims.HMACSign(reqHash, startup.Secret())
+	token, err := claims.HMACSign(reqHash, a.secret)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +115,7 @@ var ErrTokenExpired = errors.New("auth: token expired")
 
 // CheckToken checks the validity of the token and returns relevant data.
 func (a *myAuth) CheckToken(token []byte, k auth.TokenKind) (auth.TokenData, error) {
-	h, err := jwt.NewHMAC(reqHash, startup.Secret())
+	h, err := jwt.NewHMAC(reqHash, a.secret)
 	if err != nil {
 		return auth.TokenData{}, err
 	}

@@ -193,7 +193,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 
 	service.Main.SetCreators(
 		func(readonly bool, owner id.Zid) (auth.Manager, error) {
-			return impl.New(readonly, owner), nil
+			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
 		},
 		createManager,
 		func(srv server.Server, plMgr place.Manager, authMgr auth.Manager) error {
