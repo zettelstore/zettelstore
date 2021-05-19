@@ -13,7 +13,9 @@ package impl
 
 import (
 	"net"
+	"strconv"
 	"sync"
+	"time"
 
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
@@ -26,6 +28,16 @@ type webSub struct {
 	srvw        server.Server
 	setupServer service.SetupWebServerFunc
 }
+
+// Constants for web subservice keys.
+const (
+	WebSecureCookie      = "secure"
+	WebListenAddress     = "listen"
+	WebPersistentCookie  = "persistent"
+	WebTokenLifetimeAPI  = "api-lifetime"
+	WebTokenLifetimeHTML = "html-lifetime"
+	WebURLPrefix         = "prefix"
+)
 
 func (ws *webSub) Initialize() {
 	ws.descr = descriptionMap{
@@ -42,6 +54,18 @@ func (ws *webSub) Initialize() {
 				return net.JoinHostPort(host, port)
 			},
 			true},
+		service.WebPersistentCookie: {"Persistent cookie", parseBool, true},
+		service.WebSecureCookie:     {"Secure cookie", parseBool, true},
+		service.WebTokenLifetimeAPI: {
+			"Token lifetime API",
+			makeDurationParser(10*time.Minute, 0, 1*time.Hour),
+			true,
+		},
+		service.WebTokenLifetimeHTML: {
+			"Token lifetime HTML",
+			makeDurationParser(1*time.Hour, 1*time.Minute, 30*24*time.Hour),
+			true,
+		},
 		service.WebURLPrefix: {
 			"URL prefix under which the web server runs",
 			func(val string) interface{} {
@@ -54,16 +78,38 @@ func (ws *webSub) Initialize() {
 		},
 	}
 	ws.next = interfaceMap{
-		service.WebListenAddress: "127.0.0.1:23123",
-		service.WebURLPrefix:     "/",
+		service.WebListenAddress:     "127.0.0.1:23123",
+		service.WebPersistentCookie:  false,
+		service.WebSecureCookie:      true,
+		service.WebTokenLifetimeAPI:  1 * time.Hour,
+		service.WebTokenLifetimeHTML: 10 * time.Minute,
+		service.WebURLPrefix:         "/",
+	}
+}
+
+func makeDurationParser(defDur, minDur, maxDur time.Duration) parseFunc {
+	return func(val string) interface{} {
+		if d, err := strconv.ParseUint(val, 10, 64); err == nil {
+			secs := time.Duration(d) * time.Minute
+			if secs < minDur {
+				return minDur
+			}
+			if secs > maxDur {
+				return maxDur
+			}
+			return secs
+		}
+		return defDur
 	}
 }
 
 func (ws *webSub) Start(srv *myService) error {
 	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
+	persistentCookie := ws.GetNextConfig(service.WebPersistentCookie).(bool)
+	secureCookie := ws.GetNextConfig(service.WebSecureCookie).(bool)
 
-	srvw := impl.New(listenAddr, urlPrefix, srv.auth.manager)
+	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, srv.auth.manager)
 	err := srv.web.setupServer(srvw, srv.place.manager, srv.auth.manager)
 	if err != nil {
 		srv.doLog("Unable to create Web Server:", err)

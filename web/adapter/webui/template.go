@@ -17,11 +17,11 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config/runtime"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -30,6 +30,7 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/change"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -48,6 +49,7 @@ type templatePlace interface {
 type TemplateEngine struct {
 	authBuilder   server.AuthBuilder
 	token         auth.TokenManager
+	tokenLifetime time.Duration
 	place         templatePlace
 	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
@@ -68,10 +70,11 @@ func NewTemplateEngine(
 	ab server.AuthBuilder, authz auth.AuthzManager, token auth.TokenManager,
 	mgr place.Manager, pol auth.Policy) *TemplateEngine {
 	te := &TemplateEngine{
-		authBuilder: ab,
-		token:       token,
-		place:       mgr,
-		policy:      pol,
+		authBuilder:   ab,
+		token:         token,
+		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration),
+		place:         mgr,
+		policy:        pol,
 
 		stylesheetURL: ab.NewURLBuilder('z').SetZid(
 			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery(
@@ -309,9 +312,8 @@ func (te *TemplateEngine) renderTemplateStatus(
 		return
 	}
 	if user := te.authBuilder.GetUser(ctx); user != nil {
-		htmlLifetime, _ := startup.TokenLifetime()
-		if tok, err1 := te.token.GetToken(user, htmlLifetime, auth.KindHTML); err1 == nil {
-			te.authBuilder.SetToken(w, tok, htmlLifetime)
+		if tok, err1 := te.token.GetToken(user, te.tokenLifetime, auth.KindHTML); err1 == nil {
+			te.authBuilder.SetToken(w, tok, te.tokenLifetime)
 		}
 	}
 	var content bytes.Buffer

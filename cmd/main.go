@@ -21,7 +21,6 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -133,12 +132,16 @@ func parsePort(s string) (string, error) {
 const (
 	keyAdminPort           = "admin-port"
 	keyDefaultDirPlaceType = "default-dir-place-type"
+	keyInsecureCookie      = "insecure-cookie"
 	keyListenAddr          = "listen-addr"
 	keyOwner               = "owner"
+	keyPersistentCookie    = "persistent-cookie"
 	keyPlaceOneURI         = "place-1-uri"
 	keyReadOnly            = "read-only-mode"
-	keyVerbose             = "verbose"
+	keyTokenLifetimeHTML   = "token-lifetime-html"
+	keyTokenLifetimeAPI    = "token-lifetime-api"
 	keyURLPrefix           = "url-prefix"
+	keyVerbose             = "verbose"
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
@@ -158,6 +161,12 @@ func setServiceConfig(cfg *meta.Meta) error {
 		ok, service.SubWeb, service.WebListenAddress,
 		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
+	ok = setConfigValue(ok, service.SubWeb, service.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
+	ok = setConfigValue(ok, service.SubWeb, service.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
+	ok = setConfigValue(
+		ok, service.SubWeb, service.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
+	ok = setConfigValue(
+		ok, service.SubWeb, service.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
 
 	if !ok {
 		return errors.New("unable to set configuration")
@@ -189,7 +198,6 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 	} else {
 		createManager = func(authManager auth.Manager) (place.Manager, error) { return nil, nil }
 	}
-	startup.SetupStartupConfig(cfg)
 
 	service.Main.SetCreators(
 		func(readonly bool, owner id.Zid) (auth.Manager, error) {

@@ -118,8 +118,12 @@ const (
 
 // Constants for web subservice keys.
 const (
-	WebListenAddress = "listen"
-	WebURLPrefix     = "prefix"
+	WebListenAddress     = "listen"
+	WebPersistentCookie  = "persistent"
+	WebSecureCookie      = "secure"
+	WebTokenLifetimeAPI  = "api-lifetime"
+	WebTokenLifetimeHTML = "html-lifetime"
+	WebURLPrefix         = "prefix"
 )
 
 // KeyDescrValue is a triple of config data.

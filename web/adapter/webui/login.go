@@ -14,11 +14,12 @@ package webui
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config/runtime"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -45,19 +46,19 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
 func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te *TemplateEngine, ucAuth usecase.Authenticate) http.HandlerFunc {
+	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !authz.WithAuth() {
 			redirectFound(w, r, ab.NewURLBuilder('/'))
 			return
 		}
-		htmlDur, _ := startup.TokenLifetime()
 		ctx := r.Context()
 		ident, cred, ok := adapter.GetCredentialsViaForm(r)
 		if !ok {
 			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
-		token, err := ucAuth.Run(ctx, ident, cred, htmlDur, auth.KindHTML)
+		token, err := ucAuth.Run(ctx, ident, cred, tokenLifetime, auth.KindHTML)
 		if err != nil {
 			te.reportError(ctx, w, err)
 			return
@@ -67,7 +68,7 @@ func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te
 			return
 		}
 
-		ab.SetToken(w, token, htmlDur)
+		ab.SetToken(w, token, tokenLifetime)
 		redirectFound(w, r, ab.NewURLBuilder('/'))
 	}
 }

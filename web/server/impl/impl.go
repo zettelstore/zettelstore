@@ -17,19 +17,23 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config/startup"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
 )
 
 type myServer struct {
-	server httpServer
-	router httpRouter
+	server           httpServer
+	router           httpRouter
+	persistentCookie bool
+	secureCookie     bool
 }
 
 // New creates a new web server.
-func New(listenAddr, urlPrefix string, auth auth.TokenManager) server.Server {
-	srv := myServer{}
+func New(listenAddr, urlPrefix string, persistentCookie, secureCookie bool, auth auth.TokenManager) server.Server {
+	srv := myServer{
+		persistentCookie: persistentCookie,
+		secureCookie:     secureCookie,
+	}
 	srv.router.initializeRouter(urlPrefix, auth)
 	srv.server.initializeHTTPServer(listenAddr, &srv.router)
 	return &srv
@@ -67,11 +71,11 @@ func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Durati
 		Name:     sessionName,
 		Value:    string(token),
 		Path:     srv.GetURLPrefix(),
-		Secure:   startup.SecureCookie(),
+		Secure:   srv.secureCookie,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}
-	if startup.PersistentCookie() && d > 0 {
+	if srv.persistentCookie && d > 0 {
 		cookie.Expires = time.Now().Add(d).Add(30 * time.Second).UTC()
 	}
 	http.SetCookie(w, &cookie)

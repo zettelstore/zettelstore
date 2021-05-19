@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config/startup"
+	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -25,14 +25,14 @@ import (
 
 // MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
 func MakePostLoginHandlerAPI(authz auth.AuthzManager, auth usecase.Authenticate) http.HandlerFunc {
+	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !authz.WithAuth() {
 			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
 		}
-		_, apiDur := startup.TokenLifetime()
-		authenticateViaJSON(auth, w, r, apiDur)
+		authenticateViaJSON(auth, w, r, tokenLifetime)
 	}
 }
 
@@ -88,6 +88,7 @@ func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration)
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
 func MakeRenewAuthHandler(token auth.TokenManager, authS server.Auth) http.HandlerFunc {
+	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration)
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		authData := authS.GetAuthData(ctx)
@@ -104,14 +105,13 @@ func MakeRenewAuthHandler(token auth.TokenManager, authS server.Auth) http.Handl
 			return
 		}
 
-		// Toke is a little bit aged. Create a new one
-		_, apiDur := startup.TokenLifetime()
-		token, err := token.GetToken(authData.User, apiDur, auth.KindJSON)
+		// Token is a little bit aged. Create a new one
+		token, err := token.GetToken(authData.User, tokenLifetime, auth.KindJSON)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 		w.Header().Set(adapter.ContentType, format2ContentType("json"))
-		writeJSONToken(w, string(token), apiDur)
+		writeJSONToken(w, string(token), tokenLifetime)
 	}
 }
