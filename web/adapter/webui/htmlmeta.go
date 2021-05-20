@@ -26,24 +26,23 @@ import (
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 var space = []byte{' '}
 
-func writeHTMLMetaValue(w io.Writer, b server.Builder, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
+func (wui *WebUI) writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
 	switch kt := m.Type(key); kt {
 	case meta.TypeBool:
-		writeHTMLBool(w, b, key, m.GetBool(key))
+		wui.writeHTMLBool(w, key, m.GetBool(key))
 	case meta.TypeCredential:
 		writeCredential(w, m.GetDefault(key, "???c"))
 	case meta.TypeEmpty:
 		writeEmpty(w, m.GetDefault(key, "???e"))
 	case meta.TypeID:
-		writeIdentifier(w, b, m.GetDefault(key, "???i"), getTitle)
+		wui.writeIdentifier(w, m.GetDefault(key, "???i"), getTitle)
 	case meta.TypeIDSet:
 		if l, ok := m.GetList(key); ok {
-			writeIdentifierSet(w, b, l, getTitle)
+			wui.writeIdentifierSet(w, l, getTitle)
 		}
 	case meta.TypeNumber:
 		writeNumber(w, m.GetDefault(key, "???n"))
@@ -51,7 +50,7 @@ func writeHTMLMetaValue(w io.Writer, b server.Builder, m *meta.Meta, key string,
 		writeString(w, m.GetDefault(key, "???s"))
 	case meta.TypeTagSet:
 		if l, ok := m.GetList(key); ok {
-			writeTagSet(w, b, key, l)
+			wui.writeTagSet(w, key, l)
 		}
 	case meta.TypeTimestamp:
 		if ts, ok := m.GetTime(key); ok {
@@ -60,10 +59,10 @@ func writeHTMLMetaValue(w io.Writer, b server.Builder, m *meta.Meta, key string,
 	case meta.TypeURL:
 		writeURL(w, m.GetDefault(key, "???u"))
 	case meta.TypeWord:
-		writeWord(w, b, key, m.GetDefault(key, "???w"))
+		wui.writeWord(w, key, m.GetDefault(key, "???w"))
 	case meta.TypeWordSet:
 		if l, ok := m.GetList(key); ok {
-			writeWordSet(w, b, key, l)
+			wui.writeWordSet(w, key, l)
 		}
 	case meta.TypeZettelmarkup:
 		writeZettelmarkup(w, m.GetDefault(key, "???z"), env)
@@ -75,11 +74,11 @@ func writeHTMLMetaValue(w io.Writer, b server.Builder, m *meta.Meta, key string,
 	}
 }
 
-func writeHTMLBool(w io.Writer, b server.Builder, key string, val bool) {
+func (wui *WebUI) writeHTMLBool(w io.Writer, key string, val bool) {
 	if val {
-		writeLink(w, b, key, "true", "True")
+		wui.writeLink(w, key, "true", "True")
 	} else {
-		writeLink(w, b, key, "false", "False")
+		wui.writeLink(w, key, "false", "False")
 	}
 }
 
@@ -91,7 +90,7 @@ func writeEmpty(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func writeIdentifier(w io.Writer, b server.Builder, val string, getTitle func(id.Zid, string) (string, int)) {
+func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle func(id.Zid, string) (string, int)) {
 	zid, err := id.Parse(val)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
@@ -101,9 +100,9 @@ func writeIdentifier(w io.Writer, b server.Builder, val string, getTitle func(id
 	switch {
 	case found > 0:
 		if title == "" {
-			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", b.NewURLBuilder('h').SetZid(zid), zid)
+			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", wui.newURLBuilder('h').SetZid(zid), zid)
 		} else {
-			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", b.NewURLBuilder('h').SetZid(zid), title, zid)
+			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", wui.newURLBuilder('h').SetZid(zid), title, zid)
 		}
 	case found == 0:
 		fmt.Fprintf(w, "<s>%v</s>", val)
@@ -112,12 +111,12 @@ func writeIdentifier(w io.Writer, b server.Builder, val string, getTitle func(id
 	}
 }
 
-func writeIdentifierSet(w io.Writer, b server.Builder, vals []string, getTitle func(id.Zid, string) (string, int)) {
+func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTitle func(id.Zid, string) (string, int)) {
 	for i, val := range vals {
 		if i > 0 {
 			w.Write(space)
 		}
-		writeIdentifier(w, b, val, getTitle)
+		wui.writeIdentifier(w, val, getTitle)
 	}
 }
 
@@ -133,12 +132,12 @@ func writeUnknown(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func writeTagSet(w io.Writer, b server.Builder, key string, tags []string) {
+func (wui *WebUI) writeTagSet(w io.Writer, key string, tags []string) {
 	for i, tag := range tags {
 		if i > 0 {
 			w.Write(space)
 		}
-		writeLink(w, b, key, tag, tag)
+		wui.writeLink(w, key, tag, tag)
 	}
 }
 
@@ -157,16 +156,16 @@ func writeURL(w io.Writer, val string) {
 	io.WriteString(w, "</a>")
 }
 
-func writeWord(w io.Writer, b server.Builder, key, word string) {
-	writeLink(w, b, key, word, word)
+func (wui *WebUI) writeWord(w io.Writer, key, word string) {
+	wui.writeLink(w, key, word, word)
 }
 
-func writeWordSet(w io.Writer, b server.Builder, key string, words []string) {
+func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 	for i, word := range words {
 		if i > 0 {
 			w.Write(space)
 		}
-		writeWord(w, b, key, word)
+		wui.writeWord(w, key, word)
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
@@ -178,8 +177,8 @@ func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
 	io.WriteString(w, title)
 }
 
-func writeLink(w io.Writer, b server.Builder, key, value, text string) {
-	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", b.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
+func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
+	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", wui.newURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
 	strfun.HTMLEscape(w, text, false)
 	io.WriteString(w, "</a>")
 }

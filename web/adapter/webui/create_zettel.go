@@ -112,7 +112,7 @@ func (wui *WebUI) renderZettelForm(
 	title, heading string,
 ) {
 	ctx := r.Context()
-	user := wui.ab.GetUser(ctx)
+	user := wui.getUser(ctx)
 	m := zettel.Meta
 	var base baseData
 	wui.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
@@ -148,6 +148,6 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel usecase.CreateZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.newURLBuilder('h').SetZid(newZid))
 	}
 }

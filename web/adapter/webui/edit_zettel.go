@@ -46,7 +46,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 			return
 		}
 
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		wui.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
@@ -84,6 +84,6 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) ht
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(zid))
+		redirectFound(w, r, wui.newURLBuilder('h').SetZid(zid))
 	}
 }

@@ -26,7 +26,6 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 type metaDataInfo struct {
@@ -76,7 +75,7 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		getTitle := makeGetTitle(ctx, getMeta, &env)
 		for i, p := range pairs {
 			var html strings.Builder
-			writeHTMLMetaValue(&html, wui.ab, zn.Meta, p.Key, getTitle, &env)
+			wui.writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		endnotes, err := formatBlocks(nil, "html", &env)
@@ -85,7 +84,7 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		}
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
@@ -114,18 +113,18 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 			Endnotes     string
 		}{
 			Zid:          zid.String(),
-			WebURL:       wui.ab.NewURLBuilder('h').SetZid(zid).String(),
-			ContextURL:   wui.ab.NewURLBuilder('j').SetZid(zid).String(),
+			WebURL:       wui.newURLBuilder('h').SetZid(zid).String(),
+			ContextURL:   wui.newURLBuilder('j').SetZid(zid).String(),
 			CanWrite:     wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:      wui.ab.NewURLBuilder('e').SetZid(zid).String(),
+			EditURL:      wui.newURLBuilder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:     wui.ab.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:     wui.newURLBuilder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
-			CopyURL:      wui.ab.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:      wui.newURLBuilder('c').SetZid(zid).String(),
 			CanRename:    wui.canRename(ctx, user, zn.Meta),
-			RenameURL:    wui.ab.NewURLBuilder('b').SetZid(zid).String(),
+			RenameURL:    wui.newURLBuilder('b').SetZid(zid).String(),
 			CanDelete:    wui.canDelete(ctx, user, zn.Meta),
-			DeleteURL:    wui.ab.NewURLBuilder('d').SetZid(zid).String(),
+			DeleteURL:    wui.newURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:  len(locLinks) > 0,
@@ -133,7 +132,7 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 			HasExtLinks:  len(extLinks) > 0,
 			ExtLinks:     extLinks,
 			ExtNewWindow: htmlAttrNewWindow(len(extLinks) > 0),
-			Matrix:       infoAPIMatrix(wui.ab, zid),
+			Matrix:       wui.infoAPIMatrix(zid),
 			Endnotes:     endnotes,
 		})
 	}
@@ -164,12 +163,12 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 	return locLinks, extLinks
 }
 
-func infoAPIMatrix(b server.Builder, zid id.Zid) []matrixLine {
+func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
 	formats := encoder.GetFormats()
 	defFormat := encoder.GetDefaultFormat()
 	parts := []string{"zettel", "meta", "content"}
 	matrix := make([]matrixLine, 0, len(parts))
-	u := b.NewURLBuilder('z').SetZid(zid)
+	u := wui.newURLBuilder('z').SetZid(zid)
 	for _, part := range parts {
 		row := make([]matrixElement, 0, len(formats)+1)
 		row = append(row, matrixElement{part, false, ""})

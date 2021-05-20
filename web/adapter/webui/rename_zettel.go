@@ -47,7 +47,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
@@ -89,6 +89,6 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.newURLBuilder('h').SetZid(newZid))
 	}
 }

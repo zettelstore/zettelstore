@@ -330,3 +330,12 @@ func (wui *WebUI) renderTemplateStatus(
 		log.Println("Unable to render template", err)
 	}
 }
+
+func (wui *WebUI) getUser(ctx context.Context) *meta.Meta   { return wui.ab.GetUser(ctx) }
+func (wui *WebUI) newURLBuilder(key byte) server.URLBuilder { return wui.ab.NewURLBuilder(key) }
+func (wui *WebUI) clearToken(ctx context.Context, w http.ResponseWriter) context.Context {
+	return wui.ab.ClearToken(ctx, w)
+}
+func (wui *WebUI) setToken(w http.ResponseWriter, token []byte) {
+	wui.ab.SetToken(w, token, wui.tokenLifetime)
+}

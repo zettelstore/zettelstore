@@ -37,20 +37,20 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 		homeZid := runtime.GetHomeZettel()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {
-				redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(homeZid))
+				redirectFound(w, r, wui.newURLBuilder('h').SetZid(homeZid))
 				return
 			}
 			homeZid = id.DefaultHomeZid
 		}
 		_, err := s.GetMeta(ctx, homeZid)
 		if err == nil {
-			redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(homeZid))
+			redirectFound(w, r, wui.newURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && wui.authz.WithAuth() && wui.ab.GetUser(ctx) == nil {
-			redirectFound(w, r, wui.ab.NewURLBuilder('a'))
+		if place.IsErrNotAllowed(err) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
+			redirectFound(w, r, wui.newURLBuilder('a'))
 			return
 		}
-		redirectFound(w, r, wui.ab.NewURLBuilder('h'))
+		redirectFound(w, r, wui.newURLBuilder('h'))
 	}
 }

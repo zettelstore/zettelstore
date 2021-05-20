@@ -28,7 +28,6 @@ import (
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
@@ -65,7 +64,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
-			return newPageURL(wui.ab, 'h', query, offset, "_offset", "_limit")
+			return wui.newPageURL('h', query, offset, "_offset", "_limit")
 		})
 }
 
@@ -86,10 +85,10 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 	for _, role := range roleList {
 		roleInfos = append(
 			roleInfos,
-			roleInfo{role, wui.ab.NewURLBuilder('h').AppendQuery("role", role).String()})
+			roleInfo{role, wui.newURLBuilder('h').AppendQuery("role", role).String()})
 	}
 
-	user := wui.ab.GetUser(ctx)
+	user := wui.getUser(ctx)
 	var base baseData
 	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
@@ -123,10 +122,10 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 		return
 	}
 
-	user := wui.ab.GetUser(ctx)
+	user := wui.getUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	baseTagListURL := wui.ab.NewURLBuilder('h')
+	baseTagListURL := wui.newURLBuilder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
 		countMap[count]++
@@ -181,7 +180,7 @@ func (wui *WebUI) MakeSearchHandler(
 		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			redirectFound(w, r, wui.ab.NewURLBuilder('h'))
+			redirectFound(w, r, wui.newURLBuilder('h'))
 			return
 		}
 
@@ -194,7 +193,7 @@ func (wui *WebUI) MakeSearchHandler(
 				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
-				return newPageURL(wui.ab, 'f', query, offset, "offset", "limit")
+				return wui.newPageURL('f', query, offset, "offset", "limit")
 			})
 	}
 }
@@ -217,7 +216,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			wui.reportError(ctx, w, err)
 			return
 		}
-		metaLinks, err := buildHTMLMetaList(wui.ab, metaList)
+		metaLinks, err := wui.buildHTMLMetaList(metaList)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
 			return
@@ -225,7 +224,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := wui.ab.NewURLBuilder('j').SetZid(zid)
+		depthURL := wui.newURLBuilder('j').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -239,7 +238,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			depthLinks[i].URL = depthURL.String()
 		}
 		var base baseData
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
@@ -249,7 +248,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: wui.ab.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL: wui.newURLBuilder('i').SetZid(zid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],
@@ -304,8 +303,8 @@ func (wui *WebUI) renderMetaList(
 			return
 		}
 	}
-	user := wui.ab.GetUser(ctx)
-	metas, err := buildHTMLMetaList(wui.ab, metaList)
+	user := wui.getUser(ctx)
+	metas, err := wui.buildHTMLMetaList(metaList)
 	if err != nil {
 		wui.reportError(ctx, w, err)
 		return
@@ -344,8 +343,8 @@ func listTitleSearch(prefix string, s *search.Search) string {
 	return sb.String()
 }
 
-func newPageURL(b server.Builder, key byte, query url.Values, offset int, offsetKey, limitKey string) string {
-	ub := b.NewURLBuilder(key)
+func (wui *WebUI) newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+	ub := wui.newURLBuilder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {
 			for _, val := range values {
@@ -360,7 +359,7 @@ func newPageURL(b server.Builder, key byte, query url.Values, offset int, offset
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func buildHTMLMetaList(b server.Builder, metaList []*meta.Meta) ([]simpleLink, error) {
+func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
 	defaultLang := runtime.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
@@ -378,7 +377,7 @@ func buildHTMLMetaList(b server.Builder, metaList []*meta.Meta) ([]simpleLink, e
 		}
 		metas = append(metas, simpleLink{
 			Text: htmlTitle,
-			URL:  b.NewURLBuilder('h').SetZid(m.Zid).String(),
+			URL:  wui.newURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
 	return metas, nil

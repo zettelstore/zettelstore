@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -73,12 +72,12 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			return
 		}
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
-		tags := buildTagInfos(wui.ab, zn.Meta)
+		tags := wui.buildTagInfos(zn.Meta)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		backLinks := formatBackLinks(wui.ab, zn.InhMeta, getTitle)
+		backLinks := wui.formatBackLinks(zn.InhMeta, getTitle)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -108,19 +107,19 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		}{
 			HTMLTitle:     htmlTitle,
 			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       wui.ab.NewURLBuilder('e').SetZid(zid).String(),
+			EditURL:       wui.newURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
-			InfoURL:       wui.ab.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL:       wui.newURLBuilder('i').SetZid(zid).String(),
 			RoleText:      roleText,
-			RoleURL:       wui.ab.NewURLBuilder('h').AppendQuery("role", roleText).String(),
+			RoleURL:       wui.newURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCopy,
-			CopyURL:       wui.ab.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:       wui.newURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:      wui.ab.NewURLBuilder('f').SetZid(zid).String(),
-			FolgeRefs:     formatMetaKey(zn.InhMeta, wui.ab, meta.KeyFolge, getTitle),
-			PrecursorRefs: formatMetaKey(zn.InhMeta, wui.ab, meta.KeyPrecursor, getTitle),
+			FolgeURL:      wui.newURLBuilder('f').SetZid(zid).String(),
+			FolgeRefs:     wui.formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
+			PrecursorRefs: wui.formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
@@ -159,10 +158,10 @@ func formatMeta(m *meta.Meta, format string, env *encoder.Environment) (string, 
 	return content.String(), nil
 }
 
-func buildTagInfos(b server.Builder, m *meta.Meta) []simpleLink {
+func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
 	if tags, ok := m.GetList(meta.KeyTags); ok {
-		ub := b.NewURLBuilder('h')
+		ub := wui.newURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
 			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", tag).String()}
@@ -172,16 +171,16 @@ func buildTagInfos(b server.Builder, m *meta.Meta) []simpleLink {
 	return tagInfos
 }
 
-func formatMetaKey(m *meta.Meta, b server.Builder, key string, getTitle getTitleFunc) string {
+func (wui *WebUI) formatMetaKey(m *meta.Meta, key string, getTitle getTitleFunc) string {
 	if _, ok := m.Get(key); ok {
 		var buf bytes.Buffer
-		writeHTMLMetaValue(&buf, b, m, key, getTitle, nil)
+		wui.writeHTMLMetaValue(&buf, m, key, getTitle, nil)
 		return buf.String()
 	}
 	return ""
 }
 
-func formatBackLinks(b server.Builder, m *meta.Meta, getTitle getTitleFunc) []simpleLink {
+func (wui *WebUI) formatBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleLink {
 	values, ok := m.GetList(meta.KeyBack)
 	if !ok || len(values) == 0 {
 		return nil
@@ -193,7 +192,7 @@ func formatBackLinks(b server.Builder, m *meta.Meta, getTitle getTitleFunc) []si
 			continue
 		}
 		if title, found := getTitle(zid, "text"); found > 0 {
-			url := b.NewURLBuilder('h').SetZid(zid).String()
+			url := wui.newURLBuilder('h').SetZid(zid).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})
 			} else {

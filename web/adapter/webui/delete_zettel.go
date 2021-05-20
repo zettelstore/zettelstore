@@ -46,7 +46,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.H
 			return
 		}
 
-		user := wui.ab.GetUser(ctx)
+		user := wui.getUser(ctx)
 		m := zettel.Meta
 		var base baseData
 		wui.makeBaseData(ctx, runtime.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
@@ -74,6 +74,6 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
+		redirectFound(w, r, wui.newURLBuilder('/'))
 	}
 }

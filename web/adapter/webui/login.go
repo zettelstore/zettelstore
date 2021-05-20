@@ -14,12 +14,10 @@ package webui
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config/runtime"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -27,7 +25,7 @@ import (
 // MakeGetLoginHandler creates a new HTTP handler to display the HTML login view.
 func (wui *WebUI) MakeGetLoginHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wui.renderLoginForm(wui.ab.ClearToken(r.Context(), w), w, false)
+		wui.renderLoginForm(wui.clearToken(r.Context(), w), w, false)
 	}
 }
 
@@ -45,10 +43,9 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
 func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.HandlerFunc {
-	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration)
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !wui.authz.WithAuth() {
-			redirectFound(w, r, wui.ab.NewURLBuilder('/'))
+			redirectFound(w, r, wui.newURLBuilder('/'))
 			return
 		}
 		ctx := r.Context()
@@ -57,25 +54,25 @@ func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.Han
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
-		token, err := ucAuth.Run(ctx, ident, cred, tokenLifetime, auth.KindHTML)
+		token, err := ucAuth.Run(ctx, ident, cred, wui.tokenLifetime, auth.KindHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		if token == nil {
-			wui.renderLoginForm(wui.ab.ClearToken(ctx, w), w, true)
+			wui.renderLoginForm(wui.clearToken(ctx, w), w, true)
 			return
 		}
 
-		wui.ab.SetToken(w, token, tokenLifetime)
-		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
+		wui.setToken(w, token)
+		redirectFound(w, r, wui.newURLBuilder('/'))
 	}
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
 func (wui *WebUI) MakeGetLogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wui.ab.ClearToken(r.Context(), w)
-		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
+		wui.clearToken(r.Context(), w)
+		redirectFound(w, r, wui.newURLBuilder('/'))
 	}
 }
