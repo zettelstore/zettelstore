@@ -15,7 +15,7 @@ import (
 	"log"
 
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -84,7 +84,7 @@ func ParseMetadata(title string) ast.InlineSlice {
 // ParseZettel parses the zettel based on the syntax.
 func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
 	m := zettel.Meta
-	inhMeta := runtime.AddDefaultValues(m)
+	inhMeta := config.AddDefaultValues(m)
 	if syntax == "" {
 		syntax, _ = inhMeta.Get(meta.KeySyntax)
 	}

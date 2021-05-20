@@ -12,7 +12,7 @@
 package usecase
 
 import (
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -38,9 +38,9 @@ func (uc FolgeZettel) Run(origZettel domain.Zettel) domain.Zettel {
 		}
 		m.Set(meta.KeyTitle, title)
 	}
-	m.Set(meta.KeyRole, runtime.GetRole(origMeta))
+	m.Set(meta.KeyRole, config.GetRole(origMeta))
 	m.Set(meta.KeyTags, origMeta.GetDefault(meta.KeyTags, ""))
-	m.Set(meta.KeySyntax, runtime.GetSyntax(origMeta))
+	m.Set(meta.KeySyntax, config.GetSyntax(origMeta))
 	m.Set(meta.KeyPrecursor, origMeta.Zid.String())
 	return domain.Zettel{Meta: m, Content: ""}
 }

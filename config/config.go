@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package runtime provides functions to retrieve runtime configuration data.
-package runtime
+// Package config provides functions to retrieve runtime configuration data.
+package config
 
 import (
 	"context"

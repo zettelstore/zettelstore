@@ -21,7 +21,7 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -181,5 +181,5 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 
 func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place) (place.Place, auth.Policy) {
 	return policy.PlaceWithPolicy(
-		auth, a, unprotectedPlace, runtime.GetExpertMode, runtime.GetVisibility)
+		auth, a, unprotectedPlace, config.GetExpertMode, config.GetVisibility)
 }

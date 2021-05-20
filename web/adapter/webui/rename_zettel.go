@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"strings"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -49,7 +49,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 
 		user := wui.getUser(ctx)
 		var base baseData
-		wui.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
+		wui.makeBaseData(ctx, config.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
 			Zid       string
 			MetaPairs []meta.Pair

@@ -16,7 +16,7 @@ import (
 	"io"
 	"os"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -38,9 +38,9 @@ func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 			Meta:    meta,
 			Content: domain.NewContent(inp.Src[inp.Pos:]),
 		},
-		runtime.GetSyntax(meta),
+		config.GetSyntax(meta),
 	)
-	enc := encoder.Create(format, &encoder.Environment{Lang: runtime.GetLang(meta)})
+	enc := encoder.Create(format, &encoder.Environment{Lang: config.GetLang(meta)})
 	if enc == nil {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", format)
 		return 2, nil

@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -301,7 +301,7 @@ func calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	case meta.ValueSyntaxNone, meta.ValueSyntaxZmk:
 		return directory.MetaSpecHeader, "zettel"
 	}
-	for _, s := range runtime.GetZettelFileSyntax() {
+	for _, s := range config.GetZettelFileSyntax() {
 		if s == syntax {
 			return directory.MetaSpecHeader, "zettel"
 		}
@@ -393,10 +393,10 @@ func (dp *dirPlace) ReadStats(st *place.ManagedPlaceStats) {
 
 func (dp *dirPlace) cleanupMeta(ctx context.Context, m *meta.Meta) {
 	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
-		m.Set(meta.KeyRole, runtime.GetDefaultRole())
+		m.Set(meta.KeyRole, config.GetDefaultRole())
 	}
 	if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-		m.Set(meta.KeySyntax, runtime.GetDefaultSyntax())
+		m.Set(meta.KeySyntax, config.GetDefaultSyntax())
 	}
 }
 

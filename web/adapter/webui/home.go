@@ -15,7 +15,7 @@ import (
 	"context"
 	"net/http"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -34,7 +34,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
-		homeZid := runtime.GetHomeZettel()
+		homeZid := config.GetHomeZettel()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {
 				redirectFound(w, r, wui.NewURLBuilder('h').SetZid(homeZid))

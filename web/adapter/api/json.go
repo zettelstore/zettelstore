@@ -18,7 +18,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -127,7 +127,7 @@ func getPrepareZettelFunc(ctx context.Context, parseZettel usecase.ParseZettel, 
 				Meta:    m,
 				Content: "",
 				Zid:     m.Zid,
-				InhMeta: runtime.AddDefaultValues(m),
+				InhMeta: config.AddDefaultValues(m),
 				Ast:     nil,
 			}, nil
 		}

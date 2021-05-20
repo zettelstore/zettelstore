@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"sync"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
@@ -59,7 +59,7 @@ func (ps *placeSub) Start(srv *myService) error {
 	if err := mgr.Start(context.Background()); err != nil {
 		srv.doLog("Unable to start place manager:", err)
 	}
-	runtime.SetupConfiguration(mgr)
+	config.SetupConfiguration(mgr)
 	ps.manager = mgr
 	return nil
 }

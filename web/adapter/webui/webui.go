@@ -21,7 +21,7 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/collect"
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -218,7 +218,7 @@ func (wui *WebUI) makeBaseData(
 	data.CanCreate = canCreate
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
-	data.FooterHTML = runtime.GetFooterHTML()
+	data.FooterHTML = config.GetFooterHTML()
 }
 
 // htmlAttrNewWindow eturns HTML attribute string for opening a link in a new window.
@@ -251,9 +251,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		if !wui.policy.CanRead(user, m) {
 			continue
 		}
-		title := runtime.GetTitle(m)
+		title := config.GetTitle(m)
 		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
-		env := encoder.Environment{Lang: runtime.GetLang(m)}
+		env := encoder.Environment{Lang: config.GetLang(m)}
 		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
 		if err != nil {
 			menuTitle, err = adapter.FormatInlines(astTitle, "text", nil)

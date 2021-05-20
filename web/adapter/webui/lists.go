@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -90,7 +90,7 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 
 	user := wui.getUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(), config.GetSiteName(), user, &base)
 	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
@@ -151,7 +151,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	}
 
 	var base baseData
-	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(), config.GetSiteName(), user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
@@ -239,7 +239,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 		}
 		var base baseData
 		user := wui.getUser(ctx)
-		wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+		wui.makeBaseData(ctx, config.GetDefaultLang(), config.GetSiteName(), user, &base)
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
@@ -275,7 +275,7 @@ func (wui *WebUI) renderMetaList(
 	var metaList []*meta.Meta
 	var err error
 	var prevURL, nextURL string
-	if lps := runtime.GetListPageSize(); lps > 0 {
+	if lps := config.GetListPageSize(); lps > 0 {
 		if s.GetLimit() < lps {
 			s.SetLimit(lps + 1)
 		}
@@ -310,7 +310,7 @@ func (wui *WebUI) renderMetaList(
 		return
 	}
 	var base baseData
-	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(), config.GetSiteName(), user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title       string
 		Metas       []simpleLink
@@ -332,7 +332,7 @@ func (wui *WebUI) renderMetaList(
 
 func listTitleSearch(prefix string, s *search.Search) string {
 	if s == nil {
-		return runtime.GetSiteName()
+		return config.GetSiteName()
 	}
 	var sb strings.Builder
 	sb.WriteString(prefix)
@@ -360,7 +360,7 @@ func (wui *WebUI) newPageURL(key byte, query url.Values, offset int, offsetKey, 
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
 func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
-	defaultLang := runtime.GetDefaultLang()
+	defaultLang := config.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
 		var lang string

@@ -14,7 +14,7 @@ package usecase
 import (
 	"context"
 
-	"zettelstore.de/z/config/runtime"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -45,15 +45,15 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	}
 
 	if title, ok := m.Get(meta.KeyTitle); !ok || title == "" {
-		m.Set(meta.KeyTitle, runtime.GetDefaultTitle())
+		m.Set(meta.KeyTitle, config.GetDefaultTitle())
 	}
 	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
-		m.Set(meta.KeyRole, runtime.GetDefaultRole())
+		m.Set(meta.KeyRole, config.GetDefaultRole())
 	}
 	if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-		m.Set(meta.KeySyntax, runtime.GetDefaultSyntax())
+		m.Set(meta.KeySyntax, config.GetDefaultSyntax())
 	}
-	m.YamlSep = runtime.GetYAMLHeader()
+	m.YamlSep = config.GetYAMLHeader()
 
 	zettel.Content = domain.Content(strfun.TrimSpaceRight(zettel.Content.AsString()))
 	return uc.port.CreateZettel(ctx, zettel)
