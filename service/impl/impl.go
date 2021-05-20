@@ -37,6 +37,7 @@ type myService struct {
 	core     coreSub
 	auth     authSub
 	place    placeSub
+	cfg      cfgSub
 	web      webSub
 	subs     map[service.Subservice]subServceDescr
 	subNames map[string]subServiceData
@@ -71,6 +72,7 @@ func createAndStart() service.Service {
 		service.SubCore:  {&srv.core, "core"},
 		service.SubAuth:  {&srv.auth, "auth"},
 		service.SubPlace: {&srv.place, "place"},
+		service.SubCfg:   {&srv.cfg, "config"},
 		service.SubWeb:   {&srv.web, "web"},
 	}
 	srv.subNames = make(map[string]subServiceData, len(srv.subs))
@@ -82,10 +84,11 @@ func createAndStart() service.Service {
 		subDescr.sub.Initialize()
 	}
 	srv.depStart = subServiceDependency{
-		// service.SubCore:  nil,
-		// service.SubAuth:  nil,
+		service.SubCore:  nil,
+		service.SubAuth:  nil,
 		service.SubPlace: {service.SubAuth},
-		service.SubWeb:   {service.SubAuth, service.SubPlace},
+		service.SubCfg:   {service.SubPlace},
+		service.SubWeb:   {service.SubAuth, service.SubCfg, service.SubPlace},
 	}
 	srv.depStop = make(subServiceDependency, len(srv.depStart))
 	for sub, deps := range srv.depStart {
@@ -170,10 +173,8 @@ func (srv *myService) shutdown() {
 	}
 	srv.observer = nil
 	srv.started = false
-	for _, subD := range srv.subs {
-		if sub := subD.sub; sub.IsStarted() {
-			sub.Stop(srv)
-		}
+	for subsrv := range srv.subs {
+		srv.doStopSub(subsrv)
 	}
 }
 

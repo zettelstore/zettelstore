@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
@@ -57,16 +58,16 @@ func doRun(debug bool) (int, error) {
 	return 0, nil
 }
 
-func setupRouting(webSrv server.Server, placeManager place.Manager, authManager auth.Manager) {
-	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, placeManager)
-	api := api.New(webSrv, authManager, authManager, webSrv)
-	wui := webui.New(webSrv, authManager, authManager, placeManager, authPolicy)
+func setupRouting(webSrv server.Server, rtConfig *config.Config, placeManager place.Manager, authManager auth.Manager) {
+	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, rtConfig, placeManager)
+	api := api.New(webSrv, rtConfig, authManager, authManager, webSrv)
+	wui := webui.New(webSrv, rtConfig, authManager, authManager, placeManager, authPolicy)
 
 	ucAuthenticate := usecase.NewAuthenticate(authManager, authManager, placeManager)
-	ucCreateZettel := usecase.NewCreateZettel(protectedPlaceManager)
+	ucCreateZettel := usecase.NewCreateZettel(rtConfig, protectedPlaceManager)
 	ucGetMeta := usecase.NewGetMeta(protectedPlaceManager)
 	ucGetZettel := usecase.NewGetZettel(protectedPlaceManager)
-	ucParseZettel := usecase.NewParseZettel(ucGetZettel)
+	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
 	ucListMeta := usecase.NewListMeta(protectedPlaceManager)
 	ucListRoles := usecase.NewListRole(protectedPlaceManager)
 	ucListTags := usecase.NewListTags(protectedPlaceManager)
@@ -93,7 +94,7 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 		webSrv.AddZettelRoute('e', http.MethodPost, wui.MakeEditSetZettelHandler(
 			usecase.NewUpdateZettel(protectedPlaceManager)))
 		webSrv.AddZettelRoute('f', http.MethodGet, wui.MakeGetFolgeZettelHandler(
-			ucGetZettel, usecase.NewFolgeZettel()))
+			ucGetZettel, usecase.NewFolgeZettel(rtConfig)))
 		webSrv.AddZettelRoute('f', http.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
 		webSrv.AddZettelRoute('g', http.MethodGet, wui.MakeGetNewZettelHandler(
 			ucGetZettel, usecase.NewNewZettel()))

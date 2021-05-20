@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -67,13 +66,13 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 			return
 		}
 		m := origZettel.Meta
-		title := parser.ParseInlines(input.NewInput(config.GetTitle(m)), meta.ValueSyntaxZmk)
+		title := parser.ParseInlines(input.NewInput(wui.rtConfig.GetTitle(m)), meta.ValueSyntaxZmk)
 		textTitle, err := adapter.FormatInlines(title, "text", nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		env := encoder.Environment{Lang: config.GetLang(m)}
+		env := encoder.Environment{Lang: wui.rtConfig.GetLang(m)}
 		htmlTitle, err := adapter.FormatInlines(title, "html", &env)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -115,13 +114,13 @@ func (wui *WebUI) renderZettelForm(
 	user := wui.getUser(ctx)
 	m := zettel.Meta
 	var base baseData
-	wui.makeBaseData(ctx, config.GetLang(m), title, user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetLang(m), title, user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     m.GetDefault(meta.KeyTitle, ""),
 		MetaTags:      m.GetDefault(meta.KeyTags, ""),
-		MetaRole:      config.GetRole(m),
-		MetaSyntax:    config.GetSyntax(m),
+		MetaRole:      wui.rtConfig.GetRole(m),
+		MetaSyntax:    wui.rtConfig.GetSyntax(m),
 		MetaPairsRest: m.PairsRest(false),
 		IsTextContent: !zettel.Content.IsBinary(),
 		Content:       zettel.Content.AsString(),

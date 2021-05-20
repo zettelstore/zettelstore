@@ -16,7 +16,6 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -31,7 +30,7 @@ func (wui *WebUI) MakeGetLoginHandler() http.HandlerFunc {
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
 	var base baseData
-	wui.makeBaseData(ctx, config.GetDefaultLang(), "Login", nil, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), "Login", nil, &base)
 	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
 		Title string
 		Retry bool

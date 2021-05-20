@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -49,7 +48,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.H
 		user := wui.getUser(ctx)
 		m := zettel.Meta
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
 			Zid       string
 			MetaPairs []meta.Pair

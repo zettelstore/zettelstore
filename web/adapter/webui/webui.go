@@ -38,11 +38,12 @@ import (
 
 // WebUI holds all data for delivering the web ui.
 type WebUI struct {
-	ab     server.AuthBuilder
-	authz  auth.AuthzManager
-	token  auth.TokenManager
-	place  webuiPlace
-	policy auth.Policy
+	ab       server.AuthBuilder
+	rtConfig *config.Config
+	authz    auth.AuthzManager
+	token    auth.TokenManager
+	place    webuiPlace
+	policy   auth.Policy
 
 	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
@@ -68,14 +69,15 @@ type webuiPlace interface {
 }
 
 // New creates a new WebUI struct.
-func New(ab server.AuthBuilder, authz auth.AuthzManager, token auth.TokenManager,
+func New(ab server.AuthBuilder, rtConfig *config.Config, authz auth.AuthzManager, token auth.TokenManager,
 	mgr place.Manager, pol auth.Policy) *WebUI {
 	wui := &WebUI{
-		ab:     ab,
-		authz:  authz,
-		token:  token,
-		place:  mgr,
-		policy: pol,
+		ab:       ab,
+		rtConfig: rtConfig,
+		authz:    authz,
+		token:    token,
+		place:    mgr,
+		policy:   pol,
 
 		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration),
 		stylesheetURL: ab.NewURLBuilder('z').SetZid(
@@ -218,7 +220,7 @@ func (wui *WebUI) makeBaseData(
 	data.CanCreate = canCreate
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
-	data.FooterHTML = config.GetFooterHTML()
+	data.FooterHTML = wui.rtConfig.GetFooterHTML()
 }
 
 // htmlAttrNewWindow eturns HTML attribute string for opening a link in a new window.
@@ -236,7 +238,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 	if err != nil {
 		return nil
 	}
-	zn := parser.ParseZettel(menu, "")
+	zn := parser.ParseZettel(menu, "", wui.rtConfig)
 	refs := collect.Order(zn)
 	result := make([]simpleLink, 0, len(refs))
 	for _, ref := range refs {
@@ -251,9 +253,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		if !wui.policy.CanRead(user, m) {
 			continue
 		}
-		title := config.GetTitle(m)
+		title := wui.rtConfig.GetTitle(m)
 		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
-		env := encoder.Environment{Lang: config.GetLang(m)}
+		env := encoder.Environment{Lang: wui.rtConfig.GetLang(m)}
 		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
 		if err != nil {
 			menuTitle, err = adapter.FormatInlines(astTitle, "text", nil)

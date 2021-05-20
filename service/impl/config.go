@@ -138,7 +138,8 @@ func (cfg *subConfig) SwitchNextToCur() {
 	cfg.cur = cfg.next.Clone()
 }
 
-// func parseString(val string) interface{} { return val }
+func parseString(val string) interface{} { return val }
+
 func parseBool(val string) interface{} {
 	if val == "" {
 		return false

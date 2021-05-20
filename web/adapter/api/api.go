@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
@@ -23,21 +24,23 @@ import (
 
 // API holds all data and methods for delivering API call results.
 type API struct {
-	b     server.Builder
-	authz auth.AuthzManager
-	token auth.TokenManager
-	auth  server.Auth
+	b        server.Builder
+	rtConfig *config.Config
+	authz    auth.AuthzManager
+	token    auth.TokenManager
+	auth     server.Auth
 
 	tokenLifetime time.Duration
 }
 
 // New creates a new API object.
-func New(b server.Builder, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth) *API {
+func New(b server.Builder, rtConfig *config.Config, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth) *API {
 	api := &API{
-		b:     b,
-		authz: authz,
-		token: token,
-		auth:  auth,
+		b:        b,
+		rtConfig: rtConfig,
+		authz:    authz,
+		token:    token,
+		auth:     auth,
 
 		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration),
 	}

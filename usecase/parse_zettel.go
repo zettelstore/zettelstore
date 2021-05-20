@@ -15,18 +15,20 @@ import (
 	"context"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/parser"
 )
 
 // ParseZettel is the data for this use case.
 type ParseZettel struct {
+	rtConfig  *config.Config
 	getZettel GetZettel
 }
 
 // NewParseZettel creates a new use case.
-func NewParseZettel(getZettel GetZettel) ParseZettel {
-	return ParseZettel{getZettel: getZettel}
+func NewParseZettel(rtConfig *config.Config, getZettel GetZettel) ParseZettel {
+	return ParseZettel{rtConfig: rtConfig, getZettel: getZettel}
 }
 
 // Run executes the use case.
@@ -37,5 +39,5 @@ func (uc ParseZettel) Run(
 		return nil, err
 	}
 
-	return parser.ParseZettel(zettel, syntax), nil
+	return parser.ParseZettel(zettel, syntax, uc.rtConfig), nil
 }

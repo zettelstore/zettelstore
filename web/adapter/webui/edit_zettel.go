@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -49,7 +48,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		user := wui.getUser(ctx)
 		m := zettel.Meta
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m), "Edit Zettel", user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.GetLang(m), "Edit Zettel", user, &base)
 		wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 			Heading:       base.Title,
 			MetaTitle:     m.GetDefault(meta.KeyTitle, ""),

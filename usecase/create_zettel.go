@@ -29,12 +29,16 @@ type CreateZettelPort interface {
 
 // CreateZettel is the data for this use case.
 type CreateZettel struct {
-	port CreateZettelPort
+	rtConfig *config.Config
+	port     CreateZettelPort
 }
 
 // NewCreateZettel creates a new use case.
-func NewCreateZettel(port CreateZettelPort) CreateZettel {
-	return CreateZettel{port: port}
+func NewCreateZettel(rtConfig *config.Config, port CreateZettelPort) CreateZettel {
+	return CreateZettel{
+		rtConfig: rtConfig,
+		port:     port,
+	}
 }
 
 // Run executes the use case.
@@ -45,15 +49,15 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	}
 
 	if title, ok := m.Get(meta.KeyTitle); !ok || title == "" {
-		m.Set(meta.KeyTitle, config.GetDefaultTitle())
+		m.Set(meta.KeyTitle, uc.rtConfig.GetDefaultTitle())
 	}
 	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
-		m.Set(meta.KeyRole, config.GetDefaultRole())
+		m.Set(meta.KeyRole, uc.rtConfig.GetDefaultRole())
 	}
 	if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-		m.Set(meta.KeySyntax, config.GetDefaultSyntax())
+		m.Set(meta.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	}
-	m.YamlSep = config.GetYAMLHeader()
+	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 
 	zettel.Content = domain.Content(strfun.TrimSpaceRight(zettel.Content.AsString()))
 	return uc.port.CreateZettel(ctx, zettel)

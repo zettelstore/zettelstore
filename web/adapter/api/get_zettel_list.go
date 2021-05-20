@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
@@ -67,7 +66,7 @@ func (api *API) MakeListMetaHandler(
 func (api *API) renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta) {
 	env := encoder.Environment{Interactive: true}
 	buf := encoder.NewBufWriter(w)
-	buf.WriteStrings("<html lang=\"", config.GetDefaultLang(), "\">\n<body>\n<ul>\n")
+	buf.WriteStrings("<html lang=\"", api.rtConfig.GetDefaultLang(), "\">\n<body>\n<ul>\n")
 	for _, m := range metaList {
 		title := m.GetDefault(meta.KeyTitle, "")
 		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), "html", &env)

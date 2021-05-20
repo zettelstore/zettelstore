@@ -19,11 +19,13 @@ import (
 )
 
 // FolgeZettel is the data for this use case.
-type FolgeZettel struct{}
+type FolgeZettel struct {
+	rtConfig *config.Config
+}
 
 // NewFolgeZettel creates a new use case.
-func NewFolgeZettel() FolgeZettel {
-	return FolgeZettel{}
+func NewFolgeZettel(rtConfig *config.Config) FolgeZettel {
+	return FolgeZettel{rtConfig}
 }
 
 // Run executes the use case.
@@ -38,9 +40,9 @@ func (uc FolgeZettel) Run(origZettel domain.Zettel) domain.Zettel {
 		}
 		m.Set(meta.KeyTitle, title)
 	}
-	m.Set(meta.KeyRole, config.GetRole(origMeta))
+	m.Set(meta.KeyRole, uc.rtConfig.GetRole(origMeta))
 	m.Set(meta.KeyTags, origMeta.GetDefault(meta.KeyTags, ""))
-	m.Set(meta.KeySyntax, config.GetSyntax(origMeta))
+	m.Set(meta.KeySyntax, uc.rtConfig.GetSyntax(origMeta))
 	m.Set(meta.KeyPrecursor, origMeta.Zid.String())
 	return domain.Zettel{Meta: m, Content: ""}
 }

@@ -126,7 +126,7 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	sb.Reset()
 
 	newZettel := parser.ParseZettel(domain.Zettel{
-		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "")
+		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "", nil)
 	zmkEncoder.WriteBlocks(&sb, newZettel.Ast)
 	gotSecond := sb.String()
 	sb.Reset()
@@ -160,7 +160,7 @@ func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string)
 		if err != nil {
 			panic(err)
 		}
-		z := parser.ParseZettel(zettel, "")
+		z := parser.ParseZettel(zettel, "", nil)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
@@ -213,7 +213,7 @@ func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 		if err != nil {
 			panic(err)
 		}
-		z := parser.ParseZettel(zettel, "")
+		z := parser.ParseZettel(zettel, "", nil)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)

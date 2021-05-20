@@ -17,7 +17,6 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -66,7 +65,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, api, 'z', getMeta, part.DefString(partZettel), format),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, api, getMeta),
 			CiteAdapter:    nil,
-			Lang:           config.GetLang(zn.InhMeta),
+			Lang:           api.rtConfig.GetLang(zn.InhMeta),
 			Xhtml:          false,
 			MarkerExternal: "",
 			NewWindow:      false,
@@ -78,7 +77,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 		case partMeta:
 			err = writeZettelPartMeta(w, zn, format)
 		case partContent:
-			err = writeZettelPartContent(w, zn, format, env)
+			err = api.writeZettelPartContent(w, zn, format, env)
 		}
 		if err != nil {
 			if errors.Is(err, adapter.ErrNoSuchFormat) {
@@ -117,9 +116,9 @@ func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format strin
 	return adapter.ErrNoSuchFormat
 }
 
-func writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
+func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
 	if format == "raw" {
-		if ct, ok := syntax2contentType(config.GetSyntax(zn.Meta)); ok {
+		if ct, ok := syntax2contentType(api.rtConfig.GetSyntax(zn.Meta)); ok {
 			w.Header().Add(adapter.ContentType, ct)
 		}
 	} else {

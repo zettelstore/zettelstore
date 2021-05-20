@@ -82,9 +82,9 @@ func ParseMetadata(title string) ast.InlineSlice {
 }
 
 // ParseZettel parses the zettel based on the syntax.
-func ParseZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
+func ParseZettel(zettel domain.Zettel, syntax string, rtConfig *config.Config) *ast.ZettelNode {
 	m := zettel.Meta
-	inhMeta := config.AddDefaultValues(m)
+	inhMeta := rtConfig.AddDefaultValues(m)
 	if syntax == "" {
 		syntax, _ = inhMeta.Get(meta.KeySyntax)
 	}

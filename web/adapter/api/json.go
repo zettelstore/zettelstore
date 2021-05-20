@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -105,7 +104,7 @@ func (api *API) renderListMetaXJSON(
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
 ) {
-	prepareZettel := getPrepareZettelFunc(ctx, parseZettel, part)
+	prepareZettel := api.getPrepareZettelFunc(ctx, parseZettel, part)
 	writeZettel := api.getWriteMetaZettelFunc(ctx, format, part, defPart, getMeta)
 	err := writeListXJSON(w, metaList, prepareZettel, writeZettel)
 	if err != nil {
@@ -115,7 +114,7 @@ func (api *API) renderListMetaXJSON(
 
 type prepareZettelFunc func(m *meta.Meta) (*ast.ZettelNode, error)
 
-func getPrepareZettelFunc(ctx context.Context, parseZettel usecase.ParseZettel, part partType) prepareZettelFunc {
+func (api *API) getPrepareZettelFunc(ctx context.Context, parseZettel usecase.ParseZettel, part partType) prepareZettelFunc {
 	switch part {
 	case partZettel, partContent:
 		return func(m *meta.Meta) (*ast.ZettelNode, error) {
@@ -127,7 +126,7 @@ func getPrepareZettelFunc(ctx context.Context, parseZettel usecase.ParseZettel, 
 				Meta:    m,
 				Content: "",
 				Zid:     m.Zid,
-				InhMeta: config.AddDefaultValues(m),
+				InhMeta: api.rtConfig.AddDefaultValues(m),
 				Ast:     nil,
 			}, nil
 		}

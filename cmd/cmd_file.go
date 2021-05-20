@@ -16,7 +16,6 @@ import (
 	"io"
 	"os"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -29,18 +28,19 @@ import (
 
 func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	format := fs.Lookup("t").Value.String()
-	meta, inp, err := getInput(fs.Args())
-	if meta == nil {
+	m, inp, err := getInput(fs.Args())
+	if m == nil {
 		return 2, err
 	}
 	z := parser.ParseZettel(
 		domain.Zettel{
-			Meta:    meta,
+			Meta:    m,
 			Content: domain.NewContent(inp.Src[inp.Pos:]),
 		},
-		config.GetSyntax(meta),
+		m.GetDefault(meta.KeySyntax, meta.ValueSyntaxZmk),
+		nil,
 	)
-	enc := encoder.Create(format, &encoder.Environment{Lang: config.GetLang(meta)})
+	enc := encoder.Create(format, &encoder.Environment{Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN)})
 	if enc == nil {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", format)
 		return 2, nil

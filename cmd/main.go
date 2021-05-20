@@ -21,6 +21,7 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -204,8 +205,8 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
 		},
 		createManager,
-		func(srv server.Server, plMgr place.Manager, authMgr auth.Manager) error {
-			setupRouting(srv, plMgr, authMgr)
+		func(srv server.Server, rtConfig *config.Config, plMgr place.Manager, authMgr auth.Manager) error {
+			setupRouting(srv, rtConfig, plMgr, authMgr)
 			return nil
 		},
 	)

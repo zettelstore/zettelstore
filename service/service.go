@@ -13,6 +13,7 @@ package service
 
 import (
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/web/server"
@@ -84,6 +85,7 @@ const (
 	SubCore
 	SubAuth
 	SubPlace
+	SubCfg
 	SubWeb
 )
 
@@ -141,5 +143,6 @@ type CreatePlaceManagerFunc func(authManager auth.Manager) (place.Manager, error
 // SetupWebServerFunc is called to create a new web service handler.
 type SetupWebServerFunc func(
 	webServer server.Server,
+	rtConfig *config.Config,
 	placeManager place.Manager,
 	authManager auth.Manager) error

@@ -144,7 +144,7 @@ func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
 
 	var cData collectData
 	cData.initialize()
-	collectZettelIndexData(parser.ParseZettel(zettel, ""), &cData)
+	collectZettelIndexData(parser.ParseZettel(zettel, "", nil), &cData)
 	zi := store.NewZettelIndex(m.Zid)
 	mgr.idxCollectFromMeta(ctx, m, zi, &cData)
 	mgr.idxProcessData(ctx, zi, &cData)
