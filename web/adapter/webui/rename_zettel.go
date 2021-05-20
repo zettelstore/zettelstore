@@ -89,6 +89,6 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.newURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.NewURLBuilder('h').SetZid(newZid))
 	}
 }

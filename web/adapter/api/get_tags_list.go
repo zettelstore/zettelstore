@@ -24,7 +24,7 @@ import (
 )
 
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
+func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 		tagData, err := listTags.Run(r.Context(), iMinCount)

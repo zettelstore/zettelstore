@@ -46,8 +46,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 
 		lang := runtime.GetLang(zn.InhMeta)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui.ab, 'h', getMeta, "", ""),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui.ab, getMeta),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", ""),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,
@@ -107,17 +107,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		}{
 			HTMLTitle:     htmlTitle,
 			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       wui.newURLBuilder('e').SetZid(zid).String(),
+			EditURL:       wui.NewURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
-			InfoURL:       wui.newURLBuilder('i').SetZid(zid).String(),
+			InfoURL:       wui.NewURLBuilder('i').SetZid(zid).String(),
 			RoleText:      roleText,
-			RoleURL:       wui.newURLBuilder('h').AppendQuery("role", roleText).String(),
+			RoleURL:       wui.NewURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCopy,
-			CopyURL:       wui.newURLBuilder('c').SetZid(zid).String(),
+			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:      wui.newURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
 			FolgeRefs:     wui.formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
 			PrecursorRefs: wui.formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
@@ -161,7 +161,7 @@ func formatMeta(m *meta.Meta, format string, env *encoder.Environment) (string, 
 func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
 	if tags, ok := m.GetList(meta.KeyTags); ok {
-		ub := wui.newURLBuilder('h')
+		ub := wui.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
 			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", tag).String()}
@@ -192,7 +192,7 @@ func (wui *WebUI) formatBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleL
 			continue
 		}
 		if title, found := getTitle(zid, "text"); found > 0 {
-			url := wui.newURLBuilder('h').SetZid(zid).String()
+			url := wui.NewURLBuilder('h').SetZid(zid).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})
 			} else {

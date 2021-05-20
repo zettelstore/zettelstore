@@ -45,7 +45,7 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !wui.authz.WithAuth() {
-			redirectFound(w, r, wui.newURLBuilder('/'))
+			redirectFound(w, r, wui.NewURLBuilder('/'))
 			return
 		}
 		ctx := r.Context()
@@ -65,7 +65,7 @@ func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.Han
 		}
 
 		wui.setToken(w, token)
-		redirectFound(w, r, wui.newURLBuilder('/'))
+		redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }
 
@@ -73,6 +73,6 @@ func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.Han
 func (wui *WebUI) MakeGetLogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wui.clearToken(r.Context(), w)
-		redirectFound(w, r, wui.newURLBuilder('/'))
+		redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }

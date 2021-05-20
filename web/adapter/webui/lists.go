@@ -85,7 +85,7 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 	for _, role := range roleList {
 		roleInfos = append(
 			roleInfos,
-			roleInfo{role, wui.newURLBuilder('h').AppendQuery("role", role).String()})
+			roleInfo{role, wui.NewURLBuilder('h').AppendQuery("role", role).String()})
 	}
 
 	user := wui.getUser(ctx)
@@ -125,7 +125,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	user := wui.getUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	baseTagListURL := wui.newURLBuilder('h')
+	baseTagListURL := wui.NewURLBuilder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
 		countMap[count]++
@@ -180,7 +180,7 @@ func (wui *WebUI) MakeSearchHandler(
 		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			redirectFound(w, r, wui.newURLBuilder('h'))
+			redirectFound(w, r, wui.NewURLBuilder('h'))
 			return
 		}
 
@@ -224,7 +224,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := wui.newURLBuilder('j').SetZid(zid)
+		depthURL := wui.NewURLBuilder('j').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -248,7 +248,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: wui.newURLBuilder('i').SetZid(zid).String(),
+			InfoURL: wui.NewURLBuilder('i').SetZid(zid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],
@@ -344,7 +344,7 @@ func listTitleSearch(prefix string, s *search.Search) string {
 }
 
 func (wui *WebUI) newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
-	ub := wui.newURLBuilder(key)
+	ub := wui.NewURLBuilder(key)
 	for key, values := range query {
 		if key != offsetKey && key != limitKey {
 			for _, val := range values {
@@ -377,7 +377,7 @@ func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error)
 		}
 		metas = append(metas, simpleLink{
 			Text: htmlTitle,
-			URL:  wui.newURLBuilder('h').SetZid(m.Zid).String(),
+			URL:  wui.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
 	return metas, nil

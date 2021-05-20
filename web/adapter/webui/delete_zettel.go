@@ -74,6 +74,6 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.newURLBuilder('/'))
+		redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }

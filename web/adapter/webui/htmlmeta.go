@@ -100,9 +100,9 @@ func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle func(id.Zid,
 	switch {
 	case found > 0:
 		if title == "" {
-			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", wui.newURLBuilder('h').SetZid(zid), zid)
+			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", wui.NewURLBuilder('h').SetZid(zid), zid)
 		} else {
-			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", wui.newURLBuilder('h').SetZid(zid), title, zid)
+			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", wui.NewURLBuilder('h').SetZid(zid), title, zid)
 		}
 	case found == 0:
 		fmt.Fprintf(w, "<s>%v</s>", val)
@@ -178,7 +178,7 @@ func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
 }
 
 func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
-	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", wui.newURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
+	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", wui.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
 	strfun.HTMLEscape(w, text, false)
 	io.WriteString(w, "</a>")
 }

@@ -17,60 +17,46 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
-func MakePostLoginHandlerAPI(authz auth.AuthzManager, auth usecase.Authenticate) http.HandlerFunc {
-	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration)
+func (api *API) MakePostLoginHandlerAPI(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authz.WithAuth() {
+		if !api.withAuth() {
 			w.Header().Set(adapter.ContentType, format2ContentType("json"))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
 		}
-		authenticateViaJSON(auth, w, r, tokenLifetime)
-	}
-}
-
-func authenticateViaJSON(
-	auth usecase.Authenticate,
-	w http.ResponseWriter,
-	r *http.Request,
-	authDuration time.Duration,
-) {
-	token, err := authenticateForJSON(auth, w, r, authDuration)
-	if err != nil {
-		adapter.ReportUsecaseError(w, err)
-		return
-	}
-	if token == nil {
-		w.Header().Set("WWW-Authenticate", `Bearer realm="Default"`)
-		http.Error(w, "Authentication failed", http.StatusUnauthorized)
-		return
-	}
-
-	w.Header().Set(adapter.ContentType, format2ContentType("json"))
-	writeJSONToken(w, string(token), authDuration)
-}
-
-func authenticateForJSON(
-	ucAuth usecase.Authenticate,
-	w http.ResponseWriter,
-	r *http.Request,
-	authDuration time.Duration,
-) ([]byte, error) {
-	ident, cred, ok := adapter.GetCredentialsViaForm(r)
-	if !ok {
-		if ident, cred, ok = r.BasicAuth(); !ok {
-			return nil, nil
+		var token []byte
+		if ident, cred := retrieveIdentCred(r); ident != "" {
+			var err error
+			token, err = ucAuth.Run(r.Context(), ident, cred, api.tokenLifetime, auth.KindJSON)
+			if err != nil {
+				adapter.ReportUsecaseError(w, err)
+				return
+			}
 		}
+		if len(token) == 0 {
+			w.Header().Set("WWW-Authenticate", `Bearer realm="Default"`)
+			http.Error(w, "Authentication failed", http.StatusUnauthorized)
+			return
+		}
+
+		w.Header().Set(adapter.ContentType, format2ContentType("json"))
+		writeJSONToken(w, string(token), api.tokenLifetime)
 	}
-	token, err := ucAuth.Run(r.Context(), ident, cred, authDuration, auth.KindJSON)
-	return token, err
+}
+
+func retrieveIdentCred(r *http.Request) (string, string) {
+	if ident, cred, ok := adapter.GetCredentialsViaForm(r); ok {
+		return ident, cred
+	}
+	if ident, cred, ok := r.BasicAuth(); ok {
+		return ident, cred
+	}
+	return "", ""
 }
 
 func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) {
@@ -87,12 +73,11 @@ func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration)
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
-func MakeRenewAuthHandler(token auth.TokenManager, authS server.Auth) http.HandlerFunc {
-	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration)
+func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		authData := authS.GetAuthData(ctx)
-		if authData == nil || authData.Token == nil || authData.User == nil {
+		authData := api.getAuthData(ctx)
+		if authData == nil || len(authData.Token) == 0 || authData.User == nil {
 			adapter.BadRequest(w, "Not authenticated")
 			return
 		}
@@ -106,12 +91,12 @@ func MakeRenewAuthHandler(token auth.TokenManager, authS server.Auth) http.Handl
 		}
 
 		// Token is a little bit aged. Create a new one
-		token, err := token.GetToken(authData.User, tokenLifetime, auth.KindJSON)
+		token, err := api.getToken(authData.User)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 		w.Header().Set(adapter.ContentType, format2ContentType("json"))
-		writeJSONToken(w, string(token), tokenLifetime)
+		writeJSONToken(w, string(token), api.tokenLifetime)
 	}
 }

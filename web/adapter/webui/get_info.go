@@ -113,18 +113,18 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 			Endnotes     string
 		}{
 			Zid:          zid.String(),
-			WebURL:       wui.newURLBuilder('h').SetZid(zid).String(),
-			ContextURL:   wui.newURLBuilder('j').SetZid(zid).String(),
+			WebURL:       wui.NewURLBuilder('h').SetZid(zid).String(),
+			ContextURL:   wui.NewURLBuilder('j').SetZid(zid).String(),
 			CanWrite:     wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:      wui.newURLBuilder('e').SetZid(zid).String(),
+			EditURL:      wui.NewURLBuilder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:     wui.newURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:     wui.NewURLBuilder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
-			CopyURL:      wui.newURLBuilder('c').SetZid(zid).String(),
+			CopyURL:      wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanRename:    wui.canRename(ctx, user, zn.Meta),
-			RenameURL:    wui.newURLBuilder('b').SetZid(zid).String(),
+			RenameURL:    wui.NewURLBuilder('b').SetZid(zid).String(),
 			CanDelete:    wui.canDelete(ctx, user, zn.Meta),
-			DeleteURL:    wui.newURLBuilder('d').SetZid(zid).String(),
+			DeleteURL:    wui.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:  len(locLinks) > 0,
@@ -168,7 +168,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
 	defFormat := encoder.GetDefaultFormat()
 	parts := []string{"zettel", "meta", "content"}
 	matrix := make([]matrixLine, 0, len(parts))
-	u := wui.newURLBuilder('z').SetZid(zid)
+	u := wui.NewURLBuilder('z').SetZid(zid)
 	for _, part := range parts {
 		row := make([]matrixElement, 0, len(formats)+1)
 		row = append(row, matrixElement{part, false, ""})

@@ -196,9 +196,9 @@ func (wui *WebUI) makeBaseData(
 	}
 	userIsValid := user != nil
 	if userIsValid {
-		userZettelURL = wui.ab.NewURLBuilder('h').SetZid(user.Zid).String()
+		userZettelURL = wui.NewURLBuilder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
-		userLogoutURL = wui.ab.NewURLBuilder('a').SetZid(user.Zid).String()
+		userLogoutURL = wui.NewURLBuilder('a').SetZid(user.Zid).String()
 	}
 
 	data.Lang = lang
@@ -263,7 +263,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		}
 		result = append(result, simpleLink{
 			Text: menuTitle,
-			URL:  wui.ab.NewURLBuilder('g').SetZid(m.Zid).String(),
+			URL:  wui.NewURLBuilder('g').SetZid(m.Zid).String(),
 		})
 	}
 	return result
@@ -283,7 +283,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	if code == http.StatusInternalServerError {
 		log.Printf("%v: %v", text, err)
 	}
-	user := wui.ab.GetUser(ctx)
+	user := wui.getUser(ctx)
 	var base baseData
 	wui.makeBaseData(ctx, meta.ValueLangEN, "Error", user, &base)
 	wui.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
@@ -313,9 +313,9 @@ func (wui *WebUI) renderTemplateStatus(
 		adapter.InternalServerError(w, "Unable to get template", err)
 		return
 	}
-	if user := wui.ab.GetUser(ctx); user != nil {
+	if user := wui.getUser(ctx); user != nil {
 		if tok, err1 := wui.token.GetToken(user, wui.tokenLifetime, auth.KindHTML); err1 == nil {
-			wui.ab.SetToken(w, tok, wui.tokenLifetime)
+			wui.setToken(w, tok)
 		}
 	}
 	var content bytes.Buffer
@@ -331,8 +331,14 @@ func (wui *WebUI) renderTemplateStatus(
 	}
 }
 
-func (wui *WebUI) getUser(ctx context.Context) *meta.Meta   { return wui.ab.GetUser(ctx) }
-func (wui *WebUI) newURLBuilder(key byte) server.URLBuilder { return wui.ab.NewURLBuilder(key) }
+func (wui *WebUI) getUser(ctx context.Context) *meta.Meta { return wui.ab.GetUser(ctx) }
+
+// GetURLPrefix returns the configured URL prefix of the web server.
+func (wui *WebUI) GetURLPrefix() string { return wui.ab.GetURLPrefix() }
+
+// NewURLBuilder creates a new URL builder object with the given key.
+func (wui *WebUI) NewURLBuilder(key byte) server.URLBuilder { return wui.ab.NewURLBuilder(key) }
+
 func (wui *WebUI) clearToken(ctx context.Context, w http.ResponseWriter) context.Context {
 	return wui.ab.ClearToken(ctx, w)
 }
