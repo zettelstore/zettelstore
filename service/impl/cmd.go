@@ -72,7 +72,7 @@ func (sess *cmdSession) printTable(table [][]string) {
 	if sess.header {
 		sess.printRow(table[0], maxLen, "|=", " | ", ' ')
 		hLine := make([]string, len(table[0]))
-		sess.printRow(hLine, maxLen, "%%", "-+-", '-')
+		sess.printRow(hLine, maxLen, "|%", "-+-", '-')
 	}
 
 	for _, row := range table[1:] {

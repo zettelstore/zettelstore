@@ -28,8 +28,26 @@ type authSub struct {
 
 func (as *authSub) Initialize() {
 	as.descr = descriptionMap{
-		service.AuthOwner:    {"Owner's zettel id", parseZid, false},
-		service.AuthReadonly: {"Read-only mode", parseBool, true},
+		service.AuthOwner: {
+			"Owner's zettel id",
+			func(val string) interface{} {
+				if owner := as.cur[service.AuthOwner]; owner != nil && owner != id.Invalid {
+					return nil
+				}
+				return parseZid(val)
+			},
+			false,
+		},
+		service.AuthReadonly: {
+			"Read-only mode",
+			func(val string) interface{} {
+				if ro := as.cur[service.AuthReadonly]; ro == true {
+					return nil
+				}
+				return parseBool(val)
+			},
+			true,
+		},
 	}
 	as.next = interfaceMap{
 		service.AuthOwner:    id.Invalid,
