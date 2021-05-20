@@ -39,32 +39,25 @@ func (wui *WebUI) MakeListHTMLMetaHandler(
 	listTags usecase.ListTags,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rwl := renderWebList{w: w, ab: wui.ab, te: wui.te}
 		query := r.URL.Query()
 		switch query.Get("_l") {
 		case "r":
-			rwl.renderRolesList(r, listRole)
+			wui.renderRolesList(w, r, listRole)
 		case "t":
-			rwl.renderTagsList(r, listTags)
+			wui.renderTagsList(w, r, listTags)
 		default:
-			rwl.renderZettelList(r, listMeta)
+			wui.renderZettelList(w, r, listMeta)
 		}
 	}
 }
 
-type renderWebList struct {
-	w  http.ResponseWriter
-	ab server.AuthBuilder
-	te *templateEngine
-}
-
-func (rwl *renderWebList) renderZettelList(r *http.Request, listMeta usecase.ListMeta) {
+func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listMeta usecase.ListMeta) {
 	query := r.URL.Query()
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
 	title := listTitleSearch("Filter", s)
-	rwl.renderMetaList(
-		ctx, title, s,
+	wui.renderMetaList(
+		ctx, w, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
 			if !s.HasComputedMetaKey() {
 				ctx = place.NoEnrichContext(ctx)
@@ -72,7 +65,7 @@ func (rwl *renderWebList) renderZettelList(r *http.Request, listMeta usecase.Lis
 			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
-			return newPageURL(rwl.ab, 'h', query, offset, "_offset", "_limit")
+			return newPageURL(wui.ab, 'h', query, offset, "_offset", "_limit")
 		})
 }
 
@@ -81,11 +74,11 @@ type roleInfo struct {
 	URL  string
 }
 
-func (rwl *renderWebList) renderRolesList(r *http.Request, listRole usecase.ListRole) {
+func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRole usecase.ListRole) {
 	ctx := r.Context()
 	roleList, err := listRole.Run(ctx)
 	if err != nil {
-		adapter.ReportUsecaseError(rwl.w, err)
+		adapter.ReportUsecaseError(w, err)
 		return
 	}
 
@@ -93,13 +86,13 @@ func (rwl *renderWebList) renderRolesList(r *http.Request, listRole usecase.List
 	for _, role := range roleList {
 		roleInfos = append(
 			roleInfos,
-			roleInfo{role, rwl.ab.NewURLBuilder('h').AppendQuery("role", role).String()})
+			roleInfo{role, wui.ab.NewURLBuilder('h').AppendQuery("role", role).String()})
 	}
 
-	user := rwl.ab.GetUser(ctx)
+	user := wui.ab.GetUser(ctx)
 	var base baseData
-	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-	rwl.te.renderTemplate(ctx, rwl.w, id.RolesTemplateZid, &base, struct {
+	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
 		Roles: roleInfos,
@@ -121,19 +114,19 @@ type tagInfo struct {
 
 var fontSizes = [...]int{75, 83, 100, 117, 150, 200}
 
-func (rwl *renderWebList) renderTagsList(r *http.Request, listTags usecase.ListTags) {
+func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTags usecase.ListTags) {
 	ctx := r.Context()
 	iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 	tagData, err := listTags.Run(ctx, iMinCount)
 	if err != nil {
-		rwl.te.reportError(ctx, rwl.w, err)
+		wui.reportError(ctx, w, err)
 		return
 	}
 
-	user := rwl.ab.GetUser(ctx)
+	user := wui.ab.GetUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
-	baseTagListURL := rwl.ab.NewURLBuilder('h')
+	baseTagListURL := wui.ab.NewURLBuilder('h')
 	for tag, ml := range tagData {
 		count := len(ml)
 		countMap[count]++
@@ -159,14 +152,14 @@ func (rwl *renderWebList) renderTagsList(r *http.Request, listTags usecase.ListT
 	}
 
 	var base baseData
-	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
 		minCounts = append(minCounts, countInfo{sCount, base.ListTagsURL + "&min=" + sCount})
 	}
 
-	rwl.te.renderTemplate(ctx, rwl.w, id.TagsTemplateZid, &base, struct {
+	wui.renderTemplate(ctx, w, id.TagsTemplateZid, &base, struct {
 		ListTagsURL string
 		MinCounts   []countInfo
 		Tags        []tagInfo
@@ -192,10 +185,9 @@ func (wui *WebUI) MakeSearchHandler(
 			return
 		}
 
-		rwl := renderWebList{w: w, ab: wui.ab, te: wui.te}
 		title := listTitleSearch("Search", s)
-		rwl.renderMetaList(
-			ctx, title, s, func(s *search.Search) ([]*meta.Meta, error) {
+		wui.renderMetaList(
+			ctx, w, title, s, func(s *search.Search) ([]*meta.Meta, error) {
 				if !s.HasComputedMetaKey() {
 					ctx = place.NoEnrichContext(ctx)
 				}
@@ -213,7 +205,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 		q := r.URL.Query()
@@ -222,7 +214,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 		limit := getIntParameter(q, "limit", 200)
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		metaLinks, err := buildHTMLMetaList(wui.ab, metaList)
@@ -248,8 +240,8 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 		}
 		var base baseData
 		user := wui.ab.GetUser(ctx)
-		wui.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-		wui.te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
+		wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
 			Depths  []simpleLink
@@ -273,8 +265,9 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 	return val
 }
 
-func (rwl *renderWebList) renderMetaList(
+func (wui *WebUI) renderMetaList(
 	ctx context.Context,
+	w http.ResponseWriter,
 	title string,
 	s *search.Search,
 	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
@@ -290,7 +283,7 @@ func (rwl *renderWebList) renderMetaList(
 
 		metaList, err = ucMetaList(s)
 		if err != nil {
-			rwl.te.reportError(ctx, rwl.w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		if offset := s.GetOffset(); offset > 0 {
@@ -307,19 +300,19 @@ func (rwl *renderWebList) renderMetaList(
 	} else {
 		metaList, err = ucMetaList(s)
 		if err != nil {
-			rwl.te.reportError(ctx, rwl.w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 	}
-	user := rwl.ab.GetUser(ctx)
-	metas, err := buildHTMLMetaList(rwl.ab, metaList)
+	user := wui.ab.GetUser(ctx)
+	metas, err := buildHTMLMetaList(wui.ab, metaList)
 	if err != nil {
-		rwl.te.reportError(ctx, rwl.w, err)
+		wui.reportError(ctx, w, err)
 		return
 	}
 	var base baseData
-	rwl.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-	rwl.te.renderTemplate(ctx, rwl.w, id.ListTemplateZid, &base, struct {
+	wui.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title       string
 		Metas       []simpleLink
 		HasPrevNext bool

@@ -26,7 +26,6 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeGetCopyZettelHandler creates a new HTTP handler to display the
@@ -36,10 +35,10 @@ func (wui *WebUI) MakeGetCopyZettelHandler(getZettel usecase.GetZettel, copyZett
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Copy")
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, wui.ab, wui.te, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
+		wui.renderZettelForm(w, r, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
 	}
 }
 
@@ -50,10 +49,10 @@ func (wui *WebUI) MakeGetFolgeZettelHandler(getZettel usecase.GetZettel, folgeZe
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Folge")
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, wui.ab, wui.te, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
+		wui.renderZettelForm(w, r, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
 	}
 }
 
@@ -64,23 +63,23 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "New")
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
 		textTitle, err := adapter.FormatInlines(title, "text", nil)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: runtime.GetLang(m)}
 		htmlTitle, err := adapter.FormatInlines(title, "html", &env)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, wui.ab, wui.te, newZettel.Run(origZettel), textTitle, htmlTitle)
+		wui.renderZettelForm(w, r, newZettel.Run(origZettel), textTitle, htmlTitle)
 	}
 }
 
@@ -106,20 +105,18 @@ func getOrigZettel(
 	return origZettel, nil
 }
 
-func renderZettelForm(
+func (wui *WebUI) renderZettelForm(
 	w http.ResponseWriter,
 	r *http.Request,
-	auth server.Auth,
-	te *templateEngine,
 	zettel domain.Zettel,
 	title, heading string,
 ) {
 	ctx := r.Context()
-	user := auth.GetUser(ctx)
+	user := wui.ab.GetUser(ctx)
 	m := zettel.Meta
 	var base baseData
-	te.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
-	te.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
+	wui.makeBaseData(ctx, runtime.GetLang(m), title, user, &base)
+	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     m.GetDefault(meta.KeyTitle, ""),
 		MetaTags:      m.GetDefault(meta.KeyTags, ""),
@@ -138,17 +135,17 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel usecase.CreateZettel)
 		ctx := r.Context()
 		zettel, hasContent, err := parseZettelForm(r, id.Invalid)
 		if err != nil {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
+			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
 			return
 		}
 		if !hasContent {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
+			wui.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
 			return
 		}
 
 		newZid, err := createZettel.Run(ctx, zettel)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(newZid))

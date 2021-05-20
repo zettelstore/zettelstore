@@ -31,7 +31,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if r.URL.Path != "/" {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 		homeZid := runtime.GetHomeZettel()

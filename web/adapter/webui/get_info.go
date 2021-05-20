@@ -49,20 +49,20 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		ctx := r.Context()
 		q := r.URL.Query()
 		if format := adapter.GetFormat(r, q, "html"); format != "html" {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Zettel info not available in format %q", format)))
 			return
 		}
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 
@@ -87,9 +87,9 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
 		user := wui.ab.GetUser(ctx)
 		var base baseData
-		wui.te.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
-		wui.te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
+		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string
 			WebURL       string
 			ContextURL   string
@@ -116,15 +116,15 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 			Zid:          zid.String(),
 			WebURL:       wui.ab.NewURLBuilder('h').SetZid(zid).String(),
 			ContextURL:   wui.ab.NewURLBuilder('j').SetZid(zid).String(),
-			CanWrite:     wui.te.canWrite(ctx, user, zn.Meta, zn.Content),
+			CanWrite:     wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:      wui.ab.NewURLBuilder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
 			FolgeURL:     wui.ab.NewURLBuilder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
 			CopyURL:      wui.ab.NewURLBuilder('c').SetZid(zid).String(),
-			CanRename:    wui.te.canRename(ctx, user, zn.Meta),
+			CanRename:    wui.canRename(ctx, user, zn.Meta),
 			RenameURL:    wui.ab.NewURLBuilder('b').SetZid(zid).String(),
-			CanDelete:    wui.te.canDelete(ctx, user, zn.Meta),
+			CanDelete:    wui.canDelete(ctx, user, zn.Meta),
 			DeleteURL:    wui.ab.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,

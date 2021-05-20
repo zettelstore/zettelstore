@@ -33,8 +33,8 @@ func (wui *WebUI) MakeGetLoginHandler() http.HandlerFunc {
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
 	var base baseData
-	wui.te.makeBaseData(ctx, runtime.GetDefaultLang(), "Login", nil, &base)
-	wui.te.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
+	wui.makeBaseData(ctx, runtime.GetDefaultLang(), "Login", nil, &base)
+	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
 		Title string
 		Retry bool
 	}{
@@ -54,12 +54,12 @@ func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.Han
 		ctx := r.Context()
 		ident, cred, ok := adapter.GetCredentialsViaForm(r)
 		if !ok {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
+			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
 		token, err := ucAuth.Run(ctx, ident, cred, tokenLifetime, auth.KindHTML)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		if token == nil {

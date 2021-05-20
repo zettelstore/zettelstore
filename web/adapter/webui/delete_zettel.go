@@ -29,28 +29,28 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.H
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Delete zettel not possible in format %q", format)))
 			return
 		}
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zettel, err := getZettel.Run(ctx, zid)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 
 		user := wui.ab.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
-		wui.te.makeBaseData(ctx, runtime.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
-		wui.te.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
+		wui.makeBaseData(ctx, runtime.GetLang(m), "Delete Zettel "+m.Zid.String(), user, &base)
+		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
 			Zid       string
 			MetaPairs []meta.Pair
 		}{
@@ -66,14 +66,14 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		if err := deleteZettel.Run(r.Context(), zid); err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.te.authBuilder.NewURLBuilder('/'))
+		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
 	}
 }

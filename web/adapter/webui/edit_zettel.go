@@ -30,18 +30,18 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Edit zettel %q not possible in format %q", zid, format)))
 			return
 		}
@@ -49,8 +49,8 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		user := wui.ab.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
-		wui.te.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
-		wui.te.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
+		wui.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
+		wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 			Heading:       base.Title,
 			MetaTitle:     m.GetDefault(meta.KeyTitle, ""),
 			MetaRole:      m.GetDefault(meta.KeyRole, ""),
@@ -70,18 +70,18 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) ht
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zettel, hasContent, err := parseZettelForm(r, zid)
 		if err != nil {
-			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
+			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
 			return
 		}
 
 		if err := updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(zid))

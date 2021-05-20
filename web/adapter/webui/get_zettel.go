@@ -34,14 +34,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.te.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		syntax := r.URL.Query().Get("syntax")
 		zn, err := parseZettel.Run(ctx, zid, syntax)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 
@@ -58,18 +58,18 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		}
 		metaHeader, err := formatMeta(zn.InhMeta, "html", &envHTML)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		htmlTitle, err := adapter.FormatInlines(
 			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), "html", &envHTML)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		htmlContent, err := formatBlocks(zn.Ast, "html", &envHTML)
 		if err != nil {
-			wui.te.reportError(ctx, w, err)
+			wui.reportError(ctx, w, err)
 			return
 		}
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
@@ -80,10 +80,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
 		backLinks := formatBackLinks(wui.ab, zn.InhMeta, getTitle)
 		var base baseData
-		wui.te.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
-		wui.te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
+		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			CanWrite      bool
 			EditURL       string
@@ -107,7 +107,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			BackLinks     []simpleLink
 		}{
 			HTMLTitle:     htmlTitle,
-			CanWrite:      wui.te.canWrite(ctx, user, zn.Meta, zn.Content),
+			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:       wui.ab.NewURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
 			InfoURL:       wui.ab.NewURLBuilder('i').SetZid(zid).String(),
