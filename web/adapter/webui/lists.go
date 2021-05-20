@@ -33,15 +33,13 @@ import (
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
 // zettel as HTML.
-func MakeListHTMLMetaHandler(
-	ab server.AuthBuilder,
-	te *TemplateEngine,
+func (wui *WebUI) MakeListHTMLMetaHandler(
 	listMeta usecase.ListMeta,
 	listRole usecase.ListRole,
 	listTags usecase.ListTags,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rwl := renderWebList{w: w, ab: ab, te: te}
+		rwl := renderWebList{w: w, ab: wui.ab, te: wui.te}
 		query := r.URL.Query()
 		switch query.Get("_l") {
 		case "r":
@@ -57,7 +55,7 @@ func MakeListHTMLMetaHandler(
 type renderWebList struct {
 	w  http.ResponseWriter
 	ab server.AuthBuilder
-	te *TemplateEngine
+	te *templateEngine
 }
 
 func (rwl *renderWebList) renderZettelList(r *http.Request, listMeta usecase.ListMeta) {
@@ -180,9 +178,7 @@ func (rwl *renderWebList) renderTagsList(r *http.Request, listTags usecase.ListT
 }
 
 // MakeSearchHandler creates a new HTTP handler for the use case "search".
-func MakeSearchHandler(
-	ab server.AuthBuilder,
-	te *TemplateEngine,
+func (wui *WebUI) MakeSearchHandler(
 	ucSearch usecase.Search,
 	getMeta usecase.GetMeta,
 	getZettel usecase.GetZettel,
@@ -192,11 +188,11 @@ func MakeSearchHandler(
 		ctx := r.Context()
 		s := adapter.GetSearch(query, true)
 		if s == nil {
-			redirectFound(w, r, ab.NewURLBuilder('h'))
+			redirectFound(w, r, wui.ab.NewURLBuilder('h'))
 			return
 		}
 
-		rwl := renderWebList{w: w, ab: ab, te: te}
+		rwl := renderWebList{w: w, ab: wui.ab, te: wui.te}
 		title := listTitleSearch("Search", s)
 		rwl.renderMetaList(
 			ctx, title, s, func(s *search.Search) ([]*meta.Meta, error) {
@@ -206,19 +202,18 @@ func MakeSearchHandler(
 				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
-				return newPageURL(ab, 'f', query, offset, "offset", "limit")
+				return newPageURL(wui.ab, 'f', query, offset, "offset", "limit")
 			})
 	}
 }
 
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
-func MakeZettelContextHandler(
-	ab server.AuthBuilder, te *TemplateEngine, getContext usecase.ZettelContext) http.HandlerFunc {
+func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 		q := r.URL.Query()
@@ -227,10 +222,10 @@ func MakeZettelContextHandler(
 		limit := getIntParameter(q, "limit", 200)
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		metaLinks, err := buildHTMLMetaList(ab, metaList)
+		metaLinks, err := buildHTMLMetaList(wui.ab, metaList)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
 			return
@@ -238,7 +233,7 @@ func MakeZettelContextHandler(
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := ab.NewURLBuilder('j').SetZid(zid)
+		depthURL := wui.ab.NewURLBuilder('j').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -252,9 +247,9 @@ func MakeZettelContextHandler(
 			depthLinks[i].URL = depthURL.String()
 		}
 		var base baseData
-		user := ab.GetUser(ctx)
-		te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
-		te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
+		user := wui.ab.GetUser(ctx)
+		wui.te.makeBaseData(ctx, runtime.GetDefaultLang(), runtime.GetSiteName(), user, &base)
+		wui.te.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
 			Depths  []simpleLink
@@ -262,7 +257,7 @@ func MakeZettelContextHandler(
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: ab.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL: wui.ab.NewURLBuilder('i').SetZid(zid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],

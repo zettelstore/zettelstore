@@ -21,38 +21,36 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
-func MakeEditGetZettelHandler(
-	auth server.Auth, te *TemplateEngine, getZettel usecase.GetZettel) http.HandlerFunc {
+func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Edit zettel %q not possible in format %q", zid, format)))
 			return
 		}
 
-		user := auth.GetUser(ctx)
+		user := wui.ab.GetUser(ctx)
 		m := zettel.Meta
 		var base baseData
-		te.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
-		te.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
+		wui.te.makeBaseData(ctx, runtime.GetLang(m), "Edit Zettel", user, &base)
+		wui.te.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 			Heading:       base.Title,
 			MetaTitle:     m.GetDefault(meta.KeyTitle, ""),
 			MetaRole:      m.GetDefault(meta.KeyRole, ""),
@@ -67,26 +65,25 @@ func MakeEditGetZettelHandler(
 
 // MakeEditSetZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func MakeEditSetZettelHandler(
-	b server.Builder, te *TemplateEngine, updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zettel, hasContent, err := parseZettelForm(r, zid)
 		if err != nil {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
 			return
 		}
 
 		if err := updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, b.NewURLBuilder('h').SetZid(zid))
+		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(zid))
 	}
 }

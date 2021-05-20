@@ -31,71 +31,56 @@ import (
 
 // MakeGetCopyZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a copied zettel.
-func MakeGetCopyZettelHandler(
-	auth server.Auth,
-	te *TemplateEngine,
-	getZettel usecase.GetZettel,
-	copyZettel usecase.CopyZettel,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetCopyZettelHandler(getZettel usecase.GetZettel, copyZettel usecase.CopyZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Copy")
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, auth, te, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
+		renderZettelForm(w, r, wui.ab, wui.te, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
 	}
 }
 
 // MakeGetFolgeZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a follow-up zettel.
-func MakeGetFolgeZettelHandler(
-	auth server.Auth,
-	te *TemplateEngine,
-	getZettel usecase.GetZettel,
-	folgeZettel usecase.FolgeZettel,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetFolgeZettelHandler(getZettel usecase.GetZettel, folgeZettel usecase.FolgeZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Folge")
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, auth, te, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
+		renderZettelForm(w, r, wui.ab, wui.te, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
 	}
 }
 
 // MakeGetNewZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
-func MakeGetNewZettelHandler(
-	auth server.Auth,
-	te *TemplateEngine,
-	getZettel usecase.GetZettel,
-	newZettel usecase.NewZettel,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel usecase.NewZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "New")
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
 		textTitle, err := adapter.FormatInlines(title, "text", nil)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: runtime.GetLang(m)}
 		htmlTitle, err := adapter.FormatInlines(title, "html", &env)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		renderZettelForm(w, r, auth, te, newZettel.Run(origZettel), textTitle, htmlTitle)
+		renderZettelForm(w, r, wui.ab, wui.te, newZettel.Run(origZettel), textTitle, htmlTitle)
 	}
 }
 
@@ -125,7 +110,7 @@ func renderZettelForm(
 	w http.ResponseWriter,
 	r *http.Request,
 	auth server.Auth,
-	te *TemplateEngine,
+	te *templateEngine,
 	zettel domain.Zettel,
 	title, heading string,
 ) {
@@ -148,25 +133,24 @@ func renderZettelForm(
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func MakePostCreateZettelHandler(
-	b server.Builder, te *TemplateEngine, createZettel usecase.CreateZettel) http.HandlerFunc {
+func (wui *WebUI) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zettel, hasContent, err := parseZettelForm(r, id.Invalid)
 		if err != nil {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
 			return
 		}
 		if !hasContent {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
 			return
 		}
 
 		newZid, err := createZettel.Run(ctx, zettel)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, b.NewURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(newZid))
 	}
 }

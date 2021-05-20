@@ -45,8 +45,8 @@ type templatePlace interface {
 	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
 }
 
-// TemplateEngine is the way to render HTML templates.
-type TemplateEngine struct {
+// templateEngine is the way to render HTML templates.
+type templateEngine struct {
 	authBuilder   server.AuthBuilder
 	token         auth.TokenManager
 	tokenLifetime time.Duration
@@ -65,11 +65,11 @@ type TemplateEngine struct {
 	searchURL     string
 }
 
-// NewTemplateEngine creates a new TemplateEngine.
-func NewTemplateEngine(
+// newTemplateEngine creates a new TemplateEngine.
+func newTemplateEngine(
 	ab server.AuthBuilder, authz auth.AuthzManager, token auth.TokenManager,
-	mgr place.Manager, pol auth.Policy) *TemplateEngine {
-	te := &TemplateEngine{
+	mgr place.Manager, pol auth.Policy) *templateEngine {
+	te := &templateEngine{
 		authBuilder:   ab,
 		token:         token,
 		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration),
@@ -92,7 +92,7 @@ func NewTemplateEngine(
 	return te
 }
 
-func (te *TemplateEngine) observe(ci change.Info) {
+func (te *templateEngine) observe(ci change.Info) {
 	te.mxCache.Lock()
 	if ci.Reason == change.OnReload || ci.Zid == id.BaseTemplateZid {
 		te.templateCache = make(map[id.Zid]*template.Template, len(te.templateCache))
@@ -102,39 +102,39 @@ func (te *TemplateEngine) observe(ci change.Info) {
 	te.mxCache.Unlock()
 }
 
-func (te *TemplateEngine) cacheSetTemplate(zid id.Zid, t *template.Template) {
+func (te *templateEngine) cacheSetTemplate(zid id.Zid, t *template.Template) {
 	te.mxCache.Lock()
 	te.templateCache[zid] = t
 	te.mxCache.Unlock()
 }
 
-func (te *TemplateEngine) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
+func (te *templateEngine) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
 	te.mxCache.RLock()
 	t, ok := te.templateCache[zid]
 	te.mxCache.RUnlock()
 	return t, ok
 }
 
-func (te *TemplateEngine) canCreate(ctx context.Context, user *meta.Meta) bool {
+func (te *templateEngine) canCreate(ctx context.Context, user *meta.Meta) bool {
 	m := meta.New(id.Invalid)
 	return te.policy.CanCreate(user, m) && te.place.CanCreateZettel(ctx)
 }
 
-func (te *TemplateEngine) canWrite(
+func (te *templateEngine) canWrite(
 	ctx context.Context, user, meta *meta.Meta, content domain.Content) bool {
 	return te.policy.CanWrite(user, meta, meta) &&
 		te.place.CanUpdateZettel(ctx, domain.Zettel{Meta: meta, Content: content})
 }
 
-func (te *TemplateEngine) canRename(ctx context.Context, user, m *meta.Meta) bool {
+func (te *templateEngine) canRename(ctx context.Context, user, m *meta.Meta) bool {
 	return te.policy.CanRename(user, m) && te.place.AllowRenameZettel(ctx, m.Zid)
 }
 
-func (te *TemplateEngine) canDelete(ctx context.Context, user, m *meta.Meta) bool {
+func (te *templateEngine) canDelete(ctx context.Context, user, m *meta.Meta) bool {
 	return te.policy.CanDelete(user, m) && te.place.CanDeleteZettel(ctx, m.Zid)
 }
 
-func (te *TemplateEngine) getTemplate(
+func (te *templateEngine) getTemplate(
 	ctx context.Context, templateID id.Zid) (*template.Template, error) {
 	if t, ok := te.cacheGetTemplate(templateID); ok {
 		return t, nil
@@ -180,7 +180,7 @@ type baseData struct {
 	FooterHTML     string
 }
 
-func (te *TemplateEngine) makeBaseData(
+func (te *templateEngine) makeBaseData(
 	ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
 	var (
 		newZettelLinks []simpleLink
@@ -228,7 +228,7 @@ func htmlAttrNewWindow(hasURL bool) string {
 	return ""
 }
 
-func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
+func (te *templateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
 	ctx = place.NoEnrichContext(ctx)
 	menu, err := te.place.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
@@ -250,7 +250,7 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 			continue
 		}
 		title := runtime.GetTitle(m)
-		astTitle := parser.ParseInlines(input.NewInput(runtime.GetTitle(m)), meta.ValueSyntaxZmk)
+		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
 		env := encoder.Environment{Lang: runtime.GetLang(m)}
 		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
 		if err != nil {
@@ -267,7 +267,7 @@ func (te *TemplateEngine) fetchNewTemplates(ctx context.Context, user *meta.Meta
 	return result
 }
 
-func (te *TemplateEngine) renderTemplate(
+func (te *templateEngine) renderTemplate(
 	ctx context.Context,
 	w http.ResponseWriter,
 	templateID id.Zid,
@@ -276,7 +276,7 @@ func (te *TemplateEngine) renderTemplate(
 	te.renderTemplateStatus(ctx, w, http.StatusOK, templateID, base, data)
 }
 
-func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter, err error) {
+func (te *templateEngine) reportError(ctx context.Context, w http.ResponseWriter, err error) {
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
 		log.Printf("%v: %v", text, err)
@@ -293,7 +293,7 @@ func (te *TemplateEngine) reportError(ctx context.Context, w http.ResponseWriter
 	})
 }
 
-func (te *TemplateEngine) renderTemplateStatus(
+func (te *templateEngine) renderTemplateStatus(
 	ctx context.Context,
 	w http.ResponseWriter,
 	code int,

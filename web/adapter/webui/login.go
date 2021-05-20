@@ -22,20 +22,19 @@ import (
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeGetLoginHandler creates a new HTTP handler to display the HTML login view.
-func MakeGetLoginHandler(auth server.Auth, te *TemplateEngine) http.HandlerFunc {
+func (wui *WebUI) MakeGetLoginHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		renderLoginForm(auth.ClearToken(r.Context(), w), w, te, false)
+		wui.renderLoginForm(wui.ab.ClearToken(r.Context(), w), w, false)
 	}
 }
 
-func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEngine, retry bool) {
+func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
 	var base baseData
-	te.makeBaseData(ctx, runtime.GetDefaultLang(), "Login", nil, &base)
-	te.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
+	wui.te.makeBaseData(ctx, runtime.GetDefaultLang(), "Login", nil, &base)
+	wui.te.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
 		Title string
 		Retry bool
 	}{
@@ -45,38 +44,38 @@ func renderLoginForm(ctx context.Context, w http.ResponseWriter, te *TemplateEng
 }
 
 // MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
-func MakePostLoginHandlerHTML(ab server.AuthBuilder, authz auth.AuthzManager, te *TemplateEngine, ucAuth usecase.Authenticate) http.HandlerFunc {
+func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.HandlerFunc {
 	tokenLifetime := service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration)
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authz.WithAuth() {
-			redirectFound(w, r, ab.NewURLBuilder('/'))
+		if !wui.authz.WithAuth() {
+			redirectFound(w, r, wui.ab.NewURLBuilder('/'))
 			return
 		}
 		ctx := r.Context()
 		ident, cred, ok := adapter.GetCredentialsViaForm(r)
 		if !ok {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
 		token, err := ucAuth.Run(ctx, ident, cred, tokenLifetime, auth.KindHTML)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		if token == nil {
-			renderLoginForm(ab.ClearToken(ctx, w), w, te, true)
+			wui.renderLoginForm(wui.ab.ClearToken(ctx, w), w, true)
 			return
 		}
 
-		ab.SetToken(w, token, tokenLifetime)
-		redirectFound(w, r, ab.NewURLBuilder('/'))
+		wui.ab.SetToken(w, token, tokenLifetime)
+		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
 	}
 }
 
 // MakeGetLogoutHandler creates a new HTTP handler to log out the current user
-func MakeGetLogoutHandler(ab server.AuthBuilder, te *TemplateEngine) http.HandlerFunc {
+func (wui *WebUI) MakeGetLogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ab.ClearToken(r.Context(), w)
-		redirectFound(w, r, ab.NewURLBuilder('/'))
+		wui.ab.ClearToken(r.Context(), w)
+		redirectFound(w, r, wui.ab.NewURLBuilder('/'))
 	}
 }

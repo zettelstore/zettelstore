@@ -29,30 +29,26 @@ import (
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
-func MakeGetHTMLZettelHandler(
-	ab server.AuthBuilder,
-	te *TemplateEngine,
-	parseZettel usecase.ParseZettel,
-	getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		syntax := r.URL.Query().Get("syntax")
 		zn, err := parseZettel.Run(ctx, zid, syntax)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 
 		lang := runtime.GetLang(zn.InhMeta)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, ab, 'h', getMeta, "", ""),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, ab, getMeta),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui.ab, 'h', getMeta, "", ""),
+			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui.ab, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,
@@ -62,32 +58,32 @@ func MakeGetHTMLZettelHandler(
 		}
 		metaHeader, err := formatMeta(zn.InhMeta, "html", &envHTML)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		htmlTitle, err := adapter.FormatInlines(
 			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), "html", &envHTML)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		htmlContent, err := formatBlocks(zn.Ast, "html", &envHTML)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := ab.GetUser(ctx)
+		user := wui.ab.GetUser(ctx)
 		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
-		tags := buildTagInfos(ab, zn.Meta)
+		tags := buildTagInfos(wui.ab, zn.Meta)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		backLinks := formatBackLinks(ab, zn.InhMeta, getTitle)
+		backLinks := formatBackLinks(wui.ab, zn.InhMeta, getTitle)
 		var base baseData
-		te.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.te.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
-		te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
+		wui.te.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			CanWrite      bool
 			EditURL       string
@@ -111,20 +107,20 @@ func MakeGetHTMLZettelHandler(
 			BackLinks     []simpleLink
 		}{
 			HTMLTitle:     htmlTitle,
-			CanWrite:      te.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       ab.NewURLBuilder('e').SetZid(zid).String(),
+			CanWrite:      wui.te.canWrite(ctx, user, zn.Meta, zn.Content),
+			EditURL:       wui.ab.NewURLBuilder('e').SetZid(zid).String(),
 			Zid:           zid.String(),
-			InfoURL:       ab.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL:       wui.ab.NewURLBuilder('i').SetZid(zid).String(),
 			RoleText:      roleText,
-			RoleURL:       ab.NewURLBuilder('h').AppendQuery("role", roleText).String(),
+			RoleURL:       wui.ab.NewURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCopy,
-			CopyURL:       ab.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:       wui.ab.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:      ab.NewURLBuilder('f').SetZid(zid).String(),
-			FolgeRefs:     formatMetaKey(zn.InhMeta, ab, meta.KeyFolge, getTitle),
-			PrecursorRefs: formatMetaKey(zn.InhMeta, ab, meta.KeyPrecursor, getTitle),
+			FolgeURL:      wui.ab.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeRefs:     formatMetaKey(zn.InhMeta, wui.ab, meta.KeyFolge, getTitle),
+			PrecursorRefs: formatMetaKey(zn.InhMeta, wui.ab, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),

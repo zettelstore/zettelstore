@@ -44,30 +44,25 @@ type matrixLine struct {
 }
 
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
-func MakeGetInfoHandler(
-	ab server.AuthBuilder,
-	te *TemplateEngine,
-	parseZettel usecase.ParseZettel,
-	getMeta usecase.GetMeta,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 		if format := adapter.GetFormat(r, q, "html"); format != "html" {
-			te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Zettel info not available in format %q", format)))
 			return
 		}
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 
@@ -81,7 +76,7 @@ func MakeGetInfoHandler(
 		getTitle := makeGetTitle(ctx, getMeta, &env)
 		for i, p := range pairs {
 			var html strings.Builder
-			writeHTMLMetaValue(&html, ab, zn.Meta, p.Key, getTitle, &env)
+			writeHTMLMetaValue(&html, wui.ab, zn.Meta, p.Key, getTitle, &env)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		endnotes, err := formatBlocks(nil, "html", &env)
@@ -90,11 +85,11 @@ func MakeGetInfoHandler(
 		}
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
-		user := ab.GetUser(ctx)
+		user := wui.ab.GetUser(ctx)
 		var base baseData
-		te.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.te.makeBaseData(ctx, lang, textTitle, user, &base)
 		canCopy := base.CanCreate && !zn.Content.IsBinary()
-		te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
+		wui.te.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string
 			WebURL       string
 			ContextURL   string
@@ -119,18 +114,18 @@ func MakeGetInfoHandler(
 			Endnotes     string
 		}{
 			Zid:          zid.String(),
-			WebURL:       ab.NewURLBuilder('h').SetZid(zid).String(),
-			ContextURL:   ab.NewURLBuilder('j').SetZid(zid).String(),
-			CanWrite:     te.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:      ab.NewURLBuilder('e').SetZid(zid).String(),
+			WebURL:       wui.ab.NewURLBuilder('h').SetZid(zid).String(),
+			ContextURL:   wui.ab.NewURLBuilder('j').SetZid(zid).String(),
+			CanWrite:     wui.te.canWrite(ctx, user, zn.Meta, zn.Content),
+			EditURL:      wui.ab.NewURLBuilder('e').SetZid(zid).String(),
 			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
-			FolgeURL:     ab.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:     wui.ab.NewURLBuilder('f').SetZid(zid).String(),
 			CanCopy:      canCopy,
-			CopyURL:      ab.NewURLBuilder('c').SetZid(zid).String(),
-			CanRename:    te.canRename(ctx, user, zn.Meta),
-			RenameURL:    ab.NewURLBuilder('b').SetZid(zid).String(),
-			CanDelete:    te.canDelete(ctx, user, zn.Meta),
-			DeleteURL:    ab.NewURLBuilder('d').SetZid(zid).String(),
+			CopyURL:      wui.ab.NewURLBuilder('c').SetZid(zid).String(),
+			CanRename:    wui.te.canRename(ctx, user, zn.Meta),
+			RenameURL:    wui.ab.NewURLBuilder('b').SetZid(zid).String(),
+			CanDelete:    wui.te.canDelete(ctx, user, zn.Meta),
+			DeleteURL:    wui.ab.NewURLBuilder('d').SetZid(zid).String(),
 			MetaData:     metaData,
 			HasLinks:     len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:  len(locLinks) > 0,
@@ -138,7 +133,7 @@ func MakeGetInfoHandler(
 			HasExtLinks:  len(extLinks) > 0,
 			ExtLinks:     extLinks,
 			ExtNewWindow: htmlAttrNewWindow(len(extLinks) > 0),
-			Matrix:       infoAPIMatrix(ab, zid),
+			Matrix:       infoAPIMatrix(wui.ab, zid),
 			Endnotes:     endnotes,
 		})
 	}

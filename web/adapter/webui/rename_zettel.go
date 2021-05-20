@@ -22,37 +22,35 @@ import (
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/server"
 )
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
 // HTML rename view of a zettel.
-func MakeGetRenameZettelHandler(
-	auth server.Auth, te *TemplateEngine, getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		m, err := getMeta.Run(ctx, zid)
 		if err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
 
 		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
-			te.reportError(ctx, w, adapter.NewErrBadRequest(
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), format)))
 			return
 		}
 
-		user := auth.GetUser(ctx)
+		user := wui.ab.GetUser(ctx)
 		var base baseData
-		te.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
-		te.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
+		wui.te.makeBaseData(ctx, runtime.GetLang(m), "Rename Zettel "+zid.String(), user, &base)
+		wui.te.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
 			Zid       string
 			MetaPairs []meta.Pair
 		}{
@@ -63,35 +61,34 @@ func MakeGetRenameZettelHandler(
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.
-func MakePostRenameZettelHandler(
-	b server.Builder, te *TemplateEngine, renameZettel usecase.RenameZettel) http.HandlerFunc {
+func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		curZid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			te.reportError(ctx, w, place.ErrNotFound)
+			wui.te.reportError(ctx, w, place.ErrNotFound)
 			return
 		}
 
 		if err = r.ParseForm(); err != nil {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read rename zettel form"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read rename zettel form"))
 			return
 		}
 		if formCurZid, err1 := id.Parse(
 			r.PostFormValue("curzid")); err1 != nil || formCurZid != curZid {
-			te.reportError(ctx, w, adapter.NewErrBadRequest("Invalid value for current zettel id in form"))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest("Invalid value for current zettel id in form"))
 			return
 		}
 		newZid, err := id.Parse(strings.TrimSpace(r.PostFormValue("newzid")))
 		if err != nil {
-			te.reportError(ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", newZid)))
+			wui.te.reportError(ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", newZid)))
 			return
 		}
 
 		if err := renameZettel.Run(r.Context(), curZid, newZid); err != nil {
-			te.reportError(ctx, w, err)
+			wui.te.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, b.NewURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.ab.NewURLBuilder('h').SetZid(newZid))
 	}
 }
