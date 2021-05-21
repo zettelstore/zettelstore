@@ -128,12 +128,11 @@ func (kern *myKernel) Start(headline bool) {
 }
 
 func (kern *myKernel) waitForInterrupt() {
-	for sig := range kern.interrupt {
-		if strSig := sig.String(); strSig != "" {
-			kern.doLog("Shut down Zettelstore:", strSig)
-		}
-		kern.shutdown()
+	sig := <-kern.interrupt
+	if strSig := sig.String(); strSig != "" {
+		kern.doLog("Shut down Zettelstore:", strSig)
 	}
+	kern.shutdown()
 	kern.wg.Done()
 }
 
