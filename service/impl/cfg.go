@@ -125,10 +125,9 @@ func (cs *cfgSub) setPlace(mgr place.Manager) {
 
 // myConfig contains all runtime configuration data relevant for the software.
 type myConfig struct {
-	place place.Place
-	orig  *meta.Meta
-	data  *meta.Meta
-	mx    sync.RWMutex
+	mx   sync.RWMutex
+	orig *meta.Meta
+	data *meta.Meta
 }
 
 // New creates a new Config value.
@@ -140,15 +139,12 @@ func newConfig(orig *meta.Meta) *myConfig {
 	return &cfg
 }
 func (cfg *myConfig) setPlace(mgr place.Manager) {
-	cfg.mx.Lock()
-	cfg.place = mgr
-	cfg.mx.Unlock()
 	mgr.RegisterObserver(cfg.observe)
-	cfg.doUpdate()
+	cfg.doUpdate(mgr)
 }
 
-func (cfg *myConfig) doUpdate() error {
-	m, err := cfg.place.GetMeta(context.Background(), cfg.data.Zid)
+func (cfg *myConfig) doUpdate(p place.Place) error {
+	m, err := p.GetMeta(context.Background(), cfg.data.Zid)
 	if err != nil {
 		return err
 	}
@@ -164,7 +160,7 @@ func (cfg *myConfig) doUpdate() error {
 
 func (cfg *myConfig) observe(ci place.UpdateInfo) {
 	if ci.Reason == place.OnReload || ci.Zid == id.ConfigurationZid {
-		go func() { cfg.doUpdate() }()
+		go func() { cfg.doUpdate(ci.Place) }()
 	}
 }
 

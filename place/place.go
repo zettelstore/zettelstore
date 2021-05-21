@@ -164,6 +164,7 @@ const (
 
 // UpdateInfo contains all the data about a changed zettel.
 type UpdateInfo struct {
+	Place  Place
 	Reason UpdateReason
 	Zid    id.Zid
 }

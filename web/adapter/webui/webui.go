@@ -90,7 +90,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		loginURL:      ab.NewURLBuilder('a').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
-	wui.observe(place.UpdateInfo{Reason: place.OnReload, Zid: id.Invalid})
+	wui.observe(place.UpdateInfo{Place: mgr, Reason: place.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }

@@ -167,12 +167,12 @@ func (mgr *Manager) RegisterObserver(f place.UpdateFunc) {
 	}
 }
 
-func (mgr *Manager) notifyObserver(ci place.UpdateInfo) {
+func (mgr *Manager) notifyObserver(ci *place.UpdateInfo) {
 	mgr.mxObserver.RLock()
 	observers := mgr.observers
 	mgr.mxObserver.RUnlock()
 	for _, ob := range observers {
-		ob(ci)
+		ob(*ci)
 	}
 }
 
@@ -189,8 +189,11 @@ func (mgr *Manager) notifier() {
 		select {
 		case ci, ok := <-mgr.infos:
 			if ok {
-				mgr.idxEnqueue(ci)
-				mgr.notifyObserver(ci)
+				mgr.idxEnqueue(ci.Reason, ci.Zid)
+				if ci.Place == nil {
+					ci.Place = mgr
+				}
+				mgr.notifyObserver(&ci)
 			}
 		case <-mgr.done:
 			return
@@ -198,14 +201,14 @@ func (mgr *Manager) notifier() {
 	}
 }
 
-func (mgr *Manager) idxEnqueue(ci place.UpdateInfo) {
-	switch ci.Reason {
+func (mgr *Manager) idxEnqueue(reason place.UpdateReason, zid id.Zid) {
+	switch reason {
 	case place.OnReload:
 		mgr.idxAr.Reset()
 	case place.OnUpdate:
-		mgr.idxAr.Enqueue(ci.Zid, arUpdate)
+		mgr.idxAr.Enqueue(zid, arUpdate)
 	case place.OnDelete:
-		mgr.idxAr.Enqueue(ci.Zid, arDelete)
+		mgr.idxAr.Enqueue(zid, arDelete)
 	default:
 		return
 	}
