@@ -19,10 +19,9 @@ import (
 
 // newPolicy creates a policy based on given constraints.
 func newPolicy(
-	rtConfig config.Config,
 	manager auth.AuthzManager,
-	expertMode func() bool,
-	getVisibility func(*meta.Meta, config.Config) meta.Visibility,
+	authConfig config.AuthConfig,
+	getVisibility func(*meta.Meta) meta.Visibility,
 ) auth.Policy {
 	var pol auth.Policy
 	if manager.IsReadonly() {
@@ -32,16 +31,14 @@ func newPolicy(
 	}
 	if manager.WithAuth() {
 		pol = &ownerPolicy{
-			rtConfig:      rtConfig,
 			manager:       manager,
-			expertMode:    expertMode,
+			authConfig:    authConfig,
 			getVisibility: getVisibility,
 			pre:           pol,
 		}
 	} else {
 		pol = &anonPolicy{
-			rtConfig:      rtConfig,
-			expertMode:    expertMode,
+			authConfig:    authConfig,
 			getVisibility: getVisibility,
 			pre:           pol,
 		}

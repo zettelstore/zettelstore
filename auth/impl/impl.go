@@ -181,5 +181,6 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 
 func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, auth.Policy) {
 	return policy.PlaceWithPolicy(
-		rtConfig, auth, a, unprotectedPlace, rtConfig.GetExpertMode, config.GetVisibility)
+		auth, a, unprotectedPlace, rtConfig,
+		func(m *meta.Meta) meta.Visibility { return config.GetVisibility(m, rtConfig) })
 }

@@ -18,6 +18,8 @@ import (
 
 // Config allows to retrieve all defined configuration values that can be changed during runtime.
 type Config interface {
+	AuthConfig
+
 	// AddDefaultValues enriches the given meta data with its default values.
 	AddDefaultValues(m *meta.Meta) *meta.Meta
 
@@ -32,9 +34,6 @@ type Config interface {
 
 	// GetDefaultLang returns the current value of the "default-lang" key.
 	GetDefaultLang() string
-
-	// GetExpertMode returns the current value of the "expert-mode" key
-	GetExpertMode() bool
 
 	// GetSiteName returns the current value of the "site-name" key.
 	GetSiteName() string
@@ -61,6 +60,12 @@ type Config interface {
 	// GetListPageSize returns the maximum length of a list to be returned in WebUI.
 	// A value less or equal to zero signals no limit.
 	GetListPageSize() int
+}
+
+// AuthConfig are relevant configuration values for authentication.
+type AuthConfig interface {
+	// GetExpertMode returns the current value of the "expert-mode" key
+	GetExpertMode() bool
 }
 
 // GetTitle returns the value of the "title" key of the given meta. If there

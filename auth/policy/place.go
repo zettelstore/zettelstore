@@ -27,14 +27,13 @@ import (
 
 // PlaceWithPolicy wraps the given place inside a policy place.
 func PlaceWithPolicy(
-	rtConfig config.Config,
 	auth server.Auth,
 	manager auth.AuthzManager,
 	place place.Place,
-	expertMode func() bool,
-	getVisibility func(*meta.Meta, config.Config) meta.Visibility,
+	authConfig config.AuthConfig,
+	getVisibility func(*meta.Meta) meta.Visibility,
 ) (place.Place, auth.Policy) {
-	pol := newPolicy(rtConfig, manager, expertMode, getVisibility)
+	pol := newPolicy(manager, authConfig, getVisibility)
 	return newPlace(auth, place, pol), pol
 }
 

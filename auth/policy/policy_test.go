@@ -16,7 +16,6 @@ import (
 	"testing"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -37,17 +36,11 @@ func TestPolicies(t *testing.T) {
 		{false, false, false},
 	}
 	for _, ts := range testScene {
-		var expertFunc func() bool
-		if ts.expert {
-			expertFunc = expertMode
-		} else {
-			expertFunc = noExpertMode
-		}
 		authzManager := &testAuthzManager{
 			readOnly: ts.readonly,
 			withAuth: ts.withAuth,
 		}
-		pol := newPolicy(nil, authzManager, expertFunc, getVisibility)
+		pol := newPolicy(authzManager, &authConfig{ts.expert}, getVisibility)
 		name := fmt.Sprintf("readonly=%v/withauth=%v/expert=%v",
 			ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
@@ -89,9 +82,11 @@ func (a *testAuthzManager) GetUserRole(user *meta.Meta) meta.UserRole {
 	return meta.UserRoleReader
 }
 
-func expertMode() bool   { return true }
-func noExpertMode() bool { return false }
-func getVisibility(m *meta.Meta, rtConfig config.Config) meta.Visibility {
+type authConfig struct{ expert bool }
+
+func (ac *authConfig) GetExpertMode() bool { return ac.expert }
+
+func getVisibility(m *meta.Meta) meta.Visibility {
 	if vis, ok := m.Get(meta.KeyVisibility); ok {
 		switch vis {
 		case meta.ValueVisibilityPublic:

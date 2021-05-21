@@ -18,9 +18,8 @@ import (
 )
 
 type anonPolicy struct {
-	rtConfig      config.Config
-	expertMode    func() bool
-	getVisibility func(*meta.Meta, config.Config) meta.Visibility
+	authConfig    config.AuthConfig
+	getVisibility func(*meta.Meta) meta.Visibility
 	pre           auth.Policy
 }
 
@@ -45,8 +44,8 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 }
 
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
-	if ap.getVisibility(m, ap.rtConfig) == meta.VisibilityExpert {
-		return ap.expertMode()
+	if ap.getVisibility(m) == meta.VisibilityExpert {
+		return ap.authConfig.GetExpertMode()
 	}
 	return true
 }
