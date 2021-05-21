@@ -17,8 +17,8 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/api"
@@ -45,14 +45,14 @@ func withDebug(fs *flag.FlagSet) bool {
 
 func runFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	exitCode, err := doRun(withDebug(fs))
-	service.Main.WaitForShutdown()
+	kernel.Main.WaitForShutdown()
 	return exitCode, err
 }
 
 func doRun(debug bool) (int, error) {
-	srvm := service.Main
-	srvm.SetDebug(debug)
-	if err := srvm.StartSub(service.SubWeb); err != nil {
+	kern := kernel.Main
+	kern.SetDebug(debug)
+	if err := kern.StartService(kernel.WebService); err != nil {
 		return 1, err
 	}
 	return 0, nil

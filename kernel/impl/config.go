@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 )
 
 type parseFunc func(string) interface{}
@@ -39,7 +39,7 @@ func (m interfaceMap) Clone() interfaceMap {
 	return result
 }
 
-type subConfig struct {
+type srvConfig struct {
 	mxConfig sync.RWMutex
 	frozen   bool
 	descr    descriptionMap
@@ -47,7 +47,7 @@ type subConfig struct {
 	next     interfaceMap
 }
 
-func (cfg *subConfig) noFrozen(parse parseFunc) parseFunc {
+func (cfg *srvConfig) noFrozen(parse parseFunc) parseFunc {
 	return func(val string) interface{} {
 		if cfg.frozen {
 			return nil
@@ -56,7 +56,7 @@ func (cfg *subConfig) noFrozen(parse parseFunc) parseFunc {
 	}
 }
 
-func (cfg *subConfig) SetConfig(key, value string) bool {
+func (cfg *srvConfig) SetConfig(key, value string) bool {
 	cfg.mxConfig.Lock()
 	defer cfg.mxConfig.Unlock()
 	descr, ok := cfg.descr[key]
@@ -79,7 +79,7 @@ func (cfg *subConfig) SetConfig(key, value string) bool {
 	return true
 }
 
-func (cfg *subConfig) GetConfig(key string) interface{} {
+func (cfg *srvConfig) GetConfig(key string) interface{} {
 	cfg.mxConfig.RLock()
 	defer cfg.mxConfig.RUnlock()
 	if cfg.cur == nil {
@@ -88,19 +88,19 @@ func (cfg *subConfig) GetConfig(key string) interface{} {
 	return cfg.cur[key]
 }
 
-func (cfg *subConfig) GetNextConfig(key string) interface{} {
+func (cfg *srvConfig) GetNextConfig(key string) interface{} {
 	cfg.mxConfig.RLock()
 	defer cfg.mxConfig.RUnlock()
 	return cfg.next[key]
 }
 
-func (cfg *subConfig) GetConfigList(all bool) []service.KeyDescrValue {
+func (cfg *srvConfig) GetConfigList(all bool) []kernel.KeyDescrValue {
 	return cfg.getConfigList(all, cfg.GetConfig)
 }
-func (cfg *subConfig) GetNextConfigList() []service.KeyDescrValue {
+func (cfg *srvConfig) GetNextConfigList() []kernel.KeyDescrValue {
 	return cfg.getConfigList(true, cfg.GetNextConfig)
 }
-func (cfg *subConfig) getConfigList(all bool, getConfig func(string) interface{}) []service.KeyDescrValue {
+func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}) []kernel.KeyDescrValue {
 	if len(cfg.descr) == 0 {
 		return nil
 	}
@@ -111,13 +111,13 @@ func (cfg *subConfig) getConfigList(all bool, getConfig func(string) interface{}
 		}
 	}
 	sort.Strings(keys)
-	result := make([]service.KeyDescrValue, 0, len(keys))
+	result := make([]kernel.KeyDescrValue, 0, len(keys))
 	for _, k := range keys {
 		val := getConfig(k)
 		if val == nil {
 			continue
 		}
-		result = append(result, service.KeyDescrValue{
+		result = append(result, kernel.KeyDescrValue{
 			Key:   k,
 			Descr: cfg.descr[k].text,
 			Value: fmt.Sprintf("%v", val),
@@ -126,13 +126,13 @@ func (cfg *subConfig) getConfigList(all bool, getConfig func(string) interface{}
 	return result
 }
 
-func (cfg *subConfig) Freeze() {
+func (cfg *srvConfig) Freeze() {
 	cfg.mxConfig.Lock()
 	cfg.frozen = true
 	cfg.mxConfig.Unlock()
 }
 
-func (cfg *subConfig) SwitchNextToCur() {
+func (cfg *srvConfig) SwitchNextToCur() {
 	cfg.mxConfig.Lock()
 	defer cfg.mxConfig.Unlock()
 	cfg.cur = cfg.next.Clone()

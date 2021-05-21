@@ -19,6 +19,7 @@ import (
 	_ "zettelstore.de/z/encoder/rawenc"    // Allow to use raw encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
+	_ "zettelstore.de/z/kernel/impl"       // Allow kernel implementation to create itself
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
@@ -29,5 +30,4 @@ import (
 	_ "zettelstore.de/z/place/fileplace"   // Allow to use file place.
 	_ "zettelstore.de/z/place/memplace"    // Allow to use memory place.
 	_ "zettelstore.de/z/place/progplace"   // Allow to use computed place.
-	_ "zettelstore.de/z/service/impl"      // Allow service implementation to create itself
 )

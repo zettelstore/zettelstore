@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package service provides the main internal service.
-package service
+// Package kernel provides the main kernel service.
+package kernel
 
 import (
 	"zettelstore.de/z/auth"
@@ -19,8 +19,8 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
-// Service is the main internal service.
-type Service interface {
+// Kernel is the main internal service.
+type Kernel interface {
 	// Start the service.
 	Start(headline bool)
 
@@ -33,12 +33,6 @@ type Service interface {
 	// Shutdown the service. Waits for all concurrent activities to stop.
 	Shutdown(silent bool)
 
-	// ShutdownNotifier returns a channel where the caller gets notified to stop.
-	ShutdownNotifier() ShutdownChan
-
-	// IgnoreShutdown marks the given channel as to be ignored on shutdown.
-	IgnoreShutdown(ob ShutdownChan)
-
 	// Log some activity.
 	Log(args ...interface{})
 
@@ -46,29 +40,29 @@ type Service interface {
 	LogRecover(name string, recoverInfo interface{}) bool
 
 	// SetConfig stores a configuration value.
-	SetConfig(subsrv Subservice, key, value string) bool
+	SetConfig(srv Service, key, value string) bool
 
 	// GetConfig returns a configuration value.
-	GetConfig(subsrv Subservice, key string) interface{}
+	GetConfig(srv Service, key string) interface{}
 
 	// GetConfigList returns a sorted list of configuration data.
-	GetConfigList(subsrv Subservice) []KeyDescrValue
+	GetConfigList(Service) []KeyDescrValue
 
-	// StartSub start the given sub-service.
-	StartSub(subsrv Subservice) error
+	// StartService start the given sub-service.
+	StartService(Service) error
 
-	// StopSub stop the given sub-service.
-	StopSub(subsrv Subservice) error
+	// StopService stop the given sub-service.
+	StopService(Service) error
 
-	// GetSubStatistics returns a key/value list with statistical data.
-	GetSubStatistics(subsrv Subservice) []KeyValue
+	// GetServiceStatistics returns a key/value list with statistical data.
+	GetServiceStatistics(Service) []KeyValue
 
-	// SetCreators store the configuration data for the next start of the web server.
+	// SetCreators store functions to be called when a service has to be created.
 	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, SetupWebServerFunc)
 }
 
-// Main references the main service.
-var Main Service
+// Main references the main kernel.
+var Main Kernel
 
 // Unit is a type with just one value.
 type Unit struct{}
@@ -76,20 +70,20 @@ type Unit struct{}
 // ShutdownChan is a channel used to signal a system shutdown.
 type ShutdownChan <-chan Unit
 
-// Subservice specifies an sub-service of the main service, e.g. web, ...
-type Subservice uint8
+// Service specifies a service, e.g. web, ...
+type Service uint8
 
-// Constants for type Subservice.
+// Constants for type Service.
 const (
-	_ Subservice = iota
-	SubCore
-	SubAuth
-	SubPlace
-	SubCfg
-	SubWeb
+	_ Service = iota
+	CoreService
+	ConfigService
+	AuthService
+	PlaceService
+	WebService
 )
 
-// Constants for core subservice system keys.
+// Constants for core service system keys.
 const (
 	CoreGoArch    = "go-arch"
 	CoreGoOS      = "go-os"
@@ -101,13 +95,13 @@ const (
 	CoreVersion   = "version"
 )
 
-// Constants for authentication subservice keys.
+// Constants for authentication service keys.
 const (
 	AuthOwner    = "owner"
 	AuthReadonly = "readonly"
 )
 
-// Constants for place subservice keys.
+// Constants for place service keys.
 const (
 	PlaceDefaultDirType = "defdirtype"
 )
@@ -118,7 +112,7 @@ const (
 	PlaceDirTypeSimple = "simple"
 )
 
-// Constants for web subservice keys.
+// Constants for web service keys.
 const (
 	WebListenAddress     = "listen"
 	WebPersistentCookie  = "persistent"

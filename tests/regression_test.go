@@ -26,10 +26,10 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/service"
 
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/jsonenc"
@@ -54,7 +54,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 	for _, entry := range entries {
 		if entry.IsDir() {
 			place, err := manager.Connect(
-				"dir://"+filepath.Join(root, entry.Name())+"?type="+service.PlaceDirTypeSimple,
+				"dir://"+filepath.Join(root, entry.Name())+"?type="+kernel.PlaceDirTypeSimple,
 				&noAuth{},
 				&cdata,
 			)

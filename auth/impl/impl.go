@@ -24,8 +24,8 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
 )
 
@@ -45,12 +45,12 @@ func New(readonly bool, owner id.Zid, extSecret string) auth.Manager {
 }
 
 var configKeys = []string{
-	service.CoreProgname,
-	service.CoreGoVersion,
-	service.CoreHostname,
-	service.CoreGoOS,
-	service.CoreGoArch,
-	service.CoreVersion,
+	kernel.CoreProgname,
+	kernel.CoreGoVersion,
+	kernel.CoreHostname,
+	kernel.CoreGoOS,
+	kernel.CoreGoArch,
+	kernel.CoreVersion,
 }
 
 func calcSecret(extSecret string) []byte {
@@ -59,7 +59,7 @@ func calcSecret(extSecret string) []byte {
 		io.WriteString(h, extSecret)
 	}
 	for _, key := range configKeys {
-		io.WriteString(h, service.Main.GetConfig(service.SubCore, key).(string))
+		io.WriteString(h, kernel.Main.GetConfig(kernel.CoreService, key).(string))
 	}
 	return h.Sum(nil)
 }

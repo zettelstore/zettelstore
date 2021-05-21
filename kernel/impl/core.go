@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -18,21 +18,21 @@ import (
 	"runtime"
 	"strconv"
 
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 )
 
-type coreSub struct {
-	subConfig
+type coreService struct {
+	srvConfig
 	started bool
 }
 
-func (cs *coreSub) Initialize() {
+func (cs *coreService) Initialize() {
 	cs.descr = descriptionMap{
-		service.CoreGoArch:    {"Go processor architecture", nil, false},
-		service.CoreGoOS:      {"Go Operating System", nil, false},
-		service.CoreGoVersion: {"Go Version", nil, false},
-		service.CoreHostname:  {"Host name", nil, false},
-		service.CorePort: {
+		kernel.CoreGoArch:    {"Go processor architecture", nil, false},
+		kernel.CoreGoOS:      {"Go Operating System", nil, false},
+		kernel.CoreGoVersion: {"Go Version", nil, false},
+		kernel.CoreHostname:  {"Host name", nil, false},
+		kernel.CorePort: {
 			"Port of core service",
 			cs.noFrozen(func(val string) interface{} {
 				port, err := net.LookupPort("tcp", val)
@@ -43,9 +43,9 @@ func (cs *coreSub) Initialize() {
 			}),
 			true,
 		},
-		service.CoreProgname: {"Program name", nil, false},
-		service.CoreVerbose:  {"Verbose output", parseBool, true},
-		service.CoreVersion: {
+		kernel.CoreProgname: {"Program name", nil, false},
+		kernel.CoreVerbose:  {"Verbose output", parseBool, true},
+		kernel.CoreVersion: {
 			"Version",
 			cs.noFrozen(func(val string) interface{} {
 				if val == "" {
@@ -57,45 +57,45 @@ func (cs *coreSub) Initialize() {
 		},
 	}
 	cs.next = interfaceMap{
-		service.CoreGoArch:    runtime.GOARCH,
-		service.CoreGoOS:      runtime.GOOS,
-		service.CoreGoVersion: runtime.Version(),
-		service.CoreHostname:  "*unknwon host*",
-		service.CorePort:      0,
-		service.CoreVerbose:   false,
+		kernel.CoreGoArch:    runtime.GOARCH,
+		kernel.CoreGoOS:      runtime.GOOS,
+		kernel.CoreGoVersion: runtime.Version(),
+		kernel.CoreHostname:  "*unknwon host*",
+		kernel.CorePort:      0,
+		kernel.CoreVerbose:   false,
 	}
 	if hn, err := os.Hostname(); err == nil {
-		cs.next[service.CoreHostname] = hn
+		cs.next[kernel.CoreHostname] = hn
 	}
 }
 
-func (cs *coreSub) Start(srv *myService) error {
-	port := cs.GetNextConfig(service.CorePort).(int)
+func (cs *coreService) Start(kern *myKernel) error {
+	port := cs.GetNextConfig(kernel.CorePort).(int)
 	if port <= 0 {
 		return nil
 	}
 	listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		srv.doLog("Unable to start Core Service:", err)
+		kern.doLog("Unable to start Core Service:", err)
 		return err
 	}
-	srv.doLog("Start Core Service:", listenAddr)
-	go func() { cs.serve(ln, srv) }()
+	kern.doLog("Start Core Service:", listenAddr)
+	go func() { cs.serve(ln, kern) }()
 	cs.started = true
 	return nil
 }
-func (cs *coreSub) IsStarted() bool { return cs.started }
-func (cs *coreSub) Stop(srv *myService) error {
+func (cs *coreService) IsStarted() bool { return cs.started }
+func (cs *coreService) Stop(*myKernel) error {
 	return nil
 }
 
-func (cs *coreSub) serve(ln net.Listener, srv *myService) {
+func (cs *coreService) serve(ln net.Listener, kern *myKernel) {
 	// Something may panic. Ensure a running line service.
 	defer func() {
 		if r := recover(); r != nil {
-			srv.doLogRecover("Line", r)
-			go cs.serve(ln, srv)
+			kern.doLogRecover("Line", r)
+			go cs.serve(ln, kern)
 		}
 	}()
 
@@ -103,25 +103,25 @@ func (cs *coreSub) serve(ln net.Listener, srv *myService) {
 		conn, err := ln.Accept()
 		if err != nil {
 			// handle error
-			srv.doLog("Unable to accept connection:", err)
+			kern.doLog("Unable to accept connection:", err)
 			break
 		}
-		go handleConnection(conn, srv)
+		go handleConnection(conn, kern)
 	}
 	ln.Close()
 }
 
-func handleConnection(conn net.Conn, srv *myService) {
+func handleConnection(conn net.Conn, kern *myKernel) {
 	// Something may panic. Ensure a running connection.
 	defer func() {
 		if r := recover(); r != nil {
-			srv.doLogRecover("LineConn", r)
-			go handleConnection(conn, srv)
+			kern.doLogRecover("LineConn", r)
+			go handleConnection(conn, kern)
 		}
 	}()
 
 	cmds := cmdSession{}
-	cmds.initialize(conn, srv)
+	cmds.initialize(conn, kern)
 	s := bufio.NewScanner(conn)
 	for s.Scan() {
 		line := s.Text()
@@ -132,6 +132,6 @@ func handleConnection(conn net.Conn, srv *myService) {
 	conn.Close()
 }
 
-func (cs *coreSub) GetStatistics() []service.KeyValue {
+func (cs *coreService) GetStatistics() []kernel.KeyValue {
 	return nil
 }

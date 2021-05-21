@@ -24,10 +24,10 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager/memstore"
 	"zettelstore.de/z/place/manager/store"
-	"zettelstore.de/z/service"
 )
 
 // ConnectData contains all administration related values.
@@ -180,7 +180,7 @@ func (mgr *Manager) notifier() {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
 		if r := recover(); r != nil {
-			service.Main.LogRecover("Notifier", r)
+			kernel.Main.LogRecover("Notifier", r)
 			go mgr.notifier()
 		}
 	}()

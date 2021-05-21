@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -17,19 +17,19 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/web/server/impl"
 )
 
-type webSub struct {
-	subConfig
+type webService struct {
+	srvConfig
 	mxService   sync.RWMutex
 	srvw        server.Server
-	setupServer service.SetupWebServerFunc
+	setupServer kernel.SetupWebServerFunc
 }
 
-// Constants for web subservice keys.
+// Constants for web service keys.
 const (
 	WebSecureCookie      = "secure"
 	WebListenAddress     = "listen"
@@ -39,9 +39,9 @@ const (
 	WebURLPrefix         = "prefix"
 )
 
-func (ws *webSub) Initialize() {
+func (ws *webService) Initialize() {
 	ws.descr = descriptionMap{
-		service.WebListenAddress: {
+		kernel.WebListenAddress: {
 			"Listen address",
 			func(val string) interface{} {
 				host, port, err := net.SplitHostPort(val)
@@ -54,19 +54,19 @@ func (ws *webSub) Initialize() {
 				return net.JoinHostPort(host, port)
 			},
 			true},
-		service.WebPersistentCookie: {"Persistent cookie", parseBool, true},
-		service.WebSecureCookie:     {"Secure cookie", parseBool, true},
-		service.WebTokenLifetimeAPI: {
+		kernel.WebPersistentCookie: {"Persistent cookie", parseBool, true},
+		kernel.WebSecureCookie:     {"Secure cookie", parseBool, true},
+		kernel.WebTokenLifetimeAPI: {
 			"Token lifetime API",
 			makeDurationParser(10*time.Minute, 0, 1*time.Hour),
 			true,
 		},
-		service.WebTokenLifetimeHTML: {
+		kernel.WebTokenLifetimeHTML: {
 			"Token lifetime HTML",
 			makeDurationParser(1*time.Hour, 1*time.Minute, 30*24*time.Hour),
 			true,
 		},
-		service.WebURLPrefix: {
+		kernel.WebURLPrefix: {
 			"URL prefix under which the web server runs",
 			func(val string) interface{} {
 				if val != "" && val[0] == '/' && val[len(val)-1] == '/' {
@@ -78,12 +78,12 @@ func (ws *webSub) Initialize() {
 		},
 	}
 	ws.next = interfaceMap{
-		service.WebListenAddress:     "127.0.0.1:23123",
-		service.WebPersistentCookie:  false,
-		service.WebSecureCookie:      true,
-		service.WebTokenLifetimeAPI:  1 * time.Hour,
-		service.WebTokenLifetimeHTML: 10 * time.Minute,
-		service.WebURLPrefix:         "/",
+		kernel.WebListenAddress:     "127.0.0.1:23123",
+		kernel.WebPersistentCookie:  false,
+		kernel.WebSecureCookie:      true,
+		kernel.WebTokenLifetimeAPI:  1 * time.Hour,
+		kernel.WebTokenLifetimeHTML: 10 * time.Minute,
+		kernel.WebURLPrefix:         "/",
 	}
 }
 
@@ -103,40 +103,40 @@ func makeDurationParser(defDur, minDur, maxDur time.Duration) parseFunc {
 	}
 }
 
-func (ws *webSub) Start(srv *myService) error {
-	listenAddr := ws.GetNextConfig(service.WebListenAddress).(string)
-	urlPrefix := ws.GetNextConfig(service.WebURLPrefix).(string)
-	persistentCookie := ws.GetNextConfig(service.WebPersistentCookie).(bool)
-	secureCookie := ws.GetNextConfig(service.WebSecureCookie).(bool)
+func (ws *webService) Start(kern *myKernel) error {
+	listenAddr := ws.GetNextConfig(kernel.WebListenAddress).(string)
+	urlPrefix := ws.GetNextConfig(kernel.WebURLPrefix).(string)
+	persistentCookie := ws.GetNextConfig(kernel.WebPersistentCookie).(bool)
+	secureCookie := ws.GetNextConfig(kernel.WebSecureCookie).(bool)
 
-	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, srv.auth.manager)
-	err := srv.web.setupServer(srvw, srv.place.manager, srv.auth.manager, srv.cfg.rtConfig)
+	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
+	err := kern.web.setupServer(srvw, kern.place.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
-		srv.doLog("Unable to create Web Server:", err)
+		kern.doLog("Unable to create Web Server:", err)
 		return err
 	}
-	if srv.debug {
+	if kern.debug {
 		srvw.SetDebug()
 	}
 	if err := srvw.Run(); err != nil {
-		srv.doLog("Unable to start Web Service:", err)
+		kern.doLog("Unable to start Web Service:", err)
 		return err
 	}
-	srv.doLog("Start Web Service:", listenAddr)
+	kern.doLog("Start Web Service:", listenAddr)
 	ws.mxService.Lock()
 	ws.srvw = srvw
 	ws.mxService.Unlock()
 	return nil
 }
 
-func (ws *webSub) IsStarted() bool {
+func (ws *webService) IsStarted() bool {
 	ws.mxService.RLock()
 	defer ws.mxService.RUnlock()
 	return ws.srvw != nil
 }
 
-func (ws *webSub) Stop(srv *myService) error {
-	srv.doLog("Stop Web Service")
+func (ws *webService) Stop(kern *myKernel) error {
+	kern.doLog("Stop Web Service")
 	err := ws.srvw.Stop()
 	ws.mxService.Lock()
 	ws.srvw = nil
@@ -144,6 +144,6 @@ func (ws *webSub) Stop(srv *myService) error {
 	return err
 }
 
-func (ws *webSub) GetStatistics() []service.KeyValue {
+func (ws *webService) GetStatistics() []kernel.KeyValue {
 	return nil
 }

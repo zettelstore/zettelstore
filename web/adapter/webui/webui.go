@@ -27,9 +27,9 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -78,7 +78,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		place:    mgr,
 		policy:   pol,
 
-		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeHTML).(time.Duration),
+		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
 		stylesheetURL: ab.NewURLBuilder('z').SetZid(
 			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery(
 			"_part", "content").String(),

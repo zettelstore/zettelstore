@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -19,21 +19,21 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/strfun"
 )
 
 type cmdSession struct {
 	w        io.Writer
-	srv      *myService
+	kern     *myKernel
 	echo     bool
 	header   bool
 	colwidth int
 }
 
-func (sess *cmdSession) initialize(w io.Writer, srv *myService) {
+func (sess *cmdSession) initialize(w io.Writer, kern *myKernel) {
 	sess.w = w
-	sess.srv = srv
+	sess.kern = kern
 	sess.header = true
 	sess.colwidth = 80
 }
@@ -158,16 +158,16 @@ var commands = map[string]command{
 	},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
-	"restart":     {"restart subservice", cmdRestart},
+	"restart":     {"restart service", cmdRestart},
+	"services":    {"show available services", cmdServices},
 	"set-config":  {"set next configuration data", cmdSetConfig},
 	"shutdown": {
 		"shutdown Zettelstore",
-		func(sess *cmdSession, cmd string, args []string) bool { sess.srv.Shutdown(false); return false },
+		func(sess *cmdSession, cmd string, args []string) bool { sess.kern.Shutdown(false); return false },
 	},
-	"start":       {"start subservice", cmdStart},
-	"stat":        {"show subservice statistics", cmdStat},
-	"stop":        {"stop subservice", cmdStop},
-	"subservices": {"show available subservices", cmdServices},
+	"start": {"start service", cmdStart},
+	"stat":  {"show service statistics", cmdStat},
+	"stop":  {"stop service", cmdStop},
 }
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
@@ -192,50 +192,50 @@ func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
 
 func cmdGetConfig(sess *cmdSession, cmd string, args []string) bool {
 	showConfig(sess, args,
-		listSubConfig, func(sub subService, key string) interface{} { return sub.GetConfig(key) })
+		listCurConfig, func(srv service, key string) interface{} { return srv.GetConfig(key) })
 	return true
 }
 func cmdNextConfig(sess *cmdSession, cmd string, args []string) bool {
 	showConfig(sess, args,
-		listNextConfig, func(sub subService, key string) interface{} { return sub.GetNextConfig(key) })
+		listNextConfig, func(srv service, key string) interface{} { return srv.GetNextConfig(key) })
 	return true
 }
 func showConfig(sess *cmdSession, args []string,
-	listConfig func(*cmdSession, subService), getConfig func(subService, string) interface{}) {
+	listConfig func(*cmdSession, service), getConfig func(service, string) interface{}) {
 
 	if len(args) == 0 {
-		for subsrv := service.SubCore; subsrv <= service.SubWeb; subsrv++ {
-			if subsrv > service.SubCore {
+		for srvnum := kernel.CoreService; srvnum <= kernel.WebService; srvnum++ {
+			if srvnum > kernel.CoreService {
 				sess.println()
 			}
-			sub := sess.srv.subs[subsrv].sub
-			listConfig(sess, sub)
+			srv := sess.kern.srvs[srvnum].srv
+			listConfig(sess, srv)
 		}
 		return
 	}
-	subD, ok := sess.srv.subNames[args[0]]
+	srvD, ok := sess.kern.srvNames[args[0]]
 	if !ok {
-		sess.println("Unknown subservice:", args[0])
+		sess.println("Unknown service:", args[0])
 		return
 	}
 	if len(args) == 1 {
-		listConfig(sess, subD.sub)
+		listConfig(sess, srvD.srv)
 		return
 	}
-	val := getConfig(subD.sub, args[1])
+	val := getConfig(srvD.srv, args[1])
 	if val == nil {
-		sess.println("Unknown key", args[1], "for subservice", args[0])
+		sess.println("Unknown key", args[1], "for service", args[0])
 		return
 	}
 	sess.println(fmt.Sprintf("%v", val))
 }
-func listSubConfig(sess *cmdSession, sub subService) {
-	listConfig(sess, func() []service.KeyDescrValue { return sub.GetConfigList(true) })
+func listCurConfig(sess *cmdSession, srv service) {
+	listConfig(sess, func() []kernel.KeyDescrValue { return srv.GetConfigList(true) })
 }
-func listNextConfig(sess *cmdSession, sub subService) {
-	listConfig(sess, sub.GetNextConfigList)
+func listNextConfig(sess *cmdSession, srv service) {
+	listConfig(sess, srv.GetNextConfigList)
 }
-func listConfig(sess *cmdSession, getConfigList func() []service.KeyDescrValue) {
+func listConfig(sess *cmdSession, getConfigList func() []kernel.KeyDescrValue) {
 	l := getConfigList()
 	table := [][]string{{"Key", "Value", "Description"}}
 	for _, kdv := range l {
@@ -246,30 +246,30 @@ func listConfig(sess *cmdSession, getConfigList func() []service.KeyDescrValue) 
 
 func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) < 3 {
-		sess.println("Usage:", cmd, "SUBSERIVCE KEY VALUE")
+		sess.println("Usage:", cmd, "SERIVCE KEY VALUE")
 		return true
 	}
-	subD, ok := sess.srv.subNames[args[0]]
+	srvD, ok := sess.kern.srvNames[args[0]]
 	if !ok {
-		sess.println("Unknown subservice:", args[0])
+		sess.println("Unknown service:", args[0])
 		return true
 	}
-	if !subD.sub.SetConfig(args[1], args[2]) {
+	if !srvD.srv.SetConfig(args[1], args[2]) {
 		sess.println("Unable to set key", args[1], "to value", args[2])
 	}
 	return true
 }
 
 func cmdServices(sess *cmdSession, cmd string, args []string) bool {
-	names := make([]string, 0, len(sess.srv.subNames))
-	for name := range sess.srv.subNames {
+	names := make([]string, 0, len(sess.kern.srvNames))
+	for name := range sess.kern.srvNames {
 		names = append(names, name)
 	}
 	sort.Strings(names)
 
-	table := [][]string{{"Subservice", "Status"}}
+	table := [][]string{{"Service", "Status"}}
 	for _, name := range names {
-		if sess.srv.subNames[name].sub.IsStarted() {
+		if sess.kern.srvNames[name].srv.IsStarted() {
 			table = append(table, []string{name, "started"})
 		} else {
 			table = append(table, []string{name, "stopped"})
@@ -280,11 +280,11 @@ func cmdServices(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdStart(sess *cmdSession, cmd string, args []string) bool {
-	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	srvnum, ok := lookupService(sess, cmd, args)
 	if !ok {
 		return true
 	}
-	err := sess.srv.doStartSub(subsrv)
+	err := sess.kern.doStartService(srvnum)
 	if err != nil {
 		sess.println(err.Error())
 	}
@@ -292,11 +292,11 @@ func cmdStart(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdRestart(sess *cmdSession, cmd string, args []string) bool {
-	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	srvnum, ok := lookupService(sess, cmd, args)
 	if !ok {
 		return true
 	}
-	err := sess.srv.doRestartSub(subsrv)
+	err := sess.kern.doRestartService(srvnum)
 	if err != nil {
 		sess.println(err.Error())
 	}
@@ -304,11 +304,11 @@ func cmdRestart(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdStop(sess *cmdSession, cmd string, args []string) bool {
-	subsrv, ok := lookupSubsrv(sess, cmd, args)
+	srvnum, ok := lookupService(sess, cmd, args)
 	if !ok {
 		return true
 	}
-	err := sess.srv.doStopSub(subsrv)
+	err := sess.kern.doStopService(srvnum)
 	if err != nil {
 		sess.println(err.Error())
 	}
@@ -317,15 +317,15 @@ func cmdStop(sess *cmdSession, cmd string, args []string) bool {
 
 func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) == 0 {
-		sess.println("Usage:", cmd, "SUBSERVICE")
+		sess.println("Usage:", cmd, "SERVICE")
 		return true
 	}
-	subD, ok := sess.srv.subNames[args[0]]
+	srvD, ok := sess.kern.srvNames[args[0]]
 	if !ok {
-		sess.println("Unknown subservice", args[0])
+		sess.println("Unknown service", args[0])
 		return true
 	}
-	kvl := subD.sub.GetStatistics()
+	kvl := srvD.srv.GetStatistics()
 	if len(kvl) == 0 {
 		return true
 	}
@@ -337,17 +337,17 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
-func lookupSubsrv(sess *cmdSession, cmd string, args []string) (service.Subservice, bool) {
+func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service, bool) {
 	if len(args) == 0 {
-		sess.println("Usage:", cmd, "SUBSERVICE")
+		sess.println("Usage:", cmd, "SERVICE")
 		return 0, false
 	}
-	subD, ok := sess.srv.subNames[args[0]]
+	srvD, ok := sess.kern.srvNames[args[0]]
 	if !ok {
-		sess.println("Unknown subservice", args[0])
+		sess.println("Unknown service", args[0])
 		return 0, false
 	}
-	return subD.subsrv, true
+	return srvD.srvnum, true
 }
 
 func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
@@ -393,7 +393,7 @@ func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
-	sess.srv.place.manager.Dump(sess.w)
+	sess.kern.place.manager.Dump(sess.w)
 	return true
 }
 

@@ -19,10 +19,10 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager/store"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/strfun"
 )
 
@@ -56,7 +56,7 @@ func (mgr *Manager) idxIndexer() {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
 		if r := recover(); r != nil {
-			service.Main.LogRecover("Indexer", r)
+			kernel.Main.LogRecover("Indexer", r)
 			go mgr.idxIndexer()
 		}
 	}()

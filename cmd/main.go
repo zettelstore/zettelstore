@@ -25,9 +25,9 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/service"
 	"zettelstore.de/z/web/server"
 )
 
@@ -146,28 +146,28 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
-	ok := setConfigValue(true, service.SubCore, service.CoreVerbose, cfg.GetBool(keyVerbose))
+	ok := setConfigValue(true, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
-		ok = setConfigValue(ok, service.SubCore, service.CorePort, val)
+		ok = setConfigValue(ok, kernel.CoreService, kernel.CorePort, val)
 	}
 
-	ok = setConfigValue(ok, service.SubAuth, service.AuthOwner, cfg.GetDefault(keyOwner, ""))
-	ok = setConfigValue(ok, service.SubAuth, service.AuthReadonly, cfg.GetBool(keyReadOnly))
+	ok = setConfigValue(ok, kernel.AuthService, kernel.AuthOwner, cfg.GetDefault(keyOwner, ""))
+	ok = setConfigValue(ok, kernel.AuthService, kernel.AuthReadonly, cfg.GetBool(keyReadOnly))
 
 	ok = setConfigValue(
-		ok, service.SubPlace, service.PlaceDefaultDirType,
-		cfg.GetDefault(keyDefaultDirPlaceType, service.PlaceDirTypeNotify))
+		ok, kernel.PlaceService, kernel.PlaceDefaultDirType,
+		cfg.GetDefault(keyDefaultDirPlaceType, kernel.PlaceDirTypeNotify))
 
 	ok = setConfigValue(
-		ok, service.SubWeb, service.WebListenAddress,
+		ok, kernel.WebService, kernel.WebListenAddress,
 		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
-	ok = setConfigValue(ok, service.SubWeb, service.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
-	ok = setConfigValue(ok, service.SubWeb, service.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
-	ok = setConfigValue(ok, service.SubWeb, service.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
+	ok = setConfigValue(ok, kernel.WebService, kernel.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
+	ok = setConfigValue(ok, kernel.WebService, kernel.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
+	ok = setConfigValue(ok, kernel.WebService, kernel.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
 	ok = setConfigValue(
-		ok, service.SubWeb, service.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
+		ok, kernel.WebService, kernel.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
 	ok = setConfigValue(
-		ok, service.SubWeb, service.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
+		ok, kernel.WebService, kernel.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
 
 	if !ok {
 		return errors.New("unable to set configuration")
@@ -175,23 +175,23 @@ func setServiceConfig(cfg *meta.Meta) error {
 	return nil
 }
 
-func setConfigValue(ok bool, subsys service.Subservice, key string, val interface{}) bool {
-	done := service.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
+func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{}) bool {
+	done := kernel.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
 	if !done {
-		service.Main.Log("unable to set configuration:", key, val)
+		kernel.Main.Log("unable to set configuration:", key, val)
 	}
 	return ok && done
 }
 
 func setupOperations(cfg *meta.Meta, withPlaces bool) error {
-	var createManager service.CreatePlaceManagerFunc
+	var createManager kernel.CreatePlaceManagerFunc
 	if withPlaces {
 		err := raiseFdLimit()
 		if err != nil {
-			srvm := service.Main
+			srvm := kernel.Main
 			srvm.Log("Raising some limitions did not work:", err)
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
-			srvm.SetConfig(service.SubPlace, service.PlaceDefaultDirType, service.PlaceDirTypeSimple)
+			srvm.SetConfig(kernel.PlaceService, kernel.PlaceDefaultDirType, kernel.PlaceDirTypeSimple)
 		}
 		createManager = func(authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
 			return manager.New(getPlaces(cfg), cfg, authManager, rtConfig)
@@ -200,7 +200,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 		createManager = func(auth.Manager, config.Config) (place.Manager, error) { return nil, nil }
 	}
 
-	service.Main.SetCreators(
+	kernel.Main.SetCreators(
 		func(readonly bool, owner id.Zid) (auth.Manager, error) {
 			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
 		},
@@ -250,20 +250,20 @@ func executeCommand(name string, args ...string) int {
 		return 2
 	}
 
-	service.Main.Start(command.Header)
+	kernel.Main.Start(command.Header)
 
 	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
-	service.Main.Shutdown(true)
+	kernel.Main.Shutdown(true)
 	return exitCode
 }
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) {
-	service.Main.SetConfig(service.SubCore, service.CoreProgname, progName)
-	service.Main.SetConfig(service.SubCore, service.CoreVersion, buildVersion)
+	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreProgname, progName)
+	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreVersion, buildVersion)
 	var exitCode int
 	if len(os.Args) <= 1 {
 		exitCode = runSimple()

@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -20,19 +20,34 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/service"
 )
 
-type cfgSub struct {
-	subConfig
+type configService struct {
+	srvConfig
 	mxService sync.RWMutex
 	rtConfig  *myConfig
 }
 
-func (cs *cfgSub) Initialize() {
+func (cs *configService) Initialize() {
 	cs.descr = descriptionMap{
-		meta.KeyCopyright:  {"Copyright", parseString, true},
+		meta.KeyCopyright:     {"Copyright", parseString, true},
+		meta.KeyDefaultLang:   {"Default language", parseString, true},
+		meta.KeyDefaultRole:   {"Default role", parseString, true},
+		meta.KeyDefaultSyntax: {"Default syntax", parseString, true},
+		meta.KeyDefaultTitle:  {"Default title", parseString, true},
+		meta.KeyDefaultVisibility: {
+			"Default zettel visibility",
+			func(val string) interface{} {
+				vis := meta.GetVisibility(val)
+				if vis == meta.VisibilityUnknown {
+					return nil
+				}
+				return vis
+			},
+			true,
+		},
 		meta.KeyExpertMode: {"Expert mode", parseBool, true},
 		meta.KeyFooterHTML: {"Footer HTML", parseString, true},
 		meta.KeyHomeZettel: {"Home zettel", parseZid, true},
@@ -47,24 +62,9 @@ func (cs *cfgSub) Initialize() {
 			},
 			true,
 		},
-		meta.KeyDefaultLang:    {"Language", parseString, true},
 		meta.KeyMarkerExternal: {"Marker external URL", parseString, true},
-		meta.KeyDefaultRole:    {"Default role", parseString, true},
 		meta.KeySiteName:       {"Site name", parseString, true},
-		meta.KeyDefaultSyntax:  {"Default syntax", parseString, true},
-		meta.KeyDefaultTitle:   {"Default title", parseString, true},
-		meta.KeyDefaultVisibility: {
-			"Default zettel visibility",
-			func(val string) interface{} {
-				vis := meta.GetVisibility(val)
-				if vis == meta.VisibilityUnknown {
-					return nil
-				}
-				return vis
-			},
-			true,
-		},
-		meta.KeyYAMLHeader: {"YAML header", parseBool, true},
+		meta.KeyYAMLHeader:     {"YAML header", parseBool, true},
 		meta.KeyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) interface{} { return strings.Fields(val) },
@@ -89,8 +89,8 @@ func (cs *cfgSub) Initialize() {
 	}
 }
 
-func (cs *cfgSub) Start(srv *myService) error {
-	srv.doLog("Start Config Service")
+func (cs *configService) Start(kern *myKernel) error {
+	kern.doLog("Start Config Service")
 	data := meta.New(id.ConfigurationZid)
 	for _, kv := range cs.GetNextConfigList() {
 		data.Set(kv.Key, fmt.Sprintf("%v", kv.Value))
@@ -101,25 +101,25 @@ func (cs *cfgSub) Start(srv *myService) error {
 	return nil
 }
 
-func (cs *cfgSub) IsStarted() bool {
+func (cs *configService) IsStarted() bool {
 	cs.mxService.RLock()
 	defer cs.mxService.RUnlock()
 	return cs.rtConfig != nil
 }
 
-func (cs *cfgSub) Stop(srv *myService) error {
-	srv.doLog("Stop Config Service")
+func (cs *configService) Stop(kern *myKernel) error {
+	kern.doLog("Stop Config Service")
 	cs.mxService.Lock()
 	cs.rtConfig = nil
 	cs.mxService.Unlock()
 	return nil
 }
 
-func (cs *cfgSub) GetStatistics() []service.KeyValue {
+func (cs *configService) GetStatistics() []kernel.KeyValue {
 	return nil
 }
 
-func (cs *cfgSub) setPlace(mgr place.Manager) {
+func (cs *configService) setPlace(mgr place.Manager) {
 	cs.rtConfig.setPlace(mgr)
 }
 

@@ -18,7 +18,7 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/web/server"
 )
 
@@ -42,7 +42,7 @@ func New(b server.Builder, authz auth.AuthzManager, token auth.TokenManager, aut
 		auth:     auth,
 		rtConfig: rtConfig,
 
-		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration),
+		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeAPI).(time.Duration),
 	}
 	return api
 }

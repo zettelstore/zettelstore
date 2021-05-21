@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 )
 
 func flgSimpleRun(fs *flag.FlagSet) {
@@ -25,18 +25,18 @@ func flgSimpleRun(fs *flag.FlagSet) {
 }
 
 func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
-	srvm := service.Main
-	listenAddr := srvm.GetConfig(service.SubWeb, service.WebListenAddress).(string)
+	kern := kernel.Main
+	listenAddr := kern.GetConfig(kernel.WebService, kernel.WebListenAddress).(string)
 	exitCode, err := doRun(false)
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
-		srvm.Log()
-		srvm.Log("--------------------------")
-		srvm.Log("Open your browser and enter the following URL:")
-		srvm.Log()
-		srvm.Log(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
-		srvm.Log()
+		kern.Log()
+		kern.Log("--------------------------")
+		kern.Log("Open your browser and enter the following URL:")
+		kern.Log()
+		kern.Log(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
+		kern.Log()
 	}
-	srvm.WaitForShutdown()
+	kern.WaitForShutdown()
 	return exitCode, err
 }
 

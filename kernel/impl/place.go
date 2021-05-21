@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the main internal service implementation.
+// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -16,24 +16,24 @@ import (
 	"fmt"
 	"sync"
 
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/service"
 )
 
-type placeSub struct {
-	subConfig
+type placeService struct {
+	srvConfig
 	mxService     sync.RWMutex
 	manager       place.Manager
-	createManager service.CreatePlaceManagerFunc
+	createManager kernel.CreatePlaceManagerFunc
 }
 
-func (ps *placeSub) Initialize() {
+func (ps *placeService) Initialize() {
 	ps.descr = descriptionMap{
-		service.PlaceDefaultDirType: {
+		kernel.PlaceDefaultDirType: {
 			"Default directory place type",
 			ps.noFrozen(func(val string) interface{} {
 				switch val {
-				case service.PlaceDirTypeNotify, service.PlaceDirTypeSimple:
+				case kernel.PlaceDirTypeNotify, kernel.PlaceDirTypeSimple:
 					return val
 				}
 				return nil
@@ -42,35 +42,35 @@ func (ps *placeSub) Initialize() {
 		},
 	}
 	ps.next = interfaceMap{
-		service.PlaceDefaultDirType: service.PlaceDirTypeNotify,
+		kernel.PlaceDefaultDirType: kernel.PlaceDirTypeNotify,
 	}
 }
 
-func (ps *placeSub) Start(srv *myService) error {
+func (ps *placeService) Start(kern *myKernel) error {
 	ps.mxService.Lock()
 	defer ps.mxService.Unlock()
-	mgr, err := ps.createManager(srv.auth.manager, srv.cfg.rtConfig)
+	mgr, err := ps.createManager(kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
-		srv.doLog("Unable to create place manager:", err)
+		kern.doLog("Unable to create place manager:", err)
 		return err
 	}
-	srv.doLog("Start Place Manager:", mgr.Location())
+	kern.doLog("Start Place Manager:", mgr.Location())
 	if err := mgr.Start(context.Background()); err != nil {
-		srv.doLog("Unable to start place manager:", err)
+		kern.doLog("Unable to start place manager:", err)
 	}
-	srv.cfg.setPlace(mgr)
+	kern.cfg.setPlace(mgr)
 	ps.manager = mgr
 	return nil
 }
 
-func (ps *placeSub) IsStarted() bool {
+func (ps *placeService) IsStarted() bool {
 	ps.mxService.RLock()
 	defer ps.mxService.RUnlock()
 	return ps.manager != nil
 }
 
-func (ps *placeSub) Stop(srv *myService) error {
-	srv.doLog("Stop Place Manager")
+func (ps *placeService) Stop(kern *myKernel) error {
+	kern.doLog("Stop Place Manager")
 	ps.mxService.RLock()
 	mgr := ps.manager
 	ps.mxService.RUnlock()
@@ -81,12 +81,12 @@ func (ps *placeSub) Stop(srv *myService) error {
 	return err
 }
 
-func (ps *placeSub) GetStatistics() []service.KeyValue {
+func (ps *placeService) GetStatistics() []kernel.KeyValue {
 	var st place.Stats
 	ps.mxService.RLock()
 	ps.manager.ReadStats(&st)
 	ps.mxService.RUnlock()
-	return []service.KeyValue{
+	return []kernel.KeyValue{
 		{Key: "Read-only", Value: fmt.Sprintf("%v", st.ReadOnly)},
 		{Key: "Sub-places", Value: fmt.Sprintf("%v", st.NumManagedPlaces)},
 		{Key: "Zettel (total)", Value: fmt.Sprintf("%v", st.ZettelTotal)},

@@ -16,7 +16,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 )
 
 func getVersionMeta(zid id.Zid, title string) *meta.Meta {
@@ -32,14 +32,14 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	return m
 }
 func genVersionBuildC(*meta.Meta) string {
-	return service.Main.GetConfig(service.SubCore, service.CoreVersion).(string)
+	return kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string)
 }
 
 func genVersionHostM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Host")
 }
 func genVersionHostC(*meta.Meta) string {
-	return service.Main.GetConfig(service.SubCore, service.CoreHostname).(string)
+	return kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string)
 }
 
 func genVersionOSM(zid id.Zid) *meta.Meta {
@@ -48,7 +48,7 @@ func genVersionOSM(zid id.Zid) *meta.Meta {
 func genVersionOSC(*meta.Meta) string {
 	return fmt.Sprintf(
 		"%v/%v",
-		service.Main.GetConfig(service.SubCore, service.CoreGoOS).(string),
-		service.Main.GetConfig(service.SubCore, service.CoreGoArch).(string),
+		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string),
+		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoArch).(string),
 	)
 }

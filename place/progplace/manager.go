@@ -18,7 +18,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/service"
+	"zettelstore.de/z/kernel"
 )
 
 func genManagerM(zid id.Zid) *meta.Meta {
@@ -28,7 +28,7 @@ func genManagerM(zid id.Zid) *meta.Meta {
 }
 
 func genManagerC(*meta.Meta) string {
-	kvl := service.Main.GetSubStatistics(service.SubPlace)
+	kvl := kernel.Main.GetServiceStatistics(kernel.PlaceService)
 	if len(kvl) == 0 {
 		return "No statistics available"
 	}
