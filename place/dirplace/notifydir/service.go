@@ -17,7 +17,6 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/dirplace/directory"
 )
 
@@ -113,7 +112,7 @@ func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<
 					close(ready)
 					ready = nil
 				}
-				srv.notifyChange(change.OnReload, id.Invalid)
+				srv.notifyChange(place.OnReload, id.Invalid)
 			case fileStatusError:
 				log.Println("DIRPLACE", "ERROR", ev.err)
 			case fileStatusUpdate:
@@ -134,7 +133,7 @@ func (srv *notifyService) processFileUpdateEvent(ev *fileEvent, curMap, newMap d
 		dirMapUpdate(newMap, ev)
 	} else {
 		dirMapUpdate(curMap, ev)
-		srv.notifyChange(change.OnUpdate, ev.zid)
+		srv.notifyChange(place.OnUpdate, ev.zid)
 	}
 }
 
@@ -143,7 +142,7 @@ func (srv *notifyService) processFileDeleteEvent(ev *fileEvent, curMap, newMap d
 		deleteFromMap(newMap, ev)
 	} else {
 		deleteFromMap(curMap, ev)
-		srv.notifyChange(change.OnDelete, ev.zid)
+		srv.notifyChange(place.OnDelete, ev.zid)
 	}
 }
 

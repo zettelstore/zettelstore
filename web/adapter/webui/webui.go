@@ -29,7 +29,6 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/service"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
@@ -91,14 +90,14 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		loginURL:      ab.NewURLBuilder('a').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
-	wui.observe(change.Info{Reason: change.OnReload, Zid: id.Invalid})
+	wui.observe(place.UpdateInfo{Reason: place.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }
 
-func (wui *WebUI) observe(ci change.Info) {
+func (wui *WebUI) observe(ci place.UpdateInfo) {
 	wui.mxCache.Lock()
-	if ci.Reason == change.OnReload || ci.Zid == id.BaseTemplateZid {
+	if ci.Reason == place.OnReload || ci.Zid == id.BaseTemplateZid {
 		wui.templateCache = make(map[id.Zid]*template.Template, len(wui.templateCache))
 	} else {
 		delete(wui.templateCache, ci.Zid)

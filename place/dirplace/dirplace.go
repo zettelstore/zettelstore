@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/dirplace/directory"
 	"zettelstore.de/z/place/fileplace"
 	"zettelstore.de/z/place/manager"
@@ -136,10 +135,10 @@ func (dp *dirPlace) Stop(ctx context.Context) error {
 	return err
 }
 
-func (dp *dirPlace) notifyChanged(reason change.Reason, zid id.Zid) {
+func (dp *dirPlace) notifyChanged(reason place.UpdateReason, zid id.Zid) {
 	if dp.mustNotify {
 		if chci := dp.cdata.Notify; chci != nil {
-			chci <- change.Info{Reason: reason, Zid: zid}
+			chci <- place.UpdateInfo{Reason: reason, Zid: zid}
 		}
 	}
 }
@@ -177,7 +176,7 @@ func (dp *dirPlace) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	if err == nil {
 		dp.dirSrv.UpdateEntry(entry)
 	}
-	dp.notifyChanged(change.OnUpdate, meta.Zid)
+	dp.notifyChanged(place.OnUpdate, meta.Zid)
 	return meta.Zid, err
 }
 
@@ -276,7 +275,7 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	}
 	err = setZettel(dp, entry, zettel)
 	if err == nil {
-		dp.notifyChanged(change.OnUpdate, meta.Zid)
+		dp.notifyChanged(place.OnUpdate, meta.Zid)
 	}
 	return err
 }
@@ -354,8 +353,8 @@ func (dp *dirPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	}
 	err = deleteZettel(dp, curEntry, curZid)
 	if err == nil {
-		dp.notifyChanged(change.OnDelete, curZid)
-		dp.notifyChanged(change.OnUpdate, newZid)
+		dp.notifyChanged(place.OnDelete, curZid)
+		dp.notifyChanged(place.OnUpdate, newZid)
 	}
 	return err
 }
@@ -380,7 +379,7 @@ func (dp *dirPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	dp.dirSrv.DeleteEntry(zid)
 	err = deleteZettel(dp, entry, zid)
 	if err == nil {
-		dp.notifyChanged(change.OnDelete, zid)
+		dp.notifyChanged(place.OnDelete, zid)
 	}
 	return err
 }

@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/search"
 )
 
@@ -149,7 +148,34 @@ type Stats struct {
 type Manager interface {
 	Place
 	StartStopper
-	change.Subject
+	Subject
+}
+
+// UpdateReason gives an indication, why the ObserverFunc was called.
+type UpdateReason uint8
+
+// Values for Reason
+const (
+	_        UpdateReason = iota
+	OnReload              // Place was reloaded
+	OnUpdate              // A zettel was created or changed
+	OnDelete              // A zettel was removed
+)
+
+// UpdateInfo contains all the data about a changed zettel.
+type UpdateInfo struct {
+	Reason UpdateReason
+	Zid    id.Zid
+}
+
+// UpdateFunc is a function to be called when a change is detected.
+type UpdateFunc func(UpdateInfo)
+
+// Subject is a place that notifies observers about changes.
+type Subject interface {
+	// RegisterObserver registers an observer that will be notified
+	// if one or all zettel are found to be changed.
+	RegisterObserver(UpdateFunc)
 }
 
 // Enricher is used to update metadata by adding new properties.

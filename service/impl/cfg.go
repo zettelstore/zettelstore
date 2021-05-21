@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/service"
 )
 
@@ -163,8 +162,8 @@ func (cfg *myConfig) doUpdate() error {
 	return nil
 }
 
-func (cfg *myConfig) observe(ci change.Info) {
-	if ci.Reason == change.OnReload || ci.Zid == id.ConfigurationZid {
+func (cfg *myConfig) observe(ci place.UpdateInfo) {
+	if ci.Reason == place.OnReload || ci.Zid == id.ConfigurationZid {
 		go func() { cfg.doUpdate() }()
 	}
 }

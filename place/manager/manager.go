@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/change"
 	"zettelstore.de/z/place/manager/memstore"
 	"zettelstore.de/z/place/manager/store"
 	"zettelstore.de/z/service"
@@ -35,7 +34,7 @@ import (
 type ConnectData struct {
 	Config   config.Config
 	Enricher place.Enricher
-	Notify   chan<- change.Info
+	Notify   chan<- place.UpdateInfo
 }
 
 // Connect returns a handle to the specified place
@@ -99,10 +98,10 @@ type Manager struct {
 	started      bool
 	rtConfig     config.Config
 	subplaces    []place.ManagedPlace
-	observers    []change.Func
+	observers    []place.UpdateFunc
 	mxObserver   sync.RWMutex
 	done         chan struct{}
-	infos        chan change.Info
+	infos        chan place.UpdateInfo
 	propertyKeys map[string]bool // Set of property key names
 
 	// Indexer data
@@ -127,7 +126,7 @@ func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager, rtCon
 	}
 	mgr := &Manager{
 		rtConfig:     rtConfig,
-		infos:        make(chan change.Info, len(placeURIs)*10),
+		infos:        make(chan place.UpdateInfo, len(placeURIs)*10),
 		propertyKeys: propertyKeys,
 
 		idxStore: memstore.New(),
@@ -160,7 +159,7 @@ func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager, rtCon
 
 // RegisterObserver registers an observer that will be notified
 // if a zettel was found to be changed.
-func (mgr *Manager) RegisterObserver(f change.Func) {
+func (mgr *Manager) RegisterObserver(f place.UpdateFunc) {
 	if f != nil {
 		mgr.mxObserver.Lock()
 		mgr.observers = append(mgr.observers, f)
@@ -168,7 +167,7 @@ func (mgr *Manager) RegisterObserver(f change.Func) {
 	}
 }
 
-func (mgr *Manager) notifyObserver(ci change.Info) {
+func (mgr *Manager) notifyObserver(ci place.UpdateInfo) {
 	mgr.mxObserver.RLock()
 	observers := mgr.observers
 	mgr.mxObserver.RUnlock()
@@ -199,13 +198,13 @@ func (mgr *Manager) notifier() {
 	}
 }
 
-func (mgr *Manager) idxEnqueue(ci change.Info) {
+func (mgr *Manager) idxEnqueue(ci place.UpdateInfo) {
 	switch ci.Reason {
-	case change.OnReload:
+	case place.OnReload:
 		mgr.idxAr.Reset()
-	case change.OnUpdate:
+	case place.OnUpdate:
 		mgr.idxAr.Enqueue(ci.Zid, arUpdate)
-	case change.OnDelete:
+	case place.OnDelete:
 		mgr.idxAr.Enqueue(ci.Zid, arDelete)
 	default:
 		return
@@ -249,7 +248,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	// mgr.startIndexer(mgr)
 	mgr.started = true
 	mgr.mgrMx.Unlock()
-	mgr.infos <- change.Info{Reason: change.OnReload, Zid: id.Invalid}
+	mgr.infos <- place.UpdateInfo{Reason: place.OnReload, Zid: id.Invalid}
 	return nil
 }
 
