@@ -29,12 +29,12 @@ type CreateZettelPort interface {
 
 // CreateZettel is the data for this use case.
 type CreateZettel struct {
-	rtConfig *config.Config
+	rtConfig config.Config
 	port     CreateZettelPort
 }
 
 // NewCreateZettel creates a new use case.
-func NewCreateZettel(rtConfig *config.Config, port CreateZettelPort) CreateZettel {
+func NewCreateZettel(rtConfig config.Config, port CreateZettelPort) CreateZettel {
 	return CreateZettel{
 		rtConfig: rtConfig,
 		port:     port,

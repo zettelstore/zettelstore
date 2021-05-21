@@ -13,12 +13,14 @@ package policy
 
 import (
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 )
 
 type anonPolicy struct {
+	rtConfig      config.Config
 	expertMode    func() bool
-	getVisibility func(*meta.Meta) meta.Visibility
+	getVisibility func(*meta.Meta, config.Config) meta.Visibility
 	pre           auth.Policy
 }
 
@@ -43,7 +45,7 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 }
 
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
-	if ap.getVisibility(m) == meta.VisibilityExpert {
+	if ap.getVisibility(m, ap.rtConfig) == meta.VisibilityExpert {
 		return ap.expertMode()
 	}
 	return true

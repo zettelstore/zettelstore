@@ -179,7 +179,7 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 	return meta.UserRoleReader
 }
 
-func (a *myAuth) PlaceWithPolicy(auth server.Auth, rtConfig *config.Config, unprotectedPlace place.Place) (place.Place, auth.Policy) {
+func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, auth.Policy) {
 	return policy.PlaceWithPolicy(
-		auth, a, unprotectedPlace, rtConfig.GetExpertMode, rtConfig.GetVisibility)
+		rtConfig, auth, a, unprotectedPlace, rtConfig.GetExpertMode, config.GetVisibility)
 }

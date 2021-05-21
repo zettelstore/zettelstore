@@ -23,6 +23,7 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
@@ -49,7 +50,7 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 		panic(err)
 	}
 
-	cdata := manager.ConnectData{Enricher: &noEnrich{}, Notify: nil}
+	cdata := manager.ConnectData{Config: testConfig, Enricher: &noEnrich{}, Notify: nil}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			place, err := manager.Connect(
@@ -126,7 +127,7 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	sb.Reset()
 
 	newZettel := parser.ParseZettel(domain.Zettel{
-		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "", nil)
+		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "", testConfig)
 	zmkEncoder.WriteBlocks(&sb, newZettel.Ast)
 	gotSecond := sb.String()
 	sb.Reset()
@@ -160,7 +161,7 @@ func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string)
 		if err != nil {
 			panic(err)
 		}
-		z := parser.ParseZettel(zettel, "", nil)
+		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
@@ -213,7 +214,7 @@ func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 		if err != nil {
 			panic(err)
 		}
-		z := parser.ParseZettel(zettel, "", nil)
+		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)
@@ -225,6 +226,25 @@ func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 		panic(err)
 	}
 }
+
+type myConfig struct{}
+
+func (cfg *myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
+func (cfg *myConfig) GetDefaultTitle() string                  { return "" }
+func (cfg *myConfig) GetDefaultRole() string                   { return meta.ValueRoleZettel }
+func (cfg *myConfig) GetDefaultSyntax() string                 { return meta.ValueSyntaxZmk }
+func (cfg *myConfig) GetDefaultLang() string                   { return "" }
+func (cfg *myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }
+func (cfg *myConfig) GetExpertMode() bool                      { return false }
+func (cfg *myConfig) GetFooterHTML() string                    { return "" }
+func (cfg *myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
+func (cfg *myConfig) GetListPageSize() int                     { return 0 }
+func (cfg *myConfig) GetMarkerExternal() string                { return "" }
+func (cfg *myConfig) GetSiteName() string                      { return "" }
+func (cfg *myConfig) GetYAMLHeader() bool                      { return false }
+func (cfg *myConfig) GetZettelFileSyntax() []string            { return nil }
+
+var testConfig = &myConfig{}
 
 func TestMetaRegression(t *testing.T) {
 	wd, err := os.Getwd()

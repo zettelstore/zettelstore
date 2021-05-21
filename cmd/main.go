@@ -193,11 +193,11 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(service.SubPlace, service.PlaceDefaultDirType, service.PlaceDirTypeSimple)
 		}
-		createManager = func(authManager auth.Manager) (place.Manager, error) {
-			return manager.New(getPlaces(cfg), cfg, authManager)
+		createManager = func(authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
+			return manager.New(getPlaces(cfg), cfg, authManager, rtConfig)
 		}
 	} else {
-		createManager = func(authManager auth.Manager) (place.Manager, error) { return nil, nil }
+		createManager = func(auth.Manager, config.Config) (place.Manager, error) { return nil, nil }
 	}
 
 	service.Main.SetCreators(
@@ -205,8 +205,8 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
 		},
 		createManager,
-		func(srv server.Server, rtConfig *config.Config, plMgr place.Manager, authMgr auth.Manager) error {
-			setupRouting(srv, rtConfig, plMgr, authMgr)
+		func(srv server.Server, plMgr place.Manager, authMgr auth.Manager, rtConfig config.Config) error {
+			setupRouting(srv, plMgr, authMgr, rtConfig)
 			return nil
 		},
 	)

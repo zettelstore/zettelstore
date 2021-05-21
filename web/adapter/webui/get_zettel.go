@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -43,7 +44,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			return
 		}
 
-		lang := wui.rtConfig.GetLang(zn.InhMeta)
+		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", ""),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui, getMeta),

@@ -13,13 +13,15 @@ package policy
 
 import (
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 )
 
 type ownerPolicy struct {
+	rtConfig      config.Config
 	manager       auth.AuthzManager
 	expertMode    func() bool
-	getVisibility func(*meta.Meta) meta.Visibility
+	getVisibility func(*meta.Meta, config.Config) meta.Visibility
 	pre           auth.Policy
 }
 
@@ -43,7 +45,7 @@ func (o *ownerPolicy) userCanCreate(user, newMeta *meta.Meta) bool {
 func (o *ownerPolicy) CanRead(user, m *meta.Meta) bool {
 	// No need to call o.pre.CanRead(user, meta), because it will always return true.
 	// Both the default and the readonly policy allow to read a zettel.
-	vis := o.getVisibility(m)
+	vis := o.getVisibility(m, o.rtConfig)
 	if res, ok := o.checkVisibility(user, vis); ok {
 		return res
 	}
@@ -78,7 +80,7 @@ func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	if user == nil || !o.pre.CanWrite(user, oldMeta, newMeta) {
 		return false
 	}
-	vis := o.getVisibility(oldMeta)
+	vis := o.getVisibility(oldMeta, o.rtConfig)
 	if res, ok := o.checkVisibility(user, vis); ok {
 		return res
 	}
@@ -108,7 +110,7 @@ func (o *ownerPolicy) CanRename(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanRename(user, m) {
 		return false
 	}
-	if res, ok := o.checkVisibility(user, o.getVisibility(m)); ok {
+	if res, ok := o.checkVisibility(user, o.getVisibility(m, o.rtConfig)); ok {
 		return res
 	}
 	return o.userIsOwner(user)
@@ -118,7 +120,7 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanDelete(user, m) {
 		return false
 	}
-	if res, ok := o.checkVisibility(user, o.getVisibility(m)); ok {
+	if res, ok := o.checkVisibility(user, o.getVisibility(m, o.rtConfig)); ok {
 		return res
 	}
 	return o.userIsOwner(user)

@@ -110,7 +110,7 @@ func (ws *webSub) Start(srv *myService) error {
 	secureCookie := ws.GetNextConfig(service.WebSecureCookie).(bool)
 
 	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, srv.auth.manager)
-	err := srv.web.setupServer(srvw, srv.cfg.rtConfig, srv.place.manager, srv.auth.manager)
+	err := srv.web.setupServer(srvw, srv.place.manager, srv.auth.manager, srv.cfg.rtConfig)
 	if err != nil {
 		srv.doLog("Unable to create Web Server:", err)
 		return err

@@ -13,14 +13,16 @@ package policy
 
 import (
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 )
 
 // newPolicy creates a policy based on given constraints.
 func newPolicy(
+	rtConfig config.Config,
 	manager auth.AuthzManager,
 	expertMode func() bool,
-	getVisibility func(*meta.Meta) meta.Visibility,
+	getVisibility func(*meta.Meta, config.Config) meta.Visibility,
 ) auth.Policy {
 	var pol auth.Policy
 	if manager.IsReadonly() {
@@ -30,6 +32,7 @@ func newPolicy(
 	}
 	if manager.WithAuth() {
 		pol = &ownerPolicy{
+			rtConfig:      rtConfig,
 			manager:       manager,
 			expertMode:    expertMode,
 			getVisibility: getVisibility,
@@ -37,6 +40,7 @@ func newPolicy(
 		}
 	} else {
 		pol = &anonPolicy{
+			rtConfig:      rtConfig,
 			expertMode:    expertMode,
 			getVisibility: getVisibility,
 			pre:           pol,

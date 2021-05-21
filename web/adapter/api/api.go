@@ -25,7 +25,7 @@ import (
 // API holds all data and methods for delivering API call results.
 type API struct {
 	b        server.Builder
-	rtConfig *config.Config
+	rtConfig config.Config
 	authz    auth.AuthzManager
 	token    auth.TokenManager
 	auth     server.Auth
@@ -34,13 +34,13 @@ type API struct {
 }
 
 // New creates a new API object.
-func New(b server.Builder, rtConfig *config.Config, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth) *API {
+func New(b server.Builder, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth, rtConfig config.Config) *API {
 	api := &API{
 		b:        b,
-		rtConfig: rtConfig,
 		authz:    authz,
 		token:    token,
 		auth:     auth,
+		rtConfig: rtConfig,
 
 		tokenLifetime: service.Main.GetConfig(service.SubWeb, service.WebTokenLifetimeAPI).(time.Duration),
 	}

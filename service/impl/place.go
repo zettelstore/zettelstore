@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"sync"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/service"
 )
@@ -50,7 +49,7 @@ func (ps *placeSub) Initialize() {
 func (ps *placeSub) Start(srv *myService) error {
 	ps.mxService.Lock()
 	defer ps.mxService.Unlock()
-	mgr, err := ps.createManager(srv.auth.manager)
+	mgr, err := ps.createManager(srv.auth.manager, srv.cfg.rtConfig)
 	if err != nil {
 		srv.doLog("Unable to create place manager:", err)
 		return err
@@ -59,7 +58,7 @@ func (ps *placeSub) Start(srv *myService) error {
 	if err := mgr.Start(context.Background()); err != nil {
 		srv.doLog("Unable to start place manager:", err)
 	}
-	config.SetupConfiguration(mgr)
+	srv.cfg.setPlace(mgr)
 	ps.manager = mgr
 	return nil
 }

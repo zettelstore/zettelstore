@@ -22,12 +22,12 @@ import (
 
 // ParseZettel is the data for this use case.
 type ParseZettel struct {
-	rtConfig  *config.Config
+	rtConfig  config.Config
 	getZettel GetZettel
 }
 
 // NewParseZettel creates a new use case.
-func NewParseZettel(rtConfig *config.Config, getZettel GetZettel) ParseZettel {
+func NewParseZettel(rtConfig config.Config, getZettel GetZettel) ParseZettel {
 	return ParseZettel{rtConfig: rtConfig, getZettel: getZettel}
 }
 

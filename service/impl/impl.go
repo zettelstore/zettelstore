@@ -35,9 +35,9 @@ type myService struct {
 	debug     bool
 
 	core     coreSub
+	cfg      cfgSub
 	auth     authSub
 	place    placeSub
-	cfg      cfgSub
 	web      webSub
 	subs     map[service.Subservice]subServceDescr
 	subNames map[string]subServiceData
@@ -70,9 +70,9 @@ func createAndStart() service.Service {
 	}
 	srv.subs = map[service.Subservice]subServceDescr{
 		service.SubCore:  {&srv.core, "core"},
+		service.SubCfg:   {&srv.cfg, "config"},
 		service.SubAuth:  {&srv.auth, "auth"},
 		service.SubPlace: {&srv.place, "place"},
-		service.SubCfg:   {&srv.cfg, "config"},
 		service.SubWeb:   {&srv.web, "web"},
 	}
 	srv.subNames = make(map[string]subServiceData, len(srv.subs))
@@ -86,9 +86,8 @@ func createAndStart() service.Service {
 	srv.depStart = subServiceDependency{
 		service.SubCore:  nil,
 		service.SubAuth:  nil,
-		service.SubPlace: {service.SubAuth},
-		service.SubCfg:   {service.SubPlace},
-		service.SubWeb:   {service.SubAuth, service.SubCfg, service.SubPlace},
+		service.SubPlace: {service.SubCfg, service.SubAuth},
+		service.SubWeb:   {service.SubCfg, service.SubAuth, service.SubPlace},
 	}
 	srv.depStop = make(subServiceDependency, len(srv.depStart))
 	for sub, deps := range srv.depStart {

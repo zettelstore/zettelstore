@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
@@ -32,6 +33,7 @@ import (
 
 // ConnectData contains all administration related values.
 type ConnectData struct {
+	Config   config.Config
 	Enricher place.Enricher
 	Notify   chan<- change.Info
 }
@@ -95,6 +97,7 @@ func GetSchemes() []string {
 type Manager struct {
 	mgrMx        sync.RWMutex
 	started      bool
+	rtConfig     config.Config
 	subplaces    []place.ManagedPlace
 	observers    []change.Func
 	mxObserver   sync.RWMutex
@@ -115,7 +118,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager) (*Manager, error) {
+func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager, rtConfig config.Config) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {
@@ -123,6 +126,7 @@ func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager) (*Man
 		}
 	}
 	mgr := &Manager{
+		rtConfig:     rtConfig,
 		infos:        make(chan change.Info, len(placeURIs)*10),
 		propertyKeys: propertyKeys,
 
@@ -130,7 +134,7 @@ func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager) (*Man
 		idxAr:    newAnterooms(10),
 		idxReady: make(chan struct{}, 1),
 	}
-	cdata := ConnectData{Enricher: mgr, Notify: mgr.infos}
+	cdata := ConnectData{Config: rtConfig, Enricher: mgr, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
 		p, err := Connect(uri, authManager, &cdata)

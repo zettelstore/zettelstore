@@ -39,8 +39,8 @@ import (
 // WebUI holds all data for delivering the web ui.
 type WebUI struct {
 	ab       server.AuthBuilder
-	rtConfig *config.Config
 	authz    auth.AuthzManager
+	rtConfig config.Config
 	token    auth.TokenManager
 	place    webuiPlace
 	policy   auth.Policy
@@ -69,7 +69,7 @@ type webuiPlace interface {
 }
 
 // New creates a new WebUI struct.
-func New(ab server.AuthBuilder, rtConfig *config.Config, authz auth.AuthzManager, token auth.TokenManager,
+func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr place.Manager, pol auth.Policy) *WebUI {
 	wui := &WebUI{
 		ab:       ab,
@@ -253,9 +253,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		if !wui.policy.CanRead(user, m) {
 			continue
 		}
-		title := wui.rtConfig.GetTitle(m)
+		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
-		env := encoder.Environment{Lang: wui.rtConfig.GetLang(m)}
+		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
 		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
 		if err != nil {
 			menuTitle, err = adapter.FormatInlines(astTitle, "text", nil)

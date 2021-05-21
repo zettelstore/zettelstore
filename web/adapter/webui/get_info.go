@@ -18,6 +18,7 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -67,7 +68,7 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		summary := collect.References(zn)
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Images...))
 
-		lang := wui.rtConfig.GetLang(zn.InhMeta)
+		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		env := encoder.Environment{Lang: lang}
 		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, len(pairs))

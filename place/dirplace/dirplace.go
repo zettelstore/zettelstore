@@ -21,7 +21,6 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -283,7 +282,7 @@ func (dp *dirPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 }
 
 func (dp *dirPlace) updateEntryFromMeta(entry *directory.Entry, meta *meta.Meta) {
-	entry.MetaSpec, entry.ContentExt = calcSpecExt(meta)
+	entry.MetaSpec, entry.ContentExt = dp.calcSpecExt(meta)
 	basePath := filepath.Join(dp.dir, entry.Zid.String())
 	if entry.MetaSpec == directory.MetaSpecFile {
 		entry.MetaPath = basePath + ".meta"
@@ -292,7 +291,7 @@ func (dp *dirPlace) updateEntryFromMeta(entry *directory.Entry, meta *meta.Meta)
 	entry.Duplicates = false
 }
 
-func calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
+func (dp *dirPlace) calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	if m.YamlSep {
 		return directory.MetaSpecHeader, "zettel"
 	}
@@ -301,7 +300,7 @@ func calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	case meta.ValueSyntaxNone, meta.ValueSyntaxZmk:
 		return directory.MetaSpecHeader, "zettel"
 	}
-	for _, s := range config.GetZettelFileSyntax() {
+	for _, s := range dp.cdata.Config.GetZettelFileSyntax() {
 		if s == syntax {
 			return directory.MetaSpecHeader, "zettel"
 		}
@@ -393,10 +392,10 @@ func (dp *dirPlace) ReadStats(st *place.ManagedPlaceStats) {
 
 func (dp *dirPlace) cleanupMeta(ctx context.Context, m *meta.Meta) {
 	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
-		m.Set(meta.KeyRole, config.GetDefaultRole())
+		m.Set(meta.KeyRole, dp.cdata.Config.GetDefaultRole())
 	}
 	if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-		m.Set(meta.KeySyntax, config.GetDefaultSyntax())
+		m.Set(meta.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
 	}
 }
 

@@ -138,11 +138,12 @@ type KeyValue struct{ Key, Value string }
 type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)
 
 // CreatePlaceManagerFunc is called to create a new place manager.
-type CreatePlaceManagerFunc func(authManager auth.Manager) (place.Manager, error)
+type CreatePlaceManagerFunc func(authManager auth.Manager, rtConfig config.Config) (place.Manager, error)
 
 // SetupWebServerFunc is called to create a new web service handler.
 type SetupWebServerFunc func(
 	webServer server.Server,
-	rtConfig *config.Config,
 	placeManager place.Manager,
-	authManager auth.Manager) error
+	authManager auth.Manager,
+	rtConfig config.Config,
+) error

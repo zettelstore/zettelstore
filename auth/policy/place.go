@@ -16,6 +16,7 @@ import (
 	"io"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -26,13 +27,14 @@ import (
 
 // PlaceWithPolicy wraps the given place inside a policy place.
 func PlaceWithPolicy(
+	rtConfig config.Config,
 	auth server.Auth,
 	manager auth.AuthzManager,
 	place place.Place,
 	expertMode func() bool,
-	getVisibility func(*meta.Meta) meta.Visibility,
+	getVisibility func(*meta.Meta, config.Config) meta.Visibility,
 ) (place.Place, auth.Policy) {
-	pol := newPolicy(manager, expertMode, getVisibility)
+	pol := newPolicy(rtConfig, manager, expertMode, getVisibility)
 	return newPlace(auth, place, pol), pol
 }
 

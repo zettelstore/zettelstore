@@ -58,10 +58,10 @@ func doRun(debug bool) (int, error) {
 	return 0, nil
 }
 
-func setupRouting(webSrv server.Server, rtConfig *config.Config, placeManager place.Manager, authManager auth.Manager) {
-	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, rtConfig, placeManager)
-	api := api.New(webSrv, rtConfig, authManager, authManager, webSrv)
-	wui := webui.New(webSrv, rtConfig, authManager, authManager, placeManager, authPolicy)
+func setupRouting(webSrv server.Server, placeManager place.Manager, authManager auth.Manager, rtConfig config.Config) {
+	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, placeManager, rtConfig)
+	api := api.New(webSrv, authManager, authManager, webSrv, rtConfig)
+	wui := webui.New(webSrv, authManager, rtConfig, authManager, placeManager, authPolicy)
 
 	ucAuthenticate := usecase.NewAuthenticate(authManager, authManager, placeManager)
 	ucCreateZettel := usecase.NewCreateZettel(rtConfig, protectedPlaceManager)

@@ -79,7 +79,7 @@ type Manager interface {
 	TokenManager
 	AuthzManager
 
-	PlaceWithPolicy(auth server.Auth, rtConfig *config.Config, unprotectedPlace place.Place) (place.Place, Policy)
+	PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, Policy)
 }
 
 // Policy is an interface for checking access authorization.
