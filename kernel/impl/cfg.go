@@ -32,11 +32,11 @@ type configService struct {
 
 func (cs *configService) Initialize() {
 	cs.descr = descriptionMap{
-		meta.KeyCopyright:     {"Copyright", parseString, true},
-		meta.KeyDefaultLang:   {"Default language", parseString, true},
-		meta.KeyDefaultRole:   {"Default role", parseString, true},
-		meta.KeyDefaultSyntax: {"Default syntax", parseString, true},
-		meta.KeyDefaultTitle:  {"Default title", parseString, true},
+		meta.KeyDefaultCopyright: {"Default copyright", parseString, true},
+		meta.KeyDefaultLang:      {"Default language", parseString, true},
+		meta.KeyDefaultRole:      {"Default role", parseString, true},
+		meta.KeyDefaultSyntax:    {"Default syntax", parseString, true},
+		meta.KeyDefaultTitle:     {"Default title", parseString, true},
 		meta.KeyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
@@ -72,18 +72,18 @@ func (cs *configService) Initialize() {
 		},
 	}
 	cs.next = interfaceMap{
-		meta.KeyCopyright:         "",
+		meta.KeyDefaultCopyright:  "",
+		meta.KeyDefaultLang:       meta.ValueLangEN,
+		meta.KeyDefaultRole:       meta.ValueRoleZettel,
+		meta.KeyDefaultSyntax:     meta.ValueSyntaxZmk,
+		meta.KeyDefaultTitle:      "Untitled",
+		meta.KeyDefaultVisibility: meta.VisibilityLogin,
 		meta.KeyExpertMode:        false,
 		meta.KeyFooterHTML:        "",
 		meta.KeyHomeZettel:        id.DefaultHomeZid,
 		meta.KeyListPageSize:      0,
-		meta.KeyDefaultLang:       meta.ValueLangEN,
 		meta.KeyMarkerExternal:    "&#10138;",
-		meta.KeyDefaultRole:       meta.ValueRoleZettel,
 		meta.KeySiteName:          "Zettelstore",
-		meta.KeyDefaultSyntax:     meta.ValueSyntaxZmk,
-		meta.KeyDefaultTitle:      "Untitled",
-		meta.KeyDefaultVisibility: meta.VisibilityLogin,
 		meta.KeyYAMLHeader:        false,
 		meta.KeyZettelFileSyntax:  nil,
 	}

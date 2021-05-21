@@ -14,12 +14,13 @@ package impl
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"strconv"
 	"sync"
 	"syscall"
-	"time"
 
 	"zettelstore.de/z/kernel"
 )
@@ -29,7 +30,6 @@ type myKernel struct {
 	// started   bool
 	wg        sync.WaitGroup
 	mx        sync.RWMutex
-	commands  chan workerCommand
 	interrupt chan os.Signal
 	debug     bool
 
@@ -64,7 +64,6 @@ func init() {
 // create and start a new kernel.
 func createAndStart() kernel.Kernel {
 	kern := &myKernel{
-		commands:  make(chan workerCommand),
 		interrupt: make(chan os.Signal, 5),
 	}
 	kern.srvs = map[kernel.Service]servceDescr{
@@ -83,10 +82,11 @@ func createAndStart() kernel.Kernel {
 		srvD.srv.Initialize()
 	}
 	kern.depStart = serviceDependency{
-		kernel.CoreService:  nil,
-		kernel.AuthService:  nil,
-		kernel.PlaceService: {kernel.ConfigService, kernel.AuthService},
-		kernel.WebService:   {kernel.ConfigService, kernel.AuthService, kernel.PlaceService},
+		kernel.CoreService:   nil,
+		kernel.ConfigService: {kernel.CoreService},
+		kernel.AuthService:   {kernel.CoreService},
+		kernel.PlaceService:  {kernel.CoreService, kernel.ConfigService, kernel.AuthService},
+		kernel.WebService:    {kernel.ConfigService, kernel.AuthService, kernel.PlaceService},
 	}
 	kern.depStop = make(serviceDependency, len(kern.depStart))
 	for srv, deps := range kern.depStart {
@@ -103,8 +103,9 @@ func (kern *myKernel) Start(headline bool) {
 	}
 	kern.wg.Add(1)
 	signal.Notify(kern.interrupt, os.Interrupt, syscall.SIGTERM)
-	go kern.worker()
+	go kern.waitForInterrupt()
 
+	kern.StartService(kernel.CoreService)
 	if headline {
 		kern.doLog(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
@@ -119,55 +120,25 @@ func (kern *myKernel) Start(headline bool) {
 			kern.doLog("Read-only mode")
 		}
 	}
-	kern.StartService(kernel.CoreService)
+	port := kern.core.GetNextConfig(kernel.CorePort).(int)
+	if port > 0 {
+		listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
+		startLineServer(kern, listenAddr)
+	}
 }
 
-// workerCommand encapsulates a command sent to the worker.
-type workerCommand interface {
-	run(*myKernel)
-}
-
-// send a command to the service.
-// func (srv *myService) send(cmd workerCommand) {
-// 	srv.commands <- cmd
-// }
-
-// worker is the background activity.
-func (kern *myKernel) worker() {
-	// Something may panic. Ensure a running worker.
-	defer func() {
-		if r := recover(); r != nil {
-			kern.doLogRecover("Main", r)
-			go kern.worker()
+func (kern *myKernel) waitForInterrupt() {
+	for sig := range kern.interrupt {
+		if strSig := sig.String(); strSig != "" {
+			kern.doLog("Shut down Zettelstore:", strSig)
 		}
-	}()
-
-	timerDuration := 15 * time.Second
-	timer := time.NewTimer(timerDuration)
-loop:
-	for {
-		select {
-		case cmd := <-kern.commands:
-			cmd.run(kern)
-		case <-timer.C:
-			timer.Reset(timerDuration)
-		case sig := <-kern.interrupt:
-			if strSig := sig.String(); strSig != "" {
-				kern.doLog("Shut down Zettelstore:", strSig)
-			}
-			kern.shutdown()
-			break loop
-		}
+		kern.shutdown()
 	}
 	kern.wg.Done()
 }
 
 func (kern *myKernel) shutdown() {
-	kern.mx.Lock()
-	defer kern.mx.Unlock()
-	for srvnum := range kern.srvs {
-		kern.doStopService(srvnum)
-	}
+	kern.StopService(kernel.CoreService) // Will stop all other services.
 }
 
 func (kern *myKernel) WaitForShutdown() {

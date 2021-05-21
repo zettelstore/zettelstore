@@ -129,7 +129,7 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
-	"dump-index": {"Writes the content of the index", cmdDumpIndex},
+	"dump-index": {"writes the content of the index", cmdDumpIndex},
 	"echo": {
 		"toggle echo mode",
 		func(sess *cmdSession, cmd string, args []string) bool {
