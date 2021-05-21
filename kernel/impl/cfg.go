@@ -219,9 +219,6 @@ func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(meta.KeyDe
 // GetDefaultLang returns the current value of the "default-lang" key.
 func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(meta.KeyDefaultLang) }
 
-// GetExpertMode returns the current value of the "expert-mode" key
-func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(meta.KeyExpertMode) }
-
 // GetSiteName returns the current value of the "site-name" key.
 func (cfg *myConfig) GetSiteName() string { return cfg.getString(meta.KeySiteName) }
 
@@ -281,4 +278,19 @@ func (cfg *myConfig) GetZettelFileSyntax() []string {
 	cfg.mx.RLock()
 	defer cfg.mx.RUnlock()
 	return cfg.data.GetListOrNil(meta.KeyZettelFileSyntax)
+}
+
+// --- AuthConfig
+
+// GetExpertMode returns the current value of the "expert-mode" key
+func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(meta.KeyExpertMode) }
+
+// GetVisibility returns the visibility value, or "login" if none is given.
+func (cfg *myConfig) GetVisibility(m *meta.Meta) meta.Visibility {
+	if val, ok := m.Get(meta.KeyVisibility); ok {
+		if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
+			return vis
+		}
+	}
+	return cfg.GetDefaultVisibility()
 }

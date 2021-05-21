@@ -31,9 +31,8 @@ func PlaceWithPolicy(
 	manager auth.AuthzManager,
 	place place.Place,
 	authConfig config.AuthConfig,
-	getVisibility func(*meta.Meta) meta.Visibility,
 ) (place.Place, auth.Policy) {
-	pol := newPolicy(manager, authConfig, getVisibility)
+	pol := newPolicy(manager, authConfig)
 	return newPlace(auth, place, pol), pol
 }
 

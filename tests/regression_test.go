@@ -235,7 +235,6 @@ func (cfg *myConfig) GetDefaultRole() string                   { return meta.Val
 func (cfg *myConfig) GetDefaultSyntax() string                 { return meta.ValueSyntaxZmk }
 func (cfg *myConfig) GetDefaultLang() string                   { return "" }
 func (cfg *myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }
-func (cfg *myConfig) GetExpertMode() bool                      { return false }
 func (cfg *myConfig) GetFooterHTML() string                    { return "" }
 func (cfg *myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
 func (cfg *myConfig) GetListPageSize() int                     { return 0 }
@@ -243,6 +242,9 @@ func (cfg *myConfig) GetMarkerExternal() string                { return "" }
 func (cfg *myConfig) GetSiteName() string                      { return "" }
 func (cfg *myConfig) GetYAMLHeader() bool                      { return false }
 func (cfg *myConfig) GetZettelFileSyntax() []string            { return nil }
+
+func (cfg *myConfig) GetExpertMode() bool                      { return false }
+func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetDefaultVisibility() }
 
 var testConfig = &myConfig{}
 

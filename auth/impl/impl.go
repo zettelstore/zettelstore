@@ -180,7 +180,5 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 }
 
 func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, auth.Policy) {
-	return policy.PlaceWithPolicy(
-		auth, a, unprotectedPlace, rtConfig,
-		func(m *meta.Meta) meta.Visibility { return config.GetVisibility(m, rtConfig) })
+	return policy.PlaceWithPolicy(auth, a, unprotectedPlace, rtConfig)
 }

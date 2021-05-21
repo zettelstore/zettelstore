@@ -18,11 +18,7 @@ import (
 )
 
 // newPolicy creates a policy based on given constraints.
-func newPolicy(
-	manager auth.AuthzManager,
-	authConfig config.AuthConfig,
-	getVisibility func(*meta.Meta) meta.Visibility,
-) auth.Policy {
+func newPolicy(manager auth.AuthzManager, authConfig config.AuthConfig) auth.Policy {
 	var pol auth.Policy
 	if manager.IsReadonly() {
 		pol = &roPolicy{}
@@ -31,16 +27,14 @@ func newPolicy(
 	}
 	if manager.WithAuth() {
 		pol = &ownerPolicy{
-			manager:       manager,
-			authConfig:    authConfig,
-			getVisibility: getVisibility,
-			pre:           pol,
+			manager:    manager,
+			authConfig: authConfig,
+			pre:        pol,
 		}
 	} else {
 		pol = &anonPolicy{
-			authConfig:    authConfig,
-			getVisibility: getVisibility,
-			pre:           pol,
+			authConfig: authConfig,
+			pre:        pol,
 		}
 	}
 	return &prePolicy{pol}

@@ -40,7 +40,7 @@ func TestPolicies(t *testing.T) {
 			readOnly: ts.readonly,
 			withAuth: ts.withAuth,
 		}
-		pol := newPolicy(authzManager, &authConfig{ts.expert}, getVisibility)
+		pol := newPolicy(authzManager, &authConfig{ts.expert})
 		name := fmt.Sprintf("readonly=%v/withauth=%v/expert=%v",
 			ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
@@ -86,7 +86,7 @@ type authConfig struct{ expert bool }
 
 func (ac *authConfig) GetExpertMode() bool { return ac.expert }
 
-func getVisibility(m *meta.Meta) meta.Visibility {
+func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 	if vis, ok := m.Get(meta.KeyVisibility); ok {
 		switch vis {
 		case meta.ValueVisibilityPublic:

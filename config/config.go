@@ -66,6 +66,9 @@ type Config interface {
 type AuthConfig interface {
 	// GetExpertMode returns the current value of the "expert-mode" key
 	GetExpertMode() bool
+
+	// GetVisibility returns the visibility value of the metadata.
+	GetVisibility(m *meta.Meta) meta.Visibility
 }
 
 // GetTitle returns the value of the "title" key of the given meta. If there
@@ -102,14 +105,4 @@ func GetLang(m *meta.Meta, cfg Config) string {
 		return val
 	}
 	return cfg.GetDefaultLang()
-}
-
-// GetVisibility returns the visibility value, or "login" if none is given.
-func GetVisibility(m *meta.Meta, cfg Config) meta.Visibility {
-	if val, ok := m.Get(meta.KeyVisibility); ok {
-		if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
-			return vis
-		}
-	}
-	return cfg.GetDefaultVisibility()
 }

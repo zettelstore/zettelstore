@@ -18,10 +18,9 @@ import (
 )
 
 type ownerPolicy struct {
-	manager       auth.AuthzManager
-	authConfig    config.AuthConfig
-	getVisibility func(*meta.Meta) meta.Visibility
-	pre           auth.Policy
+	manager    auth.AuthzManager
+	authConfig config.AuthConfig
+	pre        auth.Policy
 }
 
 func (o *ownerPolicy) CanCreate(user, newMeta *meta.Meta) bool {
@@ -44,7 +43,7 @@ func (o *ownerPolicy) userCanCreate(user, newMeta *meta.Meta) bool {
 func (o *ownerPolicy) CanRead(user, m *meta.Meta) bool {
 	// No need to call o.pre.CanRead(user, meta), because it will always return true.
 	// Both the default and the readonly policy allow to read a zettel.
-	vis := o.getVisibility(m)
+	vis := o.authConfig.GetVisibility(m)
 	if res, ok := o.checkVisibility(user, vis); ok {
 		return res
 	}
@@ -79,7 +78,7 @@ func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	if user == nil || !o.pre.CanWrite(user, oldMeta, newMeta) {
 		return false
 	}
-	vis := o.getVisibility(oldMeta)
+	vis := o.authConfig.GetVisibility(oldMeta)
 	if res, ok := o.checkVisibility(user, vis); ok {
 		return res
 	}
@@ -109,7 +108,7 @@ func (o *ownerPolicy) CanRename(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanRename(user, m) {
 		return false
 	}
-	if res, ok := o.checkVisibility(user, o.getVisibility(m)); ok {
+	if res, ok := o.checkVisibility(user, o.authConfig.GetVisibility(m)); ok {
 		return res
 	}
 	return o.userIsOwner(user)
@@ -119,7 +118,7 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanDelete(user, m) {
 		return false
 	}
-	if res, ok := o.checkVisibility(user, o.getVisibility(m)); ok {
+	if res, ok := o.checkVisibility(user, o.authConfig.GetVisibility(m)); ok {
 		return res
 	}
 	return o.userIsOwner(user)
