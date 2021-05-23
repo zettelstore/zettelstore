@@ -3,7 +3,7 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20210518101643
+modified: 20210523194915
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -27,7 +27,7 @@ The following syntax values are supported:
   Typically the data is stored in a separate file and the syntax is given in the ''.meta'' file.
 ; [!markdown]''markdown'', [!md]''md''
 : For those who desperately need [[Markdown|https://daringfireball.net/projects/markdown/]].
-  Since the world of Markdown is so diverse, a [[CommonMark|https://commonmark.org]] parser is used.
+  Since the world of Markdown is so diverse, a [[CommonMark|https://commonmark.org/]] parser is used.
   See [[Use Markdown within Zettelstore|00001008010000]].
 ; [!mustache]''mustache''
 : A [[Mustache template|https://mustache.github.io/]], used when rendering a zettel as HTML.
