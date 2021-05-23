@@ -14,7 +14,6 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -59,30 +58,37 @@ func readVersionFile() (string, error) {
 	}), nil
 }
 
-var fossilHash = regexp.MustCompile(`\[[0-9a-fA-F]+\]`)
-var dirtyPrefixes = []string{"DELETED", "ADDED", "UPDATED", "CONFLICT", "EDITED", "RENAMED"}
+var fossilCheckout = regexp.MustCompile(`^checkout:\s+([0-9a-f]+)\s`)
+var dirtyPrefixes = []string{
+	"DELETED ", "ADDED ", "UPDATED ", "CONFLICT ", "EDITED ", "RENAMED ", "EXTRA "}
 
 const dirtySuffix = "-dirty"
 
 func readFossilVersion() (string, error) {
-	s, err := executeCommand(nil, "fossil", "timeline", "--limit", "1")
+	s, err := executeCommand(nil, "fossil", "status", "--differ")
 	if err != nil {
 		return "", err
 	}
-	hash := fossilHash.FindString(s)
-	if len(hash) < 3 {
-		return "", errors.New("no fossil hash found")
-	}
-	hash = hash[1 : len(hash)-1]
-
-	s, err = executeCommand(nil, "fossil", "status")
-	if err != nil {
-		return "", err
-	}
+	var hash, suffix string
 	for _, line := range splitLines(s) {
-		for _, prefix := range dirtyPrefixes {
-			if strings.HasPrefix(line, prefix) {
-				return hash + dirtySuffix, nil
+		if hash == "" {
+			if m := fossilCheckout.FindStringSubmatch(line); len(m) > 0 {
+				hash = m[1][:10]
+				if suffix != "" {
+					return hash + suffix, nil
+				}
+				continue
+			}
+		}
+		if suffix == "" {
+			for _, prefix := range dirtyPrefixes {
+				if strings.HasPrefix(line, prefix) {
+					suffix = dirtySuffix
+					if hash != "" {
+						return hash + suffix, nil
+					}
+					break
+				}
 			}
 		}
 	}
