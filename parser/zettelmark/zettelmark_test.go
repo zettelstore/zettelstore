@@ -530,6 +530,8 @@ func TestTable(t *testing.T) {
 		{"|a| ", "(TAB (TR (TD a)(TD)))"},
 		{"|a|b", "(TAB (TR (TD a)(TD b)))"},
 		{"|a|b\n|c|d", "(TAB (TR (TD a)(TD b))(TR (TD c)(TD d)))"},
+		{"|%", ""},
+		{"|a|b\n|%---\n|c|d", "(TAB (TR (TD a)(TD b))(TR (TD c)(TD d)))"},
 	})
 }
 

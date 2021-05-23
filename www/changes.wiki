@@ -32,8 +32,12 @@
      (minor: webui, api)
   *  For security reasons, HTML blocks are not encoded as HTML if they contain
      certain snippets, such as <tt>&lt;script</tt> or <tt>&lt;iframe</tt>.
-     These can be caused by using CommonMark as a zettel syntax.
+     These may be caused by using CommonMark as a zettel syntax.
      (major)
+  *  Add zettelmarkup syntax for a table row that should be ignored:
+     <tt>|%</tt>. This allows to paste output of the administrator console into
+     a zettel.
+     (minor: zmk)
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>

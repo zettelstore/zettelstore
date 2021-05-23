@@ -1,8 +1,9 @@
 id: 00001007031000
 title: Zettelmarkup: Tables
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20210523185812
 
 Tables are used to show some data in a two-dimenensional fashion.
 In zettelmarkup, table are not specified explicitly, but by entering //table rows//.
@@ -30,6 +31,7 @@ will be rendered in HTML as:
 | c1 | c2
 :::
 
+=== Header row
 If any cell in the first row of a table contains an equal sing character (""''=''"", ''U+003D'') as the very first character, then this first row will be interpreted as a //table header// row.
 
 For example:
@@ -45,6 +47,7 @@ will be rendered in HTML as:
 | c1 | c2
 :::
 
+=== Column alignment
 Inside a header row, you can specify the alignment of each header cell by a given character as the last character of a cell.
 The alignment of a header cell determines the alignment of every cell in the same column.
 The following characters specify the alignment:
@@ -68,6 +71,7 @@ will be rendered in HTML as:
 |123|123|123|123
 :::
 
+=== Cell alignment
 To specify the alignment of an individual cell, you can enter these characters for alignment as the first character of that cell.
 
 For example:
@@ -83,4 +87,21 @@ will be rendered in HTML as:
 |>R|:C|<L
 |123456|123456|123456|123456|
 |123|123|123|123
+:::
+
+=== Rows to be ignored
+A line that begins with the sequence ''|%'' (vertical bar character (""''|''"", ''U+007C''), followed by a percent sign character (“%”, U+0025)) will be ignored.
+This allows to specify a horizontal rule that is not rendered.
+Such tables are emitted by some commands of the [[administrator console|00001004100000]].
+For example, the command ``get-config place`` will emit
+```
+|=Key        | Value  | Description
+|%-----------+--------+-----------------------------
+| defdirtype | notify | Default directory place type
+```
+This is rendered in HTML as:
+:::example
+|=Key        | Value  | Description
+|%-----------+--------+-----------------------------
+| defdirtype | notify | Default directory place type
 :::

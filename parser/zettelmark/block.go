@@ -549,6 +549,10 @@ func (cp *zmkP) parseLinePara() *ast.ParaNode {
 // parseRow parse one table row.
 func (cp *zmkP) parseRow() (res ast.BlockNode, success bool) {
 	inp := cp.inp
+	if inp.Peek() == '%' {
+		inp.SkipToEOL()
+		return nil, true
+	}
 	row := ast.TableRow{}
 	for {
 		inp.Next()
