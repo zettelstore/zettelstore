@@ -129,6 +129,7 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
+	"config":     {"show configuration keys", cmdConfig},
 	"dump-index": {"writes the content of the index", cmdDumpIndex},
 	"echo": {
 		"toggle echo mode",
@@ -172,24 +173,34 @@ var commands = map[string]command{
 
 func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
 	cmds := make([]string, 0, len(commands))
-	maxLen := 0
 	for key := range commands {
 		if key == "" {
 			continue
 		}
-		if keyLen := strfun.Length(key); keyLen > maxLen {
-			maxLen = keyLen
-		}
 		cmds = append(cmds, key)
 	}
 	sort.Strings(cmds)
-	sess.println("Available commands:")
+	table := [][]string{{"Command", "Description"}}
 	for _, cmd := range cmds {
-		sess.println("-", strfun.JustifyLeft(cmd, maxLen, ' '), commands[cmd].Text)
+		table = append(table, []string{cmd, commands[cmd].Text})
 	}
+	sess.printTable(table)
 	return true
 }
 
+func cmdConfig(sess *cmdSession, cmd string, args []string) bool {
+	srvnum, ok := lookupService(sess, cmd, args)
+	if !ok {
+		return true
+	}
+	srv := sess.kern.srvs[srvnum].srv
+	table := [][]string{{"Key", "Description"}}
+	for _, kd := range srv.ConfigDescriptions() {
+		table = append(table, []string{kd.Key, kd.Descr})
+	}
+	sess.printTable(table)
+	return true
+}
 func cmdGetConfig(sess *cmdSession, cmd string, args []string) bool {
 	showConfig(sess, args,
 		listCurConfig, func(srv service, key string) interface{} { return srv.GetConfig(key) })
@@ -204,12 +215,19 @@ func showConfig(sess *cmdSession, args []string,
 	listConfig func(*cmdSession, service), getConfig func(service, string) interface{}) {
 
 	if len(args) == 0 {
-		for srvnum := kernel.CoreService; srvnum <= kernel.WebService; srvnum++ {
-			if srvnum > kernel.CoreService {
+		keys := make([]int, 0, len(sess.kern.srvs))
+		for k := range sess.kern.srvs {
+			keys = append(keys, int(k))
+		}
+		sort.Ints(keys)
+		for i, k := range keys {
+			if i > 0 {
 				sess.println()
 			}
-			srv := sess.kern.srvs[srvnum].srv
-			listConfig(sess, srv)
+			srvD := sess.kern.srvs[kernel.Service(k)]
+			sess.println("%% Service", srvD.name)
+			listConfig(sess, srvD.srv)
+
 		}
 		return
 	}

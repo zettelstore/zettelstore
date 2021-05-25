@@ -14,6 +14,7 @@ package impl
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -49,6 +50,25 @@ type srvConfig struct {
 	next     interfaceMap
 }
 
+func (cfg *srvConfig) ConfigDescriptions() []serviceConfigDescription {
+	cfg.mxConfig.RLock()
+	defer cfg.mxConfig.RUnlock()
+	keys := make([]string, 0, len(cfg.descr))
+	for k := range cfg.descr {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	result := make([]serviceConfigDescription, 0, len(keys))
+	for _, k := range keys {
+		text := cfg.descr[k].text
+		if strings.HasSuffix(k, "-") {
+			text = text + " (list)"
+		}
+		result = append(result, serviceConfigDescription{Key: k, Descr: text})
+	}
+	return result
+}
+
 func (cfg *srvConfig) noFrozen(parse parseFunc) parseFunc {
 	return func(val string) interface{} {
 		if cfg.frozen {
@@ -63,10 +83,22 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 	defer cfg.mxConfig.Unlock()
 	descr, ok := cfg.descr[key]
 	if !ok {
-		descr, ok = cfg.getListDescription(key)
-		if !ok {
+		d, baseKey, num := cfg.getListDescription(key)
+		if num < 0 {
 			return false
 		}
+		format := baseKey + "%d"
+		for i := num + 1; ; i++ {
+			k := fmt.Sprintf(format, i)
+			if _, ok = cfg.next[k]; !ok {
+				break
+			}
+			delete(cfg.next, k)
+		}
+		if num == 0 {
+			return true
+		}
+		descr = d
 	}
 	parse := descr.parse
 	if parse == nil {
@@ -84,16 +116,21 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 	return true
 }
 
-func (cfg *srvConfig) getListDescription(key string) (configDescription, bool) {
+func (cfg *srvConfig) getListDescription(key string) (configDescription, string, int) {
 	for k, d := range cfg.descr {
 		if !strings.HasSuffix(k, "-") {
 			continue
 		}
-		if strings.HasPrefix(key, k) {
-			return d, true
+		if !strings.HasPrefix(key, k) {
+			continue
 		}
+		num, err := strconv.Atoi(key[len(k):])
+		if err != nil || num < 0 {
+			continue
+		}
+		return d, k, num
 	}
-	return configDescription{}, false
+	return configDescription{}, "", -1
 }
 
 func (cfg *srvConfig) GetConfig(key string) interface{} {
@@ -148,7 +185,7 @@ func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}
 		}
 		descr, ok := cfg.descr[k]
 		if !ok {
-			descr, _ = cfg.getListDescription(k)
+			descr, _, _ = cfg.getListDescription(k)
 		}
 		result = append(result, kernel.KeyDescrValue{
 			Key:   k,

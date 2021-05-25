@@ -39,13 +39,13 @@ type myKernel struct {
 	place placeService
 	web   webService
 
-	srvs     map[kernel.Service]servceDescr
+	srvs     map[kernel.Service]serviceDescr
 	srvNames map[string]serviceData
 	depStart serviceDependency
 	depStop  serviceDependency // reverse of depStart
 }
 
-type servceDescr struct {
+type serviceDescr struct {
 	srv  service
 	name string
 }
@@ -66,7 +66,7 @@ func createAndStart() kernel.Kernel {
 	kern := &myKernel{
 		interrupt: make(chan os.Signal, 5),
 	}
-	kern.srvs = map[kernel.Service]servceDescr{
+	kern.srvs = map[kernel.Service]serviceDescr{
 		kernel.CoreService:   {&kern.core, "core"},
 		kernel.ConfigService: {&kern.cfg, "config"},
 		kernel.AuthService:   {&kern.auth, "auth"},
@@ -310,6 +310,9 @@ type service interface {
 	// Initialize the data for the service.
 	Initialize()
 
+	// ConfigDescriptions returns a sorted list of configuration descriptions.
+	ConfigDescriptions() []serviceConfigDescription
+
 	// SetConfig stores a configuration value.
 	SetConfig(key, value string) bool
 
@@ -343,6 +346,8 @@ type service interface {
 	// Stop the service.
 	Stop(*myKernel) error
 }
+
+type serviceConfigDescription struct{ Key, Descr string }
 
 func (kern *myKernel) SetCreators(
 	createAuthManager kernel.CreateAuthManagerFunc,
