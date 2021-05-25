@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/place"
 	"zettelstore.de/z/place/manager"
+	"zettelstore.de/z/place/progplace"
 	"zettelstore.de/z/web/server"
 )
 
@@ -205,6 +206,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) {
 			srvm.SetConfig(kernel.PlaceService, kernel.PlaceDefaultDirType, kernel.PlaceDirTypeSimple)
 		}
 		createManager = func(placeURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
+			progplace.Setup(cfg)
 			return manager.New(placeURIs, authManager, rtConfig)
 		}
 	} else {

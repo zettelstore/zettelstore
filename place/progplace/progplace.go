@@ -15,7 +15,6 @@ package progplace
 import (
 	"context"
 	"net/url"
-	"sync"
 
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -33,56 +32,30 @@ func init() {
 		})
 }
 
-type (
-	zettelGen struct {
-		meta    func(id.Zid) *meta.Meta
-		content func(*meta.Meta) string
-	}
+type progPlace struct {
+	filter place.Enricher
+}
 
-	progPlace struct {
-		zettel      map[id.Zid]zettelGen
-		filter      place.Enricher
-		startConfig *meta.Meta
-	}
-)
-
-var (
-	myPlace *progPlace
-	myMx    sync.RWMutex
-)
+var myConfig *meta.Meta
+var myZettel = map[id.Zid]struct {
+	meta    func(id.Zid) *meta.Meta
+	content func(*meta.Meta) string
+}{
+	id.VersionZid:              {genVersionBuildM, genVersionBuildC},
+	id.HostZid:                 {genVersionHostM, genVersionHostC},
+	id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
+	id.PlaceManagerZid:         {genManagerM, genManagerC},
+	id.MetadataKeyZid:          {genKeysM, genKeysC},
+	id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
+}
 
 // Get returns the one program place.
 func getPlace(mf place.Enricher) place.ManagedPlace {
-	myMx.Lock()
-	if myPlace == nil {
-		myPlace = &progPlace{
-			zettel: map[id.Zid]zettelGen{
-				id.VersionZid:              {genVersionBuildM, genVersionBuildC},
-				id.HostZid:                 {genVersionHostM, genVersionHostC},
-				id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
-				id.PlaceManagerZid:         {genManagerM, genManagerC},
-				id.MetadataKeyZid:          {genKeysM, genKeysC},
-				id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
-			},
-			filter: mf,
-		}
-	}
-	myMx.Unlock()
-	return myPlace
+	return &progPlace{filter: mf}
 }
 
 // Setup remembers important values.
-func Setup(startConfig *meta.Meta) {
-	myMx.Lock()
-	defer myMx.Unlock()
-	if myPlace == nil {
-		panic("progplace.getPlace not called")
-	}
-	if myPlace.startConfig != nil {
-		panic("progplace.Setup already called")
-	}
-	myPlace.startConfig = startConfig.Clone()
-}
+func Setup(cfg *meta.Meta) { myConfig = cfg.Clone() }
 
 func (pp *progPlace) Location() string { return "" }
 
@@ -94,7 +67,7 @@ func (pp *progPlace) CreateZettel(
 }
 
 func (pp *progPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
-	if gen, ok := pp.zettel[zid]; ok && gen.meta != nil {
+	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
 			if genContent := gen.content; genContent != nil {
@@ -110,7 +83,7 @@ func (pp *progPlace) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, 
 }
 
 func (pp *progPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	if gen, ok := pp.zettel[zid]; ok {
+	if gen, ok := myZettel[zid]; ok {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
@@ -122,8 +95,8 @@ func (pp *progPlace) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error
 }
 
 func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
-	result := id.NewSetCap(len(pp.zettel))
-	for zid, gen := range pp.zettel {
+	result := id.NewSetCap(len(myZettel))
+	for zid, gen := range myZettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {
 				result[zid] = true
@@ -134,7 +107,7 @@ func (pp *progPlace) FetchZids(ctx context.Context) (id.Set, error) {
 }
 
 func (pp *progPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
-	for zid, gen := range pp.zettel {
+	for zid, gen := range myZettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
@@ -157,12 +130,12 @@ func (pp *progPlace) UpdateZettel(ctx context.Context, zettel domain.Zettel) err
 }
 
 func (pp *progPlace) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
-	_, ok := pp.zettel[zid]
+	_, ok := myZettel[zid]
 	return !ok
 }
 
 func (pp *progPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	if _, ok := pp.zettel[curZid]; ok {
+	if _, ok := myZettel[curZid]; ok {
 		return place.ErrReadOnly
 	}
 	return place.ErrNotFound
@@ -171,7 +144,7 @@ func (pp *progPlace) RenameZettel(ctx context.Context, curZid, newZid id.Zid) er
 func (pp *progPlace) CanDeleteZettel(ctx context.Context, zid id.Zid) bool { return false }
 
 func (pp *progPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
-	if _, ok := pp.zettel[zid]; ok {
+	if _, ok := myZettel[zid]; ok {
 		return place.ErrReadOnly
 	}
 	return place.ErrNotFound
@@ -179,7 +152,7 @@ func (pp *progPlace) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 func (pp *progPlace) ReadStats(st *place.ManagedPlaceStats) {
 	st.ReadOnly = true
-	st.Zettel = len(pp.zettel)
+	st.Zettel = len(myZettel)
 }
 
 func updateMeta(m *meta.Meta) {

@@ -19,9 +19,7 @@ import (
 )
 
 func genConfigZettelM(zid id.Zid) *meta.Meta {
-	myMx.RLock()
-	defer myMx.RUnlock()
-	if myPlace.startConfig == nil {
+	if myConfig == nil {
 		return nil
 	}
 	m := meta.New(zid)
@@ -32,7 +30,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 
 func genConfigZettelC(m *meta.Meta) string {
 	var sb strings.Builder
-	for i, p := range myPlace.startConfig.Pairs(false) {
+	for i, p := range myConfig.Pairs(false) {
 		if i > 0 {
 			sb.WriteByte('\n')
 		}
