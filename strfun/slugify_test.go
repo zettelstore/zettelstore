@@ -53,6 +53,7 @@ func TestNormalizeWord(t *testing.T) {
 	}{
 		{"", []string{}},
 		{" ", []string{}},
+		{"ˋ", []string{}}, // No single diacritic char, such as U+02CB
 		{"simple test", []string{"simple", "test"}},
 		{"I'm a go developer", []string{"i", "m", "a", "go", "developer"}},
 		{"-!->simple   test<-!-", []string{"simple", "test"}},

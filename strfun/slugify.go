@@ -12,50 +12,23 @@
 package strfun
 
 import (
+	"strings"
 	"unicode"
 
 	"golang.org/x/text/unicode/norm"
 )
-
-var (
-	useUnicode = []*unicode.RangeTable{
-		unicode.Letter,
-		unicode.Number,
-	}
-	ignoreUnicode = []*unicode.RangeTable{
-		unicode.Mark,
-		unicode.Sk,
-		unicode.Lm,
-	}
-)
-
-// Slugify returns a string that can be used as part of an URL
-func Slugify(s string) string {
-	result := make([]rune, 0, len(s))
-	addDash := false
-	for _, r := range norm.NFKD.String(s) {
-		if unicode.IsOneOf(useUnicode, r) {
-			result = append(result, unicode.ToLower(r))
-			addDash = true
-		} else if !unicode.IsOneOf(ignoreUnicode, r) && addDash {
-			result = append(result, '-')
-			addDash = false
-		}
-	}
-	if i := len(result) - 1; i >= 0 && result[i] == '-' {
-		result = result[:i]
-	}
-	return string(result)
-}
 
 // NormalizeWords produces a word list that is normalized for better searching.
 func NormalizeWords(s string) []string {
 	result := make([]string, 0, 1)
 	word := make([]rune, 0, len(s))
 	for _, r := range norm.NFKD.String(s) {
-		if unicode.IsOneOf(useUnicode, r) {
+		if unicode.Is(unicode.Diacritic, r) {
+			continue
+		}
+		if unicode.In(r, unicode.Letter, unicode.Number) {
 			word = append(word, unicode.ToLower(r))
-		} else if !unicode.IsOneOf(ignoreUnicode, r) && len(word) > 0 {
+		} else if !unicode.In(r, unicode.Mark, unicode.Sk, unicode.Lm) && len(word) > 0 {
 			result = append(result, string(word))
 			word = word[:0]
 		}
@@ -64,4 +37,10 @@ func NormalizeWords(s string) []string {
 		result = append(result, string(word))
 	}
 	return result
+}
+
+// Slugify returns a string that can be used as part of an URL
+func Slugify(s string) string {
+	words := NormalizeWords(s)
+	return strings.Join(words, "-")
 }
