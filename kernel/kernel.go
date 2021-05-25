@@ -48,10 +48,13 @@ type Kernel interface {
 	// GetConfigList returns a sorted list of configuration data.
 	GetConfigList(Service) []KeyDescrValue
 
-	// StartService start the given sub-service.
+	// StartService start the given service.
 	StartService(Service) error
 
-	// StopService stop the given sub-service.
+	// RestartService stops and restarts the given service, while maintaining service dependencies.
+	RestartService(Service) error
+
+	// StopService stop the given service.
 	StopService(Service) error
 
 	// GetServiceStatistics returns a key/value list with statistical data.

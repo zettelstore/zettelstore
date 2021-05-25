@@ -243,6 +243,11 @@ func (kern *myKernel) doStartService(srvnum kernel.Service) error {
 	return nil
 }
 
+func (kern *myKernel) RestartService(srvnum kernel.Service) error {
+	kern.mx.RLock()
+	defer kern.mx.RUnlock()
+	return kern.doRestartService(srvnum)
+}
 func (kern *myKernel) doRestartService(srvnum kernel.Service) error {
 	deps := kern.sortDependency(srvnum, kern.depStop, false)
 	for _, srv := range deps {
