@@ -14,6 +14,7 @@ package impl
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/url"
 	"sync"
 
@@ -122,4 +123,8 @@ func (ps *placeService) GetStatistics() []kernel.KeyValue {
 		{Key: "Indexed URLs", Value: fmt.Sprintf("%v", st.IndexedUrls)},
 		{Key: "Zettel enrichments", Value: fmt.Sprintf("%v", st.IndexUpdates)},
 	}
+}
+
+func (ps *placeService) DumpIndex(w io.Writer) {
+	ps.manager.Dump(w)
 }

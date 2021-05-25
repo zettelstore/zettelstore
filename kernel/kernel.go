@@ -12,6 +12,7 @@
 package kernel
 
 import (
+	"io"
 	"net/url"
 
 	"zettelstore.de/z/auth"
@@ -61,6 +62,9 @@ type Kernel interface {
 
 	// GetServiceStatistics returns a key/value list with statistical data.
 	GetServiceStatistics(Service) []KeyValue
+
+	// DumpIndex writes some data about the internal index into a writer.
+	DumpIndex(io.Writer)
 
 	// SetCreators store functions to be called when a service has to be created.
 	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, SetupWebServerFunc)

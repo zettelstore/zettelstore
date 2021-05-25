@@ -13,6 +13,7 @@ package impl
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -304,6 +305,9 @@ func (kern *myKernel) sortDependency(
 		}
 	}
 	return append(result, srvD.srv)
+}
+func (kern *myKernel) DumpIndex(w io.Writer) {
+	kern.place.DumpIndex(w)
 }
 
 type service interface {

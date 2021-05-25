@@ -414,7 +414,7 @@ func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
-	sess.kern.place.manager.Dump(sess.w)
+	sess.kern.DumpIndex(sess.w)
 	return true
 }
 func cmdDumpRecover(sess *cmdSession, cmd string, args []string) bool {
