@@ -50,6 +50,7 @@ func (sess *cmdSession) executeLine(line string) bool {
 		return cmdHelp(sess, cmd, args)
 	}
 	sess.println("Unknown command:", cmd, strings.Join(args, " "))
+	sess.println("-- Enter 'help' go get a list of valid commands.")
 	return true
 }
 
@@ -129,8 +130,9 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
-	"config":     {"show configuration keys", cmdConfig},
-	"dump-index": {"writes the content of the index", cmdDumpIndex},
+	"config":       {"show configuration keys", cmdConfig},
+	"dump-index":   {"writes the content of the index", cmdDumpIndex},
+	"dump-recover": {"show data of last recovery", cmdDumpRecover},
 	"echo": {
 		"toggle echo mode",
 		func(sess *cmdSession, cmd string, args []string) bool {
@@ -272,8 +274,9 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 		sess.println("Unknown service:", args[0])
 		return true
 	}
-	if !srvD.srv.SetConfig(args[1], args[2]) {
-		sess.println("Unable to set key", args[1], "to value", args[2])
+	newValue := strings.Join(args[2:], " ")
+	if !srvD.srv.SetConfig(args[1], newValue) {
+		sess.println("Unable to set key", args[1], "to value", newValue)
 	}
 	return true
 }
@@ -412,6 +415,21 @@ func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
 
 func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
 	sess.kern.place.manager.Dump(sess.w)
+	return true
+}
+func cmdDumpRecover(sess *cmdSession, cmd string, args []string) bool {
+	if len(args) == 0 {
+		sess.println("Usage:", cmd, "RECOVER")
+		sess.println("-- A valid value for RECOVER can be obtained via 'stat core'.")
+		return true
+	}
+	lines := sess.kern.core.RecoverLines(args[0])
+	if len(lines) == 0 {
+		return true
+	}
+	for _, line := range lines {
+		sess.println(line)
+	}
 	return true
 }
 

@@ -85,3 +85,35 @@ func TestJustifyLeft(t *testing.T) {
 		}
 	}
 }
+
+func TestSplitLines(t *testing.T) {
+	testcases := []struct {
+		in  string
+		exp []string
+	}{
+		{"", nil},
+		{"\n", nil},
+		{"a", []string{"a"}},
+		{"a\n", []string{"a"}},
+		{"a\n\n", []string{"a"}},
+		{"a\n\nb", []string{"a", "b"}},
+	}
+	for i, tc := range testcases {
+		got := strfun.SplitLines(tc.in)
+		if !compareStringslice(tc.exp, got) {
+			t.Errorf("%d/%q: expected %q, got %q", i, tc.in, tc.exp, got)
+		}
+	}
+}
+
+func compareStringslice(s1, s2 []string) bool {
+	if len(s1) != len(s2) {
+		return false
+	}
+	for i, s := range s1 {
+		if s != s2[i] {
+			return false
+		}
+	}
+	return true
+}

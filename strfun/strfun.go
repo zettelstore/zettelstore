@@ -51,3 +51,10 @@ func JustifyLeft(s string, maxLen int, pad rune) string {
 	}
 	return sb.String()
 }
+
+// SplitLines splits the given string into a list of lines.
+func SplitLines(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool {
+		return r == '\n' || r == '\r'
+	})
+}

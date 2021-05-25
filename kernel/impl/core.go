@@ -12,19 +12,34 @@
 package impl
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"runtime"
+	"sort"
+	"sync"
+	"time"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/strfun"
 )
 
 type coreService struct {
 	srvConfig
 	started bool
+
+	mxRecover  sync.RWMutex
+	mapRecover map[string]recoverInfo
+}
+type recoverInfo struct {
+	count uint64
+	ts    time.Time
+	info  interface{}
+	stack []byte
 }
 
 func (cs *coreService) Initialize() {
+	cs.mapRecover = make(map[string]recoverInfo)
 	cs.descr = descriptionMap{
 		kernel.CoreGoArch:    {"Go processor architecture", nil, false},
 		kernel.CoreGoOS:      {"Go Operating System", nil, false},
@@ -78,5 +93,59 @@ func (cs *coreService) Stop(*myKernel) error {
 }
 
 func (cs *coreService) GetStatistics() []kernel.KeyValue {
-	return nil
+	cs.mxRecover.RLock()
+	defer cs.mxRecover.RUnlock()
+	names := make([]string, 0, len(cs.mapRecover))
+	for n := range cs.mapRecover {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	result := make([]kernel.KeyValue, 0, 3*len(names))
+	for _, n := range names {
+		ri := cs.mapRecover[n]
+		result = append(
+			result,
+			kernel.KeyValue{
+				Key:   fmt.Sprintf("Recover %q / Count", n),
+				Value: fmt.Sprintf("%d", ri.count),
+			},
+			kernel.KeyValue{
+				Key:   fmt.Sprintf("Recover %q / Last ", n),
+				Value: fmt.Sprintf("%v", ri.ts),
+			},
+			kernel.KeyValue{
+				Key:   fmt.Sprintf("Recover %q / Info ", n),
+				Value: fmt.Sprintf("%v", ri.info),
+			},
+		)
+	}
+	return result
+}
+
+func (cs *coreService) RecoverLines(name string) []string {
+	cs.mxRecover.RLock()
+	ri := cs.mapRecover[name]
+	cs.mxRecover.RUnlock()
+	if ri.stack == nil {
+		return nil
+	}
+	return append(
+		[]string{
+			fmt.Sprintf("Count: %d", ri.count),
+			fmt.Sprintf("Time: %v", ri.ts),
+			fmt.Sprintf("Reason: %v", ri.info),
+		},
+		strfun.SplitLines(string(ri.stack))...,
+	)
+}
+
+func (cs *coreService) updateRecoverInfo(name string, recoverInfo interface{}, stack []byte) {
+	cs.mxRecover.Lock()
+	ri := cs.mapRecover[name]
+	ri.count++
+	ri.ts = time.Now()
+	ri.info = recoverInfo
+	ri.stack = stack
+	cs.mapRecover[name] = ri
+	cs.mxRecover.Unlock()
 }

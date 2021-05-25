@@ -53,7 +53,6 @@ type serviceData struct {
 	srv    service
 	srvnum kernel.Service
 }
-
 type serviceDependency map[kernel.Service][]kernel.Service
 
 // create and start a new kernel.
@@ -103,7 +102,15 @@ func (kern *myKernel) Start(headline bool) {
 	}
 	kern.wg.Add(1)
 	signal.Notify(kern.interrupt, os.Interrupt, syscall.SIGTERM)
-	go kern.waitForInterrupt()
+	go func() {
+		// Wait for interrupt.
+		sig := <-kern.interrupt
+		if strSig := sig.String(); strSig != "" {
+			kern.doLog("Shut down Zettelstore:", strSig)
+		}
+		kern.shutdown()
+		kern.wg.Done()
+	}()
 
 	kern.StartService(kernel.CoreService)
 	if headline {
@@ -125,15 +132,6 @@ func (kern *myKernel) Start(headline bool) {
 		listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
 		startLineServer(kern, listenAddr)
 	}
-}
-
-func (kern *myKernel) waitForInterrupt() {
-	sig := <-kern.interrupt
-	if strSig := sig.String(); strSig != "" {
-		kern.doLog("Shut down Zettelstore:", strSig)
-	}
-	kern.shutdown()
-	kern.wg.Done()
 }
 
 func (kern *myKernel) shutdown() {
@@ -187,7 +185,9 @@ func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 }
 func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
 	kern.Log(name, "recovered from:", recoverInfo)
-	debug.PrintStack()
+	stack := debug.Stack()
+	os.Stderr.Write(stack)
+	kern.core.updateRecoverInfo(name, recoverInfo, stack)
 	return true
 }
 

@@ -24,6 +24,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"zettelstore.de/z/strfun"
 )
 
 func executeCommand(env []string, name string, arg ...string) (string, error) {
@@ -70,7 +72,7 @@ func readFossilVersion() (string, error) {
 		return "", err
 	}
 	var hash, suffix string
-	for _, line := range splitLines(s) {
+	for _, line := range strfun.SplitLines(s) {
 		if hash == "" {
 			if m := fossilCheckout.FindStringSubmatch(line); len(m) > 0 {
 				hash = m[1][:10]
@@ -93,12 +95,6 @@ func readFossilVersion() (string, error) {
 		}
 	}
 	return hash, nil
-}
-
-func splitLines(s string) []string {
-	return strings.FieldsFunc(s, func(r rune) bool {
-		return r == '\n' || r == '\r'
-	})
 }
 
 func getVersionData() (string, string) {
@@ -149,7 +145,7 @@ func cmdCheck() error {
 func checkGoTest() error {
 	out, err := executeCommand(nil, "go", "test", "./...")
 	if err != nil {
-		for _, line := range splitLines(out) {
+		for _, line := range strfun.SplitLines(out) {
 			if strings.HasPrefix(line, "ok") || strings.HasPrefix(line, "?") {
 				continue
 			}
@@ -212,7 +208,7 @@ func checkFossilExtra() error {
 	}
 	if len(out) > 0 {
 		fmt.Fprint(os.Stderr, "Warning: unversioned file(s):")
-		for i, extra := range splitLines(out) {
+		for i, extra := range strfun.SplitLines(out) {
 			if i > 0 {
 				fmt.Fprint(os.Stderr, ",")
 			}
