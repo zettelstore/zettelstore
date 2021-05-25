@@ -12,6 +12,8 @@
 package kernel
 
 import (
+	"net/url"
+
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -107,6 +109,7 @@ const (
 // Constants for place service keys.
 const (
 	PlaceDefaultDirType = "defdirtype"
+	PlaceURIs           = "place-uri-"
 )
 
 // Allowed values for PlaceDefaultDirType
@@ -135,7 +138,11 @@ type KeyValue struct{ Key, Value string }
 type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)
 
 // CreatePlaceManagerFunc is called to create a new place manager.
-type CreatePlaceManagerFunc func(authManager auth.Manager, rtConfig config.Config) (place.Manager, error)
+type CreatePlaceManagerFunc func(
+	placeURIs []*url.URL,
+	authManager auth.Manager,
+	rtConfig config.Config,
+) (place.Manager, error)
 
 // SetupWebServerFunc is called to create a new web service handler.
 type SetupWebServerFunc func(

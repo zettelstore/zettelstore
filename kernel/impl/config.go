@@ -14,6 +14,7 @@ package impl
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 
 	"zettelstore.de/z/domain/id"
@@ -21,11 +22,12 @@ import (
 )
 
 type parseFunc func(string) interface{}
-type descriptionMap map[string]struct {
+type configDescription struct {
 	text    string
 	parse   parseFunc
 	canList bool
 }
+type descriptionMap map[string]configDescription
 type interfaceMap map[string]interface{}
 
 func (m interfaceMap) Clone() interfaceMap {
@@ -61,7 +63,10 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 	defer cfg.mxConfig.Unlock()
 	descr, ok := cfg.descr[key]
 	if !ok {
-		return false
+		descr, ok = cfg.getListDescription(key)
+		if !ok {
+			return false
+		}
 	}
 	parse := descr.parse
 	if parse == nil {
@@ -77,6 +82,18 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 	}
 	cfg.next[key] = iVal
 	return true
+}
+
+func (cfg *srvConfig) getListDescription(key string) (configDescription, bool) {
+	for k, d := range cfg.descr {
+		if !strings.HasSuffix(k, "-") {
+			continue
+		}
+		if strings.HasPrefix(key, k) {
+			return d, true
+		}
+	}
+	return configDescription{}, false
 }
 
 func (cfg *srvConfig) GetConfig(key string) interface{} {
@@ -107,7 +124,19 @@ func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}
 	keys := make([]string, 0, len(cfg.descr))
 	for k, descr := range cfg.descr {
 		if all || descr.canList {
-			keys = append(keys, k)
+			if !strings.HasSuffix(k, "-") {
+				keys = append(keys, k)
+				continue
+			}
+			format := k + "%d"
+			for i := 1; ; i++ {
+				key := fmt.Sprintf(format, i)
+				val := getConfig(key)
+				if val == nil {
+					break
+				}
+				keys = append(keys, key)
+			}
 		}
 	}
 	sort.Strings(keys)
@@ -117,9 +146,13 @@ func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}
 		if val == nil {
 			continue
 		}
+		descr, ok := cfg.descr[k]
+		if !ok {
+			descr, _ = cfg.getListDescription(k)
+		}
 		result = append(result, kernel.KeyDescrValue{
 			Key:   k,
-			Descr: cfg.descr[k].text,
+			Descr: descr.text,
 			Value: fmt.Sprintf("%v", val),
 		})
 	}

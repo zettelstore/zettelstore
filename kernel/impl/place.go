@@ -14,6 +14,7 @@ package impl
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"sync"
 
 	"zettelstore.de/z/kernel"
@@ -40,6 +41,20 @@ func (ps *placeService) Initialize() {
 			}),
 			true,
 		},
+		kernel.PlaceURIs: {
+			"Place URI",
+			func(val string) interface{} {
+				uVal, err := url.Parse(val)
+				if err != nil {
+					return nil
+				}
+				if uVal.Scheme == "" {
+					uVal.Scheme = "dir"
+				}
+				return uVal
+			},
+			true,
+		},
 	}
 	ps.next = interfaceMap{
 		kernel.PlaceDefaultDirType: kernel.PlaceDirTypeNotify,
@@ -47,9 +62,18 @@ func (ps *placeService) Initialize() {
 }
 
 func (ps *placeService) Start(kern *myKernel) error {
+	placeURIs := make([]*url.URL, 0, 4)
+	format := kernel.PlaceURIs + "%d"
+	for i := 1; ; i++ {
+		u := ps.GetNextConfig(fmt.Sprintf(format, i))
+		if u == nil {
+			break
+		}
+		placeURIs = append(placeURIs, u.(*url.URL))
+	}
 	ps.mxService.Lock()
 	defer ps.mxService.Unlock()
-	mgr, err := ps.createManager(kern.auth.manager, kern.cfg.rtConfig)
+	mgr, err := ps.createManager(placeURIs, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
 		kern.doLog("Unable to create place manager:", err)
 		return err

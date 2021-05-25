@@ -15,6 +15,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -137,7 +138,7 @@ const (
 	keyListenAddr          = "listen-addr"
 	keyOwner               = "owner"
 	keyPersistentCookie    = "persistent-cookie"
-	keyPlaceOneURI         = "place-1-uri"
+	keyPlaceOneURI         = kernel.PlaceURIs + "1"
 	keyReadOnly            = "read-only-mode"
 	keyTokenLifetimeHTML   = "token-lifetime-html"
 	keyTokenLifetimeAPI    = "token-lifetime-api"
@@ -157,6 +158,15 @@ func setServiceConfig(cfg *meta.Meta) error {
 	ok = setConfigValue(
 		ok, kernel.PlaceService, kernel.PlaceDefaultDirType,
 		cfg.GetDefault(keyDefaultDirPlaceType, kernel.PlaceDirTypeNotify))
+	format := kernel.PlaceURIs + "%v"
+	for i := 1; ; i++ {
+		key := fmt.Sprintf(format, i)
+		val, found := cfg.Get(key)
+		if !found {
+			break
+		}
+		ok = setConfigValue(ok, kernel.PlaceService, key, val)
+	}
 
 	ok = setConfigValue(
 		ok, kernel.WebService, kernel.WebListenAddress,
@@ -183,7 +193,7 @@ func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{})
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces bool) error {
+func setupOperations(cfg *meta.Meta, withPlaces bool) {
 	var createManager kernel.CreatePlaceManagerFunc
 	if withPlaces {
 		err := raiseFdLimit()
@@ -193,11 +203,11 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(kernel.PlaceService, kernel.PlaceDefaultDirType, kernel.PlaceDirTypeSimple)
 		}
-		createManager = func(authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
-			return manager.New(getPlaces(cfg), cfg, authManager, rtConfig)
+		createManager = func(placeURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
+			return manager.New(placeURIs, authManager, rtConfig)
 		}
 	} else {
-		createManager = func(auth.Manager, config.Config) (place.Manager, error) { return nil, nil }
+		createManager = func([]*url.URL, auth.Manager, config.Config) (place.Manager, error) { return nil, nil }
 	}
 
 	kernel.Main.SetCreators(
@@ -210,23 +220,6 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) error {
 			return nil
 		},
 	)
-	return nil
-}
-
-func getPlaces(cfg *meta.Meta) []string {
-	var result []string = nil
-	for cnt := 1; ; cnt++ {
-		key := fmt.Sprintf("place-%v-uri", cnt)
-		uri, ok := cfg.Get(key)
-		if !ok || uri == "" {
-			if cnt > 1 {
-				break
-			}
-			uri = "dir:./zettel"
-		}
-		result = append(result, uri)
-	}
-	return result
 }
 
 func executeCommand(name string, args ...string) int {
@@ -245,13 +238,8 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	if err := setupOperations(cfg, command.Places); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
-		return 2
-	}
-
+	setupOperations(cfg, command.Places)
 	kernel.Main.Start(command.Header)
-
 	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)

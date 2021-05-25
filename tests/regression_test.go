@@ -53,11 +53,11 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 	cdata := manager.ConnectData{Config: testConfig, Enricher: &noEnrich{}, Notify: nil}
 	for _, entry := range entries {
 		if entry.IsDir() {
-			place, err := manager.Connect(
-				"dir://"+filepath.Join(root, entry.Name())+"?type="+kernel.PlaceDirTypeSimple,
-				&noAuth{},
-				&cdata,
-			)
+			u, err := url.Parse("dir://" + filepath.Join(root, entry.Name()) + "?type=" + kernel.PlaceDirTypeSimple)
+			if err != nil {
+				panic(err)
+			}
+			place, err := manager.Connect(u, &noAuth{}, &cdata)
 			if err != nil {
 				panic(err)
 			}

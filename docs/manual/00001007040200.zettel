@@ -1,8 +1,9 @@
 id: 00001007040200
 title: Zettelmarkup: Literal-like formatting
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20210525121114
 
 There are some reasons to mark text that should be rendered as uninterpreted:
 * Mark text as literal, sometimes as part of a program.
@@ -18,7 +19,7 @@ However, all four characters must be the same.
 The literal element supports the default attribute: when given, all spaces in the text are rendered in HTML as open box characters (""''&#x2423;''"", ''U+2423'').
 The use of a generic attribute allwos to specify a (programming) language that controls syntax colouring when rendered in HTML.
 
-If you want to specify a grave accent character in the text, either use modifier grave accent characters as delimiters for the element, or place a backslash character before the grave accent character you want to use inside the element.
+If you want to specify a grave accent character in the text, either use modifier grave accent characters as delimiters for the element, or put a backslash character before the grave accent character you want to use inside the element.
 If you want to enter a backslash character, you need to enter two of these.
 
 Examples:

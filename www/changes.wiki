@@ -2,6 +2,26 @@
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (pending)</h2>
+  *  Startup configuration <tt>place-<em>X</em>-uri</tt> (where <em>X</em> is a
+     number greater than zero) has been renamed to
+     <tt>place-uri-<em>X</em></tt>.
+     (breaking)
+  *  Web server processes startup configuration <tt>url-prefix</tt>. There is
+     no need for stripping the prefix by a front-end web server any more.
+     (breaking: webui, api)
+  *  Administrator console (only optional accessible locally). Enable it only
+     on systems with a single user or with trusted users. It is disabled by
+     default.
+     (major: core)
+  *  Remove visibility value &ldquo;simple-expert&rdquo; introduced in
+     [#0_0_8|version 0.0.8]. It was too complicated, esp. authorization. There
+     was a name collision with the &ldquo;simple&rdquo; directory place
+     sub-type.
+     (major)
+  *  For security reasons, HTML blocks are not encoded as HTML if they contain
+     certain snippets, such as <tt>&lt;script</tt> or <tt>&lt;iframe</tt>.
+     These may be caused by using CommonMark as a zettel syntax.
+     (major)
   *  Full-text search can be a prefix search or a search for equal words, in
      addition to the search whether a word just contains word of the search
      term.
@@ -18,22 +38,6 @@
      substituted with the new default image, a spinning emoji.
      See [/file?name=place/constplace/emoji_spin.gif].
      (minor: webui)
-  *  Administrator console (only optional accessible locally). Enable it only
-     on systems with a single user or with trusted users. It is disabled by
-     default.
-     (major: core)
-  *  Remove visibility value &ldquo;simple-expert&rdquo; introduced in
-     [#0_0_8|version 0.0.8]. It was too complicated, esp. authorization. There
-     was a name collision with the &ldquo;simple&rdquo; directory place
-     sub-type.
-     (major)
-  *  Web server processes startup configuration <tt>url-prefix</tt>. There is
-     no need for stripping the prefix by a front-end web server any more.
-     (minor: webui, api)
-  *  For security reasons, HTML blocks are not encoded as HTML if they contain
-     certain snippets, such as <tt>&lt;script</tt> or <tt>&lt;iframe</tt>.
-     These may be caused by using CommonMark as a zettel syntax.
-     (major)
   *  Add zettelmarkup syntax for a table row that should be ignored:
      <tt>|%</tt>. This allows to paste output of the administrator console into
      a zettel.

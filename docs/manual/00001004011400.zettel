@@ -3,6 +3,7 @@ title: Configure file directory places
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+modified: 20210525121232
 
 Under certain circumstances, it is preferable to further configure a file directory place.
 This is done by appending query parameters after the base place URI ''dir:\//DIR''.
@@ -40,7 +41,7 @@ Under certain circumstances it is possible that Zettelstore does not detect a ch
 To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file directory.
 The time interval is configured by the ''rescan'' parameter, e.g.
 ```
-place-1-uri: dir:///home/zettel?rescan=300
+place-uri-1: dir:///home/zettel?rescan=300
 ```
 This makes Zettelstore to re-scan the directory ''/home/zettel/'' every 300 seconds, i.e. 5 minutes.
 
@@ -76,6 +77,6 @@ For various reasons, the value should be a prime number, with a maximum value of
 Sometimes you may want to provide zettel from a file directory place, but you want to disallow any changes.
 If you provide the query parameter ''readonly'' (with or without a corresponding value), the place will disallow any changes.
 ```
-place-1-uri: dir:///home/zettel?readonly
+place-uri-1: dir:///home/zettel?readonly
 ```
 If you put the whole Zettelstore in [[read-only|00001004010000]] [[mode|00001004051000]], all configured file directory places will be in read-only mode too, even if not explicitly configured.

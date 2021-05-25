@@ -38,15 +38,9 @@ type ConnectData struct {
 }
 
 // Connect returns a handle to the specified place
-func Connect(rawURL string, authManager auth.BaseManager, cdata *ConnectData) (place.ManagedPlace, error) {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return nil, err
-	}
-	if u.Scheme == "" {
-		u.Scheme = "dir"
-	}
+func Connect(u *url.URL, authManager auth.BaseManager, cdata *ConnectData) (place.ManagedPlace, error) {
 	if authManager.IsReadonly() {
+		rawURL := u.String()
 		// TODO: the following is wrong under some circumstances:
 		// 1. fragment is set
 		if q := u.Query(); len(q) == 0 {
@@ -54,6 +48,7 @@ func Connect(rawURL string, authManager auth.BaseManager, cdata *ConnectData) (p
 		} else if _, ok := q["readonly"]; !ok {
 			rawURL += "&readonly"
 		}
+		var err error
 		if u, err = url.Parse(rawURL); err != nil {
 			return nil, err
 		}
@@ -117,7 +112,7 @@ type Manager struct {
 }
 
 // New creates a new managing place.
-func New(placeURIs []string, cfg *meta.Meta, authManager auth.BaseManager, rtConfig config.Config) (*Manager, error) {
+func New(placeURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Config) (*Manager, error) {
 	propertyKeys := make(map[string]bool)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		if kd.IsProperty() {
