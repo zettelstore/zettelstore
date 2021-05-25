@@ -13,6 +13,7 @@ package webui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -189,7 +190,7 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Env
 	return func(zid id.Zid, format string) (string, int) {
 		m, err := getMeta.Run(place.NoEnrichContext(ctx), zid)
 		if err != nil {
-			if place.IsErrNotAllowed(err) {
+			if errors.Is(err, &place.ErrNotAllowed{}) {
 				return "", -1
 			}
 			return "", 0

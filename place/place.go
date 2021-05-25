@@ -244,11 +244,8 @@ func (err *ErrNotAllowed) Error() string {
 		err.User.Zid.String())
 }
 
-// IsErrNotAllowed return true, if the error is of type ErrNotAllowed.
-func IsErrNotAllowed(err error) bool {
-	_, ok := err.(*ErrNotAllowed)
-	return ok
-}
+// Is return true, if the error is of type ErrNotAllowed.
+func (err *ErrNotAllowed) Is(target error) bool { return true }
 
 // ErrStarted is returned when trying to start an already started place.
 var ErrStarted = errors.New("place is already started")

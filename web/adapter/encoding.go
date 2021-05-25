@@ -71,7 +71,7 @@ func MakeLinkAdapter(
 			panic(err)
 		}
 		_, err = getMeta.Run(place.NoEnrichContext(ctx), zid)
-		if place.IsErrNotAllowed(err) {
+		if errors.Is(err, &place.ErrNotAllowed{}) {
 			return &ast.FormatNode{
 				Code:    ast.FormatSpan,
 				Attrs:   origLink.Attrs,

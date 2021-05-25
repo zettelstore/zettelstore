@@ -28,8 +28,8 @@ import (
 
 // Location returns some information where the place is located.
 func (mgr *Manager) Location() string {
-	if len(mgr.subplaces) < 2 {
-		return mgr.subplaces[0].Location()
+	if len(mgr.subplaces) <= 2 {
+		return "NONE"
 	}
 	var sb strings.Builder
 	for i := 0; i < len(mgr.subplaces)-2; i++ {

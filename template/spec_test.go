@@ -22,6 +22,7 @@ package template_test
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"sort"
@@ -183,7 +184,7 @@ func getRoot() string {
 func TestSpec(t *testing.T) {
 	root := getRoot()
 	if _, err := os.Stat(root); err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("Could not find the mustache testdata folder at %s'", root)
 		}
 		t.Fatal(err)

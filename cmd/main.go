@@ -158,6 +158,7 @@ func setServiceConfig(cfg *meta.Meta) error {
 	ok = setConfigValue(
 		ok, kernel.PlaceService, kernel.PlaceDefaultDirType,
 		cfg.GetDefault(keyDefaultDirPlaceType, kernel.PlaceDirTypeNotify))
+	ok = setConfigValue(ok, kernel.PlaceService, kernel.PlaceURIs+"1", "dir:./zettel")
 	format := kernel.PlaceURIs + "%v"
 	for i := 1; ; i++ {
 		key := fmt.Sprintf(format, i)

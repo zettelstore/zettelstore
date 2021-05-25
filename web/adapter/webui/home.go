@@ -13,6 +13,7 @@ package webui
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"zettelstore.de/z/domain/id"
@@ -46,7 +47,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			redirectFound(w, r, wui.NewURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		if place.IsErrNotAllowed(err) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
+		if errors.Is(err, &place.ErrNotAllowed{}) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
 			redirectFound(w, r, wui.NewURLBuilder('a'))
 			return
 		}

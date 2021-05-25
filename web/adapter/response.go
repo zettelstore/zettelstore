@@ -12,6 +12,7 @@
 package adapter
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -56,10 +57,10 @@ func CodeMessageFromError(err error) (int, string) {
 	if err1, ok := err.(*ErrBadRequest); ok {
 		return http.StatusBadRequest, err1.Text
 	}
-	if err == place.ErrStopped {
+	if errors.Is(err, place.ErrStopped) {
 		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v", err)
 	}
-	if err == place.ErrConflict {
+	if errors.Is(err, place.ErrConflict) {
 		return http.StatusConflict, "Zettelstore operations conflicted"
 	}
 	return http.StatusInternalServerError, err.Error()

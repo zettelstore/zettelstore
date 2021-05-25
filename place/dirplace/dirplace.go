@@ -13,6 +13,7 @@ package dirplace
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -34,7 +35,7 @@ import (
 func init() {
 	manager.Register("dir", func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
 		path := getDirPath(u)
-		if _, err := os.Stat(path); os.IsNotExist(err) {
+		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
 		dirSrvSpec, defWorker, maxWorker := getDirSrvInfo(u.Query().Get("type"))
