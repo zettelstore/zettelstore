@@ -42,6 +42,8 @@
      <tt>|%</tt>. This allows to paste output of the administrator console into
      a zettel.
      (minor: zmk)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_0_12"></a>
 <h2>Changes for Version 0.0.12 (2021-04-16)</h2>

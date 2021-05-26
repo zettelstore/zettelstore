@@ -81,7 +81,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
-		canCopy := base.CanCreate && !zn.Content.IsBinary()
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			CanWrite      bool
@@ -114,9 +113,9 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			RoleURL:       wui.NewURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
-			CanCopy:       canCopy,
+			CanCopy:       base.CanCreate && !zn.Content.IsBinary(),
 			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
-			CanFolge:      base.CanCreate && !zn.Content.IsBinary(),
+			CanFolge:      base.CanCreate,
 			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
 			FolgeRefs:     wui.formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
 			PrecursorRefs: wui.formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),

@@ -87,7 +87,6 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
-		canCopy := base.CanCreate && !zn.Content.IsBinary()
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid          string
 			WebURL       string
@@ -117,9 +116,9 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 			ContextURL:   wui.NewURLBuilder('j').SetZid(zid).String(),
 			CanWrite:     wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:      wui.NewURLBuilder('e').SetZid(zid).String(),
-			CanFolge:     base.CanCreate && !zn.Content.IsBinary(),
+			CanFolge:     base.CanCreate,
 			FolgeURL:     wui.NewURLBuilder('f').SetZid(zid).String(),
-			CanCopy:      canCopy,
+			CanCopy:      base.CanCreate && !zn.Content.IsBinary(),
 			CopyURL:      wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanRename:    wui.canRename(ctx, user, zn.Meta),
 			RenameURL:    wui.NewURLBuilder('b').SetZid(zid).String(),
