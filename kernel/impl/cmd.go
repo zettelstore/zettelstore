@@ -29,6 +29,7 @@ type cmdSession struct {
 	echo     bool
 	header   bool
 	colwidth int
+	eol      []byte
 }
 
 func (sess *cmdSession) initialize(w io.Writer, kern *myKernel) {
@@ -36,6 +37,7 @@ func (sess *cmdSession) initialize(w io.Writer, kern *myKernel) {
 	sess.kern = kern
 	sess.header = true
 	sess.colwidth = 80
+	sess.eol = []byte{'\n'}
 }
 
 func (sess *cmdSession) executeLine(line string) bool {
@@ -62,7 +64,7 @@ func (sess *cmdSession) println(args ...string) {
 			io.WriteString(sess.w, arg)
 		}
 	}
-	io.WriteString(sess.w, "\n")
+	sess.w.Write(sess.eol)
 }
 
 func (sess *cmdSession) printTable(table [][]string) {
@@ -108,7 +110,7 @@ func (sess *cmdSession) printRow(row []string, maxLen []int, prefix, delim strin
 		prefix = delim
 		io.WriteString(sess.w, strfun.JustifyLeft(column, maxLen[colno], pad))
 	}
-	io.WriteString(sess.w, "\n")
+	sess.w.Write(sess.eol)
 }
 
 func splitLine(line string) (string, []string) {
@@ -130,7 +132,20 @@ var commands = map[string]command{
 		"end this session",
 		func(*cmdSession, string, []string) bool { return false },
 	},
-	"config":       {"show configuration keys", cmdConfig},
+	"config": {"show configuration keys", cmdConfig},
+	"crlf": {
+		"toggle crlf mode",
+		func(sess *cmdSession, cmd string, args []string) bool {
+			if len(sess.eol) == 1 {
+				sess.eol = []byte{'\r', '\n'}
+				sess.println("crlf is on")
+			} else {
+				sess.eol = []byte{'\n'}
+				sess.println("crlf is off")
+			}
+			return true
+		},
+	},
 	"dump-index":   {"writes the content of the index", cmdDumpIndex},
 	"dump-recover": {"show data of last recovery", cmdDumpRecover},
 	"echo": {

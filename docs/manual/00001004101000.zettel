@@ -12,6 +12,10 @@ modified: 20210525161623
 
   If a key ends with the hyphen-minus character (""''-''"", ''U+002D''), the key denotes a list value.
   Keys of list elements are specified by appending a number greater than zero to the key.
+; ''crlf''
+: Toggles CRLF mode for console output.
+  Changes end of line sequences between Windows mode (==\\r\\n==) and non-Windows mode (==\\n==, initial value).
+  Often used on Windows telnet clients that otherwise scramble the output of commands.
 ; ''dump-index''
 : Displays the content of the internal search index.
 ; ''dump-recover RECOVER''

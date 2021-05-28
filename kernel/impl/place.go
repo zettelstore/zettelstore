@@ -115,7 +115,7 @@ func (ps *placeService) GetStatistics() []kernel.KeyValue {
 		{Key: "Read-only", Value: fmt.Sprintf("%v", st.ReadOnly)},
 		{Key: "Sub-places", Value: fmt.Sprintf("%v", st.NumManagedPlaces)},
 		{Key: "Zettel (total)", Value: fmt.Sprintf("%v", st.ZettelTotal)},
-		{Key: "Zettel (indexable)", Value: fmt.Sprintf("%v", st.ZettelIndexed)},
+		{Key: "Zettel (indexed)", Value: fmt.Sprintf("%v", st.ZettelIndexed)},
 		{Key: "Last re-index", Value: st.LastReload.Format("2006-01-02 15:04:05 -0700 MST")},
 		{Key: "Indexes since last re-index", Value: fmt.Sprintf("%v", st.IndexesSinceReload)},
 		{Key: "Duration last index", Value: fmt.Sprintf("%vms", st.DurLastIndex.Milliseconds())},
