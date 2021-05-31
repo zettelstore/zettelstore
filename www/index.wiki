@@ -19,20 +19,19 @@ The software, including the manual, is licensed under the
 <hr>
 <h3>Latest Release: 0.0.12 (2021-04-16)</h3>
   *  [./download.wiki|Download]
-  *  [./changes.wiki#0_0_12|Change Summary]
+  *  [./changes.wiki#0_0_12|Change summary]
   *  [/timeline?p=version-0.0.12&bt=version-0.0.11&y=ci|Check-ins for version 0.0.12],
      [/vdiff?to=version-0.0.12&from=version-0.0.11|content diff]
   *  [/timeline?df=version-0.0.12&y=ci|Check-ins derived from the 0.0.12 release],
      [/vdiff?from=version-0.0.12&to=trunk|content diff]
-  *  [./plan.wiki|Limitations and planned Improvements]
+  *  [./plan.wiki|Limitations and planned improvements]
   *  [/timeline?t=release|Timeline of all past releases]
 
 <hr>
 <h2>Build instructions</h2>
-Just install [https://fossil-scm.org|Fossil],
-[https://golang.org/dl/|Go] and some Go-based tools. Please read the
-[./build.md|instructions] for details.
+Just install [https://golang.org/dl/|Go] and some Go-based tools. Please read
+the [./build.md|instructions] for details.
 
-  *  [/dir?ci=trunk|Source Code]
-  *  [/download|Download the source code] as a Tarball or a ZIP file
+  *  [/dir?ci=trunk|Source code]
+  *  [/download|Download the source code] as a tarball or a ZIP file
      (you must [/login|login] as user &quot;anonymous&quot;).

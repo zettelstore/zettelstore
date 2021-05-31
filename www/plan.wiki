@@ -1,4 +1,4 @@
-<title>Limitations and planned Improvements</title>
+<title>Limitations and planned improvements</title>
 
 Here is a list of some shortcomings of Zettelstore.
 They are planned to be solved.
@@ -20,6 +20,10 @@ They are planned to be solved.
   *  The horizontal tab character (<tt>U+0009</tt>) is not supported.
   *  Missing support for citation keys.
   *  Changing the content syntax is not reflected in file extension.
+  *  File names with additional text besides the zettel identifier are not
+     always preserved.
+  *  Backspace character in links does not always work, esp. for <tt>\|</tt> or
+     <tt>\]</tt>.
   *  &hellip;
 
 <h3>Planned improvements</h3>
