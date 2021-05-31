@@ -40,18 +40,21 @@ func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 }
 
 func addRef(refs id.Slice, ref id.Zid) id.Slice {
-	if len(refs) == 0 {
-		return append(refs, ref)
-	}
-	for i, r := range refs {
-		if r == ref {
+	hi := len(refs)
+	for lo := 0; lo < hi; {
+		m := lo + (hi-lo)/2
+		if r := refs[m]; r == ref {
 			return refs
-		}
-		if r > ref {
-			return append(refs[:i], append(id.Slice{ref}, refs[i:]...)...)
+		} else if r < ref {
+			lo = m + 1
+		} else {
+			hi = m
 		}
 	}
-	return append(refs, ref)
+	refs = append(refs, id.Invalid)
+	copy(refs[hi+1:], refs[hi:])
+	refs[hi] = ref
+	return refs
 }
 
 func remRefs(refs, rem id.Slice) id.Slice {
@@ -81,12 +84,17 @@ func remRefs(refs, rem id.Slice) id.Slice {
 }
 
 func remRef(refs id.Slice, ref id.Zid) id.Slice {
-	for i, r := range refs {
-		if r == ref {
-			return append(refs[:i], refs[i+1:]...)
-		}
-		if r > ref {
+	hi := len(refs)
+	for lo := 0; lo < hi; {
+		m := lo + (hi-lo)/2
+		if r := refs[m]; r == ref {
+			copy(refs[m:], refs[m+1:])
+			refs = refs[:len(refs)-1]
 			return refs
+		} else if r < ref {
+			lo = m + 1
+		} else {
+			hi = m
 		}
 	}
 	return refs

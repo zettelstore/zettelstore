@@ -348,7 +348,6 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 
 func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
 	// Must only be called if ms.mx is write-locked!
-	//words := zidx.GetWords()
 	newWords, removeWords := next.Diff(prev)
 	for _, word := range newWords {
 		if refs, ok := srefs[word]; ok {
@@ -553,8 +552,11 @@ func dumpZids(w io.Writer, prefix string, zids id.Slice) {
 
 func dumpStrings(w io.Writer, title, preString, postString string, slice []string) {
 	if len(slice) > 0 {
+		sl := make([]string, len(slice))
+		copy(sl, slice)
+		sort.Strings(sl)
 		fmt.Fprintln(w, title)
-		for _, s := range slice {
+		for _, s := range sl {
 			fmt.Fprintf(w, "** %s%s%s\n", preString, s, postString)
 		}
 	}
