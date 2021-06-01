@@ -19,10 +19,10 @@ import (
 func startLineServer(kern *myKernel, listenAddr string) error {
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		kern.doLog("Unable to start line command server:", err)
+		kern.doLog("Unable to start Line Command Server:", err)
 		return err
 	}
-	kern.doLog("Start line command server:", listenAddr)
+	kern.doLog("Start Line Command Server:", listenAddr)
 	go func() { lineServer(ln, kern) }()
 	return nil
 }
