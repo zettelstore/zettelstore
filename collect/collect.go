@@ -22,12 +22,12 @@ type Summary struct {
 
 // References returns all references mentioned in the given zettel. This also
 // includes references to images.
-func References(zn *ast.ZettelNode) Summary {
-	var s Summary
+func References(zn *ast.ZettelNode) (s Summary) {
 	ast.WalkBlockSlice(&s, zn.Ast)
 	return s
 }
 
+// Visit all node to collect data for the summary.
 func (s *Summary) Visit(node ast.Node) ast.WalkVisitor {
 	switch n := node.(type) {
 	case *ast.LinkNode:

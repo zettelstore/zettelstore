@@ -329,7 +329,11 @@ func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 		cp.lists = cp.lists[:len(codes)]
 	}
 	ln, newLnCount := cp.buildNestedList(codes)
-	ln.Items = append(ln.Items, ast.ItemSlice{cp.parseLinePara()})
+	pn := cp.parseLinePara()
+	if pn == nil {
+		pn = &ast.ParaNode{}
+	}
+	ln.Items = append(ln.Items, ast.ItemSlice{pn})
 	return cp.cleanupParsedNestedList(newLnCount)
 }
 
@@ -484,6 +488,9 @@ func (cp *zmkP) parseIndentForList(cnt int) bool {
 	}
 	ln := cp.lists[cnt-1]
 	pn := cp.parseLinePara()
+	if pn == nil {
+		pn = &ast.ParaNode{}
+	}
 	lbn := ln.Items[len(ln.Items)-1]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
 		lpn.Inlines = append(lpn.Inlines, pn.Inlines...)

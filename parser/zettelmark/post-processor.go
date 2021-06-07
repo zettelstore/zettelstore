@@ -34,71 +34,67 @@ type postProcessor struct {
 	inVerse bool
 }
 
-// VisitPara post-processes a paragraph.
-func (pp *postProcessor) VisitPara(pn *ast.ParaNode) {
-	if pn != nil {
-		pn.Inlines = pp.processInlineSlice(pn.Inlines)
-	}
-}
-
-// VisitVerbatim does nothing, no post-processing needed.
-func (pp *postProcessor) VisitVerbatim(vn *ast.VerbatimNode) {}
-
-// VisitRegion post-processes a region.
-func (pp *postProcessor) VisitRegion(rn *ast.RegionNode) {
-	oldVerse := pp.inVerse
-	if rn.Code == ast.RegionVerse {
-		pp.inVerse = true
-	}
-	rn.Blocks = pp.processBlockSlice(rn.Blocks)
-	pp.inVerse = oldVerse
-	rn.Inlines = pp.processInlineSlice(rn.Inlines)
-}
-
-// VisitHeading post-processes a heading.
-func (pp *postProcessor) VisitHeading(hn *ast.HeadingNode) {
-	hn.Inlines = pp.processInlineSlice(hn.Inlines)
-}
-
-// VisitHRule does nothing, no post-processing needed.
-func (pp *postProcessor) VisitHRule(hn *ast.HRuleNode) {}
-
-// VisitList post-processes a list.
-func (pp *postProcessor) VisitNestedList(ln *ast.NestedListNode) {
-	for i, item := range ln.Items {
-		ln.Items[i] = pp.processItemSlice(item)
-	}
-}
-
-// VisitDescriptionList post-processes a description list.
-func (pp *postProcessor) VisitDescriptionList(dn *ast.DescriptionListNode) {
-	for i, def := range dn.Descriptions {
-		dn.Descriptions[i].Term = pp.processInlineSlice(def.Term)
-		for j, b := range def.Descriptions {
-			dn.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
+func (pp *postProcessor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.ParaNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.RegionNode:
+		oldVerse := pp.inVerse
+		if n.Code == ast.RegionVerse {
+			pp.inVerse = true
 		}
-	}
-}
-
-// VisitTable post-processes a table.
-func (pp *postProcessor) VisitTable(tn *ast.TableNode) {
-	width := tableWidth(tn)
-	tn.Align = make([]ast.Alignment, width)
-	for i := 0; i < width; i++ {
-		tn.Align[i] = ast.AlignDefault
-	}
-	if len(tn.Rows) > 0 && isHeaderRow(tn.Rows[0]) {
-		tn.Header = tn.Rows[0]
-		tn.Rows = tn.Rows[1:]
-		pp.visitTableHeader(tn)
-	}
-	if len(tn.Header) > 0 {
-		tn.Header = appendCells(tn.Header, width, tn.Align)
-		for i, cell := range tn.Header {
-			pp.processCell(cell, tn.Align[i])
+		n.Blocks = pp.processBlockSlice(n.Blocks)
+		pp.inVerse = oldVerse
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.HeadingNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.NestedListNode:
+		for i, item := range n.Items {
+			n.Items[i] = pp.processItemSlice(item)
 		}
+	case *ast.DescriptionListNode:
+		for i, def := range n.Descriptions {
+			n.Descriptions[i].Term = pp.processInlineSlice(def.Term)
+			for j, b := range def.Descriptions {
+				n.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
+			}
+		}
+	case *ast.TableNode:
+		width := tableWidth(n)
+		n.Align = make([]ast.Alignment, width)
+		for i := 0; i < width; i++ {
+			n.Align[i] = ast.AlignDefault
+		}
+		if len(n.Rows) > 0 && isHeaderRow(n.Rows[0]) {
+			n.Header = n.Rows[0]
+			n.Rows = n.Rows[1:]
+			pp.visitTableHeader(n)
+		}
+		if len(n.Header) > 0 {
+			n.Header = appendCells(n.Header, width, n.Align)
+			for i, cell := range n.Header {
+				pp.processCell(cell, n.Align[i])
+			}
+		}
+		pp.visitTableRows(n, width)
+	case *ast.LinkNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.ImageNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.CiteNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.FootnoteNode:
+		n.Inlines = pp.processInlineSlice(n.Inlines)
+	case *ast.FormatNode:
+		if n.Attrs != nil && n.Attrs.HasDefault() {
+			if newCode, ok := mapSemantic[n.Code]; ok {
+				n.Attrs.RemoveDefault()
+				n.Code = newCode
+			}
+		}
+		n.Inlines = pp.processInlineSlice(n.Inlines)
 	}
-	pp.visitTableRows(tn, width)
+	return nil
 }
 
 func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
@@ -194,46 +190,6 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	cell.Inlines = pp.processInlineSlice(cell.Inlines)
 }
 
-// VisitBLOB does nothing.
-func (pp *postProcessor) VisitBLOB(bn *ast.BLOBNode) {}
-
-// VisitText does nothing.
-func (pp *postProcessor) VisitText(tn *ast.TextNode) {}
-
-// VisitTag does nothing.
-func (pp *postProcessor) VisitTag(tn *ast.TagNode) {}
-
-// VisitSpace does nothing.
-func (pp *postProcessor) VisitSpace(sn *ast.SpaceNode) {}
-
-// VisitBreak does nothing.
-func (pp *postProcessor) VisitBreak(bn *ast.BreakNode) {}
-
-// VisitLink post-processes a link.
-func (pp *postProcessor) VisitLink(ln *ast.LinkNode) {
-	ln.Inlines = pp.processInlineSlice(ln.Inlines)
-}
-
-// VisitImage post-processes an image.
-func (pp *postProcessor) VisitImage(in *ast.ImageNode) {
-	if len(in.Inlines) > 0 {
-		in.Inlines = pp.processInlineSlice(in.Inlines)
-	}
-}
-
-// VisitCite post-processes a citation.
-func (pp *postProcessor) VisitCite(cn *ast.CiteNode) {
-	cn.Inlines = pp.processInlineSlice(cn.Inlines)
-}
-
-// VisitFootnote post-processes a footnote.
-func (pp *postProcessor) VisitFootnote(fn *ast.FootnoteNode) {
-	fn.Inlines = pp.processInlineSlice(fn.Inlines)
-}
-
-// VisitMark post-processes a mark.
-func (pp *postProcessor) VisitMark(mn *ast.MarkNode) {}
-
 var mapSemantic = map[ast.FormatCode]ast.FormatCode{
 	ast.FormatItalic: ast.FormatEmph,
 	ast.FormatBold:   ast.FormatStrong,
@@ -241,26 +197,13 @@ var mapSemantic = map[ast.FormatCode]ast.FormatCode{
 	ast.FormatStrike: ast.FormatDelete,
 }
 
-// VisitFormat post-processes formatted inline nodes.
-func (pp *postProcessor) VisitFormat(fn *ast.FormatNode) {
-	if fn.Attrs != nil && fn.Attrs.HasDefault() {
-		if newCode, ok := mapSemantic[fn.Code]; ok {
-			fn.Attrs.RemoveDefault()
-			fn.Code = newCode
-		}
-	}
-	fn.Inlines = pp.processInlineSlice(fn.Inlines)
-}
-
-// VisitLiteral post-processes an inline literal.
-func (pp *postProcessor) VisitLiteral(cn *ast.LiteralNode) {}
-
 // processBlockSlice post-processes a slice of blocks.
 // It is one of the working horses for post-processing.
 func (pp *postProcessor) processBlockSlice(bns ast.BlockSlice) ast.BlockSlice {
-	for _, bn := range bns {
-		bn.Accept(pp)
+	if len(bns) == 0 {
+		return nil
 	}
+	ast.WalkBlockSlice(pp, bns)
 	fromPos, toPos := 0, 0
 	for fromPos < len(bns) {
 		bns[toPos] = bns[fromPos]
@@ -285,8 +228,11 @@ func (pp *postProcessor) processBlockSlice(bns ast.BlockSlice) ast.BlockSlice {
 // processItemSlice post-processes a slice of items.
 // It is one of the working horses for post-processing.
 func (pp *postProcessor) processItemSlice(ins ast.ItemSlice) ast.ItemSlice {
+	if len(ins) == 0 {
+		return nil
+	}
 	for _, in := range ins {
-		in.Accept(pp)
+		ast.Walk(pp, in)
 	}
 	fromPos, toPos := 0, 0
 	for fromPos < len(ins) {
@@ -312,8 +258,11 @@ func (pp *postProcessor) processItemSlice(ins ast.ItemSlice) ast.ItemSlice {
 // processDescriptionSlice post-processes a slice of descriptions.
 // It is one of the working horses for post-processing.
 func (pp *postProcessor) processDescriptionSlice(dns ast.DescriptionSlice) ast.DescriptionSlice {
+	if len(dns) == 0 {
+		return nil
+	}
 	for _, dn := range dns {
-		dn.Accept(pp)
+		ast.Walk(pp, dn)
 	}
 	fromPos, toPos := 0, 0
 	for fromPos < len(dns) {
@@ -341,9 +290,7 @@ func (pp *postProcessor) processInlineSlice(ins ast.InlineSlice) ast.InlineSlice
 	if len(ins) == 0 {
 		return nil
 	}
-	for _, in := range ins {
-		in.Accept(pp)
-	}
+	ast.WalkInlineSlice(pp, ins)
 
 	if !pp.inVerse {
 		ins = processInlineSliceHead(ins)

@@ -488,7 +488,7 @@ func TestList(t *testing.T) {
 		// Changing list type adds a new list
 		{"* abc\n# def", "(UL {(PARA abc)})(OL {(PARA def)})"},
 
-		// Quotation lists mayx have empty items
+		// Quotation lists may have empty items
 		{">", "(QL {})"},
 	})
 }
