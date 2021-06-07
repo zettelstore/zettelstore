@@ -50,7 +50,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 			inp := input.NewInput(tc.source)
 			bns := parser.ParseBlocks(inp, nil, meta.ValueSyntaxZmk)
 			var tv TestVisitor
-			tv.visitBlockSlice(bns)
+			ast.WalkBlockSlice(&tv, bns)
 			got := tv.String()
 			if tc.want != got {
 				st.Errorf("\nwant=%q\n got=%q", tc.want, got)
@@ -616,28 +616,177 @@ type TestVisitor struct {
 }
 
 func (tv *TestVisitor) String() string { return tv.b.String() }
-func (tv *TestVisitor) VisitPara(pn *ast.ParaNode) {
-	tv.b.WriteString("(PARA")
-	tv.visitInlineSlice(pn.Inlines)
-	tv.b.WriteByte(')')
+
+func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.ParaNode:
+		tv.b.WriteString("(PARA")
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+	case *ast.VerbatimNode:
+		code, ok := mapVerbatimCode[n.Code]
+		if !ok {
+			panic(fmt.Sprintf("Unknown verbatim code %v", n.Code))
+		}
+		tv.b.WriteString(code)
+		for _, line := range n.Lines {
+			tv.b.WriteByte('\n')
+			tv.b.WriteString(line)
+		}
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.RegionNode:
+		code, ok := mapRegionCode[n.Code]
+		if !ok {
+			panic(fmt.Sprintf("Unknown region code %v", n.Code))
+		}
+		tv.b.WriteString(code)
+		if n.Blocks != nil {
+			tv.b.WriteByte(' ')
+			ast.WalkBlockSlice(tv, n.Blocks)
+		}
+		if len(n.Inlines) > 0 {
+			tv.b.WriteString(" (LINE")
+			tv.visitInlineSlice(n.Inlines)
+			tv.b.WriteByte(')')
+		}
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.HeadingNode:
+		fmt.Fprintf(&tv.b, "(H%d", n.Level)
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.HRuleNode:
+		tv.b.WriteString("(HR)")
+		tv.visitAttributes(n.Attrs)
+	case *ast.NestedListNode:
+		tv.b.WriteString(mapNestedListCode[n.Code])
+		for _, item := range n.Items {
+			tv.b.WriteString(" {")
+			for _, it := range item {
+				ast.Walk(tv, it)
+			}
+			tv.b.WriteByte('}')
+		}
+		tv.b.WriteByte(')')
+	case *ast.DescriptionListNode:
+		tv.b.WriteString("(DL")
+		for _, def := range n.Descriptions {
+			tv.b.WriteString(" (DT")
+			tv.visitInlineSlice(def.Term)
+			tv.b.WriteByte(')')
+			for _, b := range def.Descriptions {
+				tv.b.WriteString(" (DD ")
+				for _, d := range b {
+					ast.Walk(tv, d)
+				}
+				tv.b.WriteByte(')')
+			}
+		}
+		tv.b.WriteByte(')')
+	case *ast.TableNode:
+		tv.b.WriteString("(TAB")
+		if len(n.Header) > 0 {
+			tv.b.WriteString(" (TR")
+			for _, cell := range n.Header {
+				tv.b.WriteString(" (TH")
+				tv.b.WriteString(alignString[cell.Align])
+				tv.visitInlineSlice(cell.Inlines)
+				tv.b.WriteString(")")
+			}
+			tv.b.WriteString(")")
+		}
+		if len(n.Rows) > 0 {
+			tv.b.WriteString(" ")
+			for _, row := range n.Rows {
+				tv.b.WriteString("(TR")
+				for i, cell := range row {
+					if i == 0 {
+						tv.b.WriteString(" ")
+					}
+					tv.b.WriteString("(TD")
+					tv.b.WriteString(alignString[cell.Align])
+					tv.visitInlineSlice(cell.Inlines)
+					tv.b.WriteString(")")
+				}
+				tv.b.WriteString(")")
+			}
+		}
+		tv.b.WriteString(")")
+	case *ast.BLOBNode:
+		tv.b.WriteString("(BLOB ")
+		tv.b.WriteString(n.Syntax)
+		tv.b.WriteString(")")
+	case *ast.TextNode:
+		tv.b.WriteString(n.Text)
+	case *ast.TagNode:
+		tv.b.WriteByte('#')
+		tv.b.WriteString(n.Tag)
+		tv.b.WriteByte('#')
+	case *ast.SpaceNode:
+		if len(n.Lexeme) == 1 {
+			tv.b.WriteString("SP")
+		} else {
+			fmt.Fprintf(&tv.b, "SP%d", len(n.Lexeme))
+		}
+	case *ast.BreakNode:
+		if n.Hard {
+			tv.b.WriteString("HB")
+		} else {
+			tv.b.WriteString("SB")
+		}
+	case *ast.LinkNode:
+		fmt.Fprintf(&tv.b, "(LINK %s", n.Ref)
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.ImageNode:
+		fmt.Fprintf(&tv.b, "(IMAGE %s", n.Ref)
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.CiteNode:
+		fmt.Fprintf(&tv.b, "(CITE %s", n.Key)
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.FootnoteNode:
+		tv.b.WriteString("(FN")
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.MarkNode:
+		tv.b.WriteString("(MARK")
+		if len(n.Text) > 0 {
+			tv.b.WriteByte(' ')
+			tv.b.WriteString(n.Text)
+		}
+		tv.b.WriteByte(')')
+	case *ast.FormatNode:
+		fmt.Fprintf(&tv.b, "{%c", mapCode[n.Code])
+		tv.visitInlineSlice(n.Inlines)
+		tv.b.WriteByte('}')
+		tv.visitAttributes(n.Attrs)
+	case *ast.LiteralNode:
+		code, ok := mapLiteralCode[n.Code]
+		if !ok {
+			panic(fmt.Sprintf("No element for code %v", n.Code))
+		}
+		tv.b.WriteByte('{')
+		tv.b.WriteRune(code)
+		if len(n.Text) > 0 {
+			tv.b.WriteByte(' ')
+			tv.b.WriteString(n.Text)
+		}
+		tv.b.WriteByte('}')
+		tv.visitAttributes(n.Attrs)
+	}
+	return nil
 }
 
 var mapVerbatimCode = map[ast.VerbatimCode]string{
 	ast.VerbatimProg: "(PROG",
-}
-
-func (tv *TestVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
-	code, ok := mapVerbatimCode[vn.Code]
-	if !ok {
-		panic(fmt.Sprintf("Unknown verbatim code %v", vn.Code))
-	}
-	tv.b.WriteString(code)
-	for _, line := range vn.Lines {
-		tv.b.WriteByte('\n')
-		tv.b.WriteString(line)
-	}
-	tv.b.WriteByte(')')
-	tv.visitAttributes(vn.Attrs)
 }
 
 var mapRegionCode = map[ast.RegionCode]string{
@@ -646,65 +795,10 @@ var mapRegionCode = map[ast.RegionCode]string{
 	ast.RegionVerse: "(VERSE",
 }
 
-// VisitRegion stores information about a region.
-func (tv *TestVisitor) VisitRegion(rn *ast.RegionNode) {
-	code, ok := mapRegionCode[rn.Code]
-	if !ok {
-		panic(fmt.Sprintf("Unknown region code %v", rn.Code))
-	}
-	tv.b.WriteString(code)
-	if rn.Blocks != nil {
-		tv.b.WriteByte(' ')
-		tv.visitBlockSlice(rn.Blocks)
-	}
-	if len(rn.Inlines) > 0 {
-		tv.b.WriteString(" (LINE")
-		tv.visitInlineSlice(rn.Inlines)
-		tv.b.WriteByte(')')
-	}
-	tv.b.WriteByte(')')
-	tv.visitAttributes(rn.Attrs)
-}
-
-func (tv *TestVisitor) VisitHeading(hn *ast.HeadingNode) {
-	fmt.Fprintf(&tv.b, "(H%d", hn.Level)
-	tv.visitInlineSlice(hn.Inlines)
-	tv.b.WriteByte(')')
-	tv.visitAttributes(hn.Attrs)
-}
-func (tv *TestVisitor) VisitHRule(hn *ast.HRuleNode) {
-	tv.b.WriteString("(HR)")
-	tv.visitAttributes(hn.Attrs)
-}
-
 var mapNestedListCode = map[ast.NestedListCode]string{
 	ast.NestedListOrdered:   "(OL",
 	ast.NestedListUnordered: "(UL",
 	ast.NestedListQuote:     "(QL",
-}
-
-func (tv *TestVisitor) VisitNestedList(ln *ast.NestedListNode) {
-	tv.b.WriteString(mapNestedListCode[ln.Code])
-	for _, item := range ln.Items {
-		tv.b.WriteString(" {")
-		tv.visitItemSlice(item)
-		tv.b.WriteByte('}')
-	}
-	tv.b.WriteByte(')')
-}
-func (tv *TestVisitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
-	tv.b.WriteString("(DL")
-	for _, def := range dn.Descriptions {
-		tv.b.WriteString(" (DT")
-		tv.visitInlineSlice(def.Term)
-		tv.b.WriteByte(')')
-		for _, b := range def.Descriptions {
-			tv.b.WriteString(" (DD ")
-			tv.visitDescriptionSlice(b)
-			tv.b.WriteByte(')')
-		}
-	}
-	tv.b.WriteByte(')')
 }
 
 var alignString = map[ast.Alignment]string{
@@ -712,99 +806,6 @@ var alignString = map[ast.Alignment]string{
 	ast.AlignLeft:    "l",
 	ast.AlignCenter:  "c",
 	ast.AlignRight:   "r",
-}
-
-// VisitTable emits a HTML table.
-func (tv *TestVisitor) VisitTable(tn *ast.TableNode) {
-	tv.b.WriteString("(TAB")
-	if len(tn.Header) > 0 {
-		tv.b.WriteString(" (TR")
-		for _, cell := range tn.Header {
-			tv.b.WriteString(" (TH")
-			tv.b.WriteString(alignString[cell.Align])
-			tv.visitInlineSlice(cell.Inlines)
-			tv.b.WriteString(")")
-		}
-		tv.b.WriteString(")")
-	}
-	if len(tn.Rows) > 0 {
-		tv.b.WriteString(" ")
-		for _, row := range tn.Rows {
-			tv.b.WriteString("(TR")
-			for i, cell := range row {
-				if i == 0 {
-					tv.b.WriteString(" ")
-				}
-				tv.b.WriteString("(TD")
-				tv.b.WriteString(alignString[cell.Align])
-				tv.visitInlineSlice(cell.Inlines)
-				tv.b.WriteString(")")
-			}
-			tv.b.WriteString(")")
-		}
-	}
-	tv.b.WriteString(")")
-}
-
-func (tv *TestVisitor) VisitBLOB(bn *ast.BLOBNode) {
-	tv.b.WriteString("(BLOB ")
-	tv.b.WriteString(bn.Syntax)
-	tv.b.WriteString(")")
-}
-
-func (tv *TestVisitor) VisitText(tn *ast.TextNode) {
-	tv.b.WriteString(tn.Text)
-}
-func (tv *TestVisitor) VisitTag(tn *ast.TagNode) {
-	tv.b.WriteByte('#')
-	tv.b.WriteString(tn.Tag)
-	tv.b.WriteByte('#')
-}
-func (tv *TestVisitor) VisitSpace(sn *ast.SpaceNode) {
-	if len(sn.Lexeme) == 1 {
-		tv.b.WriteString("SP")
-	} else {
-		fmt.Fprintf(&tv.b, "SP%d", len(sn.Lexeme))
-	}
-}
-func (tv *TestVisitor) VisitBreak(bn *ast.BreakNode) {
-	if bn.Hard {
-		tv.b.WriteString("HB")
-	} else {
-		tv.b.WriteString("SB")
-	}
-}
-func (tv *TestVisitor) VisitLink(tn *ast.LinkNode) {
-	fmt.Fprintf(&tv.b, "(LINK %s", tn.Ref)
-	tv.visitInlineSlice(tn.Inlines)
-	tv.b.WriteByte(')')
-	tv.visitAttributes(tn.Attrs)
-}
-func (tv *TestVisitor) VisitImage(in *ast.ImageNode) {
-	fmt.Fprintf(&tv.b, "(IMAGE %s", in.Ref)
-	tv.visitInlineSlice(in.Inlines)
-	tv.b.WriteByte(')')
-	tv.visitAttributes(in.Attrs)
-}
-func (tv *TestVisitor) VisitCite(cn *ast.CiteNode) {
-	fmt.Fprintf(&tv.b, "(CITE %s", cn.Key)
-	tv.visitInlineSlice(cn.Inlines)
-	tv.b.WriteByte(')')
-	tv.visitAttributes(cn.Attrs)
-}
-func (tv *TestVisitor) VisitFootnote(fn *ast.FootnoteNode) {
-	tv.b.WriteString("(FN")
-	tv.visitInlineSlice(fn.Inlines)
-	tv.b.WriteByte(')')
-	tv.visitAttributes(fn.Attrs)
-}
-func (tv *TestVisitor) VisitMark(mn *ast.MarkNode) {
-	tv.b.WriteString("(MARK")
-	if len(mn.Text) > 0 {
-		tv.b.WriteByte(' ')
-		tv.b.WriteString(mn.Text)
-	}
-	tv.b.WriteByte(')')
 }
 
 var mapCode = map[ast.FormatCode]rune{
@@ -821,13 +822,6 @@ var mapCode = map[ast.FormatCode]rune{
 	ast.FormatSpan:      ':',
 }
 
-func (tv *TestVisitor) VisitFormat(fn *ast.FormatNode) {
-	fmt.Fprintf(&tv.b, "{%c", mapCode[fn.Code])
-	tv.visitInlineSlice(fn.Inlines)
-	tv.b.WriteByte('}')
-	tv.visitAttributes(fn.Attrs)
-}
-
 var mapLiteralCode = map[ast.LiteralCode]rune{
 	ast.LiteralProg:    '`',
 	ast.LiteralKeyb:    '+',
@@ -835,41 +829,13 @@ var mapLiteralCode = map[ast.LiteralCode]rune{
 	ast.LiteralComment: '%',
 }
 
-func (tv *TestVisitor) VisitLiteral(ln *ast.LiteralNode) {
-	code, ok := mapLiteralCode[ln.Code]
-	if !ok {
-		panic(fmt.Sprintf("No element for code %v", ln.Code))
-	}
-	tv.b.WriteByte('{')
-	tv.b.WriteRune(code)
-	if len(ln.Text) > 0 {
-		tv.b.WriteByte(' ')
-		tv.b.WriteString(ln.Text)
-	}
-	tv.b.WriteByte('}')
-	tv.visitAttributes(ln.Attrs)
-}
-func (tv *TestVisitor) visitBlockSlice(bns ast.BlockSlice) {
-	for _, bn := range bns {
-		bn.Accept(tv)
-	}
-}
-func (tv *TestVisitor) visitItemSlice(ins ast.ItemSlice) {
-	for _, in := range ins {
-		in.Accept(tv)
-	}
-}
-func (tv *TestVisitor) visitDescriptionSlice(dns ast.DescriptionSlice) {
-	for _, dn := range dns {
-		dn.Accept(tv)
-	}
-}
 func (tv *TestVisitor) visitInlineSlice(ins ast.InlineSlice) {
 	for _, in := range ins {
 		tv.b.WriteByte(' ')
-		in.Accept(tv)
+		ast.Walk(tv, in)
 	}
 }
+
 func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 	if a == nil || len(a.Attrs) == 0 {
 		return
