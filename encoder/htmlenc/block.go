@@ -19,15 +19,7 @@ import (
 	"zettelstore.de/z/ast"
 )
 
-// VisitPara emits HTML code for a paragraph: <p>...</p>
-func (v *visitor) VisitPara(pn *ast.ParaNode) {
-	v.b.WriteString("<p>")
-	v.acceptInlineSlice(pn.Inlines)
-	v.writeEndPara()
-}
-
-// VisitVerbatim emits HTML code for verbatim lines.
-func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
+func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	switch vn.Kind {
 	case ast.VerbatimProg:
 		oldVisible := v.visibleSpace
@@ -103,8 +95,7 @@ func processSpanAttributes(attrs *ast.Attributes) *ast.Attributes {
 	return attrs
 }
 
-// VisitRegion writes HTML code for block regions.
-func (v *visitor) VisitRegion(rn *ast.RegionNode) {
+func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	var code string
 	attrs := rn.Attrs
 	oldVerse := v.inVerse
@@ -127,18 +118,17 @@ func (v *visitor) VisitRegion(rn *ast.RegionNode) {
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteString(">\n")
-	v.acceptBlockSlice(rn.Blocks)
+	ast.WalkBlockSlice(v, rn.Blocks)
 	if len(rn.Inlines) > 0 {
 		v.b.WriteString("<cite>")
-		v.acceptInlineSlice(rn.Inlines)
+		ast.WalkInlineSlice(v, rn.Inlines)
 		v.b.WriteString("</cite>\n")
 	}
 	v.b.WriteStrings("</", code, ">\n")
 	v.inVerse = oldVerse
 }
 
-// VisitHeading writes the HTML code for a heading.
-func (v *visitor) VisitHeading(hn *ast.HeadingNode) {
+func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.lang.push(hn.Attrs)
 	defer v.lang.pop()
 
@@ -153,19 +143,8 @@ func (v *visitor) VisitHeading(hn *ast.HeadingNode) {
 		v.b.WriteStrings(" id=\"", slug, "\"")
 	}
 	v.b.WriteByte('>')
-	v.acceptInlineSlice(hn.Inlines)
+	ast.WalkInlineSlice(v, hn.Inlines)
 	v.b.WriteStrings("</h", strLvl, ">\n")
-}
-
-// VisitHRule writes HTML code for a horizontal rule: <hr>.
-func (v *visitor) VisitHRule(hn *ast.HRuleNode) {
-	v.b.WriteString("<hr")
-	v.visitAttributes(hn.Attrs)
-	if v.env.IsXHTML() {
-		v.b.WriteString(" />\n")
-	} else {
-		v.b.WriteString(">\n")
-	}
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
@@ -173,8 +152,7 @@ var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListUnordered: "ul",
 }
 
-// VisitNestedList writes HTML code for lists and blockquotes.
-func (v *visitor) VisitNestedList(ln *ast.NestedListNode) {
+func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.lang.push(ln.Attrs)
 	defer v.lang.pop()
 
@@ -212,13 +190,13 @@ func (v *visitor) writeQuotationList(ln *ast.NestedListNode) {
 				v.b.WriteString("<p>")
 				inPara = true
 			}
-			v.acceptInlineSlice(pn.Inlines)
+			ast.WalkInlineSlice(v, pn.Inlines)
 		} else {
 			if inPara {
 				v.writeEndPara()
 				inPara = false
 			}
-			v.acceptItemSlice(item)
+			ast.WalkItemSlice(v, item)
 		}
 	}
 	if inPara {
@@ -267,31 +245,28 @@ func isCompactSlice(ins ast.ItemSlice) bool {
 func (v *visitor) writeItemSliceOrPara(ins ast.ItemSlice, compact bool) {
 	if compact && len(ins) == 1 {
 		if para, ok := ins[0].(*ast.ParaNode); ok {
-			v.acceptInlineSlice(para.Inlines)
+			ast.WalkInlineSlice(v, para.Inlines)
 			return
 		}
 	}
-	v.acceptItemSlice(ins)
+	ast.WalkItemSlice(v, ins)
 }
 
 func (v *visitor) writeDescriptionsSlice(ds ast.DescriptionSlice) {
 	if len(ds) == 1 {
 		if para, ok := ds[0].(*ast.ParaNode); ok {
-			v.acceptInlineSlice(para.Inlines)
+			ast.WalkInlineSlice(v, para.Inlines)
 			return
 		}
 	}
-	for _, dn := range ds {
-		dn.Accept(v)
-	}
+	ast.WalkDescriptionSlice(v, ds)
 }
 
-// VisitDescriptionList emits a HTML description list.
-func (v *visitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
+func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.b.WriteString("<dl>\n")
 	for _, descr := range dn.Descriptions {
 		v.b.WriteString("<dt>")
-		v.acceptInlineSlice(descr.Term)
+		ast.WalkInlineSlice(v, descr.Term)
 		v.b.WriteString("</dt>\n")
 
 		for _, b := range descr.Descriptions {
@@ -303,8 +278,7 @@ func (v *visitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
 	v.b.WriteString("</dl>\n")
 }
 
-// VisitTable emits a HTML table.
-func (v *visitor) VisitTable(tn *ast.TableNode) {
+func (v *visitor) visitTable(tn *ast.TableNode) {
 	v.b.WriteString("<table>\n")
 	if len(tn.Header) > 0 {
 		v.b.WriteString("<thead>\n")
@@ -336,15 +310,14 @@ func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {
 			v.b.WriteByte('>')
 		} else {
 			v.b.WriteString(alignStyle[cell.Align])
-			v.acceptInlineSlice(cell.Inlines)
+			ast.WalkInlineSlice(v, cell.Inlines)
 		}
 		v.b.WriteString(cellEnd)
 	}
 	v.b.WriteString("</tr>\n")
 }
 
-// VisitBLOB writes the binary object as a value.
-func (v *visitor) VisitBLOB(bn *ast.BLOBNode) {
+func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 	switch bn.Syntax {
 	case "gif", "jpeg", "png":
 		v.b.WriteStrings("<img src=\"data:image/", bn.Syntax, ";base64,")

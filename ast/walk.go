@@ -38,3 +38,17 @@ func WalkInlineSlice(v WalkVisitor, ins InlineSlice) {
 		Walk(v, in)
 	}
 }
+
+// WalkItemSlice traverses an item slice.
+func WalkItemSlice(v WalkVisitor, ins ItemSlice) {
+	for _, in := range ins {
+		Walk(v, in)
+	}
+}
+
+// WalkDescriptionSlice traverses an item slice.
+func WalkDescriptionSlice(v WalkVisitor, dns DescriptionSlice) {
+	for _, dn := range dns {
+		Walk(v, dn)
+	}
+}

@@ -51,7 +51,7 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool
 		v.acceptMeta(zn.Meta)
 	}
 	v.b.WriteString("\n</head>\n<body>\n")
-	v.acceptBlockSlice(zn.Ast)
+	ast.WalkBlockSlice(v, zn.Ast)
 	v.writeEndnotes()
 	v.b.WriteString("</body>\n</html>")
 	length, err := v.b.Flush()
@@ -85,7 +85,7 @@ func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 // WriteBlocks encodes a block slice.
 func (he *htmlEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 	v := newVisitor(he, w)
-	v.acceptBlockSlice(bs)
+	ast.WalkBlockSlice(v, bs)
 	v.writeEndnotes()
 	length, err := v.b.Flush()
 	return length, err
@@ -97,7 +97,7 @@ func (he *htmlEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error
 	if env := he.env; env != nil {
 		v.inInteractive = env.Interactive
 	}
-	v.acceptInlineSlice(is)
+	ast.WalkInlineSlice(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }

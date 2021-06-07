@@ -20,30 +20,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-// VisitText writes text content.
-func (v *visitor) VisitText(tn *ast.TextNode) {
-	v.writeHTMLEscaped(tn.Text)
-}
-
-// VisitTag writes tag content.
-func (v *visitor) VisitTag(tn *ast.TagNode) {
-	// TODO: erst mal als span. Link wäre gut, muss man vermutlich via Callback lösen.
-	v.b.WriteString("<span class=\"zettel-tag\">#")
-	v.writeHTMLEscaped(tn.Tag)
-	v.b.WriteString("</span>")
-}
-
-// VisitSpace emits a white space.
-func (v *visitor) VisitSpace(sn *ast.SpaceNode) {
-	if v.inVerse || v.env.IsXHTML() {
-		v.b.WriteString(sn.Lexeme)
-	} else {
-		v.b.WriteByte(' ')
-	}
-}
-
-// VisitBreak writes HTML code for line breaks.
-func (v *visitor) VisitBreak(bn *ast.BreakNode) {
+func (v *visitor) visitBreak(bn *ast.BreakNode) {
 	if bn.Hard {
 		if v.env.IsXHTML() {
 			v.b.WriteString("<br />\n")
@@ -55,11 +32,10 @@ func (v *visitor) VisitBreak(bn *ast.BreakNode) {
 	}
 }
 
-// VisitLink writes HTML code for links.
-func (v *visitor) VisitLink(ln *ast.LinkNode) {
+func (v *visitor) visitLink(ln *ast.LinkNode) {
 	ln, n := v.env.AdaptLink(ln)
 	if n != nil {
-		n.Accept(v)
+		ast.Walk(v, n)
 		return
 	}
 	v.lang.push(ln.Attrs)
@@ -94,7 +70,7 @@ func (v *visitor) VisitLink(ln *ast.LinkNode) {
 		v.visitAttributes(ln.Attrs)
 		v.b.WriteByte('>')
 		v.inInteractive = true
-		v.acceptInlineSlice(ln.Inlines)
+		ast.WalkInlineSlice(v, ln.Inlines)
 		v.inInteractive = false
 		v.b.WriteString("</a>")
 	}
@@ -111,16 +87,15 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
 	v.inInteractive = true
-	v.acceptInlineSlice(ins)
+	ast.WalkInlineSlice(v, ins)
 	v.inInteractive = false
 	v.b.WriteString("</a>")
 }
 
-// VisitImage writes HTML code for images.
-func (v *visitor) VisitImage(in *ast.ImageNode) {
+func (v *visitor) visitImage(in *ast.ImageNode) {
 	in, n := v.env.AdaptImage(in)
 	if n != nil {
-		n.Accept(v)
+		ast.Walk(v, n)
 		return
 	}
 	v.lang.push(in.Attrs)
@@ -141,7 +116,7 @@ func (v *visitor) VisitImage(in *ast.ImageNode) {
 		v.writeReference(in.Ref)
 	}
 	v.b.WriteString("\" alt=\"")
-	v.acceptInlineSlice(in.Inlines)
+	ast.WalkInlineSlice(v, in.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(in.Attrs)
 	if v.env.IsXHTML() {
@@ -151,11 +126,10 @@ func (v *visitor) VisitImage(in *ast.ImageNode) {
 	}
 }
 
-// VisitCite writes code for citations.
-func (v *visitor) VisitCite(cn *ast.CiteNode) {
+func (v *visitor) visitCite(cn *ast.CiteNode) {
 	cn, n := v.env.AdaptCite(cn)
 	if n != nil {
-		n.Accept(v)
+		ast.Walk(v, n)
 		return
 	}
 	if cn == nil {
@@ -166,12 +140,11 @@ func (v *visitor) VisitCite(cn *ast.CiteNode) {
 	v.b.WriteString(cn.Key)
 	if len(cn.Inlines) > 0 {
 		v.b.WriteString(", ")
-		v.acceptInlineSlice(cn.Inlines)
+		ast.WalkInlineSlice(v, cn.Inlines)
 	}
 }
 
-// VisitFootnote write HTML code for a footnote.
-func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
+func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
 	v.lang.push(fn.Attrs)
 	defer v.lang.pop()
 	if v.env.IsInteractive(v.inInteractive) {
@@ -183,8 +156,7 @@ func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
 	// TODO: what to do with Attrs?
 }
 
-// VisitMark writes HTML code to mark a position.
-func (v *visitor) VisitMark(mn *ast.MarkNode) {
+func (v *visitor) visitMark(mn *ast.MarkNode) {
 	if v.env.IsInteractive(v.inInteractive) {
 		return
 	}
@@ -193,8 +165,7 @@ func (v *visitor) VisitMark(mn *ast.MarkNode) {
 	}
 }
 
-// VisitFormat write HTML code for formatting text.
-func (v *visitor) VisitFormat(fn *ast.FormatNode) {
+func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.lang.push(fn.Attrs)
 	defer v.lang.pop()
 
@@ -240,7 +211,7 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.acceptInlineSlice(fn.Inlines)
+	ast.WalkInlineSlice(v, fn.Inlines)
 	v.b.WriteStrings("</", code, ">")
 }
 
@@ -248,7 +219,7 @@ func (v *visitor) writeSpan(ins ast.InlineSlice, attrs *ast.Attributes) {
 	v.b.WriteString("<span")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.acceptInlineSlice(ins)
+	ast.WalkInlineSlice(v, ins)
 	v.b.WriteString("</span>")
 
 }
@@ -281,15 +252,14 @@ func (v *visitor) visitQuotes(fn *ast.FormatNode) {
 	}
 	openingQ, closingQ := getQuotes(v.lang.top())
 	v.b.WriteString(openingQ)
-	v.acceptInlineSlice(fn.Inlines)
+	ast.WalkInlineSlice(v, fn.Inlines)
 	v.b.WriteString(closingQ)
 	if withSpan {
 		v.b.WriteString("</span>")
 	}
 }
 
-// VisitLiteral write HTML code for literal inline text.
-func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
+func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Text)

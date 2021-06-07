@@ -159,9 +159,7 @@ func (ln *NestedListNode) Accept(v Visitor) { v.VisitNestedList(ln) }
 // WalkChildren walks down the items.
 func (ln *NestedListNode) WalkChildren(v WalkVisitor) {
 	for _, item := range ln.Items {
-		for _, in := range item {
-			Walk(v, in)
-		}
+		WalkItemSlice(v, item)
 	}
 }
 
@@ -188,9 +186,7 @@ func (dn *DescriptionListNode) WalkChildren(v WalkVisitor) {
 	for _, desc := range dn.Descriptions {
 		WalkInlineSlice(v, desc.Term)
 		for _, dns := range desc.Descriptions {
-			for _, dn := range dns {
-				Walk(v, dn)
-			}
+			WalkDescriptionSlice(v, dns)
 		}
 	}
 }

@@ -664,9 +664,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 		tv.b.WriteString(mapNestedListKind[n.Kind])
 		for _, item := range n.Items {
 			tv.b.WriteString(" {")
-			for _, it := range item {
-				ast.Walk(tv, it)
-			}
+			ast.WalkItemSlice(tv, item)
 			tv.b.WriteByte('}')
 		}
 		tv.b.WriteByte(')')
@@ -678,9 +676,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 			tv.b.WriteByte(')')
 			for _, b := range def.Descriptions {
 				tv.b.WriteString(" (DD ")
-				for _, d := range b {
-					ast.Walk(tv, d)
-				}
+				ast.WalkDescriptionSlice(tv, b)
 				tv.b.WriteByte(')')
 			}
 		}

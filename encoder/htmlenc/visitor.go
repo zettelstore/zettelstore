@@ -45,6 +45,69 @@ func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 	}
 }
 
+func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.ParaNode:
+		v.b.WriteString("<p>")
+		ast.WalkInlineSlice(v, n.Inlines)
+		v.writeEndPara()
+	case *ast.VerbatimNode:
+		v.visitVerbatim(n)
+	case *ast.RegionNode:
+		v.visitRegion(n)
+	case *ast.HeadingNode:
+		v.visitHeading(n)
+	case *ast.HRuleNode:
+		v.b.WriteString("<hr")
+		v.visitAttributes(n.Attrs)
+		if v.env.IsXHTML() {
+			v.b.WriteString(" />\n")
+		} else {
+			v.b.WriteString(">\n")
+		}
+	case *ast.NestedListNode:
+		v.visitNestedList(n)
+	case *ast.DescriptionListNode:
+		v.visitDescriptionList(n)
+	case *ast.TableNode:
+		v.visitTable(n)
+	case *ast.BLOBNode:
+		v.visitBLOB(n)
+	case *ast.TextNode:
+		v.writeHTMLEscaped(n.Text)
+	case *ast.TagNode:
+		// TODO: erst mal als span. Link wäre gut, muss man vermutlich via Callback lösen.
+		v.b.WriteString("<span class=\"zettel-tag\">#")
+		v.writeHTMLEscaped(n.Tag)
+		v.b.WriteString("</span>")
+	case *ast.SpaceNode:
+		if v.inVerse || v.env.IsXHTML() {
+			v.b.WriteString(n.Lexeme)
+		} else {
+			v.b.WriteByte(' ')
+		}
+	case *ast.BreakNode:
+		v.visitBreak(n)
+	case *ast.LinkNode:
+		v.visitLink(n)
+	case *ast.ImageNode:
+		v.visitImage(n)
+	case *ast.CiteNode:
+		v.visitCite(n)
+	case *ast.FootnoteNode:
+		v.visitFootnote(n)
+	case *ast.MarkNode:
+		v.visitMark(n)
+	case *ast.FormatNode:
+		v.visitFormat(n)
+	case *ast.LiteralNode:
+		v.visitLiteral(n)
+	default:
+		return v
+	}
+	return nil
+}
+
 var mapMetaKey = map[string]string{
 	meta.KeyCopyright: "copyright",
 	meta.KeyLicense:   "license",
@@ -85,22 +148,6 @@ func (v *visitor) writeMeta(prefix, key, value string) {
 	v.b.WriteString("\">")
 }
 
-func (v *visitor) acceptBlockSlice(bns ast.BlockSlice) {
-	for _, bn := range bns {
-		bn.Accept(v)
-	}
-}
-func (v *visitor) acceptItemSlice(ins ast.ItemSlice) {
-	for _, in := range ins {
-		in.Accept(v)
-	}
-}
-func (v *visitor) acceptInlineSlice(ins ast.InlineSlice) {
-	for _, in := range ins {
-		in.Accept(v)
-	}
-}
-
 func (v *visitor) writeEndnotes() {
 	footnotes := v.env.GetCleanFootnotes()
 	if len(footnotes) > 0 {
@@ -111,7 +158,7 @@ func (v *visitor) writeEndnotes() {
 			fn := footnotes[i]
 			n := strconv.Itoa(i + 1)
 			v.b.WriteStrings("<li id=\"fn:", n, "\" role=\"doc-endnote\">")
-			v.acceptInlineSlice(fn.Inlines)
+			ast.WalkInlineSlice(v, fn.Inlines)
 			v.b.WriteStrings(
 				" <a href=\"#fnref:",
 				n,
