@@ -23,6 +23,9 @@ func (tn *TextNode) inlineNode() {}
 // Accept a visitor and visit the node.
 func (tn *TextNode) Accept(v Visitor) { v.VisitText(tn) }
 
+// WalkChildren does nothing.
+func (tn *TextNode) WalkChildren(v WalkVisitor) {}
+
 // --------------------------------------------------------------------------
 
 // TagNode contains a tag.
@@ -34,6 +37,9 @@ func (tn *TagNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
 func (tn *TagNode) Accept(v Visitor) { v.VisitTag(tn) }
+
+// WalkChildren does nothing.
+func (tn *TagNode) WalkChildren(v WalkVisitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -47,6 +53,9 @@ func (sn *SpaceNode) inlineNode() {}
 // Accept a visitor and visit the node.
 func (sn *SpaceNode) Accept(v Visitor) { v.VisitSpace(sn) }
 
+// WalkChildren does nothing.
+func (sn *SpaceNode) WalkChildren(v WalkVisitor) {}
+
 // --------------------------------------------------------------------------
 
 // BreakNode signals a new line that must / should be interpreted as a new line break.
@@ -58,6 +67,9 @@ func (bn *BreakNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
 func (bn *BreakNode) Accept(v Visitor) { v.VisitBreak(bn) }
+
+// WalkChildren does nothing.
+func (bn *BreakNode) WalkChildren(v WalkVisitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -73,6 +85,11 @@ func (ln *LinkNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
 func (ln *LinkNode) Accept(v Visitor) { v.VisitLink(ln) }
+
+// WalkChildren walks to the link text.
+func (ln *LinkNode) WalkChildren(v WalkVisitor) {
+	WalkInlineSlice(v, ln.Inlines)
+}
 
 // --------------------------------------------------------------------------
 
@@ -90,6 +107,11 @@ func (in *ImageNode) inlineNode() {}
 // Accept a visitor and visit the node.
 func (in *ImageNode) Accept(v Visitor) { v.VisitImage(in) }
 
+// WalkChildren walks to the image text.
+func (in *ImageNode) WalkChildren(v WalkVisitor) {
+	WalkInlineSlice(v, in.Inlines)
+}
+
 // --------------------------------------------------------------------------
 
 // CiteNode contains the specified citation.
@@ -103,6 +125,11 @@ func (cn *CiteNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
 func (cn *CiteNode) Accept(v Visitor) { v.VisitCite(cn) }
+
+// WalkChildren walks to the cite text.
+func (cn *CiteNode) WalkChildren(v WalkVisitor) {
+	WalkInlineSlice(v, cn.Inlines)
+}
 
 // --------------------------------------------------------------------------
 
@@ -118,6 +145,9 @@ func (mn *MarkNode) inlineNode() {}
 // Accept a visitor and visit the node.
 func (mn *MarkNode) Accept(v Visitor) { v.VisitMark(mn) }
 
+// WalkChildren does nothing.
+func (mn *MarkNode) WalkChildren(v WalkVisitor) {}
+
 // --------------------------------------------------------------------------
 
 // FootnoteNode contains the specified footnote.
@@ -130,6 +160,11 @@ func (fn *FootnoteNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
 func (fn *FootnoteNode) Accept(v Visitor) { v.VisitFootnote(fn) }
+
+// WalkChildren walks to the footnote text.
+func (fn *FootnoteNode) WalkChildren(v WalkVisitor) {
+	WalkInlineSlice(v, fn.Inlines)
+}
 
 // --------------------------------------------------------------------------
 
@@ -168,6 +203,11 @@ func (fn *FormatNode) inlineNode() {}
 // Accept a visitor and visit the node.
 func (fn *FormatNode) Accept(v Visitor) { v.VisitFormat(fn) }
 
+// WalkChildren walks to the formatted text.
+func (fn *FormatNode) WalkChildren(v WalkVisitor) {
+	WalkInlineSlice(v, fn.Inlines)
+}
+
 // --------------------------------------------------------------------------
 
 // LiteralNode specifies some uninterpreted text.
@@ -190,7 +230,10 @@ const (
 	LiteralHTML                // Inline HTML, e.g. for Markdown
 )
 
-func (rn *LiteralNode) inlineNode() {}
+func (ln *LiteralNode) inlineNode() {}
 
 // Accept a visitor and visit the node.
-func (rn *LiteralNode) Accept(v Visitor) { v.VisitLiteral(rn) }
+func (ln *LiteralNode) Accept(v Visitor) { v.VisitLiteral(ln) }
+
+// WalkChildren does nothing.
+func (ln *LiteralNode) WalkChildren(v WalkVisitor) {}

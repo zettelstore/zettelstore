@@ -22,15 +22,15 @@ import (
 
 // CleanupBlockSlice cleans the given block slice.
 func CleanupBlockSlice(bs ast.BlockSlice) {
-	cv := &cleanupVisitor{
+	cv := cleanupVisitor{
 		textEnc: encoder.Create("text", nil),
+		hasMark: false,
 		doMark:  false,
 	}
-	t := ast.NewTopDownTraverser(cv)
-	t.VisitBlockSlice(bs)
+	ast.WalkBlockSlice(&cv, bs)
 	if cv.hasMark {
 		cv.doMark = true
-		t.VisitBlockSlice(bs)
+		ast.WalkBlockSlice(&cv, bs)
 	}
 }
 
@@ -41,91 +41,36 @@ type cleanupVisitor struct {
 	doMark  bool
 }
 
-// VisitVerbatim does nothing.
-func (cv *cleanupVisitor) VisitVerbatim(vn *ast.VerbatimNode) {}
-
-// VisitRegion does nothing.
-func (cv *cleanupVisitor) VisitRegion(rn *ast.RegionNode) {}
-
-// VisitHeading calculates the heading slug.
-func (cv *cleanupVisitor) VisitHeading(hn *ast.HeadingNode) {
-	if cv.doMark || hn == nil || hn.Inlines == nil {
-		return
+func (cv *cleanupVisitor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.HeadingNode:
+		if cv.doMark || n == nil || n.Inlines == nil {
+			return nil
+		}
+		var sb strings.Builder
+		_, err := cv.textEnc.WriteInlines(&sb, n.Inlines)
+		if err != nil {
+			return nil
+		}
+		s := strfun.Slugify(sb.String())
+		if len(s) > 0 {
+			n.Slug = cv.addIdentifier(s, n)
+		}
+		return nil
+	case *ast.MarkNode:
+		if !cv.doMark {
+			cv.hasMark = true
+			return nil
+		}
+		if n.Text == "" {
+			n.Text = cv.addIdentifier("*", n)
+			return nil
+		}
+		n.Text = cv.addIdentifier(n.Text, n)
+		return nil
 	}
-	var sb strings.Builder
-	_, err := cv.textEnc.WriteInlines(&sb, hn.Inlines)
-	if err != nil {
-		return
-	}
-	s := strfun.Slugify(sb.String())
-	if len(s) > 0 {
-		hn.Slug = cv.addIdentifier(s, hn)
-	}
+	return cv
 }
-
-// VisitHRule does nothing.
-func (cv *cleanupVisitor) VisitHRule(hn *ast.HRuleNode) {}
-
-// VisitList does nothing.
-func (cv *cleanupVisitor) VisitNestedList(ln *ast.NestedListNode) {}
-
-// VisitDescriptionList does nothing.
-func (cv *cleanupVisitor) VisitDescriptionList(dn *ast.DescriptionListNode) {}
-
-// VisitPara does nothing.
-func (cv *cleanupVisitor) VisitPara(pn *ast.ParaNode) {}
-
-// VisitTable does nothing.
-func (cv *cleanupVisitor) VisitTable(tn *ast.TableNode) {}
-
-// VisitBLOB does nothing.
-func (cv *cleanupVisitor) VisitBLOB(bn *ast.BLOBNode) {}
-
-// VisitText does nothing.
-func (cv *cleanupVisitor) VisitText(tn *ast.TextNode) {}
-
-// VisitTag does nothing.
-func (cv *cleanupVisitor) VisitTag(tn *ast.TagNode) {}
-
-// VisitSpace does nothing.
-func (cv *cleanupVisitor) VisitSpace(sn *ast.SpaceNode) {}
-
-// VisitBreak does nothing.
-func (cv *cleanupVisitor) VisitBreak(bn *ast.BreakNode) {}
-
-// VisitLink collects the given link as a reference.
-func (cv *cleanupVisitor) VisitLink(ln *ast.LinkNode) {}
-
-// VisitImage collects the image links as a reference.
-func (cv *cleanupVisitor) VisitImage(in *ast.ImageNode) {}
-
-// VisitCite does nothing.
-func (cv *cleanupVisitor) VisitCite(cn *ast.CiteNode) {}
-
-// VisitFootnote does nothing.
-func (cv *cleanupVisitor) VisitFootnote(fn *ast.FootnoteNode) {}
-
-// VisitMark checks for duplicate marks and changes them.
-func (cv *cleanupVisitor) VisitMark(mn *ast.MarkNode) {
-	if mn == nil {
-		return
-	}
-	if !cv.doMark {
-		cv.hasMark = true
-		return
-	}
-	if mn.Text == "" {
-		mn.Text = cv.addIdentifier("*", mn)
-		return
-	}
-	mn.Text = cv.addIdentifier(mn.Text, mn)
-}
-
-// VisitFormat does nothing.
-func (cv *cleanupVisitor) VisitFormat(fn *ast.FormatNode) {}
-
-// VisitLiteral does nothing.
-func (cv *cleanupVisitor) VisitLiteral(ln *ast.LiteralNode) {}
 
 func (cv *cleanupVisitor) addIdentifier(id string, node ast.Node) string {
 	if cv.ids == nil {

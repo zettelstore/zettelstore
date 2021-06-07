@@ -14,13 +14,13 @@ package ast
 // Visitor is the interface all visitors must implement.
 type Visitor interface {
 	// Block nodes
+	VisitPara(pn *ParaNode)
 	VisitVerbatim(vn *VerbatimNode)
 	VisitRegion(rn *RegionNode)
 	VisitHeading(hn *HeadingNode)
 	VisitHRule(hn *HRuleNode)
 	VisitNestedList(ln *NestedListNode)
 	VisitDescriptionList(dn *DescriptionListNode)
-	VisitPara(pn *ParaNode)
 	VisitTable(tn *TableNode)
 	VisitBLOB(bn *BLOBNode)
 

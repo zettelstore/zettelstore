@@ -146,7 +146,7 @@ func (dp *dirPlace) notifyChanged(reason place.UpdateReason, zid id.Zid) {
 
 func (dp *dirPlace) getFileChan(zid id.Zid) chan fileCmd {
 	// Based on https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
-	var sum uint32 = 2166136261 ^ uint32(zid)
+	sum := 2166136261 ^ uint32(zid)
 	sum *= 16777619
 	sum ^= uint32(zid >> 32)
 	sum *= 16777619
