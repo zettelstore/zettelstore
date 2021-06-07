@@ -40,7 +40,7 @@ func (pp *postProcessor) Visit(node ast.Node) ast.WalkVisitor {
 		n.Inlines = pp.processInlineSlice(n.Inlines)
 	case *ast.RegionNode:
 		oldVerse := pp.inVerse
-		if n.Code == ast.RegionVerse {
+		if n.Kind == ast.RegionVerse {
 			pp.inVerse = true
 		}
 		n.Blocks = pp.processBlockSlice(n.Blocks)
@@ -87,9 +87,9 @@ func (pp *postProcessor) Visit(node ast.Node) ast.WalkVisitor {
 		n.Inlines = pp.processInlineSlice(n.Inlines)
 	case *ast.FormatNode:
 		if n.Attrs != nil && n.Attrs.HasDefault() {
-			if newCode, ok := mapSemantic[n.Code]; ok {
+			if newKind, ok := mapSemantic[n.Kind]; ok {
 				n.Attrs.RemoveDefault()
-				n.Code = newCode
+				n.Kind = newKind
 			}
 		}
 		n.Inlines = pp.processInlineSlice(n.Inlines)
@@ -190,7 +190,7 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	cell.Inlines = pp.processInlineSlice(cell.Inlines)
 }
 
-var mapSemantic = map[ast.FormatCode]ast.FormatCode{
+var mapSemantic = map[ast.FormatKind]ast.FormatKind{
 	ast.FormatItalic: ast.FormatEmph,
 	ast.FormatBold:   ast.FormatStrong,
 	ast.FormatUnder:  ast.FormatInsert,

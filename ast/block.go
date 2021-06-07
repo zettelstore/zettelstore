@@ -35,17 +35,17 @@ func (pn *ParaNode) WalkChildren(v WalkVisitor) {
 
 // VerbatimNode contains lines of uninterpreted text
 type VerbatimNode struct {
-	Code  VerbatimCode
+	Kind  VerbatimKind
 	Attrs *Attributes
 	Lines []string
 }
 
-// VerbatimCode specifies the format that is applied to code inline nodes.
-type VerbatimCode int
+// VerbatimKind specifies the format that is applied to code inline nodes.
+type VerbatimKind uint8
 
 // Constants for VerbatimCode
 const (
-	_               VerbatimCode = iota
+	_               VerbatimKind = iota
 	VerbatimProg                 // Program code.
 	VerbatimComment              // Block comment
 	VerbatimHTML                 // Block HTML, e.g. for Markdown
@@ -64,18 +64,18 @@ func (vn *VerbatimNode) WalkChildren(v WalkVisitor) {}
 
 // RegionNode encapsulates a region of block nodes.
 type RegionNode struct {
-	Code    RegionCode
+	Kind    RegionKind
 	Attrs   *Attributes
 	Blocks  BlockSlice
 	Inlines InlineSlice // Additional text at the end of the region
 }
 
-// RegionCode specifies the actual region type.
-type RegionCode int
+// RegionKind specifies the actual region type.
+type RegionKind uint8
 
 // Values for RegionCode
 const (
-	_           RegionCode = iota
+	_           RegionKind = iota
 	RegionSpan             // Just a span of blocks
 	RegionQuote            // A longer quotation
 	RegionVerse            // Line breaks matter
@@ -134,17 +134,17 @@ func (hn *HRuleNode) WalkChildren(v WalkVisitor) {}
 
 // NestedListNode specifies a nestable list, either ordered or unordered.
 type NestedListNode struct {
-	Code  NestedListCode
+	Kind  NestedListKind
 	Items []ItemSlice
 	Attrs *Attributes
 }
 
-// NestedListCode specifies the actual list type.
-type NestedListCode int
+// NestedListKind specifies the actual list type.
+type NestedListKind uint8
 
 // Values for ListCode
 const (
-	_                   NestedListCode = iota
+	_                   NestedListKind = iota
 	NestedListOrdered                  // Ordered list.
 	NestedListUnordered                // Unordered list.
 	NestedListQuote                    // Quote list.

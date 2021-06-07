@@ -17,7 +17,7 @@ import "zettelstore.de/z/ast"
 func Order(zn *ast.ZettelNode) (result []*ast.Reference) {
 	for _, bn := range zn.Ast {
 		if ln, ok := bn.(*ast.NestedListNode); ok {
-			switch ln.Code {
+			switch ln.Kind {
 			case ast.NestedListOrdered, ast.NestedListUnordered:
 				for _, is := range ln.Items {
 					if ref := firstItemZettelReference(is); ref != nil {

@@ -362,13 +362,13 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {
-			return &ast.LiteralNode{Code: ast.LiteralComment, Text: inp.Src[pos:inp.Pos]}, true
+			return &ast.LiteralNode{Kind: ast.LiteralComment, Text: inp.Src[pos:inp.Pos]}, true
 		}
 		inp.Next()
 	}
 }
 
-var mapRuneFormat = map[rune]ast.FormatCode{
+var mapRuneFormat = map[rune]ast.FormatKind{
 	'/':  ast.FormatItalic,
 	'*':  ast.FormatBold,
 	'_':  ast.FormatUnder,
@@ -385,7 +385,7 @@ var mapRuneFormat = map[rune]ast.FormatCode{
 func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 	inp := cp.inp
 	fch := inp.Ch
-	code, ok := mapRuneFormat[fch]
+	kind, ok := mapRuneFormat[fch]
 	if !ok {
 		panic(fmt.Sprintf("%q is not a formatting char", fch))
 	}
@@ -394,7 +394,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	fn := &ast.FormatNode{Code: code}
+	fn := &ast.FormatNode{Kind: kind}
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false
@@ -416,7 +416,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 	}
 }
 
-var mapRuneLiteral = map[rune]ast.LiteralCode{
+var mapRuneLiteral = map[rune]ast.LiteralKind{
 	'`':          ast.LiteralProg,
 	runeModGrave: ast.LiteralProg,
 	'+':          ast.LiteralKeyb,
@@ -426,7 +426,7 @@ var mapRuneLiteral = map[rune]ast.LiteralCode{
 func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 	inp := cp.inp
 	fch := inp.Ch
-	code, ok := mapRuneLiteral[fch]
+	kind, ok := mapRuneLiteral[fch]
 	if !ok {
 		panic(fmt.Sprintf("%q is not a formatting char", fch))
 	}
@@ -434,7 +434,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 	if inp.Ch != fch {
 		return nil, false
 	}
-	fn := &ast.LiteralNode{Code: code}
+	fn := &ast.LiteralNode{Kind: kind}
 	inp.Next()
 	var sb strings.Builder
 	for {

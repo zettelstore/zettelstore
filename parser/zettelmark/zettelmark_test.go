@@ -624,9 +624,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte(')')
 	case *ast.VerbatimNode:
-		code, ok := mapVerbatimCode[n.Code]
+		code, ok := mapVerbatimKind[n.Kind]
 		if !ok {
-			panic(fmt.Sprintf("Unknown verbatim code %v", n.Code))
+			panic(fmt.Sprintf("Unknown verbatim code %v", n.Kind))
 		}
 		tv.b.WriteString(code)
 		for _, line := range n.Lines {
@@ -636,9 +636,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.RegionNode:
-		code, ok := mapRegionCode[n.Code]
+		code, ok := mapRegionKind[n.Kind]
 		if !ok {
-			panic(fmt.Sprintf("Unknown region code %v", n.Code))
+			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
 		tv.b.WriteString(code)
 		if n.Blocks != nil {
@@ -661,7 +661,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 		tv.b.WriteString("(HR)")
 		tv.visitAttributes(n.Attrs)
 	case *ast.NestedListNode:
-		tv.b.WriteString(mapNestedListCode[n.Code])
+		tv.b.WriteString(mapNestedListKind[n.Kind])
 		for _, item := range n.Items {
 			tv.b.WriteString(" {")
 			for _, it := range item {
@@ -764,14 +764,14 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 		}
 		tv.b.WriteByte(')')
 	case *ast.FormatNode:
-		fmt.Fprintf(&tv.b, "{%c", mapCode[n.Code])
+		fmt.Fprintf(&tv.b, "{%c", mapFormatKind[n.Kind])
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	case *ast.LiteralNode:
-		code, ok := mapLiteralCode[n.Code]
+		code, ok := mapLiteralKind[n.Kind]
 		if !ok {
-			panic(fmt.Sprintf("No element for code %v", n.Code))
+			panic(fmt.Sprintf("No element for code %v", n.Kind))
 		}
 		tv.b.WriteByte('{')
 		tv.b.WriteRune(code)
@@ -785,17 +785,17 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
 	return nil
 }
 
-var mapVerbatimCode = map[ast.VerbatimCode]string{
+var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimProg: "(PROG",
 }
 
-var mapRegionCode = map[ast.RegionCode]string{
+var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionSpan:  "(SPAN",
 	ast.RegionQuote: "(QUOTE",
 	ast.RegionVerse: "(VERSE",
 }
 
-var mapNestedListCode = map[ast.NestedListCode]string{
+var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListOrdered:   "(OL",
 	ast.NestedListUnordered: "(UL",
 	ast.NestedListQuote:     "(QL",
@@ -808,7 +808,7 @@ var alignString = map[ast.Alignment]string{
 	ast.AlignRight:   "r",
 }
 
-var mapCode = map[ast.FormatCode]rune{
+var mapFormatKind = map[ast.FormatKind]rune{
 	ast.FormatItalic:    '/',
 	ast.FormatBold:      '*',
 	ast.FormatUnder:     '_',
@@ -822,7 +822,7 @@ var mapCode = map[ast.FormatCode]rune{
 	ast.FormatSpan:      ':',
 }
 
-var mapLiteralCode = map[ast.LiteralCode]rune{
+var mapLiteralKind = map[ast.LiteralKind]rune{
 	ast.LiteralProg:    '`',
 	ast.LiteralKeyb:    '+',
 	ast.LiteralOutput:  '=',

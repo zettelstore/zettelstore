@@ -170,17 +170,17 @@ func (fn *FootnoteNode) WalkChildren(v WalkVisitor) {
 
 // FormatNode specifies some inline formatting.
 type FormatNode struct {
-	Code    FormatCode
+	Kind    FormatKind
 	Attrs   *Attributes // Optional attributes.
 	Inlines InlineSlice
 }
 
-// FormatCode specifies the format that is applied to the inline nodes.
-type FormatCode int
+// FormatKind specifies the format that is applied to the inline nodes.
+type FormatKind uint8
 
 // Constants for FormatCode
 const (
-	_               FormatCode = iota
+	_               FormatKind = iota
 	FormatItalic               // Italic text.
 	FormatEmph                 // Semantically emphasized text.
 	FormatBold                 // Bold text.
@@ -212,17 +212,17 @@ func (fn *FormatNode) WalkChildren(v WalkVisitor) {
 
 // LiteralNode specifies some uninterpreted text.
 type LiteralNode struct {
-	Code  LiteralCode
+	Kind  LiteralKind
 	Attrs *Attributes // Optional attributes.
 	Text  string
 }
 
-// LiteralCode specifies the format that is applied to code inline nodes.
-type LiteralCode int
+// LiteralKind specifies the format that is applied to code inline nodes.
+type LiteralKind uint8
 
 // Constants for LiteralCode
 const (
-	_              LiteralCode = iota
+	_              LiteralKind = iota
 	LiteralProg                // Inline program code.
 	LiteralKeyb                // Keyboard strokes.
 	LiteralOutput              // Sample output.

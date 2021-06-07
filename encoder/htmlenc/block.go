@@ -28,7 +28,7 @@ func (v *visitor) VisitPara(pn *ast.ParaNode) {
 
 // VisitVerbatim emits HTML code for verbatim lines.
 func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
-	switch vn.Code {
+	switch vn.Kind {
 	case ast.VerbatimProg:
 		oldVisible := v.visibleSpace
 		if vn.Attrs != nil {
@@ -61,7 +61,7 @@ func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
 			}
 		}
 	default:
-		panic(fmt.Sprintf("Unknown verbatim code %v", vn.Code))
+		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
 	}
 }
 
@@ -108,7 +108,7 @@ func (v *visitor) VisitRegion(rn *ast.RegionNode) {
 	var code string
 	attrs := rn.Attrs
 	oldVerse := v.inVerse
-	switch rn.Code {
+	switch rn.Kind {
 	case ast.RegionSpan:
 		code = "div"
 		attrs = processSpanAttributes(attrs)
@@ -118,7 +118,7 @@ func (v *visitor) VisitRegion(rn *ast.RegionNode) {
 	case ast.RegionQuote:
 		code = "blockquote"
 	default:
-		panic(fmt.Sprintf("Unknown region code %v", rn.Code))
+		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
 	}
 
 	v.lang.push(attrs)
@@ -168,7 +168,7 @@ func (v *visitor) VisitHRule(hn *ast.HRuleNode) {
 	}
 }
 
-var listCode = map[ast.NestedListCode]string{
+var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListOrdered:   "ol",
 	ast.NestedListUnordered: "ul",
 }
@@ -178,15 +178,15 @@ func (v *visitor) VisitNestedList(ln *ast.NestedListNode) {
 	v.lang.push(ln.Attrs)
 	defer v.lang.pop()
 
-	if ln.Code == ast.NestedListQuote {
+	if ln.Kind == ast.NestedListQuote {
 		// NestedListQuote -> HTML <blockquote> doesn't use <li>...</li>
 		v.writeQuotationList(ln)
 		return
 	}
 
-	code, ok := listCode[ln.Code]
+	code, ok := mapNestedListKind[ln.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Invalid list code %v", ln.Code))
+		panic(fmt.Sprintf("Invalid list kind %v", ln.Kind))
 	}
 
 	compact := isCompactList(ln.Items)

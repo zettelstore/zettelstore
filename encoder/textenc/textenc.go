@@ -102,7 +102,7 @@ func newVisitor(w io.Writer) *visitor {
 func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
 	switch n := node.(type) {
 	case *ast.VerbatimNode:
-		if n.Code == ast.VerbatimComment {
+		if n.Kind == ast.VerbatimComment {
 			return nil
 		}
 		for i, line := range n.Lines {
@@ -186,7 +186,7 @@ func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
 		v.b.WriteByte(' ')
 		return v // No 'return nil' to write text
 	case *ast.LiteralNode:
-		if n.Code != ast.LiteralComment {
+		if n.Kind != ast.LiteralComment {
 			v.b.WriteString(n.Text)
 		}
 	}

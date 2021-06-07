@@ -125,7 +125,7 @@ func (p *mdP) acceptThematicBreak(node *gmAst.ThematicBreak) *ast.HRuleNode {
 
 func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 	return &ast.VerbatimNode{
-		Code:  ast.VerbatimProg,
+		Kind:  ast.VerbatimProg,
 		Attrs: nil, //TODO
 		Lines: p.acceptRawText(node),
 	}
@@ -137,7 +137,7 @@ func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNo
 		attrs = attrs.Set("class", "language-"+cleanText(string(language), true))
 	}
 	return &ast.VerbatimNode{
-		Code:  ast.VerbatimProg,
+		Kind:  ast.VerbatimProg,
 		Attrs: attrs,
 		Lines: p.acceptRawText(node),
 	}
@@ -163,7 +163,7 @@ func (p *mdP) acceptRawText(node gmAst.Node) []string {
 
 func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 	return &ast.NestedListNode{
-		Code: ast.NestedListQuote,
+		Kind: ast.NestedListQuote,
 		Items: []ast.ItemSlice{
 			p.acceptItemSlice(node),
 		},
@@ -171,10 +171,10 @@ func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 }
 
 func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
-	code := ast.NestedListUnordered
+	kind := ast.NestedListUnordered
 	var attrs *ast.Attributes
 	if node.IsOrdered() {
-		code = ast.NestedListOrdered
+		kind = ast.NestedListOrdered
 		if node.Start != 1 {
 			attrs = attrs.Set("start", fmt.Sprintf("%d", node.Start))
 		}
@@ -188,7 +188,7 @@ func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 		items = append(items, p.acceptItemSlice(item))
 	}
 	return &ast.NestedListNode{
-		Code:  code,
+		Kind:  kind,
 		Items: items,
 		Attrs: attrs,
 	}
@@ -223,7 +223,7 @@ func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
 		lines = append(lines, closure)
 	}
 	return &ast.VerbatimNode{
-		Code:  ast.VerbatimHTML,
+		Kind:  ast.VerbatimHTML,
 		Lines: lines,
 	}
 }
@@ -361,7 +361,7 @@ func cleanText(text string, cleanBS bool) string {
 func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) ast.InlineSlice {
 	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Code:  ast.LiteralProg,
+			Kind:  ast.LiteralProg,
 			Attrs: nil, //TODO
 			Text:  cleanCodeSpan(string(node.Text(p.source))),
 		},
@@ -391,13 +391,13 @@ func cleanCodeSpan(text string) string {
 }
 
 func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
-	code := ast.FormatEmph
+	kind := ast.FormatEmph
 	if node.Level == 2 {
-		code = ast.FormatStrong
+		kind = ast.FormatStrong
 	}
 	return ast.InlineSlice{
 		&ast.FormatNode{
-			Code:    code,
+			Kind:    kind,
 			Attrs:   nil, //TODO
 			Inlines: p.acceptInlineSlice(node),
 		},
@@ -482,7 +482,7 @@ func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) ast.InlineSlice {
 	}
 	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Code:  ast.LiteralHTML,
+			Kind:  ast.LiteralHTML,
 			Attrs: nil, // TODO: add HTML as language
 			Text:  strings.Join(segs, ""),
 		},

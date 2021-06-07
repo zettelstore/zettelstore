@@ -48,7 +48,7 @@ func init() {
 func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	return ast.BlockSlice{
 		&ast.VerbatimNode{
-			Code:  ast.VerbatimProg,
+			Kind:  ast.VerbatimProg,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Lines: readLines(inp),
 		},
@@ -71,7 +71,7 @@ func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	inp.SkipToEOL()
 	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Code:  ast.LiteralProg,
+			Kind:  ast.LiteralProg,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Text:  inp.Src[0:inp.Pos],
 		},

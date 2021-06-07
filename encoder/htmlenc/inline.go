@@ -200,7 +200,7 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 
 	var code string
 	attrs := fn.Attrs
-	switch fn.Code {
+	switch fn.Kind {
 	case ast.FormatItalic:
 		code = "i"
 	case ast.FormatEmph:
@@ -235,7 +235,7 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 		v.visitQuotes(fn)
 		return
 	default:
-		panic(fmt.Sprintf("Unknown format code %v", fn.Code))
+		panic(fmt.Sprintf("Unknown format kind %v", fn.Kind))
 	}
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
@@ -290,7 +290,7 @@ func (v *visitor) visitQuotes(fn *ast.FormatNode) {
 
 // VisitLiteral write HTML code for literal inline text.
 func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
-	switch ln.Code {
+	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Text)
 	case ast.LiteralKeyb:
@@ -306,7 +306,7 @@ func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
 			v.b.WriteString(ln.Text)
 		}
 	default:
-		panic(fmt.Sprintf("Unknown literal code %v", ln.Code))
+		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
 }
 

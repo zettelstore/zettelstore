@@ -103,7 +103,7 @@ func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
 	v.b.WriteString("```\n")
 }
 
-var regionCode = map[ast.RegionCode]string{
+var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionSpan:  ":::",
 	ast.RegionQuote: "<<<",
 	ast.RegionVerse: "\"\"\"",
@@ -112,15 +112,15 @@ var regionCode = map[ast.RegionCode]string{
 // VisitRegion writes HTML code for block regions.
 func (v *visitor) VisitRegion(rn *ast.RegionNode) {
 	// Scan rn.Blocks for embedded regions to adjust length of regionCode
-	code, ok := regionCode[rn.Code]
+	kind, ok := mapRegionKind[rn.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Unknown region code %d", rn.Code))
+		panic(fmt.Sprintf("Unknown region kind %d", rn.Kind))
 	}
-	v.b.WriteString(code)
+	v.b.WriteString(kind)
 	v.visitAttributes(rn.Attrs)
 	v.b.WriteByte('\n')
 	v.acceptBlockSlice(rn.Blocks)
-	v.b.WriteString(code)
+	v.b.WriteString(kind)
 	if len(rn.Inlines) > 0 {
 		v.b.WriteByte(' ')
 		v.acceptInlineSlice(rn.Inlines)
@@ -146,7 +146,7 @@ func (v *visitor) VisitHRule(hn *ast.HRuleNode) {
 	v.b.WriteByte('\n')
 }
 
-var listCode = map[ast.NestedListCode]byte{
+var mapNestedListKind = map[ast.NestedListKind]byte{
 	ast.NestedListOrdered:   '#',
 	ast.NestedListUnordered: '*',
 	ast.NestedListQuote:     '>',
@@ -154,7 +154,7 @@ var listCode = map[ast.NestedListCode]byte{
 
 // VisitNestedList writes HTML code for lists and blockquotes.
 func (v *visitor) VisitNestedList(ln *ast.NestedListNode) {
-	v.prefix = append(v.prefix, listCode[ln.Code])
+	v.prefix = append(v.prefix, mapNestedListKind[ln.Kind])
 	for _, item := range ln.Items {
 		v.b.Write(v.prefix)
 		v.b.WriteByte(' ')
@@ -351,7 +351,7 @@ func (v *visitor) VisitMark(mn *ast.MarkNode) {
 	v.b.WriteStrings("[!", mn.Text, "]")
 }
 
-var formatCode = map[ast.FormatCode][]byte{
+var mapFormatKind = map[ast.FormatKind][]byte{
 	ast.FormatItalic:    []byte("//"),
 	ast.FormatEmph:      []byte("//"),
 	ast.FormatBold:      []byte("**"),
@@ -371,26 +371,26 @@ var formatCode = map[ast.FormatCode][]byte{
 
 // VisitFormat write HTML code for formatting text.
 func (v *visitor) VisitFormat(fn *ast.FormatNode) {
-	code, ok := formatCode[fn.Code]
+	kind, ok := mapFormatKind[fn.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Unknown format code %d", fn.Code))
+		panic(fmt.Sprintf("Unknown format kind %d", fn.Kind))
 	}
 	attrs := fn.Attrs
-	switch fn.Code {
+	switch fn.Kind {
 	case ast.FormatEmph, ast.FormatStrong, ast.FormatInsert, ast.FormatDelete:
 		attrs = attrs.Clone()
 		attrs.Set("-", "")
 	}
 
-	v.b.Write(code)
+	v.b.Write(kind)
 	v.acceptInlineSlice(fn.Inlines)
-	v.b.Write(code)
+	v.b.Write(kind)
 	v.visitAttributes(attrs)
 }
 
 // VisitLiteral write Zettelmarkup for inline literal text.
 func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
-	switch ln.Code {
+	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Text)
 	case ast.LiteralKeyb:
@@ -404,7 +404,7 @@ func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
 		v.writeEscaped(ln.Text, '`')
 		v.b.WriteString("``{=html,.warning}")
 	default:
-		panic(fmt.Sprintf("Unknown literal code %v", ln.Code))
+		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
 }
 

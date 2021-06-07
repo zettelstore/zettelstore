@@ -100,7 +100,7 @@ func (v *detailVisitor) VisitPara(pn *ast.ParaNode) {
 	v.b.WriteByte('}')
 }
 
-var verbatimCode = map[ast.VerbatimCode]string{
+var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimProg:    "CodeBlock",
 	ast.VerbatimComment: "CommentBlock",
 	ast.VerbatimHTML:    "HTMLBlock",
@@ -108,11 +108,11 @@ var verbatimCode = map[ast.VerbatimCode]string{
 
 // VisitVerbatim emits JSON code for verbatim lines.
 func (v *detailVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
-	code, ok := verbatimCode[vn.Code]
+	kind, ok := mapVerbatimKind[vn.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Unknown verbatim code %v", vn.Code))
+		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
 	}
-	v.writeNodeStart(code)
+	v.writeNodeStart(kind)
 	v.visitAttributes(vn.Attrs)
 	v.writeContentStart('l')
 	for i, line := range vn.Lines {
@@ -124,7 +124,7 @@ func (v *detailVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
 	v.b.WriteString("]}")
 }
 
-var regionCode = map[ast.RegionCode]string{
+var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionSpan:  "SpanBlock",
 	ast.RegionQuote: "QuoteBlock",
 	ast.RegionVerse: "VerseBlock",
@@ -132,11 +132,11 @@ var regionCode = map[ast.RegionCode]string{
 
 // VisitRegion writes JSON code for block regions.
 func (v *detailVisitor) VisitRegion(rn *ast.RegionNode) {
-	code, ok := regionCode[rn.Code]
+	kind, ok := mapRegionKind[rn.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Unknown region code %v", rn.Code))
+		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
 	}
-	v.writeNodeStart(code)
+	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
 	v.acceptBlockSlice(rn.Blocks)
@@ -169,7 +169,7 @@ func (v *detailVisitor) VisitHRule(hn *ast.HRuleNode) {
 	v.b.WriteByte('}')
 }
 
-var listCode = map[ast.NestedListCode]string{
+var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListOrdered:   "OrderedList",
 	ast.NestedListUnordered: "BulletList",
 	ast.NestedListQuote:     "QuoteList",
@@ -177,7 +177,7 @@ var listCode = map[ast.NestedListCode]string{
 
 // VisitNestedList writes JSON code for lists and blockquotes.
 func (v *detailVisitor) VisitNestedList(ln *ast.NestedListNode) {
-	v.writeNodeStart(listCode[ln.Code])
+	v.writeNodeStart(mapNestedListKind[ln.Kind])
 	v.writeContentStart('c')
 	for i, item := range ln.Items {
 		if i > 0 {
@@ -399,7 +399,7 @@ func (v *detailVisitor) VisitMark(mn *ast.MarkNode) {
 	v.b.WriteByte('}')
 }
 
-var formatCode = map[ast.FormatCode]string{
+var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatItalic:    "Italic",
 	ast.FormatEmph:      "Emph",
 	ast.FormatBold:      "Bold",
@@ -419,14 +419,14 @@ var formatCode = map[ast.FormatCode]string{
 
 // VisitFormat write JSON code for formatting text.
 func (v *detailVisitor) VisitFormat(fn *ast.FormatNode) {
-	v.writeNodeStart(formatCode[fn.Code])
+	v.writeNodeStart(mapFormatKind[fn.Kind])
 	v.visitAttributes(fn.Attrs)
 	v.writeContentStart('i')
 	v.acceptInlineSlice(fn.Inlines)
 	v.b.WriteByte('}')
 }
 
-var literalCode = map[ast.LiteralCode]string{
+var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralProg:    "Code",
 	ast.LiteralKeyb:    "Input",
 	ast.LiteralOutput:  "Output",
@@ -436,11 +436,11 @@ var literalCode = map[ast.LiteralCode]string{
 
 // VisitLiteral write JSON code for literal inline text.
 func (v *detailVisitor) VisitLiteral(ln *ast.LiteralNode) {
-	code, ok := literalCode[ln.Code]
+	kind, ok := mapLiteralKind[ln.Kind]
 	if !ok {
-		panic(fmt.Sprintf("Unknown literal code %v", ln.Code))
+		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
-	v.writeNodeStart(code)
+	v.writeNodeStart(kind)
 	v.visitAttributes(ln.Attrs)
 	v.writeContentStart('s')
 	writeEscaped(&v.b, ln.Text)

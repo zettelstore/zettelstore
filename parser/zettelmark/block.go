@@ -169,16 +169,16 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 	if inp.Ch == input.EOS {
 		return nil, false
 	}
-	var code ast.VerbatimCode
+	var kind ast.VerbatimKind
 	switch fch {
 	case '`', runeModGrave:
-		code = ast.VerbatimProg
+		kind = ast.VerbatimProg
 	case '%':
-		code = ast.VerbatimComment
+		kind = ast.VerbatimComment
 	default:
 		panic(fmt.Sprintf("%q is not a verbatim char", fch))
 	}
-	rn = &ast.VerbatimNode{Code: code, Attrs: attrs}
+	rn = &ast.VerbatimNode{Kind: kind, Attrs: attrs}
 	for {
 		inp.EatEOL()
 		posL := inp.Pos
@@ -197,7 +197,7 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 	}
 }
 
-var runeRegion = map[rune]ast.RegionCode{
+var runeRegion = map[rune]ast.RegionKind{
 	':': ast.RegionSpan,
 	'<': ast.RegionQuote,
 	'"': ast.RegionVerse,
@@ -207,7 +207,7 @@ var runeRegion = map[rune]ast.RegionCode{
 func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	inp := cp.inp
 	fch := inp.Ch
-	code, ok := runeRegion[fch]
+	kind, ok := runeRegion[fch]
 	if !ok {
 		panic(fmt.Sprintf("%q is not a region char", fch))
 	}
@@ -220,7 +220,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	if inp.Ch == input.EOS {
 		return nil, false
 	}
-	rn = &ast.RegionNode{Code: code, Attrs: attrs}
+	rn = &ast.RegionNode{Kind: kind, Attrs: attrs}
 	var lastPara *ast.ParaNode
 	inp.EatEOL()
 	for {
@@ -307,7 +307,7 @@ func (cp *zmkP) parseHRule() (hn *ast.HRuleNode, success bool) {
 	return &ast.HRuleNode{Attrs: attrs}, true
 }
 
-var mapRuneNestedList = map[rune]ast.NestedListCode{
+var mapRuneNestedList = map[rune]ast.NestedListKind{
 	'*': ast.NestedListUnordered,
 	'#': ast.NestedListOrdered,
 	'>': ast.NestedListQuote,
@@ -316,19 +316,19 @@ var mapRuneNestedList = map[rune]ast.NestedListCode{
 // parseNestedList parses a list.
 func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 	inp := cp.inp
-	codes := cp.parseNestedListCodes()
-	if codes == nil {
+	kinds := cp.parseNestedListKinds()
+	if kinds == nil {
 		return nil, false
 	}
 	cp.skipSpace()
-	if codes[len(codes)-1] != ast.NestedListQuote && input.IsEOLEOS(inp.Ch) {
+	if kinds[len(kinds)-1] != ast.NestedListQuote && input.IsEOLEOS(inp.Ch) {
 		return nil, false
 	}
 
-	if len(codes) < len(cp.lists) {
-		cp.lists = cp.lists[:len(codes)]
+	if len(kinds) < len(cp.lists) {
+		cp.lists = cp.lists[:len(kinds)]
 	}
-	ln, newLnCount := cp.buildNestedList(codes)
+	ln, newLnCount := cp.buildNestedList(kinds)
 	pn := cp.parseLinePara()
 	if pn == nil {
 		pn = &ast.ParaNode{}
@@ -337,9 +337,9 @@ func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 	return cp.cleanupParsedNestedList(newLnCount)
 }
 
-func (cp *zmkP) parseNestedListCodes() []ast.NestedListCode {
+func (cp *zmkP) parseNestedListKinds() []ast.NestedListKind {
 	inp := cp.inp
-	codes := make([]ast.NestedListCode, 0, 4)
+	codes := make([]ast.NestedListKind, 0, 4)
 	for {
 		code, ok := mapRuneNestedList[inp.Ch]
 		if !ok {
@@ -358,11 +358,11 @@ func (cp *zmkP) parseNestedListCodes() []ast.NestedListCode {
 
 }
 
-func (cp *zmkP) buildNestedList(codes []ast.NestedListCode) (ln *ast.NestedListNode, newLnCount int) {
-	for i, code := range codes {
+func (cp *zmkP) buildNestedList(kinds []ast.NestedListKind) (ln *ast.NestedListNode, newLnCount int) {
+	for i, kind := range kinds {
 		if i < len(cp.lists) {
-			if cp.lists[i].Code != code {
-				ln = &ast.NestedListNode{Code: code}
+			if cp.lists[i].Kind != kind {
+				ln = &ast.NestedListNode{Kind: kind}
 				newLnCount++
 				cp.lists[i] = ln
 				cp.lists = cp.lists[:i+1]
@@ -370,7 +370,7 @@ func (cp *zmkP) buildNestedList(codes []ast.NestedListCode) (ln *ast.NestedListN
 				ln = cp.lists[i]
 			}
 		} else {
-			ln = &ast.NestedListNode{Code: code}
+			ln = &ast.NestedListNode{Kind: kind}
 			newLnCount++
 			cp.lists = append(cp.lists, ln)
 		}
