@@ -38,7 +38,7 @@ func (ze *zmkEncoder) WriteZettel(
 	} else {
 		zn.Meta.WriteAsHeader(&v.b, true)
 	}
-	v.acceptBlockSlice(zn.Ast)
+	ast.WalkBlockSlice(v, zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -55,7 +55,7 @@ func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error)
 // WriteBlocks writes the content of a block slice to the writer.
 func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 	v := newVisitor(w, ze)
-	v.acceptBlockSlice(bs)
+	ast.WalkBlockSlice(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -63,7 +63,7 @@ func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 // WriteInlines writes an inline slice to the writer
 func (ze *zmkEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
 	v := newVisitor(w, ze)
-	v.acceptInlineSlice(is)
+	ast.WalkInlineSlice(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -82,17 +82,66 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 	}
 }
 
-// VisitPara emits HTML code for a paragraph: <p>...</p>
-func (v *visitor) VisitPara(pn *ast.ParaNode) {
-	v.acceptInlineSlice(pn.Inlines)
-	v.b.WriteByte('\n')
-	if len(v.prefix) == 0 {
+func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.ParaNode:
+		ast.WalkInlineSlice(v, n.Inlines)
 		v.b.WriteByte('\n')
+		if len(v.prefix) == 0 {
+			v.b.WriteByte('\n')
+		}
+	case *ast.VerbatimNode:
+		v.visitVerbatim(n)
+	case *ast.RegionNode:
+		v.visitRegion(n)
+	case *ast.HeadingNode:
+		v.visitHeading(n)
+	case *ast.HRuleNode:
+		v.b.WriteString("---")
+		v.visitAttributes(n.Attrs)
+		v.b.WriteByte('\n')
+	case *ast.NestedListNode:
+		v.visitNestedList(n)
+	case *ast.DescriptionListNode:
+		v.visitDescriptionList(n)
+	case *ast.TableNode:
+		v.visitTable(n)
+	case *ast.BLOBNode:
+		v.b.WriteStrings(
+			"%% Unable to display BLOB with title '", n.Title,
+			"' and syntax '", n.Syntax, "'\n")
+	case *ast.TextNode:
+		v.visitText(n)
+	case *ast.TagNode:
+		v.b.WriteStrings("#", n.Tag)
+	case *ast.SpaceNode:
+		v.b.WriteString(n.Lexeme)
+	case *ast.BreakNode:
+		v.visitBreak(n)
+	case *ast.LinkNode:
+		v.visitLink(n)
+	case *ast.ImageNode:
+		v.visitImage(n)
+	case *ast.CiteNode:
+		v.visitCite(n)
+	case *ast.FootnoteNode:
+		v.b.WriteString("[^")
+		ast.WalkInlineSlice(v, n.Inlines)
+		v.b.WriteByte(']')
+		v.visitAttributes(n.Attrs)
+	case *ast.MarkNode:
+		v.b.WriteStrings("[!", n.Text, "]")
+	case *ast.FormatNode:
+		v.visitFormat(n)
+	case *ast.LiteralNode:
+		v.visitLiteral(n)
+	default:
+		return v
 	}
+	return nil
 }
 
-// VisitVerbatim emits HTML code for verbatim lines.
-func (v *visitor) VisitVerbatim(vn *ast.VerbatimNode) {
+func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	// TODO: scan cn.Lines to find embedded "`"s at beginning
 	v.b.WriteString("```")
 	v.visitAttributes(vn.Attrs)
@@ -109,8 +158,7 @@ var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionVerse: "\"\"\"",
 }
 
-// VisitRegion writes HTML code for block regions.
-func (v *visitor) VisitRegion(rn *ast.RegionNode) {
+func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	// Scan rn.Blocks for embedded regions to adjust length of regionCode
 	kind, ok := mapRegionKind[rn.Kind]
 	if !ok {
@@ -119,29 +167,21 @@ func (v *visitor) VisitRegion(rn *ast.RegionNode) {
 	v.b.WriteString(kind)
 	v.visitAttributes(rn.Attrs)
 	v.b.WriteByte('\n')
-	v.acceptBlockSlice(rn.Blocks)
+	ast.WalkBlockSlice(v, rn.Blocks)
 	v.b.WriteString(kind)
 	if len(rn.Inlines) > 0 {
 		v.b.WriteByte(' ')
-		v.acceptInlineSlice(rn.Inlines)
+		ast.WalkInlineSlice(v, rn.Inlines)
 	}
 	v.b.WriteByte('\n')
 }
 
-// VisitHeading writes the HTML code for a heading.
-func (v *visitor) VisitHeading(hn *ast.HeadingNode) {
+func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	for i := 0; i <= hn.Level; i++ {
 		v.b.WriteByte('=')
 	}
 	v.b.WriteByte(' ')
-	v.acceptInlineSlice(hn.Inlines)
-	v.visitAttributes(hn.Attrs)
-	v.b.WriteByte('\n')
-}
-
-// VisitHRule writes HTML code for a horizontal rule: <hr>.
-func (v *visitor) VisitHRule(hn *ast.HRuleNode) {
-	v.b.WriteString("---")
+	ast.WalkInlineSlice(v, hn.Inlines)
 	v.visitAttributes(hn.Attrs)
 	v.b.WriteByte('\n')
 }
@@ -152,8 +192,7 @@ var mapNestedListKind = map[ast.NestedListKind]byte{
 	ast.NestedListQuote:     '>',
 }
 
-// VisitNestedList writes HTML code for lists and blockquotes.
-func (v *visitor) VisitNestedList(ln *ast.NestedListNode) {
+func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.prefix = append(v.prefix, mapNestedListKind[ln.Kind])
 	for _, item := range ln.Items {
 		v.b.Write(v.prefix)
@@ -167,25 +206,22 @@ func (v *visitor) VisitNestedList(ln *ast.NestedListNode) {
 					}
 				}
 			}
-			in.Accept(v)
+			ast.Walk(v, in)
 		}
 	}
 	v.prefix = v.prefix[:len(v.prefix)-1]
 	v.b.WriteByte('\n')
 }
 
-// VisitDescriptionList emits a HTML description list.
-func (v *visitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
+func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	for _, descr := range dn.Descriptions {
 		v.b.WriteString("; ")
-		v.acceptInlineSlice(descr.Term)
+		ast.WalkInlineSlice(v, descr.Term)
 		v.b.WriteByte('\n')
 
 		for _, b := range descr.Descriptions {
 			v.b.WriteString(": ")
-			for _, dn := range b {
-				dn.Accept(v)
-			}
+			ast.WalkDescriptionSlice(v, b)
 			v.b.WriteByte('\n')
 		}
 	}
@@ -198,8 +234,7 @@ var alignCode = map[ast.Alignment]string{
 	ast.AlignRight:   ">",
 }
 
-// VisitTable emits a HTML table.
-func (v *visitor) VisitTable(tn *ast.TableNode) {
+func (v *visitor) visitTable(tn *ast.TableNode) {
 	if len(tn.Header) > 0 {
 		for pos, cell := range tn.Header {
 			v.b.WriteString("|=")
@@ -207,7 +242,7 @@ func (v *visitor) VisitTable(tn *ast.TableNode) {
 			if cell.Align != colAlign {
 				v.b.WriteString(alignCode[cell.Align])
 			}
-			v.acceptInlineSlice(cell.Inlines)
+			ast.WalkInlineSlice(v, cell.Inlines)
 			if colAlign != ast.AlignDefault {
 				v.b.WriteString(alignCode[colAlign])
 			}
@@ -220,21 +255,11 @@ func (v *visitor) VisitTable(tn *ast.TableNode) {
 			if cell.Align != tn.Align[pos] {
 				v.b.WriteString(alignCode[cell.Align])
 			}
-			v.acceptInlineSlice(cell.Inlines)
+			ast.WalkInlineSlice(v, cell.Inlines)
 		}
 		v.b.WriteByte('\n')
 	}
 	v.b.WriteByte('\n')
-}
-
-// VisitBLOB writes the binary object as a value.
-func (v *visitor) VisitBLOB(bn *ast.BLOBNode) {
-	v.b.WriteStrings(
-		"%% Unable to display BLOB with title '",
-		bn.Title,
-		"' and syntax '",
-		bn.Syntax,
-		"'\n")
 }
 
 var escapeSeqs = map[string]bool{
@@ -255,8 +280,7 @@ var escapeSeqs = map[string]bool{
 	"==":   true,
 }
 
-// VisitText writes text content.
-func (v *visitor) VisitText(tn *ast.TextNode) {
+func (v *visitor) visitText(tn *ast.TextNode) {
 	last := 0
 	for i := 0; i < len(tn.Text); i++ {
 		if b := tn.Text[i]; b == '\\' {
@@ -281,18 +305,7 @@ func (v *visitor) VisitText(tn *ast.TextNode) {
 	v.b.WriteString(tn.Text[last:])
 }
 
-// VisitTag writes tag content.
-func (v *visitor) VisitTag(tn *ast.TagNode) {
-	v.b.WriteStrings("#", tn.Tag)
-}
-
-// VisitSpace emits a white space.
-func (v *visitor) VisitSpace(sn *ast.SpaceNode) {
-	v.b.WriteString(sn.Lexeme)
-}
-
-// VisitBreak writes HTML code for line breaks.
-func (v *visitor) VisitBreak(bn *ast.BreakNode) {
+func (v *visitor) visitBreak(bn *ast.BreakNode) {
 	if bn.Hard {
 		v.b.WriteString("\\\n")
 	} else {
@@ -305,50 +318,34 @@ func (v *visitor) VisitBreak(bn *ast.BreakNode) {
 	}
 }
 
-// VisitLink writes HTML code for links.
-func (v *visitor) VisitLink(ln *ast.LinkNode) {
+func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString("[[")
 	if !ln.OnlyRef {
-		v.acceptInlineSlice(ln.Inlines)
+		ast.WalkInlineSlice(v, ln.Inlines)
 		v.b.WriteByte('|')
 	}
 	v.b.WriteStrings(ln.Ref.String(), "]]")
 }
 
-// VisitImage writes HTML code for images.
-func (v *visitor) VisitImage(in *ast.ImageNode) {
+func (v *visitor) visitImage(in *ast.ImageNode) {
 	if in.Ref != nil {
 		v.b.WriteString("{{")
 		if len(in.Inlines) > 0 {
-			v.acceptInlineSlice(in.Inlines)
+			ast.WalkInlineSlice(v, in.Inlines)
 			v.b.WriteByte('|')
 		}
 		v.b.WriteStrings(in.Ref.String(), "}}")
 	}
 }
 
-// VisitCite writes code for citations.
-func (v *visitor) VisitCite(cn *ast.CiteNode) {
+func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.b.WriteStrings("[@", cn.Key)
 	if len(cn.Inlines) > 0 {
 		v.b.WriteString(", ")
-		v.acceptInlineSlice(cn.Inlines)
+		ast.WalkInlineSlice(v, cn.Inlines)
 	}
 	v.b.WriteByte(']')
 	v.visitAttributes(cn.Attrs)
-}
-
-// VisitFootnote write HTML code for a footnote.
-func (v *visitor) VisitFootnote(fn *ast.FootnoteNode) {
-	v.b.WriteString("[^")
-	v.acceptInlineSlice(fn.Inlines)
-	v.b.WriteByte(']')
-	v.visitAttributes(fn.Attrs)
-}
-
-// VisitMark writes HTML code to mark a position.
-func (v *visitor) VisitMark(mn *ast.MarkNode) {
-	v.b.WriteStrings("[!", mn.Text, "]")
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
@@ -369,8 +366,7 @@ var mapFormatKind = map[ast.FormatKind][]byte{
 	ast.FormatMonospace: []byte("''"),
 }
 
-// VisitFormat write HTML code for formatting text.
-func (v *visitor) VisitFormat(fn *ast.FormatNode) {
+func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	kind, ok := mapFormatKind[fn.Kind]
 	if !ok {
 		panic(fmt.Sprintf("Unknown format kind %d", fn.Kind))
@@ -383,13 +379,12 @@ func (v *visitor) VisitFormat(fn *ast.FormatNode) {
 	}
 
 	v.b.Write(kind)
-	v.acceptInlineSlice(fn.Inlines)
+	ast.WalkInlineSlice(v, fn.Inlines)
 	v.b.Write(kind)
 	v.visitAttributes(attrs)
 }
 
-// VisitLiteral write Zettelmarkup for inline literal text.
-func (v *visitor) VisitLiteral(ln *ast.LiteralNode) {
+func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Text)
@@ -413,17 +408,6 @@ func (v *visitor) writeLiteral(code byte, attrs *ast.Attributes, text string) {
 	v.writeEscaped(text, code)
 	v.b.WriteBytes(code, code)
 	v.visitAttributes(attrs)
-}
-
-func (v *visitor) acceptBlockSlice(bns ast.BlockSlice) {
-	for _, bn := range bns {
-		bn.Accept(v)
-	}
-}
-func (v *visitor) acceptInlineSlice(ins ast.InlineSlice) {
-	for _, in := range ins {
-		in.Accept(v)
-	}
 }
 
 // visitAttributes write HTML attributes
