@@ -37,7 +37,7 @@ type jsonDetailEncoder struct {
 func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"meta\":{\"title\":")
-	v.acceptInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
+	v.walkInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
 	if inhMeta {
 		v.writeMeta(zn.InhMeta)
 	} else {
@@ -45,7 +45,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMet
 	}
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
-	v.acceptBlockSlice(zn.Ast)
+	v.walkBlockSlice(zn.Ast)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
@@ -55,7 +55,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMet
 func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"title\":")
-	v.acceptInlineSlice(encfun.MetaAsInlineSlice(m, meta.KeyTitle))
+	v.walkInlineSlice(encfun.MetaAsInlineSlice(m, meta.KeyTitle))
 	v.writeMeta(m)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
@@ -69,7 +69,7 @@ func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int,
 // WriteBlocks writes a block slice to the writer
 func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.acceptBlockSlice(bs)
+	v.walkBlockSlice(bs)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -77,7 +77,7 @@ func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, e
 // WriteInlines writes an inline slice to the writer
 func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.acceptInlineSlice(is)
+	v.walkInlineSlice(is)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -92,12 +92,111 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
 	return &detailVisitor{b: encoder.NewBufWriter(w), env: je.env}
 }
 
-// VisitPara emits JSON code for a paragraph.
-func (v *detailVisitor) VisitPara(pn *ast.ParaNode) {
-	v.writeNodeStart("Para")
-	v.writeContentStart('i')
-	v.acceptInlineSlice(pn.Inlines)
+func (v *detailVisitor) Visit(node ast.Node) ast.WalkVisitor {
+	switch n := node.(type) {
+	case *ast.ParaNode:
+		v.writeNodeStart("Para")
+		v.writeContentStart('i')
+		v.walkInlineSlice(n.Inlines)
+	case *ast.VerbatimNode:
+		v.visitVerbatim(n)
+	case *ast.RegionNode:
+		v.visitRegion(n)
+	case *ast.HeadingNode:
+		v.visitHeading(n)
+	case *ast.HRuleNode:
+		v.writeNodeStart("Hrule")
+		v.visitAttributes(n.Attrs)
+	case *ast.NestedListNode:
+		v.visitNestedList(n)
+	case *ast.DescriptionListNode:
+		v.visitDescriptionList(n)
+	case *ast.TableNode:
+		v.visitTable(n)
+	case *ast.BLOBNode:
+		v.writeNodeStart("Blob")
+		v.writeContentStart('q')
+		writeEscaped(&v.b, n.Title)
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Syntax)
+		v.writeContentStart('o')
+		v.b.WriteBase64(n.Blob)
+		v.b.WriteByte('"')
+	case *ast.TextNode:
+		v.writeNodeStart("Text")
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Text)
+	case *ast.TagNode:
+		v.writeNodeStart("Tag")
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Tag)
+	case *ast.SpaceNode:
+		v.writeNodeStart("Space")
+		if l := len(n.Lexeme); l > 1 {
+			v.writeContentStart('n')
+			v.b.WriteString(strconv.Itoa(l))
+		}
+	case *ast.BreakNode:
+		if n.Hard {
+			v.writeNodeStart("Hard")
+		} else {
+			v.writeNodeStart("Soft")
+		}
+	case *ast.LinkNode:
+		n, n2 := v.env.AdaptLink(n)
+		if n2 != nil {
+			ast.Walk(v, n2)
+			return nil
+		}
+		v.writeNodeStart("Link")
+		v.visitAttributes(n.Attrs)
+		v.writeContentStart('q')
+		writeEscaped(&v.b, mapRefState[n.Ref.State])
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Ref.String())
+		v.writeContentStart('i')
+		v.walkInlineSlice(n.Inlines)
+	case *ast.ImageNode:
+		v.visitImage(n)
+	case *ast.CiteNode:
+		v.writeNodeStart("Cite")
+		v.visitAttributes(n.Attrs)
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Key)
+		if len(n.Inlines) > 0 {
+			v.writeContentStart('i')
+			v.walkInlineSlice(n.Inlines)
+		}
+	case *ast.FootnoteNode:
+		v.writeNodeStart("Footnote")
+		v.visitAttributes(n.Attrs)
+		v.writeContentStart('i')
+		v.walkInlineSlice(n.Inlines)
+	case *ast.MarkNode:
+		v.writeNodeStart("Mark")
+		if len(n.Text) > 0 {
+			v.writeContentStart('s')
+			writeEscaped(&v.b, n.Text)
+		}
+	case *ast.FormatNode:
+		v.writeNodeStart(mapFormatKind[n.Kind])
+		v.visitAttributes(n.Attrs)
+		v.writeContentStart('i')
+		v.walkInlineSlice(n.Inlines)
+	case *ast.LiteralNode:
+		kind, ok := mapLiteralKind[n.Kind]
+		if !ok {
+			panic(fmt.Sprintf("Unknown literal kind %v", n.Kind))
+		}
+		v.writeNodeStart(kind)
+		v.visitAttributes(n.Attrs)
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Text)
+	default:
+		return v
+	}
 	v.b.WriteByte('}')
+	return nil
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
@@ -106,8 +205,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimHTML:    "HTMLBlock",
 }
 
-// VisitVerbatim emits JSON code for verbatim lines.
-func (v *detailVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
+func (v *detailVisitor) visitVerbatim(vn *ast.VerbatimNode) {
 	kind, ok := mapVerbatimKind[vn.Kind]
 	if !ok {
 		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
@@ -121,7 +219,7 @@ func (v *detailVisitor) VisitVerbatim(vn *ast.VerbatimNode) {
 		}
 		writeEscaped(&v.b, line)
 	}
-	v.b.WriteString("]}")
+	v.b.WriteByte(']')
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
@@ -130,8 +228,7 @@ var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionVerse: "VerseBlock",
 }
 
-// VisitRegion writes JSON code for block regions.
-func (v *detailVisitor) VisitRegion(rn *ast.RegionNode) {
+func (v *detailVisitor) visitRegion(rn *ast.RegionNode) {
 	kind, ok := mapRegionKind[rn.Kind]
 	if !ok {
 		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
@@ -139,16 +236,14 @@ func (v *detailVisitor) VisitRegion(rn *ast.RegionNode) {
 	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
-	v.acceptBlockSlice(rn.Blocks)
+	v.walkBlockSlice(rn.Blocks)
 	if len(rn.Inlines) > 0 {
 		v.writeContentStart('i')
-		v.acceptInlineSlice(rn.Inlines)
+		v.walkInlineSlice(rn.Inlines)
 	}
-	v.b.WriteByte('}')
 }
 
-// VisitHeading writes the JSON code for a heading.
-func (v *detailVisitor) VisitHeading(hn *ast.HeadingNode) {
+func (v *detailVisitor) visitHeading(hn *ast.HeadingNode) {
 	v.writeNodeStart("Heading")
 	v.visitAttributes(hn.Attrs)
 	v.writeContentStart('n')
@@ -158,15 +253,7 @@ func (v *detailVisitor) VisitHeading(hn *ast.HeadingNode) {
 		v.b.WriteStrings("\"", slug, "\"")
 	}
 	v.writeContentStart('i')
-	v.acceptInlineSlice(hn.Inlines)
-	v.b.WriteByte('}')
-}
-
-// VisitHRule writes JSON code for a horizontal rule: <hr>.
-func (v *detailVisitor) VisitHRule(hn *ast.HRuleNode) {
-	v.writeNodeStart("Hrule")
-	v.visitAttributes(hn.Attrs)
-	v.b.WriteByte('}')
+	v.walkInlineSlice(hn.Inlines)
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
@@ -175,21 +262,26 @@ var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListQuote:     "QuoteList",
 }
 
-// VisitNestedList writes JSON code for lists and blockquotes.
-func (v *detailVisitor) VisitNestedList(ln *ast.NestedListNode) {
+func (v *detailVisitor) visitNestedList(ln *ast.NestedListNode) {
 	v.writeNodeStart(mapNestedListKind[ln.Kind])
 	v.writeContentStart('c')
 	for i, item := range ln.Items {
 		if i > 0 {
 			v.b.WriteByte(',')
 		}
-		v.acceptItemSlice(item)
+		v.b.WriteByte('[')
+		for j, in := range item {
+			if j > 0 {
+				v.b.WriteByte(',')
+			}
+			ast.Walk(v, in)
+		}
+		v.b.WriteByte(']')
 	}
-	v.b.WriteString("]}")
+	v.b.WriteByte(']')
 }
 
-// VisitDescriptionList emits a JSON description list.
-func (v *detailVisitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
+func (v *detailVisitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.writeNodeStart("DescriptionList")
 	v.writeContentStart('g')
 	for i, def := range dn.Descriptions {
@@ -197,21 +289,27 @@ func (v *detailVisitor) VisitDescriptionList(dn *ast.DescriptionListNode) {
 			v.b.WriteByte(',')
 		}
 		v.b.WriteByte('[')
-		v.acceptInlineSlice(def.Term)
+		v.walkInlineSlice(def.Term)
 
 		if len(def.Descriptions) > 0 {
 			for _, b := range def.Descriptions {
 				v.b.WriteByte(',')
-				v.acceptDescriptionSlice(b)
+				v.b.WriteByte('[')
+				for j, dn := range b {
+					if j > 0 {
+						v.b.WriteByte(',')
+					}
+					ast.Walk(v, dn)
+				}
+				v.b.WriteByte(']')
 			}
 		}
 		v.b.WriteByte(']')
 	}
-	v.b.WriteString("]}")
+	v.b.WriteByte(']')
 }
 
-// VisitTable emits a JSON table.
-func (v *detailVisitor) VisitTable(tn *ast.TableNode) {
+func (v *detailVisitor) visitTable(tn *ast.TableNode) {
 	v.writeNodeStart("Table")
 	v.writeContentStart('p')
 
@@ -240,7 +338,7 @@ func (v *detailVisitor) VisitTable(tn *ast.TableNode) {
 		}
 		v.b.WriteByte(']')
 	}
-	v.b.WriteString("]]}")
+	v.b.WriteString("]]")
 }
 
 var alignmentCode = map[ast.Alignment]string{
@@ -252,56 +350,8 @@ var alignmentCode = map[ast.Alignment]string{
 
 func (v *detailVisitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteString(alignmentCode[cell.Align])
-	v.acceptInlineSlice(cell.Inlines)
+	v.walkInlineSlice(cell.Inlines)
 	v.b.WriteByte(']')
-}
-
-// VisitBLOB writes the binary object as a value.
-func (v *detailVisitor) VisitBLOB(bn *ast.BLOBNode) {
-	v.writeNodeStart("Blob")
-	v.writeContentStart('q')
-	writeEscaped(&v.b, bn.Title)
-	v.writeContentStart('s')
-	writeEscaped(&v.b, bn.Syntax)
-	v.writeContentStart('o')
-	v.b.WriteBase64(bn.Blob)
-	v.b.WriteString("\"}")
-}
-
-// VisitText writes text content.
-func (v *detailVisitor) VisitText(tn *ast.TextNode) {
-	v.writeNodeStart("Text")
-	v.writeContentStart('s')
-	writeEscaped(&v.b, tn.Text)
-	v.b.WriteByte('}')
-}
-
-// VisitTag writes tag content.
-func (v *detailVisitor) VisitTag(tn *ast.TagNode) {
-	v.writeNodeStart("Tag")
-	v.writeContentStart('s')
-	writeEscaped(&v.b, tn.Tag)
-	v.b.WriteByte('}')
-}
-
-// VisitSpace emits a white space.
-func (v *detailVisitor) VisitSpace(sn *ast.SpaceNode) {
-	v.writeNodeStart("Space")
-	if l := len(sn.Lexeme); l > 1 {
-		v.writeContentStart('n')
-		v.b.WriteString(strconv.Itoa(l))
-	}
-	v.b.WriteByte('}')
-}
-
-// VisitBreak writes JSON code for line breaks.
-func (v *detailVisitor) VisitBreak(bn *ast.BreakNode) {
-	if bn.Hard {
-		v.writeNodeStart("Hard")
-	} else {
-		v.writeNodeStart("Soft")
-	}
-	v.b.WriteByte('}')
 }
 
 var mapRefState = map[ast.RefState]string{
@@ -315,29 +365,10 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateExternal: "external",
 }
 
-// VisitLink writes JSON code for links.
-func (v *detailVisitor) VisitLink(ln *ast.LinkNode) {
-	ln, n := v.env.AdaptLink(ln)
-	if n != nil {
-		n.Accept(v)
-		return
-	}
-	v.writeNodeStart("Link")
-	v.visitAttributes(ln.Attrs)
-	v.writeContentStart('q')
-	writeEscaped(&v.b, mapRefState[ln.Ref.State])
-	v.writeContentStart('s')
-	writeEscaped(&v.b, ln.Ref.String())
-	v.writeContentStart('i')
-	v.acceptInlineSlice(ln.Inlines)
-	v.b.WriteByte('}')
-}
-
-// VisitImage writes JSON code for images.
-func (v *detailVisitor) VisitImage(in *ast.ImageNode) {
+func (v *detailVisitor) visitImage(in *ast.ImageNode) {
 	in, n := v.env.AdaptImage(in)
 	if n != nil {
-		n.Accept(v)
+		ast.Walk(v, n)
 		return
 	}
 	v.writeNodeStart("Image")
@@ -362,41 +393,8 @@ func (v *detailVisitor) VisitImage(in *ast.ImageNode) {
 	}
 	if len(in.Inlines) > 0 {
 		v.writeContentStart('i')
-		v.acceptInlineSlice(in.Inlines)
+		v.walkInlineSlice(in.Inlines)
 	}
-	v.b.WriteByte('}')
-}
-
-// VisitCite writes code for citations.
-func (v *detailVisitor) VisitCite(cn *ast.CiteNode) {
-	v.writeNodeStart("Cite")
-	v.visitAttributes(cn.Attrs)
-	v.writeContentStart('s')
-	writeEscaped(&v.b, cn.Key)
-	if len(cn.Inlines) > 0 {
-		v.writeContentStart('i')
-		v.acceptInlineSlice(cn.Inlines)
-	}
-	v.b.WriteByte('}')
-}
-
-// VisitFootnote write JSON code for a footnote.
-func (v *detailVisitor) VisitFootnote(fn *ast.FootnoteNode) {
-	v.writeNodeStart("Footnote")
-	v.visitAttributes(fn.Attrs)
-	v.writeContentStart('i')
-	v.acceptInlineSlice(fn.Inlines)
-	v.b.WriteByte('}')
-}
-
-// VisitMark writes JSON code to mark a position.
-func (v *detailVisitor) VisitMark(mn *ast.MarkNode) {
-	v.writeNodeStart("Mark")
-	if len(mn.Text) > 0 {
-		v.writeContentStart('s')
-		writeEscaped(&v.b, mn.Text)
-	}
-	v.b.WriteByte('}')
 }
 
 var mapFormatKind = map[ast.FormatKind]string{
@@ -417,15 +415,6 @@ var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatSpan:      "Span",
 }
 
-// VisitFormat write JSON code for formatting text.
-func (v *detailVisitor) VisitFormat(fn *ast.FormatNode) {
-	v.writeNodeStart(mapFormatKind[fn.Kind])
-	v.visitAttributes(fn.Attrs)
-	v.writeContentStart('i')
-	v.acceptInlineSlice(fn.Inlines)
-	v.b.WriteByte('}')
-}
-
 var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralProg:    "Code",
 	ast.LiteralKeyb:    "Input",
@@ -434,59 +423,24 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralHTML:    "HTML",
 }
 
-// VisitLiteral write JSON code for literal inline text.
-func (v *detailVisitor) VisitLiteral(ln *ast.LiteralNode) {
-	kind, ok := mapLiteralKind[ln.Kind]
-	if !ok {
-		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
-	}
-	v.writeNodeStart(kind)
-	v.visitAttributes(ln.Attrs)
-	v.writeContentStart('s')
-	writeEscaped(&v.b, ln.Text)
-	v.b.WriteByte('}')
-}
-
-func (v *detailVisitor) acceptBlockSlice(bns ast.BlockSlice) {
+func (v *detailVisitor) walkBlockSlice(bns ast.BlockSlice) {
 	v.b.WriteByte('[')
 	for i, bn := range bns {
 		if i > 0 {
 			v.b.WriteByte(',')
 		}
-		bn.Accept(v)
+		ast.Walk(v, bn)
 	}
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) acceptItemSlice(ins ast.ItemSlice) {
+func (v *detailVisitor) walkInlineSlice(ins ast.InlineSlice) {
 	v.b.WriteByte('[')
 	for i, in := range ins {
 		if i > 0 {
 			v.b.WriteByte(',')
 		}
-		in.Accept(v)
-	}
-	v.b.WriteByte(']')
-}
-
-func (v *detailVisitor) acceptDescriptionSlice(dns ast.DescriptionSlice) {
-	v.b.WriteByte('[')
-	for i, dn := range dns {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
-		dn.Accept(v)
-	}
-	v.b.WriteByte(']')
-}
-
-func (v *detailVisitor) acceptInlineSlice(ins ast.InlineSlice) {
-	v.b.WriteByte('[')
-	for i, in := range ins {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
-		in.Accept(v)
+		ast.Walk(v, in)
 	}
 	v.b.WriteByte(']')
 }
