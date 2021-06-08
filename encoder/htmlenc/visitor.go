@@ -45,7 +45,7 @@ func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 	}
 }
 
-func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")

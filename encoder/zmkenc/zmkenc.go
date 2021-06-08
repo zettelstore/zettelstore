@@ -82,7 +82,7 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 	}
 }
 
-func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		ast.WalkInlineSlice(v, n.Inlines)

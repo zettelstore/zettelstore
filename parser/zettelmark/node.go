@@ -11,9 +11,7 @@
 // Package zettelmark provides a parser for zettelmarkup.
 package zettelmark
 
-import (
-	"zettelstore.de/z/ast"
-)
+import "zettelstore.de/z/ast"
 
 // Internal nodes for parsing zettelmark. These will be removed in
 // post-processing.
@@ -23,13 +21,7 @@ type nullItemNode struct {
 	ast.ItemNode
 }
 
-// Accept a visitor and visit the node.
-func (nn *nullItemNode) Accept(v ast.Visitor) {}
-
 // nullDescriptionNode specifies a removable placeholder.
 type nullDescriptionNode struct {
 	ast.DescriptionNode
 }
-
-// Accept a visitor and visit the node.
-func (nn *nullDescriptionNode) Accept(v ast.Visitor) {}

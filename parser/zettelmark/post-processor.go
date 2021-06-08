@@ -34,7 +34,7 @@ type postProcessor struct {
 	inVerse bool
 }
 
-func (pp *postProcessor) Visit(node ast.Node) ast.WalkVisitor {
+func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		n.Inlines = pp.processInlineSlice(n.Inlines)

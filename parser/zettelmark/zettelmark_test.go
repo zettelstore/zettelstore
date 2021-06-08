@@ -617,7 +617,7 @@ type TestVisitor struct {
 
 func (tv *TestVisitor) String() string { return tv.b.String() }
 
-func (tv *TestVisitor) Visit(node ast.Node) ast.WalkVisitor {
+func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		tv.b.WriteString("(PARA")

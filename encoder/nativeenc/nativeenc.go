@@ -91,7 +91,7 @@ func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
 	return &visitor{b: encoder.NewBufWriter(w), env: enc.env}
 }
 
-func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		v.b.WriteString("[Para ")

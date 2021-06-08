@@ -40,7 +40,7 @@ func collectInlineIndexData(ins ast.InlineSlice, data *collectData) {
 	ast.WalkInlineSlice(data, ins)
 }
 
-func (data *collectData) Visit(node ast.Node) ast.WalkVisitor {
+func (data *collectData) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.VerbatimNode:
 		for _, line := range n.Lines {

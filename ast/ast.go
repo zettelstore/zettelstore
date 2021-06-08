@@ -32,8 +32,7 @@ type ZettelNode struct {
 
 // Node is the interface, all nodes must implement.
 type Node interface {
-	Accept(v Visitor)
-	WalkChildren(v WalkVisitor)
+	WalkChildren(v Visitor)
 }
 
 // BlockNode is the interface that all block nodes must implement.

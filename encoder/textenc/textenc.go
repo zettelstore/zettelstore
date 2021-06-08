@@ -99,7 +99,7 @@ func newVisitor(w io.Writer) *visitor {
 	return &visitor{b: encoder.NewBufWriter(w)}
 }
 
-func (v *visitor) Visit(node ast.Node) ast.WalkVisitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.VerbatimNode:
 		if n.Kind == ast.VerbatimComment {

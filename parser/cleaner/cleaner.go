@@ -41,7 +41,7 @@ type cleanupVisitor struct {
 	doMark  bool
 }
 
-func (cv *cleanupVisitor) Visit(node ast.Node) ast.WalkVisitor {
+func (cv *cleanupVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.HeadingNode:
 		if cv.doMark || n == nil || n.Inlines == nil {

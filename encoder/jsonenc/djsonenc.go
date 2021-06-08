@@ -92,7 +92,7 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
 	return &detailVisitor{b: encoder.NewBufWriter(w), env: je.env}
 }
 
-func (v *detailVisitor) Visit(node ast.Node) ast.WalkVisitor {
+func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		v.writeNodeStart("Para")

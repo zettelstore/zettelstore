@@ -28,7 +28,7 @@ func References(zn *ast.ZettelNode) (s Summary) {
 }
 
 // Visit all node to collect data for the summary.
-func (s *Summary) Visit(node ast.Node) ast.WalkVisitor {
+func (s *Summary) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.LinkNode:
 		s.Links = append(s.Links, n.Ref)

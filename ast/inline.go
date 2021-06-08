@@ -20,11 +20,8 @@ type TextNode struct {
 
 func (tn *TextNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (tn *TextNode) Accept(v Visitor) { v.VisitText(tn) }
-
 // WalkChildren does nothing.
-func (tn *TextNode) WalkChildren(v WalkVisitor) {}
+func (tn *TextNode) WalkChildren(v Visitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -35,11 +32,8 @@ type TagNode struct {
 
 func (tn *TagNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (tn *TagNode) Accept(v Visitor) { v.VisitTag(tn) }
-
 // WalkChildren does nothing.
-func (tn *TagNode) WalkChildren(v WalkVisitor) {}
+func (tn *TagNode) WalkChildren(v Visitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -50,11 +44,8 @@ type SpaceNode struct {
 
 func (sn *SpaceNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (sn *SpaceNode) Accept(v Visitor) { v.VisitSpace(sn) }
-
 // WalkChildren does nothing.
-func (sn *SpaceNode) WalkChildren(v WalkVisitor) {}
+func (sn *SpaceNode) WalkChildren(v Visitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -65,11 +56,8 @@ type BreakNode struct {
 
 func (bn *BreakNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (bn *BreakNode) Accept(v Visitor) { v.VisitBreak(bn) }
-
 // WalkChildren does nothing.
-func (bn *BreakNode) WalkChildren(v WalkVisitor) {}
+func (bn *BreakNode) WalkChildren(v Visitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -83,11 +71,8 @@ type LinkNode struct {
 
 func (ln *LinkNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (ln *LinkNode) Accept(v Visitor) { v.VisitLink(ln) }
-
 // WalkChildren walks to the link text.
-func (ln *LinkNode) WalkChildren(v WalkVisitor) {
+func (ln *LinkNode) WalkChildren(v Visitor) {
 	WalkInlineSlice(v, ln.Inlines)
 }
 
@@ -104,11 +89,8 @@ type ImageNode struct {
 
 func (in *ImageNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (in *ImageNode) Accept(v Visitor) { v.VisitImage(in) }
-
 // WalkChildren walks to the image text.
-func (in *ImageNode) WalkChildren(v WalkVisitor) {
+func (in *ImageNode) WalkChildren(v Visitor) {
 	WalkInlineSlice(v, in.Inlines)
 }
 
@@ -123,11 +105,8 @@ type CiteNode struct {
 
 func (cn *CiteNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (cn *CiteNode) Accept(v Visitor) { v.VisitCite(cn) }
-
 // WalkChildren walks to the cite text.
-func (cn *CiteNode) WalkChildren(v WalkVisitor) {
+func (cn *CiteNode) WalkChildren(v Visitor) {
 	WalkInlineSlice(v, cn.Inlines)
 }
 
@@ -142,11 +121,8 @@ type MarkNode struct {
 
 func (mn *MarkNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (mn *MarkNode) Accept(v Visitor) { v.VisitMark(mn) }
-
 // WalkChildren does nothing.
-func (mn *MarkNode) WalkChildren(v WalkVisitor) {}
+func (mn *MarkNode) WalkChildren(v Visitor) {}
 
 // --------------------------------------------------------------------------
 
@@ -158,11 +134,8 @@ type FootnoteNode struct {
 
 func (fn *FootnoteNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (fn *FootnoteNode) Accept(v Visitor) { v.VisitFootnote(fn) }
-
 // WalkChildren walks to the footnote text.
-func (fn *FootnoteNode) WalkChildren(v WalkVisitor) {
+func (fn *FootnoteNode) WalkChildren(v Visitor) {
 	WalkInlineSlice(v, fn.Inlines)
 }
 
@@ -200,11 +173,8 @@ const (
 
 func (fn *FormatNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (fn *FormatNode) Accept(v Visitor) { v.VisitFormat(fn) }
-
 // WalkChildren walks to the formatted text.
-func (fn *FormatNode) WalkChildren(v WalkVisitor) {
+func (fn *FormatNode) WalkChildren(v Visitor) {
 	WalkInlineSlice(v, fn.Inlines)
 }
 
@@ -232,8 +202,5 @@ const (
 
 func (ln *LiteralNode) inlineNode() {}
 
-// Accept a visitor and visit the node.
-func (ln *LiteralNode) Accept(v Visitor) { v.VisitLiteral(ln) }
-
 // WalkChildren does nothing.
-func (ln *LiteralNode) WalkChildren(v WalkVisitor) {}
+func (ln *LiteralNode) WalkChildren(v Visitor) {}

@@ -11,13 +11,13 @@
 // Package ast provides the abstract syntax tree.
 package ast
 
-// WalkVisitor is a visitor for walking the AST.
-type WalkVisitor interface {
-	Visit(node Node) WalkVisitor
+// Visitor is a visitor for walking the AST.
+type Visitor interface {
+	Visit(node Node) Visitor
 }
 
 // Walk traverses the AST.
-func Walk(v WalkVisitor, node Node) {
+func Walk(v Visitor, node Node) {
 	if v = v.Visit(node); v == nil {
 		return
 	}
@@ -26,28 +26,28 @@ func Walk(v WalkVisitor, node Node) {
 }
 
 // WalkBlockSlice traverse a block slice.
-func WalkBlockSlice(v WalkVisitor, bns BlockSlice) {
+func WalkBlockSlice(v Visitor, bns BlockSlice) {
 	for _, bn := range bns {
 		Walk(v, bn)
 	}
 }
 
 // WalkInlineSlice traverses an inline slice.
-func WalkInlineSlice(v WalkVisitor, ins InlineSlice) {
+func WalkInlineSlice(v Visitor, ins InlineSlice) {
 	for _, in := range ins {
 		Walk(v, in)
 	}
 }
 
 // WalkItemSlice traverses an item slice.
-func WalkItemSlice(v WalkVisitor, ins ItemSlice) {
+func WalkItemSlice(v Visitor, ins ItemSlice) {
 	for _, in := range ins {
 		Walk(v, in)
 	}
 }
 
 // WalkDescriptionSlice traverses an item slice.
-func WalkDescriptionSlice(v WalkVisitor, dns DescriptionSlice) {
+func WalkDescriptionSlice(v Visitor, dns DescriptionSlice) {
 	for _, dn := range dns {
 		Walk(v, dn)
 	}
