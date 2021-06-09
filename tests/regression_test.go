@@ -69,8 +69,8 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 
 type noEnrich struct{}
 
-func (nf *noEnrich) Enrich(ctx context.Context, m *meta.Meta) {}
-func (nf *noEnrich) Remove(ctx context.Context, m *meta.Meta) {}
+func (nf *noEnrich) Enrich(context.Context, *meta.Meta, int) {}
+func (nf *noEnrich) Remove(context.Context, *meta.Meta)      {}
 
 type noAuth struct{}
 

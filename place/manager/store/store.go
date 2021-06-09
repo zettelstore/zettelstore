@@ -16,7 +16,7 @@ import (
 	"io"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
 )
 
@@ -38,8 +38,10 @@ type Stats struct {
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
-	place.Enricher
 	search.Selector
+
+	// Entrich metadata with data from store.
+	Enrich(ctx context.Context, m *meta.Meta)
 
 	// UpdateReferences for a specific zettel.
 	// Returns set of zettel identifier that must also be checked for changes.

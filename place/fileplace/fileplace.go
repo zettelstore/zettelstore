@@ -30,7 +30,11 @@ func init() {
 		if ext != ".zip" {
 			return nil, errors.New("unknown extension '" + ext + "' in place URL: " + u.String())
 		}
-		return &zipPlace{name: path, enricher: cdata.Enricher}, nil
+		return &zipPlace{
+			number:   cdata.Number,
+			name:     path,
+			enricher: cdata.Enricher,
+		}, nil
 	})
 }
 

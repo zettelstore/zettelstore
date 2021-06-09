@@ -32,6 +32,7 @@ import (
 
 // ConnectData contains all administration related values.
 type ConnectData struct {
+	Number   int // number of the place, starting with 1.
 	Config   config.Config
 	Enricher place.Enricher
 	Notify   chan<- place.UpdateInfo
@@ -128,7 +129,7 @@ func New(placeURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Con
 		idxAr:    newAnterooms(10),
 		idxReady: make(chan struct{}, 1),
 	}
-	cdata := ConnectData{Config: rtConfig, Enricher: mgr, Notify: mgr.infos}
+	cdata := ConnectData{Number: 1, Config: rtConfig, Enricher: mgr, Notify: mgr.infos}
 	subplaces := make([]place.ManagedPlace, 0, len(placeURIs)+2)
 	for _, uri := range placeURIs {
 		p, err := Connect(uri, authManager, &cdata)
@@ -137,16 +138,19 @@ func New(placeURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Con
 		}
 		if p != nil {
 			subplaces = append(subplaces, p)
+			cdata.Number++
 		}
 	}
 	constplace, err := registry[" const"](nil, &cdata)
 	if err != nil {
 		return nil, err
 	}
+	cdata.Number++
 	progplace, err := registry[" prog"](nil, &cdata)
 	if err != nil {
 		return nil, err
 	}
+	cdata.Number++
 	subplaces = append(subplaces, constplace, progplace)
 	mgr.subplaces = subplaces
 	return mgr, nil

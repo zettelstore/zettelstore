@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210525121644
+modified: 20210609185100
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -52,7 +52,7 @@ The following keys are supported:
   Its lifetime exceeds the lifetime of the authentication token (see option ''token-lifetime-html'') by 30 seconds.
 
   Default: ''false''
-; [!place-uri-X]''place-uri-//X//'', where //X// is a number greater or equal to one
+; [!place-uri-x]''place-uri-//X//'', where //X// is a number greater or equal to one
 : Specifies a [[place|00001004011200]] where zettel are stored.
   During startup //X// is counted up, starting with one, until no key is found.
   This allows to configure more than one place.

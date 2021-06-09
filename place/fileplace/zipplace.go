@@ -40,6 +40,7 @@ type zipEntry struct {
 }
 
 type zipPlace struct {
+	number   int
 	name     string
 	enricher place.Enricher
 	zettel   map[id.Zid]*zipEntry // no lock needed, because read-only after creation
@@ -179,7 +180,7 @@ func (zp *zipPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) 
 		if err != nil {
 			continue
 		}
-		zp.enricher.Enrich(ctx, m)
+		zp.enricher.Enrich(ctx, m, zp.number)
 		if match(m) {
 			res = append(res, m)
 		}

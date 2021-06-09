@@ -137,6 +137,7 @@ var (
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
 	KeyNoIndex           = registerKey("no-index", TypeBool, usageUser, "")
+	KeyPlaceNumber       = registerKey("place-number", TypeNumber, usageComputed, "")
 	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser, KeyFolge)
 	KeyPublished         = registerKey("published", TypeTimestamp, usageProperty, "")
 	KeyReadOnly          = registerKey("read-only", TypeWord, usageUser, "")

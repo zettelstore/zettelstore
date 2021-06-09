@@ -28,11 +28,12 @@ func init() {
 	manager.Register(
 		" prog",
 		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
-			return getPlace(cdata.Enricher), nil
+			return getPlace(cdata.Number, cdata.Enricher), nil
 		})
 }
 
 type progPlace struct {
+	number int
 	filter place.Enricher
 }
 
@@ -50,8 +51,8 @@ var myZettel = map[id.Zid]struct {
 }
 
 // Get returns the one program place.
-func getPlace(mf place.Enricher) place.ManagedPlace {
-	return &progPlace{filter: mf}
+func getPlace(placeNumber int, mf place.Enricher) place.ManagedPlace {
+	return &progPlace{number: placeNumber, filter: mf}
 }
 
 // Setup remembers important values.
@@ -111,7 +112,7 @@ func (pp *progPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc)
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
-				pp.filter.Enrich(ctx, m)
+				pp.filter.Enrich(ctx, m, pp.number)
 				if match(m) {
 					res = append(res, m)
 				}

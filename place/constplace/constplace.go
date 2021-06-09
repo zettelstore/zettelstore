@@ -28,7 +28,11 @@ func init() {
 	manager.Register(
 		" const",
 		func(u *url.URL, cdata *manager.ConnectData) (place.ManagedPlace, error) {
-			return &constPlace{zettel: constZettelMap, enricher: cdata.Enricher}, nil
+			return &constPlace{
+				number:   cdata.Number,
+				zettel:   constZettelMap,
+				enricher: cdata.Enricher,
+			}, nil
 		})
 }
 
@@ -48,6 +52,7 @@ type constZettel struct {
 }
 
 type constPlace struct {
+	number   int
 	zettel   map[id.Zid]constZettel
 	enricher place.Enricher
 }
@@ -87,7 +92,7 @@ func (cp *constPlace) FetchZids(ctx context.Context) (id.Set, error) {
 func (cp *constPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	for zid, zettel := range cp.zettel {
 		m := makeMeta(zid, zettel.header)
-		cp.enricher.Enrich(ctx, m)
+		cp.enricher.Enrich(ctx, m, cp.number)
 		if match(m) {
 			res = append(res, m)
 		}

@@ -13,18 +13,20 @@ package manager
 
 import (
 	"context"
+	"strconv"
 
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/place"
 )
 
 // Enrich computes additional properties and updates the given metadata.
-func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta) {
+func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, placeNumber int) {
 	if place.DoNotEnrich(ctx) {
 		// Enrich is called indirectly via indexer or enrichment is not requested
 		// because of other reasons -> ignore this call, do not update meta data
 		return
 	}
+	m.Set(meta.KeyPlaceNumber, strconv.Itoa(placeNumber))
 	computePublished(m)
 	mgr.idxStore.Enrich(ctx, m)
 }

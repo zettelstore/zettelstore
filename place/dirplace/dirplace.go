@@ -40,6 +40,7 @@ func init() {
 		}
 		dirSrvSpec, defWorker, maxWorker := getDirSrvInfo(u.Query().Get("type"))
 		dp := dirPlace{
+			number:     cdata.Number,
 			location:   u.String(),
 			readonly:   getQueryBool(u, "readonly"),
 			cdata:      *cdata,
@@ -93,6 +94,7 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 
 // dirPlace uses a directory to store zettel as files.
 type dirPlace struct {
+	number     int
 	location   string
 	readonly   bool
 	cdata      manager.ConnectData
@@ -234,7 +236,7 @@ func (dp *dirPlace) SelectMeta(ctx context.Context, match search.MetaMatchFunc) 
 			continue
 		}
 		dp.cleanupMeta(ctx, m)
-		dp.cdata.Enricher.Enrich(ctx, m)
+		dp.cdata.Enricher.Enrich(ctx, m, dp.number)
 
 		if match(m) {
 			res = append(res, m)

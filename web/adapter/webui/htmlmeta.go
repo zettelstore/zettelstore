@@ -46,7 +46,7 @@ func (wui *WebUI) writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getT
 			wui.writeIdentifierSet(w, l, getTitle)
 		}
 	case meta.TypeNumber:
-		writeNumber(w, m.GetDefault(key, "???n"))
+		wui.writeNumber(w, key, m.GetDefault(key, "???n"))
 	case meta.TypeString:
 		writeString(w, m.GetDefault(key, "???s"))
 	case meta.TypeTagSet:
@@ -121,8 +121,8 @@ func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTitle func(i
 	}
 }
 
-func writeNumber(w io.Writer, val string) {
-	strfun.HTMLEscape(w, val, false)
+func (wui *WebUI) writeNumber(w io.Writer, key, val string) {
+	wui.writeLink(w, key, val, val)
 }
 
 func writeString(w io.Writer, val string) {

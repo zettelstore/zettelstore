@@ -183,7 +183,7 @@ type Subject interface {
 type Enricher interface {
 	// Enrich computes additional properties and updates the given metadata.
 	// It is typically called by zettel reading methods.
-	Enrich(ctx context.Context, m *meta.Meta)
+	Enrich(ctx context.Context, m *meta.Meta, placeNumber int)
 }
 
 // NoEnrichContext will signal an enricher that nothing has to be done.
