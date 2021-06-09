@@ -93,17 +93,24 @@ func (mgr *Manager) idxWorkService(ctx context.Context) bool {
 				mgr.idxMx.Unlock()
 			}
 		case arUpdate:
-			changed = true
-			mgr.idxMx.Lock()
-			mgr.idxSinceReload++
-			mgr.idxMx.Unlock()
 			zettel, err := mgr.GetZettel(ctx, zid)
 			if err != nil {
 				// TODO: on some errors put the zid into a "try later" set
 				continue
 			}
+			changed = true
+			mgr.idxMx.Lock()
+			mgr.idxSinceReload++
+			mgr.idxMx.Unlock()
 			mgr.idxUpdateZettel(ctx, zettel)
 		case arDelete:
+			if _, err := mgr.GetMeta(ctx, zid); err == nil {
+				// Zettel was not deleted. This might occur, if zettel was
+				// deleted in secondary dirplace, but is still present in
+				// first dirplace (or vice versa). Re-index zettel in case
+				// a hidden zettel was recovered
+				mgr.idxAr.Enqueue(zid, arUpdate)
+			}
 			changed = true
 			mgr.idxMx.Lock()
 			mgr.idxSinceReload++
