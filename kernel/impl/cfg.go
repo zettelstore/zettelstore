@@ -14,7 +14,6 @@ package impl
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -48,20 +47,9 @@ func (cs *configService) Initialize() {
 			},
 			true,
 		},
-		meta.KeyExpertMode: {"Expert mode", parseBool, true},
-		meta.KeyFooterHTML: {"Footer HTML", parseString, true},
-		meta.KeyHomeZettel: {"Home zettel", parseZid, true},
-		meta.KeyListPageSize: {
-			"List page size",
-			func(val string) interface{} {
-				iVal, err := strconv.Atoi(val)
-				if err != nil {
-					return nil
-				}
-				return iVal
-			},
-			true,
-		},
+		meta.KeyExpertMode:     {"Expert mode", parseBool, true},
+		meta.KeyFooterHTML:     {"Footer HTML", parseString, true},
+		meta.KeyHomeZettel:     {"Home zettel", parseZid, true},
 		meta.KeyMarkerExternal: {"Marker external URL", parseString, true},
 		meta.KeySiteName:       {"Site name", parseString, true},
 		meta.KeyYAMLHeader:     {"YAML header", parseBool, true},
@@ -81,7 +69,6 @@ func (cs *configService) Initialize() {
 		meta.KeyExpertMode:        false,
 		meta.KeyFooterHTML:        "",
 		meta.KeyHomeZettel:        id.DefaultHomeZid,
-		meta.KeyListPageSize:      0,
 		meta.KeyMarkerExternal:    "&#10138;",
 		meta.KeySiteName:          "Zettelstore",
 		meta.KeyYAMLHeader:        false,
@@ -259,19 +246,6 @@ func (cfg *myConfig) GetMarkerExternal() string {
 // GetFooterHTML returns HTML code that should be embedded into the footer
 // of each WebUI page.
 func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(meta.KeyFooterHTML) }
-
-// GetListPageSize returns the maximum length of a list to be returned in WebUI.
-// A value less or equal to zero signals no limit.
-func (cfg *myConfig) GetListPageSize() int {
-	cfg.mx.RLock()
-	defer cfg.mx.RUnlock()
-
-	if value, ok := cfg.data.GetNumber(meta.KeyListPageSize); ok {
-		return value
-	}
-	value, _ := cfg.orig.GetNumber(meta.KeyListPageSize)
-	return value
-}
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cfg *myConfig) GetZettelFileSyntax() []string {

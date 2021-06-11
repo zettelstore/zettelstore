@@ -271,36 +271,10 @@ func (wui *WebUI) renderMetaList(
 	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
 	pageURL func(int) string) {
 
-	var metaList []*meta.Meta
-	var err error
-	var prevURL, nextURL string
-	if lps := wui.rtConfig.GetListPageSize(); lps > 0 {
-		if s.GetLimit() < lps {
-			s.SetLimit(lps + 1)
-		}
-
-		metaList, err = ucMetaList(s)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		if offset := s.GetOffset(); offset > 0 {
-			offset -= lps
-			if offset < 0 {
-				offset = 0
-			}
-			prevURL = pageURL(offset)
-		}
-		if len(metaList) >= s.GetLimit() {
-			nextURL = pageURL(s.GetOffset() + lps)
-			metaList = metaList[:len(metaList)-1]
-		}
-	} else {
-		metaList, err = ucMetaList(s)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
+	metaList, err := ucMetaList(s)
+	if err != nil {
+		wui.reportError(ctx, w, err)
+		return
 	}
 	user := wui.getUser(ctx)
 	metas, err := wui.buildHTMLMetaList(metaList)
@@ -311,21 +285,11 @@ func (wui *WebUI) renderMetaList(
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
-		Title       string
-		Metas       []simpleLink
-		HasPrevNext bool
-		HasPrev     bool
-		PrevURL     string
-		HasNext     bool
-		NextURL     string
+		Title string
+		Metas []simpleLink
 	}{
-		Title:       title,
-		Metas:       metas,
-		HasPrevNext: len(prevURL) > 0 || len(nextURL) > 0,
-		HasPrev:     len(prevURL) > 0,
-		PrevURL:     prevURL,
-		HasNext:     len(nextURL) > 0,
-		NextURL:     nextURL,
+		Title: title,
+		Metas: metas,
 	})
 }
 

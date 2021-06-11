@@ -133,7 +133,6 @@ var (
 	KeyHomeZettel        = registerKey("home-zettel", TypeID, usageUser, "")
 	KeyLang              = registerKey("lang", TypeWord, usageUser, "")
 	KeyLicense           = registerKey("license", TypeEmpty, usageUser, "")
-	KeyListPageSize      = registerKey("list-page-size", TypeNumber, usageUser, "")
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
 	KeyNoIndex           = registerKey("no-index", TypeBool, usageUser, "")

@@ -56,10 +56,6 @@ type Config interface {
 	// GetFooterHTML returns HTML code that should be embedded into the footer
 	// of each WebUI page.
 	GetFooterHTML() string
-
-	// GetListPageSize returns the maximum length of a list to be returned in WebUI.
-	// A value less or equal to zero signals no limit.
-	GetListPageSize() int
 }
 
 // AuthConfig are relevant configuration values for authentication.

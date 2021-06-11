@@ -1,19 +1,6 @@
-<nav>
 <header>
 <h1>{{Title}}</h1>
 </header>
 <ul>
 {{#Metas}}<li><a href="{{{URL}}}">{{{Text}}}</a></li>
 {{/Metas}}</ul>
-{{#HasPrevNext}}
-<p>
-{{#HasPrev}}
-<a href="{{{PrevURL}}}" rel="prev">Prev</a>
-{{#HasNext}},{{/HasNext}}
-{{/HasPrev}}
-{{#HasNext}}
-<a href="{{{NextURL}}}" rel="next">Next</a>
-{{/HasNext}}
-</p>
-{{/HasPrevNext}}
-</nav>
