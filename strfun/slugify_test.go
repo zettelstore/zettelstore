@@ -18,6 +18,7 @@ import (
 )
 
 func TestSlugify(t *testing.T) {
+	t.Parallel()
 	tests := []struct{ in, exp string }{
 		{"simple test", "simple-test"},
 		{"I'm a go developer", "i-m-a-go-developer"},
@@ -47,6 +48,7 @@ func eqStringSlide(got, exp []string) bool {
 }
 
 func TestNormalizeWord(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		in  string
 		exp []string

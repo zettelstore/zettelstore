@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -17,6 +17,7 @@ import (
 )
 
 func TestContentIsBinary(t *testing.T) {
+	t.Parallel()
 	td := []struct {
 		s   string
 		exp bool

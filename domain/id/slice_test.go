@@ -19,6 +19,7 @@ import (
 )
 
 func TestSliceSort(t *testing.T) {
+	t.Parallel()
 	zs := id.Slice{9, 4, 6, 1, 7}
 	zs.Sort()
 	exp := id.Slice{1, 4, 6, 7, 9}
@@ -28,6 +29,7 @@ func TestSliceSort(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
+	t.Parallel()
 	var orig id.Slice
 	got := orig.Copy()
 	if got != nil {
@@ -41,6 +43,7 @@ func TestCopy(t *testing.T) {
 }
 
 func TestSliceEqual(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		s1, s2 id.Slice
 		exp    bool
@@ -66,6 +69,7 @@ func TestSliceEqual(t *testing.T) {
 }
 
 func TestSliceString(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in  id.Slice
 		exp string

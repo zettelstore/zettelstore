@@ -182,6 +182,7 @@ func getRoot() string {
 }
 
 func TestSpec(t *testing.T) {
+	t.Parallel()
 	root := getRoot()
 	if _, err := os.Stat(root); err != nil {
 		if errors.Is(err, os.ErrNotExist) {

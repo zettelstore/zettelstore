@@ -35,6 +35,7 @@ func equalWordList(exp, got []string) bool {
 }
 
 func TestWordsWords(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		words store.WordSet
 		exp   []string
@@ -52,6 +53,7 @@ func TestWordsWords(t *testing.T) {
 }
 
 func TestWordsDiff(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		cur        store.WordSet
 		old        []string

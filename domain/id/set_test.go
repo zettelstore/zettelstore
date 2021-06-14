@@ -19,6 +19,7 @@ import (
 )
 
 func TestSetSorted(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		set id.Set
 		exp id.Slice
@@ -36,6 +37,7 @@ func TestSetSorted(t *testing.T) {
 }
 
 func TestSetIntersection(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		s1, s2 id.Set
 		exp    id.Slice
@@ -63,6 +65,7 @@ func TestSetIntersection(t *testing.T) {
 }
 
 func TestSetRemove(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		s1, s2 id.Set
 		exp    id.Slice

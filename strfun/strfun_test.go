@@ -18,6 +18,7 @@ import (
 )
 
 func TestTrimSpaceRight(t *testing.T) {
+	t.Parallel()
 	const space = "\t\v\r\f\n\u0085\u00a0\u2000\u3000"
 	testcases := []struct {
 		in  string
@@ -50,6 +51,7 @@ func TestTrimSpaceRight(t *testing.T) {
 }
 
 func TestLength(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in  string
 		exp int
@@ -66,6 +68,7 @@ func TestLength(t *testing.T) {
 }
 
 func TestJustifyLeft(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in  string
 		ml  int
@@ -87,6 +90,7 @@ func TestJustifyLeft(t *testing.T) {
 }
 
 func TestSplitLines(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in  string
 		exp []string

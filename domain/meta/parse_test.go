@@ -23,6 +23,7 @@ func parseMetaStr(src string) *meta.Meta {
 }
 
 func TestEmpty(t *testing.T) {
+	t.Parallel()
 	m := parseMetaStr("")
 	if got, ok := m.Get(meta.KeySyntax); ok || got != "" {
 		t.Errorf("Syntax is not %q, but %q", "", got)
@@ -33,6 +34,7 @@ func TestEmpty(t *testing.T) {
 }
 
 func TestTitle(t *testing.T) {
+	t.Parallel()
 	td := []struct{ s, e string }{
 		{meta.KeyTitle + ": a title", "a title"},
 		{meta.KeyTitle + ": a\n\t title", "a title"},
@@ -61,6 +63,7 @@ func TestTitle(t *testing.T) {
 }
 
 func TestNewFromInput(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		input string
 		exp   []meta.Pair
@@ -109,6 +112,7 @@ func equalPairs(one, two []meta.Pair) bool {
 }
 
 func TestPrecursorIDSet(t *testing.T) {
+	t.Parallel()
 	var testdata = []struct {
 		inp string
 		exp string

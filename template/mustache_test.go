@@ -229,6 +229,7 @@ func renderString(data string, errMissing bool, value interface{}) (string, erro
 }
 
 func TestBasic(t *testing.T) {
+	t.Parallel()
 	for _, test := range tests {
 		output, err := renderString(test.tmpl, false, test.context)
 		if err != nil {
@@ -261,6 +262,7 @@ var missing = []Test{
 }
 
 func TestMissing(t *testing.T) {
+	t.Parallel()
 	for _, test := range missing {
 		output, err := renderString(test.tmpl, false, test.context)
 		if err != nil {
@@ -291,6 +293,7 @@ var malformed = []Test{
 }
 
 func TestMalformed(t *testing.T) {
+	t.Parallel()
 	for _, test := range malformed {
 		output, err := renderString(test.tmpl, false, test.context)
 		if err != nil {
@@ -323,6 +326,7 @@ func (p Person) Name2() string {
 }
 
 func TestPointerReceiver(t *testing.T) {
+	t.Parallel()
 	p := Person{"John", "Smith"}
 	tests := []struct {
 		tmpl     string
@@ -413,6 +417,7 @@ var tagTests = []tagsTest{
 }
 
 func TestTags(t *testing.T) {
+	t.Parallel()
 	for _, test := range tagTests {
 		testTags(t, &test)
 	}

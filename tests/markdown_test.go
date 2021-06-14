@@ -70,6 +70,7 @@ var exceptions = []string{
 var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
 
 func TestEncoderAvailability(t *testing.T) {
+	t.Parallel()
 	encoderMissing := false
 	for _, format := range formats {
 		enc := encoder.Create(format, nil)
@@ -84,6 +85,7 @@ func TestEncoderAvailability(t *testing.T) {
 }
 
 func TestMarkdownSpec(t *testing.T) {
+	t.Parallel()
 	content, err := os.ReadFile("../testdata/markdown/spec.json")
 	if err != nil {
 		panic(err)

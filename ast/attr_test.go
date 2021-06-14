@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -18,6 +18,7 @@ import (
 )
 
 func TestHasDefault(t *testing.T) {
+	t.Parallel()
 	attr := &ast.Attributes{}
 	if attr.HasDefault() {
 		t.Error("Should not have default attr")
@@ -29,6 +30,7 @@ func TestHasDefault(t *testing.T) {
 }
 
 func TestAttrClone(t *testing.T) {
+	t.Parallel()
 	orig := &ast.Attributes{}
 	clone := orig.Clone()
 	if len(clone.Attrs) > 0 {

@@ -18,6 +18,7 @@ import (
 )
 
 func TestEatEOL(t *testing.T) {
+	t.Parallel()
 	inp := input.NewInput("")
 	inp.EatEOL()
 	if inp.Ch != input.EOS {
@@ -38,6 +39,7 @@ func TestEatEOL(t *testing.T) {
 }
 
 func TestScanEntity(t *testing.T) {
+	t.Parallel()
 	var testcases = []struct {
 		text string
 		exp  string

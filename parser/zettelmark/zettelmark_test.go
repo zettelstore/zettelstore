@@ -60,6 +60,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 }
 
 func TestEOL(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"", ""},
 		{"\n", ""},
@@ -70,6 +71,7 @@ func TestEOL(t *testing.T) {
 }
 
 func TestText(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"abcd", "(PARA abcd)"},
 		{"ab cd", "(PARA ab SP cd)"},
@@ -99,6 +101,7 @@ func TestText(t *testing.T) {
 }
 
 func TestSpace(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{" ", ""},
 		{"\t", ""},
@@ -107,6 +110,7 @@ func TestSpace(t *testing.T) {
 }
 
 func TestSoftBreak(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"x\ny", "(PARA x SB y)"},
 		{"z\n", "(PARA z)"},
@@ -116,6 +120,7 @@ func TestSoftBreak(t *testing.T) {
 }
 
 func TestHardBreak(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"x  \ny", "(PARA x HB y)"},
 		{"z  \n", "(PARA z)"},
@@ -125,6 +130,7 @@ func TestHardBreak(t *testing.T) {
 }
 
 func TestLink(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"[", "(PARA [)"},
 		{"[[", "(PARA [[)"},
@@ -161,6 +167,7 @@ func TestLink(t *testing.T) {
 }
 
 func TestCite(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"[@", "(PARA [@)"},
 		{"[@]", "(PARA [@])"},
@@ -180,6 +187,7 @@ func TestCite(t *testing.T) {
 }
 
 func TestFootnote(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"[^", "(PARA [^)"},
 		{"[^]", "(PARA (FN))"},
@@ -193,6 +201,7 @@ func TestFootnote(t *testing.T) {
 }
 
 func TestImage(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"{", "(PARA {)"},
 		{"{{", "(PARA {{)"},
@@ -222,6 +231,7 @@ func TestImage(t *testing.T) {
 }
 
 func TestTag(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"#", "(PARA #)"},
 		{"##", "(PARA ##)"},
@@ -234,6 +244,7 @@ func TestTag(t *testing.T) {
 }
 
 func TestMark(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"[!", "(PARA [!)"},
 		{"[!\n", "(PARA [!)"},
@@ -249,6 +260,7 @@ func TestMark(t *testing.T) {
 }
 
 func TestComment(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"%", "(PARA %)"},
 		{"%%", "(PARA {%})"},
@@ -269,6 +281,7 @@ func TestComment(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
+	t.Parallel()
 	for _, ch := range []string{"/", "*", "_", "~", "'", "^", ",", "<", "\"", ";", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
@@ -298,6 +311,7 @@ func TestFormat(t *testing.T) {
 }
 
 func TestLiteral(t *testing.T) {
+	t.Parallel()
 	for _, ch := range []string{"`", "+", "="} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
@@ -326,6 +340,7 @@ func TestLiteral(t *testing.T) {
 }
 
 func TestMixFormatCode(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"//abc//\n**def**", "(PARA {/ abc} SB {* def})"},
 		{"++abc++\n==def==", "(PARA {+ abc} SB {= def})"},
@@ -336,6 +351,7 @@ func TestMixFormatCode(t *testing.T) {
 }
 
 func TestNDash(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"--", "(PARA \u2013)"},
 		{"a--b", "(PARA a\u2013b)"},
@@ -343,6 +359,7 @@ func TestNDash(t *testing.T) {
 }
 
 func TestEntity(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"&", "(PARA &)"},
 		{"&;", "(PARA &;)"},
@@ -362,6 +379,7 @@ func TestEntity(t *testing.T) {
 }
 
 func TestVerbatim(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"```\n```", "(PROG)"},
 		{"```\nabc\n```", "(PROG\nabc)"},
@@ -373,6 +391,7 @@ func TestVerbatim(t *testing.T) {
 }
 
 func TestSpanRegion(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{":::\n:::", "(SPAN)"},
 		{":::\nabc\n:::", "(SPAN (PARA abc))"},
@@ -385,6 +404,7 @@ func TestSpanRegion(t *testing.T) {
 }
 
 func TestQuoteRegion(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"<<<\n<<<", "(QUOTE)"},
 		{"<<<\nabc\n<<<", "(QUOTE (PARA abc))"},
@@ -397,6 +417,7 @@ func TestQuoteRegion(t *testing.T) {
 }
 
 func TestVerseRegion(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, replace("\"", TestCases{
 		{"$$$\n$$$", "(VERSE)"},
 		{"$$$\nabc\n$$$", "(VERSE (PARA abc))"},
@@ -410,6 +431,7 @@ func TestVerseRegion(t *testing.T) {
 }
 
 func TestHeading(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"=h", "(PARA =h)"},
 		{"= h", "(PARA = SP h)"},
@@ -434,6 +456,7 @@ func TestHeading(t *testing.T) {
 }
 
 func TestHRule(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"-", "(PARA -)"},
 		{"---", "(HR)"},
@@ -448,6 +471,7 @@ func TestHRule(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	t.Parallel()
 	// No ">" in the following, because quotation lists may have empty items.
 	for _, ch := range []string{"*", "#"} {
 		checkTcs(t, replace(ch, TestCases{
@@ -494,6 +518,7 @@ func TestList(t *testing.T) {
 }
 
 func TestEnumAfterPara(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"abc\n* def", "(PARA abc)(UL {(PARA def)})"},
 		{"abc\n*def", "(PARA abc SB *def)"},
@@ -501,6 +526,7 @@ func TestEnumAfterPara(t *testing.T) {
 }
 
 func TestDefinition(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{";", "(PARA ;)"},
 		{"; ", "(PARA ;)"},
@@ -523,6 +549,7 @@ func TestDefinition(t *testing.T) {
 }
 
 func TestTable(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"|", "(TAB (TR))"},
 		{"|a", "(TAB (TR (TD a)))"},
@@ -536,6 +563,7 @@ func TestTable(t *testing.T) {
 }
 
 func TestBlockAttr(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{":::go\n:::", "(SPAN)[ATTR =go]"},
 		{":::go=\n:::", "(SPAN)[ATTR =go]"},
@@ -571,6 +599,7 @@ func TestBlockAttr(t *testing.T) {
 }
 
 func TestInlineAttr(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"::a::{}", "(PARA {: a})"},
 		{"::a::{ }", "(PARA {: a})"},
@@ -603,6 +632,7 @@ func TestInlineAttr(t *testing.T) {
 }
 
 func TestTemp(t *testing.T) {
+	t.Parallel()
 	checkTcs(t, TestCases{
 		{"", ""},
 	})

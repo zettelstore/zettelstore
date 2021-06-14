@@ -18,6 +18,7 @@ import (
 )
 
 func TestIsValid(t *testing.T) {
+	t.Parallel()
 	validIDs := []string{
 		"00000000000001",
 		"00000000000020",

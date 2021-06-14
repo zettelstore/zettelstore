@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -21,6 +21,7 @@ import (
 const testID = id.Zid(98765432101234)
 
 func TestKeyIsValid(t *testing.T) {
+	t.Parallel()
 	validKeys := []string{"0", "a", "0-", "title", "title-----", strings.Repeat("r", 255)}
 	for _, key := range validKeys {
 		if !KeyIsValid(key) {
@@ -36,6 +37,7 @@ func TestKeyIsValid(t *testing.T) {
 }
 
 func TestTitleHeader(t *testing.T) {
+	t.Parallel()
 	m := New(testID)
 	if got, ok := m.Get(KeyTitle); ok || got != "" {
 		t.Errorf("Title is not empty, but %q", got)
@@ -82,6 +84,7 @@ func checkSet(t *testing.T, exp []string, m *Meta, key string) {
 }
 
 func TestTagsHeader(t *testing.T) {
+	t.Parallel()
 	m := New(testID)
 	checkSet(t, []string{}, m, KeyTags)
 
@@ -99,6 +102,7 @@ func TestTagsHeader(t *testing.T) {
 }
 
 func TestSyntax(t *testing.T) {
+	t.Parallel()
 	m := New(testID)
 	if got, ok := m.Get(KeySyntax); ok || got != "" {
 		t.Errorf("Syntax is not %q, but %q", "", got)
@@ -139,6 +143,7 @@ func checkHeader(t *testing.T, exp map[string]string, gotP []Pair) {
 }
 
 func TestDefaultHeader(t *testing.T) {
+	t.Parallel()
 	m := New(testID)
 	addToMeta(m, "h1", "d1")
 	addToMeta(m, "H2", "D2")
@@ -158,6 +163,7 @@ func TestDefaultHeader(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	t.Parallel()
 	m := New(testID)
 	m.Set("key", "val")
 	if got, ok := m.Get("key"); !ok || got != "val" {
@@ -174,6 +180,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestEqual(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		pairs1, pairs2 []string
 		allowComputed  bool

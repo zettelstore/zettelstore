@@ -178,6 +178,7 @@ func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 }
 
 func TestContentRegression(t *testing.T) {
+	t.Parallel()
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -249,6 +250,7 @@ func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetD
 var testConfig = &myConfig{}
 
 func TestMetaRegression(t *testing.T) {
+	t.Parallel()
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)

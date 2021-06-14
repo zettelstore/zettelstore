@@ -18,6 +18,7 @@ import (
 )
 
 func TestParseReference(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		link string
 		err  bool
@@ -41,6 +42,7 @@ func TestParseReference(t *testing.T) {
 }
 
 func TestReferenceIsZettelMaterial(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		link       string
 		isZettel   bool

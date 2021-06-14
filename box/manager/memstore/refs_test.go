@@ -39,6 +39,7 @@ func assertRefs(t *testing.T, i int, got, exp id.Slice) {
 }
 
 func TestRefsDiff(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in1, in2   id.Slice
 		exp1, exp2 id.Slice
@@ -59,6 +60,7 @@ func TestRefsDiff(t *testing.T) {
 }
 
 func TestAddRef(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		ref id.Slice
 		zid uint
@@ -78,6 +80,7 @@ func TestAddRef(t *testing.T) {
 }
 
 func TestRemRefs(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		in1, in2 id.Slice
 		exp      id.Slice
@@ -113,6 +116,7 @@ func TestRemRefs(t *testing.T) {
 }
 
 func TestRemRef(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		ref id.Slice
 		zid uint

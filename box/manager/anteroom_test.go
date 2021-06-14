@@ -18,6 +18,7 @@ import (
 )
 
 func TestSimple(t *testing.T) {
+	t.Parallel()
 	ar := newAnterooms(2)
 	ar.Enqueue(id.Zid(1), arUpdate)
 	action, zid := ar.Dequeue()
@@ -51,6 +52,7 @@ func TestSimple(t *testing.T) {
 }
 
 func TestReset(t *testing.T) {
+	t.Parallel()
 	ar := newAnterooms(1)
 	ar.Enqueue(id.Zid(1), arUpdate)
 	ar.Reset()

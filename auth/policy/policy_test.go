@@ -21,6 +21,7 @@ import (
 )
 
 func TestPolicies(t *testing.T) {
+	t.Parallel()
 	testScene := []struct {
 		readonly bool
 		withAuth bool

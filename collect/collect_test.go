@@ -27,6 +27,7 @@ func parseRef(s string) *ast.Reference {
 }
 
 func TestLinks(t *testing.T) {
+	t.Parallel()
 	zn := &ast.ZettelNode{}
 	summary := collect.References(zn)
 	if summary.Links != nil || summary.Images != nil {
@@ -54,6 +55,7 @@ func TestLinks(t *testing.T) {
 }
 
 func TestImage(t *testing.T) {
+	t.Parallel()
 	zn := &ast.ZettelNode{
 		Ast: ast.BlockSlice{
 			&ast.ParaNode{

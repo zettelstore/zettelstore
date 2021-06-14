@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -44,6 +44,7 @@ func assertWriteMeta(t *testing.T, m *meta.Meta, expected string) {
 }
 
 func TestWriteMeta(t *testing.T) {
+	t.Parallel()
 	assertWriteMeta(t, newMeta("", nil, ""), "")
 
 	m := newMeta("TITLE", []string{"#t1", "#t2"}, "syntax")

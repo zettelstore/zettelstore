@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -21,6 +21,7 @@ import (
 )
 
 func TestNow(t *testing.T) {
+	t.Parallel()
 	m := meta.New(id.Invalid)
 	m.SetNow("key")
 	val, ok := m.Get("key")
@@ -39,6 +40,7 @@ func TestNow(t *testing.T) {
 }
 
 func TestGetTime(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		value string
 		valid bool
