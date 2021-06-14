@@ -13,6 +13,11 @@ package cmd
 
 // Mention all needed encoders, parsers and stores to have them registered.
 import (
+	_ "zettelstore.de/z/box/compbox"       // Allow to use computed box.
+	_ "zettelstore.de/z/box/constbox"      // Allow to use global internal box.
+	_ "zettelstore.de/z/box/dirbox"        // Allow to use directory box.
+	_ "zettelstore.de/z/box/filebox"       // Allow to use file box.
+	_ "zettelstore.de/z/box/membox"        // Allow to use in-memory box.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/jsonenc"   // Allow to use JSON encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
@@ -25,9 +30,4 @@ import (
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
-	_ "zettelstore.de/z/place/constplace"  // Allow to use global internal place.
-	_ "zettelstore.de/z/place/dirplace"    // Allow to use directory place.
-	_ "zettelstore.de/z/place/fileplace"   // Allow to use file place.
-	_ "zettelstore.de/z/place/memplace"    // Allow to use memory place.
-	_ "zettelstore.de/z/place/progplace"   // Allow to use computed place.
 )

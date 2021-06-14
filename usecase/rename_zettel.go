@@ -14,9 +14,9 @@ package usecase
 import (
 	"context"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 )
 
 // RenameZettelPort is the interface used by this use case.
@@ -33,7 +33,7 @@ type RenameZettel struct {
 	port RenameZettelPort
 }
 
-// ErrZidInUse is returned if the zettel id is not appropriate for the place operation.
+// ErrZidInUse is returned if the zettel id is not appropriate for the box operation.
 type ErrZidInUse struct{ Zid id.Zid }
 
 func (err *ErrZidInUse) Error() string {
@@ -47,7 +47,7 @@ func NewRenameZettel(port RenameZettelPort) RenameZettel {
 
 // Run executes the use case.
 func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
-	noEnrichCtx := place.NoEnrichContext(ctx)
+	noEnrichCtx := box.NoEnrichContext(ctx)
 	if _, err := uc.port.GetMeta(noEnrichCtx, curZid); err != nil {
 		return err
 	}

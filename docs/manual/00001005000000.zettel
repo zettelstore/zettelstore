@@ -3,6 +3,7 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
+modified: 20210614165848
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -20,7 +21,7 @@ For example, a more sophisticated web interface could be build, or an applicatio
 
 === Where zettel are stored
 
-Your zettel are stored as files in a specific directory.
+Your zettel are stored typically as files in a specific directory.
 If you have not explicitly specified the directory, a default directory will be used.
 The directory has to be specified at [[startup time|00001004010000]].
 Nested directories are not supported (yet).
@@ -48,20 +49,20 @@ Zettelstore recognizes this situation and reads in both files for the one zettel
 It maintains this relationship as long as theses files exists.
 
 In case of some textual zettel content you do not want to store the metadata and the zettel content in two different files.
-Here the ''.zettel'' extension will signal that the metadata and the zettel content will be placed in the same file, separated by an empty line or a line with three dashes (""''-\-\-''"", also known as ""YAML separator"").
+Here the ''.zettel'' extension will signal that the metadata and the zettel content will be put in the same file, separated by an empty line or a line with three dashes (""''-\-\-''"", also known as ""YAML separator"").
 
 === Predefined zettel
 
 Zettelstore contains some [[predefined zettel|00001005090000]] to work properly.
 The [[configuration zettel|00001004020000]] is one example.
 To render the builtin web interface, some templates are used, as well as a layout specification in CSS.
-The icon that visualizes an external link is a predefined SVG image.
+The icon that visualizes a broken image is a predefined GIF image.
 All of these are visible to the Zettelstore as zettel.
 
 One reason for this is to allow you to modify these zettel to adapt Zettelstore to your needs and visual preferences.
 
 Where are these zettel stored?
-They are stored within the Zettelstore software itself, because one design goal was to have just one file to use Zettelstore.
+They are stored within the Zettelstore software itself, because one design goal was to have just one executable file to use Zettelstore.
 But data stored within an executable programm cannot be changed later[^Well, it can, but it is a very bad idea to allow this. Mostly for security reasons.].
 
 To allow changing predefined zettel, both the file store and the internal zettel store are internally chained together.
@@ -74,3 +75,15 @@ If you want to read the original zettel, you either have to delete the zettel (w
 Now we have two places where zettel are stored: in the specific directory and within the Zettelstore software.
 
 * [[List of predefined zettel|00001005090000]]
+
+=== Boxes: other ways to store zettel
+As described above, a zettel may be stored as a file inside a directory or inside the Zettelstore software itself.
+Zettelstore allows other ways to store zettel by providing an abstraction called //box//.[^Formerly, zettel were stored physically in boxes, often made of wood.]
+
+A file directory which stores zettel is called a ""directory box"".
+But zettel may be also stored in a ZIP file, which is called ""file box"".
+For testing purposes, zettel may be stored in volatile memeory (called //RAM//).
+This way is called ""memory box"".
+
+Other types of boxes could be added to Zettelstore.
+What about a ""remote Zettelstore box""?

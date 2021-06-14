@@ -21,7 +21,7 @@ import (
 type Command struct {
 	Name   string              // command name as it appears on the command line
 	Func   CommandFunc         // function that executes a command
-	Places bool                // if true then places will be set up
+	Boxes  bool                // if true then boxes will be set up
 	Header bool                // Print a heading on startup
 	Flags  func(*flag.FlagSet) // function to set up flag.FlagSet
 	flags  *flag.FlagSet       // flags that belong to the command

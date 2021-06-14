@@ -41,7 +41,7 @@ func raiseFdLimit() error {
 		return err
 	}
 	if rLimit.Cur < minFiles {
-		log.Printf("Make sure you have no more than %d files in all your places if you enabled notification\n", rLimit.Cur)
+		log.Printf("Make sure you have no more than %d files in all your boxes if you enabled notification\n", rLimit.Cur)
 	}
 	return nil
 }

@@ -16,7 +16,7 @@ is interpreted as ""false"", anybody can modify the zettel.
 
 If the metadata value is something else (the value ""true"" is recommended),
 the user cannot modify the zettel through the web interface.
-However, if the zettel is stored as a file in a [[directory place|00001004011400]],
+However, if the zettel is stored as a file in a [[directory box|00001004011400]],
 the zettel could be modified using an external editor.
 
 === Authentication enabled
@@ -35,6 +35,6 @@ users with that role (or a role with lower rights) are not allowed to modify the
 
 If the metadata value is something else (one of the values ""true"" or ""owner"" is recommended),
 no user is allowed modify the zettel through the web interface.
-However, if the zettel is accessible as a file in a [[directory place|00001004011400]],
+However, if the zettel is accessible as a file in a [[directory box|00001004011400]],
 the zettel could be modified using an external editor.
 Typically the owner of a Zettelstore have such an access.

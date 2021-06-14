@@ -22,15 +22,16 @@ import (
 	"testing"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/box"
+	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/manager"
 
+	_ "zettelstore.de/z/box/dirbox"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/jsonenc"
 	_ "zettelstore.de/z/encoder/nativeenc"
@@ -38,12 +39,11 @@ import (
 	_ "zettelstore.de/z/encoder/zmkenc"
 	_ "zettelstore.de/z/parser/blob"
 	_ "zettelstore.de/z/parser/zettelmark"
-	_ "zettelstore.de/z/place/dirplace"
 )
 
 var formats = []string{"html", "djson", "native", "text"}
 
-func getFilePlaces(wd string, kind string) (root string, places []place.ManagedPlace) {
+func getFileBoxes(wd string, kind string) (root string, boxes []box.ManagedBox) {
 	root = filepath.Clean(filepath.Join(wd, "..", "testdata", kind))
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -53,18 +53,18 @@ func getFilePlaces(wd string, kind string) (root string, places []place.ManagedP
 	cdata := manager.ConnectData{Config: testConfig, Enricher: &noEnrich{}, Notify: nil}
 	for _, entry := range entries {
 		if entry.IsDir() {
-			u, err := url.Parse("dir://" + filepath.Join(root, entry.Name()) + "?type=" + kernel.PlaceDirTypeSimple)
+			u, err := url.Parse("dir://" + filepath.Join(root, entry.Name()) + "?type=" + kernel.BoxDirTypeSimple)
 			if err != nil {
 				panic(err)
 			}
-			place, err := manager.Connect(u, &noAuth{}, &cdata)
+			box, err := manager.Connect(u, &noAuth{}, &cdata)
 			if err != nil {
 				panic(err)
 			}
-			places = append(places, place)
+			boxes = append(boxes, box)
 		}
 	}
-	return root, places
+	return root, boxes
 }
 
 type noEnrich struct{}
@@ -137,7 +137,7 @@ func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	}
 }
 
-func getPlaceName(p place.ManagedPlace, root string) string {
+func getBoxName(p box.ManagedBox, root string) string {
 	u, err := url.Parse(p.Location())
 	if err != nil {
 		panic("Unable to parse URL '" + p.Location() + "': " + err.Error())
@@ -147,8 +147,8 @@ func getPlaceName(p place.ManagedPlace, root string) string {
 
 func match(*meta.Meta) bool { return true }
 
-func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
-	ss := p.(place.StartStopper)
+func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
+	ss := p.(box.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
@@ -164,7 +164,7 @@ func checkContentPlace(t *testing.T, p place.ManagedPlace, wd, placeName string)
 		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "content", placeName, z.Zid.String()+"."+format)
+				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+format)
 				checkBlocksFile(st, resultName, z, format)
 			})
 		}
@@ -182,9 +182,9 @@ func TestContentRegression(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	root, places := getFilePlaces(wd, "content")
-	for _, p := range places {
-		checkContentPlace(t, p, wd, getPlaceName(p, root))
+	root, boxes := getFileBoxes(wd, "content")
+	for _, p := range boxes {
+		checkContentBox(t, p, wd, getBoxName(p, root))
 	}
 }
 
@@ -200,8 +200,8 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format s
 	panic(fmt.Sprintf("Unknown writer format %q", format))
 }
 
-func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
-	ss := p.(place.StartStopper)
+func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
+	ss := p.(box.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
@@ -217,7 +217,7 @@ func checkMetaPlace(t *testing.T, p place.ManagedPlace, wd, placeName string) {
 		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "meta", placeName, z.Zid.String()+"."+format)
+				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+format)
 				checkMetaFile(st, resultName, z, format)
 			})
 		}
@@ -253,8 +253,8 @@ func TestMetaRegression(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	root, places := getFilePlaces(wd, "meta")
-	for _, p := range places {
-		checkMetaPlace(t, p, wd, getPlaceName(p, root))
+	root, boxes := getFileBoxes(wd, "meta")
+	for _, p := range boxes {
+		checkMetaBox(t, p, wd, getBoxName(p, root))
 	}
 }

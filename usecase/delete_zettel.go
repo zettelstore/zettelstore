@@ -19,7 +19,7 @@ import (
 
 // DeleteZettelPort is the interface used by this use case.
 type DeleteZettelPort interface {
-	// DeleteZettel removes the zettel from the place.
+	// DeleteZettel removes the zettel from the box.
 	DeleteZettel(ctx context.Context, zid id.Zid) error
 }
 

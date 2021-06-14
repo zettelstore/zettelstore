@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -41,7 +41,7 @@ func (api *API) MakeListMetaHandler(
 		}
 		ctx1 := ctx
 		if format == "html" || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
-			ctx1 = place.NoEnrichContext(ctx1)
+			ctx1 = box.NoEnrichContext(ctx1)
 		}
 		metaList, err := listMeta.Run(ctx1, s)
 		if err != nil {

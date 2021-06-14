@@ -15,8 +15,8 @@ import (
 	"context"
 	"sort"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
 )
 
@@ -38,7 +38,7 @@ func NewListRole(port ListRolePort) ListRole {
 
 // Run executes the use case.
 func (uc ListRole) Run(ctx context.Context) ([]string, error) {
-	metas, err := uc.port.SelectMeta(place.NoEnrichContext(ctx), nil)
+	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), nil)
 	if err != nil {
 		return nil, err
 	}

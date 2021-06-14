@@ -22,14 +22,14 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
+	"zettelstore.de/z/box"
+	"zettelstore.de/z/box/compbox"
+	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/place"
-	"zettelstore.de/z/place/manager"
-	"zettelstore.de/z/place/progplace"
 	"zettelstore.de/z/web/server"
 )
 
@@ -56,14 +56,14 @@ func init() {
 	RegisterCommand(Command{
 		Name:   "run",
 		Func:   runFunc,
-		Places: true,
+		Boxes:  true,
 		Header: true,
 		Flags:  flgRun,
 	})
 	RegisterCommand(Command{
 		Name:   "run-simple",
 		Func:   runSimpleFunc,
-		Places: true,
+		Boxes:  true,
 		Header: true,
 		Flags:  flgSimpleRun,
 	})
@@ -113,7 +113,7 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			} else {
 				val = "dir:" + val
 			}
-			cfg.Set(keyPlaceOneURI, val)
+			cfg.Set(keyBoxOneURI, val)
 		case "r":
 			cfg.Set(keyReadOnly, flg.Value.String())
 		case "v":
@@ -133,18 +133,18 @@ func parsePort(s string) (string, error) {
 }
 
 const (
-	keyAdminPort           = "admin-port"
-	keyDefaultDirPlaceType = "default-dir-place-type"
-	keyInsecureCookie      = "insecure-cookie"
-	keyListenAddr          = "listen-addr"
-	keyOwner               = "owner"
-	keyPersistentCookie    = "persistent-cookie"
-	keyPlaceOneURI         = kernel.PlaceURIs + "1"
-	keyReadOnly            = "read-only-mode"
-	keyTokenLifetimeHTML   = "token-lifetime-html"
-	keyTokenLifetimeAPI    = "token-lifetime-api"
-	keyURLPrefix           = "url-prefix"
-	keyVerbose             = "verbose"
+	keyAdminPort         = "admin-port"
+	keyDefaultDirBoxType = "default-dir-box-type"
+	keyInsecureCookie    = "insecure-cookie"
+	keyListenAddr        = "listen-addr"
+	keyOwner             = "owner"
+	keyPersistentCookie  = "persistent-cookie"
+	keyBoxOneURI         = kernel.BoxURIs + "1"
+	keyReadOnly          = "read-only-mode"
+	keyTokenLifetimeHTML = "token-lifetime-html"
+	keyTokenLifetimeAPI  = "token-lifetime-api"
+	keyURLPrefix         = "url-prefix"
+	keyVerbose           = "verbose"
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
@@ -157,17 +157,17 @@ func setServiceConfig(cfg *meta.Meta) error {
 	ok = setConfigValue(ok, kernel.AuthService, kernel.AuthReadonly, cfg.GetBool(keyReadOnly))
 
 	ok = setConfigValue(
-		ok, kernel.PlaceService, kernel.PlaceDefaultDirType,
-		cfg.GetDefault(keyDefaultDirPlaceType, kernel.PlaceDirTypeNotify))
-	ok = setConfigValue(ok, kernel.PlaceService, kernel.PlaceURIs+"1", "dir:./zettel")
-	format := kernel.PlaceURIs + "%v"
+		ok, kernel.BoxService, kernel.BoxDefaultDirType,
+		cfg.GetDefault(keyDefaultDirBoxType, kernel.BoxDirTypeNotify))
+	ok = setConfigValue(ok, kernel.BoxService, kernel.BoxURIs+"1", "dir:./zettel")
+	format := kernel.BoxURIs + "%v"
 	for i := 1; ; i++ {
 		key := fmt.Sprintf(format, i)
 		val, found := cfg.Get(key)
 		if !found {
 			break
 		}
-		ok = setConfigValue(ok, kernel.PlaceService, key, val)
+		ok = setConfigValue(ok, kernel.BoxService, key, val)
 	}
 
 	ok = setConfigValue(
@@ -195,22 +195,22 @@ func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{})
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withPlaces bool) {
-	var createManager kernel.CreatePlaceManagerFunc
-	if withPlaces {
+func setupOperations(cfg *meta.Meta, withBoxes bool) {
+	var createManager kernel.CreateBoxManagerFunc
+	if withBoxes {
 		err := raiseFdLimit()
 		if err != nil {
 			srvm := kernel.Main
 			srvm.Log("Raising some limitions did not work:", err)
 			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
-			srvm.SetConfig(kernel.PlaceService, kernel.PlaceDefaultDirType, kernel.PlaceDirTypeSimple)
+			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
 		}
-		createManager = func(placeURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (place.Manager, error) {
-			progplace.Setup(cfg)
-			return manager.New(placeURIs, authManager, rtConfig)
+		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {
+			compbox.Setup(cfg)
+			return manager.New(boxURIs, authManager, rtConfig)
 		}
 	} else {
-		createManager = func([]*url.URL, auth.Manager, config.Config) (place.Manager, error) { return nil, nil }
+		createManager = func([]*url.URL, auth.Manager, config.Config) (box.Manager, error) { return nil, nil }
 	}
 
 	kernel.Main.SetCreators(
@@ -218,7 +218,7 @@ func setupOperations(cfg *meta.Meta, withPlaces bool) {
 			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
 		},
 		createManager,
-		func(srv server.Server, plMgr place.Manager, authMgr auth.Manager, rtConfig config.Config) error {
+		func(srv server.Server, plMgr box.Manager, authMgr auth.Manager, rtConfig config.Config) error {
 			setupRouting(srv, plMgr, authMgr, rtConfig)
 			return nil
 		},
@@ -241,7 +241,7 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	setupOperations(cfg, command.Places)
+	setupOperations(cfg, command.Boxes)
 	kernel.Main.Start(command.Header)
 	exitCode, err := command.Func(fs, cfg)
 	if err != nil {

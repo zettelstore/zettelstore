@@ -110,7 +110,7 @@ func (ws *webService) Start(kern *myKernel) error {
 	secureCookie := ws.GetNextConfig(kernel.WebSecureCookie).(bool)
 
 	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
-	err := kern.web.setupServer(srvw, kern.place.manager, kern.auth.manager, kern.cfg.rtConfig)
+	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
 		kern.doLog("Unable to create Web Server:", err)
 		return err

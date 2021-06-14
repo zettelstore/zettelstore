@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
@@ -29,7 +30,6 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -41,7 +41,7 @@ type WebUI struct {
 	authz    auth.AuthzManager
 	rtConfig config.Config
 	token    auth.TokenManager
-	place    webuiPlace
+	box      webuiBox
 	policy   auth.Policy
 
 	templateCache map[id.Zid]*template.Template
@@ -58,7 +58,7 @@ type WebUI struct {
 	searchURL     string
 }
 
-type webuiPlace interface {
+type webuiBox interface {
 	CanCreateZettel(ctx context.Context) bool
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
@@ -69,13 +69,13 @@ type webuiPlace interface {
 
 // New creates a new WebUI struct.
 func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
-	mgr place.Manager, pol auth.Policy) *WebUI {
+	mgr box.Manager, pol auth.Policy) *WebUI {
 	wui := &WebUI{
 		ab:       ab,
 		rtConfig: rtConfig,
 		authz:    authz,
 		token:    token,
-		place:    mgr,
+		box:      mgr,
 		policy:   pol,
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
@@ -90,14 +90,14 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		loginURL:      ab.NewURLBuilder('a').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
-	wui.observe(place.UpdateInfo{Place: mgr, Reason: place.OnReload, Zid: id.Invalid})
+	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }
 
-func (wui *WebUI) observe(ci place.UpdateInfo) {
+func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
-	if ci.Reason == place.OnReload || ci.Zid == id.BaseTemplateZid {
+	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid {
 		wui.templateCache = make(map[id.Zid]*template.Template, len(wui.templateCache))
 	} else {
 		delete(wui.templateCache, ci.Zid)
@@ -120,21 +120,21 @@ func (wui *WebUI) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
 	m := meta.New(id.Invalid)
-	return wui.policy.CanCreate(user, m) && wui.place.CanCreateZettel(ctx)
+	return wui.policy.CanCreate(user, m) && wui.box.CanCreateZettel(ctx)
 }
 
 func (wui *WebUI) canWrite(
 	ctx context.Context, user, meta *meta.Meta, content domain.Content) bool {
 	return wui.policy.CanWrite(user, meta, meta) &&
-		wui.place.CanUpdateZettel(ctx, domain.Zettel{Meta: meta, Content: content})
+		wui.box.CanUpdateZettel(ctx, domain.Zettel{Meta: meta, Content: content})
 }
 
 func (wui *WebUI) canRename(ctx context.Context, user, m *meta.Meta) bool {
-	return wui.policy.CanRename(user, m) && wui.place.AllowRenameZettel(ctx, m.Zid)
+	return wui.policy.CanRename(user, m) && wui.box.AllowRenameZettel(ctx, m.Zid)
 }
 
 func (wui *WebUI) canDelete(ctx context.Context, user, m *meta.Meta) bool {
-	return wui.policy.CanDelete(user, m) && wui.place.CanDeleteZettel(ctx, m.Zid)
+	return wui.policy.CanDelete(user, m) && wui.box.CanDeleteZettel(ctx, m.Zid)
 }
 
 func (wui *WebUI) getTemplate(
@@ -142,7 +142,7 @@ func (wui *WebUI) getTemplate(
 	if t, ok := wui.cacheGetTemplate(templateID); ok {
 		return t, nil
 	}
-	realTemplateZettel, err := wui.place.GetZettel(ctx, templateID)
+	realTemplateZettel, err := wui.box.GetZettel(ctx, templateID)
 	if err != nil {
 		return nil, err
 	}
@@ -232,8 +232,8 @@ func htmlAttrNewWindow(hasURL bool) string {
 }
 
 func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
-	ctx = place.NoEnrichContext(ctx)
-	menu, err := wui.place.GetZettel(ctx, id.TOCNewTemplateZid)
+	ctx = box.NoEnrichContext(ctx)
+	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
 		return nil
 	}
@@ -245,7 +245,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		if err != nil {
 			continue
 		}
-		m, err := wui.place.GetMeta(ctx, zid)
+		m, err := wui.box.GetMeta(ctx, zid)
 		if err != nil {
 			continue
 		}

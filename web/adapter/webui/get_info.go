@@ -17,13 +17,13 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/encfun"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -55,7 +55,7 @@ func (wui *WebUI) MakeGetInfoHandler(parseZettel usecase.ParseZettel, getMeta us
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 

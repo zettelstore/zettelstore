@@ -19,11 +19,11 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -58,7 +58,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 		ctx, w, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
 			if !s.HasComputedMetaKey() {
-				ctx = place.NoEnrichContext(ctx)
+				ctx = box.NoEnrichContext(ctx)
 			}
 			return listMeta.Run(ctx, s)
 		},
@@ -187,7 +187,7 @@ func (wui *WebUI) MakeSearchHandler(
 		wui.renderMetaList(
 			ctx, w, title, s, func(s *search.Search) ([]*meta.Meta, error) {
 				if !s.HasComputedMetaKey() {
-					ctx = place.NoEnrichContext(ctx)
+					ctx = box.NoEnrichContext(ctx)
 				}
 				return ucSearch.Run(ctx, s)
 			},
@@ -203,7 +203,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 		q := r.URL.Query()

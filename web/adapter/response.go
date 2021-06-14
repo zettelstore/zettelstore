@@ -17,7 +17,7 @@ import (
 	"log"
 	"net/http"
 
-	"zettelstore.de/z/place"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/usecase"
 )
 
@@ -42,13 +42,13 @@ func (err *ErrBadRequest) Error() string { return err.Text }
 
 // CodeMessageFromError returns an appropriate HTTP status code and text from a given error.
 func CodeMessageFromError(err error) (int, string) {
-	if err == place.ErrNotFound {
+	if err == box.ErrNotFound {
 		return http.StatusNotFound, http.StatusText(http.StatusNotFound)
 	}
-	if err1, ok := err.(*place.ErrNotAllowed); ok {
+	if err1, ok := err.(*box.ErrNotAllowed); ok {
 		return http.StatusForbidden, err1.Error()
 	}
-	if err1, ok := err.(*place.ErrInvalidID); ok {
+	if err1, ok := err.(*box.ErrInvalidID); ok {
 		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context", err1.Zid)
 	}
 	if err1, ok := err.(*usecase.ErrZidInUse); ok {
@@ -57,10 +57,10 @@ func CodeMessageFromError(err error) (int, string) {
 	if err1, ok := err.(*ErrBadRequest); ok {
 		return http.StatusBadRequest, err1.Text
 	}
-	if errors.Is(err, place.ErrStopped) {
+	if errors.Is(err, box.ErrStopped) {
 		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v", err)
 	}
-	if errors.Is(err, place.ErrConflict) {
+	if errors.Is(err, box.ErrConflict) {
 		return http.StatusConflict, "Zettelstore operations conflicted"
 	}
 	return http.StatusInternalServerError, err.Error()

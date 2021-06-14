@@ -16,10 +16,10 @@ import (
 	"net/http"
 	"strings"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -31,7 +31,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 
@@ -66,7 +66,7 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 		ctx := r.Context()
 		curZid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 

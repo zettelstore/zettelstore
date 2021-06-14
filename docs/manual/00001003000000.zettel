@@ -9,7 +9,7 @@ You just want to check out the Zettelstore software
 
 * Grab the appropriate executable and copy it into any directory
 * Start the Zettelstore software, e.g. with a double click
-* A sub-directory ""zettel"" will be created in the directory where you placed the executable.
+* A sub-directory ""zettel"" will be created in the directory where you put the executable.
   It will contain your future zettel.
 * Open the URI [[http://localhost:23123]] with your web browser.
   It will present you a mostly empty Zettelstore.
@@ -43,7 +43,7 @@ Create a system user of that group, named ''zettelstore'', with a home folder:
     --comment "Zettelstore server" \
     zettelstore
 ```
-Create a systemd service file and place it into ''/etc/systemd/system/zettelstore.service'':
+Create a systemd service file and store it into ''/etc/systemd/system/zettelstore.service'':
 ```ini
 [Unit]
 Description=Zettelstore

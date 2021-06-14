@@ -14,10 +14,10 @@ package auth
 import (
 	"time"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/web/server"
 )
 
@@ -79,7 +79,7 @@ type Manager interface {
 	TokenManager
 	AuthzManager
 
-	PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, Policy)
+	BoxWithPolicy(auth server.Auth, unprotectedBox box.Box, rtConfig config.Config) (box.Box, Policy)
 }
 
 // Policy is an interface for checking access authorization.

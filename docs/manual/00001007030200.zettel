@@ -90,7 +90,7 @@ is rendered in HTML as:
 :::
 
 Please note that two lists cannot be separated by an empty line.
-Instead you should place a horizonal rule (""thematic break"") between them.
+Instead you should put a horizonal rule (""thematic break"") between them.
 You could also use a mark element or a hard line break to separate the two lists:
 ```zmk
 # One

@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -30,11 +30,11 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 
-		zettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
+		zettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -70,7 +70,7 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) ht
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 

@@ -21,11 +21,11 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/web/server"
 )
 
@@ -179,6 +179,6 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 	return meta.UserRoleReader
 }
 
-func (a *myAuth) PlaceWithPolicy(auth server.Auth, unprotectedPlace place.Place, rtConfig config.Config) (place.Place, auth.Policy) {
-	return policy.PlaceWithPolicy(auth, a, unprotectedPlace, rtConfig)
+func (a *myAuth) BoxWithPolicy(auth server.Auth, unprotectedBox box.Box, rtConfig config.Config) (box.Box, auth.Policy) {
+	return policy.BoxWithPolicy(auth, a, unprotectedBox, rtConfig)
 }

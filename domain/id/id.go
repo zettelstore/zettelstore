@@ -25,7 +25,7 @@ type Zid uint64
 
 // Some important ZettelIDs.
 // Note: if you change some values, ensure that you also change them in the
-//       constant place. They are mentioned there literally, because these
+//       constant box. They are mentioned there literally, because these
 //       constants are not available there.
 const (
 	Invalid = Zid(0) // Invalid is a Zid that will never be valid
@@ -37,7 +37,7 @@ const (
 	LicenseZid              = Zid(4)
 	AuthorsZid              = Zid(5)
 	DependenciesZid         = Zid(6)
-	PlaceManagerZid         = Zid(20)
+	BoxManagerZid           = Zid(20)
 	MetadataKeyZid          = Zid(90)
 	StartupConfigurationZid = Zid(96)
 	ConfigurationZid        = Zid(100)

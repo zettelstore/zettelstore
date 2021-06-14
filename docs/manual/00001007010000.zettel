@@ -24,14 +24,14 @@ With some exceptions, two identical non-space characters begins a formatting ran
 Exceptions are: links, images, edits, comments, and both the ""en-dash"" and the ""horizontal ellipsis"".
 A link is given with ``[[...]]``{=zmk}, an images with ``{{...}}``{=zmk}, and an edit formatting with ``((...))``{=zmk}.
 An inline comment, beginning with the sequence ``%%``{=zmk}, always ends at the end of the line where it begins.
-The ""en-dash"" (""--"") is specified as ``--``{=zmk}, the ""horizontal ellipsis"" (""..."") as ``...``{=zmk}[^If placed at the end of non-space text.].
+The ""en-dash"" (""--"") is specified as ``--``{=zmk}, the ""horizontal ellipsis"" (""..."") as ``...``{=zmk}[^If put at the end of non-space text.].
 
 Some inline elements do not follow the rule of two identical character, especially to specify footnotes, citation keys, and local marks.
 These elements begin with one opening square bracket (""``[``""), use a character for specifying the kind of the inline, typically allow to specify some content, and end with one closing square bracket (""``]``"").
 
 One inline element that does not begin with two characters is the ""entity"".
 It allows to specify any Unicode character.
-The specification of that character is placed between an ampersand character and a semicolon: ``&...;``{=zmk}.
+The specification of that character is put between an ampersand character and a semicolon: ``&...;``{=zmk}.
 For exmple, an ""n-dash"" could also be specified as ``&ndash;``{==zmk}.
 
 The backslash character (""``\\``"") possibly gives the next character a special meaning.
@@ -41,7 +41,7 @@ An inline element to strongly emphasize some text begin with a space will be spe
 To force the inline element formatting at the beginning of a line, ``**\\ Text**``{=zmk} should better be specified.
 
 Many block and inline elements can be refined by additional attributes.
-Attributes resemble roughly HTML attributes and are placed near the corresponding elements by using the syntax ``{...}``{=zmk}.
+Attributes resemble roughly HTML attributes and are put near the corresponding elements by using the syntax ``{...}``{=zmk}.
 One example is to make space characters visible inside a inline literal element: ``1 + 2 = 3``{-} was specified by using the default attribute: ``\`\`1 + 2 = 3\`\`{-}``.
 
 To summarize:

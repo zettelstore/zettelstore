@@ -60,7 +60,7 @@ modified: 20210525161623
 
   If the key specifies a list value, all other list values with a number greater than the given key are deleted.
   You can use the special number ""0"" to delete all values.
-  E.g. ``set-config place place-uri-0 any_text`` will remove all values of the list //place-uri-//.
+  E.g. ``set-config box box-uri-0 any_text`` will remove all values of the list //box-uri-//.
 ; ''shutdown''
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).
 ; ''start SERVICE''

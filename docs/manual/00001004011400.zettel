@@ -1,17 +1,17 @@
 id: 00001004011400
-title: Configure file directory places
+title: Configure file directory boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 modified: 20210525121232
 
-Under certain circumstances, it is preferable to further configure a file directory place.
-This is done by appending query parameters after the base place URI ''dir:\//DIR''.
+Under certain circumstances, it is preferable to further configure a file directory box.
+This is done by appending query parameters after the base box URI ''dir:\//DIR''.
 
 The following parameters are supported:
 
 |= Parameter:|Description|Default value:|
-|type|(Sub-) Type of the directory service|(value of ''[[default-dir-place-type|00001004010000#default-dir-place-type]]'')
+|type|(Sub-) Type of the directory service|(value of ''[[default-dir-box-type|00001004010000#default-dir-box-type]]'')
 |rescan|Time (in seconds) after which the directory should be scanned fully|600
 |worker|Number of worker that can access the directory in parallel|(depends on type)
 |readonly|Allow only operations that do not change a zettel or create a new zettel|n/a
@@ -19,9 +19,9 @@ The following parameters are supported:
 === Type
 On some operating systems, Zettelstore tries to detect changes to zettel files outside of Zettelstore's control[^This includes Linux, Windows, and macOS.].
 On other operating systems, this may be not possible, due to technical limitations.
-Automatic detection of external changes is also not possible, if zettel files are placed on an external service, such as a file server accessed via SMD/CIFS or NFS.
+Automatic detection of external changes is also not possible, if zettel files are put on an external service, such as a file server accessed via SMD/CIFS or NFS.
 
-To cope with this uncertainty, Zettelstore provides various internal implementations of a directory place.
+To cope with this uncertainty, Zettelstore provides various internal implementations of a directory box.
 The default values should match the needs of different users, as explained in the [[installation part|00001003000000]] of this manual.
 The following values are supported:
 
@@ -41,7 +41,7 @@ Under certain circumstances it is possible that Zettelstore does not detect a ch
 To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file directory.
 The time interval is configured by the ''rescan'' parameter, e.g.
 ```
-place-uri-1: dir:///home/zettel?rescan=300
+box-uri-1: dir:///home/zettel?rescan=300
 ```
 This makes Zettelstore to re-scan the directory ''/home/zettel/'' every 300 seconds, i.e. 5 minutes.
 
@@ -52,7 +52,7 @@ Please note that a directory re-scan invalidates all internal data of a Zettelst
 It might trigger a re-build of the backlink database (and other internal databases).
 Therefore a large value if preferred.
 
-This value is ignored for other directory place type, such as ""simple"".
+This value is ignored for other directory box type, such as ""simple"".
 
 === Worker
 Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.
@@ -62,21 +62,21 @@ A computer contains a limited number of internal processing units (CPU).
 Its number ranges from 1 to (currently) 128, e.g. in bigger server environments.
 Zettelstore typically runs on a system with 1 to 8 CPUs.
 Access to zettel file is ultimately managed by the underlying operating system.
-Depending on the hardware and on the type of the directory place, only a limited number of parallel accesses are desirable.
+Depending on the hardware and on the type of the directory box, only a limited number of parallel accesses are desirable.
 
 On smaller hardware[^In comparison to a normal desktop or laptop computer], such as the [[Raspberry Zero|https://www.raspberrypi.org/products/raspberry-pi-zero/]], a smaller value might be appropriate.
 Every worker needs some amount of main memory (RAM) and some amount of processing power.
 On bigger hardware, with some fast file services, a bigger value could result in higher performance, if needed.
 
-For a directory place of type ""notify"", the default value is: 7.
-The directory place type ""simple"" limits the value to a maximum of 1, i.e. no concurrency is possible with this type of directory place.
+For a directory box of type ""notify"", the default value is: 7.
+The directory box type ""simple"" limits the value to a maximum of 1, i.e. no concurrency is possible with this type of directory box.
 
 For various reasons, the value should be a prime number, with a maximum value of 1499.
 
 === Readonly
-Sometimes you may want to provide zettel from a file directory place, but you want to disallow any changes.
-If you provide the query parameter ''readonly'' (with or without a corresponding value), the place will disallow any changes.
+Sometimes you may want to provide zettel from a file directory box, but you want to disallow any changes.
+If you provide the query parameter ''readonly'' (with or without a corresponding value), the box will disallow any changes.
 ```
-place-uri-1: dir:///home/zettel?readonly
+box-uri-1: dir:///home/zettel?readonly
 ```
-If you put the whole Zettelstore in [[read-only|00001004010000]] [[mode|00001004051000]], all configured file directory places will be in read-only mode too, even if not explicitly configured.
+If you put the whole Zettelstore in [[read-only|00001004010000]] [[mode|00001004051000]], all configured file directory boxes will be in read-only mode too, even if not explicitly configured.

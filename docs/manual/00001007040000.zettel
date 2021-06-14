@@ -47,13 +47,13 @@ Sometimes it is not easy to enter special characters.
 If you know the Unicode code point of that character, or its name according to the [[HTML standard|https://html.spec.whatwg.org/multipage/named-characters.html]], you can enter it by number or by name.
 
 Regardless which method you use, an entity always begins with an ampersand character (""''&''"", ''U+0026'') and ends with a semicolon character (""'';''"", ''U+003B'').
-If you know the HTML name of the character you want to enter, place it between these two character.
+If you know the HTML name of the character you want to enter, put it between these two character.
 Example: ``&amp;`` is rendered as ::&amp;::{=example}.
 
 If you want to enter its numeric code point, a number sign character must follow the ampersand character, followed by digits to base 10.
 Example: ``&#38;`` is rendered in HTML as ::&#38;::{=example}.
 
-You also can enter its numeric code point as a hex number, if you place the letter ""x"" after the numeric sign character.
+You also can enter its numeric code point as a hex number, if you put the letter ""x"" after the numeric sign character.
 Example: ``&#x26;`` is rendered in HTML as ::&#x26;::{=example}.
 
 Since some Unicode character are used quite often, a special notation is introduced for them:

@@ -17,9 +17,9 @@ import (
 	"strings"
 
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
 )
@@ -70,8 +70,8 @@ func MakeLinkAdapter(
 		if err != nil {
 			panic(err)
 		}
-		_, err = getMeta.Run(place.NoEnrichContext(ctx), zid)
-		if errors.Is(err, &place.ErrNotAllowed{}) {
+		_, err = getMeta.Run(box.NoEnrichContext(ctx), zid)
+		if errors.Is(err, &box.ErrNotAllowed{}) {
 			return &ast.FormatNode{
 				Kind:    ast.FormatSpan,
 				Attrs:   origLink.Attrs,
@@ -117,7 +117,7 @@ func MakeImageAdapter(ctx context.Context, b server.Builder, getMeta usecase.Get
 			if err != nil {
 				panic(err)
 			}
-			_, err = getMeta.Run(place.NoEnrichContext(ctx), zid)
+			_, err = getMeta.Run(box.NoEnrichContext(ctx), zid)
 			if err != nil {
 				return createZettelImage(b, origImage, id.EmojiZid, ast.RefStateBroken)
 			}

@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -23,7 +24,6 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -96,11 +96,11 @@ func getOrigZettel(
 	}
 	zid, err := id.Parse(r.URL.Path[1:])
 	if err != nil {
-		return domain.Zettel{}, place.ErrNotFound
+		return domain.Zettel{}, box.ErrNotFound
 	}
-	origZettel, err := getZettel.Run(place.NoEnrichContext(ctx), zid)
+	origZettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 	if err != nil {
-		return domain.Zettel{}, place.ErrNotFound
+		return domain.Zettel{}, box.ErrNotFound
 	}
 	return origZettel, nil
 }

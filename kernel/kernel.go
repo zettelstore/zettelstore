@@ -16,9 +16,9 @@ import (
 	"net/url"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/web/server"
 )
 
@@ -67,7 +67,7 @@ type Kernel interface {
 	DumpIndex(io.Writer)
 
 	// SetCreators store functions to be called when a service has to be created.
-	SetCreators(CreateAuthManagerFunc, CreatePlaceManagerFunc, SetupWebServerFunc)
+	SetCreators(CreateAuthManagerFunc, CreateBoxManagerFunc, SetupWebServerFunc)
 }
 
 // Main references the main kernel.
@@ -88,7 +88,7 @@ const (
 	CoreService
 	ConfigService
 	AuthService
-	PlaceService
+	BoxService
 	WebService
 )
 
@@ -110,16 +110,16 @@ const (
 	AuthReadonly = "readonly"
 )
 
-// Constants for place service keys.
+// Constants for box service keys.
 const (
-	PlaceDefaultDirType = "defdirtype"
-	PlaceURIs           = "place-uri-"
+	BoxDefaultDirType = "defdirtype"
+	BoxURIs           = "box-uri-"
 )
 
-// Allowed values for PlaceDefaultDirType
+// Allowed values for BoxDefaultDirType
 const (
-	PlaceDirTypeNotify = "notify"
-	PlaceDirTypeSimple = "simple"
+	BoxDirTypeNotify = "notify"
+	BoxDirTypeSimple = "simple"
 )
 
 // Constants for web service keys.
@@ -141,17 +141,17 @@ type KeyValue struct{ Key, Value string }
 // CreateAuthManagerFunc is called to create a new auth manager.
 type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)
 
-// CreatePlaceManagerFunc is called to create a new place manager.
-type CreatePlaceManagerFunc func(
-	placeURIs []*url.URL,
+// CreateBoxManagerFunc is called to create a new box manager.
+type CreateBoxManagerFunc func(
+	boxURIs []*url.URL,
 	authManager auth.Manager,
 	rtConfig config.Config,
-) (place.Manager, error)
+) (box.Manager, error)
 
 // SetupWebServerFunc is called to create a new web service handler.
 type SetupWebServerFunc func(
 	webServer server.Server,
-	placeManager place.Manager,
+	boxManager box.Manager,
 	authManager auth.Manager,
 	rtConfig config.Config,
 ) error

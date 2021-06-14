@@ -17,10 +17,10 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/place"
 )
 
 type configService struct {
@@ -106,8 +106,8 @@ func (cs *configService) GetStatistics() []kernel.KeyValue {
 	return nil
 }
 
-func (cs *configService) setPlace(mgr place.Manager) {
-	cs.rtConfig.setPlace(mgr)
+func (cs *configService) setBox(mgr box.Manager) {
+	cs.rtConfig.setBox(mgr)
 }
 
 // myConfig contains all runtime configuration data relevant for the software.
@@ -125,12 +125,12 @@ func newConfig(orig *meta.Meta) *myConfig {
 	}
 	return &cfg
 }
-func (cfg *myConfig) setPlace(mgr place.Manager) {
+func (cfg *myConfig) setBox(mgr box.Manager) {
 	mgr.RegisterObserver(cfg.observe)
 	cfg.doUpdate(mgr)
 }
 
-func (cfg *myConfig) doUpdate(p place.Place) error {
+func (cfg *myConfig) doUpdate(p box.Box) error {
 	m, err := p.GetMeta(context.Background(), cfg.data.Zid)
 	if err != nil {
 		return err
@@ -145,9 +145,9 @@ func (cfg *myConfig) doUpdate(p place.Place) error {
 	return nil
 }
 
-func (cfg *myConfig) observe(ci place.UpdateInfo) {
-	if ci.Reason == place.OnReload || ci.Zid == id.ConfigurationZid {
-		go func() { cfg.doUpdate(ci.Place) }()
+func (cfg *myConfig) observe(ci box.UpdateInfo) {
+	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
+		go func() { cfg.doUpdate(ci.Box) }()
 	}
 }
 

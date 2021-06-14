@@ -34,11 +34,11 @@ type myKernel struct {
 	interrupt chan os.Signal
 	debug     bool
 
-	core  coreService
-	cfg   configService
-	auth  authService
-	place placeService
-	web   webService
+	core coreService
+	cfg  configService
+	auth authService
+	box  boxService
+	web  webService
 
 	srvs     map[kernel.Service]serviceDescr
 	srvNames map[string]serviceData
@@ -70,7 +70,7 @@ func createAndStart() kernel.Kernel {
 		kernel.CoreService:   {&kern.core, "core"},
 		kernel.ConfigService: {&kern.cfg, "config"},
 		kernel.AuthService:   {&kern.auth, "auth"},
-		kernel.PlaceService:  {&kern.place, "place"},
+		kernel.BoxService:    {&kern.box, "box"},
 		kernel.WebService:    {&kern.web, "web"},
 	}
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
@@ -85,8 +85,8 @@ func createAndStart() kernel.Kernel {
 		kernel.CoreService:   nil,
 		kernel.ConfigService: {kernel.CoreService},
 		kernel.AuthService:   {kernel.CoreService},
-		kernel.PlaceService:  {kernel.CoreService, kernel.ConfigService, kernel.AuthService},
-		kernel.WebService:    {kernel.ConfigService, kernel.AuthService, kernel.PlaceService},
+		kernel.BoxService:    {kernel.CoreService, kernel.ConfigService, kernel.AuthService},
+		kernel.WebService:    {kernel.ConfigService, kernel.AuthService, kernel.BoxService},
 	}
 	kern.depStop = make(serviceDependency, len(kern.depStart))
 	for srv, deps := range kern.depStart {
@@ -307,7 +307,7 @@ func (kern *myKernel) sortDependency(
 	return append(result, srvD.srv)
 }
 func (kern *myKernel) DumpIndex(w io.Writer) {
-	kern.place.DumpIndex(w)
+	kern.box.DumpIndex(w)
 }
 
 type service interface {
@@ -355,10 +355,10 @@ type serviceConfigDescription struct{ Key, Descr string }
 
 func (kern *myKernel) SetCreators(
 	createAuthManager kernel.CreateAuthManagerFunc,
-	createPlaceManager kernel.CreatePlaceManagerFunc,
+	createBoxManager kernel.CreateBoxManagerFunc,
 	setupWebServer kernel.SetupWebServerFunc,
 ) {
 	kern.auth.createManager = createAuthManager
-	kern.place.createManager = createPlaceManager
+	kern.box.createManager = createBoxManager
 	kern.web.setupServer = setupWebServer
 }

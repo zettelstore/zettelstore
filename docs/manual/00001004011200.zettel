@@ -1,5 +1,5 @@
 id: 00001004011200
-title: Zettelstore places
+title: Zettelstore boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
@@ -7,17 +7,17 @@ modified: 20210525121452
 
 A Zettelstore must store its zettel somehow and somewhere.
 In most cases you want to store your zettel as files in a directory.
-Under certain circumstances you may want to store your zettel in other places.
+Under certain circumstances you may want to store your zettel elsewhere.
 
 An example are the [[predefined zettel|00001005090000]] that come with a Zettelstore.
 They are stored within the software itself.
 In another situation you may want to store your zettel volatile, e.g. if you want to provide a sandbox for experimenting.
 
-To cope with these (and more) situations, you configure Zettelstore to use one or more places.
-This is done via the ''place-uri-X'' keys of the [[startup configuration|00001004010000#place-uri-X]] (X is a number).
-Places are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]], somehow similar to web addresses.
+To cope with these (and more) situations, you configure Zettelstore to use one or more //boxes//{-}.
+This is done via the ''box-uri-X'' keys of the [[startup configuration|00001004010000#box-uri-X]] (X is a number).
+Boxes are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]], somehow similar to web addresses.
 
-The following place URIs are supported:
+The following box URIs are supported:
 
 ; ''dir:\//DIR''
 : Specifies a directory where zettel files are stored.
@@ -26,21 +26,21 @@ The following place URIs are supported:
 
   The directory must exist before starting the Zettelstore[^There is one exception: when Zettelstore is [[started without any parameter|00001004050000]], e.g. via double-clicking its icon, an directory called ''./zettel'' will be created.].
 
-  It is possible to [[configure|00001004011400]] a directory place.
+  It is possible to [[configure|00001004011400]] a directory box.
 ; ''file:FILE.zip'' oder ''file:/\//path/to/file.zip''
 : Specifies a ZIP file which contains files that store zettel.
   You can create such a ZIP file, if you zip a directory full of zettel files.
 
-  This place is always read-only.
+  This box is always read-only.
 ; ''mem:''
 : Stores all its zettel in volatile memory.
   If you stop the Zettelstore, all changes are lost.
 
-All places that you configure via the ''store-uri-X'' keys form a chain of places.
-If a zettel should be retrieved, a search starts in the place specified with the ''place-uri-2'' key, then ''place-uri-3'' and so on.
-If a zettel is created or changed, it is always stored in the place specified with the ''place-uri-1'' key.
-This allows to overwrite zettel from other places, e.g. the predefined zettel.
+All boxes that you configure via the ''box-uri-X'' keys form a chain of boxes.
+If a zettel should be retrieved, a search starts in the box specified with the ''box-uri-2'' key, then ''box-uri-3'' and so on.
+If a zettel is created or changed, it is always stored in the box specified with the ''box-uri-1'' key.
+This allows to overwrite zettel from other boxes, e.g. the predefined zettel.
 
-If you use the ''mem:'' place, where zettel are stored in volatile memory, it makes only sense if you configure it as ''place-uri-1''.
-Such a place will be empty when Zettelstore starts and only the first place will receive updates.
+If you use the ''mem:'' box, where zettel are stored in volatile memory, it makes only sense if you configure it as ''box-uri-1''.
+Such a box will be empty when Zettelstore starts and only the first box will receive updates.
 You must make sure that your computer has enough RAM to store all zettel.

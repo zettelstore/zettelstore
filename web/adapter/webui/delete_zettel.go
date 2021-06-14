@@ -15,10 +15,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -36,7 +36,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.H
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 
@@ -66,7 +66,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 

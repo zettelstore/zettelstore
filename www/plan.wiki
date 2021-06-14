@@ -6,7 +6,7 @@ They are planned to be solved.
 <h3>Serious limitations</h3>
   *  Content with binary data (e.g. a GIF, PNG, or JPG file) cannot be created
      nor modified via the standard web interface. As a workaround, you should
-     place your file into the directory where your zettel are stored. Make sure
+     put your file into the directory where your zettel are stored. Make sure
      that the file name starts with unique 14 digits that make up the zettel
      identifier.
   *  Automatic lists and transclusions are not supported in Zettelmarkup.

@@ -16,9 +16,9 @@ import (
 	"errors"
 	"net/http"
 
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/place"
 )
 
 type getRootStore interface {
@@ -31,7 +31,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if r.URL.Path != "/" {
-			wui.reportError(ctx, w, place.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
 		homeZid := wui.rtConfig.GetHomeZettel()
@@ -47,7 +47,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			redirectFound(w, r, wui.NewURLBuilder('h').SetZid(homeZid))
 			return
 		}
-		if errors.Is(err, &place.ErrNotAllowed{}) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
+		if errors.Is(err, &box.ErrNotAllowed{}) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
 			redirectFound(w, r, wui.NewURLBuilder('a'))
 			return
 		}

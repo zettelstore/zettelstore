@@ -15,10 +15,10 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/place"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/api"
@@ -58,22 +58,22 @@ func doRun(debug bool) (int, error) {
 	return 0, nil
 }
 
-func setupRouting(webSrv server.Server, placeManager place.Manager, authManager auth.Manager, rtConfig config.Config) {
-	protectedPlaceManager, authPolicy := authManager.PlaceWithPolicy(webSrv, placeManager, rtConfig)
+func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth.Manager, rtConfig config.Config) {
+	protectedBoxManager, authPolicy := authManager.BoxWithPolicy(webSrv, boxManager, rtConfig)
 	api := api.New(webSrv, authManager, authManager, webSrv, rtConfig)
-	wui := webui.New(webSrv, authManager, rtConfig, authManager, placeManager, authPolicy)
+	wui := webui.New(webSrv, authManager, rtConfig, authManager, boxManager, authPolicy)
 
-	ucAuthenticate := usecase.NewAuthenticate(authManager, authManager, placeManager)
-	ucCreateZettel := usecase.NewCreateZettel(rtConfig, protectedPlaceManager)
-	ucGetMeta := usecase.NewGetMeta(protectedPlaceManager)
-	ucGetZettel := usecase.NewGetZettel(protectedPlaceManager)
+	ucAuthenticate := usecase.NewAuthenticate(authManager, authManager, boxManager)
+	ucCreateZettel := usecase.NewCreateZettel(rtConfig, protectedBoxManager)
+	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)
+	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
-	ucListMeta := usecase.NewListMeta(protectedPlaceManager)
-	ucListRoles := usecase.NewListRole(protectedPlaceManager)
-	ucListTags := usecase.NewListTags(protectedPlaceManager)
-	ucZettelContext := usecase.NewZettelContext(protectedPlaceManager)
+	ucListMeta := usecase.NewListMeta(protectedBoxManager)
+	ucListRoles := usecase.NewListRole(protectedBoxManager)
+	ucListTags := usecase.NewListTags(protectedBoxManager)
+	ucZettelContext := usecase.NewZettelContext(protectedBoxManager)
 
-	webSrv.Handle("/", wui.MakeGetRootHandler(protectedPlaceManager))
+	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 	webSrv.AddListRoute('a', http.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
 		api.MakePostLoginHandlerAPI(ucAuthenticate),
@@ -83,16 +83,16 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 	if !authManager.IsReadonly() {
 		webSrv.AddZettelRoute('b', http.MethodGet, wui.MakeGetRenameZettelHandler(ucGetMeta))
 		webSrv.AddZettelRoute('b', http.MethodPost, wui.MakePostRenameZettelHandler(
-			usecase.NewRenameZettel(protectedPlaceManager)))
+			usecase.NewRenameZettel(protectedBoxManager)))
 		webSrv.AddZettelRoute('c', http.MethodGet, wui.MakeGetCopyZettelHandler(
 			ucGetZettel, usecase.NewCopyZettel()))
 		webSrv.AddZettelRoute('c', http.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
 		webSrv.AddZettelRoute('d', http.MethodGet, wui.MakeGetDeleteZettelHandler(ucGetZettel))
 		webSrv.AddZettelRoute('d', http.MethodPost, wui.MakePostDeleteZettelHandler(
-			usecase.NewDeleteZettel(protectedPlaceManager)))
+			usecase.NewDeleteZettel(protectedBoxManager)))
 		webSrv.AddZettelRoute('e', http.MethodGet, wui.MakeEditGetZettelHandler(ucGetZettel))
 		webSrv.AddZettelRoute('e', http.MethodPost, wui.MakeEditSetZettelHandler(
-			usecase.NewUpdateZettel(protectedPlaceManager)))
+			usecase.NewUpdateZettel(protectedBoxManager)))
 		webSrv.AddZettelRoute('f', http.MethodGet, wui.MakeGetFolgeZettelHandler(
 			ucGetZettel, usecase.NewFolgeZettel(rtConfig)))
 		webSrv.AddZettelRoute('f', http.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
@@ -101,7 +101,7 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 		webSrv.AddZettelRoute('g', http.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
 	}
 	webSrv.AddListRoute('f', http.MethodGet, wui.MakeSearchHandler(
-		usecase.NewSearch(protectedPlaceManager), ucGetMeta, ucGetZettel))
+		usecase.NewSearch(protectedBoxManager), ucGetMeta, ucGetZettel))
 	webSrv.AddListRoute('h', http.MethodGet, wui.MakeListHTMLMetaHandler(
 		ucListMeta, ucListRoles, ucListTags))
 	webSrv.AddZettelRoute('h', http.MethodGet, wui.MakeGetHTMLZettelHandler(
@@ -111,16 +111,16 @@ func setupRouting(webSrv server.Server, placeManager place.Manager, authManager 
 
 	webSrv.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
 	webSrv.AddZettelRoute('o', http.MethodGet, api.MakeGetOrderHandler(
-		usecase.NewZettelOrder(protectedPlaceManager, ucParseZettel)))
+		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
 	webSrv.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
 	webSrv.AddZettelRoute('y', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
-		usecase.NewListMeta(protectedPlaceManager), ucGetMeta, ucParseZettel))
+		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))
 	webSrv.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
 		ucParseZettel, ucGetMeta))
 
 	if authManager.WithAuth() {
-		webSrv.SetUserRetriever(usecase.NewGetUserByZid(placeManager))
+		webSrv.SetUserRetriever(usecase.NewGetUserByZid(boxManager))
 	}
 }

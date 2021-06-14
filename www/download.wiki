@@ -20,6 +20,7 @@ Build: <code>v0.0.13</code> (2021-06-01).
 Unzip the appropriate file, install and execute Zettelstore according to the manual.
 
 <h2>Zettel for the manual</h2>
-As a starter, you can download the zettel for the manual [/uv/manual-0.0.13.zip|here].
-Just unzip the contained files and put them into your zettel folder or configure
-a file place to read the zettel directly from the ZIP file.
+As a starter, you can download the zettel for the manual
+[/uv/manual-0.0.13.zip|here]. Just unzip the contained files and put them into
+your zettel folder or configure a file box to read the zettel directly from the
+ZIP file.
