@@ -163,6 +163,14 @@ func TestLink(t *testing.T) {
 		{"[[[b]c|d]]", "(PARA (LINK d [b]c))"},
 		{"[[a[]c|d]]", "(PARA (LINK d a[]c))"},
 		{"[[a[b]|d]]", "(PARA (LINK d a[b]))"},
+		{"[[\\|]]", "(PARA (LINK %5C%7C \\|))"},
+		{"[[\\||a]]", "(PARA (LINK a |))"},
+		{"[[b\\||a]]", "(PARA (LINK a b|))"},
+		{"[[b\\|c|a]]", "(PARA (LINK a b|c))"},
+		{"[[\\]]]", "(PARA (LINK %5C%5D \\]))"},
+		{"[[\\]|a]]", "(PARA (LINK a ]))"},
+		{"[[b\\]|a]]", "(PARA (LINK a b]))"},
+		{"[[\\]\\||a]]", "(PARA (LINK a ]|))"},
 	})
 }
 
@@ -227,6 +235,14 @@ func TestImage(t *testing.T) {
 		{"{{b c|a#n}}", "(PARA (IMAGE a#n b SP c))"},
 		{"{{a}}{go}", "(PARA (IMAGE a)[ATTR go])"},
 		{"{{{{a}}|b}}", "(PARA (IMAGE %7B%7Ba) |b}})"},
+		{"{{\\|}}", "(PARA (IMAGE %5C%7C))"},
+		{"{{\\||a}}", "(PARA (IMAGE a |))"},
+		{"{{b\\||a}}", "(PARA (IMAGE a b|))"},
+		{"{{b\\|c|a}}", "(PARA (IMAGE a b|c))"},
+		{"{{\\}}}", "(PARA (IMAGE %5C%7D))"},
+		{"{{\\}|a}}", "(PARA (IMAGE a }))"},
+		{"{{b\\}|a}}", "(PARA (IMAGE a b}))"},
+		{"{{\\}\\||a}}", "(PARA (IMAGE a }|))"},
 	})
 }
 
@@ -763,12 +779,12 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			tv.b.WriteString("SB")
 		}
 	case *ast.LinkNode:
-		fmt.Fprintf(&tv.b, "(LINK %s", n.Ref)
+		fmt.Fprintf(&tv.b, "(LINK %v", n.Ref)
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.ImageNode:
-		fmt.Fprintf(&tv.b, "(IMAGE %s", n.Ref)
+		fmt.Fprintf(&tv.b, "(IMAGE %v", n.Ref)
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)

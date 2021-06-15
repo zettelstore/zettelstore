@@ -226,6 +226,14 @@ func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
 			hasSpace = true
 		case '|':
 			return hasSpace, true
+		case '\\':
+			inp.Next()
+			switch inp.Ch {
+			case input.EOS:
+				return false, false
+			case '\n', '\r':
+				hasSpace = true
+			}
 		case closeCh:
 			inp.Next()
 			if inp.Ch == closeCh {
@@ -243,6 +251,12 @@ func (cp *zmkP) readReferenceToClose(closeCh rune) bool {
 		switch inp.Ch {
 		case input.EOS, '\n', '\r', ' ':
 			return false
+		case '\\':
+			inp.Next()
+			switch inp.Ch {
+			case input.EOS, '\n', '\r':
+				return false
+			}
 		case closeCh:
 			return true
 		}
