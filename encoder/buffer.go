@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -32,22 +32,28 @@ func NewBufWriter(w io.Writer) BufWriter {
 
 // Write writes the contents of p into the buffer.
 func (w *BufWriter) Write(p []byte) (int, error) {
-	if w.err == nil {
-		w.buf = append(w.buf, p...)
-		if len(w.buf) > 2048 {
-			w.flush()
-			if w.err != nil {
-				return 0, w.err
-			}
-		}
-		return len(p), nil
+	if w.err != nil {
+		return 0, w.err
 	}
-	return 0, w.err
+	w.buf = append(w.buf, p...)
+	if len(w.buf) > 2048 {
+		w.flush()
+		if w.err != nil {
+			return 0, w.err
+		}
+	}
+	return len(p), nil
 }
 
 // WriteString writes the contents of s into the buffer.
-func (w *BufWriter) WriteString(s string) (int, error) {
-	return w.Write([]byte(s))
+func (w *BufWriter) WriteString(s string) {
+	if w.err != nil {
+		return
+	}
+	w.buf = append(w.buf, s...)
+	if len(w.buf) > 2048 {
+		w.flush()
+	}
 }
 
 // WriteStrings writes the contents of sl into the buffer.
