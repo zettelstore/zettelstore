@@ -18,7 +18,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/runes"
 )
 
 func init() {
@@ -104,7 +103,7 @@ func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 }
 
 func scanSVG(inp *input.Input) string {
-	for runes.IsSpace(inp.Ch) {
+	for input.IsSpace(inp.Ch) {
 		inp.Next()
 	}
 	svgSrc := inp.Src[inp.Pos:]

@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/runes"
+	"zettelstore.de/z/input"
 )
 
 type keyUsage int
@@ -231,7 +231,7 @@ func (m *Meta) Set(key, value string) {
 }
 
 func trimValue(value string) string {
-	return strings.TrimFunc(value, runes.IsSpace)
+	return strings.TrimFunc(value, input.IsSpace)
 }
 
 // Get retrieves the string value of a given key. The bool value signals,

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package runes provides some functions on runes.
-package runes
+// Package input provides an abstraction for data to be read.
+package input
 
 // IsSpace returns true if rune is a whitespace.
 func IsSpace(ch rune) bool {

@@ -17,7 +17,6 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
-	"zettelstore.de/z/runes"
 )
 
 // NewFromInput parses the meta data of a zettel.
@@ -72,7 +71,7 @@ func parseHeader(m *Meta, inp *input.Input) {
 		skipToEOL(inp)
 		val += inp.Src[pos:inp.Pos]
 		inp.EatEOL()
-		if !runes.IsSpace(inp.Ch) {
+		if !input.IsSpace(inp.Ch) {
 			break
 		}
 		val += " "
@@ -81,7 +80,7 @@ func parseHeader(m *Meta, inp *input.Input) {
 }
 
 func skipSpace(inp *input.Input) {
-	for runes.IsSpace(inp.Ch) {
+	for input.IsSpace(inp.Ch) {
 		inp.Next()
 	}
 }

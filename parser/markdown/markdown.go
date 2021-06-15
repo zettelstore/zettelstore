@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/runes"
 )
 
 func init() {
@@ -292,7 +291,7 @@ func splitText(text string) ast.InlineSlice {
 	state := 0 // 0=unknown,1=non-spaces,2=spaces
 	lastPos := 0
 	for pos, ch := range text {
-		if runes.IsSpace(ch) {
+		if input.IsSpace(ch) {
 			if state == 1 {
 				result = append(result, &ast.TextNode{Text: text[lastPos:pos]})
 				lastPos = pos
