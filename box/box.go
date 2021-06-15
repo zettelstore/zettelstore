@@ -124,12 +124,11 @@ type Stats struct {
 	// LastReload stores the timestamp when a full re-index was done.
 	LastReload time.Time
 
+	// DurLastReload is the duration of the last full re-index run.
+	DurLastReload time.Duration
+
 	// IndexesSinceReload counts indexing a zettel since the full re-index.
 	IndexesSinceReload uint64
-
-	// DurLastIndex is the duration of the last index run. This could be a
-	// full re-index or a re-index of a single zettel.
-	DurLastIndex time.Duration
 
 	// ZettelIndexed is the number of zettel managed by the indexer.
 	ZettelIndexed int

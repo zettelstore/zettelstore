@@ -93,7 +93,7 @@ type Manager struct {
 	mgrMx        sync.RWMutex
 	started      bool
 	rtConfig     config.Config
-	subboxes     []box.ManagedBox
+	boxes        []box.ManagedBox
 	observers    []box.UpdateFunc
 	mxObserver   sync.RWMutex
 	done         chan struct{}
@@ -106,10 +106,10 @@ type Manager struct {
 	idxReady chan struct{} // Signal a non-empty anteroom to background task
 
 	// Indexer stats data
-	idxMx           sync.RWMutex
-	idxLastReload   time.Time
-	idxSinceReload  uint64
-	idxDurLastIndex time.Duration
+	idxMx          sync.RWMutex
+	idxLastReload  time.Time
+	idxDurReload   time.Duration
+	idxSinceReload uint64
 }
 
 // New creates a new managing box.
@@ -130,14 +130,14 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 		idxReady: make(chan struct{}, 1),
 	}
 	cdata := ConnectData{Number: 1, Config: rtConfig, Enricher: mgr, Notify: mgr.infos}
-	subboxes := make([]box.ManagedBox, 0, len(boxURIs)+2)
+	boxes := make([]box.ManagedBox, 0, len(boxURIs)+2)
 	for _, uri := range boxURIs {
 		p, err := Connect(uri, authManager, &cdata)
 		if err != nil {
 			return nil, err
 		}
 		if p != nil {
-			subboxes = append(subboxes, p)
+			boxes = append(boxes, p)
 			cdata.Number++
 		}
 	}
@@ -151,8 +151,8 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 		return nil, err
 	}
 	cdata.Number++
-	subboxes = append(subboxes, constbox, compbox)
-	mgr.subboxes = subboxes
+	boxes = append(boxes, constbox, compbox)
+	mgr.boxes = boxes
 	return mgr, nil
 }
 
@@ -225,8 +225,8 @@ func (mgr *Manager) Start(ctx context.Context) error {
 		mgr.mgrMx.Unlock()
 		return box.ErrStarted
 	}
-	for i := len(mgr.subboxes) - 1; i >= 0; i-- {
-		ssi, ok := mgr.subboxes[i].(box.StartStopper)
+	for i := len(mgr.boxes) - 1; i >= 0; i-- {
+		ssi, ok := mgr.boxes[i].(box.StartStopper)
 		if !ok {
 			continue
 		}
@@ -234,8 +234,8 @@ func (mgr *Manager) Start(ctx context.Context) error {
 		if err == nil {
 			continue
 		}
-		for j := i + 1; j < len(mgr.subboxes); j++ {
-			if ssj, ok := mgr.subboxes[j].(box.StartStopper); ok {
+		for j := i + 1; j < len(mgr.boxes); j++ {
+			if ssj, ok := mgr.boxes[j].(box.StartStopper); ok {
 				ssj.Stop(ctx)
 			}
 		}
@@ -263,7 +263,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	}
 	close(mgr.done)
 	var err error
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		if ss, ok := p.(box.StartStopper); ok {
 			if err1 := ss.Stop(ctx); err1 != nil && err == nil {
 				err = err1
@@ -278,8 +278,8 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 func (mgr *Manager) ReadStats(st *box.Stats) {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	subStats := make([]box.ManagedBoxStats, len(mgr.subboxes))
-	for i, p := range mgr.subboxes {
+	subStats := make([]box.ManagedBoxStats, len(mgr.boxes))
+	for i, p := range mgr.boxes {
 		p.ReadStats(&subStats[i])
 	}
 
@@ -291,7 +291,7 @@ func (mgr *Manager) ReadStats(st *box.Stats) {
 		}
 		sumZettel += sst.Zettel
 	}
-	st.NumManagedBoxes = len(mgr.subboxes)
+	st.NumManagedBoxes = len(mgr.boxes)
 	st.ZettelTotal = sumZettel
 
 	var storeSt store.Stats
@@ -301,7 +301,7 @@ func (mgr *Manager) ReadStats(st *box.Stats) {
 
 	st.LastReload = mgr.idxLastReload
 	st.IndexesSinceReload = mgr.idxSinceReload
-	st.DurLastIndex = mgr.idxDurLastIndex
+	st.DurLastReload = mgr.idxDurReload
 	st.ZettelIndexed = storeSt.Zettel
 	st.IndexUpdates = storeSt.Updates
 	st.IndexedWords = storeSt.Words

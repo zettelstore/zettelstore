@@ -28,15 +28,15 @@ import (
 
 // Location returns some information where the box is located.
 func (mgr *Manager) Location() string {
-	if len(mgr.subboxes) <= 2 {
+	if len(mgr.boxes) <= 2 {
 		return "NONE"
 	}
 	var sb strings.Builder
-	for i := 0; i < len(mgr.subboxes)-2; i++ {
+	for i := 0; i < len(mgr.boxes)-2; i++ {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
-		sb.WriteString(mgr.subboxes[i].Location())
+		sb.WriteString(mgr.boxes[i].Location())
 	}
 	return sb.String()
 }
@@ -45,7 +45,7 @@ func (mgr *Manager) Location() string {
 func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.started && mgr.subboxes[0].CanCreateZettel(ctx)
+	return mgr.started && mgr.boxes[0].CanCreateZettel(ctx)
 }
 
 // CreateZettel creates a new zettel.
@@ -55,7 +55,7 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 	if !mgr.started {
 		return id.Invalid, box.ErrStopped
 	}
-	return mgr.subboxes[0].CreateZettel(ctx, zettel)
+	return mgr.boxes[0].CreateZettel(ctx, zettel)
 }
 
 // GetZettel retrieves a specific zettel.
@@ -65,7 +65,7 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	if !mgr.started {
 		return domain.Zettel{}, box.ErrStopped
 	}
-	for i, p := range mgr.subboxes {
+	for i, p := range mgr.boxes {
 		if z, err := p.GetZettel(ctx, zid); err != box.ErrNotFound {
 			if err == nil {
 				mgr.Enrich(ctx, z.Meta, i+1)
@@ -83,7 +83,7 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	for i, p := range mgr.subboxes {
+	for i, p := range mgr.boxes {
 		if m, err := p.GetMeta(ctx, zid); err != box.ErrNotFound {
 			if err == nil {
 				mgr.Enrich(ctx, m, i+1)
@@ -101,7 +101,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (result id.Set, err error) {
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		zids, err := p.FetchZids(ctx)
 		if err != nil {
 			return nil, err
@@ -132,7 +132,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	}
 	var result []*meta.Meta
 	match := s.CompileMatch(mgr)
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		selected, err := p.SelectMeta(ctx, match)
 		if err != nil {
 			return nil, err
@@ -154,7 +154,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.started && mgr.subboxes[0].CanUpdateZettel(ctx, zettel)
+	return mgr.started && mgr.boxes[0].CanUpdateZettel(ctx, zettel)
 }
 
 // UpdateZettel updates an existing zettel.
@@ -171,7 +171,7 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 			zettel.Meta.Delete(p.Key)
 		}
 	}
-	return mgr.subboxes[0].UpdateZettel(ctx, zettel)
+	return mgr.boxes[0].UpdateZettel(ctx, zettel)
 }
 
 // AllowRenameZettel returns true, if box will not disallow renaming the zettel.
@@ -181,7 +181,7 @@ func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	if !mgr.started {
 		return false
 	}
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		if !p.AllowRenameZettel(ctx, zid) {
 			return false
 		}
@@ -196,11 +196,11 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	if !mgr.started {
 		return box.ErrStopped
 	}
-	for i, p := range mgr.subboxes {
+	for i, p := range mgr.boxes {
 		err := p.RenameZettel(ctx, curZid, newZid)
 		if err != nil && !errors.Is(err, box.ErrNotFound) {
 			for j := 0; j < i; j++ {
-				mgr.subboxes[j].RenameZettel(ctx, newZid, curZid)
+				mgr.boxes[j].RenameZettel(ctx, newZid, curZid)
 			}
 			return err
 		}
@@ -215,7 +215,7 @@ func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	if !mgr.started {
 		return false
 	}
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		if p.CanDeleteZettel(ctx, zid) {
 			return true
 		}
@@ -230,7 +230,7 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if !mgr.started {
 		return box.ErrStopped
 	}
-	for _, p := range mgr.subboxes {
+	for _, p := range mgr.boxes {
 		err := p.DeleteZettel(ctx, zid)
 		if err == nil {
 			return nil

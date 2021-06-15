@@ -113,12 +113,12 @@ func (ps *boxService) GetStatistics() []kernel.KeyValue {
 	ps.mxService.RUnlock()
 	return []kernel.KeyValue{
 		{Key: "Read-only", Value: fmt.Sprintf("%v", st.ReadOnly)},
-		{Key: "Sub-boxes", Value: fmt.Sprintf("%v", st.NumManagedBoxes)},
+		{Key: "Managed boxes", Value: fmt.Sprintf("%v", st.NumManagedBoxes)},
 		{Key: "Zettel (total)", Value: fmt.Sprintf("%v", st.ZettelTotal)},
 		{Key: "Zettel (indexed)", Value: fmt.Sprintf("%v", st.ZettelIndexed)},
 		{Key: "Last re-index", Value: st.LastReload.Format("2006-01-02 15:04:05 -0700 MST")},
+		{Key: "Duration last re-index", Value: fmt.Sprintf("%vms", st.DurLastReload.Milliseconds())},
 		{Key: "Indexes since last re-index", Value: fmt.Sprintf("%v", st.IndexesSinceReload)},
-		{Key: "Duration last index", Value: fmt.Sprintf("%vms", st.DurLastIndex.Milliseconds())},
 		{Key: "Indexed words", Value: fmt.Sprintf("%v", st.IndexedWords)},
 		{Key: "Indexed URLs", Value: fmt.Sprintf("%v", st.IndexedUrls)},
 		{Key: "Zettel enrichments", Value: fmt.Sprintf("%v", st.IndexUpdates)},

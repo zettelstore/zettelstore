@@ -27,6 +27,7 @@ const (
 )
 
 type anteroom struct {
+	num     uint64
 	next    *anteroom
 	waiting map[id.Zid]arAction
 	curLoad int
@@ -35,6 +36,7 @@ type anteroom struct {
 
 type anterooms struct {
 	mx      sync.Mutex
+	nextNum uint64
 	first   *anteroom
 	last    *anteroom
 	maxLoad int
@@ -90,7 +92,8 @@ func (ar *anterooms) makeAnteroom(zid id.Zid, action arAction) *anteroom {
 	}
 	waiting := make(map[id.Zid]arAction, c)
 	waiting[zid] = action
-	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
+	ar.nextNum++
+	return &anteroom{num: ar.nextNum, next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
 
 func (ar *anterooms) Reset() {
@@ -100,50 +103,24 @@ func (ar *anterooms) Reset() {
 	ar.last = ar.first
 }
 
-func (ar *anterooms) Reload(delZids id.Slice, newZids id.Set) {
+func (ar *anterooms) Reload(newZids id.Set) uint64 {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	delWaiting := createWaitingSlice(delZids, arDelete)
 	newWaiting := createWaitingSet(newZids, arUpdate)
 	ar.deleteReloadedRooms()
 
-	if ds := len(delWaiting); ds > 0 {
-		if ns := len(newWaiting); ns > 0 {
-			roomNew := &anteroom{next: ar.first, waiting: newWaiting, curLoad: ns, reload: true}
-			ar.first = &anteroom{next: roomNew, waiting: delWaiting, curLoad: ds, reload: true}
-			if roomNew.next == nil {
-				ar.last = roomNew
-			}
-			return
-		}
-
-		ar.first = &anteroom{next: ar.first, waiting: delWaiting, curLoad: ds}
-		if ar.first.next == nil {
-			ar.last = ar.first
-		}
-		return
-	}
-
 	if ns := len(newWaiting); ns > 0 {
-		ar.first = &anteroom{next: ar.first, waiting: newWaiting, curLoad: ns}
+		ar.nextNum++
+		ar.first = &anteroom{num: ar.nextNum, next: ar.first, waiting: newWaiting, curLoad: ns}
 		if ar.first.next == nil {
 			ar.last = ar.first
 		}
-		return
+		return ar.nextNum
 	}
 
 	ar.first = nil
 	ar.last = nil
-}
-
-func createWaitingSlice(zids id.Slice, action arAction) map[id.Zid]arAction {
-	waitingSet := make(map[id.Zid]arAction, len(zids))
-	for _, zid := range zids {
-		if zid.IsValid() {
-			waitingSet[zid] = action
-		}
-	}
-	return waitingSet
+	return 0
 }
 
 func createWaitingSet(zids id.Set, action arAction) map[id.Zid]arAction {
@@ -167,13 +144,14 @@ func (ar *anterooms) deleteReloadedRooms() {
 	}
 }
 
-func (ar *anterooms) Dequeue() (arAction, id.Zid) {
+func (ar *anterooms) Dequeue() (arAction, id.Zid, uint64) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	if ar.first == nil {
-		return arNothing, id.Invalid
+		return arNothing, id.Invalid, 0
 	}
 	for zid, action := range ar.first.waiting {
+		roomNo := ar.first.num
 		delete(ar.first.waiting, zid)
 		if len(ar.first.waiting) == 0 {
 			ar.first = ar.first.next
@@ -181,7 +159,7 @@ func (ar *anterooms) Dequeue() (arAction, id.Zid) {
 				ar.last = nil
 			}
 		}
-		return action, zid
+		return action, zid, roomNo
 	}
-	return arNothing, id.Invalid
+	return arNothing, id.Invalid, 0
 }

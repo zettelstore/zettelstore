@@ -65,28 +65,28 @@ func (mgr *Manager) idxIndexer() {
 	timer := time.NewTimer(timerDuration)
 	ctx := box.NoEnrichContext(context.Background())
 	for {
-		start := time.Now()
-		if mgr.idxWorkService(ctx) {
-			mgr.idxMx.Lock()
-			mgr.idxDurLastIndex = time.Since(start)
-			mgr.idxMx.Unlock()
-		}
+		mgr.idxWorkService(ctx)
 		if !mgr.idxSleepService(timer, timerDuration) {
 			return
 		}
 	}
 }
 
-func (mgr *Manager) idxWorkService(ctx context.Context) bool {
-	changed := false
+func (mgr *Manager) idxWorkService(ctx context.Context) {
+	var roomNum uint64
+	var start time.Time
 	for {
-		switch action, zid := mgr.idxAr.Dequeue(); action {
+		switch action, zid, arRoomNum := mgr.idxAr.Dequeue(); action {
 		case arNothing:
-			return changed
+			return
 		case arReload:
+			roomNum = 0
 			zids, err := mgr.FetchZids(ctx)
 			if err == nil {
-				mgr.idxAr.Reload(nil, zids)
+				start = time.Now()
+				if rno := mgr.idxAr.Reload(zids); rno > 0 {
+					roomNum = rno
+				}
 				mgr.idxMx.Lock()
 				mgr.idxLastReload = time.Now()
 				mgr.idxSinceReload = 0
@@ -98,8 +98,10 @@ func (mgr *Manager) idxWorkService(ctx context.Context) bool {
 				// TODO: on some errors put the zid into a "try later" set
 				continue
 			}
-			changed = true
 			mgr.idxMx.Lock()
+			if arRoomNum == roomNum {
+				mgr.idxDurReload = time.Since(start)
+			}
 			mgr.idxSinceReload++
 			mgr.idxMx.Unlock()
 			mgr.idxUpdateZettel(ctx, zettel)
@@ -111,7 +113,6 @@ func (mgr *Manager) idxWorkService(ctx context.Context) bool {
 				// a hidden zettel was recovered
 				mgr.idxAr.Enqueue(zid, arUpdate)
 			}
-			changed = true
 			mgr.idxMx.Lock()
 			mgr.idxSinceReload++
 			mgr.idxMx.Unlock()
