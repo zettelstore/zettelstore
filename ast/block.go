@@ -19,9 +19,9 @@ type ParaNode struct {
 	Inlines InlineSlice
 }
 
-func (pn *ParaNode) blockNode()       {}
-func (pn *ParaNode) itemNode()        {}
-func (pn *ParaNode) descriptionNode() {}
+func (pn *ParaNode) blockNode()       { /* Just a marker */ }
+func (pn *ParaNode) itemNode()        { /* Just a marker */ }
+func (pn *ParaNode) descriptionNode() { /* Just a marker */ }
 
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {
@@ -48,11 +48,11 @@ const (
 	VerbatimHTML                 // Block HTML, e.g. for Markdown
 )
 
-func (vn *VerbatimNode) blockNode() {}
-func (vn *VerbatimNode) itemNode()  {}
+func (vn *VerbatimNode) blockNode() { /* Just a marker */ }
+func (vn *VerbatimNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (vn *VerbatimNode) WalkChildren(v Visitor) {}
+func (vn *VerbatimNode) WalkChildren(v Visitor) { /* No children*/ }
 
 //--------------------------------------------------------------------------
 
@@ -75,8 +75,8 @@ const (
 	RegionVerse            // Line breaks matter
 )
 
-func (rn *RegionNode) blockNode() {}
-func (rn *RegionNode) itemNode()  {}
+func (rn *RegionNode) blockNode() { /* Just a marker */ }
+func (rn *RegionNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
@@ -94,8 +94,8 @@ type HeadingNode struct {
 	Attrs   *Attributes
 }
 
-func (hn *HeadingNode) blockNode() {}
-func (hn *HeadingNode) itemNode()  {}
+func (hn *HeadingNode) blockNode() { /* Just a marker */ }
+func (hn *HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
 func (hn *HeadingNode) WalkChildren(v Visitor) {
@@ -109,11 +109,11 @@ type HRuleNode struct {
 	Attrs *Attributes
 }
 
-func (hn *HRuleNode) blockNode() {}
-func (hn *HRuleNode) itemNode()  {}
+func (hn *HRuleNode) blockNode() { /* Just a marker */ }
+func (hn *HRuleNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (hn *HRuleNode) WalkChildren(v Visitor) {}
+func (hn *HRuleNode) WalkChildren(v Visitor) { /* No children*/ }
 
 //--------------------------------------------------------------------------
 
@@ -135,8 +135,8 @@ const (
 	NestedListQuote                    // Quote list.
 )
 
-func (ln *NestedListNode) blockNode() {}
-func (ln *NestedListNode) itemNode()  {}
+func (ln *NestedListNode) blockNode() { /* Just a marker */ }
+func (ln *NestedListNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the items.
 func (ln *NestedListNode) WalkChildren(v Visitor) {
@@ -201,7 +201,7 @@ const (
 	AlignRight             // Right alignment
 )
 
-func (tn *TableNode) blockNode() {}
+func (tn *TableNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
@@ -225,7 +225,7 @@ type BLOBNode struct {
 	Blob   []byte
 }
 
-func (bn *BLOBNode) blockNode() {}
+func (bn *BLOBNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (bn *BLOBNode) WalkChildren(v Visitor) {}
+func (bn *BLOBNode) WalkChildren(v Visitor) { /* No children*/ }

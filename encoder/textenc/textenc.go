@@ -106,9 +106,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			return nil
 		}
 		for i, line := range n.Lines {
-			if i > 0 {
-				v.b.WriteByte('\n')
-			}
+			v.writePosChar(i, '\n')
 			v.b.WriteString(line)
 		}
 		return nil
@@ -121,29 +119,21 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.NestedListNode:
 		for i, item := range n.Items {
-			if i > 0 {
-				v.b.WriteByte('\n')
-			}
+			v.writePosChar(i, '\n')
 			for j, it := range item {
-				if j > 0 {
-					v.b.WriteByte('\n')
-				}
+				v.writePosChar(j, '\n')
 				ast.Walk(v, it)
 			}
 		}
 		return nil
 	case *ast.DescriptionListNode:
 		for i, descr := range n.Descriptions {
-			if i > 0 {
-				v.b.WriteByte('\n')
-			}
+			v.writePosChar(i, '\n')
 			ast.WalkInlineSlice(v, descr.Term)
 			for _, b := range descr.Descriptions {
 				v.b.WriteByte('\n')
 				for k, d := range b {
-					if k > 0 {
-						v.b.WriteByte('\n')
-					}
+					v.writePosChar(k, '\n')
 					ast.Walk(v, d)
 				}
 			}
@@ -155,9 +145,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			v.b.WriteByte('\n')
 		}
 		for i, row := range n.Rows {
-			if i > 0 {
-				v.b.WriteByte('\n')
-			}
+			v.writePosChar(i, '\n')
 			v.writeRow(row)
 		}
 		return nil
@@ -195,18 +183,20 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 
 func (v *visitor) writeRow(row ast.TableRow) {
 	for i, cell := range row {
-		if i > 0 {
-			v.b.WriteByte(' ')
-		}
+		v.writePosChar(i, ' ')
 		ast.WalkInlineSlice(v, cell.Inlines)
 	}
 }
 
 func (v *visitor) acceptBlockSlice(bns ast.BlockSlice) {
 	for i, bn := range bns {
-		if i > 0 {
-			v.b.WriteByte('\n')
-		}
+		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)
+	}
+}
+
+func (v *visitor) writePosChar(pos int, ch byte) {
+	if pos > 0 {
+		v.b.WriteByte(ch)
 	}
 }

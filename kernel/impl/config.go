@@ -158,6 +158,27 @@ func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}
 	if len(cfg.descr) == 0 {
 		return nil
 	}
+	keys := cfg.getSortedConfigKeys(all, getConfig)
+	result := make([]kernel.KeyDescrValue, 0, len(keys))
+	for _, k := range keys {
+		val := getConfig(k)
+		if val == nil {
+			continue
+		}
+		descr, ok := cfg.descr[k]
+		if !ok {
+			descr, _, _ = cfg.getListDescription(k)
+		}
+		result = append(result, kernel.KeyDescrValue{
+			Key:   k,
+			Descr: descr.text,
+			Value: fmt.Sprintf("%v", val),
+		})
+	}
+	return result
+}
+
+func (cfg *srvConfig) getSortedConfigKeys(all bool, getConfig func(string) interface{}) []string {
 	keys := make([]string, 0, len(cfg.descr))
 	for k, descr := range cfg.descr {
 		if all || descr.canList {
@@ -177,23 +198,7 @@ func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}
 		}
 	}
 	sort.Strings(keys)
-	result := make([]kernel.KeyDescrValue, 0, len(keys))
-	for _, k := range keys {
-		val := getConfig(k)
-		if val == nil {
-			continue
-		}
-		descr, ok := cfg.descr[k]
-		if !ok {
-			descr, _, _ = cfg.getListDescription(k)
-		}
-		result = append(result, kernel.KeyDescrValue{
-			Key:   k,
-			Descr: descr.text,
-			Value: fmt.Sprintf("%v", val),
-		})
-	}
-	return result
+	return keys
 }
 
 func (cfg *srvConfig) Freeze() {

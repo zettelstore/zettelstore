@@ -214,9 +214,7 @@ func (v *detailVisitor) visitVerbatim(vn *ast.VerbatimNode) {
 	v.visitAttributes(vn.Attrs)
 	v.writeContentStart('l')
 	for i, line := range vn.Lines {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		writeEscaped(&v.b, line)
 	}
 	v.b.WriteByte(']')
@@ -266,14 +264,10 @@ func (v *detailVisitor) visitNestedList(ln *ast.NestedListNode) {
 	v.writeNodeStart(mapNestedListKind[ln.Kind])
 	v.writeContentStart('c')
 	for i, item := range ln.Items {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.b.WriteByte('[')
 		for j, in := range item {
-			if j > 0 {
-				v.b.WriteByte(',')
-			}
+			v.writeComma(j)
 			ast.Walk(v, in)
 		}
 		v.b.WriteByte(']')
@@ -285,20 +279,15 @@ func (v *detailVisitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.writeNodeStart("DescriptionList")
 	v.writeContentStart('g')
 	for i, def := range dn.Descriptions {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.b.WriteByte('[')
 		v.walkInlineSlice(def.Term)
 
 		if len(def.Descriptions) > 0 {
 			for _, b := range def.Descriptions {
-				v.b.WriteByte(',')
-				v.b.WriteByte('[')
+				v.b.WriteString(",[")
 				for j, dn := range b {
-					if j > 0 {
-						v.b.WriteByte(',')
-					}
+					v.writeComma(j)
 					ast.Walk(v, dn)
 				}
 				v.b.WriteByte(']')
@@ -316,9 +305,7 @@ func (v *detailVisitor) visitTable(tn *ast.TableNode) {
 	// Table header
 	v.b.WriteByte('[')
 	for i, cell := range tn.Header {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.writeCell(cell)
 	}
 	v.b.WriteString("],")
@@ -326,14 +313,10 @@ func (v *detailVisitor) visitTable(tn *ast.TableNode) {
 	// Table rows
 	v.b.WriteByte('[')
 	for i, row := range tn.Rows {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.b.WriteByte('[')
 		for j, cell := range row {
-			if j > 0 {
-				v.b.WriteByte(',')
-			}
+			v.writeComma(j)
 			v.writeCell(cell)
 		}
 		v.b.WriteByte(']')
@@ -426,9 +409,7 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 func (v *detailVisitor) walkBlockSlice(bns ast.BlockSlice) {
 	v.b.WriteByte('[')
 	for i, bn := range bns {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		ast.Walk(v, bn)
 	}
 	v.b.WriteByte(']')
@@ -437,9 +418,7 @@ func (v *detailVisitor) walkBlockSlice(bns ast.BlockSlice) {
 func (v *detailVisitor) walkInlineSlice(ins ast.InlineSlice) {
 	v.b.WriteByte('[')
 	for i, in := range ins {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		ast.Walk(v, in)
 	}
 	v.b.WriteByte(']')
@@ -517,12 +496,16 @@ func (v *detailVisitor) writeMeta(m *meta.Meta) {
 func (v *detailVisitor) writeSetValue(value string) {
 	v.b.WriteByte('[')
 	for i, val := range meta.ListFromValue(value) {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.b.WriteByte('"')
 		v.b.Write(Escape(val))
 		v.b.WriteByte('"')
 	}
 	v.b.WriteByte(']')
+}
+
+func (v *detailVisitor) writeComma(pos int) {
+	if pos > 0 {
+		v.b.WriteByte(',')
+	}
 }

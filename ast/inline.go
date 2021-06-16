@@ -18,10 +18,10 @@ type TextNode struct {
 	Text string // The text itself.
 }
 
-func (tn *TextNode) inlineNode() {}
+func (tn *TextNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (tn *TextNode) WalkChildren(v Visitor) {}
+func (tn *TextNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -30,10 +30,10 @@ type TagNode struct {
 	Tag string // The text itself.
 }
 
-func (tn *TagNode) inlineNode() {}
+func (tn *TagNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (tn *TagNode) WalkChildren(v Visitor) {}
+func (tn *TagNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -42,10 +42,10 @@ type SpaceNode struct {
 	Lexeme string
 }
 
-func (sn *SpaceNode) inlineNode() {}
+func (sn *SpaceNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (sn *SpaceNode) WalkChildren(v Visitor) {}
+func (sn *SpaceNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -54,10 +54,10 @@ type BreakNode struct {
 	Hard bool // Hard line break?
 }
 
-func (bn *BreakNode) inlineNode() {}
+func (bn *BreakNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (bn *BreakNode) WalkChildren(v Visitor) {}
+func (bn *BreakNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ type LinkNode struct {
 	Attrs   *Attributes // Optional attributes
 }
 
-func (ln *LinkNode) inlineNode() {}
+func (ln *LinkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the link text.
 func (ln *LinkNode) WalkChildren(v Visitor) {
@@ -87,7 +87,7 @@ type ImageNode struct {
 	Attrs   *Attributes // Optional attributes
 }
 
-func (in *ImageNode) inlineNode() {}
+func (in *ImageNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the image text.
 func (in *ImageNode) WalkChildren(v Visitor) {
@@ -103,7 +103,7 @@ type CiteNode struct {
 	Attrs   *Attributes // Optional attributes
 }
 
-func (cn *CiteNode) inlineNode() {}
+func (cn *CiteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the cite text.
 func (cn *CiteNode) WalkChildren(v Visitor) {
@@ -119,10 +119,10 @@ type MarkNode struct {
 	Text string
 }
 
-func (mn *MarkNode) inlineNode() {}
+func (mn *MarkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (mn *MarkNode) WalkChildren(v Visitor) {}
+func (mn *MarkNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -132,7 +132,7 @@ type FootnoteNode struct {
 	Attrs   *Attributes // Optional attributes
 }
 
-func (fn *FootnoteNode) inlineNode() {}
+func (fn *FootnoteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the footnote text.
 func (fn *FootnoteNode) WalkChildren(v Visitor) {
@@ -171,7 +171,7 @@ const (
 	FormatMonospace            // Monospaced text.
 )
 
-func (fn *FormatNode) inlineNode() {}
+func (fn *FormatNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the formatted text.
 func (fn *FormatNode) WalkChildren(v Visitor) {
@@ -200,7 +200,7 @@ const (
 	LiteralHTML                // Inline HTML, e.g. for Markdown
 )
 
-func (ln *LiteralNode) inlineNode() {}
+func (ln *LiteralNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (ln *LiteralNode) WalkChildren(v Visitor) {}
+func (ln *LiteralNode) WalkChildren(v Visitor) { /* No children*/ }

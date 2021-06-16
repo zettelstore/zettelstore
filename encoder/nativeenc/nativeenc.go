@@ -217,9 +217,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	v.b.WriteString("\n[Header")
 	v.level++
 	for i, p := range pairs {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.writeNewLine()
 		v.b.WriteByte('[')
 		v.b.WriteStrings(p.Key, " \"")
@@ -311,9 +309,7 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.b.Write(mapNestedListKind[ln.Kind])
 	v.level++
 	for i, item := range ln.Items {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.writeNewLine()
 		v.level++
 		v.b.WriteByte('[')
@@ -335,9 +331,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.b.WriteString("[DescriptionList")
 	v.level++
 	for i, descr := range dn.Descriptions {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.writeNewLine()
 		v.b.WriteString("[Term [")
 		v.walkInlineSlice(descr.Term)
@@ -376,23 +370,17 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 		v.writeNewLine()
 		v.b.WriteString("[Header ")
 		for i, cell := range tn.Header {
-			if i > 0 {
-				v.b.WriteByte(',')
-			}
+			v.writeComma(i)
 			v.writeCell(cell)
 		}
 		v.b.WriteString("],")
 	}
 	for i, row := range tn.Rows {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.writeNewLine()
 		v.b.WriteString("[Row ")
 		for j, cell := range row {
-			if j > 0 {
-				v.b.WriteByte(',')
-			}
+			v.writeComma(j)
 			v.writeCell(cell)
 		}
 		v.b.WriteByte(']')
@@ -512,9 +500,7 @@ func (v *visitor) walkBlockSlice(bns ast.BlockSlice) {
 }
 func (v *visitor) walkInlineSlice(ins ast.InlineSlice) {
 	for i, in := range ins {
-		if i > 0 {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		ast.Walk(v, in)
 	}
 }
@@ -535,14 +521,11 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 		v.writeEscaped(val)
 	}
 	v.b.WriteString("\",[")
-	first := true
-	for _, k := range keys {
+	for i, k := range keys {
 		if k == "" {
 			continue
 		}
-		if !first {
-			v.b.WriteByte(',')
-		}
+		v.writeComma(i)
 		v.b.WriteString(k)
 		val := a.Attrs[k]
 		if len(val) > 0 {
@@ -550,7 +533,6 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 			v.writeEscaped(val)
 			v.b.WriteByte('"')
 		}
-		first = false
 	}
 	v.b.WriteString("])")
 }
@@ -581,4 +563,10 @@ func (v *visitor) writeEscaped(s string) {
 		last = i + 1
 	}
 	v.b.WriteString(s[last:])
+}
+
+func (v *visitor) writeComma(pos int) {
+	if pos > 0 {
+		v.b.WriteByte(',')
+	}
 }

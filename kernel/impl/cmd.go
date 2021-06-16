@@ -67,6 +67,10 @@ func (sess *cmdSession) println(args ...string) {
 	sess.w.Write(sess.eol)
 }
 
+func (sess *cmdSession) usage(cmd, val string) {
+	sess.println("Usage:", cmd, val)
+}
+
 func (sess *cmdSession) printTable(table [][]string) {
 	maxLen := sess.calcMaxLen(table)
 	if len(maxLen) == 0 {
@@ -281,7 +285,7 @@ func listConfig(sess *cmdSession, getConfigList func() []kernel.KeyDescrValue) {
 
 func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) < 3 {
-		sess.println("Usage:", cmd, "SERIVCE KEY VALUE")
+		sess.usage(cmd, "SERVICE KEY VALUE")
 		return true
 	}
 	srvD, ok := sess.kern.srvNames[args[0]]
@@ -353,7 +357,7 @@ func cmdStop(sess *cmdSession, cmd string, args []string) bool {
 
 func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) == 0 {
-		sess.println("Usage:", cmd, "SERVICE")
+		sess.usage(cmd, "SERVICE")
 		return true
 	}
 	srvD, ok := sess.kern.srvNames[args[0]]
@@ -375,7 +379,7 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 
 func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service, bool) {
 	if len(args) == 0 {
-		sess.println("Usage:", cmd, "SERVICE")
+		sess.usage(cmd, "SERVICE")
 		return 0, false
 	}
 	srvD, ok := sess.kern.srvNames[args[0]]
@@ -434,7 +438,7 @@ func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
 }
 func cmdDumpRecover(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) == 0 {
-		sess.println("Usage:", cmd, "RECOVER")
+		sess.usage(cmd, "RECOVER")
 		sess.println("-- A valid value for RECOVER can be obtained via 'stat core'.")
 		return true
 	}
