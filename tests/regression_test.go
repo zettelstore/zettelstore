@@ -43,7 +43,7 @@ import (
 
 var formats = []string{"html", "djson", "native", "text"}
 
-func getFileBoxes(wd string, kind string) (root string, boxes []box.ManagedBox) {
+func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
 	root = filepath.Clean(filepath.Join(wd, "..", "testdata", kind))
 	entries, err := os.ReadDir(root)
 	if err != nil {
@@ -93,7 +93,7 @@ func resultFile(file string) (data string, err error) {
 	return string(src), err
 }
 
-func checkFileContent(t *testing.T, filename string, gotContent string) {
+func checkFileContent(t *testing.T, filename, gotContent string) {
 	t.Helper()
 	wantContent, err := resultFile(filename)
 	if err != nil {

@@ -199,7 +199,7 @@ func (mgr *Manager) idxProcessData(ctx context.Context, zi *store.ZettelIndex, c
 	zi.SetUrls(cData.urls)
 }
 
-func (mgr *Manager) idxUpdateValue(ctx context.Context, inverse string, value string, zi *store.ZettelIndex) {
+func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string, zi *store.ZettelIndex) {
 	zid, err := id.Parse(value)
 	if err != nil {
 		return
@@ -208,11 +208,11 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverse string, value st
 		zi.AddDeadRef(zid)
 		return
 	}
-	if inverse == "" {
+	if inverseKey == "" {
 		zi.AddBackRef(zid)
 		return
 	}
-	zi.AddMetaRef(inverse, zid)
+	zi.AddMetaRef(inverseKey, zid)
 }
 
 func (mgr *Manager) idxDeleteZettel(zid id.Zid) {

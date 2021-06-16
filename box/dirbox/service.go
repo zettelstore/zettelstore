@@ -278,7 +278,7 @@ func writeFileZid(f *os.File, zid id.Zid) error {
 	return err
 }
 
-func writeFileContent(path string, content string) error {
+func writeFileContent(path, content string) error {
 	f, err := openFileWrite(path)
 	if err == nil {
 		_, err = f.WriteString(content)
