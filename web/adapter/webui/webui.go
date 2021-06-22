@@ -48,7 +48,8 @@ type WebUI struct {
 	mxCache       sync.RWMutex
 
 	tokenLifetime time.Duration
-	stylesheetURL string
+	cssBaseURL    string
+	cssUserURL    string
 	homeURL       string
 	listZettelURL string
 	listRolesURL  string
@@ -79,9 +80,10 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		policy:   pol,
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
-		stylesheetURL: ab.NewURLBuilder('z').SetZid(
-			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery(
-			"_part", "content").String(),
+		cssBaseURL: ab.NewURLBuilder('z').SetZid(
+			id.BaseCSSZid).AppendQuery("_format", "raw").AppendQuery("_part", "content").String(),
+		cssUserURL: ab.NewURLBuilder('z').SetZid(
+			id.UserCSSZid).AppendQuery("_format", "raw").AppendQuery("_part", "content").String(),
 		homeURL:       ab.NewURLBuilder('/').String(),
 		listZettelURL: ab.NewURLBuilder('h').String(),
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
@@ -162,7 +164,8 @@ type simpleLink struct {
 type baseData struct {
 	Lang           string
 	MetaHeader     string
-	StylesheetURL  string
+	CSSBaseURL     string
+	CSSUserURL     string
 	Title          string
 	HomeURL        string
 	WithUser       bool
@@ -203,7 +206,8 @@ func (wui *WebUI) makeBaseData(
 	}
 
 	data.Lang = lang
-	data.StylesheetURL = wui.stylesheetURL
+	data.CSSBaseURL = wui.cssBaseURL
+	data.CSSUserURL = wui.cssUserURL
 	data.Title = title
 	data.HomeURL = wui.homeURL
 	data.WithAuth = wui.withAuth

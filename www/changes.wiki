@@ -14,6 +14,9 @@
   *  New suported metadata key <tt>box-number</tt>, which gives an indication
      from which box the zettel was loaded.
      (minor)
+  *  New predefined zettel &ldquo;User CSS&rdquo; that can be used to redefine
+     some predefined CSS (without modifying the base CSS zettel).
+     (minor: webui)
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (2021-06-01)</h2>

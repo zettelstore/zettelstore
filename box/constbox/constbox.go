@@ -292,6 +292,14 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyNoIndex:    meta.ValueTrue,
 		},
 		domain.NewContent(contentBaseCSS)},
+	id.UserCSSZid: {
+		constHeader{
+			meta.KeyTitle:      "Zettelstore User CSS",
+			meta.KeyRole:       meta.ValueRoleConfiguration,
+			meta.KeyVisibility: meta.ValueVisibilityPublic,
+			meta.KeySyntax:     "css",
+		},
+		domain.NewContent("/* User-defined CSS */")},
 	id.EmojiZid: {
 		constHeader{
 			meta.KeyTitle:      "Generic Emoji",

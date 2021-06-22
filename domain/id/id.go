@@ -58,6 +58,7 @@ const (
 
 	// WebUI CSS zettel are in the range 20000..29999
 	BaseCSSZid = Zid(20001)
+	UserCSSZid = Zid(25001)
 
 	// WebUI JS zettel are in the range 30000..39999
 
