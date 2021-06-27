@@ -21,6 +21,9 @@
   *  New predefined zettel &ldquo;User CSS&rdquo; that can be used to redefine
      some predefined CSS (without modifying the base CSS zettel).
      (minor: webui)
+  *  When a user moves a zettel file with additional characters into the box
+     directory, these characters are preserved when zettel is updated.
+     (bug)
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (2021-06-01)</h2>

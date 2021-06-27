@@ -285,12 +285,21 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error 
 
 func (dp *dirBox) updateEntryFromMeta(entry *directory.Entry, meta *meta.Meta) {
 	entry.MetaSpec, entry.ContentExt = dp.calcSpecExt(meta)
-	basePath := filepath.Join(dp.dir, entry.Zid.String())
+	basePath := dp.calcBasePath(entry)
 	if entry.MetaSpec == directory.MetaSpecFile {
 		entry.MetaPath = basePath + ".meta"
 	}
 	entry.ContentPath = basePath + "." + entry.ContentExt
 	entry.Duplicates = false
+}
+
+func (dp *dirBox) calcBasePath(entry *directory.Entry) string {
+	p := entry.ContentPath
+	if p == "" {
+		return filepath.Join(dp.dir, entry.Zid.String())
+	}
+	// ContentPath w/o the file extension
+	return p[0 : len(p)-len(filepath.Ext(p))]
 }
 
 func (dp *dirBox) calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
