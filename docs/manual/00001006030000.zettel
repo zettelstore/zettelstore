@@ -3,11 +3,17 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20210627170437
 
-Most [[supported metadata keys|00001006020000]] conform to a type.
+All [[supported metadata keys|00001006020000]] conform to a type.
 
-Every metadata key should conform to a type.
-User-defined metadata keys are of type EString.
+User-defined metadata keys conform also to a type, based on the suffix of the key.
+|=Suffix|Type
+| ''-number'' | [[Number|00001006033000]]
+| ''-url'' | [[URL|00001006035000]]
+| ''-zid''  | [[Identifier|00001006032000]]
+| any other suffix | [[EString|00001006031500]]
+
 The name of the metadata key is bound to the key type
 
 Every key type has an associated validation rule to check values of the given type.

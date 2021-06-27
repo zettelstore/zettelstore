@@ -11,6 +11,10 @@
      <tt>list-page-size</tt> is removed. If you still specify it, it will be
      ignored.
      (major: webui)
+  *  Type of used-defined metadata is determined by suffix of key: "-number",
+     "-url", "-zid" will result the values to be interpreted as a number, an
+     URL, or a zettel identifier.
+     (minor, but possibly breaking)
   *  New suported metadata key <tt>box-number</tt>, which gives an indication
      from which box the zettel was loaded.
      (minor)

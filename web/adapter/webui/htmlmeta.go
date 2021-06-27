@@ -67,8 +67,6 @@ func (wui *WebUI) writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getT
 		}
 	case meta.TypeZettelmarkup:
 		writeZettelmarkup(w, m.GetDefault(key, "???z"), env)
-	case meta.TypeUnknown:
-		writeUnknown(w, m.GetDefault(key, "???u"))
 	default:
 		strfun.HTMLEscape(w, m.GetDefault(key, "???w"), false)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -126,10 +124,6 @@ func (wui *WebUI) writeNumber(w io.Writer, key, val string) {
 }
 
 func writeString(w io.Writer, val string) {
-	strfun.HTMLEscape(w, val, false)
-}
-
-func writeUnknown(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 

@@ -89,7 +89,7 @@ func GetDescription(name string) DescriptionKey {
 	if d, ok := registeredKeys[name]; ok {
 		return *d
 	}
-	return DescriptionKey{Type: TypeUnknown}
+	return DescriptionKey{Type: Type(name)}
 }
 
 // GetSortedKeyDescriptions delivers all metadata key descriptions as a slice, sorted by name.

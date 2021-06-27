@@ -14,6 +14,7 @@ package meta
 import (
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -49,7 +50,6 @@ var (
 	TypeTagSet       = registerType("TagSet", true)
 	TypeTimestamp    = registerType("Timestamp", false)
 	TypeURL          = registerType("URL", false)
-	TypeUnknown      = registerType("Unknown", false)
 	TypeWord         = registerType("Word", false)
 	TypeWordSet      = registerType("WordSet", true)
 	TypeZettelmarkup = registerType("Zettelmarkup", false)
@@ -61,13 +61,40 @@ func (m *Meta) Type(key string) *DescriptionType {
 	return Type(key)
 }
 
+var (
+	cachedTypedKeys = make(map[string]*DescriptionType)
+	mxTypedKey      sync.RWMutex
+)
+
+func typedKey(key string, t *DescriptionType) *DescriptionType {
+	mxTypedKey.Lock()
+	defer mxTypedKey.Unlock()
+	cachedTypedKeys[key] = t
+	return t
+}
+
 // Type returns a type hint for the given key. If no type hint is specified,
 // TypeUnknown is returned.
 func Type(key string) *DescriptionType {
 	if k, ok := registeredKeys[key]; ok {
 		return k.Type
 	}
-	return TypeUnknown
+	mxTypedKey.RLock()
+	k, ok := cachedTypedKeys[key]
+	mxTypedKey.RUnlock()
+	if ok {
+		return k
+	}
+	if strings.HasSuffix(key, "-url") {
+		return typedKey(key, TypeURL)
+	}
+	if strings.HasSuffix(key, "-number") {
+		return typedKey(key, TypeNumber)
+	}
+	if strings.HasSuffix(key, "-zid") {
+		return typedKey(key, TypeID)
+	}
+	return TypeEmpty
 }
 
 // SetList stores the given string list value under the given key.
