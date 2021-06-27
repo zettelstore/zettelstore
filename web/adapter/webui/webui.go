@@ -226,7 +226,7 @@ func (wui *WebUI) makeBaseData(
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
 }
 
-// htmlAttrNewWindow eturns HTML attribute string for opening a link in a new window.
+// htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
 // If hasURL is false an empty string is returned.
 func htmlAttrNewWindow(hasURL bool) string {
 	if hasURL {

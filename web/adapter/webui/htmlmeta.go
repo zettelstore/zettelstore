@@ -152,7 +152,7 @@ func writeURL(w io.Writer, val string) {
 		strfun.HTMLEscape(w, val, false)
 		return
 	}
-	fmt.Fprintf(w, "<a href=\"%v\">", u)
+	fmt.Fprintf(w, "<a href=\"%v\"%v>", u, htmlAttrNewWindow(true))
 	strfun.HTMLEscape(w, val, false)
 	io.WriteString(w, "</a>")
 }
