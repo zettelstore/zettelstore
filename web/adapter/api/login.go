@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -61,11 +62,7 @@ func retrieveIdentCred(r *http.Request) (string, string) {
 
 func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) {
 	je := json.NewEncoder(w)
-	je.Encode(struct {
-		Token   string `json:"access_token"`
-		Type    string `json:"token_type"`
-		Expires int    `json:"expires_in"`
-	}{
+	je.Encode(api.AuthJSON{
 		Token:   token,
 		Type:    "Bearer",
 		Expires: int(lifetime / time.Second),
