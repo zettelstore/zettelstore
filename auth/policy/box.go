@@ -13,7 +13,6 @@ package policy
 
 import (
 	"context"
-	"io"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
@@ -154,12 +153,4 @@ func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		return pp.box.DeleteZettel(ctx, zid)
 	}
 	return box.NewErrNotAllowed("Delete", user, zid)
-}
-
-func (pp *polBox) ReadStats(st *box.Stats) {
-	pp.box.ReadStats(st)
-}
-
-func (pp *polBox) Dump(w io.Writer) {
-	pp.box.Dump(w)
 }

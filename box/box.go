@@ -101,12 +101,6 @@ type Box interface {
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
 	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
-
-	// ReadStats populates st with box statistics
-	ReadStats(st *Stats)
-
-	// Dump internal data to a Writer.
-	Dump(w io.Writer)
 }
 
 // Stats record stattistics about a box.
@@ -148,6 +142,12 @@ type Manager interface {
 	Box
 	StartStopper
 	Subject
+
+	// ReadStats populates st with box statistics
+	ReadStats(st *Stats)
+
+	// Dump internal data to a Writer.
+	Dump(w io.Writer)
 }
 
 // UpdateReason gives an indication, why the ObserverFunc was called.
