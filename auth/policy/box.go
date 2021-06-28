@@ -79,6 +79,10 @@ func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	return domain.Zettel{}, box.NewErrNotAllowed("GetZettel", user, zid)
 }
 
+func (pp *polBox) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error) {
+	return pp.box.GetAllZettel(ctx, zid)
+}
+
 func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	m, err := pp.box.GetMeta(ctx, zid)
 	if err != nil {
@@ -89,6 +93,10 @@ func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 		return m, nil
 	}
 	return nil, box.NewErrNotAllowed("GetMeta", user, zid)
+}
+
+func (pp *polBox) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error) {
+	return pp.box.GetAllMeta(ctx, zid)
 }
 
 func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {

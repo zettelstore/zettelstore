@@ -76,6 +76,23 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 	return domain.Zettel{}, box.ErrNotFound
 }
 
+// GetAllZettel retrieves a specific zettel from all managed boxes.
+func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error) {
+	mgr.mgrMx.RLock()
+	defer mgr.mgrMx.RUnlock()
+	if !mgr.started {
+		return nil, box.ErrStopped
+	}
+	var result []domain.Zettel
+	for i, p := range mgr.boxes {
+		if z, err := p.GetZettel(ctx, zid); err == nil {
+			mgr.Enrich(ctx, z.Meta, i+1)
+			result = append(result, z)
+		}
+	}
+	return result, nil
+}
+
 // GetMeta retrieves just the meta data of a specific zettel.
 func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	mgr.mgrMx.RLock()
@@ -92,6 +109,23 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 		}
 	}
 	return nil, box.ErrNotFound
+}
+
+// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
+func (mgr *Manager) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error) {
+	mgr.mgrMx.RLock()
+	defer mgr.mgrMx.RUnlock()
+	if !mgr.started {
+		return nil, box.ErrStopped
+	}
+	var result []*meta.Meta
+	for i, p := range mgr.boxes {
+		if m, err := p.GetMeta(ctx, zid); err == nil {
+			mgr.Enrich(ctx, m, i+1)
+			result = append(result, m)
+		}
+	}
+	return result, nil
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.

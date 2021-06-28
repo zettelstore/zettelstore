@@ -101,6 +101,12 @@ type Box interface {
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
 	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+
+	// GetAllZettel retrieves a specific zettel from all managed boxes.
+	GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error)
+
+	// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
+	GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error)
 }
 
 // Stats record stattistics about a box.

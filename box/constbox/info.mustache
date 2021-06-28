@@ -40,5 +40,9 @@
 </tr>
 {{/Matrix}}
 </table>
+{{#HasShadowLinks}}
+<h2>Shadowed Boxes</h2>
+<ul>{{#ShadowLinks}}<li>{{.}}</li>{{/ShadowLinks}}</ul>
+{{/HasShadowLinks}}
 {{#Endnotes}}{{{Endnotes}}}{{/Endnotes}}
 </article>
