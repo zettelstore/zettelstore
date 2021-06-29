@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -342,7 +343,7 @@ func (wui *WebUI) getUser(ctx context.Context) *meta.Meta { return wui.ab.GetUse
 func (wui *WebUI) GetURLPrefix() string { return wui.ab.GetURLPrefix() }
 
 // NewURLBuilder creates a new URL builder object with the given key.
-func (wui *WebUI) NewURLBuilder(key byte) server.URLBuilder { return wui.ab.NewURLBuilder(key) }
+func (wui *WebUI) NewURLBuilder(key byte) *api.URLBuilder { return wui.ab.NewURLBuilder(key) }
 
 func (wui *WebUI) clearToken(ctx context.Context, w http.ResponseWriter) context.Context {
 	return wui.ab.ClearToken(ctx, w)

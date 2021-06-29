@@ -36,12 +36,18 @@ type Client struct {
 
 // NewClient create a new client.
 func NewClient(baseURL string) *Client {
+	if !strings.HasSuffix(baseURL, "/") {
+		baseURL += "/"
+	}
 	c := Client{baseURL: baseURL}
 	return &c
 }
 
-func (c *Client) newListRequest(ctx context.Context, method string, key byte, body io.Reader) (*http.Request, error) {
-	return http.NewRequestWithContext(ctx, method, c.baseURL+"/"+string(key), body)
+func (c *Client) newURLBuilder(key byte) *api.URLBuilder {
+	return api.NewURLBuilder(c.baseURL, key)
+}
+func (c *Client) newListRequest(ctx context.Context, method string, ub *api.URLBuilder, body io.Reader) (*http.Request, error) {
+	return http.NewRequestWithContext(ctx, method, ub.String(), body)
 }
 
 func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
@@ -99,7 +105,7 @@ func (c *Client) updateToken(ctx context.Context) error {
 // Authenticate sets a new token by sending user name and password.
 func (c *Client) Authenticate(ctx context.Context) error {
 	authData := url.Values{"username": {c.username}, "password": {c.password}}
-	req, err := c.newListRequest(ctx, http.MethodPost, 'a', strings.NewReader(authData.Encode()))
+	req, err := c.newListRequest(ctx, http.MethodPost, c.newURLBuilder('a'), strings.NewReader(authData.Encode()))
 	if err != nil {
 		return err
 	}
@@ -109,7 +115,7 @@ func (c *Client) Authenticate(ctx context.Context) error {
 
 // RefreshToken updates the access token
 func (c *Client) RefreshToken(ctx context.Context) error {
-	req, err := c.newListRequest(ctx, http.MethodPut, 'a', nil)
+	req, err := c.newListRequest(ctx, http.MethodPut, c.newURLBuilder('a'), nil)
 	if err != nil {
 		return err
 	}
@@ -118,7 +124,7 @@ func (c *Client) RefreshToken(ctx context.Context) error {
 
 // ListZettel returns a list of all Zettel.
 func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
-	req, err := c.newListRequest(ctx, http.MethodGet, 'z', nil)
+	req, err := c.newListRequest(ctx, http.MethodGet, c.newURLBuilder('z'), nil)
 	if err != nil {
 		return nil, err
 	}

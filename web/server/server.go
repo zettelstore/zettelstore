@@ -16,33 +16,10 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
-
-// URLBuilder builds URLs.
-type URLBuilder interface {
-	// Clone an URLBuilder
-	Clone() URLBuilder
-
-	// SetZid sets the zettel identifier.
-	SetZid(zid id.Zid) URLBuilder
-
-	// AppendPath adds a new path element
-	AppendPath(p string) URLBuilder
-
-	// AppendQuery adds a new query parameter
-	AppendQuery(key, value string) URLBuilder
-
-	// ClearQuery removes all query parameters.
-	ClearQuery() URLBuilder
-
-	// SetFragment stores the fragment
-	SetFragment(s string) URLBuilder
-
-	// String produces a string value.
-	String() string
-}
 
 // UserRetriever allows to retrieve user data based on a given zettel identifier.
 type UserRetriever interface {
@@ -60,10 +37,10 @@ type Router interface {
 // Builder allows to build new URLs for the web service.
 type Builder interface {
 	GetURLPrefix() string
-	NewURLBuilder(key byte) URLBuilder
+	NewURLBuilder(key byte) *api.URLBuilder
 }
 
-// Auth is.
+// Auth is the authencation interface.
 type Auth interface {
 	GetUser(context.Context) *meta.Meta
 	SetToken(w http.ResponseWriter, token []byte, d time.Duration)
