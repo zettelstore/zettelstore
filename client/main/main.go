@@ -20,10 +20,10 @@ import (
 
 func main() {
 	c := client.NewClient("http://127.0.0.1:23123")
-	c.SetAuth("abc", "abc")
+	c.SetAuth("reader", "reader")
 	zl, err := c.ListZettel(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	log.Println("RESU", zl)
+	log.Println("RESU", len(zl.List), zl)
 }
