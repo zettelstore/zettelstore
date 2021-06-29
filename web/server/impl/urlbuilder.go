@@ -23,11 +23,16 @@ type urlQuery struct{ key, val string }
 
 // URLBuilder should be used to create zettelstore URLs.
 type URLBuilder struct {
-	router   *httpRouter
+	prefix   string
 	key      byte
 	path     []string
 	query    []urlQuery
 	fragment string
+}
+
+// NewURLBuilder creates a new URL builder with the given prefix and key.
+func NewURLBuilder(prefix string, key byte) *URLBuilder {
+	return &URLBuilder{prefix: prefix, key: key}
 }
 
 // Clone an URLBuilder
@@ -84,7 +89,7 @@ func (ub *URLBuilder) SetFragment(s string) server.URLBuilder {
 func (ub *URLBuilder) String() string {
 	var sb strings.Builder
 
-	sb.WriteString(ub.router.urlPrefix)
+	sb.WriteString(ub.prefix)
 	if ub.key != '/' {
 		sb.WriteByte(ub.key)
 	}
