@@ -17,3 +17,17 @@ type AuthJSON struct {
 	Type    string `json:"token_type"`
 	Expires int    `json:"expires_in"`
 }
+
+// ZettelJSON contains all data for a zettel.
+type ZettelJSON struct {
+	ID       string            `json:"id"`
+	URL      string            `json:"url"`
+	Meta     map[string]string `json:"meta"`
+	Encoding string            `json:"encoding"`
+	Content  string            `json:"content"`
+}
+
+// ZettelListJSON contains all data for a list of zettel
+type ZettelListJSON struct {
+	List []ZettelJSON `json:"list"`
+}

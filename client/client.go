@@ -16,9 +16,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"zettelstore.de/z/api"
@@ -40,8 +40,23 @@ func NewClient(baseURL string) *Client {
 	return &c
 }
 
-func (c *Client) newRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
-	return http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
+func (c *Client) newListRequest(ctx context.Context, method string, key byte, body io.Reader) (*http.Request, error) {
+	return http.NewRequestWithContext(ctx, method, c.baseURL+"/"+string(key), body)
+}
+
+func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
+	if c.token != "" {
+		req.Header.Add("Authorization", c.tokenType+" "+c.token)
+	}
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+		return nil, err
+	}
+	return resp, err
 }
 
 // SetAuth sets authentication data.
@@ -50,11 +65,9 @@ func (c *Client) SetAuth(username, password string) {
 	c.password = password
 }
 
-func (c *Client) handleAuthResponse(resp *http.Response, err error) error {
+func (c *Client) executeAuthRequest(req *http.Request) error {
+	resp, err := c.executeRequest(req)
 	if err != nil {
-		if resp != nil {
-			resp.Body.Close()
-		}
 		return err
 	}
 	defer resp.Body.Close()
@@ -78,27 +91,54 @@ func (c *Client) updateToken(ctx context.Context) error {
 		return nil
 	}
 	if time.Now().After(c.expires) {
-		// New token
-		resp, err := http.PostForm(
-			c.baseURL+"/a", url.Values{"username": {c.username}, "password": {c.password}})
-		return c.handleAuthResponse(resp, err)
+		return c.Authenticate(ctx)
 	}
-	// Refresh token
-	req, err := c.newRequest(ctx, http.MethodPut, "/a", nil)
+	return c.RefreshToken(ctx)
+}
+
+// Authenticate sets a new token by sending user name and password.
+func (c *Client) Authenticate(ctx context.Context) error {
+	authData := url.Values{"username": {c.username}, "password": {c.password}}
+	req, err := c.newListRequest(ctx, http.MethodPost, 'a', strings.NewReader(authData.Encode()))
 	if err != nil {
 		return err
 	}
-	req.Header.Add("Authorization", c.tokenType+" "+c.token)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	return c.handleAuthResponse(resp, err)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return c.executeAuthRequest(req)
+}
+
+// RefreshToken updates the access token
+func (c *Client) RefreshToken(ctx context.Context) error {
+	req, err := c.newListRequest(ctx, http.MethodPut, 'a', nil)
+	if err != nil {
+		return err
+	}
+	return c.executeAuthRequest(req)
 }
 
 // ListZettel returns a list of all Zettel.
-func (c *Client) ListZettel(ctx context.Context) string {
-	err := c.updateToken(ctx)
+func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
+	req, err := c.newListRequest(ctx, http.MethodGet, 'z', nil)
 	if err != nil {
-		log.Println("ERR", err)
+		return nil, err
 	}
-	return ""
+	err = c.updateToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.executeRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var zl api.ZettelListJSON
+	err = dec.Decode(&zl)
+	if err != nil {
+		return nil, err
+	}
+	return &zl, nil
 }

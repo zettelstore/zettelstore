@@ -13,7 +13,7 @@ package main
 
 import (
 	"context"
-	"time"
+	"log"
 
 	"zettelstore.de/z/client"
 )
@@ -21,7 +21,9 @@ import (
 func main() {
 	c := client.NewClient("http://127.0.0.1:23123")
 	c.SetAuth("abc", "abc")
-	c.ListZettel(context.Background())
-	time.Sleep(time.Second * 50)
-	c.ListZettel(context.Background())
+	zl, err := c.ListZettel(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	log.Println("RESU", zl)
 }
