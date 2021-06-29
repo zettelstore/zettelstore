@@ -58,7 +58,7 @@ func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
 	return nil
 }
 func (srv *myServer) NewURLBuilder(key byte) server.URLBuilder {
-	return &URLBuilder{router: &srv.router, key: key}
+	return NewURLBuilder(srv.GetURLPrefix(), key)
 }
 func (srv *myServer) GetURLPrefix() string {
 	return srv.router.urlPrefix
