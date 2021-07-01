@@ -14,19 +14,39 @@ package client_test
 import (
 	"context"
 	"flag"
+	"fmt"
 	"testing"
 
 	"zettelstore.de/z/client"
 )
 
 func TestList(t *testing.T) {
-	c := getClient()
-	l, err := c.ListZettel(context.Background())
-	if err != nil {
-		t.Error(err)
-		return
+	testdata := []struct {
+		user string
+		exp  int
+	}{
+		{"reader", 13},
+		{"writer", 13},
+		{"owner", 34},
+		{"", 7},
 	}
-	t.Error(len(l.List), l)
+
+	t.Parallel()
+	for i, tc := range testdata {
+		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
+			c := getClient()
+			c.SetAuth(tc.user, tc.user)
+			l, err := c.ListZettel(context.Background())
+			if err != nil {
+				tt.Error(err)
+				return
+			}
+			got := len(l.List)
+			if got != tc.exp {
+				tt.Errorf("List of length %d expected, but got %d\n%v", tc.exp, got, l.List)
+			}
+		})
+	}
 }
 
 var baseURL string

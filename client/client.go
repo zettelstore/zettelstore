@@ -69,6 +69,9 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 func (c *Client) SetAuth(username, password string) {
 	c.username = username
 	c.password = password
+	c.token = ""
+	c.tokenType = ""
+	c.expires = time.Time{}
 }
 
 func (c *Client) executeAuthRequest(req *http.Request) error {

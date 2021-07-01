@@ -14,10 +14,12 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,25 +31,34 @@ import (
 )
 
 func executeCommand(env []string, name string, arg ...string) (string, error) {
+	logCommand("EXEC", env, name, arg)
+	var out bytes.Buffer
+	cmd := prepareCommand(env, name, arg, &out)
+	err := cmd.Run()
+	return out.String(), err
+}
+
+func prepareCommand(env []string, name string, arg []string, out io.Writer) *exec.Cmd {
+	if len(env) > 0 {
+		env = append(env, os.Environ()...)
+	}
+	cmd := exec.Command(name, arg...)
+	cmd.Env = env
+	cmd.Stdin = nil
+	cmd.Stdout = out
+	cmd.Stderr = os.Stderr
+	return cmd
+}
+
+func logCommand(exec string, env []string, name string, arg []string) {
 	if verbose {
 		if len(env) > 0 {
 			for i, e := range env {
 				fmt.Fprintf(os.Stderr, "ENV%d %v\n", i+1, e)
 			}
 		}
-		fmt.Fprintln(os.Stderr, "EXEC", name, arg)
+		fmt.Fprintln(os.Stderr, exec, name, arg)
 	}
-	if len(env) > 0 {
-		env = append(env, os.Environ()...)
-	}
-	var out bytes.Buffer
-	cmd := exec.Command(name, arg...)
-	cmd.Env = env
-	cmd.Stdin = nil
-	cmd.Stdout = &out
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	return out.String(), err
 }
 
 func readVersionFile() (string, error) {
@@ -124,7 +135,7 @@ func findExec(cmd string) string {
 }
 
 func cmdCheck() error {
-	if err := checkGoTest(); err != nil {
+	if err := checkGoTest("./..."); err != nil {
 		return err
 	}
 	if err := checkGoVet(); err != nil {
@@ -142,8 +153,10 @@ func cmdCheck() error {
 	return checkFossilExtra()
 }
 
-func checkGoTest() error {
-	out, err := executeCommand(nil, "go", "test", "./...")
+func checkGoTest(pkg string, testParams ...string) error {
+	args := []string{"test", pkg}
+	args = append(args, testParams...)
+	out, err := executeCommand(nil, "go", args...)
 	if err != nil {
 		for _, line := range strfun.SplitLines(out) {
 			if strings.HasPrefix(line, "ok") || strings.HasPrefix(line, "?") {
@@ -217,6 +230,74 @@ func checkFossilExtra() error {
 		fmt.Fprintln(os.Stderr)
 	}
 	return nil
+}
+
+type zsInfo struct {
+	cmd          *exec.Cmd
+	out          bytes.Buffer
+	adminAddress string
+}
+
+func cmdTestAPI() error {
+	var err error
+	var info zsInfo
+	needServer := !addressInUse(":23123")
+	if needServer {
+		err = startZettelstore(&info)
+	}
+	if err != nil {
+		return err
+	}
+	err = checkGoTest("zettelstore.de/z/client", "-base-url", "http://127.0.0.1:23123")
+	if needServer {
+		err1 := stopZettelstore(&info)
+		if err == nil {
+			err = err1
+		}
+	}
+	return err
+}
+
+func startZettelstore(info *zsInfo) error {
+	info.adminAddress = ":2323"
+	name, arg := "go", []string{
+		"run", "cmd/zettelstore/main.go", "run",
+		"-c", "./testdata/testbox/19700101000000.zettel", "-a", info.adminAddress[1:]}
+	logCommand("FORK", nil, name, arg)
+	cmd := prepareCommand(nil, name, arg, &info.out)
+	if !verbose {
+		cmd.Stderr = nil
+	}
+	err := cmd.Start()
+	for i := 0; i < 100; i++ {
+		time.Sleep(time.Millisecond * 100)
+		if addressInUse(info.adminAddress) {
+			info.cmd = cmd
+			return err
+		}
+	}
+	return errors.New("zettelstore did not start")
+}
+
+func stopZettelstore(i *zsInfo) error {
+	conn, err := net.Dial("tcp", i.adminAddress)
+	if err != nil {
+		fmt.Println("Unable to stop Zettelstore")
+		return err
+	}
+	io.WriteString(conn, "shutdown\n")
+	conn.Close()
+	err = i.cmd.Wait()
+	return err
+}
+
+func addressInUse(address string) bool {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
 }
 
 func cmdBuild() error {
@@ -410,6 +491,7 @@ Commands:
   manual   Create a ZIP file with all manual zettel
   release  Create the software for various platforms and put them in
            appropriate named ZIP files.
+  testapi  Starts a Zettelstore and execute API tests.
   version  Print the current version of the software.
 
 All commands can be abbreviated as long as they remain unique.`)
@@ -440,6 +522,8 @@ func main() {
 			fmt.Print(getVersion())
 		case "ch", "che", "chec", "check":
 			err = cmdCheck()
+		case "t", "te", "tes", "test", "testa", "testap", "testapi":
+			cmdTestAPI()
 		case "h", "he", "hel", "help":
 			cmdHelp()
 		default:
