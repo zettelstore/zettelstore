@@ -151,3 +151,30 @@ func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
 	}
 	return &zl, nil
 }
+
+// ListTags returns a list of all tags, together with the associated zettel containing this tag.
+func (c *Client) ListTags(ctx context.Context) (*api.TagListJSON, error) {
+	err := c.updateToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	req, err := c.newListRequest(ctx, http.MethodGet, c.newURLBuilder('t'), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.executeRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var tl api.TagListJSON
+	err = dec.Decode(&tl)
+	if err != nil {
+		return nil, err
+	}
+	return &tl, nil
+}

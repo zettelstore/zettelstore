@@ -25,8 +25,8 @@ func TestList(t *testing.T) {
 		user string
 		exp  int
 	}{
-		{"reader", 13},
-		{"writer", 13},
+		{"reader", 12},
+		{"writer", 12},
 		{"owner", 34},
 		{"", 7},
 	}
@@ -46,6 +46,39 @@ func TestList(t *testing.T) {
 				tt.Errorf("List of length %d expected, but got %d\n%v", tc.exp, got, l.List)
 			}
 		})
+	}
+}
+
+func TestListTags(t *testing.T) {
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	l, err := c.ListTags(context.Background())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	tags := []struct {
+		key  string
+		size int
+	}{
+		{"#invisible", 1},
+		{"#user", 4},
+		{"#test", 4},
+	}
+	if len(l.Tags) != len(tags) {
+		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(l.Tags), l.Tags)
+	}
+	for _, tag := range tags {
+		if zl, ok := l.Tags[tag.key]; !ok {
+			t.Errorf("No tag %v: %v", tag.key, l.Tags)
+		} else if len(zl) != tag.size {
+			t.Errorf("Expected %d zettel with tag %v, but got %v", tag.size, tag.key, zl)
+		}
+	}
+	for i, id := range l.Tags["#user"] {
+		if id != l.Tags["#test"][i] {
+			t.Errorf("Tags #user and #test have different content: %v vs %v", l.Tags["#user"], l.Tags["#test"])
+		}
 	}
 }
 

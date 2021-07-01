@@ -1,9 +1,10 @@
 id: 19700101000000
 title: Startup Configuration
 role: configuration
+tags: #invisible
 syntax: none
 box-uri-1: dir:testdata/testbox
 modified: 20210629174022
 owner: 20210629163300
 token-lifetime-api: 1
-
+visibility: owner
