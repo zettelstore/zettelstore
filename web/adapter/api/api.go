@@ -15,6 +15,7 @@ import (
 	"context"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
@@ -51,7 +52,7 @@ func New(b server.Builder, authz auth.AuthzManager, token auth.TokenManager, aut
 func (api *API) GetURLPrefix() string { return api.b.GetURLPrefix() }
 
 // NewURLBuilder creates a new URL builder object with the given key.
-func (api *API) NewURLBuilder(key byte) server.URLBuilder { return api.b.NewURLBuilder(key) }
+func (api *API) NewURLBuilder(key byte) *api.URLBuilder { return api.b.NewURLBuilder(key) }
 
 func (api *API) getAuthData(ctx context.Context) *server.AuthData {
 	return api.auth.GetAuthData(ctx)

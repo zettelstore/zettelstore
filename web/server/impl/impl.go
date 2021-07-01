@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
@@ -57,8 +58,8 @@ func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
 	}
 	return nil
 }
-func (srv *myServer) NewURLBuilder(key byte) server.URLBuilder {
-	return NewURLBuilder(srv.GetURLPrefix(), key)
+func (srv *myServer) NewURLBuilder(key byte) *api.URLBuilder {
+	return api.NewURLBuilder(srv.GetURLPrefix(), key)
 }
 func (srv *myServer) GetURLPrefix() string {
 	return srv.router.urlPrefix
