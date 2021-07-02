@@ -1,8 +1,9 @@
 id: 00001012053600
 title: API: Retrieve references of an existing zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-role: manual
+modified: 20210702183357
 
 The web of zettel is one important value of a Zettelstore.
 Many zettel references other zettel, images, external/local material or, via citations, external literature.
@@ -10,7 +11,7 @@ By using the [[endpoint|00001012920000]] ''/l/{ID}'' you are able to retrieve th
 
 ````
 # curl http://127.0.0.1:23123/l/00001012053600
-{"id":"00001012053600","url":"/z/00001012053600","links":{"incoming":[],"outgoing":[{"id":"00001012920000","url":"/z/00001012920000"},{"id":"00001007040300","url":"/z/00001007040300#links"},{"id":"00001007040300","url":"/z/00001007040300#images"},{"id":"00001007040300","url":"/z/00001007040300#citation-key"}],"local":[],"external":[]},"images":{"outgoing":[],"local":[],"external":[]},"cites":[]}
+{"id":"00001012053600","url":"/z/00001012053600","links":{"outgoing":[{"id":"00001012920000","url":"/z/00001012920000"},{"id":"00001007040300","url":"/z/00001007040300#links"},{"id":"00001007040300","url":"/z/00001007040300#images"},{"id":"00001007040300","url":"/z/00001007040300#citation-key"}]},"images":{}}
 ````
 Formatted, this translates into:
 ````json
@@ -18,7 +19,6 @@ Formatted, this translates into:
   "id": "00001012053600",
   "url": "/z/00001012053600",
   "links": {
-    "incoming": [],
     "outgoing": [
       {
         "id": "00001012920000",
@@ -37,15 +37,8 @@ Formatted, this translates into:
         "url": "/z/00001007040300#citation-key"
       }
     ],
-    "local": [],
-    "external": []
   },
-  "images": {
-    "outgoing": [],
-    "local": [],
-    "external": []
-  },
-  "cites": []
+  "images": {},
 }
 ````
 === Kind
@@ -84,9 +77,10 @@ This is controlled by the value of the query parameter ''matter'':
 | ''outgoing'' | 4|outgoing references
 | ''local'' | 8|local references, i.e. local, non-zettel material
 | ''external'' |16| external references, i.e. on the web
+| ''meta'' |32| external reference, stored in metadata
 | ''zettel'' | (6)|incoming and outgoing references
-| ''material'' |(24)| local and external references
-| ''all'' | (30)| incoming, outgoing, local, and external references
+| ''material'' |(56)| local and external references
+| ''all'' | (62)| incoming, outgoing, local, and external references
 
 Incoming and outgoing references are basically zettel.
 Therefore the list elements are JSON objects with keys ''id'' and ''url''.

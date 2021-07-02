@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -26,17 +27,18 @@ type jsonGetLinks struct {
 	ID    string `json:"id"`
 	URL   string `json:"url"`
 	Links struct {
-		Incoming []jsonIDURL `json:"incoming"`
-		Outgoing []jsonIDURL `json:"outgoing"`
-		Local    []string    `json:"local"`
-		External []string    `json:"external"`
+		Incoming []jsonIDURL `json:"incoming,omitempty"`
+		Outgoing []jsonIDURL `json:"outgoing,omitempty"`
+		Local    []string    `json:"local,omitempty"`
+		External []string    `json:"external,omitempty"`
+		Meta     []string    `json:"meta,omitempty"`
 	} `json:"links"`
 	Images struct {
-		Outgoing []jsonIDURL `json:"outgoing"`
-		Local    []string    `json:"local"`
-		External []string    `json:"external"`
-	} `json:"images"`
-	Cites []string `json:"cites"`
+		Outgoing []jsonIDURL `json:"outgoing,omitempty"`
+		Local    []string    `json:"local,omitempty"`
+		External []string    `json:"external,omitempty"`
+	} `json:"images,omitempty"`
+	Cites []string `json:"cites,omitempty"`
 }
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
@@ -69,6 +71,13 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 		}
 		if kind&kindLink != 0 {
 			api.setupLinkJSONRefs(summary, matter, &outData)
+			if matter&matterMeta != 0 {
+				for _, p := range zn.Meta.PairsRest(false) {
+					if meta.Type(p.Key) == meta.TypeURL {
+						outData.Links.Meta = append(outData.Links.Meta, p.Value)
+					}
+				}
+			}
 		}
 		if kind&kindImage != 0 {
 			api.setupImageJSONRefs(summary, matter, &outData)
@@ -180,17 +189,19 @@ const (
 	matterOutgoing
 	matterLocal
 	matterExternal
+	matterMeta
 )
 
 var mapMatter = map[string]matterType{
-	"":         matterIncoming | matterOutgoing | matterLocal | matterExternal,
+	"":         matterIncoming | matterOutgoing | matterLocal | matterExternal | matterMeta,
 	"incoming": matterIncoming,
 	"outgoing": matterOutgoing,
 	"local":    matterLocal,
 	"external": matterExternal,
+	"meta":     matterMeta,
 	"zettel":   matterIncoming | matterOutgoing,
-	"material": matterLocal | matterExternal,
-	"all":      matterIncoming | matterOutgoing | matterLocal | matterExternal,
+	"material": matterLocal | matterExternal | matterMeta,
+	"all":      matterIncoming | matterOutgoing | matterLocal | matterExternal | matterMeta,
 }
 
 func getMatterFromValue(value string) matterType {
