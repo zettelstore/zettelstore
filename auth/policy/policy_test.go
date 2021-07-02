@@ -104,6 +104,7 @@ func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool) {
 	t.Helper()
 	anonUser := newAnon()
+	creator := newCreator()
 	reader := newReader()
 	writer := newWriter()
 	owner := newOwner()
@@ -117,18 +118,21 @@ func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool
 	}{
 		// No meta
 		{anonUser, nil, false},
+		{creator, nil, false},
 		{reader, nil, false},
 		{writer, nil, false},
 		{owner, nil, false},
 		{owner2, nil, false},
 		// Ordinary zettel
 		{anonUser, zettel, !withAuth && !readonly},
+		{creator, zettel, !readonly},
 		{reader, zettel, !withAuth && !readonly},
 		{writer, zettel, !readonly},
 		{owner, zettel, !readonly},
 		{owner2, zettel, !readonly},
 		// User zettel
 		{anonUser, userZettel, !withAuth && !readonly},
+		{creator, userZettel, !withAuth && !readonly},
 		{reader, userZettel, !withAuth && !readonly},
 		{writer, userZettel, !withAuth && !readonly},
 		{owner, userZettel, !readonly},
@@ -147,6 +151,7 @@ func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool
 func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
+	creator := newCreator()
 	reader := newReader()
 	writer := newWriter()
 	owner := newOwner()
@@ -164,47 +169,55 @@ func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	}{
 		// No meta
 		{anonUser, nil, false},
+		{creator, nil, false},
 		{reader, nil, false},
 		{writer, nil, false},
 		{owner, nil, false},
 		{owner2, nil, false},
 		// Ordinary zettel
 		{anonUser, zettel, !withAuth},
+		{creator, zettel, !withAuth},
 		{reader, zettel, true},
 		{writer, zettel, true},
 		{owner, zettel, true},
 		{owner2, zettel, true},
 		// Public zettel
 		{anonUser, publicZettel, true},
+		{creator, publicZettel, true},
 		{reader, publicZettel, true},
 		{writer, publicZettel, true},
 		{owner, publicZettel, true},
 		{owner2, publicZettel, true},
 		// Login zettel
 		{anonUser, loginZettel, !withAuth},
+		{creator, loginZettel, !withAuth},
 		{reader, loginZettel, true},
 		{writer, loginZettel, true},
 		{owner, loginZettel, true},
 		{owner2, loginZettel, true},
 		// Owner zettel
 		{anonUser, ownerZettel, !withAuth},
+		{creator, ownerZettel, !withAuth},
 		{reader, ownerZettel, !withAuth},
 		{writer, ownerZettel, !withAuth},
 		{owner, ownerZettel, true},
 		{owner2, ownerZettel, true},
 		// Expert zettel
 		{anonUser, expertZettel, !withAuth && expert},
+		{creator, expertZettel, !withAuth && expert},
 		{reader, expertZettel, !withAuth && expert},
 		{writer, expertZettel, !withAuth && expert},
 		{owner, expertZettel, expert},
 		{owner2, expertZettel, expert},
 		// Other user zettel
 		{anonUser, userZettel, !withAuth},
+		{creator, userZettel, !withAuth},
 		{reader, userZettel, !withAuth},
 		{writer, userZettel, !withAuth},
 		{owner, userZettel, true},
 		{owner2, userZettel, true},
 		// Own user zettel
+		{creator, creator, true},
 		{reader, reader, true},
 		{writer, writer, true},
 		{owner, owner, true},
@@ -225,6 +238,7 @@ func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
+	creator := newCreator()
 	reader := newReader()
 	writer := newWriter()
 	owner := newOwner()
@@ -251,65 +265,76 @@ func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	}{
 		// No old and new meta
 		{anonUser, nil, nil, false},
+		{creator, nil, nil, false},
 		{reader, nil, nil, false},
 		{writer, nil, nil, false},
 		{owner, nil, nil, false},
 		{owner2, nil, nil, false},
 		// No old meta
 		{anonUser, nil, zettel, false},
+		{creator, nil, zettel, false},
 		{reader, nil, zettel, false},
 		{writer, nil, zettel, false},
 		{owner, nil, zettel, false},
 		{owner2, nil, zettel, false},
 		// No new meta
 		{anonUser, zettel, nil, false},
+		{creator, zettel, nil, false},
 		{reader, zettel, nil, false},
 		{writer, zettel, nil, false},
 		{owner, zettel, nil, false},
 		{owner2, zettel, nil, false},
 		// Old an new zettel have different zettel identifier
 		{anonUser, zettel, publicZettel, false},
+		{creator, zettel, publicZettel, false},
 		{reader, zettel, publicZettel, false},
 		{writer, zettel, publicZettel, false},
 		{owner, zettel, publicZettel, false},
 		{owner2, zettel, publicZettel, false},
 		// Overwrite a normal zettel
 		{anonUser, zettel, zettel, notAuthNotReadonly},
+		{creator, zettel, zettel, notAuthNotReadonly},
 		{reader, zettel, zettel, notAuthNotReadonly},
 		{writer, zettel, zettel, !readonly},
 		{owner, zettel, zettel, !readonly},
 		{owner2, zettel, zettel, !readonly},
 		// Public zettel
 		{anonUser, publicZettel, publicZettel, notAuthNotReadonly},
+		{creator, publicZettel, publicZettel, notAuthNotReadonly},
 		{reader, publicZettel, publicZettel, notAuthNotReadonly},
 		{writer, publicZettel, publicZettel, !readonly},
 		{owner, publicZettel, publicZettel, !readonly},
 		{owner2, publicZettel, publicZettel, !readonly},
 		// Login zettel
 		{anonUser, loginZettel, loginZettel, notAuthNotReadonly},
+		{creator, loginZettel, loginZettel, notAuthNotReadonly},
 		{reader, loginZettel, loginZettel, notAuthNotReadonly},
 		{writer, loginZettel, loginZettel, !readonly},
 		{owner, loginZettel, loginZettel, !readonly},
 		{owner2, loginZettel, loginZettel, !readonly},
 		// Owner zettel
 		{anonUser, ownerZettel, ownerZettel, notAuthNotReadonly},
+		{creator, ownerZettel, ownerZettel, notAuthNotReadonly},
 		{reader, ownerZettel, ownerZettel, notAuthNotReadonly},
 		{writer, ownerZettel, ownerZettel, notAuthNotReadonly},
 		{owner, ownerZettel, ownerZettel, !readonly},
 		{owner2, ownerZettel, ownerZettel, !readonly},
 		// Expert zettel
 		{anonUser, expertZettel, expertZettel, notAuthNotReadonly && expert},
+		{creator, expertZettel, expertZettel, notAuthNotReadonly && expert},
 		{reader, expertZettel, expertZettel, notAuthNotReadonly && expert},
 		{writer, expertZettel, expertZettel, notAuthNotReadonly && expert},
 		{owner, expertZettel, expertZettel, !readonly && expert},
 		{owner2, expertZettel, expertZettel, !readonly && expert},
 		// Other user zettel
 		{anonUser, userZettel, userZettel, notAuthNotReadonly},
+		{creator, userZettel, userZettel, notAuthNotReadonly},
 		{reader, userZettel, userZettel, notAuthNotReadonly},
 		{writer, userZettel, userZettel, notAuthNotReadonly},
 		{owner, userZettel, userZettel, !readonly},
 		{owner2, userZettel, userZettel, !readonly},
 		// Own user zettel
+		{creator, creator, creator, !readonly},
 		{reader, reader, reader, !readonly},
 		{writer, writer, writer, !readonly},
 		{owner, owner, owner, !readonly},
@@ -318,30 +343,35 @@ func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 		{writer, writer, writerNew, notAuthNotReadonly},
 		// No r/o zettel
 		{anonUser, roFalse, roFalse, notAuthNotReadonly},
+		{creator, roFalse, roFalse, notAuthNotReadonly},
 		{reader, roFalse, roFalse, notAuthNotReadonly},
 		{writer, roFalse, roFalse, !readonly},
 		{owner, roFalse, roFalse, !readonly},
 		{owner2, roFalse, roFalse, !readonly},
 		// Reader r/o zettel
 		{anonUser, roReader, roReader, false},
+		{creator, roReader, roReader, false},
 		{reader, roReader, roReader, false},
 		{writer, roReader, roReader, !readonly},
 		{owner, roReader, roReader, !readonly},
 		{owner2, roReader, roReader, !readonly},
 		// Writer r/o zettel
 		{anonUser, roWriter, roWriter, false},
+		{creator, roWriter, roWriter, false},
 		{reader, roWriter, roWriter, false},
 		{writer, roWriter, roWriter, false},
 		{owner, roWriter, roWriter, !readonly},
 		{owner2, roWriter, roWriter, !readonly},
 		// Owner r/o zettel
 		{anonUser, roOwner, roOwner, false},
+		{creator, roOwner, roOwner, false},
 		{reader, roOwner, roOwner, false},
 		{writer, roOwner, roOwner, false},
 		{owner, roOwner, roOwner, false},
 		{owner2, roOwner, roOwner, false},
 		// r/o = true zettel
 		{anonUser, roTrue, roTrue, false},
+		{creator, roTrue, roTrue, false},
 		{reader, roTrue, roTrue, false},
 		{writer, roTrue, roTrue, false},
 		{owner, roTrue, roTrue, false},
@@ -360,6 +390,7 @@ func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 func testRename(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
+	creator := newCreator()
 	reader := newReader()
 	writer := newWriter()
 	owner := newOwner()
@@ -379,48 +410,56 @@ func testRename(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 	}{
 		// No meta
 		{anonUser, nil, false},
+		{creator, nil, false},
 		{reader, nil, false},
 		{writer, nil, false},
 		{owner, nil, false},
 		{owner2, nil, false},
 		// Any zettel
 		{anonUser, zettel, notAuthNotReadonly},
+		{creator, zettel, notAuthNotReadonly},
 		{reader, zettel, notAuthNotReadonly},
 		{writer, zettel, notAuthNotReadonly},
 		{owner, zettel, !readonly},
 		{owner2, zettel, !readonly},
 		// Expert zettel
 		{anonUser, expertZettel, notAuthNotReadonly && expert},
+		{creator, expertZettel, notAuthNotReadonly && expert},
 		{reader, expertZettel, notAuthNotReadonly && expert},
 		{writer, expertZettel, notAuthNotReadonly && expert},
 		{owner, expertZettel, !readonly && expert},
 		{owner2, expertZettel, !readonly && expert},
 		// No r/o zettel
 		{anonUser, roFalse, notAuthNotReadonly},
+		{creator, roFalse, notAuthNotReadonly},
 		{reader, roFalse, notAuthNotReadonly},
 		{writer, roFalse, notAuthNotReadonly},
 		{owner, roFalse, !readonly},
 		{owner2, roFalse, !readonly},
 		// Reader r/o zettel
 		{anonUser, roReader, false},
+		{creator, roReader, false},
 		{reader, roReader, false},
 		{writer, roReader, notAuthNotReadonly},
 		{owner, roReader, !readonly},
 		{owner2, roReader, !readonly},
 		// Writer r/o zettel
 		{anonUser, roWriter, false},
+		{creator, roWriter, false},
 		{reader, roWriter, false},
 		{writer, roWriter, false},
 		{owner, roWriter, !readonly},
 		{owner2, roWriter, !readonly},
 		// Owner r/o zettel
 		{anonUser, roOwner, false},
+		{creator, roOwner, false},
 		{reader, roOwner, false},
 		{writer, roOwner, false},
 		{owner, roOwner, false},
 		{owner2, roOwner, false},
 		// r/o = true zettel
 		{anonUser, roTrue, false},
+		{creator, roTrue, false},
 		{reader, roTrue, false},
 		{writer, roTrue, false},
 		{owner, roTrue, false},
@@ -439,6 +478,7 @@ func testRename(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
+	creator := newCreator()
 	reader := newReader()
 	writer := newWriter()
 	owner := newOwner()
@@ -458,48 +498,56 @@ func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 	}{
 		// No meta
 		{anonUser, nil, false},
+		{creator, nil, false},
 		{reader, nil, false},
 		{writer, nil, false},
 		{owner, nil, false},
 		{owner2, nil, false},
 		// Any zettel
 		{anonUser, zettel, notAuthNotReadonly},
+		{creator, zettel, notAuthNotReadonly},
 		{reader, zettel, notAuthNotReadonly},
 		{writer, zettel, notAuthNotReadonly},
 		{owner, zettel, !readonly},
 		{owner2, zettel, !readonly},
 		// Expert zettel
 		{anonUser, expertZettel, notAuthNotReadonly && expert},
+		{creator, expertZettel, notAuthNotReadonly && expert},
 		{reader, expertZettel, notAuthNotReadonly && expert},
 		{writer, expertZettel, notAuthNotReadonly && expert},
 		{owner, expertZettel, !readonly && expert},
 		{owner2, expertZettel, !readonly && expert},
 		// No r/o zettel
 		{anonUser, roFalse, notAuthNotReadonly},
+		{creator, roFalse, notAuthNotReadonly},
 		{reader, roFalse, notAuthNotReadonly},
 		{writer, roFalse, notAuthNotReadonly},
 		{owner, roFalse, !readonly},
 		{owner2, roFalse, !readonly},
 		// Reader r/o zettel
 		{anonUser, roReader, false},
+		{creator, roReader, false},
 		{reader, roReader, false},
 		{writer, roReader, notAuthNotReadonly},
 		{owner, roReader, !readonly},
 		{owner2, roReader, !readonly},
 		// Writer r/o zettel
 		{anonUser, roWriter, false},
+		{creator, roWriter, false},
 		{reader, roWriter, false},
 		{writer, roWriter, false},
 		{owner, roWriter, !readonly},
 		{owner2, roWriter, !readonly},
 		// Owner r/o zettel
 		{anonUser, roOwner, false},
+		{creator, roOwner, false},
 		{reader, roOwner, false},
 		{writer, roOwner, false},
 		{owner, roOwner, false},
 		{owner2, roOwner, false},
 		// r/o = true zettel
 		{anonUser, roTrue, false},
+		{creator, roTrue, false},
 		{reader, roTrue, false},
 		{writer, roTrue, false},
 		{owner, roTrue, false},
@@ -516,16 +564,24 @@ func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 }
 
 const (
-	readerZid = id.Zid(1013)
-	writerZid = id.Zid(1015)
-	ownerZid  = id.Zid(1017)
-	owner2Zid = id.Zid(1019)
-	zettelZid = id.Zid(1021)
-	visZid    = id.Zid(1023)
-	userZid   = id.Zid(1025)
+	creatorZid = id.Zid(1013)
+	readerZid  = id.Zid(1013)
+	writerZid  = id.Zid(1015)
+	ownerZid   = id.Zid(1017)
+	owner2Zid  = id.Zid(1019)
+	zettelZid  = id.Zid(1021)
+	visZid     = id.Zid(1023)
+	userZid    = id.Zid(1025)
 )
 
 func newAnon() *meta.Meta { return nil }
+func newCreator() *meta.Meta {
+	user := meta.New(creatorZid)
+	user.Set(meta.KeyTitle, "Creator")
+	user.Set(meta.KeyRole, meta.ValueRoleUser)
+	user.Set(meta.KeyUserRole, meta.ValueUserRoleCreator)
+	return user
+}
 func newReader() *meta.Meta {
 	user := meta.New(readerZid)
 	user.Set(meta.KeyTitle, "Reader")

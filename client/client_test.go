@@ -25,10 +25,11 @@ func TestList(t *testing.T) {
 		user string
 		exp  int
 	}{
+		{"", 7},
+		{"creator", 8},
 		{"reader", 12},
 		{"writer", 12},
 		{"owner", 34},
-		{"", 7},
 	}
 
 	t.Parallel()

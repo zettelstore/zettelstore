@@ -15,6 +15,13 @@
      "-url", "-zid" will result the values to be interpreted as a number, an
      URL, or a zettel identifier.
      (minor, but possibly breaking)
+  *  New <tt>user-role</tt> &ldquo;creator&rdquo;, which is only allowed to
+     create new zettel (except user zettel). This role may only read and
+     update public zettel or its own user zettel. Added to support future
+     client software (e.g. on a mobile device) that automatically creates new
+     zettel but, in case of a password loss, should not allow to read existing
+     zettel.
+     (minor)
   *  New suported metadata key <tt>box-number</tt>, which gives an indication
      from which box the zettel was loaded.
      (minor)

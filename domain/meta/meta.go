@@ -161,6 +161,7 @@ const (
 	ValueTrue              = "true"
 	ValueFalse             = "false"
 	ValueLangEN            = "en"
+	ValueUserRoleCreator   = "creator"
 	ValueUserRoleReader    = "reader"
 	ValueUserRoleWriter    = "writer"
 	ValueUserRoleOwner     = "owner"

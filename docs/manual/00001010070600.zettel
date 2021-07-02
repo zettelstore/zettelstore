@@ -1,8 +1,9 @@
 id: 00001010070600
 title: Access rules
+role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
-role: manual
+modified: 20210702165416
 
 Whether an operation of the Zettelstore is allowed or rejected, depends on various factors.
 
@@ -21,6 +22,7 @@ In the second step, when authentication is enabled and the requesting user is no
 ** If the zettel requested is an user zettel, reject the access if the users identification is not the same as of the ''ident'' meta key in the zettel.
 
    In other words: only the requesting user is allowed to access its own user zettel.
+** If the ''user-role'' of the user is ""creator"", reject the access.
 ** Otherwise the user is authenticated, no sensitive zettel is requested.
    Allow to read the zettel.
 * Create a new zettel

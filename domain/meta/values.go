@@ -46,15 +46,17 @@ type UserRole int
 const (
 	_ UserRole = iota
 	UserRoleUnknown
+	UserRoleCreator
 	UserRoleReader
 	UserRoleWriter
 	UserRoleOwner
 )
 
 var urMap = map[string]UserRole{
-	ValueUserRoleReader: UserRoleReader,
-	ValueUserRoleWriter: UserRoleWriter,
-	ValueUserRoleOwner:  UserRoleOwner,
+	ValueUserRoleCreator: UserRoleCreator,
+	ValueUserRoleReader:  UserRoleReader,
+	ValueUserRoleWriter:  UserRoleWriter,
+	ValueUserRoleOwner:   UserRoleOwner,
 }
 
 // GetUserRole role returns the user role of the given string.
