@@ -152,8 +152,8 @@ func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
 	return &zl, nil
 }
 
-// ListTags returns a list of all tags, together with the associated zettel containing this tag.
-func (c *Client) ListTags(ctx context.Context) (*api.TagListJSON, error) {
+// ListTags returns a map of all tags, together with the associated zettel containing this tag.
+func (c *Client) ListTags(ctx context.Context) (map[string][]string, error) {
 	err := c.updateToken(ctx)
 	if err != nil {
 		return nil, err
@@ -176,5 +176,32 @@ func (c *Client) ListTags(ctx context.Context) (*api.TagListJSON, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &tl, nil
+	return tl.Tags, nil
+}
+
+// ListRoles returns a list of all roles.
+func (c *Client) ListRoles(ctx context.Context) ([]string, error) {
+	err := c.updateToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	req, err := c.newListRequest(ctx, http.MethodGet, c.newURLBuilder('r'), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.executeRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var rl api.RoleListJSON
+	err = dec.Decode(&rl)
+	if err != nil {
+		return nil, err
+	}
+	return rl.Roles, nil
 }

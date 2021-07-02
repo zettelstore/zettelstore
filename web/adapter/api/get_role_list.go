@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"net/http"
 
+	jsonapi "zettelstore.de/z/api"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/jsonenc"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -34,31 +34,10 @@ func (api *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc 
 		switch format {
 		case "json":
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			renderListRoleJSON(w, roleList)
+			encodeJSONData(w, jsonapi.RoleListJSON{Roles: roleList})
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Role list not available in format %q", format))
 		}
 
 	}
-}
-
-func renderListRoleJSON(w http.ResponseWriter, roleList []string) {
-	buf := encoder.NewBufWriter(w)
-
-	buf.WriteString("{\"role-list\":[")
-	first := true
-	for _, role := range roleList {
-		if first {
-			buf.WriteByte('"')
-			first = false
-		} else {
-			buf.WriteString("\",\"")
-		}
-		buf.Write(jsonenc.Escape(role))
-	}
-	if !first {
-		buf.WriteByte('"')
-	}
-	buf.WriteString("]}")
-	buf.Flush()
 }

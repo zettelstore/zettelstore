@@ -52,7 +52,7 @@ func TestList(t *testing.T) {
 func TestListTags(t *testing.T) {
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	l, err := c.ListTags(context.Background())
+	tm, err := c.ListTags(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -65,19 +65,38 @@ func TestListTags(t *testing.T) {
 		{"#user", 4},
 		{"#test", 4},
 	}
-	if len(l.Tags) != len(tags) {
-		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(l.Tags), l.Tags)
+	if len(tm) != len(tags) {
+		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(tm), tm)
 	}
 	for _, tag := range tags {
-		if zl, ok := l.Tags[tag.key]; !ok {
-			t.Errorf("No tag %v: %v", tag.key, l.Tags)
+		if zl, ok := tm[tag.key]; !ok {
+			t.Errorf("No tag %v: %v", tag.key, tm)
 		} else if len(zl) != tag.size {
 			t.Errorf("Expected %d zettel with tag %v, but got %v", tag.size, tag.key, zl)
 		}
 	}
-	for i, id := range l.Tags["#user"] {
-		if id != l.Tags["#test"][i] {
-			t.Errorf("Tags #user and #test have different content: %v vs %v", l.Tags["#user"], l.Tags["#test"])
+	for i, id := range tm["#user"] {
+		if id != tm["#test"][i] {
+			t.Errorf("Tags #user and #test have different content: %v vs %v", tm["#user"], tm["#test"])
+		}
+	}
+}
+
+func TestListRoles(t *testing.T) {
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	rl, err := c.ListRoles(context.Background())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	exp := []string{"configuration", "user", "zettel"}
+	if len(rl) != len(exp) {
+		t.Errorf("Expected %d different tags, but got only %d (%v)", len(exp), len(rl), rl)
+	}
+	for i, id := range exp {
+		if id != rl[i] {
+			t.Errorf("Role list pos %d: expected %q, got %q", i, id, rl[i])
 		}
 	}
 }

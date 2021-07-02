@@ -36,3 +36,8 @@ type ZettelListJSON struct {
 type TagListJSON struct {
 	Tags map[string][]string `json:"tags"`
 }
+
+// RoleListJSON specifies the list of roles.
+type RoleListJSON struct {
+	Roles []string `json:"role-list"`
+}
