@@ -14,11 +14,10 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
 
+	jsonapi "zettelstore.de/z/api"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/jsonenc"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -37,44 +36,17 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 		switch format {
 		case "json":
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			renderListTagsJSON(w, tagData)
+			tagMap := make(map[string][]string, len(tagData))
+			for tag, metaList := range tagData {
+				zidList := make([]string, 0, len(metaList))
+				for _, m := range metaList {
+					zidList = append(zidList, m.Zid.String())
+				}
+				tagMap[tag] = zidList
+			}
+			encodeJSONData(w, jsonapi.TagListJSON{Tags: tagMap})
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in format %q", format))
 		}
 	}
-}
-
-func renderListTagsJSON(w http.ResponseWriter, tagData usecase.TagData) {
-	buf := encoder.NewBufWriter(w)
-
-	tagList := make([]string, 0, len(tagData))
-	for tag := range tagData {
-		tagList = append(tagList, tag)
-	}
-	sort.Strings(tagList)
-
-	buf.WriteString("{\"tags\":{")
-	first := true
-	for _, tag := range tagList {
-		if first {
-			buf.WriteByte('"')
-			first = false
-		} else {
-			buf.WriteString(",\"")
-		}
-		buf.Write(jsonenc.Escape(tag))
-		buf.WriteString("\":[")
-		for i, meta := range tagData[tag] {
-			if i > 0 {
-				buf.WriteByte(',')
-			}
-			buf.WriteByte('"')
-			buf.WriteString(meta.Zid.String())
-			buf.WriteByte('"')
-		}
-		buf.WriteString("]")
-
-	}
-	buf.WriteString("}}")
-	buf.Flush()
 }

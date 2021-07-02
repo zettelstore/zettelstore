@@ -12,7 +12,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -79,9 +78,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 		}
 
 		w.Header().Set(adapter.ContentType, format2ContentType("json"))
-		enc := json.NewEncoder(w)
-		enc.SetEscapeHTML(false)
-		enc.Encode(&outData)
+		encodeJSONData(w, outData)
 	}
 }
 

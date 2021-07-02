@@ -23,6 +23,13 @@ The following keys are supported:
   On most operating systems, the value must be greater than ''1024'' unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
 
   Default: ''0''
+; [!box-uri-x]''box-uri-//X//'', where //X// is a number greater or equal to one
+: Specifies a [[box|00001004011200]] where zettel are stored.
+  During startup //X// is counted up, starting with one, until no key is found.
+  This allows to configure more than one box.
+
+  If no ''box-uri-1'' key is given, the overall effect will be the same as if only ''box-uri-1'' was specified with the value ''dir://.zettel''.
+  In this case, even a key ''box-uri-2'' will be ignored.
 ; [!default-dir-box-type]''default-dir-box-type''
 : Specifies the default value for the (sub-) type of [[directory boxes|00001004011400#type]].
   Zettel are typically stored in such boxes.
@@ -52,13 +59,6 @@ The following keys are supported:
   Its lifetime exceeds the lifetime of the authentication token (see option ''token-lifetime-html'') by 30 seconds.
 
   Default: ''false''
-; [!box-uri-x]''box-uri-//X//'', where //X// is a number greater or equal to one
-: Specifies a [[box|00001004011200]] where zettel are stored.
-  During startup //X// is counted up, starting with one, until no key is found.
-  This allows to configure more than one box.
-
-  If no ''box-uri-1'' key is given, the overall effect will be the same as if only ''box-uri-1'' was specified with the value ''dir://.zettel''.
-  In this case, even a key ''box-uri-2'' will be ignored.
 ; [!read-only-mode]''read-only-mode''
 : Puts the Zettelstore web service into a read-only mode.
   No changes are possible.
@@ -82,5 +82,3 @@ The following keys are supported:
 ; ''verbose''
 : Be more verbose inf logging data.
   Default: false
-
-Other keys will be ignored.
