@@ -386,7 +386,7 @@ func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 	entry, err := dp.dirSrv.GetEntry(zid)
 	if err != nil || !entry.IsValid() {
-		return nil
+		return box.ErrNotFound
 	}
 	dp.dirSrv.DeleteEntry(zid)
 	err = deleteZettel(dp, entry, zid)
