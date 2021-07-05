@@ -20,6 +20,7 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/client"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
 
@@ -60,6 +61,25 @@ func TestList(t *testing.T) {
 	got := len(l)
 	if got != 27 {
 		t.Errorf("List of length %d expected, but got %d\n%v", 27, got, l)
+	}
+}
+func TestGetZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, url.Values{api.QueryKeyPart: {api.PartContent}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if got := z.ID; got != id.DefaultHomeZid.String() {
+		t.Errorf("Expected Zid %s, got %s", id.DefaultHomeZid, got)
+	}
+	if m := z.Meta; len(m) > 0 {
+		t.Errorf("Exptected empty meta, but got %v", z.Meta)
+	}
+	if z.Content == "" || z.Encoding != "" {
+		t.Errorf("Expect non-empty content, but empty encoding (got %q)", z.Encoding)
 	}
 }
 

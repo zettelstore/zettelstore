@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/api"
+	"zettelstore.de/z/domain/id"
 )
 
 // Client contains all data to execute requests.
@@ -127,15 +128,7 @@ func (c *Client) RefreshToken(ctx context.Context) error {
 
 // ListZettel returns a list of all Zettel.
 func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZettelJSON, error) {
-	ub := c.newURLBuilder('z')
-	for key, values := range query {
-		if key == api.QueryKeyFormat {
-			continue
-		}
-		for _, val := range values {
-			ub.AppendQuery(key, val)
-		}
-	}
+	ub := c.jsonZettelURLBuilder(query)
 	req, err := c.newListRequest(ctx, http.MethodGet, ub, nil)
 	if err != nil {
 		return nil, err
@@ -159,6 +152,47 @@ func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.Zettel
 		return nil, err
 	}
 	return zl.List, nil
+}
+
+// GetZettelJSON returns a zettel as a JSON struct.
+func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid, query url.Values) (*api.ZettelJSON, error) {
+	ub := c.jsonZettelURLBuilder(query).SetZid(zid)
+	req, err := c.newListRequest(ctx, http.MethodGet, ub, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = c.updateToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.executeRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var zttl api.ZettelJSON
+	err = dec.Decode(&zttl)
+	if err != nil {
+		return nil, err
+	}
+	return &zttl, nil
+}
+
+func (c *Client) jsonZettelURLBuilder(query url.Values) *api.URLBuilder {
+	ub := c.newURLBuilder('z')
+	for key, values := range query {
+		if key == api.QueryKeyFormat {
+			continue
+		}
+		for _, val := range values {
+			ub.AppendQuery(key, val)
+		}
+	}
+	return ub
 }
 
 // ListTags returns a map of all tags, together with the associated zettel containing this tag.
