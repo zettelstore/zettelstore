@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -41,9 +42,9 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
-		if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
+		if format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.EncoderHTML); format != encoder.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), format)))
+				fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), formatText)))
 			return
 		}
 

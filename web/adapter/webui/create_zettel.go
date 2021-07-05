@@ -68,13 +68,13 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(config.GetTitle(m, wui.rtConfig)), meta.ValueSyntaxZmk)
-		textTitle, err := adapter.FormatInlines(title, "text", nil)
+		textTitle, err := adapter.FormatInlines(title, encoder.EncoderText, nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		htmlTitle, err := adapter.FormatInlines(title, "html", &env)
+		htmlTitle, err := adapter.FormatInlines(title, encoder.EncoderHTML, &env)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -90,9 +90,9 @@ func getOrigZettel(
 	getZettel usecase.GetZettel,
 	op string,
 ) (domain.Zettel, error) {
-	if format := adapter.GetFormat(r, r.URL.Query(), "html"); format != "html" {
+	if format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.EncoderHTML); format != encoder.EncoderHTML {
 		return domain.Zettel{}, adapter.NewErrBadRequest(
-			fmt.Sprintf("%v zettel not possible in format %q", op, format))
+			fmt.Sprintf("%v zettel not possible in format %q", op, formatText))
 	}
 	zid, err := id.Parse(r.URL.Path[1:])
 	if err != nil {

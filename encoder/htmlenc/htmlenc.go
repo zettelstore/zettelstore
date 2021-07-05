@@ -15,7 +15,6 @@ import (
 	"io"
 	"strings"
 
-	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -24,7 +23,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.FormatHTML, encoder.Info{
+	encoder.Register(encoder.EncoderHTML, encoder.Info{
 		Create: func(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} },
 	})
 }
@@ -65,7 +64,7 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 
 	// Write title
 	if title, ok := m.Get(meta.KeyTitle); ok {
-		textEnc := encoder.Create("text", nil)
+		textEnc := encoder.Create(encoder.EncoderText, nil)
 		var sb strings.Builder
 		textEnc.WriteInlines(&sb, parser.ParseMetadata(title))
 		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")

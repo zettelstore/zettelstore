@@ -16,6 +16,7 @@ import (
 	"errors"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -28,7 +29,7 @@ import (
 var ErrNoSuchFormat = errors.New("no such format")
 
 // FormatInlines returns a string representation of the inline slice.
-func FormatInlines(is ast.InlineSlice, format string, env *encoder.Environment) (string, error) {
+func FormatInlines(is ast.InlineSlice, format encoder.Enum, env *encoder.Environment) (string, error) {
 	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", ErrNoSuchFormat
@@ -48,7 +49,8 @@ func MakeLinkAdapter(
 	b server.Builder,
 	key byte,
 	getMeta usecase.GetMeta,
-	part, format string,
+	part string,
+	format encoder.Enum,
 ) func(*ast.LinkNode) ast.InlineNode {
 	return func(origLink *ast.LinkNode) ast.InlineNode {
 		origRef := origLink.Ref
@@ -82,10 +84,10 @@ func MakeLinkAdapter(
 		if err == nil {
 			ub := b.NewURLBuilder(key).SetZid(zid)
 			if part != "" {
-				ub.AppendQuery("_part", part)
+				ub.AppendQuery(api.QueryKeyPart, part)
 			}
-			if format != "" {
-				ub.AppendQuery("_format", format)
+			if format != encoder.EncoderUnknown {
+				ub.AppendQuery(api.QueryKeyFormat, api.Format(format))
 			}
 			if fragment := origRef.URL.EscapedFragment(); fragment != "" {
 				ub.SetFragment(fragment)

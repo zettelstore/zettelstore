@@ -27,7 +27,7 @@ func MetaAsInlineSlice(m *meta.Meta, key string) ast.InlineSlice {
 
 // MetaAsText returns the value of given metadata as text.
 func MetaAsText(m *meta.Meta, key string) string {
-	textEncoder := encoder.Create("text", nil)
+	textEncoder := encoder.Create(encoder.EncoderText, nil)
 	var sb strings.Builder
 	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineSlice(m, key))
 	if err == nil {

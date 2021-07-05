@@ -260,9 +260,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simp
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		menuTitle, err := adapter.FormatInlines(astTitle, "html", &env)
+		menuTitle, err := adapter.FormatInlines(astTitle, encoder.EncoderHTML, &env)
 		if err != nil {
-			menuTitle, err = adapter.FormatInlines(astTitle, "text", nil)
+			menuTitle, err = adapter.FormatInlines(astTitle, encoder.EncoderText, nil)
 			if err != nil {
 				menuTitle = title
 			}

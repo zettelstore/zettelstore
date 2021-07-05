@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,21 +11,21 @@
 // Package api provides api handlers for web requests.
 package api
 
-import zsapi "zettelstore.de/z/api"
+import "zettelstore.de/z/encoder"
 
 const plainText = "text/plain; charset=utf-8"
 
-var mapFormat2CT = map[string]string{
-	zsapi.FormatHTML:   "text/html; charset=utf-8",
-	zsapi.FormatNative: plainText,
-	zsapi.FormatJSON:   "application/json",
-	zsapi.FormatDJSON:  "application/json",
-	zsapi.FormatText:   plainText,
-	zsapi.FormatZMK:    plainText,
-	zsapi.FormatRaw:    plainText, // In some cases...
+var mapFormat2CT = map[encoder.Enum]string{
+	encoder.EncoderHTML:   "text/html; charset=utf-8",
+	encoder.EncoderNative: plainText,
+	encoder.EncoderJSON:   "application/json",
+	encoder.EncoderDJSON:  "application/json",
+	encoder.EncoderText:   plainText,
+	encoder.EncoderZmk:    plainText,
+	encoder.EncoderRaw:    plainText, // In some cases...
 }
 
-func format2ContentType(format string) string {
+func format2ContentType(format encoder.Enum) string {
 	ct, ok := mapFormat2CT[format]
 	if !ok {
 		return "application/octet-stream"

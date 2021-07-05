@@ -15,8 +15,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -52,9 +54,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		if format := adapter.GetFormat(r, q, "html"); format != "html" {
+		if format, formatText := adapter.GetFormat(r, q, encoder.EncoderHTML); format != encoder.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Zettel info not available in format %q", format)))
+				fmt.Sprintf("Zettel info not available in format %q", formatText)))
 			return
 		}
 
@@ -84,7 +86,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := formatBlocks(nil, "html", &env)
+		endnotes, err := formatBlocks(nil, encoder.EncoderHTML, &env)
 		if err != nil {
 			endnotes = ""
 		}
@@ -174,17 +176,22 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 
 func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
 	formats := encoder.GetFormats()
-	defFormat := encoder.GetDefaultFormat()
+	formatTexts := make([]string, 0, len(formats))
+	for _, f := range formats {
+		formatTexts = append(formatTexts, f.String())
+	}
+	sort.Strings(formatTexts)
+	defFormat := encoder.GetDefaultFormat().String()
 	parts := []string{"zettel", "meta", "content"}
 	matrix := make([]matrixLine, 0, len(parts))
 	u := wui.NewURLBuilder('z').SetZid(zid)
 	for _, part := range parts {
-		row := make([]matrixElement, 0, len(formats)+1)
+		row := make([]matrixElement, 0, len(formatTexts)+1)
 		row = append(row, matrixElement{part, false, ""})
-		for _, format := range formats {
-			u.AppendQuery("_part", part)
+		for _, format := range formatTexts {
+			u.AppendQuery(api.QueryKeyPart, part)
 			if format != defFormat {
-				u.AppendQuery("_format", format)
+				u.AppendQuery(api.QueryKeyFormat, format)
 			}
 			row = append(row, matrixElement{format, true, u.String()})
 			u.ClearQuery()

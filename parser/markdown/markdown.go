@@ -49,7 +49,7 @@ func parseMarkdown(inp *input.Input) *mdP {
 	source := []byte(inp.Src[inp.Pos:])
 	parser := gm.DefaultParser()
 	node := parser.Parse(gmText.NewReader(source))
-	textEnc := encoder.Create("text", nil)
+	textEnc := encoder.Create(encoder.EncoderText, nil)
 	return &mdP{source: source, docNode: node, textEnc: textEnc}
 }
 

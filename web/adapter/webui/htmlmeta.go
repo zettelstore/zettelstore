@@ -89,13 +89,13 @@ func writeEmpty(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle func(id.Zid, string) (string, int)) {
+func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle getTitleFunc) {
 	zid, err := id.Parse(val)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
 	}
-	title, found := getTitle(zid, "text")
+	title, found := getTitle(zid, encoder.EncoderText)
 	switch {
 	case found > 0:
 		if title == "" {
@@ -110,7 +110,7 @@ func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle func(id.Zid,
 	}
 }
 
-func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTitle func(id.Zid, string) (string, int)) {
+func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTitle getTitleFunc) {
 	for i, val := range vals {
 		if i > 0 {
 			w.Write(space)
@@ -164,7 +164,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	title, err := adapter.FormatInlines(parser.ParseMetadata(val), "html", env)
+	title, err := adapter.FormatInlines(parser.ParseMetadata(val), encoder.EncoderHTML, env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -178,10 +178,10 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	io.WriteString(w, "</a>")
 }
 
-type getTitleFunc func(id.Zid, string) (string, int)
+type getTitleFunc func(id.Zid, encoder.Enum) (string, int)
 
 func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Environment) getTitleFunc {
-	return func(zid id.Zid, format string) (string, int) {
+	return func(zid id.Zid, format encoder.Enum) (string, int) {
 		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {

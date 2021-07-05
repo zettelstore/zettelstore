@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -38,8 +37,8 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 
 		ctx := r.Context()
 		q := r.URL.Query()
-		format := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
-		if format == zsapi.FormatRaw {
+		format, _ := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
+		if format == encoder.EncoderRaw {
 			ctx = box.NoEnrichContext(ctx)
 		}
 		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
@@ -54,7 +53,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 			return
 		}
 		switch format {
-		case zsapi.FormatJSON, zsapi.FormatDJSON:
+		case encoder.EncoderJSON, encoder.EncoderDJSON:
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			err = api.getWriteMetaZettelFunc(ctx, format, part, partZettel, getMeta)(w, zn)
 			if err != nil {
@@ -91,13 +90,13 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 	}
 }
 
-func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
+func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum, env encoder.Environment) error {
 	enc := encoder.Create(format, &env)
 	if enc == nil {
 		return adapter.ErrNoSuchFormat
 	}
 	inhMeta := false
-	if format != zsapi.FormatRaw {
+	if format != encoder.EncoderRaw {
 		w.Header().Set(adapter.ContentType, format2ContentType(format))
 		inhMeta = true
 	}
@@ -105,10 +104,10 @@ func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format str
 	return err
 }
 
-func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format string) error {
+func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum) error {
 	w.Header().Set(adapter.ContentType, format2ContentType(format))
 	if enc := encoder.Create(format, nil); enc != nil {
-		if format == zsapi.FormatRaw {
+		if format == encoder.EncoderRaw {
 			_, err := enc.WriteMeta(w, zn.Meta)
 			return err
 		}
@@ -118,8 +117,8 @@ func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format strin
 	return adapter.ErrNoSuchFormat
 }
 
-func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format string, env encoder.Environment) error {
-	if format == zsapi.FormatRaw {
+func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum, env encoder.Environment) error {
+	if format == encoder.EncoderRaw {
 		if ct, ok := syntax2contentType(config.GetSyntax(zn.Meta, api.rtConfig)); ok {
 			w.Header().Add(adapter.ContentType, ct)
 		}

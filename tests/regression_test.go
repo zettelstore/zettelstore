@@ -41,7 +41,12 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark"
 )
 
-var formats = []string{"html", "djson", "native", "text"}
+var formats = []encoder.Enum{
+	encoder.EncoderHTML,
+	encoder.EncoderDJSON,
+	encoder.EncoderNative,
+	encoder.EncoderText,
+}
 
 func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
 	root = filepath.Clean(filepath.Join(wd, "..", "testdata", kind))
@@ -107,7 +112,7 @@ func checkFileContent(t *testing.T, filename, gotContent string) {
 	}
 }
 
-func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format string) {
+func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format encoder.Enum) {
 	t.Helper()
 	var env encoder.Environment
 	if enc := encoder.Create(format, &env); enc != nil {
@@ -120,7 +125,7 @@ func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format
 }
 
 func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
-	zmkEncoder := encoder.Create("zmk", nil)
+	zmkEncoder := encoder.Create(encoder.EncoderZmk, nil)
 	var sb strings.Builder
 	zmkEncoder.WriteBlocks(&sb, zn.Ast)
 	gotFirst := sb.String()
@@ -164,7 +169,7 @@ func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+format)
+				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+format.String())
 				checkBlocksFile(st, resultName, z, format)
 			})
 		}
@@ -189,7 +194,7 @@ func TestContentRegression(t *testing.T) {
 	}
 }
 
-func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format string) {
+func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format encoder.Enum) {
 	t.Helper()
 
 	if enc := encoder.Create(format, nil); enc != nil {
@@ -218,7 +223,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, format := range formats {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+format)
+				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+format.String())
 				checkMetaFile(st, resultName, z, format)
 			})
 		}

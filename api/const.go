@@ -11,6 +11,12 @@
 // Package api contains common definition used for client and server.
 package api
 
+import (
+	"fmt"
+
+	"zettelstore.de/z/encoder"
+)
+
 // Values for HTTP query parameter.
 const (
 	QueryKeyFormat = "_format"
@@ -27,6 +33,39 @@ const (
 	FormatText   = "text"
 	FormatZMK    = "zmk"
 )
+
+var formatEncoder = map[string]encoder.Enum{
+	FormatDJSON:  encoder.EncoderDJSON,
+	FormatHTML:   encoder.EncoderHTML,
+	FormatJSON:   encoder.EncoderJSON,
+	FormatNative: encoder.EncoderNative,
+	FormatRaw:    encoder.EncoderRaw,
+	FormatText:   encoder.EncoderText,
+	FormatZMK:    encoder.EncoderZmk,
+}
+var encoderFormat = map[encoder.Enum]string{}
+
+func init() {
+	for k, v := range formatEncoder {
+		encoderFormat[v] = k
+	}
+}
+
+// Encoder returns the internal encoder code for the given format string.
+func Encoder(format string) encoder.Enum {
+	if e, ok := formatEncoder[format]; ok {
+		return e
+	}
+	return encoder.EncoderUnknown
+}
+
+// Format returns the API format of the given encoder
+func Format(e encoder.Enum) string {
+	if f, ok := encoderFormat[e]; ok {
+		return f
+	}
+	return fmt.Sprintf("*Unknown*(%d)", e)
+}
 
 // Supported part values.
 const (

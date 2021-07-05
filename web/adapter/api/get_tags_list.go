@@ -32,9 +32,9 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 			return
 		}
 
-		format := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
+		format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
-		case zsapi.FormatJSON:
+		case encoder.EncoderJSON:
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			tagMap := make(map[string][]string, len(tagData))
 			for tag, metaList := range tagData {
@@ -46,7 +46,7 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 			}
 			encodeJSONData(w, zsapi.TagListJSON{Tags: tagMap})
 		default:
-			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in format %q", format))
+			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in format %q", formatText))
 		}
 	}
 }

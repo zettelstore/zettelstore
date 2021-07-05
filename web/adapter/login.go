@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -23,13 +23,13 @@ import (
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user.
 func MakePostLoginHandler(apiHandler, htmlHandler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		switch format := GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat()); format {
-		case "json":
+		switch format, formatText := GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat()); format {
+		case encoder.EncoderJSON:
 			apiHandler(w, r)
-		case "html":
+		case encoder.EncoderHTML:
 			htmlHandler(w, r)
 		default:
-			BadRequest(w, fmt.Sprintf("Authentication not available in format %q", format))
+			BadRequest(w, fmt.Sprintf("Authentication not available in format %q", formatText))
 		}
 	}
 }

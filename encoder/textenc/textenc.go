@@ -14,7 +14,6 @@ package textenc
 import (
 	"io"
 
-	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -22,7 +21,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.FormatText, encoder.Info{
+	encoder.Register(encoder.EncoderText, encoder.Info{
 		Create: func(*encoder.Environment) encoder.Encoder { return &textEncoder{} },
 	})
 }

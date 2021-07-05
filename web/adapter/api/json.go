@@ -100,7 +100,7 @@ func (api *API) renderListMetaXJSON(
 	ctx context.Context,
 	w http.ResponseWriter,
 	metaList []*meta.Meta,
-	format string,
+	format encoder.Enum,
 	part, defPart partType,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
@@ -137,7 +137,7 @@ func (api *API) getPrepareZettelFunc(ctx context.Context, parseZettel usecase.Pa
 
 type writeZettelFunc func(io.Writer, *ast.ZettelNode) error
 
-func (api *API) getWriteMetaZettelFunc(ctx context.Context, format string,
+func (api *API) getWriteMetaZettelFunc(ctx context.Context, format encoder.Enum,
 	part, defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
 	switch part {
 	case partZettel:
@@ -153,9 +153,9 @@ func (api *API) getWriteMetaZettelFunc(ctx context.Context, format string,
 	}
 }
 
-func (api *API) getWriteZettelFunc(ctx context.Context, format string,
+func (api *API) getWriteZettelFunc(ctx context.Context, format encoder.Enum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	if format == zsapi.FormatJSON {
+	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
 			return encodeJSONData(w, jsonZettel{
@@ -167,7 +167,7 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format string,
 			})
 		}
 	}
-	enc := encoder.Create(zsapi.FormatDJSON, nil)
+	enc := encoder.Create(encoder.EncoderDJSON, nil)
 	if enc == nil {
 		panic("no DJSON encoder found")
 	}
@@ -188,8 +188,9 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format string,
 		if err != nil {
 			return err
 		}
-		err = writeContent(w, zn, zsapi.FormatDJSON, &encoder.Environment{
-			LinkAdapter:  adapter.MakeLinkAdapter(ctx, api, 'z', getMeta, partZettel.DefString(defPart), zsapi.FormatDJSON),
+		err = writeContent(w, zn, encoder.EncoderDJSON, &encoder.Environment{
+			LinkAdapter: adapter.MakeLinkAdapter(
+				ctx, api, 'z', getMeta, partZettel.DefString(defPart), encoder.EncoderDJSON),
 			ImageAdapter: adapter.MakeImageAdapter(ctx, api, getMeta)})
 		if err != nil {
 			return err
@@ -198,8 +199,8 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format string,
 		return err
 	}
 }
-func (api *API) getWriteMetaFunc(ctx context.Context, format string) writeZettelFunc {
-	if format == zsapi.FormatJSON {
+func (api *API) getWriteMetaFunc(ctx context.Context, format encoder.Enum) writeZettelFunc {
+	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonMeta{
 				ID:   zn.Zid.String(),
@@ -208,7 +209,7 @@ func (api *API) getWriteMetaFunc(ctx context.Context, format string) writeZettel
 			})
 		}
 	}
-	enc := encoder.Create(zsapi.FormatDJSON, nil)
+	enc := encoder.Create(encoder.EncoderDJSON, nil)
 	if enc == nil {
 		panic("no DJSON encoder found")
 	}
@@ -229,9 +230,9 @@ func (api *API) getWriteMetaFunc(ctx context.Context, format string) writeZettel
 		return err
 	}
 }
-func (api *API) getWriteContentFunc(ctx context.Context, format string,
+func (api *API) getWriteContentFunc(ctx context.Context, format encoder.Enum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	if format == zsapi.FormatJSON {
+	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			encoding, content := encodedContent(zn.Content)
 			return encodeJSONData(w, jsonContent{
@@ -251,8 +252,9 @@ func (api *API) getWriteContentFunc(ctx context.Context, format string,
 		if err != nil {
 			return err
 		}
-		err = writeContent(w, zn, "djson", &encoder.Environment{
-			LinkAdapter:  adapter.MakeLinkAdapter(ctx, api, 'z', getMeta, partContent.DefString(defPart), "djson"),
+		err = writeContent(w, zn, encoder.EncoderDJSON, &encoder.Environment{
+			LinkAdapter: adapter.MakeLinkAdapter(
+				ctx, api, 'z', getMeta, partContent.DefString(defPart), encoder.EncoderDJSON),
 			ImageAdapter: adapter.MakeImageAdapter(ctx, api, getMeta)})
 		if err != nil {
 			return err
@@ -261,8 +263,8 @@ func (api *API) getWriteContentFunc(ctx context.Context, format string,
 		return err
 	}
 }
-func (api *API) getWriteIDFunc(ctx context.Context, format string) writeZettelFunc {
-	if format == zsapi.FormatJSON {
+func (api *API) getWriteIDFunc(ctx context.Context, format encoder.Enum) writeZettelFunc {
+	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, jsonIDURL{
 				ID:  zn.Zid.String(),
@@ -310,7 +312,7 @@ func writeListXJSON(w http.ResponseWriter, metaList []*meta.Meta, prepareZettel 
 	return err
 }
 
-func writeContent(w io.Writer, zn *ast.ZettelNode, format string, env *encoder.Environment) error {
+func writeContent(w io.Writer, zn *ast.ZettelNode, format encoder.Enum, env *encoder.Environment) error {
 	enc := encoder.Create(format, env)
 	if enc == nil {
 		return adapter.ErrNoSuchFormat
@@ -338,6 +340,6 @@ func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*m
 		outData.List[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
 		outData.List[i].Meta = m.Map()
 	}
-	w.Header().Set(adapter.ContentType, format2ContentType(zsapi.FormatJSON))
+	w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
 	return encodeJSONData(w, outData)
 }

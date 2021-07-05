@@ -120,7 +120,7 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 }
 
 func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	htmlEncoder := encoder.Create("html", &encoder.Environment{Xhtml: true})
+	htmlEncoder := encoder.Create(encoder.EncoderHTML, &encoder.Environment{Xhtml: true})
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
@@ -145,7 +145,7 @@ func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	zmkEncoder := encoder.Create("zmk", nil)
+	zmkEncoder := encoder.Create(encoder.EncoderZmk, nil)
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {

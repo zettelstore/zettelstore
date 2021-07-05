@@ -14,9 +14,9 @@ package encoder
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
-	"sort"
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -40,8 +40,45 @@ var (
 	ErrNoWriteInlines = errors.New("method WriteInlines is not implemented")
 )
 
+// Enum lists all valid encoder keys.
+type Enum uint8
+
+// Values for EncoderEnum
+const (
+	EncoderUnknown Enum = iota
+	EncoderDJSON
+	EncoderHTML
+	EncoderJSON
+	EncoderNative
+	EncoderRaw
+	EncoderText
+	EncoderZmk
+	encoderMax
+)
+
+// String representation of an encoder key.
+func (e Enum) String() string {
+	switch e {
+	case EncoderDJSON:
+		return "djson"
+	case EncoderHTML:
+		return "html"
+	case EncoderJSON:
+		return "json"
+	case EncoderNative:
+		return "native"
+	case EncoderRaw:
+		return "raw"
+	case EncoderText:
+		return "text"
+	case EncoderZmk:
+		return "zmk"
+	}
+	return fmt.Sprintf("Unknown(%d", e)
+}
+
 // Create builds a new encoder with the given options.
-func Create(format string, env *Environment) Encoder {
+func Create(format Enum, env *Environment) Encoder {
 	if info, ok := registry[format]; ok {
 		return info.Create(env)
 	}
@@ -54,16 +91,16 @@ type Info struct {
 	Default bool
 }
 
-var registry = map[string]Info{}
-var defFormat string
+var registry = map[Enum]Info{}
+var defFormat Enum
 
 // Register the encoder for later retrieval.
-func Register(format string, info Info) {
+func Register(format Enum, info Info) {
 	if _, ok := registry[format]; ok {
 		log.Fatalf("Writer with format %q already registered", format)
 	}
 	if info.Default {
-		if defFormat != "" && defFormat != format {
+		if defFormat != EncoderUnknown && defFormat != format {
 			log.Fatalf("Default format already set: %q, new format: %q", defFormat, format)
 		}
 		defFormat = format
@@ -71,24 +108,23 @@ func Register(format string, info Info) {
 	registry[format] = info
 }
 
-// GetFormats returns all registered formats, ordered by format name.
-func GetFormats() []string {
-	result := make([]string, 0, len(registry))
+// GetFormats returns all registered formats, ordered by format code.
+func GetFormats() []Enum {
+	result := make([]Enum, 0, len(registry))
 	for format := range registry {
 		result = append(result, format)
 	}
-	sort.Strings(result)
 	return result
 }
 
 // GetDefaultFormat returns the format that should be used as default.
-func GetDefaultFormat() string {
-	if defFormat != "" {
+func GetDefaultFormat() Enum {
+	if defFormat != EncoderUnknown {
 		return defFormat
 	}
-	if _, ok := registry["json"]; ok {
-		return "json"
+	if _, ok := registry[EncoderJSON]; ok {
+		return EncoderJSON
 	}
 	log.Fatalf("No default format given")
-	return ""
+	return EncoderUnknown
 }

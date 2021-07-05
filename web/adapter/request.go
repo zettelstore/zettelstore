@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/search"
 )
 
@@ -37,18 +38,18 @@ func GetInteger(q url.Values, key string) (int, bool) {
 const ContentType = "Content-Type"
 
 // GetFormat returns the data format selected by the caller.
-func GetFormat(r *http.Request, q url.Values, defFormat string) string {
+func GetFormat(r *http.Request, q url.Values, defFormat encoder.Enum) (encoder.Enum, string) {
 	format := q.Get(api.QueryKeyFormat)
 	if len(format) > 0 {
-		return format
+		return api.Encoder(format), format
 	}
 	if format, ok := getOneFormat(r, "Accept"); ok {
-		return format
+		return api.Encoder(format), format
 	}
 	if format, ok := getOneFormat(r, ContentType); ok {
-		return format
+		return api.Encoder(format), format
 	}
-	return defFormat
+	return defFormat, "*default*"
 }
 
 func getOneFormat(r *http.Request, key string) (string, bool) {

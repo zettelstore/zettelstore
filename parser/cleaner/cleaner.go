@@ -23,7 +23,7 @@ import (
 // CleanupBlockSlice cleans the given block slice.
 func CleanupBlockSlice(bs ast.BlockSlice) {
 	cv := cleanupVisitor{
-		textEnc: encoder.Create("text", nil),
+		textEnc: encoder.Create(encoder.EncoderText, nil),
 		hasMark: false,
 		doMark:  false,
 	}

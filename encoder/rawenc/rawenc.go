@@ -14,14 +14,13 @@ package rawenc
 import (
 	"io"
 
-	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 )
 
 func init() {
-	encoder.Register(api.FormatRaw, encoder.Info{
+	encoder.Register(encoder.EncoderRaw, encoder.Info{
 		Create: func(*encoder.Environment) encoder.Encoder { return &rawEncoder{} },
 	})
 }

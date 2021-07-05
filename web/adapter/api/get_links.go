@@ -15,11 +15,11 @@ import (
 	"net/http"
 	"strconv"
 
-	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -87,7 +87,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 			outData.Cites = stringCites(summary.Cites)
 		}
 
-		w.Header().Set(adapter.ContentType, format2ContentType(zsapi.FormatJSON))
+		w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
 		encodeJSONData(w, outData)
 	}
 }
