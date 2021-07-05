@@ -171,6 +171,7 @@ func TestLink(t *testing.T) {
 		{"[[\\]|a]]", "(PARA (LINK a ]))"},
 		{"[[b\\]|a]]", "(PARA (LINK a b]))"},
 		{"[[\\]\\||a]]", "(PARA (LINK a ]|))"},
+		{"[[http://a|http://a]]", "(PARA (LINK http://a http://a))"},
 	})
 }
 
@@ -243,6 +244,7 @@ func TestImage(t *testing.T) {
 		{"{{\\}|a}}", "(PARA (IMAGE a }))"},
 		{"{{b\\}|a}}", "(PARA (IMAGE a b}))"},
 		{"{{\\}\\||a}}", "(PARA (IMAGE a }|))"},
+		{"{{http://a|http://a}}", "(PARA (IMAGE http://a http://a))"},
 	})
 }
 
