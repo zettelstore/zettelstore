@@ -28,6 +28,11 @@ func init() {
 		ParseInlines: parseInlines,
 	})
 	parser.Register(&parser.Info{
+		Name:         "html",
+		ParseBlocks:  parseBlocksHTML,
+		ParseInlines: parseInlinesHTML,
+	})
+	parser.Register(&parser.Info{
 		Name:         "css",
 		ParseBlocks:  parseBlocks,
 		ParseInlines: parseInlines,
@@ -45,9 +50,15 @@ func init() {
 }
 
 func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+	return doParseBlocks(inp, m, syntax, ast.VerbatimProg)
+}
+func parseBlocksHTML(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+	return doParseBlocks(inp, m, syntax, ast.VerbatimHTML)
+}
+func doParseBlocks(inp *input.Input, m *meta.Meta, syntax string, kind ast.VerbatimKind) ast.BlockSlice {
 	return ast.BlockSlice{
 		&ast.VerbatimNode{
-			Kind:  ast.VerbatimProg,
+			Kind:  kind,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Lines: readLines(inp),
 		},
@@ -67,10 +78,16 @@ func readLines(inp *input.Input) (lines []string) {
 }
 
 func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+	return doParseInlines(inp, syntax, ast.LiteralProg)
+}
+func parseInlinesHTML(inp *input.Input, syntax string) ast.InlineSlice {
+	return doParseInlines(inp, syntax, ast.LiteralHTML)
+}
+func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) ast.InlineSlice {
 	inp.SkipToEOL()
 	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Kind:  ast.LiteralProg,
+			Kind:  kind,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Text:  inp.Src[0:inp.Pos],
 		},

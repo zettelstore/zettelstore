@@ -3,7 +3,7 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20210523194915
+modified: 20210705111758
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -25,12 +25,18 @@ The following syntax values are supported:
 ; [!gif]''gif''; [!jpeg]''jpeg''; [!jpg]''jpg''; [!png]''png''
 : The formats for pixel graphics.
   Typically the data is stored in a separate file and the syntax is given in the ''.meta'' file.
+; [!html]''html''
+: Hypertext Markup Language, will not be parsed further.
+  Instead, it is treated as [[text|#text]], but will be encoded differently for [[HTML format|00001012920510]] (same for the [[web user interface|00001014000000]]).
+
+  For security reasons, equivocal elements will not be encoded in the HTML format / web user interface, e.g. the ``<script ...`` tag.
+  See [[security aspects of Markdown|00001008010000#security-aspects]] for some details.
 ; [!markdown]''markdown'', [!md]''md''
 : For those who desperately need [[Markdown|https://daringfireball.net/projects/markdown/]].
   Since the world of Markdown is so diverse, a [[CommonMark|https://commonmark.org/]] parser is used.
   See [[Use Markdown within Zettelstore|00001008010000]].
 ; [!mustache]''mustache''
-: A [[Mustache template|https://mustache.github.io/]], used when rendering a zettel as HTML.
+: A [[Mustache template|https://mustache.github.io/]], used when rendering a zettel as HTML for the [[web user interface|00001014000000]].
 ; [!none]''none''
 : Only the metadata of a zettel is ""parsed"".
   Useful for displaying the full metadata.
