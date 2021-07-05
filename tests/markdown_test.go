@@ -44,27 +44,27 @@ type markdownTestCase struct {
 // exceptions lists all CommonMark tests that should not be tested for identical HTML output
 var exceptions = []string{
 	" - foo\n   - bar\n\t - baz\n", // 9
-	"<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\nokay\n", // 140
-	"<script>\nfoo\n</script>1. *bar*\n",                       // 147
-	"- foo\n  - bar\n    - baz\n      - boo\n",                 // 264
-	"10) foo\n    - bar\n",                                     // 266
-	"- # Foo\n- Bar\n  ---\n  baz\n",                           // 270
-	"- foo\n\n- bar\n\n\n- baz\n",                              // 276
-	"- foo\n  - bar\n    - baz\n\n\n      bim\n",               // 277
-	"1. a\n\n  2. b\n\n   3. c\n",                              // 281
-	"1. a\n\n  2. b\n\n    3. c\n",                             // 283
-	"- a\n- b\n\n- c\n",                                        // 284
-	"* a\n*\n\n* c\n",                                          // 285
-	"- a\n- b\n\n  [ref]: /url\n- d\n",                         // 287
-	"- a\n  - b\n\n    c\n- d\n",                               // 289
-	"* a\n  > b\n  >\n* c\n",                                   // 290
-	"- a\n  > b\n  ```\n  c\n  ```\n- d\n",                     // 291
-	"- a\n  - b\n",                                             // 293
-	"<http://example.com?find=\\*>\n",                          // 306
-	"<http://foo.bar.`baz>`\n",                                 // 346
-	"[foo<http://example.com/?search=](uri)>\n",                // 522
-	"[foo<http://example.com/?search=][ref]>\n\n[ref]: /uri\n", // 534
-	"<http://foo.bar.baz/test?q=hello&id=22&boolean>\n",        // 591
+	"<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\nokay\n", // 170
+	"<script>\nfoo\n</script>1. *bar*\n",                       // 178
+	"- foo\n  - bar\n    - baz\n      - boo\n",                 // 294
+	"10) foo\n    - bar\n",                                     // 296
+	"- # Foo\n- Bar\n  ---\n  baz\n",                           // 300
+	"- foo\n\n- bar\n\n\n- baz\n",                              // 306
+	"- foo\n  - bar\n    - baz\n\n\n      bim\n",               // 307
+	"1. a\n\n  2. b\n\n   3. c\n",                              // 311
+	"1. a\n\n  2. b\n\n    3. c\n",                             // 313
+	"- a\n- b\n\n- c\n",                                        // 314
+	"* a\n*\n\n* c\n",                                          // 315
+	"- a\n- b\n\n  [ref]: /url\n- d\n",                         // 317
+	"- a\n  - b\n\n    c\n- d\n",                               // 319
+	"* a\n  > b\n  >\n* c\n",                                   // 320
+	"- a\n  > b\n  ```\n  c\n  ```\n- d\n",                     // 321
+	"- a\n  - b\n",                                             // 323
+	"<http://foo.bar.`baz>`\n",                                 // 345
+	"[foo<http://example.com/?search=](uri)>\n",                // 525
+	"[foo<http://example.com/?search=][ref]>\n\n[ref]: /uri\n", // 537
+	"<http://example.com?find=\\*>\n",                          // 581
+	"<http://foo.bar.baz/test?q=hello&id=22&boolean>\n",        // 594
 }
 
 var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
