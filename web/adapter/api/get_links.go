@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
@@ -51,7 +52,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
+		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
@@ -86,7 +87,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 			outData.Cites = stringCites(summary.Cites)
 		}
 
-		w.Header().Set(adapter.ContentType, format2ContentType("json"))
+		w.Header().Set(adapter.ContentType, format2ContentType(zsapi.FormatJSON))
 		encodeJSONData(w, outData)
 	}
 }

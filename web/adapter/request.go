@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
 )
@@ -37,7 +38,7 @@ const ContentType = "Content-Type"
 
 // GetFormat returns the data format selected by the caller.
 func GetFormat(r *http.Request, q url.Values, defFormat string) string {
-	format := q.Get("_format")
+	format := q.Get(api.QueryKeyFormat)
 	if len(format) > 0 {
 		return format
 	}
@@ -62,8 +63,8 @@ func getOneFormat(r *http.Request, key string) (string, bool) {
 }
 
 var mapCT2format = map[string]string{
-	"application/json": "json",
-	"text/html":        "html",
+	"application/json": api.FormatJSON,
+	"text/html":        api.FormatHTML,
 }
 
 func contentType2format(contentType string) (string, bool) {

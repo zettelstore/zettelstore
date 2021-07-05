@@ -11,7 +11,11 @@
 // Package api provides api handlers for web requests.
 package api
 
-import "net/url"
+import (
+	"net/url"
+
+	"zettelstore.de/z/api"
+)
 
 type partType int
 
@@ -24,14 +28,14 @@ const (
 )
 
 var partMap = map[string]partType{
-	"id":      partID,
-	"meta":    partMeta,
-	"content": partContent,
-	"zettel":  partZettel,
+	api.PartID:      partID,
+	api.PartMeta:    partMeta,
+	api.PartContent: partContent,
+	api.PartZettel:  partZettel,
 }
 
 func getPart(q url.Values, defPart partType) partType {
-	p := q.Get("_part")
+	p := q.Get(api.QueryKeyPart)
 	if p == "" {
 		return defPart
 	}

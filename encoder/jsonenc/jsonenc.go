@@ -15,13 +15,14 @@ import (
 	"bytes"
 	"io"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 )
 
 func init() {
-	encoder.Register("json", encoder.Info{
+	encoder.Register(api.FormatJSON, encoder.Info{
 		Create:  func(*encoder.Environment) encoder.Encoder { return &jsonEncoder{} },
 		Default: true,
 	})

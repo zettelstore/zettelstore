@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"strconv"
 
-	jsonapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -34,7 +34,7 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 
 		format := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
-		case "json":
+		case zsapi.FormatJSON:
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
 			tagMap := make(map[string][]string, len(tagData))
 			for tag, metaList := range tagData {
@@ -44,7 +44,7 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 				}
 				tagMap[tag] = zidList
 			}
-			encodeJSONData(w, jsonapi.TagListJSON{Tags: tagMap})
+			encodeJSONData(w, zsapi.TagListJSON{Tags: tagMap})
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in format %q", format))
 		}

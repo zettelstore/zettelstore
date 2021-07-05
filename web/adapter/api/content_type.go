@@ -11,16 +11,18 @@
 // Package api provides api handlers for web requests.
 package api
 
+import zsapi "zettelstore.de/z/api"
+
 const plainText = "text/plain; charset=utf-8"
 
 var mapFormat2CT = map[string]string{
-	"html":   "text/html; charset=utf-8",
-	"native": plainText,
-	"json":   "application/json",
-	"djson":  "application/json",
-	"text":   plainText,
-	"zmk":    plainText,
-	"raw":    plainText, // In some cases...
+	zsapi.FormatHTML:   "text/html; charset=utf-8",
+	zsapi.FormatNative: plainText,
+	zsapi.FormatJSON:   "application/json",
+	zsapi.FormatDJSON:  "application/json",
+	zsapi.FormatText:   plainText,
+	zsapi.FormatZMK:    plainText,
+	zsapi.FormatRaw:    plainText, // In some cases...
 }
 
 func format2ContentType(format string) string {

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net/http"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -40,7 +41,7 @@ func (api *API) MakeListMetaHandler(
 			return
 		}
 		ctx1 := ctx
-		if format == "html" || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
+		if format == zsapi.FormatHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
 			ctx1 = box.NoEnrichContext(ctx1)
 		}
 		metaList, err := listMeta.Run(ctx1, s)
@@ -51,11 +52,11 @@ func (api *API) MakeListMetaHandler(
 
 		w.Header().Set(adapter.ContentType, format2ContentType(format))
 		switch format {
-		case "html":
+		case zsapi.FormatHTML:
 			api.renderListMetaHTML(w, metaList)
-		case "json", "djson":
+		case zsapi.FormatJSON, zsapi.FormatDJSON:
 			api.renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
-		case "native", "raw", "text", "zmk":
+		case zsapi.FormatNative, zsapi.FormatRaw, zsapi.FormatText, zsapi.FormatZMK:
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", format))
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in format %q", format))

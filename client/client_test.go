@@ -15,9 +15,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/url"
 	"testing"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/client"
+	"zettelstore.de/z/domain/meta"
 )
 
 func TestList(t *testing.T) {
@@ -33,24 +36,35 @@ func TestList(t *testing.T) {
 	}
 
 	t.Parallel()
+	c := getClient()
+	query := url.Values{api.QueryKeyFormat: {"html"}} // Client must remove "html"
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
-			c := getClient()
 			c.SetAuth(tc.user, tc.user)
-			l, err := c.ListZettel(context.Background())
+			l, err := c.ListZettel(context.Background(), query)
 			if err != nil {
 				tt.Error(err)
 				return
 			}
-			got := len(l.List)
+			got := len(l)
 			if got != tc.exp {
-				tt.Errorf("List of length %d expected, but got %d\n%v", tc.exp, got, l.List)
+				tt.Errorf("List of length %d expected, but got %d\n%v", tc.exp, got, l)
 			}
 		})
+	}
+	l, err := c.ListZettel(context.Background(), url.Values{meta.KeyRole: {meta.ValueRoleConfiguration}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	got := len(l)
+	if got != 27 {
+		t.Errorf("List of length %d expected, but got %d\n%v", 27, got, l)
 	}
 }
 
 func TestListTags(t *testing.T) {
+	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	tm, err := c.ListTags(context.Background())
@@ -84,6 +98,7 @@ func TestListTags(t *testing.T) {
 }
 
 func TestListRoles(t *testing.T) {
+	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	rl, err := c.ListRoles(context.Background())

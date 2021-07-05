@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -30,7 +31,7 @@ func (api *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.Handle
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		start, metas, err := zettelOrder.Run(ctx, zid, q.Get("syntax"))
+		start, metas, err := zettelOrder.Run(ctx, zid, q.Get(meta.KeySyntax))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

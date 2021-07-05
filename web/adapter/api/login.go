@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/z/api"
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -62,7 +62,7 @@ func retrieveIdentCred(r *http.Request) (string, string) {
 
 func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) {
 	je := json.NewEncoder(w)
-	je.Encode(api.AuthJSON{
+	je.Encode(zsapi.AuthJSON{
 		Token:   token,
 		Type:    "Bearer",
 		Expires: int(lifetime / time.Second),
@@ -82,7 +82,7 @@ func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			w.Header().Set(adapter.ContentType, format2ContentType("json"))
+			w.Header().Set(adapter.ContentType, format2ContentType(zsapi.FormatJSON))
 			writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			return
 		}
@@ -93,7 +93,7 @@ func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		w.Header().Set(adapter.ContentType, format2ContentType("json"))
+		w.Header().Set(adapter.ContentType, format2ContentType(zsapi.FormatJSON))
 		writeJSONToken(w, string(token), api.tokenLifetime)
 	}
 }

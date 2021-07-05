@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"net/http"
 
-	jsonapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -32,9 +32,9 @@ func (api *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc 
 
 		format := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
-		case "json":
+		case zsapi.FormatJSON:
 			w.Header().Set(adapter.ContentType, format2ContentType(format))
-			encodeJSONData(w, jsonapi.RoleListJSON{Roles: roleList})
+			encodeJSONData(w, zsapi.RoleListJSON{Roles: roleList})
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Role list not available in format %q", format))
 		}

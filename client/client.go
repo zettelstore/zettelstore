@@ -126,8 +126,17 @@ func (c *Client) RefreshToken(ctx context.Context) error {
 }
 
 // ListZettel returns a list of all Zettel.
-func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
-	req, err := c.newListRequest(ctx, http.MethodGet, c.newURLBuilder('z'), nil)
+func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZettelJSON, error) {
+	ub := c.newURLBuilder('z')
+	for key, values := range query {
+		if key == api.QueryKeyFormat {
+			continue
+		}
+		for _, val := range values {
+			ub.AppendQuery(key, val)
+		}
+	}
+	req, err := c.newListRequest(ctx, http.MethodGet, ub, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +158,7 @@ func (c *Client) ListZettel(ctx context.Context) (*api.ZettelListJSON, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &zl, nil
+	return zl.List, nil
 }
 
 // ListTags returns a map of all tags, together with the associated zettel containing this tag.

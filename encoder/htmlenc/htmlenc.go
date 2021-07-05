@@ -15,6 +15,7 @@ import (
 	"io"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -23,7 +24,7 @@ import (
 )
 
 func init() {
-	encoder.Register("html", encoder.Info{
+	encoder.Register(api.FormatHTML, encoder.Info{
 		Create: func(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} },
 	})
 }
