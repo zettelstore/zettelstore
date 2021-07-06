@@ -50,9 +50,9 @@ In this case, you should adjust the parameter value.
 
 Please note that a directory re-scan invalidates all internal data of a Zettelstore.
 It might trigger a re-build of the backlink database (and other internal databases).
-Therefore a large value if preferred.
+Therefore a large value is preferred.
 
-This value is ignored for other directory box type, such as ""simple"".
+This value is ignored for other directory box types, such as ""simple"".
 
 === Worker
 Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.
