@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strconv"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
@@ -28,16 +29,16 @@ type jsonGetLinks struct {
 	ID    string `json:"id"`
 	URL   string `json:"url"`
 	Links struct {
-		Incoming []jsonIDURL `json:"incoming,omitempty"`
-		Outgoing []jsonIDURL `json:"outgoing,omitempty"`
-		Local    []string    `json:"local,omitempty"`
-		External []string    `json:"external,omitempty"`
-		Meta     []string    `json:"meta,omitempty"`
+		Incoming []zsapi.ZidJSON `json:"incoming,omitempty"`
+		Outgoing []zsapi.ZidJSON `json:"outgoing,omitempty"`
+		Local    []string        `json:"local,omitempty"`
+		External []string        `json:"external,omitempty"`
+		Meta     []string        `json:"meta,omitempty"`
 	} `json:"links"`
 	Images struct {
-		Outgoing []jsonIDURL `json:"outgoing,omitempty"`
-		Local    []string    `json:"local,omitempty"`
-		External []string    `json:"external,omitempty"`
+		Outgoing []zsapi.ZidJSON `json:"outgoing,omitempty"`
+		Local    []string        `json:"local,omitempty"`
+		External []string        `json:"external,omitempty"`
 	} `json:"images,omitempty"`
 	Cites []string `json:"cites,omitempty"`
 }
@@ -94,7 +95,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 
 func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
 	if matter&matterIncoming != 0 {
-		outData.Links.Incoming = []jsonIDURL{}
+		outData.Links.Incoming = []zsapi.ZidJSON{}
 	}
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 	if matter&matterOutgoing != 0 {
@@ -121,15 +122,15 @@ func (api *API) setupImageJSONRefs(summary collect.Summary, matter matterType, o
 	}
 }
 
-func (api *API) idURLRefs(refs []*ast.Reference) []jsonIDURL {
-	result := make([]jsonIDURL, 0, len(refs))
+func (api *API) idURLRefs(refs []*ast.Reference) []zsapi.ZidJSON {
+	result := make([]zsapi.ZidJSON, 0, len(refs))
 	for _, ref := range refs {
 		path := ref.URL.Path
 		ub := api.NewURLBuilder('z').AppendPath(path)
 		if fragment := ref.URL.Fragment; len(fragment) > 0 {
 			ub.SetFragment(fragment)
 		}
-		result = append(result, jsonIDURL{ID: path, URL: ub.String()})
+		result = append(result, zsapi.ZidJSON{ID: path, URL: ub.String()})
 	}
 	return result
 }

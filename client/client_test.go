@@ -25,9 +25,9 @@ import (
 )
 
 func TestCreateDeleteZettel(t *testing.T) {
-	t.Parallel()
+	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
-	c.SetAuth("owner", "owner")
+	c.SetAuth("creator", "creator")
 	zid, err := c.CreateZettel(context.Background(), &api.ZettelDataJSON{
 		Meta:     nil,
 		Encoding: "",
@@ -41,6 +41,7 @@ func TestCreateDeleteZettel(t *testing.T) {
 		t.Error("Invalid zettel ID", zid)
 		return
 	}
+	c.SetAuth("owner", "owner")
 	err = c.DeleteZettel(context.Background(), zid)
 	if err != nil {
 		t.Error("Cannot delete", zid, ":", err)

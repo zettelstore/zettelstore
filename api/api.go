@@ -37,7 +37,7 @@ type ZettelJSON struct {
 	ZettelDataJSON
 }
 
-// ZettelListJSON contains all data for a list of zettel
+// ZettelListJSON contains data for a zettel list.
 type ZettelListJSON struct {
 	List []ZettelJSON `json:"list"`
 }

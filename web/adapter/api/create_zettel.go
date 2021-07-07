@@ -41,14 +41,12 @@ func (api *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) h
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
-		// TODO: Set Location field
+		u := api.NewURLBuilder('z').SetZid(newZid).String()
+		h := w.Header()
+		h.Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+		h.Set(adapter.Location, u)
 		w.WriteHeader(http.StatusCreated)
-		err = encodeJSONData(w, zsapi.ZidJSON{
-			ID:  newZid.String(),
-			URL: api.NewURLBuilder('z').SetZid(newZid).String(),
-		})
-		if err != nil {
+		if err = encodeJSONData(w, zsapi.ZidJSON{ID: newZid.String(), URL: u}); err != nil {
 			adapter.InternalServerError(w, "Write JSON", err)
 		}
 	}

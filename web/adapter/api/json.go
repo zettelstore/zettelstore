@@ -27,10 +27,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonIDURL struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
-}
 type jsonZettel struct {
 	ID       string            `json:"id"`
 	URL      string            `json:"url"`
@@ -266,7 +262,7 @@ func (api *API) getWriteContentFunc(ctx context.Context, format encoder.Enum,
 func (api *API) getWriteIDFunc(ctx context.Context, format encoder.Enum) writeZettelFunc {
 	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
-			return encodeJSONData(w, jsonIDURL{
+			return encodeJSONData(w, zsapi.ZidJSON{
 				ID:  zn.Zid.String(),
 				URL: api.NewURLBuilder('z').SetZid(zn.Zid).String(),
 			})
