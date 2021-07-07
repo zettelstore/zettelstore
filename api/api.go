@@ -18,13 +18,23 @@ type AuthJSON struct {
 	Expires int    `json:"expires_in"`
 }
 
-// ZettelJSON contains all data for a zettel.
-type ZettelJSON struct {
-	ID       string            `json:"id"`
-	URL      string            `json:"url"`
+// ZidJSON contains the identifier data of a zettel.
+type ZidJSON struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
+
+// ZettelDataJSON contains all data for a zettel.
+type ZettelDataJSON struct {
 	Meta     map[string]string `json:"meta"`
 	Encoding string            `json:"encoding"`
 	Content  string            `json:"content"`
+}
+
+// ZettelJSON contains all data for a zettel, the identifier, the metadata, and the content.
+type ZettelJSON struct {
+	ZidJSON
+	ZettelDataJSON
 }
 
 // ZettelListJSON contains all data for a list of zettel

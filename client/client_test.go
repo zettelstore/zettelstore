@@ -24,6 +24,30 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
+func TestCreateDeleteZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	zid, err := c.CreateZettel(context.Background(), &api.ZettelDataJSON{
+		Meta:     nil,
+		Encoding: "",
+		Content:  "Example",
+	})
+	if err != nil {
+		t.Error("Cannot create zettel:", err)
+		return
+	}
+	if !zid.IsValid() {
+		t.Error("Invalid zettel ID", zid)
+		return
+	}
+	err = c.DeleteZettel(context.Background(), zid)
+	if err != nil {
+		t.Error("Cannot delete", zid, ":", err)
+		return
+	}
+}
+
 func TestList(t *testing.T) {
 	testdata := []struct {
 		user string
@@ -71,9 +95,6 @@ func TestGetZettel(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 		return
-	}
-	if got := z.ID; got != id.DefaultHomeZid.String() {
-		t.Errorf("Expected Zid %s, got %s", id.DefaultHomeZid, got)
 	}
 	if m := z.Meta; len(m) > 0 {
 		t.Errorf("Exptected empty meta, but got %v", z.Meta)
