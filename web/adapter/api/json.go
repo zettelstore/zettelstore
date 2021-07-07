@@ -27,13 +27,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonZettel struct {
-	ID       string            `json:"id"`
-	URL      string            `json:"url"`
-	Meta     map[string]string `json:"meta"`
-	Encoding string            `json:"encoding"`
-	Content  interface{}       `json:"content"`
-}
 type jsonMeta struct {
 	ID   string            `json:"id"`
 	URL  string            `json:"url"`
@@ -46,17 +39,10 @@ type jsonMetaList struct {
 	List []jsonMeta        `json:"list"`
 }
 type jsonContent struct {
-	ID       string      `json:"id"`
-	URL      string      `json:"url"`
-	Encoding string      `json:"encoding"`
-	Content  interface{} `json:"content"`
-}
-
-func encodedContent(content domain.Content) (string, interface{}) {
-	if content.IsBinary() {
-		return "base64", content.AsBytes()
-	}
-	return "", content.AsString()
+	ID       string `json:"id"`
+	URL      string `json:"url"`
+	Encoding string `json:"encoding"`
+	Content  string `json:"content"`
 }
 
 var (
@@ -121,7 +107,7 @@ func (api *API) getPrepareZettelFunc(ctx context.Context, parseZettel usecase.Pa
 		return func(m *meta.Meta) (*ast.ZettelNode, error) {
 			return &ast.ZettelNode{
 				Meta:    m,
-				Content: "",
+				Content: domain.NewContent(""),
 				Zid:     m.Zid,
 				InhMeta: api.rtConfig.AddDefaultValues(m),
 				Ast:     nil,
@@ -153,8 +139,8 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format encoder.Enum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
 	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
-			encoding, content := encodedContent(zn.Content)
-			return encodeJSONData(w, jsonZettel{
+			content, encoding := zn.Content.Encode()
+			return encodeJSONData(w, zsapi.ZettelJSON{
 				ID:       zn.Zid.String(),
 				URL:      api.NewURLBuilder('z').SetZid(zn.Zid).String(),
 				Meta:     zn.InhMeta.Map(),
@@ -230,7 +216,7 @@ func (api *API) getWriteContentFunc(ctx context.Context, format encoder.Enum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
 	if format == encoder.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
-			encoding, content := encodedContent(zn.Content)
+			content, encoding := zn.Content.Encode()
 			return encodeJSONData(w, jsonContent{
 				ID:       zn.Zid.String(),
 				URL:      api.NewURLBuilder('z').SetZid(zn.Zid).String(),

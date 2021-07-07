@@ -11,10 +11,7 @@
 // Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
-import (
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/strfun"
-)
+import "zettelstore.de/z/domain"
 
 // NewZettel is the data for this use case.
 type NewZettel struct{}
@@ -34,6 +31,7 @@ func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 			m.Delete(key)
 		}
 	}
-	content := strfun.TrimSpaceRight(origZettel.Content.AsString())
-	return domain.Zettel{Meta: m, Content: domain.Content(content)}
+	content := origZettel.Content
+	content.TrimSpace()
+	return domain.Zettel{Meta: m, Content: content}
 }

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -44,5 +44,5 @@ func (uc FolgeZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m.Set(meta.KeyTags, origMeta.GetDefault(meta.KeyTags, ""))
 	m.Set(meta.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	m.Set(meta.KeyPrecursor, origMeta.Zid.String())
-	return domain.Zettel{Meta: m, Content: ""}
+	return domain.Zettel{Meta: m, Content: domain.NewContent("")}
 }

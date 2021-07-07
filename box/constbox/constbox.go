@@ -144,7 +144,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeySyntax:     meta.ValueSyntaxNone,
 			meta.KeyNoIndex:    meta.ValueTrue,
 		},
-		""},
+		domain.NewContent("")},
 	id.LicenseZid: {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore License",
@@ -323,7 +323,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyRole:   meta.ValueRoleZettel,
 			meta.KeySyntax: meta.ValueSyntaxZmk,
 		},
-		""},
+		domain.NewContent("")},
 	id.TemplateNewUserZid: {
 		constHeader{
 			meta.KeyTitle:      "New User",
@@ -333,7 +333,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyUserRole:   meta.ValueUserRoleReader,
 			meta.KeySyntax:     meta.ValueSyntaxNone,
 		},
-		""},
+		domain.NewContent("")},
 	id.DefaultHomeZid: {
 		constHeader{
 			meta.KeyTitle:  "Home",

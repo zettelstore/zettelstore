@@ -33,8 +33,11 @@ type ZettelDataJSON struct {
 
 // ZettelJSON contains all data for a zettel, the identifier, the metadata, and the content.
 type ZettelJSON struct {
-	ZidJSON
-	ZettelDataJSON
+	ID       string            `json:"id"`
+	URL      string            `json:"url"`
+	Meta     map[string]string `json:"meta"`
+	Encoding string            `json:"encoding"`
+	Content  string            `json:"content"`
 }
 
 // ZettelListJSON contains data for a zettel list.

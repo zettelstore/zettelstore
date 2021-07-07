@@ -14,7 +14,6 @@ package usecase
 import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/strfun"
 )
 
 // CopyZettel is the data for this use case.
@@ -36,6 +35,7 @@ func (uc CopyZettel) Run(origZettel domain.Zettel) domain.Zettel {
 		}
 		m.Set(meta.KeyTitle, title)
 	}
-	content := strfun.TrimSpaceRight(origZettel.Content.AsString())
-	return domain.Zettel{Meta: m, Content: domain.Content(content)}
+	content := origZettel.Content
+	content.TrimSpace()
+	return domain.Zettel{Meta: m, Content: content}
 }

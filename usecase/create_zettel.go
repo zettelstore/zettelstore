@@ -18,7 +18,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/strfun"
 )
 
 // CreateZettelPort is the interface used by this use case.
@@ -59,6 +58,6 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	}
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 
-	zettel.Content = domain.Content(strfun.TrimSpaceRight(zettel.Content.AsString()))
+	zettel.Content.TrimSpace()
 	return uc.port.CreateZettel(ctx, zettel)
 }

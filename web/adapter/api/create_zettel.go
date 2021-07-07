@@ -12,7 +12,6 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -64,15 +63,8 @@ func buildZettelFromData(r *http.Request) (domain.Zettel, error) {
 		m.Set(k, v)
 	}
 	zettel.Meta = m
-	switch zettelData.Encoding {
-	case "":
-		zettel.Content = domain.NewContent(zettelData.Content)
-	case "base64":
-		data, err := base64.StdEncoding.DecodeString(zettelData.Content)
-		if err != nil {
-			return zettel, err
-		}
-		zettel.Content = domain.NewContent(string(data))
+	if err := zettel.Content.SetDecoded(zettelData.Content, zettelData.Encoding); err != nil {
+		return zettel, err
 	}
 	return zettel, nil
 }
