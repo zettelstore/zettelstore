@@ -55,7 +55,7 @@ func (zc *Content) TrimSpace() {
 }
 
 // Encode content for future transmission.
-func (zc *Content) Encode() (data string, encoding string) {
+func (zc *Content) Encode() (data, encoding string) {
 	if !zc.isBinary {
 		return zc.data, ""
 	}
@@ -63,16 +63,16 @@ func (zc *Content) Encode() (data string, encoding string) {
 }
 
 // SetDecoded content to the decoded value of the given string.
-func (zc *Content) SetDecoded(encoded string, encoding string) error {
+func (zc *Content) SetDecoded(data, encoding string) error {
 	switch encoding {
 	case "":
-		zc.data = encoded
+		zc.data = data
 	case "base64":
-		data, err := base64.StdEncoding.DecodeString(encoded)
+		decoded, err := base64.StdEncoding.DecodeString(data)
 		if err != nil {
 			return err
 		}
-		zc.data = string(data)
+		zc.data = string(decoded)
 	default:
 		return errors.New("unknown encoding " + encoding)
 	}

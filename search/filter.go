@@ -43,15 +43,16 @@ func createFilterSpecs(tags map[string][]expValue) ([]matchSpec, []string) {
 		if !meta.KeyIsValid(key) {
 			continue
 		}
-		if empty, negates := hasEmptyValues(values); empty {
-			if negates == 0 {
+		if always, never := countEmptyValues(values); always+never > 0 {
+			if never == 0 {
 				specs = append(specs, matchSpec{key, matchAlways})
 				continue
 			}
-			if len(values) < negates {
+			if always == 0 {
 				specs = append(specs, matchSpec{key, matchNever})
 				continue
 			}
+			// value must match always AND never. This results in a no-match.
 			nomatch = append(nomatch, key)
 			continue
 		}
@@ -63,18 +64,18 @@ func createFilterSpecs(tags map[string][]expValue) ([]matchSpec, []string) {
 	return specs, nomatch
 }
 
-func hasEmptyValues(values []expValue) (bool, int) {
-	var negates int
+func countEmptyValues(values []expValue) (always, never int) {
 	for _, v := range values {
 		if v.value != "" {
 			continue
 		}
-		if !v.negate {
-			return true, 0
+		if v.negate {
+			never++
+		} else {
+			always++
 		}
-		negates++
 	}
-	return negates > 0, negates
+	return always, never
 }
 
 func createMatchFunc(key string, values []expValue) matchFunc {

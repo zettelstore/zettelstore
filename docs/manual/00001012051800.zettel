@@ -3,7 +3,7 @@ title: API: Shape the list of zettel metadata with filter options
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210510150129
+modified: 20210708200826
 
 In most cases, it is not essential to list //all// zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.
@@ -28,9 +28,14 @@ For example, if you want to retrieve all zettel that do not contain the string "
 {"list":[{"id":"00010000000000","url":"/z/00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","url":"/z/00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
 ...
 ```
+
 The empty query parameter values matches all zettel that contain the given metadata key.
 Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does //not// contain the given metadata key.
 For example ``curl 'http://localhost:23123/z?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
+
+Above example shows that all sub-expressions of a filter specification must be true, so that the whole filter does not remove a zettel from the final list.
+
+If you specify the query parameter ''_negate'', either with or without a value, the whole filter expression will be negated.
 
 === Output only specific parts of a zettel
 If you are just interested in the zettel identifier, you should add the ""''_part''"" query parameter:
