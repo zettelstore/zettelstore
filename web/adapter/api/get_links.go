@@ -88,7 +88,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 			outData.Cites = stringCites(summary.Cites)
 		}
 
-		w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 		encodeJSONData(w, outData)
 	}
 }

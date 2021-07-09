@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -54,7 +55,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 		}
 		switch format {
 		case encoder.EncoderJSON, encoder.EncoderDJSON:
-			w.Header().Set(adapter.ContentType, format2ContentType(format))
+			w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 			err = api.getWriteMetaZettelFunc(ctx, format, part, partZettel, getMeta)(w, zn)
 			if err != nil {
 				adapter.InternalServerError(w, "Write D/JSON", err)
@@ -97,7 +98,7 @@ func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format enc
 	}
 	inhMeta := false
 	if format != encoder.EncoderRaw {
-		w.Header().Set(adapter.ContentType, format2ContentType(format))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 		inhMeta = true
 	}
 	_, err := enc.WriteZettel(w, zn, inhMeta)
@@ -105,7 +106,7 @@ func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format enc
 }
 
 func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum) error {
-	w.Header().Set(adapter.ContentType, format2ContentType(format))
+	w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 	if enc := encoder.Create(format, nil); enc != nil {
 		if format == encoder.EncoderRaw {
 			_, err := enc.WriteMeta(w, zn.Meta)
@@ -120,10 +121,10 @@ func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format encod
 func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum, env encoder.Environment) error {
 	if format == encoder.EncoderRaw {
 		if ct, ok := syntax2contentType(config.GetSyntax(zn.Meta, api.rtConfig)); ok {
-			w.Header().Add(adapter.ContentType, ct)
+			w.Header().Add(zsapi.HeaderContentType, ct)
 		}
 	} else {
-		w.Header().Set(adapter.ContentType, format2ContentType(format))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 	}
 	return writeContent(w, zn, format, &env)
 }

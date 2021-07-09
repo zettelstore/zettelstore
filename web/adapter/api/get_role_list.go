@@ -33,7 +33,7 @@ func (api *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc 
 		format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
 		case encoder.EncoderJSON:
-			w.Header().Set(adapter.ContentType, format2ContentType(format))
+			w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 			encodeJSONData(w, zsapi.RoleListJSON{Roles: roleList})
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Role list not available in format %q", formatText))

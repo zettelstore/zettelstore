@@ -322,7 +322,7 @@ func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*m
 		outData.List[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
 		outData.List[i].Meta = m.Map()
 	}
-	w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+	w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 	return encodeJSONData(w, outData)
 }
 

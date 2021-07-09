@@ -34,25 +34,16 @@ func GetInteger(q url.Values, key string) (int, bool) {
 	return 0, false
 }
 
-// Some HTTP header keys
-const (
-	// ContentType defines the HTTP header value "Content-Type".
-	ContentType = "Content-Type"
-
-	// Location is to specify a location for a ressource
-	Location = "Location"
-)
-
 // GetFormat returns the data format selected by the caller.
 func GetFormat(r *http.Request, q url.Values, defFormat encoder.Enum) (encoder.Enum, string) {
 	format := q.Get(api.QueryKeyFormat)
 	if len(format) > 0 {
 		return api.Encoder(format), format
 	}
-	if format, ok := getOneFormat(r, "Accept"); ok {
+	if format, ok := getOneFormat(r, api.HeaderAccept); ok {
 		return api.Encoder(format), format
 	}
-	if format, ok := getOneFormat(r, ContentType); ok {
+	if format, ok := getOneFormat(r, api.HeaderContentType); ok {
 		return api.Encoder(format), format
 	}
 	return defFormat, "*default*"

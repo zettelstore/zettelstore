@@ -24,7 +24,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func TestCreateDeleteZettel(t *testing.T) {
+func TestCreateRenameDeleteZettel(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("creator", "creator")
@@ -41,8 +41,14 @@ func TestCreateDeleteZettel(t *testing.T) {
 		t.Error("Invalid zettel ID", zid)
 		return
 	}
+	newZid := zid + 1
 	c.SetAuth("owner", "owner")
-	err = c.DeleteZettel(context.Background(), zid)
+	err = c.RenameZettel(context.Background(), zid, newZid)
+	if err != nil {
+		t.Error("Cannot rename", zid, ":", err)
+		newZid = zid
+	}
+	err = c.DeleteZettel(context.Background(), newZid)
 	if err != nil {
 		t.Error("Cannot delete", zid, ":", err)
 		return

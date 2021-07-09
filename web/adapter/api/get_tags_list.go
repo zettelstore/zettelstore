@@ -35,7 +35,7 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 		format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.GetDefaultFormat())
 		switch format {
 		case encoder.EncoderJSON:
-			w.Header().Set(adapter.ContentType, format2ContentType(format))
+			w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 			tagMap := make(map[string][]string, len(tagData))
 			for tag, metaList := range tagData {
 				zidList := make([]string, 0, len(metaList))

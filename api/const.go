@@ -17,6 +17,16 @@ import (
 	"zettelstore.de/z/encoder"
 )
 
+// Additional HTTP constants used.
+const (
+	MethodMove = "MOVE" // HTTP method for renaming a zettel
+
+	HeaderAccept      = "Accept"
+	HeaderContentType = "Content-Type"
+	HeaderDestination = "Destination"
+	HeaderLocation    = "Location"
+)
+
 // Values for HTTP query parameter.
 const (
 	QueryKeyFormat = "_format"

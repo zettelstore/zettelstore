@@ -14,6 +14,7 @@ import (
 	"flag"
 	"net/http"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -75,6 +76,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucZettelContext := usecase.NewZettelContext(protectedBoxManager)
 	ucDelete := usecase.NewDeleteZettel(protectedBoxManager)
 	ucUpdate := usecase.NewUpdateZettel(protectedBoxManager)
+	ucRename := usecase.NewRenameZettel(protectedBoxManager)
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 	webSrv.AddListRoute('a', http.MethodGet, wui.MakeGetLoginHandler())
@@ -85,8 +87,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddZettelRoute('a', http.MethodGet, wui.MakeGetLogoutHandler())
 	if !authManager.IsReadonly() {
 		webSrv.AddZettelRoute('b', http.MethodGet, wui.MakeGetRenameZettelHandler(ucGetMeta))
-		webSrv.AddZettelRoute('b', http.MethodPost, wui.MakePostRenameZettelHandler(
-			usecase.NewRenameZettel(protectedBoxManager)))
+		webSrv.AddZettelRoute('b', http.MethodPost, wui.MakePostRenameZettelHandler(ucRename))
 		webSrv.AddZettelRoute('c', http.MethodGet, wui.MakeGetCopyZettelHandler(
 			ucGetZettel, usecase.NewCopyZettel()))
 		webSrv.AddZettelRoute('c', http.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
@@ -125,6 +126,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.AddListRoute('z', http.MethodPost, api.MakePostCreateZettelHandler(ucCreateZettel))
 		webSrv.AddZettelRoute('z', http.MethodDelete, api.MakeDeleteZettelHandler(ucDelete))
 		webSrv.AddZettelRoute('z', http.MethodPut, api.MakeUpdateZettelHandler(ucUpdate))
+		webSrv.AddZettelRoute('z', zsapi.MethodMove, api.MakeRenameZettelHandler(ucRename))
 	}
 
 	if authManager.WithAuth() {

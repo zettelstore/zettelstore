@@ -324,15 +324,15 @@ func (dp *dirBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 }
 
 func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	if dp.readonly {
-		return box.ErrReadOnly
-	}
 	if curZid == newZid {
 		return nil
 	}
 	curEntry, err := dp.dirSrv.GetEntry(curZid)
 	if err != nil || !curEntry.IsValid() {
 		return box.ErrNotFound
+	}
+	if dp.readonly {
+		return box.ErrReadOnly
 	}
 
 	// Check whether zettel with new ID already exists in this box.

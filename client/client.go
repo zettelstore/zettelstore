@@ -67,7 +67,8 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func (c *Client) buildAndExecuteRequest(ctx context.Context, method string, ub *api.URLBuilder, body io.Reader) (*http.Response, error) {
+func (c *Client) buildAndExecuteRequest(
+	ctx context.Context, method string, ub *api.URLBuilder, body io.Reader, h http.Header) (*http.Response, error) {
 	req, err := c.newRequest(ctx, method, ub, body)
 	if err != nil {
 		return nil, err
@@ -75,6 +76,9 @@ func (c *Client) buildAndExecuteRequest(ctx context.Context, method string, ub *
 	err = c.updateToken(ctx)
 	if err != nil {
 		return nil, err
+	}
+	for key, val := range h {
+		req.Header[key] = append(req.Header[key], val...)
 	}
 	return c.executeRequest(req)
 }
@@ -146,7 +150,7 @@ func (c *Client) CreateZettel(ctx context.Context, data *api.ZettelDataJSON) (id
 		return id.Invalid, err
 	}
 	ub := c.jsonZettelURLBuilder(nil)
-	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPost, ub, &buf)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPost, ub, &buf, nil)
 	if err != nil {
 		return id.Invalid, err
 	}
@@ -176,7 +180,7 @@ func encodeZettelData(buf *bytes.Buffer, data *api.ZettelDataJSON) error {
 // ListZettel returns a list of all Zettel.
 func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZettelJSON, error) {
 	ub := c.jsonZettelURLBuilder(query)
-	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +200,7 @@ func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.Zettel
 // GetZettelJSON returns a zettel as a JSON struct.
 func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid, query url.Values) (*api.ZettelDataJSON, error) {
 	ub := c.jsonZettelURLBuilder(query).SetZid(zid)
-	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +224,7 @@ func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelD
 		return err
 	}
 	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
-	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPut, ub, &buf)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPut, ub, &buf, nil)
 	if err != nil {
 		return err
 	}
@@ -231,10 +235,27 @@ func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelD
 	return nil
 }
 
-// DeleteZettel deletes a zettel from with the given identifier.
+// RenameZettel renames a zettel.
+func (c *Client) RenameZettel(ctx context.Context, oldZid, newZid id.Zid) error {
+	ub := c.jsonZettelURLBuilder(nil).SetZid(oldZid)
+	h := http.Header{
+		api.HeaderDestination: {c.jsonZettelURLBuilder(nil).SetZid(newZid).String()},
+	}
+	resp, err := c.buildAndExecuteRequest(ctx, api.MethodMove, ub, nil, h)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		return errors.New(resp.Status)
+	}
+	return nil
+}
+
+// DeleteZettel deletes a zettel with the given identifier.
 func (c *Client) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
-	resp, err := c.buildAndExecuteRequest(ctx, http.MethodDelete, ub, nil)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodDelete, ub, nil, nil)
 	if err != nil {
 		return err
 	}

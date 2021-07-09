@@ -50,7 +50,7 @@ func (api *API) MakeListMetaHandler(
 			return
 		}
 
-		w.Header().Set(adapter.ContentType, format2ContentType(format))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 		switch format {
 		case encoder.EncoderHTML:
 			api.renderListMetaHTML(w, metaList)

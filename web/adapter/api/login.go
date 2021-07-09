@@ -27,7 +27,7 @@ import (
 func (api *API) MakePostLoginHandlerAPI(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !api.withAuth() {
-			w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+			w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
 		}
@@ -46,7 +46,7 @@ func (api *API) MakePostLoginHandlerAPI(ucAuth usecase.Authenticate) http.Handle
 			return
 		}
 
-		w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 		writeJSONToken(w, string(token), api.tokenLifetime)
 	}
 }
@@ -83,7 +83,7 @@ func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+			w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 			writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			return
 		}
@@ -94,7 +94,7 @@ func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
+		w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
 		writeJSONToken(w, string(token), api.tokenLifetime)
 	}
 }
