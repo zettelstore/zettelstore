@@ -29,39 +29,42 @@ type matchSpec struct {
 
 // compileFilter calculates a filter func based on the given filter.
 func compileFilter(tags expTagValues) MetaMatchFunc {
-	specs, nomatch := createFilterSpecs(tags)
-	if len(specs) == 0 && len(nomatch) == 0 {
-		return nil
+	posSpecs, negSpecs, nomatch := createFilterSpecs(tags)
+	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(nomatch) > 0 {
+		return makeSearchMetaFilterFunc(posSpecs, negSpecs, nomatch)
 	}
-	return makeSearchMetaFilterFunc(specs, nomatch)
+	return nil
 }
 
-func createFilterSpecs(tags map[string][]expValue) ([]matchSpec, []string) {
-	specs := make([]matchSpec, 0, len(tags))
-	var nomatch []string
+func createFilterSpecs(tags map[string][]expValue) (posSpecs, negSpecs []matchSpec, nomatch []string) {
+	posSpecs = make([]matchSpec, 0, len(tags))
+	negSpecs = make([]matchSpec, 0, len(tags))
 	for key, values := range tags {
 		if !meta.KeyIsValid(key) {
 			continue
 		}
 		if always, never := countEmptyValues(values); always+never > 0 {
 			if never == 0 {
-				specs = append(specs, matchSpec{key, matchAlways})
+				posSpecs = append(posSpecs, matchSpec{key, matchAlways})
 				continue
 			}
 			if always == 0 {
-				specs = append(specs, matchSpec{key, matchNever})
+				negSpecs = append(negSpecs, matchSpec{key, nil})
 				continue
 			}
-			// value must match always AND never. This results in a no-match.
+			// value must match always AND never, at the same time. This results in a no-match.
 			nomatch = append(nomatch, key)
 			continue
 		}
-		match := createMatchFunc(key, values)
-		if match != nil {
-			specs = append(specs, matchSpec{key, match})
+		posMatch, negMatch := createPosNegMatchFunc(key, values)
+		if posMatch != nil {
+			posSpecs = append(posSpecs, matchSpec{key, posMatch})
+		}
+		if negMatch != nil {
+			negSpecs = append(negSpecs, matchSpec{key, negMatch})
 		}
 	}
-	return specs, nomatch
+	return posSpecs, negSpecs, nomatch
 }
 
 func countEmptyValues(values []expValue) (always, never int) {
@@ -78,7 +81,29 @@ func countEmptyValues(values []expValue) (always, never int) {
 	return always, never
 }
 
-func createMatchFunc(key string, values []expValue) matchFunc {
+func createPosNegMatchFunc(key string, values []expValue) (posMatch, negMatch matchFunc) {
+	posValues := make([]opValue, 0, len(values))
+	negValues := make([]opValue, 0, len(values))
+	for _, val := range values {
+		if val.negate {
+			negValues = append(negValues, opValue{value: val.value, op: val.op})
+		} else {
+			posValues = append(posValues, opValue{value: val.value, op: val.op})
+		}
+	}
+	return createMatchFunc(key, posValues), createMatchFunc(key, negValues)
+}
+
+// opValue is an expValue, but w/o the field "negate"
+type opValue struct {
+	value string
+	op    compareOp
+}
+
+func createMatchFunc(key string, values []opValue) matchFunc {
+	if len(values) == 0 {
+		return nil
+	}
 	switch meta.Type(key) {
 	case meta.TypeBool:
 		return createMatchBoolFunc(values)
@@ -98,14 +123,10 @@ func createMatchFunc(key string, values []expValue) matchFunc {
 	return createMatchStringFunc(values)
 }
 
-func createMatchBoolFunc(values []expValue) matchFunc {
+func createMatchBoolFunc(values []opValue) matchFunc {
 	preValues := make([]bool, 0, len(values))
 	for _, v := range values {
-		boolValue := meta.BoolValue(v.value)
-		if v.negate {
-			boolValue = !boolValue
-		}
-		preValues = append(preValues, boolValue)
+		preValues = append(preValues, meta.BoolValue(v.value))
 	}
 	return func(value string) bool {
 		bValue := meta.BoolValue(value)
@@ -118,10 +139,10 @@ func createMatchBoolFunc(values []expValue) matchFunc {
 	}
 }
 
-func createMatchIDFunc(values []expValue) matchFunc {
+func createMatchIDFunc(values []opValue) matchFunc {
 	return func(value string) bool {
 		for _, v := range values {
-			if strings.HasPrefix(value, v.value) == v.negate {
+			if !strings.HasPrefix(value, v.value) {
 				return false
 			}
 		}
@@ -129,13 +150,13 @@ func createMatchIDFunc(values []expValue) matchFunc {
 	}
 }
 
-func createMatchIDSetFunc(values []expValue) matchFunc {
+func createMatchIDSetFunc(values []opValue) matchFunc {
 	idValues := preprocessSet(sliceToLower(values))
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
 		for _, neededIDs := range idValues {
 			for _, neededID := range neededIDs {
-				if matchAllID(ids, neededID.value) == neededID.negate {
+				if !matchAllID(ids, neededID.value) {
 					return false
 				}
 			}
@@ -153,7 +174,7 @@ func matchAllID(zettelIDs []string, neededID string) bool {
 	return false
 }
 
-func createMatchTagSetFunc(values []expValue) matchFunc {
+func createMatchTagSetFunc(values []opValue) matchFunc {
 	tagValues := processTagSet(preprocessSet(values))
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
@@ -163,7 +184,7 @@ func createMatchTagSetFunc(values []expValue) matchFunc {
 		}
 		for _, neededTags := range tagValues {
 			for _, neededTag := range neededTags {
-				if matchAllTag(tags, neededTag.value, neededTag.equal) == neededTag.negate {
+				if !matchAllTag(tags, neededTag.value, neededTag.equal) {
 					return false
 				}
 			}
@@ -173,21 +194,20 @@ func createMatchTagSetFunc(values []expValue) matchFunc {
 }
 
 type tagQueryValue struct {
-	value  string
-	negate bool
-	equal  bool // not equal == prefix
+	value string
+	equal bool // not equal == prefix
 }
 
-func processTagSet(valueSet [][]expValue) [][]tagQueryValue {
+func processTagSet(valueSet [][]opValue) [][]tagQueryValue {
 	result := make([][]tagQueryValue, len(valueSet))
 	for i, values := range valueSet {
 		tags := make([]tagQueryValue, len(values))
 		for j, val := range values {
 			if tval := val.value; tval != "" && tval[0] == '#' {
 				tval = meta.CleanTag(tval)
-				tags[j] = tagQueryValue{value: tval, negate: val.negate, equal: true}
+				tags[j] = tagQueryValue{value: tval, equal: true}
 			} else {
-				tags[j] = tagQueryValue{value: tval, negate: val.negate, equal: false}
+				tags[j] = tagQueryValue{value: tval, equal: false}
 			}
 		}
 		result[i] = tags
@@ -212,12 +232,12 @@ func matchAllTag(zettelTags []string, neededTag string, equal bool) bool {
 	return false
 }
 
-func createMatchWordFunc(values []expValue) matchFunc {
+func createMatchWordFunc(values []opValue) matchFunc {
 	values = sliceToLower(values)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, v := range values {
-			if (value == v.value) == v.negate {
+			if value != v.value {
 				return false
 			}
 		}
@@ -225,13 +245,13 @@ func createMatchWordFunc(values []expValue) matchFunc {
 	}
 }
 
-func createMatchWordSetFunc(values []expValue) matchFunc {
+func createMatchWordSetFunc(values []opValue) matchFunc {
 	wordValues := preprocessSet(sliceToLower(values))
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
 		for _, neededWords := range wordValues {
 			for _, neededWord := range neededWords {
-				if matchAllWord(words, neededWord.value) == neededWord.negate {
+				if !matchAllWord(words, neededWord.value) {
 					return false
 				}
 			}
@@ -240,12 +260,12 @@ func createMatchWordSetFunc(values []expValue) matchFunc {
 	}
 }
 
-func createMatchStringFunc(values []expValue) matchFunc {
+func createMatchStringFunc(values []opValue) matchFunc {
 	values = sliceToLower(values)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, v := range values {
-			if strings.Contains(value, v.value) == v.negate {
+			if !strings.Contains(value, v.value) {
 				return false
 			}
 		}
@@ -253,42 +273,51 @@ func createMatchStringFunc(values []expValue) matchFunc {
 	}
 }
 
-func makeSearchMetaFilterFunc(specs []matchSpec, nomatch []string) MetaMatchFunc {
+func makeSearchMetaFilterFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
 	return func(m *meta.Meta) bool {
-		for _, s := range specs {
-			if value, ok := m.Get(s.key); !ok || !s.match(value) {
-				return false
-			}
-		}
 		for _, key := range nomatch {
 			if _, ok := m.Get(key); ok {
 				return false
 			}
 		}
+		for _, s := range posSpecs {
+			if value, ok := m.Get(s.key); !ok || !s.match(value) {
+				return false
+			}
+		}
+		for _, s := range negSpecs {
+			if s.match == nil {
+				if _, ok := m.Get(s.key); ok {
+					return false
+				}
+			} else if value, ok := m.Get(s.key); !ok || s.match(value) {
+				return false
+			}
+		}
 		return true
 	}
 }
 
-func sliceToLower(sl []expValue) []expValue {
-	result := make([]expValue, 0, len(sl))
+func sliceToLower(sl []opValue) []opValue {
+	result := make([]opValue, 0, len(sl))
 	for _, s := range sl {
-		result = append(result, expValue{
-			value:  strings.ToLower(s.value),
-			negate: s.negate,
+		result = append(result, opValue{
+			value: strings.ToLower(s.value),
+			op:    s.op,
 		})
 	}
 	return result
 }
 
-func preprocessSet(set []expValue) [][]expValue {
-	result := make([][]expValue, 0, len(set))
+func preprocessSet(set []opValue) [][]opValue {
+	result := make([][]opValue, 0, len(set))
 	for _, elem := range set {
 		splitElems := strings.Split(elem.value, ",")
-		valueElems := make([]expValue, 0, len(splitElems))
+		valueElems := make([]opValue, 0, len(splitElems))
 		for _, se := range splitElems {
 			e := strings.TrimSpace(se)
 			if len(e) > 0 {
-				valueElems = append(valueElems, expValue{value: e, negate: elem.negate})
+				valueElems = append(valueElems, opValue{value: e, op: elem.op})
 			}
 		}
 		if len(valueElems) > 0 {

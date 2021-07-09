@@ -1,0 +1,42 @@
+id: 00001012051810
+title: API: Shape the list of zettel metadata with filter options
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210709160130
+
+Every query parameter that does //not// begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
+According to the [[type|00001006030000]] of a metadata key, zettel are matched and therefore filtered.
+All [[supported|00001006020000]] metadata keys have a well-defined type.
+User-defined keys have the type ''e'' (string, possibly empty).
+
+For example, if you want to retrieve all zettel that contain the string ""API"" in its title, your request will be:
+```sh
+# curl 'http://127.0.0.1:23123/z?title=API'
+{"list":[{"id":"00001012921000","url":"/z/00001012921000","meta":{"title":"API: JSON structure of an access token","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920500","url":"/z/00001012920500","meta":{"title":"Formats available by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920000","url":"/z/00001012920000","meta":{"title":"Endpoints used by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}}, ...
+```
+
+However, if you want all zettel that does //not// match a given value, you must prefix the value with the exclamation mark character (""!"", ''U+0021'').
+For example, if you want to retrieve all zettel that do not contain the string ""API"" in their title, your request will be:
+```sh
+# curl 'http://127.0.0.1:23123/z?title=!API'
+{"list":[{"id":"00010000000000","url":"/z/00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","url":"/z/00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
+...
+```
+
+In both cases, an implicit precondition is that the zettel must contain the given metadata key.
+For a metadata key like [[''title''|00001006020000#title]], which has a default value, this precondition should always be true.
+But the situation is different for a key like [[''url''|00001006020000#url]].
+Both ``curl 'http://localhost:23123/z?url='`` and ``curl 'http://localhost:23123/z?url=!'`` may result in an empty list.
+
+The empty query parameter values matches all zettel that contain the given metadata key.
+Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does //not// contain the given metadata key.
+This is in contrast to above rule that the metadata value must exist before a match is done.
+For example ``curl 'http://localhost:23123/z?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
+
+Above example shows that all sub-expressions of a filter specification must be true so that the entire filter does not remove a zettel from the final list.
+
+If you specify the query parameter ''_negate'', either with or without a value, the whole filter expression will be negated.
+Because of the precondition described above, ``curl 'http://127.0.0.1:23123/z?url=!com'`` and ``curl 'http://127.0.0.1:23123/z?url=com&_negate'`` may produce different lists.
+The first query produces a zettel list, where each zettel does have a ''url'' metadata value, which does not contain the characters ""com"".
+The second query produces a zettel list, that excludes any zettel containing a ''url'' metadata value that contains the characters ""com""; this also includes all zettel that do not contain the metadata key ''url''.

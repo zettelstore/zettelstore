@@ -1,99 +1,16 @@
 id: 00001012051800
-title: API: Shape the list of zettel metadata with filter options
+title: API: Shape the list of zettel metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210708200826
+modified: 20210709162424
 
 In most cases, it is not essential to list //all// zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.
 This is done by adding some query parameters to the general ''GET /z'' request.
 
-=== Filter
-Every query parameter that does //not// begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
-According to the [[type|00001006030000]] of a metadata key, zettel are matched and therefore filtered.
-All [[supported|00001006020000]] metadata keys have a well-defined type.
-User-defined keys have the type ''e'' (string, possibly empty).
-
-For example, if you want to retrieve all zettel that contain the string ""API"" in its title, your request will be:
-```sh
-# curl 'http://127.0.0.1:23123/z?title=API'
-{"list":[{"id":"00001012921000","url":"/z/00001012921000","meta":{"title":"API: JSON structure of an access token","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920500","url":"/z/00001012920500","meta":{"title":"Formats available by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920000","url":"/z/00001012920000","meta":{"title":"Endpoints used by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}}, ...
-```
-
-However, if you want all zettel that does //not// match a given value, you must prefix the value with the exclamation mark character (""!"", ''U+0021'').
-For example, if you want to retrieve all zettel that do not contain the string ""API"" in their title, your request will be:
-```sh
-# curl 'http://127.0.0.1:23123/z?title=!API'
-{"list":[{"id":"00010000000000","url":"/z/00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","url":"/z/00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
-...
-```
-
-The empty query parameter values matches all zettel that contain the given metadata key.
-Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does //not// contain the given metadata key.
-For example ``curl 'http://localhost:23123/z?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
-
-Above example shows that all sub-expressions of a filter specification must be true, so that the whole filter does not remove a zettel from the final list.
-
-If you specify the query parameter ''_negate'', either with or without a value, the whole filter expression will be negated.
-
-=== Output only specific parts of a zettel
-If you are just interested in the zettel identifier, you should add the ""''_part''"" query parameter:
-```sh
-# curl 'http://127.0.0.1:23123/z?title=API&_part=id'
-{"list":[{"id":"00001012921000","url":"/z/00001012921000"},{"id":"00001012920500","url":"/z/00001012920500"},{"id":"00001012920000","url":"/z/00001012920000"},{"id":"00001012051800","url":"/z/00001012051800"},{"id":"00001012051600","url":"/z/00001012051600"},{"id":"00001012051400","url":"/z/00001012051400"},{"id":"00001012051200","url":"/z/00001012051200"},{"id":"00001012050600","url":"/z/00001012050600"},{"id":"00001012050400","url":"/z/00001012050400"},{"id":"00001012050200","url":"/z/00001012050200"},{"id":"00001012000000","url":"/z/00001012000000"}]}
-```
-If you want only those zettel that additionally must contain the string ""JSON"", you have to add an additional query parameter:
-```sh
-# curl 'http://127.0.0.1:23123/z?title=API&_part=id&title=JSON'
-{"list":[{"id":"00001012921000","url":"/z/00001012921000"}]}
-```
-Similarly, if you add another query parameter, the intersection of both results is returned:
-```sh
-# curl 'http://127.0.0.1:23123/z?title=API&_part=id&id=00001012050'
-{"list":[{"id":"00001012050600","url":"/z/00001012050600"},{"id":"00001012050400","url":"/z/00001012050400"},{"id":"00001012050200","url":"/z/00001012050200"}]}
-```
-
-=== Limit and offset
-By using the query parameter ""''_limit''"", which must have an integer value, you specifying an upper limit of list elements:
-```sh
-# curl 'http://192.168.17.7:23121/z?title=API&_part=id&_sort=id&_limit=2'
-{"list":[{"id":"00001012000000","url":"/z/00001012000000"},{"id":"00001012050200","url":"/z/00001012050200"}]}
-```
-The query parameter ""''_offset''"" allows to list not only the first elements, but to begin at a specific element:
-```sh
-# curl 'http://192.168.17.7:23121/z?title=API&_part=id&_sort=id&_limit=2&_offset=1'
-{"list":[{"id":"00001012050200","url":"/z/00001012050200"},{"id":"00001012050400","url":"/z/00001012050400"}]}
-```
-
-=== General filter
-The query parameter ""''_s''"" allows to provide a string for a full-text search of all zettel.
-The search string will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
-
-If the search string starts with the character ""''!''"", it will be removed and the query matches all zettel that **does not match** the search string.
-
-In the next step, the first character of the search string will be inspected.
-If it contains one of the characters ""'':''"", ""''=''"", ""''>''"", or ""''~''"", this will modify how the search will be performed.
-The character will be removed from the start of the search string.
-
-For example, assume the search string is ""def"":
-
-; ""'':''"", ""''~''"" (or none of these characters)[^""'':''"" is always the character for specifying the default comparison. In this case, it is equal to ""''~''"". If you omit a comparison character, the default comparison is used.]
-: The zettel must contain a word that contains the search string.
-  ""def"", ""defghi"", and ""abcdefghi"" are matching the search string.
-; ""''=''""
-: The zettel must contain a word that is equal to the search string.
-  Only the word ""def"" matches the search string.
-; ""''>''""
-: The zettel must contain a word with the search string as a prefix.
-  A word like ""def"" or ""defghi"" matches the search string.
-
-If you want to include an initial ""''!''"" into the search string, you must prefix that with the escape character ""''\\''"".
-For example ""\\!abc"" will search for zettel that contains the string ""!abc"".
-A similar rule applies to the characters that specify the way how the search will be done.
-For example, ""!\\=abc"" will search for zettel that do not contains the string ""=abc"".
-
-You are allowed to specify this query parameter more than once.
-All results will be intersected, i.e. a zettel will be included into the list if all of the provided values match.
-
-This parameter loosely resembles the search box of the web user interface.
+* [[Filter|00001012051810]] provide a way to select some zettel.
+* You can specify which [[parts of a zettel|00001012051820]] must be returned.
+* Only a specific amount of zettel will be selected by specifying [[a length and/or an offset|00001012051830]].
+* [[Searching for specific content|00001012051840]], not just the metadata, is another way of selecting some zettel.
+* The resulting list can be [[sorted|00001012052000]] according to various criteria.
