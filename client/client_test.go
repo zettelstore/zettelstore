@@ -49,6 +49,36 @@ func TestCreateDeleteZettel(t *testing.T) {
 	}
 }
 
+func TestUpdateZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("writer", "writer")
+	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if got := z.Meta[meta.KeyTitle]; got != "Home" {
+		t.Errorf("Title of zettel is not \"Home\", but %q", got)
+		return
+	}
+	newTitle := "New Home"
+	z.Meta[meta.KeyTitle] = newTitle
+	err = c.UpdateZettel(context.Background(), id.DefaultHomeZid, z)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	zt, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if got := zt.Meta[meta.KeyTitle]; got != newTitle {
+		t.Errorf("Title of zettel is not %q, but %q", newTitle, got)
+	}
+}
+
 func TestList(t *testing.T) {
 	testdata := []struct {
 		user string

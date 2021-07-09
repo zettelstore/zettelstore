@@ -325,3 +325,21 @@ func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*m
 	w.Header().Set(adapter.ContentType, format2ContentType(encoder.EncoderJSON))
 	return encodeJSONData(w, outData)
 }
+
+func buildZettelFromData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
+	var zettel domain.Zettel
+	dec := json.NewDecoder(r.Body)
+	var zettelData zsapi.ZettelDataJSON
+	if err := dec.Decode(&zettelData); err != nil {
+		return zettel, err
+	}
+	m := meta.New(zid)
+	for k, v := range zettelData.Meta {
+		m.Set(k, v)
+	}
+	zettel.Meta = m
+	if err := zettel.Content.SetDecoded(zettelData.Content, zettelData.Encoding); err != nil {
+		return zettel, err
+	}
+	return zettel, nil
+}

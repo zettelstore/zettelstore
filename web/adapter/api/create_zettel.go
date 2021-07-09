@@ -12,13 +12,10 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -29,7 +26,7 @@ import (
 func (api *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zettel, err := buildZettelFromData(r)
+		zettel, err := buildZettelFromData(r, id.Invalid)
 		if err != nil {
 			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
@@ -49,22 +46,4 @@ func (api *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) h
 			adapter.InternalServerError(w, "Write JSON", err)
 		}
 	}
-}
-
-func buildZettelFromData(r *http.Request) (domain.Zettel, error) {
-	var zettel domain.Zettel
-	dec := json.NewDecoder(r.Body)
-	var zettelData zsapi.ZettelDataJSON
-	if err := dec.Decode(&zettelData); err != nil {
-		return zettel, err
-	}
-	m := meta.New(id.Invalid)
-	for k, v := range zettelData.Meta {
-		m.Set(k, v)
-	}
-	zettel.Meta = m
-	if err := zettel.Content.SetDecoded(zettelData.Content, zettelData.Encoding); err != nil {
-		return zettel, err
-	}
-	return zettel, nil
 }
