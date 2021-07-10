@@ -93,6 +93,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 
 		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
 		user := wui.getUser(ctx)
+		canCreate := wui.canCreate(ctx, user)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
@@ -126,9 +127,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ContextURL:     wui.NewURLBuilder('j').SetZid(zid).String(),
 			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:        wui.NewURLBuilder('e').SetZid(zid).String(),
-			CanFolge:       base.CanCreate,
+			CanFolge:       canCreate,
 			FolgeURL:       wui.NewURLBuilder('f').SetZid(zid).String(),
-			CanCopy:        base.CanCreate && !zn.Content.IsBinary(),
+			CanCopy:        canCreate && !zn.Content.IsBinary(),
 			CopyURL:        wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanRename:      wui.canRename(ctx, user, zn.Meta),
 			RenameURL:      wui.NewURLBuilder('b').SetZid(zid).String(),

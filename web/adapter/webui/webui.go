@@ -163,48 +163,43 @@ type simpleLink struct {
 }
 
 type baseData struct {
-	Lang           string
-	MetaHeader     string
-	CSSBaseURL     string
-	CSSUserURL     string
-	Title          string
-	HomeURL        string
-	WithUser       bool
-	WithAuth       bool
-	UserIsValid    bool
-	UserZettelURL  string
-	UserIdent      string
-	UserLogoutURL  string
-	LoginURL       string
-	ListZettelURL  string
-	ListRolesURL   string
-	ListTagsURL    string
-	CanCreate      bool
-	NewZettelURL   string
-	NewZettelLinks []simpleLink
-	SearchURL      string
-	Content        string
-	FooterHTML     string
+	Lang              string
+	MetaHeader        string
+	CSSBaseURL        string
+	CSSUserURL        string
+	Title             string
+	HomeURL           string
+	WithUser          bool
+	WithAuth          bool
+	UserIsValid       bool
+	UserZettelURL     string
+	UserIdent         string
+	UserLogoutURL     string
+	LoginURL          string
+	ListZettelURL     string
+	ListRolesURL      string
+	ListTagsURL       string
+	HasNewZettelLinks bool
+	NewZettelLinks    []simpleLink
+	SearchURL         string
+	Content           string
+	FooterHTML        string
 }
 
 func (wui *WebUI) makeBaseData(
 	ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
 	var (
-		newZettelLinks []simpleLink
-		userZettelURL  string
-		userIdent      string
-		userLogoutURL  string
+		userZettelURL string
+		userIdent     string
+		userLogoutURL string
 	)
-	canCreate := wui.canCreate(ctx, user)
-	if canCreate {
-		newZettelLinks = wui.fetchNewTemplates(ctx, user)
-	}
 	userIsValid := user != nil
 	if userIsValid {
 		userZettelURL = wui.NewURLBuilder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
 		userLogoutURL = wui.NewURLBuilder('a').SetZid(user.Zid).String()
 	}
+	newZettelLinks := wui.fetchNewTemplates(ctx, user)
 
 	data.Lang = lang
 	data.CSSBaseURL = wui.cssBaseURL
@@ -221,7 +216,7 @@ func (wui *WebUI) makeBaseData(
 	data.ListZettelURL = wui.listZettelURL
 	data.ListRolesURL = wui.listRolesURL
 	data.ListTagsURL = wui.listTagsURL
-	data.CanCreate = canCreate
+	data.HasNewZettelLinks = len(newZettelLinks) > 0
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
@@ -236,15 +231,16 @@ func htmlAttrNewWindow(hasURL bool) string {
 	return ""
 }
 
-func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) []simpleLink {
+func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (result []simpleLink) {
 	ctx = box.NoEnrichContext(ctx)
+	if !wui.canCreate(ctx, user) {
+		return nil
+	}
 	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
 		return nil
 	}
-	zn := parser.ParseZettel(menu, "", wui.rtConfig)
-	refs := collect.Order(zn)
-	result := make([]simpleLink, 0, len(refs))
+	refs := collect.Order(parser.ParseZettel(menu, "", wui.rtConfig))
 	for _, ref := range refs {
 		zid, err := id.Parse(ref.URL.Path)
 		if err != nil {

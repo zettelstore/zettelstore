@@ -40,7 +40,7 @@
 <a href="{{{ListTagsURL}}}">List Tags</a>
 </nav>
 </div>
-{{#CanCreate}}
+{{#HasNewZettelLinks}}
 <div class="zs-dropdown">
 <button>New</button>
 <nav class="zs-dropdown-content">
@@ -49,7 +49,7 @@
 {{/NewZettelLinks}}
 </nav>
 </div>
-{{/CanCreate}}
+{{/HasNewZettelLinks}}
 <form action="{{{SearchURL}}}">
 <input type="text" placeholder="Search.." name="s">
 </form>
