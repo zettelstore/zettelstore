@@ -89,14 +89,7 @@ func (ac *authConfig) GetExpertMode() bool { return ac.expert }
 
 func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 	if vis, ok := m.Get(meta.KeyVisibility); ok {
-		switch vis {
-		case meta.ValueVisibilityPublic:
-			return meta.VisibilityPublic
-		case meta.ValueVisibilityOwner:
-			return meta.VisibilityOwner
-		case meta.ValueVisibilityExpert:
-			return meta.VisibilityExpert
-		}
+		return meta.GetVisibility(vis)
 	}
 	return meta.VisibilityLogin
 }
@@ -158,6 +151,7 @@ func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	owner2 := newOwner2()
 	zettel := newZettel()
 	publicZettel := newPublicZettel()
+	creatorZettel := newCreatorZettel()
 	loginZettel := newLoginZettel()
 	ownerZettel := newOwnerZettel()
 	expertZettel := newExpertZettel()
@@ -188,6 +182,13 @@ func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 		{writer, publicZettel, true},
 		{owner, publicZettel, true},
 		{owner2, publicZettel, true},
+		// Creator zettel
+		{anonUser, creatorZettel, !withAuth},
+		{creator, creatorZettel, true},
+		{reader, creatorZettel, true},
+		{writer, creatorZettel, true},
+		{owner, creatorZettel, true},
+		{owner2, creatorZettel, true},
 		// Login zettel
 		{anonUser, loginZettel, !withAuth},
 		{creator, loginZettel, !withAuth},
@@ -619,6 +620,12 @@ func newPublicZettel() *meta.Meta {
 	m := meta.New(visZid)
 	m.Set(meta.KeyTitle, "Public Zettel")
 	m.Set(meta.KeyVisibility, meta.ValueVisibilityPublic)
+	return m
+}
+func newCreatorZettel() *meta.Meta {
+	m := meta.New(visZid)
+	m.Set(meta.KeyTitle, "Creator Zettel")
+	m.Set(meta.KeyVisibility, meta.ValueVisibilityCreator)
 	return m
 }
 func newLoginZettel() *meta.Meta {

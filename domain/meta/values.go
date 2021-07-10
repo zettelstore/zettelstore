@@ -19,16 +19,18 @@ const (
 	_ Visibility = iota
 	VisibilityUnknown
 	VisibilityPublic
+	VisibilityCreator
 	VisibilityLogin
 	VisibilityOwner
 	VisibilityExpert
 )
 
 var visMap = map[string]Visibility{
-	ValueVisibilityPublic: VisibilityPublic,
-	ValueVisibilityLogin:  VisibilityLogin,
-	ValueVisibilityOwner:  VisibilityOwner,
-	ValueVisibilityExpert: VisibilityExpert,
+	ValueVisibilityPublic:  VisibilityPublic,
+	ValueVisibilityCreator: VisibilityCreator,
+	ValueVisibilityLogin:   VisibilityLogin,
+	ValueVisibilityOwner:   VisibilityOwner,
+	ValueVisibilityExpert:  VisibilityExpert,
 }
 
 // GetVisibility returns the visibility value of the given string

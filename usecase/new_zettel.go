@@ -11,7 +11,11 @@
 // Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
-import "zettelstore.de/z/domain"
+import (
+	"zettelstore.de/z/domain"
+	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
+)
 
 // NewZettel is the data for this use case.
 type NewZettel struct{}
@@ -23,12 +27,17 @@ func NewNewZettel() NewZettel {
 
 // Run executes the use case.
 func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
-	m := origZettel.Meta.Clone()
-	const prefix = "new-"
-	for _, pair := range m.PairsRest(false) {
-		if key := pair.Key; len(key) > len(prefix) && key[0:len(prefix)] == prefix {
-			m.Set(key[len(prefix):], pair.Value)
-			m.Delete(key)
+	m := meta.New(id.Invalid)
+	om := origZettel.Meta
+	m.Set(meta.KeyTitle, om.GetDefault(meta.KeyTitle, ""))
+	m.Set(meta.KeyRole, om.GetDefault(meta.KeyRole, ""))
+	m.Set(meta.KeyTags, om.GetDefault(meta.KeyTags, ""))
+	m.Set(meta.KeySyntax, om.GetDefault(meta.KeySyntax, ""))
+
+	const prefixLen = len(meta.NewPrefix)
+	for _, pair := range om.PairsRest(false) {
+		if key := pair.Key; len(key) > prefixLen && key[0:prefixLen] == meta.NewPrefix {
+			m.Set(key[prefixLen:], pair.Value)
 		}
 	}
 	content := origZettel.Content

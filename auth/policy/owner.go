@@ -64,7 +64,14 @@ func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool 
 		// Only the user can read its own zettel
 		return user.Zid == m.Zid
 	}
-	return o.manager.GetUserRole(user) > meta.UserRoleCreator
+	switch o.manager.GetUserRole(user) {
+	case meta.UserRoleReader, meta.UserRoleWriter, meta.UserRoleOwner:
+		return true
+	case meta.UserRoleCreator:
+		return vis == meta.VisibilityCreator
+	default:
+		return false
+	}
 }
 
 var noChangeUser = []string{

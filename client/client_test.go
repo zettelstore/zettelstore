@@ -91,7 +91,7 @@ func TestList(t *testing.T) {
 		exp  int
 	}{
 		{"", 7},
-		{"creator", 8},
+		{"creator", 10},
 		{"reader", 12},
 		{"writer", 12},
 		{"owner", 34},

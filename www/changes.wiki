@@ -11,17 +11,19 @@
      <tt>list-page-size</tt> is removed. If you still specify it, it will be
      ignored.
      (major: webui)
-  *  Type of used-defined metadata is determined by suffix of key: "-number",
-     "-url", "-zid" will result the values to be interpreted as a number, an
-     URL, or a zettel identifier.
-     (minor, but possibly breaking)
+  *  Type of used-defined metadata is determined by suffix of key:
+     <tt>-number</tt>, <tt>-url</tt>, <tt>-zid</tt> will result the values to
+     be interpreted as a number, an URL, or a zettel identifier.
+     (minor, but possibly breaking if you already used a metadata key with
+     above suffixes, but as a string type)
   *  New <tt>user-role</tt> &ldquo;creator&rdquo;, which is only allowed to
-     create new zettel (except user zettel). This role may only read and
-     update public zettel or its own user zettel. Added to support future
-     client software (e.g. on a mobile device) that automatically creates new
-     zettel but, in case of a password loss, should not allow to read existing
-     zettel.
-     (minor)
+     create new zettel (except user zettel). This role may only read and update
+     public zettel or its own user zettel. Added to support future client
+     software (e.g. on a mobile device) that automatically creates new zettel
+     but, in case of a password loss, should not allow to read existing zettel.
+     (minor, possibly breaking, because new zettel template zettel must always
+     prepend the string <tt>new-</tt> before metdata keys that should be
+     transferred to the new zettel)
   *  New suported metadata key <tt>box-number</tt>, which gives an indication
      from which box the zettel was loaded.
      (minor)

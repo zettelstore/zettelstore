@@ -149,6 +149,9 @@ var (
 	KeyZettelFileSyntax  = registerKey("zettel-file-syntax", TypeWordSet, usageUser, "")
 )
 
+// NewPrefix is the prefix for metadata key in template zettel for creating new zettel.
+const NewPrefix = "new-"
+
 // Important values for some keys.
 const (
 	ValueRoleConfiguration = "configuration"
@@ -165,6 +168,7 @@ const (
 	ValueUserRoleReader    = "reader"
 	ValueUserRoleWriter    = "writer"
 	ValueUserRoleOwner     = "owner"
+	ValueVisibilityCreator = "creator"
 	ValueVisibilityExpert  = "expert"
 	ValueVisibilityOwner   = "owner"
 	ValueVisibilityLogin   = "login"
