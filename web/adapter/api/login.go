@@ -23,8 +23,8 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-// MakePostLoginHandlerAPI creates a new HTTP handler to authenticate the given user via API.
-func (api *API) MakePostLoginHandlerAPI(ucAuth usecase.Authenticate) http.HandlerFunc {
+// MakePostLoginHandler creates a new HTTP handler to authenticate the given user via API.
+func (api *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !api.withAuth() {
 			w.Header().Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))

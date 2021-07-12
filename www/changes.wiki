@@ -11,6 +11,9 @@
      <tt>list-page-size</tt> is removed. If you still specify it, it will be
      ignored.
      (major: webui)
+  *  Use endpoint <tt>/v</tt> for user authentication via API. Endpoint
+     <tt>/a</tt> is now used for the web user interface only.
+     (minor, possibly breaking)
   *  Type of used-defined metadata is determined by suffix of key:
      <tt>-number</tt>, <tt>-url</tt>, <tt>-zid</tt> will result the values to
      be interpreted as a number, an URL, or a zettel identifier.

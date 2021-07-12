@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/api"
 	"zettelstore.de/z/web/adapter/webui"
 	"zettelstore.de/z/web/server"
@@ -80,10 +79,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 	webSrv.AddListRoute('a', http.MethodGet, wui.MakeGetLoginHandler())
-	webSrv.AddListRoute('a', http.MethodPost, adapter.MakePostLoginHandler(
-		api.MakePostLoginHandlerAPI(ucAuthenticate),
-		wui.MakePostLoginHandlerHTML(ucAuthenticate)))
-	webSrv.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
+	webSrv.AddListRoute('a', http.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('a', http.MethodGet, wui.MakeGetLogoutHandler())
 	if !authManager.IsReadonly() {
 		webSrv.AddZettelRoute('b', http.MethodGet, wui.MakeGetRenameZettelHandler(ucGetMeta))
@@ -117,6 +113,8 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
 	webSrv.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
+	webSrv.AddListRoute('v', http.MethodPost, api.MakePostLoginHandler(ucAuthenticate))
+	webSrv.AddListRoute('v', http.MethodPut, api.MakeRenewAuthHandler())
 	webSrv.AddZettelRoute('y', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))

@@ -3,7 +3,7 @@ title: Endpoints used by the API
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210511131339
+modified: 20210712221629
 
 All API endpoints conform to the pattern ''[PREFIX]LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
@@ -16,12 +16,12 @@ All API endpoints conform to the pattern ''[PREFIX]LETTER[/ZETTEL-ID]'', where:
 The following letters are currently in use:
 
 |= Letter:| Without zettel identifier | With [[zettel identifier|00001006050000]]
-| ''a'' | POST: [[Client authentication|00001012050200]] |
-|       | PUT: [[renew access token|00001012050400]] |
 | ''l'' |  | GET: [[list references|00001012053600]]
 | ''o'' |  | GET: [[list zettel order|00001012054000]]
 | ''r'' | GET: [[list roles|00001012052400]]
 | ''t'' | GET: [[list tags|00001012052200]]
+| ''v'' | POST: [[client authentication|00001012050200]] |
+|       | PUT: [[renew access token|00001012050400]] |
 | ''y'' |  | GET: [[list zettel context|00001012053800]]
 | ''z'' | GET: [[list zettel|00001012051200]] | GET: [[retrieve zettel|00001012053400]]
 |       | POST: add new zettel | PUT: change a zettel

@@ -126,7 +126,7 @@ func (c *Client) updateToken(ctx context.Context) error {
 // Authenticate sets a new token by sending user name and password.
 func (c *Client) Authenticate(ctx context.Context) error {
 	authData := url.Values{"username": {c.username}, "password": {c.password}}
-	req, err := c.newRequest(ctx, http.MethodPost, c.newURLBuilder('a'), strings.NewReader(authData.Encode()))
+	req, err := c.newRequest(ctx, http.MethodPost, c.newURLBuilder('v'), strings.NewReader(authData.Encode()))
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (c *Client) Authenticate(ctx context.Context) error {
 
 // RefreshToken updates the access token
 func (c *Client) RefreshToken(ctx context.Context) error {
-	req, err := c.newRequest(ctx, http.MethodPut, c.newURLBuilder('a'), nil)
+	req, err := c.newRequest(ctx, http.MethodPut, c.newURLBuilder('v'), nil)
 	if err != nil {
 		return err
 	}

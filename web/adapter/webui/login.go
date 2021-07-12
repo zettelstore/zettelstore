@@ -40,8 +40,8 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 	})
 }
 
-// MakePostLoginHandlerHTML creates a new HTTP handler to authenticate the given user.
-func (wui *WebUI) MakePostLoginHandlerHTML(ucAuth usecase.Authenticate) http.HandlerFunc {
+// MakePostLoginHandler creates a new HTTP handler to authenticate the given user.
+func (wui *WebUI) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !wui.authz.WithAuth() {
 			redirectFound(w, r, wui.NewURLBuilder('/'))

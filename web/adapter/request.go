@@ -12,6 +12,7 @@
 package adapter
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -22,6 +23,22 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/search"
 )
+
+// GetCredentialsViaForm retrieves the authentication credentions from a form.
+func GetCredentialsViaForm(r *http.Request) (ident, cred string, ok bool) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		return "", "", false
+	}
+
+	ident = strings.TrimSpace(r.PostFormValue("username"))
+	cred = r.PostFormValue("password")
+	if ident == "" {
+		return "", "", false
+	}
+	return ident, cred, true
+}
 
 // GetInteger returns the integer value of the named query key.
 func GetInteger(q url.Values, key string) (int, bool) {
