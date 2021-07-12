@@ -100,23 +100,24 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = r.URL.Path[prefixLen-1:]
 	}
 	match := rt.reURL.FindStringSubmatch(r.URL.Path)
-	if len(match) == 3 {
-		key := match[1][0]
-		table := rt.zettelTable
-		if match[2] == "" {
-			table = rt.listTable
-		}
-		if mh, ok := table[key]; ok {
-			if handler, ok := mh[r.Method]; ok {
-				r.URL.Path = "/" + match[2]
-				handler.ServeHTTP(w, rt.addUserContext(r))
-				return
-			}
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+	if len(match) != 3 {
+		rt.mux.ServeHTTP(w, rt.addUserContext(r))
+		return
+	}
+
+	key := match[1][0]
+	table := rt.zettelTable
+	if match[2] == "" {
+		table = rt.listTable
+	}
+	if mh, ok := table[key]; ok {
+		if handler, ok := mh[r.Method]; ok {
+			r.URL.Path = "/" + match[2]
+			handler.ServeHTTP(w, rt.addUserContext(r))
 			return
 		}
 	}
-	rt.mux.ServeHTTP(w, rt.addUserContext(r))
+	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 }
 
 func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
