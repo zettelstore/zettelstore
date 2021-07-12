@@ -3,7 +3,7 @@ title: The ''help'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-precursor: 00001004050000
+modified: 20210712233414
 
 Lists all implemented sub-commands.
 
@@ -11,7 +11,6 @@ Example:
 ```
 # zettelstore help
 Available commands:
-- "config"
 - "file"
 - "help"
 - "password"

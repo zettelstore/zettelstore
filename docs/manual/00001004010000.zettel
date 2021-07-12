@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210609185100
+modified: 20210712234656
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -18,7 +18,8 @@ The following keys are supported:
 
 ; [!admin-port]''admin-port''
 : Specifies the TCP port through which you can reach the [[administrator console|00001004100000]].
-  A value of ''0'' (the default) disables the administrators console.
+  A value of ''0'' (the default) disables the administrator console.
+  The administrator console will only be enabled if Zettelstore is started with the [[''run'' sub-command|00001004051000]].
 
   On most operating systems, the value must be greater than ''1024'' unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
 

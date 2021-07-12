@@ -54,11 +54,12 @@ func init() {
 		Header: true,
 	})
 	RegisterCommand(Command{
-		Name:   "run",
-		Func:   runFunc,
-		Boxes:  true,
-		Header: true,
-		Flags:  flgRun,
+		Name:       "run",
+		Func:       runFunc,
+		Boxes:      true,
+		Header:     true,
+		LineServer: true,
+		Flags:      flgRun,
 	})
 	RegisterCommand(Command{
 		Name:   "run-simple",
@@ -242,7 +243,7 @@ func executeCommand(name string, args ...string) int {
 		return 2
 	}
 	setupOperations(cfg, command.Boxes)
-	kernel.Main.Start(command.Header)
+	kernel.Main.Start(command.Header, command.LineServer)
 	exitCode, err := command.Func(fs, cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)

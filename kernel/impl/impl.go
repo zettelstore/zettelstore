@@ -97,7 +97,7 @@ func createAndStart() kernel.Kernel {
 	return kern
 }
 
-func (kern *myKernel) Start(headline bool) {
+func (kern *myKernel) Start(headline bool, lineServer bool) {
 	for _, srvD := range kern.srvs {
 		srvD.srv.Freeze()
 	}
@@ -128,10 +128,12 @@ func (kern *myKernel) Start(headline bool) {
 			kern.doLog("Read-only mode")
 		}
 	}
-	port := kern.core.GetNextConfig(kernel.CorePort).(int)
-	if port > 0 {
-		listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
-		startLineServer(kern, listenAddr)
+	if lineServer {
+		port := kern.core.GetNextConfig(kernel.CorePort).(int)
+		if port > 0 {
+			listenAddr := net.JoinHostPort("127.0.0.1", strconv.Itoa(port))
+			startLineServer(kern, listenAddr)
+		}
 	}
 }
 

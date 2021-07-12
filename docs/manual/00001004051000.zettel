@@ -3,14 +3,13 @@ title: The ''run'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210510153318
-precursor: 00001004050000
+modified: 20210712234419
 
 === ``zettelstore run``
 This starts the web service.
 
 ```
-zettelstore run [-c CONFIGFILE] [-d DIR] [-p PORT] [-r] [-v]
+zettelstore run [-a PORT] [-c CONFIGFILE] [-d DIR] [-debug] [-p PORT] [-r] [-v]
 ```
 
 ; [!a]''-a PORT''

@@ -25,7 +25,7 @@ import (
 // Kernel is the main internal service.
 type Kernel interface {
 	// Start the service.
-	Start(headline bool)
+	Start(headline bool, lineServer bool)
 
 	// WaitForShutdown blocks the call until Shutdown is called.
 	WaitForShutdown()

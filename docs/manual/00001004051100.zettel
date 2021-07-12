@@ -3,7 +3,7 @@ title: The ''run-simple'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-precursor: 00001004050000
+modified: 20210712234203
 
 === ``zettelstore run-simple``
 This sub-command is implicitly called, when an user starts Zettelstore by double-clicking on its GUI icon.
@@ -11,7 +11,8 @@ It is s simplified variant of the [[''run'' sub-command|00001004051000]].
 
 It allows only to specify a zettel directory.
 The directory will be created automatically, if it does not exist.
-This is the only difference to the ''run'' sub-command, where the directory must exists.
+This is a difference to the ''run'' sub-command, where the directory must exists.
+In contrast to the ''run'' sub-command, other command line parameter are not allowed.
 
 ```
 zettelstore run-simple [-d DIR]
