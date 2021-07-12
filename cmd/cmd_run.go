@@ -78,6 +78,8 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucRename := usecase.NewRenameZettel(protectedBoxManager)
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
+
+	// Web user interface
 	webSrv.AddListRoute('a', http.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('a', http.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('a', http.MethodGet, wui.MakeGetLogoutHandler())
@@ -108,6 +110,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		ucParseZettel, ucGetMeta, ucGetAllMeta))
 	webSrv.AddZettelRoute('j', http.MethodGet, wui.MakeZettelContextHandler(ucZettelContext))
 
+	// API
 	webSrv.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
 	webSrv.AddZettelRoute('o', http.MethodGet, api.MakeGetOrderHandler(
 		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
@@ -115,7 +118,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
 	webSrv.AddListRoute('v', http.MethodPost, api.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddListRoute('v', http.MethodPut, api.MakeRenewAuthHandler())
-	webSrv.AddZettelRoute('y', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
+	webSrv.AddZettelRoute('x', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))
 	webSrv.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(

@@ -3,12 +3,13 @@ title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210712223623
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
 Zettel are also connected by using same [[tags|00001006020000#tags]].
 
-The context is defined by a //direction//, a //depth//, and a /limit//:
+The context is defined by a //direction//, a //depth//, and a //limit//:
 * Direction: connections are directed.
   For example, the metadata value of ''backward'' lists all zettel that link to the current zettel, while ''formward'' list all zettel to which the current zettel links.
   When you are only interested in one direction, set the parameter ''dir'' either to the value ""backward"" or ""forward"".
@@ -26,10 +27,10 @@ Only for the origin zettel, tags are used to calculate a connection.
 Currently, only some of the newest zettel with a given tag are considered a connection.[^The number of zettel is given by the value of parameter ''depth''.]
 Otherwise the context would become too big and therefore unusable.
 
-To retrieve the context of an existing zettel, use the [[endpoint|00001012920000]] ''/y/{ID}''.
+To retrieve the context of an existing zettel, use the [[endpoint|00001012920000]] ''/x/{ID}''[^Mnemonic: conte**X**t].
 
 ````
-# curl 'http://127.0.0.1:23123/y/00001012053800?limit=3&dir=forward&depth=2'
+# curl 'http://127.0.0.1:23123/x/00001012053800?limit=3&dir=forward&depth=2'
 {"id": "00001012053800","url": "/z/00001012053800","meta": {...},"list": [{"id": "00001012921000","url": "/z/00001012921000","meta": {...}},{"id": "00001012920800","url": "/z/00001012920800","meta": {...}},{"id": "00010000000000","url": "/z/00010000000000","meta": {...}}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
