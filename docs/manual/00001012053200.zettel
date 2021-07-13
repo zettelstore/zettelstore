@@ -1,0 +1,59 @@
+id: 00001012053200
+title: API: Create a new zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210713163927
+
+A zettel is created by adding it to the [[list of zettel|00001012000000#zettel-lists]].
+Therefore, the [[endpoint|00001012920000]] to create a new zettel is also ''/z'', but you must send the data of the new zettel via a HTTP POST request.
+
+The body of the POST request must contain a JSON object that specifies metadata and content of the zettel to be created.
+The following keys of the JSON object are used:
+; ''"meta"''
+: References an embedded JSON object with only string values.
+  The name/value pairs of this objects are interpreted as the metadata of the new zettel.
+  Please consider the [[list of supported metadata keys|00001006020000]] (and their value types).
+; ''"encoding"''
+: States how the content is encoded.
+  Currently, only two values are allowed: the empty string (''""'') that specifies an empty encoding, and the string ''"base64"'' that specifies the [[standard Base64 encoding|https://www.rfc-editor.org/rfc/rfc4648.txt]].
+  Other values will result in a HTTP response status code ''400''.
+; ''"content"''
+: Is a string value that contains the content of the zettel to be created.
+  Typically, text content is not encoded, and binary content is encoded via Base64.
+
+Other keys will be ignored.
+Even these three keys are just optional.
+The body of the HTTP POST request must not be empty and it must contain a JSON object.
+
+Therefore, a body containing just ''{}'' is perfectly valid.
+The new zettel will have no content, its title will be set to the value of [[''default-title''|00001004020000#default-title]] (default: ""Untitled""), its role is set to the value of [[''default-role''|00001004020000#default-role]] (default: ""zettel""), and its syntax is set to the value of [[''default-syntax''|00001004020000#default-syntax]] (default: ""zmk"").
+
+```
+# curl -X POST --data '{}' http://127.0.0.1:23123/z
+{"id":"20210713161000","url":"/z/20210713161000"}
+```
+If creating the zettel was successful, the HTTP response will contain a JSON object with two keys:
+; ''"id"''
+: Contains the zettel identifier of the created zettel for further usage.
+; ''"url"''
+: The URL for [[reading metadata and content|00001012053400]] of the new zettel.
+  In most cases, the URL is a relative one.
+  A client must prepend the HTTP protocol scheme, the host name, and (optional, but often needed) the post number to make it an absolute URL.
+
+In addition, the HTTP response header contains a key ''Location'' with the same value of the relative URL.
+
+As an example, a zettel with title ""Note"" and content ""Important content."" can be created by issuing:
+```
+# curl -X POST --data '{"meta":{"title":"Note"},"content":"Important content."}' http://127.0.0.1:23123/z
+{"id":"20210713163100","url":"/z/20210713163100"}
+```
+=== HTTP Status codes
+; ''201''
+: Zettel creation was successful, the body contains a JSON object that contains its zettel identifier.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Most likely, the JSON was not formed according to above rules.
+; ''403''
+: You are not allowed to create a new zettel.

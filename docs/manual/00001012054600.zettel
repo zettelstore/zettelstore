@@ -1,0 +1,26 @@
+id: 00001012054600
+title: API: Delete a zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210713163722
+
+Deleting a zettel within the Zettelstore is executed on the first [[box|00001004011200]] that contains that zettel.
+Zettel with the same identifier, but in subsequent boxes remain.
+If the first box containing the zettel is read-only, deleting that zettel will fail, as well for a Zettelstore in [[read-only mode|00001004010000#read-only-mode]] or if authentication is enabled and the user has no [[access right|00001010070600]] to do so.
+
+The [[endpoint|00001012920000]] to delete a zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+You must send a HTTP DELETE request to this endpoint:
+```
+# curl -X DELETE http://127.0.0.1:23123/z/00001000000000
+```
+
+=== HTTP Status codes
+; ''204''
+: Delete was successful, there is no body in the response.
+; ''403''
+: You are not allowed to delete the given zettel.
+  Maybe you do not have enough access rights, or either the box or Zettelstore itself operate in read-only mode.
+; ''404''
+: Zettel not found.
+  You probably specified a zettel identifier that is not used in the Zettelstore.
