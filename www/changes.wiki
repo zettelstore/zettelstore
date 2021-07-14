@@ -7,6 +7,10 @@
      <tt>place-uri-<em>X</em></tt>. Older changes documented here are renamed
      too.
      (breaking)
+  *  Add API for creating, updating, renaming, and deleting zettel.
+     (major: api)
+  *  Initial API client for Go.
+     (major: api)
   *  Remove support for paging of WebUI list. Runtime configuration key
      <tt>list-page-size</tt> is removed. If you still specify it, it will be
      ignored.
