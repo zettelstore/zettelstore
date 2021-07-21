@@ -27,16 +27,16 @@ type matchSpec struct {
 	match matchFunc
 }
 
-// compileFilter calculates a filter func based on the given filter.
-func compileFilter(tags expTagValues) MetaMatchFunc {
-	posSpecs, negSpecs, nomatch := createFilterSpecs(tags)
+// compileSelect calculates a selection func based on the given select criteria.
+func compileSelect(tags expTagValues) MetaMatchFunc {
+	posSpecs, negSpecs, nomatch := createSelectSpecs(tags)
 	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(nomatch) > 0 {
-		return makeSearchMetaFilterFunc(posSpecs, negSpecs, nomatch)
+		return makeSearchMetaMatchFunc(posSpecs, negSpecs, nomatch)
 	}
 	return nil
 }
 
-func createFilterSpecs(tags map[string][]expValue) (posSpecs, negSpecs []matchSpec, nomatch []string) {
+func createSelectSpecs(tags map[string][]expValue) (posSpecs, negSpecs []matchSpec, nomatch []string) {
 	posSpecs = make([]matchSpec, 0, len(tags))
 	negSpecs = make([]matchSpec, 0, len(tags))
 	for key, values := range tags {
@@ -273,7 +273,7 @@ func createMatchStringFunc(values []opValue) matchFunc {
 	}
 }
 
-func makeSearchMetaFilterFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
+func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
 	return func(m *meta.Meta) bool {
 		for _, key := range nomatch {
 			if _, ok := m.Get(key); ok {

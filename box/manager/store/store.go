@@ -38,7 +38,7 @@ type Stats struct {
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
-	search.Selector
+	search.Searcher
 
 	// Entrich metadata with data from store.
 	Enrich(ctx context.Context, m *meta.Meta)

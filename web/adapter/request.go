@@ -88,7 +88,7 @@ func contentType2format(contentType string) (string, bool) {
 	return format, ok
 }
 
-// GetSearch retrieves the specified filter and sorting options from a query.
+// GetSearch retrieves the specified search and sorting options from a query.
 func GetSearch(q url.Values, forSearch bool) (s *search.Search) {
 	sortQKey, orderQKey, offsetQKey, limitQKey, negateQKey, sQKey := getQueryKeys(forSearch)
 	for key, values := range q {

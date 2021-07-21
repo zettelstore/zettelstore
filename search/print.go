@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-// Print the filter to a writer.
+// Print the search to a writer.
 func (s *Search) Print(w io.Writer) {
 	if s.negate {
 		io.WriteString(w, "NOT (")
@@ -27,7 +27,7 @@ func (s *Search) Print(w io.Writer) {
 	space := false
 	if len(s.search) > 0 {
 		io.WriteString(w, "ANY")
-		printFilterExprValues(w, s.search)
+		printSelectExprValues(w, s.search)
 		space = true
 	}
 	names := make([]string, 0, len(s.tags))
@@ -40,7 +40,7 @@ func (s *Search) Print(w io.Writer) {
 			io.WriteString(w, " AND ")
 		}
 		io.WriteString(w, name)
-		printFilterExprValues(w, s.tags[name])
+		printSelectExprValues(w, s.tags[name])
 		space = true
 	}
 	if s.negate {
@@ -76,7 +76,7 @@ func (s *Search) Print(w io.Writer) {
 	}
 }
 
-func printFilterExprValues(w io.Writer, values []expValue) {
+func printSelectExprValues(w io.Writer, values []expValue) {
 	if len(values) == 0 {
 		io.WriteString(w, " MATCH ANY")
 		return

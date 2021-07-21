@@ -22,9 +22,9 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-func compileFullSearch(selector Selector, search []expValue) MetaMatchFunc {
-	normSearch := compileNormalizedSearch(selector, search)
-	plainSearch := compilePlainSearch(selector, search)
+func compileFullSearch(searcher Searcher, search []expValue) MetaMatchFunc {
+	normSearch := compileNormalizedSearch(searcher, search)
+	plainSearch := compilePlainSearch(searcher, search)
 	if normSearch == nil {
 		if plainSearch == nil {
 			return nil
@@ -39,7 +39,7 @@ func compileFullSearch(selector Selector, search []expValue) MetaMatchFunc {
 	}
 }
 
-func compileNormalizedSearch(selector Selector, search []expValue) MetaMatchFunc {
+func compileNormalizedSearch(searcher Searcher, search []expValue) MetaMatchFunc {
 	var positives, negatives []expValue
 	posSet := make(map[string]bool)
 	negSet := make(map[string]bool)
@@ -66,9 +66,9 @@ func compileNormalizedSearch(selector Selector, search []expValue) MetaMatchFunc
 			}
 		}
 	}
-	return compileSearch(selector, positives, negatives)
+	return compileSearch(searcher, positives, negatives)
 }
-func compilePlainSearch(selector Selector, search []expValue) MetaMatchFunc {
+func compilePlainSearch(searcher Searcher, search []expValue) MetaMatchFunc {
 	var positives, negatives []expValue
 	for _, val := range search {
 		if val.negate {
@@ -85,24 +85,24 @@ func compilePlainSearch(selector Selector, search []expValue) MetaMatchFunc {
 			})
 		}
 	}
-	return compileSearch(selector, positives, negatives)
+	return compileSearch(searcher, positives, negatives)
 }
 
-func compileSearch(selector Selector, poss, negs []expValue) MetaMatchFunc {
+func compileSearch(searcher Searcher, poss, negs []expValue) MetaMatchFunc {
 	if len(poss) == 0 {
 		if len(negs) == 0 {
 			return nil
 		}
-		return makeNegOnlySearch(selector, negs)
+		return makeNegOnlySearch(searcher, negs)
 	}
 	if len(negs) == 0 {
-		return makePosOnlySearch(selector, poss)
+		return makePosOnlySearch(searcher, poss)
 	}
-	return makePosNegSearch(selector, poss, negs)
+	return makePosNegSearch(searcher, poss, negs)
 }
 
-func makePosOnlySearch(selector Selector, poss []expValue) MetaMatchFunc {
-	retrievePos := compileRetrieveZids(selector, poss)
+func makePosOnlySearch(searcher Searcher, poss []expValue) MetaMatchFunc {
+	retrievePos := compileRetrieveZids(searcher, poss)
 	var ids id.Set
 	return func(m *meta.Meta) bool {
 		if ids == nil {
@@ -113,8 +113,8 @@ func makePosOnlySearch(selector Selector, poss []expValue) MetaMatchFunc {
 	}
 }
 
-func makeNegOnlySearch(selector Selector, negs []expValue) MetaMatchFunc {
-	retrieveNeg := compileRetrieveZids(selector, negs)
+func makeNegOnlySearch(searcher Searcher, negs []expValue) MetaMatchFunc {
+	retrieveNeg := compileRetrieveZids(searcher, negs)
 	var ids id.Set
 	return func(m *meta.Meta) bool {
 		if ids == nil {
@@ -125,9 +125,9 @@ func makeNegOnlySearch(selector Selector, negs []expValue) MetaMatchFunc {
 	}
 }
 
-func makePosNegSearch(selector Selector, poss, negs []expValue) MetaMatchFunc {
-	retrievePos := compileRetrieveZids(selector, poss)
-	retrieveNeg := compileRetrieveZids(selector, negs)
+func makePosNegSearch(searcher Searcher, poss, negs []expValue) MetaMatchFunc {
+	retrievePos := compileRetrieveZids(searcher, poss)
+	retrieveNeg := compileRetrieveZids(searcher, negs)
 	var ids id.Set
 	return func(m *meta.Meta) bool {
 		if ids == nil {
@@ -139,11 +139,11 @@ func makePosNegSearch(selector Selector, poss, negs []expValue) MetaMatchFunc {
 	}
 }
 
-func compileRetrieveZids(selector Selector, values []expValue) func() id.Set {
+func compileRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
 	selFuncs := make([]selectorFunc, 0, len(values))
 	stringVals := make([]string, 0, len(values))
 	for _, val := range values {
-		selFuncs = append(selFuncs, compileSelectOp(selector, val.op))
+		selFuncs = append(selFuncs, compileSelectOp(searcher, val.op))
 		stringVals = append(stringVals, val.value)
 	}
 	if len(selFuncs) == 0 {
@@ -163,16 +163,16 @@ func compileRetrieveZids(selector Selector, values []expValue) func() id.Set {
 
 type selectorFunc func(string) id.Set
 
-func compileSelectOp(selector Selector, op compareOp) selectorFunc {
+func compileSelectOp(searcher Searcher, op compareOp) selectorFunc {
 	switch op {
 	case cmpDefault, cmpContains:
-		return selector.SelectContains
+		return searcher.SearchContains
 	case cmpEqual:
-		return selector.SelectEqual
+		return searcher.SearchEqual
 	case cmpPrefix:
-		return selector.SelectPrefix
+		return searcher.SearchPrefix
 	case cmpSuffix:
-		return selector.SelectSuffix
+		return searcher.SearchSuffix
 	default:
 		panic(fmt.Sprintf("Unexpected value of comparison operation: %v", op))
 	}

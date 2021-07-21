@@ -1,12 +1,12 @@
 id: 00001012051810
-title: API: Shape the list of zettel metadata with filter options
+title: API: Select zettel based on their metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210709160130
+modified: 20210721121038
 
 Every query parameter that does //not// begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
-According to the [[type|00001006030000]] of a metadata key, zettel are matched and therefore filtered.
+According to the [[type|00001006030000]] of a metadata key, zettel are possibly selected.
 All [[supported|00001006020000]] metadata keys have a well-defined type.
 User-defined keys have the type ''e'' (string, possibly empty).
 
@@ -34,9 +34,9 @@ Similar, if you specify just the exclamation mark character as a query parameter
 This is in contrast to above rule that the metadata value must exist before a match is done.
 For example ``curl 'http://localhost:23123/z?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
 
-Above example shows that all sub-expressions of a filter specification must be true so that the entire filter does not remove a zettel from the final list.
+Above example shows that all sub-expressions of a select specification must be true so that no zettel is rejected from the final list.
 
-If you specify the query parameter ''_negate'', either with or without a value, the whole filter expression will be negated.
+If you specify the query parameter ''_negate'', either with or without a value, the whole selection will be negated.
 Because of the precondition described above, ``curl 'http://127.0.0.1:23123/z?url=!com'`` and ``curl 'http://127.0.0.1:23123/z?url=com&_negate'`` may produce different lists.
 The first query produces a zettel list, where each zettel does have a ''url'' metadata value, which does not contain the characters ""com"".
 The second query produces a zettel list, that excludes any zettel containing a ''url'' metadata value that contains the characters ""com""; this also includes all zettel that do not contain the metadata key ''url''.

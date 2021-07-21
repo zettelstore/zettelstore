@@ -43,6 +43,9 @@
   *  When a user moves a zettel file with additional characters into the box
      directory, these characters are preserved when zettel is updated.
      (bug)
+  *  The phase &ldquo;filtering a zettel list&rdquo; is more precise
+     &ldquo;selecting zettel&rdquo;
+     (documentation)
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (2021-06-01)</h2>
@@ -112,30 +115,32 @@
   *  New box schema "file" allows to read zettel from a ZIP file.
      A zettel collection can now be packaged and distributed easier.
      (major: server)
-  *  Non-restricted search is a full-text search. The search string will
-     be normalized according to Unicode NFKD. Every character that is not a letter
+  *  Non-restricted search is a full-text search. The search string will be
+     normalized according to Unicode NFKD. Every character that is not a letter
      or a number will be ignored for the search. It is sufficient if the words
-     to be searched are part of words inside a zettel, both content and metadata.
+     to be searched are part of words inside a zettel, both content and
+     metadata.
      (major: api, webui)
   *  A zettel can be excluded from being indexed (and excluded from being found
      in a search) if it contains the metadata <tt>no-index: true</tt>.
      (minor: api, webui)
   *  Menu bar is shown when displaying error messages.
      (minor: webui)
-  *  When filtering a list of zettel, it can be specified that a given value should
-     <em>not</em> match. Previously, only the whole filter expression could be
+  *  When selecting zettel, it can be specified that a given value should
+     <em>not</em> match. Previously, only the whole select criteria could be
      negated (which is still possible).
      (minor: api, webui)
-  *  You can filter a zettel list by specifying that specific metadata keys must
+  *  You can select a zettel by specifying that specific metadata keys must
      (or must not) be present.
      (minor: api, webui)
-  *  Context of a zettel (introduced in version 0.0.10) does not take tags into account any more.
-     Using some tags for determining the context resulted into erratic, non-deterministic context lists.
+  *  Context of a zettel (introduced in version 0.0.10) does not take tags into
+     account any more. Using some tags for determining the context resulted
+     into erratic, non-deterministic context lists.
      (minor: api, webui)
-  *  Filtering zettel depending on tag values can be both by comparing only the prefix
-     or the whole string. If a search value begins with '#', only zettel with the exact
-     tag will be returned. Otherwise a zettel will be returned if the search string
-     just matches the prefix of only one of its tags.
+  *  Selecting zettel depending on tag values can be both by comparing only the
+     prefix or the whole string. If a search value begins with '#', only zettel
+     with the exact tag will be returned. Otherwise a zettel will be returned
+     if the search string just matches the prefix of only one of its tags.
      (minor: api, webui)
   *  Many smaller bug fixes and inprovements, to the software and to the documentation.
 
@@ -174,9 +179,9 @@ are three options to mitigate this limitation temporarily:
      For example, if <code>url-prefix</code> has the value <code>/manual/</code>,
      the reference <code>&lbrack;&lbrack;Zettel list|//h]]</code> will render as
      <code>&lt;a href="/manual/h">Zettel list&lt;/a></code>. (minor: syntax)
-  *  Searching/filtering ignores the leading '#' character of tags.
+  *  Searching/selecting ignores the leading '#' character of tags.
      (minor: api, webui)
-  *  When result of filtering or searching is presented, the query is written as the page heading.
+  *  When result of selecting or searching is presented, the query is written as the page heading.
      (minor: webui)
   *  A reference to a zettel that contains a URL fragment, will now be processed by the indexer.
      (bug: server)
@@ -392,7 +397,7 @@ instead of GitHub. To access older versions, use the Git repository under
 <h3>API</h3>
   *  (bug)   Encoding binary content in format &ldquo;json&rdquo; now results
              in valid JSON content.
-  *  (bug)   All query parameter of filtering a list must be true, regardless
+  *  (bug)   All query parameters of selecting zettel must be true, regardless
              if a specific key occurs more than one or not.
   *  (minor) Encode all inherited meta values in all formats except
              &ldquo;raw&rdquo;. A meta value is called <i>inherited</i> if

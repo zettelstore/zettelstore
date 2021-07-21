@@ -26,28 +26,28 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// SelectEqual all zettel that contains the given exact word.
+// SearchEqual returns all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (mgr *Manager) SelectEqual(word string) id.Set {
-	return mgr.idxStore.SelectEqual(word)
+func (mgr *Manager) SearchEqual(word string) id.Set {
+	return mgr.idxStore.SearchEqual(word)
 }
 
-// SelectPrefix all zettel that have a word with the given prefix.
+// SearchPrefix returns all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (mgr *Manager) SelectPrefix(prefix string) id.Set {
-	return mgr.idxStore.SelectPrefix(prefix)
+func (mgr *Manager) SearchPrefix(prefix string) id.Set {
+	return mgr.idxStore.SearchPrefix(prefix)
 }
 
-// SelectSuffix all zettel that have a word with the given suffix.
+// SearchSuffix returns all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (mgr *Manager) SelectSuffix(suffix string) id.Set {
-	return mgr.idxStore.SelectSuffix(suffix)
+func (mgr *Manager) SearchSuffix(suffix string) id.Set {
+	return mgr.idxStore.SearchSuffix(suffix)
 }
 
-// SelectContains all zettel that contains the given string.
+// SearchContains returns all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (mgr *Manager) SelectContains(s string) id.Set {
-	return mgr.idxStore.SelectContains(s)
+func (mgr *Manager) SearchContains(s string) id.Set {
+	return mgr.idxStore.SearchContains(s)
 }
 
 // idxIndexer runs in the background and updates the index data structures.

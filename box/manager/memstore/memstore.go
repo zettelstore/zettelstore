@@ -114,9 +114,9 @@ func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
 	return updated
 }
 
-// SelectEqual all zettel that contains the given exact word.
+// SearchEqual returns all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SelectEqual(word string) id.Set {
+func (ms *memStore) SearchEqual(word string) id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
@@ -139,9 +139,9 @@ func (ms *memStore) SelectEqual(word string) id.Set {
 	return result
 }
 
-// Select all zettel that have a word with the given prefix.
+// SearchPrefix returns all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SelectPrefix(prefix string) id.Set {
+func (ms *memStore) SearchPrefix(prefix string) id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(prefix, strings.HasPrefix)
@@ -165,9 +165,9 @@ func (ms *memStore) SelectPrefix(prefix string) id.Set {
 	return result
 }
 
-// Select all zettel that have a word with the given suffix.
+// SearchSuffix returns all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SelectSuffix(suffix string) id.Set {
+func (ms *memStore) SearchSuffix(suffix string) id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(suffix, strings.HasSuffix)
@@ -191,9 +191,9 @@ func (ms *memStore) SelectSuffix(suffix string) id.Set {
 	return result
 }
 
-// Select all zettel that contains the given string.
+// SearchContains returns all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SelectContains(s string) id.Set {
+func (ms *memStore) SearchContains(s string) id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(s, strings.Contains)

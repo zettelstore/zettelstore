@@ -32,8 +32,8 @@ func init() {
 }
 
 type compBox struct {
-	number int
-	filter box.Enricher
+	number   int
+	enricher box.Enricher
 }
 
 var myConfig *meta.Meta
@@ -51,7 +51,7 @@ var myZettel = map[id.Zid]struct {
 
 // Get returns the one program box.
 func getCompBox(boxNumber int, mf box.Enricher) box.ManagedBox {
-	return &compBox{number: boxNumber, filter: mf}
+	return &compBox{number: boxNumber, enricher: mf}
 }
 
 // Setup remembers important values.
@@ -111,7 +111,7 @@ func (pp *compBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
-				pp.filter.Enrich(ctx, m, pp.number)
+				pp.enricher.Enrich(ctx, m, pp.number)
 				if match(m) {
 					res = append(res, m)
 				}

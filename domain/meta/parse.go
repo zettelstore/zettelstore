@@ -123,7 +123,7 @@ func addSet(m *Meta, key, val string, useElem predValidElem) {
 	set := make(map[string]bool, len(newElems)+len(oldElems))
 	addToSet(set, newElems, useElem)
 	if len(set) == 0 {
-		// Nothing to add. Maybe because of filtered elements.
+		// Nothing to add. Maybe because of rejected elements.
 		return
 	}
 	addToSet(set, oldElems, useElem)

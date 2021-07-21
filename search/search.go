@@ -21,37 +21,37 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-// Selector is used to select zettel identifier based on selection criteria.
-type Selector interface {
+// Searcher is used to select zettel identifier based on search criteria.
+type Searcher interface {
 	// Select all zettel that contains the given exact word.
 	// The word must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectEqual(word string) id.Set
+	SearchEqual(word string) id.Set
 
 	// Select all zettel that have a word with the given prefix.
 	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectPrefix(prefix string) id.Set
+	SearchPrefix(prefix string) id.Set
 
 	// Select all zettel that have a word with the given suffix.
 	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectSuffix(suffix string) id.Set
+	SearchSuffix(suffix string) id.Set
 
 	// Select all zettel that contains the given string.
 	// The string must be normalized through Unicode NKFD, trimmed and not empty.
-	SelectContains(s string) id.Set
+	SearchContains(s string) id.Set
 }
 
-// MetaMatchFunc is a function determine whethe some metadata should be filtered or not.
+// MetaMatchFunc is a function determine whethe some metadata should be selected or not.
 type MetaMatchFunc func(*meta.Meta) bool
 
 // Search specifies a mechanism for selecting zettel.
 type Search struct {
 	mx sync.RWMutex // Protects other attributes
 
-	// Fields to be used for filtering
+	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	tags     expTagValues  // Expected values for a tag
 	search   []expValue    // Search string
-	negate   bool          // Negate the result of the whole filtering process
+	negate   bool          // Negate the result of the whole selecting process
 
 	// Fields to be used for sorting
 	order      string // Name of meta key. None given: use "id"
@@ -81,7 +81,7 @@ type expValue struct {
 	negate bool
 }
 
-// AddExpr adds a match expression to the filter.
+// AddExpr adds a match expression to the search.
 func (s *Search) AddExpr(key, val string) *Search {
 	val, negate, op := parseOp(strings.TrimSpace(val))
 	if s == nil {
@@ -131,7 +131,7 @@ func parseOp(s string) (r string, negate bool, op compareOp) {
 	return s, negate, cmpDefault
 }
 
-// SetNegate changes the filter to reverse its selection.
+// SetNegate changes the search to reverse its selection.
 func (s *Search) SetNegate() *Search {
 	if s == nil {
 		s = new(Search)
@@ -142,7 +142,7 @@ func (s *Search) SetNegate() *Search {
 	return s
 }
 
-// AddPreMatch adds the pre-filter selection predicate.
+// AddPreMatch adds the pre-selection predicate.
 func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
 	if s == nil {
 		s = new(Search)
@@ -222,7 +222,7 @@ func (s *Search) GetLimit() int {
 	return s.limit
 }
 
-// HasComputedMetaKey returns true, if the filter references a metadata key which
+// HasComputedMetaKey returns true, if the search references a metadata key which
 // a computed value.
 func (s *Search) HasComputedMetaKey() bool {
 	if s == nil {
@@ -241,23 +241,23 @@ func (s *Search) HasComputedMetaKey() bool {
 	return false
 }
 
-// CompileMatch returns a function to match meta data based on filter specification.
-func (s *Search) CompileMatch(selector Selector) MetaMatchFunc {
+// CompileMatch returns a function to match meta data based on select specification.
+func (s *Search) CompileMatch(searcher Searcher) MetaMatchFunc {
 	if s == nil {
-		return filterNone
+		return selectNone
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
-	compMeta := compileFilter(s.tags)
-	compSearch := compileFullSearch(selector, s.search)
+	compMeta := compileSelect(s.tags)
+	compSearch := compileFullSearch(searcher, s.search)
 	if preMatch := s.preMatch; preMatch != nil {
 		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)
 	}
 	return compileNoPreMatch(compMeta, compSearch, s.negate)
 }
 
-func filterNone(m *meta.Meta) bool { return true }
+func selectNone(m *meta.Meta) bool { return true }
 
 func compilePreMatch(preMatch, compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
 	if compMeta == nil {
@@ -287,7 +287,7 @@ func compileNoPreMatch(compMeta, compSearch MetaMatchFunc, negate bool) MetaMatc
 			if negate {
 				return func(m *meta.Meta) bool { return false }
 			}
-			return filterNone
+			return selectNone
 		}
 		if negate {
 			return func(m *meta.Meta) bool { return !compSearch(m) }

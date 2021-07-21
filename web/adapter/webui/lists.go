@@ -53,7 +53,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 	query := r.URL.Query()
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
-	title := wui.listTitleSearch("Filter", s)
+	title := wui.listTitleSearch("Select", s)
 	wui.renderMetaList(
 		ctx, w, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
