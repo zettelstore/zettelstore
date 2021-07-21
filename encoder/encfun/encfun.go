@@ -14,6 +14,7 @@ package encfun
 import (
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -27,7 +28,7 @@ func MetaAsInlineSlice(m *meta.Meta, key string) ast.InlineSlice {
 
 // MetaAsText returns the value of given metadata as text.
 func MetaAsText(m *meta.Meta, key string) string {
-	textEncoder := encoder.Create(encoder.EncoderText, nil)
+	textEncoder := encoder.Create(api.EncoderText, nil)
 	var sb strings.Builder
 	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineSlice(m, key))
 	if err == nil {

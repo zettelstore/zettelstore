@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/strfun"
@@ -23,7 +24,7 @@ import (
 // CleanupBlockSlice cleans the given block slice.
 func CleanupBlockSlice(bs ast.BlockSlice) {
 	cv := cleanupVisitor{
-		textEnc: encoder.Create(encoder.EncoderText, nil),
+		textEnc: encoder.Create(api.EncoderText, nil),
 		hasMark: false,
 		doMark:  false,
 	}

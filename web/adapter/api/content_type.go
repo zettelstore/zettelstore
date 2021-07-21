@@ -11,21 +11,21 @@
 // Package api provides api handlers for web requests.
 package api
 
-import "zettelstore.de/z/encoder"
+import "zettelstore.de/z/api"
 
 const plainText = "text/plain; charset=utf-8"
 
-var mapFormat2CT = map[encoder.Enum]string{
-	encoder.EncoderHTML:   "text/html; charset=utf-8",
-	encoder.EncoderNative: plainText,
-	encoder.EncoderJSON:   "application/json",
-	encoder.EncoderDJSON:  "application/json",
-	encoder.EncoderText:   plainText,
-	encoder.EncoderZmk:    plainText,
-	encoder.EncoderRaw:    plainText, // In some cases...
+var mapFormat2CT = map[api.EncodingEnum]string{
+	api.EncoderHTML:   "text/html; charset=utf-8",
+	api.EncoderNative: plainText,
+	api.EncoderJSON:   "application/json",
+	api.EncoderDJSON:  "application/json",
+	api.EncoderText:   plainText,
+	api.EncoderZmk:    plainText,
+	api.EncoderRaw:    plainText, // In some cases...
 }
 
-func format2ContentType(format encoder.Enum) string {
+func format2ContentType(format api.EncodingEnum) string {
 	ct, ok := mapFormat2CT[format]
 	if !ok {
 		return "application/octet-stream"

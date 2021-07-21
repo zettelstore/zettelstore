@@ -54,7 +54,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		if format, formatText := adapter.GetFormat(r, q, encoder.EncoderHTML); format != encoder.EncoderHTML {
+		if format, formatText := adapter.GetFormat(r, q, api.EncoderHTML); format != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Zettel info not available in format %q", formatText)))
 			return
@@ -86,7 +86,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := formatBlocks(nil, encoder.EncoderHTML, &env)
+		endnotes, err := formatBlocks(nil, api.EncoderHTML, &env)
 		if err != nil {
 			endnotes = ""
 		}

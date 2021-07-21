@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strconv"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -25,7 +26,7 @@ import (
 )
 
 func init() {
-	encoder.Register(encoder.EncoderNative, encoder.Info{
+	encoder.Register(api.EncoderNative, encoder.Info{
 		Create: func(env *encoder.Environment) encoder.Encoder { return &nativeEncoder{env: env} },
 	})
 }

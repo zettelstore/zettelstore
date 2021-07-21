@@ -15,11 +15,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -29,7 +29,7 @@ import (
 func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		if format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.EncoderHTML); format != encoder.EncoderHTML {
+		if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Delete zettel not possible in format %q", formatText)))
 			return

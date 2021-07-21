@@ -29,7 +29,7 @@ import (
 var ErrNoSuchFormat = errors.New("no such format")
 
 // FormatInlines returns a string representation of the inline slice.
-func FormatInlines(is ast.InlineSlice, format encoder.Enum, env *encoder.Environment) (string, error) {
+func FormatInlines(is ast.InlineSlice, format api.EncodingEnum, env *encoder.Environment) (string, error) {
 	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", ErrNoSuchFormat
@@ -50,7 +50,7 @@ func MakeLinkAdapter(
 	key byte,
 	getMeta usecase.GetMeta,
 	part string,
-	format encoder.Enum,
+	format api.EncodingEnum,
 ) func(*ast.LinkNode) ast.InlineNode {
 	return func(origLink *ast.LinkNode) ast.InlineNode {
 		origRef := origLink.Ref
@@ -86,8 +86,8 @@ func MakeLinkAdapter(
 			if part != "" {
 				ub.AppendQuery(api.QueryKeyPart, part)
 			}
-			if format != encoder.EncoderUnknown {
-				ub.AppendQuery(api.QueryKeyFormat, api.Format(format))
+			if format != api.EncoderUnknown {
+				ub.AppendQuery(api.QueryKeyFormat, format.String())
 			}
 			if fragment := origRef.URL.EscapedFragment(); fragment != "" {
 				ub.SetFragment(fragment)

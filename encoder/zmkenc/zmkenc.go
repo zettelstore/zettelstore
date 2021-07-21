@@ -16,13 +16,14 @@ import (
 	"io"
 	"sort"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 )
 
 func init() {
-	encoder.Register(encoder.EncoderZmk, encoder.Info{
+	encoder.Register(api.EncoderZmk, encoder.Info{
 		Create: func(*encoder.Environment) encoder.Encoder { return &zmkEncoder{} },
 	})
 }

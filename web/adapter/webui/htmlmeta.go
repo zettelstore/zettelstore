@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"time"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -95,7 +96,7 @@ func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle getTitleFunc
 		strfun.HTMLEscape(w, val, false)
 		return
 	}
-	title, found := getTitle(zid, encoder.EncoderText)
+	title, found := getTitle(zid, api.EncoderText)
 	switch {
 	case found > 0:
 		if title == "" {
@@ -164,7 +165,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	title, err := adapter.FormatInlines(parser.ParseMetadata(val), encoder.EncoderHTML, env)
+	title, err := adapter.FormatInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -178,10 +179,10 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	io.WriteString(w, "</a>")
 }
 
-type getTitleFunc func(id.Zid, encoder.Enum) (string, int)
+type getTitleFunc func(id.Zid, api.EncodingEnum) (string, int)
 
 func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Environment) getTitleFunc {
-	return func(zid id.Zid, format encoder.Enum) (string, int) {
+	return func(zid id.Zid, format api.EncodingEnum) (string, int) {
 		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {

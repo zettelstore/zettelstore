@@ -16,7 +16,6 @@ import (
 
 	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -39,7 +38,7 @@ func (api *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) h
 		}
 		u := api.NewURLBuilder('z').SetZid(newZid).String()
 		h := w.Header()
-		h.Set(zsapi.HeaderContentType, format2ContentType(encoder.EncoderJSON))
+		h.Set(zsapi.HeaderContentType, format2ContentType(zsapi.EncoderJSON))
 		h.Set(zsapi.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
 		if err = encodeJSONData(w, zsapi.ZidJSON{ID: newZid.String(), URL: u}); err != nil {

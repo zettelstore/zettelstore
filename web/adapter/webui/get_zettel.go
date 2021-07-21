@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -46,7 +47,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", encoder.EncoderUnknown),
+			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", api.EncoderUnknown),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
@@ -55,18 +56,18 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			NewWindow:      true,
 			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
 		}
-		metaHeader, err := formatMeta(zn.InhMeta, encoder.EncoderHTML, &envHTML)
+		metaHeader, err := formatMeta(zn.InhMeta, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		htmlTitle, err := adapter.FormatInlines(
-			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), encoder.EncoderHTML, &envHTML)
+			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlContent, err := formatBlocks(zn.Ast, encoder.EncoderHTML, &envHTML)
+		htmlContent, err := formatBlocks(zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -130,7 +131,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 	}
 }
 
-func formatBlocks(bs ast.BlockSlice, format encoder.Enum, env *encoder.Environment) (string, error) {
+func formatBlocks(bs ast.BlockSlice, format api.EncodingEnum, env *encoder.Environment) (string, error) {
 	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", adapter.ErrNoSuchFormat
@@ -144,7 +145,7 @@ func formatBlocks(bs ast.BlockSlice, format encoder.Enum, env *encoder.Environme
 	return content.String(), nil
 }
 
-func formatMeta(m *meta.Meta, format encoder.Enum, env *encoder.Environment) (string, error) {
+func formatMeta(m *meta.Meta, format api.EncodingEnum, env *encoder.Environment) (string, error) {
 	enc := encoder.Create(format, env)
 	if enc == nil {
 		return "", adapter.ErrNoSuchFormat
@@ -191,7 +192,7 @@ func (wui *WebUI) formatBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleL
 		if err != nil {
 			continue
 		}
-		if title, found := getTitle(zid, encoder.EncoderText); found > 0 {
+		if title, found := getTitle(zid, api.EncoderText); found > 0 {
 			url := wui.NewURLBuilder('h').SetZid(zid).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})

@@ -39,7 +39,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 		ctx := r.Context()
 		q := r.URL.Query()
 		format, _ := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
-		if format == encoder.EncoderRaw {
+		if format == zsapi.EncoderRaw {
 			ctx = box.NoEnrichContext(ctx)
 		}
 		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
@@ -54,7 +54,7 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 			return
 		}
 		switch format {
-		case encoder.EncoderJSON, encoder.EncoderDJSON:
+		case zsapi.EncoderJSON, zsapi.EncoderDJSON:
 			w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 			err = api.getWriteMetaZettelFunc(ctx, format, part, partZettel, getMeta)(w, zn)
 			if err != nil {
@@ -91,13 +91,13 @@ func (api *API) MakeGetZettelHandler(parseZettel usecase.ParseZettel, getMeta us
 	}
 }
 
-func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum, env encoder.Environment) error {
+func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format zsapi.EncodingEnum, env encoder.Environment) error {
 	enc := encoder.Create(format, &env)
 	if enc == nil {
 		return adapter.ErrNoSuchFormat
 	}
 	inhMeta := false
-	if format != encoder.EncoderRaw {
+	if format != zsapi.EncoderRaw {
 		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 		inhMeta = true
 	}
@@ -105,10 +105,10 @@ func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, format enc
 	return err
 }
 
-func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum) error {
+func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format zsapi.EncodingEnum) error {
 	w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 	if enc := encoder.Create(format, nil); enc != nil {
-		if format == encoder.EncoderRaw {
+		if format == zsapi.EncoderRaw {
 			_, err := enc.WriteMeta(w, zn.Meta)
 			return err
 		}
@@ -118,8 +118,8 @@ func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, format encod
 	return adapter.ErrNoSuchFormat
 }
 
-func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format encoder.Enum, env encoder.Environment) error {
-	if format == encoder.EncoderRaw {
+func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, format zsapi.EncodingEnum, env encoder.Environment) error {
+	if format == zsapi.EncoderRaw {
 		if ct, ok := syntax2contentType(config.GetSyntax(zn.Meta, api.rtConfig)); ok {
 			w.Header().Add(zsapi.HeaderContentType, ct)
 		}

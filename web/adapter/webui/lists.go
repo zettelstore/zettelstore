@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -334,7 +335,7 @@ func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error)
 		}
 		title, _ := m.Get(meta.KeyTitle)
 		env := encoder.Environment{Lang: lang, Interactive: true}
-		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), encoder.EncoderHTML, &env)
+		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), api.EncoderHTML, &env)
 		if err != nil {
 			return nil, err
 		}

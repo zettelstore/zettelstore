@@ -41,7 +41,7 @@ func (api *API) MakeListMetaHandler(
 			return
 		}
 		ctx1 := ctx
-		if format == encoder.EncoderHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
+		if format == zsapi.EncoderHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
 			ctx1 = box.NoEnrichContext(ctx1)
 		}
 		metaList, err := listMeta.Run(ctx1, s)
@@ -52,11 +52,11 @@ func (api *API) MakeListMetaHandler(
 
 		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
 		switch format {
-		case encoder.EncoderHTML:
+		case zsapi.EncoderHTML:
 			api.renderListMetaHTML(w, metaList)
-		case encoder.EncoderJSON, encoder.EncoderDJSON:
+		case zsapi.EncoderJSON, zsapi.EncoderDJSON:
 			api.renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
-		case encoder.EncoderNative, encoder.EncoderRaw, encoder.EncoderText, encoder.EncoderZmk:
+		case zsapi.EncoderNative, zsapi.EncoderRaw, zsapi.EncoderText, zsapi.EncoderZmk:
 			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", formatText))
 		default:
 			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in format %q", formatText))
@@ -70,7 +70,7 @@ func (api *API) renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta)
 	buf.WriteStrings("<html lang=\"", api.rtConfig.GetDefaultLang(), "\">\n<body>\n<ul>\n")
 	for _, m := range metaList {
 		title := m.GetDefault(meta.KeyTitle, "")
-		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), encoder.EncoderHTML, &env)
+		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), zsapi.EncoderHTML, &env)
 		if err != nil {
 			adapter.InternalServerError(w, "Format HTML inlines", err)
 			return

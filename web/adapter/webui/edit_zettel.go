@@ -15,11 +15,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -41,7 +41,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 			return
 		}
 
-		if format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.EncoderHTML); format != encoder.EncoderHTML {
+		if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Edit zettel %q not possible in format %q", zid, formatText)))
 			return

@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
@@ -68,13 +69,13 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(config.GetTitle(m, wui.rtConfig)), meta.ValueSyntaxZmk)
-		textTitle, err := adapter.FormatInlines(title, encoder.EncoderText, nil)
+		textTitle, err := adapter.FormatInlines(title, api.EncoderText, nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		htmlTitle, err := adapter.FormatInlines(title, encoder.EncoderHTML, &env)
+		htmlTitle, err := adapter.FormatInlines(title, api.EncoderHTML, &env)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -90,7 +91,7 @@ func getOrigZettel(
 	getZettel usecase.GetZettel,
 	op string,
 ) (domain.Zettel, error) {
-	if format, formatText := adapter.GetFormat(r, r.URL.Query(), encoder.EncoderHTML); format != encoder.EncoderHTML {
+	if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
 		return domain.Zettel{}, adapter.NewErrBadRequest(
 			fmt.Sprintf("%v zettel not possible in format %q", op, formatText))
 	}

@@ -13,8 +13,6 @@ package api
 
 import (
 	"fmt"
-
-	"zettelstore.de/z/encoder"
 )
 
 // Additional HTTP constants used.
@@ -44,16 +42,16 @@ const (
 	FormatZMK    = "zmk"
 )
 
-var formatEncoder = map[string]encoder.Enum{
-	FormatDJSON:  encoder.EncoderDJSON,
-	FormatHTML:   encoder.EncoderHTML,
-	FormatJSON:   encoder.EncoderJSON,
-	FormatNative: encoder.EncoderNative,
-	FormatRaw:    encoder.EncoderRaw,
-	FormatText:   encoder.EncoderText,
-	FormatZMK:    encoder.EncoderZmk,
+var formatEncoder = map[string]EncodingEnum{
+	FormatDJSON:  EncoderDJSON,
+	FormatHTML:   EncoderHTML,
+	FormatJSON:   EncoderJSON,
+	FormatNative: EncoderNative,
+	FormatRaw:    EncoderRaw,
+	FormatText:   EncoderText,
+	FormatZMK:    EncoderZmk,
 }
-var encoderFormat = map[encoder.Enum]string{}
+var encoderFormat = map[EncodingEnum]string{}
 
 func init() {
 	for k, v := range formatEncoder {
@@ -62,15 +60,30 @@ func init() {
 }
 
 // Encoder returns the internal encoder code for the given format string.
-func Encoder(format string) encoder.Enum {
+func Encoder(format string) EncodingEnum {
 	if e, ok := formatEncoder[format]; ok {
 		return e
 	}
-	return encoder.EncoderUnknown
+	return EncoderUnknown
 }
 
-// Format returns the API format of the given encoder
-func Format(e encoder.Enum) string {
+// EncodingEnum lists all valid encoder keys.
+type EncodingEnum uint8
+
+// Values for EncoderEnum
+const (
+	EncoderUnknown EncodingEnum = iota
+	EncoderDJSON
+	EncoderHTML
+	EncoderJSON
+	EncoderNative
+	EncoderRaw
+	EncoderText
+	EncoderZmk
+)
+
+// String representation of an encoder key.
+func (e EncodingEnum) String() string {
 	if f, ok := encoderFormat[e]; ok {
 		return f
 	}

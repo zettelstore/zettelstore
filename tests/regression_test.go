@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
@@ -41,11 +42,11 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark"
 )
 
-var formats = []encoder.Enum{
-	encoder.EncoderHTML,
-	encoder.EncoderDJSON,
-	encoder.EncoderNative,
-	encoder.EncoderText,
+var formats = []api.EncodingEnum{
+	api.EncoderHTML,
+	api.EncoderDJSON,
+	api.EncoderNative,
+	api.EncoderText,
 }
 
 func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
@@ -112,7 +113,7 @@ func checkFileContent(t *testing.T, filename, gotContent string) {
 	}
 }
 
-func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format encoder.Enum) {
+func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format api.EncodingEnum) {
 	t.Helper()
 	var env encoder.Environment
 	if enc := encoder.Create(format, &env); enc != nil {
@@ -125,7 +126,7 @@ func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format
 }
 
 func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
-	zmkEncoder := encoder.Create(encoder.EncoderZmk, nil)
+	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var sb strings.Builder
 	zmkEncoder.WriteBlocks(&sb, zn.Ast)
 	gotFirst := sb.String()
@@ -194,7 +195,7 @@ func TestContentRegression(t *testing.T) {
 	}
 }
 
-func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format encoder.Enum) {
+func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format api.EncodingEnum) {
 	t.Helper()
 
 	if enc := encoder.Create(format, nil); enc != nil {

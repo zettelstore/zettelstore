@@ -19,6 +19,7 @@ import (
 	"strings"
 	"testing"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
@@ -120,7 +121,7 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 }
 
 func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	htmlEncoder := encoder.Create(encoder.EncoderHTML, &encoder.Environment{Xhtml: true})
+	htmlEncoder := encoder.Create(api.EncoderHTML, &encoder.Environment{Xhtml: true})
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
@@ -145,7 +146,7 @@ func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
-	zmkEncoder := encoder.Create(encoder.EncoderZmk, nil)
+	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {

@@ -20,6 +20,7 @@ import (
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -49,7 +50,7 @@ func parseMarkdown(inp *input.Input) *mdP {
 	source := []byte(inp.Src[inp.Pos:])
 	parser := gm.DefaultParser()
 	node := parser.Parse(gmText.NewReader(source))
-	textEnc := encoder.Create(encoder.EncoderText, nil)
+	textEnc := encoder.Create(api.EncoderText, nil)
 	return &mdP{source: source, docNode: node, textEnc: textEnc}
 }
 
