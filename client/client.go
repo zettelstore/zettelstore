@@ -217,6 +217,26 @@ func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid, query url.Values
 	return &out, nil
 }
 
+// GetEvaluatedZettel return a zettel in a defined encoding.
+func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
+	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
+	ub.AppendQuery(api.QueryKeyFormat, enc.String())
+	ub.AppendQuery(api.QueryKeyPart, api.PartContent)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(resp.Status)
+	}
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
+}
+
 // UpdateZettel updates an existing zettel.
 func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelDataJSON) error {
 	var buf bytes.Buffer

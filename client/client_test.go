@@ -141,6 +141,28 @@ func TestGetZettel(t *testing.T) {
 	}
 }
 
+func TestGetEvaluatedZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	encodings := []api.EncodingEnum{
+		api.EncoderDJSON,
+		api.EncoderHTML,
+		api.EncoderNative,
+		api.EncoderText,
+	}
+	for _, enc := range encodings {
+		content, err := c.GetEvaluatedZettel(context.Background(), id.DefaultHomeZid, enc)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		if len(content) == 0 {
+			t.Errorf("Empty content for encoding %v", enc)
+		}
+	}
+}
+
 func TestListTags(t *testing.T) {
 	t.Parallel()
 	c := getClient()
