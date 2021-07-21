@@ -1,0 +1,43 @@
+id: 00001006055000
+title: Reserved zettel identifier
+role: manual
+tags: #design #manual #zettelstore
+syntax: zmk
+modified: 20210721125518
+
+[[Zettel identifier|00001006050000]] are typically created by examine the current date and time.
+By renaming a zettel, you are able to provide any sequence of 14 digits.
+If no other zettel has the same identifier, you are allowed to rename a zettel.
+
+To make things easier, you normally should not use zettel identifier that begin with four zeroes (''0000'').
+
+All zettel provided by an empty zettelstore begin with six zeroes[^Exception: the predefined home zettel ''00010000000000''. But you can [[configure|00001004020000#home-zettel]] another zettel with another identifier as the new home zettel.].
+Zettel identifier of this manual have be chosen to begin with ''000010''.
+
+However, some external applications may need a range of specific zettel identifier to work properly.
+Identifier that begin with ''00009'' can be used for such purpose.
+To request a reservation, please send an email to the maintainer of Zettelstore.
+The request must include the following data:
+; Title
+: Title of you application
+; Description
+: A brief description what the application is used for and why you need to reserve some zettel identifier
+; Number
+: Specify the amount of zettel identifier you are planning to use.
+  Minimum size is 100.
+  If you need more than 10.000, your justification will contain more words.
+
+=== Reserved Zettel Identifier
+
+|= From | To | Description
+| 00000000000000 | 0000000000000 | This is an invalid zettel identifier
+| 00000000000001 | 0000009999999 | [[Predefined zettel|00001005090000]]
+| 00000100000000 | 0000019999999 | Zettelstore manual
+| 00000200000000 | 0000899999999 | Reserved for future use
+| 00009000000000 | 0000999999999 | Reserved for applications
+
+This list may change in the future.
+
+==== External Applications
+|= From | To | Description
+| 00009000001000 | 00009000001000 | ZS Slides, an application to display zettel as a HTML-based slideshow
