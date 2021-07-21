@@ -3,6 +3,7 @@ title: API: Retrieve zettel order within an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210721184434
 
 Some zettel act as a ""table of contents"" for other zettel.
 The [[initial zettel|00001000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
@@ -29,7 +30,7 @@ Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the
 {
   "id": "00001000000000",
   "url": "/z/00001000000000",
-  "order": [
+  "list": [
     {
       "id": "00001001000000",
       "url": "/z/00001001000000",

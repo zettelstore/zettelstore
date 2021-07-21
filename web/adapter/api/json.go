@@ -27,17 +27,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonMeta struct {
-	ID   string            `json:"id"`
-	URL  string            `json:"url"`
-	Meta map[string]string `json:"meta"`
-}
-type jsonMetaList struct {
-	ID   string            `json:"id"`
-	URL  string            `json:"url"`
-	Meta map[string]string `json:"meta"`
-	List []jsonMeta        `json:"list"`
-}
 type jsonContent struct {
 	ID       string `json:"id"`
 	URL      string `json:"url"`
@@ -184,7 +173,7 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format zsapi.EncodingEnu
 func (api *API) getWriteMetaFunc(ctx context.Context, format zsapi.EncodingEnum) writeZettelFunc {
 	if format == zsapi.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
-			return encodeJSONData(w, jsonMeta{
+			return encodeJSONData(w, zsapi.ZidMetaJSON{
 				ID:   zn.Zid.String(),
 				URL:  api.NewURLBuilder('z').SetZid(zn.Zid).String(),
 				Meta: zn.InhMeta.Map(),
@@ -311,19 +300,19 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 }
 
 func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
-	outData := jsonMetaList{
+	outList := make([]zsapi.ZidMetaJSON, len(metaList))
+	for i, m := range metaList {
+		outList[i].ID = m.Zid.String()
+		outList[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
+		outList[i].Meta = m.Map()
+	}
+	w.Header().Set(zsapi.HeaderContentType, format2ContentType(zsapi.EncoderJSON))
+	return encodeJSONData(w, zsapi.ZidMetaRelatedList{
 		ID:   m.Zid.String(),
 		URL:  api.NewURLBuilder('z').SetZid(m.Zid).String(),
 		Meta: m.Map(),
-		List: make([]jsonMeta, len(metaList)),
-	}
-	for i, m := range metaList {
-		outData.List[i].ID = m.Zid.String()
-		outData.List[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
-		outData.List[i].Meta = m.Map()
-	}
-	w.Header().Set(zsapi.HeaderContentType, format2ContentType(zsapi.EncoderJSON))
-	return encodeJSONData(w, outData)
+		List: outList,
+	})
 }
 
 func buildZettelFromData(r *http.Request, zid id.Zid) (domain.Zettel, error) {

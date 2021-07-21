@@ -37,9 +37,9 @@ func NewZettelOrder(port ZettelOrderPort, parseZettel ParseZettel) ZettelOrder {
 }
 
 // Run executes the use case.
-func (uc ZettelOrder) Run(
-	ctx context.Context, zid id.Zid, syntax string,
-) (start *meta.Meta, result []*meta.Meta, err error) {
+func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
+	start *meta.Meta, result []*meta.Meta, err error,
+) {
 	zn, err := uc.parseZettel.Run(ctx, zid, syntax)
 	if err != nil {
 		return nil, nil, err

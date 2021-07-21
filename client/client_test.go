@@ -163,6 +163,32 @@ func TestGetEvaluatedZettel(t *testing.T) {
 	}
 }
 
+func TestGetZettelOrder(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	rl, err := c.GetZettelOrder(context.Background(), id.TOCNewTemplateZid)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if rl.ID != id.TOCNewTemplateZid.String() {
+		t.Errorf("Expected an Zid %v, but got %v", id.TOCNewTemplateZid, rl.ID)
+		return
+	}
+	l := rl.List
+	if got := len(l); got != 2 {
+		t.Errorf("Expected list fo length 2, got %d", got)
+		return
+	}
+	if got := l[0].ID; got != id.TemplateNewZettelZid.String() {
+		t.Errorf("Expected result[0]=%v, but got %v", id.TemplateNewZettelZid, got)
+	}
+	if got := l[1].ID; got != id.TemplateNewUserZid.String() {
+		t.Errorf("Expected result[1]=%v, but got %v", id.TemplateNewUserZid, got)
+	}
+}
+
 func TestListTags(t *testing.T) {
 	t.Parallel()
 	c := getClient()

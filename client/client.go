@@ -237,6 +237,27 @@ func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.Enc
 	return string(content), nil
 }
 
+// GetZettelOrder returns metadata of the given zettel and, more important,
+// metadata of zettel that are referenced in a list within the first zettel.
+func (c *Client) GetZettelOrder(ctx context.Context, zid id.Zid) (*api.ZidMetaRelatedList, error) {
+	ub := c.newURLBuilder('o').SetZid(zid)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var out api.ZidMetaRelatedList
+	err = dec.Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // UpdateZettel updates an existing zettel.
 func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelDataJSON) error {
 	var buf bytes.Buffer

@@ -24,6 +24,21 @@ type ZidJSON struct {
 	URL string `json:"url"`
 }
 
+// ZidMetaJSON contains the identifier and the metadata of a zettel.
+type ZidMetaJSON struct {
+	ID   string            `json:"id"`
+	URL  string            `json:"url"`
+	Meta map[string]string `json:"meta"`
+}
+
+// ZidMetaRelatedList contains identifier/metadata of a zettel and the same for related zettel
+type ZidMetaRelatedList struct {
+	ID   string            `json:"id"`
+	URL  string            `json:"url"`
+	Meta map[string]string `json:"meta"`
+	List []ZidMetaJSON     `json:"list"`
+}
+
 // ZettelDataJSON contains all data for a zettel.
 type ZettelDataJSON struct {
 	Meta     map[string]string `json:"meta"`
