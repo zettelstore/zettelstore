@@ -14,6 +14,7 @@ package api
 import (
 	"net/http"
 
+	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -28,12 +29,12 @@ func (api *API) MakeZettelContextHandler(getContext usecase.ZettelContext) http.
 			return
 		}
 		q := r.URL.Query()
-		dir := usecase.ParseZCDirection(q.Get("dir"))
-		depth, ok := adapter.GetInteger(q, "depth")
+		dir := adapter.GetZCDirection(q.Get(zsapi.QueryKeyDir))
+		depth, ok := adapter.GetInteger(q, zsapi.QueryKeyDepth)
 		if !ok || depth < 0 {
 			depth = 5
 		}
-		limit, ok := adapter.GetInteger(q, "limit")
+		limit, ok := adapter.GetInteger(q, zsapi.QueryKeyLimit)
 		if !ok || limit < 0 {
 			limit = 200
 		}

@@ -27,8 +27,17 @@ const (
 
 // Values for HTTP query parameter.
 const (
+	QueryKeyDepth  = "depth"
+	QueryKeyDir    = "dir"
 	QueryKeyFormat = "_format"
+	QueryKeyLimit  = "limit"
 	QueryKeyPart   = "_part"
+)
+
+// Supported dir values.
+const (
+	DirBackward = "backward"
+	DirForward  = "forward"
 )
 
 // Supported format values.

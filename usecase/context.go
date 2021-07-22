@@ -45,17 +45,6 @@ const (
 	ZettelContextBoth                            // Traverse both directions
 )
 
-// ParseZCDirection returns a direction value for a given string.
-func ParseZCDirection(s string) ZettelContextDirection {
-	switch s {
-	case "backward":
-		return ZettelContextBackward
-	case "forward":
-		return ZettelContextForward
-	}
-	return ZettelContextBoth
-}
-
 // Run executes the use case.
 func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDirection, depth, limit int) (result []*meta.Meta, err error) {
 	start, err := uc.port.GetMeta(ctx, zid)

@@ -208,9 +208,9 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			return
 		}
 		q := r.URL.Query()
-		dir := usecase.ParseZCDirection(q.Get("dir"))
-		depth := getIntParameter(q, "depth", 5)
-		limit := getIntParameter(q, "limit", 200)
+		dir := adapter.GetZCDirection(q.Get(api.QueryKeyDir))
+		depth := getIntParameter(q, api.QueryKeyDepth, 5)
+		limit := getIntParameter(q, api.QueryKeyLimit, 200)
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -229,11 +229,11 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			depthURL.ClearQuery()
 			switch dir {
 			case usecase.ZettelContextBackward:
-				depthURL.AppendQuery("dir", "backward")
+				depthURL.AppendQuery(api.QueryKeyDir, api.DirBackward)
 			case usecase.ZettelContextForward:
-				depthURL.AppendQuery("dir", "forward")
+				depthURL.AppendQuery(api.QueryKeyDir, api.DirForward)
 			}
-			depthURL.AppendQuery("depth", depth)
+			depthURL.AppendQuery(api.QueryKeyDepth, depth)
 			depthLinks[i].Text = depth
 			depthLinks[i].URL = depthURL.String()
 		}

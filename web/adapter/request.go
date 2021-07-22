@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
+	"zettelstore.de/z/usecase"
 )
 
 // GetCredentialsViaForm retrieves the authentication credentions from a form.
@@ -156,4 +157,15 @@ func setCleanedQueryValues(s *search.Search, key string, values []string) *searc
 		s = s.AddExpr(key, val)
 	}
 	return s
+}
+
+// GetZCDirection returns a direction value for a given string.
+func GetZCDirection(s string) usecase.ZettelContextDirection {
+	switch s {
+	case api.DirBackward:
+		return usecase.ZettelContextBackward
+	case api.DirForward:
+		return usecase.ZettelContextForward
+	}
+	return usecase.ZettelContextBoth
 }

@@ -19,6 +19,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -241,6 +242,53 @@ func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.Enc
 // metadata of zettel that are referenced in a list within the first zettel.
 func (c *Client) GetZettelOrder(ctx context.Context, zid id.Zid) (*api.ZidMetaRelatedList, error) {
 	ub := c.newURLBuilder('o').SetZid(zid)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var out api.ZidMetaRelatedList
+	err = dec.Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ContextDirection specifies how the context should be calculated.
+type ContextDirection uint8
+
+// Allowed values for ContextDirection
+const (
+	_ ContextDirection = iota
+	DirBoth
+	DirBackward
+	DirForward
+)
+
+// GetZettelContext returns metadata of the given zettel and, more important,
+// metadata of zettel that for the context of the first zettel.
+func (c *Client) GetZettelContext(
+	ctx context.Context, zid id.Zid, dir ContextDirection, depth, limit int) (
+	*api.ZidMetaRelatedList, error,
+) {
+	ub := c.newURLBuilder('x').SetZid(zid)
+	switch dir {
+	case DirBackward:
+		ub.AppendQuery(api.QueryKeyDir, api.DirBackward)
+	case DirForward:
+		ub.AppendQuery(api.QueryKeyDir, api.DirForward)
+	}
+	if depth > 0 {
+		ub.AppendQuery(api.QueryKeyDepth, strconv.Itoa(depth))
+	}
+	if limit > 0 {
+		ub.AppendQuery(api.QueryKeyLimit, strconv.Itoa(limit))
+	}
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err
