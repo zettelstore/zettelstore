@@ -24,24 +24,6 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-type jsonGetLinks struct {
-	ID    string `json:"id"`
-	URL   string `json:"url"`
-	Links struct {
-		Incoming []zsapi.ZidJSON `json:"incoming,omitempty"`
-		Outgoing []zsapi.ZidJSON `json:"outgoing,omitempty"`
-		Local    []string        `json:"local,omitempty"`
-		External []string        `json:"external,omitempty"`
-		Meta     []string        `json:"meta,omitempty"`
-	} `json:"links"`
-	Images struct {
-		Outgoing []zsapi.ZidJSON `json:"outgoing,omitempty"`
-		Local    []string        `json:"local,omitempty"`
-		External []string        `json:"external,omitempty"`
-	} `json:"images,omitempty"`
-	Cites []string `json:"cites,omitempty"`
-}
-
 // MakeGetLinksHandler creates a new API handler to return links to other material.
 func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +48,7 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 			return
 		}
 
-		outData := jsonGetLinks{
+		outData := zsapi.ZettelLinksJSON{
 			ID:  zid.String(),
 			URL: api.NewURLBuilder('z').SetZid(zid).String(),
 		}
@@ -92,8 +74,9 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 	}
 }
 
-func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
 	if matter&matterIncoming != 0 {
+		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
 		outData.Links.Incoming = []zsapi.ZidJSON{}
 	}
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
@@ -108,7 +91,7 @@ func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, ou
 	}
 }
 
-func (api *API) setupImageJSONRefs(summary collect.Summary, matter matterType, outData *jsonGetLinks) {
+func (api *API) setupImageJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images)
 	if matter&matterOutgoing != 0 {
 		outData.Images.Outgoing = api.idURLRefs(zetRefs)

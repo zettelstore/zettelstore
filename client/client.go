@@ -306,6 +306,26 @@ func (c *Client) GetZettelContext(
 	return &out, nil
 }
 
+// GetZettelLinks returns connections to ohter zettel, images, externals URLs.
+func (c *Client) GetZettelLinks(ctx context.Context, zid id.Zid) (*api.ZettelLinksJSON, error) {
+	ub := c.newURLBuilder('l').SetZid(zid)
+	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+	dec := json.NewDecoder(resp.Body)
+	var out api.ZettelLinksJSON
+	err = dec.Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // UpdateZettel updates an existing zettel.
 func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelDataJSON) error {
 	var buf bytes.Buffer

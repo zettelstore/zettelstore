@@ -39,6 +39,25 @@ type ZidMetaRelatedList struct {
 	List []ZidMetaJSON     `json:"list"`
 }
 
+// ZettelLinksJSON store all links / connections from one zettel to other.
+type ZettelLinksJSON struct {
+	ID    string `json:"id"`
+	URL   string `json:"url"`
+	Links struct {
+		Incoming []ZidJSON `json:"incoming,omitempty"`
+		Outgoing []ZidJSON `json:"outgoing,omitempty"`
+		Local    []string  `json:"local,omitempty"`
+		External []string  `json:"external,omitempty"`
+		Meta     []string  `json:"meta,omitempty"`
+	} `json:"links"`
+	Images struct {
+		Outgoing []ZidJSON `json:"outgoing,omitempty"`
+		Local    []string  `json:"local,omitempty"`
+		External []string  `json:"external,omitempty"`
+	} `json:"images,omitempty"`
+	Cites []string `json:"cites,omitempty"`
+}
+
 // ZettelDataJSON contains all data for a zettel.
 type ZettelDataJSON struct {
 	Meta     map[string]string `json:"meta"`
