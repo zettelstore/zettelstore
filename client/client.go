@@ -221,7 +221,7 @@ func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid, query url.Values
 // GetEvaluatedZettel return a zettel in a defined encoding.
 func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
 	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
-	ub.AppendQuery(api.QueryKeyFormat, enc.String())
+	ub.AppendQuery(api.QueryKeyEncoding, enc.String())
 	ub.AppendQuery(api.QueryKeyPart, api.PartContent)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
@@ -378,7 +378,7 @@ func (c *Client) DeleteZettel(ctx context.Context, zid id.Zid) error {
 func (c *Client) jsonZettelURLBuilder(query url.Values) *api.URLBuilder {
 	ub := c.newURLBuilder('z')
 	for key, values := range query {
-		if key == api.QueryKeyFormat {
+		if key == api.QueryKeyEncoding {
 			continue
 		}
 		for _, val := range values {

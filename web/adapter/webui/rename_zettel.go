@@ -42,9 +42,9 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
-		if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Rename zettel %q not possible in format %q", zid.String(), formatText)))
+				fmt.Sprintf("Rename zettel %q not possible in encoding %q", zid.String(), encText)))
 			return
 		}
 

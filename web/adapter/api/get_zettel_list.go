@@ -34,14 +34,14 @@ func (api *API) MakeListMetaHandler(
 		ctx := r.Context()
 		q := r.URL.Query()
 		s := adapter.GetSearch(q, false)
-		format, formatText := adapter.GetFormat(r, q, encoder.GetDefaultFormat())
+		enc, encText := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partMeta)
 		if part == partUnknown {
 			adapter.BadRequest(w, "Unknown _part parameter")
 			return
 		}
 		ctx1 := ctx
-		if format == zsapi.EncoderHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
+		if enc == zsapi.EncoderHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
 			ctx1 = box.NoEnrichContext(ctx1)
 		}
 		metaList, err := listMeta.Run(ctx1, s)
@@ -50,16 +50,16 @@ func (api *API) MakeListMetaHandler(
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, format2ContentType(format))
-		switch format {
+		w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
+		switch enc {
 		case zsapi.EncoderHTML:
 			api.renderListMetaHTML(w, metaList)
 		case zsapi.EncoderJSON, zsapi.EncoderDJSON:
-			api.renderListMetaXJSON(ctx, w, metaList, format, part, partMeta, getMeta, parseZettel)
+			api.renderListMetaXJSON(ctx, w, metaList, enc, part, partMeta, getMeta, parseZettel)
 		case zsapi.EncoderNative, zsapi.EncoderRaw, zsapi.EncoderText, zsapi.EncoderZmk:
-			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in format %q not yet implemented", formatText))
+			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in encoding %q not yet implemented", encText))
 		default:
-			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in format %q", formatText))
+			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in encoding %q", encText))
 		}
 	}
 }
@@ -70,14 +70,14 @@ func (api *API) renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta)
 	buf.WriteStrings("<html lang=\"", api.rtConfig.GetDefaultLang(), "\">\n<body>\n<ul>\n")
 	for _, m := range metaList {
 		title := m.GetDefault(meta.KeyTitle, "")
-		htmlTitle, err := adapter.FormatInlines(parser.ParseMetadata(title), zsapi.EncoderHTML, &env)
+		htmlTitle, err := adapter.EncodeInlines(parser.ParseMetadata(title), zsapi.EncoderHTML, &env)
 		if err != nil {
-			adapter.InternalServerError(w, "Format HTML inlines", err)
+			adapter.InternalServerError(w, "Encode HTML inlines", err)
 			return
 		}
 		buf.WriteStrings(
 			"<li><a href=\"",
-			api.NewURLBuilder('z').SetZid(m.Zid).AppendQuery(zsapi.QueryKeyFormat, zsapi.FormatHTML).String(),
+			api.NewURLBuilder('z').SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, zsapi.EncodingHTML).String(),
 			"\">",
 			htmlTitle,
 			"</a></li>\n")

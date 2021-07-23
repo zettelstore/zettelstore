@@ -29,9 +29,9 @@ import (
 func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Delete zettel not possible in format %q", formatText)))
+				fmt.Sprintf("Delete zettel not possible in encoding %q", encText)))
 			return
 		}
 

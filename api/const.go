@@ -11,9 +11,7 @@
 // Package api contains common definition used for client and server.
 package api
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Additional HTTP constants used.
 const (
@@ -27,11 +25,11 @@ const (
 
 // Values for HTTP query parameter.
 const (
-	QueryKeyDepth  = "depth"
-	QueryKeyDir    = "dir"
-	QueryKeyFormat = "_format"
-	QueryKeyLimit  = "limit"
-	QueryKeyPart   = "_part"
+	QueryKeyDepth    = "depth"
+	QueryKeyDir      = "dir"
+	QueryKeyEncoding = "_enc"
+	QueryKeyLimit    = "limit"
+	QueryKeyPart     = "_part"
 )
 
 // Supported dir values.
@@ -40,37 +38,37 @@ const (
 	DirForward  = "forward"
 )
 
-// Supported format values.
+// Supported encoding values.
 const (
-	FormatDJSON  = "djson"
-	FormatHTML   = "html"
-	FormatJSON   = "json"
-	FormatNative = "native"
-	FormatRaw    = "raw"
-	FormatText   = "text"
-	FormatZMK    = "zmk"
+	EncodingDJSON  = "djson"
+	EncodingHTML   = "html"
+	EncodingJSON   = "json"
+	EncodingNative = "native"
+	EncodingRaw    = "raw"
+	EncodingText   = "text"
+	EncodingZMK    = "zmk"
 )
 
-var formatEncoder = map[string]EncodingEnum{
-	FormatDJSON:  EncoderDJSON,
-	FormatHTML:   EncoderHTML,
-	FormatJSON:   EncoderJSON,
-	FormatNative: EncoderNative,
-	FormatRaw:    EncoderRaw,
-	FormatText:   EncoderText,
-	FormatZMK:    EncoderZmk,
+var mapEncodingEnum = map[string]EncodingEnum{
+	EncodingDJSON:  EncoderDJSON,
+	EncodingHTML:   EncoderHTML,
+	EncodingJSON:   EncoderJSON,
+	EncodingNative: EncoderNative,
+	EncodingRaw:    EncoderRaw,
+	EncodingText:   EncoderText,
+	EncodingZMK:    EncoderZmk,
 }
-var encoderFormat = map[EncodingEnum]string{}
+var mapEnumEncoding = map[EncodingEnum]string{}
 
 func init() {
-	for k, v := range formatEncoder {
-		encoderFormat[v] = k
+	for k, v := range mapEncodingEnum {
+		mapEnumEncoding[v] = k
 	}
 }
 
-// Encoder returns the internal encoder code for the given format string.
-func Encoder(format string) EncodingEnum {
-	if e, ok := formatEncoder[format]; ok {
+// Encoder returns the internal encoder code for the given encoding string.
+func Encoder(encoding string) EncodingEnum {
+	if e, ok := mapEncodingEnum[encoding]; ok {
 		return e
 	}
 	return EncoderUnknown
@@ -93,7 +91,7 @@ const (
 
 // String representation of an encoder key.
 func (e EncodingEnum) String() string {
-	if f, ok := encoderFormat[e]; ok {
+	if f, ok := mapEnumEncoding[e]; ok {
 		return f
 	}
 	return fmt.Sprintf("*Unknown*(%d)", e)

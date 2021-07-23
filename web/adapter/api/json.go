@@ -39,7 +39,7 @@ var (
 	djsonContentHeader = []byte(",\"content\":")
 	djsonHeader1       = []byte("{\"id\":\"")
 	djsonHeader2       = []byte("\",\"url\":\"")
-	djsonHeader3       = []byte("?_format=")
+	djsonHeader3       = []byte("?" + zsapi.QueryKeyEncoding + "=")
 	djsonHeader4       = []byte("\"")
 	djsonFooter        = []byte("}")
 )
@@ -58,7 +58,7 @@ func (api *API) writeDJSONHeader(w io.Writer, zid id.Zid) error {
 	if err == nil {
 		_, err = w.Write(djsonHeader3)
 		if err == nil {
-			_, err = io.WriteString(w, zsapi.FormatDJSON)
+			_, err = io.WriteString(w, zsapi.EncodingDJSON)
 		}
 	}
 	if err == nil {
@@ -71,13 +71,13 @@ func (api *API) renderListMetaXJSON(
 	ctx context.Context,
 	w http.ResponseWriter,
 	metaList []*meta.Meta,
-	format zsapi.EncodingEnum,
+	enc zsapi.EncodingEnum,
 	part, defPart partType,
 	getMeta usecase.GetMeta,
 	parseZettel usecase.ParseZettel,
 ) {
 	prepareZettel := api.getPrepareZettelFunc(ctx, parseZettel, part)
-	writeZettel := api.getWriteMetaZettelFunc(ctx, format, part, defPart, getMeta)
+	writeZettel := api.getWriteMetaZettelFunc(ctx, enc, part, defPart, getMeta)
 	err := writeListXJSON(w, metaList, prepareZettel, writeZettel)
 	if err != nil {
 		adapter.InternalServerError(w, "Get list", err)
@@ -108,25 +108,25 @@ func (api *API) getPrepareZettelFunc(ctx context.Context, parseZettel usecase.Pa
 
 type writeZettelFunc func(io.Writer, *ast.ZettelNode) error
 
-func (api *API) getWriteMetaZettelFunc(ctx context.Context, format zsapi.EncodingEnum,
+func (api *API) getWriteMetaZettelFunc(ctx context.Context, enc zsapi.EncodingEnum,
 	part, defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
 	switch part {
 	case partZettel:
-		return api.getWriteZettelFunc(ctx, format, defPart, getMeta)
+		return api.getWriteZettelFunc(ctx, enc, defPart, getMeta)
 	case partMeta:
-		return api.getWriteMetaFunc(ctx, format)
+		return api.getWriteMetaFunc(ctx, enc)
 	case partContent:
-		return api.getWriteContentFunc(ctx, format, defPart, getMeta)
+		return api.getWriteContentFunc(ctx, enc, defPart, getMeta)
 	case partID:
-		return api.getWriteIDFunc(ctx, format)
+		return api.getWriteIDFunc(ctx, enc)
 	default:
 		panic(part)
 	}
 }
 
-func (api *API) getWriteZettelFunc(ctx context.Context, format zsapi.EncodingEnum,
+func (api *API) getWriteZettelFunc(ctx context.Context, enc zsapi.EncodingEnum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	if format == zsapi.EncoderJSON {
+	if enc == zsapi.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			content, encoding := zn.Content.Encode()
 			return encodeJSONData(w, zsapi.ZettelJSON{
@@ -138,8 +138,8 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format zsapi.EncodingEnu
 			})
 		}
 	}
-	enc := encoder.Create(zsapi.EncoderDJSON, nil)
-	if enc == nil {
+	encdr := encoder.Create(zsapi.EncoderDJSON, nil)
+	if encdr == nil {
 		panic("no DJSON encoder found")
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
@@ -151,7 +151,7 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format zsapi.EncodingEnu
 		if err != nil {
 			return err
 		}
-		_, err = enc.WriteMeta(w, zn.InhMeta)
+		_, err = encdr.WriteMeta(w, zn.InhMeta)
 		if err != nil {
 			return err
 		}
@@ -170,8 +170,8 @@ func (api *API) getWriteZettelFunc(ctx context.Context, format zsapi.EncodingEnu
 		return err
 	}
 }
-func (api *API) getWriteMetaFunc(ctx context.Context, format zsapi.EncodingEnum) writeZettelFunc {
-	if format == zsapi.EncoderJSON {
+func (api *API) getWriteMetaFunc(ctx context.Context, enc zsapi.EncodingEnum) writeZettelFunc {
+	if enc == zsapi.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, zsapi.ZidMetaJSON{
 				ID:   zn.Zid.String(),
@@ -180,8 +180,8 @@ func (api *API) getWriteMetaFunc(ctx context.Context, format zsapi.EncodingEnum)
 			})
 		}
 	}
-	enc := encoder.Create(zsapi.EncoderDJSON, nil)
-	if enc == nil {
+	encdr := encoder.Create(zsapi.EncoderDJSON, nil)
+	if encdr == nil {
 		panic("no DJSON encoder found")
 	}
 	return func(w io.Writer, zn *ast.ZettelNode) error {
@@ -193,7 +193,7 @@ func (api *API) getWriteMetaFunc(ctx context.Context, format zsapi.EncodingEnum)
 		if err != nil {
 			return err
 		}
-		_, err = enc.WriteMeta(w, zn.InhMeta)
+		_, err = encdr.WriteMeta(w, zn.InhMeta)
 		if err != nil {
 			return err
 		}
@@ -201,9 +201,9 @@ func (api *API) getWriteMetaFunc(ctx context.Context, format zsapi.EncodingEnum)
 		return err
 	}
 }
-func (api *API) getWriteContentFunc(ctx context.Context, format zsapi.EncodingEnum,
+func (api *API) getWriteContentFunc(ctx context.Context, enc zsapi.EncodingEnum,
 	defPart partType, getMeta usecase.GetMeta) writeZettelFunc {
-	if format == zsapi.EncoderJSON {
+	if enc == zsapi.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			content, encoding := zn.Content.Encode()
 			return encodeJSONData(w, jsonContent{
@@ -234,8 +234,8 @@ func (api *API) getWriteContentFunc(ctx context.Context, format zsapi.EncodingEn
 		return err
 	}
 }
-func (api *API) getWriteIDFunc(ctx context.Context, format zsapi.EncodingEnum) writeZettelFunc {
-	if format == zsapi.EncoderJSON {
+func (api *API) getWriteIDFunc(ctx context.Context, enc zsapi.EncodingEnum) writeZettelFunc {
+	if enc == zsapi.EncoderJSON {
 		return func(w io.Writer, zn *ast.ZettelNode) error {
 			return encodeJSONData(w, zsapi.ZidJSON{
 				ID:  zn.Zid.String(),
@@ -283,13 +283,13 @@ func writeListXJSON(w http.ResponseWriter, metaList []*meta.Meta, prepareZettel 
 	return err
 }
 
-func writeContent(w io.Writer, zn *ast.ZettelNode, format zsapi.EncodingEnum, env *encoder.Environment) error {
-	enc := encoder.Create(format, env)
-	if enc == nil {
-		return adapter.ErrNoSuchFormat
+func writeContent(w io.Writer, zn *ast.ZettelNode, enc zsapi.EncodingEnum, env *encoder.Environment) error {
+	encdr := encoder.Create(enc, env)
+	if encdr == nil {
+		return adapter.ErrNoSuchEncoding
 	}
 
-	_, err := enc.WriteContent(w, zn)
+	_, err := encdr.WriteContent(w, zn)
 	return err
 }
 
@@ -306,7 +306,7 @@ func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*m
 		outList[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
 		outList[i].Meta = m.Map()
 	}
-	w.Header().Set(zsapi.HeaderContentType, format2ContentType(zsapi.EncoderJSON))
+	w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(zsapi.EncoderJSON))
 	return encodeJSONData(w, zsapi.ZidMetaRelatedList{
 		ID:   m.Zid.String(),
 		URL:  api.NewURLBuilder('z').SetZid(m.Zid).String(),

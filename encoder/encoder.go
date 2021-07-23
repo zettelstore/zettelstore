@@ -41,8 +41,8 @@ var (
 )
 
 // Create builds a new encoder with the given options.
-func Create(format api.EncodingEnum, env *Environment) Encoder {
-	if info, ok := registry[format]; ok {
+func Create(enc api.EncodingEnum, env *Environment) Encoder {
+	if info, ok := registry[enc]; ok {
 		return info.Create(env)
 	}
 	return nil
@@ -55,39 +55,39 @@ type Info struct {
 }
 
 var registry = map[api.EncodingEnum]Info{}
-var defFormat api.EncodingEnum
+var defEncoding api.EncodingEnum
 
 // Register the encoder for later retrieval.
-func Register(format api.EncodingEnum, info Info) {
-	if _, ok := registry[format]; ok {
-		log.Fatalf("Writer with format %q already registered", format)
+func Register(enc api.EncodingEnum, info Info) {
+	if _, ok := registry[enc]; ok {
+		log.Fatalf("Encoder %q already registered", enc)
 	}
 	if info.Default {
-		if defFormat != api.EncoderUnknown && defFormat != format {
-			log.Fatalf("Default format already set: %q, new format: %q", defFormat, format)
+		if defEncoding != api.EncoderUnknown && defEncoding != enc {
+			log.Fatalf("Default encoder already set: %q, new encoding: %q", defEncoding, enc)
 		}
-		defFormat = format
+		defEncoding = enc
 	}
-	registry[format] = info
+	registry[enc] = info
 }
 
-// GetFormats returns all registered formats, ordered by format code.
-func GetFormats() []api.EncodingEnum {
+// GetEncodings returns all registered encodings, ordered by encoding value.
+func GetEncodings() []api.EncodingEnum {
 	result := make([]api.EncodingEnum, 0, len(registry))
-	for format := range registry {
-		result = append(result, format)
+	for enc := range registry {
+		result = append(result, enc)
 	}
 	return result
 }
 
-// GetDefaultFormat returns the format that should be used as default.
-func GetDefaultFormat() api.EncodingEnum {
-	if defFormat != api.EncoderUnknown {
-		return defFormat
+// GetDefaultEncoding returns the encoding that should be used as default.
+func GetDefaultEncoding() api.EncodingEnum {
+	if defEncoding != api.EncoderUnknown {
+		return defEncoding
 	}
 	if _, ok := registry[api.EncoderJSON]; ok {
 		return api.EncoderJSON
 	}
-	log.Fatalf("No default format given")
+	log.Fatalf("No default encoding given")
 	return api.EncoderUnknown
 }

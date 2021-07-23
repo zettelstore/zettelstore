@@ -56,18 +56,18 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			NewWindow:      true,
 			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
 		}
-		metaHeader, err := formatMeta(zn.InhMeta, api.EncoderHTML, &envHTML)
+		metaHeader, err := encodeMeta(zn.InhMeta, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlTitle, err := adapter.FormatInlines(
+		htmlTitle, err := adapter.EncodeInlines(
 			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlContent, err := formatBlocks(zn.Ast, api.EncoderHTML, &envHTML)
+		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -79,7 +79,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		canCreate := wui.canCreate(ctx, user)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		backLinks := wui.formatBackLinks(zn.InhMeta, getTitle)
+		backLinks := wui.encodeBackLinks(zn.InhMeta, getTitle)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -119,8 +119,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      canCreate,
 			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
-			FolgeRefs:     wui.formatMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
-			PrecursorRefs: wui.formatMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
+			FolgeRefs:     wui.encodeMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
+			PrecursorRefs: wui.encodeMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
@@ -131,28 +131,28 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 	}
 }
 
-func formatBlocks(bs ast.BlockSlice, format api.EncodingEnum, env *encoder.Environment) (string, error) {
-	enc := encoder.Create(format, env)
-	if enc == nil {
-		return "", adapter.ErrNoSuchFormat
+func encodeBlocks(bs ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+	encdr := encoder.Create(enc, env)
+	if encdr == nil {
+		return "", adapter.ErrNoSuchEncoding
 	}
 
 	var content strings.Builder
-	_, err := enc.WriteBlocks(&content, bs)
+	_, err := encdr.WriteBlocks(&content, bs)
 	if err != nil {
 		return "", err
 	}
 	return content.String(), nil
 }
 
-func formatMeta(m *meta.Meta, format api.EncodingEnum, env *encoder.Environment) (string, error) {
-	enc := encoder.Create(format, env)
-	if enc == nil {
-		return "", adapter.ErrNoSuchFormat
+func encodeMeta(m *meta.Meta, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+	encdr := encoder.Create(enc, env)
+	if encdr == nil {
+		return "", adapter.ErrNoSuchEncoding
 	}
 
 	var content strings.Builder
-	_, err := enc.WriteMeta(&content, m)
+	_, err := encdr.WriteMeta(&content, m)
 	if err != nil {
 		return "", err
 	}
@@ -172,7 +172,7 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 	return tagInfos
 }
 
-func (wui *WebUI) formatMetaKey(m *meta.Meta, key string, getTitle getTitleFunc) string {
+func (wui *WebUI) encodeMetaKey(m *meta.Meta, key string, getTitle getTitleFunc) string {
 	if _, ok := m.Get(key); ok {
 		var buf bytes.Buffer
 		wui.writeHTMLMetaValue(&buf, m, key, getTitle, nil)
@@ -181,7 +181,7 @@ func (wui *WebUI) formatMetaKey(m *meta.Meta, key string, getTitle getTitleFunc)
 	return ""
 }
 
-func (wui *WebUI) formatBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleLink {
+func (wui *WebUI) encodeBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleLink {
 	values, ok := m.GetList(meta.KeyBack)
 	if !ok || len(values) == 0 {
 		return nil

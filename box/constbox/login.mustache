@@ -5,7 +5,7 @@
 {{#Retry}}
 <div class="zs-indication zs-error">Wrong user name / password. Try again.</div>
 {{/Retry}}
-<form method="POST" action="?_format=html">
+<form method="POST" action="?_{{EncKey}}={{EncValue}}">
 <div>
 <label for="username">User name</label>
 <input class="zs-input" type="text" id="username" name="username" placeholder="Your user name.." autofocus>

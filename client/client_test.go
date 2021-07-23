@@ -99,7 +99,7 @@ func TestList(t *testing.T) {
 
 	t.Parallel()
 	c := getClient()
-	query := url.Values{api.QueryKeyFormat: {"html"}} // Client must remove "html"
+	query := url.Values{api.QueryKeyEncoding: {api.EncodingHTML}} // Client must remove "html"
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)

@@ -25,18 +25,18 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
-// ErrNoSuchFormat signals an unsupported encoding format
-var ErrNoSuchFormat = errors.New("no such format")
+// ErrNoSuchEncoding signals an unsupported encoding encoding
+var ErrNoSuchEncoding = errors.New("no such encoding")
 
-// FormatInlines returns a string representation of the inline slice.
-func FormatInlines(is ast.InlineSlice, format api.EncodingEnum, env *encoder.Environment) (string, error) {
-	enc := encoder.Create(format, env)
-	if enc == nil {
-		return "", ErrNoSuchFormat
+// EncodeInlines returns a string representation of the inline slice.
+func EncodeInlines(is ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+	encdr := encoder.Create(enc, env)
+	if encdr == nil {
+		return "", ErrNoSuchEncoding
 	}
 
 	var content strings.Builder
-	_, err := enc.WriteInlines(&content, is)
+	_, err := encdr.WriteInlines(&content, is)
 	if err != nil {
 		return "", err
 	}
@@ -50,7 +50,7 @@ func MakeLinkAdapter(
 	key byte,
 	getMeta usecase.GetMeta,
 	part string,
-	format api.EncodingEnum,
+	enc api.EncodingEnum,
 ) func(*ast.LinkNode) ast.InlineNode {
 	return func(origLink *ast.LinkNode) ast.InlineNode {
 		origRef := origLink.Ref
@@ -86,8 +86,8 @@ func MakeLinkAdapter(
 			if part != "" {
 				ub.AppendQuery(api.QueryKeyPart, part)
 			}
-			if format != api.EncoderUnknown {
-				ub.AppendQuery(api.QueryKeyFormat, format.String())
+			if enc != api.EncoderUnknown {
+				ub.AppendQuery(api.QueryKeyEncoding, enc.String())
 			}
 			if fragment := origRef.URL.EscapedFragment(); fragment != "" {
 				ub.SetFragment(fragment)
@@ -132,7 +132,8 @@ func MakeImageAdapter(ctx context.Context, b server.Builder, getMeta usecase.Get
 func createZettelImage(b server.Builder, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
 	newImage := *origImage
 	newImage.Ref = ast.ParseReference(
-		b.NewURLBuilder('z').SetZid(zid).AppendQuery("_part", "content").AppendQuery("_format", "raw").String())
+		b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyPart, api.PartContent).AppendQuery(
+			api.QueryKeyEncoding, api.EncodingRaw).String())
 	newImage.Ref.State = state
 	return &newImage
 }

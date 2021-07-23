@@ -51,41 +51,41 @@ func GetInteger(q url.Values, key string) (int, bool) {
 	return 0, false
 }
 
-// GetFormat returns the data format selected by the caller.
-func GetFormat(r *http.Request, q url.Values, defFormat api.EncodingEnum) (api.EncodingEnum, string) {
-	format := q.Get(api.QueryKeyFormat)
-	if len(format) > 0 {
-		return api.Encoder(format), format
+// GetEncoding returns the data encoding selected by the caller.
+func GetEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (api.EncodingEnum, string) {
+	encoding := q.Get(api.QueryKeyEncoding)
+	if len(encoding) > 0 {
+		return api.Encoder(encoding), encoding
 	}
-	if format, ok := getOneFormat(r, api.HeaderAccept); ok {
-		return api.Encoder(format), format
+	if enc, ok := getOneEncoding(r, api.HeaderAccept); ok {
+		return api.Encoder(enc), enc
 	}
-	if format, ok := getOneFormat(r, api.HeaderContentType); ok {
-		return api.Encoder(format), format
+	if enc, ok := getOneEncoding(r, api.HeaderContentType); ok {
+		return api.Encoder(enc), enc
 	}
-	return defFormat, "*default*"
+	return defEncoding, "*default*"
 }
 
-func getOneFormat(r *http.Request, key string) (string, bool) {
+func getOneEncoding(r *http.Request, key string) (string, bool) {
 	if values, ok := r.Header[key]; ok {
 		for _, value := range values {
-			if format, ok := contentType2format(value); ok {
-				return format, true
+			if enc, ok := contentType2encoding(value); ok {
+				return enc, true
 			}
 		}
 	}
 	return "", false
 }
 
-var mapCT2format = map[string]string{
-	"application/json": api.FormatJSON,
-	"text/html":        api.FormatHTML,
+var mapCT2encoding = map[string]string{
+	"application/json": api.EncodingJSON,
+	"text/html":        api.EncodingHTML,
 }
 
-func contentType2format(contentType string) (string, bool) {
+func contentType2encoding(contentType string) (string, bool) {
 	// TODO: only check before first ';'
-	format, ok := mapCT2format[contentType]
-	return format, ok
+	enc, ok := mapCT2encoding[contentType]
+	return enc, ok
 }
 
 // GetSearch retrieves the specified search and sorting options from a query.

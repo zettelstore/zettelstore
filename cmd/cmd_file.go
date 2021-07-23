@@ -28,7 +28,7 @@ import (
 // ---------- Subcommand: file -----------------------------------------------
 
 func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
-	format := fs.Lookup("t").Value.String()
+	enc := fs.Lookup("t").Value.String()
 	m, inp, err := getInput(fs.Args())
 	if m == nil {
 		return 2, err
@@ -41,12 +41,12 @@ func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 		m.GetDefault(meta.KeySyntax, meta.ValueSyntaxZmk),
 		nil,
 	)
-	enc := encoder.Create(api.Encoder(format), &encoder.Environment{Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN)})
-	if enc == nil {
-		fmt.Fprintf(os.Stderr, "Unknown format %q\n", format)
+	encdr := encoder.Create(api.Encoder(enc), &encoder.Environment{Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN)})
+	if encdr == nil {
+		fmt.Fprintf(os.Stderr, "Unknown encoder %q\n", enc)
 		return 2, nil
 	}
-	_, err = enc.WriteZettel(os.Stdout, z, format != "raw")
+	_, err = encdr.WriteZettel(os.Stdout, z, enc != "raw")
 	if err != nil {
 		return 2, err
 	}

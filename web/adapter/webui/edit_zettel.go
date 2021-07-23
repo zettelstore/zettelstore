@@ -41,9 +41,9 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 			return
 		}
 
-		if format, formatText := adapter.GetFormat(r, r.URL.Query(), api.EncoderHTML); format != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Edit zettel %q not possible in format %q", zid, formatText)))
+				fmt.Sprintf("Edit zettel %q not possible in encoding %q", zid, encText)))
 			return
 		}
 

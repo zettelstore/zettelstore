@@ -54,9 +54,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		if format, formatText := adapter.GetFormat(r, q, api.EncoderHTML); format != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, q, api.EncoderHTML); enc != api.EncoderHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Zettel info not available in format %q", formatText)))
+				fmt.Sprintf("Zettel info not available in encoding %q", encText)))
 			return
 		}
 
@@ -86,7 +86,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := formatBlocks(nil, api.EncoderHTML, &env)
+		endnotes, err := encodeBlocks(nil, api.EncoderHTML, &env)
 		if err != nil {
 			endnotes = ""
 		}
@@ -176,25 +176,25 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 }
 
 func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
-	formats := encoder.GetFormats()
-	formatTexts := make([]string, 0, len(formats))
-	for _, f := range formats {
-		formatTexts = append(formatTexts, f.String())
+	encodings := encoder.GetEncodings()
+	encTexts := make([]string, 0, len(encodings))
+	for _, f := range encodings {
+		encTexts = append(encTexts, f.String())
 	}
-	sort.Strings(formatTexts)
-	defFormat := encoder.GetDefaultFormat().String()
-	parts := []string{"zettel", "meta", "content"}
+	sort.Strings(encTexts)
+	defEncoding := encoder.GetDefaultEncoding().String()
+	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	matrix := make([]matrixLine, 0, len(parts))
 	u := wui.NewURLBuilder('z').SetZid(zid)
 	for _, part := range parts {
-		row := make([]matrixElement, 0, len(formatTexts)+1)
+		row := make([]matrixElement, 0, len(encTexts)+1)
 		row = append(row, matrixElement{part, false, ""})
-		for _, format := range formatTexts {
+		for _, enc := range encTexts {
 			u.AppendQuery(api.QueryKeyPart, part)
-			if format != defFormat {
-				u.AppendQuery(api.QueryKeyFormat, format)
+			if enc != defEncoding {
+				u.AppendQuery(api.QueryKeyEncoding, enc)
 			}
-			row = append(row, matrixElement{format, true, u.String()})
+			row = append(row, matrixElement{enc, true, u.String()})
 			u.ClearQuery()
 		}
 		matrix = append(matrix, matrixLine{row})

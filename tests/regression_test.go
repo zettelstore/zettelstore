@@ -42,7 +42,7 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark"
 )
 
-var formats = []api.EncodingEnum{
+var encodings = []api.EncodingEnum{
 	api.EncoderHTML,
 	api.EncoderDJSON,
 	api.EncoderNative,
@@ -113,16 +113,16 @@ func checkFileContent(t *testing.T, filename, gotContent string) {
 	}
 }
 
-func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, format api.EncodingEnum) {
+func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.EncodingEnum) {
 	t.Helper()
 	var env encoder.Environment
-	if enc := encoder.Create(format, &env); enc != nil {
+	if enc := encoder.Create(enc, &env); enc != nil {
 		var sb strings.Builder
 		enc.WriteBlocks(&sb, zn.Ast)
 		checkFileContent(t, resultName, sb.String())
 		return
 	}
-	panic(fmt.Sprintf("Unknown writer format %q", format))
+	panic(fmt.Sprintf("Unknown writer encoding %q", enc))
 }
 
 func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
@@ -168,10 +168,10 @@ func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 			panic(err)
 		}
 		z := parser.ParseZettel(zettel, "", testConfig)
-		for _, format := range formats {
-			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+format.String())
-				checkBlocksFile(st, resultName, z, format)
+		for _, enc := range encodings {
+			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, enc), func(st *testing.T) {
+				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+enc.String())
+				checkBlocksFile(st, resultName, z, enc)
 			})
 		}
 		t.Run(fmt.Sprintf("%s::%d", p.Location(), meta.Zid), func(st *testing.T) {
@@ -195,16 +195,16 @@ func TestContentRegression(t *testing.T) {
 	}
 }
 
-func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, format api.EncodingEnum) {
+func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.EncodingEnum) {
 	t.Helper()
 
-	if enc := encoder.Create(format, nil); enc != nil {
+	if enc := encoder.Create(enc, nil); enc != nil {
 		var sb strings.Builder
 		enc.WriteMeta(&sb, zn.Meta)
 		checkFileContent(t, resultName, sb.String())
 		return
 	}
-	panic(fmt.Sprintf("Unknown writer format %q", format))
+	panic(fmt.Sprintf("Unknown writer encoding %q", enc))
 }
 
 func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
@@ -222,10 +222,10 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 			panic(err)
 		}
 		z := parser.ParseZettel(zettel, "", testConfig)
-		for _, format := range formats {
-			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, format), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+format.String())
-				checkMetaFile(st, resultName, z, format)
+		for _, enc := range encodings {
+			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, enc), func(st *testing.T) {
+				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+enc.String())
+				checkMetaFile(st, resultName, z, enc)
 			})
 		}
 	}

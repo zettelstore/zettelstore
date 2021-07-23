@@ -165,7 +165,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	title, err := adapter.FormatInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
+	title, err := adapter.EncodeInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -182,7 +182,7 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 type getTitleFunc func(id.Zid, api.EncodingEnum) (string, int)
 
 func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Environment) getTitleFunc {
-	return func(zid id.Zid, format api.EncodingEnum) (string, int) {
+	return func(zid id.Zid, enc api.EncodingEnum) (string, int) {
 		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {
@@ -191,7 +191,7 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Env
 			return "", 0
 		}
 		astTitle := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, ""))
-		title, err := adapter.FormatInlines(astTitle, format, env)
+		title, err := adapter.EncodeInlines(astTitle, enc, env)
 		if err == nil {
 			return title, 1
 		}

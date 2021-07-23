@@ -15,7 +15,7 @@ import "zettelstore.de/z/api"
 
 const plainText = "text/plain; charset=utf-8"
 
-var mapFormat2CT = map[api.EncodingEnum]string{
+var mapEncoding2CT = map[api.EncodingEnum]string{
 	api.EncoderHTML:   "text/html; charset=utf-8",
 	api.EncoderNative: plainText,
 	api.EncoderJSON:   "application/json",
@@ -25,8 +25,8 @@ var mapFormat2CT = map[api.EncodingEnum]string{
 	api.EncoderRaw:    plainText, // In some cases...
 }
 
-func format2ContentType(format api.EncodingEnum) string {
-	ct, ok := mapFormat2CT[format]
+func encoding2ContentType(enc api.EncodingEnum) string {
+	ct, ok := mapEncoding2CT[enc]
 	if !ok {
 		return "application/octet-stream"
 	}

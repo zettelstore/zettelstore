@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
 	"zettelstore.de/z/box"
@@ -72,7 +73,7 @@ func init() {
 		Name: "file",
 		Func: cmdFile,
 		Flags: func(fs *flag.FlagSet) {
-			fs.String("t", "html", "target output format")
+			fs.String("t", api.EncoderHTML.String(), "target output encoding")
 		},
 	})
 	RegisterCommand(Command{

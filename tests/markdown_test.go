@@ -73,10 +73,10 @@ var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
 func TestEncoderAvailability(t *testing.T) {
 	t.Parallel()
 	encoderMissing := false
-	for _, format := range formats {
-		enc := encoder.Create(format, nil)
+	for _, enc := range encodings {
+		enc := encoder.Create(enc, nil)
 		if enc == nil {
-			t.Errorf("No encoder for %q found", format)
+			t.Errorf("No encoder for %q found", enc)
 			encoderMissing = true
 		}
 	}
@@ -112,9 +112,9 @@ func TestMarkdownSpec(t *testing.T) {
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
-	for _, format := range formats {
-		t.Run(fmt.Sprintf("Encode %v %v", format, testID), func(st *testing.T) {
-			encoder.Create(format, nil).WriteBlocks(&sb, ast)
+	for _, enc := range encodings {
+		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
+			encoder.Create(enc, nil).WriteBlocks(&sb, ast)
 			sb.Reset()
 		})
 	}
