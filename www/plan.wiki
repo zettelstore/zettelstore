@@ -22,8 +22,6 @@ They are planned to be solved.
   *  Changing the content syntax is not reflected in file extension.
   *  File names with additional text besides the zettel identifier are not
      always preserved.
-  *  Backspace character in links does not always work, esp. for <tt>\|</tt> or
-     <tt>\]</tt>.
   *  &hellip;
 
 <h3>Planned improvements</h3>

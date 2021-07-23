@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_0_15"></a>
+<h2>Changes for Version 0.0.15 (pending)</h2>
+
 <a name="0_0_14"></a>
-<h2>Changes for Version 0.0.14 (pending)</h2>
+<h2>Changes for Version 0.0.14 (2021-07-23)</h2>
   *  Rename &ldquo;place&rdquo; into &ldquo;box&rdquo;. This also affects the
      configuration keys to specify boxes <tt>box-uri<em>X</em></tt> (previously
      <tt>place-uri-<em>X</em></tt>. Older changes documented here are renamed
@@ -46,6 +49,8 @@
   *  The phase &ldquo;filtering a zettel list&rdquo; is more precise
      &ldquo;selecting zettel&rdquo;
      (documentation)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_0_13"></a>
 <h2>Changes for Version 0.0.13 (2021-06-01)</h2>
