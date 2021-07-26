@@ -199,8 +199,8 @@ func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.Zettel
 }
 
 // GetZettelJSON returns a zettel as a JSON struct.
-func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid, query url.Values) (*api.ZettelDataJSON, error) {
-	ub := c.jsonZettelURLBuilder(query).SetZid(zid)
+func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid) (*api.ZettelDataJSON, error) {
+	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err

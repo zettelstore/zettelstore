@@ -53,7 +53,7 @@ func (api *API) writeDJSONHeader(w io.Writer, zid id.Zid) error {
 		_, err = w.Write(djsonHeader2)
 	}
 	if err == nil {
-		_, err = io.WriteString(w, api.NewURLBuilder('z').SetZid(zid).String())
+		_, err = io.WriteString(w, api.NewURLBuilder('v').SetZid(zid).String())
 	}
 	if err == nil {
 		_, err = w.Write(djsonHeader3)
@@ -161,7 +161,7 @@ func (api *API) getWriteZettelFunc(ctx context.Context, enc zsapi.EncodingEnum,
 		}
 		err = writeContent(w, zn, zsapi.EncoderDJSON, &encoder.Environment{
 			LinkAdapter: adapter.MakeLinkAdapter(
-				ctx, api, 'z', getMeta, partZettel.DefString(defPart), zsapi.EncoderDJSON),
+				ctx, api, 'v', getMeta, partZettel.DefString(defPart), zsapi.EncoderDJSON),
 			ImageAdapter: adapter.MakeImageAdapter(ctx, api, getMeta)})
 		if err != nil {
 			return err
@@ -225,7 +225,7 @@ func (api *API) getWriteContentFunc(ctx context.Context, enc zsapi.EncodingEnum,
 		}
 		err = writeContent(w, zn, zsapi.EncoderDJSON, &encoder.Environment{
 			LinkAdapter: adapter.MakeLinkAdapter(
-				ctx, api, 'z', getMeta, partContent.DefString(defPart), zsapi.EncoderDJSON),
+				ctx, api, 'v', getMeta, partContent.DefString(defPart), zsapi.EncoderDJSON),
 			ImageAdapter: adapter.MakeImageAdapter(ctx, api, getMeta)})
 		if err != nil {
 			return err

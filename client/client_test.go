@@ -59,7 +59,7 @@ func TestUpdateZettel(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("writer", "writer")
-	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, nil)
+	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -75,7 +75,7 @@ func TestUpdateZettel(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	zt, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, nil)
+	zt, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid)
 	if err != nil {
 		t.Error(err)
 		return
@@ -128,13 +128,13 @@ func TestGetZettel(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid, url.Values{api.QueryKeyPart: {api.PartContent}})
+	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if m := z.Meta; len(m) > 0 {
-		t.Errorf("Exptected empty meta, but got %v", z.Meta)
+	if m := z.Meta; len(m) == 0 {
+		t.Errorf("Exptected non-empty meta, but got %v", z.Meta)
 	}
 	if z.Content == "" || z.Encoding != "" {
 		t.Errorf("Expect non-empty content, but empty encoding (got %q)", z.Encoding)

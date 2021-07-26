@@ -77,7 +77,7 @@ func (api *API) renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta)
 		}
 		buf.WriteStrings(
 			"<li><a href=\"",
-			api.NewURLBuilder('z').SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, zsapi.EncodingHTML).String(),
+			api.NewURLBuilder('v').SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, zsapi.EncodingHTML).String(),
 			"\">",
 			htmlTitle,
 			"</a></li>\n")

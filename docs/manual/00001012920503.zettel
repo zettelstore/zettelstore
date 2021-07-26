@@ -1,18 +1,19 @@
 id: 00001012920503
-title: DJSON Format
+title: DJSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
+modified: 20210726193006
 
 A zettel representation that allows to process the syntactic structure of a zettel.
 It is a JSON-based encoding format, but different to [[json|00001012920501]].
 
 For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 
-* [[../z/00001012920503?_format=djson&_part=id]],
-* [[../z/00001012920503?_format=djson&_part=zettel]],
-* [[../z/00001012920503?_format=djson&_part=meta]],
-* [[../z/00001012920503?_format=djson&_part=content]].
+* [[//v/00001012920503?_enc=djson&_part=id]],
+* [[//v/00001012920503?_enc=djson&_part=zettel]],
+* [[//v/00001012920503?_enc=djson&_part=meta]],
+* [[//v/00001012920503?_enc=djson&_part=content]].
 
 If transferred via HTTP, the content type will be ''application/json''.
 

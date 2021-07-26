@@ -185,7 +185,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
 	defEncoding := encoder.GetDefaultEncoding().String()
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	matrix := make([]matrixLine, 0, len(parts))
-	u := wui.NewURLBuilder('z').SetZid(zid)
+	u := wui.NewURLBuilder('v').SetZid(zid)
 	for _, part := range parts {
 		row := make([]matrixElement, 0, len(encTexts)+1)
 		row = append(row, matrixElement{part, false, ""})

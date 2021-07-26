@@ -1,8 +1,9 @@
 id: 00001012920522
-title: Zmk Format
+title: Zmk Encoding
+role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-role: manual
+modified: 20210726193136
 
 A zettel representation that tries to recreate a [[Zettelmarkup|00001007000000]] representation of the zettel.
 Useful if you want to convert [[other markup languages|00001008000000]] to Zettelmarkup (e.g. Markdown).

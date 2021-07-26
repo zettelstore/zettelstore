@@ -118,11 +118,12 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
 	webSrv.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
+	webSrv.AddZettelRoute('v', http.MethodGet, api.MakeGetEvalZettelHandler(
+		ucParseZettel, ucGetMeta))
 	webSrv.AddZettelRoute('x', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))
-	webSrv.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(
-		ucParseZettel, ucGetMeta))
+	webSrv.AddZettelRoute('z', http.MethodGet, api.MakeGetZettelHandler(ucGetZettel))
 	if !authManager.IsReadonly() {
 		webSrv.AddListRoute('z', http.MethodPost, api.MakePostCreateZettelHandler(ucCreateZettel))
 		webSrv.AddZettelRoute('z', http.MethodDelete, api.MakeDeleteZettelHandler(ucDelete))

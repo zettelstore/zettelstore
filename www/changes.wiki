@@ -8,6 +8,12 @@
      <tt>/v</tt> to </tt>/a</tt>. Since the API client is updated too, this
      should not be a breaking change for most users.
      (minor: api, webui; possibly breaking)
+  *  Add API endpoint <tt>/v/{ID}</tt> to retrieve an evaluated zettel in
+     various encodings. Mostly replaces endpoint <tt>/z/{ID}</tt> for other
+     encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
+     <tt>/z/{ID}</tt> now only returns JSON data, except when query parameter
+     <tt>raw</tt> is given. See documentation for details.
+     (Major: api; possibly breaking)
 
 <a name="0_0_14"></a>
 <h2>Changes for Version 0.0.14 (2021-07-23)</h2>

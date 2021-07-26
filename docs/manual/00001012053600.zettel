@@ -3,7 +3,7 @@ title: API: Retrieve references of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210702183357
+modified: 20210726192512
 
 The web of zettel is one important value of a Zettelstore.
 Many zettel references other zettel, images, external/local material or, via citations, external literature.
@@ -97,7 +97,7 @@ If a list is not going to retrieved, the associated value is ``null``{=json} ins
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.
-  Maybe the zettel identifier did not consist of exactly 14 digits or ''_format'' / ''_part'' contained illegal values.
+  Maybe the zettel identifier did not consist of exactly 14 digits.
 ; ''403''
 : You are not allowed to retrieve data of the given zettel.
 ; ''404''

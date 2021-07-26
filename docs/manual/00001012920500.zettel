@@ -1,8 +1,9 @@
 id: 00001012920500
-title: Formats available by the API
+title: Encodings available by the API
+role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-role: manual
+modified: 20210726191515
 
 A zettel representation can be encoded in various formats for further processing.
 
@@ -13,7 +14,3 @@ A zettel representation can be encoded in various formats for further processing
 * [[raw|00001012920516]]
 * [[text|00001012920519]]
 * [[zmk|00001012920522]]
-
-Planned formats:
-; ''pjson''
-: Encoder that emits JSON data that can be fed into [[pandoc|https://pandoc.org]] for further processing.

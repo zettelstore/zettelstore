@@ -1,8 +1,9 @@
 id: 00001012920516
-title: Raw Format
+title: Raw Encoding
+role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-role: manual
+modified: 20210726193104
 
 A zettel representation as it was loaded from the zettel content.
 

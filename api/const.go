@@ -30,6 +30,7 @@ const (
 	QueryKeyEncoding = "_enc"
 	QueryKeyLimit    = "limit"
 	QueryKeyPart     = "_part"
+	QueryKeyRaw      = "raw"
 )
 
 // Supported dir values.

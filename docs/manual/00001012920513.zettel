@@ -1,8 +1,9 @@
 id: 00001012920513
-title: Native Format
+title: Native Encoding
+role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-role: manual
+modified: 20210726193049
 
 A zettel representation shows the structure of a zettel in a more user-friendly way.
 Mostly used for debugging.

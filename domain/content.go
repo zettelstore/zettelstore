@@ -14,6 +14,7 @@ package domain
 import (
 	"encoding/base64"
 	"errors"
+	"io"
 	"unicode/utf8"
 
 	"zettelstore.de/z/strfun"
@@ -34,6 +35,11 @@ func NewContent(s string) Content {
 func (zc *Content) Set(s string) {
 	zc.data = s
 	zc.isBinary = calcIsBinary(s)
+}
+
+// Write it to a Writer
+func (zc *Content) Write(w io.Writer) (int, error) {
+	return io.WriteString(w, zc.data)
 }
 
 // AsString returns the content itself is a string.

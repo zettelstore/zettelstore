@@ -1,29 +1,24 @@
 id: 00001012920501
-title: JSON Format
+title: JSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
+modified: 20210726192919
 
 This is the default representation of a zettel or a list of zettel.
 Basically, user provided data is encoded as a string (zettel content and metadata values),
 The metadata and some other structuring data is encoded a JSON object.
 
-The JSON objects contains various name/value pairs, depending which content should be encoded:
+The JSON objects contains the following name/value pairs:
 
 * ''"id"'': the [[zettel identifier|00001006050000]], as a string.
 * ''"url"'': the base URL to the zettel, as a string.
 * ''"meta"'': the metadata of the zettel, as an JSON object. See below for details.
 * ''"encoding"'' and ''"content"'': the actual content of the zettel. See below for details.
 
-''"id"'' and ''"url"'' are always sent to the client.
-It depends on the value of the required [[zettel part|00001012920800]], whether ''"meta"'' or ''"content"'' or both are sent.
+For an example, take a look at the JSON encoding of this page:
 
-For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
-
-* [[//z/00001012920501?_part=id]],
-* [[//z/00001012920501?_part=zettel]],
-* [[//z/00001012920501?_part=meta]],
-* [[//z/00001012920501?_part=content]].
+* [[//z/00001012920501]].
 
 If transferred via HTTP, the content type will be ''application/json''.
 

@@ -132,8 +132,7 @@ func MakeImageAdapter(ctx context.Context, b server.Builder, getMeta usecase.Get
 func createZettelImage(b server.Builder, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
 	newImage := *origImage
 	newImage.Ref = ast.ParseReference(
-		b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyPart, api.PartContent).AppendQuery(
-			api.QueryKeyEncoding, api.EncodingRaw).String())
+		b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
 	newImage.Ref.State = state
 	return &newImage
 }

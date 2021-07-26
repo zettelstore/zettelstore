@@ -1,0 +1,70 @@
+id: 00001012053500
+title: API: Retrieve evaluated metadata and content of an existing zettel in various encodings
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210726192415
+
+The [[endpoint|00001012920000]] to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+
+For example, to retrieve some evaluated data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/v/00001012053400''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
+If successful, the output is a JSON object:
+```sh
+# curl http://127.0.0.1:23123/v/00001012053500
+{"id":"00001012053500","url":"/v/00001012053500","meta":{"title":"API: Retrieve evaluated metadata and content of an existing zettel in various encodings","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual","copyright":"(c) 2020 by Detlef Stern <ds@zettelstore.de>","lang":"en","license":"CC BY-SA 4.0"},"content":"The endpoint to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).\n\nFor example, ...
+```
+
+To select another encoding, you can provide a query parameter ''_enc=[[ENCODING|00001012920500]]''.
+The default encoding is ""[[json|00001012920501]]"".
+Others are ""[[djson|00001012920503]]"", ""[[html|00001012920510]]"", and some more.
+```sh
+# curl 'http://127.0.0.1:23123/v/00001012053500?_enc=html'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>API: Retrieve evaluated metadata and content of an existing zettel in various encodings</title>
+<meta name="zs-role" content="manual">
+<meta name="keywords" content="api, manual, zettelstore">
+<meta name="zs-syntax" content="zmk">
+<meta name="zs-back" content="00001012000000">
+<meta name="zs-backward" content="00001012000000">
+<meta name="zs-box-number" content="1">
+<meta name="copyright" content="(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>">
+<meta name="zs-forward" content="00001010040100 00001012050200 00001012920000 00001012920800">
+<meta name="zs-published" content="00001012053500">
+</head>
+<body>
+<p>The <a href="/v/00001012920000?_enc=html">endpoint</a> to work with metadata and content of a specific zettel is <span style="font-family:monospace">/z/{ID}</span>, where <span style="font-family:monospace">{ID}</span> is a placeholder for the zettel identifier (14 digits).</p>
+...
+```
+
+You also can use the query parameter ''_part=[[PART|00001012920800]]'' to specify which parts of a zettel must be encoded.
+In this case, its default value is ''zettel''.
+```sh
+# curl 'http://127.0.0.1:23123/v/00001012053500?_enc=html&_part=meta'
+<meta name="zs-title" content="API: Retrieve evaluated metadata and content of an existing zettel in various encodings">
+<meta name="zs-role" content="manual">
+<meta name="keywords" content="api, manual, zettelstore">
+<meta name="zs-syntax" content="zmk">
+<meta name="zs-back" content="00001012000000">
+<meta name="zs-backward" content="00001012000000">
+<meta name="zs-box-number" content="1">
+<meta name="copyright" content="(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>">
+<meta name="zs-forward" content="00001010040100 00001012050200 00001012920000 00001012920800">
+<meta name="zs-lang" content="en">
+<meta name="zs-published" content="00001012053500">
+```
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the zettel identifier did not consist of exactly 14 digits or ''_enc'' / ''_part'' contained illegal values.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.

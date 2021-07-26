@@ -3,7 +3,7 @@ title: API
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210721120820
+modified: 20210726192253
 
 The API (short for ""**A**pplication **P**rogramming **I**nterface"") is the primary way to communicate with a running Zettelstore.
 Most integration with other systems and services is done through the API.
@@ -14,13 +14,6 @@ The API is HTTP-based and uses JSON as its main encoding format for exchanging m
 
 There is an [[overview zettel|00001012920000]] that shows the structure of the endpoints used by the API and gives an indication about its use.
 
-While JSON is the main encoding format, it is possible to retrieve zettel representations in other formats.
-If you want to create a new zettel or to change an existing one, you have to use JSON.
-There is an [[overview zettel for encoding formats|00001012920500]] that describes the valid formats.
-
-Various parts of a zettel can be retrieved.
-There are the [[possible values to specify zettel parts|00001012920800]].
-
 === Authentication
 If [[authentication is enabled|00001010040100]], most API calls must include an [[access token|00001010040700]] that proves the identity of the caller.
 * [[Authenticate an user|00001012050200]] to obtain an access token
@@ -29,8 +22,6 @@ If [[authentication is enabled|00001010040100]], most API calls must include an 
 
 === Zettel lists
 * [[List metadata of all zettel|00001012051200]]
-* [[List all zettel, but in different encoding formats|00001012051400]]
-* [[List all zettel, but include different parts of a zettel|00001012051600]]
 * [[Shape the list of zettel metadata|00001012051800]]
 ** [[Selection of zettel|00001012051810]]
 ** [[Zettel parts|00001012051820]]
@@ -43,6 +34,7 @@ If [[authentication is enabled|00001010040100]], most API calls must include an 
 === Working with zettel
 * [[Create a new zettel|00001012053200]]
 * [[Retrieve metadata and content of an existing zettel|00001012053400]]
+* [[Retrieve evaluated metadata and content of an existing zettel in various encodings|00001012053500]]
 * [[Retrieve references of an existing zettel|00001012053600]]
 * [[Retrieve context of an existing zettel|00001012053800]]
 * [[Retrieve zettel order within an existing zettel|00001012054000]]

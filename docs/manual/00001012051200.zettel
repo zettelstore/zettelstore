@@ -3,6 +3,7 @@ title: API: List metadata of all zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210726192219
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/z''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
@@ -75,12 +76,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
 }
 ```
 In this special case, the metadata of each zettel just contains the four default keys ''title'', ''tags'', ''syntax'', and ''role''.
-
-If you specify the request in above simple way, you will always get a JSON object that contains all zettel maintained by your Zettelstore and which contains just the metadata of each zettel.
-There are several ways to change this behavior.
-
-* [[Specify a different encoding format|00001012051400]]
-* [[Specify which detail information of a zettel should be included|00001012051600]]
 
 === HTTP Status codes
 ; ''200''
