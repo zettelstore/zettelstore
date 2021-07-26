@@ -92,7 +92,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
 		withAuth:      authz.WithAuth(),
-		loginURL:      ab.NewURLBuilder('a').String(),
+		loginURL:      ab.NewURLBuilder('i').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
@@ -199,7 +199,7 @@ func (wui *WebUI) makeBaseData(
 	if userIsValid {
 		userZettelURL = wui.NewURLBuilder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
-		userLogoutURL = wui.NewURLBuilder('a').SetZid(user.Zid).String()
+		userLogoutURL = wui.NewURLBuilder('j').String()
 	}
 	newZettelLinks := wui.fetchNewTemplates(ctx, user)
 

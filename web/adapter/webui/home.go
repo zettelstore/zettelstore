@@ -48,7 +48,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			return
 		}
 		if errors.Is(err, &box.ErrNotAllowed{}) && wui.authz.WithAuth() && wui.getUser(ctx) == nil {
-			redirectFound(w, r, wui.NewURLBuilder('a'))
+			redirectFound(w, r, wui.NewURLBuilder('i'))
 			return
 		}
 		redirectFound(w, r, wui.NewURLBuilder('h'))

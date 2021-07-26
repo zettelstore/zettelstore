@@ -80,9 +80,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 
 	// Web user interface
-	webSrv.AddListRoute('a', http.MethodGet, wui.MakeGetLoginHandler())
-	webSrv.AddListRoute('a', http.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
-	webSrv.AddZettelRoute('a', http.MethodGet, wui.MakeGetLogoutHandler())
 	if !authManager.IsReadonly() {
 		webSrv.AddZettelRoute('b', http.MethodGet, wui.MakeGetRenameZettelHandler(ucGetMeta))
 		webSrv.AddZettelRoute('b', http.MethodPost, wui.MakePostRenameZettelHandler(ucRename))
@@ -106,18 +103,21 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		ucListMeta, ucListRoles, ucListTags))
 	webSrv.AddZettelRoute('h', http.MethodGet, wui.MakeGetHTMLZettelHandler(
 		ucParseZettel, ucGetMeta))
+	webSrv.AddListRoute('i', http.MethodGet, wui.MakeGetLoginHandler())
+	webSrv.AddListRoute('i', http.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', http.MethodGet, wui.MakeGetInfoHandler(
 		ucParseZettel, ucGetMeta, ucGetAllMeta))
+	webSrv.AddListRoute('j', http.MethodGet, wui.MakeGetLogoutHandler())
 	webSrv.AddZettelRoute('j', http.MethodGet, wui.MakeZettelContextHandler(ucZettelContext))
 
 	// API
+	webSrv.AddListRoute('a', http.MethodPost, api.MakePostLoginHandler(ucAuthenticate))
+	webSrv.AddListRoute('a', http.MethodPut, api.MakeRenewAuthHandler())
 	webSrv.AddZettelRoute('l', http.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
 	webSrv.AddZettelRoute('o', http.MethodGet, api.MakeGetOrderHandler(
 		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
 	webSrv.AddListRoute('r', http.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', http.MethodGet, api.MakeListTagsHandler(ucListTags))
-	webSrv.AddListRoute('v', http.MethodPost, api.MakePostLoginHandler(ucAuthenticate))
-	webSrv.AddListRoute('v', http.MethodPut, api.MakeRenewAuthHandler())
 	webSrv.AddZettelRoute('x', http.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', http.MethodGet, api.MakeListMetaHandler(
 		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))
