@@ -97,7 +97,7 @@ func createAndStart() kernel.Kernel {
 	return kern
 }
 
-func (kern *myKernel) Start(headline bool, lineServer bool) {
+func (kern *myKernel) Start(headline, lineServer bool) {
 	for _, srvD := range kern.srvs {
 		srvD.srv.Freeze()
 	}

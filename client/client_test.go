@@ -163,6 +163,23 @@ func TestGetEvaluatedZettel(t *testing.T) {
 	}
 }
 
+func checkZid(t *testing.T, expected id.Zid, got string) bool {
+	t.Helper()
+	if exp := expected.String(); exp != got {
+		t.Errorf("Expected a Zid %q, but got %q", exp, got)
+		return false
+	}
+	return true
+}
+
+func checkListZid(t *testing.T, l []api.ZidMetaJSON, pos int, expected id.Zid) {
+	t.Helper()
+	exp := expected.String()
+	if got := l[pos].ID; got != exp {
+		t.Errorf("Expected result[%d]=%v, but got %v", pos, exp, got)
+	}
+}
+
 func TestGetZettelOrder(t *testing.T) {
 	t.Parallel()
 	c := getClient()
@@ -172,8 +189,7 @@ func TestGetZettelOrder(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if rl.ID != id.TOCNewTemplateZid.String() {
-		t.Errorf("Expected an Zid %v, but got %v", id.TOCNewTemplateZid, rl.ID)
+	if !checkZid(t, id.TOCNewTemplateZid, rl.ID) {
 		return
 	}
 	l := rl.List
@@ -181,12 +197,8 @@ func TestGetZettelOrder(t *testing.T) {
 		t.Errorf("Expected list fo length 2, got %d", got)
 		return
 	}
-	if got := l[0].ID; got != id.TemplateNewZettelZid.String() {
-		t.Errorf("Expected result[0]=%v, but got %v", id.TemplateNewZettelZid, got)
-	}
-	if got := l[1].ID; got != id.TemplateNewUserZid.String() {
-		t.Errorf("Expected result[1]=%v, but got %v", id.TemplateNewUserZid, got)
-	}
+	checkListZid(t, l, 0, id.TemplateNewZettelZid)
+	checkListZid(t, l, 1, id.TemplateNewUserZid)
 }
 
 func TestGetZettelContext(t *testing.T) {
@@ -198,8 +210,7 @@ func TestGetZettelContext(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if rl.ID != id.VersionZid.String() {
-		t.Errorf("Expected an Zid %v, but got %v", id.VersionZid, rl.ID)
+	if !checkZid(t, id.VersionZid, rl.ID) {
 		return
 	}
 	l := rl.List
@@ -207,23 +218,16 @@ func TestGetZettelContext(t *testing.T) {
 		t.Errorf("Expected list fo length 3, got %d", got)
 		return
 	}
-	if got := l[0].ID; got != id.DefaultHomeZid.String() {
-		t.Errorf("Expected result[0]=%v, but got %v", id.DefaultHomeZid, got)
-	}
-	if got := l[1].ID; got != id.OperatingSystemZid.String() {
-		t.Errorf("Expected result[1]=%v, but got %v", id.OperatingSystemZid, got)
-	}
-	if got := l[2].ID; got != id.StartupConfigurationZid.String() {
-		t.Errorf("Expected result[2]=%v, but got %v", id.StartupConfigurationZid, got)
-	}
+	checkListZid(t, l, 0, id.DefaultHomeZid)
+	checkListZid(t, l, 1, id.OperatingSystemZid)
+	checkListZid(t, l, 2, id.StartupConfigurationZid)
 
 	rl, err = c.GetZettelContext(context.Background(), id.VersionZid, client.DirBackward, 0, 0)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if rl.ID != id.VersionZid.String() {
-		t.Errorf("Expected an Zid %v, but got %v", id.VersionZid, rl.ID)
+	if !checkZid(t, id.VersionZid, rl.ID) {
 		return
 	}
 	l = rl.List
@@ -231,9 +235,7 @@ func TestGetZettelContext(t *testing.T) {
 		t.Errorf("Expected list fo length 1, got %d", got)
 		return
 	}
-	if got := l[0].ID; got != id.DefaultHomeZid.String() {
-		t.Errorf("Expected result[0]=%v, but got %v", id.DefaultHomeZid, got)
-	}
+	checkListZid(t, l, 0, id.DefaultHomeZid)
 }
 
 func TestGetZettelLinks(t *testing.T) {
@@ -245,8 +247,7 @@ func TestGetZettelLinks(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if zl.ID != id.DefaultHomeZid.String() {
-		t.Errorf("Expected an Zid %v, but got %v", id.DefaultHomeZid, zl.ID)
+	if !checkZid(t, id.DefaultHomeZid, zl.ID) {
 		return
 	}
 	if len(zl.Links.Incoming) != 0 {

@@ -57,6 +57,7 @@ type WebUI struct {
 	listTagsURL   string
 	withAuth      bool
 	loginURL      string
+	logoutURL     string
 	searchURL     string
 }
 
@@ -93,6 +94,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
 		withAuth:      authz.WithAuth(),
 		loginURL:      ab.NewURLBuilder('i').String(),
+		logoutURL:     ab.NewURLBuilder('j').String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
@@ -176,8 +178,8 @@ type baseData struct {
 	UserIsValid       bool
 	UserZettelURL     string
 	UserIdent         string
-	UserLogoutURL     string
 	LoginURL          string
+	LogoutURL         string
 	ListZettelURL     string
 	ListRolesURL      string
 	ListTagsURL       string
@@ -188,18 +190,14 @@ type baseData struct {
 	FooterHTML        string
 }
 
-func (wui *WebUI) makeBaseData(
-	ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
-	var (
-		userZettelURL string
-		userIdent     string
-		userLogoutURL string
-	)
+func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
+	var userZettelURL string
+	var userIdent string
+
 	userIsValid := user != nil
 	if userIsValid {
 		userZettelURL = wui.NewURLBuilder('h').SetZid(user.Zid).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
-		userLogoutURL = wui.NewURLBuilder('j').String()
 	}
 	newZettelLinks := wui.fetchNewTemplates(ctx, user)
 
@@ -213,8 +211,8 @@ func (wui *WebUI) makeBaseData(
 	data.UserIsValid = userIsValid
 	data.UserZettelURL = userZettelURL
 	data.UserIdent = userIdent
-	data.UserLogoutURL = userLogoutURL
 	data.LoginURL = wui.loginURL
+	data.LogoutURL = wui.logoutURL
 	data.ListZettelURL = wui.listZettelURL
 	data.ListRolesURL = wui.listRolesURL
 	data.ListTagsURL = wui.listTagsURL
