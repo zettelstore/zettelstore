@@ -78,7 +78,7 @@ func getOneEncoding(r *http.Request, key string) (string, bool) {
 }
 
 var mapCT2encoding = map[string]string{
-	"application/json": api.EncodingJSON,
+	"application/json": "json",
 	"text/html":        api.EncodingHTML,
 }
 

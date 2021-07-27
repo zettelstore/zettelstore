@@ -13,16 +13,15 @@ package api
 
 import "zettelstore.de/z/api"
 
-const plainText = "text/plain; charset=utf-8"
+const ctPlainText = "text/plain; charset=utf-8"
+const ctJSON = "application/json"
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
 	api.EncoderHTML:   "text/html; charset=utf-8",
-	api.EncoderNative: plainText,
-	api.EncoderJSON:   "application/json",
-	api.EncoderDJSON:  "application/json",
-	api.EncoderText:   plainText,
-	api.EncoderZmk:    plainText,
-	api.EncoderRaw:    plainText, // In some cases...
+	api.EncoderNative: ctPlainText,
+	api.EncoderDJSON:  ctJSON,
+	api.EncoderText:   ctPlainText,
+	api.EncoderZmk:    ctPlainText,
 }
 
 func encoding2ContentType(enc api.EncodingEnum) string {
@@ -45,11 +44,11 @@ var mapSyntax2CT = map[string]string{
 	"svg":      "image/svg+xml",
 	"xml":      "text/xml; charset=utf-8",
 	"zmk":      "text/x-zmk; charset=utf-8",
-	"plain":    plainText,
-	"text":     plainText,
+	"plain":    ctPlainText,
+	"text":     ctPlainText,
 	"markdown": "text/markdown; charset=utf-8",
 	"md":       "text/markdown; charset=utf-8",
-	"mustache": plainText,
+	"mustache": ctPlainText,
 	//"graphviz":      "text/vnd.graphviz; charset=utf-8",
 }
 

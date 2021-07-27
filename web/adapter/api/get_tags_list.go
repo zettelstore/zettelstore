@@ -12,12 +12,10 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -32,21 +30,15 @@ func (api *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc 
 			return
 		}
 
-		enc, encText := adapter.GetEncoding(r, r.URL.Query(), encoder.GetDefaultEncoding())
-		switch enc {
-		case zsapi.EncoderJSON:
-			w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-			tagMap := make(map[string][]string, len(tagData))
-			for tag, metaList := range tagData {
-				zidList := make([]string, 0, len(metaList))
-				for _, m := range metaList {
-					zidList = append(zidList, m.Zid.String())
-				}
-				tagMap[tag] = zidList
+		w.Header().Set(zsapi.HeaderContentType, ctJSON)
+		tagMap := make(map[string][]string, len(tagData))
+		for tag, metaList := range tagData {
+			zidList := make([]string, 0, len(metaList))
+			for _, m := range metaList {
+				zidList = append(zidList, m.Zid.String())
 			}
-			encodeJSONData(w, zsapi.TagListJSON{Tags: tagMap})
-		default:
-			adapter.BadRequest(w, fmt.Sprintf("Tags list not available in encoding %q", encText))
+			tagMap[tag] = zidList
 		}
+		encodeJSONData(w, zsapi.TagListJSON{Tags: tagMap})
 	}
 }

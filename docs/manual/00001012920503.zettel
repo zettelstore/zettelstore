@@ -3,10 +3,10 @@ title: DJSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210726193006
+modified: 20210727120128
 
 A zettel representation that allows to process the syntactic structure of a zettel.
-It is a JSON-based encoding format, but different to [[json|00001012920501]].
+It is a JSON-based encoding format, but different to the structures returned by [[endpoint|00001012920000]] ''/z/{ID}''.
 
 For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 

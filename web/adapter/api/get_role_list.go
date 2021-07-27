@@ -12,11 +12,9 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -30,14 +28,7 @@ func (api *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc 
 			return
 		}
 
-		enc, encText := adapter.GetEncoding(r, r.URL.Query(), encoder.GetDefaultEncoding())
-		switch enc {
-		case zsapi.EncoderJSON:
-			w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-			encodeJSONData(w, zsapi.RoleListJSON{Roles: roleList})
-		default:
-			adapter.BadRequest(w, fmt.Sprintf("Role list not available in encoding %q", encText))
-		}
-
+		w.Header().Set(zsapi.HeaderContentType, ctJSON)
+		encodeJSONData(w, zsapi.RoleListJSON{Roles: roleList})
 	}
 }

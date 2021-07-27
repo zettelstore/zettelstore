@@ -12,14 +12,9 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -34,54 +29,27 @@ func (api *API) MakeListMetaHandler(
 		ctx := r.Context()
 		q := r.URL.Query()
 		s := adapter.GetSearch(q, false)
-		enc, encText := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
-		part := getPart(q, partMeta)
-		if part == partUnknown {
-			adapter.BadRequest(w, "Unknown _part parameter")
-			return
-		}
-		ctx1 := ctx
-		if enc == zsapi.EncoderHTML || (!s.HasComputedMetaKey() && (part == partID || part == partContent)) {
-			ctx1 = box.NoEnrichContext(ctx1)
-		}
-		metaList, err := listMeta.Run(ctx1, s)
+		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-		switch enc {
-		case zsapi.EncoderHTML:
-			api.renderListMetaHTML(w, metaList)
-		case zsapi.EncoderJSON, zsapi.EncoderDJSON:
-			api.renderListMetaXJSON(ctx, w, metaList, enc, part, partMeta, getMeta, parseZettel)
-		case zsapi.EncoderNative, zsapi.EncoderRaw, zsapi.EncoderText, zsapi.EncoderZmk:
-			adapter.NotImplemented(w, fmt.Sprintf("Zettel list in encoding %q not yet implemented", encText))
-		default:
-			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in encoding %q", encText))
+		result := make([]zsapi.ZidMetaJSON, 0, len(metaList))
+		for _, m := range metaList {
+			result = append(result, zsapi.ZidMetaJSON{
+				ID:   m.Zid.String(),
+				URL:  api.NewURLBuilder('z').SetZid(m.Zid).String(),
+				Meta: m.Map(),
+			})
 		}
-	}
-}
 
-func (api *API) renderListMetaHTML(w http.ResponseWriter, metaList []*meta.Meta) {
-	env := encoder.Environment{Interactive: true}
-	buf := encoder.NewBufWriter(w)
-	buf.WriteStrings("<html lang=\"", api.rtConfig.GetDefaultLang(), "\">\n<body>\n<ul>\n")
-	for _, m := range metaList {
-		title := m.GetDefault(meta.KeyTitle, "")
-		htmlTitle, err := adapter.EncodeInlines(parser.ParseMetadata(title), zsapi.EncoderHTML, &env)
+		w.Header().Set(zsapi.HeaderContentType, ctJSON)
+		err = encodeJSONData(w, zsapi.ZettelListJSON{
+			List: result,
+		})
 		if err != nil {
-			adapter.InternalServerError(w, "Encode HTML inlines", err)
-			return
+			adapter.InternalServerError(w, "Write Zettel list JSON", err)
 		}
-		buf.WriteStrings(
-			"<li><a href=\"",
-			api.NewURLBuilder('v').SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, zsapi.EncodingHTML).String(),
-			"\">",
-			htmlTitle,
-			"</a></li>\n")
 	}
-	buf.WriteString("</ul>\n</body>\n</html>")
-	buf.Flush()
 }

@@ -3,7 +3,7 @@ title: API: Retrieve evaluated metadata and content of an existing zettel in var
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210726192415
+modified: 20210727120403
 
 The [[endpoint|00001012920000]] to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
@@ -15,8 +15,8 @@ If successful, the output is a JSON object:
 ```
 
 To select another encoding, you can provide a query parameter ''_enc=[[ENCODING|00001012920500]]''.
-The default encoding is ""[[json|00001012920501]]"".
-Others are ""[[djson|00001012920503]]"", ""[[html|00001012920510]]"", and some more.
+The default encoding is ""[[djson|00001012920503]]"".
+Others are ""[[html|00001012920510]]"", ""[[text|00001012920519]]"", and some more.
 ```sh
 # curl 'http://127.0.0.1:23123/v/00001012053500?_enc=html'
 <!DOCTYPE html>

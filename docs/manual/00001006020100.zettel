@@ -3,6 +3,7 @@ title: Supported Zettel Roles
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20210727120817
 
 The [[''role'' key|00001006020000#role]] defines what kind of zettel you are writing.
 The following values are used internally by Zettelstore and must exist:
@@ -35,4 +36,4 @@ If you adhere to the process outlined by Niklas Luhmann, a zettel could have one
 ; [!zettel]''zettel''
 : A real zettel that contains your own thoughts.
 
-However, you are free to define additional roles, e.g. ''material'' for literature that is web-based only, ''slide'' for presentation slides, ''paper'' for the raw text of a scientific paper, ''project'' to define a project, ...
+However, you are free to define additional roles, e.g. ''material'' for literature that is web-based only, ''slide'' for presentation slides, ''paper'' for the text of a scientific paper, ''project'' to define a project, ...

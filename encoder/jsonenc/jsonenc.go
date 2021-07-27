@@ -13,49 +13,9 @@ package jsonenc
 
 import (
 	"bytes"
-	"io"
 
-	"zettelstore.de/z/api"
-	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 )
-
-func init() {
-	encoder.Register(api.EncoderJSON, encoder.Info{
-		Create:  func(*encoder.Environment) encoder.Encoder { return &jsonEncoder{} },
-		Default: true,
-	})
-}
-
-// jsonEncoder is just a stub. It is not implemented. The real implementation
-// is in file web/adapter/json.go
-type jsonEncoder struct{}
-
-// WriteZettel writes the encoded zettel to the writer.
-func (je *jsonEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
-	return 0, encoder.ErrNoWriteZettel
-}
-
-// WriteMeta encodes meta data as HTML5.
-func (je *jsonEncoder) WriteMeta(w io.Writer, meta *meta.Meta) (int, error) {
-	return 0, encoder.ErrNoWriteMeta
-}
-
-func (je *jsonEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return 0, encoder.ErrNoWriteContent
-}
-
-// WriteBlocks writes a block slice to the writer
-func (je *jsonEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
-	return 0, encoder.ErrNoWriteBlocks
-}
-
-// WriteInlines writes an inline slice to the writer
-func (je *jsonEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
-	return 0, encoder.ErrNoWriteInlines
-}
 
 var (
 	jsBackslash   = []byte{'\\', '\\'}

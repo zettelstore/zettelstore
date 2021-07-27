@@ -85,9 +85,8 @@ func GetDefaultEncoding() api.EncodingEnum {
 	if defEncoding != api.EncoderUnknown {
 		return defEncoding
 	}
-	if _, ok := registry[api.EncoderJSON]; ok {
-		return api.EncoderJSON
+	if _, ok := registry[api.EncoderDJSON]; ok {
+		return api.EncoderDJSON
 	}
-	log.Fatalf("No default encoding given")
-	return api.EncoderUnknown
+	panic("No default encoding given")
 }

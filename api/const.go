@@ -43,9 +43,7 @@ const (
 const (
 	EncodingDJSON  = "djson"
 	EncodingHTML   = "html"
-	EncodingJSON   = "json"
 	EncodingNative = "native"
-	EncodingRaw    = "raw"
 	EncodingText   = "text"
 	EncodingZMK    = "zmk"
 )
@@ -53,9 +51,7 @@ const (
 var mapEncodingEnum = map[string]EncodingEnum{
 	EncodingDJSON:  EncoderDJSON,
 	EncodingHTML:   EncoderHTML,
-	EncodingJSON:   EncoderJSON,
 	EncodingNative: EncoderNative,
-	EncodingRaw:    EncoderRaw,
 	EncodingText:   EncoderText,
 	EncodingZMK:    EncoderZmk,
 }
@@ -83,9 +79,7 @@ const (
 	EncoderUnknown EncodingEnum = iota
 	EncoderDJSON
 	EncoderHTML
-	EncoderJSON
 	EncoderNative
-	EncoderRaw
 	EncoderText
 	EncoderZmk
 )

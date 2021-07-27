@@ -53,7 +53,7 @@ func (api *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFu
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(zsapi.EncoderJSON))
+		w.Header().Set(zsapi.HeaderContentType, ctJSON)
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, zsapi.ZettelJSON{
 			ID:       zid.String(),
@@ -80,7 +80,7 @@ func (api *API) writeRawZettel(w http.ResponseWriter, z domain.Zettel, part part
 			_, err = z.Content.Write(w)
 		}
 	case partMeta:
-		w.Header().Set(zsapi.HeaderContentType, plainText)
+		w.Header().Set(zsapi.HeaderContentType, ctPlainText)
 		_, err = z.Meta.Write(w, false)
 	case partContent:
 		if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, api.rtConfig)); ok {

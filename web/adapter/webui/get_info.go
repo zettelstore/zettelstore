@@ -36,13 +36,9 @@ type metaDataInfo struct {
 	Value string
 }
 
-type matrixElement struct {
-	Text   string
-	HasURL bool
-	URL    string
-}
 type matrixLine struct {
-	Elements []matrixElement
+	Header   string
+	Elements []simpleLink
 }
 
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
@@ -187,18 +183,26 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid) []matrixLine {
 	matrix := make([]matrixLine, 0, len(parts))
 	u := wui.NewURLBuilder('v').SetZid(zid)
 	for _, part := range parts {
-		row := make([]matrixElement, 0, len(encTexts)+1)
-		row = append(row, matrixElement{part, false, ""})
+		row := make([]simpleLink, 0, len(encTexts)+2) // +2, because we later append Raw&JSON
 		for _, enc := range encTexts {
 			u.AppendQuery(api.QueryKeyPart, part)
 			if enc != defEncoding {
 				u.AppendQuery(api.QueryKeyEncoding, enc)
 			}
-			row = append(row, matrixElement{enc, true, u.String()})
+			row = append(row, simpleLink{enc, u.String()})
 			u.ClearQuery()
 		}
-		matrix = append(matrix, matrixLine{row})
+		matrix = append(matrix, matrixLine{part, row})
 	}
+
+	// Append JSON and Raw format
+	u = wui.NewURLBuilder('z').SetZid(zid)
+	for i, part := range parts {
+		u.AppendQuery(api.QueryKeyRaw, "").AppendQuery(api.QueryKeyPart, part)
+		matrix[i].Elements = append(matrix[i].Elements, simpleLink{api.QueryKeyRaw, u.String()})
+		u.ClearQuery()
+	}
+	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"JSON", u.String()})
 	return matrix
 }
 

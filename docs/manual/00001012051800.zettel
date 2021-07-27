@@ -3,14 +3,13 @@ title: API: Shape the list of zettel metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210721120658
+modified: 20210727120724
 
 In most cases, it is not essential to list //all// zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.
 This is done by adding some query parameters to the general ''GET /z'' request.
 
 * [[Select|00001012051810]] just some zettel, based on metadata.
-* You can specify which [[parts of a zettel|00001012051820]] must be returned.
 * Only a specific amount of zettel will be selected by specifying [[a length and/or an offset|00001012051830]].
 * [[Searching for specific content|00001012051840]], not just the metadata, is another way of selecting some zettel.
 * The resulting list can be [[sorted|00001012052000]] according to various criteria.

@@ -35,7 +35,8 @@
 <table>
 {{#Matrix}}
 <tr>
-{{#Elements}}{{#HasURL}}<td><a href="{{{URL}}}">{{Text}}</td>{{/HasURL}}{{^HasURL}}<th>{{Text}}</th>{{/HasURL}}
+<th>{{Header}}</th>
+{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</td>
 {{/Elements}}
 </tr>
 {{/Matrix}}

@@ -179,7 +179,7 @@ func encodeZettelData(buf *bytes.Buffer, data *api.ZettelDataJSON) error {
 }
 
 // ListZettel returns a list of all Zettel.
-func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZettelJSON, error) {
+func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZidMetaJSON, error) {
 	ub := c.jsonZettelURLBuilder(query)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
