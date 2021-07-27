@@ -16,14 +16,24 @@ import (
 	"regexp"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/web/server"
 )
 
 type (
-	methodHandler map[string]http.Handler
-	routingTable  map[byte]methodHandler
+	methodHandler [server.MethodLAST]http.Handler
+	routingTable  [256]*methodHandler
 )
+
+var mapMethod = map[string]server.Method{
+	http.MethodHead:   server.MethodHead,
+	http.MethodGet:    server.MethodGet,
+	http.MethodPost:   server.MethodPost,
+	http.MethodPut:    server.MethodPut,
+	http.MethodDelete: server.MethodDelete,
+	api.MethodMove:    server.MethodMove,
+}
 
 // httpRouter handles all routing for zettelstore.
 type httpRouter struct {
@@ -46,11 +56,9 @@ func (rt *httpRouter) initializeRouter(urlPrefix string, auth auth.TokenManager)
 	rt.maxKey = 0
 	rt.reURL = regexp.MustCompile("^$")
 	rt.mux = http.NewServeMux()
-	rt.listTable = make(routingTable)
-	rt.zettelTable = make(routingTable)
 }
 
-func (rt *httpRouter) addRoute(key byte, httpMethod string, handler http.Handler, table routingTable) {
+func (rt *httpRouter) addRoute(key byte, method server.Method, handler http.Handler, table *routingTable) {
 	// Set minKey and maxKey; re-calculate regexp.
 	if key < rt.minKey || rt.maxKey < key {
 		if key < rt.minKey {
@@ -63,27 +71,27 @@ func (rt *httpRouter) addRoute(key byte, httpMethod string, handler http.Handler
 			"^/(?:([" + string(rt.minKey) + "-" + string(rt.maxKey) + "])(?:/(?:([0-9]{14})/?)?)?)$")
 	}
 
-	mh, hasKey := table[key]
-	if !hasKey {
-		mh = make(methodHandler)
+	mh := table[key]
+	if mh == nil {
+		mh = new(methodHandler)
 		table[key] = mh
 	}
-	mh[httpMethod] = handler
-	if httpMethod == http.MethodGet {
-		if _, hasHead := table[key][http.MethodHead]; !hasHead {
-			table[key][http.MethodHead] = handler
+	mh[method] = handler
+	if method == server.MethodGet {
+		if handler := mh[server.MethodHead]; handler == nil {
+			mh[server.MethodHead] = handler
 		}
 	}
 }
 
 // addListRoute adds a route for the given key and HTTP method to work with a list.
-func (rt *httpRouter) addListRoute(key byte, httpMethod string, handler http.Handler) {
-	rt.addRoute(key, httpMethod, handler, rt.listTable)
+func (rt *httpRouter) addListRoute(key byte, method server.Method, handler http.Handler) {
+	rt.addRoute(key, method, handler, &rt.listTable)
 }
 
 // addZettelRoute adds a route for the given key and HTTP method to work with a zettel.
-func (rt *httpRouter) addZettelRoute(key byte, httpMethod string, handler http.Handler) {
-	rt.addRoute(key, httpMethod, handler, rt.zettelTable)
+func (rt *httpRouter) addZettelRoute(key byte, method server.Method, handler http.Handler) {
+	rt.addRoute(key, method, handler, &rt.zettelTable)
 }
 
 // Handle registers the handler for the given pattern. If a handler already exists for pattern, Handle panics.
@@ -106,12 +114,15 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key := match[1][0]
-	table := rt.zettelTable
+	var mh *methodHandler
 	if match[2] == "" {
-		table = rt.listTable
+		mh = rt.listTable[key]
+	} else {
+		mh = rt.zettelTable[key]
 	}
-	if mh, ok := table[key]; ok {
-		if handler, ok := mh[r.Method]; ok {
+	method, ok := mapMethod[r.Method]
+	if ok && mh != nil {
+		if handler := mh[method]; handler != nil {
 			r.URL.Path = "/" + match[2]
 			handler.ServeHTTP(w, rt.addUserContext(r))
 			return

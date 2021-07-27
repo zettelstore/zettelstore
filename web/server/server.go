@@ -26,11 +26,25 @@ type UserRetriever interface {
 	GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error)
 }
 
+// Method enumerates the allowed HTTP methods.
+type Method uint8
+
+// Values for method type
+const (
+	MethodGet Method = iota
+	MethodHead
+	MethodPost
+	MethodPut
+	MethodMove
+	MethodDelete
+	MethodLAST // must always be the last one
+)
+
 // Router allows to state routes for various URL paths.
 type Router interface {
 	Handle(pattern string, handler http.Handler)
-	AddListRoute(key byte, httpMethod string, handler http.Handler)
-	AddZettelRoute(key byte, httpMethod string, handler http.Handler)
+	AddListRoute(key byte, method Method, handler http.Handler)
+	AddZettelRoute(key byte, method Method, handler http.Handler)
 	SetUserRetriever(ur UserRetriever)
 }
 

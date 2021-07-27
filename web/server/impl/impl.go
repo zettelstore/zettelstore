@@ -43,11 +43,11 @@ func New(listenAddr, urlPrefix string, persistentCookie, secureCookie bool, auth
 func (srv *myServer) Handle(pattern string, handler http.Handler) {
 	srv.router.Handle(pattern, handler)
 }
-func (srv *myServer) AddListRoute(key byte, httpMethod string, handler http.Handler) {
-	srv.router.addListRoute(key, httpMethod, handler)
+func (srv *myServer) AddListRoute(key byte, method server.Method, handler http.Handler) {
+	srv.router.addListRoute(key, method, handler)
 }
-func (srv *myServer) AddZettelRoute(key byte, httpMethod string, handler http.Handler) {
-	srv.router.addZettelRoute(key, httpMethod, handler)
+func (srv *myServer) AddZettelRoute(key byte, method server.Method, handler http.Handler) {
+	srv.router.addZettelRoute(key, method, handler)
 }
 func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
 	srv.router.ur = ur
