@@ -41,12 +41,14 @@ func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 		m.GetDefault(meta.KeySyntax, meta.ValueSyntaxZmk),
 		nil,
 	)
-	encdr := encoder.Create(api.Encoder(enc), &encoder.Environment{Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN)})
+	encdr := encoder.Create(api.Encoder(enc), &encoder.Environment{
+		Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN),
+	})
 	if encdr == nil {
-		fmt.Fprintf(os.Stderr, "Unknown encoder %q\n", enc)
+		fmt.Fprintf(os.Stderr, "Unknown format %q\n", enc)
 		return 2, nil
 	}
-	_, err = encdr.WriteZettel(os.Stdout, z, enc != "raw")
+	_, err = encdr.WriteZettel(os.Stdout, z)
 	if err != nil {
 		return 2, err
 	}

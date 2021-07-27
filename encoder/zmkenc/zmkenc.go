@@ -31,14 +31,9 @@ func init() {
 type zmkEncoder struct{}
 
 // WriteZettel writes the encoded zettel to the writer.
-func (ze *zmkEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w, ze)
-	if inhMeta {
-		zn.InhMeta.WriteAsHeader(&v.b, true)
-	} else {
-		zn.Meta.WriteAsHeader(&v.b, true)
-	}
+	zn.InhMeta.WriteAsHeader(&v.b, true)
 	ast.WalkBlockSlice(v, zn.Ast)
 	length, err := v.b.Flush()
 	return length, err

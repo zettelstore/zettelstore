@@ -36,17 +36,12 @@ type nativeEncoder struct {
 }
 
 // WriteZettel encodes the zettel to the writer.
-func (ne *nativeEncoder) WriteZettel(
-	w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w, ne)
 	v.b.WriteString("[Title ")
 	v.walkInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
 	v.b.WriteByte(']')
-	if inhMeta {
-		v.acceptMeta(zn.InhMeta, false)
-	} else {
-		v.acceptMeta(zn.Meta, false)
-	}
+	v.acceptMeta(zn.InhMeta, false)
 	v.b.WriteByte('\n')
 	v.walkBlockSlice(zn.Ast)
 	length, err := v.b.Flush()

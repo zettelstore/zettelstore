@@ -94,7 +94,6 @@ func (e EncodingEnum) String() string {
 
 // Supported part values.
 const (
-	PartID      = "id"
 	PartMeta    = "meta"
 	PartContent = "content"
 	PartZettel  = "zettel"

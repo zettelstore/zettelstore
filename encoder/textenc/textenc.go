@@ -30,13 +30,9 @@ func init() {
 type textEncoder struct{}
 
 // WriteZettel writes metadata and content.
-func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w)
-	if inhMeta {
-		te.WriteMeta(&v.b, zn.InhMeta)
-	} else {
-		te.WriteMeta(&v.b, zn.Meta)
-	}
+	te.WriteMeta(&v.b, zn.InhMeta)
 	v.acceptBlockSlice(zn.Ast)
 	length, err := v.b.Flush()
 	return length, err

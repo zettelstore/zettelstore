@@ -12,12 +12,10 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -45,19 +43,6 @@ func (api *API) MakeGetEvalZettelHandler(parseZettel usecase.ParseZettel, getMet
 		}
 
 		part := getPart(q, partZettel)
-		if part == partUnknown {
-			adapter.BadRequest(w, "Unknown _part parameter")
-			return
-		}
-		if enc == zsapi.EncoderDJSON {
-			w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-			err = api.getWriteMetaZettelFunc(ctx, part, partZettel, getMeta)(w, zn)
-			if err != nil {
-				adapter.InternalServerError(w, "Write DJSON", err)
-			}
-			return
-		}
-
 		env := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, api, 'v', getMeta, part.DefString(partZettel), enc),
 			ImageAdapter:   adapter.MakeImageAdapter(ctx, api, getMeta),
@@ -68,46 +53,22 @@ func (api *API) MakeGetEvalZettelHandler(parseZettel usecase.ParseZettel, getMet
 			NewWindow:      false,
 			IgnoreMeta:     map[string]bool{meta.KeyLang: true},
 		}
+		encdr := encoder.Create(enc, &env)
+		if encdr == nil {
+			adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zid.String(), enc))
+			return
+		}
+		w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
 		switch part {
 		case partZettel:
-			err = writeZettelPartZettel(w, zn, enc, env)
+			_, err = encdr.WriteZettel(w, zn)
 		case partMeta:
-			err = writeZettelPartMeta(w, zn, enc)
+			_, err = encdr.WriteMeta(w, zn.InhMeta)
 		case partContent:
-			err = api.writeZettelPartContent(w, zn, enc, env)
+			_, err = encdr.WriteContent(w, zn)
 		}
 		if err != nil {
-			if errors.Is(err, adapter.ErrNoSuchEncoding) {
-				adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zid.String(), enc))
-				return
-			}
-			adapter.InternalServerError(w, "Get zettel", err)
+			adapter.InternalServerError(w, "Get evaluated zettel", err)
 		}
 	}
-}
-
-func writeZettelPartZettel(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum, env encoder.Environment) error {
-	encdr := encoder.Create(enc, &env)
-	if encdr == nil {
-		return adapter.ErrNoSuchEncoding
-	}
-	inhMeta := false
-	w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-	inhMeta = true
-	_, err := encdr.WriteZettel(w, zn, inhMeta)
-	return err
-}
-
-func writeZettelPartMeta(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum) error {
-	w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-	if encdr := encoder.Create(enc, nil); encdr != nil {
-		_, err := encdr.WriteMeta(w, zn.InhMeta)
-		return err
-	}
-	return adapter.ErrNoSuchEncoding
-}
-
-func (api *API) writeZettelPartContent(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum, env encoder.Environment) error {
-	w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-	return writeContent(w, zn, enc, &env)
 }

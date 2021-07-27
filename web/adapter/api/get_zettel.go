@@ -45,11 +45,7 @@ func (api *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFu
 		}
 
 		if isRaw {
-			part := getPart(q, partContent)
-			if part == partUnknown {
-				part = partContent
-			}
-			api.writeRawZettel(w, z, part)
+			api.writeRawZettel(w, z, getPart(q, partContent))
 			return
 		}
 

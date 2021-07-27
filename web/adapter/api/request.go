@@ -20,43 +20,33 @@ import (
 type partType int
 
 const (
-	partUnknown partType = iota
-	partID
+	_ partType = iota
 	partMeta
 	partContent
 	partZettel
 )
 
 var partMap = map[string]partType{
-	api.PartID:      partID,
 	api.PartMeta:    partMeta,
 	api.PartContent: partContent,
 	api.PartZettel:  partZettel,
 }
 
 func getPart(q url.Values, defPart partType) partType {
-	p := q.Get(api.QueryKeyPart)
-	if p == "" {
-		return defPart
-	}
-	if part, ok := partMap[p]; ok {
+	if part, ok := partMap[q.Get(api.QueryKeyPart)]; ok {
 		return part
 	}
-	return partUnknown
+	return defPart
 }
 
 func (p partType) String() string {
 	switch p {
-	case partID:
-		return "id"
 	case partMeta:
 		return "meta"
 	case partContent:
 		return "content"
 	case partZettel:
 		return "zettel"
-	case partUnknown:
-		return "unknown"
 	}
 	return ""
 }

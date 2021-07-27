@@ -24,7 +24,7 @@ import (
 
 // Encoder is an interface that allows to encode different parts of a zettel.
 type Encoder interface {
-	WriteZettel(io.Writer, *ast.ZettelNode, bool) (int, error)
+	WriteZettel(io.Writer, *ast.ZettelNode) (int, error)
 	WriteMeta(io.Writer, *meta.Meta) (int, error)
 	WriteContent(io.Writer, *ast.ZettelNode) (int, error)
 	WriteBlocks(io.Writer, ast.BlockSlice) (int, error)

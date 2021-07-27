@@ -35,15 +35,11 @@ type jsonDetailEncoder struct {
 }
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"meta\":{\"title\":")
 	v.walkInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
-	if inhMeta {
-		v.writeMeta(zn.InhMeta)
-	} else {
-		v.writeMeta(zn.Meta)
-	}
+	v.writeMeta(zn.InhMeta)
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
 	v.walkBlockSlice(zn.Ast)

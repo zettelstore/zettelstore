@@ -3,7 +3,7 @@ title: Values to specify zettel parts
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210727115950
+modified: 20210727125306
 
 When working with [[zettel|00001006000000]], you could work with the whole zettel, with its metadata, or with its content:
 ; [!zettel]''zettel''
@@ -15,6 +15,3 @@ When working with [[zettel|00001006000000]], you could work with the whole zette
 ; [!content]''content''
 : Specifies that you are only interested in the zettel content.
   Contains identifier and content of a zettel.
-; [!id]''id''
-: States that you just want the zettel identifier and the URL of the zettel.
-  Only valid for [[DJSON encoding|00001012920503]].

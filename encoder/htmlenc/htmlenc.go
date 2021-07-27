@@ -34,7 +34,7 @@ type htmlEncoder struct {
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool) (int, error) {
+func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(he, w)
 	if !he.env.IsXHTML() {
 		v.b.WriteString("<!DOCTYPE html>\n")
@@ -46,11 +46,7 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, inhMeta bool
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
 	v.b.WriteStrings("<title>", encfun.MetaAsText(zn.InhMeta, meta.KeyTitle), "</title>")
-	if inhMeta {
-		v.acceptMeta(zn.InhMeta)
-	} else {
-		v.acceptMeta(zn.Meta)
-	}
+	v.acceptMeta(zn.InhMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
 	ast.WalkBlockSlice(v, zn.Ast)
 	v.writeEndnotes()
