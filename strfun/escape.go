@@ -79,3 +79,48 @@ func HTMLAttrEscape(w io.Writer, s string) {
 	}
 	io.WriteString(w, s[last:])
 }
+
+var (
+	jsBackslash   = []byte{'\\', '\\'}
+	jsDoubleQuote = []byte{'\\', '"'}
+	jsNewline     = []byte{'\\', 'n'}
+	jsTab         = []byte{'\\', 't'}
+	jsCr          = []byte{'\\', 'r'}
+	jsUnicode     = []byte{'\\', 'u', '0', '0', '0', '0'}
+	jsHex         = []byte("0123456789ABCDEF")
+)
+
+// JSONEscape returns the given string as a byte slice, where every non-printable
+// rune is made printable.
+func JSONEscape(w io.Writer, s string) {
+	last := 0
+	for i, ch := range s {
+		var b []byte
+		switch ch {
+		case '\t':
+			b = jsTab
+		case '\r':
+			b = jsCr
+		case '\n':
+			b = jsNewline
+		case '"':
+			b = jsDoubleQuote
+		case '\\':
+			b = jsBackslash
+		default:
+			if ch < ' ' {
+				b = jsUnicode
+				b[2] = '0'
+				b[3] = '0'
+				b[4] = jsHex[ch>>4]
+				b[5] = jsHex[ch&0xF]
+			} else {
+				continue
+			}
+		}
+		io.WriteString(w, s[last:i])
+		w.Write(b)
+		last = i + 1
+	}
+	io.WriteString(w, s[last:])
+}

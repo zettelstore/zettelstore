@@ -38,14 +38,6 @@ func init() {
 
 type constHeader map[string]string
 
-func makeMeta(zid id.Zid, h constHeader) *meta.Meta {
-	m := meta.New(zid)
-	for k, v := range h {
-		m.Set(k, v)
-	}
-	return m
-}
-
 type constZettel struct {
 	header  constHeader
 	content domain.Content
@@ -69,14 +61,14 @@ func (cp *constBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 
 func (cp *constBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	if z, ok := cp.zettel[zid]; ok {
-		return domain.Zettel{Meta: makeMeta(zid, z.header), Content: z.content}, nil
+		return domain.Zettel{Meta: meta.NewWithData(zid, z.header), Content: z.content}, nil
 	}
 	return domain.Zettel{}, box.ErrNotFound
 }
 
 func (cp *constBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	if z, ok := cp.zettel[zid]; ok {
-		return makeMeta(zid, z.header), nil
+		return meta.NewWithData(zid, z.header), nil
 	}
 	return nil, box.ErrNotFound
 }
@@ -91,7 +83,7 @@ func (cp *constBox) FetchZids(ctx context.Context) (id.Set, error) {
 
 func (cp *constBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
 	for zid, zettel := range cp.zettel {
-		m := makeMeta(zid, zettel.header)
+		m := meta.NewWithData(zid, zettel.header)
 		cp.enricher.Enrich(ctx, m, cp.number)
 		if match(m) {
 			res = append(res, m)

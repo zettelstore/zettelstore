@@ -33,8 +33,8 @@ import (
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/box/dirbox"
+	_ "zettelstore.de/z/encoder/djsonenc"
 	_ "zettelstore.de/z/encoder/htmlenc"
-	_ "zettelstore.de/z/encoder/jsonenc"
 	_ "zettelstore.de/z/encoder/nativeenc"
 	_ "zettelstore.de/z/encoder/textenc"
 	_ "zettelstore.de/z/encoder/zmkenc"

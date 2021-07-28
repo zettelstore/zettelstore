@@ -15,7 +15,6 @@ import (
 	"context"
 	"net/http"
 
-	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
@@ -33,15 +32,11 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), "Login", nil, &base)
 	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
-		Title    string
-		Retry    bool
-		EncKey   string
-		EncValue string
+		Title string
+		Retry bool
 	}{
-		Title:    base.Title,
-		Retry:    retry,
-		EncKey:   api.QueryKeyEncoding,
-		EncValue: api.EncodingHTML,
+		Title: base.Title,
+		Retry: retry,
 	})
 }
 

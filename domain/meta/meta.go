@@ -182,9 +182,18 @@ type Meta struct {
 	YamlSep bool
 }
 
-// New creates a new chunk for storing meta-data
+// New creates a new chunk for storing metadata.
 func New(zid id.Zid) *Meta {
 	return &Meta{Zid: zid, pairs: make(map[string]string, 5)}
+}
+
+// NewWithData creates metadata object with given data.
+func NewWithData(zid id.Zid, data map[string]string) *Meta {
+	copy := make(map[string]string, len(data))
+	for k, v := range data {
+		copy[k] = v
+	}
+	return &Meta{Zid: zid, pairs: copy}
 }
 
 // Clone returns a new copy of the metadata.

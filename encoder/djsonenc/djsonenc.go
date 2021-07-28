@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/encfun"
+	"zettelstore.de/z/strfun"
 )
 
 func init() {
@@ -437,9 +438,9 @@ func (v *detailVisitor) visitAttributes(a *ast.Attributes) {
 		if i > 0 {
 			v.b.WriteString("\",\"")
 		}
-		v.b.Write(Escape(k))
+		strfun.JSONEscape(&v.b, k)
 		v.b.WriteString("\":\"")
-		v.b.Write(Escape(a.Attrs[k]))
+		strfun.JSONEscape(&v.b, a.Attrs[k])
 	}
 	v.b.WriteString("\"}")
 }
@@ -478,14 +479,12 @@ func (v *detailVisitor) writeMeta(m *meta.Meta) {
 			continue
 		}
 		v.b.WriteString(",\"")
-		v.b.Write(Escape(p.Key))
+		strfun.JSONEscape(&v.b, p.Key)
 		v.b.WriteString("\":")
 		if m.Type(p.Key).IsSet {
 			v.writeSetValue(p.Value)
 		} else {
-			v.b.WriteByte('"')
-			v.b.Write(Escape(p.Value))
-			v.b.WriteByte('"')
+			writeEscaped(&v.b, p.Value)
 		}
 	}
 }
@@ -494,9 +493,7 @@ func (v *detailVisitor) writeSetValue(value string) {
 	v.b.WriteByte('[')
 	for i, val := range meta.ListFromValue(value) {
 		v.writeComma(i)
-		v.b.WriteByte('"')
-		v.b.Write(Escape(val))
-		v.b.WriteByte('"')
+		writeEscaped(&v.b, val)
 	}
 	v.b.WriteByte(']')
 }
@@ -505,4 +502,10 @@ func (v *detailVisitor) writeComma(pos int) {
 	if pos > 0 {
 		v.b.WriteByte(',')
 	}
+}
+
+func writeEscaped(b *encoder.BufWriter, s string) {
+	b.WriteByte('"')
+	strfun.JSONEscape(b, s)
+	b.WriteByte('"')
 }
