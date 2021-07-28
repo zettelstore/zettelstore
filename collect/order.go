@@ -49,7 +49,7 @@ func firstInlineZettelReference(ins ast.InlineSlice) (result *ast.Reference) {
 				return ref
 			}
 			result = firstInlineZettelReference(in.Inlines)
-		case *ast.ImageNode:
+		case *ast.EmbedNode:
 			result = firstInlineZettelReference(in.Inlines)
 		case *ast.CiteNode:
 			result = firstInlineZettelReference(in.Inlines)

@@ -79,7 +79,7 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 		pp.visitTableRows(n, width)
 	case *ast.LinkNode:
 		n.Inlines = pp.processInlineSlice(n.Inlines)
-	case *ast.ImageNode:
+	case *ast.EmbedNode:
 		n.Inlines = pp.processInlineSlice(n.Inlines)
 	case *ast.CiteNode:
 		n.Inlines = pp.processInlineSlice(n.Inlines)

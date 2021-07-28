@@ -105,34 +105,34 @@ func MakeLinkAdapter(
 	}
 }
 
-// MakeImageAdapter creates an adapter to change an image node during encoding.
-func MakeImageAdapter(ctx context.Context, b server.Builder, getMeta usecase.GetMeta) func(*ast.ImageNode) ast.InlineNode {
-	return func(origImage *ast.ImageNode) ast.InlineNode {
-		if origImage.Ref == nil {
-			return origImage
+// MakeEmbedAdapter creates an adapter to change an embed node during encoding.
+func MakeEmbedAdapter(ctx context.Context, b server.Builder, getMeta usecase.GetMeta) func(*ast.EmbedNode) ast.InlineNode {
+	return func(origEmbed *ast.EmbedNode) ast.InlineNode {
+		if origEmbed.Ref == nil {
+			return origEmbed
 		}
-		switch origImage.Ref.State {
+		switch origEmbed.Ref.State {
 		case ast.RefStateInvalid:
-			return createZettelImage(b, origImage, id.EmojiZid, ast.RefStateInvalid)
+			return createZettelEmbed(b, origEmbed, id.EmojiZid, ast.RefStateInvalid)
 		case ast.RefStateZettel:
-			zid, err := id.Parse(origImage.Ref.Value)
+			zid, err := id.Parse(origEmbed.Ref.Value)
 			if err != nil {
 				panic(err)
 			}
 			_, err = getMeta.Run(box.NoEnrichContext(ctx), zid)
 			if err != nil {
-				return createZettelImage(b, origImage, id.EmojiZid, ast.RefStateBroken)
+				return createZettelEmbed(b, origEmbed, id.EmojiZid, ast.RefStateBroken)
 			}
-			return createZettelImage(b, origImage, zid, ast.RefStateFound)
+			return createZettelEmbed(b, origEmbed, zid, ast.RefStateFound)
 		}
-		return origImage
+		return origEmbed
 	}
 }
 
-func createZettelImage(b server.Builder, origImage *ast.ImageNode, zid id.Zid, state ast.RefState) *ast.ImageNode {
-	newImage := *origImage
-	newImage.Ref = ast.ParseReference(
+func createZettelEmbed(b server.Builder, origEmbed *ast.EmbedNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
+	newEmbed := *origEmbed
+	newEmbed.Ref = ast.ParseReference(
 		b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
-	newImage.Ref.State = state
-	return &newImage
+	newEmbed.Ref.State = state
+	return &newEmbed
 }

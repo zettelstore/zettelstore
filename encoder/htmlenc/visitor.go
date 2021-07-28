@@ -90,8 +90,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBreak(n)
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.ImageNode:
-		v.visitImage(n)
+	case *ast.EmbedNode:
+		v.visitEmbed(n)
 	case *ast.CiteNode:
 		v.visitCite(n)
 	case *ast.FootnoteNode:

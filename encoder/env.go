@@ -18,7 +18,7 @@ import "zettelstore.de/z/ast"
 type Environment struct {
 	// Important for many encoder.
 	LinkAdapter  func(*ast.LinkNode) ast.InlineNode
-	ImageAdapter func(*ast.ImageNode) ast.InlineNode
+	EmbedAdapter func(*ast.EmbedNode) ast.InlineNode
 	CiteAdapter  func(*ast.CiteNode) ast.InlineNode
 
 	// Important for HTML encoder
@@ -46,16 +46,16 @@ func (env *Environment) AdaptLink(ln *ast.LinkNode) (*ast.LinkNode, ast.InlineNo
 	return nil, n
 }
 
-// AdaptImage helps to call the link adapter.
-func (env *Environment) AdaptImage(in *ast.ImageNode) (*ast.ImageNode, ast.InlineNode) {
-	if env == nil || env.ImageAdapter == nil {
-		return in, nil
+// AdaptEmbed helps to call the link adapter.
+func (env *Environment) AdaptEmbed(en *ast.EmbedNode) (*ast.EmbedNode, ast.InlineNode) {
+	if env == nil || env.EmbedAdapter == nil {
+		return en, nil
 	}
-	n := env.ImageAdapter(in)
+	n := env.EmbedAdapter(en)
 	if n == nil {
-		return in, nil
+		return en, nil
 	}
-	if in2, ok := n.(*ast.ImageNode); ok {
+	if in2, ok := n.(*ast.EmbedNode); ok {
 		return in2, nil
 	}
 	return nil, n

@@ -116,8 +116,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBreak(n)
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.ImageNode:
-		v.visitImage(n)
+	case *ast.EmbedNode:
+		v.visitEmbed(n)
 	case *ast.CiteNode:
 		v.visitCite(n)
 	case *ast.FootnoteNode:
@@ -323,14 +323,14 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteStrings(ln.Ref.String(), "]]")
 }
 
-func (v *visitor) visitImage(in *ast.ImageNode) {
-	if in.Ref != nil {
+func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+	if en.Ref != nil {
 		v.b.WriteString("{{")
-		if len(in.Inlines) > 0 {
-			ast.WalkInlineSlice(v, in.Inlines)
+		if len(en.Inlines) > 0 {
+			ast.WalkInlineSlice(v, en.Inlines)
 			v.b.WriteByte('|')
 		}
-		v.b.WriteStrings(in.Ref.String(), "}}")
+		v.b.WriteStrings(en.Ref.String(), "}}")
 	}
 }
 

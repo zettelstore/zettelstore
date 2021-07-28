@@ -143,8 +143,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.ImageNode:
-		v.visitImage(n)
+	case *ast.EmbedNode:
+		v.visitEmbed(n)
 	case *ast.CiteNode:
 		v.b.WriteString("Cite")
 		v.visitAttributes(n.Attrs)
@@ -431,30 +431,30 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteByte(']')
 }
 
-func (v *visitor) visitImage(in *ast.ImageNode) {
-	in, n := v.env.AdaptImage(in)
+func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+	en, n := v.env.AdaptEmbed(en)
 	if n != nil {
 		ast.Walk(v, n)
 		return
 	}
-	v.b.WriteString("Image")
-	v.visitAttributes(in.Attrs)
-	if in.Ref == nil {
-		v.b.WriteStrings(" {\"", in.Syntax, "\" \"")
-		switch in.Syntax {
+	v.b.WriteString("Embed")
+	v.visitAttributes(en.Attrs)
+	if en.Ref == nil {
+		v.b.WriteStrings(" {\"", en.Syntax, "\" \"")
+		switch en.Syntax {
 		case "svg":
-			v.writeEscaped(string(in.Blob))
+			v.writeEscaped(string(en.Blob))
 		default:
 			v.b.WriteString("\" \"")
-			v.b.WriteBase64(in.Blob)
+			v.b.WriteBase64(en.Blob)
 		}
 		v.b.WriteString("\"}")
 	} else {
-		v.b.WriteStrings(" \"", in.Ref.String(), "\"")
+		v.b.WriteStrings(" \"", en.Ref.String(), "\"")
 	}
-	if len(in.Inlines) > 0 {
+	if len(en.Inlines) > 0 {
 		v.b.WriteString(" [")
-		v.walkInlineSlice(in.Inlines)
+		v.walkInlineSlice(en.Inlines)
 		v.b.WriteByte(']')
 	}
 }

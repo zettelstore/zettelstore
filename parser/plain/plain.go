@@ -112,7 +112,7 @@ func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 		return nil
 	}
 	return ast.InlineSlice{
-		&ast.ImageNode{
+		&ast.EmbedNode{
 			Blob:   []byte(svgSrc),
 			Syntax: syntax,
 		},

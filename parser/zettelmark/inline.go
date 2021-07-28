@@ -64,7 +64,7 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 		case '{':
 			inp.Next()
 			if inp.Ch == '{' {
-				in, success = cp.parseImage()
+				in, success = cp.parseEmbed()
 			}
 		case '#':
 			return cp.parseTag()
@@ -333,12 +333,12 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 	return ins, true
 }
 
-func (cp *zmkP) parseImage() (ast.InlineNode, bool) {
+func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
 	if ref, ins, ok := cp.parseReference('}'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
-			return &ast.ImageNode{Ref: r, Inlines: ins, Attrs: attrs}, true
+			return &ast.EmbedNode{Ref: r, Inlines: ins, Attrs: attrs}, true
 		}
 	}
 	return nil, false

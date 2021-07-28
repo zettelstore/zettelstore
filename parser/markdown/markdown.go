@@ -427,7 +427,7 @@ func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
 	return ast.InlineSlice{
-		&ast.ImageNode{
+		&ast.EmbedNode{
 			Ref:     ref,
 			Inlines: p.flattenInlineSlice(node),
 			Attrs:   attrs,

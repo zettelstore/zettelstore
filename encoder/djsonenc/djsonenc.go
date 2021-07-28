@@ -154,8 +154,8 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 		writeEscaped(&v.b, n.Ref.String())
 		v.writeContentStart('i')
 		v.walkInlineSlice(n.Inlines)
-	case *ast.ImageNode:
-		v.visitImage(n)
+	case *ast.EmbedNode:
+		v.visitEmbed(n)
 	case *ast.CiteNode:
 		v.writeNodeStart("Cite")
 		v.visitAttributes(n.Attrs)
@@ -346,35 +346,35 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateExternal: "external",
 }
 
-func (v *detailVisitor) visitImage(in *ast.ImageNode) {
-	in, n := v.env.AdaptImage(in)
+func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
+	en, n := v.env.AdaptEmbed(en)
 	if n != nil {
 		ast.Walk(v, n)
 		return
 	}
-	v.writeNodeStart("Image")
-	v.visitAttributes(in.Attrs)
-	if in.Ref == nil {
+	v.writeNodeStart("Embed")
+	v.visitAttributes(en.Attrs)
+	if en.Ref == nil {
 		v.writeContentStart('j')
 		v.b.WriteString("\"s\":")
-		writeEscaped(&v.b, in.Syntax)
-		switch in.Syntax {
+		writeEscaped(&v.b, en.Syntax)
+		switch en.Syntax {
 		case "svg":
 			v.writeContentStart('q')
-			writeEscaped(&v.b, string(in.Blob))
+			writeEscaped(&v.b, string(en.Blob))
 		default:
 			v.writeContentStart('o')
-			v.b.WriteBase64(in.Blob)
+			v.b.WriteBase64(en.Blob)
 			v.b.WriteByte('"')
 		}
 		v.b.WriteByte('}')
 	} else {
 		v.writeContentStart('s')
-		writeEscaped(&v.b, in.Ref.String())
+		writeEscaped(&v.b, en.Ref.String())
 	}
-	if len(in.Inlines) > 0 {
+	if len(en.Inlines) > 0 {
 		v.writeContentStart('i')
-		v.walkInlineSlice(in.Inlines)
+		v.walkInlineSlice(en.Inlines)
 	}
 }
 

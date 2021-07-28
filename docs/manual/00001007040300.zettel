@@ -3,6 +3,7 @@ title: Zettelmarkup: Reference-like text
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+modified: 20210728162031
 
 An important aspect of knowledge work is to interconnect your zettel as well as provide links to (external) material.
 
@@ -34,18 +35,18 @@ If the URL begins with two slash characters, it will be interpreted relative to 
 
 The text in the second form is just a sequence of inline elements.
 
-=== Images
-To some degree, an image specification is conceptually not too far away from a link specification.
-Both contain a link specification and optionally some text.
-In contrast to a link, the link specification of an image must resolve to actual graphical image data.
+=== Embedded material
+To some degree, an specification for embedded material is conceptually not too far away from a specification for linked material.
+Both contain a reference specification and optionally some text.
+In contrast to a link, the specification of embedded material must currently resolve to actual graphical image data.
 That data is read when rendered as HTML, and is embedded inside the zettel as an inline image.
 
 An image specification begins with two consecutive left curly bracket characters (""''{''"", ''U+007B'') and ends with two consecutive right curly bracket characters (""''}''"", ''U+007D'').
-The curly brackets delimits either a link specification or some text, a vertical bar character and the link specification, similar to a link.
+The curly brackets delimits either a reference specification or some text, a vertical bar character and the link specification, similar to a link.
 
 One difference to a link: if the text was not given, an empty string is assumed.
 
-The link specification must reference a graphical image representation if the image is about to be rendered.
+The reference must (currently) point to a graphical image representation if the image is about to be rendered.
 Supported formats are:
 
 * Portable Network Graphics (""PNG""), as defined by [[RFC\ 2083|https://tools.ietf.org/html/rfc2083]].

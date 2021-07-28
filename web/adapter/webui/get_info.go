@@ -69,7 +69,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		summary := collect.References(zn)
-		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Images...))
+		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		env := encoder.Environment{Lang: lang}

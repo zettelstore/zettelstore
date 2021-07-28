@@ -48,7 +48,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", api.EncoderUnknown),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, wui, getMeta),
+			EmbedAdapter:   adapter.MakeEmbedAdapter(ctx, wui, getMeta),
 			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,

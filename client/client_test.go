@@ -250,16 +250,16 @@ func TestGetZettelLinks(t *testing.T) {
 	if !checkZid(t, id.DefaultHomeZid, zl.ID) {
 		return
 	}
-	if len(zl.Links.Incoming) != 0 {
-		t.Error("No incomings expected", zl.Links.Incoming)
+	if len(zl.Linked.Incoming) != 0 {
+		t.Error("No incomings expected", zl.Linked.Incoming)
 	}
-	if got := len(zl.Links.Outgoing); got != 4 {
+	if got := len(zl.Linked.Outgoing); got != 4 {
 		t.Errorf("Expected 4 outgoing links, got %d", got)
 	}
-	if got := len(zl.Links.Local); got != 1 {
+	if got := len(zl.Linked.Local); got != 1 {
 		t.Errorf("Expected 1 local link, got %d", got)
 	}
-	if got := len(zl.Links.External); got != 4 {
+	if got := len(zl.Linked.External); got != 4 {
 		t.Errorf("Expected 4 external link, got %d", got)
 	}
 }

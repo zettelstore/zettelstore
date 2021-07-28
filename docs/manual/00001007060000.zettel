@@ -1,8 +1,9 @@
 id: 00001007060000
 title: Zettelmarkup: Summary of Formatting Characters
+role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20210728162830
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
@@ -29,13 +30,13 @@ The following table gives an overview about the use of all characters that begin
 | ''>''  | [[Quotation lists|00001007030200]] | (blocked: to remove anyambiguity with quotation lists)
 | ''?''  | (free) | (free)
 | ''@''  | (free) | (reserved)
-| ''[''  | (reserved)  | [[Link|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
+| ''[''  | (reserved)  | [[Linked material|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
 | ''\\'' | (blocked by inline meaning) | [[Escape character|00001007040000]]
 | '']''  | (reserved) | End of link, citation key, footnote, mark
 | ''^''  | (free) | [[Superscripted text|00001007040100]]
 | ''_''  | (free) | [[Underlined text|00001007040100]]
 | ''`''  | [[Verbatim block|00001007030500]] | [[Literal text|00001007040200]]
-| ''{''  | (reserved) | [[Image|00001007040300]], [[Attribute|00001007050000]]
-| ''|''  | [[Table row / table cell|00001007031000]] | Separator within link and image formatting
-| ''}''  | (reserved) | End of Image, End of Attribute
+| ''{''  | (reserved) | [[Embedded material|00001007040300]], [[Attribute|00001007050000]]
+| ''|''  | [[Table row / table cell|00001007031000]] | Separator within link and embed formatting
+| ''}''  | (reserved) | End of embedded material, End of Attribute
 | ''~''  | (free) | [[Strike-through text|00001007040100]]

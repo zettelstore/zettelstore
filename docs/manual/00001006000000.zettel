@@ -1,8 +1,9 @@
 id: 00001006000000
 title: Layout of a Zettel
+role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-role: manual
+modified: 20210728161548
 
 A zettel consists of two part: the metadata and the zettel content.
 Metadata gives some information mostly about the zettel content, how it should be interpreted, how it is sorted within Zettelstore.
@@ -25,4 +26,4 @@ Other text formats are also supported, like CSS and HTML templates.
 Plain text content is always Unicode, encoded as UTF-8.
 Other character encodings are not supported and will never be[^This is not a real problem, since every modern software should support UTF-8 as an encoding.].
 There is support for a graphical format with a text represenation: SVG.
-And the is support for some binary image formats, like GIF, PNG, and JPEG.
+And there is support for some binary image formats, like GIF, PNG, and JPEG.

@@ -57,13 +57,13 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 			if matter&matterMeta != 0 {
 				for _, p := range zn.Meta.PairsRest(false) {
 					if meta.Type(p.Key) == meta.TypeURL {
-						outData.Links.Meta = append(outData.Links.Meta, p.Value)
+						outData.Linked.Meta = append(outData.Linked.Meta, p.Value)
 					}
 				}
 			}
 		}
-		if kind&kindImage != 0 {
-			api.setupImageJSONRefs(summary, matter, &outData)
+		if kind&kindEmbed != 0 {
+			api.setupEmbedJSONRefs(summary, matter, &outData)
 		}
 		if kind&kindCite != 0 {
 			outData.Cites = stringCites(summary.Cites)
@@ -77,30 +77,30 @@ func (api *API) MakeGetLinksHandler(parseZettel usecase.ParseZettel) http.Handle
 func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
 	if matter&matterIncoming != 0 {
 		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
-		outData.Links.Incoming = []zsapi.ZidJSON{}
+		outData.Linked.Incoming = []zsapi.ZidJSON{}
 	}
 	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 	if matter&matterOutgoing != 0 {
-		outData.Links.Outgoing = api.idURLRefs(zetRefs)
+		outData.Linked.Outgoing = api.idURLRefs(zetRefs)
 	}
 	if matter&matterLocal != 0 {
-		outData.Links.Local = stringRefs(locRefs)
+		outData.Linked.Local = stringRefs(locRefs)
 	}
 	if matter&matterExternal != 0 {
-		outData.Links.External = stringRefs(extRefs)
+		outData.Linked.External = stringRefs(extRefs)
 	}
 }
 
-func (api *API) setupImageJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
-	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Images)
+func (api *API) setupEmbedJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
+	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Embeds)
 	if matter&matterOutgoing != 0 {
-		outData.Images.Outgoing = api.idURLRefs(zetRefs)
+		outData.Embedded.Outgoing = api.idURLRefs(zetRefs)
 	}
 	if matter&matterLocal != 0 {
-		outData.Images.Local = stringRefs(locRefs)
+		outData.Embedded.Local = stringRefs(locRefs)
 	}
 	if matter&matterExternal != 0 {
-		outData.Images.External = stringRefs(extRefs)
+		outData.Embedded.External = stringRefs(extRefs)
 	}
 }
 
@@ -142,17 +142,17 @@ type kindType int
 const (
 	_ kindType = 1 << iota
 	kindLink
-	kindImage
+	kindEmbed
 	kindCite
 )
 
 var mapKind = map[string]kindType{
-	"":      kindLink | kindImage | kindCite,
+	"":      kindLink | kindEmbed | kindCite,
 	"link":  kindLink,
-	"image": kindImage,
+	"embed": kindEmbed,
 	"cite":  kindCite,
-	"both":  kindLink | kindImage,
-	"all":   kindLink | kindImage | kindCite,
+	"both":  kindLink | kindEmbed,
+	"all":   kindLink | kindEmbed | kindCite,
 }
 
 func getKindFromValue(value string) kindType {
@@ -205,7 +205,7 @@ func validKindMatter(kind kindType, matter matterType) bool {
 	if kind&kindLink != 0 {
 		return matter != 0
 	}
-	if kind&kindImage != 0 {
+	if kind&kindEmbed != 0 {
 		if matter == 0 || matter == matterIncoming {
 			return false
 		}

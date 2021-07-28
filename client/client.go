@@ -306,7 +306,7 @@ func (c *Client) GetZettelContext(
 	return &out, nil
 }
 
-// GetZettelLinks returns connections to ohter zettel, images, externals URLs.
+// GetZettelLinks returns connections to other zettel, embedded material, externals URLs.
 func (c *Client) GetZettelLinks(ctx context.Context, zid id.Zid) (*api.ZettelLinksJSON, error) {
 	ub := c.newURLBuilder('l').SetZid(zid)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)

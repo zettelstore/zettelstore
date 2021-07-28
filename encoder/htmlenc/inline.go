@@ -92,33 +92,33 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.
 	v.b.WriteString("</a>")
 }
 
-func (v *visitor) visitImage(in *ast.ImageNode) {
-	in, n := v.env.AdaptImage(in)
+func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+	en, n := v.env.AdaptEmbed(en)
 	if n != nil {
 		ast.Walk(v, n)
 		return
 	}
-	v.lang.push(in.Attrs)
+	v.lang.push(en.Attrs)
 	defer v.lang.pop()
 
-	if in.Ref == nil {
+	if en.Ref == nil {
 		v.b.WriteString("<img src=\"data:image/")
-		switch in.Syntax {
+		switch en.Syntax {
 		case "svg":
 			v.b.WriteString("svg+xml;utf8,")
-			v.writeQuotedEscaped(string(in.Blob))
+			v.writeQuotedEscaped(string(en.Blob))
 		default:
-			v.b.WriteStrings(in.Syntax, ";base64,")
-			v.b.WriteBase64(in.Blob)
+			v.b.WriteStrings(en.Syntax, ";base64,")
+			v.b.WriteBase64(en.Blob)
 		}
 	} else {
 		v.b.WriteString("<img src=\"")
-		v.writeReference(in.Ref)
+		v.writeReference(en.Ref)
 	}
 	v.b.WriteString("\" alt=\"")
-	ast.WalkInlineSlice(v, in.Inlines)
+	ast.WalkInlineSlice(v, en.Inlines)
 	v.b.WriteByte('"')
-	v.visitAttributes(in.Attrs)
+	v.visitAttributes(en.Attrs)
 	if v.env.IsXHTML() {
 		v.b.WriteString(" />")
 	} else {

@@ -209,7 +209,7 @@ func TestFootnote(t *testing.T) {
 	})
 }
 
-func TestImage(t *testing.T) {
+func TestEmbed(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"{", "(PARA {)"},
@@ -223,28 +223,28 @@ func TestImage(t *testing.T) {
 		{"{{\n}}", "(PARA {{ SB }})"},
 		{"{{a }}", "(PARA {{a SP }})"},
 		{"{{a\n}}", "(PARA {{a SB }})"},
-		{"{{a}}", "(PARA (IMAGE a))"},
-		{"{{12345678901234}}", "(PARA (IMAGE 12345678901234))"},
-		{"{{ a}}", "(PARA (IMAGE a))"},
+		{"{{a}}", "(PARA (EMBED a))"},
+		{"{{12345678901234}}", "(PARA (EMBED 12345678901234))"},
+		{"{{ a}}", "(PARA (EMBED a))"},
 		{"{{a}", "(PARA {{a})"},
 		{"{{|a}}", "(PARA {{|a}})"},
 		{"{{b|}}", "(PARA {{b|}})"},
-		{"{{b|a}}", "(PARA (IMAGE a b))"},
-		{"{{b| a}}", "(PARA (IMAGE a b))"},
+		{"{{b|a}}", "(PARA (EMBED a b))"},
+		{"{{b| a}}", "(PARA (EMBED a b))"},
 		{"{{b|a}", "(PARA {{b|a})"},
-		{"{{b\nc|a}}", "(PARA (IMAGE a b SB c))"},
-		{"{{b c|a#n}}", "(PARA (IMAGE a#n b SP c))"},
-		{"{{a}}{go}", "(PARA (IMAGE a)[ATTR go])"},
-		{"{{{{a}}|b}}", "(PARA (IMAGE %7B%7Ba) |b}})"},
-		{"{{\\|}}", "(PARA (IMAGE %5C%7C))"},
-		{"{{\\||a}}", "(PARA (IMAGE a |))"},
-		{"{{b\\||a}}", "(PARA (IMAGE a b|))"},
-		{"{{b\\|c|a}}", "(PARA (IMAGE a b|c))"},
-		{"{{\\}}}", "(PARA (IMAGE %5C%7D))"},
-		{"{{\\}|a}}", "(PARA (IMAGE a }))"},
-		{"{{b\\}|a}}", "(PARA (IMAGE a b}))"},
-		{"{{\\}\\||a}}", "(PARA (IMAGE a }|))"},
-		{"{{http://a|http://a}}", "(PARA (IMAGE http://a http://a))"},
+		{"{{b\nc|a}}", "(PARA (EMBED a b SB c))"},
+		{"{{b c|a#n}}", "(PARA (EMBED a#n b SP c))"},
+		{"{{a}}{go}", "(PARA (EMBED a)[ATTR go])"},
+		{"{{{{a}}|b}}", "(PARA (EMBED %7B%7Ba) |b}})"},
+		{"{{\\|}}", "(PARA (EMBED %5C%7C))"},
+		{"{{\\||a}}", "(PARA (EMBED a |))"},
+		{"{{b\\||a}}", "(PARA (EMBED a b|))"},
+		{"{{b\\|c|a}}", "(PARA (EMBED a b|c))"},
+		{"{{\\}}}", "(PARA (EMBED %5C%7D))"},
+		{"{{\\}|a}}", "(PARA (EMBED a }))"},
+		{"{{b\\}|a}}", "(PARA (EMBED a b}))"},
+		{"{{\\}\\||a}}", "(PARA (EMBED a }|))"},
+		{"{{http://a|http://a}}", "(PARA (EMBED http://a http://a))"},
 	})
 }
 
@@ -785,8 +785,8 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
-	case *ast.ImageNode:
-		fmt.Fprintf(&tv.b, "(IMAGE %v", n.Ref)
+	case *ast.EmbedNode:
+		fmt.Fprintf(&tv.b, "(EMBED %v", n.Ref)
 		tv.visitInlineSlice(n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)

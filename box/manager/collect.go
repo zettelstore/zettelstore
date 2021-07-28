@@ -52,7 +52,7 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 		data.addText(n.Tag)
 	case *ast.LinkNode:
 		data.addRef(n.Ref)
-	case *ast.ImageNode:
+	case *ast.EmbedNode:
 		data.addRef(n.Ref)
 	case *ast.LiteralNode:
 		data.addText(n.Text)

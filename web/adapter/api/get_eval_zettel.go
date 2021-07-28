@@ -45,7 +45,7 @@ func (api *API) MakeGetEvalZettelHandler(parseZettel usecase.ParseZettel, getMet
 		part := getPart(q, partZettel)
 		env := encoder.Environment{
 			LinkAdapter:    adapter.MakeLinkAdapter(ctx, api, 'v', getMeta, part.DefString(partZettel), enc),
-			ImageAdapter:   adapter.MakeImageAdapter(ctx, api, getMeta),
+			EmbedAdapter:   adapter.MakeEmbedAdapter(ctx, api, getMeta),
 			CiteAdapter:    nil,
 			Lang:           config.GetLang(zn.InhMeta, api.rtConfig),
 			Xhtml:          false,
