@@ -324,13 +324,18 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 }
 
 func (v *visitor) visitEmbed(en *ast.EmbedNode) {
-	if en.Ref != nil {
+	switch m := en.Material.(type) {
+	case *ast.ReferenceMaterialNode:
 		v.b.WriteString("{{")
 		if len(en.Inlines) > 0 {
 			ast.WalkInlineSlice(v, en.Inlines)
 			v.b.WriteByte('|')
 		}
-		v.b.WriteStrings(en.Ref.String(), "}}")
+		v.b.WriteStrings(m.Ref.String(), "}}")
+	case *ast.BLOBMaterialNode:
+		panic("TODO")
+	default:
+		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
 }
 

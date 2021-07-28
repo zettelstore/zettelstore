@@ -53,7 +53,10 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 	case *ast.LinkNode:
 		data.addRef(n.Ref)
 	case *ast.EmbedNode:
-		data.addRef(n.Ref)
+		switch m := n.Material.(type) {
+		case *ast.ReferenceMaterialNode:
+			data.addRef(m.Ref)
+		}
 	case *ast.LiteralNode:
 		data.addText(n.Text)
 	}

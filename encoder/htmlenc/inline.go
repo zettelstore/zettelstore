@@ -101,19 +101,22 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	v.lang.push(en.Attrs)
 	defer v.lang.pop()
 
-	if en.Ref == nil {
+	switch m := en.Material.(type) {
+	case *ast.ReferenceMaterialNode:
+		v.b.WriteString("<img src=\"")
+		v.writeReference(m.Ref)
+	case *ast.BLOBMaterialNode:
 		v.b.WriteString("<img src=\"data:image/")
-		switch en.Syntax {
+		switch m.Syntax {
 		case "svg":
 			v.b.WriteString("svg+xml;utf8,")
-			v.writeQuotedEscaped(string(en.Blob))
+			v.writeQuotedEscaped(string(m.Blob))
 		default:
-			v.b.WriteStrings(en.Syntax, ";base64,")
-			v.b.WriteBase64(en.Blob)
+			v.b.WriteStrings(m.Syntax, ";base64,")
+			v.b.WriteBase64(m.Blob)
 		}
-	} else {
-		v.b.WriteString("<img src=\"")
-		v.writeReference(en.Ref)
+	default:
+		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
 	v.b.WriteString("\" alt=\"")
 	ast.WalkInlineSlice(v, en.Inlines)

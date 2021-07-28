@@ -428,9 +428,9 @@ func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 	}
 	return ast.InlineSlice{
 		&ast.EmbedNode{
-			Ref:     ref,
-			Inlines: p.flattenInlineSlice(node),
-			Attrs:   attrs,
+			Material: &ast.ReferenceMaterialNode{Ref: ref},
+			Inlines:  p.flattenInlineSlice(node),
+			Attrs:    attrs,
 		},
 	}
 }

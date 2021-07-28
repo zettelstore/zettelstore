@@ -338,7 +338,11 @@ func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
-			return &ast.EmbedNode{Ref: r, Inlines: ins, Attrs: attrs}, true
+			return &ast.EmbedNode{
+				Material: &ast.ReferenceMaterialNode{Ref: r},
+				Inlines:  ins,
+				Attrs:    attrs,
+			}, true
 		}
 	}
 	return nil, false

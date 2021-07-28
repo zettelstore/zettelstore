@@ -113,8 +113,10 @@ func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	}
 	return ast.InlineSlice{
 		&ast.EmbedNode{
-			Blob:   []byte(svgSrc),
-			Syntax: syntax,
+			Material: &ast.BLOBMaterialNode{
+				Blob:   []byte(svgSrc),
+				Syntax: syntax,
+			},
 		},
 	}
 }

@@ -786,10 +786,17 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.EmbedNode:
-		fmt.Fprintf(&tv.b, "(EMBED %v", n.Ref)
-		tv.visitInlineSlice(n.Inlines)
-		tv.b.WriteByte(')')
-		tv.visitAttributes(n.Attrs)
+		switch m := n.Material.(type) {
+		case *ast.ReferenceMaterialNode:
+			fmt.Fprintf(&tv.b, "(EMBED %v", m.Ref)
+			tv.visitInlineSlice(n.Inlines)
+			tv.b.WriteByte(')')
+			tv.visitAttributes(n.Attrs)
+		case *ast.BLOBMaterialNode:
+			panic("TODO: zmktest blob")
+		default:
+			panic(fmt.Sprintf("Unknown material type %t for %v", n.Material, n.Material))
+		}
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.b, "(CITE %s", n.Key)
 		tv.visitInlineSlice(n.Inlines)

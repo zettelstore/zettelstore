@@ -60,7 +60,7 @@ func TestEmbed(t *testing.T) {
 		Ast: ast.BlockSlice{
 			&ast.ParaNode{
 				Inlines: ast.InlineSlice{
-					&ast.EmbedNode{Ref: parseRef("12345678901234")},
+					&ast.EmbedNode{Material: &ast.ReferenceMaterialNode{Ref: parseRef("12345678901234")}},
 				},
 			},
 		},

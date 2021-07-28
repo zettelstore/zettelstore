@@ -354,24 +354,28 @@ func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
 	}
 	v.writeNodeStart("Embed")
 	v.visitAttributes(en.Attrs)
-	if en.Ref == nil {
+	switch m := en.Material.(type) {
+	case *ast.ReferenceMaterialNode:
+		v.writeContentStart('s')
+		writeEscaped(&v.b, m.Ref.String())
+	case *ast.BLOBMaterialNode:
 		v.writeContentStart('j')
 		v.b.WriteString("\"s\":")
-		writeEscaped(&v.b, en.Syntax)
-		switch en.Syntax {
+		writeEscaped(&v.b, m.Syntax)
+		switch m.Syntax {
 		case "svg":
 			v.writeContentStart('q')
-			writeEscaped(&v.b, string(en.Blob))
+			writeEscaped(&v.b, string(m.Blob))
 		default:
 			v.writeContentStart('o')
-			v.b.WriteBase64(en.Blob)
+			v.b.WriteBase64(m.Blob)
 			v.b.WriteByte('"')
 		}
 		v.b.WriteByte('}')
-	} else {
-		v.writeContentStart('s')
-		writeEscaped(&v.b, en.Ref.String())
+	default:
+		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
+
 	if len(en.Inlines) > 0 {
 		v.writeContentStart('i')
 		v.walkInlineSlice(en.Inlines)

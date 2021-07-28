@@ -14,6 +14,7 @@ package adapter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"zettelstore.de/z/api"
@@ -108,14 +109,20 @@ func MakeLinkAdapter(
 // MakeEmbedAdapter creates an adapter to change an embed node during encoding.
 func MakeEmbedAdapter(ctx context.Context, b server.Builder, getMeta usecase.GetMeta) func(*ast.EmbedNode) ast.InlineNode {
 	return func(origEmbed *ast.EmbedNode) ast.InlineNode {
-		if origEmbed.Ref == nil {
+		switch origEmbed.Material.(type) {
+		case *ast.ReferenceMaterialNode:
+		case *ast.BLOBMaterialNode:
 			return origEmbed
+		default:
+			panic(fmt.Sprintf("Unknown material type %t for %v", origEmbed.Material, origEmbed.Material))
 		}
-		switch origEmbed.Ref.State {
+
+		origRef := origEmbed.Material.(*ast.ReferenceMaterialNode)
+		switch origRef.Ref.State {
 		case ast.RefStateInvalid:
 			return createZettelEmbed(b, origEmbed, id.EmojiZid, ast.RefStateInvalid)
 		case ast.RefStateZettel:
-			zid, err := id.Parse(origEmbed.Ref.Value)
+			zid, err := id.Parse(origRef.Ref.Value)
 			if err != nil {
 				panic(err)
 			}
@@ -130,9 +137,9 @@ func MakeEmbedAdapter(ctx context.Context, b server.Builder, getMeta usecase.Get
 }
 
 func createZettelEmbed(b server.Builder, origEmbed *ast.EmbedNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
+	newRef := ast.ParseReference(b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
+	newRef.State = state
 	newEmbed := *origEmbed
-	newEmbed.Ref = ast.ParseReference(
-		b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
-	newEmbed.Ref.State = state
+	newEmbed.Material = &ast.ReferenceMaterialNode{Ref: newRef}
 	return &newEmbed
 }

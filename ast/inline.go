@@ -78,11 +78,12 @@ func (ln *LinkNode) WalkChildren(v Visitor) {
 
 // --------------------------------------------------------------------------
 
-// EmbedNode contains the specified image reference.
+// EmbedNode contains the specified embedded material.
 type EmbedNode struct {
-	Ref     *Reference  // Reference to image
-	Blob    []byte      // BLOB data of the image, as an alternative to Ref.
-	Syntax  string      // Syntax of Blob
+	Material MaterialNode
+	// Ref      *Reference // Reference to image
+	// Blob     []byte      // BLOB data of the image, as an alternative to Ref.
+	// Syntax   string      // Syntax of Blob
 	Inlines InlineSlice // The text associated with the image.
 	Attrs   *Attributes // Optional attributes
 }
