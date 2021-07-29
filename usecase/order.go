@@ -27,20 +27,22 @@ type ZettelOrderPort interface {
 
 // ZettelOrder is the data for this use case.
 type ZettelOrder struct {
-	port        ZettelOrderPort
-	parseZettel ParseZettel
+	port           ZettelOrderPort
+	evaluateZettel EvaluateZettel
 }
 
 // NewZettelOrder creates a new use case.
-func NewZettelOrder(port ZettelOrderPort, parseZettel ParseZettel) ZettelOrder {
-	return ZettelOrder{port: port, parseZettel: parseZettel}
+func NewZettelOrder(port ZettelOrderPort, evaluateZettel EvaluateZettel) ZettelOrder {
+	return ZettelOrder{port: port, evaluateZettel: evaluateZettel}
 }
 
 // Run executes the use case.
 func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
 	start *meta.Meta, result []*meta.Meta, err error,
 ) {
-	zn, err := uc.parseZettel.Run(ctx, zid, syntax)
+	zn, err := uc.evaluateZettel.Run(ctx, zid, &EvaluateEnvironment{
+		Syntax: syntax,
+	})
 	if err != nil {
 		return nil, nil, err
 	}

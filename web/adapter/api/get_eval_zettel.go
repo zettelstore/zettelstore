@@ -16,6 +16,7 @@ import (
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -35,15 +36,31 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 
 		ctx := r.Context()
 		q := r.URL.Query()
-		enc, _ := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
+		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partZettel)
+		getHostedRef := func(s string) *ast.Reference {
+			return adapter.CreateHostedReference(api, s)
+		}
+		getFoundRef := func(zid id.Zid, fragment string) *ast.Reference {
+			return adapter.CreateFoundReference(api, 'v', part.DefString(partZettel), encStr, zid, fragment)
+		}
+		getImageRef := func(zid id.Zid, state ast.RefState) *ast.Reference {
+			return adapter.CreateImageReference(api, zid, state)
+		}
+		switch enc {
+		case zsapi.EncoderDJSON, zsapi.EncoderHTML:
+			// Change references only for these encodings
+		default:
+			// Other encodings do not change the references
+			getHostedRef = nil
+			getFoundRef = nil
+			getImageRef = nil
+		}
 		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
-			Syntax:        q.Get(meta.KeySyntax),
-			Encoding:      enc,
-			Key:           'v',
-			Part:          part.DefString(partZettel),
-			GetURLPrefix:  api.GetURLPrefix,
-			NewURLBuilder: api.NewURLBuilder,
+			Syntax:       q.Get(meta.KeySyntax),
+			GetHostedRef: getHostedRef,
+			GetFoundRef:  getFoundRef,
+			GetImageRef:  getImageRef,
 		})
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)

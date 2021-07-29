@@ -66,8 +66,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
 	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
-	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
-	ucEvaluateZettel := usecase.NewEvaluateZettel(ucGetMeta, ucParseZettel)
+	ucEvaluateZettel := usecase.NewEvaluateZettel(rtConfig, ucGetZettel, ucGetMeta)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
 	ucListRoles := usecase.NewListRole(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
@@ -105,16 +104,16 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
-		ucParseZettel, ucGetMeta, ucGetAllMeta))
+		ucEvaluateZettel, ucGetMeta, ucGetAllMeta))
 	webSrv.AddListRoute('j', server.MethodGet, wui.MakeGetLogoutHandler())
 	webSrv.AddZettelRoute('j', server.MethodGet, wui.MakeZettelContextHandler(ucZettelContext))
 
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, api.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddListRoute('a', server.MethodPut, api.MakeRenewAuthHandler())
-	webSrv.AddZettelRoute('l', server.MethodGet, api.MakeGetLinksHandler(ucParseZettel))
+	webSrv.AddZettelRoute('l', server.MethodGet, api.MakeGetLinksHandler(ucEvaluateZettel))
 	webSrv.AddZettelRoute('o', server.MethodGet, api.MakeGetOrderHandler(
-		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
+		usecase.NewZettelOrder(protectedBoxManager, ucEvaluateZettel)))
 	webSrv.AddListRoute('r', server.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', server.MethodGet, api.MakeListTagsHandler(ucListTags))
 	webSrv.AddZettelRoute('v', server.MethodGet, api.MakeGetEvalZettelHandler(ucEvaluateZettel))

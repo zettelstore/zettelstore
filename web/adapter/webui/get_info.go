@@ -43,7 +43,7 @@ type matrixLine struct {
 
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
 func (wui *WebUI) MakeGetInfoHandler(
-	parseZettel usecase.ParseZettel,
+	evaluateZettel usecase.EvaluateZettel,
 	getMeta usecase.GetMeta,
 	getAllMeta usecase.GetAllMeta,
 ) http.HandlerFunc {
@@ -62,7 +62,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		zn, err := parseZettel.Run(ctx, zid, q.Get("syntax"))
+		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+			Syntax: q.Get(meta.KeySyntax),
+		})
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

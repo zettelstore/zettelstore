@@ -16,29 +16,36 @@ import (
 	"errors"
 	"fmt"
 
-	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/parser"
 )
 
 // EvaluateZettel is the data for this use case.
 type EvaluateZettel struct {
-	getMeta     GetMeta
-	parseZettel ParseZettel
+	rtConfig  config.Config
+	getZettel GetZettel
+	getMeta   GetMeta
 }
 
 // NewEvaluateZettel creates a new use case.
-func NewEvaluateZettel(getMeta GetMeta, parseZettel ParseZettel) EvaluateZettel {
+func NewEvaluateZettel(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta) EvaluateZettel {
 	return EvaluateZettel{
-		getMeta:     getMeta,
-		parseZettel: parseZettel,
+		rtConfig:  rtConfig,
+		getZettel: getZettel,
+		getMeta:   getMeta,
 	}
 }
 
 // Run executes the use case.
 func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *EvaluateEnvironment) (*ast.ZettelNode, error) {
-	zn, err := uc.parseZettel.Run(ctx, zid, env.Syntax)
+	zettel, err := uc.getZettel.Run(ctx, zid)
+	if err != nil {
+		return nil, err
+	}
+	zn, err := parser.ParseZettel(zettel, env.Syntax, uc.rtConfig), nil
 	if err != nil {
 		return nil, err
 	}
@@ -54,12 +61,10 @@ func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *EvaluateEnvi
 
 // EvaluateEnvironment contains values to control the evaluation.
 type EvaluateEnvironment struct {
-	Syntax        string
-	Encoding      api.EncodingEnum
-	Key           byte
-	Part          string
-	GetURLPrefix  func() string
-	NewURLBuilder func(key byte) *api.URLBuilder
+	Syntax       string
+	GetHostedRef func(string) *ast.Reference
+	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
+	GetImageRef  func(zid id.Zid, state ast.RefState) *ast.Reference
 }
 
 type evaluator struct {
@@ -122,22 +127,20 @@ func (e *evaluator) walkInlineSlice(ins ast.InlineSlice) ast.InlineSlice {
 }
 
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
-	origRef := ln.Ref
-	if origRef == nil {
+	ref := ln.Ref
+	if ref == nil {
 		return ln
 	}
-	if origRef.State == ast.RefStateBased {
-		newLink := *ln
-		urlPrefix := e.env.GetURLPrefix()
-		newRef := ast.ParseReference(urlPrefix + origRef.Value[1:])
-		newRef.State = ast.RefStateHosted
-		newLink.Ref = newRef
-		return &newLink
-	}
-	if origRef.State != ast.RefStateZettel {
+	if ref.State == ast.RefStateBased {
+		if ghr := e.env.GetHostedRef; ghr != nil {
+			ln.Ref = ghr(ref.Value[1:])
+		}
 		return ln
 	}
-	zid, err := id.Parse(origRef.URL.Path)
+	if ref.State != ast.RefStateZettel {
+		return ln
+	}
+	zid, err := id.Parse(ref.URL.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -148,29 +151,15 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 			Attrs:   ln.Attrs,
 			Inlines: ln.Inlines,
 		}
+	} else if err != nil {
+		ln.Ref.State = ast.RefStateBroken
+		return ln
 	}
-	var newRef *ast.Reference
-	if err == nil {
-		ub := e.env.NewURLBuilder(e.env.Key).SetZid(zid)
-		if part := e.env.Part; part != "" {
-			ub.AppendQuery(api.QueryKeyPart, part)
-		}
-		if enc := e.env.Encoding; enc != api.EncoderUnknown {
-			ub.AppendQuery(api.QueryKeyEncoding, enc.String())
-		}
-		if fragment := origRef.URL.EscapedFragment(); fragment != "" {
-			ub.SetFragment(fragment)
-		}
 
-		newRef = ast.ParseReference(ub.String())
-		newRef.State = ast.RefStateFound
-	} else {
-		newRef = ast.ParseReference(origRef.Value)
-		newRef.State = ast.RefStateBroken
+	if gfr := e.env.GetFoundRef; gfr != nil {
+		ln.Ref = gfr(zid, ref.URL.EscapedFragment())
 	}
-	newLink := *ln
-	newLink.Ref = newRef
-	return &newLink
+	return ln
 }
 
 func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
@@ -182,32 +171,32 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
 
-	origRef := en.Material.(*ast.ReferenceMaterialNode)
-	switch origRef.Ref.State {
+	ref := en.Material.(*ast.ReferenceMaterialNode)
+	switch ref.Ref.State {
 	case ast.RefStateInvalid:
-		return e.createZettelEmbed(en, id.EmojiZid, ast.RefStateInvalid)
+		return e.createZettelEmbed(en, ref, id.EmojiZid, ast.RefStateInvalid)
 	case ast.RefStateZettel:
-		zid, err := id.Parse(origRef.Ref.Value)
+		zid, err := id.Parse(ref.Ref.Value)
 		if err != nil {
 			panic(err)
 		}
 		_, err = e.getMeta.Run(box.NoEnrichContext(e.ctx), zid)
 		if err != nil {
-			return e.createZettelEmbed(en, id.EmojiZid, ast.RefStateBroken)
+			return e.createZettelEmbed(en, ref, id.EmojiZid, ast.RefStateBroken)
 		}
-		return e.createZettelEmbed(en, zid, ast.RefStateFound)
+		return e.createZettelEmbed(en, ref, zid, ast.RefStateFound)
 	}
 	return en
 }
 
-func (e *evaluator) createZettelEmbed(en *ast.EmbedNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
-	switch e.env.Encoding {
-	case api.EncoderDJSON, api.EncoderHTML:
-		newRef := ast.ParseReference(e.env.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
-		newRef.State = state
-		newEmbed := *en
-		newEmbed.Material = &ast.ReferenceMaterialNode{Ref: newRef}
-		return &newEmbed
+func (e *evaluator) createZettelEmbed(
+	en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
+
+	if gir := e.env.GetImageRef; gir != nil {
+		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zid, state)}
+		return en
 	}
+	ref.Ref.State = state
+	en.Material = ref
 	return en
 }

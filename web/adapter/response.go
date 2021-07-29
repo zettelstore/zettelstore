@@ -17,8 +17,12 @@ import (
 	"log"
 	"net/http"
 
+	"zettelstore.de/z/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/server"
 )
 
 // ReportUsecaseError returns an appropriate HTTP status code for errors in use cases.
@@ -64,4 +68,37 @@ func CodeMessageFromError(err error) (int, string) {
 		return http.StatusConflict, "Zettelstore operations conflicted"
 	}
 	return http.StatusInternalServerError, err.Error()
+}
+
+// CreateHostedReference builds a reference with state "hosted".
+func CreateHostedReference(b server.Builder, s string) *ast.Reference {
+	urlPrefix := b.GetURLPrefix()
+	ref := ast.ParseReference(urlPrefix + s)
+	ref.State = ast.RefStateHosted
+	return ref
+}
+
+// CreateFoundReference builds a reference for a found zettel.
+func CreateFoundReference(b server.Builder, key byte, part string, enc string, zid id.Zid, fragment string) *ast.Reference {
+	ub := b.NewURLBuilder(key).SetZid(zid)
+	if part != "" {
+		ub.AppendQuery(api.QueryKeyPart, part)
+	}
+	if enc != "" {
+		ub.AppendQuery(api.QueryKeyEncoding, enc)
+	}
+	if fragment != "" {
+		ub.SetFragment(fragment)
+	}
+
+	ref := ast.ParseReference(ub.String())
+	ref.State = ast.RefStateFound
+	return ref
+}
+
+// CreateImageReference build an URL reference to a given image.
+func CreateImageReference(b server.Builder, zid id.Zid, state ast.RefState) *ast.Reference {
+	ref := ast.ParseReference(b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
+	ref.State = state
+	return ref
 }

@@ -40,14 +40,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 		}
 
 		q := r.URL.Query()
-		enc, _ := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
-			Syntax:        q.Get(meta.KeySyntax),
-			Encoding:      enc,
-			Key:           'v',
-			Part:          "",
-			GetURLPrefix:  wui.GetURLPrefix,
-			NewURLBuilder: wui.NewURLBuilder,
+			Syntax: q.Get(meta.KeySyntax),
+			GetHostedRef: func(s string) *ast.Reference {
+				return adapter.CreateHostedReference(wui, s)
+			},
+			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
+				return adapter.CreateFoundReference(wui, 'h', "", api.EncodingHTML, zid, fragment)
+			},
+			GetImageRef: func(zid id.Zid, state ast.RefState) *ast.Reference {
+				return adapter.CreateImageReference(wui, zid, state)
+			},
 		})
 
 		if err != nil {
