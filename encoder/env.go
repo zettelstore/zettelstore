@@ -16,11 +16,6 @@ import "zettelstore.de/z/ast"
 
 // Environment specifies all data and functions that affects encoding.
 type Environment struct {
-	// Important for many encoder.
-	LinkAdapter  func(*ast.LinkNode) ast.InlineNode
-	EmbedAdapter func(*ast.EmbedNode) ast.InlineNode
-	CiteAdapter  func(*ast.CiteNode) ast.InlineNode
-
 	// Important for HTML encoder
 	Lang           string // default language
 	Interactive    bool   // Encoded data will be placed in interactive content
@@ -29,51 +24,6 @@ type Environment struct {
 	NewWindow      bool   // open link in new window
 	IgnoreMeta     map[string]bool
 	footnotes      []*ast.FootnoteNode // Stores footnotes detected while encoding
-}
-
-// AdaptLink helps to call the link adapter.
-func (env *Environment) AdaptLink(ln *ast.LinkNode) (*ast.LinkNode, ast.InlineNode) {
-	if env == nil || env.LinkAdapter == nil {
-		return ln, nil
-	}
-	n := env.LinkAdapter(ln)
-	if n == nil {
-		return ln, nil
-	}
-	if ln2, ok := n.(*ast.LinkNode); ok {
-		return ln2, nil
-	}
-	return nil, n
-}
-
-// AdaptEmbed helps to call the link adapter.
-func (env *Environment) AdaptEmbed(en *ast.EmbedNode) (*ast.EmbedNode, ast.InlineNode) {
-	if env == nil || env.EmbedAdapter == nil {
-		return en, nil
-	}
-	n := env.EmbedAdapter(en)
-	if n == nil {
-		return en, nil
-	}
-	if in2, ok := n.(*ast.EmbedNode); ok {
-		return in2, nil
-	}
-	return nil, n
-}
-
-// AdaptCite helps to call the link adapter.
-func (env *Environment) AdaptCite(cn *ast.CiteNode) (*ast.CiteNode, ast.InlineNode) {
-	if env == nil || env.CiteAdapter == nil {
-		return cn, nil
-	}
-	n := env.CiteAdapter(cn)
-	if n == nil {
-		return cn, nil
-	}
-	if cn2, ok := n.(*ast.CiteNode); ok {
-		return cn2, nil
-	}
-	return nil, n
 }
 
 // IsInteractive returns true, if Interactive is enabled and currently embedded

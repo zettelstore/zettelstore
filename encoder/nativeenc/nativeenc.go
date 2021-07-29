@@ -413,11 +413,6 @@ var mapRefState = map[ast.RefState]string{
 }
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
-	ln, n := v.env.AdaptLink(ln)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
 	v.b.WriteString("Link")
 	v.visitAttributes(ln.Attrs)
 	v.b.WriteByte(' ')
@@ -432,11 +427,6 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 }
 
 func (v *visitor) visitEmbed(en *ast.EmbedNode) {
-	en, n := v.env.AdaptEmbed(en)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
 	v.b.WriteString("Embed")
 	v.visitAttributes(en.Attrs)
 	switch m := en.Material.(type) {

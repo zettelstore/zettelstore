@@ -33,11 +33,6 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 }
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
-	ln, n := v.env.AdaptLink(ln)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
 	v.lang.push(ln.Attrs)
 	defer v.lang.pop()
 
@@ -93,11 +88,6 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.
 }
 
 func (v *visitor) visitEmbed(en *ast.EmbedNode) {
-	en, n := v.env.AdaptEmbed(en)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
 	v.lang.push(en.Attrs)
 	defer v.lang.pop()
 
@@ -130,14 +120,6 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 }
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
-	cn, n := v.env.AdaptCite(cn)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
-	if cn == nil {
-		return
-	}
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
 	v.b.WriteString(cn.Key)

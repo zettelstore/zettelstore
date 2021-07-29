@@ -67,6 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
 	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
+	ucEvaluateZettel := usecase.NewEvaluateZettel(ucGetMeta, ucParseZettel)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
 	ucListRoles := usecase.NewListRole(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
@@ -100,7 +101,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(
 		ucListMeta, ucListRoles, ucListTags))
 	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(
-		ucParseZettel, ucGetMeta))
+		ucEvaluateZettel, ucGetMeta))
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
@@ -116,11 +117,10 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		usecase.NewZettelOrder(protectedBoxManager, ucParseZettel)))
 	webSrv.AddListRoute('r', server.MethodGet, api.MakeListRoleHandler(ucListRoles))
 	webSrv.AddListRoute('t', server.MethodGet, api.MakeListTagsHandler(ucListTags))
-	webSrv.AddZettelRoute('v', server.MethodGet, api.MakeGetEvalZettelHandler(
-		ucParseZettel, ucGetMeta))
+	webSrv.AddZettelRoute('v', server.MethodGet, api.MakeGetEvalZettelHandler(ucEvaluateZettel))
 	webSrv.AddZettelRoute('x', server.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', server.MethodGet, api.MakeListMetaHandler(
-		usecase.NewListMeta(protectedBoxManager), ucGetMeta, ucParseZettel))
+		usecase.NewListMeta(protectedBoxManager)))
 	webSrv.AddZettelRoute('z', server.MethodGet, api.MakeGetZettelHandler(ucGetZettel))
 	if !authManager.IsReadonly() {
 		webSrv.AddListRoute('z', server.MethodPost, api.MakePostCreateZettelHandler(ucCreateZettel))

@@ -22,7 +22,6 @@ import (
 // ZettelNode is the root node of the abstract syntax tree.
 // It is *not* part of the visitor pattern.
 type ZettelNode struct {
-	// Zettel  domain.Zettel
 	Meta    *meta.Meta     // Original metadata
 	Content domain.Content // Original content
 	Zid     id.Zid         // Zettel identification.

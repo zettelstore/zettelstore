@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -32,8 +32,7 @@ func NewParseZettel(rtConfig config.Config, getZettel GetZettel) ParseZettel {
 }
 
 // Run executes the use case.
-func (uc ParseZettel) Run(
-	ctx context.Context, zid id.Zid, syntax string) (*ast.ZettelNode, error) {
+func (uc ParseZettel) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.ZettelNode, error) {
 	zettel, err := uc.getZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err

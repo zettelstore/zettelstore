@@ -25,7 +25,7 @@ import (
 )
 
 // MakeGetEvalZettelHandler creates a new HTTP handler to return a evaluated zettel.
-func (api *API) MakeGetEvalZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -36,17 +36,21 @@ func (api *API) MakeGetEvalZettelHandler(parseZettel usecase.ParseZettel, getMet
 		ctx := r.Context()
 		q := r.URL.Query()
 		enc, _ := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
-		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
+		part := getPart(q, partZettel)
+		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+			Syntax:        q.Get(meta.KeySyntax),
+			Encoding:      enc,
+			Key:           'v',
+			Part:          part.DefString(partZettel),
+			GetURLPrefix:  api.GetURLPrefix,
+			NewURLBuilder: api.NewURLBuilder,
+		})
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
-		part := getPart(q, partZettel)
 		env := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, api, 'v', getMeta, part.DefString(partZettel), enc),
-			EmbedAdapter:   adapter.MakeEmbedAdapter(ctx, api, getMeta),
-			CiteAdapter:    nil,
 			Lang:           config.GetLang(zn.InhMeta, api.rtConfig),
 			Xhtml:          false,
 			MarkerExternal: "",

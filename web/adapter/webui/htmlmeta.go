@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 var space = []byte{' '}
@@ -165,7 +164,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 	}
 }
 func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	title, err := adapter.EncodeInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
+	title, err := encodeInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
@@ -191,7 +190,7 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Env
 			return "", 0
 		}
 		astTitle := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, ""))
-		title, err := adapter.EncodeInlines(astTitle, enc, env)
+		title, err := encodeInlines(astTitle, enc, env)
 		if err == nil {
 			return title, 1
 		}

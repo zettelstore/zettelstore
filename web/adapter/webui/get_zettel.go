@@ -13,6 +13,7 @@ package webui
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -29,7 +30,7 @@ import (
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
-func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -38,8 +39,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			return
 		}
 
-		syntax := r.URL.Query().Get("syntax")
-		zn, err := parseZettel.Run(ctx, zid, syntax)
+		q := r.URL.Query()
+		enc, _ := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
+		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+			Syntax:        q.Get(meta.KeySyntax),
+			Encoding:      enc,
+			Key:           'v',
+			Part:          "",
+			GetURLPrefix:  wui.GetURLPrefix,
+			NewURLBuilder: wui.NewURLBuilder,
+		})
+
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -47,9 +57,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{
-			LinkAdapter:    adapter.MakeLinkAdapter(ctx, wui, 'h', getMeta, "", api.EncoderUnknown),
-			EmbedAdapter:   adapter.MakeEmbedAdapter(ctx, wui, getMeta),
-			CiteAdapter:    nil,
 			Lang:           lang,
 			Xhtml:          false,
 			MarkerExternal: wui.rtConfig.GetMarkerExternal(),
@@ -61,7 +68,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlTitle, err := adapter.EncodeInlines(
+		htmlTitle, err := encodeInlines(
 			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -131,10 +138,28 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(parseZettel usecase.ParseZettel, getM
 	}
 }
 
+// errNoSuchEncoding signals an unsupported encoding encoding
+var errNoSuchEncoding = errors.New("no such encoding")
+
+// encodeInlines returns a string representation of the inline slice.
+func encodeInlines(is ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+	encdr := encoder.Create(enc, env)
+	if encdr == nil {
+		return "", errNoSuchEncoding
+	}
+
+	var content strings.Builder
+	_, err := encdr.WriteInlines(&content, is)
+	if err != nil {
+		return "", err
+	}
+	return content.String(), nil
+}
+
 func encodeBlocks(bs ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
-		return "", adapter.ErrNoSuchEncoding
+		return "", errNoSuchEncoding
 	}
 
 	var content strings.Builder
@@ -148,7 +173,7 @@ func encodeBlocks(bs ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environm
 func encodeMeta(m *meta.Meta, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
-		return "", adapter.ErrNoSuchEncoding
+		return "", errNoSuchEncoding
 	}
 
 	var content strings.Builder

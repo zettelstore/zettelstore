@@ -141,11 +141,6 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 			v.writeNodeStart("Soft")
 		}
 	case *ast.LinkNode:
-		n, n2 := v.env.AdaptLink(n)
-		if n2 != nil {
-			ast.Walk(v, n2)
-			return nil
-		}
 		v.writeNodeStart("Link")
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('q')
@@ -347,11 +342,6 @@ var mapRefState = map[ast.RefState]string{
 }
 
 func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
-	en, n := v.env.AdaptEmbed(en)
-	if n != nil {
-		ast.Walk(v, n)
-		return
-	}
 	v.writeNodeStart("Embed")
 	v.visitAttributes(en.Attrs)
 	switch m := en.Material.(type) {

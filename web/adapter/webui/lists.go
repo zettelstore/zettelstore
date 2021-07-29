@@ -335,7 +335,7 @@ func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error)
 		}
 		title, _ := m.Get(meta.KeyTitle)
 		env := encoder.Environment{Lang: lang, Interactive: true}
-		htmlTitle, err := adapter.EncodeInlines(parser.ParseMetadata(title), api.EncoderHTML, &env)
+		htmlTitle, err := encodeInlines(parser.ParseMetadata(title), api.EncoderHTML, &env)
 		if err != nil {
 			return nil, err
 		}
