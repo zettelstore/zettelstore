@@ -77,44 +77,44 @@ func readLines(inp *input.Input) (lines []string) {
 	}
 }
 
-func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	return doParseInlines(inp, syntax, ast.LiteralProg)
 }
-func parseInlinesHTML(inp *input.Input, syntax string) ast.InlineSlice {
+func parseInlinesHTML(inp *input.Input, syntax string) *ast.InlineListNode {
 	return doParseInlines(inp, syntax, ast.LiteralHTML)
 }
-func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) ast.InlineSlice {
+func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.InlineListNode {
 	inp.SkipToEOL()
-	return ast.InlineSlice{
+	return &ast.InlineListNode{List: []ast.InlineNode{
 		&ast.LiteralNode{
 			Kind:  kind,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Text:  inp.Src[0:inp.Pos],
 		},
-	}
+	}}
 }
 
 func parseSVGBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
-	ins := parseSVGInlines(inp, syntax)
-	if ins == nil {
+	iln := parseSVGInlines(inp, syntax)
+	if iln == nil {
 		return nil
 	}
-	return ast.BlockSlice{&ast.ParaNode{Inlines: &ast.InlineListNode{List: ins}}}
+	return ast.BlockSlice{&ast.ParaNode{Inlines: iln}}
 }
 
-func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
+func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	svgSrc := scanSVG(inp)
 	if svgSrc == "" {
 		return nil
 	}
-	return ast.InlineSlice{
+	return &ast.InlineListNode{List: []ast.InlineNode{
 		&ast.EmbedNode{
 			Material: &ast.BLOBMaterialNode{
 				Blob:   []byte(svgSrc),
 				Syntax: syntax,
 			},
 		},
-	}
+	}}
 }
 
 func scanSVG(inp *input.Input) string {

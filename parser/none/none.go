@@ -81,9 +81,9 @@ func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlic
 	return result
 }
 
-func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	inp.SkipToEOL()
-	return ast.InlineSlice{
+	return &ast.InlineListNode{List: []ast.InlineNode{
 		&ast.FormatNode{
 			Kind:  ast.FormatSpan,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"class": "warning"}},
@@ -99,5 +99,5 @@ func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 				&ast.TextNode{Text: ")"},
 			}},
 		},
-	}
+	}}
 }

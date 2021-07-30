@@ -57,7 +57,9 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 				b.WriteString(meta.CleanTag(tag))
 			}
 		case meta.TypeZettelmarkup:
-			te.WriteInlines(w, parser.ParseMetadata(pair.Value))
+			if iln := parser.ParseMetadata(pair.Value); iln != nil {
+				te.WriteInlines(w, iln.List)
+			}
 		default:
 			b.WriteString(pair.Value)
 		}

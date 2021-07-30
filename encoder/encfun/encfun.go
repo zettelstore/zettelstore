@@ -21,8 +21,8 @@ import (
 	"zettelstore.de/z/parser"
 )
 
-// MetaAsInlineSlice returns the value of the given metadata key as an inlince slice.
-func MetaAsInlineSlice(m *meta.Meta, key string) ast.InlineSlice {
+// MetaAsInlineList returns the value of the given metadata key as an inlince list.
+func MetaAsInlineList(m *meta.Meta, key string) *ast.InlineListNode {
 	return parser.ParseMetadata(m.GetDefault(key, ""))
 }
 
@@ -30,7 +30,7 @@ func MetaAsInlineSlice(m *meta.Meta, key string) ast.InlineSlice {
 func MetaAsText(m *meta.Meta, key string) string {
 	textEncoder := encoder.Create(api.EncoderText, nil)
 	var sb strings.Builder
-	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineSlice(m, key))
+	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineList(m, key).List)
 	if err == nil {
 		return sb.String()
 	}

@@ -42,7 +42,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	return p.acceptBlockSlice(p.docNode)
 }
 
-func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	panic("markdown.parseInline not yet implemented")
 }
 

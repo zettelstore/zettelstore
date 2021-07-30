@@ -72,7 +72,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			return
 		}
 		htmlTitle, err := encodeInlines(
-			encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle), api.EncoderHTML, &envHTML)
+			encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle).List, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

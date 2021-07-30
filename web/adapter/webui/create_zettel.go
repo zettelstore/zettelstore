@@ -69,13 +69,13 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 		}
 		m := origZettel.Meta
 		title := parser.ParseInlines(input.NewInput(config.GetTitle(m, wui.rtConfig)), meta.ValueSyntaxZmk)
-		textTitle, err := encodeInlines(title, api.EncoderText, nil)
+		textTitle, err := encodeInlines(title.List, api.EncoderText, nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		htmlTitle, err := encodeInlines(title, api.EncoderHTML, &env)
+		htmlTitle, err := encodeInlines(title.List, api.EncoderHTML, &env)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

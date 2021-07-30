@@ -39,7 +39,7 @@ type jsonDetailEncoder struct {
 func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"meta\":{\"title\":")
-	v.walkInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
+	ast.Walk(v, encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle))
 	v.writeMeta(zn.InhMeta)
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
@@ -53,7 +53,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, 
 func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 	v := newDetailVisitor(w, je)
 	v.b.WriteString("{\"title\":")
-	v.walkInlineSlice(encfun.MetaAsInlineSlice(m, meta.KeyTitle))
+	ast.Walk(v, encfun.MetaAsInlineList(m, meta.KeyTitle))
 	v.writeMeta(m)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()

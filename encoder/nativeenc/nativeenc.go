@@ -39,7 +39,7 @@ type nativeEncoder struct {
 func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w, ne)
 	v.b.WriteString("[Title ")
-	v.walkInlineSlice(encfun.MetaAsInlineSlice(zn.InhMeta, meta.KeyTitle))
+	ast.Walk(v, encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle))
 	v.b.WriteByte(']')
 	v.acceptMeta(zn.InhMeta, false)
 	v.b.WriteByte('\n')
@@ -203,9 +203,11 @@ var (
 
 func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	if withTitle {
-		v.b.WriteString("[Title ")
-		v.walkInlineSlice(parser.ParseMetadata(m.GetDefault(meta.KeyTitle, "")))
-		v.b.WriteByte(']')
+		if iln := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, "")); iln != nil {
+			v.b.WriteString("[Title ")
+			v.walkInlineSlice(iln.List)
+			v.b.WriteByte(']')
+		}
 	}
 	v.writeMetaString(m, meta.KeyRole, "Role")
 	v.writeMetaList(m, meta.KeyTags, "Tags")
