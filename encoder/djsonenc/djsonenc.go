@@ -93,10 +93,10 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
 func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
-		v.walkBlockSlice(n.List)
+		v.visitBlockList(n)
 		return nil
 	case *ast.InlineListNode:
-		v.walkInlineSlice(n.List)
+		v.walkInlineList(n)
 		return nil
 	case *ast.ParaNode:
 		v.writeNodeStart("Para")
@@ -404,18 +404,18 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralHTML:    "HTML",
 }
 
-func (v *detailVisitor) walkBlockSlice(bns ast.BlockSlice) {
+func (v *detailVisitor) visitBlockList(bln *ast.BlockListNode) {
 	v.b.WriteByte('[')
-	for i, bn := range bns {
+	for i, bn := range bln.List {
 		v.writeComma(i)
 		ast.Walk(v, bn)
 	}
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) walkInlineSlice(ins ast.InlineSlice) {
+func (v *detailVisitor) walkInlineList(iln *ast.InlineListNode) {
 	v.b.WriteByte('[')
-	for i, in := range ins {
+	for i, in := range iln.List {
 		v.writeComma(i)
 		ast.Walk(v, in)
 	}

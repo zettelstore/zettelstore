@@ -19,18 +19,18 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// parseInlineSlice parses a sequence of Inlines until EOS.
-func (cp *zmkP) parseInlineSlice() ast.InlineSlice {
+// parseInlineList parses a sequence of Inlines until EOS.
+func (cp *zmkP) parseInlineList() *ast.InlineListNode {
 	inp := cp.inp
-	var ins ast.InlineSlice
+	var ins []ast.InlineNode
 	for inp.Ch != input.EOS {
 		in := cp.parseInline()
 		if in == nil {
-			return ins
+			break
 		}
 		ins = append(ins, in)
 	}
-	return ins
+	return &ast.InlineListNode{List: ins}
 }
 
 func (cp *zmkP) parseInline() ast.InlineNode {
@@ -444,12 +444,12 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 				fn.Attrs = cp.parseAttributes(false)
 				return fn, true
 			}
-			fn.Inlines.List = append(fn.Inlines.List, &ast.TextNode{Text: string(fch)})
+			fn.Inlines.Append(&ast.TextNode{Text: string(fch)})
 		} else if in := cp.parseInline(); in != nil {
 			if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 				return nil, false
 			}
-			fn.Inlines.List = append(fn.Inlines.List, in)
+			fn.Inlines.Append(in)
 		}
 	}
 }

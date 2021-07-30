@@ -33,7 +33,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNo
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getDescription(p.Key, p.Value))
 	}
-	return &ast.BlockListNode{List: ast.BlockSlice{descrlist}}
+	return &ast.BlockListNode{List: []ast.BlockNode{descrlist}}
 }
 
 func getDescription(key, value string) ast.Description {
@@ -41,18 +41,18 @@ func getDescription(key, value string) ast.Description {
 		Term: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: key}}},
 		Descriptions: []ast.DescriptionSlice{{
 			&ast.ParaNode{
-				Inlines: &ast.InlineListNode{List: convertToInlineSlice(value, meta.Type(key))},
+				Inlines: convertToInlineList(value, meta.Type(key)),
 			}},
 		},
 	}
 }
 
-func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlice {
+func convertToInlineList(value string, dt *meta.DescriptionType) *ast.InlineListNode {
 	var sliceData []string
 	if dt.IsSet {
 		sliceData = meta.ListFromValue(value)
 		if len(sliceData) == 0 {
-			return ast.InlineSlice{}
+			return &ast.InlineListNode{}
 		}
 	} else {
 		sliceData = []string{value}
@@ -63,7 +63,7 @@ func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlic
 		makeLink = true
 	}
 
-	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
+	result := make([]ast.InlineNode, 0, 2*len(sliceData)-1)
 	for i, val := range sliceData {
 		if i > 0 {
 			result = append(result, &ast.SpaceNode{Lexeme: " "})
@@ -78,7 +78,7 @@ func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlic
 			result = append(result, tn)
 		}
 	}
-	return result
+	return &ast.InlineListNode{List: result}
 }
 
 func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {

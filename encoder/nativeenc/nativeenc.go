@@ -71,7 +71,7 @@ func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, 
 // WriteInlines writes an inline slice to the writer
 func (ne *nativeEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(w, ne)
-	v.walkInlineSlice(iln.List)
+	ast.Walk(v, iln)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -90,9 +90,9 @@ func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
-		v.walkBlockSlice(n.List)
+		v.visitBlockList(n)
 	case *ast.InlineListNode:
-		v.walkInlineSlice(n.List)
+		v.walkInlineList(n)
 	case *ast.ParaNode:
 		v.b.WriteString("[Para ")
 		ast.Walk(v, n.Inlines)
@@ -205,7 +205,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	if withTitle {
 		if iln := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, "")); iln != nil {
 			v.b.WriteString("[Title ")
-			v.walkInlineSlice(iln.List)
+			ast.Walk(v, iln)
 			v.b.WriteByte(']')
 		}
 	}
@@ -485,8 +485,8 @@ var mapLiteralKind = map[ast.LiteralKind][]byte{
 	ast.LiteralHTML:    []byte("HTML"),
 }
 
-func (v *visitor) walkBlockSlice(bns ast.BlockSlice) {
-	for i, bn := range bns {
+func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
+	for i, bn := range bln.List {
 		if i > 0 {
 			v.b.WriteByte(',')
 			v.writeNewLine()
@@ -494,8 +494,8 @@ func (v *visitor) walkBlockSlice(bns ast.BlockSlice) {
 		ast.Walk(v, bn)
 	}
 }
-func (v *visitor) walkInlineSlice(ins ast.InlineSlice) {
-	for i, in := range ins {
+func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
+	for i, in := range iln.List {
 		v.writeComma(i)
 		ast.Walk(v, in)
 	}

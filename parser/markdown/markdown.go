@@ -39,7 +39,7 @@ func init() {
 
 func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	p := parseMarkdown(inp)
-	return &ast.BlockListNode{List: p.acceptBlockSlice(p.docNode)}
+	return p.acceptBlockChildren(p.docNode)
 }
 
 func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
@@ -60,17 +60,17 @@ type mdP struct {
 	textEnc encoder.Encoder
 }
 
-func (p *mdP) acceptBlockSlice(docNode gmAst.Node) ast.BlockSlice {
+func (p *mdP) acceptBlockChildren(docNode gmAst.Node) *ast.BlockListNode {
 	if docNode.Type() != gmAst.TypeDocument {
 		panic(fmt.Sprintf("Expected document, but got node type %v", docNode.Type()))
 	}
-	result := make(ast.BlockSlice, 0, docNode.ChildCount())
+	result := make([]ast.BlockNode, 0, docNode.ChildCount())
 	for child := docNode.FirstChild(); child != nil; child = child.NextSibling() {
 		if block := p.acceptBlock(child); block != nil {
 			result = append(result, block)
 		}
 	}
-	return result
+	return &ast.BlockListNode{List: result}
 }
 
 func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
@@ -101,7 +101,7 @@ func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
 }
 
 func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
-	if iln := p.acceptChildren(node); iln != nil && len(iln.List) > 0 {
+	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
 		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
@@ -110,7 +110,7 @@ func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
 func (p *mdP) acceptHeading(node *gmAst.Heading) *ast.HeadingNode {
 	return &ast.HeadingNode{
 		Level:   node.Level,
-		Inlines: p.acceptChildren(node),
+		Inlines: p.acceptInlineChildren(node),
 		Attrs:   nil,
 	}
 }
@@ -203,7 +203,7 @@ func (p *mdP) acceptItemSlice(node gmAst.Node) ast.ItemSlice {
 }
 
 func (p *mdP) acceptTextBlock(node *gmAst.TextBlock) ast.ItemNode {
-	if iln := p.acceptChildren(node); iln != nil && len(iln.List) > 0 {
+	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
 		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
@@ -224,7 +224,7 @@ func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
 	}
 }
 
-func (p *mdP) acceptChildren(node gmAst.Node) *ast.InlineListNode {
+func (p *mdP) acceptInlineChildren(node gmAst.Node) *ast.InlineListNode {
 	result := make([]ast.InlineNode, 0, node.ChildCount())
 	for child := node.FirstChild(); child != nil; child = child.NextSibling() {
 		if inlines := p.acceptInline(child); inlines != nil {
@@ -234,7 +234,7 @@ func (p *mdP) acceptChildren(node gmAst.Node) *ast.InlineListNode {
 	return &ast.InlineListNode{List: result}
 }
 
-func (p *mdP) acceptInline(node gmAst.Node) ast.InlineSlice {
+func (p *mdP) acceptInline(node gmAst.Node) []ast.InlineNode {
 	if node.Type() != gmAst.TypeInline {
 		panic(fmt.Sprintf("Expected inline node, but got %v", node.Type()))
 	}
@@ -257,13 +257,13 @@ func (p *mdP) acceptInline(node gmAst.Node) ast.InlineSlice {
 	panic(fmt.Sprintf("Unhandled inline node %v", node.Kind()))
 }
 
-func (p *mdP) acceptText(node *gmAst.Text) ast.InlineSlice {
+func (p *mdP) acceptText(node *gmAst.Text) []ast.InlineNode {
 	segment := node.Segment
 	if node.IsRaw() {
 		return splitText(string(segment.Value(p.source)))
 	}
 	ins := splitText(string(segment.Value(p.source)))
-	result := make(ast.InlineSlice, 0, len(ins)+1)
+	result := make([]ast.InlineNode, 0, len(ins)+1)
 	for _, in := range ins {
 		if tn, ok := in.(*ast.TextNode); ok {
 			tn.Text = cleanText(tn.Text, true)
@@ -279,11 +279,11 @@ func (p *mdP) acceptText(node *gmAst.Text) ast.InlineSlice {
 }
 
 // splitText transform the text into a sequence of TextNode and SpaceNode
-func splitText(text string) ast.InlineSlice {
+func splitText(text string) []ast.InlineNode {
 	if text == "" {
-		return ast.InlineSlice{}
+		return nil
 	}
-	result := make(ast.InlineSlice, 0, 1)
+	result := make([]ast.InlineNode, 0, 1)
 
 	state := 0 // 0=unknown,1=non-spaces,2=spaces
 	lastPos := 0
@@ -354,8 +354,8 @@ func cleanText(text string, cleanBS bool) string {
 	return sb.String()
 }
 
-func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) ast.InlineSlice {
-	return ast.InlineSlice{
+func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) []ast.InlineNode {
+	return []ast.InlineNode{
 		&ast.LiteralNode{
 			Kind:  ast.LiteralProg,
 			Attrs: nil, //TODO
@@ -386,53 +386,53 @@ func cleanCodeSpan(text string) string {
 	return sb.String()
 }
 
-func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
+func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
 	kind := ast.FormatEmph
 	if node.Level == 2 {
 		kind = ast.FormatStrong
 	}
-	return ast.InlineSlice{
+	return []ast.InlineNode{
 		&ast.FormatNode{
 			Kind:    kind,
 			Attrs:   nil, //TODO
-			Inlines: p.acceptChildren(node),
+			Inlines: p.acceptInlineChildren(node),
 		},
 	}
 }
 
-func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
+func (p *mdP) acceptLink(node *gmAst.Link) []ast.InlineNode {
 	ref := ast.ParseReference(cleanText(string(node.Destination), true))
 	var attrs *ast.Attributes
 	if title := string(node.Title); len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
-	return ast.InlineSlice{
+	return []ast.InlineNode{
 		&ast.LinkNode{
 			Ref:     ref,
-			Inlines: p.acceptChildren(node),
+			Inlines: p.acceptInlineChildren(node),
 			OnlyRef: false,
 			Attrs:   attrs,
 		},
 	}
 }
 
-func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
+func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
 	ref := ast.ParseReference(cleanText(string(node.Destination), true))
 	var attrs *ast.Attributes
 	if title := string(node.Title); len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
-	return ast.InlineSlice{
+	return []ast.InlineNode{
 		&ast.EmbedNode{
 			Material: &ast.ReferenceMaterialNode{Ref: ref},
-			Inlines:  &ast.InlineListNode{List: p.flattenInlineSlice(node)},
+			Inlines:  p.flattenInlineList(node),
 			Attrs:    attrs,
 		},
 	}
 }
 
-func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
-	iln := p.acceptChildren(node)
+func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
+	iln := p.acceptInlineChildren(node)
 	var sb strings.Builder
 	_, err := p.textEnc.WriteInlines(&sb, iln)
 	if err != nil {
@@ -440,16 +440,16 @@ func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
 	}
 	text := sb.String()
 	if text == "" {
-		return nil
+		return &ast.InlineListNode{}
 	}
-	return ast.InlineSlice{
+	return &ast.InlineListNode{List: []ast.InlineNode{
 		&ast.TextNode{
 			Text: text,
 		},
-	}
+	}}
 }
 
-func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
+func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {
 	url := node.URL(p.source)
 	if node.AutoLinkType == gmAst.AutoLinkEmail &&
 		!bytes.HasPrefix(bytes.ToLower(url), []byte("mailto:")) {
@@ -460,7 +460,7 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 	if len(label) == 0 {
 		label = url
 	}
-	return ast.InlineSlice{
+	return []ast.InlineNode{
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: string(label)}}},
@@ -470,13 +470,13 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 	}
 }
 
-func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) ast.InlineSlice {
+func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) []ast.InlineNode {
 	segs := make([]string, 0, node.Segments.Len())
 	for i := 0; i < node.Segments.Len(); i++ {
 		segment := node.Segments.At(i)
 		segs = append(segs, string(segment.Value(p.source)))
 	}
-	return ast.InlineSlice{
+	return []ast.InlineNode{
 		&ast.LiteralNode{
 			Kind:  ast.LiteralHTML,
 			Attrs: nil, // TODO: add HTML as language

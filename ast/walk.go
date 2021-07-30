@@ -25,20 +25,6 @@ func Walk(v Visitor, node Node) {
 	v.Visit(nil)
 }
 
-// WalkBlockSlice traverse a block slice.
-func WalkBlockSlice(v Visitor, bns BlockSlice) {
-	for _, bn := range bns {
-		Walk(v, bn)
-	}
-}
-
-// WalkInlineSlice traverses an inline slice.
-func WalkInlineSlice(v Visitor, ins InlineSlice) {
-	for _, in := range ins {
-		Walk(v, in)
-	}
-}
-
 // WalkItemSlice traverses an item slice.
 func WalkItemSlice(v Visitor, ins ItemSlice) {
 	for _, in := range ins {

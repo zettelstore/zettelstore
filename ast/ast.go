@@ -40,21 +40,6 @@ type BlockNode interface {
 	blockNode()
 }
 
-// BlockSlice is a slice of BlockNodes.
-type BlockSlice []BlockNode
-
-// BlockListNode is a list of BlockNodes.
-type BlockListNode struct {
-	List []BlockNode
-}
-
-// WalkChildren walks down to the descriptions.
-func (bln *BlockListNode) WalkChildren(v Visitor) {
-	for _, bn := range bln.List {
-		Walk(v, bn)
-	}
-}
-
 // ItemNode is a node that can occur as a list item.
 type ItemNode interface {
 	BlockNode
@@ -89,21 +74,6 @@ type DescriptionSlice []DescriptionNode
 type InlineNode interface {
 	Node
 	inlineNode()
-}
-
-// InlineSlice is a slice of InlineNodes.
-type InlineSlice []InlineNode
-
-// InlineListNode is a list of BlockNodes.
-type InlineListNode struct {
-	List []InlineNode
-}
-
-// WalkChildren walks down to the descriptions.
-func (iln *InlineListNode) WalkChildren(v Visitor) {
-	for _, bn := range iln.List {
-		Walk(v, bn)
-	}
 }
 
 // Reference is a reference to external or internal material.

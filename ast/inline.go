@@ -13,6 +13,27 @@ package ast
 
 // Definitions of inline nodes.
 
+// InlineListNode is a list of BlockNodes.
+type InlineListNode struct {
+	List []InlineNode
+}
+
+func (iln *InlineListNode) inlineNode() { /* Just a marker */ }
+
+// WalkChildren walks down to the descriptions.
+func (iln *InlineListNode) WalkChildren(v Visitor) {
+	for _, bn := range iln.List {
+		Walk(v, bn)
+	}
+}
+
+// Append inline node(s) to the list.
+func (iln *InlineListNode) Append(in ...InlineNode) {
+	iln.List = append(iln.List, in...)
+}
+
+// --------------------------------------------------------------------------
+
 // TextNode just contains some text.
 type TextNode struct {
 	Text string // The text itself.

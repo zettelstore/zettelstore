@@ -66,7 +66,7 @@ func Get(name string) *Info {
 // ParseBlocks parses some input and returns a slice of block nodes.
 func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	bs := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanupBlockSlice(bs.List)
+	cleaner.CleanupBlockList(bs)
 	return bs
 }
 

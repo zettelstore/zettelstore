@@ -21,17 +21,17 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// CleanupBlockSlice cleans the given block slice.
-func CleanupBlockSlice(bs ast.BlockSlice) {
+// CleanupBlockList cleans the given block list.
+func CleanupBlockList(bln *ast.BlockListNode) {
 	cv := cleanupVisitor{
 		textEnc: encoder.Create(api.EncoderText, nil),
 		hasMark: false,
 		doMark:  false,
 	}
-	ast.WalkBlockSlice(&cv, bs)
+	ast.Walk(&cv, bln)
 	if cv.hasMark {
 		cv.doMark = true
-		ast.WalkBlockSlice(&cv, bs)
+		ast.Walk(&cv, bln)
 	}
 }
 

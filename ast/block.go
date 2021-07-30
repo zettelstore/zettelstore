@@ -13,6 +13,20 @@ package ast
 
 // Definition of Block nodes.
 
+// BlockListNode is a list of BlockNodes.
+type BlockListNode struct {
+	List []BlockNode
+}
+
+// WalkChildren walks down to the descriptions.
+func (bln *BlockListNode) WalkChildren(v Visitor) {
+	for _, bn := range bln.List {
+		Walk(v, bn)
+	}
+}
+
+//--------------------------------------------------------------------------
+
 // ParaNode contains just a sequence of inline elements.
 // Another name is "paragraph".
 type ParaNode struct {

@@ -76,24 +76,23 @@ type evaluator struct {
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.InlineListNode:
-		n.List = e.walkInlineSlice(n.List)
+		e.visitInlineList(n)
 	default:
 		return e
 	}
 	return nil
 }
 
-func (e *evaluator) walkInlineSlice(ins ast.InlineSlice) ast.InlineSlice {
-	for i, in := range ins {
+func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
+	for i, in := range iln.List {
 		ast.Walk(e, in)
 		switch n := in.(type) {
 		case *ast.LinkNode:
-			ins[i] = e.evalLinkNode(n)
+			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedNode:
-			ins[i] = e.evalEmbedNode(n)
+			iln.List[i] = e.evalEmbedNode(n)
 		}
 	}
-	return ins
 }
 
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {

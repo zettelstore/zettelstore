@@ -47,7 +47,7 @@ func TestLinks(t *testing.T) {
 		t.Error("Links expected, and no images, but got:", summary.Links, "and", summary.Embeds)
 	}
 
-	para.Inlines.List = append(para.Inlines.List, intNode)
+	para.Inlines.Append(intNode)
 	summary = collect.References(zn)
 	if cnt := len(summary.Links); cnt != 3 {
 		t.Error("Link count does not work. Expected: 3, got", summary.Links)

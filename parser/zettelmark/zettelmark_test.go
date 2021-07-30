@@ -50,7 +50,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 			inp := input.NewInput(tc.source)
 			bns := parser.ParseBlocks(inp, nil, meta.ValueSyntaxZmk)
 			var tv TestVisitor
-			ast.WalkBlockSlice(&tv, bns.List)
+			ast.Walk(&tv, bns)
 			got := tv.String()
 			if tc.want != got {
 				st.Errorf("\nwant=%q\n got=%q", tc.want, got)
@@ -668,7 +668,7 @@ func (tv *TestVisitor) String() string { return tv.b.String() }
 func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.InlineListNode:
-		tv.visitInlineSlice(n.List)
+		tv.visitInlineList(n)
 	case *ast.ParaNode:
 		tv.b.WriteString("(PARA")
 		ast.Walk(tv, n.Inlines)
@@ -888,8 +888,8 @@ var mapLiteralKind = map[ast.LiteralKind]rune{
 	ast.LiteralComment: '%',
 }
 
-func (tv *TestVisitor) visitInlineSlice(ins ast.InlineSlice) {
-	for _, in := range ins {
+func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
+	for _, in := range iln.List {
 		tv.b.WriteByte(' ')
 		ast.Walk(tv, in)
 	}

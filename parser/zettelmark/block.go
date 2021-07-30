@@ -18,15 +18,15 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// parseBlockSlice parses a sequence of blocks.
-func (cp *zmkP) parseBlockSlice() ast.BlockSlice {
+// parseBlockList parses a sequence of blocks.
+func (cp *zmkP) parseBlockList() *ast.BlockListNode {
 	inp := cp.inp
 	var lastPara *ast.ParaNode
-	result := make(ast.BlockSlice, 0, 2)
+	bs := make([]ast.BlockNode, 0, 2)
 	for inp.Ch != input.EOS {
 		bn, cont := cp.parseBlock(lastPara)
 		if bn != nil {
-			result = append(result, bn)
+			bs = append(bs, bn)
 		}
 		if !cont {
 			lastPara, _ = bn.(*ast.ParaNode)
@@ -35,7 +35,7 @@ func (cp *zmkP) parseBlockSlice() ast.BlockSlice {
 	if cp.nestingLevel != 0 {
 		panic("Nesting level was not decremented")
 	}
-	return result
+	return &ast.BlockListNode{List: bs}
 }
 
 // parseBlock parses one block.
@@ -95,7 +95,7 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 	cp.clearStacked()
 	pn := cp.parsePara()
 	if lastPara != nil {
-		lastPara.Inlines.List = append(lastPara.Inlines.List, pn.Inlines.List...)
+		lastPara.Inlines.Append(pn.Inlines.List...)
 		return nil, true
 	}
 	return pn, false
@@ -134,7 +134,7 @@ func (cp *zmkP) parsePara() *ast.ParaNode {
 		if in == nil {
 			return pn
 		}
-		pn.Inlines.List = append(pn.Inlines.List, in)
+		pn.Inlines.Append(in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			ch := cp.inp.Ch
 			switch ch {
@@ -265,7 +265,7 @@ func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
 		if rn.Inlines == nil {
 			rn.Inlines = &ast.InlineListNode{List: []ast.InlineNode{in}}
 		} else {
-			rn.Inlines.List = append(rn.Inlines.List, in)
+			rn.Inlines.Append(in)
 		}
 	}
 
@@ -301,7 +301,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 			inp.SkipToEOL()
 			return hn, true
 		}
-		hn.Inlines.List = append(hn.Inlines.List, in)
+		hn.Inlines.Append(in)
 	}
 }
 
@@ -436,7 +436,7 @@ func (cp *zmkP) parseDefTerm() (res ast.BlockNode, success bool) {
 		if descrl.Descriptions[defPos].Term == nil {
 			descrl.Descriptions[defPos].Term = &ast.InlineListNode{}
 		}
-		descrl.Descriptions[defPos].Term.List = append(descrl.Descriptions[defPos].Term.List, in)
+		descrl.Descriptions[defPos].Term.Append(in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			return res, true
 		}
@@ -505,7 +505,7 @@ func (cp *zmkP) parseIndentForList(cnt int) bool {
 	}
 	lbn := ln.Items[len(ln.Items)-1]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-		lpn.Inlines.List = append(lpn.Inlines.List, pn.Inlines.List...)
+		lpn.Inlines.Append(pn.Inlines.List...)
 	} else {
 		ln.Items[len(ln.Items)-1] = append(ln.Items[len(ln.Items)-1], pn)
 	}
@@ -524,7 +524,7 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 			if in == nil {
 				return true
 			}
-			cp.descrl.Descriptions[defPos].Term.List = append(cp.descrl.Descriptions[defPos].Term.List, in)
+			cp.descrl.Descriptions[defPos].Term.Append(in)
 			if _, ok := in.(*ast.BreakNode); ok {
 				return true
 			}
@@ -539,7 +539,7 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 	descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
 	lbn := cp.descrl.Descriptions[defPos].Descriptions[descrPos]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-		lpn.Inlines.List = append(lpn.Inlines.List, pn.Inlines.List...)
+		lpn.Inlines.Append(pn.Inlines.List...)
 	} else {
 		descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
 		cp.descrl.Descriptions[defPos].Descriptions[descrPos] = append(cp.descrl.Descriptions[defPos].Descriptions[descrPos], pn)
@@ -558,7 +558,7 @@ func (cp *zmkP) parseLinePara() *ast.ParaNode {
 			}
 			return pn
 		}
-		pn.Inlines.List = append(pn.Inlines.List, in)
+		pn.Inlines.Append(in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			return pn
 		}
