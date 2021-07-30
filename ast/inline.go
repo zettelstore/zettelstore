@@ -94,8 +94,8 @@ func (ln *LinkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the link text.
 func (ln *LinkNode) WalkChildren(v Visitor) {
-	if ln.Inlines != nil {
-		Walk(v, ln.Inlines)
+	if iln := ln.Inlines; iln != nil {
+		Walk(v, iln)
 	}
 }
 
@@ -108,12 +108,12 @@ type EmbedNode struct {
 	Attrs    *Attributes     // Optional attributes
 }
 
-func (in *EmbedNode) inlineNode() { /* Just a marker */ }
+func (en *EmbedNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
-func (in *EmbedNode) WalkChildren(v Visitor) {
-	if in.Inlines != nil {
-		Walk(v, in.Inlines)
+func (en *EmbedNode) WalkChildren(v Visitor) {
+	if iln := en.Inlines; iln != nil {
+		Walk(v, iln)
 	}
 }
 
@@ -130,8 +130,8 @@ func (cn *CiteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the cite text.
 func (cn *CiteNode) WalkChildren(v Visitor) {
-	if cn.Inlines != nil {
-		Walk(v, cn.Inlines)
+	if iln := cn.Inlines; iln != nil {
+		Walk(v, iln)
 	}
 }
 

@@ -103,14 +103,14 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 
 func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
 	for pos, cell := range tn.Header {
-		inlines := cell.Inlines
-		if inlines == nil {
+		iln := cell.Inlines
+		if iln == nil || len(iln.List) == 0 {
 			continue
 		}
-		if textNode, ok := inlines.List[0].(*ast.TextNode); ok {
+		if textNode, ok := iln.List[0].(*ast.TextNode); ok {
 			textNode.Text = strings.TrimPrefix(textNode.Text, "=")
 		}
-		if textNode, ok := inlines.List[len(inlines.List)-1].(*ast.TextNode); ok {
+		if textNode, ok := iln.List[len(iln.List)-1].(*ast.TextNode); ok {
 			if tnl := len(textNode.Text); tnl > 0 {
 				if align := getAlignment(textNode.Text[tnl-1]); align != ast.AlignDefault {
 					tn.Align[pos] = align
@@ -177,10 +177,11 @@ func getAlignment(ch byte) ast.Alignment {
 
 // processCell tries to recognize cell formatting.
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
-	if cell.Inlines == nil {
+	iln := cell.Inlines
+	if iln == nil || len(iln.List) == 0 {
 		return
 	}
-	if textNode, ok := cell.Inlines.List[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
+	if textNode, ok := iln.List[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
 		align := getAlignment(textNode.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
@@ -191,7 +192,7 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	} else {
 		cell.Align = colAlign
 	}
-	pp.visitInlineList(cell.Inlines)
+	pp.visitInlineList(iln)
 }
 
 var mapSemantic = map[ast.FormatKind]ast.FormatKind{

@@ -98,8 +98,8 @@ func (rn *RegionNode) itemNode()  { /* Just a marker */ }
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
 	Walk(v, rn.Blocks)
-	if rn.Inlines != nil {
-		Walk(v, rn.Inlines)
+	if iln := rn.Inlines; iln != nil {
+		Walk(v, iln)
 	}
 }
 
@@ -225,11 +225,15 @@ func (tn *TableNode) blockNode() { /* Just a marker */ }
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
 	for _, cell := range tn.Header {
-		Walk(v, cell.Inlines)
+		if iln := cell.Inlines; iln != nil {
+			Walk(v, iln)
+		}
 	}
 	for _, row := range tn.Rows {
 		for _, cell := range row {
-			Walk(v, cell.Inlines)
+			if iln := cell.Inlines; iln != nil {
+				Walk(v, iln)
+			}
 		}
 	}
 }
