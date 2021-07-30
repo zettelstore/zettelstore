@@ -69,9 +69,9 @@ func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ne *nativeEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
+func (ne *nativeEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(w, ne)
-	v.walkInlineSlice(is)
+	v.walkInlineSlice(iln.List)
 	length, err := v.b.Flush()
 	return length, err
 }

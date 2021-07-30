@@ -432,9 +432,9 @@ func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 }
 
 func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
-	ins := p.acceptChildren(node)
+	iln := p.acceptChildren(node)
 	var sb strings.Builder
-	_, err := p.textEnc.WriteInlines(&sb, ins.List)
+	_, err := p.textEnc.WriteInlines(&sb, iln)
 	if err != nil {
 		panic(err)
 	}

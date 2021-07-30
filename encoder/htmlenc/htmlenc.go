@@ -64,7 +64,7 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 		if iln := parser.ParseMetadata(title); iln != nil {
 			textEnc := encoder.Create(api.EncoderText, nil)
 			var sb strings.Builder
-			textEnc.WriteInlines(&sb, iln.List)
+			textEnc.WriteInlines(&sb, iln)
 			v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
 			v.writeQuotedEscaped(sb.String())
 			v.b.WriteString("\">")
@@ -91,12 +91,12 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) 
 }
 
 // WriteInlines writes an inline slice to the writer
-func (he *htmlEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
+func (he *htmlEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(he, w)
 	if env := he.env; env != nil {
 		v.inInteractive = env.Interactive
 	}
-	ast.WalkInlineSlice(v, is)
+	ast.Walk(v, iln)
 	length, err := v.b.Flush()
 	return length, err
 }

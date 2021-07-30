@@ -30,7 +30,7 @@ func MetaAsInlineList(m *meta.Meta, key string) *ast.InlineListNode {
 func MetaAsText(m *meta.Meta, key string) string {
 	textEncoder := encoder.Create(api.EncoderText, nil)
 	var sb strings.Builder
-	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineList(m, key).List)
+	_, err := textEncoder.WriteInlines(&sb, MetaAsInlineList(m, key))
 	if err == nil {
 		return sb.String()
 	}

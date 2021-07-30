@@ -57,9 +57,9 @@ func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ze *zmkEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
+func (ze *zmkEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(w, ze)
-	ast.WalkInlineSlice(v, is)
+	ast.Walk(v, iln)
 	length, err := v.b.Flush()
 	return length, err
 }

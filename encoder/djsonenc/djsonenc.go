@@ -73,9 +73,9 @@ func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, e
 }
 
 // WriteInlines writes an inline slice to the writer
-func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
+func (je *jsonDetailEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.walkInlineSlice(is)
+	ast.Walk(v, iln)
 	length, err := v.b.Flush()
 	return length, err
 }

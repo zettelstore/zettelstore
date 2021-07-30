@@ -72,7 +72,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			return
 		}
 		htmlTitle, err := encodeInlines(
-			encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle).List, api.EncoderHTML, &envHTML)
+			encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle), api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -145,7 +145,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 var errNoSuchEncoding = errors.New("no such encoding")
 
 // encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+	if is == nil {
+		return "", nil
+	}
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
 		return "", errNoSuchEncoding

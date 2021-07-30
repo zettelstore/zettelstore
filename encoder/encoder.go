@@ -28,7 +28,7 @@ type Encoder interface {
 	WriteMeta(io.Writer, *meta.Meta) (int, error)
 	WriteContent(io.Writer, *ast.ZettelNode) (int, error)
 	WriteBlocks(io.Writer, ast.BlockSlice) (int, error)
-	WriteInlines(io.Writer, ast.InlineSlice) (int, error)
+	WriteInlines(io.Writer, *ast.InlineListNode) (int, error)
 }
 
 // Some errors to signal when encoder methods are not implemented.

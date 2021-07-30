@@ -49,7 +49,7 @@ func (cv *cleanupVisitor) Visit(node ast.Node) ast.Visitor {
 			return nil
 		}
 		var sb strings.Builder
-		_, err := cv.textEnc.WriteInlines(&sb, n.Inlines.List)
+		_, err := cv.textEnc.WriteInlines(&sb, n.Inlines)
 		if err != nil {
 			return nil
 		}

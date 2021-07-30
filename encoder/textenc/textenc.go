@@ -58,7 +58,7 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 			}
 		case meta.TypeZettelmarkup:
 			if iln := parser.ParseMetadata(pair.Value); iln != nil {
-				te.WriteInlines(w, iln.List)
+				te.WriteInlines(w, iln)
 			}
 		default:
 			b.WriteString(pair.Value)
@@ -82,9 +82,9 @@ func (te *textEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) 
 }
 
 // WriteInlines writes an inline slice to the writer
-func (te *textEncoder) WriteInlines(w io.Writer, is ast.InlineSlice) (int, error) {
+func (te *textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(w)
-	ast.WalkInlineSlice(v, is)
+	ast.Walk(v, iln)
 	length, err := v.b.Flush()
 	return length, err
 }
