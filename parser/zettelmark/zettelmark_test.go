@@ -691,9 +691,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
 		tv.b.WriteString(code)
-		if n.Blocks != nil {
+		if n.Blocks != nil && len(n.Blocks.List) > 0 {
 			tv.b.WriteByte(' ')
-			ast.WalkBlockSlice(tv, n.Blocks)
+			ast.Walk(tv, n.Blocks)
 		}
 		if n.Inlines != nil {
 			tv.b.WriteString(" (LINE")
@@ -838,6 +838,8 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 		tv.b.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
+	default:
+		return tv
 	}
 	return nil
 }

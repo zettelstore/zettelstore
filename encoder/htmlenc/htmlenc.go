@@ -48,7 +48,7 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error)
 	v.b.WriteStrings("<title>", encfun.MetaAsText(zn.InhMeta, meta.KeyTitle), "</title>")
 	v.acceptMeta(zn.InhMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
-	ast.WalkBlockSlice(v, zn.Ast)
+	ast.Walk(v, zn.Ast)
 	v.writeEndnotes()
 	v.b.WriteString("</body>\n</html>")
 	length, err := v.b.Flush()
@@ -76,7 +76,7 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return he.WriteBlocks(w, zn.Ast)
+	return he.WriteBlocks(w, zn.Ast.List)
 }
 
 // WriteBlocks encodes a block slice.

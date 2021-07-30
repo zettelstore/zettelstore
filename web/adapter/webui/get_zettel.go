@@ -77,7 +77,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
+		htmlContent, err := encodeBlocks(zn.Ast.List, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

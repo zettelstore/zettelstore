@@ -26,7 +26,7 @@ type ZettelNode struct {
 	Content domain.Content // Original content
 	Zid     id.Zid         // Zettel identification.
 	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
-	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.
+	Ast     *BlockListNode // Zettel abstract syntax tree is a sequence of block nodes.
 }
 
 // Node is the interface, all nodes must implement.

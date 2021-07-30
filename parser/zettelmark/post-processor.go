@@ -36,6 +36,8 @@ type postProcessor struct {
 
 func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		n.List = pp.processBlockSlice(n.List)
 	case *ast.InlineListNode:
 		n.List = pp.processInlineSlice(n.List)
 	case *ast.ParaNode:
@@ -45,7 +47,7 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 		if n.Kind == ast.RegionVerse {
 			pp.inVerse = true
 		}
-		n.Blocks = pp.processBlockSlice(n.Blocks)
+		n.Blocks.List = pp.processBlockSlice(n.Blocks.List)
 		pp.inVerse = oldVerse
 		return pp
 	case *ast.HeadingNode:

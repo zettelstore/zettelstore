@@ -33,7 +33,7 @@ func (data *collectData) initialize() {
 }
 
 func collectZettelIndexData(zn *ast.ZettelNode, data *collectData) {
-	ast.WalkBlockSlice(data, zn.Ast)
+	ast.Walk(data, zn.Ast)
 }
 
 func collectInlineIndexData(ins ast.InlineSlice, data *collectData) {

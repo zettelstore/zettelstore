@@ -97,6 +97,6 @@ func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *a
 		Content: zettel.Content,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax),
+		Ast:     &ast.BlockListNode{List: ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax)},
 	}
 }

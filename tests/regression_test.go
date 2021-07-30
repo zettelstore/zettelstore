@@ -118,7 +118,7 @@ func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc ap
 	var env encoder.Environment
 	if enc := encoder.Create(enc, &env); enc != nil {
 		var sb strings.Builder
-		enc.WriteBlocks(&sb, zn.Ast)
+		enc.WriteBlocks(&sb, zn.Ast.List)
 		checkFileContent(t, resultName, sb.String())
 		return
 	}
@@ -128,13 +128,13 @@ func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc ap
 func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
 	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var sb strings.Builder
-	zmkEncoder.WriteBlocks(&sb, zn.Ast)
+	zmkEncoder.WriteBlocks(&sb, zn.Ast.List)
 	gotFirst := sb.String()
 	sb.Reset()
 
 	newZettel := parser.ParseZettel(domain.Zettel{
 		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "", testConfig)
-	zmkEncoder.WriteBlocks(&sb, newZettel.Ast)
+	zmkEncoder.WriteBlocks(&sb, newZettel.Ast.List)
 	gotSecond := sb.String()
 	sb.Reset()
 

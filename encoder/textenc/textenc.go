@@ -33,7 +33,7 @@ type textEncoder struct{}
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta)
-	v.acceptBlockSlice(zn.Ast)
+	v.acceptBlockList(zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -68,13 +68,13 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return te.WriteBlocks(w, zn.Ast)
+	return te.WriteBlocks(w, zn.Ast.List)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
 func (te *textEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
-	v.acceptBlockSlice(bs)
+	v.acceptBlockList(&ast.BlockListNode{List: bs})
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -98,6 +98,8 @@ func newVisitor(w io.Writer) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		v.acceptBlockList(n)
 	case *ast.VerbatimNode:
 		if n.Kind == ast.VerbatimComment {
 			return nil
@@ -108,7 +110,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		return nil
 	case *ast.RegionNode:
-		v.acceptBlockSlice(n.Blocks)
+		v.acceptBlockList(n.Blocks)
 		if n.Inlines != nil {
 			v.b.WriteByte('\n')
 			ast.Walk(v, n.Inlines)
@@ -185,8 +187,8 @@ func (v *visitor) writeRow(row ast.TableRow) {
 	}
 }
 
-func (v *visitor) acceptBlockSlice(bns ast.BlockSlice) {
-	for i, bn := range bns {
+func (v *visitor) acceptBlockList(bns *ast.BlockListNode) {
+	for i, bn := range bns.List {
 		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)
 	}

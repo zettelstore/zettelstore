@@ -23,7 +23,9 @@ type Summary struct {
 // References returns all references mentioned in the given zettel. This also
 // includes references to images.
 func References(zn *ast.ZettelNode) (s Summary) {
-	ast.WalkBlockSlice(&s, zn.Ast)
+	if zn.Ast != nil {
+		ast.Walk(&s, zn.Ast)
+	}
 	return s
 }
 

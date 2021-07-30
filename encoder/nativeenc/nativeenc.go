@@ -43,7 +43,7 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, erro
 	v.b.WriteByte(']')
 	v.acceptMeta(zn.InhMeta, false)
 	v.b.WriteByte('\n')
-	v.walkBlockSlice(zn.Ast)
+	ast.Walk(v, zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -57,7 +57,7 @@ func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ne.WriteBlocks(w, zn.Ast)
+	return ne.WriteBlocks(w, zn.Ast.List)
 }
 
 // WriteBlocks writes a block slice to the writer
@@ -89,6 +89,8 @@ func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		v.walkBlockSlice(n.List)
 	case *ast.InlineListNode:
 		v.walkInlineSlice(n.List)
 	case *ast.ParaNode:
@@ -283,7 +285,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.writeNewLine()
 	v.b.WriteByte('[')
 	v.level++
-	v.walkBlockSlice(rn.Blocks)
+	ast.Walk(v, rn.Blocks)
 	v.level--
 	v.b.WriteByte(']')
 	if rn.Inlines != nil {

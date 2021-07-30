@@ -55,7 +55,7 @@ func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *EvaluateEnvi
 		getMeta: uc.getMeta,
 		env:     env,
 	}
-	ast.WalkBlockSlice(&e, zn.Ast)
+	ast.Walk(&e, zn.Ast)
 	return zn, nil
 }
 

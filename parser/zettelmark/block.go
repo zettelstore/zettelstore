@@ -220,7 +220,12 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	if inp.Ch == input.EOS {
 		return nil, false
 	}
-	rn = &ast.RegionNode{Kind: kind, Attrs: attrs}
+	rn = &ast.RegionNode{
+		Kind:    kind,
+		Attrs:   attrs,
+		Blocks:  &ast.BlockListNode{},
+		Inlines: nil,
+	}
 	var lastPara *ast.ParaNode
 	inp.EatEOL()
 	for {
@@ -237,7 +242,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 		}
 		bn, cont := cp.parseBlock(lastPara)
 		if bn != nil {
-			rn.Blocks = append(rn.Blocks, bn)
+			rn.Blocks.List = append(rn.Blocks.List, bn)
 		}
 		if !cont {
 			lastPara, _ = bn.(*ast.ParaNode)

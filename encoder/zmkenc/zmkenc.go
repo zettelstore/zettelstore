@@ -34,7 +34,7 @@ type zmkEncoder struct{}
 func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w, ze)
 	zn.InhMeta.WriteAsHeader(&v.b, true)
-	ast.WalkBlockSlice(v, zn.Ast)
+	ast.Walk(v, zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -45,7 +45,7 @@ func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ze.WriteBlocks(w, zn.Ast)
+	return ze.WriteBlocks(w, zn.Ast.List)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
@@ -163,7 +163,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteString(kind)
 	v.visitAttributes(rn.Attrs)
 	v.b.WriteByte('\n')
-	ast.WalkBlockSlice(v, rn.Blocks)
+	ast.Walk(v, rn.Blocks)
 	v.b.WriteString(kind)
 	if rn.Inlines != nil {
 		v.b.WriteByte(' ')

@@ -63,8 +63,8 @@ func (vn *VerbatimNode) WalkChildren(v Visitor) { /* No children*/ }
 type RegionNode struct {
 	Kind    RegionKind
 	Attrs   *Attributes
-	Blocks  BlockSlice
-	Inlines *InlineListNode // Additional text at the end of the region
+	Blocks  *BlockListNode
+	Inlines *InlineListNode // Optional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
@@ -83,7 +83,7 @@ func (rn *RegionNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
-	WalkBlockSlice(v, rn.Blocks)
+	Walk(v, rn.Blocks)
 	if rn.Inlines != nil {
 		Walk(v, rn.Inlines)
 	}

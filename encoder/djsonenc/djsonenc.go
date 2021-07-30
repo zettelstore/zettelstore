@@ -43,7 +43,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, 
 	v.writeMeta(zn.InhMeta)
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
-	v.walkBlockSlice(zn.Ast)
+	ast.Walk(v, zn.Ast)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
@@ -61,7 +61,7 @@ func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return je.WriteBlocks(w, zn.Ast)
+	return je.WriteBlocks(w, zn.Ast.List)
 }
 
 // WriteBlocks writes a block slice to the writer
@@ -92,6 +92,9 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
 
 func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		v.walkBlockSlice(n.List)
+		return nil
 	case *ast.InlineListNode:
 		v.walkInlineSlice(n.List)
 		return nil
@@ -230,7 +233,7 @@ func (v *detailVisitor) visitRegion(rn *ast.RegionNode) {
 	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
-	v.walkBlockSlice(rn.Blocks)
+	ast.Walk(v, rn.Blocks)
 	if rn.Inlines != nil {
 		v.writeContentStart('i')
 		ast.Walk(v, rn.Inlines)

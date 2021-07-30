@@ -15,7 +15,10 @@ import "zettelstore.de/z/ast"
 
 // Order of internal reference within the given zettel.
 func Order(zn *ast.ZettelNode) (result []*ast.Reference) {
-	for _, bn := range zn.Ast {
+	if zn.Ast == nil {
+		return nil
+	}
+	for _, bn := range zn.Ast.List {
 		if ln, ok := bn.(*ast.NestedListNode); ok {
 			switch ln.Kind {
 			case ast.NestedListOrdered, ast.NestedListUnordered:
