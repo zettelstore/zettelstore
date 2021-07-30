@@ -49,20 +49,20 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	return doParseBlocks(inp, m, syntax, ast.VerbatimProg)
 }
-func parseBlocksHTML(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func parseBlocksHTML(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	return doParseBlocks(inp, m, syntax, ast.VerbatimHTML)
 }
-func doParseBlocks(inp *input.Input, m *meta.Meta, syntax string, kind ast.VerbatimKind) ast.BlockSlice {
-	return ast.BlockSlice{
+func doParseBlocks(inp *input.Input, m *meta.Meta, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
+	return &ast.BlockListNode{List: []ast.BlockNode{
 		&ast.VerbatimNode{
 			Kind:  kind,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Lines: readLines(inp),
 		},
-	}
+	}}
 }
 
 func readLines(inp *input.Input) (lines []string) {
@@ -94,12 +94,12 @@ func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.
 	}}
 }
 
-func parseSVGBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func parseSVGBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	iln := parseSVGInlines(inp, syntax)
 	if iln == nil {
 		return nil
 	}
-	return ast.BlockSlice{&ast.ParaNode{Inlines: iln}}
+	return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: iln}}}
 }
 
 func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {

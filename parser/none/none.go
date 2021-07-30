@@ -27,13 +27,13 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	descrlist := &ast.DescriptionListNode{}
 	for _, p := range m.Pairs(true) {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getDescription(p.Key, p.Value))
 	}
-	return ast.BlockSlice{descrlist}
+	return &ast.BlockListNode{List: ast.BlockSlice{descrlist}}
 }
 
 func getDescription(key, value string) ast.Description {

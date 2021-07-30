@@ -50,7 +50,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 			inp := input.NewInput(tc.source)
 			bns := parser.ParseBlocks(inp, nil, meta.ValueSyntaxZmk)
 			var tv TestVisitor
-			ast.WalkBlockSlice(&tv, bns)
+			ast.WalkBlockSlice(&tv, bns.List)
 			got := tv.String()
 			if tc.want != got {
 				st.Errorf("\nwant=%q\n got=%q", tc.want, got)

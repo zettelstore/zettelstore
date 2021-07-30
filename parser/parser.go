@@ -30,7 +30,7 @@ import (
 type Info struct {
 	Name         string
 	AltNames     []string
-	ParseBlocks  func(*input.Input, *meta.Meta, string) ast.BlockSlice
+	ParseBlocks  func(*input.Input, *meta.Meta, string) *ast.BlockListNode
 	ParseInlines func(*input.Input, string) *ast.InlineListNode
 }
 
@@ -64,9 +64,9 @@ func Get(name string) *Info {
 }
 
 // ParseBlocks parses some input and returns a slice of block nodes.
-func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	bs := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanupBlockSlice(bs)
+	cleaner.CleanupBlockSlice(bs.List)
 	return bs
 }
 
@@ -97,6 +97,6 @@ func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *a
 		Content: zettel.Content,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Ast:     &ast.BlockListNode{List: ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax)},
+		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsString()), parseMeta, syntax),
 	}
 }

@@ -109,23 +109,23 @@ func TestMarkdownSpec(t *testing.T) {
 	}
 }
 
-func testAllEncodings(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc, nil).WriteBlocks(&sb, ast)
+			encoder.Create(enc, nil).WriteBlocks(&sb, ast.List)
 			sb.Reset()
 		})
 	}
 }
 
-func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
 	htmlEncoder := encoder.Create(api.EncoderHTML, &encoder.Environment{Xhtml: true})
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
-		htmlEncoder.WriteBlocks(&sb, ast)
+		htmlEncoder.WriteBlocks(&sb, ast.List)
 		gotHTML := sb.String()
 		sb.Reset()
 
@@ -145,18 +145,18 @@ func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 	})
 }
 
-func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
+func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
 	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
-		zmkEncoder.WriteBlocks(&sb, ast)
+		zmkEncoder.WriteBlocks(&sb, ast.List)
 		gotFirst := sb.String()
 		sb.Reset()
 
 		testID = tc.Example*100 + 2
 		secondAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, secondAst)
+		zmkEncoder.WriteBlocks(&sb, secondAst.List)
 		gotSecond := sb.String()
 		sb.Reset()
 
@@ -166,7 +166,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast ast.BlockSlice) {
 
 		testID = tc.Example*100 + 3
 		thirdAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, thirdAst)
+		zmkEncoder.WriteBlocks(&sb, thirdAst.List)
 		gotThird := sb.String()
 		sb.Reset()
 

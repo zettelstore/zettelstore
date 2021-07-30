@@ -37,9 +37,9 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
 	p := parseMarkdown(inp)
-	return p.acceptBlockSlice(p.docNode)
+	return &ast.BlockListNode{List: p.acceptBlockSlice(p.docNode)}
 }
 
 func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
