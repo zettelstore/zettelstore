@@ -225,15 +225,11 @@ func (tn *TableNode) blockNode() { /* Just a marker */ }
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
 	for _, cell := range tn.Header {
-		if iln := cell.Inlines; iln != nil {
-			Walk(v, iln)
-		}
+		Walk(v, cell.Inlines)
 	}
 	for _, row := range tn.Rows {
 		for _, cell := range row {
-			if iln := cell.Inlines; iln != nil {
-				Walk(v, iln)
-			}
+			Walk(v, cell.Inlines)
 		}
 	}
 }

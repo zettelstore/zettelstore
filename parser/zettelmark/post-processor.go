@@ -103,14 +103,14 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 
 func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
 	for pos, cell := range tn.Header {
-		iln := cell.Inlines
-		if iln == nil || len(iln.List) == 0 {
+		ins := cell.Inlines.List
+		if len(ins) == 0 {
 			continue
 		}
-		if textNode, ok := iln.List[0].(*ast.TextNode); ok {
+		if textNode, ok := ins[0].(*ast.TextNode); ok {
 			textNode.Text = strings.TrimPrefix(textNode.Text, "=")
 		}
-		if textNode, ok := iln.List[len(iln.List)-1].(*ast.TextNode); ok {
+		if textNode, ok := ins[len(ins)-1].(*ast.TextNode); ok {
 			if tnl := len(textNode.Text); tnl > 0 {
 				if align := getAlignment(textNode.Text[tnl-1]); align != ast.AlignDefault {
 					tn.Align[pos] = align
@@ -144,14 +144,18 @@ func tableWidth(tn *ast.TableNode) int {
 
 func appendCells(row ast.TableRow, width int, colAlign []ast.Alignment) ast.TableRow {
 	for len(row) < width {
-		row = append(row, &ast.TableCell{Align: colAlign[len(row)]})
+		row = append(row, &ast.TableCell{
+			Align:   colAlign[len(row)],
+			Inlines: &ast.InlineListNode{},
+		})
 	}
 	return row
 }
 
 func isHeaderRow(row ast.TableRow) bool {
-	for i := 0; i < len(row); i++ {
-		if inlines := row[i].Inlines.List; len(inlines) > 0 {
+	for _, cell := range row {
+		iln := cell.Inlines
+		if inlines := iln.List; len(inlines) > 0 {
 			if textNode, ok := inlines[0].(*ast.TextNode); ok {
 				if strings.HasPrefix(textNode.Text, "=") {
 					return true
@@ -178,10 +182,11 @@ func getAlignment(ch byte) ast.Alignment {
 // processCell tries to recognize cell formatting.
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
 	iln := cell.Inlines
-	if iln == nil || len(iln.List) == 0 {
+	ins := iln.List
+	if len(ins) == 0 {
 		return
 	}
-	if textNode, ok := iln.List[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
+	if textNode, ok := ins[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
 		align := getAlignment(textNode.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
@@ -192,7 +197,7 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	} else {
 		cell.Align = colAlign
 	}
-	pp.visitInlineList(iln)
+	ast.Walk(pp, iln)
 }
 
 var mapSemantic = map[ast.FormatKind]ast.FormatKind{
@@ -307,28 +312,31 @@ func (pp *postProcessor) visitInlineList(iln *ast.InlineListNode) {
 	}
 
 	if !pp.inVerse {
-		iln.List = processInlineSliceHead(iln.List)
+		processInlineSliceHead(iln)
 	}
-	toPos := pp.processInlineSliceCopy(iln.List)
-	toPos = pp.processInlineSliceTail(iln.List, toPos)
+	toPos := pp.processInlineSliceCopy(iln)
+	toPos = pp.processInlineSliceTail(iln, toPos)
 	iln.List = iln.List[:toPos:toPos]
 	pp.processInlineListInplace(iln)
 }
 
 // processInlineSliceHead removes leading spaces and empty text.
-func processInlineSliceHead(ins []ast.InlineNode) []ast.InlineNode {
-	for i := 0; i < len(ins); i++ {
-		switch in := ins[i].(type) {
+func processInlineSliceHead(iln *ast.InlineListNode) {
+	ins := iln.List
+	for i, in := range ins {
+		switch in := in.(type) {
 		case *ast.SpaceNode:
 		case *ast.TextNode:
 			if len(in.Text) > 0 {
-				return ins[i:]
+				iln.List = ins[i:]
+				return
 			}
 		default:
-			return ins[i:]
+			iln.List = ins[i:]
+			return
 		}
 	}
-	return ins[0:0]
+	iln.List = ins[0:0]
 }
 
 // processInlineSliceCopy goes forward through the slice and tries to eliminate
@@ -337,10 +345,11 @@ func processInlineSliceHead(ins []ast.InlineNode) []ast.InlineNode {
 // Two text nodes are merged into one.
 //
 // Two spaces following a break are merged into a hard break.
-func (pp *postProcessor) processInlineSliceCopy(ins []ast.InlineNode) int {
+func (pp *postProcessor) processInlineSliceCopy(iln *ast.InlineListNode) int {
+	ins := iln.List
 	maxPos := len(ins)
 	for {
-		again, toPos := pp.processInlineSliceCopyLoop(ins, maxPos)
+		again, toPos := pp.processInlineSliceCopyLoop(iln, maxPos)
 		for pos := toPos; pos < maxPos; pos++ {
 			ins[pos] = nil // Allow excess nodes to be garbage collected.
 		}
@@ -351,7 +360,8 @@ func (pp *postProcessor) processInlineSliceCopy(ins []ast.InlineNode) int {
 	}
 }
 
-func (pp *postProcessor) processInlineSliceCopyLoop(ins []ast.InlineNode, maxPos int) (bool, int) {
+func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, maxPos int) (bool, int) {
+	ins := iln.List
 	again := false
 	fromPos, toPos := 0, 0
 	for fromPos < maxPos {
@@ -395,7 +405,8 @@ func (pp *postProcessor) processInlineSliceCopyLoop(ins []ast.InlineNode, maxPos
 }
 
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.
-func (pp *postProcessor) processInlineSliceTail(ins []ast.InlineNode, toPos int) int {
+func (pp *postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos int) int {
+	ins := iln.List
 	for toPos > 0 {
 		switch n := ins[toPos-1].(type) {
 		case *ast.TextNode:
