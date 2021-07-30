@@ -78,13 +78,13 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return he.WriteBlocks(w, zn.Ast.List)
+	return he.WriteBlocks(w, zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.
-func (he *htmlEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
+func (he *htmlEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(he, w)
-	ast.WalkBlockSlice(v, bs)
+	ast.Walk(v, bln)
 	v.writeEndnotes()
 	length, err := v.b.Flush()
 	return length, err

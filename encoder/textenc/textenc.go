@@ -70,13 +70,13 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return te.WriteBlocks(w, zn.Ast.List)
+	return te.WriteBlocks(w, zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (te *textEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
+func (te *textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(w)
-	v.acceptBlockList(&ast.BlockListNode{List: bs})
+	v.acceptBlockList(bln)
 	length, err := v.b.Flush()
 	return length, err
 }

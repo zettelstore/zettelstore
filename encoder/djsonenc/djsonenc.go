@@ -61,13 +61,13 @@ func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return je.WriteBlocks(w, zn.Ast.List)
+	return je.WriteBlocks(w, zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
+func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.walkBlockSlice(bs)
+	ast.Walk(v, bln)
 	length, err := v.b.Flush()
 	return length, err
 }

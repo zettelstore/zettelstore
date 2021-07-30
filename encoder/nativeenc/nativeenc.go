@@ -57,13 +57,13 @@ func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ne.WriteBlocks(w, zn.Ast.List)
+	return ne.WriteBlocks(w, zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
+func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(w, ne)
-	v.walkBlockSlice(bs)
+	ast.Walk(v, bln)
 	length, err := v.b.Flush()
 	return length, err
 }

@@ -114,7 +114,7 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode)
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc, nil).WriteBlocks(&sb, ast.List)
+			encoder.Create(enc, nil).WriteBlocks(&sb, ast)
 			sb.Reset()
 		})
 	}
@@ -125,7 +125,7 @@ func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode)
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
-		htmlEncoder.WriteBlocks(&sb, ast.List)
+		htmlEncoder.WriteBlocks(&sb, ast)
 		gotHTML := sb.String()
 		sb.Reset()
 
@@ -150,13 +150,13 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
-		zmkEncoder.WriteBlocks(&sb, ast.List)
+		zmkEncoder.WriteBlocks(&sb, ast)
 		gotFirst := sb.String()
 		sb.Reset()
 
 		testID = tc.Example*100 + 2
 		secondAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, secondAst.List)
+		zmkEncoder.WriteBlocks(&sb, secondAst)
 		gotSecond := sb.String()
 		sb.Reset()
 
@@ -166,7 +166,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 
 		testID = tc.Example*100 + 3
 		thirdAst := parser.ParseBlocks(input.NewInput(gotFirst), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, thirdAst.List)
+		zmkEncoder.WriteBlocks(&sb, thirdAst)
 		gotThird := sb.String()
 		sb.Reset()
 

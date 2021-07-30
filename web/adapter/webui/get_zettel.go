@@ -77,7 +77,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			wui.reportError(ctx, w, err)
 			return
 		}
-		htmlContent, err := encodeBlocks(zn.Ast.List, api.EncoderHTML, &envHTML)
+		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -162,14 +162,14 @@ func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.En
 	return content.String(), nil
 }
 
-func encodeBlocks(bs ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
 		return "", errNoSuchEncoding
 	}
 
 	var content strings.Builder
-	_, err := encdr.WriteBlocks(&content, bs)
+	_, err := encdr.WriteBlocks(&content, bln)
 	if err != nil {
 		return "", err
 	}

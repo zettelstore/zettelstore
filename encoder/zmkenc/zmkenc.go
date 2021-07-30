@@ -45,13 +45,13 @@ func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 }
 
 func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ze.WriteBlocks(w, zn.Ast.List)
+	return ze.WriteBlocks(w, zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs ast.BlockSlice) (int, error) {
+func (ze *zmkEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(w, ze)
-	ast.WalkBlockSlice(v, bs)
+	ast.Walk(v, bln)
 	length, err := v.b.Flush()
 	return length, err
 }
