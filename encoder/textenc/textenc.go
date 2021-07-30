@@ -109,9 +109,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.RegionNode:
 		v.acceptBlockSlice(n.Blocks)
-		if len(n.Inlines) > 0 {
+		if n.Inlines != nil {
 			v.b.WriteByte('\n')
-			ast.WalkInlineSlice(v, n.Inlines)
+			ast.Walk(v, n.Inlines)
 		}
 		return nil
 	case *ast.NestedListNode:
@@ -126,7 +126,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.DescriptionListNode:
 		for i, descr := range n.Descriptions {
 			v.writePosChar(i, '\n')
-			ast.WalkInlineSlice(v, descr.Term)
+			ast.Walk(v, descr.Term)
 			for _, b := range descr.Descriptions {
 				v.b.WriteByte('\n')
 				for k, d := range b {
@@ -164,7 +164,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.LinkNode:
 		if !n.OnlyRef {
-			ast.WalkInlineSlice(v, n.Inlines)
+			ast.Walk(v, n.Inlines)
 		}
 		return nil
 	case *ast.FootnoteNode:
@@ -181,7 +181,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 func (v *visitor) writeRow(row ast.TableRow) {
 	for i, cell := range row {
 		v.writePosChar(i, ' ')
-		ast.WalkInlineSlice(v, cell.Inlines)
+		ast.Walk(v, cell.Inlines)
 	}
 }
 

@@ -75,38 +75,8 @@ type evaluator struct {
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.ParaNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.RegionNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.HeadingNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.DescriptionListNode:
-		for _, desc := range n.Descriptions {
-			desc.Term = e.walkInlineSlice(desc.Term)
-			for _, dns := range desc.Descriptions {
-				ast.WalkDescriptionSlice(e, dns)
-			}
-		}
-	case *ast.TableNode:
-		for _, cell := range n.Header {
-			e.walkInlineSlice(cell.Inlines)
-		}
-		for _, row := range n.Rows {
-			for _, cell := range row {
-				e.walkInlineSlice(cell.Inlines)
-			}
-		}
-	case *ast.LinkNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.EmbedNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.CiteNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.FootnoteNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
-	case *ast.FormatNode:
-		n.Inlines = e.walkInlineSlice(n.Inlines)
+	case *ast.InlineListNode:
+		n.List = e.walkInlineSlice(n.List)
 	default:
 		return e
 	}

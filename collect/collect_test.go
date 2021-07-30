@@ -36,10 +36,10 @@ func TestLinks(t *testing.T) {
 
 	intNode := &ast.LinkNode{Ref: parseRef("01234567890123")}
 	para := &ast.ParaNode{
-		Inlines: ast.InlineSlice{
+		Inlines: &ast.InlineListNode{List: []ast.InlineNode{
 			intNode,
 			&ast.LinkNode{Ref: parseRef("https://zettelstore.de/z")},
-		},
+		}},
 	}
 	zn.Ast = ast.BlockSlice{para}
 	summary = collect.References(zn)
@@ -47,7 +47,7 @@ func TestLinks(t *testing.T) {
 		t.Error("Links expected, and no images, but got:", summary.Links, "and", summary.Embeds)
 	}
 
-	para.Inlines = append(para.Inlines, intNode)
+	para.Inlines.List = append(para.Inlines.List, intNode)
 	summary = collect.References(zn)
 	if cnt := len(summary.Links); cnt != 3 {
 		t.Error("Link count does not work. Expected: 3, got", summary.Links)
@@ -59,9 +59,9 @@ func TestEmbed(t *testing.T) {
 	zn := &ast.ZettelNode{
 		Ast: ast.BlockSlice{
 			&ast.ParaNode{
-				Inlines: ast.InlineSlice{
+				Inlines: &ast.InlineListNode{List: []ast.InlineNode{
 					&ast.EmbedNode{Material: &ast.ReferenceMaterialNode{Ref: parseRef("12345678901234")}},
-				},
+				}},
 			},
 		},
 	}

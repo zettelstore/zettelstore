@@ -16,16 +16,19 @@ package ast
 // ParaNode contains just a sequence of inline elements.
 // Another name is "paragraph".
 type ParaNode struct {
-	Inlines InlineSlice
+	Inlines *InlineListNode
 }
 
 func (pn *ParaNode) blockNode()       { /* Just a marker */ }
 func (pn *ParaNode) itemNode()        { /* Just a marker */ }
 func (pn *ParaNode) descriptionNode() { /* Just a marker */ }
 
+// NewParaNode creates an empty ParaNode.
+func NewParaNode() *ParaNode { return &ParaNode{Inlines: &InlineListNode{}} }
+
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, pn.Inlines)
+	Walk(v, pn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -61,7 +64,7 @@ type RegionNode struct {
 	Kind    RegionKind
 	Attrs   *Attributes
 	Blocks  BlockSlice
-	Inlines InlineSlice // Additional text at the end of the region
+	Inlines *InlineListNode // Additional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
@@ -81,7 +84,9 @@ func (rn *RegionNode) itemNode()  { /* Just a marker */ }
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
 	WalkBlockSlice(v, rn.Blocks)
-	WalkInlineSlice(v, rn.Inlines)
+	if rn.Inlines != nil {
+		Walk(v, rn.Inlines)
+	}
 }
 
 //--------------------------------------------------------------------------
@@ -89,8 +94,8 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
 	Level   int
-	Inlines InlineSlice // Heading text, possibly formatted
-	Slug    string      // Heading text, suitable to be used as an URL fragment
+	Inlines *InlineListNode // Heading text, possibly formatted
+	Slug    string          // Heading text, suitable to be used as an URL fragment
 	Attrs   *Attributes
 }
 
@@ -99,7 +104,7 @@ func (hn *HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
 func (hn *HeadingNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, hn.Inlines)
+	Walk(v, hn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -154,7 +159,7 @@ type DescriptionListNode struct {
 
 // Description is one element of a description list.
 type Description struct {
-	Term         InlineSlice
+	Term         *InlineListNode
 	Descriptions []DescriptionSlice
 }
 
@@ -163,7 +168,7 @@ func (dn *DescriptionListNode) blockNode() {}
 // WalkChildren walks down to the descriptions.
 func (dn *DescriptionListNode) WalkChildren(v Visitor) {
 	for _, desc := range dn.Descriptions {
-		WalkInlineSlice(v, desc.Term)
+		Walk(v, desc.Term)
 		for _, dns := range desc.Descriptions {
 			WalkDescriptionSlice(v, dns)
 		}
@@ -181,8 +186,8 @@ type TableNode struct {
 
 // TableCell contains the data for one table cell
 type TableCell struct {
-	Align   Alignment   // Cell alignment
-	Inlines InlineSlice // Cell content
+	Align   Alignment       // Cell alignment
+	Inlines *InlineListNode // Cell content
 }
 
 // TableRow is a slice of cells.
@@ -206,11 +211,11 @@ func (tn *TableNode) blockNode() { /* Just a marker */ }
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
 	for _, cell := range tn.Header {
-		WalkInlineSlice(v, cell.Inlines)
+		Walk(v, cell.Inlines)
 	}
 	for _, row := range tn.Rows {
 		for _, cell := range row {
-			WalkInlineSlice(v, cell.Inlines)
+			Walk(v, cell.Inlines)
 		}
 	}
 }

@@ -92,10 +92,13 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
 
 func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.InlineListNode:
+		v.walkInlineSlice(n.List)
+		return nil
 	case *ast.ParaNode:
 		v.writeNodeStart("Para")
 		v.writeContentStart('i')
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
 	case *ast.RegionNode:
@@ -148,7 +151,7 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Ref.String())
 		v.writeContentStart('i')
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 	case *ast.EmbedNode:
 		v.visitEmbed(n)
 	case *ast.CiteNode:
@@ -156,15 +159,15 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Key)
-		if len(n.Inlines) > 0 {
+		if n.Inlines != nil {
 			v.writeContentStart('i')
-			v.walkInlineSlice(n.Inlines)
+			ast.Walk(v, n.Inlines)
 		}
 	case *ast.FootnoteNode:
 		v.writeNodeStart("Footnote")
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('i')
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 	case *ast.MarkNode:
 		v.writeNodeStart("Mark")
 		if len(n.Text) > 0 {
@@ -175,7 +178,7 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 		v.writeNodeStart(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('i')
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 	case *ast.LiteralNode:
 		kind, ok := mapLiteralKind[n.Kind]
 		if !ok {
@@ -228,9 +231,9 @@ func (v *detailVisitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
 	v.walkBlockSlice(rn.Blocks)
-	if len(rn.Inlines) > 0 {
+	if rn.Inlines != nil {
 		v.writeContentStart('i')
-		v.walkInlineSlice(rn.Inlines)
+		ast.Walk(v, rn.Inlines)
 	}
 }
 
@@ -244,7 +247,7 @@ func (v *detailVisitor) visitHeading(hn *ast.HeadingNode) {
 		v.b.WriteStrings("\"", slug, "\"")
 	}
 	v.writeContentStart('i')
-	v.walkInlineSlice(hn.Inlines)
+	ast.Walk(v, hn.Inlines)
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
@@ -274,7 +277,7 @@ func (v *detailVisitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	for i, def := range dn.Descriptions {
 		v.writeComma(i)
 		v.b.WriteByte('[')
-		v.walkInlineSlice(def.Term)
+		ast.Walk(v, def.Term)
 
 		if len(def.Descriptions) > 0 {
 			for _, b := range def.Descriptions {
@@ -326,7 +329,7 @@ var alignmentCode = map[ast.Alignment]string{
 
 func (v *detailVisitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteString(alignmentCode[cell.Align])
-	v.walkInlineSlice(cell.Inlines)
+	ast.Walk(v, cell.Inlines)
 	v.b.WriteByte(']')
 }
 
@@ -366,9 +369,9 @@ func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
 		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
 
-	if len(en.Inlines) > 0 {
+	if en.Inlines != nil {
 		v.writeContentStart('i')
-		v.walkInlineSlice(en.Inlines)
+		ast.Walk(v, en.Inlines)
 	}
 }
 

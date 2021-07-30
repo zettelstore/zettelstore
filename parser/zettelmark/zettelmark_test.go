@@ -667,9 +667,11 @@ func (tv *TestVisitor) String() string { return tv.b.String() }
 
 func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.InlineListNode:
+		tv.visitInlineSlice(n.List)
 	case *ast.ParaNode:
 		tv.b.WriteString("(PARA")
-		tv.visitInlineSlice(n.Inlines)
+		ast.Walk(tv, n.Inlines)
 		tv.b.WriteByte(')')
 	case *ast.VerbatimNode:
 		code, ok := mapVerbatimKind[n.Kind]
@@ -693,16 +695,16 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			tv.b.WriteByte(' ')
 			ast.WalkBlockSlice(tv, n.Blocks)
 		}
-		if len(n.Inlines) > 0 {
+		if n.Inlines != nil {
 			tv.b.WriteString(" (LINE")
-			tv.visitInlineSlice(n.Inlines)
+			ast.Walk(tv, n.Inlines)
 			tv.b.WriteByte(')')
 		}
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HeadingNode:
 		fmt.Fprintf(&tv.b, "(H%d", n.Level)
-		tv.visitInlineSlice(n.Inlines)
+		ast.Walk(tv, n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HRuleNode:
@@ -720,7 +722,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.b.WriteString("(DL")
 		for _, def := range n.Descriptions {
 			tv.b.WriteString(" (DT")
-			tv.visitInlineSlice(def.Term)
+			ast.Walk(tv, def.Term)
 			tv.b.WriteByte(')')
 			for _, b := range def.Descriptions {
 				tv.b.WriteString(" (DD ")
@@ -736,7 +738,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			for _, cell := range n.Header {
 				tv.b.WriteString(" (TH")
 				tv.b.WriteString(alignString[cell.Align])
-				tv.visitInlineSlice(cell.Inlines)
+				ast.Walk(tv, cell.Inlines)
 				tv.b.WriteString(")")
 			}
 			tv.b.WriteString(")")
@@ -751,7 +753,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 					}
 					tv.b.WriteString("(TD")
 					tv.b.WriteString(alignString[cell.Align])
-					tv.visitInlineSlice(cell.Inlines)
+					ast.Walk(tv, cell.Inlines)
 					tv.b.WriteString(")")
 				}
 				tv.b.WriteString(")")
@@ -782,14 +784,16 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		fmt.Fprintf(&tv.b, "(LINK %v", n.Ref)
-		tv.visitInlineSlice(n.Inlines)
+		ast.Walk(tv, n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.EmbedNode:
 		switch m := n.Material.(type) {
 		case *ast.ReferenceMaterialNode:
 			fmt.Fprintf(&tv.b, "(EMBED %v", m.Ref)
-			tv.visitInlineSlice(n.Inlines)
+			if n.Inlines != nil {
+				ast.Walk(tv, n.Inlines)
+			}
 			tv.b.WriteByte(')')
 			tv.visitAttributes(n.Attrs)
 		case *ast.BLOBMaterialNode:
@@ -799,12 +803,14 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.b, "(CITE %s", n.Key)
-		tv.visitInlineSlice(n.Inlines)
+		if n.Inlines != nil {
+			ast.Walk(tv, n.Inlines)
+		}
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.FootnoteNode:
 		tv.b.WriteString("(FN")
-		tv.visitInlineSlice(n.Inlines)
+		ast.Walk(tv, n.Inlines)
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
@@ -816,7 +822,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.b.WriteByte(')')
 	case *ast.FormatNode:
 		fmt.Fprintf(&tv.b, "{%c", mapFormatKind[n.Kind])
-		tv.visitInlineSlice(n.Inlines)
+		ast.Walk(tv, n.Inlines)
 		tv.b.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	case *ast.LiteralNode:

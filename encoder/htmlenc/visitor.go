@@ -49,7 +49,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")
-		ast.WalkInlineSlice(v, n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.writeEndPara()
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -158,7 +158,7 @@ func (v *visitor) writeEndnotes() {
 			fn := footnotes[i]
 			n := strconv.Itoa(i + 1)
 			v.b.WriteStrings("<li id=\"fn:", n, "\" role=\"doc-endnote\">")
-			ast.WalkInlineSlice(v, fn.Inlines)
+			ast.Walk(v, fn.Inlines)
 			v.b.WriteStrings(
 				" <a href=\"#fnref:",
 				n,

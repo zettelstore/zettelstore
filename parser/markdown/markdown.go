@@ -101,10 +101,8 @@ func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
 }
 
 func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
-	if ins := p.acceptInlineSlice(node); len(ins) > 0 {
-		return &ast.ParaNode{
-			Inlines: ins,
-		}
+	if iln := p.acceptChildren(node); iln != nil && len(iln.List) > 0 {
+		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
 }
@@ -112,7 +110,7 @@ func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
 func (p *mdP) acceptHeading(node *gmAst.Heading) *ast.HeadingNode {
 	return &ast.HeadingNode{
 		Level:   node.Level,
-		Inlines: p.acceptInlineSlice(node),
+		Inlines: p.acceptChildren(node),
 		Attrs:   nil,
 	}
 }
@@ -205,10 +203,8 @@ func (p *mdP) acceptItemSlice(node gmAst.Node) ast.ItemSlice {
 }
 
 func (p *mdP) acceptTextBlock(node *gmAst.TextBlock) ast.ItemNode {
-	if ins := p.acceptInlineSlice(node); len(ins) > 0 {
-		return &ast.ParaNode{
-			Inlines: ins,
-		}
+	if iln := p.acceptChildren(node); iln != nil && len(iln.List) > 0 {
+		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
 }
@@ -228,14 +224,14 @@ func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
 	}
 }
 
-func (p *mdP) acceptInlineSlice(node gmAst.Node) ast.InlineSlice {
-	result := make(ast.InlineSlice, 0, node.ChildCount())
+func (p *mdP) acceptChildren(node gmAst.Node) *ast.InlineListNode {
+	result := make([]ast.InlineNode, 0, node.ChildCount())
 	for child := node.FirstChild(); child != nil; child = child.NextSibling() {
 		if inlines := p.acceptInline(child); inlines != nil {
 			result = append(result, inlines...)
 		}
 	}
-	return result
+	return &ast.InlineListNode{List: result}
 }
 
 func (p *mdP) acceptInline(node gmAst.Node) ast.InlineSlice {
@@ -399,7 +395,7 @@ func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
 		&ast.FormatNode{
 			Kind:    kind,
 			Attrs:   nil, //TODO
-			Inlines: p.acceptInlineSlice(node),
+			Inlines: p.acceptChildren(node),
 		},
 	}
 }
@@ -413,7 +409,7 @@ func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 	return ast.InlineSlice{
 		&ast.LinkNode{
 			Ref:     ref,
-			Inlines: p.acceptInlineSlice(node),
+			Inlines: p.acceptChildren(node),
 			OnlyRef: false,
 			Attrs:   attrs,
 		},
@@ -429,16 +425,16 @@ func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 	return ast.InlineSlice{
 		&ast.EmbedNode{
 			Material: &ast.ReferenceMaterialNode{Ref: ref},
-			Inlines:  p.flattenInlineSlice(node),
+			Inlines:  &ast.InlineListNode{List: p.flattenInlineSlice(node)},
 			Attrs:    attrs,
 		},
 	}
 }
 
 func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
-	ins := p.acceptInlineSlice(node)
+	ins := p.acceptChildren(node)
 	var sb strings.Builder
-	_, err := p.textEnc.WriteInlines(&sb, ins)
+	_, err := p.textEnc.WriteInlines(&sb, ins.List)
 	if err != nil {
 		panic(err)
 	}
@@ -467,7 +463,7 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 	return ast.InlineSlice{
 		&ast.LinkNode{
 			Ref:     ref,
-			Inlines: ast.InlineSlice{&ast.TextNode{Text: string(label)}},
+			Inlines: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: string(label)}}},
 			OnlyRef: true,
 			Attrs:   nil, //TODO
 		},

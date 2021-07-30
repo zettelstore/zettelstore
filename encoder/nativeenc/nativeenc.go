@@ -89,9 +89,11 @@ func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.InlineListNode:
+		v.walkInlineSlice(n.List)
 	case *ast.ParaNode:
 		v.b.WriteString("[Para ")
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -101,7 +103,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteStrings("[Heading ", strconv.Itoa(n.Level), " \"", n.Slug, "\"")
 		v.visitAttributes(n.Attrs)
 		v.b.WriteByte(' ')
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.HRuleNode:
 		v.b.WriteString("[Hrule")
@@ -151,16 +153,16 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteString(" \"")
 		v.writeEscaped(n.Key)
 		v.b.WriteByte('"')
-		if len(n.Inlines) > 0 {
+		if n.Inlines != nil {
 			v.b.WriteString(" [")
-			v.walkInlineSlice(n.Inlines)
+			ast.Walk(v, n.Inlines)
 			v.b.WriteByte(']')
 		}
 	case *ast.FootnoteNode:
 		v.b.WriteString("Footnote")
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" [")
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.MarkNode:
 		v.b.WriteString("Mark")
@@ -173,7 +175,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.Write(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" [")
-		v.walkInlineSlice(n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.LiteralNode:
 		kind, ok := mapLiteralKind[n.Kind]
@@ -284,11 +286,11 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.walkBlockSlice(rn.Blocks)
 	v.level--
 	v.b.WriteByte(']')
-	if len(rn.Inlines) > 0 {
+	if rn.Inlines != nil {
 		v.b.WriteByte(',')
 		v.writeNewLine()
 		v.b.WriteString("[Cite ")
-		v.walkInlineSlice(rn.Inlines)
+		ast.Walk(v, rn.Inlines)
 		v.b.WriteByte(']')
 	}
 	v.level--
@@ -330,7 +332,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 		v.writeComma(i)
 		v.writeNewLine()
 		v.b.WriteString("[Term [")
-		v.walkInlineSlice(descr.Term)
+		ast.Walk(v, descr.Term)
 		v.b.WriteByte(']')
 
 		if len(descr.Descriptions) > 0 {
@@ -394,9 +396,9 @@ var alignString = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteStrings("[Cell", alignString[cell.Align])
-	if len(cell.Inlines) > 0 {
+	if cell.Inlines != nil {
 		v.b.WriteByte(' ')
-		v.walkInlineSlice(cell.Inlines)
+		ast.Walk(v, cell.Inlines)
 	}
 	v.b.WriteByte(']')
 }
@@ -421,7 +423,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.writeEscaped(ln.Ref.String())
 	v.b.WriteString("\" [")
 	if !ln.OnlyRef {
-		v.walkInlineSlice(ln.Inlines)
+		ast.Walk(v, ln.Inlines)
 	}
 	v.b.WriteByte(']')
 }
@@ -446,9 +448,9 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
 
-	if len(en.Inlines) > 0 {
+	if en.Inlines != nil {
 		v.b.WriteString(" [")
-		v.walkInlineSlice(en.Inlines)
+		ast.Walk(v, en.Inlines)
 		v.b.WriteByte(']')
 	}
 }

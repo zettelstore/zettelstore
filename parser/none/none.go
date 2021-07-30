@@ -38,10 +38,10 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 
 func getDescription(key, value string) ast.Description {
 	return ast.Description{
-		Term: ast.InlineSlice{&ast.TextNode{Text: key}},
+		Term: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: key}}},
 		Descriptions: []ast.DescriptionSlice{{
 			&ast.ParaNode{
-				Inlines: convertToInlineSlice(value, meta.Type(key)),
+				Inlines: &ast.InlineListNode{List: convertToInlineSlice(value, meta.Type(key))},
 			}},
 		},
 	}
@@ -72,7 +72,7 @@ func convertToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlic
 		if makeLink {
 			result = append(result, &ast.LinkNode{
 				Ref:     ast.ParseReference(val),
-				Inlines: ast.InlineSlice{tn},
+				Inlines: &ast.InlineListNode{List: []ast.InlineNode{tn}},
 			})
 		} else {
 			result = append(result, tn)
@@ -87,7 +87,7 @@ func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 		&ast.FormatNode{
 			Kind:  ast.FormatSpan,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"class": "warning"}},
-			Inlines: ast.InlineSlice{
+			Inlines: &ast.InlineListNode{List: []ast.InlineNode{
 				&ast.TextNode{Text: "parser.meta.ParseInlines:"},
 				&ast.SpaceNode{Lexeme: " "},
 				&ast.TextNode{Text: "not"},
@@ -97,7 +97,7 @@ func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 				&ast.TextNode{Text: "("},
 				&ast.TextNode{Text: inp.Src[0:inp.Pos]},
 				&ast.TextNode{Text: ")"},
-			},
+			}},
 		},
 	}
 }

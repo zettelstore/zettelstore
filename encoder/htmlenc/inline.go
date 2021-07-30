@@ -65,15 +65,15 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.visitAttributes(ln.Attrs)
 		v.b.WriteByte('>')
 		v.inInteractive = true
-		ast.WalkInlineSlice(v, ln.Inlines)
+		ast.Walk(v, ln.Inlines)
 		v.inInteractive = false
 		v.b.WriteString("</a>")
 	}
 }
 
-func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.InlineSlice) {
+func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, iln *ast.InlineListNode) {
 	if v.env.IsInteractive(v.inInteractive) {
-		v.writeSpan(ins, attrs)
+		v.writeSpan(iln, attrs)
 		return
 	}
 	v.b.WriteString("<a href=\"")
@@ -82,7 +82,7 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, ins ast.
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
 	v.inInteractive = true
-	ast.WalkInlineSlice(v, ins)
+	ast.Walk(v, iln)
 	v.inInteractive = false
 	v.b.WriteString("</a>")
 }
@@ -108,8 +108,10 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	default:
 		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
-	v.b.WriteString("\" alt=\"")
-	ast.WalkInlineSlice(v, en.Inlines)
+	if en.Inlines != nil {
+		v.b.WriteString("\" alt=\"")
+		ast.Walk(v, en.Inlines)
+	}
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	if v.env.IsXHTML() {
@@ -123,9 +125,9 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
 	v.b.WriteString(cn.Key)
-	if len(cn.Inlines) > 0 {
+	if cn.Inlines != nil {
 		v.b.WriteString(", ")
-		ast.WalkInlineSlice(v, cn.Inlines)
+		ast.Walk(v, cn.Inlines)
 	}
 }
 
@@ -196,15 +198,15 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	ast.WalkInlineSlice(v, fn.Inlines)
+	ast.Walk(v, fn.Inlines)
 	v.b.WriteStrings("</", code, ">")
 }
 
-func (v *visitor) writeSpan(ins ast.InlineSlice, attrs *ast.Attributes) {
+func (v *visitor) writeSpan(iln *ast.InlineListNode, attrs *ast.Attributes) {
 	v.b.WriteString("<span")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	ast.WalkInlineSlice(v, ins)
+	ast.Walk(v, iln)
 	v.b.WriteString("</span>")
 
 }
@@ -237,7 +239,7 @@ func (v *visitor) visitQuotes(fn *ast.FormatNode) {
 	}
 	openingQ, closingQ := getQuotes(v.lang.top())
 	v.b.WriteString(openingQ)
-	ast.WalkInlineSlice(v, fn.Inlines)
+	ast.Walk(v, fn.Inlines)
 	v.b.WriteString(closingQ)
 	if withSpan {
 		v.b.WriteString("</span>")

@@ -64,48 +64,54 @@ func (bn *BreakNode) WalkChildren(v Visitor) { /* No children*/ }
 // LinkNode contains the specified link.
 type LinkNode struct {
 	Ref     *Reference
-	Inlines InlineSlice // The text associated with the link.
-	OnlyRef bool        // True if no text was specified.
-	Attrs   *Attributes // Optional attributes
+	Inlines *InlineListNode // The text associated with the link.
+	OnlyRef bool            // True if no text was specified.
+	Attrs   *Attributes     // Optional attributes
 }
 
 func (ln *LinkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the link text.
 func (ln *LinkNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, ln.Inlines)
+	if ln.Inlines != nil {
+		Walk(v, ln.Inlines)
+	}
 }
 
 // --------------------------------------------------------------------------
 
 // EmbedNode contains the specified embedded material.
 type EmbedNode struct {
-	Material MaterialNode // The material to be embedded
-	Inlines  InlineSlice  // The text associated with the image.
-	Attrs    *Attributes  // Optional attributes
+	Material MaterialNode    // The material to be embedded
+	Inlines  *InlineListNode // Optional text associated with the image.
+	Attrs    *Attributes     // Optional attributes
 }
 
 func (in *EmbedNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
 func (in *EmbedNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, in.Inlines)
+	if in.Inlines != nil {
+		Walk(v, in.Inlines)
+	}
 }
 
 // --------------------------------------------------------------------------
 
 // CiteNode contains the specified citation.
 type CiteNode struct {
-	Key     string      // The citation key
-	Inlines InlineSlice // The text associated with the citation.
-	Attrs   *Attributes // Optional attributes
+	Key     string          // The citation key
+	Inlines *InlineListNode // Optional text associated with the citation.
+	Attrs   *Attributes     // Optional attributes
 }
 
 func (cn *CiteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the cite text.
 func (cn *CiteNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, cn.Inlines)
+	if cn.Inlines != nil {
+		Walk(v, cn.Inlines)
+	}
 }
 
 // --------------------------------------------------------------------------
@@ -126,15 +132,15 @@ func (mn *MarkNode) WalkChildren(v Visitor) { /* No children*/ }
 
 // FootnoteNode contains the specified footnote.
 type FootnoteNode struct {
-	Inlines InlineSlice // The footnote text.
-	Attrs   *Attributes // Optional attributes
+	Inlines *InlineListNode // The footnote text.
+	Attrs   *Attributes     // Optional attributes
 }
 
 func (fn *FootnoteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the footnote text.
 func (fn *FootnoteNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, fn.Inlines)
+	Walk(v, fn.Inlines)
 }
 
 // --------------------------------------------------------------------------
@@ -143,7 +149,7 @@ func (fn *FootnoteNode) WalkChildren(v Visitor) {
 type FormatNode struct {
 	Kind    FormatKind
 	Attrs   *Attributes // Optional attributes.
-	Inlines InlineSlice
+	Inlines *InlineListNode
 }
 
 // FormatKind specifies the format that is applied to the inline nodes.
@@ -173,7 +179,7 @@ func (fn *FormatNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the formatted text.
 func (fn *FormatNode) WalkChildren(v Visitor) {
-	WalkInlineSlice(v, fn.Inlines)
+	Walk(v, fn.Inlines)
 }
 
 // --------------------------------------------------------------------------

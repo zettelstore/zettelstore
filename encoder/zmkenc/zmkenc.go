@@ -81,7 +81,7 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.ParaNode:
-		ast.WalkInlineSlice(v, n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte('\n')
 		if len(v.prefix) == 0 {
 			v.b.WriteByte('\n')
@@ -122,7 +122,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitCite(n)
 	case *ast.FootnoteNode:
 		v.b.WriteString("[^")
-		ast.WalkInlineSlice(v, n.Inlines)
+		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 		v.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
@@ -165,9 +165,9 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteByte('\n')
 	ast.WalkBlockSlice(v, rn.Blocks)
 	v.b.WriteString(kind)
-	if len(rn.Inlines) > 0 {
+	if rn.Inlines != nil {
 		v.b.WriteByte(' ')
-		ast.WalkInlineSlice(v, rn.Inlines)
+		ast.Walk(v, rn.Inlines)
 	}
 	v.b.WriteByte('\n')
 }
@@ -177,7 +177,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 		v.b.WriteByte('=')
 	}
 	v.b.WriteByte(' ')
-	ast.WalkInlineSlice(v, hn.Inlines)
+	ast.Walk(v, hn.Inlines)
 	v.visitAttributes(hn.Attrs)
 	v.b.WriteByte('\n')
 }
@@ -212,7 +212,7 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	for _, descr := range dn.Descriptions {
 		v.b.WriteString("; ")
-		ast.WalkInlineSlice(v, descr.Term)
+		ast.Walk(v, descr.Term)
 		v.b.WriteByte('\n')
 
 		for _, b := range descr.Descriptions {
@@ -238,7 +238,7 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 			if cell.Align != colAlign {
 				v.b.WriteString(alignCode[cell.Align])
 			}
-			ast.WalkInlineSlice(v, cell.Inlines)
+			ast.Walk(v, cell.Inlines)
 			if colAlign != ast.AlignDefault {
 				v.b.WriteString(alignCode[colAlign])
 			}
@@ -251,7 +251,7 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 			if cell.Align != tn.Align[pos] {
 				v.b.WriteString(alignCode[cell.Align])
 			}
-			ast.WalkInlineSlice(v, cell.Inlines)
+			ast.Walk(v, cell.Inlines)
 		}
 		v.b.WriteByte('\n')
 	}
@@ -317,7 +317,7 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString("[[")
 	if !ln.OnlyRef {
-		ast.WalkInlineSlice(v, ln.Inlines)
+		ast.Walk(v, ln.Inlines)
 		v.b.WriteByte('|')
 	}
 	v.b.WriteStrings(ln.Ref.String(), "]]")
@@ -327,8 +327,8 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	switch m := en.Material.(type) {
 	case *ast.ReferenceMaterialNode:
 		v.b.WriteString("{{")
-		if len(en.Inlines) > 0 {
-			ast.WalkInlineSlice(v, en.Inlines)
+		if en.Inlines != nil {
+			ast.Walk(v, en.Inlines)
 			v.b.WriteByte('|')
 		}
 		v.b.WriteStrings(m.Ref.String(), "}}")
@@ -341,9 +341,9 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.b.WriteStrings("[@", cn.Key)
-	if len(cn.Inlines) > 0 {
+	if cn.Inlines != nil {
 		v.b.WriteString(", ")
-		ast.WalkInlineSlice(v, cn.Inlines)
+		ast.Walk(v, cn.Inlines)
 	}
 	v.b.WriteByte(']')
 	v.visitAttributes(cn.Attrs)
@@ -380,7 +380,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	}
 
 	v.b.Write(kind)
-	ast.WalkInlineSlice(v, fn.Inlines)
+	ast.Walk(v, fn.Inlines)
 	v.b.Write(kind)
 	v.visitAttributes(attrs)
 }

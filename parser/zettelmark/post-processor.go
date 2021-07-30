@@ -36,8 +36,10 @@ type postProcessor struct {
 
 func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.InlineListNode:
+		n.List = pp.processInlineSlice(n.List)
 	case *ast.ParaNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.RegionNode:
 		oldVerse := pp.inVerse
 		if n.Kind == ast.RegionVerse {
@@ -45,20 +47,22 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 		}
 		n.Blocks = pp.processBlockSlice(n.Blocks)
 		pp.inVerse = oldVerse
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.HeadingNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.NestedListNode:
 		for i, item := range n.Items {
 			n.Items[i] = pp.processItemSlice(item)
 		}
 	case *ast.DescriptionListNode:
 		for i, def := range n.Descriptions {
-			n.Descriptions[i].Term = pp.processInlineSlice(def.Term)
+			// ast.Walk(pp, def.Term)
+			// n.Descriptions[i].Term.List = pp.processInlineSlice(def.Term.List)
 			for j, b := range def.Descriptions {
 				n.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
 			}
 		}
+		return pp
 	case *ast.TableNode:
 		width := tableWidth(n)
 		n.Align = make([]ast.Alignment, width)
@@ -78,13 +82,13 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 		}
 		pp.visitTableRows(n, width)
 	case *ast.LinkNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.EmbedNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.CiteNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.FootnoteNode:
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
 	case *ast.FormatNode:
 		if n.Attrs != nil && n.Attrs.HasDefault() {
 			if newKind, ok := mapSemantic[n.Kind]; ok {
@@ -92,7 +96,8 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 				n.Kind = newKind
 			}
 		}
-		n.Inlines = pp.processInlineSlice(n.Inlines)
+		return pp
+		// n.Inlines = pp.processInlineSlice(n.Inlines)
 	}
 	return nil
 }
@@ -100,13 +105,13 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
 	for pos, cell := range tn.Header {
 		inlines := cell.Inlines
-		if len(inlines) == 0 {
+		if inlines == nil {
 			continue
 		}
-		if textNode, ok := inlines[0].(*ast.TextNode); ok {
+		if textNode, ok := inlines.List[0].(*ast.TextNode); ok {
 			textNode.Text = strings.TrimPrefix(textNode.Text, "=")
 		}
-		if textNode, ok := inlines[len(inlines)-1].(*ast.TextNode); ok {
+		if textNode, ok := inlines.List[len(inlines.List)-1].(*ast.TextNode); ok {
 			if tnl := len(textNode.Text); tnl > 0 {
 				if align := getAlignment(textNode.Text[tnl-1]); align != ast.AlignDefault {
 					tn.Align[pos] = align
@@ -147,7 +152,7 @@ func appendCells(row ast.TableRow, width int, colAlign []ast.Alignment) ast.Tabl
 
 func isHeaderRow(row ast.TableRow) bool {
 	for i := 0; i < len(row); i++ {
-		if inlines := row[i].Inlines; len(inlines) > 0 {
+		if inlines := row[i].Inlines.List; len(inlines) > 0 {
 			if textNode, ok := inlines[0].(*ast.TextNode); ok {
 				if strings.HasPrefix(textNode.Text, "=") {
 					return true
@@ -173,10 +178,10 @@ func getAlignment(ch byte) ast.Alignment {
 
 // processCell tries to recognize cell formatting.
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
-	if len(cell.Inlines) == 0 {
+	if cell.Inlines == nil {
 		return
 	}
-	if textNode, ok := cell.Inlines[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
+	if textNode, ok := cell.Inlines.List[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
 		align := getAlignment(textNode.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
@@ -187,7 +192,7 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	} else {
 		cell.Align = colAlign
 	}
-	cell.Inlines = pp.processInlineSlice(cell.Inlines)
+	cell.Inlines.List = pp.processInlineSlice(cell.Inlines.List)
 }
 
 var mapSemantic = map[ast.FormatKind]ast.FormatKind{
@@ -210,7 +215,7 @@ func (pp *postProcessor) processBlockSlice(bns ast.BlockSlice) ast.BlockSlice {
 		fromPos++
 		switch bn := bns[toPos].(type) {
 		case *ast.ParaNode:
-			if len(bn.Inlines) > 0 {
+			if len(bn.Inlines.List) > 0 {
 				toPos++
 			}
 		case *nullItemNode:
@@ -240,7 +245,7 @@ func (pp *postProcessor) processItemSlice(ins ast.ItemSlice) ast.ItemSlice {
 		fromPos++
 		switch in := ins[toPos].(type) {
 		case *ast.ParaNode:
-			if in != nil && len(in.Inlines) > 0 {
+			if in != nil && len(in.Inlines.List) > 0 {
 				toPos++
 			}
 		case *nullItemNode:
@@ -270,7 +275,7 @@ func (pp *postProcessor) processDescriptionSlice(dns ast.DescriptionSlice) ast.D
 		fromPos++
 		switch dn := dns[toPos].(type) {
 		case *ast.ParaNode:
-			if len(dn.Inlines) > 0 {
+			if len(dn.Inlines.List) > 0 {
 				toPos++
 			}
 		case *nullDescriptionNode:

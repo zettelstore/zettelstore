@@ -156,18 +156,18 @@ func (cp *zmkP) parseSoftBreak() *ast.BreakNode {
 }
 
 func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
-	if ref, ins, ok := cp.parseReference(']'); ok {
+	if ref, iln, ok := cp.parseReference(']'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			onlyRef := false
 			r := ast.ParseReference(ref)
-			if ins == nil {
-				ins = ast.InlineSlice{&ast.TextNode{Text: ref}}
+			if iln == nil {
+				iln = &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: ref}}}
 				onlyRef = true
 			}
 			return &ast.LinkNode{
 				Ref:     r,
-				Inlines: ins,
+				Inlines: iln,
 				OnlyRef: onlyRef,
 				Attrs:   attrs,
 			}, true
@@ -176,7 +176,7 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	return nil, false
 }
 
-func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, ok bool) {
+func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNode, ok bool) {
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
@@ -185,6 +185,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, o
 	if !ok {
 		return "", nil, false
 	}
+	var ins []ast.InlineNode
 	if inp.Ch == '|' { // First part must be inline text
 		if pos == inp.Pos { // [[| or {{|
 			return "", nil, false
@@ -216,7 +217,10 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, ins ast.InlineSlice, o
 		return "", nil, false
 	}
 	inp.Next()
-	return ref, ins, true
+	if len(ins) == 0 {
+		return ref, nil, true
+	}
+	return ref, &ast.InlineListNode{List: ins}, true
 }
 
 func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
@@ -307,17 +311,20 @@ loop:
 
 func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 	cp.inp.Next()
-	ins, ok := cp.parseLinkLikeRest()
+	iln, ok := cp.parseLinkLikeRest()
 	if !ok {
 		return nil, false
 	}
 	attrs := cp.parseAttributes(false)
-	return &ast.FootnoteNode{Inlines: ins, Attrs: attrs}, true
+	if iln == nil {
+		iln = &ast.InlineListNode{}
+	}
+	return &ast.FootnoteNode{Inlines: iln, Attrs: attrs}, true
 }
 
-func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
+func (cp *zmkP) parseLinkLikeRest() (*ast.InlineListNode, bool) {
 	cp.skipSpace()
-	var ins ast.InlineSlice
+	var ins []ast.InlineNode
 	inp := cp.inp
 	for inp.Ch != ']' {
 		in := cp.parseInline()
@@ -330,17 +337,20 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 		}
 	}
 	inp.Next()
-	return ins, true
+	if len(ins) == 0 {
+		return nil, true
+	}
+	return &ast.InlineListNode{List: ins}, true
 }
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
-	if ref, ins, ok := cp.parseReference('}'); ok {
+	if ref, iln, ok := cp.parseReference('}'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
 			return &ast.EmbedNode{
 				Material: &ast.ReferenceMaterialNode{Ref: r},
-				Inlines:  ins,
+				Inlines:  iln,
 				Attrs:    attrs,
 			}, true
 		}
@@ -422,7 +432,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	fn := &ast.FormatNode{Kind: kind}
+	fn := &ast.FormatNode{Kind: kind, Inlines: &ast.InlineListNode{}}
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false
@@ -434,12 +444,12 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 				fn.Attrs = cp.parseAttributes(false)
 				return fn, true
 			}
-			fn.Inlines = append(fn.Inlines, &ast.TextNode{Text: string(fch)})
+			fn.Inlines.List = append(fn.Inlines.List, &ast.TextNode{Text: string(fch)})
 		} else if in := cp.parseInline(); in != nil {
 			if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 				return nil, false
 			}
-			fn.Inlines = append(fn.Inlines, in)
+			fn.Inlines.List = append(fn.Inlines.List, in)
 		}
 	}
 }

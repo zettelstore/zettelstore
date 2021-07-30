@@ -99,11 +99,7 @@ func parseSVGBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlic
 	if ins == nil {
 		return nil
 	}
-	return ast.BlockSlice{
-		&ast.ParaNode{
-			Inlines: ins,
-		},
-	}
+	return ast.BlockSlice{&ast.ParaNode{Inlines: &ast.InlineListNode{List: ins}}}
 }
 
 func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
