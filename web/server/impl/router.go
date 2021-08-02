@@ -18,6 +18,7 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/auth"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/web/server"
 )
 
@@ -100,6 +101,13 @@ func (rt *httpRouter) Handle(pattern string, handler http.Handler) {
 }
 
 func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Something may panic. Ensure a kernel log.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("Web", r)
+		}
+	}()
+
 	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
 		if len(r.URL.Path) < prefixLen || r.URL.Path[:prefixLen] != rt.urlPrefix {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
