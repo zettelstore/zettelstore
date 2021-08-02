@@ -84,7 +84,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(nil, api.EncoderHTML, &env)
+		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &env)
 		if err != nil {
 			endnotes = ""
 		}
