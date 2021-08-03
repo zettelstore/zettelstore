@@ -19,13 +19,15 @@ func Order(zn *ast.ZettelNode) (result []*ast.Reference) {
 		return nil
 	}
 	for _, bn := range zn.Ast.List {
-		if ln, ok := bn.(*ast.NestedListNode); ok {
-			switch ln.Kind {
-			case ast.NestedListOrdered, ast.NestedListUnordered:
-				for _, is := range ln.Items {
-					if ref := firstItemZettelReference(is); ref != nil {
-						result = append(result, ref)
-					}
+		ln, ok := bn.(*ast.NestedListNode)
+		if !ok {
+			continue
+		}
+		switch ln.Kind {
+		case ast.NestedListOrdered, ast.NestedListUnordered:
+			for _, is := range ln.Items {
+				if ref := firstItemZettelReference(is); ref != nil {
+					result = append(result, ref)
 				}
 			}
 		}

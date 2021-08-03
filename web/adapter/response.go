@@ -79,7 +79,7 @@ func CreateHostedReference(b server.Builder, s string) *ast.Reference {
 }
 
 // CreateFoundReference builds a reference for a found zettel.
-func CreateFoundReference(b server.Builder, key byte, part string, enc string, zid id.Zid, fragment string) *ast.Reference {
+func CreateFoundReference(b server.Builder, key byte, part, enc string, zid id.Zid, fragment string) *ast.Reference {
 	ub := b.NewURLBuilder(key).SetZid(zid)
 	if part != "" {
 		ub.AppendQuery(api.QueryKeyPart, part)

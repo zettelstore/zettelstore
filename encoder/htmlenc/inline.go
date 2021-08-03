@@ -108,8 +108,8 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	default:
 		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
 	}
+	v.b.WriteString("\" alt=\"")
 	if en.Inlines != nil {
-		v.b.WriteString("\" alt=\"")
 		ast.Walk(v, en.Inlines)
 	}
 	v.b.WriteByte('"')

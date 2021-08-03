@@ -189,11 +189,11 @@ func New(zid id.Zid) *Meta {
 
 // NewWithData creates metadata object with given data.
 func NewWithData(zid id.Zid, data map[string]string) *Meta {
-	copy := make(map[string]string, len(data))
+	pairs := make(map[string]string, len(data))
 	for k, v := range data {
-		copy[k] = v
+		pairs[k] = v
 	}
-	return &Meta{Zid: zid, pairs: copy}
+	return &Meta{Zid: zid, pairs: pairs}
 }
 
 // Clone returns a new copy of the metadata.

@@ -35,8 +35,7 @@ func (s *Summary) Visit(node ast.Node) ast.Visitor {
 	case *ast.LinkNode:
 		s.Links = append(s.Links, n.Ref)
 	case *ast.EmbedNode:
-		switch m := n.Material.(type) {
-		case *ast.ReferenceMaterialNode:
+		if m, ok := n.Material.(*ast.ReferenceMaterialNode); ok {
 			s.Embeds = append(s.Embeds, m.Ref)
 		}
 	case *ast.CiteNode:

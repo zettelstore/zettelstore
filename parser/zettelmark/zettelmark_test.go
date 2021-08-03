@@ -570,7 +570,6 @@ func TestTable(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"|", "(TAB (TR))"},
-		{"| ", "(TAB (TR (TD)))"},
 		{"||", "(TAB (TR (TD)))"},
 		{"| |", "(TAB (TR (TD)))"},
 		{"|a", "(TAB (TR (TD a)))"},

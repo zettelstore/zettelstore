@@ -440,7 +440,7 @@ func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
 	}
 	text := sb.String()
 	if text == "" {
-		return &ast.InlineListNode{}
+		return nil
 	}
 	return &ast.InlineListNode{List: []ast.InlineNode{
 		&ast.TextNode{

@@ -40,35 +40,47 @@ func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error)
 
 // WriteMeta encodes metadata as text.
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
-	b := encoder.NewBufWriter(w)
+	buf := encoder.NewBufWriter(w)
 	for _, pair := range m.Pairs(true) {
 		switch meta.Type(pair.Key) {
 		case meta.TypeBool:
-			if meta.BoolValue(pair.Value) {
-				b.WriteString("true")
-			} else {
-				b.WriteString("false")
-			}
+			writeBool(&buf, meta.BoolValue(pair.Value))
 		case meta.TypeTagSet:
-			for i, tag := range meta.ListFromValue(pair.Value) {
-				if i > 0 {
-					b.WriteByte(' ')
-				}
-				b.WriteString(meta.CleanTag(tag))
-			}
+			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
-			if iln := parser.ParseMetadata(pair.Value); iln != nil {
-				te.WriteInlines(w, iln)
-			}
+			te.writeZettelmarkup(&buf, pair.Value)
 		default:
-			b.WriteString(pair.Value)
+			buf.WriteString(pair.Value)
 		}
-		b.WriteByte('\n')
+		buf.WriteByte('\n')
 	}
-	length, err := b.Flush()
+	length, err := buf.Flush()
 	return length, err
 }
 
+func writeBool(buf *encoder.BufWriter, b bool) {
+	if b {
+		buf.WriteString("true")
+	} else {
+		buf.WriteString("false")
+	}
+}
+
+func writeTagSet(buf *encoder.BufWriter, tags []string) {
+	for i, tag := range tags {
+		if i > 0 {
+			buf.WriteByte(' ')
+		}
+		buf.WriteString(meta.CleanTag(tag))
+	}
+
+}
+
+func (te *textEncoder) writeZettelmarkup(buf *encoder.BufWriter, zmk string) {
+	if iln := parser.ParseMetadata(zmk); iln != nil {
+		te.WriteInlines(buf, iln)
+	}
+}
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return te.WriteBlocks(w, zn.Ast)
 }
