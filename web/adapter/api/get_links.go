@@ -13,7 +13,6 @@ package api
 
 import (
 	"net/http"
-	"strconv"
 
 	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
@@ -43,66 +42,31 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		}
 		summary := collect.References(zn)
 
-		kind := getKindFromValue(q.Get("kind"))
-		matter := getMatterFromValue(q.Get("matter"))
-		if !validKindMatter(kind, matter) {
-			adapter.BadRequest(w, "Invalid kind/matter")
-			return
-		}
-
 		outData := zsapi.ZettelLinksJSON{
 			ID:  zid.String(),
 			URL: api.NewURLBuilder('z').SetZid(zid).String(),
 		}
-		if kind&kindLink != 0 {
-			api.setupLinkJSONRefs(summary, matter, &outData)
-			if matter&matterMeta != 0 {
-				for _, p := range zn.Meta.PairsRest(false) {
-					if meta.Type(p.Key) == meta.TypeURL {
-						outData.Linked.Meta = append(outData.Linked.Meta, p.Value)
-					}
-				}
+		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
+		outData.Linked.Incoming = []zsapi.ZidJSON{}
+		zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
+		outData.Linked.Outgoing = api.idURLRefs(zetRefs)
+		outData.Linked.Local = stringRefs(locRefs)
+		outData.Linked.External = stringRefs(extRefs)
+		for _, p := range zn.Meta.PairsRest(false) {
+			if meta.Type(p.Key) == meta.TypeURL {
+				outData.Linked.Meta = append(outData.Linked.Meta, p.Value)
 			}
 		}
-		if kind&kindEmbed != 0 {
-			api.setupEmbedJSONRefs(summary, matter, &outData)
-		}
-		if kind&kindCite != 0 {
-			outData.Cites = stringCites(summary.Cites)
-		}
+
+		zetRefs, locRefs, extRefs = collect.DivideReferences(summary.Embeds)
+		outData.Embedded.Outgoing = api.idURLRefs(zetRefs)
+		outData.Embedded.Local = stringRefs(locRefs)
+		outData.Embedded.External = stringRefs(extRefs)
+
+		outData.Cites = stringCites(summary.Cites)
 
 		w.Header().Set(zsapi.HeaderContentType, ctJSON)
 		encodeJSONData(w, outData)
-	}
-}
-
-func (api *API) setupLinkJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
-	if matter&matterIncoming != 0 {
-		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
-		outData.Linked.Incoming = []zsapi.ZidJSON{}
-	}
-	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
-	if matter&matterOutgoing != 0 {
-		outData.Linked.Outgoing = api.idURLRefs(zetRefs)
-	}
-	if matter&matterLocal != 0 {
-		outData.Linked.Local = stringRefs(locRefs)
-	}
-	if matter&matterExternal != 0 {
-		outData.Linked.External = stringRefs(extRefs)
-	}
-}
-
-func (api *API) setupEmbedJSONRefs(summary collect.Summary, matter matterType, outData *zsapi.ZettelLinksJSON) {
-	zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Embeds)
-	if matter&matterOutgoing != 0 {
-		outData.Embedded.Outgoing = api.idURLRefs(zetRefs)
-	}
-	if matter&matterLocal != 0 {
-		outData.Embedded.Local = stringRefs(locRefs)
-	}
-	if matter&matterExternal != 0 {
-		outData.Embedded.External = stringRefs(extRefs)
 	}
 }
 
@@ -137,84 +101,4 @@ func stringCites(cites []*ast.CiteNode) []string {
 		}
 	}
 	return result
-}
-
-type kindType int
-
-const (
-	_ kindType = 1 << iota
-	kindLink
-	kindEmbed
-	kindCite
-)
-
-var mapKind = map[string]kindType{
-	"":      kindLink | kindEmbed | kindCite,
-	"link":  kindLink,
-	"embed": kindEmbed,
-	"cite":  kindCite,
-	"both":  kindLink | kindEmbed,
-	"all":   kindLink | kindEmbed | kindCite,
-}
-
-func getKindFromValue(value string) kindType {
-	if k, ok := mapKind[value]; ok {
-		return k
-	}
-	if n, err := strconv.Atoi(value); err == nil && n > 0 {
-		return kindType(n)
-	}
-	return 0
-}
-
-type matterType int
-
-const (
-	_ matterType = 1 << iota
-	matterIncoming
-	matterOutgoing
-	matterLocal
-	matterExternal
-	matterMeta
-)
-
-var mapMatter = map[string]matterType{
-	"":         matterIncoming | matterOutgoing | matterLocal | matterExternal | matterMeta,
-	"incoming": matterIncoming,
-	"outgoing": matterOutgoing,
-	"local":    matterLocal,
-	"external": matterExternal,
-	"meta":     matterMeta,
-	"zettel":   matterIncoming | matterOutgoing,
-	"material": matterLocal | matterExternal | matterMeta,
-	"all":      matterIncoming | matterOutgoing | matterLocal | matterExternal | matterMeta,
-}
-
-func getMatterFromValue(value string) matterType {
-	if m, ok := mapMatter[value]; ok {
-		return m
-	}
-	if n, err := strconv.Atoi(value); err == nil && n > 0 {
-		return matterType(n)
-	}
-	return 0
-}
-
-func validKindMatter(kind kindType, matter matterType) bool {
-	if kind == 0 {
-		return false
-	}
-	if kind&kindLink != 0 {
-		return matter != 0
-	}
-	if kind&kindEmbed != 0 {
-		if matter == 0 || matter == matterIncoming {
-			return false
-		}
-		return true
-	}
-	if kind&kindCite != 0 {
-		return matter == matterOutgoing
-	}
-	return false
 }
