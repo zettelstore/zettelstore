@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/evaluate"
 )
 
 // ZettelOrderPort is the interface used by this use case.
@@ -40,7 +41,7 @@ func NewZettelOrder(port ZettelOrderPort, evaluateZettel EvaluateZettel) ZettelO
 func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
 	start *meta.Meta, result []*meta.Meta, err error,
 ) {
-	zn, err := uc.evaluateZettel.Run(ctx, zid, &EvaluateEnvironment{
+	zn, err := uc.evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 		Syntax: syntax,
 	})
 	if err != nil {

@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/encfun"
+	"zettelstore.de/z/evaluate"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -62,7 +63,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
 		})
 		if err != nil {

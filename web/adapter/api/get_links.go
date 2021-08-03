@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/evaluate"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -33,7 +34,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
 		})
 		if err != nil {

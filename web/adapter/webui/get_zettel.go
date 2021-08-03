@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/encfun"
+	"zettelstore.de/z/evaluate"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -40,7 +41,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 		}
 
 		q := r.URL.Query()
-		zn, err := evaluateZettel.Run(ctx, zid, &usecase.EvaluateEnvironment{
+		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
 			GetHostedRef: func(s string) *ast.Reference {
 				return adapter.CreateHostedReference(wui, s)
