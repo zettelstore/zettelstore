@@ -119,22 +119,35 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	ref := en.Material.(*ast.ReferenceMaterialNode)
 	switch ref.Ref.State {
 	case ast.RefStateInvalid:
-		return e.createZettelEmbed(en, ref, id.EmojiZid, ast.RefStateInvalid)
-	case ast.RefStateZettel:
+		return e.createImage(en, ref, id.EmojiZid, ast.RefStateInvalid)
+	case ast.RefStateZettel, ast.RefStateFound:
 		zid, err := id.Parse(ref.Ref.Value)
 		if err != nil {
 			panic(err)
 		}
-		_, err = e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
+		m, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
 		if err != nil {
-			return e.createZettelEmbed(en, ref, id.EmojiZid, ast.RefStateBroken)
+			return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
 		}
-		return e.createZettelEmbed(en, ref, zid, ast.RefStateFound)
+		return e.createEmbed(en, ref, m)
+	case ast.RefStateSelf:
+		panic("TODO: Zettel references itself")
+	case ast.RefStateBroken:
+		return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
+	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+		return en
+	default:
+		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.Ref.State, ref.Ref))
 	}
-	return en
 }
 
-func (e *evaluator) createZettelEmbed(
+func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, m *meta.Meta) *ast.EmbedNode {
+	// TODO: Check for image or text content. There may be non-image that is non-text, e.g. binary content.
+
+	return e.createImage(en, ref, m.Zid, ast.RefStateFound)
+}
+
+func (e *evaluator) createImage(
 	en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
 
 	if gir := e.env.GetImageRef; gir != nil {

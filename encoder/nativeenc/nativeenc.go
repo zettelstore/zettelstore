@@ -437,7 +437,11 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	v.visitAttributes(en.Attrs)
 	switch m := en.Material.(type) {
 	case *ast.ReferenceMaterialNode:
-		v.b.WriteStrings(" \"", m.Ref.String(), "\"")
+		v.b.WriteByte(' ')
+		v.b.WriteString(mapRefState[m.Ref.State])
+		v.b.WriteString(" \"")
+		v.writeEscaped(m.Ref.String())
+		v.b.WriteString("\" [")
 	case *ast.BLOBMaterialNode:
 		v.b.WriteStrings(" {\"", m.Syntax, "\" \"")
 		switch m.Syntax {
