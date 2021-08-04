@@ -65,6 +65,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
+			Config: wui.rtConfig,
 		})
 		if err != nil {
 			wui.reportError(ctx, w, err)

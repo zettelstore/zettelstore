@@ -441,7 +441,7 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 		v.b.WriteString(mapRefState[m.Ref.State])
 		v.b.WriteString(" \"")
 		v.writeEscaped(m.Ref.String())
-		v.b.WriteString("\" [")
+		v.b.WriteByte('"')
 	case *ast.BLOBMaterialNode:
 		v.b.WriteStrings(" {\"", m.Syntax, "\" \"")
 		switch m.Syntax {

@@ -59,6 +59,7 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 		}
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax:       q.Get(meta.KeySyntax),
+			Config:       api.rtConfig,
 			GetHostedRef: getHostedRef,
 			GetFoundRef:  getFoundRef,
 			GetImageRef:  getImageRef,

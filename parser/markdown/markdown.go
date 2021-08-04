@@ -30,10 +30,12 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         "markdown",
-		AltNames:     []string{"md"},
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "markdown",
+		AltNames:      []string{"md"},
+		IsTextParser:  true,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 }
 

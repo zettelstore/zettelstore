@@ -15,6 +15,7 @@ import (
 	"context"
 
 	"zettelstore.de/z/collect"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/evaluate"
@@ -38,11 +39,12 @@ func NewZettelOrder(port ZettelOrderPort, evaluateZettel EvaluateZettel) ZettelO
 }
 
 // Run executes the use case.
-func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
+func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string, cfg config.Config) (
 	start *meta.Meta, result []*meta.Meta, err error,
 ) {
 	zn, err := uc.evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 		Syntax: syntax,
+		Config: cfg,
 	})
 	if err != nil {
 		return nil, nil, err

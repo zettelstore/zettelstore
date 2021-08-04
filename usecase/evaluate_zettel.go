@@ -53,6 +53,7 @@ func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluate.Env
 	return zn, nil
 }
 
+// GetMeta retrieves the metadata of a given zettel identifier.
 func (uc *EvaluateZettel) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return uc.getMeta.Run(ctx, zid)
 }

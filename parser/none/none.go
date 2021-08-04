@@ -20,10 +20,12 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         meta.ValueSyntaxNone,
-		AltNames:     []string{},
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          meta.ValueSyntaxNone,
+		AltNames:      []string{},
+		IsTextParser:  false,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 }
 

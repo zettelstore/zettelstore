@@ -22,30 +22,44 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         "txt",
-		AltNames:     []string{"plain", "text"},
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "txt",
+		AltNames:      []string{"plain", "text"},
+		IsTextParser:  false,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:         "html",
-		ParseBlocks:  parseBlocksHTML,
-		ParseInlines: parseInlinesHTML,
+		Name:          "html",
+		AltNames:      []string{},
+		IsTextParser:  false,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocksHTML,
+		ParseInlines:  parseInlinesHTML,
 	})
 	parser.Register(&parser.Info{
-		Name:         "css",
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "css",
+		AltNames:      []string{},
+		IsTextParser:  false,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:         "svg",
-		ParseBlocks:  parseSVGBlocks,
-		ParseInlines: parseSVGInlines,
+		Name:          "svg",
+		AltNames:      []string{},
+		IsTextParser:  false,
+		IsImageFormat: true,
+		ParseBlocks:   parseSVGBlocks,
+		ParseInlines:  parseSVGInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:         "mustache",
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "mustache",
+		AltNames:      []string{},
+		IsTextParser:  false,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 }
 

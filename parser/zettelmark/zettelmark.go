@@ -22,10 +22,12 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         meta.ValueSyntaxZmk,
-		AltNames:     nil,
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          meta.ValueSyntaxZmk,
+		AltNames:      nil,
+		IsTextParser:  true,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 }
 

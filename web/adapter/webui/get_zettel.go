@@ -43,6 +43,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 		q := r.URL.Query()
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
+			Config: wui.rtConfig,
 			GetHostedRef: func(s string) *ast.Reference {
 				return adapter.CreateHostedReference(wui, s)
 			},

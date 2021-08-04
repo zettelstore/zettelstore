@@ -28,10 +28,12 @@ import (
 // be valid. This can ce achieved on calling inp.Next() after the input stream
 // was created.
 type Info struct {
-	Name         string
-	AltNames     []string
-	ParseBlocks  func(*input.Input, *meta.Meta, string) *ast.BlockListNode
-	ParseInlines func(*input.Input, string) *ast.InlineListNode
+	Name          string
+	AltNames      []string
+	IsTextParser  bool
+	IsImageFormat bool
+	ParseBlocks   func(*input.Input, *meta.Meta, string) *ast.BlockListNode
+	ParseInlines  func(*input.Input, string) *ast.InlineListNode
 }
 
 var registry = map[string]*Info{}
@@ -51,6 +53,15 @@ func Register(pi *Info) *Info {
 	return pi
 }
 
+// GetSyntaxes returns a list of syntaxes implemented by all registered parsers.
+func GetSyntaxes() []string {
+	result := make([]string, 0, len(registry))
+	for syntax := range registry {
+		result = append(result, syntax)
+	}
+	return result
+}
+
 // Get the parser (info) by name. If name not found, use a default parser.
 func Get(name string) *Info {
 	if pi := registry[name]; pi != nil {
@@ -61,6 +72,24 @@ func Get(name string) *Info {
 	}
 	log.Printf("No parser for %q found", name)
 	panic("No default parser registered")
+}
+
+// IsTextParser returns whether the given syntax parses text into an AST or not.
+func IsTextParser(syntax string) bool {
+	pi, ok := registry[syntax]
+	if !ok {
+		return false
+	}
+	return pi.IsTextParser
+}
+
+// IsImageFormat returns whether the given syntax is known to be an image format.
+func IsImageFormat(syntax string) bool {
+	pi, ok := registry[syntax]
+	if !ok {
+		return false
+	}
+	return pi.IsImageFormat
 }
 
 // ParseBlocks parses some input and returns a slice of block nodes.

@@ -20,22 +20,28 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:         "gif",
-		AltNames:     nil,
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "gif",
+		AltNames:      nil,
+		IsTextParser:  false,
+		IsImageFormat: true,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:         "jpeg",
-		AltNames:     []string{"jpg"},
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "jpeg",
+		AltNames:      []string{"jpg"},
+		IsTextParser:  false,
+		IsImageFormat: true,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:         "png",
-		AltNames:     nil,
-		ParseBlocks:  parseBlocks,
-		ParseInlines: parseInlines,
+		Name:          "png",
+		AltNames:      nil,
+		IsTextParser:  false,
+		IsImageFormat: true,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
 	})
 }
 

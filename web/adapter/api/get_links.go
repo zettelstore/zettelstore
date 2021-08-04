@@ -36,6 +36,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		q := r.URL.Query()
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
 			Syntax: q.Get(meta.KeySyntax),
+			Config: api.rtConfig,
 		})
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)

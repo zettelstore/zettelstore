@@ -18,22 +18,28 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/parser"
 )
 
 // Environment contains values to control the evaluation.
 type Environment struct {
+	Config       config.Config
 	Syntax       string
 	GetHostedRef func(string) *ast.Reference
 	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
 	GetImageRef  func(zid id.Zid, state ast.RefState) *ast.Reference
 }
 
+// Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 }
 
+// Evaluate the given AST in the given context, with the given ports, and the
+// given environment.
 func Evaluate(ctx context.Context, port Port, env *Environment, zn *ast.ZettelNode) {
 	e := evaluator{
 		ctx:  ctx,
@@ -141,10 +147,24 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 }
 
+func (e *evaluator) getSyntax(m *meta.Meta) string {
+	if cfg := e.env.Config; cfg != nil {
+		return config.GetSyntax(m, cfg)
+	}
+	return m.GetDefault(meta.KeySyntax, "")
+}
 func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, m *meta.Meta) *ast.EmbedNode {
-	// TODO: Check for image or text content. There may be non-image that is non-text, e.g. binary content.
+	syntax := e.getSyntax(m)
+	if parser.IsImageFormat(syntax) {
+		return e.createImage(en, ref, m.Zid, ast.RefStateFound)
+	}
+	if parser.IsTextParser(syntax) {
+		// Search for text to be embedded.
+		return en
+	}
 
-	return e.createImage(en, ref, m.Zid, ast.RefStateFound)
+	// Not embeddable. Must add some kind of visual indication.
+	return en
 }
 
 func (e *evaluator) createImage(
