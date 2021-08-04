@@ -48,7 +48,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 				return adapter.CreateHostedReference(wui, s)
 			},
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
-				return adapter.CreateFoundReference(wui, 'h', "", api.EncodingHTML, zid, fragment)
+				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
 			GetImageRef: func(zid id.Zid, state ast.RefState) *ast.Reference {
 				return adapter.CreateImageReference(wui, zid, state)
