@@ -30,6 +30,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
+var directProxy = []string{"GOPROXY=direct"}
+
 func executeCommand(env []string, name string, arg ...string) (string, error) {
 	logCommand("EXEC", env, name, arg)
 	var out bytes.Buffer
@@ -156,7 +158,7 @@ func cmdCheck() error {
 func checkGoTest(pkg string, testParams ...string) error {
 	args := []string{"test", pkg}
 	args = append(args, testParams...)
-	out, err := executeCommand(nil, "go", args...)
+	out, err := executeCommand(directProxy, "go", args...)
 	if err != nil {
 		for _, line := range strfun.SplitLines(out) {
 			if strings.HasPrefix(line, "ok") || strings.HasPrefix(line, "?") {
@@ -301,7 +303,7 @@ func addressInUse(address string) bool {
 }
 
 func cmdBuild() error {
-	return doBuild(nil, getVersion(), "bin/zettelstore")
+	return doBuild(directProxy, getVersion(), "bin/zettelstore")
 }
 
 func doBuild(env []string, version, target string) error {
@@ -406,6 +408,7 @@ func cmdRelease() error {
 	}
 	for _, rel := range releases {
 		env := append(rel.env, "GOARCH="+rel.arch, "GOOS="+rel.os)
+		env = append(env, directProxy...)
 		zsName := filepath.Join("releases", rel.name)
 		if err := doBuild(env, calcVersion(base, fossil), zsName); err != nil {
 			return err
@@ -471,6 +474,20 @@ func cmdClean() error {
 		if err != nil {
 			return err
 		}
+	}
+	out, err := executeCommand(nil, "go", "clean", "./...")
+	if err != nil {
+		return err
+	}
+	if len(out) > 0 {
+		fmt.Println(out)
+	}
+	out, err = executeCommand(nil, "go", "clean", "-cache", "-modcache", "-testcache")
+	if err != nil {
+		return err
+	}
+	if len(out) > 0 {
+		fmt.Println(out)
 	}
 	return nil
 }
