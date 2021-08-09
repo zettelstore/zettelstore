@@ -36,10 +36,10 @@ func TestLinks(t *testing.T) {
 
 	intNode := &ast.LinkNode{Ref: parseRef("01234567890123")}
 	para := &ast.ParaNode{
-		Inlines: &ast.InlineListNode{List: []ast.InlineNode{
+		Inlines: ast.CreateInlineListNode(
 			intNode,
 			&ast.LinkNode{Ref: parseRef("https://zettelstore.de/z")},
-		}},
+		),
 	}
 	zn.Ast = &ast.BlockListNode{List: []ast.BlockNode{para}}
 	summary = collect.References(zn)
@@ -59,9 +59,9 @@ func TestEmbed(t *testing.T) {
 	zn := &ast.ZettelNode{
 		Ast: &ast.BlockListNode{List: []ast.BlockNode{
 			&ast.ParaNode{
-				Inlines: &ast.InlineListNode{List: []ast.InlineNode{
+				Inlines: ast.CreateInlineListNode(
 					&ast.EmbedNode{Material: &ast.ReferenceMaterialNode{Ref: parseRef("12345678901234")}},
-				}},
+				),
 			},
 		}},
 	}

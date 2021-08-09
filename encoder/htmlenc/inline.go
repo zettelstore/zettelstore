@@ -157,7 +157,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	defer v.lang.pop()
 
 	var code string
-	attrs := fn.Attrs
+	attrs := fn.Attrs.Clone()
 	switch fn.Kind {
 	case ast.FormatItalic:
 		code = "i"

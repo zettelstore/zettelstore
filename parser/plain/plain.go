@@ -99,13 +99,11 @@ func parseInlinesHTML(inp *input.Input, syntax string) *ast.InlineListNode {
 }
 func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.InlineListNode {
 	inp.SkipToEOL()
-	return &ast.InlineListNode{List: []ast.InlineNode{
-		&ast.LiteralNode{
-			Kind:  kind,
-			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
-			Text:  inp.Src[0:inp.Pos],
-		},
-	}}
+	return ast.CreateInlineListNode(&ast.LiteralNode{
+		Kind:  kind,
+		Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
+		Text:  inp.Src[0:inp.Pos],
+	})
 }
 
 func parseSVGBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
@@ -121,14 +119,12 @@ func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	if svgSrc == "" {
 		return nil
 	}
-	return &ast.InlineListNode{List: []ast.InlineNode{
-		&ast.EmbedNode{
-			Material: &ast.BLOBMaterialNode{
-				Blob:   []byte(svgSrc),
-				Syntax: syntax,
-			},
+	return ast.CreateInlineListNode(&ast.EmbedNode{
+		Material: &ast.BLOBMaterialNode{
+			Blob:   []byte(svgSrc),
+			Syntax: syntax,
 		},
-	}}
+	})
 }
 
 func scanSVG(inp *input.Input) string {

@@ -263,7 +263,7 @@ func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
 			return
 		}
 		if rn.Inlines == nil {
-			rn.Inlines = &ast.InlineListNode{List: []ast.InlineNode{in}}
+			rn.Inlines = ast.CreateInlineListNode(in)
 		} else {
 			rn.Inlines.Append(in)
 		}
@@ -605,10 +605,10 @@ func (cp *zmkP) parseCell() *ast.TableCell {
 			if len(l) == 0 {
 				return nil
 			}
-			return &ast.TableCell{Inlines: &ast.InlineListNode{List: l}}
+			return &ast.TableCell{Inlines: ast.CreateInlineListNode(l...)}
 		}
 		if inp.Ch == '|' {
-			return &ast.TableCell{Inlines: &ast.InlineListNode{List: l}}
+			return &ast.TableCell{Inlines: ast.CreateInlineListNode(l...)}
 		}
 		l = append(l, cp.parseInline())
 	}

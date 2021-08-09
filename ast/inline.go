@@ -20,6 +20,24 @@ type InlineListNode struct {
 
 func (iln *InlineListNode) inlineNode() { /* Just a marker */ }
 
+// CreateInlineListNode make a new inline list node from nodes
+func CreateInlineListNode(nodes ...InlineNode) *InlineListNode {
+	return &InlineListNode{List: nodes}
+}
+
+// CreateInlineListNodeFromWords makes a new inline list from words,
+// that will be space-separated.
+func CreateInlineListNodeFromWords(words ...string) *InlineListNode {
+	inl := make([]InlineNode, 0, 2*len(words)-1)
+	for i, word := range words {
+		if i > 0 {
+			inl = append(inl, &SpaceNode{Lexeme: " "})
+		}
+		inl = append(inl, &TextNode{Text: word})
+	}
+	return &InlineListNode{List: inl}
+}
+
 // WalkChildren walks down to the descriptions.
 func (iln *InlineListNode) WalkChildren(v Visitor) {
 	for _, bn := range iln.List {

@@ -40,7 +40,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNo
 
 func getDescription(key, value string) ast.Description {
 	return ast.Description{
-		Term: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: key}}},
+		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
 		Descriptions: []ast.DescriptionSlice{{
 			&ast.ParaNode{
 				Inlines: convertToInlineList(value, meta.Type(key)),
@@ -74,32 +74,24 @@ func convertToInlineList(value string, dt *meta.DescriptionType) *ast.InlineList
 		if makeLink {
 			result = append(result, &ast.LinkNode{
 				Ref:     ast.ParseReference(val),
-				Inlines: &ast.InlineListNode{List: []ast.InlineNode{tn}},
+				Inlines: ast.CreateInlineListNode(tn),
 			})
 		} else {
 			result = append(result, tn)
 		}
 	}
-	return &ast.InlineListNode{List: result}
+	return ast.CreateInlineListNode(result...)
 }
 
 func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	inp.SkipToEOL()
-	return &ast.InlineListNode{List: []ast.InlineNode{
+	return ast.CreateInlineListNode(
 		&ast.FormatNode{
 			Kind:  ast.FormatSpan,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"class": "warning"}},
-			Inlines: &ast.InlineListNode{List: []ast.InlineNode{
-				&ast.TextNode{Text: "parser.meta.ParseInlines:"},
-				&ast.SpaceNode{Lexeme: " "},
-				&ast.TextNode{Text: "not"},
-				&ast.SpaceNode{Lexeme: " "},
-				&ast.TextNode{Text: "possible"},
-				&ast.SpaceNode{Lexeme: " "},
-				&ast.TextNode{Text: "("},
-				&ast.TextNode{Text: inp.Src[0:inp.Pos]},
-				&ast.TextNode{Text: ")"},
-			}},
+			Inlines: ast.CreateInlineListNodeFromWords(
+				"parser.meta.ParseInlines:", "not", "possible", "("+inp.Src[0:inp.Pos]+")",
+			),
 		},
-	}}
+	)
 }

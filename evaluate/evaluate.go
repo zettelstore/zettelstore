@@ -153,7 +153,7 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	}
 	return m.GetDefault(meta.KeySyntax, "")
 }
-func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, m *meta.Meta) *ast.EmbedNode {
+func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, m *meta.Meta) ast.InlineNode {
 	syntax := e.getSyntax(m)
 	if parser.IsImageFormat(syntax) {
 		return e.createImage(en, ref, m.Zid, ast.RefStateFound)
@@ -163,8 +163,8 @@ func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNod
 		return en
 	}
 
-	// Not embeddable. Must add some kind of visual indication.
-	return en
+	// Not embeddable.
+	return createErrorText(en, "Cannot", "embed (syntax="+syntax+"):")
 }
 
 func (e *evaluator) createImage(
@@ -177,4 +177,25 @@ func (e *evaluator) createImage(
 	ref.Ref.State = state
 	en.Material = ref
 	return en
+}
+
+func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
+	ref := en.Material.(*ast.ReferenceMaterialNode)
+	ln := &ast.LinkNode{
+		Ref:     ref.Ref,
+		Inlines: ast.CreateInlineListNodeFromWords(ref.Ref.String()),
+		OnlyRef: true,
+	}
+	text := ast.CreateInlineListNodeFromWords(msgWords...)
+	text.Append(&ast.SpaceNode{Lexeme: " "}, ln)
+	fn := &ast.FormatNode{
+		Kind:    ast.FormatMonospace,
+		Inlines: text,
+	}
+	fn = &ast.FormatNode{
+		Kind:    ast.FormatBold,
+		Inlines: ast.CreateInlineListNode(fn),
+	}
+	fn.Attrs = fn.Attrs.AddClass("error")
+	return fn
 }

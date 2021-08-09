@@ -79,6 +79,9 @@ func (a *Attributes) AddClass(class string) *Attributes {
 	if a == nil {
 		return &Attributes{map[string]string{"class": class}}
 	}
+	if a.Attrs == nil {
+		a.Attrs = make(map[string]string)
+	}
 	classes := a.GetClasses()
 	for _, cls := range classes {
 		if cls == class {

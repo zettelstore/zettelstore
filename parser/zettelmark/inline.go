@@ -30,7 +30,7 @@ func (cp *zmkP) parseInlineList() *ast.InlineListNode {
 		}
 		ins = append(ins, in)
 	}
-	return &ast.InlineListNode{List: ins}
+	return ast.CreateInlineListNode(ins...)
 }
 
 func (cp *zmkP) parseInline() ast.InlineNode {
@@ -162,7 +162,7 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 			onlyRef := false
 			r := ast.ParseReference(ref)
 			if iln == nil {
-				iln = &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: ref}}}
+				iln = ast.CreateInlineListNode(&ast.TextNode{Text: ref})
 				onlyRef = true
 			}
 			return &ast.LinkNode{
@@ -220,7 +220,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 	if len(ins) == 0 {
 		return ref, nil, true
 	}
-	return ref, &ast.InlineListNode{List: ins}, true
+	return ref, ast.CreateInlineListNode(ins...), true
 }
 
 func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
@@ -340,7 +340,7 @@ func (cp *zmkP) parseLinkLikeRest() (*ast.InlineListNode, bool) {
 	if len(ins) == 0 {
 		return nil, true
 	}
-	return &ast.InlineListNode{List: ins}, true
+	return ast.CreateInlineListNode(ins...), true
 }
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {

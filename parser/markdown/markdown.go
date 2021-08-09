@@ -233,7 +233,7 @@ func (p *mdP) acceptInlineChildren(node gmAst.Node) *ast.InlineListNode {
 			result = append(result, inlines...)
 		}
 	}
-	return &ast.InlineListNode{List: result}
+	return ast.CreateInlineListNode(result...)
 }
 
 func (p *mdP) acceptInline(node gmAst.Node) []ast.InlineNode {
@@ -444,11 +444,7 @@ func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
 	if text == "" {
 		return nil
 	}
-	return &ast.InlineListNode{List: []ast.InlineNode{
-		&ast.TextNode{
-			Text: text,
-		},
-	}}
+	return ast.CreateInlineListNode(&ast.TextNode{Text: text})
 }
 
 func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {
@@ -465,7 +461,7 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {
 	return []ast.InlineNode{
 		&ast.LinkNode{
 			Ref:     ref,
-			Inlines: &ast.InlineListNode{List: []ast.InlineNode{&ast.TextNode{Text: string(label)}}},
+			Inlines: ast.CreateInlineListNode(&ast.TextNode{Text: string(label)}),
 			OnlyRef: true,
 			Attrs:   nil, //TODO
 		},
