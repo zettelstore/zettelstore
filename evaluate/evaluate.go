@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
@@ -36,23 +37,26 @@ type Environment struct {
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
 }
 
 // Evaluate the given AST in the given context, with the given ports, and the
 // given environment.
-func Evaluate(ctx context.Context, port Port, env *Environment, zn *ast.ZettelNode) {
+func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
 	e := evaluator{
-		ctx:  ctx,
-		port: port,
-		env:  env,
+		ctx:      ctx,
+		port:     port,
+		env:      env,
+		rtConfig: rtConfig,
 	}
 	ast.Walk(&e, zn.Ast)
 }
 
 type evaluator struct {
-	ctx  context.Context
-	port Port
-	env  *Environment
+	ctx      context.Context
+	port     Port
+	env      *Environment
+	rtConfig config.Config
 }
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
@@ -72,7 +76,14 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedNode:
-			iln.List[i] = e.evalEmbedNode(n)
+			in := e.evalEmbedNode(n)
+			if ln, ok := in.(*ast.InlineListNode); ok {
+				tmp := append(iln.List[:i], ln.List...)
+				tmp = append(tmp, iln.List[i+1:]...)
+				iln.List = tmp
+			} else {
+				iln.List[i] = in
+			}
 		}
 	}
 }
@@ -127,15 +138,6 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	case ast.RefStateInvalid:
 		return e.createImage(en, ref, id.EmojiZid, ast.RefStateInvalid)
 	case ast.RefStateZettel, ast.RefStateFound:
-		zid, err := id.Parse(ref.Ref.Value)
-		if err != nil {
-			panic(err)
-		}
-		m, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
-		if err != nil {
-			return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
-		}
-		return e.createEmbed(en, ref, m)
 	case ast.RefStateSelf:
 		panic("TODO: Zettel references itself")
 	case ast.RefStateBroken:
@@ -145,6 +147,55 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	default:
 		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.Ref.State, ref.Ref))
 	}
+
+	zid, err := id.Parse(ref.Ref.Value)
+	if err != nil {
+		panic(err)
+	}
+	m, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
+	if err != nil {
+		return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
+	}
+
+	syntax := e.getSyntax(m)
+	if parser.IsImageFormat(syntax) {
+		return e.createImage(en, ref, m.Zid, ast.RefStateFound)
+	}
+	if !parser.IsTextParser(syntax) {
+		// Not embeddable.
+		return createErrorText(en, "Cannot", "embed (syntax="+syntax+"):")
+	}
+
+	zettel, err := e.port.GetZettel(e.ctx, zid)
+	if err != nil {
+		return createErrorText(en, "Cannot", "get", "zettel (error="+err.Error()+"):")
+	}
+	zn, err := parser.ParseZettel(zettel, syntax, e.rtConfig), nil
+	if err != nil {
+		return createErrorText(en, "Cannot", "parse", "zettel (error="+err.Error()+"):")
+	}
+	ast.Walk(e, zn.Ast)
+
+	// Search for text to be embedded.
+	iln := findInlineList(zn.Ast)
+	if iln == nil {
+		return createErrorText(en, "Nothing", "to", "embed:")
+	}
+	return iln
+}
+
+func findInlineList(bnl *ast.BlockListNode) *ast.InlineListNode {
+	for _, bn := range bnl.List {
+		pn, ok := bn.(*ast.ParaNode)
+		if !ok {
+			continue
+		}
+		inl := pn.Inlines
+		if inl != nil && len(inl.List) > 0 {
+			return inl
+		}
+	}
+	return nil
 }
 
 func (e *evaluator) getSyntax(m *meta.Meta) string {
@@ -152,19 +203,6 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 		return config.GetSyntax(m, cfg)
 	}
 	return m.GetDefault(meta.KeySyntax, "")
-}
-func (e *evaluator) createEmbed(en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, m *meta.Meta) ast.InlineNode {
-	syntax := e.getSyntax(m)
-	if parser.IsImageFormat(syntax) {
-		return e.createImage(en, ref, m.Zid, ast.RefStateFound)
-	}
-	if parser.IsTextParser(syntax) {
-		// Search for text to be embedded.
-		return en
-	}
-
-	// Not embeddable.
-	return createErrorText(en, "Cannot", "embed (syntax="+syntax+"):")
 }
 
 func (e *evaluator) createImage(

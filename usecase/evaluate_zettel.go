@@ -16,6 +16,7 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/evaluate"
@@ -49,11 +50,16 @@ func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluate.Env
 		return nil, err
 	}
 
-	evaluate.Evaluate(ctx, uc, env, zn)
+	evaluate.Evaluate(ctx, uc, env, uc.rtConfig, zn)
 	return zn, nil
 }
 
 // GetMeta retrieves the metadata of a given zettel identifier.
 func (uc *EvaluateZettel) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return uc.getMeta.Run(ctx, zid)
+}
+
+// GetZettel retrieves the full zettel of a given zettel identifier.
+func (uc *EvaluateZettel) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+	return uc.getZettel.Run(ctx, zid)
 }
