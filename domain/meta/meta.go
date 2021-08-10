@@ -135,6 +135,7 @@ var (
 	KeyLang              = registerKey("lang", TypeWord, usageUser, "")
 	KeyLicense           = registerKey("license", TypeEmpty, usageUser, "")
 	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
+	KeyMaxTransclusions  = registerKey("max-transclusions", TypeNumber, usageUser, "")
 	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
 	KeyNoIndex           = registerKey("no-index", TypeBool, usageUser, "")
 	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser, KeyFolge)

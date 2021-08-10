@@ -44,6 +44,9 @@ type Config interface {
 	// GetDefaultVisibility returns the default value for zettel visibility.
 	GetDefaultVisibility() meta.Visibility
 
+	// GetMaxTransclusions return the maximum number of indirect transclusions.
+	GetMaxTransclusions() int
+
 	// GetYAMLHeader returns the current value of the "yaml-header" key.
 	GetYAMLHeader() bool
 

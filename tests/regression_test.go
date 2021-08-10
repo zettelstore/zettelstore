@@ -252,6 +252,7 @@ func (cfg *myConfig) GetZettelFileSyntax() []string            { return nil }
 
 func (cfg *myConfig) GetExpertMode() bool                      { return false }
 func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetDefaultVisibility() }
+func (cfg *myConfig) GetMaxTransclusions() int                 { return 1024 }
 
 var testConfig = &myConfig{}
 

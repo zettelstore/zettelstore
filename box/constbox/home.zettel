@@ -5,14 +5,13 @@ Check that website regulary for [[upgrades|https://zettelstore.de/home/doc/trunk
 You should consult the [[change log|https://zettelstore.de/home/doc/trunk/www/changes.wiki]] before upgrading.
 Sometimes, you have to edit some of your Zettelstore-related zettel before upgrading.
 Since Zettelstore is currently in a development state, every upgrade might fix some of your problems.
-To check for versions, there is a zettel with the [[current version|00000000000001]] of your Zettelstore.
 
 If you have problems concerning Zettelstore,
 do not hesitate to get in [[contact with the main developer|mailto:ds@zettelstore.de]].
 
 === Reporting errors
 If you have encountered an error, please include the content of the following zettel in your mail (if possible):
-* [[Zettelstore Version|00000000000001]]
+* [[Zettelstore Version|00000000000001]]: {{00000000000001}}
 * [[Zettelstore Operating System|00000000000003]]
 * [[Zettelstore Startup Configuration|00000000000096]]
 * [[Zettelstore Runtime Configuration|00000000000100]]

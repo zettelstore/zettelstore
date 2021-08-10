@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210611213730
+modified: 20210810103936
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called ""configuration zettel"".
@@ -55,6 +55,10 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 ; [!marker-external]''marker-external''
 : Some HTML code that is displayed after a reference to external material.
   Default: ''&\#10138;'', to display a ""&#10138;"" sign.
+; [!max-transclusions]''max-transclusions''
+: Maximum number of indirect transclusion.
+  This is used to avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]].
+  Default: 1024.
 ; [!site-name]''site-name''
 : Name of the Zettelstore instance.
   Will be used when displaying some lists.

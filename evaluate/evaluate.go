@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
@@ -44,20 +45,26 @@ type Port interface {
 // given environment.
 func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
 	e := evaluator{
-		ctx:      ctx,
-		port:     port,
-		env:      env,
-		rtConfig: rtConfig,
+		ctx:        ctx,
+		port:       port,
+		env:        env,
+		rtConfig:   rtConfig,
+		embedMap:   map[id.Zid]*ast.InlineListNode{},
+		embedCount: 0,
+		marker:     &ast.InlineListNode{},
 	}
 	ast.Walk(&e, zn.Ast)
 	cleanBlockList(zn.Ast)
 }
 
 type evaluator struct {
-	ctx      context.Context
-	port     Port
-	env      *Environment
-	rtConfig config.Config
+	ctx        context.Context
+	port       Port
+	env        *Environment
+	rtConfig   config.Config
+	embedMap   map[id.Zid]*ast.InlineListNode
+	embedCount int
+	marker     *ast.InlineListNode
 }
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
@@ -142,7 +149,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		return e.createImage(en, ref, id.EmojiZid, ast.RefStateInvalid)
 	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
-		panic("TODO: Zettel references itself")
+		return createErrorText(en, "Self", "embed", "reference:")
 	case ast.RefStateBroken:
 		return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
@@ -166,25 +173,39 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 	if !parser.IsTextParser(syntax) {
 		// Not embeddable.
-		return createErrorText(en, "Cannot", "embed (syntax="+syntax+"):")
+		return createErrorText(en, "Not", "embeddable (syntax="+syntax+"):")
 	}
 
-	zettel, err := e.port.GetZettel(e.ctx, zid)
-	if err != nil {
-		return createErrorText(en, "Cannot", "get", "zettel (error="+err.Error()+"):")
+	result, ok := e.embedMap[zid]
+	if result == e.marker {
+		return createErrorText(en, "Recursive", "transclusion:")
 	}
-	zn, err := parser.ParseZettel(zettel, syntax, e.rtConfig), nil
-	if err != nil {
-		return createErrorText(en, "Cannot", "parse", "zettel (error="+err.Error()+"):")
-	}
-	ast.Walk(e, zn.Ast)
+	if !ok {
+		e.embedMap[zid] = e.marker
 
-	// Search for text to be embedded.
-	iln := findInlineList(zn.Ast)
-	if iln == nil {
-		return createErrorText(en, "Nothing", "to", "embed:")
+		zettel, err := e.port.GetZettel(e.ctx, zid)
+		if err != nil {
+			return createErrorText(en, "Cannot", "get", "zettel (error="+err.Error()+"):")
+		}
+		zn, err := parser.ParseZettel(zettel, syntax, e.rtConfig), nil
+		if err != nil {
+			return createErrorText(en, "Cannot", "parse", "zettel (error="+err.Error()+"):")
+		}
+		ast.Walk(e, zn.Ast)
+
+		// Search for text to be embedded.
+		result = findInlineList(zn.Ast)
+		e.embedMap[zid] = result
+		if result == nil || len(result.List) == 0 {
+			return createErrorText(en, "Nothing", "to", "transclude:")
+		}
 	}
-	return iln
+
+	e.embedCount++
+	if maxTrans := e.rtConfig.GetMaxTransclusions(); e.embedCount > maxTrans {
+		return createErrorText(en, "Too", "many", "transclusions ("+strconv.Itoa(maxTrans)+"):")
+	}
+	return result
 }
 
 func findInlineList(bnl *ast.BlockListNode) *ast.InlineListNode {

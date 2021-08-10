@@ -47,12 +47,13 @@ func (cs *configService) Initialize() {
 			},
 			true,
 		},
-		meta.KeyExpertMode:     {"Expert mode", parseBool, true},
-		meta.KeyFooterHTML:     {"Footer HTML", parseString, true},
-		meta.KeyHomeZettel:     {"Home zettel", parseZid, true},
-		meta.KeyMarkerExternal: {"Marker external URL", parseString, true},
-		meta.KeySiteName:       {"Site name", parseString, true},
-		meta.KeyYAMLHeader:     {"YAML header", parseBool, true},
+		meta.KeyExpertMode:       {"Expert mode", parseBool, true},
+		meta.KeyFooterHTML:       {"Footer HTML", parseString, true},
+		meta.KeyHomeZettel:       {"Home zettel", parseZid, true},
+		meta.KeyMarkerExternal:   {"Marker external URL", parseString, true},
+		meta.KeyMaxTransclusions: {"Maximum transclusions", parseInt, true},
+		meta.KeySiteName:         {"Site name", parseString, true},
+		meta.KeyYAMLHeader:       {"YAML header", parseBool, true},
 		meta.KeyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) interface{} { return strings.Fields(val) },
@@ -70,6 +71,7 @@ func (cs *configService) Initialize() {
 		meta.KeyFooterHTML:        "",
 		meta.KeyHomeZettel:        id.DefaultHomeZid,
 		meta.KeyMarkerExternal:    "&#10138;",
+		meta.KeyMaxTransclusions:  1024,
 		meta.KeySiteName:          "Zettelstore",
 		meta.KeyYAMLHeader:        false,
 		meta.KeyZettelFileSyntax:  nil,
@@ -233,6 +235,17 @@ func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
 	vis := meta.GetVisibility(val)
 	cfg.mx.RUnlock()
 	return vis
+}
+
+// GetMaxTransclusions return the maximum number of indirect transclusions.
+func (cfg *myConfig) GetMaxTransclusions() int {
+	cfg.mx.RLock()
+	val, ok := cfg.data.GetNumber(meta.KeyMaxTransclusions)
+	cfg.mx.RUnlock()
+	if ok && val > 0 {
+		return val
+	}
+	return 1024
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.

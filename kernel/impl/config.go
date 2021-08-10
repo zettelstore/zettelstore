@@ -226,6 +226,14 @@ func parseBool(val string) interface{} {
 	return true
 }
 
+func parseInt(val string) interface{} {
+	i, err := strconv.Atoi(val)
+	if err == nil {
+		return i
+	}
+	return 0
+}
+
 func parseZid(val string) interface{} {
 	if zid, err := id.Parse(val); err == nil {
 		return zid
