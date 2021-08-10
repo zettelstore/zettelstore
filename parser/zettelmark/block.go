@@ -295,7 +295,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		if in == nil {
 			return hn, true
 		}
-		if inp.Ch == '{' {
+		if inp.Ch == '{' && inp.Peek() != '{' {
 			attrs := cp.parseAttributes(true)
 			hn.Attrs = attrs
 			inp.SkipToEOL()

@@ -468,6 +468,10 @@ func TestHeading(t *testing.T) {
 		{" =", "(PARA =)"},
 		{"=== h\na", "(H2 h)(PARA a)"},
 		{"=== h i {-}", "(H2 h SP i)[ATTR -]"},
+		{"=== h {{a}}", "(H2 h SP (EMBED a))"},
+		{"=== h {{a}}{-}", "(H2 h SP (EMBED a)[ATTR -])"},
+		{"=== h {{a}} {-}", "(H2 h SP (EMBED a))[ATTR -]"},
+		{"=== h {-}{{a}}", "(H2 h)[ATTR -]"},
 	})
 }
 
