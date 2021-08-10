@@ -295,13 +295,13 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		if in == nil {
 			return hn, true
 		}
+		hn.Inlines.Append(in)
 		if inp.Ch == '{' && inp.Peek() != '{' {
 			attrs := cp.parseAttributes(true)
 			hn.Attrs = attrs
 			inp.SkipToEOL()
 			return hn, true
 		}
-		hn.Inlines.Append(in)
 	}
 }
 
