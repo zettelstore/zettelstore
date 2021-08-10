@@ -1,0 +1,11 @@
+id: 00001007040330
+title: Zettelmarkup: Footnotes
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+
+A footnote begins with a left square bracket, followed by a circumflex accent (""''^''"", ''U+005E''), followed by some text, and ends with a right square bracket.
+
+Example:
+
+``Main text[^Footnote text.].`` is rendered in HTML as: ::Main text[^Footnote text.].::{=example}.

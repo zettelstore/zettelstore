@@ -1,0 +1,17 @@
+id: 00001007040350
+title: Zettelmarkup: Mark
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+
+A mark allows to name a point within a zettel.
+This is useful if you want to reference some content in a bigger-sized zettel, currently with a [[link|00001007040310]] only[^Other uses of marks will be given, if Zettelmarkup is extended by a concept called //transclusion//.].
+
+A mark begins with a left square bracket, followed by an exclamation mark character (""''!''"", ''U+0021'').
+Now the optional mark name follows.
+It is a (possibly empty) sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low-line character (""''_''"", ''U+005F'').
+The mark element ends with a right square bracket.
+
+Examples:
+* ``[!]`` is a mark without a name, the empty mark.
+* ``[!mark]`` is a mark with the name ""mark"".

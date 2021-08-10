@@ -13,7 +13,14 @@
      encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
      <tt>/z/{ID}</tt> now only returns JSON data, except when query parameter
      <tt>raw</tt> is given. See documentation for details.
-     (Major: api; possibly breaking)
+     (major: api; possibly breaking)
+  *  Allows to transclude / expand the content of another zettel into a target
+     zettel when the zettel is rendered. By using the syntax of embedding an
+     image (which is some kind of expansion too), the first top-level paragraph
+     of a zettel may be transcluded into the target zettel. Endless recursion
+     is checked, as well as a possible &ldquo;transclusion bomb &rdquo;
+     (similar to an XML bomb). See manual for details.
+     (major: zettelmarkup)
 
 <a name="0_0_14"></a>
 <h2>Changes for Version 0.0.14 (2021-07-23)</h2>

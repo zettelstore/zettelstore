@@ -1,30 +1,31 @@
 id: 00001007040000
 title: Zettelmarkup: Inline-Structured Elements
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20210810171215
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
 Inline-structured elements allow to format your text and add some helpful links or images.
 Sometimes, you want to enter characters that have no representation on your keyboard.
 
-=== Text formatting
-Every [[text formatting|00001007040100]] element begins with two same characters at the beginning.
-It lasts until the same two characters occurred the second time.
-Some of these elements explicitly support [[attributes|00001007050000]].
+; Text formatting
+: Every [[text formatting|00001007040100]] element begins with two same characters at the beginning.
+  It lasts until the same two characters occurred the second time.
+  Some of these elements explicitly support [[attributes|00001007050000]].
 
-=== Literal-like formatting
-Sometime you want to render the text as it is.
-This is the core motivation of [[literal-like formatting|00001007040200]].
+; Literal-like formatting
+: Sometime you want to render the text as it is.
+: This is the core motivation of [[literal-like formatting|00001007040200]].
 
-=== Reference-like text
-You can reference other zettel and (external) material within one zettel.
-This kind of reference may be a link, or an images that is display inline when the zettel is rendered.
-Footnotes sometimes factor out some useful text that hinders the flow of reading text.
-Internal marks allow to reference something within a zettel.
-An important aspect of all knowledge work is to reference others work, e.g. with citation keys.
-All these elements can be subsumed under [[reference-like text|00001007040300]].
+; Reference-like text
+: You can reference other zettel and (external) material within one zettel.
+  This kind of reference may be a link, or an images that is display inline when the zettel is rendered.
+  Footnotes sometimes factor out some useful text that hinders the flow of reading text.
+  Internal marks allow to reference something within a zettel.
+  An important aspect of all knowledge work is to reference others work, e.g. with citation keys.
+  All these elements can be subsumed under [[reference-like text|00001007040300]].
 
 === Other inline elements
 ==== Comments
