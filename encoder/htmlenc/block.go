@@ -139,8 +139,10 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	strLvl := strconv.Itoa(lvl)
 	v.b.WriteStrings("<h", strLvl)
 	v.visitAttributes(hn.Attrs)
-	if slug := hn.Slug; len(slug) > 0 {
-		v.b.WriteStrings(" id=\"", slug, "\"")
+	if _, ok := hn.Attrs.Get("id"); !ok {
+		if fragment := hn.Fragment; fragment != "" {
+			v.b.WriteStrings(" id=\"", fragment, "\"")
+		}
 	}
 	v.b.WriteByte('>')
 	ast.Walk(v, hn.Inlines)

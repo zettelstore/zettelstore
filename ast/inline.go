@@ -159,7 +159,9 @@ func (cn *CiteNode) WalkChildren(v Visitor) {
 // It is a BlockNode too, because although it is typically parsed during inline
 // mode, it is moved into block mode afterwards.
 type MarkNode struct {
-	Text string
+	Text     string
+	Slug     string // Slugified form of Text
+	Fragment string // Unique form of Slug
 }
 
 func (mn *MarkNode) inlineNode() { /* Just a marker */ }

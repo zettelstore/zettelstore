@@ -163,12 +163,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		ast.Walk(v, n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.MarkNode:
-		v.b.WriteString("Mark")
-		if len(n.Text) > 0 {
-			v.b.WriteString(" \"")
-			v.writeEscaped(n.Text)
-			v.b.WriteByte('"')
-		}
+		v.visitMark(n)
 	case *ast.FormatNode:
 		v.b.Write(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
@@ -299,8 +294,8 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.b.WriteStrings("[Heading ", strconv.Itoa(hn.Level))
-	if slug := hn.Slug; len(slug) > 0 {
-		v.b.WriteStrings(" \"", slug, "\"")
+	if fragment := hn.Fragment; fragment != "" {
+		v.b.WriteStrings(" #", fragment)
 	}
 	v.visitAttributes(hn.Attrs)
 	v.b.WriteByte(' ')
@@ -467,6 +462,19 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 		v.b.WriteString(" [")
 		ast.Walk(v, en.Inlines)
 		v.b.WriteByte(']')
+	}
+}
+
+func (v *visitor) visitMark(mn *ast.MarkNode) {
+	v.b.WriteString("Mark")
+	if text := mn.Text; text != "" {
+		v.b.WriteString(" \"")
+		v.writeEscaped(text)
+		v.b.WriteByte('"')
+	}
+	if fragment := mn.Fragment; fragment != "" {
+		v.b.WriteString(" #")
+		v.writeEscaped(fragment)
 	}
 }
 

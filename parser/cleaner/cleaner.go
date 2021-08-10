@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package evaluate interprets and evaluates the AST.
-package evaluate
+// Package cleaner provides funxtions to clean up the parsed AST.
+package cleaner
 
 import (
 	"strconv"
@@ -21,7 +21,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-func cleanBlockList(bln *ast.BlockListNode) {
+// CleanBlockList cleans the given block list.
+func CleanBlockList(bln *ast.BlockListNode) {
 	cv := cleanVisitor{
 		textEnc: encoder.Create(api.EncoderText, nil),
 		hasMark: false,
@@ -47,14 +48,16 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 		if cv.doMark || n == nil || n.Inlines == nil {
 			return nil
 		}
-		var sb strings.Builder
-		_, err := cv.textEnc.WriteInlines(&sb, n.Inlines)
-		if err != nil {
-			return nil
+		if n.Slug == "" {
+			var sb strings.Builder
+			_, err := cv.textEnc.WriteInlines(&sb, n.Inlines)
+			if err != nil {
+				return nil
+			}
+			n.Slug = strfun.Slugify(sb.String())
 		}
-		s := strfun.Slugify(sb.String())
-		if len(s) > 0 {
-			n.Slug = cv.addIdentifier(s, n)
+		if n.Slug != "" {
+			n.Fragment = cv.addIdentifier(n.Slug, n)
 		}
 		return nil
 	case *ast.MarkNode:
@@ -63,10 +66,14 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 			return nil
 		}
 		if n.Text == "" {
-			n.Text = cv.addIdentifier("*", n)
+			n.Slug = ""
+			n.Fragment = cv.addIdentifier("*", n)
 			return nil
 		}
-		n.Text = cv.addIdentifier(n.Text, n)
+		if n.Slug == "" {
+			n.Slug = strfun.Slugify(n.Text)
+		}
+		n.Fragment = cv.addIdentifier(n.Slug, n)
 		return nil
 	}
 	return cv

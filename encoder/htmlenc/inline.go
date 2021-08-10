@@ -147,8 +147,8 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 	if v.env.IsInteractive(v.inInteractive) {
 		return
 	}
-	if len(mn.Text) > 0 {
-		v.b.WriteStrings("<a id=\"", mn.Text, "\"></a>")
+	if fragment := mn.Fragment; fragment != "" {
+		v.b.WriteStrings("<a id=\"", fragment, "\"></a>")
 	}
 }
 

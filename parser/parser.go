@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/parser/cleaner"
 )
 
 // Info describes a single parser.
@@ -93,7 +94,9 @@ func IsImageFormat(syntax string) bool {
 
 // ParseBlocks parses some input and returns a slice of block nodes.
 func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
-	return Get(syntax).ParseBlocks(inp, m, syntax)
+	bln := Get(syntax).ParseBlocks(inp, m, syntax)
+	cleaner.CleanBlockList(bln)
+	return bln
 }
 
 // ParseInlines parses some input and returns a slice of inline nodes.

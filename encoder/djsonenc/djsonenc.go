@@ -80,17 +80,17 @@ func (je *jsonDetailEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) 
 	return length, err
 }
 
-// detailVisitor writes the abstract syntax tree to an io.Writer.
-type detailVisitor struct {
+// visitor writes the abstract syntax tree to an io.Writer.
+type visitor struct {
 	b   encoder.BufWriter
 	env *encoder.Environment
 }
 
-func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *detailVisitor {
-	return &detailVisitor{b: encoder.NewBufWriter(w), env: je.env}
+func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *visitor {
+	return &visitor{b: encoder.NewBufWriter(w), env: je.env}
 }
 
-func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
+func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
 		v.visitBlockList(n)
@@ -172,11 +172,7 @@ func (v *detailVisitor) Visit(node ast.Node) ast.Visitor {
 		v.writeContentStart('i')
 		ast.Walk(v, n.Inlines)
 	case *ast.MarkNode:
-		v.writeNodeStart("Mark")
-		if len(n.Text) > 0 {
-			v.writeContentStart('s')
-			writeEscaped(&v.b, n.Text)
-		}
+		v.visitMark(n)
 	case *ast.FormatNode:
 		v.writeNodeStart(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
@@ -204,7 +200,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimHTML:    "HTMLBlock",
 }
 
-func (v *detailVisitor) visitVerbatim(vn *ast.VerbatimNode) {
+func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	kind, ok := mapVerbatimKind[vn.Kind]
 	if !ok {
 		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
@@ -225,7 +221,7 @@ var mapRegionKind = map[ast.RegionKind]string{
 	ast.RegionVerse: "VerseBlock",
 }
 
-func (v *detailVisitor) visitRegion(rn *ast.RegionNode) {
+func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	kind, ok := mapRegionKind[rn.Kind]
 	if !ok {
 		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
@@ -240,14 +236,14 @@ func (v *detailVisitor) visitRegion(rn *ast.RegionNode) {
 	}
 }
 
-func (v *detailVisitor) visitHeading(hn *ast.HeadingNode) {
+func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.writeNodeStart("Heading")
 	v.visitAttributes(hn.Attrs)
 	v.writeContentStart('n')
 	v.b.WriteString(strconv.Itoa(hn.Level))
-	if slug := hn.Slug; len(slug) > 0 {
+	if fragment := hn.Fragment; fragment != "" {
 		v.writeContentStart('s')
-		v.b.WriteStrings("\"", slug, "\"")
+		v.b.WriteStrings("\"", fragment, "\"")
 	}
 	v.writeContentStart('i')
 	ast.Walk(v, hn.Inlines)
@@ -259,7 +255,7 @@ var mapNestedListKind = map[ast.NestedListKind]string{
 	ast.NestedListQuote:     "QuoteList",
 }
 
-func (v *detailVisitor) visitNestedList(ln *ast.NestedListNode) {
+func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.writeNodeStart(mapNestedListKind[ln.Kind])
 	v.writeContentStart('c')
 	for i, item := range ln.Items {
@@ -274,7 +270,7 @@ func (v *detailVisitor) visitNestedList(ln *ast.NestedListNode) {
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) visitDescriptionList(dn *ast.DescriptionListNode) {
+func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.writeNodeStart("DescriptionList")
 	v.writeContentStart('g')
 	for i, def := range dn.Descriptions {
@@ -297,7 +293,7 @@ func (v *detailVisitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) visitTable(tn *ast.TableNode) {
+func (v *visitor) visitTable(tn *ast.TableNode) {
 	v.writeNodeStart("Table")
 	v.writeContentStart('p')
 
@@ -330,7 +326,7 @@ var alignmentCode = map[ast.Alignment]string{
 	ast.AlignRight:   "[\">\",",
 }
 
-func (v *detailVisitor) writeCell(cell *ast.TableCell) {
+func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteString(alignmentCode[cell.Align])
 	ast.Walk(v, cell.Inlines)
 	v.b.WriteByte(']')
@@ -347,7 +343,7 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateExternal: "external",
 }
 
-func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
+func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 	v.writeNodeStart("Embed")
 	v.visitAttributes(en.Attrs)
 	switch m := en.Material.(type) {
@@ -378,6 +374,20 @@ func (v *detailVisitor) visitEmbed(en *ast.EmbedNode) {
 	}
 }
 
+func (v *visitor) visitMark(mn *ast.MarkNode) {
+	v.writeNodeStart("Mark")
+	if text := mn.Text; text != "" {
+		v.writeContentStart('s')
+		writeEscaped(&v.b, text)
+	}
+	if fragment := mn.Fragment; fragment != "" {
+		v.writeContentStart('q')
+		v.b.WriteByte('"')
+		v.b.WriteString(fragment)
+		v.b.WriteByte('"')
+	}
+}
+
 var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatItalic:    "Italic",
 	ast.FormatEmph:      "Emph",
@@ -404,7 +414,7 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralHTML:    "HTML",
 }
 
-func (v *detailVisitor) visitBlockList(bln *ast.BlockListNode) {
+func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
 	v.b.WriteByte('[')
 	for i, bn := range bln.List {
 		v.writeComma(i)
@@ -413,7 +423,7 @@ func (v *detailVisitor) visitBlockList(bln *ast.BlockListNode) {
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) walkInlineList(iln *ast.InlineListNode) {
+func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
 	v.b.WriteByte('[')
 	for i, in := range iln.List {
 		v.writeComma(i)
@@ -423,7 +433,7 @@ func (v *detailVisitor) walkInlineList(iln *ast.InlineListNode) {
 }
 
 // visitAttributes write JSON attributes
-func (v *detailVisitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a *ast.Attributes) {
 	if a == nil || len(a.Attrs) == 0 {
 		return
 	}
@@ -445,7 +455,7 @@ func (v *detailVisitor) visitAttributes(a *ast.Attributes) {
 	v.b.WriteString("\"}")
 }
 
-func (v *detailVisitor) writeNodeStart(t string) {
+func (v *visitor) writeNodeStart(t string) {
 	v.b.WriteStrings("{\"t\":\"", t, "\"")
 }
 
@@ -465,7 +475,7 @@ var contentCode = map[rune][]byte{
 	'y': []byte("Content code 'y' is not allowed"), // field after 'j'
 }
 
-func (v *detailVisitor) writeContentStart(code rune) {
+func (v *visitor) writeContentStart(code rune) {
 	if b, ok := contentCode[code]; ok {
 		v.b.Write(b)
 		return
@@ -473,7 +483,7 @@ func (v *detailVisitor) writeContentStart(code rune) {
 	panic("Unknown content code " + strconv.Itoa(int(code)))
 }
 
-func (v *detailVisitor) writeMeta(m *meta.Meta) {
+func (v *visitor) writeMeta(m *meta.Meta) {
 	for _, p := range m.Pairs(true) {
 		if p.Key == meta.KeyTitle {
 			continue
@@ -489,7 +499,7 @@ func (v *detailVisitor) writeMeta(m *meta.Meta) {
 	}
 }
 
-func (v *detailVisitor) writeSetValue(value string) {
+func (v *visitor) writeSetValue(value string) {
 	v.b.WriteByte('[')
 	for i, val := range meta.ListFromValue(value) {
 		v.writeComma(i)
@@ -498,7 +508,7 @@ func (v *detailVisitor) writeSetValue(value string) {
 	v.b.WriteByte(']')
 }
 
-func (v *detailVisitor) writeComma(pos int) {
+func (v *visitor) writeComma(pos int) {
 	if pos > 0 {
 		v.b.WriteByte(',')
 	}

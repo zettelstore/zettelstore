@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/parser/cleaner"
 )
 
 // Environment contains values to control the evaluation.
@@ -54,7 +55,7 @@ func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.
 		marker:     &ast.InlineListNode{},
 	}
 	ast.Walk(&e, zn.Ast)
-	cleanBlockList(zn.Ast)
+	cleaner.CleanBlockList(zn.Ast)
 }
 
 type evaluator struct {

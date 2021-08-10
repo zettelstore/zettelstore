@@ -266,12 +266,15 @@ func TestMark(t *testing.T) {
 	checkTcs(t, TestCases{
 		{"[!", "(PARA [!)"},
 		{"[!\n", "(PARA [!)"},
-		{"[!]", "(PARA (MARK))"},
+		{"[!]", "(PARA (MARK #*))"},
+		{"[!][!]", "(PARA (MARK #*) (MARK #*-1))"},
 		{"[! ]", "(PARA [! SP ])"},
-		{"[!a]", "(PARA (MARK a))"},
+		{"[!a]", "(PARA (MARK \"a\" #a))"},
+		{"[!a][!a]", "(PARA (MARK \"a\" #a) (MARK \"a\" #a-1))"},
 		{"[!a ]", "(PARA [!a SP ])"},
-		{"[!a_]", "(PARA (MARK a_))"},
-		{"[!a-b]", "(PARA (MARK a-b))"},
+		{"[!a_]", "(PARA (MARK \"a_\" #a))"},
+		{"[!a_][!a]", "(PARA (MARK \"a_\" #a) (MARK \"a\" #a-1))"},
+		{"[!a-b]", "(PARA (MARK \"a-b\" #a-b))"},
 	})
 }
 
@@ -454,26 +457,28 @@ func TestHeading(t *testing.T) {
 		{"==h", "(PARA ==h)"},
 		{"== h", "(PARA == SP h)"},
 		{"===h", "(PARA ===h)"},
-		{"=== h", "(H2 h)"},
-		{"===  h", "(H2 h)"},
-		{"==== h", "(H3 h)"},
-		{"===== h", "(H4 h)"},
-		{"====== h", "(H5 h)"},
-		{"======= h", "(H6 h)"},
-		{"======== h", "(H6 h)"},
+		{"=== h", "(H2 h #h)"},
+		{"===  h", "(H2 h #h)"},
+		{"==== h", "(H3 h #h)"},
+		{"===== h", "(H4 h #h)"},
+		{"====== h", "(H5 h #h)"},
+		{"======= h", "(H6 h #h)"},
+		{"======== h", "(H6 h #h)"},
 		{"=", "(PARA =)"},
-		{"=== h=//=a//", "(H2 h= {/ =a})"},
+		{"=== h=//=a//", "(H2 h= {/ =a} #h-a)"},
 		{"=\n", "(PARA =)"},
 		{"a=", "(PARA a=)"},
 		{" =", "(PARA =)"},
-		{"=== h\na", "(H2 h)(PARA a)"},
-		{"=== h i {-}", "(H2 h SP i)[ATTR -]"},
-		{"=== h {{a}}", "(H2 h SP (EMBED a))"},
-		{"=== h{{a}}", "(H2 h (EMBED a))"},
-		{"=== h {{a}}{-}", "(H2 h SP (EMBED a)[ATTR -])"},
-		{"=== h {{a}} {-}", "(H2 h SP (EMBED a))[ATTR -]"},
-		{"=== h {-}{{a}}", "(H2 h)[ATTR -]"},
-		{"=== h{id=abc}", "(H2 h)[ATTR id=abc]"},
+		{"=== h\na", "(H2 h #h)(PARA a)"},
+		{"=== h i {-}", "(H2 h SP i #h-i)[ATTR -]"},
+		{"=== h {{a}}", "(H2 h SP (EMBED a) #h)"},
+		{"=== h{{a}}", "(H2 h (EMBED a) #h)"},
+		{"=== {{a}}", "(H2 (EMBED a))"},
+		{"=== h {{a}}{-}", "(H2 h SP (EMBED a)[ATTR -] #h)"},
+		{"=== h {{a}} {-}", "(H2 h SP (EMBED a) #h)[ATTR -]"},
+		{"=== h {-}{{a}}", "(H2 h #h)[ATTR -]"},
+		{"=== h{id=abc}", "(H2 h #h)[ATTR id=abc]"},
+		{"=== h\n=== h", "(H2 h #h)(H2 h #h-1)"},
 	})
 }
 
@@ -712,6 +717,10 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.HeadingNode:
 		fmt.Fprintf(&tv.b, "(H%d", n.Level)
 		ast.Walk(tv, n.Inlines)
+		if n.Fragment != "" {
+			tv.b.WriteString(" #")
+			tv.b.WriteString(n.Fragment)
+		}
 		tv.b.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HRuleNode:
@@ -822,9 +831,14 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
 		tv.b.WriteString("(MARK")
-		if len(n.Text) > 0 {
-			tv.b.WriteByte(' ')
+		if n.Text != "" {
+			tv.b.WriteString(" \"")
 			tv.b.WriteString(n.Text)
+			tv.b.WriteByte('"')
+		}
+		if n.Fragment != "" {
+			tv.b.WriteString(" #")
+			tv.b.WriteString(n.Fragment)
 		}
 		tv.b.WriteByte(')')
 	case *ast.FormatNode:
@@ -839,7 +853,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 		tv.b.WriteByte('{')
 		tv.b.WriteRune(code)
-		if len(n.Text) > 0 {
+		if n.Text != "" {
 			tv.b.WriteByte(' ')
 			tv.b.WriteString(n.Text)
 		}

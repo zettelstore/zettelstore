@@ -107,10 +107,11 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
-	Level   int
-	Inlines *InlineListNode // Heading text, possibly formatted
-	Slug    string          // Heading text, suitable to be used as an URL fragment
-	Attrs   *Attributes
+	Level    int
+	Inlines  *InlineListNode // Heading text, possibly formatted
+	Slug     string          // Heading text, normalized
+	Fragment string          // Heading text, suitable to be used as an unique URL fragment
+	Attrs    *Attributes
 }
 
 func (hn *HeadingNode) blockNode() { /* Just a marker */ }
