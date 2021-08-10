@@ -102,11 +102,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.RegionNode:
 		v.visitRegion(n)
 	case *ast.HeadingNode:
-		v.b.WriteStrings("[Heading ", strconv.Itoa(n.Level), " \"", n.Slug, "\"")
-		v.visitAttributes(n.Attrs)
-		v.b.WriteByte(' ')
-		ast.Walk(v, n.Inlines)
-		v.b.WriteByte(']')
+		v.visitHeading(n)
 	case *ast.HRuleNode:
 		v.b.WriteString("[Hrule")
 		v.visitAttributes(n.Attrs)
@@ -298,6 +294,17 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 		v.b.WriteByte(']')
 	}
 	v.level--
+	v.b.WriteByte(']')
+}
+
+func (v *visitor) visitHeading(hn *ast.HeadingNode) {
+	v.b.WriteStrings("[Heading ", strconv.Itoa(hn.Level))
+	if slug := hn.Slug; len(slug) > 0 {
+		v.b.WriteStrings(" \"", slug, "\"")
+	}
+	v.visitAttributes(hn.Attrs)
+	v.b.WriteByte(' ')
+	ast.Walk(v, hn.Inlines)
 	v.b.WriteByte(']')
 }
 

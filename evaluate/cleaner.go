@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package cleaner provides funxtions to clean up the parsed AST.
-package cleaner
+// Package evaluate interprets and evaluates the AST.
+package evaluate
 
 import (
 	"strconv"
@@ -21,9 +21,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// CleanupBlockList cleans the given block list.
-func CleanupBlockList(bln *ast.BlockListNode) {
-	cv := cleanupVisitor{
+func cleanBlockList(bln *ast.BlockListNode) {
+	cv := cleanVisitor{
 		textEnc: encoder.Create(api.EncoderText, nil),
 		hasMark: false,
 		doMark:  false,
@@ -35,14 +34,14 @@ func CleanupBlockList(bln *ast.BlockListNode) {
 	}
 }
 
-type cleanupVisitor struct {
+type cleanVisitor struct {
 	textEnc encoder.Encoder
 	ids     map[string]ast.Node
 	hasMark bool
 	doMark  bool
 }
 
-func (cv *cleanupVisitor) Visit(node ast.Node) ast.Visitor {
+func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.HeadingNode:
 		if cv.doMark || n == nil || n.Inlines == nil {
@@ -73,7 +72,7 @@ func (cv *cleanupVisitor) Visit(node ast.Node) ast.Visitor {
 	return cv
 }
 
-func (cv *cleanupVisitor) addIdentifier(id string, node ast.Node) string {
+func (cv *cleanVisitor) addIdentifier(id string, node ast.Node) string {
 	if cv.ids == nil {
 		cv.ids = map[string]ast.Node{id: node}
 		return id

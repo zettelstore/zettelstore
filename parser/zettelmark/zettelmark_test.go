@@ -266,14 +266,12 @@ func TestMark(t *testing.T) {
 	checkTcs(t, TestCases{
 		{"[!", "(PARA [!)"},
 		{"[!\n", "(PARA [!)"},
-		{"[!]", "(PARA (MARK *))"},
+		{"[!]", "(PARA (MARK))"},
 		{"[! ]", "(PARA [! SP ])"},
 		{"[!a]", "(PARA (MARK a))"},
 		{"[!a ]", "(PARA [!a SP ])"},
 		{"[!a_]", "(PARA (MARK a_))"},
 		{"[!a-b]", "(PARA (MARK a-b))"},
-		{"[!a][!a]", "(PARA (MARK a) (MARK a-1))"},
-		{"[!][!]", "(PARA (MARK *) (MARK *-1))"},
 	})
 }
 

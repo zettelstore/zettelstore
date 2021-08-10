@@ -50,6 +50,7 @@ func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.
 		rtConfig: rtConfig,
 	}
 	ast.Walk(&e, zn.Ast)
+	cleanBlockList(zn.Ast)
 }
 
 type evaluator struct {
