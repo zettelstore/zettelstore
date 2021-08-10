@@ -71,7 +71,8 @@ func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 }
 
 func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
-	for i, in := range iln.List {
+	for i := 0; i < len(iln.List); i++ {
+		in := iln.List[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {
 		case *ast.LinkNode:
@@ -82,6 +83,7 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 				tmp := append(iln.List[:i], ln.List...)
 				tmp = append(tmp, iln.List[i+1:]...)
 				iln.List = tmp
+				i += len(ln.List) - 1
 			} else {
 				iln.List[i] = in
 			}
