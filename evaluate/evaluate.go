@@ -184,20 +184,15 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	if !ok {
 		e.embedMap[zid] = e.marker
 
-		zettel, err := e.port.GetZettel(e.ctx, zid)
-		if err != nil {
-			return createErrorText(en, "Cannot", "get", "zettel (error="+err.Error()+"):")
-		}
-		zn, err := parser.ParseZettel(zettel, syntax, e.rtConfig), nil
+		zn, err := e.evaluateEmbeddedZettel(zid, syntax)
 		if err != nil {
 			return createErrorText(en, "Cannot", "parse", "zettel (error="+err.Error()+"):")
 		}
-		ast.Walk(e, zn.Ast)
 
 		// Search for text to be embedded.
 		result = findInlineList(zn.Ast)
 		e.embedMap[zid] = result
-		if result == nil || len(result.List) == 0 {
+		if result.IsEmpty() {
 			return createErrorText(en, "Nothing", "to", "transclude:")
 		}
 	}
@@ -207,20 +202,6 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		return createErrorText(en, "Too", "many", "transclusions ("+strconv.Itoa(maxTrans)+"):")
 	}
 	return result
-}
-
-func findInlineList(bnl *ast.BlockListNode) *ast.InlineListNode {
-	for _, bn := range bnl.List {
-		pn, ok := bn.(*ast.ParaNode)
-		if !ok {
-			continue
-		}
-		inl := pn.Inlines
-		if inl != nil && len(inl.List) > 0 {
-			return inl
-		}
-	}
-	return nil
 }
 
 func (e *evaluator) getSyntax(m *meta.Meta) string {
@@ -261,4 +242,28 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn
+}
+
+func (e *evaluator) evaluateEmbeddedZettel(zid id.Zid, syntax string) (*ast.ZettelNode, error) {
+	zettel, err := e.port.GetZettel(e.ctx, zid)
+	if err == nil {
+		zn := parser.ParseZettel(zettel, syntax, e.rtConfig)
+		ast.Walk(e, zn.Ast)
+		return zn, nil
+	}
+	return nil, err
+}
+
+func findInlineList(bnl *ast.BlockListNode) *ast.InlineListNode {
+	for _, bn := range bnl.List {
+		pn, ok := bn.(*ast.ParaNode)
+		if !ok {
+			continue
+		}
+		inl := pn.Inlines
+		if inl != nil && len(inl.List) > 0 {
+			return inl
+		}
+	}
+	return nil
 }

@@ -45,38 +45,46 @@ type cleanVisitor struct {
 func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.HeadingNode:
-		if cv.doMark || n == nil || n.Inlines == nil {
-			return nil
-		}
-		if n.Slug == "" {
-			var sb strings.Builder
-			_, err := cv.textEnc.WriteInlines(&sb, n.Inlines)
-			if err != nil {
-				return nil
-			}
-			n.Slug = strfun.Slugify(sb.String())
-		}
-		if n.Slug != "" {
-			n.Fragment = cv.addIdentifier(n.Slug, n)
-		}
+		cv.visitHeading(n)
 		return nil
 	case *ast.MarkNode:
-		if !cv.doMark {
-			cv.hasMark = true
-			return nil
-		}
-		if n.Text == "" {
-			n.Slug = ""
-			n.Fragment = cv.addIdentifier("*", n)
-			return nil
-		}
-		if n.Slug == "" {
-			n.Slug = strfun.Slugify(n.Text)
-		}
-		n.Fragment = cv.addIdentifier(n.Slug, n)
+		cv.visitMark(n)
 		return nil
 	}
 	return cv
+}
+
+func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
+	if cv.doMark || hn == nil || hn.Inlines == nil {
+		return
+	}
+	if hn.Slug == "" {
+		var sb strings.Builder
+		_, err := cv.textEnc.WriteInlines(&sb, hn.Inlines)
+		if err != nil {
+			return
+		}
+		hn.Slug = strfun.Slugify(sb.String())
+	}
+	if hn.Slug != "" {
+		hn.Fragment = cv.addIdentifier(hn.Slug, hn)
+	}
+}
+
+func (cv *cleanVisitor) visitMark(mn *ast.MarkNode) {
+	if !cv.doMark {
+		cv.hasMark = true
+		return
+	}
+	if mn.Text == "" {
+		mn.Slug = ""
+		mn.Fragment = cv.addIdentifier("*", mn)
+		return
+	}
+	if mn.Slug == "" {
+		mn.Slug = strfun.Slugify(mn.Text)
+	}
+	mn.Fragment = cv.addIdentifier(mn.Slug, mn)
 }
 
 func (cv *cleanVisitor) addIdentifier(id string, node ast.Node) string {

@@ -522,7 +522,7 @@ func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
 
 // visitAttributes write native attributes
 func (v *visitor) visitAttributes(a *ast.Attributes) {
-	if a == nil || len(a.Attrs) == 0 {
+	if a.IsEmpty() {
 		return
 	}
 	keys := make([]string, 0, len(a.Attrs))

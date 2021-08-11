@@ -33,7 +33,7 @@ type textEncoder struct{}
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta)
-	v.acceptBlockList(zn.Ast)
+	v.visitBlockList(zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -88,7 +88,7 @@ func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 // WriteBlocks writes the content of a block slice to the writer.
 func (te *textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(w)
-	v.acceptBlockList(bln)
+	v.visitBlockList(bln)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -113,54 +113,25 @@ func newVisitor(w io.Writer) *visitor {
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
-		v.acceptBlockList(n)
+		v.visitBlockList(n)
 	case *ast.VerbatimNode:
-		if n.Kind == ast.VerbatimComment {
-			return nil
-		}
-		for i, line := range n.Lines {
-			v.writePosChar(i, '\n')
-			v.b.WriteString(line)
-		}
+		v.visitVerbatim(n)
 		return nil
 	case *ast.RegionNode:
-		v.acceptBlockList(n.Blocks)
+		v.visitBlockList(n.Blocks)
 		if n.Inlines != nil {
 			v.b.WriteByte('\n')
 			ast.Walk(v, n.Inlines)
 		}
 		return nil
 	case *ast.NestedListNode:
-		for i, item := range n.Items {
-			v.writePosChar(i, '\n')
-			for j, it := range item {
-				v.writePosChar(j, '\n')
-				ast.Walk(v, it)
-			}
-		}
+		v.visitNestedList(n)
 		return nil
 	case *ast.DescriptionListNode:
-		for i, descr := range n.Descriptions {
-			v.writePosChar(i, '\n')
-			ast.Walk(v, descr.Term)
-			for _, b := range descr.Descriptions {
-				v.b.WriteByte('\n')
-				for k, d := range b {
-					v.writePosChar(k, '\n')
-					ast.Walk(v, d)
-				}
-			}
-		}
+		v.visitDescriptionList(n)
 		return nil
 	case *ast.TableNode:
-		if len(n.Header) > 0 {
-			v.writeRow(n.Header)
-			v.b.WriteByte('\n')
-		}
-		for i, row := range n.Rows {
-			v.writePosChar(i, '\n')
-			v.writeRow(row)
-		}
+		v.visitTable(n)
 		return nil
 	case *ast.TextNode:
 		v.b.WriteString(n.Text)
@@ -194,6 +165,51 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	return v
 }
 
+func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
+	if vn.Kind == ast.VerbatimComment {
+		return
+	}
+	for i, line := range vn.Lines {
+		v.writePosChar(i, '\n')
+		v.b.WriteString(line)
+	}
+}
+
+func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
+	for i, item := range ln.Items {
+		v.writePosChar(i, '\n')
+		for j, it := range item {
+			v.writePosChar(j, '\n')
+			ast.Walk(v, it)
+		}
+	}
+}
+
+func (v *visitor) visitDescriptionList(dl *ast.DescriptionListNode) {
+	for i, descr := range dl.Descriptions {
+		v.writePosChar(i, '\n')
+		ast.Walk(v, descr.Term)
+		for _, b := range descr.Descriptions {
+			v.b.WriteByte('\n')
+			for k, d := range b {
+				v.writePosChar(k, '\n')
+				ast.Walk(v, d)
+			}
+		}
+	}
+}
+
+func (v *visitor) visitTable(tn *ast.TableNode) {
+	if len(tn.Header) > 0 {
+		v.writeRow(tn.Header)
+		v.b.WriteByte('\n')
+	}
+	for i, row := range tn.Rows {
+		v.writePosChar(i, '\n')
+		v.writeRow(row)
+	}
+}
+
 func (v *visitor) writeRow(row ast.TableRow) {
 	for i, cell := range row {
 		v.writePosChar(i, ' ')
@@ -201,7 +217,7 @@ func (v *visitor) writeRow(row ast.TableRow) {
 	}
 }
 
-func (v *visitor) acceptBlockList(bns *ast.BlockListNode) {
+func (v *visitor) visitBlockList(bns *ast.BlockListNode) {
 	for i, bn := range bns.List {
 		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)

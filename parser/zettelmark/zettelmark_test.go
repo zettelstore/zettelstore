@@ -917,7 +917,7 @@ func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
 }
 
 func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
-	if a == nil || len(a.Attrs) == 0 {
+	if a.IsEmpty() {
 		return
 	}
 	tv.b.WriteString("[ATTR")

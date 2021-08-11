@@ -43,44 +43,17 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	case *ast.ParaNode:
 		return pp
 	case *ast.RegionNode:
-		oldVerse := pp.inVerse
-		if n.Kind == ast.RegionVerse {
-			pp.inVerse = true
-		}
-		pp.visitBlockList(n.Blocks)
-		pp.inVerse = oldVerse
+		pp.visitRegion(n)
 		return pp
 	case *ast.HeadingNode:
 		return pp
 	case *ast.NestedListNode:
-		for i, item := range n.Items {
-			n.Items[i] = pp.processItemSlice(item)
-		}
+		pp.visitNestedList(n)
 	case *ast.DescriptionListNode:
-		for i, def := range n.Descriptions {
-			for j, b := range def.Descriptions {
-				n.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
-			}
-		}
+		pp.visitDescriptionList(n)
 		return pp
 	case *ast.TableNode:
-		width := tableWidth(n)
-		n.Align = make([]ast.Alignment, width)
-		for i := 0; i < width; i++ {
-			n.Align[i] = ast.AlignDefault
-		}
-		if len(n.Rows) > 0 && isHeaderRow(n.Rows[0]) {
-			n.Header = n.Rows[0]
-			n.Rows = n.Rows[1:]
-			pp.visitTableHeader(n)
-		}
-		if len(n.Header) > 0 {
-			n.Header = appendCells(n.Header, width, n.Align)
-			for i, cell := range n.Header {
-				pp.processCell(cell, n.Align[i])
-			}
-		}
-		pp.visitTableRows(n, width)
+		pp.visitTable(n)
 	case *ast.LinkNode:
 		return pp
 	case *ast.EmbedNode:
@@ -90,15 +63,53 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	case *ast.FootnoteNode:
 		return pp
 	case *ast.FormatNode:
-		if n.Attrs != nil && n.Attrs.HasDefault() {
-			if newKind, ok := mapSemantic[n.Kind]; ok {
-				n.Attrs.RemoveDefault()
-				n.Kind = newKind
-			}
-		}
+		pp.visitFormat(n)
 		return pp
 	}
 	return nil
+}
+
+func (pp *postProcessor) visitRegion(rn *ast.RegionNode) {
+	oldVerse := pp.inVerse
+	if rn.Kind == ast.RegionVerse {
+		pp.inVerse = true
+	}
+	pp.visitBlockList(rn.Blocks)
+	pp.inVerse = oldVerse
+}
+
+func (pp *postProcessor) visitNestedList(ln *ast.NestedListNode) {
+	for i, item := range ln.Items {
+		ln.Items[i] = pp.processItemSlice(item)
+	}
+}
+
+func (pp *postProcessor) visitDescriptionList(dn *ast.DescriptionListNode) {
+	for i, def := range dn.Descriptions {
+		for j, b := range def.Descriptions {
+			dn.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
+		}
+	}
+}
+
+func (pp *postProcessor) visitTable(tn *ast.TableNode) {
+	width := tableWidth(tn)
+	tn.Align = make([]ast.Alignment, width)
+	for i := 0; i < width; i++ {
+		tn.Align[i] = ast.AlignDefault
+	}
+	if len(tn.Rows) > 0 && isHeaderRow(tn.Rows[0]) {
+		tn.Header = tn.Rows[0]
+		tn.Rows = tn.Rows[1:]
+		pp.visitTableHeader(tn)
+	}
+	if len(tn.Header) > 0 {
+		tn.Header = appendCells(tn.Header, width, tn.Align)
+		for i, cell := range tn.Header {
+			pp.processCell(cell, tn.Align[i])
+		}
+	}
+	pp.visitTableRows(tn, width)
 }
 
 func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
@@ -205,6 +216,15 @@ var mapSemantic = map[ast.FormatKind]ast.FormatKind{
 	ast.FormatBold:   ast.FormatStrong,
 	ast.FormatUnder:  ast.FormatInsert,
 	ast.FormatStrike: ast.FormatDelete,
+}
+
+func (pp *postProcessor) visitFormat(fn *ast.FormatNode) {
+	if fn.Attrs.HasDefault() {
+		if newKind, ok := mapSemantic[fn.Kind]; ok {
+			fn.Attrs.RemoveDefault()
+			fn.Kind = newKind
+		}
+	}
 }
 
 func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {

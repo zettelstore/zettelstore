@@ -20,6 +20,9 @@ type Attributes struct {
 	Attrs map[string]string
 }
 
+// IsEmpty returns true if there are no attributes.
+func (a *Attributes) IsEmpty() bool { return a == nil || len(a.Attrs) == 0 }
+
 // HasDefault returns true, if the default attribute "-" has been set.
 func (a *Attributes) HasDefault() bool {
 	if a != nil {

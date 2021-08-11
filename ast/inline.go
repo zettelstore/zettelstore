@@ -45,6 +45,9 @@ func (iln *InlineListNode) WalkChildren(v Visitor) {
 	}
 }
 
+// IsEmpty returns true if the list has no elements.
+func (iln *InlineListNode) IsEmpty() bool { return iln == nil || len(iln.List) == 0 }
+
 // Append inline node(s) to the list.
 func (iln *InlineListNode) Append(in ...InlineNode) {
 	iln.List = append(iln.List, in...)

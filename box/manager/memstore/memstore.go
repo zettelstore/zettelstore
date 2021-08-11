@@ -42,7 +42,7 @@ func (zi *zettelIndex) isEmpty() bool {
 	if len(zi.forward) > 0 || len(zi.backward) > 0 || len(zi.dead) > 0 || len(zi.words) > 0 {
 		return false
 	}
-	return zi.meta == nil || len(zi.meta) == 0
+	return len(zi.meta) == 0
 }
 
 type stringRefs map[string]id.Slice
