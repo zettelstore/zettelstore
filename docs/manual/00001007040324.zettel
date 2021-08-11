@@ -1,0 +1,41 @@
+id: 00001007040324
+title: Zettelmarkup: Inline Transclusion of Text
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20210811172440
+
+Inline transclusion applies to all zettel that are parsed in an non-trivial way.
+For example, textual content is assumed if the [[syntax|00001006020000#syntax]] of a zettel is ''zmk'' ([[Zettelmarkup|00001007000000]]), or ''markdown'' / ''md'' ([[Markdown|00001008010000]]).
+
+Since the transclusion is at the level of [[inline-structured elements|00001007040000]], the transclude specification must be replaced with some inline-structured elements.
+
+First, the referenced zettel is read.
+If it contains inline transclusions, these will be expanded, recursively.
+When an endless recursion is detected, expansion does not take place.
+Instead an error message replaces the transclude specification.
+
+The result of this (indirect) transclusion is searched for inline-structured elements.
+
+* If only the zettel identifier was specified, the first top-level [[paragraph|00001007030000#paragraphs]] is used.
+  Since a paragraph is basically a sequence of inline-structured elements, these elements will replace the transclude specification.
+
+  Example: ``{{00010000000000}}`` (see [[00010000000000]]) is rendered as ::{{00010000000000}}::{=example}.
+
+* If a fragment identifier was additionally specified, the element with the given fragment is searched:
+** If it specifies a [[heading|00001007030300]], the next top-level paragraph is used.
+
+   Example: ``{{00010000000000#reporting-errors}}`` is rendered as ::{{00010000000000#reporting-errors}}::{=example}.
+
+** In case the fragment names a [[mark|00001007040350]], the inline-structured elements after the mark are used.
+   Initial spaces and line breaks are ignored in this case.
+
+   Example: ``{{00001007040322#spin}}`` is rendered as ::{{00001007040322#spin}}::{=example}.
+
+** Just specifying the fragment identifier will reference something in the current page.
+   This is not allowed, to prevent a possible endless recursion.
+
+If no inline-structured elements are found, the transclude specification is replaced by an error message.
+
+To avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]] (also known as ""XML bomb""), the total number of transclusions / expansions is limited.
+The limit can be controlled by setting the value [[''max-transclusions''|00001004020000#max-transclusions]] of the runtime configuration zettel.
