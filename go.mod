@@ -8,5 +8,5 @@ require (
 	github.com/yuin/goldmark v1.4.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
-	golang.org/x/text v0.3.6
+	golang.org/x/text v0.3.7
 )
