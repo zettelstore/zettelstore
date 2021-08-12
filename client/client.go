@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -35,6 +36,7 @@ type Client struct {
 	token     string
 	tokenType string
 	expires   time.Time
+	client    http.Client
 }
 
 // NewClient create a new client.
@@ -42,7 +44,18 @@ func NewClient(baseURL string) *Client {
 	if !strings.HasSuffix(baseURL, "/") {
 		baseURL += "/"
 	}
-	c := Client{baseURL: baseURL}
+	c := Client{
+		baseURL: baseURL,
+		client: http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				DialContext: (&net.Dialer{
+					Timeout: 5 * time.Second, // TCP connect timeout
+				}).DialContext,
+				TLSHandshakeTimeout: 5 * time.Second,
+			},
+		},
+	}
 	return &c
 }
 
@@ -57,8 +70,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	if c.token != "" {
 		req.Header.Add("Authorization", c.tokenType+" "+c.token)
 	}
-	client := http.Client{}
-	resp, err := client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
