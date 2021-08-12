@@ -31,6 +31,7 @@ import (
 type Environment struct {
 	Config       config.Config
 	Syntax       string
+	GetTagRef    func(string) *ast.Reference
 	GetHostedRef func(string) *ast.Reference
 	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
 	GetImageRef  func(zid id.Zid, state ast.RefState) *ast.Reference
@@ -85,6 +86,8 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 		in := iln.List[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {
+		case *ast.TagNode:
+			iln.List[i] = e.visitTag(n)
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedNode:
@@ -115,6 +118,16 @@ func replaceWithInlineNodes(ins []ast.InlineNode, i int, replaceIns []ast.Inline
 		newIns = append(newIns, ins[i+1:]...)
 	}
 	return newIns
+}
+
+func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
+	if gtr := e.env.GetTagRef; gtr != nil {
+		return &ast.LinkNode{
+			Ref:     e.env.GetTagRef(tn.Tag),
+			Inlines: ast.CreateInlineListNodeFromWords("#" + tn.Tag),
+		}
+	}
+	return tn
 }
 
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {

@@ -39,6 +39,9 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 		q := r.URL.Query()
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partZettel)
+		getTagRef := func(s string) *ast.Reference {
+			return adapter.CreateTagReference(api, 'z', s)
+		}
 		getHostedRef := func(s string) *ast.Reference {
 			return adapter.CreateHostedReference(api, s)
 		}
@@ -49,10 +52,14 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 			return adapter.CreateImageReference(api, zid, state)
 		}
 		switch enc {
-		case zsapi.EncoderDJSON, zsapi.EncoderHTML:
-			// Change references only for these encodings
+		case zsapi.EncoderHTML:
+			// Get all references only for HTML encoding
+		case zsapi.EncoderDJSON:
+			// Get all references, except for tags.
+			getTagRef = nil
 		default:
 			// Other encodings do not change the references
+			getTagRef = nil
 			getHostedRef = nil
 			getFoundRef = nil
 			getImageRef = nil
@@ -60,6 +67,7 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
 			Syntax:       q.Get(meta.KeySyntax),
 			Config:       api.rtConfig,
+			GetTagRef:    getTagRef,
 			GetHostedRef: getHostedRef,
 			GetFoundRef:  getFoundRef,
 			GetImageRef:  getImageRef,

@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
 )
@@ -68,6 +69,14 @@ func CodeMessageFromError(err error) (int, string) {
 		return http.StatusConflict, "Zettelstore operations conflicted"
 	}
 	return http.StatusInternalServerError, err.Error()
+}
+
+// CreateTagReference builds a reference to list all tags.
+func CreateTagReference(b server.Builder, key byte, s string) *ast.Reference {
+	u := b.NewURLBuilder(key).AppendQuery(meta.KeyTags, s)
+	ref := ast.ParseReference(u.String())
+	ref.State = ast.RefStateHosted
+	return ref
 }
 
 // CreateHostedReference builds a reference with state "hosted".
