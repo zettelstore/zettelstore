@@ -9,13 +9,26 @@
 {{#HasTags}}&#183; {{#Tags}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags}}{{/HasTags}}
 {{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
 {{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
-{{#FolgeRefs}}<br>Folge: {{{FolgeRefs}}}{{/FolgeRefs}}
 {{#PrecursorRefs}}<br>Precursor: {{{PrecursorRefs}}}{{/PrecursorRefs}}
 {{#HasExtURL}}<br>URL: <a href="{{{ExtURL}}}"{{{ExtNewWindow}}}>{{ExtURL}}</a>{{/HasExtURL}}
 </div>
 </header>
 {{{Content}}}
+</article>
+{{#HasFolgeLinks}}
+<nav>
+<details open>
+<summary>Folgezettel</summary>
+<ul>
+{{#FolgeLinks}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/FolgeLinks}}
+</ul>
+</details>
+</nav>
+{{/HasFolgeLinks}}
 {{#HasBackLinks}}
+<nav>
 <details>
 <summary>Additional links to this zettel</summary>
 <ul>
@@ -24,5 +37,5 @@
 {{/BackLinks}}
 </ul>
 </details>
+</nav>
 {{/HasBackLinks}}
-</article>

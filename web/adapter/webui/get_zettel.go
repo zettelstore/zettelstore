@@ -91,7 +91,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 		canCreate := wui.canCreate(ctx, user)
 		getTitle := makeGetTitle(ctx, getMeta, &encoder.Environment{Lang: lang})
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		backLinks := wui.encodeBackLinks(zn.InhMeta, getTitle)
+		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyFolge, getTitle)
+		backLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyBack, getTitle)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -109,12 +110,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			CopyURL       string
 			CanFolge      bool
 			FolgeURL      string
-			FolgeRefs     string
 			PrecursorRefs string
 			HasExtURL     bool
 			ExtURL        string
 			ExtNewWindow  string
 			Content       string
+			HasFolgeLinks bool
+			FolgeLinks    []simpleLink
 			HasBackLinks  bool
 			BackLinks     []simpleLink
 		}{
@@ -131,12 +133,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      canCreate,
 			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
-			FolgeRefs:     wui.encodeMetaKey(zn.InhMeta, meta.KeyFolge, getTitle),
 			PrecursorRefs: wui.encodeMetaKey(zn.InhMeta, meta.KeyPrecursor, getTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
 			Content:       htmlContent,
+			HasFolgeLinks: len(folgeLinks) > 0,
+			FolgeLinks:    folgeLinks,
 			HasBackLinks:  len(backLinks) > 0,
 			BackLinks:     backLinks,
 		})
@@ -214,8 +217,8 @@ func (wui *WebUI) encodeMetaKey(m *meta.Meta, key string, getTitle getTitleFunc)
 	return ""
 }
 
-func (wui *WebUI) encodeBackLinks(m *meta.Meta, getTitle getTitleFunc) []simpleLink {
-	values, ok := m.GetList(meta.KeyBack)
+func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTitle getTitleFunc) []simpleLink {
+	values, ok := m.GetList(key)
 	if !ok || len(values) == 0 {
 		return nil
 	}

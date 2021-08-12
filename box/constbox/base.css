@@ -256,6 +256,9 @@
   h1+.zs-meta {
     margin-top:-1rem;
   }
+  nav > details {
+    margin-top:1rem;
+  }
   details > summary {
     width: 100%;
     background-color: #eee;

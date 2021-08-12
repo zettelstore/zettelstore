@@ -21,6 +21,8 @@
      is checked, as well as a possible &ldquo;transclusion bomb &rdquo;
      (similar to an XML bomb). See manual for details.
      (major: zettelmarkup)
+  *  Folgezettel are now displayed with full title at the bottom of a page.
+     (minor: webui)
 
 <a name="0_0_14"></a>
 <h2>Changes for Version 0.0.14 (2021-07-23)</h2>
