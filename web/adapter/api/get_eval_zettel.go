@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/evaluate"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -57,7 +57,7 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 			getFoundRef = nil
 			getImageRef = nil
 		}
-		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
+		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
 			Syntax:       q.Get(meta.KeySyntax),
 			Config:       api.rtConfig,
 			GetHostedRef: getHostedRef,

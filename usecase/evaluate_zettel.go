@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/evaluate"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 )
 
@@ -40,7 +40,7 @@ func NewEvaluateZettel(rtConfig config.Config, getZettel GetZettel, getMeta GetM
 }
 
 // Run executes the use case.
-func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluate.Environment) (*ast.ZettelNode, error) {
+func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluator.Environment) (*ast.ZettelNode, error) {
 	zettel, err := uc.getZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluate.Env
 		return nil, err
 	}
 
-	evaluate.Evaluate(ctx, uc, env, uc.rtConfig, zn)
+	evaluator.Evaluate(ctx, uc, env, uc.rtConfig, zn)
 	return zn, nil
 }
 

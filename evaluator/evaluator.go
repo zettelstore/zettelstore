@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package evaluate interprets and evaluates the AST.
-package evaluate
+// Package evaluator interprets and evaluates the AST.
+package evaluator
 
 import (
 	"context"
