@@ -66,6 +66,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
 	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
+	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
 	ucEvaluateZettel := usecase.NewEvaluateZettel(rtConfig, ucGetZettel, ucGetMeta)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
 	ucListRoles := usecase.NewListRole(protectedBoxManager)
@@ -104,7 +105,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
-		ucEvaluateZettel, ucGetMeta, ucGetAllMeta))
+		ucParseZettel, ucGetMeta, ucGetAllMeta))
 	webSrv.AddListRoute('j', server.MethodGet, wui.MakeGetLogoutHandler())
 	webSrv.AddZettelRoute('j', server.MethodGet, wui.MakeZettelContextHandler(ucZettelContext))
 

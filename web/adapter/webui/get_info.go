@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/encfun"
-	"zettelstore.de/z/evaluate"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -44,7 +43,7 @@ type matrixLine struct {
 
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
 func (wui *WebUI) MakeGetInfoHandler(
-	evaluateZettel usecase.EvaluateZettel,
+	parseZettel usecase.ParseZettel,
 	getMeta usecase.GetMeta,
 	getAllMeta usecase.GetAllMeta,
 ) http.HandlerFunc {
@@ -63,10 +62,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		zn, err := evaluateZettel.Run(ctx, zid, &evaluate.Environment{
-			Syntax: q.Get(meta.KeySyntax),
-			Config: wui.rtConfig,
-		})
+		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
