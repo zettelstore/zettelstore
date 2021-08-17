@@ -72,8 +72,9 @@ type MetaMap map[id.Zid]*meta.Meta
 type ManagedBox interface {
 	BaseBox
 
-	// SelectMeta returns all zettel meta data that match the criteria.
-	SelectMeta(ctx context.Context, match search.MetaMatchFunc) (MetaMap, error)
+	// SelectMeta splits all managed zettel into those that match the given criteria
+	// and into those that do not match the criteria.
+	SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej MetaMap, err error)
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)

@@ -106,20 +106,23 @@ func (pp *compBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (pp *compBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (box.MetaMap, error) {
-	result := make(box.MetaMap, len(myZettel))
+func (pp *compBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
+	sel = make(box.MetaMap, len(myZettel))
+	rej = make(box.MetaMap, len(myZettel))
 	for zid, gen := range myZettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
 				pp.enricher.Enrich(ctx, m, pp.number)
 				if match(m) {
-					result[zid] = m
+					sel[zid] = m
+				} else {
+					rej[zid] = m
 				}
 			}
 		}
 	}
-	return result, nil
+	return sel, nil, nil
 }
 
 func (pp *compBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

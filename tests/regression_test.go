@@ -151,14 +151,14 @@ func getBoxName(p box.ManagedBox, root string) string {
 	return u.Path[len(root):]
 }
 
-func match(*meta.Meta) bool { return true }
+func matchAll(*meta.Meta) bool { return true }
 
 func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 	ss := p.(box.StartStopper)
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), match)
+	metaList, _, err := p.SelectMeta(context.Background(), matchAll)
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +212,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 	if err := ss.Start(context.Background()); err != nil {
 		panic(err)
 	}
-	metaList, err := p.SelectMeta(context.Background(), match)
+	metaList, _, err := p.SelectMeta(context.Background(), matchAll)
 	if err != nil {
 		panic(err)
 	}

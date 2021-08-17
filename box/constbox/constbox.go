@@ -81,16 +81,19 @@ func (cp *constBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (cp *constBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (box.MetaMap, error) {
-	result := make(box.MetaMap, len(cp.zettel))
+func (cp *constBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
+	sel = make(box.MetaMap, len(cp.zettel))
+	rej = make(box.MetaMap, len(cp.zettel))
 	for zid, zettel := range cp.zettel {
 		m := meta.NewWithData(zid, zettel.header)
 		cp.enricher.Enrich(ctx, m, cp.number)
 		if match(m) {
-			result[zid] = m
+			sel[zid] = m
+		} else {
+			rej[zid] = m
 		}
 	}
-	return result, nil
+	return sel, rej, nil
 }
 
 func (cp *constBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

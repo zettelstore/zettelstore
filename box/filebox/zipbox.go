@@ -169,13 +169,14 @@ func (zp *zipBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (zp *zipBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (box.MetaMap, error) {
+func (zp *zipBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer reader.Close()
-	result := make(box.MetaMap, len(zp.zettel))
+	sel = make(box.MetaMap, len(zp.zettel))
+	rej = make(box.MetaMap, len(zp.zettel))
 	for zid, entry := range zp.zettel {
 		m, err := readZipMeta(reader, zid, entry)
 		if err != nil {
@@ -183,10 +184,12 @@ func (zp *zipBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (b
 		}
 		zp.enricher.Enrich(ctx, m, zp.number)
 		if match(m) {
-			result[zid] = m
+			sel[zid] = m
+		} else {
+			rej[zid] = m
 		}
 	}
-	return result, nil
+	return sel, rej, nil
 }
 
 func (zp *zipBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
