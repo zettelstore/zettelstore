@@ -162,7 +162,7 @@ func (c *Client) CreateZettel(ctx context.Context, data *api.ZettelDataJSON) (id
 	if err := encodeZettelData(&buf, data); err != nil {
 		return id.Invalid, err
 	}
-	ub := c.jsonZettelURLBuilder(nil)
+	ub := c.jsonZettelURLBuilder('z', nil)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPost, ub, &buf, nil)
 	if err != nil {
 		return id.Invalid, err
@@ -192,7 +192,7 @@ func encodeZettelData(buf *bytes.Buffer, data *api.ZettelDataJSON) error {
 
 // ListZettel returns a list of all Zettel.
 func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZidMetaJSON, error) {
-	ub := c.jsonZettelURLBuilder(query)
+	ub := c.jsonZettelURLBuilder('z', query)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err
@@ -212,7 +212,7 @@ func (c *Client) ListZettel(ctx context.Context, query url.Values) ([]api.ZidMet
 
 // GetZettelJSON returns a zettel as a JSON struct.
 func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid) (*api.ZettelDataJSON, error) {
-	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
+	ub := c.jsonZettelURLBuilder('z', nil).SetZid(zid)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
 	if err != nil {
 		return nil, err
@@ -230,9 +230,18 @@ func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid) (*api.ZettelData
 	return &out, nil
 }
 
-// GetEvaluatedZettel return a zettel in a defined encoding.
+// GetEvaluatedZettel return an evaluated zettel in a defined encoding.
 func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
-	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
+	return c.getZettelString(ctx, 'v', zid, enc)
+}
+
+// GetParsedZettel return a parsed zettel in a defined encoding.
+func (c *Client) GetParsedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
+	return c.getZettelString(ctx, 'p', zid, enc)
+}
+
+func (c *Client) getZettelString(ctx context.Context, key byte, zid id.Zid, enc api.EncodingEnum) (string, error) {
+	ub := c.jsonZettelURLBuilder(key, nil).SetZid(zid)
 	ub.AppendQuery(api.QueryKeyEncoding, enc.String())
 	ub.AppendQuery(api.QueryKeyPart, api.PartContent)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodGet, ub, nil, nil)
@@ -344,7 +353,7 @@ func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelD
 	if err := encodeZettelData(&buf, data); err != nil {
 		return err
 	}
-	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
+	ub := c.jsonZettelURLBuilder('z', nil).SetZid(zid)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodPut, ub, &buf, nil)
 	if err != nil {
 		return err
@@ -358,9 +367,9 @@ func (c *Client) UpdateZettel(ctx context.Context, zid id.Zid, data *api.ZettelD
 
 // RenameZettel renames a zettel.
 func (c *Client) RenameZettel(ctx context.Context, oldZid, newZid id.Zid) error {
-	ub := c.jsonZettelURLBuilder(nil).SetZid(oldZid)
+	ub := c.jsonZettelURLBuilder('z', nil).SetZid(oldZid)
 	h := http.Header{
-		api.HeaderDestination: {c.jsonZettelURLBuilder(nil).SetZid(newZid).String()},
+		api.HeaderDestination: {c.jsonZettelURLBuilder('z', nil).SetZid(newZid).String()},
 	}
 	resp, err := c.buildAndExecuteRequest(ctx, api.MethodMove, ub, nil, h)
 	if err != nil {
@@ -375,7 +384,7 @@ func (c *Client) RenameZettel(ctx context.Context, oldZid, newZid id.Zid) error 
 
 // DeleteZettel deletes a zettel with the given identifier.
 func (c *Client) DeleteZettel(ctx context.Context, zid id.Zid) error {
-	ub := c.jsonZettelURLBuilder(nil).SetZid(zid)
+	ub := c.jsonZettelURLBuilder('z', nil).SetZid(zid)
 	resp, err := c.buildAndExecuteRequest(ctx, http.MethodDelete, ub, nil, nil)
 	if err != nil {
 		return err
@@ -387,8 +396,8 @@ func (c *Client) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	return nil
 }
 
-func (c *Client) jsonZettelURLBuilder(query url.Values) *api.URLBuilder {
-	ub := c.newURLBuilder('z')
+func (c *Client) jsonZettelURLBuilder(key byte, query url.Values) *api.URLBuilder {
+	ub := c.newURLBuilder(key)
 	for key, values := range query {
 		if key == api.QueryKeyEncoding {
 			continue

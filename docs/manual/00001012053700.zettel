@@ -1,0 +1,72 @@
+id: 00001012053700
+title: API: Retrieve references of an existing zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20210817142110
+
+The web of zettel is one important value of a Zettelstore.
+Many zettel references other zettel, embedded material, external/local material or, via citations, external literature.
+By using the [[endpoint|00001012920000]] ''/l/{ID}'' you are able to retrieve these references.
+
+````
+# curl http://127.0.0.1:23123/l/00001012053700
+{"id":"00001012053600","url":"/z/00001012053600","linked":{"outgoing":[{"id":"00001012920000","url":"/z/00001012920000"},{"id":"00001007040300","url":"/z/00001007040300#links"},{"id":"00001007040300","url":"/z/00001007040300#embedded-material"},{"id":"00001007040300","url":"/z/00001007040300#citation-key"}]},"embedded":{}}
+````
+Formatted, this translates into:
+````json
+{
+  "id": "00001012053700",
+  "url": "/z/00001012053700",
+  "linked": {
+    "outgoing": [
+      {
+        "id": "00001012920000",
+        "url": "/z/00001012920000"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#links"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#embedded-material"
+      },
+      {
+        "id": "00001007040300",
+        "url": "/z/00001007040300#citation-key"
+      }
+    ],
+  },
+  "embedded": {},
+}
+````
+=== Kind
+The following top-level JSON keys are returned:
+; ''id''
+: The zettel identifier for which the references were requested.
+; ''url''
+: The API endpoint to fetch more information about the zettel.
+; ''linked''
+: A JSON object that contains information about incoming and outgoing [[links|00001007040300#links]].
+; ''embedded''
+: A JSON object that contains information about referenced [[embedded material|00001007040300#embedded-material]].
+; ''cite''
+: A JSON list of [[citation keys|00001007040300#citation-key]] (as JSON strings).
+
+Incoming and outgoing references are basically zettel.
+Therefore the list elements are JSON objects with keys ''id'' and ''url''.
+Local and external references are strings.
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the zettel identifier did not consist of exactly 14 digits.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.

@@ -23,6 +23,11 @@
      (major: zettelmarkup)
   *  Folgezettel are now displayed with full title at the bottom of a page.
      (minor: webui)
+  *  Add API endpoint <tt>/p/{ID}</tt> to retrieve a parsed, but not evaluated
+     zettel in various encodings.
+     (minor: api)
+  *  Fix: do not list a shadowed zettel that matches the select criteria.
+     (minor)
 
 <a name="0_0_14"></a>
 <h2>Changes for Version 0.0.14 (2021-07-23)</h2>

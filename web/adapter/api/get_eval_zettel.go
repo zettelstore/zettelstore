@@ -12,12 +12,10 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -76,30 +74,6 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-
-		env := encoder.Environment{
-			Lang:           config.GetLang(zn.InhMeta, api.rtConfig),
-			Xhtml:          false,
-			MarkerExternal: "",
-			NewWindow:      false,
-			IgnoreMeta:     map[string]bool{meta.KeyLang: true},
-		}
-		encdr := encoder.Create(enc, &env)
-		if encdr == nil {
-			adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zid.String(), enc))
-			return
-		}
-		w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
-		switch part {
-		case partZettel:
-			_, err = encdr.WriteZettel(w, zn)
-		case partMeta:
-			_, err = encdr.WriteMeta(w, zn.InhMeta)
-		case partContent:
-			_, err = encdr.WriteContent(w, zn)
-		}
-		if err != nil {
-			adapter.InternalServerError(w, "Get evaluated zettel", err)
-		}
+		api.writeEncodedZettelPart(w, zn, enc, encStr, part)
 	}
 }
