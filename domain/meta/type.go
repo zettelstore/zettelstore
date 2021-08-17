@@ -107,14 +107,6 @@ func (m *Meta) SetList(key string, values []string) {
 	}
 }
 
-// CleanTag removes the number charachter ('#') from a tag value.
-func CleanTag(tag string) string {
-	if len(tag) > 1 && tag[0] == '#' {
-		return tag[1:]
-	}
-	return tag
-}
-
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
 	m.Set(key, time.Now().Format("20060102150405"))
@@ -173,14 +165,23 @@ func (m *Meta) GetList(key string) ([]string, bool) {
 // GetTags returns the list of tags as a string list. Each tag does not begin
 // with the '#' character, in contrast to `GetList`.
 func (m *Meta) GetTags(key string) ([]string, bool) {
-	tags, ok := m.GetList(key)
+	tagsValue, ok := m.Get(key)
 	if !ok {
 		return nil, false
 	}
+	tags := ListFromValue(strings.ToLower(tagsValue))
 	for i, tag := range tags {
 		tags[i] = CleanTag(tag)
 	}
 	return tags, len(tags) > 0
+}
+
+// CleanTag removes the number character ('#') from a tag value and lowercases it.
+func CleanTag(tag string) string {
+	if len(tag) > 1 && tag[0] == '#' {
+		return tag[1:]
+	}
+	return tag
 }
 
 // GetListOrNil retrieves the string list value of a given key. If there was

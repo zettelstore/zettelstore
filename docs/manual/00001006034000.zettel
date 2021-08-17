@@ -3,6 +3,7 @@ title: TagSet Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20210817201410
 
 Values of this type denote a (sorted) set of tags.
 
@@ -12,6 +13,8 @@ A set is different to a list, as no duplicates are allowed.
 Every tag must must begin with the number sign character (""''#''"", ''U+0023''), followed by at least one printable character.
 Tags are separated by space characters.
 
+All characters are mapped to their lower case values.
+
 === Match operator
 It depends of the first character of a search string how it is matched against a tag set value:
 
@@ -19,8 +22,7 @@ It depends of the first character of a search string how it is matched against a
   it must exactly match one of the values of a tag.
 * In other cases, the search string must be the prefix of at least one tag.
 
-Conpectually, all number sign characters are removed at the beginning of the search string
-and of all tags.
+Conceptually, all number sign characters are removed at the beginning of the search string and of all tags.
 
 === Sorting
 Sorting is done by comparing the [[String|00001006033500]] values.

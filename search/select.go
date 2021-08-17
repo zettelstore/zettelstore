@@ -175,7 +175,7 @@ func matchAllID(zettelIDs []string, neededID string) bool {
 }
 
 func createMatchTagSetFunc(values []opValue) matchFunc {
-	tagValues := processTagSet(preprocessSet(values))
+	tagValues := processTagSet(preprocessSet(sliceToLower(values)))
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
 		// Remove leading '#' from each tag

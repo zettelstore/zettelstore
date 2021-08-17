@@ -3,14 +3,17 @@ title: Word Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20210817201304
 
 Values of this type denote a single word.
 
 === Allowed values
 Must be a non-empty sequence of characters, but without the space character.
 
+All characters are mapped to their lower case values.
+
 === Match operator
-A value matches a word value, if both value are character-wise equal.
+A value matches a word value, if both value are character-wise equal, ignoring upper / lower case.
 
 === Sorting
 Sorting is done by comparing the [[String|00001006033500]] values.

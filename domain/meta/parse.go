@@ -162,7 +162,7 @@ func addToMeta(m *Meta, key, val string) {
 			addData(m, key, v)
 		}
 	case TypeTagSet:
-		addSet(m, key, v, func(s string) bool { return s[0] == '#' })
+		addSet(m, key, strings.ToLower(v), func(s string) bool { return s[0] == '#' })
 	case TypeWord:
 		m.Set(key, strings.ToLower(v))
 	case TypeWordSet:

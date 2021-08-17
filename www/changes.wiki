@@ -14,6 +14,15 @@
      <tt>/z/{ID}</tt> now only returns JSON data, except when query parameter
      <tt>raw</tt> is given. See documentation for details.
      (major: api; possibly breaking)
+  *  Metadata values of type <em>tag set</em> (the metadata with key
+     <tt>tags</tt> is its most prominent example), are now comapred in
+     a case-insensitive manner. Tags that only differ in upper / lower case
+     character are now treated identical. This might break your workflow, if
+     you depend on case-sensitive comparison of tag values. Tag values are
+     translated to their lower case equivalent before comparing them and when
+     you edit a zettel through Zettelstore. If you just modify the zettel
+     files, your tag values remain unchanged.
+     (major; breaking)
   *  Allows to transclude / expand the content of another zettel into a target
      zettel when the zettel is rendered. By using the syntax of embedding an
      image (which is some kind of expansion too), the first top-level paragraph
