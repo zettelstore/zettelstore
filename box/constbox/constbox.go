@@ -72,12 +72,11 @@ func (cp *constBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return nil, box.ErrNotFound
 }
 
-func (cp *constBox) FetchZids(ctx context.Context) (id.Set, error) {
-	result := id.NewSetCap(len(cp.zettel))
+func (cp *constBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
 	for zid := range cp.zettel {
-		result[zid] = true
+		handle(zid)
 	}
-	return result, nil
+	return nil
 }
 
 func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {

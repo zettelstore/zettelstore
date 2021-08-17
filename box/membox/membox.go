@@ -104,14 +104,13 @@ func (mp *memBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return zettel.Meta.Clone(), nil
 }
 
-func (mp *memBox) FetchZids(ctx context.Context) (id.Set, error) {
+func (mp *memBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
 	mp.mx.RLock()
-	result := id.NewSetCap(len(mp.zettel))
+	defer mp.mx.RUnlock()
 	for zid := range mp.zettel {
-		result[zid] = true
+		handle(zid)
 	}
-	mp.mx.RUnlock()
-	return result, nil
+	return nil
 }
 
 func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {

@@ -128,28 +128,17 @@ func (mgr *Manager) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, e
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.
-func (mgr *Manager) FetchZids(ctx context.Context) (result id.Set, err error) {
+func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
+	result := id.Set{}
 	for _, p := range mgr.boxes {
-		zids, err := p.FetchZids(ctx)
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true })
 		if err != nil {
 			return nil, err
-		}
-		if result == nil {
-			result = zids
-		} else if len(result) <= len(zids) {
-			for zid := range result {
-				zids[zid] = true
-			}
-			result = zids
-		} else {
-			for zid := range zids {
-				result[zid] = true
-			}
 		}
 	}
 	return result, nil

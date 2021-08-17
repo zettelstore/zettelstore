@@ -43,9 +43,6 @@ type BaseBox interface {
 	// GetMeta retrieves just the meta data of a specific zettel.
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 
-	// FetchZids returns the set of all zettel identifer managed by the box.
-	FetchZids(ctx context.Context) (id.Set, error)
-
 	// CanUpdateZettel returns true, if box could possibly update the given zettel.
 	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool
 
@@ -65,12 +62,18 @@ type BaseBox interface {
 	DeleteZettel(ctx context.Context, zid id.Zid) error
 }
 
+// ZidFunc is a function that processes identifier of a zettel.
+type ZidFunc func(id.Zid)
+
 // MetaFunc is a function that processes metadata of a zettel.
 type MetaFunc func(*meta.Meta)
 
 // ManagedBox is the interface of managed boxes.
 type ManagedBox interface {
 	BaseBox
+
+	// Apply identifier of every zettel to the given function.
+	ApplyZid(context.Context, ZidFunc) error
 
 	// Apply metadata of every zettel to the given function.
 	ApplyMeta(context.Context, MetaFunc) error
@@ -101,6 +104,9 @@ type StartStopper interface {
 // Box is to be used outside the box package and its descendants.
 type Box interface {
 	BaseBox
+
+	// FetchZids returns the set of all zettel identifer managed by the box.
+	FetchZids(ctx context.Context) (id.Set, error)
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
 	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)

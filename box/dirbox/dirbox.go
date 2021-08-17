@@ -209,16 +209,15 @@ func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return m, nil
 }
 
-func (dp *dirBox) FetchZids(ctx context.Context) (id.Set, error) {
+func (dp *dirBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
 	entries, err := dp.dirSrv.GetEntries()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	result := id.NewSetCap(len(entries))
 	for _, entry := range entries {
-		result[entry.Zid] = true
+		handle(entry.Zid)
 	}
-	return result, nil
+	return nil
 }
 
 func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {

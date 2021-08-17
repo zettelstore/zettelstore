@@ -160,12 +160,11 @@ func (zp *zipBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return readZipMeta(reader, zid, entry)
 }
 
-func (zp *zipBox) FetchZids(ctx context.Context) (id.Set, error) {
-	result := id.NewSetCap(len(zp.zettel))
+func (zp *zipBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
 	for zid := range zp.zettel {
-		result[zid] = true
+		handle(zid)
 	}
-	return result, nil
+	return nil
 }
 
 func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {

@@ -93,16 +93,15 @@ func (pp *compBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) 
 	return nil, box.ErrNotFound
 }
 
-func (pp *compBox) FetchZids(ctx context.Context) (id.Set, error) {
-	result := id.NewSetCap(len(myZettel))
+func (pp *compBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
 	for zid, gen := range myZettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {
-				result[zid] = true
+				handle(zid)
 			}
 		}
 	}
-	return result, nil
+	return nil
 }
 
 func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
