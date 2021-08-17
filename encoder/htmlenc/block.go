@@ -308,7 +308,7 @@ func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {
 	v.b.WriteString("<tr>")
 	for _, cell := range row {
 		v.b.WriteString(cellStart)
-		if cell.Inlines == nil {
+		if cell.Inlines.IsEmpty() {
 			v.b.WriteByte('>')
 		} else {
 			v.b.WriteString(alignStyle[cell.Align])

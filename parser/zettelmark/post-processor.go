@@ -194,21 +194,28 @@ func getAlignment(ch byte) ast.Alignment {
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
 	iln := cell.Inlines
 	ins := iln.List
-	if len(ins) == 0 {
-		return
-	}
-	if textNode, ok := ins[0].(*ast.TextNode); ok && len(textNode.Text) > 0 {
-		align := getAlignment(textNode.Text[0])
+	if tn := initialText(ins); tn != nil {
+		align := getAlignment(tn.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
 		} else {
-			textNode.Text = textNode.Text[1:]
+			tn.Text = tn.Text[1:]
 			cell.Align = align
 		}
 	} else {
 		cell.Align = colAlign
 	}
 	ast.Walk(pp, iln)
+}
+
+func initialText(ins []ast.InlineNode) *ast.TextNode {
+	if len(ins) == 0 {
+		return nil
+	}
+	if tn, ok := ins[0].(*ast.TextNode); ok && len(tn.Text) > 0 {
+		return tn
+	}
+	return nil
 }
 
 var mapSemantic = map[ast.FormatKind]ast.FormatKind{

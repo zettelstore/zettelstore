@@ -402,7 +402,7 @@ var alignString = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteStrings("[Cell", alignString[cell.Align])
-	if cell.Inlines != nil {
+	if !cell.Inlines.IsEmpty() {
 		v.b.WriteByte(' ')
 		ast.Walk(v, cell.Inlines)
 	}

@@ -55,7 +55,7 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
-	if cv.doMark || hn == nil || hn.Inlines == nil {
+	if cv.doMark || hn == nil || hn.Inlines.IsEmpty() {
 		return
 	}
 	if hn.Slug == "" {
