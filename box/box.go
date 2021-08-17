@@ -65,12 +65,15 @@ type BaseBox interface {
 	DeleteZettel(ctx context.Context, zid id.Zid) error
 }
 
+// MetaMap maps zettel identifier to their metadata.
+type MetaMap map[id.Zid]*meta.Meta
+
 // ManagedBox is the interface of managed boxes.
 type ManagedBox interface {
 	BaseBox
 
-	// SelectMeta returns all zettel meta data that match the selection criteria.
-	SelectMeta(ctx context.Context, match search.MetaMatchFunc) ([]*meta.Meta, error)
+	// SelectMeta returns all zettel meta data that match the criteria.
+	SelectMeta(ctx context.Context, match search.MetaMatchFunc) (MetaMap, error)
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)

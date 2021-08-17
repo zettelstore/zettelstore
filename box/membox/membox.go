@@ -115,14 +115,14 @@ func (mp *memBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (mp *memBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) ([]*meta.Meta, error) {
-	result := make([]*meta.Meta, 0, len(mp.zettel))
+func (mp *memBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (box.MetaMap, error) {
+	result := make(box.MetaMap, len(mp.zettel))
 	mp.mx.RLock()
 	for _, zettel := range mp.zettel {
 		m := zettel.Meta.Clone()
 		mp.cdata.Enricher.Enrich(ctx, m, mp.cdata.Number)
 		if match(m) {
-			result = append(result, m)
+			result[m.Zid] = m
 		}
 	}
 	mp.mx.RUnlock()

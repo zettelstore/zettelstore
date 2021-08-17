@@ -222,12 +222,12 @@ func (dp *dirBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (dp *dirBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (res []*meta.Meta, err error) {
+func (dp *dirBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (box.MetaMap, error) {
 	entries, err := dp.dirSrv.GetEntries()
 	if err != nil {
 		return nil, err
 	}
-	res = make([]*meta.Meta, 0, len(entries))
+	result := make(box.MetaMap, len(entries))
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
 		m, err1 := getMeta(dp, entry, entry.Zid)
@@ -239,13 +239,13 @@ func (dp *dirBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (r
 		dp.cdata.Enricher.Enrich(ctx, m, dp.number)
 
 		if match(m) {
-			res = append(res, m)
+			result[m.Zid] = m
 		}
 	}
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	return result, nil
 }
 
 func (dp *dirBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

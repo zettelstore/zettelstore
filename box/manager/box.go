@@ -14,7 +14,6 @@ package manager
 import (
 	"context"
 	"errors"
-	"sort"
 	"strings"
 
 	"zettelstore.de/z/box"
@@ -164,24 +163,32 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	var result []*meta.Meta
+	var baseSelected box.MetaMap
 	match := s.CompileMatch(mgr)
 	for _, p := range mgr.boxes {
 		selected, err := p.SelectMeta(ctx, match)
 		if err != nil {
 			return nil, err
 		}
-		sort.Slice(selected, func(i, j int) bool { return selected[i].Zid > selected[j].Zid })
-		if len(result) == 0 {
-			result = selected
-		} else {
-			result = box.MergeSorted(result, selected)
-		}
+		baseSelected = mergeResults(baseSelected, selected)
 	}
-	if s == nil {
-		return result, nil
+	result := make([]*meta.Meta, 0, len(baseSelected))
+	for _, m := range baseSelected {
+		result = append(result, m)
 	}
 	return s.Sort(result), nil
+}
+
+func mergeResults(baseSelected, selected box.MetaMap) box.MetaMap {
+	if len(baseSelected) == 0 {
+		return selected
+	}
+	for id, m := range selected {
+		if _, ok := baseSelected[id]; !ok {
+			baseSelected[id] = m
+		}
+	}
+	return baseSelected
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.
