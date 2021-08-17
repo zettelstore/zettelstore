@@ -1,18 +1,23 @@
 id: 00001012052200
-title: API: List all tags
+title: API: List zettel in other encodings
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210817161901
 
-To list all [[tags|00001006020000#tags]] used in the Zettelstore just send a HTTP GET request to the [[endpoint|00001012920000]] ''/t''.
-If successful, the output is a JSON object:
+To list zettel in other encodings, send a HTTP GET request to one of the [[endpoints|00001012920000]] ''/v'' or ''/p''.
+If you need a list of [[evaluated|00001012053500]] zettel, use then endoint ''/v''.
+Otherwise, with endpoint ''/p'' you get a list of [[parsed|00001012053600]] zettel.
 
-```sh
-# curl http://127.0.0.1:23123/t
-{"tags":{"#api":[:["00001012921000","00001012920800","00001012920522",...],"#authorization":["00001010040700","00001010040400",...],...,"#zettelstore":["00010000000000","00001014000000",...,"00001001000000"]}}
-```
+You may add query parameter, if you want to [[shape the list|00001012051800]].
 
-The JSON object only contains the key ''"tags"'' with the value of another object.
-This second object contains all tags as keys and the list of identifier of those zettel with this tag as a value.
+Currently, only the [[HTML encoding|00001012920510]] is allowed, and you must specify it with the ''_enc=html'' query parameter.
+Otherwise you will receive an error message.
 
-Please note that this structure will likely change in the future to be more compliant with other API calls.
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an [[appropriate JSON object|00001012921000]].
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Maybe the access bearer token was not valid, or you specified a wrong encoding.

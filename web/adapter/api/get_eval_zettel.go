@@ -38,7 +38,7 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partZettel)
 		getTagRef := func(s string) *ast.Reference {
-			return adapter.CreateTagReference(api, 'z', s)
+			return adapter.CreateTagReference(api, 'v', encStr, s)
 		}
 		getHostedRef := func(s string) *ast.Reference {
 			return adapter.CreateHostedReference(api, s)

@@ -13,11 +13,12 @@ package api
 
 import "zettelstore.de/z/api"
 
-const ctPlainText = "text/plain; charset=utf-8"
+const ctHTML = "text/html; charset=utf-8"
 const ctJSON = "application/json"
+const ctPlainText = "text/plain; charset=utf-8"
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
-	api.EncoderHTML:   "text/html; charset=utf-8",
+	api.EncoderHTML:   ctHTML,
 	api.EncoderNative: ctPlainText,
 	api.EncoderDJSON:  ctJSON,
 	api.EncoderText:   ctPlainText,

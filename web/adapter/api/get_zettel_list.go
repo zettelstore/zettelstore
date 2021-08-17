@@ -12,9 +12,15 @@
 package api
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
+	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -48,4 +54,46 @@ func (api *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc 
 			adapter.InternalServerError(w, "Write Zettel list JSON", err)
 		}
 	}
+}
+
+// MakeListParsedMetaHandler creates a new HTTP handler for the use case "list some zettel".
+func (api *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		q := r.URL.Query()
+		s := adapter.GetSearch(q, false)
+		metaList, err := listMeta.Run(ctx, s)
+		if err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
+		}
+		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
+		if enc != zsapi.EncoderHTML {
+			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in encoding %q", encStr))
+			return
+		}
+
+		err = api.writeHTMLList(w, metaList, key, encStr)
+		if err != nil {
+			adapter.InternalServerError(w, "Write Zettel list HTML", err)
+		}
+	}
+}
+
+func (api *API) writeHTMLList(w http.ResponseWriter, metaList []*meta.Meta, key byte, enc string) error {
+	textEnc := encoder.Create(zsapi.EncoderText, nil)
+	w.Header().Set(zsapi.HeaderContentType, ctHTML)
+	for _, m := range metaList {
+		u := api.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, enc)
+		if _, err := fmt.Fprintf(w, "<li><a href=\"%v\">", u); err != nil {
+			return err
+		}
+		if _, err := textEnc.WriteInlines(w, parser.ParseMetadata(config.GetTitle(m, api.rtConfig))); err != nil {
+			return err
+		}
+		if _, err := io.WriteString(w, "</a></li>\n"); err != nil {
+			return err
+		}
+	}
+	return nil
 }

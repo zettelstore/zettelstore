@@ -1,0 +1,18 @@
+id: 00001012052600
+title: API: List all roles
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+
+To list all [[roles|00001006020100]] used in the Zettelstore just send a HTTP GET request to the [[endpoint|00001012920000]] ''/r''.
+If successful, the output is a JSON object:
+
+```sh
+# curl http://127.0.0.1:23123/r
+{"role-list":["configuration","manual","user","zettel"]}
+```
+
+The JSON object only contains the key ''"role-list"'' with the value of a sorted string list.
+Each string names one role.
+
+Please note that this structure will likely change in the future to be more compliant with other API calls.
