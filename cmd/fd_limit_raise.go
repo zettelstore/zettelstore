@@ -8,6 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
+//go:build darwin
 // +build darwin
 
 package cmd

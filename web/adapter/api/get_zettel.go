@@ -34,7 +34,7 @@ func (api *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFu
 
 		ctx := r.Context()
 		q := r.URL.Query()
-		_, isRaw := q[zsapi.QueryKeyRaw]
+		isRaw := q.Has(zsapi.QueryKeyRaw)
 		if isRaw {
 			ctx = box.NoEnrichContext(ctx)
 		}
