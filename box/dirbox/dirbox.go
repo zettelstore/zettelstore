@@ -29,7 +29,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -222,29 +221,22 @@ func (dp *dirBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (dp *dirBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
+func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	entries, err := dp.dirSrv.GetEntries()
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
-	sel = make(box.MetaMap, len(entries))
-	rej = make(box.MetaMap, len(entries))
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
 		m, err1 := getMeta(dp, entry, entry.Zid)
 		if err1 != nil {
-			return nil, nil, err1
+			return err1
 		}
 		dp.cleanupMeta(ctx, m)
 		dp.cdata.Enricher.Enrich(ctx, m, dp.number)
-
-		if match(m) {
-			sel[m.Zid] = m
-		} else {
-			rej[m.Zid] = m
-		}
+		handle(m)
 	}
-	return sel, rej, nil
+	return nil
 }
 
 func (dp *dirBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

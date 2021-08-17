@@ -65,16 +65,15 @@ type BaseBox interface {
 	DeleteZettel(ctx context.Context, zid id.Zid) error
 }
 
-// MetaMap maps zettel identifier to their metadata.
-type MetaMap map[id.Zid]*meta.Meta
+// MetaFunc is a function that processes metadata of a zettel.
+type MetaFunc func(*meta.Meta)
 
 // ManagedBox is the interface of managed boxes.
 type ManagedBox interface {
 	BaseBox
 
-	// SelectMeta splits all managed zettel into those that match the given criteria
-	// and into those that do not match the criteria.
-	SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej MetaMap, err error)
+	// Apply metadata of every zettel to the given function.
+	ApplyMeta(context.Context, MetaFunc) error
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)

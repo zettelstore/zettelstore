@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -81,19 +80,13 @@ func (cp *constBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (cp *constBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
-	sel = make(box.MetaMap, len(cp.zettel))
-	rej = make(box.MetaMap, len(cp.zettel))
+func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	for zid, zettel := range cp.zettel {
 		m := meta.NewWithData(zid, zettel.header)
 		cp.enricher.Enrich(ctx, m, cp.number)
-		if match(m) {
-			sel[zid] = m
-		} else {
-			rej[zid] = m
-		}
+		handle(m)
 	}
-	return sel, rej, nil
+	return nil
 }
 
 func (cp *constBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

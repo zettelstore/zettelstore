@@ -163,40 +163,32 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	var baseSelected, baseRejected box.MetaMap
+	selected, rejected := map[id.Zid]*meta.Meta{}, id.Set{}
 	match := s.CompileMatch(mgr)
+	handleMeta := func(m *meta.Meta) {
+		zid := m.Zid
+		if rejected[zid] {
+			return
+		}
+		if _, ok := selected[zid]; ok {
+			return
+		}
+		if match(m) {
+			selected[zid] = m
+		} else {
+			rejected[zid] = true
+		}
+	}
 	for _, p := range mgr.boxes {
-		selected, rejected, err := p.SelectMeta(ctx, match)
-		if err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta); err != nil {
 			return nil, err
 		}
-		if baseSelected == nil {
-			baseSelected, baseRejected = selected, rejected
-			continue
-		}
-		mergeResults(baseSelected, baseRejected, selected, rejected)
 	}
-	result := make([]*meta.Meta, 0, len(baseSelected))
-	for _, m := range baseSelected {
+	result := make([]*meta.Meta, 0, len(selected))
+	for _, m := range selected {
 		result = append(result, m)
 	}
 	return s.Sort(result), nil
-}
-
-func mergeResults(baseSelected, baseRejected, selected, rejected box.MetaMap) {
-	for id, m := range selected {
-		if _, ok := baseRejected[id]; ok {
-			continue
-		}
-		if _, ok := baseSelected[id]; !ok {
-			baseSelected[id] = m
-		}
-	}
-	for id, m := range rejected {
-		if _, ok := baseRejected[id]; !ok {
-			baseRejected[id] = m
-		}
-	}
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.

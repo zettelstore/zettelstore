@@ -23,7 +23,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
-	"zettelstore.de/z/search"
 )
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -169,27 +168,21 @@ func (zp *zipBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-func (zp *zipBox) SelectMeta(ctx context.Context, match search.MetaMatchFunc) (sel, rej box.MetaMap, err error) {
+func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 	defer reader.Close()
-	sel = make(box.MetaMap, len(zp.zettel))
-	rej = make(box.MetaMap, len(zp.zettel))
 	for zid, entry := range zp.zettel {
 		m, err := readZipMeta(reader, zid, entry)
 		if err != nil {
 			continue
 		}
 		zp.enricher.Enrich(ctx, m, zp.number)
-		if match(m) {
-			sel[zid] = m
-		} else {
-			rej[zid] = m
-		}
+		handle(m)
 	}
-	return sel, rej, nil
+	return nil
 }
 
 func (zp *zipBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
