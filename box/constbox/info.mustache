@@ -31,15 +31,25 @@
 </ul>
 {{/HasExtLinks}}
 {{/HasLinks}}
-<h2>Parts and encodings</h3>
+<h2>Parts and encodings</h2>
 <table>
-{{#Matrix}}
+{{#EvalMatrix}}
 <tr>
 <th>{{Header}}</th>
 {{#Elements}}<td><a href="{{{URL}}}">{{Text}}</td>
 {{/Elements}}
 </tr>
-{{/Matrix}}
+{{/EvalMatrix}}
+</table>
+<h3>Parsed (not evaluated)</h3>
+<table>
+{{#ParseMatrix}}
+<tr>
+<th>{{Header}}</th>
+{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</td>
+{{/Elements}}
+</tr>
+{{/ParseMatrix}}
 </table>
 {{#HasShadowLinks}}
 <h2>Shadowed Boxes</h2>
