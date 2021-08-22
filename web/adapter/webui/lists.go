@@ -58,7 +58,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 	wui.renderMetaList(
 		ctx, w, title, s,
 		func(s *search.Search) ([]*meta.Meta, error) {
-			if !s.HasComputedMetaKey() {
+			if !s.EnrichNeeded() {
 				ctx = box.NoEnrichContext(ctx)
 			}
 			return listMeta.Run(ctx, s)
@@ -187,7 +187,7 @@ func (wui *WebUI) MakeSearchHandler(
 		title := wui.listTitleSearch("Search", s)
 		wui.renderMetaList(
 			ctx, w, title, s, func(s *search.Search) ([]*meta.Meta, error) {
-				if !s.HasComputedMetaKey() {
+				if !s.EnrichNeeded() {
 					ctx = box.NoEnrichContext(ctx)
 				}
 				return ucSearch.Run(ctx, s)

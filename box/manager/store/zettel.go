@@ -21,6 +21,7 @@ type ZettelIndex struct {
 	deadrefs id.Set            // set of dead references
 	words    WordSet
 	urls     WordSet
+	itags    WordSet
 }
 
 // NewZettelIndex creates a new zettel index.
@@ -60,6 +61,9 @@ func (zi *ZettelIndex) SetWords(words WordSet) { zi.words = words }
 // SetUrls sets the words to the given value.
 func (zi *ZettelIndex) SetUrls(urls WordSet) { zi.urls = urls }
 
+// SetITags sets the words to the given value.
+func (zi *ZettelIndex) SetITags(itags WordSet) { zi.itags = itags }
+
 // GetDeadRefs returns all dead references as a sorted list.
 func (zi *ZettelIndex) GetDeadRefs() id.Slice {
 	return zi.deadrefs.Sorted()
@@ -87,3 +91,6 @@ func (zi *ZettelIndex) GetWords() WordSet { return zi.words }
 
 // GetUrls returns a reference to the set of URLs. It must not be modified.
 func (zi *ZettelIndex) GetUrls() WordSet { return zi.urls }
+
+// GetITags returns a reference to the set of internal tags. It must not be modified.
+func (zi *ZettelIndex) GetITags() WordSet { return zi.itags }

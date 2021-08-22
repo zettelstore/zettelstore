@@ -222,20 +222,21 @@ func (s *Search) GetLimit() int {
 	return s.limit
 }
 
-// HasComputedMetaKey returns true, if the search references a metadata key which
-// a computed value.
-func (s *Search) HasComputedMetaKey() bool {
+// EnrichNeeded returns true, if the search references a metadata key that
+// is calculated via metadata enrichments. In most cases this is a computed
+// value. Metadata "tags" is an exception to this rule.
+func (s *Search) EnrichNeeded() bool {
 	if s == nil {
 		return false
 	}
 	s.mx.RLock()
 	defer s.mx.RUnlock()
 	for key := range s.tags {
-		if meta.IsComputed(key) {
+		if meta.IsComputed(key) || key == meta.KeyTags {
 			return true
 		}
 	}
-	if order := s.order; order != "" && meta.IsComputed(order) {
+	if order := s.order; order != "" && (meta.IsComputed(order) || order == meta.KeyTags) {
 		return true
 	}
 	return false

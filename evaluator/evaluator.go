@@ -122,9 +122,10 @@ func replaceWithInlineNodes(ins []ast.InlineNode, i int, replaceIns []ast.Inline
 
 func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
 	if gtr := e.env.GetTagRef; gtr != nil {
+		fullTag := "#" + tn.Tag
 		return &ast.LinkNode{
-			Ref:     e.env.GetTagRef(tn.Tag),
-			Inlines: ast.CreateInlineListNodeFromWords("#" + tn.Tag),
+			Ref:     e.env.GetTagRef(fullTag),
+			Inlines: ast.CreateInlineListNodeFromWords(fullTag),
 		}
 	}
 	return tn

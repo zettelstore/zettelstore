@@ -37,7 +37,7 @@ func NewSearch(port SearchPort) Search {
 
 // Run executes the use case.
 func (uc Search) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
-	if !s.HasComputedMetaKey() {
+	if !s.EnrichNeeded() {
 		ctx = box.NoEnrichContext(ctx)
 	}
 	return uc.port.SelectMeta(ctx, s)

@@ -276,12 +276,12 @@ func createMatchStringFunc(values []opValue) matchFunc {
 func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
 	return func(m *meta.Meta) bool {
 		for _, key := range nomatch {
-			if _, ok := m.Get(key); ok {
+			if _, ok := getMeta(m, key); ok {
 				return false
 			}
 		}
 		for _, s := range posSpecs {
-			if value, ok := m.Get(s.key); !ok || !s.match(value) {
+			if value, ok := getMeta(m, s.key); !ok || !s.match(value) {
 				return false
 			}
 		}
@@ -290,12 +290,19 @@ func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) M
 				if _, ok := m.Get(s.key); ok {
 					return false
 				}
-			} else if value, ok := m.Get(s.key); !ok || s.match(value) {
+			} else if value, ok := getMeta(m, s.key); !ok || s.match(value) {
 				return false
 			}
 		}
 		return true
 	}
+}
+
+func getMeta(m *meta.Meta, key string) (string, bool) {
+	if key == meta.KeyTags {
+		return m.Get(meta.KeyAllTags)
+	}
+	return m.Get(key)
 }
 
 func sliceToLower(sl []opValue) []opValue {
