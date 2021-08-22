@@ -90,18 +90,17 @@ func contentType2encoding(contentType string) (string, bool) {
 
 // GetSearch retrieves the specified search and sorting options from a query.
 func GetSearch(q url.Values, forSearch bool) (s *search.Search) {
-	sortQKey, orderQKey, offsetQKey, limitQKey, negateQKey, sQKey := getQueryKeys(forSearch)
 	for key, values := range q {
 		switch key {
-		case sortQKey, orderQKey:
+		case api.QueryKeySort, api.QueryKeyOrder:
 			s = extractOrderFromQuery(values, s)
-		case offsetQKey:
+		case api.QueryKeyOffset:
 			s = extractOffsetFromQuery(values, s)
-		case limitQKey:
+		case api.QueryKeyLimit:
 			s = extractLimitFromQuery(values, s)
-		case negateQKey:
+		case api.QueryKeyNegate:
 			s = s.SetNegate()
-		case sQKey:
+		case api.QueryKeySearch:
 			s = setCleanedQueryValues(s, "", values)
 		default:
 			if !forSearch && meta.KeyIsValid(key) {
@@ -143,13 +142,6 @@ func extractLimitFromQuery(values []string, s *search.Search) *search.Search {
 		}
 	}
 	return s
-}
-
-func getQueryKeys(forSearch bool) (string, string, string, string, string, string) {
-	if forSearch {
-		return "sort", "order", "offset", "limit", "negate", "s"
-	}
-	return "_sort", "_order", "_offset", "_limit", "_negate", "_s"
 }
 
 func setCleanedQueryValues(s *search.Search, key string, values []string) *search.Search {

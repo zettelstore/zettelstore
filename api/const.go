@@ -28,9 +28,14 @@ const (
 	QueryKeyDepth    = "depth"
 	QueryKeyDir      = "dir"
 	QueryKeyEncoding = "_enc"
-	QueryKeyLimit    = "limit"
+	QueryKeyLimit    = "_limit"
+	QueryKeyNegate   = "_negate"
+	QueryKeyOffset   = "_offset"
+	QueryKeyOrder    = "_order"
 	QueryKeyPart     = "_part"
 	QueryKeyRaw      = "raw"
+	QueryKeySearch   = "_s"
+	QueryKeySort     = "_sort"
 )
 
 // Supported dir values.

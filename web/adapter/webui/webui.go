@@ -184,6 +184,7 @@ type baseData struct {
 	HasNewZettelLinks bool
 	NewZettelLinks    []simpleLink
 	SearchURL         string
+	QueryKeySearch    string
 	Content           string
 	FooterHTML        string
 }
@@ -217,6 +218,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *me
 	data.HasNewZettelLinks = len(newZettelLinks) > 0
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
+	data.QueryKeySearch = api.QueryKeySearch
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
 }
 

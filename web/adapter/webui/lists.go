@@ -64,7 +64,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 			return listMeta.Run(ctx, s)
 		},
 		func(offset int) string {
-			return wui.newPageURL('h', query, offset, "_offset", "_limit")
+			return wui.newPageURL('h', query, offset)
 		})
 }
 
@@ -193,7 +193,7 @@ func (wui *WebUI) MakeSearchHandler(
 				return ucSearch.Run(ctx, s)
 			},
 			func(offset int) string {
-				return wui.newPageURL('f', query, offset, "offset", "limit")
+				return wui.newPageURL('f', query, offset)
 			})
 	}
 }
@@ -307,17 +307,17 @@ func (wui *WebUI) listTitleSearch(prefix string, s *search.Search) string {
 	return sb.String()
 }
 
-func (wui *WebUI) newPageURL(key byte, query url.Values, offset int, offsetKey, limitKey string) string {
+func (wui *WebUI) newPageURL(key byte, query url.Values, offset int) string {
 	ub := wui.NewURLBuilder(key)
 	for key, values := range query {
-		if key != offsetKey && key != limitKey {
+		if key != api.QueryKeyOffset && key != api.QueryKeyLimit {
 			for _, val := range values {
 				ub.AppendQuery(key, val)
 			}
 		}
 	}
 	if offset > 0 {
-		ub.AppendQuery(offsetKey, strconv.Itoa(offset))
+		ub.AppendQuery(api.QueryKeyOffset, strconv.Itoa(offset))
 	}
 	return ub.String()
 }
