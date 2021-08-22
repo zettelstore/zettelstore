@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20210810171215
+modified: 20210822234205
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -41,7 +41,7 @@ The backslash character (""''\\''"", ''U+005C'') gives the next character anothe
 
 ==== Tag
 Any text that begins with a number sign character (""''#''"", ''U+0023''), followed by a non-empty sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low line character (""''_''"", ''U+005F'') is interpreted as an //inline tag//.
-They will be considered equivalent to tags in metadata.
+They are be considered equivalent to tags in metadata.
 
 ==== Entities & more
 Sometimes it is not easy to enter special characters.

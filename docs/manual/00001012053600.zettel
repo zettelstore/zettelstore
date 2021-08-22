@@ -1,9 +1,9 @@
 id: 00001012053600
-title: Retrieve parsed metadata and content of an existing zettel in various encodings
+title: API: Retrieve parsed metadata and content of an existing zettel in various encodings
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210817145821
+modified: 20210822234354
 
 The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/p/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 

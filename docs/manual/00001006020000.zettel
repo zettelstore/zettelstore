@@ -3,13 +3,15 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210709162756
+modified: 20210822234119
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
 
 Most keys conform to a [[type|00001006030000]].
 
+; [!all-tags]''all-tags''
+: A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] together with all [[tags|00001007040000#tag]] that are specified within the content.
 ; [!back]''back''
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata, that are not referenced by this zettel.
   Basically, it is the value of [[''backward''|#bachward]], but without any zettel identifier that is contained in [[''forward''|#forward]].

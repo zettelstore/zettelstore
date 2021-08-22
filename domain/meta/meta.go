@@ -113,7 +113,7 @@ var (
 	KeyRole              = registerKey("role", TypeWord, usageUser, "")
 	KeyTags              = registerKey("tags", TypeTagSet, usageUser, "")
 	KeySyntax            = registerKey("syntax", TypeWord, usageUser, "")
-	KeyAllTags           = registerKey("all-"+KeyTags, TypeTagSet, usageComputed, "")
+	KeyAllTags           = registerKey("all-"+KeyTags, TypeTagSet, usageProperty, "")
 	KeyBack              = registerKey("back", TypeIDSet, usageProperty, "")
 	KeyBackward          = registerKey("backward", TypeIDSet, usageProperty, "")
 	KeyBoxNumber         = registerKey("box-number", TypeNumber, usageComputed, "")
