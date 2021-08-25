@@ -40,16 +40,16 @@ type ZidMetaRelatedList struct {
 type ZettelLinksJSON struct {
 	ID     string `json:"id"`
 	Linked struct {
-		Incoming []ZidJSON `json:"incoming,omitempty"`
-		Outgoing []ZidJSON `json:"outgoing,omitempty"`
-		Local    []string  `json:"local,omitempty"`
-		External []string  `json:"external,omitempty"`
-		Meta     []string  `json:"meta,omitempty"`
+		Incoming []string `json:"incoming,omitempty"`
+		Outgoing []string `json:"outgoing,omitempty"`
+		Local    []string `json:"local,omitempty"`
+		External []string `json:"external,omitempty"`
+		Meta     []string `json:"meta,omitempty"`
 	} `json:"linked"`
 	Embedded struct {
-		Outgoing []ZidJSON `json:"outgoing,omitempty"`
-		Local    []string  `json:"local,omitempty"`
-		External []string  `json:"external,omitempty"`
+		Outgoing []string `json:"outgoing,omitempty"`
+		Local    []string `json:"local,omitempty"`
+		External []string `json:"external,omitempty"`
 	} `json:"embedded,omitempty"`
 	Cites []string `json:"cites,omitempty"`
 }

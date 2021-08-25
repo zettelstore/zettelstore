@@ -3,7 +3,7 @@ title: API: Retrieve references of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210825194224
+modified: 20210825225643
 
 The web of zettel is one important value of a Zettelstore.
 Many zettel references other zettel, embedded material, external/local material or, via citations, external literature.
@@ -11,7 +11,7 @@ By using the [[endpoint|00001012920000]] ''/l/{ID}'' you are able to retrieve th
 
 ````
 # curl http://127.0.0.1:23123/l/00001012053700
-{"id":"00001012053600","linked":{"outgoing":[{"id":"00001012920000"},{"id":"00001007040300"},{"id":"00001007040300"},{"id":"00001007040300"}]},"embedded":{}}
+{"id":"00001012053700","linked":{"outgoing":["00001012920000","00001007040300#links","00001007040300#embedded-material","00001007040300#citation-key"]},"embedded":{}}
 ````
 Formatted, this translates into:
 ````json
@@ -19,21 +19,13 @@ Formatted, this translates into:
   "id": "00001012053700",
   "linked": {
     "outgoing": [
-      {
-        "id": "00001012920000",
-      },
-      {
-        "id": "00001007040300",
-      },
-      {
-        "id": "00001007040300",
-      },
-      {
-        "id": "00001007040300",
-      }
-    ],
+      "00001012920000",
+      "00001007040300#links",
+      "00001007040300#embedded-material",
+      "00001007040300#citation-key"
+    ]
   },
-  "embedded": {},
+  "embedded": {}
 }
 ````
 === Kind
@@ -48,7 +40,7 @@ The following top-level JSON keys are returned:
 : A JSON list of [[citation keys|00001007040300#citation-key]] (as JSON strings).
 
 Incoming and outgoing references are basically zettel.
-Therefore the list elements are JSON objects with key ''id''.
+Therefore the list elements are JSON objects with key ''id'', optionally with an appended fragment.
 Local and external references are strings.
 
 === HTTP Status codes
