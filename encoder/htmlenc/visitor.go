@@ -114,21 +114,40 @@ var mapMetaKey = map[string]string{
 }
 
 func (v *visitor) acceptMeta(m *meta.Meta) {
+	ignore := v.setupIgnoreSet()
+	ignore[meta.KeyTitle] = true
+	if tags, ok := m.Get(meta.KeyAllTags); ok {
+		v.writeTags(tags)
+		ignore[meta.KeyAllTags] = true
+		ignore[meta.KeyTags] = true
+	} else if tags, ok := m.Get(meta.KeyTags); ok {
+		v.writeTags(tags)
+		ignore[meta.KeyTags] = true
+	}
+
 	for _, pair := range m.Pairs(true) {
-		if env := v.env; env != nil && env.IgnoreMeta[pair.Key] {
+		if ignore[pair.Key] {
 			continue
 		}
-		if pair.Key == meta.KeyTitle {
-			continue
-		}
-		if pair.Key == meta.KeyTags {
-			v.writeTags(pair.Value)
-		} else if key, ok := mapMetaKey[pair.Key]; ok {
+		if key, ok := mapMetaKey[pair.Key]; ok {
 			v.writeMeta("", key, pair.Value)
 		} else {
 			v.writeMeta("zs-", pair.Key, pair.Value)
 		}
 	}
+}
+
+func (v *visitor) setupIgnoreSet() map[string]bool {
+	if v.env == nil || v.env.IgnoreMeta == nil {
+		return make(map[string]bool)
+	}
+	result := make(map[string]bool, len(v.env.IgnoreMeta))
+	for k, v := range v.env.IgnoreMeta {
+		if v {
+			result[k] = true
+		}
+	}
+	return result
 }
 
 func (v *visitor) writeTags(tags string) {
