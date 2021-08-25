@@ -41,7 +41,6 @@ func (api *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc 
 		for _, m := range metaList {
 			result = append(result, zsapi.ZidMetaJSON{
 				ID:   m.Zid.String(),
-				URL:  api.NewURLBuilder('z').SetZid(m.Zid).String(),
 				Meta: m.Map(),
 			})
 		}

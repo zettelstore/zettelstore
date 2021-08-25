@@ -44,10 +44,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		}
 		summary := collect.References(zn)
 
-		outData := zsapi.ZettelLinksJSON{
-			ID:  zid.String(),
-			URL: api.NewURLBuilder('z').SetZid(zid).String(),
-		}
+		outData := zsapi.ZettelLinksJSON{ID: zid.String()}
 		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
 		outData.Linked.Incoming = []zsapi.ZidJSON{}
 		zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
@@ -80,7 +77,7 @@ func (api *API) idURLRefs(refs []*ast.Reference) []zsapi.ZidJSON {
 		if fragment := ref.URL.Fragment; len(fragment) > 0 {
 			ub.SetFragment(fragment)
 		}
-		result = append(result, zsapi.ZidJSON{ID: path, URL: ub.String()})
+		result = append(result, zsapi.ZidJSON{ID: path})
 	}
 	return result
 }

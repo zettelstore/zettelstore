@@ -3,17 +3,18 @@ title: API: Shape the list of zettel metadata by limiting its length
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+modified: 20210825193407
 
 === Limit
 By using the query parameter ""''_limit''"", which must have an integer value, you specifying an upper limit of list elements:
 ```sh
 # curl 'http://192.168.17.7:23121/z?title=API&_part=id&_sort=id&_limit=2'
-{"list":[{"id":"00001012000000","url":"/z/00001012000000"},{"id":"00001012050200","url":"/z/00001012050200"}]}
+{"list":[{"id":"00001012000000"},{"id":"00001012050200"}]}
 ```
 
 === Offset
 The query parameter ""''_offset''"" allows to list not only the first elements, but to begin at a specific element:
 ```sh
 # curl 'http://192.168.17.7:23121/z?title=API&_part=id&_sort=id&_limit=2&_offset=1'
-{"list":[{"id":"00001012050200","url":"/z/00001012050200"},{"id":"00001012050400","url":"/z/00001012050400"}]}
+{"list":[{"id":"00001012050200"},{"id":"00001012050400"}]}
 ```

@@ -3,7 +3,7 @@ title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210726192438
+modified: 20210825193804
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
@@ -11,14 +11,13 @@ For example, to retrieve some data about this zettel you are currently viewing, 
 If successful, the output is a JSON object:
 ```sh
 # curl http://127.0.0.1:23123/z/00001012053400
-{"id":"00001012053400","url":"/z/00001012053400","meta":{"title":"API: Retrieve data for an exisiting zettel","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual","copyright":"(c) 2020 by Detlef Stern <ds@zettelstore.de>","lang":"en","license":"CC BY-SA 4.0"},"content":"The endpoint to work with a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).\n\nFor example, ...
+{"id":"00001012053400","meta":{"title":"API: Retrieve data for an exisiting zettel","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual","copyright":"(c) 2020 by Detlef Stern <ds@zettelstore.de>","lang":"en","license":"CC BY-SA 4.0"},"content":"The endpoint to work with a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).\n\nFor example, ...
 ```
 
 Pretty-printed, this results in:
 ```
 {
   "id": "00001012053400",
-  "url": "/z/00001012053400",
   "meta": {
     "back": "00001012000000 00001012053200 00001012054400",
     "backward": "00001012000000 00001012053200 00001012054400 00001012920000",

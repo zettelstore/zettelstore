@@ -20,21 +20,18 @@ type AuthJSON struct {
 
 // ZidJSON contains the identifier data of a zettel.
 type ZidJSON struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+	ID string `json:"id"`
 }
 
 // ZidMetaJSON contains the identifier and the metadata of a zettel.
 type ZidMetaJSON struct {
 	ID   string            `json:"id"`
-	URL  string            `json:"url"`
 	Meta map[string]string `json:"meta"`
 }
 
 // ZidMetaRelatedList contains identifier/metadata of a zettel and the same for related zettel
 type ZidMetaRelatedList struct {
 	ID   string            `json:"id"`
-	URL  string            `json:"url"`
 	Meta map[string]string `json:"meta"`
 	List []ZidMetaJSON     `json:"list"`
 }
@@ -42,7 +39,6 @@ type ZidMetaRelatedList struct {
 // ZettelLinksJSON store all links / connections from one zettel to other.
 type ZettelLinksJSON struct {
 	ID     string `json:"id"`
-	URL    string `json:"url"`
 	Linked struct {
 		Incoming []ZidJSON `json:"incoming,omitempty"`
 		Outgoing []ZidJSON `json:"outgoing,omitempty"`
@@ -68,7 +64,6 @@ type ZettelDataJSON struct {
 // ZettelJSON contains all data for a zettel, the identifier, the metadata, and the content.
 type ZettelJSON struct {
 	ID       string            `json:"id"`
-	URL      string            `json:"url"`
 	Meta     map[string]string `json:"meta"`
 	Encoding string            `json:"encoding"`
 	Content  string            `json:"content"`

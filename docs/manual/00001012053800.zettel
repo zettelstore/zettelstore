@@ -3,7 +3,7 @@ title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210712223623
+modified: 20210825194347
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
@@ -31,28 +31,24 @@ To retrieve the context of an existing zettel, use the [[endpoint|00001012920000
 
 ````
 # curl 'http://127.0.0.1:23123/x/00001012053800?limit=3&dir=forward&depth=2'
-{"id": "00001012053800","url": "/z/00001012053800","meta": {...},"list": [{"id": "00001012921000","url": "/z/00001012921000","meta": {...}},{"id": "00001012920800","url": "/z/00001012920800","meta": {...}},{"id": "00010000000000","url": "/z/00010000000000","meta": {...}}]}
+{"id": "00001012053800","meta": {...},"list": [{"id": "00001012921000","meta": {...}},{"id": "00001012920800","meta": {...}},{"id": "00010000000000","meta": {...}}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
   "id": "00001012053800",
-  "url": "/z/00001012053800",
   "meta": {...},
   "list": [
     {
       "id": "00001012921000",
-      "url": "/z/00001012921000",
       "meta": {...}
     },
     {
       "id": "00001012920800",
-      "url": "/z/00001012920800",
       "meta": {...}
     },
     {
       "id": "00010000000000",
-      "url": "/z/00010000000000",
       "meta": {...}
     }
   ]
@@ -62,12 +58,10 @@ Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the
 The following top-level JSON keys are returned:
 ; ''id''
 : The zettel identifier for which the context was requested.
-; ''url''
-: The API endpoint to fetch more information about the zettel.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
 ; ''list''
-: A list of JSON objects with keys ''id'', ''url'' and ''meta'' that contains the zettel of the context.
+: A list of JSON objects with keys ''id'' and ''meta'' that contains the zettel of the context.
 
 === HTTP Status codes
 ; ''200''

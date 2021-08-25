@@ -53,7 +53,6 @@ func (api *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFu
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, zsapi.ZettelJSON{
 			ID:       zid.String(),
-			URL:      api.NewURLBuilder('z').SetZid(zid).String(),
 			Meta:     z.Meta.Map(),
 			Encoding: encoding,
 			Content:  content,

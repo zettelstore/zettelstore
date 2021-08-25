@@ -41,7 +41,7 @@ func (api *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) h
 		h.Set(zsapi.HeaderContentType, ctJSON)
 		h.Set(zsapi.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
-		if err = encodeJSONData(w, zsapi.ZidJSON{ID: newZid.String(), URL: u}); err != nil {
+		if err = encodeJSONData(w, zsapi.ZidJSON{ID: newZid.String()}); err != nil {
 			adapter.InternalServerError(w, "Write JSON", err)
 		}
 	}

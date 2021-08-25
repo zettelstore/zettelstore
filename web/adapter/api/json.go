@@ -32,13 +32,11 @@ func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*m
 	outList := make([]zsapi.ZidMetaJSON, len(metaList))
 	for i, m := range metaList {
 		outList[i].ID = m.Zid.String()
-		outList[i].URL = api.NewURLBuilder('z').SetZid(m.Zid).String()
 		outList[i].Meta = m.Map()
 	}
 	w.Header().Set(zsapi.HeaderContentType, ctJSON)
 	return encodeJSONData(w, zsapi.ZidMetaRelatedList{
 		ID:   m.Zid.String(),
-		URL:  api.NewURLBuilder('z').SetZid(m.Zid).String(),
 		Meta: m.Map(),
 		List: outList,
 	})

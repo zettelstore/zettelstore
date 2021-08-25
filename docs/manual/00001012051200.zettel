@@ -3,19 +3,19 @@ title: API: List metadata of all zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210726192219
+modified: 20210825193052
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/z''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
 
 ```sh
 # curl http://127.0.0.1:23123/z
-{"list":[{"id":"00001012051200","url":"/z/00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050600","url":"/z/00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050400","url":"/z/00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050200","url":"/z/00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012000000","url":"/z/00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}}]}
+{"list":[{"id":"00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}}]}
 ```
 
 The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
-These zettel JSON objects themself contains the keys ''"id"'' (value is a string containing the zettel identifier), ''"url"'' (value is a string containing the URL of the zettel), and ''"meta"'' (value ss a JSON object).
-The vlaue of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
+These zettel JSON objects themself contains the keys ''"id"'' (value is a string containing the zettel identifier), , and ''"meta"'' (value as a JSON object).
+The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
 
 If you reformat the JSON output from the ''GET /z'' call, you'll see its structure better:
 
@@ -24,7 +24,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
   "list": [
     {
       "id": "00001012051200",
-      "url": "/z/00001012051200",
       "meta": {
         "title": "API: List for all zettel some data",
         "tags": "#api #manual #zettelstore",
@@ -34,7 +33,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
     },
     {
       "id": "00001012050600",
-      "url": "/z/00001012050600",
       "meta": {
         "title": "API: Provide an access token",
         "tags": "#api #manual #zettelstore",
@@ -44,7 +42,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
     },
     {
       "id": "00001012050400",
-      "url": "/z/00001012050400",
       "meta": {
         "title": "API: Renew an access token",
         "tags": "#api #manual #zettelstore",
@@ -54,7 +51,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
     },
     {
       "id": "00001012050200",
-      "url": "/z/00001012050200",
       "meta": {
         "title": "API: Authenticate a client",
         "tags": "#api #manual #zettelstore",
@@ -64,7 +60,6 @@ If you reformat the JSON output from the ''GET /z'' call, you'll see its structu
     },
     {
       "id": "00001012000000",
-      "url": "/z/00001012000000",
       "meta": {
         "title": "API",
         "tags": "#api #manual #zettelstore",
