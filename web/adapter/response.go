@@ -104,10 +104,3 @@ func CreateFoundReference(b server.Builder, key byte, part, enc string, zid id.Z
 	ref.State = ast.RefStateFound
 	return ref
 }
-
-// CreateImageReference build an URL reference to a given image.
-func CreateImageReference(b server.Builder, zid id.Zid, state ast.RefState) *ast.Reference {
-	ref := ast.ParseReference(b.NewURLBuilder('z').SetZid(zid).AppendQuery(api.QueryKeyRaw, "").String())
-	ref.State = state
-	return ref
-}

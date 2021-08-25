@@ -34,7 +34,6 @@ type Environment struct {
 	GetTagRef    func(string) *ast.Reference
 	GetHostedRef func(string) *ast.Reference
 	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
-	GetImageRef  func(zid id.Zid, state ast.RefState) *ast.Reference
 }
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
@@ -179,12 +178,12 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	ref := en.Material.(*ast.ReferenceMaterialNode)
 	switch ref.Ref.State {
 	case ast.RefStateInvalid:
-		return e.createImage(en, ref, id.EmojiZid, ast.RefStateInvalid)
+		return e.createErrorImage(en)
 	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
 		return createErrorText(en, "Self", "embed", "reference:")
 	case ast.RefStateBroken:
-		return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
+		return e.createErrorImage(en)
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:
@@ -195,14 +194,14 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	if err != nil {
 		panic(err)
 	}
-	m, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
+	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err != nil {
-		return e.createImage(en, ref, id.EmojiZid, ast.RefStateBroken)
+		return e.createErrorImage(en)
 	}
 
-	syntax := e.getSyntax(m)
+	syntax := e.getSyntax(zettel.Meta)
 	if parser.IsImageFormat(syntax) {
-		return e.createImage(en, ref, m.Zid, ast.RefStateFound)
+		return e.embedImage(en, zettel, syntax)
 	}
 	if !parser.IsTextParser(syntax) {
 		// Not embeddable.
@@ -215,12 +214,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 	if !ok {
 		e.astMap[zid] = e.marker
-
-		zn, err = e.evaluateEmbeddedZettel(zid, syntax)
-		if err != nil {
-			delete(e.astMap, zid)
-			return createErrorText(en, "Cannot", "parse", "zettel (error="+err.Error()+"):")
-		}
+		zn = e.evaluateEmbeddedZettel(zettel, syntax)
 		e.astMap[zid] = zn
 	}
 
@@ -248,15 +242,20 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	return m.GetDefault(meta.KeySyntax, "")
 }
 
-func (e *evaluator) createImage(
-	en *ast.EmbedNode, ref *ast.ReferenceMaterialNode, zid id.Zid, state ast.RefState) *ast.EmbedNode {
-
-	if gir := e.env.GetImageRef; gir != nil {
-		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zid, state)}
-		return en
+func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
+	zid := id.EmojiZid
+	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
+	if err == nil {
+		return e.embedImage(en, zettel, e.getSyntax(zettel.Meta))
 	}
-	ref.Ref.State = state
-	en.Material = ref
+	panic(err)
+}
+
+func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+	en.Material = &ast.BLOBMaterialNode{
+		Blob:   zettel.Content.AsBytes(),
+		Syntax: syntax,
+	}
 	return en
 }
 
@@ -281,14 +280,10 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 	return fn
 }
 
-func (e *evaluator) evaluateEmbeddedZettel(zid id.Zid, syntax string) (*ast.ZettelNode, error) {
-	zettel, err := e.port.GetZettel(e.ctx, zid)
-	if err == nil {
-		zn := parser.ParseZettel(zettel, syntax, e.rtConfig)
-		ast.Walk(e, zn.Ast)
-		return zn, nil
-	}
-	return nil, err
+func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
+	zn := parser.ParseZettel(zettel, syntax, e.rtConfig)
+	ast.Walk(e, zn.Ast)
+	return zn
 }
 
 func findInlineList(bnl *ast.BlockListNode, fragment string) *ast.InlineListNode {

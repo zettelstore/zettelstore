@@ -53,9 +53,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-			GetImageRef: func(zid id.Zid, state ast.RefState) *ast.Reference {
-				return adapter.CreateImageReference(wui, zid, state)
-			},
 		})
 
 		if err != nil {

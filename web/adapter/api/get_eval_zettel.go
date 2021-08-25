@@ -46,9 +46,6 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 		getFoundRef := func(zid id.Zid, fragment string) *ast.Reference {
 			return adapter.CreateFoundReference(api, 'v', part.DefString(partZettel), encStr, zid, fragment)
 		}
-		getImageRef := func(zid id.Zid, state ast.RefState) *ast.Reference {
-			return adapter.CreateImageReference(api, zid, state)
-		}
 		switch enc {
 		case zsapi.EncoderHTML:
 			// Get all references only for HTML encoding
@@ -60,7 +57,6 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 			getTagRef = nil
 			getHostedRef = nil
 			getFoundRef = nil
-			getImageRef = nil
 		}
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
 			Syntax:       q.Get(meta.KeySyntax),
@@ -68,7 +64,6 @@ func (api *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) 
 			GetTagRef:    getTagRef,
 			GetHostedRef: getHostedRef,
 			GetFoundRef:  getFoundRef,
-			GetImageRef:  getImageRef,
 		})
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
