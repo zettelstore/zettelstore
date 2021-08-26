@@ -31,6 +31,7 @@ import (
 type Environment struct {
 	Config       config.Config
 	Syntax       string
+	EmbedImage   bool
 	GetTagRef    func(string) *ast.Reference
 	GetHostedRef func(string) *ast.Reference
 	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
@@ -201,7 +202,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 
 	syntax := e.getSyntax(zettel.Meta)
 	if parser.IsImageFormat(syntax) {
-		return embedImage(en, zettel, syntax)
+		return e.embedImage(en, zettel, syntax)
 	}
 	if !parser.IsTextParser(syntax) {
 		// Not embeddable.
@@ -244,14 +245,25 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 
 func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
 	zid := id.EmojiZid
+	if !e.env.EmbedImage {
+		en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(zid.String())}
+		return en
+	}
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err == nil {
-		return embedImage(en, zettel, e.getSyntax(zettel.Meta))
+		return doEmbedImage(en, zettel, e.getSyntax(zettel.Meta))
 	}
 	panic(err)
 }
 
-func embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+	if e.env.EmbedImage {
+		return doEmbedImage(en, zettel, syntax)
+	}
+	return en
+}
+
+func doEmbedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
 	en.Material = &ast.BLOBMaterialNode{
 		Blob:   zettel.Content.AsBytes(),
 		Syntax: syntax,

@@ -3,7 +3,7 @@ title: API: Retrieve evaluated metadata and content of an existing zettel in var
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210817145938
+modified: 20210826224328
 
 The [[endpoint|00001012920000]] to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
@@ -40,7 +40,7 @@ Others are ""[[html|00001012920510]]"", ""[[text|00001012920519]]"", and some mo
 ```
 
 You also can use the query parameter ''_part=[[PART|00001012920800]]'' to specify which parts of a zettel must be encoded.
-In this case, its default value is ''zettel''.
+In this case, its default value is ''content''.
 ```sh
 # curl 'http://127.0.0.1:23123/v/00001012053500?_enc=html&_part=meta'
 <meta name="zs-title" content="API: Retrieve evaluated metadata and content of an existing zettel in various encodings">
