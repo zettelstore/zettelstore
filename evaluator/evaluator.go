@@ -201,7 +201,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 
 	syntax := e.getSyntax(zettel.Meta)
 	if parser.IsImageFormat(syntax) {
-		return e.embedImage(en, zettel, syntax)
+		return embedImage(en, zettel, syntax)
 	}
 	if !parser.IsTextParser(syntax) {
 		// Not embeddable.
@@ -246,12 +246,12 @@ func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
 	zid := id.EmojiZid
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err == nil {
-		return e.embedImage(en, zettel, e.getSyntax(zettel.Meta))
+		return embedImage(en, zettel, e.getSyntax(zettel.Meta))
 	}
 	panic(err)
 }
 
-func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+func embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
 	en.Material = &ast.BLOBMaterialNode{
 		Blob:   zettel.Content.AsBytes(),
 		Syntax: syntax,

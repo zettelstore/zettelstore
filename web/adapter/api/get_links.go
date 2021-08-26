@@ -48,7 +48,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
 		outData.Linked.Incoming = nil
 		zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
-		outData.Linked.Outgoing = api.idRefs(zetRefs)
+		outData.Linked.Outgoing = idRefs(zetRefs)
 		outData.Linked.Local = stringRefs(locRefs)
 		outData.Linked.External = stringRefs(extRefs)
 		for _, p := range zn.Meta.PairsRest(false) {
@@ -58,7 +58,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		}
 
 		zetRefs, locRefs, extRefs = collect.DivideReferences(summary.Embeds)
-		outData.Embedded.Outgoing = api.idRefs(zetRefs)
+		outData.Embedded.Outgoing = idRefs(zetRefs)
 		outData.Embedded.Local = stringRefs(locRefs)
 		outData.Embedded.External = stringRefs(extRefs)
 
@@ -69,7 +69,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 	}
 }
 
-func (api *API) idRefs(refs []*ast.Reference) []string {
+func idRefs(refs []*ast.Reference) []string {
 	result := make([]string, len(refs))
 	for i, ref := range refs {
 		path := ref.URL.Path

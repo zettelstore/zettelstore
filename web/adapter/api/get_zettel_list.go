@@ -26,7 +26,7 @@ import (
 )
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
-func (api *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()

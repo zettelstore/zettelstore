@@ -28,7 +28,7 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
-func (api *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
+func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
 	outList := make([]zsapi.ZidMetaJSON, len(metaList))
 	for i, m := range metaList {
 		outList[i].ID = m.Zid.String()
