@@ -82,10 +82,8 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		policy:   pol,
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
-		cssBaseURL: ab.NewURLBuilder('z').SetZid(
-			id.BaseCSSZid).AppendQuery(api.QueryKeyRaw, "").String(),
-		cssUserURL: ab.NewURLBuilder('z').SetZid(
-			id.UserCSSZid).AppendQuery(api.QueryKeyRaw, "").String(),
+		cssBaseURL:    ab.NewURLBuilder('w').SetZid(id.BaseCSSZid).String(),
+		cssUserURL:    ab.NewURLBuilder('w').SetZid(id.UserCSSZid).String(),
 		homeURL:       ab.NewURLBuilder('/').String(),
 		listZettelURL: ab.NewURLBuilder('h').String(),
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),

@@ -33,7 +33,6 @@ const (
 	QueryKeyOffset   = "_offset"
 	QueryKeyOrder    = "_order"
 	QueryKeyPart     = "_part"
-	QueryKeyRaw      = "raw"
 	QueryKeySearch   = "_s"
 	QueryKeySort     = "_sort"
 )

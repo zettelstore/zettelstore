@@ -199,12 +199,13 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid, withRaw bool) []matrixLine
 
 	if withRaw {
 		// Append JSON and Raw format
-		u = wui.NewURLBuilder('z').SetZid(zid)
+		u = wui.NewURLBuilder('w').SetZid(zid)
 		for i, part := range parts {
-			u.AppendQuery(api.QueryKeyRaw, "").AppendQuery(api.QueryKeyPart, part)
-			matrix[i].Elements = append(matrix[i].Elements, simpleLink{api.QueryKeyRaw, u.String()})
+			u.AppendQuery(api.QueryKeyPart, part)
+			matrix[i].Elements = append(matrix[i].Elements, simpleLink{"raw", u.String()})
 			u.ClearQuery()
 		}
+		u = wui.NewURLBuilder('z').SetZid(zid)
 		matrix[0].Elements = append(matrix[0].Elements, simpleLink{"JSON", u.String()})
 	}
 	return matrix

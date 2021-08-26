@@ -23,6 +23,9 @@
      you edit a zettel through Zettelstore. If you just modify the zettel
      files, your tag values remain unchanged.
      (major; breaking)
+  *  To retrieve raw zettel data, use the new endpoint <tt>/w/{ID}</tt>.
+     Previously, <tt>/z/{ID}?raw</tt> was the endpoint to get the same effect.
+     (minor: api; breaking)
   *  Allows to transclude / expand the content of another zettel into a target
      zettel when the zettel is rendered. By using the syntax of embedding an
      image (which is some kind of expansion too), the first top-level paragraph
