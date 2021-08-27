@@ -22,7 +22,7 @@ import (
 )
 
 // MakeRenameZettelHandler creates a new HTTP handler to update a zettel.
-func (api *API) MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
+func MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

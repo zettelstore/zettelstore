@@ -55,8 +55,33 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	}
 }
 
+// MakeListRawHandler creates a new HTTP handler for the use case "list some zettel".
+func (a *API) MakeListRawHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		q := r.URL.Query()
+		s := adapter.GetSearch(q, false)
+		metaList, err := listMeta.Run(ctx, s)
+		if err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
+		}
+
+		w.Header().Set(zsapi.HeaderContentType, ctPlainText)
+		for _, m := range metaList {
+			_, err = fmt.Fprintln(w, m.Zid.String(), config.GetTitle(m, a.rtConfig))
+			if err != nil {
+				break
+			}
+		}
+		if err != nil {
+			adapter.InternalServerError(w, "Write Zettel list RAW", err)
+		}
+	}
+}
+
 // MakeListParsedMetaHandler creates a new HTTP handler for the use case "list some zettel".
-func (api *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta) http.HandlerFunc {
+func (a *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
@@ -72,22 +97,22 @@ func (api *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta) h
 			return
 		}
 
-		err = api.writeHTMLList(w, metaList, key, encStr)
+		err = a.writeHTMLList(w, metaList, key, encStr)
 		if err != nil {
 			adapter.InternalServerError(w, "Write Zettel list HTML", err)
 		}
 	}
 }
 
-func (api *API) writeHTMLList(w http.ResponseWriter, metaList []*meta.Meta, key byte, enc string) error {
+func (a *API) writeHTMLList(w http.ResponseWriter, metaList []*meta.Meta, key byte, enc string) error {
 	textEnc := encoder.Create(zsapi.EncoderText, nil)
 	w.Header().Set(zsapi.HeaderContentType, ctHTML)
 	for _, m := range metaList {
-		u := api.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, enc)
+		u := a.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, enc)
 		if _, err := fmt.Fprintf(w, "<li><a href=\"%v\">", u); err != nil {
 			return err
 		}
-		if _, err := textEnc.WriteInlines(w, parser.ParseMetadata(config.GetTitle(m, api.rtConfig))); err != nil {
+		if _, err := textEnc.WriteInlines(w, parser.ParseMetadata(config.GetTitle(m, a.rtConfig))); err != nil {
 			return err
 		}
 		if _, err := io.WriteString(w, "</a></li>\n"); err != nil {

@@ -26,6 +26,9 @@
   *  To retrieve raw zettel data, use the new endpoint <tt>/w/{ID}</tt>.
      Previously, <tt>/z/{ID}?raw</tt> was the endpoint to get the same effect.
      (minor: api; breaking)
+  *  The endpoint <tt>/w</tt> allows to list zettel in a simpler format than
+     endpoint <tt>/z</tt>: one line per zettel, and only zettel identifier plus
+     zettel title.
   *  Allows to transclude / expand the content of another zettel into a target
      zettel when the zettel is rendered. By using the syntax of embedding an
      image (which is some kind of expansion too), the first top-level paragraph

@@ -25,7 +25,7 @@ import (
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.HandlerFunc {
+func (a *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -36,7 +36,7 @@ func (api *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.
 		q := r.URL.Query()
 		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
 			Syntax: q.Get(meta.KeySyntax),
-			Config: api.rtConfig,
+			Config: a.rtConfig,
 		})
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)

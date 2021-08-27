@@ -20,7 +20,7 @@ import (
 )
 
 // MakeUpdateZettelHandler creates a new HTTP handler to update a zettel.
-func (api *API) MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

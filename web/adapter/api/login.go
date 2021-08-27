@@ -23,9 +23,9 @@ import (
 )
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user via API.
-func (api *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
+func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !api.withAuth() {
+		if !a.withAuth() {
 			w.Header().Set(zsapi.HeaderContentType, ctJSON)
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
@@ -33,7 +33,7 @@ func (api *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFu
 		var token []byte
 		if ident, cred := retrieveIdentCred(r); ident != "" {
 			var err error
-			token, err = ucAuth.Run(r.Context(), ident, cred, api.tokenLifetime, auth.KindJSON)
+			token, err = ucAuth.Run(r.Context(), ident, cred, a.tokenLifetime, auth.KindJSON)
 			if err != nil {
 				adapter.ReportUsecaseError(w, err)
 				return
@@ -46,7 +46,7 @@ func (api *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFu
 		}
 
 		w.Header().Set(zsapi.HeaderContentType, ctJSON)
-		writeJSONToken(w, string(token), api.tokenLifetime)
+		writeJSONToken(w, string(token), a.tokenLifetime)
 	}
 }
 
@@ -70,10 +70,10 @@ func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration)
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
-func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
+func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		authData := api.getAuthData(ctx)
+		authData := a.getAuthData(ctx)
 		if authData == nil || len(authData.Token) == 0 || authData.User == nil {
 			adapter.BadRequest(w, "Not authenticated")
 			return
@@ -88,12 +88,12 @@ func (api *API) MakeRenewAuthHandler() http.HandlerFunc {
 		}
 
 		// Token is a little bit aged. Create a new one
-		token, err := api.getToken(authData.User)
+		token, err := a.getToken(authData.User)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 		w.Header().Set(zsapi.HeaderContentType, ctJSON)
-		writeJSONToken(w, string(token), api.tokenLifetime)
+		writeJSONToken(w, string(token), a.tokenLifetime)
 	}
 }

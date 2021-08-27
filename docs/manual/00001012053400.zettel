@@ -3,7 +3,7 @@ title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210826234511
+modified: 20210827231630
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
@@ -35,7 +35,7 @@ Pretty-printed, this results in:
 }
 ```
 
-Additionally, you can retrieve the raw zettel, without using JSON.
+[!raw]Additionally, you can retrieve the raw zettel, without using JSON.
 Just change the [[endpoint|00001012920000]] to ''/w/{ID}''
 Optionally, you may provide which parts of the zettel you are requesting.
 In this case, add an additional query parameter ''_part=[[PART|00001012920800]]''.

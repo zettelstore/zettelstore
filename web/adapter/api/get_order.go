@@ -22,7 +22,7 @@ import (
 
 // MakeGetOrderHandler creates a new API handler to return zettel references
 // of a given zettel.
-func (api *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
+func (a *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -31,7 +31,7 @@ func (api *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.Handle
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		start, metas, err := zettelOrder.Run(ctx, zid, q.Get(meta.KeySyntax), api.rtConfig)
+		start, metas, err := zettelOrder.Run(ctx, zid, q.Get(meta.KeySyntax), a.rtConfig)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

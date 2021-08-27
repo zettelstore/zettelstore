@@ -26,7 +26,7 @@ import (
 )
 
 // MakeGetParsedZettelHandler creates a new HTTP handler to return a parsed zettel.
-func (api *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
+func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -42,13 +42,13 @@ func (api *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		api.writeEncodedZettelPart(w, zn, enc, encStr, part)
+		a.writeEncodedZettelPart(w, zn, enc, encStr, part)
 	}
 }
 
-func (api *API) writeEncodedZettelPart(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum, encStr string, part partType) {
+func (a *API) writeEncodedZettelPart(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum, encStr string, part partType) {
 	env := encoder.Environment{
-		Lang:           config.GetLang(zn.InhMeta, api.rtConfig),
+		Lang:           config.GetLang(zn.InhMeta, a.rtConfig),
 		Xhtml:          false,
 		MarkerExternal: "",
 		NewWindow:      false,
