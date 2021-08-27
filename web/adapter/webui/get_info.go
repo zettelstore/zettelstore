@@ -139,8 +139,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
-			EvalMatrix:     wui.infoAPIMatrix('v', zid, true),
-			ParseMatrix:    wui.infoAPIMatrix('p', zid, false),
+			EvalMatrix:     wui.infoAPIMatrix('v', zid),
+			ParseMatrix:    wui.infoAPIMatrixRaw('p', zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
 			Endnotes:       endnotes,
@@ -173,7 +173,7 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 	return locLinks, extLinks
 }
 
-func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid, withRaw bool) []matrixLine {
+func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 	encodings := encoder.GetEncodings()
 	encTexts := make([]string, 0, len(encodings))
 	for _, f := range encodings {
@@ -196,18 +196,22 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid, withRaw bool) []matrixLine
 		}
 		matrix = append(matrix, matrixLine{part, row})
 	}
+	return matrix
+}
 
-	if withRaw {
-		// Append JSON and Raw format
-		u = wui.NewURLBuilder('w').SetZid(zid)
-		for i, part := range parts {
-			u.AppendQuery(api.QueryKeyPart, part)
-			matrix[i].Elements = append(matrix[i].Elements, simpleLink{"raw", u.String()})
-			u.ClearQuery()
-		}
-		u = wui.NewURLBuilder('z').SetZid(zid)
-		matrix[0].Elements = append(matrix[0].Elements, simpleLink{"JSON", u.String()})
+func (wui *WebUI) infoAPIMatrixRaw(key byte, zid id.Zid) []matrixLine {
+	matrix := wui.infoAPIMatrix(key, zid)
+
+	// Append JSON and Raw format
+	u := wui.NewURLBuilder('w').SetZid(zid)
+	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
+	for i, part := range parts {
+		u.AppendQuery(api.QueryKeyPart, part)
+		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"raw", u.String()})
+		u.ClearQuery()
 	}
+	u = wui.NewURLBuilder('z').SetZid(zid)
+	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"JSON", u.String()})
 	return matrix
 }
 

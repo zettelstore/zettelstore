@@ -12,11 +12,13 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -25,22 +27,15 @@ import (
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel.
 func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
+		z, err := getZettelFromPath(r.Context(), w, r, getZettel)
 		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-
-		z, err := getZettel.Run(r.Context(), zid)
-		if err != nil {
-			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
 		w.Header().Set(zsapi.HeaderContentType, ctJSON)
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, zsapi.ZettelJSON{
-			ID:       zid.String(),
+			ID:       z.Meta.Zid.String(),
 			Meta:     z.Meta.Map(),
 			Encoding: encoding,
 			Content:  content,
@@ -54,15 +49,8 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 // MakeGetRawZettelHandler creates a new HTTP handler to return a zettel in raw formar
 func (api *API) MakeGetRawZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
+		z, err := getZettelFromPath(box.NoEnrichContext(r.Context()), w, r, getZettel)
 		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-
-		z, err := getZettel.Run(box.NoEnrichContext(r.Context()), zid)
-		if err != nil {
-			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
@@ -88,4 +76,19 @@ func (api *API) MakeGetRawZettelHandler(getZettel usecase.GetZettel) http.Handle
 			adapter.InternalServerError(w, "Write raw zettel", err)
 		}
 	}
+}
+
+func getZettelFromPath(ctx context.Context, w http.ResponseWriter, r *http.Request, getZettel usecase.GetZettel) (domain.Zettel, error) {
+	zid, err := id.Parse(r.URL.Path[1:])
+	if err != nil {
+		http.NotFound(w, r)
+		return domain.Zettel{}, err
+	}
+
+	z, err := getZettel.Run(ctx, zid)
+	if err != nil {
+		adapter.ReportUsecaseError(w, err)
+		return domain.Zettel{}, err
+	}
+	return z, nil
 }

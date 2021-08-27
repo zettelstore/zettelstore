@@ -41,7 +41,7 @@ func withDebug(fs *flag.FlagSet) bool {
 	return dbg != nil && dbg.Value.String() == "true"
 }
 
-func runFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
+func runFunc(fs *flag.FlagSet, _ *meta.Meta) (int, error) {
 	exitCode, err := doRun(withDebug(fs))
 	kernel.Main.WaitForShutdown()
 	return exitCode, err
