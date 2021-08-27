@@ -14,7 +14,6 @@ package usecase
 import (
 	"context"
 
-	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
 )
@@ -40,13 +39,13 @@ type TagData map[string][]*meta.Meta
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
-	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), nil)
+	metas, err := uc.port.SelectMeta(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	result := make(TagData)
 	for _, m := range metas {
-		if tl, ok := m.GetList(meta.KeyTags); ok && len(tl) > 0 {
+		if tl, ok := m.GetList(meta.KeyAllTags); ok && len(tl) > 0 {
 			for _, t := range tl {
 				result[t] = append(result[t], m)
 			}
