@@ -140,7 +140,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),
-			ParseMatrix:    wui.infoAPIMatrixPlain('p', zid),
+			ParseMatrix:    wui.infoAPIMatrixPlain('u', zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
 			Endnotes:       endnotes,
@@ -203,7 +203,7 @@ func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 	matrix := wui.infoAPIMatrix(key, zid)
 
 	// Append plain and JSON format
-	u := wui.NewURLBuilder('w').SetZid(zid)
+	u := wui.NewURLBuilder('p').SetZid(zid)
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	for i, part := range parts {
 		u.AppendQuery(api.QueryKeyPart, part)

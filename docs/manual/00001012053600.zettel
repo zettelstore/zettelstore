@@ -3,9 +3,9 @@ title: API: Retrieve parsed metadata and content of an existing zettel in variou
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210822234354
+modified: 20210830165056
 
-The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/p/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/u/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
 A //parsed// zettel is basically an [[unevaluated|00001012053500]] zettel: the zettel is read and analyzed, but its content is //not evaluated//.
 By using this endpoint, you are able to retrieve the structure of a zettel before it is evaluated.
@@ -13,7 +13,7 @@ By using this endpoint, you are able to retrieve the structure of a zettel befor
 For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/v/00001012053600''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
 ```sh
-# curl http://127.0.0.1:23123/p/00001012053600
+# curl http://127.0.0.1:23123/u/00001012053600
 {"meta":{"title":[{"t":"Text","s":"Retrieve"},{"t":"Space"},{"t":"Text","s":"parsed"},{"t":"Space"},{"t":"Text","s":"metadata"},{"t":"Space"},{"t":"Text","s":"and"},{"t":"Space"},{"t":"Text","s":"content"},{"t":"Space"},{"t":"Text","s":"of"},{"t":"Space"},{"t":"Text","s":"an"},{"t":"Space"},{"t":"Text","s":"existing"},{"t":"Space"},{"t":"Text","s":"zettel"},{"t":"Space"},{"t":"Text","s":"in"},{"t":"Space"},{"t":"Text","s":"various"},{"t":"Space"},{"t":"Text","s":"encodings"}],"role":"manual","tags":["#api", ...
 ```
 

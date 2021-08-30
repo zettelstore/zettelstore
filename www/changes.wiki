@@ -11,7 +11,7 @@
   *  Add API endpoint <tt>/v/{ID}</tt> to retrieve an evaluated zettel in
      various encodings. Mostly replaces endpoint <tt>/z/{ID}</tt> for other
      encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
-     <tt>/z/{ID}</tt> now only returns JSON data, endpoint <tt>/w/{ID}</tt> is
+     <tt>/z/{ID}</tt> now only returns JSON data, endpoint <tt>/p/{ID}</tt> is
      used to retrieve plain zettel data (previously called &ldquo;raw&rdquo;).
      See documentation for details.
      (major: api; breaking)
@@ -24,7 +24,7 @@
      you edit a zettel through Zettelstore. If you just modify the zettel
      files, your tag values remain unchanged.
      (major; breaking)
-  *  The endpoint <tt>/w</tt> allows to list zettel in a simpler format than
+  *  The endpoint <tt>/p</tt> allows to list zettel in a simpler format than
      endpoint <tt>/z</tt>: one line per zettel, and only zettel identifier plus
      zettel title.
      (minor: api)
@@ -33,14 +33,14 @@
      image (which is some kind of expansion too), the first top-level paragraph
      of a zettel may be transcluded into the target zettel. Endless recursion
      is checked, as well as a possible &ldquo;transclusion bomb &rdquo;
-     (similar to an XML bomb). See manual for details.
+     (similar to a XML bomb). See manual for details.
      (major: zettelmarkup)
   *  Folgezettel are now displayed with full title at the bottom of a page.
      (minor: webui)
-  *  Add API endpoint <tt>/p/{ID}</tt> to retrieve a parsed, but not evaluated
+  *  Add API endpoint <tt>/u/{ID}</tt> to retrieve a parsed, but not evaluated
      zettel in various encodings.
      (minor: api)
-  *  Add API endpoint <tt>/p</tt> and <tt>/v</tt> to retrieve list of parsed
+  *  Add API endpoint <tt>/u</tt> and <tt>/v</tt> to retrieve list of parsed
      / evaluated list of zettel, currently only in HTML encoding.
      (minor: api)
   *  Fix: do not list a shadowed zettel that matches the select criteria.

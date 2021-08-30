@@ -230,14 +230,14 @@ func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid) (*api.ZettelData
 	return &out, nil
 }
 
+// GetParsedZettel return a parsed zettel in a defined encoding.
+func (c *Client) GetParsedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
+	return c.getZettelString(ctx, 'u', zid, enc)
+}
+
 // GetEvaluatedZettel return an evaluated zettel in a defined encoding.
 func (c *Client) GetEvaluatedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
 	return c.getZettelString(ctx, 'v', zid, enc)
-}
-
-// GetParsedZettel return a parsed zettel in a defined encoding.
-func (c *Client) GetParsedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
-	return c.getZettelString(ctx, 'p', zid, enc)
 }
 
 func (c *Client) getZettelString(ctx context.Context, key byte, zid id.Zid, enc api.EncodingEnum) (string, error) {

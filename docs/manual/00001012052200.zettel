@@ -3,13 +3,13 @@ title: API: List zettel in other encodings
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210817161901
+modified: 20210830165012
 
-To list zettel in other encodings, send a HTTP GET request to one of the [[endpoints|00001012920000]] ''/v'' or ''/p''.
+To list parsed or evaluated zettel in other encodings, send a HTTP GET request to one of the [[endpoints|00001012920000]] ''/u'' or ''/v''.
 If you need a list of [[evaluated|00001012053500]] zettel, use then endoint ''/v''.
-Otherwise, with endpoint ''/p'' you get a list of [[parsed|00001012053600]] zettel.
+Otherwise, with endpoint ''/u'' you get a list of [[parsed|00001012053600]] zettel.
 
-You may add query parameter, if you want to [[shape the list|00001012051800]].
+You may add query parameters if you want to [[shape the list|00001012051800]].
 
 Currently, only the [[HTML encoding|00001012920510]] is allowed, and you must specify it with the ''_enc=html'' query parameter.
 Otherwise you will receive an error message.
