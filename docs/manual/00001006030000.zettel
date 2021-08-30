@@ -3,13 +3,14 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210627170437
+modified: 20210830132855
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
 User-defined metadata keys conform also to a type, based on the suffix of the key.
 |=Suffix|Type
 | ''-number'' | [[Number|00001006033000]]
+| ''-role'' | [[Word|00001006035500]]
 | ''-url'' | [[URL|00001006035000]]
 | ''-zid''  | [[Identifier|00001006032000]]
 | any other suffix | [[EString|00001006031500]]

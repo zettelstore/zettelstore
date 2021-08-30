@@ -64,14 +64,13 @@ func (m *Meta) Type(key string) *DescriptionType {
 var (
 	cachedTypedKeys = make(map[string]*DescriptionType)
 	mxTypedKey      sync.RWMutex
+	suffixTypes     = map[string]*DescriptionType{
+		"-number": TypeNumber,
+		"-role":   TypeWord,
+		"-url":    TypeURL,
+		"-zid":    TypeID,
+	}
 )
-
-func typedKey(key string, t *DescriptionType) *DescriptionType {
-	mxTypedKey.Lock()
-	defer mxTypedKey.Unlock()
-	cachedTypedKeys[key] = t
-	return t
-}
 
 // Type returns a type hint for the given key. If no type hint is specified,
 // TypeUnknown is returned.
@@ -85,14 +84,13 @@ func Type(key string) *DescriptionType {
 	if ok {
 		return k
 	}
-	if strings.HasSuffix(key, "-url") {
-		return typedKey(key, TypeURL)
-	}
-	if strings.HasSuffix(key, "-number") {
-		return typedKey(key, TypeNumber)
-	}
-	if strings.HasSuffix(key, "-zid") {
-		return typedKey(key, TypeID)
+	for suffix, t := range suffixTypes {
+		if strings.HasSuffix(key, suffix) {
+			mxTypedKey.Lock()
+			defer mxTypedKey.Unlock()
+			cachedTypedKeys[key] = t
+			return t
+		}
 	}
 	return TypeEmpty
 }
