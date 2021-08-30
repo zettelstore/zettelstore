@@ -31,7 +31,7 @@ import (
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
-func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel, getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate usecase.Evaluate, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -41,9 +41,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluateZettel usecase.EvaluateZettel
 		}
 
 		q := r.URL.Query()
-		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
-			Syntax:     q.Get(meta.KeySyntax),
-			Config:     wui.rtConfig,
+		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &evaluator.Environment{
 			EmbedImage: true,
 			GetTagRef: func(s string) *ast.Reference {
 				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)

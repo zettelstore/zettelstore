@@ -19,13 +19,12 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func (a *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.HandlerFunc {
+func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -34,10 +33,7 @@ func (a *API) MakeGetLinksHandler(evaluateZettel usecase.EvaluateZettel) http.Ha
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
-			Syntax: q.Get(meta.KeySyntax),
-			Config: a.rtConfig,
-		})
+		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), nil)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

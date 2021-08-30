@@ -67,7 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
 	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
-	ucEvaluateZettel := usecase.NewEvaluateZettel(rtConfig, ucGetZettel, ucGetMeta)
+	ucEvaluate := usecase.NewEvaluate(rtConfig, ucGetZettel, ucGetMeta)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
 	ucListRoles := usecase.NewListRole(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
@@ -101,7 +101,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(
 		ucListMeta, ucListRoles, ucListTags))
 	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(
-		ucEvaluateZettel, ucGetMeta))
+		ucEvaluate, ucGetMeta))
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginHandler())
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
@@ -112,9 +112,9 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, a.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
-	webSrv.AddZettelRoute('l', server.MethodGet, a.MakeGetLinksHandler(ucEvaluateZettel))
+	webSrv.AddZettelRoute('l', server.MethodGet, a.MakeGetLinksHandler(ucEvaluate))
 	webSrv.AddZettelRoute('o', server.MethodGet, a.MakeGetOrderHandler(
-		usecase.NewZettelOrder(protectedBoxManager, ucEvaluateZettel)))
+		usecase.NewZettelOrder(protectedBoxManager, ucEvaluate)))
 	webSrv.AddListRoute('p', server.MethodGet, a.MakeListPlainHandler(ucListMeta))
 	webSrv.AddZettelRoute('p', server.MethodGet, a.MakeGetPlainZettelHandler(ucGetZettel))
 	webSrv.AddListRoute('r', server.MethodGet, api.MakeListRoleHandler(ucListRoles))
@@ -122,7 +122,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('u', server.MethodGet, a.MakeListParsedMetaHandler('u', ucListMeta))
 	webSrv.AddZettelRoute('u', server.MethodGet, a.MakeGetParsedZettelHandler(ucParseZettel))
 	webSrv.AddListRoute('v', server.MethodGet, a.MakeListParsedMetaHandler('v', ucListMeta))
-	webSrv.AddZettelRoute('v', server.MethodGet, a.MakeGetEvalZettelHandler(ucEvaluateZettel))
+	webSrv.AddZettelRoute('v', server.MethodGet, a.MakeGetEvalZettelHandler(ucEvaluate))
 	webSrv.AddZettelRoute('x', server.MethodGet, api.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', server.MethodGet, api.MakeListMetaHandler(ucListMeta))
 	webSrv.AddZettelRoute('z', server.MethodGet, api.MakeGetZettelHandler(ucGetZettel))

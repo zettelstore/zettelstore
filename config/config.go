@@ -76,7 +76,10 @@ func GetTitle(m *meta.Meta, cfg Config) string {
 	if val, ok := m.Get(meta.KeyTitle); ok {
 		return val
 	}
-	return cfg.GetDefaultTitle()
+	if cfg != nil {
+		return cfg.GetDefaultTitle()
+	}
+	return "Untitled"
 }
 
 // GetRole returns the value of the "role" key of the given meta. If there

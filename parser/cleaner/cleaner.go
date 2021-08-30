@@ -22,16 +22,21 @@ import (
 )
 
 // CleanBlockList cleans the given block list.
-func CleanBlockList(bln *ast.BlockListNode) {
+func CleanBlockList(bln *ast.BlockListNode) { cleanNode(bln) }
+
+// CleanInlineList cleans the given inline list.
+func CleanInlineList(iln *ast.InlineListNode) { cleanNode(iln) }
+
+func cleanNode(n ast.Node) {
 	cv := cleanVisitor{
 		textEnc: encoder.Create(api.EncoderText, nil),
 		hasMark: false,
 		doMark:  false,
 	}
-	ast.Walk(&cv, bln)
+	ast.Walk(&cv, n)
 	if cv.hasMark {
 		cv.doMark = true
-		ast.Walk(&cv, bln)
+		ast.Walk(&cv, n)
 	}
 }
 

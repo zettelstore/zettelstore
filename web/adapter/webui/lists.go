@@ -21,6 +21,7 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -333,7 +334,7 @@ func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error)
 		} else {
 			lang = defaultLang
 		}
-		title, _ := m.Get(meta.KeyTitle)
+		title := config.GetTitle(m, wui.rtConfig)
 		env := encoder.Environment{Lang: lang, Interactive: true}
 		htmlTitle, err := encodeInlines(parser.ParseMetadata(title), api.EncoderHTML, &env)
 		if err != nil {

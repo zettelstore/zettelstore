@@ -18,7 +18,6 @@ import (
 
 	zsapi "zettelstore.de/z/api"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
@@ -97,27 +96,23 @@ func (a *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta) htt
 			return
 		}
 
-		err = a.writeHTMLList(w, metaList, key, encStr)
+		textEnc := encoder.Create(zsapi.EncoderText, nil)
+		w.Header().Set(zsapi.HeaderContentType, ctHTML)
+		for _, m := range metaList {
+			parsedTitle := parser.ParseMetadata(config.GetTitle(m, a.rtConfig))
+			u := a.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, encStr)
+			if _, err = fmt.Fprintf(w, "<li><a href=\"%v\">", u); err != nil {
+				break
+			}
+			if _, err = textEnc.WriteInlines(w, parsedTitle); err != nil {
+				break
+			}
+			if _, err = io.WriteString(w, "</a></li>\n"); err != nil {
+				break
+			}
+		}
 		if err != nil {
 			adapter.InternalServerError(w, "Write Zettel list HTML", err)
 		}
 	}
-}
-
-func (a *API) writeHTMLList(w http.ResponseWriter, metaList []*meta.Meta, key byte, enc string) error {
-	textEnc := encoder.Create(zsapi.EncoderText, nil)
-	w.Header().Set(zsapi.HeaderContentType, ctHTML)
-	for _, m := range metaList {
-		u := a.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, enc)
-		if _, err := fmt.Fprintf(w, "<li><a href=\"%v\">", u); err != nil {
-			return err
-		}
-		if _, err := textEnc.WriteInlines(w, parser.ParseMetadata(config.GetTitle(m, a.rtConfig))); err != nil {
-			return err
-		}
-		if _, err := io.WriteString(w, "</a></li>\n"); err != nil {
-			return err
-		}
-	}
-	return nil
 }

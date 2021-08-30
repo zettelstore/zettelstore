@@ -29,8 +29,6 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	Config       config.Config
-	Syntax       string
 	EmbedImage   bool
 	GetTagRef    func(string) *ast.Reference
 	GetHostedRef func(string) *ast.Reference
@@ -43,9 +41,26 @@ type Port interface {
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
 }
 
-// Evaluate the given AST in the given context, with the given ports, and the
-// given environment.
-func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
+var emptyEnv Environment
+
+// EvaluateZettel evaluates the given zettel in the given context, with the
+// given ports, and the given environment.
+func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
+	evaluateNode(ctx, port, env, rtConfig, zn.Ast)
+	cleaner.CleanBlockList(zn.Ast)
+}
+
+// EvaluateInline evaluates the given inline list in the given context, with
+// the given ports, and the given environment.
+func EvaluateInline(ctx context.Context, port Port, env *Environment, rtConfig config.Config, iln *ast.InlineListNode) {
+	evaluateNode(ctx, port, env, rtConfig, iln)
+	cleaner.CleanInlineList(iln)
+}
+
+func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig config.Config, n ast.Node) {
+	if env == nil {
+		env = &emptyEnv
+	}
 	e := evaluator{
 		ctx:        ctx,
 		port:       port,
@@ -56,8 +71,7 @@ func Evaluate(ctx context.Context, port Port, env *Environment, rtConfig config.
 		embedCount: 0,
 		marker:     &ast.ZettelNode{},
 	}
-	ast.Walk(&e, zn.Ast)
-	cleaner.CleanBlockList(zn.Ast)
+	ast.Walk(&e, n)
 }
 
 type evaluator struct {
@@ -237,7 +251,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 }
 
 func (e *evaluator) getSyntax(m *meta.Meta) string {
-	if cfg := e.env.Config; cfg != nil {
+	if cfg := e.rtConfig; cfg != nil {
 		return config.GetSyntax(m, cfg)
 	}
 	return m.GetDefault(meta.KeySyntax, "")

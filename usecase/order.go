@@ -15,10 +15,8 @@ import (
 	"context"
 
 	"zettelstore.de/z/collect"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/evaluator"
 )
 
 // ZettelOrderPort is the interface used by this use case.
@@ -29,23 +27,20 @@ type ZettelOrderPort interface {
 
 // ZettelOrder is the data for this use case.
 type ZettelOrder struct {
-	port           ZettelOrderPort
-	evaluateZettel EvaluateZettel
+	port     ZettelOrderPort
+	evaluate Evaluate
 }
 
 // NewZettelOrder creates a new use case.
-func NewZettelOrder(port ZettelOrderPort, evaluateZettel EvaluateZettel) ZettelOrder {
-	return ZettelOrder{port: port, evaluateZettel: evaluateZettel}
+func NewZettelOrder(port ZettelOrderPort, evaluate Evaluate) ZettelOrder {
+	return ZettelOrder{port: port, evaluate: evaluate}
 }
 
 // Run executes the use case.
-func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string, cfg config.Config) (
+func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
 	start *meta.Meta, result []*meta.Meta, err error,
 ) {
-	zn, err := uc.evaluateZettel.Run(ctx, zid, &evaluator.Environment{
-		Syntax: syntax,
-		Config: cfg,
-	})
+	zn, err := uc.evaluate.Run(ctx, zid, syntax, nil)
 	if err != nil {
 		return nil, nil, err
 	}

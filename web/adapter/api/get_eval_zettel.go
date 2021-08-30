@@ -25,7 +25,7 @@ import (
 )
 
 // MakeGetEvalZettelHandler creates a new HTTP handler to return a evaluated zettel.
-func (a *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) http.HandlerFunc {
+func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -41,9 +41,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluateZettel usecase.EvaluateZettel) ht
 		if enc == zsapi.EncoderHTML {
 			embedImage = true
 		}
-		zn, err := evaluateZettel.Run(ctx, zid, &evaluator.Environment{
-			Syntax:     q.Get(meta.KeySyntax),
-			Config:     a.rtConfig,
+		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &evaluator.Environment{
 			EmbedImage: embedImage,
 		})
 		if err != nil {

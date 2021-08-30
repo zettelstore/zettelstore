@@ -23,16 +23,16 @@ import (
 	"zettelstore.de/z/parser"
 )
 
-// EvaluateZettel is the data for this use case.
-type EvaluateZettel struct {
+// Evaluate is the data for this use case.
+type Evaluate struct {
 	rtConfig  config.Config
 	getZettel GetZettel
 	getMeta   GetMeta
 }
 
-// NewEvaluateZettel creates a new use case.
-func NewEvaluateZettel(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta) EvaluateZettel {
-	return EvaluateZettel{
+// NewEvaluate creates a new use case.
+func NewEvaluate(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta) Evaluate {
+	return Evaluate{
 		rtConfig:  rtConfig,
 		getZettel: getZettel,
 		getMeta:   getMeta,
@@ -40,26 +40,33 @@ func NewEvaluateZettel(rtConfig config.Config, getZettel GetZettel, getMeta GetM
 }
 
 // Run executes the use case.
-func (uc *EvaluateZettel) Run(ctx context.Context, zid id.Zid, env *evaluator.Environment) (*ast.ZettelNode, error) {
+func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string, env *evaluator.Environment) (*ast.ZettelNode, error) {
 	zettel, err := uc.getZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
-	zn, err := parser.ParseZettel(zettel, env.Syntax, uc.rtConfig), nil
+	zn, err := parser.ParseZettel(zettel, syntax, uc.rtConfig), nil
 	if err != nil {
 		return nil, err
 	}
 
-	evaluator.Evaluate(ctx, uc, env, uc.rtConfig, zn)
+	evaluator.EvaluateZettel(ctx, uc, env, uc.rtConfig, zn)
 	return zn, nil
 }
 
+// RunMetadata executes the use case for a metadata value.
+func (uc *Evaluate) RunMetadata(ctx context.Context, value string, env *evaluator.Environment) *ast.InlineListNode {
+	iln := parser.ParseMetadata(value)
+	evaluator.EvaluateInline(ctx, uc, env, uc.rtConfig, iln)
+	return nil
+}
+
 // GetMeta retrieves the metadata of a given zettel identifier.
-func (uc *EvaluateZettel) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (uc *Evaluate) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return uc.getMeta.Run(ctx, zid)
 }
 
 // GetZettel retrieves the full zettel of a given zettel identifier.
-func (uc *EvaluateZettel) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	return uc.getZettel.Run(ctx, zid)
 }

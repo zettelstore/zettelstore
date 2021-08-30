@@ -106,8 +106,8 @@ func ParseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
-func ParseMetadata(title string) *ast.InlineListNode {
-	return ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
+func ParseMetadata(value string) *ast.InlineListNode {
+	return ParseInlines(input.NewInput(value), meta.ValueSyntaxZmk)
 }
 
 // ParseZettel parses the zettel based on the syntax.

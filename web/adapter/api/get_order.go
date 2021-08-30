@@ -31,7 +31,7 @@ func (a *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerF
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		start, metas, err := zettelOrder.Run(ctx, zid, q.Get(meta.KeySyntax), a.rtConfig)
+		start, metas, err := zettelOrder.Run(ctx, zid, q.Get(meta.KeySyntax))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
