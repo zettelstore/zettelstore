@@ -58,7 +58,7 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string, env *eva
 func (uc *Evaluate) RunMetadata(ctx context.Context, value string, env *evaluator.Environment) *ast.InlineListNode {
 	iln := parser.ParseMetadata(value)
 	evaluator.EvaluateInline(ctx, uc, env, uc.rtConfig, iln)
-	return nil
+	return iln
 }
 
 // GetMeta retrieves the metadata of a given zettel identifier.

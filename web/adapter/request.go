@@ -63,7 +63,7 @@ func GetEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (a
 	if enc, ok := getOneEncoding(r, api.HeaderContentType); ok {
 		return api.Encoder(enc), enc
 	}
-	return defEncoding, "*default*"
+	return defEncoding, defEncoding.String()
 }
 
 func getOneEncoding(r *http.Request, key string) (string, bool) {
