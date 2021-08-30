@@ -113,7 +113,10 @@ func ParseMetadata(title string) *ast.InlineListNode {
 // ParseZettel parses the zettel based on the syntax.
 func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *ast.ZettelNode {
 	m := zettel.Meta
-	inhMeta := rtConfig.AddDefaultValues(m)
+	inhMeta := m
+	if rtConfig != nil {
+		inhMeta = rtConfig.AddDefaultValues(inhMeta)
+	}
 	if syntax == "" {
 		syntax, _ = inhMeta.Get(meta.KeySyntax)
 	}
