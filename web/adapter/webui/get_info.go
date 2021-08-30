@@ -26,7 +26,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -44,6 +43,7 @@ type matrixLine struct {
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
 func (wui *WebUI) MakeGetInfoHandler(
 	parseZettel usecase.ParseZettel,
+	evaluate *usecase.Evaluate,
 	getMeta usecase.GetMeta,
 	getAllMeta usecase.GetAllMeta,
 ) http.HandlerFunc {
@@ -75,10 +75,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 		env := encoder.Environment{Lang: lang}
 		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, len(pairs))
-		getTitle := makeGetTitle(ctx, getMeta, &env)
+		getTitle := wui.makeGetTitle(ctx, getMeta, evaluate, &env)
 		for i, p := range pairs {
 			var html strings.Builder
-			wui.writeHTMLMetaValue(&html, zn.Meta, p.Key, getTitle, &env)
+			wui.writeHTMLMetaValue(ctx, &html, p.Key, p.Value, getTitle, evaluate, &env)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
@@ -87,7 +87,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			endnotes = ""
 		}
 
-		textTitle := encfun.MetaAsText(zn.InhMeta, meta.KeyTitle)
+		textTitle := wui.encodeTitle(ctx, zn.InhMeta, evaluate, api.EncoderText, nil)
 		user := wui.getUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
 		var base baseData

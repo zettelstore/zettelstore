@@ -21,54 +21,53 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 )
 
 var space = []byte{' '}
 
-func (wui *WebUI) writeHTMLMetaValue(w io.Writer, m *meta.Meta, key string, getTitle getTitleFunc, env *encoder.Environment) {
-	switch kt := m.Type(key); kt {
+func (wui *WebUI) writeHTMLMetaValue(
+	ctx context.Context,
+	w io.Writer, key, value string,
+	getTitle getTitleFunc, evaluate *usecase.Evaluate,
+	env *encoder.Environment,
+) {
+	switch kt := meta.Type(key); kt {
 	case meta.TypeBool:
-		wui.writeHTMLBool(w, key, m.GetBool(key))
+		wui.writeHTMLBool(w, key, meta.BoolValue(value))
 	case meta.TypeCredential:
-		writeCredential(w, m.GetDefault(key, "???c"))
+		writeCredential(w, value)
 	case meta.TypeEmpty:
-		writeEmpty(w, m.GetDefault(key, "???e"))
+		writeEmpty(w, value)
 	case meta.TypeID:
-		wui.writeIdentifier(w, m.GetDefault(key, "???i"), getTitle)
+		wui.writeIdentifier(w, value, getTitle)
 	case meta.TypeIDSet:
-		if l, ok := m.GetList(key); ok {
-			wui.writeIdentifierSet(w, l, getTitle)
-		}
+		wui.writeIdentifierSet(w, meta.ListFromValue(value), getTitle)
 	case meta.TypeNumber:
-		wui.writeNumber(w, key, m.GetDefault(key, "???n"))
+		wui.writeNumber(w, key, value)
 	case meta.TypeString:
-		writeString(w, m.GetDefault(key, "???s"))
+		writeString(w, value)
 	case meta.TypeTagSet:
-		if l, ok := m.GetList(key); ok {
-			wui.writeTagSet(w, key, l)
-		}
+		wui.writeTagSet(w, key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
-		if ts, ok := m.GetTime(key); ok {
+		if ts, ok := meta.TimeValue(value); ok {
 			writeTimestamp(w, ts)
 		}
 	case meta.TypeURL:
-		writeURL(w, m.GetDefault(key, "???u"))
+		writeURL(w, value)
 	case meta.TypeWord:
-		wui.writeWord(w, key, m.GetDefault(key, "???w"))
+		wui.writeWord(w, key, value)
 	case meta.TypeWordSet:
-		if l, ok := m.GetList(key); ok {
-			wui.writeWordSet(w, key, l)
-		}
+		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		writeZettelmarkup(w, m.GetDefault(key, "???z"), env)
+		io.WriteString(w, encodeZmkMetadata(ctx, value, evaluate, api.EncoderHTML, env))
 	default:
-		strfun.HTMLEscape(w, m.GetDefault(key, "???w"), false)
+		strfun.HTMLEscape(w, value, false)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
 	}
 }
@@ -163,14 +162,6 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 		wui.writeWord(w, key, word)
 	}
 }
-func writeZettelmarkup(w io.Writer, val string, env *encoder.Environment) {
-	title, err := encodeInlines(parser.ParseMetadata(val), api.EncoderHTML, env)
-	if err != nil {
-		strfun.HTMLEscape(w, val, false)
-		return
-	}
-	io.WriteString(w, title)
-}
 
 func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", wui.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
@@ -180,7 +171,11 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 
 type getTitleFunc func(id.Zid, api.EncodingEnum) (string, int)
 
-func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Environment) getTitleFunc {
+func (wui *WebUI) makeGetTitle(
+	ctx context.Context,
+	getMeta usecase.GetMeta, evaluate *usecase.Evaluate,
+	env *encoder.Environment,
+) getTitleFunc {
 	return func(zid id.Zid, enc api.EncodingEnum) (string, int) {
 		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
@@ -189,13 +184,28 @@ func makeGetTitle(ctx context.Context, getMeta usecase.GetMeta, env *encoder.Env
 			}
 			return "", 0
 		}
-		astTitle := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, ""))
-		if astTitle != nil {
-			title, err := encodeInlines(astTitle, enc, env)
-			if err == nil {
-				return title, 1
-			}
-		}
-		return "", 1
+		return wui.encodeTitle(ctx, m, evaluate, enc, env), 1
 	}
+}
+
+func (wui *WebUI) encodeTitle(
+	ctx context.Context, m *meta.Meta,
+	evaluate *usecase.Evaluate, enc api.EncodingEnum, env *encoder.Environment,
+) string {
+	return encodeZmkMetadata(ctx, config.GetTitle(m, wui.rtConfig), evaluate, enc, env)
+}
+
+func encodeZmkMetadata(
+	ctx context.Context, value string,
+	evaluate *usecase.Evaluate, enc api.EncodingEnum, env *encoder.Environment,
+) string {
+	iln := evaluate.RunMetadata(ctx, value, nil)
+	if iln.IsEmpty() {
+		return ""
+	}
+	result, err := encodeInlines(iln, enc, env)
+	if err == nil {
+		return result
+	}
+	return err.Error()
 }
