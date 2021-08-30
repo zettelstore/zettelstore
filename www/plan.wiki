@@ -15,8 +15,6 @@ They are planned to be solved.
 <h3>Smaller limitations</h3>
   *  Quoted attribute values are not yet supported in Zettelmarkup:
      <code>{key="value with space"}</code>.
-  *  The <tt>file</tt> sub-command currently does not allow to output the raw
-     zettel text and metadata.
   *  The horizontal tab character (<tt>U+0009</tt>) is not supported.
   *  Missing support for citation keys.
   *  Changing the content syntax is not reflected in file extension.

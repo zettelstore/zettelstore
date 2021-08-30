@@ -27,7 +27,7 @@ import (
 type visitor struct {
 	env           *encoder.Environment
 	b             encoder.BufWriter
-	visibleSpace  bool // Show space character in raw text
+	visibleSpace  bool // Show space character in plain text
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack

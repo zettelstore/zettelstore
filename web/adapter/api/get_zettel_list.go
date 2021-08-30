@@ -55,8 +55,8 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	}
 }
 
-// MakeListRawHandler creates a new HTTP handler for the use case "list some zettel".
-func (a *API) MakeListRawHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+// MakeListPlainHandler creates a new HTTP handler for the use case "list some zettel".
+func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
@@ -75,7 +75,7 @@ func (a *API) MakeListRawHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			}
 		}
 		if err != nil {
-			adapter.InternalServerError(w, "Write Zettel list RAW", err)
+			adapter.InternalServerError(w, "Write Zettel list plain", err)
 		}
 	}
 }

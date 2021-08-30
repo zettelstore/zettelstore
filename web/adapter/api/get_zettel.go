@@ -46,8 +46,8 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	}
 }
 
-// MakeGetRawZettelHandler creates a new HTTP handler to return a zettel in raw formar
-func (a *API) MakeGetRawZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
+// MakeGetPlainZettelHandler creates a new HTTP handler to return a zettel in plain formar
+func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		z, err := getZettelFromPath(box.NoEnrichContext(r.Context()), w, r, getZettel)
 		if err != nil {
@@ -73,7 +73,7 @@ func (a *API) MakeGetRawZettelHandler(getZettel usecase.GetZettel) http.HandlerF
 			_, err = z.Content.Write(w)
 		}
 		if err != nil {
-			adapter.InternalServerError(w, "Write raw zettel", err)
+			adapter.InternalServerError(w, "Write plain zettel", err)
 		}
 	}
 }

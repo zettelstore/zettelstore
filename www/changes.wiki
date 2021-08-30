@@ -11,9 +11,10 @@
   *  Add API endpoint <tt>/v/{ID}</tt> to retrieve an evaluated zettel in
      various encodings. Mostly replaces endpoint <tt>/z/{ID}</tt> for other
      encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
-     <tt>/z/{ID}</tt> now only returns JSON data, except when query parameter
-     <tt>raw</tt> is given. See documentation for details.
-     (major: api; possibly breaking)
+     <tt>/z/{ID}</tt> now only returns JSON data, endpoint <tt>/w/{ID}</tt> is
+     used to retrieve plain zettel data (previously called &ldquo;raw&rdquo;).
+     See documentation for details.
+     (major: api; breaking)
   *  Metadata values of type <em>tag set</em> (the metadata with key
      <tt>tags</tt> is its most prominent example), are now comapred in
      a case-insensitive manner. Tags that only differ in upper / lower case
@@ -23,12 +24,10 @@
      you edit a zettel through Zettelstore. If you just modify the zettel
      files, your tag values remain unchanged.
      (major; breaking)
-  *  To retrieve raw zettel data, use the new endpoint <tt>/w/{ID}</tt>.
-     Previously, <tt>/z/{ID}?raw</tt> was the endpoint to get the same effect.
-     (minor: api; breaking)
   *  The endpoint <tt>/w</tt> allows to list zettel in a simpler format than
      endpoint <tt>/z</tt>: one line per zettel, and only zettel identifier plus
      zettel title.
+     (minor: api)
   *  Allows to transclude / expand the content of another zettel into a target
      zettel when the zettel is rendered. By using the syntax of embedding an
      image (which is some kind of expansion too), the first top-level paragraph

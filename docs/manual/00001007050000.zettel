@@ -1,14 +1,15 @@
 id: 00001007050000
 title: Zettelmarkup: Attributes
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20210830161438
 
 Attributes allows to modify the way how material is presented.
 Alternatively, they provide additional information to markup elements.
 To some degree, attributes are similar to [[HTML attributes|https://html.spec.whatwg.org/multipage/dom.html#global-attributes]].
 
-Typical use cases for attributes are to specify the (natural) [[language|00001007050100]] for a text region, to specify the [[programming language|00001007050200]] for highlighting program code, or to make white space visible in raw text.
+Typical use cases for attributes are to specify the (natural) [[language|00001007050100]] for a text region, to specify the [[programming language|00001007050200]] for highlighting program code, or to make white space visible in plain text.
 
 Attributes are specified within curly brackets ``{...}``.
 Of course, more than one attribute can be specified.
@@ -47,7 +48,7 @@ Therefore it is equivalent to ``{=key2}``.
 
 The key ""''-''"" (just hyphen-minus) is special.
 It is called //default attribute//{-} and has a markup specific meaning.
-For example, when used for raw text, it replaces the non-visible space with a visible representation:
+For example, when used for plain text, it replaces the non-visible space with a visible representation:
 
 * ++``Hello, world``{-}++ produces ==Hello, world=={-}.
 * ++``Hello, world``++ produces ==Hello, world==.

@@ -1,8 +1,9 @@
 id: 00001012050600
 title: API: Provide an access token
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-role: manual
+modified: 20210830161320
 
 The [[authentication process|00001012050200]] provides you with an [[access token|00001012921000]].
 Most API calls need such an access token, so that they know the identity of the caller.
@@ -10,7 +11,7 @@ Most API calls need such an access token, so that they know the identity of the 
 You send the access token in the ""Authorization"" request header field, as described in [[RFC 6750, section 2.1|https://tools.ietf.org/html/rfc6750#section-2.1]].
 You need to use the ""Bearer"" authentication scheme to transmit the access token.
 
-For example (raw HTTP):
+For example (in plain text HTTP):
 ```
 GET /z HTTP/1.0
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg

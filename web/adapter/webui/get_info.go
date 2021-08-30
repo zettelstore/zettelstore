@@ -140,7 +140,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),
-			ParseMatrix:    wui.infoAPIMatrixRaw('p', zid),
+			ParseMatrix:    wui.infoAPIMatrixPlain('p', zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
 			Endnotes:       endnotes,
@@ -199,19 +199,19 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 	return matrix
 }
 
-func (wui *WebUI) infoAPIMatrixRaw(key byte, zid id.Zid) []matrixLine {
+func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 	matrix := wui.infoAPIMatrix(key, zid)
 
-	// Append JSON and Raw format
+	// Append plain and JSON format
 	u := wui.NewURLBuilder('w').SetZid(zid)
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	for i, part := range parts {
 		u.AppendQuery(api.QueryKeyPart, part)
-		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"raw", u.String()})
+		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
 		u.ClearQuery()
 	}
 	u = wui.NewURLBuilder('z').SetZid(zid)
-	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"JSON", u.String()})
+	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.String()})
 	return matrix
 }
 
