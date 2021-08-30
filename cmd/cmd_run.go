@@ -97,9 +97,9 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.AddZettelRoute('g', server.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
 	}
 	webSrv.AddListRoute('f', server.MethodGet, wui.MakeSearchHandler(
-		usecase.NewSearch(protectedBoxManager), ucGetMeta, ucGetZettel))
+		usecase.NewSearch(protectedBoxManager), ucGetMeta, ucGetZettel, &ucEvaluate))
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(
-		ucListMeta, ucListRoles, ucListTags))
+		ucListMeta, ucListRoles, ucListTags, &ucEvaluate))
 	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(
 		&ucEvaluate, ucGetMeta))
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginHandler())
@@ -107,7 +107,8 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
 		ucParseZettel, &ucEvaluate, ucGetMeta, ucGetAllMeta))
 	webSrv.AddListRoute('j', server.MethodGet, wui.MakeGetLogoutHandler())
-	webSrv.AddZettelRoute('j', server.MethodGet, wui.MakeZettelContextHandler(ucZettelContext))
+	webSrv.AddZettelRoute('j', server.MethodGet, wui.MakeZettelContextHandler(
+		ucZettelContext, &ucEvaluate))
 
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, a.MakePostLoginHandler(ucAuthenticate))

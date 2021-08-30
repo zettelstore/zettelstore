@@ -21,11 +21,9 @@ import (
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -37,6 +35,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(
 	listMeta usecase.ListMeta,
 	listRole usecase.ListRole,
 	listTags usecase.ListTags,
+	evaluate *usecase.Evaluate,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
@@ -46,12 +45,15 @@ func (wui *WebUI) MakeListHTMLMetaHandler(
 		case "t":
 			wui.renderTagsList(w, r, listTags)
 		default:
-			wui.renderZettelList(w, r, listMeta)
+			wui.renderZettelList(w, r, listMeta, evaluate)
 		}
 	}
 }
 
-func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listMeta usecase.ListMeta) {
+func (wui *WebUI) renderZettelList(
+	w http.ResponseWriter, r *http.Request,
+	listMeta usecase.ListMeta, evaluate *usecase.Evaluate,
+) {
 	query := r.URL.Query()
 	s := adapter.GetSearch(query, false)
 	ctx := r.Context()
@@ -64,6 +66,7 @@ func (wui *WebUI) renderZettelList(w http.ResponseWriter, r *http.Request, listM
 			}
 			return listMeta.Run(ctx, s)
 		},
+		evaluate,
 		func(offset int) string {
 			return wui.newPageURL('h', query, offset)
 		})
@@ -175,6 +178,7 @@ func (wui *WebUI) MakeSearchHandler(
 	ucSearch usecase.Search,
 	getMeta usecase.GetMeta,
 	getZettel usecase.GetZettel,
+	evaluate *usecase.Evaluate,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
@@ -193,6 +197,7 @@ func (wui *WebUI) MakeSearchHandler(
 				}
 				return ucSearch.Run(ctx, s)
 			},
+			evaluate,
 			func(offset int) string {
 				return wui.newPageURL('f', query, offset)
 			})
@@ -200,7 +205,7 @@ func (wui *WebUI) MakeSearchHandler(
 }
 
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
-func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc {
+func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -217,7 +222,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext) htt
 			wui.reportError(ctx, w, err)
 			return
 		}
-		metaLinks, err := wui.buildHTMLMetaList(metaList)
+		metaLinks, err := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 		if err != nil {
 			adapter.InternalServerError(w, "Build HTML meta list", err)
 			return
@@ -271,6 +276,7 @@ func (wui *WebUI) renderMetaList(
 	title string,
 	s *search.Search,
 	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
+	evaluate *usecase.Evaluate,
 	pageURL func(int) string) {
 
 	metaList, err := ucMetaList(s)
@@ -279,7 +285,7 @@ func (wui *WebUI) renderMetaList(
 		return
 	}
 	user := wui.getUser(ctx)
-	metas, err := wui.buildHTMLMetaList(metaList)
+	metas, err := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 	if err != nil {
 		wui.reportError(ctx, w, err)
 		return
@@ -324,7 +330,9 @@ func (wui *WebUI) newPageURL(key byte, query url.Values, offset int) string {
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error) {
+func (wui *WebUI) buildHTMLMetaList(
+	ctx context.Context, metaList []*meta.Meta, evaluate *usecase.Evaluate,
+) ([]simpleLink, error) {
 	defaultLang := wui.rtConfig.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
@@ -334,14 +342,9 @@ func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta) ([]simpleLink, error)
 		} else {
 			lang = defaultLang
 		}
-		title := config.GetTitle(m, wui.rtConfig)
 		env := encoder.Environment{Lang: lang, Interactive: true}
-		htmlTitle, err := encodeInlines(parser.ParseMetadata(title), api.EncoderHTML, &env)
-		if err != nil {
-			return nil, err
-		}
 		metas = append(metas, simpleLink{
-			Text: htmlTitle,
+			Text: wui.encodeTitle(ctx, m, evaluate, api.EncoderHTML, &env),
 			URL:  wui.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
