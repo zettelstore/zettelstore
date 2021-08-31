@@ -13,14 +13,11 @@ package htmlenc
 
 import (
 	"io"
-	"strings"
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/encfun"
-	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -34,7 +31,7 @@ type htmlEncoder struct {
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(he, w)
 	if !he.env.IsXHTML() {
 		v.b.WriteString("<!DOCTYPE html>\n")
@@ -45,8 +42,8 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error)
 		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
-	v.b.WriteStrings("<title>", encfun.MetaAsText(zn.InhMeta, meta.KeyTitle), "</title>")
-	v.acceptMeta(zn.InhMeta)
+	v.b.WriteStrings("<title>", v.evalValue(zn.InhMeta.GetDefault(meta.KeyTitle, ""), evalMeta), "</title>")
+	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
 	ast.Walk(v, zn.Ast)
 	v.writeEndnotes()
@@ -56,23 +53,18 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error)
 }
 
 // WriteMeta encodes meta data as HTML5.
-func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
+func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(he, w)
 
 	// Write title
 	if title, ok := m.Get(meta.KeyTitle); ok {
-		if iln := parser.ParseMetadata(title); iln != nil {
-			textEnc := encoder.Create(api.EncoderText, nil)
-			var sb strings.Builder
-			textEnc.WriteInlines(&sb, iln)
-			v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
-			v.writeQuotedEscaped(sb.String())
-			v.b.WriteString("\">")
-		}
+		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
+		v.writeQuotedEscaped(v.evalValue(title, evalMeta))
+		v.b.WriteString("\">")
 	}
 
 	// Write other metadata
-	v.acceptMeta(m)
+	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
 }

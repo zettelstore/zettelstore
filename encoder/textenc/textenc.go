@@ -18,7 +18,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -30,16 +29,16 @@ func init() {
 type textEncoder struct{}
 
 // WriteZettel writes metadata and content.
-func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
-	te.WriteMeta(&v.b, zn.InhMeta)
+	te.WriteMeta(&v.b, zn.InhMeta, evalMeta)
 	v.visitBlockList(zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteMeta encodes metadata as text.
-func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
+func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	buf := encoder.NewBufWriter(w)
 	for _, pair := range m.Pairs(true) {
 		switch meta.Type(pair.Key) {
@@ -48,7 +47,7 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
-			te.writeZettelmarkup(&buf, pair.Value)
+			te.WriteInlines(&buf, evalMeta(pair.Value))
 		default:
 			buf.WriteString(pair.Value)
 		}
@@ -76,11 +75,6 @@ func writeTagSet(buf *encoder.BufWriter, tags []string) {
 
 }
 
-func (te *textEncoder) writeZettelmarkup(buf *encoder.BufWriter, zmk string) {
-	if iln := parser.ParseMetadata(zmk); iln != nil {
-		te.WriteInlines(buf, iln)
-	}
-}
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return te.WriteBlocks(w, zn.Ast)
 }

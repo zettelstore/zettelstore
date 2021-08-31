@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/encfun"
 	"zettelstore.de/z/strfun"
 )
 
@@ -36,11 +35,10 @@ type jsonDetailEncoder struct {
 }
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteString("{\"meta\":{\"title\":")
-	ast.Walk(v, encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle))
-	v.writeMeta(zn.InhMeta)
+	v.b.WriteString("{\"meta\":{")
+	v.writeMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('}')
 	v.b.WriteString(",\"content\":")
 	ast.Walk(v, zn.Ast)
@@ -50,11 +48,10 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, 
 }
 
 // WriteMeta encodes meta data as JSON.
-func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
+func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteString("{\"title\":")
-	ast.Walk(v, encfun.MetaAsInlineList(m, meta.KeyTitle))
-	v.writeMeta(m)
+	v.b.WriteByte('{')
+	v.writeMeta(m, evalMeta)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
@@ -483,19 +480,25 @@ func (v *visitor) writeContentStart(code rune) {
 	panic("Unknown content code " + strconv.Itoa(int(code)))
 }
 
-func (v *visitor) writeMeta(m *meta.Meta) {
-	for _, p := range m.Pairs(true) {
-		if p.Key == meta.KeyTitle {
+func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
+	for i, p := range m.Pairs(true) {
+		if i > 0 {
+			v.b.WriteByte(',')
+		}
+		v.b.WriteByte('"')
+		key := p.Key
+		strfun.JSONEscape(&v.b, key)
+		v.b.WriteString("\":")
+		t := m.Type(key)
+		if t.IsSet {
+			v.writeSetValue(p.Value)
 			continue
 		}
-		v.b.WriteString(",\"")
-		strfun.JSONEscape(&v.b, p.Key)
-		v.b.WriteString("\":")
-		if m.Type(p.Key).IsSet {
-			v.writeSetValue(p.Value)
-		} else {
-			writeEscaped(&v.b, p.Value)
+		if t == meta.TypeZettelmarkup {
+			ast.Walk(v, evalMeta(p.Value))
+			continue
 		}
+		writeEscaped(&v.b, p.Value)
 	}
 }
 

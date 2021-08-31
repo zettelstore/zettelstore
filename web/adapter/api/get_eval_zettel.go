@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	// "zettelstore.de/z/ast"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -41,13 +41,17 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		if enc == zsapi.EncoderHTML {
 			embedImage = true
 		}
-		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &evaluator.Environment{
+		env := evaluator.Environment{
 			EmbedImage: embedImage,
-		})
+		}
+		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &env)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		a.writeEncodedZettelPart(w, zn, enc, encStr, part)
+		evalMeta := func(value string) *ast.InlineListNode {
+			return evaluate.RunMetadata(ctx, value, &env)
+		}
+		a.writeEncodedZettelPart(w, zn, evalMeta, enc, encStr, part)
 	}
 }

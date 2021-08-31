@@ -48,7 +48,7 @@ func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", enc)
 		return 2, nil
 	}
-	_, err = encdr.WriteZettel(os.Stdout, z)
+	_, err = encdr.WriteZettel(os.Stdout, z, parser.ParseMetadata)
 	if err != nil {
 		return 2, err
 	}

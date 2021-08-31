@@ -31,17 +31,38 @@ func init() {
 type zmkEncoder struct{}
 
 // WriteZettel writes the encoded zettel to the writer.
-func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w, ze)
-	zn.InhMeta.WriteAsHeader(&v.b, true)
+	v.acceptMeta(zn.InhMeta, evalMeta)
+	if zn.InhMeta.YamlSep {
+		v.b.WriteString("---\n")
+	} else {
+		v.b.WriteByte('\n')
+	}
 	ast.Walk(v, zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteMeta encodes meta data as zmk.
-func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
-	return m.Write(w, true)
+func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newVisitor(w, ze)
+	v.acceptMeta(m, evalMeta)
+	length, err := v.b.Flush()
+	return length, err
+}
+
+func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
+	for _, p := range m.Pairs(true) {
+		key := p.Key
+		v.b.WriteStrings(key, ": ")
+		if meta.Type(key) == meta.TypeZettelmarkup {
+			ast.Walk(v, evalMeta(p.Value))
+		} else {
+			v.b.WriteString(p.Value)
+		}
+		v.b.WriteByte('\n')
+	}
 }
 
 func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {

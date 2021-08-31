@@ -21,8 +21,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/encfun"
-	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -36,12 +34,9 @@ type nativeEncoder struct {
 }
 
 // WriteZettel encodes the zettel to the writer.
-func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w, ne)
-	v.b.WriteString("[Title ")
-	ast.Walk(v, encfun.MetaAsInlineList(zn.InhMeta, meta.KeyTitle))
-	v.b.WriteByte(']')
-	v.acceptMeta(zn.InhMeta, false)
+	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('\n')
 	ast.Walk(v, zn.Ast)
 	length, err := v.b.Flush()
@@ -49,9 +44,9 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode) (int, erro
 }
 
 // WriteMeta encodes meta data in native format.
-func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta) (int, error) {
+func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w, ne)
-	v.acceptMeta(m, true)
+	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -192,14 +187,8 @@ var (
 	rawNewline     = []byte{'\\', 'n'}
 )
 
-func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
-	if withTitle {
-		if iln := parser.ParseMetadata(m.GetDefault(meta.KeyTitle, "")); iln != nil {
-			v.b.WriteString("[Title ")
-			ast.Walk(v, iln)
-			v.b.WriteByte(']')
-		}
-	}
+func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
+	v.writeZettelmarkup("Title", m.GetDefault(meta.KeyTitle, ""), evalMeta)
 	v.writeMetaString(m, meta.KeyRole, "Role")
 	v.writeMetaList(m, meta.KeyTags, "Tags")
 	v.writeMetaString(m, meta.KeySyntax, "Syntax")
@@ -212,12 +201,25 @@ func (v *visitor) acceptMeta(m *meta.Meta, withTitle bool) {
 	for i, p := range pairs {
 		v.writeComma(i)
 		v.writeNewLine()
-		v.b.WriteByte('[')
-		v.b.WriteStrings(p.Key, " \"")
-		v.writeEscaped(p.Value)
-		v.b.WriteString("\"]")
+		key, value := p.Key, p.Value
+		if meta.Type(key) == meta.TypeZettelmarkup {
+			v.writeZettelmarkup(key, value, evalMeta)
+		} else {
+			v.b.WriteByte('[')
+			v.b.WriteStrings(key, " \"")
+			v.writeEscaped(value)
+			v.b.WriteString("\"]")
+		}
 	}
 	v.level--
+	v.b.WriteByte(']')
+}
+
+func (v *visitor) writeZettelmarkup(key, value string, evalMeta encoder.EvalMetaFunc) {
+	v.b.WriteByte('[')
+	v.b.WriteString(key)
+	v.b.WriteByte(' ')
+	ast.Walk(v, evalMeta(value))
 	v.b.WriteByte(']')
 }
 

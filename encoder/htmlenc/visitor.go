@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -31,6 +32,7 @@ type visitor struct {
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack
+	textEnc       encoder.Encoder
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
@@ -39,9 +41,10 @@ func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 		lang = he.env.Lang
 	}
 	return &visitor{
-		env:  he.env,
-		b:    encoder.NewBufWriter(w),
-		lang: newLangStack(lang),
+		env:     he.env,
+		b:       encoder.NewBufWriter(w),
+		lang:    newLangStack(lang),
+		textEnc: encoder.Create(api.EncoderText, nil),
 	}
 }
 
@@ -113,7 +116,7 @@ var mapMetaKey = map[string]string{
 	meta.KeyLicense:   "license",
 }
 
-func (v *visitor) acceptMeta(m *meta.Meta) {
+func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	ignore := v.setupIgnoreSet()
 	ignore[meta.KeyTitle] = true
 	if tags, ok := m.Get(meta.KeyAllTags); ok {
@@ -125,16 +128,32 @@ func (v *visitor) acceptMeta(m *meta.Meta) {
 		ignore[meta.KeyTags] = true
 	}
 
-	for _, pair := range m.Pairs(true) {
-		if ignore[pair.Key] {
+	for _, p := range m.Pairs(true) {
+		key := p.Key
+		if ignore[key] {
 			continue
 		}
-		if key, ok := mapMetaKey[pair.Key]; ok {
-			v.writeMeta("", key, pair.Value)
+		value := p.Value
+		if m.Type(key) == meta.TypeZettelmarkup {
+			if v := v.evalValue(value, evalMeta); v != "" {
+				value = v
+			}
+		}
+		if mKey, ok := mapMetaKey[key]; ok {
+			v.writeMeta("", mKey, value)
 		} else {
-			v.writeMeta("zs-", pair.Key, pair.Value)
+			v.writeMeta("zs-", key, value)
 		}
 	}
+}
+
+func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
+	var sb strings.Builder
+	_, err := v.textEnc.WriteInlines(&sb, evalMeta(value))
+	if err == nil {
+		return sb.String()
+	}
+	return ""
 }
 
 func (v *visitor) setupIgnoreSet() map[string]bool {

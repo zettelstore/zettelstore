@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -42,11 +43,15 @@ func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.H
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		a.writeEncodedZettelPart(w, zn, enc, encStr, part)
+		a.writeEncodedZettelPart(w, zn, parser.ParseMetadata, enc, encStr, part)
 	}
 }
 
-func (a *API) writeEncodedZettelPart(w http.ResponseWriter, zn *ast.ZettelNode, enc zsapi.EncodingEnum, encStr string, part partType) {
+func (a *API) writeEncodedZettelPart(
+	w http.ResponseWriter, zn *ast.ZettelNode,
+	evalMeta encoder.EvalMetaFunc,
+	enc zsapi.EncodingEnum, encStr string, part partType,
+) {
 	env := encoder.Environment{
 		Lang:           config.GetLang(zn.InhMeta, a.rtConfig),
 		Xhtml:          false,
@@ -63,9 +68,9 @@ func (a *API) writeEncodedZettelPart(w http.ResponseWriter, zn *ast.ZettelNode, 
 	var err error
 	switch part {
 	case partZettel:
-		_, err = encdr.WriteZettel(w, zn)
+		_, err = encdr.WriteZettel(w, zn, evalMeta)
 	case partMeta:
-		_, err = encdr.WriteMeta(w, zn.InhMeta)
+		_, err = encdr.WriteMeta(w, zn.InhMeta, evalMeta)
 	case partContent:
 		_, err = encdr.WriteContent(w, zn)
 	}

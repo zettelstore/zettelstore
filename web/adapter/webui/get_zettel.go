@@ -41,7 +41,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		q := r.URL.Query()
-		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &evaluator.Environment{
+		env := evaluator.Environment{
 			EmbedImage: true,
 			GetTagRef: func(s string) *ast.Reference {
 				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)
@@ -52,13 +52,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-		})
+		}
+		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &env)
 
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 
+		evalMeta := func(value string) *ast.InlineListNode {
+			return evaluate.RunMetadata(ctx, value, &env)
+		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{
 			Lang:           lang,
@@ -67,7 +71,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			NewWindow:      true,
 			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
 		}
-		metaHeader, err := encodeMeta(zn.InhMeta, api.EncoderHTML, &envHTML)
+		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -175,14 +179,17 @@ func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Env
 	return content.String(), nil
 }
 
-func encodeMeta(m *meta.Meta, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeMeta(
+	m *meta.Meta, evalMeta encoder.EvalMetaFunc,
+	enc api.EncodingEnum, env *encoder.Environment,
+) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
 		return "", errNoSuchEncoding
 	}
 
 	var content strings.Builder
-	_, err := encdr.WriteMeta(&content, m)
+	_, err := encdr.WriteMeta(&content, m, evalMeta)
 	if err != nil {
 		return "", err
 	}
