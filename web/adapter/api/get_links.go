@@ -24,7 +24,7 @@ import (
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
+func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

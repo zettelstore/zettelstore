@@ -39,7 +39,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 ) {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeBool:
-		wui.writeHTMLBool(w, key, meta.BoolValue(value))
+		wui.writeHTMLBool(w, key, value)
 	case meta.TypeCredential:
 		writeCredential(w, value)
 	case meta.TypeEmpty:
@@ -72,8 +72,8 @@ func (wui *WebUI) writeHTMLMetaValue(
 	}
 }
 
-func (wui *WebUI) writeHTMLBool(w io.Writer, key string, val bool) {
-	if val {
+func (wui *WebUI) writeHTMLBool(w io.Writer, key, value string) {
+	if meta.BoolValue(value) {
 		wui.writeLink(w, key, "true", "True")
 	} else {
 		wui.writeLink(w, key, "false", "False")

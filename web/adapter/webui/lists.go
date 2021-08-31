@@ -67,9 +67,7 @@ func (wui *WebUI) renderZettelList(
 			return listMeta.Run(ctx, s)
 		},
 		evaluate,
-		func(offset int) string {
-			return wui.newPageURL('h', query, offset)
-		})
+	)
 }
 
 type roleInfo struct {
@@ -174,12 +172,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 }
 
 // MakeSearchHandler creates a new HTTP handler for the use case "search".
-func (wui *WebUI) MakeSearchHandler(
-	ucSearch usecase.Search,
-	getMeta usecase.GetMeta,
-	getZettel usecase.GetZettel,
-	evaluate *usecase.Evaluate,
-) http.HandlerFunc {
+func (wui *WebUI) MakeSearchHandler(ucSearch usecase.Search, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		ctx := r.Context()
@@ -198,9 +191,7 @@ func (wui *WebUI) MakeSearchHandler(
 				return ucSearch.Run(ctx, s)
 			},
 			evaluate,
-			func(offset int) string {
-				return wui.newPageURL('f', query, offset)
-			})
+		)
 	}
 }
 
@@ -277,7 +268,7 @@ func (wui *WebUI) renderMetaList(
 	s *search.Search,
 	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
 	evaluate *usecase.Evaluate,
-	pageURL func(int) string) {
+) {
 
 	metaList, err := ucMetaList(s)
 	if err != nil {
@@ -312,21 +303,6 @@ func (wui *WebUI) listTitleSearch(prefix string, s *search.Search) string {
 		s.Print(&sb)
 	}
 	return sb.String()
-}
-
-func (wui *WebUI) newPageURL(key byte, query url.Values, offset int) string {
-	ub := wui.NewURLBuilder(key)
-	for key, values := range query {
-		if key != api.QueryKeyOffset && key != api.QueryKeyLimit {
-			for _, val := range values {
-				ub.AppendQuery(key, val)
-			}
-		}
-	}
-	if offset > 0 {
-		ub.AppendQuery(api.QueryKeyOffset, strconv.Itoa(offset))
-	}
-	return ub.String()
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.

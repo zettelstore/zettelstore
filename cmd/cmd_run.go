@@ -97,7 +97,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.AddZettelRoute('g', server.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
 	}
 	webSrv.AddListRoute('f', server.MethodGet, wui.MakeSearchHandler(
-		usecase.NewSearch(protectedBoxManager), ucGetMeta, ucGetZettel, &ucEvaluate))
+		usecase.NewSearch(protectedBoxManager), &ucEvaluate))
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(
 		ucListMeta, ucListRoles, ucListTags, &ucEvaluate))
 	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(
@@ -113,8 +113,8 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, a.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
-	webSrv.AddZettelRoute('l', server.MethodGet, a.MakeGetLinksHandler(ucEvaluate))
-	webSrv.AddZettelRoute('o', server.MethodGet, a.MakeGetOrderHandler(
+	webSrv.AddZettelRoute('l', server.MethodGet, api.MakeGetLinksHandler(ucEvaluate))
+	webSrv.AddZettelRoute('o', server.MethodGet, api.MakeGetOrderHandler(
 		usecase.NewZettelOrder(protectedBoxManager, ucEvaluate)))
 	webSrv.AddListRoute('p', server.MethodGet, a.MakeListPlainHandler(ucListMeta))
 	webSrv.AddZettelRoute('p', server.MethodGet, a.MakeGetPlainZettelHandler(ucGetZettel))

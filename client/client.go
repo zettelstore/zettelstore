@@ -62,7 +62,7 @@ func NewClient(baseURL string) *Client {
 func (c *Client) newURLBuilder(key byte) *api.URLBuilder {
 	return api.NewURLBuilder(c.baseURL, key)
 }
-func (c *Client) newRequest(ctx context.Context, method string, ub *api.URLBuilder, body io.Reader) (*http.Request, error) {
+func (*Client) newRequest(ctx context.Context, method string, ub *api.URLBuilder, body io.Reader) (*http.Request, error) {
 	return http.NewRequestWithContext(ctx, method, ub.String(), body)
 }
 

@@ -57,7 +57,7 @@ var (
 
 // Type returns a type hint for the given key. If no type hint is specified,
 // TypeUnknown is returned.
-func (m *Meta) Type(key string) *DescriptionType {
+func (*Meta) Type(key string) *DescriptionType {
 	return Type(key)
 }
 
