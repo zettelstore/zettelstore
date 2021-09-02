@@ -75,12 +75,12 @@ func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
 
 type noEnrich struct{}
 
-func (nf *noEnrich) Enrich(context.Context, *meta.Meta, int) {}
-func (nf *noEnrich) Remove(context.Context, *meta.Meta)      {}
+func (*noEnrich) Enrich(context.Context, *meta.Meta, int) {}
+func (*noEnrich) Remove(context.Context, *meta.Meta)      {}
 
 type noAuth struct{}
 
-func (na *noAuth) IsReadonly() bool { return false }
+func (*noAuth) IsReadonly() bool { return false }
 
 func trimLastEOL(s string) string {
 	if lastPos := len(s) - 1; lastPos >= 0 && s[lastPos] == '\n' {
@@ -236,23 +236,23 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 
 type myConfig struct{}
 
-func (cfg *myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
-func (cfg *myConfig) GetDefaultTitle() string                  { return "" }
-func (cfg *myConfig) GetDefaultRole() string                   { return meta.ValueRoleZettel }
-func (cfg *myConfig) GetDefaultSyntax() string                 { return meta.ValueSyntaxZmk }
-func (cfg *myConfig) GetDefaultLang() string                   { return "" }
-func (cfg *myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }
-func (cfg *myConfig) GetFooterHTML() string                    { return "" }
-func (cfg *myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
-func (cfg *myConfig) GetListPageSize() int                     { return 0 }
-func (cfg *myConfig) GetMarkerExternal() string                { return "" }
-func (cfg *myConfig) GetSiteName() string                      { return "" }
-func (cfg *myConfig) GetYAMLHeader() bool                      { return false }
-func (cfg *myConfig) GetZettelFileSyntax() []string            { return nil }
+func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
+func (*myConfig) GetDefaultTitle() string                  { return "" }
+func (*myConfig) GetDefaultRole() string                   { return meta.ValueRoleZettel }
+func (*myConfig) GetDefaultSyntax() string                 { return meta.ValueSyntaxZmk }
+func (*myConfig) GetDefaultLang() string                   { return "" }
+func (*myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }
+func (*myConfig) GetFooterHTML() string                    { return "" }
+func (*myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
+func (*myConfig) GetListPageSize() int                     { return 0 }
+func (*myConfig) GetMarkerExternal() string                { return "" }
+func (*myConfig) GetSiteName() string                      { return "" }
+func (*myConfig) GetYAMLHeader() bool                      { return false }
+func (*myConfig) GetZettelFileSyntax() []string            { return nil }
 
-func (cfg *myConfig) GetExpertMode() bool                      { return false }
+func (*myConfig) GetExpertMode() bool                          { return false }
 func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetDefaultVisibility() }
-func (cfg *myConfig) GetMaxTransclusions() int                 { return 1024 }
+func (*myConfig) GetMaxTransclusions() int                     { return 1024 }
 
 var testConfig = &myConfig{}
 

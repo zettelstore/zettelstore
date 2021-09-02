@@ -14,8 +14,8 @@ package encoder
 
 import (
 	"errors"
+	"fmt"
 	"io"
-	"log"
 
 	"zettelstore.de/z/api"
 	"zettelstore.de/z/ast"
@@ -64,11 +64,11 @@ var defEncoding api.EncodingEnum
 // Register the encoder for later retrieval.
 func Register(enc api.EncodingEnum, info Info) {
 	if _, ok := registry[enc]; ok {
-		log.Fatalf("Encoder %q already registered", enc)
+		panic(fmt.Sprintf("Encoder %q already registered", enc))
 	}
 	if info.Default {
 		if defEncoding != api.EncoderUnknown && defEncoding != enc {
-			log.Fatalf("Default encoder already set: %q, new encoding: %q", defEncoding, enc)
+			panic(fmt.Sprintf("Default encoder already set: %q, new encoding: %q", defEncoding, enc))
 		}
 		defEncoding = enc
 	}

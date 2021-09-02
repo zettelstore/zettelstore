@@ -31,7 +31,7 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		s := adapter.GetSearch(q, false)
+		s := adapter.GetSearch(q)
 		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
@@ -61,7 +61,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		s := adapter.GetSearch(q, false)
+		s := adapter.GetSearch(q)
 		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
@@ -86,7 +86,7 @@ func (a *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta, eva
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		s := adapter.GetSearch(q, false)
+		s := adapter.GetSearch(q)
 		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)

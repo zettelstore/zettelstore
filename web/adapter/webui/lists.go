@@ -55,7 +55,7 @@ func (wui *WebUI) renderZettelList(
 	listMeta usecase.ListMeta, evaluate *usecase.Evaluate,
 ) {
 	query := r.URL.Query()
-	s := adapter.GetSearch(query, false)
+	s := adapter.GetSearch(query)
 	ctx := r.Context()
 	title := wui.listTitleSearch("Select", s)
 	wui.renderMetaList(
@@ -106,11 +106,11 @@ type countInfo struct {
 }
 
 type tagInfo struct {
-	Name  string
-	URL   string
-	count int
-	Count string
-	Size  string
+	Name   string
+	URL    string
+	iCount int
+	Count  string
+	Size   string
 }
 
 var fontSizes = [...]int{75, 83, 100, 117, 150, 200}
@@ -147,7 +147,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 		countMap[count] = fontSizes[(pos*len(fontSizes))/len(countList)]
 	}
 	for i := 0; i < len(tagsList); i++ {
-		count := tagsList[i].count
+		count := tagsList[i].iCount
 		tagsList[i].Count = strconv.Itoa(count)
 		tagsList[i].Size = strconv.Itoa(countMap[count])
 	}
@@ -176,7 +176,7 @@ func (wui *WebUI) MakeSearchHandler(ucSearch usecase.Search, evaluate *usecase.E
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		ctx := r.Context()
-		s := adapter.GetSearch(query, true)
+		s := adapter.GetSearch(query)
 		if s == nil {
 			redirectFound(w, r, wui.NewURLBuilder('h'))
 			return

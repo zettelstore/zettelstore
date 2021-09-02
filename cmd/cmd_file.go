@@ -27,7 +27,7 @@ import (
 
 // ---------- Subcommand: file -----------------------------------------------
 
-func cmdFile(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
+func cmdFile(fs *flag.FlagSet, _ *meta.Meta) (int, error) {
 	enc := fs.Lookup("t").Value.String()
 	m, inp, err := getInput(fs.Args())
 	if m == nil {

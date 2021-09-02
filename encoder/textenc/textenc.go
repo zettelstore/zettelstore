@@ -43,7 +43,7 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	for _, pair := range m.Pairs(true) {
 		switch meta.Type(pair.Key) {
 		case meta.TypeBool:
-			writeBool(&buf, meta.BoolValue(pair.Value))
+			writeBool(&buf, pair.Value)
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
@@ -57,8 +57,8 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	return length, err
 }
 
-func writeBool(buf *encoder.BufWriter, b bool) {
-	if b {
+func writeBool(buf *encoder.BufWriter, val string) {
+	if meta.BoolValue(val) {
 		buf.WriteString("true")
 	} else {
 		buf.WriteString("false")
@@ -80,7 +80,7 @@ func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (te *textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (*textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
 	v := newVisitor(w)
 	v.visitBlockList(bln)
 	length, err := v.b.Flush()
@@ -88,7 +88,7 @@ func (te *textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, er
 }
 
 // WriteInlines writes an inline slice to the writer
-func (te *textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (*textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, iln)
 	length, err := v.b.Flush()

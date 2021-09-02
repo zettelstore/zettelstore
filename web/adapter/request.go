@@ -89,7 +89,7 @@ func contentType2encoding(contentType string) (string, bool) {
 }
 
 // GetSearch retrieves the specified search and sorting options from a query.
-func GetSearch(q url.Values, forSearch bool) (s *search.Search) {
+func GetSearch(q url.Values) (s *search.Search) {
 	for key, values := range q {
 		switch key {
 		case api.QueryKeySort, api.QueryKeyOrder:
@@ -103,7 +103,7 @@ func GetSearch(q url.Values, forSearch bool) (s *search.Search) {
 		case api.QueryKeySearch:
 			s = setCleanedQueryValues(s, "", values)
 		default:
-			if !forSearch && meta.KeyIsValid(key) {
+			if meta.KeyIsValid(key) {
 				s = setCleanedQueryValues(s, key, values)
 			}
 		}
