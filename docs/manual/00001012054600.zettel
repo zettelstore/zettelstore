@@ -3,7 +3,7 @@ title: API: Delete a zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210713163722
+modified: 20210903184243
 
 Deleting a zettel within the Zettelstore is executed on the first [[box|00001004011200]] that contains that zettel.
 Zettel with the same identifier, but in subsequent boxes remain.
@@ -14,6 +14,9 @@ You must send a HTTP DELETE request to this endpoint:
 ```
 # curl -X DELETE http://127.0.0.1:23123/z/00001000000000
 ```
+
+[!plain]Alternatively, you can also use the [[endpoint|00001012920000]] ''/p/{ID}''.
+Both endpoints behave identical.
 
 === HTTP Status codes
 ; ''204''
