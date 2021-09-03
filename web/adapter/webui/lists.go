@@ -320,7 +320,7 @@ func (wui *WebUI) buildHTMLMetaList(
 		}
 		env := encoder.Environment{Lang: lang, Interactive: true}
 		metas = append(metas, simpleLink{
-			Text: wui.encodeTitle(ctx, m, evaluate, api.EncoderHTML, &env),
+			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, &env),
 			URL:  wui.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}

@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 )
@@ -34,8 +35,9 @@ var space = []byte{' '}
 func (wui *WebUI) writeHTMLMetaValue(
 	ctx context.Context,
 	w io.Writer, key, value string,
-	getTitle getTitleFunc, evaluate *usecase.Evaluate,
-	env *encoder.Environment,
+	getTextTitle getTextTitleFunc,
+	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	envEnc *encoder.Environment,
 ) {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeBool:
@@ -45,9 +47,9 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeEmpty:
 		writeEmpty(w, value)
 	case meta.TypeID:
-		wui.writeIdentifier(w, value, getTitle)
+		wui.writeIdentifier(w, value, getTextTitle)
 	case meta.TypeIDSet:
-		wui.writeIdentifierSet(w, meta.ListFromValue(value), getTitle)
+		wui.writeIdentifierSet(w, meta.ListFromValue(value), getTextTitle)
 	case meta.TypeNumber:
 		wui.writeNumber(w, key, value)
 	case meta.TypeString:
@@ -65,7 +67,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeWordSet:
 		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(ctx, value, evaluate, api.EncoderHTML, env))
+		io.WriteString(w, encodeZmkMetadata(ctx, value, evaluate, envEval, api.EncoderHTML, envEnc))
 	default:
 		strfun.HTMLEscape(w, value, false)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -88,13 +90,13 @@ func writeEmpty(w io.Writer, val string) {
 	strfun.HTMLEscape(w, val, false)
 }
 
-func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle getTitleFunc) {
+func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTextTitle getTextTitleFunc) {
 	zid, err := id.Parse(val)
 	if err != nil {
 		strfun.HTMLEscape(w, val, false)
 		return
 	}
-	title, found := getTitle(zid, api.EncoderText)
+	title, found := getTextTitle(zid)
 	switch {
 	case found > 0:
 		if title == "" {
@@ -109,12 +111,12 @@ func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTitle getTitleFunc
 	}
 }
 
-func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTitle getTitleFunc) {
+func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTextTitle getTextTitleFunc) {
 	for i, val := range vals {
 		if i > 0 {
 			w.Write(space)
 		}
-		wui.writeIdentifier(w, val, getTitle)
+		wui.writeIdentifier(w, val, getTextTitle)
 	}
 }
 
@@ -169,14 +171,13 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	io.WriteString(w, "</a>")
 }
 
-type getTitleFunc func(id.Zid, api.EncodingEnum) (string, int)
+type getTextTitleFunc func(id.Zid) (string, int)
 
-func (wui *WebUI) makeGetTitle(
+func (wui *WebUI) makeGetTextTitle(
 	ctx context.Context,
 	getMeta usecase.GetMeta, evaluate *usecase.Evaluate,
-	env *encoder.Environment,
-) getTitleFunc {
-	return func(zid id.Zid, enc api.EncodingEnum) (string, int) {
+) getTextTitleFunc {
+	return func(zid id.Zid) (string, int) {
 		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {
@@ -184,26 +185,36 @@ func (wui *WebUI) makeGetTitle(
 			}
 			return "", 0
 		}
-		return wui.encodeTitle(ctx, m, evaluate, enc, env), 1
+		return wui.encodeTitleAsText(ctx, m, evaluate), 1
 	}
 }
 
-func (wui *WebUI) encodeTitle(
+func (wui *WebUI) encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
-	evaluate *usecase.Evaluate, enc api.EncodingEnum, env *encoder.Environment,
+	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	envHTML *encoder.Environment,
 ) string {
-	return encodeZmkMetadata(ctx, config.GetTitle(m, wui.rtConfig), evaluate, enc, env)
+	plainTitle := config.GetTitle(m, wui.rtConfig)
+	return encodeZmkMetadata(ctx, plainTitle, evaluate, envEval, api.EncoderHTML, envHTML)
+}
+
+func (wui *WebUI) encodeTitleAsText(
+	ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate,
+) string {
+	plainTitle := config.GetTitle(m, wui.rtConfig)
+	return encodeZmkMetadata(ctx, plainTitle, evaluate, nil, api.EncoderText, nil)
 }
 
 func encodeZmkMetadata(
 	ctx context.Context, value string,
-	evaluate *usecase.Evaluate, enc api.EncodingEnum, env *encoder.Environment,
+	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	enc api.EncodingEnum, envHTML *encoder.Environment,
 ) string {
-	iln := evaluate.RunMetadata(ctx, value, nil)
+	iln := evaluate.RunMetadata(ctx, value, envEval)
 	if iln.IsEmpty() {
 		return ""
 	}
-	result, err := encodeInlines(iln, enc, env)
+	result, err := encodeInlines(iln, enc, envHTML)
 	if err == nil {
 		return result
 	}

@@ -13,7 +13,6 @@ package webui
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -76,8 +75,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			wui.reportError(ctx, w, err)
 			return
 		}
-		textTitle := wui.encodeTitle(ctx, zn.InhMeta, evaluate, api.EncoderText, nil)
-		htmlTitle := wui.encodeTitle(ctx, zn.InhMeta, evaluate, api.EncoderHTML, &envHTML)
+		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
+		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, &envHTML)
 		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -87,10 +86,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
 		tags := wui.buildTagInfos(zn.Meta)
 		canCreate := wui.canCreate(ctx, user)
-		getTitle := wui.makeGetTitle(ctx, getMeta, evaluate, &encoder.Environment{Lang: lang})
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyFolge, getTitle)
-		backLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyBack, getTitle)
+		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyFolge, getTextTitle)
+		backLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyBack, getTextTitle)
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -131,7 +130,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
 			CanFolge:      canCreate,
 			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
-			PrecursorRefs: wui.encodeMetaKey(ctx, zn.InhMeta, meta.KeyPrecursor, getTitle, evaluate),
+			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, meta.KeyPrecursor, getTextTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
@@ -209,20 +208,16 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 	return tagInfos
 }
 
-func (wui *WebUI) encodeMetaKey(
-	ctx context.Context,
-	m *meta.Meta, key string,
-	getTitle getTitleFunc, evaluate *usecase.Evaluate,
-) string {
+func (wui *WebUI) encodeIdentifierSet(m *meta.Meta, key string, getTextTitle getTextTitleFunc) string {
 	if value, ok := m.Get(key); ok {
 		var buf bytes.Buffer
-		wui.writeHTMLMetaValue(ctx, &buf, key, value, getTitle, evaluate, nil)
+		wui.writeIdentifierSet(&buf, meta.ListFromValue(value), getTextTitle)
 		return buf.String()
 	}
 	return ""
 }
 
-func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTitle getTitleFunc) []simpleLink {
+func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) []simpleLink {
 	values, ok := m.GetList(key)
 	if !ok || len(values) == 0 {
 		return nil
@@ -233,7 +228,7 @@ func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTitle getTitleF
 		if err != nil {
 			continue
 		}
-		if title, found := getTitle(zid, api.EncoderText); found > 0 {
+		if title, found := getTextTitle(zid); found > 0 {
 			url := wui.NewURLBuilder('h').SetZid(zid).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})

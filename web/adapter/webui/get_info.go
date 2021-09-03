@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -71,23 +72,35 @@ func (wui *WebUI) MakeGetInfoHandler(
 		summary := collect.References(zn)
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
+		envEval := evaluator.Environment{
+			EmbedImage: true,
+			GetTagRef: func(s string) *ast.Reference {
+				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)
+			},
+			GetHostedRef: func(s string) *ast.Reference {
+				return adapter.CreateHostedReference(wui, s)
+			},
+			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
+				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
+			},
+		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		env := encoder.Environment{Lang: lang}
+		envHTML := encoder.Environment{Lang: lang}
 		pairs := zn.Meta.Pairs(true)
 		metaData := make([]metaDataInfo, len(pairs))
-		getTitle := wui.makeGetTitle(ctx, getMeta, evaluate, &env)
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		for i, p := range pairs {
 			var html strings.Builder
-			wui.writeHTMLMetaValue(ctx, &html, p.Key, p.Value, getTitle, evaluate, &env)
+			wui.writeHTMLMetaValue(ctx, &html, p.Key, p.Value, getTextTitle, evaluate, &envEval, &envHTML)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &env)
+		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)
 		if err != nil {
 			endnotes = ""
 		}
 
-		textTitle := wui.encodeTitle(ctx, zn.InhMeta, evaluate, api.EncoderText, nil)
+		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		user := wui.getUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
 		var base baseData
