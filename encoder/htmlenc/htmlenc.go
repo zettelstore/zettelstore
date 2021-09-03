@@ -42,9 +42,19 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
-	v.b.WriteStrings("<title>", v.evalValue(zn.InhMeta.GetDefault(meta.KeyTitle, ""), evalMeta), "</title>")
+	plainTitle, hasTitle := zn.InhMeta.Get(meta.KeyTitle)
+	if hasTitle {
+		v.b.WriteStrings("<title>", v.evalValue(plainTitle, evalMeta), "</title>")
+	}
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
+	if hasTitle {
+		if ilnTitle := evalMeta(plainTitle); ilnTitle != nil {
+			v.b.WriteString("<h1>")
+			ast.Walk(v, ilnTitle)
+			v.b.WriteString("</h1>\n")
+		}
+	}
 	ast.Walk(v, zn.Ast)
 	v.writeEndnotes()
 	v.b.WriteString("</body>\n</html>")
