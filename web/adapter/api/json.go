@@ -42,7 +42,7 @@ func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) e
 	})
 }
 
-func buildZettelFromData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
+func buildZettelFromJSONData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
 	var zettel domain.Zettel
 	dec := json.NewDecoder(r.Body)
 	var zettelData zsapi.ZettelDataJSON

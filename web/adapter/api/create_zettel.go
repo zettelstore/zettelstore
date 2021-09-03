@@ -20,12 +20,39 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
+// MakePostCreatePlainZettelHandler creates a new HTTP handler to store content of
+// an existing zettel.
+func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		zettel, err := buildZettelFromPlainData(r, id.Invalid)
+		if err != nil {
+			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			return
+		}
+
+		newZid, err := createZettel.Run(ctx, zettel)
+		if err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
+		}
+		u := a.NewURLBuilder('p').SetZid(newZid).String()
+		h := w.Header()
+		h.Set(zsapi.HeaderContentType, ctPlainText)
+		h.Set(zsapi.HeaderLocation, u)
+		w.WriteHeader(http.StatusCreated)
+		if _, err = w.Write(newZid.Bytes()); err != nil {
+			adapter.InternalServerError(w, "Write Plain", err)
+		}
+	}
+}
+
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
 func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zettel, err := buildZettelFromData(r, id.Invalid)
+		zettel, err := buildZettelFromJSONData(r, id.Invalid)
 		if err != nil {
 			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return

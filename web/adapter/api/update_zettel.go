@@ -19,6 +19,27 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
+// MakeUpdatePlainZettelHandler creates a new HTTP handler to update a zettel.
+func MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		zid, err := id.Parse(r.URL.Path[1:])
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		zettel, err := buildZettelFromPlainData(r, zid)
+		if err != nil {
+			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			return
+		}
+		if err := updateZettel.Run(r.Context(), zettel, true); err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // MakeUpdateZettelHandler creates a new HTTP handler to update a zettel.
 func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +48,7 @@ func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc
 			http.NotFound(w, r)
 			return
 		}
-		zettel, err := buildZettelFromData(r, zid)
+		zettel, err := buildZettelFromJSONData(r, zid)
 		if err != nil {
 			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return

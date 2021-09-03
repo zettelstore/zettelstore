@@ -3,9 +3,9 @@ title: Layout of a Zettel
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20210728161548
+modified: 20210903210655
 
-A zettel consists of two part: the metadata and the zettel content.
+A zettel consists of two parts: the metadata and the zettel content.
 Metadata gives some information mostly about the zettel content, how it should be interpreted, how it is sorted within Zettelstore.
 The zettel content is, well, the actual content.
 In many cases, the content is in plain text form.

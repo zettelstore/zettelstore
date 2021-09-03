@@ -12,9 +12,15 @@
 package api
 
 import (
+	"io"
+	"net/http"
 	"net/url"
 
 	"zettelstore.de/z/api"
+	"zettelstore.de/z/domain"
+	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 )
 
 type partType int
@@ -56,4 +62,18 @@ func (p partType) DefString(defPart partType) string {
 		return ""
 	}
 	return p.String()
+}
+
+func buildZettelFromPlainData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		return domain.Zettel{}, err
+	}
+	inp := input.NewInput(string(b))
+	m := meta.NewFromInput(zid, inp)
+	return domain.Zettel{
+		Meta:    m,
+		Content: domain.NewContent(inp.Src[inp.Pos:]),
+	}, nil
+
 }

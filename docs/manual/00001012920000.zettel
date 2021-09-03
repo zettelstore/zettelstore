@@ -3,7 +3,7 @@ title: Endpoints used by the API
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210903184107
+modified: 20210903211718
 
 All API endpoints conform to the pattern ''[PREFIX]LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
@@ -21,6 +21,7 @@ The following letters are currently in use:
 | ''l'' |  | GET: [[list references|00001012053700]] | **L**inks
 | ''o'' |  | GET: [[list zettel order|00001012054000]] | **O**rder
 | ''p'' | GET: [[list zettel plain|00001012051200#plain]] | GET: [[retrieve plain zettel|00001012053400#plain]] | Ra**w**
+|       | POST: [[create new plain zettel|00001012053200#plain]] | PUT: [[update a plain zettel|00001012054200#plain]]
 |       |  | DELETE: [[delete the plain zettel|00001012054600#plain]]
 |       |  | MOVE: [[rename the plain zettel|00001012054400#plain]]
 | ''r'' | GET: [[list roles|00001012052600]] | | **R**oles
