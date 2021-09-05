@@ -21,9 +21,16 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-// MakeGetLoginHandler creates a new HTTP handler to display the HTML login view.
-func (wui *WebUI) MakeGetLoginHandler() http.HandlerFunc {
+// MakeGetLoginOutHandler creates a new HTTP handler to display the HTML login view,
+// or to execute a logout.
+func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query()
+		if query.Has("logout") {
+			wui.clearToken(r.Context(), w)
+			redirectFound(w, r, wui.NewURLBuilder('/'))
+			return
+		}
 		wui.renderLoginForm(wui.clearToken(r.Context(), w), w, false)
 	}
 }
@@ -64,14 +71,6 @@ func (wui *WebUI) MakePostLoginHandler(ucAuth usecase.Authenticate) http.Handler
 		}
 
 		wui.setToken(w, token)
-		redirectFound(w, r, wui.NewURLBuilder('/'))
-	}
-}
-
-// MakeGetLogoutHandler creates a new HTTP handler to log out the current user
-func (wui *WebUI) MakeGetLogoutHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		wui.clearToken(r.Context(), w)
 		redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }

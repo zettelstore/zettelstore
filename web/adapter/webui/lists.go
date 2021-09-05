@@ -221,7 +221,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := wui.NewURLBuilder('j').SetZid(zid)
+		depthURL := wui.NewURLBuilder('k').SetZid(zid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {

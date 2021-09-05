@@ -73,6 +73,7 @@ type webuiBox interface {
 // New creates a new WebUI struct.
 func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy) *WebUI {
+	loginoutBase := ab.NewURLBuilder('i')
 	wui := &WebUI{
 		ab:       ab,
 		rtConfig: rtConfig,
@@ -89,8 +90,8 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
 		withAuth:      authz.WithAuth(),
-		loginURL:      ab.NewURLBuilder('i').String(),
-		logoutURL:     ab.NewURLBuilder('j').String(),
+		loginURL:      loginoutBase.String(),
+		logoutURL:     loginoutBase.AppendQuery("logout", "").String(),
 		searchURL:     ab.NewURLBuilder('f').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})

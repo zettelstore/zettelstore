@@ -134,7 +134,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}{
 			Zid:            zid.String(),
 			WebURL:         wui.NewURLBuilder('h').SetZid(zid).String(),
-			ContextURL:     wui.NewURLBuilder('j').SetZid(zid).String(),
+			ContextURL:     wui.NewURLBuilder('k').SetZid(zid).String(),
 			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:        wui.NewURLBuilder('e').SetZid(zid).String(),
 			CanFolge:       canCreate,
