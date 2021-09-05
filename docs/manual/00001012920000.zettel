@@ -24,9 +24,9 @@ The following letters are currently in use:
 |       |  | MOVE: [[rename the zettel|00001012054400]]
 | ''l'' |  | GET: [[list references|00001012053700]] | **L**inks
 | ''o'' |  | GET: [[list zettel order|00001012054000]] | **O**rder
+| ''p'' | GET: [[list parsed zettel|00001012052200]] | GET: [[retrieve parsed zettel|00001012053600]]| **P**arsed
 | ''r'' | GET: [[list roles|00001012052600]] | | **R**oles
 | ''t'' | GET: [[list tags|00001012052400]] || **T**ags
-| ''u'' | GET: [[list parsed zettel|00001012052200]] | GET: [[retrieve parsed zettel|00001012053600]]| **u** is one before **v**, as parsing is one before evaluating
 | ''v'' | GET: [[list evaluated zettel|00001012052200]] | GET: [[retrieve evaluated zettel|00001012053500]] | E**v**aluated
 | ''x'' |  | GET: [[list zettel context|00001012053800]] | Conte**x**t
 | ''z'' | GET: [[list zettel|00001012051200#plain]] | GET: [[retrieve zettel|00001012053400#plain]] | **Z**ettel

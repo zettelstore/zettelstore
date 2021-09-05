@@ -232,7 +232,7 @@ func (c *Client) GetZettelJSON(ctx context.Context, zid id.Zid) (*api.ZettelData
 
 // GetParsedZettel return a parsed zettel in a defined encoding.
 func (c *Client) GetParsedZettel(ctx context.Context, zid id.Zid, enc api.EncodingEnum) (string, error) {
-	return c.getZettelString(ctx, 'u', zid, enc)
+	return c.getZettelString(ctx, 'p', zid, enc)
 }
 
 // GetEvaluatedZettel return an evaluated zettel in a defined encoding.

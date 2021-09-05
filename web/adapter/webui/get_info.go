@@ -153,7 +153,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),
-			ParseMatrix:    wui.infoAPIMatrixPlain('u', zid),
+			ParseMatrix:    wui.infoAPIMatrixPlain('p', zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
 			Endnotes:       endnotes,
