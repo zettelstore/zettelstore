@@ -41,10 +41,10 @@ Because of the precondition described above, ``curl 'http://127.0.0.1:23123/j?ur
 The first query produces a zettel list, where each zettel does have a ''url'' metadata value, which does not contain the characters ""com"".
 The second query produces a zettel list, that excludes any zettel containing a ''url'' metadata value that contains the characters ""com""; this also includes all zettel that do not contain the metadata key ''url''.
 
-Alternatively, you also can use the [[endpoint|00001012920000]] ''/p'' for a simpler result format.
+Alternatively, you also can use the [[endpoint|00001012920000]] ''/z'' for a simpler result format.
 The first example translates to:
 ```sh
-# curl 'http://127.0.0.1:23123/p?title=API'
+# curl 'http://127.0.0.1:23123/z?title=API'
 00001012921000 API: JSON structure of an access token
 00001012920500 Formats available by the API
 00001012920000 Endpoints used by the API

@@ -13,7 +13,7 @@
   *  Add API endpoint <tt>/v/{ID}</tt> to retrieve an evaluated zettel in
      various encodings. Mostly replaces endpoint <tt>/z/{ID}</tt> for other
      encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
-     <tt>/j/{ID}</tt> now only returns JSON data, endpoint <tt>/p/{ID}</tt> is
+     <tt>/j/{ID}</tt> now only returns JSON data, endpoint <tt>/z/{ID}</tt> is
      used to retrieve plain zettel data (previously called &ldquo;raw&rdquo;).
      See documentation for details.
      (major: api; breaking)
@@ -26,7 +26,7 @@
      you edit a zettel through Zettelstore. If you just modify the zettel
      files, your tag values remain unchanged.
      (major; breaking)
-  *  The endpoint <tt>/p</tt> allows to list zettel in a simpler format than
+  *  The endpoint <tt>/z</tt> allows to list zettel in a simpler format than
      endpoint <tt>/j</tt>: one line per zettel, and only zettel identifier plus
      zettel title.
      (minor: api)

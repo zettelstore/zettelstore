@@ -72,13 +72,13 @@ If you reformat the JSON output from the ''GET /j'' call, you'll see its structu
 ```
 In this special case, the metadata of each zettel just contains the four default keys ''title'', ''tags'', ''syntax'', and ''role''.
 
-[!plain]Alternatively, you can retrieve the list of zettel in a simple, plain format using the [[endpoint|00001012920000]] ''/p''.
+[!plain]Alternatively, you can retrieve the list of zettel in a simple, plain format using the [[endpoint|00001012920000]] ''/z''.
 In this case, a plain text document is returned, with one line per zettel.
 Each line contains in the first 14 characters the zettel identifier.
 Separated by a space character, the title of the zettel follows:
 
 ```sh
-# curl http://127.0.0.1:23123/p
+# curl http://127.0.0.1:23123/z
 00001012051200 API: Renew an access token
 00001012050600 API: Provide an access token
 00001012050400 API: Renew an access token

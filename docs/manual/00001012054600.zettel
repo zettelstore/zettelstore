@@ -15,7 +15,7 @@ You must send a HTTP DELETE request to this endpoint:
 # curl -X DELETE http://127.0.0.1:23123/j/00001000000000
 ```
 
-[!plain]Alternatively, you can also use the [[endpoint|00001012920000]] ''/p/{ID}''.
+[!plain]Alternatively, you can also use the [[endpoint|00001012920000]] ''/z/{ID}''.
 Both endpoints behave identical.
 
 === HTTP Status codes

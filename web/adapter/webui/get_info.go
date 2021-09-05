@@ -216,7 +216,7 @@ func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 	matrix := wui.infoAPIMatrix(key, zid)
 
 	// Append plain and JSON format
-	u := wui.NewURLBuilder('p').SetZid(zid)
+	u := wui.NewURLBuilder('z').SetZid(zid)
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	for i, part := range parts {
 		u.AppendQuery(api.QueryKeyPart, part)

@@ -13,7 +13,7 @@ By using the query parameter ""''_limit''"", which must have an integer value, y
 ```
 
 ```sh
-# curl 'http://127.0.0.1:23123/p?title=API&_sort=id&_limit=2'
+# curl 'http://127.0.0.1:23123/z?title=API&_sort=id&_limit=2'
 00001012000000 API
 00001012050200 API: Authenticate a client
 ```
@@ -26,7 +26,7 @@ The query parameter ""''_offset''"" allows to list not only the first elements, 
 ```
 
 ```sh
-# curl 'http://127.0.0.1:23123/p?title=API&_sort=id&_limit=2&_offset=1'
+# curl 'http://127.0.0.1:23123/z?title=API&_sort=id&_limit=2&_offset=1'
 00001012050200 API: Authenticate a client
 00001012050400 API: Renew an access token
 ```

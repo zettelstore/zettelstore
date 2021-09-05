@@ -46,11 +46,11 @@ As an example, a zettel with title ""Note"" and content ""Important content."" c
 {"id":"20210713163100"}
 ```
 
-[!plain]Alternatively, you can use the [[endpoint|00001012920000]] ''/p'' to create a new zettel.
+[!plain]Alternatively, you can use the [[endpoint|00001012920000]] ''/z'' to create a new zettel.
 In this case, the zettel must be encoded in a [[plain|00001006000000]] format: first comes the [[metadata|00001006010000]] and the following content is separated by an empty line.
 This is the same format as used by storing zettel within a [[directory box|00001006010000]].
 ```
-# curl -X POST --data $'title: Note\n\nImportant content.' http://127.0.0.1:23123/p
+# curl -X POST --data $'title: Note\n\nImportant content.' http://127.0.0.1:23123/z
 20210903211500
 ```
 
