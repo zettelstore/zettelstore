@@ -223,7 +223,7 @@ func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
 		u.ClearQuery()
 	}
-	u = wui.NewURLBuilder('z').SetZid(zid)
+	u = wui.NewURLBuilder('j').SetZid(zid)
 	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.String()})
 	return matrix
 }

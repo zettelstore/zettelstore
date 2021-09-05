@@ -3,17 +3,17 @@ title: API: Update a zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210903211954
+modified: 20210905204628
 
 Updating metadata and content of a zettel is technically quite similar to [[creating a new zettel|00001012053200]].
 In both cases you must provide the data for the new or updated zettel in the body of the HTTP request.
 
 One difference is the endpoint.
-The [[endpoint|00001012920000]] to update a zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+The [[endpoint|00001012920000]] to update a zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 You must send a HTTP PUT request to that endpoint:
 
 ```
-# curl -X PUT --data '{}' http://127.0.0.1:23123/z/00001012054200
+# curl -X PUT --data '{}' http://127.0.0.1:23123/j/00001012054200
 ```
 This will put some empty content and metadata to the zettel you are currently reading.
 As usual, some metadata will be calculated if it is empty.

@@ -3,14 +3,14 @@ title: API
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210817160844
+modified: 20210905203448
 
 The API (short for ""**A**pplication **P**rogramming **I**nterface"") is the primary way to communicate with a running Zettelstore.
 Most integration with other systems and services is done through the API.
 The [[web user interface|00001014000000]] is just an alternative, secondary way of interacting with a Zettelstore.
 
 === Background
-The API is HTTP-based and uses JSON as its main encoding format for exchanging messages between a Zettelstore and its client software.
+The API is HTTP-based and uses plain text and JSON as its main encoding format for exchanging messages between a Zettelstore and its client software.
 
 There is an [[overview zettel|00001012920000]] that shows the structure of the endpoints used by the API and gives an indication about its use.
 

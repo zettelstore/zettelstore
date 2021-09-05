@@ -3,17 +3,17 @@ title: API: Shape the list of zettel metadata by limiting its length
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210827232545
+modified: 20210905204006
 
 === Limit
 By using the query parameter ""''_limit''"", which must have an integer value, you specifying an upper limit of list elements:
 ```sh
-# curl 'http://127.0.0.1:23123/z?title=API&_sort=id&_limit=2'
+# curl 'http://127.0.0.1:23123/j?title=API&_sort=id&_limit=2'
 {"list":[{"id":"00001012000000","meta":{"all-tags":"#api #manual #zettelstore","back":"00001000000000 00001004020000","backward":"00001000000000 00001004020000 00001012053200 00001012054000 00001014000000","box-number":"1","forward":"00001010040100 00001010040700 00001012050200 00001012050400 00001012050600 00001012051200 00001012051800 00001012051810 00001012051830 00001012051840 00001012052000 00001012052200 00001012052400 00001012052600 00001012053200 00001012053400 00001012053500 00001012053600 00001012053700 00001012053800 00001012054000 00001012054200 00001012054400 00001012054600 00001012920000 00001014000000","modified":"20210817160844","published":"20210817160844","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API"}},{"id":"00001012050200","meta":{"all-tags":"#api #manual #zettelstore","back":"00001012000000 00001012050400 00001012050600 00001012051200 00001012053400 00001012053500 00001012053600","backward":"00001010040700 00001012000000 00001012050400 00001012050600 00001012051200 00001012053400 00001012053500 00001012053600 00001012920000 00001012921000","box-number":"1","forward":"00001004010000 00001010040200 00001010040700 00001012920000 00001012921000","modified":"20210726123709","published":"20210726123709","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Authenticate a client"}}]}
 ```
 
 ```sh
-# curl 'http://127.0.0.1:23123/w?title=API&_sort=id&_limit=2'
+# curl 'http://127.0.0.1:23123/p?title=API&_sort=id&_limit=2'
 00001012000000 API
 00001012050200 API: Authenticate a client
 ```
@@ -21,12 +21,12 @@ By using the query parameter ""''_limit''"", which must have an integer value, y
 === Offset
 The query parameter ""''_offset''"" allows to list not only the first elements, but to begin at a specific element:
 ```sh
-# curl 'http://127.0.0.1:23123/z?title=API&_sort=id&_limit=2&_offset=1'
+# curl 'http://127.0.0.1:23123/j?title=API&_sort=id&_limit=2&_offset=1'
 {"list":[{"id":"00001012050200","meta":{"all-tags":"#api #manual #zettelstore","back":"00001012000000 00001012050400 00001012050600 00001012051200 00001012053400 00001012053500 00001012053600","backward":"00001010040700 00001012000000 00001012050400 00001012050600 00001012051200 00001012053400 00001012053500 00001012053600 00001012920000 00001012921000","box-number":"1","forward":"00001004010000 00001010040200 00001010040700 00001012920000 00001012921000","modified":"20210726123709","published":"20210726123709","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Authenticate a client"}},{"id":"00001012050400","meta":{"all-tags":"#api #manual #zettelstore","back":"00001010040700 00001012000000","backward":"00001010040700 00001012000000 00001012920000 00001012921000","box-number":"1","forward":"00001010040100 00001012050200 00001012920000 00001012921000","modified":"20210726123745","published":"20210726123745","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Renew an access token"}}]}
 ```
 
 ```sh
-# curl 'http://127.0.0.1:23123/w?title=API&_sort=id&_limit=2&_offset=1'
+# curl 'http://127.0.0.1:23123/p?title=API&_sort=id&_limit=2&_offset=1'
 00001012050200 API: Authenticate a client
 00001012050400 API: Renew an access token
 ```

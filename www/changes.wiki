@@ -4,19 +4,21 @@
 <h2>Changes for Version 0.0.15 (pending)</h2>
   *  Move again endpoint characters for authentication to make room for future
      features. WebUI authentication moves from <tt>/a</tt> to <tt>/i</tt>
-     (login) and <tt>/j</tt> (logout). API authentication moves from
-     <tt>/v</tt> to </tt>/a</tt>. Since the API client is updated too, this
-     should not be a breaking change for most users.
+     (login) and <tt>/i?logout</tt> (logout). API authentication moves from
+     <tt>/v</tt> to </tt>/a</tt>. JSON-based basic zettel handling moves from
+     <tt>/z</tt> to <tt>/j</tt> and <tt>/z/{ID}</tt> to <tt>/j/{ID}</tt>. Since
+     the API client is updated too, this should not be a breaking change for
+     most users.
      (minor: api, webui; possibly breaking)
   *  Add API endpoint <tt>/v/{ID}</tt> to retrieve an evaluated zettel in
      various encodings. Mostly replaces endpoint <tt>/z/{ID}</tt> for other
      encodings except &ldquo;json&rdquo; and &ldquo;raw&rdquo;. Endpoint
-     <tt>/z/{ID}</tt> now only returns JSON data, endpoint <tt>/p/{ID}</tt> is
+     <tt>/j/{ID}</tt> now only returns JSON data, endpoint <tt>/p/{ID}</tt> is
      used to retrieve plain zettel data (previously called &ldquo;raw&rdquo;).
      See documentation for details.
      (major: api; breaking)
   *  Metadata values of type <em>tag set</em> (the metadata with key
-     <tt>tags</tt> is its most prominent example), are now comapred in
+     <tt>tags</tt> is its most prominent example), are now compared in
      a case-insensitive manner. Tags that only differ in upper / lower case
      character are now treated identical. This might break your workflow, if
      you depend on case-sensitive comparison of tag values. Tag values are
@@ -25,7 +27,7 @@
      files, your tag values remain unchanged.
      (major; breaking)
   *  The endpoint <tt>/p</tt> allows to list zettel in a simpler format than
-     endpoint <tt>/z</tt>: one line per zettel, and only zettel identifier plus
+     endpoint <tt>/j</tt>: one line per zettel, and only zettel identifier plus
      zettel title.
      (minor: api)
   *  Allows to transclude / expand the content of another zettel into a target

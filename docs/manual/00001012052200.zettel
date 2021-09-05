@@ -3,7 +3,7 @@ title: API: List zettel in other encodings
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210830165012
+modified: 20210905204215
 
 To list parsed or evaluated zettel in other encodings, send a HTTP GET request to one of the [[endpoints|00001012920000]] ''/u'' or ''/v''.
 If you need a list of [[evaluated|00001012053500]] zettel, use then endoint ''/v''.
@@ -16,7 +16,7 @@ Otherwise you will receive an error message.
 
 === HTTP Status codes
 ; ''200''
-: Retrieval was successful, the body contains an [[appropriate JSON object|00001012921000]].
+: Retrieval was successful, the body contains the encoded zettel.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.

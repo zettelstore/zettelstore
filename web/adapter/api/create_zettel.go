@@ -63,7 +63,7 @@ func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) htt
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		u := a.NewURLBuilder('z').SetZid(newZid).String()
+		u := a.NewURLBuilder('j').SetZid(newZid).String()
 		h := w.Header()
 		h.Set(zsapi.HeaderContentType, ctJSON)
 		h.Set(zsapi.HeaderLocation, u)
