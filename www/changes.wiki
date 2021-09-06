@@ -26,10 +26,14 @@
      you edit a zettel through Zettelstore. If you just modify the zettel
      files, your tag values remain unchanged.
      (major; breaking)
-  *  The endpoint <tt>/z</tt> allows to list zettel in a simpler format than
-     endpoint <tt>/j</tt>: one line per zettel, and only zettel identifier plus
-     zettel title.
-     (minor: api)
+  *  Endpoint <tt>/z/{ID}</tt> allows the same methods as endpoint
+     <tt>/j/{ID}</tt>: <tt>GET</tt> retrieves zettel (see above), <tt>PUT</tt>
+     updates a zettel, <tt>DELETE</tt> deletes a zettel, <tt>MOVE</tt> renames
+     a zettel. In addtion, <tt>POST /z</tt> will create a new zettel. When
+     zettel data must be given, the format is plain text, with metadata
+     separated from content by an empty line. See documentation for more
+     details.
+     (major: api (plus WebUI for some details))
   *  Allows to transclude / expand the content of another zettel into a target
      zettel when the zettel is rendered. By using the syntax of embedding an
      image (which is some kind of expansion too), the first top-level paragraph
@@ -37,6 +41,10 @@
      is checked, as well as a possible &ldquo;transclusion bomb &rdquo;
      (similar to a XML bomb). See manual for details.
      (major: zettelmarkup)
+  *  The endpoint <tt>/z</tt> allows to list zettel in a simpler format than
+     endpoint <tt>/j</tt>: one line per zettel, and only zettel identifier plus
+     zettel title.
+     (minor: api)
   *  Folgezettel are now displayed with full title at the bottom of a page.
      (minor: webui)
   *  Add API endpoint <tt>/p/{ID}</tt> to retrieve a parsed, but not evaluated

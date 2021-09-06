@@ -16,6 +16,7 @@ import (
 	"flag"
 	"fmt"
 	"net/url"
+	"strings"
 	"testing"
 
 	"zettelstore.de/z/api"
@@ -24,11 +25,53 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func TestCreateRenameDeleteZettel(t *testing.T) {
+func TestCreateGetRenameDeleteZettel(t *testing.T) {
+	// Is not to be allowed to run in parallel with other tests.
+	zettel := `title: A Test
+
+Example content.`
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	zid, err := c.CreateZettel(context.Background(), zettel)
+	if err != nil {
+		t.Error("Cannot create zettel:", err)
+		return
+	}
+	if !zid.IsValid() {
+		t.Error("Invalid zettel ID", zid)
+		return
+	}
+	data, err := c.GetZettel(context.Background(), zid, api.PartZettel)
+	if err != nil {
+		t.Error("Cannot read zettel", zid, err)
+		return
+	}
+	exp := `title: A Test
+role: zettel
+syntax: zmk
+
+Example content.`
+	if data != exp {
+		t.Errorf("Expected zettel data: %q, but got %q", exp, data)
+	}
+	newZid := zid + 1
+	err = c.RenameZettel(context.Background(), zid, newZid)
+	if err != nil {
+		t.Error("Cannot rename", zid, ":", err)
+		newZid = zid
+	}
+	err = c.DeleteZettel(context.Background(), newZid)
+	if err != nil {
+		t.Error("Cannot delete", zid, ":", err)
+		return
+	}
+}
+
+func TestCreateRenameDeleteZettelJSON(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("creator", "creator")
-	zid, err := c.CreateZettel(context.Background(), &api.ZettelDataJSON{
+	zid, err := c.CreateZettelJSON(context.Background(), &api.ZettelDataJSON{
 		Meta:     nil,
 		Encoding: "",
 		Content:  "Example",
@@ -58,6 +101,45 @@ func TestCreateRenameDeleteZettel(t *testing.T) {
 func TestUpdateZettel(t *testing.T) {
 	t.Parallel()
 	c := getClient()
+	c.SetAuth("owner", "owner")
+	z, err := c.GetZettel(context.Background(), id.DefaultHomeZid, api.PartZettel)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !strings.HasPrefix(z, "title: Home\n") {
+		t.Error("Got unexpected zettel", z)
+		return
+	}
+	newZettel := `title: New Home
+role: zettel
+syntax: zmk
+
+Empty`
+	err = c.UpdateZettel(context.Background(), id.DefaultHomeZid, newZettel)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	zt, err := c.GetZettel(context.Background(), id.DefaultHomeZid, api.PartZettel)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if zt != newZettel {
+		t.Errorf("Expected zettel %q, got %q", newZettel, zt)
+	}
+	// Must delete to clean up for next tests
+	err = c.DeleteZettel(context.Background(), id.DefaultHomeZid)
+	if err != nil {
+		t.Error("Cannot delete", id.DefaultHomeZid, ":", err)
+		return
+	}
+}
+
+func TestUpdateZettelJSON(t *testing.T) {
+	t.Parallel()
+	c := getClient()
 	c.SetAuth("writer", "writer")
 	z, err := c.GetZettelJSON(context.Background(), id.DefaultHomeZid)
 	if err != nil {
@@ -70,7 +152,7 @@ func TestUpdateZettel(t *testing.T) {
 	}
 	newTitle := "New Home"
 	z.Meta[meta.KeyTitle] = newTitle
-	err = c.UpdateZettel(context.Background(), id.DefaultHomeZid, z)
+	err = c.UpdateZettelJSON(context.Background(), id.DefaultHomeZid, z)
 	if err != nil {
 		t.Error(err)
 		return
@@ -83,9 +165,10 @@ func TestUpdateZettel(t *testing.T) {
 	if got := zt.Meta[meta.KeyTitle]; got != newTitle {
 		t.Errorf("Title of zettel is not %q, but %q", newTitle, got)
 	}
+	// No need to clean up, because we just changed the title.
 }
 
-func TestList(t *testing.T) {
+func TestListZettel(t *testing.T) {
 	testdata := []struct {
 		user string
 		exp  int
@@ -103,7 +186,7 @@ func TestList(t *testing.T) {
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)
-			l, err := c.ListZettel(context.Background(), query)
+			l, err := c.ListZettelJSON(context.Background(), query)
 			if err != nil {
 				tt.Error(err)
 				return
@@ -114,7 +197,7 @@ func TestList(t *testing.T) {
 			}
 		})
 	}
-	l, err := c.ListZettel(context.Background(), url.Values{meta.KeyRole: {meta.ValueRoleConfiguration}})
+	l, err := c.ListZettelJSON(context.Background(), url.Values{meta.KeyRole: {meta.ValueRoleConfiguration}})
 	if err != nil {
 		t.Error(err)
 		return
@@ -123,8 +206,28 @@ func TestList(t *testing.T) {
 	if got != 27 {
 		t.Errorf("List of length %d expected, but got %d\n%v", 27, got, l)
 	}
+
+	pl, err := c.ListZettel(context.Background(), url.Values{meta.KeyRole: {meta.ValueRoleConfiguration}})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	lines := strings.Split(pl, "\n")
+	if lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+	if len(lines) != len(l) {
+		t.Errorf("Different list lenght: Plain=%d, JSON=%d", len(lines), len(l))
+	} else {
+		for i, line := range lines {
+			if got := line[:14]; got != l[i].ID {
+				t.Errorf("%d: JSON=%q, got=%q", i, l[i].ID, got)
+			}
+		}
+	}
 }
-func TestGetZettel(t *testing.T) {
+
+func TestGetZettelJSON(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
