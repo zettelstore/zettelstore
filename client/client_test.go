@@ -244,7 +244,7 @@ func TestGetZettelJSON(t *testing.T) {
 	}
 }
 
-func TestGetEvaluatedZettel(t *testing.T) {
+func TestGetParsedEvaluatedZettel(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
@@ -255,13 +255,21 @@ func TestGetEvaluatedZettel(t *testing.T) {
 		api.EncoderText,
 	}
 	for _, enc := range encodings {
-		content, err := c.GetEvaluatedZettel(context.Background(), id.DefaultHomeZid, enc)
+		content, err := c.GetParsedZettel(context.Background(), id.DefaultHomeZid, enc)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
 		if len(content) == 0 {
-			t.Errorf("Empty content for encoding %v", enc)
+			t.Errorf("Empty content for parsed encoding %v", enc)
+		}
+		content, err = c.GetEvaluatedZettel(context.Background(), id.DefaultHomeZid, enc)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		if len(content) == 0 {
+			t.Errorf("Empty content for evaluated encoding %v", enc)
 		}
 	}
 }
