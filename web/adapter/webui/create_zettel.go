@@ -34,7 +34,7 @@ import (
 func (wui *WebUI) MakeGetCopyZettelHandler(getZettel usecase.GetZettel, copyZettel usecase.CopyZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Copy")
+		origZettel, err := getOrigZettel(ctx, r, getZettel, "Copy")
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -48,7 +48,7 @@ func (wui *WebUI) MakeGetCopyZettelHandler(getZettel usecase.GetZettel, copyZett
 func (wui *WebUI) MakeGetFolgeZettelHandler(getZettel usecase.GetZettel, folgeZettel usecase.FolgeZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "Folge")
+		origZettel, err := getOrigZettel(ctx, r, getZettel, "Folge")
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -62,7 +62,7 @@ func (wui *WebUI) MakeGetFolgeZettelHandler(getZettel usecase.GetZettel, folgeZe
 func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel usecase.NewZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, w, r, getZettel, "New")
+		origZettel, err := getOrigZettel(ctx, r, getZettel, "New")
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -86,7 +86,6 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 
 func getOrigZettel(
 	ctx context.Context,
-	w http.ResponseWriter,
 	r *http.Request,
 	getZettel usecase.GetZettel,
 	op string,

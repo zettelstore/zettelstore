@@ -52,7 +52,7 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 		return nil, err
 	}
 	tasks := ztlCtx{depth: depth}
-	uc.addInitialTasks(ctx, &tasks, start)
+	tasks.add(start, 0)
 	visited := id.NewSet()
 	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
 	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
@@ -94,10 +94,6 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 		}
 	}
 	return result, nil
-}
-
-func (uc ZettelContext) addInitialTasks(ctx context.Context, tasks *ztlCtx, start *meta.Meta) {
-	tasks.add(start, 0)
 }
 
 func (uc ZettelContext) addID(ctx context.Context, tasks *ztlCtx, depth int, value string) {

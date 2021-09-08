@@ -192,7 +192,7 @@ var commands = map[string]command{
 	"stop":  {"stop service", cmdStop},
 }
 
-func cmdHelp(sess *cmdSession, cmd string, args []string) bool {
+func cmdHelp(sess *cmdSession, _ string, _ []string) bool {
 	cmds := make([]string, 0, len(commands))
 	for key := range commands {
 		if key == "" {

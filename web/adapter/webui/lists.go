@@ -213,12 +213,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
-		metaLinks, err := wui.buildHTMLMetaList(ctx, metaList, evaluate)
-		if err != nil {
-			adapter.InternalServerError(w, "Build HTML meta list", err)
-			return
-		}
-
+		metaLinks := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
 		depthURL := wui.NewURLBuilder('k').SetZid(zid)
@@ -276,11 +271,7 @@ func (wui *WebUI) renderMetaList(
 		return
 	}
 	user := wui.getUser(ctx)
-	metas, err := wui.buildHTMLMetaList(ctx, metaList, evaluate)
-	if err != nil {
-		wui.reportError(ctx, w, err)
-		return
-	}
+	metas := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
@@ -308,7 +299,7 @@ func (wui *WebUI) listTitleSearch(prefix string, s *search.Search) string {
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
 func (wui *WebUI) buildHTMLMetaList(
 	ctx context.Context, metaList []*meta.Meta, evaluate *usecase.Evaluate,
-) ([]simpleLink, error) {
+) []simpleLink {
 	defaultLang := wui.rtConfig.GetDefaultLang()
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
@@ -324,5 +315,5 @@ func (wui *WebUI) buildHTMLMetaList(
 			URL:  wui.NewURLBuilder('h').SetZid(m.Zid).String(),
 		})
 	}
-	return metas, nil
+	return metas
 }

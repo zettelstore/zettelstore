@@ -130,7 +130,7 @@ func getVersion() string {
 }
 
 func findExec(cmd string) string {
-	if path, err := executeCommand(nil, "which", "shadow"); err == nil && path != "" {
+	if path, err := executeCommand(nil, "which", cmd); err == nil && path != "" {
 		return path
 	}
 	return ""

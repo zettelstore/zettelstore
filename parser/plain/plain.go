@@ -64,12 +64,12 @@ func init() {
 }
 
 func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
-	return doParseBlocks(inp, m, syntax, ast.VerbatimProg)
+	return doParseBlocks(inp, syntax, ast.VerbatimProg)
 }
 func parseBlocksHTML(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
-	return doParseBlocks(inp, m, syntax, ast.VerbatimHTML)
+	return doParseBlocks(inp, syntax, ast.VerbatimHTML)
 }
-func doParseBlocks(inp *input.Input, m *meta.Meta, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
+func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
 	return &ast.BlockListNode{List: []ast.BlockNode{
 		&ast.VerbatimNode{
 			Kind:  kind,

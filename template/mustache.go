@@ -298,12 +298,12 @@ func (tmpl *Template) skipWhitespaceTag(tag string, eow int, mayStandalone bool)
 	return false
 }
 
-func (tmpl *Template) parsePartial(name, indent string) (*partialNode, error) {
+func (tmpl *Template) parsePartial(name, indent string) *partialNode {
 	return &partialNode{
 		name:   name,
 		indent: indent,
 		prov:   tmpl.partial,
-	}, nil
+	}
 }
 
 func (tmpl *Template) parseSection(section *sectionNode) error {
@@ -350,10 +350,7 @@ func (tmpl *Template) parseSection(section *sectionNode) error {
 			return nil
 		case '>':
 			name := strings.TrimSpace(tag[1:])
-			partial, err := tmpl.parsePartial(name, textResult.padding)
-			if err != nil {
-				return err
-			}
+			partial := tmpl.parsePartial(name, textResult.padding)
 			section.nodes = append(section.nodes, partial)
 		case '=':
 			if tag[len(tag)-1] != '=' {
@@ -421,10 +418,7 @@ func (tmpl *Template) parse() error {
 			return parseError{tmpl.curline, "unmatched close tag"}
 		case '>':
 			name := strings.TrimSpace(tag[1:])
-			partial, err := tmpl.parsePartial(name, textResult.padding)
-			if err != nil {
-				return err
-			}
+			partial := tmpl.parsePartial(name, textResult.padding)
 			tmpl.nodes = append(tmpl.nodes, partial)
 		case '=':
 			if tag[len(tag)-1] != '=' {

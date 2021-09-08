@@ -70,14 +70,14 @@ func New() store.Store {
 }
 
 func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
-	if ms.doEnrich(ctx, m) {
+	if ms.doEnrich(m) {
 		ms.mx.Lock()
 		ms.updates++
 		ms.mx.Unlock()
 	}
 }
 
-func (ms *memStore) doEnrich(ctx context.Context, m *meta.Meta) bool {
+func (ms *memStore) doEnrich(m *meta.Meta) bool {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	zi, ok := ms.idx[m.Zid]

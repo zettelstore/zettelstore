@@ -80,11 +80,11 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 			bn, success = cp.parseDefTerm()
 		case ' ':
 			cp.table = nil
-			bn, success = cp.parseIndent()
+			bn, success = nil, cp.parseIndent()
 		case '|':
 			cp.lists = nil
 			cp.descrl = nil
-			bn, success = cp.parseRow()
+			bn, success = cp.parseRow(), true
 		}
 
 		if success {
@@ -471,7 +471,7 @@ func (cp *zmkP) parseDefDescr() (res ast.BlockNode, success bool) {
 }
 
 // parseIndent parses initial spaces to continue a list.
-func (cp *zmkP) parseIndent() (res ast.BlockNode, success bool) {
+func (cp *zmkP) parseIndent() bool {
 	inp := cp.inp
 	cnt := 0
 	for {
@@ -482,12 +482,12 @@ func (cp *zmkP) parseIndent() (res ast.BlockNode, success bool) {
 		cnt++
 	}
 	if cp.lists != nil {
-		return nil, cp.parseIndentForList(cnt)
+		return cp.parseIndentForList(cnt)
 	}
 	if cp.descrl != nil {
-		return nil, cp.parseIndentForDescription(cnt)
+		return cp.parseIndentForDescription(cnt)
 	}
-	return nil, false
+	return false
 }
 
 func (cp *zmkP) parseIndentForList(cnt int) bool {
@@ -566,11 +566,11 @@ func (cp *zmkP) parseLinePara() *ast.ParaNode {
 }
 
 // parseRow parse one table row.
-func (cp *zmkP) parseRow() (res ast.BlockNode, success bool) {
+func (cp *zmkP) parseRow() ast.BlockNode {
 	inp := cp.inp
 	if inp.Peek() == '%' {
 		inp.SkipToEOL()
-		return nil, true
+		return nil
 	}
 	row := ast.TableRow{}
 	for {
@@ -587,10 +587,10 @@ func (cp *zmkP) parseRow() (res ast.BlockNode, success bool) {
 			// add to table
 			if cp.table == nil {
 				cp.table = &ast.TableNode{Rows: []ast.TableRow{row}}
-				return cp.table, true
+				return cp.table
 			}
 			cp.table.Rows = append(cp.table.Rows, row)
-			return nil, true
+			return nil
 		}
 		// inp.Ch must be '|'
 	}

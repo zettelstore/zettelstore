@@ -116,7 +116,7 @@ func (dp *dirBox) Start(ctx context.Context) error {
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
 	for i := uint32(0); i < dp.fSrvs; i++ {
 		cc := make(chan fileCmd)
-		go fileService(i, cc)
+		go fileService(cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
 	dp.setupDirService()
@@ -191,7 +191,7 @@ func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	if err != nil {
 		return domain.Zettel{}, err
 	}
-	dp.cleanupMeta(ctx, m)
+	dp.cleanupMeta(m)
 	zettel := domain.Zettel{Meta: m, Content: domain.NewContent(c)}
 	return zettel, nil
 }
@@ -205,7 +205,7 @@ func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	if err != nil {
 		return nil, err
 	}
-	dp.cleanupMeta(ctx, m)
+	dp.cleanupMeta(m)
 	return m, nil
 }
 
@@ -231,7 +231,7 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 		if err1 != nil {
 			return err1
 		}
-		dp.cleanupMeta(ctx, m)
+		dp.cleanupMeta(m)
 		dp.cdata.Enricher.Enrich(ctx, m, dp.number)
 		handle(m)
 	}
@@ -391,7 +391,7 @@ func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 	st.Zettel, _ = dp.dirSrv.NumEntries()
 }
 
-func (dp *dirBox) cleanupMeta(ctx context.Context, m *meta.Meta) {
+func (dp *dirBox) cleanupMeta(m *meta.Meta) {
 	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
 		m.Set(meta.KeyRole, dp.cdata.Config.GetDefaultRole())
 	}

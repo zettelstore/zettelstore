@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/input"
 )
 
-func fileService(num uint32, cmds <-chan fileCmd) {
+func fileService(cmds <-chan fileCmd) {
 	for cmd := range cmds {
 		cmd.run()
 	}

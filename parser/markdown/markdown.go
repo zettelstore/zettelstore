@@ -87,7 +87,7 @@ func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
 	case *gmAst.Heading:
 		return p.acceptHeading(n)
 	case *gmAst.ThematicBreak:
-		return p.acceptThematicBreak(n)
+		return p.acceptThematicBreak()
 	case *gmAst.CodeBlock:
 		return p.acceptCodeBlock(n)
 	case *gmAst.FencedCodeBlock:
@@ -117,7 +117,7 @@ func (p *mdP) acceptHeading(node *gmAst.Heading) *ast.HeadingNode {
 	}
 }
 
-func (p *mdP) acceptThematicBreak(node *gmAst.ThematicBreak) *ast.HRuleNode {
+func (p *mdP) acceptThematicBreak() *ast.HRuleNode {
 	return &ast.HRuleNode{
 		Attrs: nil, //TODO
 	}
