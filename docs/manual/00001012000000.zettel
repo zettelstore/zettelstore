@@ -3,7 +3,7 @@ title: API
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905203448
+modified: 20210908220502
 
 The API (short for ""**A**pplication **P**rogramming **I**nterface"") is the primary way to communicate with a running Zettelstore.
 Most integration with other systems and services is done through the API.
@@ -27,7 +27,6 @@ If [[authentication is enabled|00001010040100]], most API calls must include an 
 ** [[Limit the list length|00001012051830]]
 ** [[Content search|00001012051840]]
 ** [[Sort the list of zettel metadata|00001012052000]]
-* [[List zettel in other encodings|00001012052200]]
 * [[List all tags|00001012052400]]
 * [[List all roles|00001012052600]]
 

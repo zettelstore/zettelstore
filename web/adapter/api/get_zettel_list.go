@@ -13,15 +13,10 @@ package api
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 
 	zsapi "zettelstore.de/z/api"
-	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/evaluator"
-	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -77,52 +72,6 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		}
 		if err != nil {
 			adapter.InternalServerError(w, "Write Zettel list plain", err)
-		}
-	}
-}
-
-// MakeListParsedMetaHandler creates a new HTTP handler for the use case "list some zettel".
-func (a *API) MakeListParsedMetaHandler(key byte, listMeta usecase.ListMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		q := r.URL.Query()
-		s := adapter.GetSearch(q)
-		metaList, err := listMeta.Run(ctx, s)
-		if err != nil {
-			adapter.ReportUsecaseError(w, err)
-			return
-		}
-		enc, encStr := adapter.GetEncoding(r, q, zsapi.EncoderHTML)
-		if enc != zsapi.EncoderHTML {
-			adapter.BadRequest(w, fmt.Sprintf("Zettel list not available in encoding %q", encStr))
-			return
-		}
-
-		textEnc := encoder.Create(zsapi.EncoderText, nil)
-		w.Header().Set(zsapi.HeaderContentType, ctHTML)
-		for _, m := range metaList {
-			titleValue := config.GetTitle(m, a.rtConfig)
-			var titleAst *ast.InlineListNode
-			if evaluate == nil {
-				titleAst = parser.ParseMetadata(titleValue)
-			} else {
-				titleAst = evaluate.RunMetadata(ctx, titleValue, &evaluator.Environment{
-					EmbedImage: true,
-				})
-			}
-			u := a.NewURLBuilder(key).SetZid(m.Zid).AppendQuery(zsapi.QueryKeyEncoding, encStr)
-			if _, err = fmt.Fprintf(w, "<li><a href=\"%v\">", u); err != nil {
-				break
-			}
-			if _, err = textEnc.WriteInlines(w, titleAst); err != nil {
-				break
-			}
-			if _, err = io.WriteString(w, "</a></li>\n"); err != nil {
-				break
-			}
-		}
-		if err != nil {
-			adapter.InternalServerError(w, "Write Zettel list HTML", err)
 		}
 	}
 }
