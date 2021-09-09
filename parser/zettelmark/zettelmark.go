@@ -31,14 +31,14 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
 	parser := &zmkP{inp: inp}
 	bns := parser.parseBlockList()
 	postProcessBlocks(bns)
 	return bns
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 	parser := &zmkP{inp: inp}
 	iln := parser.parseInlineList()
 	postProcessInlines(iln)

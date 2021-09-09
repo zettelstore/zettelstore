@@ -52,7 +52,7 @@ func (zp *zipBox) Location() string {
 	return "file:" + zp.name
 }
 
-func (zp *zipBox) Start(ctx context.Context) error {
+func (zp *zipBox) Start(context.Context) error {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
 		return err
@@ -97,18 +97,18 @@ func (zp *zipBox) addFile(zid id.Zid, name, ext string) {
 	}
 }
 
-func (zp *zipBox) Stop(ctx context.Context) error {
+func (zp *zipBox) Stop(context.Context) error {
 	zp.zettel = nil
 	return nil
 }
 
-func (zp *zipBox) CanCreateZettel(ctx context.Context) bool { return false }
+func (zp *zipBox) CanCreateZettel(context.Context) bool { return false }
 
-func (zp *zipBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (zp *zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (zp *zipBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (zp *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
 	entry, ok := zp.zettel[zid]
 	if !ok {
 		return domain.Zettel{}, box.ErrNotFound
@@ -147,7 +147,7 @@ func (zp *zipBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
 }
 
-func (zp *zipBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (zp *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	entry, ok := zp.zettel[zid]
 	if !ok {
 		return nil, box.ErrNotFound
@@ -160,7 +160,7 @@ func (zp *zipBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return readZipMeta(reader, zid, entry)
 }
 
-func (zp *zipBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
+func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	for zid := range zp.zettel {
 		handle(zid)
 	}
@@ -184,29 +184,29 @@ func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (zp *zipBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (zp *zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
 	return false
 }
 
-func (zp *zipBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (zp *zipBox) UpdateZettel(context.Context, domain.Zettel) error {
 	return box.ErrReadOnly
 }
 
-func (zp *zipBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
+func (zp *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := zp.zettel[zid]
 	return !ok
 }
 
-func (zp *zipBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+func (zp *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 	if _, ok := zp.zettel[curZid]; ok {
 		return box.ErrReadOnly
 	}
 	return box.ErrNotFound
 }
 
-func (zp *zipBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool { return false }
+func (zp *zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (zp *zipBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
+func (zp *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if _, ok := zp.zettel[zid]; ok {
 		return box.ErrReadOnly
 	}

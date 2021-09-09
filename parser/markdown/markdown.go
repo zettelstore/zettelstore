@@ -39,12 +39,12 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
 	p := parseMarkdown(inp)
 	return p.acceptBlockChildren(p.docNode)
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(*input.Input, string) *ast.InlineListNode {
 	panic("markdown.parseInline not yet implemented")
 }
 
@@ -117,7 +117,7 @@ func (p *mdP) acceptHeading(node *gmAst.Heading) *ast.HeadingNode {
 	}
 }
 
-func (p *mdP) acceptThematicBreak() *ast.HRuleNode {
+func (*mdP) acceptThematicBreak() *ast.HRuleNode {
 	return &ast.HRuleNode{
 		Attrs: nil, //TODO
 	}

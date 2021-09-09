@@ -69,7 +69,7 @@ func New() store.Store {
 	}
 }
 
-func (ms *memStore) Enrich(ctx context.Context, m *meta.Meta) {
+func (ms *memStore) Enrich(_ context.Context, m *meta.Meta) {
 	if ms.doEnrich(m) {
 		ms.mx.Lock()
 		ms.updates++
@@ -268,7 +268,7 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 	return back
 }
 
-func (ms *memStore) UpdateReferences(ctx context.Context, zidx *store.ZettelIndex) id.Set {
+func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	zi, ziExist := ms.idx[zidx.Zid]
@@ -403,7 +403,7 @@ func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
 	return zi
 }
 
-func (ms *memStore) DeleteZettel(ctx context.Context, zid id.Zid) id.Set {
+func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 

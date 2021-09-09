@@ -111,7 +111,7 @@ func (dp *dirBox) Location() string {
 	return dp.location
 }
 
-func (dp *dirBox) Start(ctx context.Context) error {
+func (dp *dirBox) Start(context.Context) error {
 	dp.mxCmds.Lock()
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
 	for i := uint32(0); i < dp.fSrvs; i++ {
@@ -127,7 +127,7 @@ func (dp *dirBox) Start(ctx context.Context) error {
 	return dp.dirSrv.Start()
 }
 
-func (dp *dirBox) Stop(ctx context.Context) error {
+func (dp *dirBox) Stop(_ context.Context) error {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil
 	err := dirSrv.Stop()
@@ -157,11 +157,11 @@ func (dp *dirBox) getFileChan(zid id.Zid) chan fileCmd {
 	return dp.fCmds[sum%dp.fSrvs]
 }
 
-func (dp *dirBox) CanCreateZettel(ctx context.Context) bool {
+func (dp *dirBox) CanCreateZettel(_ context.Context) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid, error) {
 	if dp.readonly {
 		return id.Invalid, box.ErrReadOnly
 	}
@@ -182,7 +182,7 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zi
 	return meta.Zid, err
 }
 
-func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (dp *dirBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
 	entry, err := dp.dirSrv.GetEntry(zid)
 	if err != nil || !entry.IsValid() {
 		return domain.Zettel{}, box.ErrNotFound
@@ -196,7 +196,7 @@ func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	return zettel, nil
 }
 
-func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	entry, err := dp.dirSrv.GetEntry(zid)
 	if err != nil || !entry.IsValid() {
 		return nil, box.ErrNotFound
@@ -209,7 +209,7 @@ func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return m, nil
 }
 
-func (dp *dirBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
+func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	entries, err := dp.dirSrv.GetEntries()
 	if err != nil {
 		return err
@@ -238,11 +238,11 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (dp *dirBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (dp *dirBox) CanUpdateZettel(_ context.Context, zettel domain.Zettel) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}
@@ -309,7 +309,7 @@ func (dp *dirBox) calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	return directory.MetaSpecFile, syntax
 }
 
-func (dp *dirBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
+func (dp *dirBox) AllowRenameZettel(context.Context, id.Zid) bool {
 	return !dp.readonly
 }
 
@@ -361,7 +361,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	return err
 }
 
-func (dp *dirBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
+func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	if dp.readonly {
 		return false
 	}
@@ -369,7 +369,7 @@ func (dp *dirBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	return err == nil && entry.IsValid()
 }
 
-func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
+func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}

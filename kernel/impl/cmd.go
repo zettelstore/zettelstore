@@ -222,12 +222,12 @@ func cmdConfig(sess *cmdSession, cmd string, args []string) bool {
 	sess.printTable(table)
 	return true
 }
-func cmdGetConfig(sess *cmdSession, cmd string, args []string) bool {
+func cmdGetConfig(sess *cmdSession, _ string, args []string) bool {
 	showConfig(sess, args,
 		listCurConfig, func(srv service, key string) interface{} { return srv.GetConfig(key) })
 	return true
 }
-func cmdNextConfig(sess *cmdSession, cmd string, args []string) bool {
+func cmdNextConfig(sess *cmdSession, _ string, args []string) bool {
 	showConfig(sess, args,
 		listNextConfig, func(srv service, key string) interface{} { return srv.GetNextConfig(key) })
 	return true
@@ -300,7 +300,7 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
-func cmdServices(sess *cmdSession, cmd string, args []string) bool {
+func cmdServices(sess *cmdSession, _ string, _ []string) bool {
 	names := make([]string, 0, len(sess.kern.srvNames))
 	for name := range sess.kern.srvNames {
 		names = append(names, name)
@@ -390,7 +390,7 @@ func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service,
 	return srvD.srvnum, true
 }
 
-func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
+func cmdMetrics(sess *cmdSession, _ string, _ []string) bool {
 	var samples []metrics.Sample
 	all := metrics.All()
 	for _, d := range all {
@@ -432,7 +432,7 @@ func cmdMetrics(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
-func cmdDumpIndex(sess *cmdSession, cmd string, args []string) bool {
+func cmdDumpIndex(sess *cmdSession, _ string, _ []string) bool {
 	sess.kern.DumpIndex(sess.w)
 	return true
 }
@@ -452,7 +452,7 @@ func cmdDumpRecover(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
-func cmdEnvironment(sess *cmdSession, cmd string, args []string) bool {
+func cmdEnvironment(sess *cmdSession, _ string, _ []string) bool {
 	workDir, err := os.Getwd()
 	if err != nil {
 		workDir = err.Error()

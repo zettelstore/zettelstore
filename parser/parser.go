@@ -12,6 +12,7 @@
 package parser
 
 import (
+	"fmt"
 	"log"
 
 	"zettelstore.de/z/ast"
@@ -41,12 +42,12 @@ var registry = map[string]*Info{}
 // Register the parser (info) for later retrieval.
 func Register(pi *Info) *Info {
 	if _, ok := registry[pi.Name]; ok {
-		log.Fatalf("Parser %q already registered", pi.Name)
+		panic(fmt.Sprintf("Parser %q already registered", pi.Name))
 	}
 	registry[pi.Name] = pi
 	for _, alt := range pi.AltNames {
 		if _, ok := registry[alt]; ok {
-			log.Fatalf("Parser %q already registered", alt)
+			panic(fmt.Sprintf("Parser %q already registered", alt))
 		}
 		registry[alt] = pi
 	}

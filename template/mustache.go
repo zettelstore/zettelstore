@@ -73,10 +73,10 @@ type varNode struct {
 	raw  bool
 }
 
-func (e *varNode) node()         {}
-func (e *varNode) Type() TagType { return Variable }
-func (e *varNode) Name() string  { return e.name }
-func (e *varNode) Tags() []Tag   { panic("mustache: Tags on Variable type") }
+func (*varNode) node()          {}
+func (*varNode) Type() TagType  { return Variable }
+func (e *varNode) Name() string { return e.name }
+func (*varNode) Tags() []Tag    { panic("mustache: Tags on Variable type") }
 
 type sectionNode struct {
 	name      string
@@ -85,7 +85,7 @@ type sectionNode struct {
 	nodes     []node
 }
 
-func (e *sectionNode) node() {}
+func (*sectionNode) node() {}
 func (e *sectionNode) Type() TagType {
 	if e.inverted {
 		return InvertedSection
@@ -101,10 +101,10 @@ type partialNode struct {
 	prov   PartialProvider
 }
 
-func (e *partialNode) node()         {}
-func (e *partialNode) Type() TagType { return Partial }
-func (e *partialNode) Name() string  { return e.name }
-func (e *partialNode) Tags() []Tag   { return nil }
+func (*partialNode) node()          {}
+func (*partialNode) Type() TagType  { return Partial }
+func (e *partialNode) Name() string { return e.name }
+func (*partialNode) Tags() []Tag    { return nil }
 
 type textNode struct {
 	text []byte
@@ -695,7 +695,7 @@ func (sp *StaticProvider) Get(name string) (string, error) {
 type emptyProvider struct{}
 
 // Get accepts the name of a partial and returns the parsed partial.
-func (ep *emptyProvider) Get(name string) (string, error) { return "", nil }
+func (*emptyProvider) Get(string) (string, error) { return "", nil }
 
 // EmptyProvider is a partial provider that will always return an empty string.
 var EmptyProvider emptyProvider

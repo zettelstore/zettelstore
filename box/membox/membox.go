@@ -48,23 +48,23 @@ func (mp *memBox) Location() string {
 	return mp.u.String()
 }
 
-func (mp *memBox) Start(ctx context.Context) error {
+func (mp *memBox) Start(context.Context) error {
 	mp.mx.Lock()
 	mp.zettel = make(map[id.Zid]domain.Zettel)
 	mp.mx.Unlock()
 	return nil
 }
 
-func (mp *memBox) Stop(ctx context.Context) error {
+func (mp *memBox) Stop(context.Context) error {
 	mp.mx.Lock()
 	mp.zettel = nil
 	mp.mx.Unlock()
 	return nil
 }
 
-func (mp *memBox) CanCreateZettel(ctx context.Context) bool { return true }
+func (mp *memBox) CanCreateZettel(context.Context) bool { return true }
 
-func (mp *memBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (mp *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid, error) {
 	mp.mx.Lock()
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
 		_, ok := mp.zettel[zid]
@@ -83,7 +83,7 @@ func (mp *memBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zi
 	return zid, nil
 }
 
-func (mp *memBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (mp *memBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
 	mp.mx.RLock()
 	zettel, ok := mp.zettel[zid]
 	mp.mx.RUnlock()
@@ -94,7 +94,7 @@ func (mp *memBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	return zettel, nil
 }
 
-func (mp *memBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (mp *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	mp.mx.RLock()
 	zettel, ok := mp.zettel[zid]
 	mp.mx.RUnlock()
@@ -104,7 +104,7 @@ func (mp *memBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return zettel.Meta.Clone(), nil
 }
 
-func (mp *memBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
+func (mp *memBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	mp.mx.RLock()
 	defer mp.mx.RUnlock()
 	for zid := range mp.zettel {
@@ -124,11 +124,11 @@ func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (mp *memBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (mp *memBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
 	return true
 }
 
-func (mp *memBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (mp *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	mp.mx.Lock()
 	meta := zettel.Meta.Clone()
 	if !meta.Zid.IsValid() {
@@ -141,9 +141,9 @@ func (mp *memBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error 
 	return nil
 }
 
-func (mp *memBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool { return true }
+func (mp *memBox) AllowRenameZettel(context.Context, id.Zid) bool { return true }
 
-func (mp *memBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+func (mp *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	mp.mx.Lock()
 	zettel, ok := mp.zettel[curZid]
 	if !ok {
@@ -168,14 +168,14 @@ func (mp *memBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	return nil
 }
 
-func (mp *memBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
+func (mp *memBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	mp.mx.RLock()
 	_, ok := mp.zettel[zid]
 	mp.mx.RUnlock()
 	return ok
 }
 
-func (mp *memBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
+func (mp *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	mp.mx.Lock()
 	if _, ok := mp.zettel[zid]; !ok {
 		mp.mx.Unlock()

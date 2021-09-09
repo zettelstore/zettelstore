@@ -58,14 +58,13 @@ func Setup(cfg *meta.Meta) { myConfig = cfg.Clone() }
 
 func (pp *compBox) Location() string { return "" }
 
-func (pp *compBox) CanCreateZettel(ctx context.Context) bool { return false }
+func (pp *compBox) CanCreateZettel(context.Context) bool { return false }
 
-func (pp *compBox) CreateZettel(
-	ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (pp *compBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (pp *compBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (pp *compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
 	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
@@ -81,7 +80,7 @@ func (pp *compBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, er
 	return domain.Zettel{}, box.ErrNotFound
 }
 
-func (pp *compBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (pp *compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	if gen, ok := myZettel[zid]; ok {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
@@ -93,7 +92,7 @@ func (pp *compBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) 
 	return nil, box.ErrNotFound
 }
 
-func (pp *compBox) ApplyZid(ctx context.Context, handle box.ZidFunc) error {
+func (pp *compBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	for zid, gen := range myZettel {
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {
@@ -117,29 +116,29 @@ func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (pp *compBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (pp *compBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
 	return false
 }
 
-func (pp *compBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (pp *compBox) UpdateZettel(context.Context, domain.Zettel) error {
 	return box.ErrReadOnly
 }
 
-func (pp *compBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
+func (pp *compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := myZettel[zid]
 	return !ok
 }
 
-func (pp *compBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+func (pp *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 	if _, ok := myZettel[curZid]; ok {
 		return box.ErrReadOnly
 	}
 	return box.ErrNotFound
 }
 
-func (pp *compBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool { return false }
+func (pp *compBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (pp *compBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
+func (pp *compBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if _, ok := myZettel[zid]; ok {
 		return box.ErrReadOnly
 	}

@@ -29,7 +29,7 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(_ *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
 	descrlist := &ast.DescriptionListNode{}
 	for _, p := range m.Pairs(true) {
 		descrlist.Descriptions = append(
@@ -83,7 +83,7 @@ func convertToInlineList(value string, dt *meta.DescriptionType) *ast.InlineList
 	return ast.CreateInlineListNode(result...)
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 	inp.SkipToEOL()
 	return ast.CreateInlineListNode(
 		&ast.FormatNode{
