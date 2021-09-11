@@ -238,7 +238,7 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (dp *dirBox) CanUpdateZettel(_ context.Context, zettel domain.Zettel) bool {
+func (dp *dirBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
 	return !dp.readonly
 }
 

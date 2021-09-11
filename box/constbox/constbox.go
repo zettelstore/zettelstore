@@ -48,13 +48,11 @@ type constBox struct {
 	enricher box.Enricher
 }
 
-func (cp *constBox) Location() string {
-	return "const:"
-}
+func (*constBox) Location() string { return "const:" }
 
-func (cp *constBox) CanCreateZettel(context.Context) bool { return false }
+func (*constBox) CanCreateZettel(context.Context) bool { return false }
 
-func (cp *constBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (*constBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
 	return id.Invalid, box.ErrReadOnly
 }
 
@@ -88,13 +86,9 @@ func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (cp *constBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
-	return false
-}
+func (*constBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
-func (cp *constBox) UpdateZettel(context.Context, domain.Zettel) error {
-	return box.ErrReadOnly
-}
+func (*constBox) UpdateZettel(context.Context, domain.Zettel) error { return box.ErrReadOnly }
 
 func (cp *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := cp.zettel[zid]
@@ -107,7 +101,7 @@ func (cp *constBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 	}
 	return box.ErrNotFound
 }
-func (cp *constBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
+func (*constBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (cp *constBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if _, ok := cp.zettel[zid]; ok {

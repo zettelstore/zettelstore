@@ -110,7 +110,7 @@ type textNode struct {
 	text []byte
 }
 
-func (e *textNode) node() {}
+func (*textNode) node() {}
 
 // Template represents a compiled mustache template
 type Template struct {

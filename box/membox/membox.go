@@ -62,7 +62,7 @@ func (mp *memBox) Stop(context.Context) error {
 	return nil
 }
 
-func (mp *memBox) CanCreateZettel(context.Context) bool { return true }
+func (*memBox) CanCreateZettel(context.Context) bool { return true }
 
 func (mp *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid, error) {
 	mp.mx.Lock()
@@ -124,9 +124,7 @@ func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (mp *memBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
-	return true
-}
+func (*memBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return true }
 
 func (mp *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	mp.mx.Lock()
@@ -141,7 +139,7 @@ func (mp *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	return nil
 }
 
-func (mp *memBox) AllowRenameZettel(context.Context, id.Zid) bool { return true }
+func (*memBox) AllowRenameZettel(context.Context, id.Zid) bool { return true }
 
 func (mp *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	mp.mx.Lock()

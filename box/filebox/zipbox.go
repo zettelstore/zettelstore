@@ -102,9 +102,9 @@ func (zp *zipBox) Stop(context.Context) error {
 	return nil
 }
 
-func (zp *zipBox) CanCreateZettel(context.Context) bool { return false }
+func (*zipBox) CanCreateZettel(context.Context) bool { return false }
 
-func (zp *zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (*zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
 	return id.Invalid, box.ErrReadOnly
 }
 
@@ -184,13 +184,9 @@ func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	return nil
 }
 
-func (zp *zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
-	return false
-}
+func (*zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
-func (zp *zipBox) UpdateZettel(context.Context, domain.Zettel) error {
-	return box.ErrReadOnly
-}
+func (*zipBox) UpdateZettel(context.Context, domain.Zettel) error { return box.ErrReadOnly }
 
 func (zp *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := zp.zettel[zid]
@@ -204,7 +200,7 @@ func (zp *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 	return box.ErrNotFound
 }
 
-func (zp *zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
+func (*zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (zp *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if _, ok := zp.zettel[zid]; ok {

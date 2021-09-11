@@ -24,10 +24,10 @@ type ReferenceMaterialNode struct {
 	Ref *Reference
 }
 
-func (rn *ReferenceMaterialNode) materialNode() { /* Just a marker */ }
+func (*ReferenceMaterialNode) materialNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (rn *ReferenceMaterialNode) WalkChildren(v Visitor) { /* No children*/ }
+func (*ReferenceMaterialNode) WalkChildren(Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ type BLOBMaterialNode struct {
 	Syntax string // Syntax of Blob
 }
 
-func (bn *BLOBMaterialNode) materialNode() { /* Just a marker */ }
+func (*BLOBMaterialNode) materialNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (bn *BLOBMaterialNode) WalkChildren(v Visitor) { /* No children*/ }
+func (*BLOBMaterialNode) WalkChildren(Visitor) { /* No children*/ }
