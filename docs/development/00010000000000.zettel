@@ -1,0 +1,8 @@
+id: 00010000000000
+title: Developments Notes
+role: zettel
+syntax: zmk
+modified: 20210916194954
+
+* [[Required Software|20210916193200]]
+* [[Checklist for Release|20210916194900]]
