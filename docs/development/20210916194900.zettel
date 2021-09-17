@@ -2,27 +2,51 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20210916200055
+modified: 20210917165448
 
 # Check for unused parameters:
 #* ``unparam ./...``
-#* ``unparam -exported ./...``
-# Before creating a release, clean up your Go workspace:
+#* ``unparam -exported -tests ./...``
+# Clean up your Go workspace:
 #* ``go run tools/build.go clean`` (alternatively: ``make clean``).
 # All internal tests must succeed:
 #* ``go run tools/build.go check`` (alternatively: ``make check``).
 # The API tests must succeed on every development platform:
 #* ``go run tools/build.go testapi`` (alternatively: ``make api``).
-# Run [[linkchecker|https://linkchecker.github.io/linkchecker/]] with your local zettel box and with the manual:
-#* ``go run -race cmd/zettelstore/main.go run -d DIR``
+# Run [[linkchecker|https://linkchecker.github.io/linkchecker/]] with the manual:
+#* ``go run -race cmd/zettelstore/main.go run -d docs/manual``
 #* ``linkchecker  http://127.0.0.1:23123 2>&1 | tee lc.txt``
 #* Check all ""Error: 404 Not Found""
+#* Check all ""Error: 403 Forbidden"": allowed for endpoint ''/p'' with encoding ''html'' for those zettel that are accessible only in ''expert-mode''.
 #* Try to resolve other error messages and warnings
 #* Warnings about empty content can be ignored
-#* Checking the manual must result in no error messages and no warnings
 # On every development platform, the box with 10.000 zettel must run, with ''-race'' enabled:
 #* ``go run -race cmd/zettelstore/main.go run -d DIR``.
 # Create a development release:
 #* ``go run tools/build.go release`` (alternatively: ``make release``).
 # On every platform (esp. macOS), the box with 10.000 zettel must run properly:
 #* ``./zettelstore -d DIR``
+# Update files in directory ''www''
+#* index.wiki
+#* download.wiki
+#* changes.wiki
+#* plan.wiki
+# Set file ''VERSION'' to the new release version
+# Disable Fossil autosync mode:
+#* ``fossil setting autosync off``
+# Commit the new release version:
+#* ``fossil commit --tag release --tag version-VERSION -m "Version VERSION"``
+# Clean up your Go workspace:
+#* ``go run tools/build.go clean`` (alternatively: ``make clean``).
+# Create the release:
+#* ``go run tools/build.go release`` (alternatively: ``make release``).
+# Remove previous executables:
+#* ``fossil uv remove --glob '*-PREVVERSION*'``
+# Add executables for release:
+#* ``cd release``
+#* ``fossil uv add *.zip``
+#* ``cd ..``
+#* Synchronize with main repository:
+#* ``fossil sync -u``
+# Enable autosync:
+#* ``fossil setting autosync on``

@@ -45,8 +45,8 @@ func TestPolicies(t *testing.T) {
 		name := fmt.Sprintf("readonly=%v/withauth=%v/expert=%v",
 			ts.readonly, ts.withAuth, ts.expert)
 		t.Run(name, func(tt *testing.T) {
-			testCreate(tt, pol, ts.withAuth, ts.readonly, ts.expert)
-			testRead(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testCreate(tt, pol, ts.withAuth, ts.readonly)
+			testRead(tt, pol, ts.withAuth, ts.expert)
 			testWrite(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 			testRename(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 			testDelete(tt, pol, ts.withAuth, ts.readonly, ts.expert)
@@ -94,7 +94,7 @@ func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 	return meta.VisibilityLogin
 }
 
-func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool) {
+func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly bool) {
 	t.Helper()
 	anonUser := newAnon()
 	creator := newCreator()
@@ -141,7 +141,7 @@ func testCreate(t *testing.T, pol auth.Policy, withAuth, readonly, isExpert bool
 	}
 }
 
-func testRead(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
+func testRead(t *testing.T, pol auth.Policy, withAuth, expert bool) {
 	t.Helper()
 	anonUser := newAnon()
 	creator := newCreator()

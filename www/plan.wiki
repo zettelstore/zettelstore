@@ -9,7 +9,7 @@ They are planned to be solved.
      put your file into the directory where your zettel are stored. Make sure
      that the file name starts with unique 14 digits that make up the zettel
      identifier.
-  *  Automatic lists and transclusions are not supported in Zettelmarkup.
+  *  Automatic lists and full transclusions are not supported in Zettelmarkup.
   *  &hellip;
 
 <h3>Smaller limitations</h3>
@@ -20,11 +20,11 @@ They are planned to be solved.
   *  Changing the content syntax is not reflected in file extension.
   *  File names with additional text besides the zettel identifier are not
      always preserved.
+  *  A running Zettelstore does not always detect when a directory box is
+     removed. In case, it expects some zettel that cannot be retrieved.
   *  &hellip;
 
 <h3>Planned improvements</h3>
   *  Support for mathematical content is missing, e.g. <code>$$F(x) &=
      \\int^a_b \\frac{1}{3}x^3$$</code>.
-  *  Render zettel in [https://pandoc.org|pandoc's] JSON version of
-     their native AST to make pandoc an external renderer for Zettelstore.
   *  &hellip;

@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_0_16"></a>
+<h2>Changes for Version 0.0.16 (pending)</h2>
+
 <a name="0_0_15"></a>
-<h2>Changes for Version 0.0.15 (pending)</h2>
+<h2>Changes for Version 0.0.15 (2021-09-17)</h2>
   *  Move again endpoint characters for authentication to make room for future
      features. WebUI authentication moves from <tt>/a</tt> to <tt>/i</tt>
      (login) and <tt>/i?logout</tt> (logout). API authentication moves from
@@ -52,6 +55,8 @@
      (minor: api)
   *  Fix: do not list a shadowed zettel that matches the select criteria.
      (minor)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_0_14"></a>
 <h2>Changes for Version 0.0.14 (2021-07-23)</h2>
