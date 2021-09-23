@@ -2,7 +2,7 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20210917165448
+modified: 20210923200805
 
 # Check for unused parameters:
 #* ``unparam ./...``
@@ -35,7 +35,9 @@ modified: 20210917165448
 # Disable Fossil autosync mode:
 #* ``fossil setting autosync off``
 # Commit the new release version:
-#* ``fossil commit --tag release --tag version-VERSION -m "Version VERSION"``
+#* ``fossil commit --tag release --tag vVERSION -m "Version VERSION"``
+#* **Important:** the tag must follow the given pattern, e.g. ''v0.0.15''.
+   Otherwise client will not be able to import ''zettelkasten.de/z''.
 # Clean up your Go workspace:
 #* ``go run tools/build.go clean`` (alternatively: ``make clean``).
 # Create the release:
