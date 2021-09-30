@@ -14,7 +14,7 @@ package webui
 import (
 	"net/http"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 )
 
 func redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {

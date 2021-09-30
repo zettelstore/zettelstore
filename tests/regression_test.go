@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"

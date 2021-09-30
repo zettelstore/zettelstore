@@ -19,7 +19,7 @@ import (
 	"net/url"
 	"time"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -99,10 +99,11 @@ func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTextTitle getTextT
 	title, found := getTextTitle(zid)
 	switch {
 	case found > 0:
+		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
 		if title == "" {
-			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", wui.NewURLBuilder('h').SetZid(zid), zid)
+			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", ub, zid)
 		} else {
-			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", wui.NewURLBuilder('h').SetZid(zid), title, zid)
+			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", ub, title, zid)
 		}
 	case found == 0:
 		fmt.Fprintf(w, "<s>%v</s>", val)

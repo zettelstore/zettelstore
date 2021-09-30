@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"

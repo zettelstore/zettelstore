@@ -14,7 +14,7 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"

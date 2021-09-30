@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -36,7 +36,7 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		result := make([]zsapi.ZidMetaJSON, 0, len(metaList))
 		for _, m := range metaList {
 			result = append(result, zsapi.ZidMetaJSON{
-				ID:   m.Zid.String(),
+				ID:   zsapi.ZettelID(m.Zid.String()),
 				Meta: m.Map(),
 			})
 		}

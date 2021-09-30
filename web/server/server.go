@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )

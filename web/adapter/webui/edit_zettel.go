@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -85,6 +85,6 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) ht
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.NewURLBuilder('h').SetZid(zid))
+		redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())))
 	}
 }

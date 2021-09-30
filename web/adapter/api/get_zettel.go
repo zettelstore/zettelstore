@@ -15,7 +15,7 @@ import (
 	"context"
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
@@ -35,7 +35,7 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 		w.Header().Set(zsapi.HeaderContentType, ctJSON)
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, zsapi.ZettelJSON{
-			ID:       z.Meta.Zid.String(),
+			ID:       zsapi.ZettelID(z.Meta.Zid.String()),
 			Meta:     z.Meta.Map(),
 			Encoding: encoding,
 			Content:  content,

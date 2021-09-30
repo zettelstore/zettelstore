@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"time"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

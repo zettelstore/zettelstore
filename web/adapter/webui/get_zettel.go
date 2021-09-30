@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -90,6 +90,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
 		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyFolge, getTextTitle)
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyBack, getTextTitle)
+		apiZid := api.ZettelID(zid.String())
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		base.MetaHeader = metaHeader
@@ -119,17 +120,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}{
 			HTMLTitle:     htmlTitle,
 			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       wui.NewURLBuilder('e').SetZid(zid).String(),
+			EditURL:       wui.NewURLBuilder('e').SetZid(apiZid).String(),
 			Zid:           zid.String(),
-			InfoURL:       wui.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL:       wui.NewURLBuilder('i').SetZid(apiZid).String(),
 			RoleText:      roleText,
 			RoleURL:       wui.NewURLBuilder('h').AppendQuery("role", roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCreate && !zn.Content.IsBinary(),
-			CopyURL:       wui.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:       wui.NewURLBuilder('c').SetZid(apiZid).String(),
 			CanFolge:      canCreate,
-			FolgeURL:      wui.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:      wui.NewURLBuilder('f').SetZid(apiZid).String(),
 			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, meta.KeyPrecursor, getTextTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
@@ -229,7 +230,7 @@ func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTextTitle getTe
 			continue
 		}
 		if title, found := getTextTitle(zid); found > 0 {
-			url := wui.NewURLBuilder('h').SetZid(zid).String()
+			url := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String()
 			if title == "" {
 				result = append(result, simpleLink{Text: val, URL: url})
 			} else {

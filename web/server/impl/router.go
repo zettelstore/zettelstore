@@ -16,7 +16,7 @@ import (
 	"regexp"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/web/server"

@@ -18,7 +18,7 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -103,6 +103,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		user := wui.getUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
+		apiZid := api.ZettelID(zid.String())
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
@@ -133,18 +134,18 @@ func (wui *WebUI) MakeGetInfoHandler(
 			Endnotes       string
 		}{
 			Zid:            zid.String(),
-			WebURL:         wui.NewURLBuilder('h').SetZid(zid).String(),
-			ContextURL:     wui.NewURLBuilder('k').SetZid(zid).String(),
+			WebURL:         wui.NewURLBuilder('h').SetZid(apiZid).String(),
+			ContextURL:     wui.NewURLBuilder('k').SetZid(apiZid).String(),
 			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:        wui.NewURLBuilder('e').SetZid(zid).String(),
+			EditURL:        wui.NewURLBuilder('e').SetZid(apiZid).String(),
 			CanFolge:       canCreate,
-			FolgeURL:       wui.NewURLBuilder('f').SetZid(zid).String(),
+			FolgeURL:       wui.NewURLBuilder('f').SetZid(apiZid).String(),
 			CanCopy:        canCreate && !zn.Content.IsBinary(),
-			CopyURL:        wui.NewURLBuilder('c').SetZid(zid).String(),
+			CopyURL:        wui.NewURLBuilder('c').SetZid(apiZid).String(),
 			CanRename:      wui.canRename(ctx, user, zn.Meta),
-			RenameURL:      wui.NewURLBuilder('b').SetZid(zid).String(),
+			RenameURL:      wui.NewURLBuilder('b').SetZid(apiZid).String(),
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
-			DeleteURL:      wui.NewURLBuilder('d').SetZid(zid).String(),
+			DeleteURL:      wui.NewURLBuilder('d').SetZid(apiZid).String(),
 			MetaData:       metaData,
 			HasLinks:       len(extLinks)+len(locLinks) > 0,
 			HasLocLinks:    len(locLinks) > 0,
@@ -196,7 +197,7 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 	defEncoding := encoder.GetDefaultEncoding().String()
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	matrix := make([]matrixLine, 0, len(parts))
-	u := wui.NewURLBuilder(key).SetZid(zid)
+	u := wui.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
 	for _, part := range parts {
 		row := make([]simpleLink, len(encTexts))
 		for j, enc := range encTexts {
@@ -214,16 +215,17 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 
 func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 	matrix := wui.infoAPIMatrix(key, zid)
+	apiZid := api.ZettelID(zid.String())
 
 	// Append plain and JSON format
-	u := wui.NewURLBuilder('z').SetZid(zid)
+	u := wui.NewURLBuilder('z').SetZid(apiZid)
 	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
 	for i, part := range parts {
 		u.AppendQuery(api.QueryKeyPart, part)
 		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
 		u.ClearQuery()
 	}
-	u = wui.NewURLBuilder('j').SetZid(zid)
+	u = wui.NewURLBuilder('j').SetZid(apiZid)
 	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.String()})
 	return matrix
 }

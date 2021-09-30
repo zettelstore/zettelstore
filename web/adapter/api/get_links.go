@@ -14,7 +14,7 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
@@ -40,9 +40,7 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		}
 		summary := collect.References(zn)
 
-		outData := zsapi.ZettelLinksJSON{ID: zid.String()}
-		// TODO: calculate incoming links from other zettel (via "backward" metadata?)
-		outData.Linked.Incoming = nil
+		outData := zsapi.ZettelLinksJSON{ID: zsapi.ZettelID(zid.String())}
 		zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 		outData.Linked.Outgoing = idRefs(zetRefs)
 		outData.Linked.Local = stringRefs(locRefs)

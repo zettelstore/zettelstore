@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -90,6 +90,6 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.NewURLBuilder('h').SetZid(newZid))
+		redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(newZid.String())))
 	}
 }

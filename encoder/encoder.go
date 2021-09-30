@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"io"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 )

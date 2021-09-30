@@ -15,7 +15,7 @@ import (
 	"context"
 	"time"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"

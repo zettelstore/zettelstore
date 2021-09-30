@@ -11,7 +11,7 @@
 // Package api provides api handlers for web requests.
 package api
 
-import "zettelstore.de/z/api"
+import "zettelstore.de/c/api"
 
 const ctHTML = "text/html; charset=utf-8"
 const ctJSON = "application/json"

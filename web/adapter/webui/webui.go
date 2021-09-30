@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -83,8 +83,8 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		policy:   pol,
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
-		cssBaseURL:    ab.NewURLBuilder('z').SetZid(id.BaseCSSZid).String(),
-		cssUserURL:    ab.NewURLBuilder('z').SetZid(id.UserCSSZid).String(),
+		cssBaseURL:    ab.NewURLBuilder('z').SetZid(api.ZidBaseCSS).String(),
+		cssUserURL:    ab.NewURLBuilder('z').SetZid(api.ZidUserCSS).String(),
 		homeURL:       ab.NewURLBuilder('/').String(),
 		listZettelURL: ab.NewURLBuilder('h').String(),
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
@@ -194,7 +194,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *me
 
 	userIsValid := user != nil
 	if userIsValid {
-		userZettelURL = wui.NewURLBuilder('h').SetZid(user.Zid).String()
+		userZettelURL = wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String()
 		userIdent = user.GetDefault(meta.KeyUserID, "")
 	}
 	newZettelLinks := wui.fetchNewTemplates(ctx, user)
@@ -264,7 +264,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		}
 		result = append(result, simpleLink{
 			Text: menuTitle,
-			URL:  wui.NewURLBuilder('g').SetZid(m.Zid).String(),
+			URL:  wui.NewURLBuilder('g').SetZid(api.ZettelID(m.Zid.String())).String(),
 		})
 	}
 	return result

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -17,7 +17,7 @@ import (
 	"log"
 	"net/http"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -89,7 +89,7 @@ func CreateHostedReference(b server.Builder, s string) *ast.Reference {
 
 // CreateFoundReference builds a reference for a found zettel.
 func CreateFoundReference(b server.Builder, key byte, part, enc string, zid id.Zid, fragment string) *ast.Reference {
-	ub := b.NewURLBuilder(key).SetZid(zid)
+	ub := b.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
 	if part != "" {
 		ub.AppendQuery(api.QueryKeyPart, part)
 	}

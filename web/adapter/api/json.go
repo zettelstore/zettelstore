@@ -16,7 +16,7 @@ import (
 	"io"
 	"net/http"
 
-	zsapi "zettelstore.de/z/api"
+	zsapi "zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -31,12 +31,12 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
 	outList := make([]zsapi.ZidMetaJSON, len(metaList))
 	for i, m := range metaList {
-		outList[i].ID = m.Zid.String()
+		outList[i].ID = zsapi.ZettelID(m.Zid.String())
 		outList[i].Meta = m.Map()
 	}
 	w.Header().Set(zsapi.HeaderContentType, ctJSON)
 	return encodeJSONData(w, zsapi.ZidMetaRelatedList{
-		ID:   m.Zid.String(),
+		ID:   zsapi.ZettelID(m.Zid.String()),
 		Meta: m.Map(),
 		List: outList,
 	})

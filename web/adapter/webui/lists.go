@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/z/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -213,10 +213,11 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
+		apiZid := api.ZettelID(zid.String())
 		metaLinks := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
-		depthURL := wui.NewURLBuilder('k').SetZid(zid)
+		depthURL := wui.NewURLBuilder('k').SetZid(apiZid)
 		for i, depth := range depths {
 			depthURL.ClearQuery()
 			switch dir {
@@ -240,7 +241,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			Metas   []simpleLink
 		}{
 			Title:   "Zettel Context",
-			InfoURL: wui.NewURLBuilder('i').SetZid(zid).String(),
+			InfoURL: wui.NewURLBuilder('i').SetZid(apiZid).String(),
 			Depths:  depthLinks,
 			Start:   metaLinks[0],
 			Metas:   metaLinks[1:],
@@ -312,7 +313,7 @@ func (wui *WebUI) buildHTMLMetaList(
 		env := encoder.Environment{Lang: lang, Interactive: true}
 		metas = append(metas, simpleLink{
 			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, &env),
-			URL:  wui.NewURLBuilder('h').SetZid(m.Zid).String(),
+			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),
 		})
 	}
 	return metas
