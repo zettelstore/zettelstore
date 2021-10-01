@@ -16,7 +16,7 @@ import (
 	"io"
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -29,14 +29,14 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 }
 
 func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
-	outList := make([]zsapi.ZidMetaJSON, len(metaList))
+	outList := make([]api.ZidMetaJSON, len(metaList))
 	for i, m := range metaList {
-		outList[i].ID = zsapi.ZettelID(m.Zid.String())
+		outList[i].ID = api.ZettelID(m.Zid.String())
 		outList[i].Meta = m.Map()
 	}
-	w.Header().Set(zsapi.HeaderContentType, ctJSON)
-	return encodeJSONData(w, zsapi.ZidMetaRelatedList{
-		ID:   zsapi.ZettelID(m.Zid.String()),
+	w.Header().Set(api.HeaderContentType, ctJSON)
+	return encodeJSONData(w, api.ZidMetaRelatedList{
+		ID:   api.ZettelID(m.Zid.String()),
 		Meta: m.Map(),
 		List: outList,
 	})
@@ -45,7 +45,7 @@ func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) e
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
 	var zettel domain.Zettel
 	dec := json.NewDecoder(r.Body)
-	var zettelData zsapi.ZettelDataJSON
+	var zettelData api.ZettelDataJSON
 	if err := dec.Decode(&zettelData); err != nil {
 		return zettel, err
 	}

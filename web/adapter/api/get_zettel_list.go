@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -33,16 +33,16 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		result := make([]zsapi.ZidMetaJSON, 0, len(metaList))
+		result := make([]api.ZidMetaJSON, 0, len(metaList))
 		for _, m := range metaList {
-			result = append(result, zsapi.ZidMetaJSON{
-				ID:   zsapi.ZettelID(m.Zid.String()),
+			result = append(result, api.ZidMetaJSON{
+				ID:   api.ZettelID(m.Zid.String()),
 				Meta: m.Map(),
 			})
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, ctJSON)
-		err = encodeJSONData(w, zsapi.ZettelListJSON{
+		w.Header().Set(api.HeaderContentType, ctJSON)
+		err = encodeJSONData(w, api.ZettelListJSON{
 			List: result,
 		})
 		if err != nil {
@@ -63,7 +63,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, ctPlainText)
+		w.Header().Set(api.HeaderContentType, ctPlainText)
 		for _, m := range metaList {
 			_, err = fmt.Fprintln(w, m.Zid.String(), config.GetTitle(m, a.rtConfig))
 			if err != nil {

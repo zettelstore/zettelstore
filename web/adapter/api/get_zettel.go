@@ -15,7 +15,7 @@ import (
 	"context"
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
@@ -32,10 +32,10 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, ctJSON)
+		w.Header().Set(api.HeaderContentType, ctJSON)
 		content, encoding := z.Content.Encode()
-		err = encodeJSONData(w, zsapi.ZettelJSON{
-			ID:       zsapi.ZettelID(z.Meta.Zid.String()),
+		err = encodeJSONData(w, api.ZettelJSON{
+			ID:       api.ZettelID(z.Meta.Zid.String()),
 			Meta:     z.Meta.Map(),
 			Encoding: encoding,
 			Content:  content,
@@ -64,11 +64,11 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 				_, err = z.Content.Write(w)
 			}
 		case partMeta:
-			w.Header().Set(zsapi.HeaderContentType, ctPlainText)
+			w.Header().Set(api.HeaderContentType, ctPlainText)
 			_, err = z.Meta.Write(w, false)
 		case partContent:
 			if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, a.rtConfig)); ok {
-				w.Header().Set(zsapi.HeaderContentType, ct)
+				w.Header().Set(api.HeaderContentType, ct)
 			}
 			_, err = z.Content.Write(w)
 		}

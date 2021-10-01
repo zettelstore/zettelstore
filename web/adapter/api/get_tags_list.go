@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"strconv"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -30,15 +30,15 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, ctJSON)
-		tagMap := make(map[string][]zsapi.ZettelID, len(tagData))
+		w.Header().Set(api.HeaderContentType, ctJSON)
+		tagMap := make(map[string][]api.ZettelID, len(tagData))
 		for tag, metaList := range tagData {
-			zidList := make([]zsapi.ZettelID, 0, len(metaList))
+			zidList := make([]api.ZettelID, 0, len(metaList))
 			for _, m := range metaList {
-				zidList = append(zidList, zsapi.ZettelID(m.Zid.String()))
+				zidList = append(zidList, api.ZettelID(m.Zid.String()))
 			}
 			tagMap[tag] = zidList
 		}
-		encodeJSONData(w, zsapi.TagListJSON{Tags: tagMap})
+		encodeJSONData(w, api.TagListJSON{Tags: tagMap})
 	}
 }

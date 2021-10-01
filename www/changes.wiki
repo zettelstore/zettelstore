@@ -2,6 +2,11 @@
 
 <a name="0_0_16"></a>
 <h2>Changes for Version 0.0.16 (pending)</h2>
+  *  Add API endpoint <tt>/</tt> to retrieve HTMl and text encoded strings from
+     given ZettelMarkup encoded values. This will be used to render a HTML page
+     from a given zettel: in many cases the title of a zettel must be treated
+     separately.
+     (minor: api)
 
 <a name="0_0_15"></a>
 <h2>Changes for Version 0.0.15 (2021-09-17)</h2>

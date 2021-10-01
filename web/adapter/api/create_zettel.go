@@ -14,7 +14,7 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -36,10 +36,10 @@ func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		u := a.NewURLBuilder('z').SetZid(zsapi.ZettelID(newZid.String())).String()
+		u := a.NewURLBuilder('z').SetZid(api.ZettelID(newZid.String())).String()
 		h := w.Header()
-		h.Set(zsapi.HeaderContentType, ctPlainText)
-		h.Set(zsapi.HeaderLocation, u)
+		h.Set(api.HeaderContentType, ctPlainText)
+		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
 		if _, err = w.Write(newZid.Bytes()); err != nil {
 			adapter.InternalServerError(w, "Write Plain", err)
@@ -63,12 +63,12 @@ func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) htt
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		u := a.NewURLBuilder('j').SetZid(zsapi.ZettelID(newZid.String())).String()
+		u := a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String()
 		h := w.Header()
-		h.Set(zsapi.HeaderContentType, ctJSON)
-		h.Set(zsapi.HeaderLocation, u)
+		h.Set(api.HeaderContentType, ctJSON)
+		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
-		if err = encodeJSONData(w, zsapi.ZidJSON{ID: zsapi.ZettelID(newZid.String())}); err != nil {
+		if err = encodeJSONData(w, api.ZidJSON{ID: api.ZettelID(newZid.String())}); err != nil {
 			adapter.InternalServerError(w, "Write JSON", err)
 		}
 	}

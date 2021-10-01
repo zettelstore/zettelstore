@@ -14,7 +14,7 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -28,7 +28,7 @@ func MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(zsapi.HeaderContentType, ctJSON)
-		encodeJSONData(w, zsapi.RoleListJSON{Roles: roleList})
+		w.Header().Set(api.HeaderContentType, ctJSON)
+		encodeJSONData(w, api.RoleListJSON{Roles: roleList})
 	}
 }
