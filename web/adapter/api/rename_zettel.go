@@ -53,17 +53,15 @@ func getDestinationZid(r *http.Request) (id.Zid, bool) {
 	return id.Invalid, false
 }
 
-var zidLength = len(id.VersionZid.Bytes())
-
 func getZidFromURL(val string) (id.Zid, bool) {
 	u, err := url.Parse(val)
 	if err != nil {
 		return id.Invalid, false
 	}
-	if len(u.Path) < zidLength {
+	if len(u.Path) < len(api.ZidVersion) {
 		return id.Invalid, false
 	}
-	zid, err := id.Parse(u.Path[len(u.Path)-zidLength:])
+	zid, err := id.Parse(u.Path[len(u.Path)-len(api.ZidVersion):])
 	if err != nil {
 		return id.Invalid, false
 	}

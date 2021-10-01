@@ -16,6 +16,7 @@ import (
 	_ "embed" // Allow to embed file content
 	"net/url"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/domain"
@@ -127,7 +128,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityOwner,
 		},
 		domain.NewContent("")},
-	id.LicenseZid: {
+	id.MustParse(api.ZidLicense): {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore License",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -137,7 +138,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityPublic,
 		},
 		domain.NewContent(contentLicense)},
-	id.AuthorsZid: {
+	id.MustParse(api.ZidAuthors): {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Contributors",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -147,7 +148,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityPublic,
 		},
 		domain.NewContent(contentContributors)},
-	id.DependenciesZid: {
+	id.MustParse(api.ZidDependencies): {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Dependencies",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -265,7 +266,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentErrorMustache)},
-	id.BaseCSSZid: {
+	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore Base CSS",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -274,7 +275,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityPublic,
 		},
 		domain.NewContent(contentBaseCSS)},
-	id.UserCSSZid: {
+	id.MustParse(api.ZidUserCSS): {
 		constHeader{
 			meta.KeyTitle:      "Zettelstore User CSS",
 			meta.KeyRole:       meta.ValueRoleConfiguration,
@@ -300,7 +301,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityCreator,
 		},
 		domain.NewContent(contentNewTOCZettel)},
-	id.TemplateNewZettelZid: {
+	id.MustParse(api.ZidTemplateNewZettel): {
 		constHeader{
 			meta.KeyTitle:      "New Zettel",
 			meta.KeyRole:       meta.ValueRoleZettel,
@@ -308,7 +309,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.KeyVisibility: meta.ValueVisibilityCreator,
 		},
 		domain.NewContent("")},
-	id.TemplateNewUserZid: {
+	id.MustParse(api.ZidTemplateNewUser): {
 		constHeader{
 			meta.KeyTitle:                       "New User",
 			meta.KeyRole:                        meta.ValueRoleUser,

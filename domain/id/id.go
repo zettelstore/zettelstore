@@ -15,6 +15,8 @@ package id
 import (
 	"strconv"
 	"time"
+
+	"zettelstore.de/c/api"
 )
 
 // Zid is the internal identifier of a zettel. Typically, it is a
@@ -24,53 +26,31 @@ import (
 type Zid uint64
 
 // Some important ZettelIDs.
+const (
+	Invalid = Zid(0) // Invalid is a Zid that will never be valid
+)
+
+// ZettelIDs that are used as Zid more than once.
 // Note: if you change some values, ensure that you also change them in the
 //       constant box. They are mentioned there literally, because these
 //       constants are not available there.
-const (
-	Invalid = Zid(0) // Invalid is a Zid that will never be valid
-
-	// System zettel
-	VersionZid              = Zid(1)
-	HostZid                 = Zid(2)
-	OperatingSystemZid      = Zid(3)
-	LicenseZid              = Zid(4)
-	AuthorsZid              = Zid(5)
-	DependenciesZid         = Zid(6)
-	BoxManagerZid           = Zid(20)
-	MetadataKeyZid          = Zid(90)
-	StartupConfigurationZid = Zid(96)
-	ConfigurationZid        = Zid(100)
-
-	// WebUI HTML templates are in the range 10000..19999
-	BaseTemplateZid    = Zid(10100)
-	LoginTemplateZid   = Zid(10200)
-	ListTemplateZid    = Zid(10300)
-	ZettelTemplateZid  = Zid(10401)
-	InfoTemplateZid    = Zid(10402)
-	FormTemplateZid    = Zid(10403)
-	RenameTemplateZid  = Zid(10404)
-	DeleteTemplateZid  = Zid(10405)
-	ContextTemplateZid = Zid(10406)
-	RolesTemplateZid   = Zid(10500)
-	TagsTemplateZid    = Zid(10600)
-	ErrorTemplateZid   = Zid(10700)
-
-	// WebUI CSS zettel are in the range 20000..29999
-	BaseCSSZid = Zid(20001)
-	UserCSSZid = Zid(25001)
-
-	// WebUI JS zettel are in the range 30000..39999
-
-	// WebUI image zettel are in the range 40000..49999
-	EmojiZid = Zid(40001)
-
-	// Range 90000...99999 is reserved for zettel templates
-	TOCNewTemplateZid    = Zid(90000)
-	TemplateNewZettelZid = Zid(90001)
-	TemplateNewUserZid   = Zid(90002)
-
-	DefaultHomeZid = Zid(10000000000)
+var (
+	ConfigurationZid   = MustParse(api.ZidConfiguration)
+	BaseTemplateZid    = MustParse(api.ZidBaseTemplate)
+	LoginTemplateZid   = MustParse(api.ZidLoginTemplate)
+	ListTemplateZid    = MustParse(api.ZidListTemplate)
+	ZettelTemplateZid  = MustParse(api.ZidZettelTemplate)
+	InfoTemplateZid    = MustParse(api.ZidInfoTemplate)
+	FormTemplateZid    = MustParse(api.ZidFormTemplate)
+	RenameTemplateZid  = MustParse(api.ZidRenameTemplate)
+	DeleteTemplateZid  = MustParse(api.ZidDeleteTemplate)
+	ContextTemplateZid = MustParse(api.ZidContextTemplate)
+	RolesTemplateZid   = MustParse(api.ZidRolesTemplate)
+	TagsTemplateZid    = MustParse(api.ZidTagsTemplate)
+	ErrorTemplateZid   = MustParse(api.ZidErrorTemplate)
+	EmojiZid           = MustParse(api.ZidEmoji)
+	TOCNewTemplateZid  = MustParse(api.ZidTOCNewTemplate)
+	DefaultHomeZid     = MustParse(api.ZidDefaultHome)
 )
 
 const maxZid = 99999999999999
@@ -99,6 +79,16 @@ func Parse(s string) (Zid, error) {
 		return Invalid, err
 	}
 	return Zid(res), nil
+}
+
+// MustParse tries to interpret a string as a zettel identifier and returns
+// its value or panics otherwise.
+func MustParse(s api.ZettelID) Zid {
+	zid, err := Parse(string(s))
+	if err == nil {
+		return zid
+	}
+	panic(err)
 }
 
 const digits = "0123456789"

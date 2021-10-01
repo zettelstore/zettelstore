@@ -15,6 +15,7 @@ import (
 	"context"
 	"net/url"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/domain"
@@ -40,12 +41,12 @@ var myZettel = map[id.Zid]struct {
 	meta    func(id.Zid) *meta.Meta
 	content func(*meta.Meta) string
 }{
-	id.VersionZid:              {genVersionBuildM, genVersionBuildC},
-	id.HostZid:                 {genVersionHostM, genVersionHostC},
-	id.OperatingSystemZid:      {genVersionOSM, genVersionOSC},
-	id.BoxManagerZid:           {genManagerM, genManagerC},
-	id.MetadataKeyZid:          {genKeysM, genKeysC},
-	id.StartupConfigurationZid: {genConfigZettelM, genConfigZettelC},
+	id.MustParse(api.ZidVersion):              {genVersionBuildM, genVersionBuildC},
+	id.MustParse(api.ZidHost):                 {genVersionHostM, genVersionHostC},
+	id.MustParse(api.ZidOperatingSystem):      {genVersionOSM, genVersionOSC},
+	id.MustParse(api.ZidBoxManager):           {genManagerM, genManagerC},
+	id.MustParse(api.ZidMetadataKey):          {genKeysM, genKeysC},
+	id.MustParse(api.ZidStartupConfiguration): {genConfigZettelM, genConfigZettelC},
 }
 
 // Get returns the one program box.
