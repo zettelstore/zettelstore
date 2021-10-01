@@ -250,7 +250,7 @@ func cmdTestAPI() error {
 	if err != nil {
 		return err
 	}
-	err = checkGoTest("zettelstore.de/z/client", "-base-url", "http://127.0.0.1:23123")
+	err = checkGoTest("zettelstore.de/z/tests/client", "-base-url", "http://127.0.0.1:23123")
 	if needServer {
 		err1 := stopZettelstore(&info)
 		if err == nil {
