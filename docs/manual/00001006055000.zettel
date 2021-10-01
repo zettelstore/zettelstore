@@ -3,7 +3,7 @@ title: Reserved zettel identifier
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20210917154229
+modified: 20211001125243
 
 [[Zettel identifier|00001006050000]] are typically created by examine the current date and time.
 By renaming a zettel, you are able to provide any sequence of 14 digits.
@@ -40,4 +40,4 @@ This list may change in the future.
 
 ==== External Applications
 |= From | To | Description
-| 00009000001000 | 00009000001999 | ZS Slides, an application to display zettel as a HTML-based slideshow
+| 00009000001000 | 00009000001999 | [[Zettel Presenter|https://zettelstore.de/contrib]], an application to display zettel as a HTML-based slideshow
