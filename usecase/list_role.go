@@ -15,6 +15,7 @@ import (
 	"context"
 	"sort"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
@@ -44,7 +45,7 @@ func (uc ListRole) Run(ctx context.Context) ([]string, error) {
 	}
 	roles := make(map[string]bool, 8)
 	for _, m := range metas {
-		if role, ok := m.Get(meta.KeyRole); ok && role != "" {
+		if role, ok := m.Get(api.KeyRole); ok && role != "" {
 			roles[role] = true
 		}
 	}

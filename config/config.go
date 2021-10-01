@@ -12,6 +12,7 @@
 package config
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -73,7 +74,7 @@ type AuthConfig interface {
 // GetTitle returns the value of the "title" key of the given meta. If there
 // is no such value, GetDefaultTitle is returned.
 func GetTitle(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(meta.KeyTitle); ok {
+	if val, ok := m.Get(api.KeyTitle); ok {
 		return val
 	}
 	if cfg != nil {
@@ -85,7 +86,7 @@ func GetTitle(m *meta.Meta, cfg Config) string {
 // GetRole returns the value of the "role" key of the given meta. If there
 // is no such value, GetDefaultRole is returned.
 func GetRole(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(meta.KeyRole); ok {
+	if val, ok := m.Get(api.KeyRole); ok {
 		return val
 	}
 	return cfg.GetDefaultRole()
@@ -94,7 +95,7 @@ func GetRole(m *meta.Meta, cfg Config) string {
 // GetSyntax returns the value of the "syntax" key of the given meta. If there
 // is no such value, GetDefaultSyntax is returned.
 func GetSyntax(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(meta.KeySyntax); ok {
+	if val, ok := m.Get(api.KeySyntax); ok {
 		return val
 	}
 	return cfg.GetDefaultSyntax()
@@ -103,7 +104,7 @@ func GetSyntax(m *meta.Meta, cfg Config) string {
 // GetLang returns the value of the "lang" key of the given meta. If there is
 // no such value, GetDefaultLang is returned.
 func GetLang(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(meta.KeyLang); ok {
+	if val, ok := m.Get(api.KeyLang); ok {
 		return val
 	}
 	return cfg.GetDefaultLang()

@@ -12,6 +12,7 @@
 package policy
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/meta"
 )
@@ -29,7 +30,7 @@ func (d *defaultPolicy) CanRename(user, m *meta.Meta) bool { return d.canChange(
 func (d *defaultPolicy) CanDelete(user, m *meta.Meta) bool { return d.canChange(user, m) }
 
 func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
-	metaRo, ok := m.Get(meta.KeyReadOnly)
+	metaRo, ok := m.Get(api.KeyReadOnly)
 	if !ok {
 		return true
 	}
@@ -39,16 +40,16 @@ func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
 
 		// No authentication: check for owner-like restriction, because the user
 		// acts as an owner
-		return metaRo != meta.ValueUserRoleOwner && !meta.BoolValue(metaRo)
+		return metaRo != api.ValueUserRoleOwner && !meta.BoolValue(metaRo)
 	}
 
 	userRole := d.manager.GetUserRole(user)
 	switch metaRo {
-	case meta.ValueUserRoleReader:
+	case api.ValueUserRoleReader:
 		return userRole > meta.UserRoleReader
-	case meta.ValueUserRoleWriter:
+	case api.ValueUserRoleWriter:
 		return userRole > meta.UserRoleWriter
-	case meta.ValueUserRoleOwner:
+	case api.ValueUserRoleOwner:
 		return userRole > meta.UserRoleOwner
 	}
 	return !meta.BoolValue(metaRo)

@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/dirbox/directory"
 	"zettelstore.de/z/box/filebox"
@@ -296,9 +297,9 @@ func (dp *dirBox) calcSpecExt(m *meta.Meta) (directory.MetaSpec, string) {
 	if m.YamlSep {
 		return directory.MetaSpecHeader, "zettel"
 	}
-	syntax := m.GetDefault(meta.KeySyntax, "bin")
+	syntax := m.GetDefault(api.KeySyntax, "bin")
 	switch syntax {
-	case meta.ValueSyntaxNone, meta.ValueSyntaxZmk:
+	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
 		return directory.MetaSpecHeader, "zettel"
 	}
 	for _, s := range dp.cdata.Config.GetZettelFileSyntax() {
@@ -392,11 +393,11 @@ func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 }
 
 func (dp *dirBox) cleanupMeta(m *meta.Meta) {
-	if role, ok := m.Get(meta.KeyRole); !ok || role == "" {
-		m.Set(meta.KeyRole, dp.cdata.Config.GetDefaultRole())
+	if role, ok := m.Get(api.KeyRole); !ok || role == "" {
+		m.Set(api.KeyRole, dp.cdata.Config.GetDefaultRole())
 	}
-	if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
-		m.Set(meta.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
+	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
+		m.Set(api.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
 	}
 }
 

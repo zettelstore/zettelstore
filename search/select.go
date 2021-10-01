@@ -14,6 +14,7 @@ package search
 import (
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 )
 
@@ -299,8 +300,8 @@ func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) M
 }
 
 func getMeta(m *meta.Meta, key string) (string, bool) {
-	if key == meta.KeyTags {
-		return m.Get(meta.KeyAllTags)
+	if key == api.KeyTags {
+		return m.Get(api.KeyAllTags)
 	}
 	return m.Get(key)
 }

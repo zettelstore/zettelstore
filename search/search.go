@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -232,11 +233,11 @@ func (s *Search) EnrichNeeded() bool {
 	s.mx.RLock()
 	defer s.mx.RUnlock()
 	for key := range s.tags {
-		if meta.IsComputed(key) || key == meta.KeyTags {
+		if meta.IsComputed(key) || key == api.KeyTags {
 			return true
 		}
 	}
-	if order := s.order; order != "" && (meta.IsComputed(order) || order == meta.KeyTags) {
+	if order := s.order; order != "" && (meta.IsComputed(order) || order == api.KeyTags) {
 		return true
 	}
 	return false
@@ -319,7 +320,7 @@ func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
 	}
 
 	if s.order == "" {
-		sort.Slice(metaList, createSortFunc(meta.KeyID, true, metaList))
+		sort.Slice(metaList, createSortFunc(api.KeyID, true, metaList))
 	} else if s.order == RandomOrder {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]

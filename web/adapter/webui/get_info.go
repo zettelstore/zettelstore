@@ -24,7 +24,6 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
@@ -63,7 +62,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		zn, err := parseZettel.Run(ctx, zid, q.Get(meta.KeySyntax))
+		zn, err := parseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -237,7 +236,7 @@ func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMe
 	}
 	result := make([]string, 0, len(ml)-1)
 	for _, m := range ml[1:] {
-		if boxNo, ok := m.Get(meta.KeyBoxNumber); ok {
+		if boxNo, ok := m.Get(api.KeyBoxNumber); ok {
 			result = append(result, boxNo)
 		}
 	}

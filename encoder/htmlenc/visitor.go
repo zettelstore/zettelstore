@@ -112,20 +112,20 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapMetaKey = map[string]string{
-	meta.KeyCopyright: "copyright",
-	meta.KeyLicense:   "license",
+	api.KeyCopyright: "copyright",
+	api.KeyLicense:   "license",
 }
 
 func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	ignore := v.setupIgnoreSet()
-	ignore[meta.KeyTitle] = true
-	if tags, ok := m.Get(meta.KeyAllTags); ok {
+	ignore[api.KeyTitle] = true
+	if tags, ok := m.Get(api.KeyAllTags); ok {
 		v.writeTags(tags)
-		ignore[meta.KeyAllTags] = true
-		ignore[meta.KeyTags] = true
-	} else if tags, ok := m.Get(meta.KeyTags); ok {
+		ignore[api.KeyAllTags] = true
+		ignore[api.KeyTags] = true
+	} else if tags, ok := m.Get(api.KeyTags); ok {
 		v.writeTags(tags)
-		ignore[meta.KeyTags] = true
+		ignore[api.KeyTags] = true
 	}
 
 	for _, p := range m.Pairs(true) {

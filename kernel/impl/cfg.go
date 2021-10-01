@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -31,12 +32,12 @@ type configService struct {
 
 func (cs *configService) Initialize() {
 	cs.descr = descriptionMap{
-		meta.KeyDefaultCopyright: {"Default copyright", parseString, true},
-		meta.KeyDefaultLang:      {"Default language", parseString, true},
-		meta.KeyDefaultRole:      {"Default role", parseString, true},
-		meta.KeyDefaultSyntax:    {"Default syntax", parseString, true},
-		meta.KeyDefaultTitle:     {"Default title", parseString, true},
-		meta.KeyDefaultVisibility: {
+		api.KeyDefaultCopyright: {"Default copyright", parseString, true},
+		api.KeyDefaultLang:      {"Default language", parseString, true},
+		api.KeyDefaultRole:      {"Default role", parseString, true},
+		api.KeyDefaultSyntax:    {"Default syntax", parseString, true},
+		api.KeyDefaultTitle:     {"Default title", parseString, true},
+		api.KeyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
 				vis := meta.GetVisibility(val)
@@ -47,34 +48,34 @@ func (cs *configService) Initialize() {
 			},
 			true,
 		},
-		meta.KeyExpertMode:       {"Expert mode", parseBool, true},
-		meta.KeyFooterHTML:       {"Footer HTML", parseString, true},
-		meta.KeyHomeZettel:       {"Home zettel", parseZid, true},
-		meta.KeyMarkerExternal:   {"Marker external URL", parseString, true},
-		meta.KeyMaxTransclusions: {"Maximum transclusions", parseInt, true},
-		meta.KeySiteName:         {"Site name", parseString, true},
-		meta.KeyYAMLHeader:       {"YAML header", parseBool, true},
-		meta.KeyZettelFileSyntax: {
+		api.KeyExpertMode:       {"Expert mode", parseBool, true},
+		api.KeyFooterHTML:       {"Footer HTML", parseString, true},
+		api.KeyHomeZettel:       {"Home zettel", parseZid, true},
+		api.KeyMarkerExternal:   {"Marker external URL", parseString, true},
+		api.KeyMaxTransclusions: {"Maximum transclusions", parseInt, true},
+		api.KeySiteName:         {"Site name", parseString, true},
+		api.KeyYAMLHeader:       {"YAML header", parseBool, true},
+		api.KeyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) interface{} { return strings.Fields(val) },
 			true,
 		},
 	}
 	cs.next = interfaceMap{
-		meta.KeyDefaultCopyright:  "",
-		meta.KeyDefaultLang:       meta.ValueLangEN,
-		meta.KeyDefaultRole:       meta.ValueRoleZettel,
-		meta.KeyDefaultSyntax:     meta.ValueSyntaxZmk,
-		meta.KeyDefaultTitle:      "Untitled",
-		meta.KeyDefaultVisibility: meta.VisibilityLogin,
-		meta.KeyExpertMode:        false,
-		meta.KeyFooterHTML:        "",
-		meta.KeyHomeZettel:        id.DefaultHomeZid,
-		meta.KeyMarkerExternal:    "&#10138;",
-		meta.KeyMaxTransclusions:  1024,
-		meta.KeySiteName:          "Zettelstore",
-		meta.KeyYAMLHeader:        false,
-		meta.KeyZettelFileSyntax:  nil,
+		api.KeyDefaultCopyright:  "",
+		api.KeyDefaultLang:       api.ValueLangEN,
+		api.KeyDefaultRole:       api.ValueRoleZettel,
+		api.KeyDefaultSyntax:     api.ValueSyntaxZmk,
+		api.KeyDefaultTitle:      "Untitled",
+		api.KeyDefaultVisibility: meta.VisibilityLogin,
+		api.KeyExpertMode:        false,
+		api.KeyFooterHTML:        "",
+		api.KeyHomeZettel:        id.DefaultHomeZid,
+		api.KeyMarkerExternal:    "&#10138;",
+		api.KeyMaxTransclusions:  1024,
+		api.KeySiteName:          "Zettelstore",
+		api.KeyYAMLHeader:        false,
+		api.KeyZettelFileSyntax:  nil,
 	}
 }
 
@@ -154,12 +155,12 @@ func (cfg *myConfig) observe(ci box.UpdateInfo) {
 }
 
 var defaultKeys = map[string]string{
-	meta.KeyCopyright: meta.KeyDefaultCopyright,
-	meta.KeyLang:      meta.KeyDefaultLang,
-	meta.KeyLicense:   meta.KeyDefaultLicense,
-	meta.KeyRole:      meta.KeyDefaultRole,
-	meta.KeySyntax:    meta.KeyDefaultSyntax,
-	meta.KeyTitle:     meta.KeyDefaultTitle,
+	api.KeyCopyright: api.KeyDefaultCopyright,
+	api.KeyLang:      api.KeyDefaultLang,
+	api.KeyLicense:   api.KeyDefaultLicense,
+	api.KeyRole:      api.KeyDefaultRole,
+	api.KeySyntax:    api.KeyDefaultSyntax,
+	api.KeyTitle:     api.KeyDefaultTitle,
 }
 
 // AddDefaultValues enriches the given meta data with its default values.
@@ -197,28 +198,28 @@ func (cfg *myConfig) getBool(key string) bool {
 }
 
 // GetDefaultTitle returns the current value of the "default-title" key.
-func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(meta.KeyDefaultTitle) }
+func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(api.KeyDefaultTitle) }
 
 // GetDefaultRole returns the current value of the "default-role" key.
-func (cfg *myConfig) GetDefaultRole() string { return cfg.getString(meta.KeyDefaultRole) }
+func (cfg *myConfig) GetDefaultRole() string { return cfg.getString(api.KeyDefaultRole) }
 
 // GetDefaultSyntax returns the current value of the "default-syntax" key.
-func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(meta.KeyDefaultSyntax) }
+func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(api.KeyDefaultSyntax) }
 
 // GetDefaultLang returns the current value of the "default-lang" key.
-func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(meta.KeyDefaultLang) }
+func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(api.KeyDefaultLang) }
 
 // GetSiteName returns the current value of the "site-name" key.
-func (cfg *myConfig) GetSiteName() string { return cfg.getString(meta.KeySiteName) }
+func (cfg *myConfig) GetSiteName() string { return cfg.getString(api.KeySiteName) }
 
 // GetHomeZettel returns the value of the "home-zettel" key.
 func (cfg *myConfig) GetHomeZettel() id.Zid {
-	val := cfg.getString(meta.KeyHomeZettel)
+	val := cfg.getString(api.KeyHomeZettel)
 	if homeZid, err := id.Parse(val); err == nil {
 		return homeZid
 	}
 	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(meta.KeyHomeZettel)
+	val, _ = cfg.orig.Get(api.KeyHomeZettel)
 	homeZid, _ := id.Parse(val)
 	cfg.mx.RUnlock()
 	return homeZid
@@ -226,12 +227,12 @@ func (cfg *myConfig) GetHomeZettel() id.Zid {
 
 // GetDefaultVisibility returns the default value for zettel visibility.
 func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
-	val := cfg.getString(meta.KeyDefaultVisibility)
+	val := cfg.getString(api.KeyDefaultVisibility)
 	if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
 		return vis
 	}
 	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(meta.KeyDefaultVisibility)
+	val, _ = cfg.orig.Get(api.KeyDefaultVisibility)
 	vis := meta.GetVisibility(val)
 	cfg.mx.RUnlock()
 	return vis
@@ -240,7 +241,7 @@ func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cfg *myConfig) GetMaxTransclusions() int {
 	cfg.mx.RLock()
-	val, ok := cfg.data.GetNumber(meta.KeyMaxTransclusions)
+	val, ok := cfg.data.GetNumber(api.KeyMaxTransclusions)
 	cfg.mx.RUnlock()
 	if ok && val > 0 {
 		return val
@@ -249,32 +250,32 @@ func (cfg *myConfig) GetMaxTransclusions() int {
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
-func (cfg *myConfig) GetYAMLHeader() bool { return cfg.getBool(meta.KeyYAMLHeader) }
+func (cfg *myConfig) GetYAMLHeader() bool { return cfg.getBool(api.KeyYAMLHeader) }
 
 // GetMarkerExternal returns the current value of the "marker-external" key.
 func (cfg *myConfig) GetMarkerExternal() string {
-	return cfg.getString(meta.KeyMarkerExternal)
+	return cfg.getString(api.KeyMarkerExternal)
 }
 
 // GetFooterHTML returns HTML code that should be embedded into the footer
 // of each WebUI page.
-func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(meta.KeyFooterHTML) }
+func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(api.KeyFooterHTML) }
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cfg *myConfig) GetZettelFileSyntax() []string {
 	cfg.mx.RLock()
 	defer cfg.mx.RUnlock()
-	return cfg.data.GetListOrNil(meta.KeyZettelFileSyntax)
+	return cfg.data.GetListOrNil(api.KeyZettelFileSyntax)
 }
 
 // --- AuthConfig
 
 // GetExpertMode returns the current value of the "expert-mode" key
-func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(meta.KeyExpertMode) }
+func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(api.KeyExpertMode) }
 
 // GetVisibility returns the visibility value, or "login" if none is given.
 func (cfg *myConfig) GetVisibility(m *meta.Meta) meta.Visibility {
-	if val, ok := m.Get(meta.KeyVisibility); ok {
+	if val, ok := m.Get(api.KeyVisibility); ok {
 		if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
 			return vis
 		}

@@ -195,7 +195,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *me
 	userIsValid := user != nil
 	if userIsValid {
 		userZettelURL = wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String()
-		userIdent = user.GetDefault(meta.KeyUserID, "")
+		userIdent = user.GetDefault(api.KeyUserID, "")
 	}
 	newZettelLinks := wui.fetchNewTemplates(ctx, user)
 
@@ -253,7 +253,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 			continue
 		}
 		title := config.GetTitle(m, wui.rtConfig)
-		astTitle := parser.ParseInlines(input.NewInput(title), meta.ValueSyntaxZmk)
+		astTitle := parser.ParseInlines(input.NewInput(title), api.ValueSyntaxZmk)
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
 		menuTitle, err := encodeInlines(astTitle, api.EncoderHTML, &env)
 		if err != nil {
@@ -286,7 +286,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 	user := wui.getUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, meta.ValueLangEN, "Error", user, &base)
+	wui.makeBaseData(ctx, api.ValueLangEN, "Error", user, &base)
 	wui.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
 		ErrorTitle string
 		ErrorText  string

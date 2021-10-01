@@ -15,6 +15,7 @@ import (
 	"context"
 	"strconv"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 )
@@ -26,24 +27,24 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 		// because of other reasons -> ignore this call, do not update meta data
 		return
 	}
-	m.Set(meta.KeyBoxNumber, strconv.Itoa(boxNumber))
+	m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
 	computePublished(m)
 	mgr.idxStore.Enrich(ctx, m)
 }
 
 func computePublished(m *meta.Meta) {
-	if _, ok := m.Get(meta.KeyPublished); ok {
+	if _, ok := m.Get(api.KeyPublished); ok {
 		return
 	}
-	if modified, ok := m.Get(meta.KeyModified); ok {
+	if modified, ok := m.Get(api.KeyModified); ok {
 		if _, ok = meta.TimeValue(modified); ok {
-			m.Set(meta.KeyPublished, modified)
+			m.Set(api.KeyPublished, modified)
 			return
 		}
 	}
 	zid := m.Zid.String()
 	if _, ok := meta.TimeValue(zid); ok {
-		m.Set(meta.KeyPublished, zid)
+		m.Set(api.KeyPublished, zid)
 		return
 	}
 

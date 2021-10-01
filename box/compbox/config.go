@@ -14,6 +14,7 @@ package compbox
 import (
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -23,8 +24,8 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 		return nil
 	}
 	m := meta.New(zid)
-	m.Set(meta.KeyTitle, "Zettelstore Startup Configuration")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
+	m.Set(api.KeyTitle, "Zettelstore Startup Configuration")
+	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }
 

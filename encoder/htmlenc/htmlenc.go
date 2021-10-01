@@ -42,7 +42,7 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
-	plainTitle, hasTitle := zn.InhMeta.Get(meta.KeyTitle)
+	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		v.b.WriteStrings("<title>", v.evalValue(plainTitle, evalMeta), "</title>")
 	}
@@ -67,8 +67,8 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	v := newVisitor(he, w)
 
 	// Write title
-	if title, ok := m.Get(meta.KeyTitle); ok {
-		v.b.WriteStrings("<meta name=\"zs-", meta.KeyTitle, "\" content=\"")
+	if title, ok := m.Get(api.KeyTitle); ok {
+		v.b.WriteStrings("<meta name=\"zs-", api.KeyTitle, "\" content=\"")
 		v.writeQuotedEscaped(v.evalValue(title, evalMeta))
 		v.b.WriteString("\">")
 	}

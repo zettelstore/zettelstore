@@ -19,6 +19,7 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -86,16 +87,16 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 	}
 	var updated bool
 	if len(zi.dead) > 0 {
-		m.Set(meta.KeyDead, zi.dead.String())
+		m.Set(api.KeyDead, zi.dead.String())
 		updated = true
 	}
 	back := removeOtherMetaRefs(m, zi.backward.Copy())
 	if len(zi.backward) > 0 {
-		m.Set(meta.KeyBackward, zi.backward.String())
+		m.Set(api.KeyBackward, zi.backward.String())
 		updated = true
 	}
 	if len(zi.forward) > 0 {
-		m.Set(meta.KeyForward, zi.forward.String())
+		m.Set(api.KeyForward, zi.forward.String())
 		back = remRefs(back, zi.forward)
 		updated = true
 	}
@@ -109,18 +110,18 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 		}
 	}
 	if len(back) > 0 {
-		m.Set(meta.KeyBack, back.String())
+		m.Set(api.KeyBack, back.String())
 		updated = true
 	}
 	if zi.itags != "" {
-		if tags, ok := m.Get(meta.KeyTags); ok {
-			m.Set(meta.KeyAllTags, tags+" "+zi.itags)
+		if tags, ok := m.Get(api.KeyTags); ok {
+			m.Set(api.KeyAllTags, tags+" "+zi.itags)
 		} else {
-			m.Set(meta.KeyAllTags, zi.itags)
+			m.Set(api.KeyAllTags, zi.itags)
 		}
 		updated = true
-	} else if tags, ok := m.Get(meta.KeyTags); ok {
-		m.Set(meta.KeyAllTags, tags)
+	} else if tags, ok := m.Get(api.KeyTags); ok {
+		m.Set(api.KeyAllTags, tags)
 		updated = true
 	}
 	return updated

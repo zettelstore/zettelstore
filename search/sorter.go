@@ -14,6 +14,7 @@ package search
 import (
 	"strconv"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 )
 
@@ -21,7 +22,7 @@ type sortFunc func(i, j int) bool
 
 func createSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
 	keyType := meta.Type(key)
-	if key == meta.KeyID || keyType == meta.TypeCredential {
+	if key == api.KeyID || keyType == meta.TypeCredential {
 		if descending {
 			return func(i, j int) bool { return ml[i].Zid > ml[j].Zid }
 		}

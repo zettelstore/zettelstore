@@ -14,6 +14,7 @@ package zettelmark
 import (
 	"unicode"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -22,7 +23,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          meta.ValueSyntaxZmk,
+		Name:          api.ValueSyntaxZmk,
 		AltNames:      nil,
 		IsTextParser:  true,
 		IsImageFormat: false,

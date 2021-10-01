@@ -14,10 +14,10 @@ package usecase
 import (
 	"context"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 )
 
 // UpdateZettelPort is the interface used by this use case.
@@ -49,10 +49,10 @@ func (uc UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasContent
 	if zettel.Equal(oldZettel, false) {
 		return nil
 	}
-	m.SetNow(meta.KeyModified)
+	m.SetNow(api.KeyModified)
 	m.YamlSep = oldZettel.Meta.YamlSep
 	if m.Zid == id.ConfigurationZid {
-		m.Set(meta.KeySyntax, meta.ValueSyntaxNone)
+		m.Set(api.KeySyntax, api.ValueSyntaxNone)
 	}
 	if !hasContent {
 		zettel.Content = oldZettel.Content

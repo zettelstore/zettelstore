@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
 )
@@ -151,7 +152,7 @@ func addToMeta(m *Meta, key, val string) {
 		return
 	}
 	switch key {
-	case "", KeyID:
+	case "", api.KeyID:
 		// Empty key and 'id' key will be ignored
 		return
 	}

@@ -15,11 +15,10 @@ import (
 	"fmt"
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
@@ -38,7 +37,7 @@ func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.H
 		q := r.URL.Query()
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
-		zn, err := parseZettel.Run(r.Context(), zid, q.Get(meta.KeySyntax))
+		zn, err := parseZettel.Run(r.Context(), zid, q.Get(api.KeySyntax))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
@@ -50,21 +49,21 @@ func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.H
 func (a *API) writeEncodedZettelPart(
 	w http.ResponseWriter, zn *ast.ZettelNode,
 	evalMeta encoder.EvalMetaFunc,
-	enc zsapi.EncodingEnum, encStr string, part partType,
+	enc api.EncodingEnum, encStr string, part partType,
 ) {
 	env := encoder.Environment{
 		Lang:           config.GetLang(zn.InhMeta, a.rtConfig),
 		Xhtml:          false,
 		MarkerExternal: "",
 		NewWindow:      false,
-		IgnoreMeta:     map[string]bool{meta.KeyLang: true},
+		IgnoreMeta:     map[string]bool{api.KeyLang: true},
 	}
 	encdr := encoder.Create(enc, &env)
 	if encdr == nil {
 		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid.String(), encStr))
 		return
 	}
-	w.Header().Set(zsapi.HeaderContentType, encoding2ContentType(enc))
+	w.Header().Set(api.HeaderContentType, encoding2ContentType(enc))
 	var err error
 	switch part {
 	case partZettel:

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -17,6 +17,7 @@ import (
 
 	"golang.org/x/term"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -60,8 +61,8 @@ func cmdPassword(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 		return 2, err
 	}
 	fmt.Printf("%v: %s\n%v: %s\n",
-		meta.KeyCredential, hashedPassword,
-		meta.KeyUserID, ident,
+		api.KeyCredential, hashedPassword,
+		api.KeyUserID, ident,
 	)
 	return 0, nil
 }

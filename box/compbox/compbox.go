@@ -148,12 +148,12 @@ func (*compBox) ReadStats(st *box.ManagedBoxStats) {
 }
 
 func updateMeta(m *meta.Meta) {
-	m.Set(meta.KeyNoIndex, meta.ValueTrue)
-	m.Set(meta.KeySyntax, meta.ValueSyntaxZmk)
-	m.Set(meta.KeyRole, meta.ValueRoleConfiguration)
-	m.Set(meta.KeyLang, meta.ValueLangEN)
-	m.Set(meta.KeyReadOnly, meta.ValueTrue)
-	if _, ok := m.Get(meta.KeyVisibility); !ok {
-		m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
+	m.Set(api.KeyNoIndex, api.ValueTrue)
+	m.Set(api.KeySyntax, api.ValueSyntaxZmk)
+	m.Set(api.KeyRole, api.ValueRoleConfiguration)
+	m.Set(api.KeyLang, api.ValueLangEN)
+	m.Set(api.KeyReadOnly, api.ValueTrue)
+	if _, ok := m.Get(api.KeyVisibility); !ok {
+		m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	}
 }

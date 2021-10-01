@@ -19,6 +19,7 @@ import (
 
 	"github.com/pascaldekloe/jwt"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/box"
@@ -83,10 +84,10 @@ var ErrNoZid = errors.New("auth: missing zettel id")
 
 // GetToken returns a token to be used for authentification.
 func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind) ([]byte, error) {
-	if role, ok := ident.Get(meta.KeyRole); !ok || role != meta.ValueRoleUser {
+	if role, ok := ident.Get(api.KeyRole); !ok || role != api.ValueRoleUser {
 		return nil, ErrNoUser
 	}
-	subject, ok := ident.Get(meta.KeyUserID)
+	subject, ok := ident.Get(api.KeyUserID)
 	if !ok || subject == "" {
 		return nil, ErrNoIdent
 	}
@@ -171,7 +172,7 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 	if a.IsOwner(user.Zid) {
 		return meta.UserRoleOwner
 	}
-	if val, ok := user.Get(meta.KeyUserRole); ok {
+	if val, ok := user.Get(api.KeyUserRole); ok {
 		if ur := meta.GetUserRole(val); ur != meta.UserRoleUnknown {
 			return ur
 		}

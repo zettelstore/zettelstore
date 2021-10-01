@@ -14,6 +14,7 @@ package usecase
 import (
 	"context"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
 )
@@ -45,7 +46,7 @@ func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
 	}
 	result := make(TagData)
 	for _, m := range metas {
-		if tl, ok := m.GetList(meta.KeyAllTags); ok && len(tl) > 0 {
+		if tl, ok := m.GetList(api.KeyAllTags); ok && len(tl) > 0 {
 			for _, t := range tl {
 				result[t] = append(result[t], m)
 			}

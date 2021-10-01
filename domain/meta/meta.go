@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
 )
@@ -107,75 +108,52 @@ func GetSortedKeyDescriptions() []*DescriptionKey {
 }
 
 // Supported keys.
-var (
-	KeyID                = registerKey("id", TypeID, usageComputed, "")
-	KeyTitle             = registerKey("title", TypeZettelmarkup, usageUser, "")
-	KeyRole              = registerKey("role", TypeWord, usageUser, "")
-	KeyTags              = registerKey("tags", TypeTagSet, usageUser, "")
-	KeySyntax            = registerKey("syntax", TypeWord, usageUser, "")
-	KeyAllTags           = registerKey("all-"+KeyTags, TypeTagSet, usageProperty, "")
-	KeyBack              = registerKey("back", TypeIDSet, usageProperty, "")
-	KeyBackward          = registerKey("backward", TypeIDSet, usageProperty, "")
-	KeyBoxNumber         = registerKey("box-number", TypeNumber, usageComputed, "")
-	KeyCopyright         = registerKey("copyright", TypeString, usageUser, "")
-	KeyCredential        = registerKey("credential", TypeCredential, usageUser, "")
-	KeyDead              = registerKey("dead", TypeIDSet, usageProperty, "")
-	KeyDefaultCopyright  = registerKey("default-copyright", TypeString, usageUser, "")
-	KeyDefaultLang       = registerKey("default-lang", TypeWord, usageUser, "")
-	KeyDefaultLicense    = registerKey("default-license", TypeEmpty, usageUser, "")
-	KeyDefaultRole       = registerKey("default-role", TypeWord, usageUser, "")
-	KeyDefaultSyntax     = registerKey("default-syntax", TypeWord, usageUser, "")
-	KeyDefaultTitle      = registerKey("default-title", TypeZettelmarkup, usageUser, "")
-	KeyDefaultVisibility = registerKey("default-visibility", TypeWord, usageUser, "")
-	KeyDuplicates        = registerKey("duplicates", TypeBool, usageUser, "")
-	KeyExpertMode        = registerKey("expert-mode", TypeBool, usageUser, "")
-	KeyFolge             = registerKey("folge", TypeIDSet, usageProperty, "")
-	KeyFooterHTML        = registerKey("footer-html", TypeString, usageUser, "")
-	KeyForward           = registerKey("forward", TypeIDSet, usageProperty, "")
-	KeyHomeZettel        = registerKey("home-zettel", TypeID, usageUser, "")
-	KeyLang              = registerKey("lang", TypeWord, usageUser, "")
-	KeyLicense           = registerKey("license", TypeEmpty, usageUser, "")
-	KeyMarkerExternal    = registerKey("marker-external", TypeEmpty, usageUser, "")
-	KeyMaxTransclusions  = registerKey("max-transclusions", TypeNumber, usageUser, "")
-	KeyModified          = registerKey("modified", TypeTimestamp, usageComputed, "")
-	KeyNoIndex           = registerKey("no-index", TypeBool, usageUser, "")
-	KeyPrecursor         = registerKey("precursor", TypeIDSet, usageUser, KeyFolge)
-	KeyPublished         = registerKey("published", TypeTimestamp, usageProperty, "")
-	KeyReadOnly          = registerKey("read-only", TypeWord, usageUser, "")
-	KeySiteName          = registerKey("site-name", TypeString, usageUser, "")
-	KeyURL               = registerKey("url", TypeURL, usageUser, "")
-	KeyUserID            = registerKey("user-id", TypeWord, usageUser, "")
-	KeyUserRole          = registerKey("user-role", TypeWord, usageUser, "")
-	KeyVisibility        = registerKey("visibility", TypeWord, usageUser, "")
-	KeyYAMLHeader        = registerKey("yaml-header", TypeBool, usageUser, "")
-	KeyZettelFileSyntax  = registerKey("zettel-file-syntax", TypeWordSet, usageUser, "")
-)
+func init() {
+	registerKey(api.KeyID, TypeID, usageComputed, "")
+	registerKey(api.KeyTitle, TypeZettelmarkup, usageUser, "")
+	registerKey(api.KeyRole, TypeWord, usageUser, "")
+	registerKey(api.KeyTags, TypeTagSet, usageUser, "")
+	registerKey(api.KeySyntax, TypeWord, usageUser, "")
+	registerKey(api.KeyAllTags, TypeTagSet, usageProperty, "")
+	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyBoxNumber, TypeNumber, usageComputed, "")
+	registerKey(api.KeyCopyright, TypeString, usageUser, "")
+	registerKey(api.KeyCredential, TypeCredential, usageUser, "")
+	registerKey(api.KeyDead, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyDefaultCopyright, TypeString, usageUser, "")
+	registerKey(api.KeyDefaultLang, TypeWord, usageUser, "")
+	registerKey(api.KeyDefaultLicense, TypeEmpty, usageUser, "")
+	registerKey(api.KeyDefaultRole, TypeWord, usageUser, "")
+	registerKey(api.KeyDefaultSyntax, TypeWord, usageUser, "")
+	registerKey(api.KeyDefaultTitle, TypeZettelmarkup, usageUser, "")
+	registerKey(api.KeyDefaultVisibility, TypeWord, usageUser, "")
+	registerKey(api.KeyDuplicates, TypeBool, usageUser, "")
+	registerKey(api.KeyExpertMode, TypeBool, usageUser, "")
+	registerKey(api.KeyFolge, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyFooterHTML, TypeString, usageUser, "")
+	registerKey(api.KeyForward, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyHomeZettel, TypeID, usageUser, "")
+	registerKey(api.KeyLang, TypeWord, usageUser, "")
+	registerKey(api.KeyLicense, TypeEmpty, usageUser, "")
+	registerKey(api.KeyMarkerExternal, TypeEmpty, usageUser, "")
+	registerKey(api.KeyMaxTransclusions, TypeNumber, usageUser, "")
+	registerKey(api.KeyModified, TypeTimestamp, usageComputed, "")
+	registerKey(api.KeyNoIndex, TypeBool, usageUser, "")
+	registerKey(api.KeyPrecursor, TypeIDSet, usageUser, api.KeyFolge)
+	registerKey(api.KeyPublished, TypeTimestamp, usageProperty, "")
+	registerKey(api.KeyReadOnly, TypeWord, usageUser, "")
+	registerKey(api.KeySiteName, TypeString, usageUser, "")
+	registerKey(api.KeyURL, TypeURL, usageUser, "")
+	registerKey(api.KeyUserID, TypeWord, usageUser, "")
+	registerKey(api.KeyUserRole, TypeWord, usageUser, "")
+	registerKey(api.KeyVisibility, TypeWord, usageUser, "")
+	registerKey(api.KeyYAMLHeader, TypeBool, usageUser, "")
+	registerKey(api.KeyZettelFileSyntax, TypeWordSet, usageUser, "")
+}
 
 // NewPrefix is the prefix for metadata key in template zettel for creating new zettel.
 const NewPrefix = "new-"
-
-// Important values for some keys.
-const (
-	ValueRoleConfiguration = "configuration"
-	ValueRoleUser          = "user"
-	ValueRoleZettel        = "zettel"
-	ValueSyntaxNone        = "none"
-	ValueSyntaxGif         = "gif"
-	ValueSyntaxText        = "text"
-	ValueSyntaxZmk         = "zmk"
-	ValueTrue              = "true"
-	ValueFalse             = "false"
-	ValueLangEN            = "en"
-	ValueUserRoleCreator   = "creator"
-	ValueUserRoleReader    = "reader"
-	ValueUserRoleWriter    = "writer"
-	ValueUserRoleOwner     = "owner"
-	ValueVisibilityCreator = "creator"
-	ValueVisibilityExpert  = "expert"
-	ValueVisibilityOwner   = "owner"
-	ValueVisibilityLogin   = "login"
-	ValueVisibilityPublic  = "public"
-)
 
 // Meta contains all meta-data of a zettel.
 type Meta struct {
@@ -229,7 +207,7 @@ type Pair struct {
 	Value string
 }
 
-var firstKeys = []string{KeyTitle, KeyRole, KeyTags, KeySyntax}
+var firstKeys = []string{api.KeyTitle, api.KeyRole, api.KeyTags, api.KeySyntax}
 var firstKeySet map[string]bool
 
 func init() {
@@ -241,7 +219,7 @@ func init() {
 
 // Set stores the given string value under the given key.
 func (m *Meta) Set(key, value string) {
-	if key != KeyID {
+	if key != api.KeyID {
 		m.pairs[key] = trimValue(value)
 	}
 }
@@ -253,7 +231,7 @@ func trimValue(value string) string {
 // Get retrieves the string value of a given key. The bool value signals,
 // whether there was a value stored or not.
 func (m *Meta) Get(key string) (string, bool) {
-	if key == KeyID {
+	if key == api.KeyID {
 		return m.Zid.String(), true
 	}
 	value, ok := m.pairs[key]
@@ -308,7 +286,7 @@ func (m *Meta) doPairs(first, allowComputed bool) []Pair {
 
 // Delete removes a key from the data.
 func (m *Meta) Delete(key string) {
-	if key != KeyID {
+	if key != api.KeyID {
 		delete(m.pairs, key)
 	}
 }

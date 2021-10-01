@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -254,7 +255,7 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	if cfg := e.rtConfig; cfg != nil {
 		return config.GetSyntax(m, cfg)
 	}
-	return m.GetDefault(meta.KeySyntax, "")
+	return m.GetDefault(api.KeySyntax, "")
 }
 
 func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {

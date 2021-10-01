@@ -14,7 +14,7 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
@@ -33,14 +33,14 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		}
 		ctx := r.Context()
 		q := r.URL.Query()
-		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), nil)
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), nil)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 		summary := collect.References(zn)
 
-		outData := zsapi.ZettelLinksJSON{ID: zsapi.ZettelID(zid.String())}
+		outData := api.ZettelLinksJSON{ID: api.ZettelID(zid.String())}
 		zetRefs, locRefs, extRefs := collect.DivideReferences(summary.Links)
 		outData.Linked.Outgoing = idRefs(zetRefs)
 		outData.Linked.Local = stringRefs(locRefs)
@@ -58,7 +58,7 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 
 		outData.Cites = stringCites(summary.Cites)
 
-		w.Header().Set(zsapi.HeaderContentType, ctJSON)
+		w.Header().Set(api.HeaderContentType, ctJSON)
 		encodeJSONData(w, outData)
 	}
 }

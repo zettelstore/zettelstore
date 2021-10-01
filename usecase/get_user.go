@@ -14,6 +14,7 @@ package usecase
 import (
 	"context"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -49,17 +50,17 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	// could give herself the same ''ident''. Second, in most cases the owner
 	// will authenticate.
 	identMeta, err := uc.port.GetMeta(ctx, uc.authz.Owner())
-	if err == nil && identMeta.GetDefault(meta.KeyUserID, "") == ident {
-		if role, ok := identMeta.Get(meta.KeyRole); !ok ||
-			role != meta.ValueRoleUser {
+	if err == nil && identMeta.GetDefault(api.KeyUserID, "") == ident {
+		if role, ok := identMeta.Get(api.KeyRole); !ok ||
+			role != api.ValueRoleUser {
 			return nil, nil
 		}
 		return identMeta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
 	var s *search.Search
-	s = s.AddExpr(meta.KeyRole, meta.ValueRoleUser)
-	s = s.AddExpr(meta.KeyUserID, ident)
+	s = s.AddExpr(api.KeyRole, api.ValueRoleUser)
+	s = s.AddExpr(api.KeyUserID, ident)
 	metaList, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err
@@ -95,7 +96,7 @@ func (uc GetUserByZid) GetUser(ctx context.Context, zid id.Zid, ident string) (*
 		return nil, err
 	}
 
-	if val, ok := userMeta.Get(meta.KeyUserID); !ok || val != ident {
+	if val, ok := userMeta.Get(api.KeyUserID); !ok || val != ident {
 		return nil, nil
 	}
 	return userMeta, nil

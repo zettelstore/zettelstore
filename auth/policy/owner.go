@@ -12,6 +12,7 @@
 package policy
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
@@ -34,7 +35,7 @@ func (o *ownerPolicy) userCanCreate(user, newMeta *meta.Meta) bool {
 	if o.manager.GetUserRole(user) == meta.UserRoleReader {
 		return false
 	}
-	if role, ok := newMeta.Get(meta.KeyRole); ok && role == meta.ValueRoleUser {
+	if role, ok := newMeta.Get(api.KeyRole); ok && role == api.ValueRoleUser {
 		return false
 	}
 	return true
@@ -60,7 +61,7 @@ func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool 
 	if user == nil {
 		return false
 	}
-	if role, ok := m.Get(meta.KeyRole); ok && role == meta.ValueRoleUser {
+	if role, ok := m.Get(api.KeyRole); ok && role == api.ValueRoleUser {
 		// Only the user can read its own zettel
 		return user.Zid == m.Zid
 	}
@@ -75,10 +76,10 @@ func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool 
 }
 
 var noChangeUser = []string{
-	meta.KeyID,
-	meta.KeyRole,
-	meta.KeyUserID,
-	meta.KeyUserRole,
+	api.KeyID,
+	api.KeyRole,
+	api.KeyUserID,
+	api.KeyUserRole,
 }
 
 func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
@@ -95,7 +96,7 @@ func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	if !o.userCanRead(user, oldMeta, vis) {
 		return false
 	}
-	if role, ok := oldMeta.Get(meta.KeyRole); ok && role == meta.ValueRoleUser {
+	if role, ok := oldMeta.Get(api.KeyRole); ok && role == api.ValueRoleUser {
 		// Here we know, that user.Zid == newMeta.Zid (because of userCanRead) and
 		// user.Zid == newMeta.Zid (because oldMeta.Zid == newMeta.Zid)
 		for _, key := range noChangeUser {
@@ -146,7 +147,7 @@ func (o *ownerPolicy) userIsOwner(user *meta.Meta) bool {
 	if o.manager.IsOwner(user.Zid) {
 		return true
 	}
-	if val, ok := user.Get(meta.KeyUserRole); ok && val == meta.ValueUserRoleOwner {
+	if val, ok := user.Get(api.KeyUserRole); ok && val == api.ValueUserRoleOwner {
 		return true
 	}
 	return false

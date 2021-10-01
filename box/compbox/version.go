@@ -14,6 +14,7 @@ package compbox
 import (
 	"fmt"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
@@ -21,14 +22,14 @@ import (
 
 func getVersionMeta(zid id.Zid, title string) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(meta.KeyTitle, title)
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
+	m.Set(api.KeyTitle, title)
+	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }
 
 func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m := getVersionMeta(zid, "Zettelstore Version")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityPublic)
+	m.Set(api.KeyVisibility, api.ValueVisibilityPublic)
 	return m
 }
 func genVersionBuildC(*meta.Meta) string {

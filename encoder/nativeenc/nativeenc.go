@@ -188,10 +188,10 @@ var (
 )
 
 func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	v.writeZettelmarkup("Title", m.GetDefault(meta.KeyTitle, ""), evalMeta)
-	v.writeMetaString(m, meta.KeyRole, "Role")
-	v.writeMetaList(m, meta.KeyTags, "Tags")
-	v.writeMetaString(m, meta.KeySyntax, "Syntax")
+	v.writeZettelmarkup("Title", m.GetDefault(api.KeyTitle, ""), evalMeta)
+	v.writeMetaString(m, api.KeyRole, "Role")
+	v.writeMetaList(m, api.KeyTags, "Tags")
+	v.writeMetaString(m, api.KeySyntax, "Syntax")
 	pairs := m.PairsRest(true)
 	if len(pairs) == 0 {
 		return

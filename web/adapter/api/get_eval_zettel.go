@@ -14,10 +14,9 @@ package api
 import (
 	"net/http"
 
-	zsapi "zettelstore.de/c/api"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
@@ -38,13 +37,13 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
 		var embedImage bool
-		if enc == zsapi.EncoderHTML {
+		if enc == api.EncoderHTML {
 			embedImage = true
 		}
 		env := evaluator.Environment{
 			EmbedImage: embedImage,
 		}
-		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &env)
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return

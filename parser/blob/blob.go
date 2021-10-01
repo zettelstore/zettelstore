@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -12,6 +12,7 @@
 package blob
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -49,7 +50,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNo
 	if p := parser.Get(syntax); p != nil {
 		syntax = p.Name
 	}
-	title, _ := m.Get(meta.KeyTitle)
+	title, _ := m.Get(api.KeyTitle)
 	return &ast.BlockListNode{List: []ast.BlockNode{
 		&ast.BLOBNode{
 			Title:  title,

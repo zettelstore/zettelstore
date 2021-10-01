@@ -18,6 +18,7 @@ import (
 	"io"
 	"time"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -248,13 +249,13 @@ func (err *ErrNotAllowed) Error() string {
 			"operation %q on zettel %v not allowed for user %v/%v",
 			err.Op,
 			err.Zid.String(),
-			err.User.GetDefault(meta.KeyUserID, "?"),
+			err.User.GetDefault(api.KeyUserID, "?"),
 			err.User.Zid.String())
 	}
 	return fmt.Sprintf(
 		"operation %q not allowed for user %v/%v",
 		err.Op,
-		err.User.GetDefault(meta.KeyUserID, "?"),
+		err.User.GetDefault(api.KeyUserID, "?"),
 		err.User.Zid.String())
 }
 

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"testing"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -75,7 +76,7 @@ func (a *testAuthzManager) GetUserRole(user *meta.Meta) meta.UserRole {
 	if a.IsOwner(user.Zid) {
 		return meta.UserRoleOwner
 	}
-	if val, ok := user.Get(meta.KeyUserRole); ok {
+	if val, ok := user.Get(api.KeyUserRole); ok {
 		if ur := meta.GetUserRole(val); ur != meta.UserRoleUnknown {
 			return ur
 		}
@@ -88,7 +89,7 @@ type authConfig struct{ expert bool }
 func (ac *authConfig) GetExpertMode() bool { return ac.expert }
 
 func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
-	if vis, ok := m.Get(meta.KeyVisibility); ok {
+	if vis, ok := m.Get(api.KeyVisibility); ok {
 		return meta.GetVisibility(vis)
 	}
 	return meta.VisibilityLogin
@@ -251,7 +252,7 @@ func testWrite(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) {
 	expertZettel := newExpertZettel()
 	userZettel := newUserZettel()
 	writerNew := writer.Clone()
-	writerNew.Set(meta.KeyUserRole, owner.GetDefault(meta.KeyUserRole, ""))
+	writerNew.Set(api.KeyUserRole, owner.GetDefault(api.KeyUserRole, ""))
 	roFalse := newRoFalseZettel()
 	roTrue := newRoTrueZettel()
 	roReader := newRoReaderZettel()
@@ -578,107 +579,107 @@ const (
 func newAnon() *meta.Meta { return nil }
 func newCreator() *meta.Meta {
 	user := meta.New(creatorZid)
-	user.Set(meta.KeyTitle, "Creator")
-	user.Set(meta.KeyRole, meta.ValueRoleUser)
-	user.Set(meta.KeyUserRole, meta.ValueUserRoleCreator)
+	user.Set(api.KeyTitle, "Creator")
+	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserRole, api.ValueUserRoleCreator)
 	return user
 }
 func newReader() *meta.Meta {
 	user := meta.New(readerZid)
-	user.Set(meta.KeyTitle, "Reader")
-	user.Set(meta.KeyRole, meta.ValueRoleUser)
-	user.Set(meta.KeyUserRole, meta.ValueUserRoleReader)
+	user.Set(api.KeyTitle, "Reader")
+	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserRole, api.ValueUserRoleReader)
 	return user
 }
 func newWriter() *meta.Meta {
 	user := meta.New(writerZid)
-	user.Set(meta.KeyTitle, "Writer")
-	user.Set(meta.KeyRole, meta.ValueRoleUser)
-	user.Set(meta.KeyUserRole, meta.ValueUserRoleWriter)
+	user.Set(api.KeyTitle, "Writer")
+	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserRole, api.ValueUserRoleWriter)
 	return user
 }
 func newOwner() *meta.Meta {
 	user := meta.New(ownerZid)
-	user.Set(meta.KeyTitle, "Owner")
-	user.Set(meta.KeyRole, meta.ValueRoleUser)
-	user.Set(meta.KeyUserRole, meta.ValueUserRoleOwner)
+	user.Set(api.KeyTitle, "Owner")
+	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserRole, api.ValueUserRoleOwner)
 	return user
 }
 func newOwner2() *meta.Meta {
 	user := meta.New(owner2Zid)
-	user.Set(meta.KeyTitle, "Owner 2")
-	user.Set(meta.KeyRole, meta.ValueRoleUser)
-	user.Set(meta.KeyUserRole, meta.ValueUserRoleOwner)
+	user.Set(api.KeyTitle, "Owner 2")
+	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserRole, api.ValueUserRoleOwner)
 	return user
 }
 func newZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "Any Zettel")
+	m.Set(api.KeyTitle, "Any Zettel")
 	return m
 }
 func newPublicZettel() *meta.Meta {
 	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Public Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityPublic)
+	m.Set(api.KeyTitle, "Public Zettel")
+	m.Set(api.KeyVisibility, api.ValueVisibilityPublic)
 	return m
 }
 func newCreatorZettel() *meta.Meta {
 	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Creator Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityCreator)
+	m.Set(api.KeyTitle, "Creator Zettel")
+	m.Set(api.KeyVisibility, api.ValueVisibilityCreator)
 	return m
 }
 func newLoginZettel() *meta.Meta {
 	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Login Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityLogin)
+	m.Set(api.KeyTitle, "Login Zettel")
+	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
 func newOwnerZettel() *meta.Meta {
 	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Owner Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityOwner)
+	m.Set(api.KeyTitle, "Owner Zettel")
+	m.Set(api.KeyVisibility, api.ValueVisibilityOwner)
 	return m
 }
 func newExpertZettel() *meta.Meta {
 	m := meta.New(visZid)
-	m.Set(meta.KeyTitle, "Expert Zettel")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityExpert)
+	m.Set(api.KeyTitle, "Expert Zettel")
+	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }
 func newRoFalseZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "No r/o Zettel")
-	m.Set(meta.KeyReadOnly, "false")
+	m.Set(api.KeyTitle, "No r/o Zettel")
+	m.Set(api.KeyReadOnly, api.ValueFalse)
 	return m
 }
 func newRoTrueZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "A r/o Zettel")
-	m.Set(meta.KeyReadOnly, "true")
+	m.Set(api.KeyTitle, "A r/o Zettel")
+	m.Set(api.KeyReadOnly, api.ValueTrue)
 	return m
 }
 func newRoReaderZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "Reader r/o Zettel")
-	m.Set(meta.KeyReadOnly, meta.ValueUserRoleReader)
+	m.Set(api.KeyTitle, "Reader r/o Zettel")
+	m.Set(api.KeyReadOnly, api.ValueUserRoleReader)
 	return m
 }
 func newRoWriterZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "Writer r/o Zettel")
-	m.Set(meta.KeyReadOnly, meta.ValueUserRoleWriter)
+	m.Set(api.KeyTitle, "Writer r/o Zettel")
+	m.Set(api.KeyReadOnly, api.ValueUserRoleWriter)
 	return m
 }
 func newRoOwnerZettel() *meta.Meta {
 	m := meta.New(zettelZid)
-	m.Set(meta.KeyTitle, "Owner r/o Zettel")
-	m.Set(meta.KeyReadOnly, meta.ValueUserRoleOwner)
+	m.Set(api.KeyTitle, "Owner r/o Zettel")
+	m.Set(api.KeyReadOnly, api.ValueUserRoleOwner)
 	return m
 }
 func newUserZettel() *meta.Meta {
 	m := meta.New(userZid)
-	m.Set(meta.KeyTitle, "Any User")
-	m.Set(meta.KeyRole, meta.ValueRoleUser)
+	m.Set(api.KeyTitle, "Any User")
+	m.Set(api.KeyRole, api.ValueRoleUser)
 	return m
 }

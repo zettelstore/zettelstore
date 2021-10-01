@@ -38,11 +38,11 @@ func cmdFile(fs *flag.FlagSet, _ *meta.Meta) (int, error) {
 			Meta:    m,
 			Content: domain.NewContent(inp.Src[inp.Pos:]),
 		},
-		m.GetDefault(meta.KeySyntax, meta.ValueSyntaxZmk),
+		m.GetDefault(api.KeySyntax, api.ValueSyntaxZmk),
 		nil,
 	)
 	encdr := encoder.Create(api.Encoder(enc), &encoder.Environment{
-		Lang: m.GetDefault(meta.KeyLang, meta.ValueLangEN),
+		Lang: m.GetDefault(api.KeyLang, api.ValueLangEN),
 	})
 	if encdr == nil {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", enc)

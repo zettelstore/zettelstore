@@ -305,7 +305,7 @@ func (wui *WebUI) buildHTMLMetaList(
 	metas := make([]simpleLink, 0, len(metaList))
 	for _, m := range metaList {
 		var lang string
-		if val, ok := m.Get(meta.KeyLang); ok {
+		if val, ok := m.Get(api.KeyLang); ok {
 			lang = val
 		} else {
 			lang = defaultLang

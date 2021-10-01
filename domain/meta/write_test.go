@@ -15,6 +15,7 @@ import (
 	"strings"
 	"testing"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -24,13 +25,13 @@ const testID = id.Zid(98765432101234)
 func newMeta(title string, tags []string, syntax string) *meta.Meta {
 	m := meta.New(testID)
 	if title != "" {
-		m.Set(meta.KeyTitle, title)
+		m.Set(api.KeyTitle, title)
 	}
 	if tags != nil {
-		m.Set(meta.KeyTags, strings.Join(tags, " "))
+		m.Set(api.KeyTags, strings.Join(tags, " "))
 	}
 	if syntax != "" {
-		m.Set(meta.KeySyntax, syntax)
+		m.Set(api.KeySyntax, syntax)
 	}
 	return m
 }

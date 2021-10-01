@@ -15,14 +15,15 @@ import (
 	"fmt"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
 
 func genKeysM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(meta.KeyTitle, "Zettelstore Supported Metadata Keys")
-	m.Set(meta.KeyVisibility, meta.ValueVisibilityLogin)
+	m.Set(api.KeyTitle, "Zettelstore Supported Metadata Keys")
+	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
 

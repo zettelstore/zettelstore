@@ -12,6 +12,7 @@
 package none
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -20,7 +21,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          meta.ValueSyntaxNone,
+		Name:          api.ValueSyntaxNone,
 		AltNames:      []string{},
 		IsTextParser:  false,
 		IsImageFormat: false,

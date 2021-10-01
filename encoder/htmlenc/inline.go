@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 )
 
 func (v *visitor) visitBreak(bn *ast.BreakNode) {
@@ -212,9 +212,9 @@ func (v *visitor) writeSpan(iln *ast.InlineListNode, attrs *ast.Attributes) {
 }
 
 var langQuotes = map[string][2]string{
-	meta.ValueLangEN: {"&ldquo;", "&rdquo;"},
-	"de":             {"&bdquo;", "&ldquo;"},
-	"fr":             {"&laquo;&nbsp;", "&nbsp;&raquo;"},
+	api.ValueLangEN: {"&ldquo;", "&rdquo;"},
+	"de":            {"&bdquo;", "&ldquo;"},
+	"fr":            {"&laquo;&nbsp;", "&nbsp;&raquo;"},
 }
 
 func getQuotes(lang string) (string, string) {

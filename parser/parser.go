@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"log"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
@@ -108,7 +109,7 @@ func ParseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
 func ParseMetadata(value string) *ast.InlineListNode {
-	return ParseInlines(input.NewInput(value), meta.ValueSyntaxZmk)
+	return ParseInlines(input.NewInput(value), api.ValueSyntaxZmk)
 }
 
 // ParseZettel parses the zettel based on the syntax.
@@ -119,10 +120,10 @@ func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *a
 		inhMeta = rtConfig.AddDefaultValues(inhMeta)
 	}
 	if syntax == "" {
-		syntax, _ = inhMeta.Get(meta.KeySyntax)
+		syntax, _ = inhMeta.Get(api.KeySyntax)
 	}
 	parseMeta := inhMeta
-	if syntax == meta.ValueSyntaxNone {
+	if syntax == api.ValueSyntaxNone {
 		parseMeta = m
 	}
 	return &ast.ZettelNode{

@@ -19,7 +19,6 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -53,10 +52,10 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Edit Zettel", user, &base)
 		wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 			Heading:       base.Title,
-			MetaTitle:     m.GetDefault(meta.KeyTitle, ""),
-			MetaRole:      m.GetDefault(meta.KeyRole, ""),
-			MetaTags:      m.GetDefault(meta.KeyTags, ""),
-			MetaSyntax:    m.GetDefault(meta.KeySyntax, ""),
+			MetaTitle:     m.GetDefault(api.KeyTitle, ""),
+			MetaRole:      m.GetDefault(api.KeyRole, ""),
+			MetaTags:      m.GetDefault(api.KeyTags, ""),
+			MetaSyntax:    m.GetDefault(api.KeySyntax, ""),
 			MetaPairsRest: m.PairsRest(false),
 			IsTextContent: !zettel.Content.IsBinary(),
 			Content:       zettel.Content.AsString(),

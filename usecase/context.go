@@ -14,6 +14,7 @@ package usecase
 import (
 	"context"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -68,19 +69,19 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 		}
 		curDepth++
 		for _, p := range m.PairsRest(true) {
-			if p.Key == meta.KeyBackward {
+			if p.Key == api.KeyBackward {
 				if isBackward {
 					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
 				}
 				continue
 			}
-			if p.Key == meta.KeyForward {
+			if p.Key == api.KeyForward {
 				if isForward {
 					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
 				}
 				continue
 			}
-			if p.Key != meta.KeyBack {
+			if p.Key != api.KeyBack {
 				hasInverse := meta.Inverse(p.Key) != ""
 				if (!hasInverse || !isBackward) && (hasInverse || !isForward) {
 					continue

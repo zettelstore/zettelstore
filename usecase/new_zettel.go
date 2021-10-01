@@ -12,6 +12,7 @@
 package usecase
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -29,10 +30,10 @@ func NewNewZettel() NewZettel {
 func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
-	m.Set(meta.KeyTitle, om.GetDefault(meta.KeyTitle, ""))
-	m.Set(meta.KeyRole, om.GetDefault(meta.KeyRole, ""))
-	m.Set(meta.KeyTags, om.GetDefault(meta.KeyTags, ""))
-	m.Set(meta.KeySyntax, om.GetDefault(meta.KeySyntax, ""))
+	m.Set(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
+	m.Set(api.KeyRole, om.GetDefault(api.KeyRole, ""))
+	m.Set(api.KeyTags, om.GetDefault(api.KeyTags, ""))
+	m.Set(api.KeySyntax, om.GetDefault(api.KeySyntax, ""))
 
 	const prefixLen = len(meta.NewPrefix)
 	for _, pair := range om.PairsRest(false) {

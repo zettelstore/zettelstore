@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
@@ -22,7 +23,7 @@ import (
 
 func genManagerM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(meta.KeyTitle, "Zettelstore Box Manager")
+	m.Set(api.KeyTitle, "Zettelstore Box Manager")
 	return m
 }
 

@@ -16,7 +16,7 @@ import (
 	"sort"
 	"strconv"
 
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/c/api"
 )
 
 // Print the search to a writer.
@@ -50,7 +50,7 @@ func (s *Search) Print(w io.Writer) {
 
 	if ord := s.order; len(ord) > 0 {
 		switch ord {
-		case meta.KeyID:
+		case api.KeyID:
 			// Ignore
 		case RandomOrder:
 			space = printSpace(w, space)

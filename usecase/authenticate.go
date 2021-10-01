@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"time"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
@@ -55,7 +56,7 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 		return nil, err
 	}
 
-	if hashCred, ok := identMeta.Get(meta.KeyCredential); ok {
+	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
 		ok, err := cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
 			return nil, err

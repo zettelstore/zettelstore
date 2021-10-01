@@ -14,7 +14,7 @@ package parser_test
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
@@ -43,13 +43,13 @@ func TestParserType(t *testing.T) {
 		{"markdown", true, false},
 		{"md", true, false},
 		{"mustache", false, false},
-		{meta.ValueSyntaxNone, false, false},
+		{api.ValueSyntaxNone, false, false},
 		{"plain", false, false},
 		{"png", false, true},
 		{"svg", false, true},
 		{"text", false, false},
 		{"txt", false, false},
-		{meta.ValueSyntaxZmk, true, false},
+		{api.ValueSyntaxZmk, true, false},
 	}
 	for _, tc := range testCases {
 		delete(syntaxSet, tc.syntax)

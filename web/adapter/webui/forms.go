@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -45,18 +46,18 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 		m = meta.New(zid)
 	}
 	if postTitle, ok := trimmedFormValue(r, "title"); ok {
-		m.Set(meta.KeyTitle, postTitle)
+		m.Set(api.KeyTitle, postTitle)
 	}
 	if postTags, ok := trimmedFormValue(r, "tags"); ok {
 		if tags := strings.Fields(postTags); len(tags) > 0 {
-			m.SetList(meta.KeyTags, tags)
+			m.SetList(api.KeyTags, tags)
 		}
 	}
 	if postRole, ok := trimmedFormValue(r, "role"); ok {
-		m.Set(meta.KeyRole, postRole)
+		m.Set(api.KeyRole, postRole)
 	}
 	if postSyntax, ok := trimmedFormValue(r, "syntax"); ok {
-		m.Set(meta.KeySyntax, postSyntax)
+		m.Set(api.KeySyntax, postSyntax)
 	}
 	if values, ok := r.PostForm["content"]; ok && len(values) > 0 {
 		return domain.Zettel{

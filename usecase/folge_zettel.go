@@ -12,6 +12,7 @@
 package usecase
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
@@ -32,17 +33,17 @@ func NewFolgeZettel(rtConfig config.Config) FolgeZettel {
 func (uc FolgeZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	origMeta := origZettel.Meta
 	m := meta.New(id.Invalid)
-	if title, ok := origMeta.Get(meta.KeyTitle); ok {
+	if title, ok := origMeta.Get(api.KeyTitle); ok {
 		if len(title) > 0 {
 			title = "Folge of " + title
 		} else {
 			title = "Folge"
 		}
-		m.Set(meta.KeyTitle, title)
+		m.Set(api.KeyTitle, title)
 	}
-	m.Set(meta.KeyRole, config.GetRole(origMeta, uc.rtConfig))
-	m.Set(meta.KeyTags, origMeta.GetDefault(meta.KeyTags, ""))
-	m.Set(meta.KeySyntax, uc.rtConfig.GetDefaultSyntax())
-	m.Set(meta.KeyPrecursor, origMeta.Zid.String())
+	m.Set(api.KeyRole, config.GetRole(origMeta, uc.rtConfig))
+	m.Set(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
+	m.Set(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
+	m.Set(api.KeyPrecursor, origMeta.Zid.String())
 	return domain.Zettel{Meta: m, Content: domain.NewContent("")}
 }

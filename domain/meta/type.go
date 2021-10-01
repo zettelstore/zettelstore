@@ -16,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"zettelstore.de/c/api"
 )
 
 // DescriptionType is a description of a specific key type.
@@ -97,7 +99,7 @@ func Type(key string) *DescriptionType {
 
 // SetList stores the given string list value under the given key.
 func (m *Meta) SetList(key string, values []string) {
-	if key != KeyID {
+	if key != api.KeyID {
 		for i, val := range values {
 			values[i] = trimValue(val)
 		}

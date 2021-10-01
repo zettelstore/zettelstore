@@ -52,7 +52,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
 		}
-		zn, err := evaluate.Run(ctx, zid, q.Get(meta.KeySyntax), &env)
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
 
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -68,7 +68,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Xhtml:          false,
 			MarkerExternal: wui.rtConfig.GetMarkerExternal(),
 			NewWindow:      true,
-			IgnoreMeta:     map[string]bool{meta.KeyTitle: true, meta.KeyLang: true},
+			IgnoreMeta:     map[string]bool{api.KeyTitle: true, api.KeyLang: true},
 		}
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, api.EncoderHTML, &envHTML)
 		if err != nil {
@@ -83,13 +83,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 		user := wui.getUser(ctx)
-		roleText := zn.Meta.GetDefault(meta.KeyRole, "*")
+		roleText := zn.Meta.GetDefault(api.KeyRole, "*")
 		tags := wui.buildTagInfos(zn.Meta)
 		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
-		extURL, hasExtURL := zn.Meta.Get(meta.KeyURL)
-		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyFolge, getTextTitle)
-		backLinks := wui.encodeZettelLinks(zn.InhMeta, meta.KeyBack, getTextTitle)
+		extURL, hasExtURL := zn.Meta.Get(api.KeyURL)
+		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle)
+		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
 		wui.makeBaseData(ctx, lang, textTitle, user, &base)
@@ -131,7 +131,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			CopyURL:       wui.NewURLBuilder('c').SetZid(apiZid).String(),
 			CanFolge:      canCreate,
 			FolgeURL:      wui.NewURLBuilder('f').SetZid(apiZid).String(),
-			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, meta.KeyPrecursor, getTextTitle),
+			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
@@ -198,7 +198,7 @@ func encodeMeta(
 
 func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 	var tagInfos []simpleLink
-	if tags, ok := m.GetList(meta.KeyTags); ok {
+	if tags, ok := m.GetList(api.KeyTags); ok {
 		ub := wui.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {

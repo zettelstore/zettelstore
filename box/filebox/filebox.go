@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/domain/id"
@@ -66,29 +67,29 @@ func calculateSyntax(ext string) string {
 // CalcDefaultMeta returns metadata with default values for the given entry.
 func CalcDefaultMeta(zid id.Zid, ext string) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(meta.KeyTitle, zid.String())
-	m.Set(meta.KeySyntax, calculateSyntax(ext))
+	m.Set(api.KeyTitle, zid.String())
+	m.Set(api.KeySyntax, calculateSyntax(ext))
 	return m
 }
 
 // CleanupMeta enhances the given metadata.
 func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta, duplicates bool) {
-	if title, ok := m.Get(meta.KeyTitle); !ok || title == "" {
-		m.Set(meta.KeyTitle, zid.String())
+	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
+		m.Set(api.KeyTitle, zid.String())
 	}
 
 	if inMeta {
-		if syntax, ok := m.Get(meta.KeySyntax); !ok || syntax == "" {
+		if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
 			dm := CalcDefaultMeta(zid, ext)
-			syntax, ok = dm.Get(meta.KeySyntax)
+			syntax, ok = dm.Get(api.KeySyntax)
 			if !ok {
 				panic("Default meta must contain syntax")
 			}
-			m.Set(meta.KeySyntax, syntax)
+			m.Set(api.KeySyntax, syntax)
 		}
 	}
 
 	if duplicates {
-		m.Set(meta.KeyDuplicates, meta.ValueTrue)
+		m.Set(api.KeyDuplicates, api.ValueTrue)
 	}
 }

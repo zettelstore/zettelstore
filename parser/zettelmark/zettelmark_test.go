@@ -17,8 +17,8 @@ import (
 	"strings"
 	"testing"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
@@ -48,7 +48,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 		t.Run(fmt.Sprintf("TC=%02d,src=%q", tcn, tc.source), func(st *testing.T) {
 			st.Helper()
 			inp := input.NewInput(tc.source)
-			bns := parser.ParseBlocks(inp, nil, meta.ValueSyntaxZmk)
+			bns := parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)
 			var tv TestVisitor
 			ast.Walk(&tv, bns)
 			got := tv.String()

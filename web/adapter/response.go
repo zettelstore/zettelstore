@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
 )
@@ -73,7 +72,7 @@ func CodeMessageFromError(err error) (int, string) {
 
 // CreateTagReference builds a reference to list all tags.
 func CreateTagReference(b server.Builder, key byte, enc, s string) *ast.Reference {
-	u := b.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(meta.KeyTags, s)
+	u := b.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyTags, s)
 	ref := ast.ParseReference(u.String())
 	ref.State = ast.RefStateHosted
 	return ref

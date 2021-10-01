@@ -11,6 +11,8 @@
 // Package meta provides the domain specific type 'meta'.
 package meta
 
+import "zettelstore.de/c/api"
+
 // Visibility enumerates the variations of the 'visibility' meta key.
 type Visibility int
 
@@ -26,11 +28,11 @@ const (
 )
 
 var visMap = map[string]Visibility{
-	ValueVisibilityPublic:  VisibilityPublic,
-	ValueVisibilityCreator: VisibilityCreator,
-	ValueVisibilityLogin:   VisibilityLogin,
-	ValueVisibilityOwner:   VisibilityOwner,
-	ValueVisibilityExpert:  VisibilityExpert,
+	api.ValueVisibilityPublic:  VisibilityPublic,
+	api.ValueVisibilityCreator: VisibilityCreator,
+	api.ValueVisibilityLogin:   VisibilityLogin,
+	api.ValueVisibilityOwner:   VisibilityOwner,
+	api.ValueVisibilityExpert:  VisibilityExpert,
 }
 
 // GetVisibility returns the visibility value of the given string
@@ -55,10 +57,10 @@ const (
 )
 
 var urMap = map[string]UserRole{
-	ValueUserRoleCreator: UserRoleCreator,
-	ValueUserRoleReader:  UserRoleReader,
-	ValueUserRoleWriter:  UserRoleWriter,
-	ValueUserRoleOwner:   UserRoleOwner,
+	api.ValueUserRoleCreator: UserRoleCreator,
+	api.ValueUserRoleReader:  UserRoleReader,
+	api.ValueUserRoleWriter:  UserRoleWriter,
+	api.ValueUserRoleOwner:   UserRoleOwner,
 }
 
 // GetUserRole role returns the user role of the given string.
