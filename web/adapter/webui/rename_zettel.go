@@ -80,9 +80,11 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Invalid value for current zettel id in form"))
 			return
 		}
-		newZid, err := id.Parse(strings.TrimSpace(r.PostFormValue("newzid")))
+		formNewZid := strings.TrimSpace(r.PostFormValue("newzid"))
+		newZid, err := id.Parse(formNewZid)
 		if err != nil {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", newZid)))
+			wui.reportError(
+				ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", formNewZid)))
 			return
 		}
 
