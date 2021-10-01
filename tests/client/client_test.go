@@ -232,14 +232,10 @@ func TestListZettel(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	lines := strings.Split(pl, "\n")
-	if lines[len(lines)-1] == "" {
-		lines = lines[:len(lines)-1]
-	}
-	if len(lines) != len(l) {
-		t.Errorf("Different list lenght: Plain=%d, JSON=%d", len(lines), len(l))
+	if len(pl) != len(l) {
+		t.Errorf("Different list lenght: Plain=%d, JSON=%d", len(pl), len(l))
 	} else {
-		for i, line := range lines {
+		for i, line := range pl {
 			if got := api.ZettelID(line[:14]); got != l[i].ID {
 				t.Errorf("%d: JSON=%q, got=%q", i, l[i].ID, got)
 			}
