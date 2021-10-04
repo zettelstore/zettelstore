@@ -71,7 +71,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
 	ucListRoles := usecase.NewListRole(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
-	ucZettelContext := usecase.NewZettelContext(protectedBoxManager)
+	ucZettelContext := usecase.NewZettelContext(protectedBoxManager, rtConfig)
 	ucDelete := usecase.NewDeleteZettel(protectedBoxManager)
 	ucUpdate := usecase.NewUpdateZettel(protectedBoxManager)
 	ucRename := usecase.NewRenameZettel(protectedBoxManager)

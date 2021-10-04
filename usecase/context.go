@@ -25,14 +25,21 @@ type ZettelContextPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
+// ZettelContextConfig is the interface to allow the usecase to read some config data.
+type ZettelContextConfig interface {
+	// GetHomeZettel returns the value of the "home-zettel" key.
+	GetHomeZettel() id.Zid
+}
+
 // ZettelContext is the data for this use case.
 type ZettelContext struct {
-	port ZettelContextPort
+	port   ZettelContextPort
+	config ZettelContextConfig
 }
 
 // NewZettelContext creates a new use case.
-func NewZettelContext(port ZettelContextPort) ZettelContext {
-	return ZettelContext{port: port}
+func NewZettelContext(port ZettelContextPort, config ZettelContextConfig) ZettelContext {
+	return ZettelContext{port: port, config: config}
 }
 
 // ZettelContextDirection determines the way, the context is calculated.
@@ -52,63 +59,21 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 	if err != nil {
 		return nil, err
 	}
-	tasks := ztlCtx{depth: depth}
-	tasks.add(start, 0)
-	visited := id.NewSet()
+	tasks := newQueue(start, depth, limit, uc.config.GetHomeZettel())
 	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
 	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
-	for !tasks.empty() {
-		m, curDepth := tasks.pop()
-		if _, ok := visited[m.Zid]; ok {
-			continue
-		}
-		visited[m.Zid] = true
-		result = append(result, m)
-		if limit > 0 && len(result) > limit { // start is the first element of result
+	for {
+		m, curDepth, found := tasks.next()
+		if !found {
 			break
 		}
-		curDepth++
+		result = append(result, m)
+
 		for _, p := range m.PairsRest(true) {
-			if p.Key == api.KeyBackward {
-				if isBackward {
-					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
-				}
-				continue
-			}
-			if p.Key == api.KeyForward {
-				if isForward {
-					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
-				}
-				continue
-			}
-			if p.Key != api.KeyBack {
-				hasInverse := meta.Inverse(p.Key) != ""
-				if (!hasInverse || !isBackward) && (hasInverse || !isForward) {
-					continue
-				}
-				if t := meta.Type(p.Key); t == meta.TypeID {
-					uc.addID(ctx, &tasks, curDepth, p.Value)
-				} else if t == meta.TypeIDSet {
-					uc.addIDSet(ctx, &tasks, curDepth, p.Value)
-				}
-			}
+			tasks.addPair(ctx, uc.port, p.Key, p.Value, curDepth+1, isBackward, isForward)
 		}
 	}
 	return result, nil
-}
-
-func (uc ZettelContext) addID(ctx context.Context, tasks *ztlCtx, depth int, value string) {
-	if zid, err := id.Parse(value); err == nil {
-		if m, err := uc.port.GetMeta(ctx, zid); err == nil {
-			tasks.add(m, depth)
-		}
-	}
-}
-
-func (uc ZettelContext) addIDSet(ctx context.Context, tasks *ztlCtx, depth int, value string) {
-	for _, val := range meta.ListFromValue(value) {
-		uc.addID(ctx, tasks, depth, val)
-	}
 }
 
 type ztlCtxTask struct {
@@ -117,16 +82,78 @@ type ztlCtxTask struct {
 	depth int
 }
 
-type ztlCtx struct {
-	first *ztlCtxTask
-	last  *ztlCtxTask
-	depth int
+type contextQueue struct {
+	home     id.Zid
+	seen     id.Set
+	first    *ztlCtxTask
+	last     *ztlCtxTask
+	maxDepth int
+	limit    int
 }
 
-func (zc *ztlCtx) add(m *meta.Meta, depth int) {
-	if zc.depth > 0 && depth > zc.depth {
+func newQueue(m *meta.Meta, maxDepth, limit int, home id.Zid) *contextQueue {
+	task := &ztlCtxTask{
+		next:  nil,
+		meta:  m,
+		depth: 0,
+	}
+	result := &contextQueue{
+		home:     home,
+		seen:     id.NewSet(),
+		first:    task,
+		last:     task,
+		maxDepth: maxDepth,
+		limit:    limit,
+	}
+	return result
+}
+
+func (zc *contextQueue) addPair(
+	ctx context.Context, port ZettelContextPort,
+	key, value string,
+	curDepth int, isBackward, isForward bool,
+) {
+	if key == api.KeyBackward {
+		if isBackward {
+			zc.addIDSet(ctx, port, curDepth, value)
+		}
 		return
 	}
+	if key == api.KeyForward {
+		if isForward {
+			zc.addIDSet(ctx, port, curDepth, value)
+		}
+		return
+	}
+	if key == api.KeyBack {
+		return
+	}
+	hasInverse := meta.Inverse(key) != ""
+	if (!hasInverse || !isBackward) && (hasInverse || !isForward) {
+		return
+	}
+	if t := meta.Type(key); t == meta.TypeID {
+		zc.addID(ctx, port, curDepth, value)
+	} else if t == meta.TypeIDSet {
+		zc.addIDSet(ctx, port, curDepth, value)
+	}
+}
+
+func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, depth int, value string) {
+	if (zc.maxDepth > 0 && depth > zc.maxDepth) || zc.hasLimit() {
+		return
+	}
+
+	zid, err := id.Parse(value)
+	if err != nil || zid == zc.home {
+		return
+	}
+
+	m, err := port.GetMeta(ctx, zid)
+	if err != nil {
+		return
+	}
+
 	task := &ztlCtxTask{next: nil, meta: m, depth: depth}
 	if zc.first == nil {
 		zc.first = task
@@ -137,18 +164,35 @@ func (zc *ztlCtx) add(m *meta.Meta, depth int) {
 	}
 }
 
-func (zc *ztlCtx) empty() bool {
-	return zc.first == nil
+func (zc *contextQueue) addIDSet(ctx context.Context, port ZettelContextPort, curDepth int, value string) {
+	for _, val := range meta.ListFromValue(value) {
+		zc.addID(ctx, port, curDepth, val)
+	}
 }
 
-func (zc *ztlCtx) pop() (*meta.Meta, int) {
-	task := zc.first
-	if task == nil {
-		return nil, -1
+func (zc *contextQueue) next() (*meta.Meta, int, bool) {
+	if zc.hasLimit() {
+		return nil, -1, false
 	}
-	zc.first = task.next
-	if zc.first == nil {
-		zc.last = nil
+	for zc.first != nil {
+		task := zc.first
+		zc.first = task.next
+		if zc.first == nil {
+			zc.last = nil
+		}
+		m := task.meta
+		zid := m.Zid
+		_, found := zc.seen[zid]
+		if found {
+			continue
+		}
+		zc.seen[zid] = true
+		return m, task.depth, true
 	}
-	return task.meta, task.depth
+	return nil, -1, false
+}
+
+func (zc *contextQueue) hasLimit() bool {
+	limit := zc.limit
+	return limit > 0 && len(zc.seen) > limit
 }

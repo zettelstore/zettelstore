@@ -3,11 +3,10 @@ title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210825194347
+modified: 20211004160313
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
-Zettel are also connected by using same [[tags|00001006020000#tags]].
 
 The context is defined by a //direction//, a //depth//, and a //limit//:
 * Direction: connections are directed.
@@ -22,10 +21,9 @@ The context is defined by a //direction//, a //depth//, and a //limit//:
   Its default value is ""200"".
   A value of ""0"" disables does not limit the number of elements returned.
 
-Zettel with same tags as the origin zettel are considered depth 1.
-Only for the origin zettel, tags are used to calculate a connection.
-Currently, only some of the newest zettel with a given tag are considered a connection.[^The number of zettel is given by the value of parameter ''depth''.]
-Otherwise the context would become too big and therefore unusable.
+The search for the context of a zettel stops at the [[home zettel|00001004020000#home-zettel]].
+This zettel is connected to all other zettel.
+If it is included, the context would become too big and therefore unusable.
 
 To retrieve the context of an existing zettel, use the [[endpoint|00001012920000]] ''/x/{ID}''[^Mnemonic: conte**X**t].
 
