@@ -14,6 +14,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
@@ -33,6 +34,11 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
+		var queryText strings.Builder
+		if s != nil {
+			s.Print(&queryText)
+		}
+
 		result := make([]api.ZidMetaJSON, 0, len(metaList))
 		for _, m := range metaList {
 			result = append(result, api.ZidMetaJSON{
@@ -43,7 +49,8 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		w.Header().Set(api.HeaderContentType, ctJSON)
 		err = encodeJSONData(w, api.ZettelListJSON{
-			List: result,
+			Query: queryText.String(),
+			List:  result,
 		})
 		if err != nil {
 			adapter.InternalServerError(w, "Write Zettel list JSON", err)

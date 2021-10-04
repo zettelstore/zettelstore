@@ -206,10 +206,13 @@ func TestListZettel(t *testing.T) {
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)
-			l, err := c.ListZettelJSON(context.Background(), query)
+			q, l, err := c.ListZettelJSON(context.Background(), query)
 			if err != nil {
 				tt.Error(err)
 				return
+			}
+			if q != "" {
+				tt.Errorf("Query should be empty, but is %q", q)
 			}
 			got := len(l)
 			if got != tc.exp {
@@ -217,10 +220,14 @@ func TestListZettel(t *testing.T) {
 			}
 		})
 	}
-	l, err := c.ListZettelJSON(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
+	q, l, err := c.ListZettelJSON(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
 	if err != nil {
 		t.Error(err)
 		return
+	}
+	expQ := "role MATCH configuration"
+	if q != expQ {
+		t.Errorf("Query should be %q, but is %q", expQ, q)
 	}
 	got := len(l)
 	if got != 27 {

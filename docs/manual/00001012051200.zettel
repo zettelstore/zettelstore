@@ -3,24 +3,29 @@ title: API: List metadata of all zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905203616
+modified: 20211004124401
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/j''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
 
 ```sh
 # curl http://127.0.0.1:23123/j
-{"list":[{"id":"00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}}]}
+{"query":"","list":[{"id":"00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"}}]}
 ```
 
 The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
-These zettel JSON objects themself contains the keys ''"id"'' (value is a string containing the zettel identifier), , and ''"meta"'' (value as a JSON object).
+These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the zettel identifier), , and ''"meta"'' (value as a JSON object).
 The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
+
+Additionally, the JSON object contains a key ''"query"'' with a string value.
+It will contain a textual description of the underlying query if you [[select only some zettel|00001012051810]].
+Without a selection, the value is the empty string.
 
 If you reformat the JSON output from the ''GET /j'' call, you'll see its structure better:
 
 ```json
 {
+  "query": "",
   "list": [
     {
       "id": "00001012051200",
