@@ -194,7 +194,7 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 	}
 	sort.Strings(encTexts)
 	defEncoding := encoder.GetDefaultEncoding().String()
-	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
+	parts := getParts()
 	matrix := make([]matrixLine, 0, len(parts))
 	u := wui.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
 	for _, part := range parts {
@@ -218,15 +218,20 @@ func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 
 	// Append plain and JSON format
 	u := wui.NewURLBuilder('z').SetZid(apiZid)
-	parts := []string{api.PartZettel, api.PartMeta, api.PartContent}
-	for i, part := range parts {
+	for i, part := range getParts() {
 		u.AppendQuery(api.QueryKeyPart, part)
 		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
 		u.ClearQuery()
 	}
 	u = wui.NewURLBuilder('j').SetZid(apiZid)
 	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.String()})
+	u = wui.NewURLBuilder('m').SetZid(apiZid)
+	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"json", u.String()})
 	return matrix
+}
+
+func getParts() []string {
+	return []string{api.PartZettel, api.PartMeta, api.PartContent}
 }
 
 func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) []string {

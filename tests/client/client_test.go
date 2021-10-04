@@ -258,6 +258,26 @@ func TestGetZettelJSON(t *testing.T) {
 	if z.Content == "" || z.Encoding != "" {
 		t.Errorf("Expect non-empty content, but empty encoding (got %q)", z.Encoding)
 	}
+
+	m, err := c.GetMeta(context.Background(), api.ZidDefaultHome)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if len(m) != len(z.Meta) {
+		t.Errorf("Pure meta differs from zettel meta: %s vs %s", m, z.Meta)
+		return
+	}
+	for k, v := range z.Meta {
+		got, ok := m[k]
+		if !ok {
+			t.Errorf("Pure meta has no key %q", k)
+			continue
+		}
+		if got != v {
+			t.Errorf("Pure meta has different value for key %q: %q vs %q", k, got, v)
+		}
+	}
 }
 
 func TestGetParsedEvaluatedZettel(t *testing.T) {

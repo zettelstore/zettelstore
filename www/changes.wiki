@@ -7,6 +7,8 @@
      from a given zettel: in many cases the title of a zettel must be treated
      separately.
      (minor: api)
+  *  Add API endpoint <tt>/m</tt> to retrieve just the metadata of a zettel.
+     (minor: api)
 
 <a name="0_0_15"></a>
 <h2>Changes for Version 0.0.15 (2021-09-17)</h2>

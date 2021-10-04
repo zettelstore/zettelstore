@@ -3,7 +3,7 @@ title: API: Rename a zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905204715
+modified: 20211004111301
 
 Renaming a zettel is effectively just specifying a new identifier for the zettel.
 Since more than one [[box|00001004011200]] might contain a zettel with the old identifier, the rename operation must success in every relevant box to be overall successful.
@@ -21,7 +21,7 @@ You must send a HTTP MOVE request to this endpoint, and you must specify the new
 Only the last 14 characters of the value of ''Destination'' are taken into account and those must form an unused zettel identifier.
 If the value contains less than 14 characters that do not form an unused zettel identifier, the response will contain a HTTP status code ''400''.
 All other characters, besides those 14 digits, are effectively ignored.
-However, the value should form a valid URL that could be used later to [[read the content|00001012053400]] of the freshly renamed zettel.
+However, the value should form a valid URL that could be used later to [[read the content|00001012053300]] of the freshly renamed zettel.
 
 [!plain]Alternatively, you can also use the [[endpoint|00001012920000]] ''/z/{ID}''.
 Both endpoints behave identical.

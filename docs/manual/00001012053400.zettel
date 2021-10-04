@@ -1,59 +1,44 @@
 id: 00001012053400
-title: API: Retrieve metadata and content of an existing zettel
+title: API: Retrieve metadata of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905204428
+modified: 20211004112257
 
-The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
+The [[endpoint|00001012920000]] to work with metadata of a specific zettel is ''/m/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
 For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/j/00001012053400''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
 ```sh
-# curl http://127.0.0.1:23123/j/00001012053400
-{"id":"00001012053400","meta":{"title":"API: Retrieve data for an exisiting zettel","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual","copyright":"(c) 2020 by Detlef Stern <ds@zettelstore.de>","lang":"en","license":"CC BY-SA 4.0"},"content":"The endpoint to work with a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).\n\nFor example, ...
+# curl http://127.0.0.1:23123/m/00001012053400
+{"meta":{"all-tags":"#api #manual #zettelstore","back":"00001012000000 00001012053300","backward":"00001012000000 00001012053300 00001012920000","box-number":"1","forward":"00001010040100 00001012050200 00001012920000 00001012920800","modified":"20211004111240","published":"20211004111240","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Retrieve metadata of an existing zettel"}}
 ```
 
 Pretty-printed, this results in:
 ```
 {
-  "id": "00001012053400",
   "meta": {
-    "back": "00001012000000 00001012053200 00001012054400",
-    "backward": "00001012000000 00001012053200 00001012054400 00001012920000",
+    "all-tags": "#api #manual #zettelstore",
+    "back": "00001012000000 00001012053300",
+    "backward": "00001012000000 00001012053300 00001012920000",
     "box-number": "1",
     "forward": "00001010040100 00001012050200 00001012920000 00001012920800",
-    "modified": "20210726190012",
-    "published": "20210726190012",
+    "modified": "20211004111240",
+    "published": "20211004111240",
     "role": "manual",
     "syntax": "zmk",
     "tags": "#api #manual #zettelstore",
-    "title": "API: Retrieve metadata and content of an existing zettel"
-  },
-  "encoding": "",
-  "content": "The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' (...)
+    "title": "API: Retrieve metadata of an existing zettel"
+  }
 }
 ```
 
-[!plain]Additionally, you can retrieve the plain zettel, without using JSON.
-Just change the [[endpoint|00001012920000]] to ''/z/{ID}''
-Optionally, you may provide which parts of the zettel you are requesting.
-In this case, add an additional query parameter ''_part=[[PART|00001012920800]]''.
-Valid values are ""zettel"", ""meta"", and ""content"" (the default value).
-
-````sh
-# curl 'http://127.0.0.1:23123/z/00001012053400'
-The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
-
-For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/j/00001012053400''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
-If successful, the output is a JSON object:
-```sh
-...
-````
+[!plain]Additionally, you can retrieve the plain metadata of a zettel, without using JSON.
+Just change the [[endpoint|00001012920000]] to ''/z/{ID}?_part=meta''
 
 ````sh
 # curl 'http://127.0.0.1:23123/z/00001012053400?_part=meta'
-title: API: Retrieve metadata and content of an existing zettel
+title: API: Retrieve metadata of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
