@@ -113,11 +113,12 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 		m.Set(api.KeyBack, back.String())
 		updated = true
 	}
-	if zi.itags != "" {
+	if itags := zi.itags; itags != "" {
+		m.Set(api.KeyContentTags, itags)
 		if tags, ok := m.Get(api.KeyTags); ok {
-			m.Set(api.KeyAllTags, tags+" "+zi.itags)
+			m.Set(api.KeyAllTags, tags+" "+itags)
 		} else {
-			m.Set(api.KeyAllTags, zi.itags)
+			m.Set(api.KeyAllTags, itags)
 		}
 		updated = true
 	} else if tags, ok := m.Get(api.KeyTags); ok {

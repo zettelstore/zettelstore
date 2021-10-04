@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210822234119
+modified: 20211004174629
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -17,7 +17,10 @@ Most keys conform to a [[type|00001006030000]].
   Basically, it is the value of [[''backward''|#bachward]], but without any zettel identifier that is contained in [[''forward''|#forward]].
 ; [!backward]''backward''
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata.
-  References within inversable values are not included here, e.g. [[''precursor''|#precursor]].
+  References within invertible values are not included here, e.g. [[''precursor''|#precursor]].
+; [!box-number]''box-number''
+: Is a computed value and contains the number of the box where the zettel was found.
+  For all but the [[predefined zettel|00001005090000]], this number is equal to the number //X// specified in startup configuration key [[''box-uri-//X//''|00001004010000#box-uri-x]].
 ; [!copyright]''copyright''
 : Defines a copyright string that will be encoded.
   If not given, the value ''default-copyright'' from the  [[configuration zettel|00001004020000#default-copyright]] will be used.
@@ -28,6 +31,9 @@ Most keys conform to a [[type|00001006030000]].
   It is only used for zettel with a ''role'' value of ""user"".
 ; [!dead]''dead''
 : Property that contains all references that does //not// identify a zettel.
+; [!duplicates]''duplicates''
+: Is set to the value ""true"" if there is more than one file that could contain the content of a zettel.
+  Is used for [[directory boxes|00001004011400]] and [[file boxes|00001004011200#file]].
 ; [!folge]''folge''
 : Is a property that contains identifier of all zettel that reference this zettel through the [[''precursor''|#precursor]] value.
 ; [!forward]''forward''
@@ -50,10 +56,7 @@ Most keys conform to a [[type|00001006030000]].
   This is a computed value.
   There is no need to set it via Zettelstore.
 ; [!no-index]''no-index''
-: If set to true, the zettel will not be indexed and therefore not be found in full-text searches.
-; [!box-number]''box-number''
-: Is a computed value and contains the number of the box where the zettel was found.
-  For all but the [[predefined zettel|00001005090000]], this number is equal to the number //X// specified in startup configuration key [[''box-uri-//X//''|00001004010000#box-uri-x]].
+: If set to a ""true"" value, the zettel will not be indexed and therefore not be found in full-text searches.
 ; [!precursor]''precursor''
 : References zettel for which this zettel is a ""Folgezettel"" / follow-up zettel.
   Basically the inverse of key [[''folge''|#folge]].
