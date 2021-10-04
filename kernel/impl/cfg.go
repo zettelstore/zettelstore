@@ -105,7 +105,7 @@ func (cs *configService) Stop(kern *myKernel) error {
 	return nil
 }
 
-func (cs *configService) GetStatistics() []kernel.KeyValue {
+func (*configService) GetStatistics() []kernel.KeyValue {
 	return nil
 }
 

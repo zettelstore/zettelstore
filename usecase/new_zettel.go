@@ -27,7 +27,7 @@ func NewNewZettel() NewZettel {
 }
 
 // Run executes the use case.
-func (uc NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
+func (NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.Set(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))

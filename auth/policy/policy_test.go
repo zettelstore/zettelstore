@@ -60,9 +60,9 @@ type testAuthzManager struct {
 	withAuth bool
 }
 
-func (a *testAuthzManager) IsReadonly() bool        { return a.readOnly }
-func (a *testAuthzManager) Owner() id.Zid           { return ownerZid }
-func (a *testAuthzManager) IsOwner(zid id.Zid) bool { return zid == ownerZid }
+func (a *testAuthzManager) IsReadonly() bool      { return a.readOnly }
+func (*testAuthzManager) Owner() id.Zid           { return ownerZid }
+func (*testAuthzManager) IsOwner(zid id.Zid) bool { return zid == ownerZid }
 
 func (a *testAuthzManager) WithAuth() bool { return a.withAuth }
 
@@ -88,7 +88,7 @@ type authConfig struct{ expert bool }
 
 func (ac *authConfig) GetExpertMode() bool { return ac.expert }
 
-func (ac *authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
+func (*authConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 	if vis, ok := m.Get(api.KeyVisibility); ok {
 		return meta.GetVisibility(vis)
 	}

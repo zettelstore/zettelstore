@@ -2,11 +2,12 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20210923200805
+modified: 20211004141620
 
-# Check for unused parameters:
+# Check for unused parameters and execute some more static checks:
 #* ``unparam ./...``
 #* ``unparam -exported -tests ./...``
+#* ``staticcheck ./...``
 # Clean up your Go workspace:
 #* ``go run tools/build.go clean`` (alternatively: ``make clean``).
 # All internal tests must succeed:

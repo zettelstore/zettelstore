@@ -21,9 +21,9 @@ type defaultPolicy struct {
 	manager auth.AuthzManager
 }
 
-func (d *defaultPolicy) CanCreate(user, newMeta *meta.Meta) bool { return true }
-func (d *defaultPolicy) CanRead(user, m *meta.Meta) bool         { return true }
-func (d *defaultPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
+func (*defaultPolicy) CanCreate(_, _ *meta.Meta) bool { return true }
+func (*defaultPolicy) CanRead(_, _ *meta.Meta) bool   { return true }
+func (d *defaultPolicy) CanWrite(user, oldMeta, _ *meta.Meta) bool {
 	return d.canChange(user, oldMeta)
 }
 func (d *defaultPolicy) CanRename(user, m *meta.Meta) bool { return d.canChange(user, m) }

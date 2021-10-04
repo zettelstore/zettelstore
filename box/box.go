@@ -260,7 +260,7 @@ func (err *ErrNotAllowed) Error() string {
 }
 
 // Is return true, if the error is of type ErrNotAllowed.
-func (err *ErrNotAllowed) Is(target error) bool { return true }
+func (*ErrNotAllowed) Is(error) bool { return true }
 
 // ErrStarted is returned when trying to start an already started box.
 var ErrStarted = errors.New("box is already started")

@@ -105,6 +105,7 @@ func MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 		m, err := getMeta.Run(r.Context(), zid)
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
+			return
 		}
 
 		w.Header().Set(api.HeaderContentType, ctJSON)

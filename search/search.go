@@ -259,7 +259,7 @@ func (s *Search) CompileMatch(searcher Searcher) MetaMatchFunc {
 	return compileNoPreMatch(compMeta, compSearch, s.negate)
 }
 
-func selectNone(m *meta.Meta) bool { return true }
+func selectNone(*meta.Meta) bool { return true }
 
 func compilePreMatch(preMatch, compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
 	if compMeta == nil {

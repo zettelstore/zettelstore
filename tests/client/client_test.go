@@ -303,7 +303,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		if len(content) == 0 {
+		if content == "" {
 			t.Errorf("Empty content for parsed encoding %v", enc)
 		}
 		content, err = c.GetEvaluatedZettel(context.Background(), api.ZidDefaultHome, enc)
@@ -311,7 +311,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		if len(content) == 0 {
+		if content == "" {
 			t.Errorf("Empty content for evaluated encoding %v", enc)
 		}
 	}

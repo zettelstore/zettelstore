@@ -25,7 +25,7 @@ func NewCopyZettel() CopyZettel {
 }
 
 // Run executes the use case.
-func (uc CopyZettel) Run(origZettel domain.Zettel) domain.Zettel {
+func (CopyZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m := origZettel.Meta.Clone()
 	if title, ok := m.Get(api.KeyTitle); ok {
 		if len(title) > 0 {

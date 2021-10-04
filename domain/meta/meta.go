@@ -46,7 +46,7 @@ func (kd *DescriptionKey) IsProperty() bool { return kd.usage >= usageProperty }
 
 var registeredKeys = make(map[string]*DescriptionKey)
 
-func registerKey(name string, t *DescriptionType, usage keyUsage, inverse string) string {
+func registerKey(name string, t *DescriptionType, usage keyUsage, inverse string) {
 	if _, ok := registeredKeys[name]; ok {
 		panic("Key '" + name + "' already defined")
 	}
@@ -66,7 +66,6 @@ func registerKey(name string, t *DescriptionType, usage keyUsage, inverse string
 		}
 	}
 	registeredKeys[name] = &DescriptionKey{name, t, usage, inverse}
-	return name
 }
 
 // IsComputed returns true, if key denotes a computed metadata key.

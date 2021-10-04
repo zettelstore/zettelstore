@@ -41,7 +41,7 @@ type Info struct {
 var registry = map[string]*Info{}
 
 // Register the parser (info) for later retrieval.
-func Register(pi *Info) *Info {
+func Register(pi *Info) {
 	if _, ok := registry[pi.Name]; ok {
 		panic(fmt.Sprintf("Parser %q already registered", pi.Name))
 	}
@@ -52,7 +52,6 @@ func Register(pi *Info) *Info {
 		}
 		registry[alt] = pi
 	}
-	return pi
 }
 
 // GetSyntaxes returns a list of syntaxes implemented by all registered parsers.

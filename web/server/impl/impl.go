@@ -91,7 +91,7 @@ func (srv *myServer) ClearToken(ctx context.Context, w http.ResponseWriter) cont
 }
 
 // GetAuthData returns the full authentication data from the context.
-func (srv *myServer) GetAuthData(ctx context.Context) *server.AuthData {
+func (*myServer) GetAuthData(ctx context.Context) *server.AuthData {
 	data, ok := ctx.Value(ctxKeySession).(*server.AuthData)
 	if ok {
 		return data

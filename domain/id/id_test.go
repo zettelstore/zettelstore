@@ -47,7 +47,7 @@ func TestIsValid(t *testing.T) {
 		s := zid.String()
 		if s != sid {
 			t.Errorf(
-				"i=%d: zid=%v does not format to %q, but to %q", i, sid, zid, s)
+				"i=%d: zid=%v does not format to %q, but to %q", i, zid, sid, s)
 		}
 	}
 

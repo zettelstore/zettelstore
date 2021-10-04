@@ -20,8 +20,8 @@ import (
 
 type matchFunc func(value string) bool
 
-func matchNever(value string) bool  { return false }
-func matchAlways(value string) bool { return true }
+func matchNever(string) bool  { return false }
+func matchAlways(string) bool { return true }
 
 type matchSpec struct {
 	key   string

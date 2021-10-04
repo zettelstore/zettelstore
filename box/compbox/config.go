@@ -29,7 +29,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genConfigZettelC(m *meta.Meta) string {
+func genConfigZettelC(*meta.Meta) string {
 	var sb strings.Builder
 	for i, p := range myConfig.Pairs(false) {
 		if i > 0 {

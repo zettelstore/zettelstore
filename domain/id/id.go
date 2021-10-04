@@ -102,10 +102,11 @@ func (zid Zid) String() string {
 // Bytes converts the zettel identification to a byte slice of 14 digits.
 // Only defined for valid ids.
 func (zid Zid) Bytes() []byte {
+	n := uint64(zid)
 	result := make([]byte, 14)
 	for i := 13; i >= 0; i-- {
-		result[i] = digits[zid%10]
-		zid /= 10
+		result[i] = digits[n%10]
+		n /= 10
 	}
 	return result
 }
