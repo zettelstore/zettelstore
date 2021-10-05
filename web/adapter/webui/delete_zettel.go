@@ -26,7 +26,7 @@ import (
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
-func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
+func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
@@ -41,22 +41,28 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel) http.H
 			return
 		}
 
-		zettel, err := getZettel.Run(ctx, zid)
+		m, err := getMeta.Run(ctx, zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+		backwardLinks := wui.encodeZettelLinks(m, api.KeyBackward, getTextTitle)
+
 		user := wui.getUser(ctx)
-		m := zettel.Meta
 		var base baseData
 		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
-			Zid       string
-			MetaPairs []meta.Pair
+			Zid         string
+			MetaPairs   []meta.Pair
+			HasBackward bool
+			Backward    []simpleLink
 		}{
-			Zid:       zid.String(),
-			MetaPairs: m.Pairs(true),
+			Zid:         zid.String(),
+			MetaPairs:   m.Pairs(true),
+			HasBackward: len(backwardLinks) > 0,
+			Backward:    backwardLinks,
 		})
 	}
 }

@@ -3,6 +3,17 @@
 <h1>Rename Zettel {{.Zid}}</h1>
 </header>
 <p>Do you really want to rename this zettel?</p>
+{{#HasBackward}}
+<div class=zs-warning>
+<h2>Warning!</h2>
+<p>If you rename this zettel, references from the following zettel will become invalid.</p>
+<ul>
+{{#Backward}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/Backward}}
+</ul>
+</div>
+{{/HasBackward}}
 <form method="POST">
 <div>
 <label for="newid">New zettel id</label>

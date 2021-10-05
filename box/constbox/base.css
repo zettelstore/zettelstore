@@ -233,6 +233,10 @@
     font-size: 95%;
   }
   .zs-example { border-style: dotted !important }
+  .zs-warning {
+    background-color: lightyellow;
+    padding: .5rem 1rem;
+  }
   .zs-error {
     background-color: lightpink;
     border-style: none !important;

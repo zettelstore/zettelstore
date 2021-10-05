@@ -3,6 +3,17 @@
 <h1>Delete Zettel {{Zid}}</h1>
 </header>
 <p>Do you really want to delete this zettel?</p>
+{{#HasBackward}}
+<div class=zs-warning>
+<h2>Warning!</h2>
+<p>If you delete this zettel, references from the following zettel will become invalid.</p>
+<ul>
+{{#Backward}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/Backward}}
+</ul>
+</div>
+{{/HasBackward}}
 <dl>
 {{#MetaPairs}}
 <dt>{{Key}}:</dt><dd>{{Value}}</dd>

@@ -27,7 +27,7 @@ import (
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
 // HTML rename view of a zettel.
-func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -48,15 +48,22 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+		backwardLinks := wui.encodeZettelLinks(m, api.KeyBackward, getTextTitle)
+
 		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Rename Zettel "+zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
-			Zid       string
-			MetaPairs []meta.Pair
+			Zid         string
+			MetaPairs   []meta.Pair
+			HasBackward bool
+			Backward    []simpleLink
 		}{
-			Zid:       zid.String(),
-			MetaPairs: m.Pairs(true),
+			Zid:         zid.String(),
+			MetaPairs:   m.Pairs(true),
+			HasBackward: len(backwardLinks) > 0,
+			Backward:    backwardLinks,
 		})
 	}
 }
