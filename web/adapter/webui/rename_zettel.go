@@ -49,7 +49,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 		}
 
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
-		backwardLinks := wui.encodeZettelLinks(m, api.KeyBackward, getTextTitle)
+		incomingLinks := wui.encodeIncoming(m, getTextTitle)
 
 		user := wui.getUser(ctx)
 		var base baseData
@@ -57,13 +57,13 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
 			Zid         string
 			MetaPairs   []meta.Pair
-			HasBackward bool
-			Backward    []simpleLink
+			HasIncoming bool
+			Incoming    []simpleLink
 		}{
 			Zid:         zid.String(),
 			MetaPairs:   m.Pairs(true),
-			HasBackward: len(backwardLinks) > 0,
-			Backward:    backwardLinks,
+			HasIncoming: len(incomingLinks) > 0,
+			Incoming:    incomingLinks,
 		})
 	}
 }

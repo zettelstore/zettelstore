@@ -223,6 +223,10 @@ func (wui *WebUI) encodeZettelLinks(m *meta.Meta, key string, getTextTitle getTe
 	if !ok || len(values) == 0 {
 		return nil
 	}
+	return wui.encodeZidLinks(values, getTextTitle)
+}
+
+func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc) []simpleLink {
 	result := make([]simpleLink, 0, len(values))
 	for _, val := range values {
 		zid, err := id.Parse(val)

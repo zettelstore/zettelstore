@@ -14,6 +14,7 @@ package webui
 import (
 	"fmt"
 	"net/http"
+	"sort"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
@@ -26,7 +27,11 @@ import (
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
-func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
+func (wui *WebUI) MakeGetDeleteZettelHandler(
+	getMeta usecase.GetMeta,
+	getAllMeta usecase.GetAllMeta,
+	evaluate *usecase.Evaluate,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
@@ -41,14 +46,21 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, evaluate *
 			return
 		}
 
-		m, err := getMeta.Run(ctx, zid)
+		ms, err := getAllMeta.Run(ctx, zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
+		m := ms[0]
 
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
-		backwardLinks := wui.encodeZettelLinks(m, api.KeyBackward, getTextTitle)
+		var shadowedBox string
+		var incomingLinks []simpleLink
+		if len(ms) > 1 {
+			shadowedBox = ms[1].GetDefault(api.KeyBoxNumber, "???")
+		} else {
+			getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+			incomingLinks = wui.encodeIncoming(m, getTextTitle)
+		}
 
 		user := wui.getUser(ctx)
 		var base baseData
@@ -56,13 +68,17 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, evaluate *
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
 			Zid         string
 			MetaPairs   []meta.Pair
-			HasBackward bool
-			Backward    []simpleLink
+			HasShadows  bool
+			ShadowedBox string
+			HasIncoming bool
+			Incoming    []simpleLink
 		}{
 			Zid:         zid.String(),
 			MetaPairs:   m.Pairs(true),
-			HasBackward: len(backwardLinks) > 0,
-			Backward:    backwardLinks,
+			HasShadows:  shadowedBox != "",
+			ShadowedBox: shadowedBox,
+			HasIncoming: len(incomingLinks) > 0,
+			Incoming:    incomingLinks,
 		})
 	}
 }
@@ -83,4 +99,38 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 		}
 		redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
+}
+
+func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []simpleLink {
+	zidMap := make(map[string]bool)
+	if values, ok := m.GetList(api.KeyBackward); ok {
+		for _, val := range values {
+			zidMap[val] = true
+		}
+	}
+	for _, kd := range meta.GetSortedKeyDescriptions() {
+		inverseKey := kd.Inverse
+		if inverseKey == "" {
+			continue
+		}
+		ikd := meta.GetDescription(inverseKey)
+		switch ikd.Type {
+		case meta.TypeID:
+			if val, ok := m.Get(inverseKey); ok {
+				zidMap[val] = true
+			}
+		case meta.TypeIDSet:
+			if values, ok := m.GetList(inverseKey); ok {
+				for _, val := range values {
+					zidMap[val] = true
+				}
+			}
+		}
+	}
+	values := make([]string, 0, len(zidMap))
+	for val := range zidMap {
+		values = append(values, val)
+	}
+	sort.Strings(values)
+	return wui.encodeZidLinks(values, getTextTitle)
 }

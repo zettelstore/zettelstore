@@ -80,12 +80,14 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 
 	// Web user interface
 	if !authManager.IsReadonly() {
-		webSrv.AddZettelRoute('b', server.MethodGet, wui.MakeGetRenameZettelHandler(ucGetMeta, &ucEvaluate))
+		webSrv.AddZettelRoute('b', server.MethodGet, wui.MakeGetRenameZettelHandler(
+			ucGetMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('b', server.MethodPost, wui.MakePostRenameZettelHandler(ucRename))
 		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCopyZettelHandler(
 			ucGetZettel, usecase.NewCopyZettel()))
 		webSrv.AddZettelRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(ucCreateZettel))
-		webSrv.AddZettelRoute('d', server.MethodGet, wui.MakeGetDeleteZettelHandler(ucGetMeta, &ucEvaluate))
+		webSrv.AddZettelRoute('d', server.MethodGet, wui.MakeGetDeleteZettelHandler(
+			ucGetMeta, ucGetAllMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('d', server.MethodPost, wui.MakePostDeleteZettelHandler(ucDelete))
 		webSrv.AddZettelRoute('e', server.MethodGet, wui.MakeEditGetZettelHandler(ucGetZettel))
 		webSrv.AddZettelRoute('e', server.MethodPost, wui.MakeEditSetZettelHandler(ucUpdate))
