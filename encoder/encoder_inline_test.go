@@ -334,6 +334,138 @@ var tcsInline = []testCase{
 		},
 	},
 	{
+		descr: "Dummy Link",
+		zmk:   `[[abc]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"external","s":"abc","i":[{"t":"Text","s":"abc"}]}]`,
+			encoderHTML:   `<a href="abc" class="zs-external">abc</a>`,
+			encoderNative: `Link EXTERNAL "abc" []`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Simple URL",
+		zmk:   `[[https://zettelstore.de]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"external","s":"https://zettelstore.de","i":[{"t":"Text","s":"https://zettelstore.de"}]}]`,
+			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">https://zettelstore.de</a>`,
+			encoderNative: `Link EXTERNAL "https://zettelstore.de" []`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "URL with Text",
+		zmk:   `[[Home|https://zettelstore.de]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"external","s":"https://zettelstore.de","i":[{"t":"Text","s":"Home"}]}]`,
+			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">Home</a>`,
+			encoderNative: `Link EXTERNAL "https://zettelstore.de" [Text "Home"]`,
+			encoderText:   `Home`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Simple Zettel ID",
+		zmk:   `[[00000000000100]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"zettel","s":"00000000000100","i":[{"t":"Text","s":"00000000000100"}]}]`,
+			encoderHTML:   `<a href="00000000000100">00000000000100</a>`,
+			encoderNative: `Link ZETTEL "00000000000100" []`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Zettel ID with Text",
+		zmk:   `[[Config|00000000000100]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"zettel","s":"00000000000100","i":[{"t":"Text","s":"Config"}]}]`,
+			encoderHTML:   `<a href="00000000000100">Config</a>`,
+			encoderNative: `Link ZETTEL "00000000000100" [Text "Config"]`,
+			encoderText:   `Config`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Simple Zettel ID with fragment",
+		zmk:   `[[00000000000100#frag]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"zettel","s":"00000000000100#frag","i":[{"t":"Text","s":"00000000000100#frag"}]}]`,
+			encoderHTML:   `<a href="00000000000100#frag">00000000000100#frag</a>`,
+			encoderNative: `Link ZETTEL "00000000000100#frag" []`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Zettel ID with Text and fragment",
+		zmk:   `[[Config|00000000000100#frag]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"zettel","s":"00000000000100#frag","i":[{"t":"Text","s":"Config"}]}]`,
+			encoderHTML:   `<a href="00000000000100#frag">Config</a>`,
+			encoderNative: `Link ZETTEL "00000000000100#frag" [Text "Config"]`,
+			encoderText:   `Config`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Fragment link to self",
+		zmk:   `[[#frag]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"self","s":"#frag","i":[{"t":"Text","s":"#frag"}]}]`,
+			encoderHTML:   `<a href="#frag">#frag</a>`,
+			encoderNative: `Link SELF "#frag" []`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Hosted link",
+		zmk:   `[[H|/hosted]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"local","s":"/hosted","i":[{"t":"Text","s":"H"}]}]`,
+			encoderHTML:   `<a href="/hosted">H</a>`,
+			encoderNative: `Link LOCAL "/hosted" [Text "H"]`,
+			encoderText:   `H`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Based link",
+		zmk:   `[[B|/based]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"local","s":"/based","i":[{"t":"Text","s":"B"}]}]`,
+			encoderHTML:   `<a href="/based">B</a>`,
+			encoderNative: `Link LOCAL "/based" [Text "B"]`,
+			encoderText:   `B`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Relative link",
+		zmk:   `[[R|../relative]]`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Link","q":"local","s":"../relative","i":[{"t":"Text","s":"R"}]}]`,
+			encoderHTML:   `<a href="../relative">R</a>`,
+			encoderNative: `Link LOCAL "../relative" [Text "R"]`,
+			encoderText:   `R`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Dummy Embed",
+		zmk:   `{{abc}}`,
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Embed","s":"abc"}]`,
+			encoderHTML:   `<img src="abc" alt="">`,
+			encoderNative: `Embed EXTERNAL "abc"`,
+			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
 		descr: "",
 		zmk:   ``,
 		expect: expectMap{

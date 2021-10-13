@@ -1,1 +1,0 @@
-[Para Link EXTERNAL "https://zettelstore.de/z" [Text "Home"],Space,Link EXTERNAL "https://zettelstore.de" [],Space,Link ZETTEL "00000000000100" [Text "Config"],Space,Link ZETTEL "00000000000100" [],Space,Link SELF "#frag" [Text "Frag"],Space,Link SELF "#frag" [],Space,Link LOCAL "/hosted" [Text "H"],Space,Link BASED "/based" [Text "B"],Space,Link LOCAL "../rel" [Text "R"]]
