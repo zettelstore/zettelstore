@@ -10,7 +10,7 @@
 
 package encoder_test
 
-var tcsInline = []testCase{
+var tcsInline = []zmkTestCase{
 	{
 		descr: "Empty Zettelmarkup should produce near nothing (inline)",
 		zmk:   "",

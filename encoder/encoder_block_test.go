@@ -12,7 +12,7 @@ package encoder_test
 
 import "testing"
 
-var tcsBlock = []testCase{
+var tcsBlock = []zmkTestCase{
 	{
 		descr: "Empty Zettelmarkup should produce near nothing",
 		zmk:   "",

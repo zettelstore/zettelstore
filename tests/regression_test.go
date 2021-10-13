@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -33,13 +32,6 @@ import (
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/box/dirbox"
-	_ "zettelstore.de/z/encoder/djsonenc"
-	_ "zettelstore.de/z/encoder/htmlenc"
-	_ "zettelstore.de/z/encoder/nativeenc"
-	_ "zettelstore.de/z/encoder/textenc"
-	_ "zettelstore.de/z/encoder/zmkenc"
-	_ "zettelstore.de/z/parser/blob"
-	_ "zettelstore.de/z/parser/zettelmark"
 )
 
 var encodings = []api.EncodingEnum{
@@ -113,85 +105,12 @@ func checkFileContent(t *testing.T, filename, gotContent string) {
 	}
 }
 
-func checkBlocksFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.EncodingEnum) {
-	t.Helper()
-	var env encoder.Environment
-	if enc := encoder.Create(enc, &env); enc != nil {
-		var sb strings.Builder
-		enc.WriteBlocks(&sb, zn.Ast)
-		checkFileContent(t, resultName, sb.String())
-		return
-	}
-	panic(fmt.Sprintf("Unknown writer encoding %q", enc))
-}
-
-func checkZmkEncoder(t *testing.T, zn *ast.ZettelNode) {
-	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
-	var sb strings.Builder
-	zmkEncoder.WriteBlocks(&sb, zn.Ast)
-	gotFirst := sb.String()
-	sb.Reset()
-
-	newZettel := parser.ParseZettel(domain.Zettel{
-		Meta: zn.Meta, Content: domain.NewContent("\n" + gotFirst)}, "", testConfig)
-	zmkEncoder.WriteBlocks(&sb, newZettel.Ast)
-	gotSecond := sb.String()
-	sb.Reset()
-
-	if gotFirst != gotSecond {
-		t.Errorf("\n1st: %q\n2nd: %q", gotFirst, gotSecond)
-	}
-}
-
 func getBoxName(p box.ManagedBox, root string) string {
 	u, err := url.Parse(p.Location())
 	if err != nil {
 		panic("Unable to parse URL '" + p.Location() + "': " + err.Error())
 	}
 	return u.Path[len(root):]
-}
-
-func checkContentBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
-	ss := p.(box.StartStopper)
-	if err := ss.Start(context.Background()); err != nil {
-		panic(err)
-	}
-	metaList := []*meta.Meta{}
-	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) })
-	if err != nil {
-		panic(err)
-	}
-	for _, meta := range metaList {
-		zettel, err := p.GetZettel(context.Background(), meta.Zid)
-		if err != nil {
-			panic(err)
-		}
-		z := parser.ParseZettel(zettel, "", testConfig)
-		for _, enc := range encodings {
-			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, enc), func(st *testing.T) {
-				resultName := filepath.Join(wd, "result", "content", boxName, z.Zid.String()+"."+enc.String())
-				checkBlocksFile(st, resultName, z, enc)
-			})
-		}
-		t.Run(fmt.Sprintf("%s::%d", p.Location(), meta.Zid), func(st *testing.T) {
-			checkZmkEncoder(st, z)
-		})
-	}
-	if err := ss.Stop(context.Background()); err != nil {
-		panic(err)
-	}
-}
-
-func TestContentRegression(t *testing.T) {
-	t.Parallel()
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	root, boxes := getFileBoxes(wd, "content")
-	for _, p := range boxes {
-		checkContentBox(t, p, wd, getBoxName(p, root))
-	}
 }
 
 func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.EncodingEnum) {

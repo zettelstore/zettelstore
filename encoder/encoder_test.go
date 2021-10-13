@@ -29,7 +29,7 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
 
-type testCase struct {
+type zmkTestCase struct {
 	descr  string
 	zmk    string
 	inline bool
@@ -55,7 +55,7 @@ func TestEncoder(t *testing.T) {
 	executeTestCases(t, append(tcsBlock, tcsInline...))
 }
 
-func executeTestCases(t *testing.T, testCases []testCase) {
+func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 	t.Helper()
 	for testNum, tc := range testCases {
 		inp := input.NewInput(tc.zmk)
@@ -65,34 +65,36 @@ func executeTestCases(t *testing.T, testCases []testCase) {
 		} else {
 			pe = &peBlocks{bln: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}
-		for enc, exp := range tc.expect {
-			encdr := encoder.Create(enc, nil)
-			got, err := pe.encode(encdr)
-			if err != nil {
-				t.Error(err)
-				continue
+		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
+	}
+}
+
+func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, expected expectMap, zmkDefault string) {
+	t.Helper()
+	for enc, exp := range expected {
+		encdr := encoder.Create(enc, nil)
+		got, err := pe.encode(encdr)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		if enc == api.EncoderZmk && exp == "\000" {
+			exp = zmkDefault
+		}
+		if got != exp {
+			prefix := fmt.Sprintf("Test #%d", testNum)
+			if d := descr; d != "" {
+				prefix += "\nReason:   " + d
 			}
-			if enc == api.EncoderZmk && exp == "\000" {
-				exp = tc.zmk
-			}
-			if got != exp {
-				prefix := fmt.Sprintf("Test #%d", testNum)
-				if d := tc.descr; d != "" {
-					prefix += "\nReason:   " + d
-				}
-				if tc.inline {
-					prefix += "\nMode:     inline"
-				} else {
-					prefix += "\nMode:     block"
-				}
-				t.Errorf("%s\nEncoder:  %s\nExpected: %q\nGot:      %q", prefix, enc, exp, got)
-			}
+			prefix += "\nMode:     " + pe.mode()
+			t.Errorf("%s\nEncoder:  %s\nExpected: %q\nGot:      %q", prefix, enc, exp, got)
 		}
 	}
 }
 
 type parserEncoder interface {
 	encode(encoder.Encoder) (string, error)
+	mode() string
 }
 
 type peInlines struct {
@@ -107,6 +109,8 @@ func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 	return sb.String(), nil
 }
 
+func (peInlines) mode() string { return "inline" }
+
 type peBlocks struct {
 	bln *ast.BlockListNode
 }
@@ -119,3 +123,4 @@ func (bl peBlocks) encode(encdr encoder.Encoder) (string, error) {
 	return sb.String(), nil
 
 }
+func (peBlocks) mode() string { return "block" }

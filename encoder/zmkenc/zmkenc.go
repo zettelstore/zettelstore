@@ -126,7 +126,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.BLOBNode:
 		v.b.WriteStrings(
 			"%% Unable to display BLOB with title '", n.Title,
-			"' and syntax '", n.Syntax, "'\n")
+			"' and syntax '", n.Syntax, "'.")
 	case *ast.TextNode:
 		v.visitText(n)
 	case *ast.TagNode:

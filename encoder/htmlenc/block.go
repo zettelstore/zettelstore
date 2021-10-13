@@ -332,9 +332,9 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 		v.b.WriteBase64(bn.Blob)
 		v.b.WriteString("\" title=\"")
 		v.writeQuotedEscaped(bn.Title)
-		v.b.WriteString("\">\n")
+		v.b.WriteString("\">")
 	default:
-		v.b.WriteStrings("<p class=\"error\">Unable to display BLOB with syntax '", bn.Syntax, "'.</p>\n")
+		v.b.WriteStrings("<p class=\"zs-error\">Unable to display BLOB with syntax '", bn.Syntax, "'.</p>")
 	}
 }
 
