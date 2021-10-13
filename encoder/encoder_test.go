@@ -30,7 +30,6 @@ import (
 )
 
 type testCase struct {
-	num    int
 	descr  string
 	zmk    string
 	inline bool
@@ -43,7 +42,6 @@ const useZmk = "\000"
 
 var testCases = []testCase{
 	{
-		num:   0,
 		descr: "Empty Zettelmarkup should produce near nothing",
 		zmk:   "",
 		expect: expectMap{
@@ -55,7 +53,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    1,
 		descr:  "Empty Zettelmarkup should produce near nothing (inline)",
 		zmk:    "",
 		inline: true,
@@ -68,7 +65,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:   2,
 		descr: "Simple text: Hello, world",
 		zmk:   "Hello, world",
 		expect: expectMap{
@@ -80,7 +76,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    3,
 		descr:  "Simple text: Hello, world (inline)",
 		zmk:    "Hello, world",
 		inline: true,
@@ -93,7 +88,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    10,
 		descr:  "Italic formatting",
 		zmk:    "//italic//",
 		inline: true,
@@ -106,7 +100,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    11,
 		descr:  "Emphasized formatting",
 		zmk:    "//emph//{-}",
 		inline: true,
@@ -119,7 +112,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    12,
 		descr:  "Bold formatting",
 		zmk:    "**bold**",
 		inline: true,
@@ -132,7 +124,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    13,
 		descr:  "Strong formatting",
 		zmk:    "**strong**{-}",
 		inline: true,
@@ -145,7 +136,6 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    14,
 		descr:  "Underline formatting",
 		zmk:    "__underline__",
 		inline: true,
@@ -158,22 +148,288 @@ var testCases = []testCase{
 		},
 	},
 	{
-		num:    0,
+		descr:  "Insert formatting",
+		zmk:    "__insert__{-}",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Insert","i":[{"t":"Text","s":"insert"}]}]`,
+			api.EncoderHTML:   "<ins>insert</ins>",
+			api.EncoderNative: `Insert [Text "insert"]`,
+			api.EncoderText:   "insert",
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Strike formatting",
+		zmk:    "~~strike~~",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Strikethrough","i":[{"t":"Text","s":"strike"}]}]`,
+			api.EncoderHTML:   "<s>strike</s>",
+			api.EncoderNative: `Strikethrough [Text "strike"]`,
+			api.EncoderText:   "strike",
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Delete formatting",
+		zmk:    "~~delete~~{-}",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"delete"}]}]`,
+			api.EncoderHTML:   "<del>delete</del>",
+			api.EncoderNative: `Delete [Text "delete"]`,
+			api.EncoderText:   "delete",
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Update formatting",
+		zmk:    "~~old~~{-}__new__{-}",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"old"}]},{"t":"Insert","i":[{"t":"Text","s":"new"}]}]`,
+			api.EncoderHTML:   "<del>old</del><ins>new</ins>",
+			api.EncoderNative: `Delete [Text "old"],Insert [Text "new"]`,
+			api.EncoderText:   "oldnew",
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Monospace formatting",
+		zmk:    "''monospace''",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Mono","i":[{"t":"Text","s":"monospace"}]}]`,
+			api.EncoderHTML:   `<span style="font-family:monospace">monospace</span>`,
+			api.EncoderNative: `Mono [Text "monospace"]`,
+			api.EncoderText:   "monospace",
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Superscript formatting",
+		zmk:    "^^superscript^^",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Super","i":[{"t":"Text","s":"superscript"}]}]`,
+			api.EncoderHTML:   `<sup>superscript</sup>`,
+			api.EncoderNative: `Super [Text "superscript"]`,
+			api.EncoderText:   `superscript`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Subscript formatting",
+		zmk:    ",,subscript,,",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Sub","i":[{"t":"Text","s":"subscript"}]}]`,
+			api.EncoderHTML:   `<sub>subscript</sub>`,
+			api.EncoderNative: `Sub [Text "subscript"]`,
+			api.EncoderText:   `subscript`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Quotes formatting",
+		zmk:    `""quotes""`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Quote","i":[{"t":"Text","s":"quotes"}]}]`,
+			api.EncoderHTML:   `"quotes"`,
+			api.EncoderNative: `Quote [Text "quotes"]`,
+			api.EncoderText:   `quotes`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Quotes formatting (german)",
+		zmk:    `""quotes""{lang=de}`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Quote","a":{"lang":"de"},"i":[{"t":"Text","s":"quotes"}]}]`,
+			api.EncoderHTML:   `<span lang="de">&bdquo;quotes&ldquo;</span>`,
+			api.EncoderNative: `Quote ("",[lang="de"]) [Text "quotes"]`,
+			api.EncoderText:   `quotes`,
+			api.EncoderZmk:    `""quotes""{lang="de"}`,
+		},
+	},
+	{
+		descr:  "Quotation formatting",
+		zmk:    `<<quotation<<`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Quotation","i":[{"t":"Text","s":"quotation"}]}]`,
+			api.EncoderHTML:   `<q>quotation</q>`,
+			api.EncoderNative: `Quotation [Text "quotation"]`,
+			api.EncoderText:   `quotation`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Small formatting",
+		zmk:    `;;small;;`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Small","i":[{"t":"Text","s":"small"}]}]`,
+			api.EncoderHTML:   `<small>small</small>`,
+			api.EncoderNative: `Small [Text "small"]`,
+			api.EncoderText:   `small`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Span formatting",
+		zmk:    `::span::`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Span","i":[{"t":"Text","s":"span"}]}]`,
+			api.EncoderHTML:   `<span>span</span>`,
+			api.EncoderNative: `Span [Text "span"]`,
+			api.EncoderText:   `span`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Code formatting",
+		zmk:    "``code``",
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Code","s":"code"}]`,
+			api.EncoderHTML:   `<code>code</code>`,
+			api.EncoderNative: `Code "code"`,
+			api.EncoderText:   `code`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Input formatting",
+		zmk:    `++input++`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Input","s":"input"}]`,
+			api.EncoderHTML:   `<kbd>input</kbd>`,
+			api.EncoderNative: `Input "input"`,
+			api.EncoderText:   `input`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Output formatting",
+		zmk:    `==output==`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Output","s":"output"}]`,
+			api.EncoderHTML:   `<samp>output</samp>`,
+			api.EncoderNative: `Output "output"`,
+			api.EncoderText:   `output`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Nested Span Quote formatting",
+		zmk:    `::""abc""::{lang=fr}`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Span","a":{"lang":"fr"},"i":[{"t":"Quote","i":[{"t":"Text","s":"abc"}]}]}]`,
+			api.EncoderHTML:   `<span lang="fr">&laquo;&nbsp;abc&nbsp;&raquo;</span>`,
+			api.EncoderNative: `Span ("",[lang="fr"]) [Quote [Text "abc"]]`,
+			api.EncoderText:   `abc`,
+			api.EncoderZmk:    `::""abc""::{lang="fr"}`,
+		},
+	},
+	{
+		descr:  "Simple Citation",
+		zmk:    `[@Stern18]`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Cite","s":"Stern18"}]`,
+			api.EncoderHTML:   `Stern18`, // TODO
+			api.EncoderNative: `Cite "Stern18"`,
+			api.EncoderText:   ``,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "No comment",
+		zmk:    `% comment`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Text","s":"%"},{"t":"Space"},{"t":"Text","s":"comment"}]`,
+			api.EncoderHTML:   `% comment`,
+			api.EncoderNative: `Text "%",Space,Text "comment"`,
+			api.EncoderText:   `% comment`,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Line comment",
+		zmk:    `%% line comment`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Comment","s":"line comment"}]`,
+			api.EncoderHTML:   `<!-- line comment -->`,
+			api.EncoderNative: `Comment "line comment"`,
+			api.EncoderText:   ``,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Comment after text",
+		zmk:    `Text %% comment`,
+		inline: true,
+		expect: expectMap{
+			// TODO: Space before comment should be removed
+			api.EncoderDJSON: `[{"t":"Text","s":"Text"},{"t":"Space"},{"t":"Comment","s":"comment"}]`,
+			api.EncoderHTML:  `Text <!-- comment -->`,
+			// TODO: Space before comment should be removed
+			api.EncoderNative: `Text "Text",Space,Comment "comment"`,
+			// TODO: Space at end should be removed
+			api.EncoderText: `Text `,
+			api.EncoderZmk:  useZmk,
+		},
+	},
+	{
+		descr:  "Simple footnote",
+		zmk:    `[^footnote]`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Footnote","i":[{"t":"Text","s":"footnote"}]}]`,
+			api.EncoderHTML:   `<sup id="fnref:0"><a href="#fn:0" class="zs-footnote-ref" role="doc-noteref">0</a></sup>`,
+			api.EncoderNative: `Footnote [Text "footnote"]`,
+			api.EncoderText:   ` footnote`, // TODO: remove leading space
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
+		descr:  "Simple mark",
+		zmk:    `[!mark]`,
+		inline: true,
+		expect: expectMap{
+			api.EncoderDJSON:  `[{"t":"Mark","s":"mark"}]`,
+			api.EncoderHTML:   ``,
+			api.EncoderNative: `Mark "mark"`,
+			api.EncoderText:   ``,
+			api.EncoderZmk:    useZmk,
+		},
+	},
+	{
 		descr:  "",
-		zmk:    "",
+		zmk:    ``,
 		inline: false,
 		expect: expectMap{
 			api.EncoderDJSON:  `[]`,
-			api.EncoderHTML:   "",
+			api.EncoderHTML:   ``,
 			api.EncoderNative: ``,
-			api.EncoderText:   "",
+			api.EncoderText:   ``,
 			api.EncoderZmk:    useZmk,
 		},
 	},
 }
 
 func TestEncoder(t *testing.T) {
-	for i, tc := range testCases {
+	for testNum, tc := range testCases {
 		inp := input.NewInput(tc.zmk)
 		var pe parserEncoder
 		if tc.inline {
@@ -192,10 +448,6 @@ func TestEncoder(t *testing.T) {
 				exp = tc.zmk
 			}
 			if got != exp {
-				testNum := tc.num
-				if testNum <= 0 {
-					testNum = i
-				}
 				prefix := fmt.Sprintf("Test #%d", testNum)
 				if d := tc.descr; d != "" {
 					prefix += "\nReason:   " + d
