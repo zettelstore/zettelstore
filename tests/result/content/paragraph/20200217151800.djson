@@ -1,1 +1,0 @@
-[{"t":"Para","i":[{"t":"Text","s":"Text"},{"t":"Space"},{"t":"Text","s":"Text"},{"t":"Soft"},{"t":"Text","s":"*abc"}]},{"t":"Para","i":[{"t":"Text","s":"Text"},{"t":"Space"},{"t":"Text","s":"Text"}]},{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"abc"}]}]]}]

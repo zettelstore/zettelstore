@@ -1,4 +1,0 @@
-[Para Text "Text",Space,Text "Text",Space,Text "*abc"],
-[Para Text "Text",Space,Text "Text"],
-[BulletList
- [[Para Text "abc"]]]

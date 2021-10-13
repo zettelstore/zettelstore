@@ -49,7 +49,10 @@ const (
 )
 
 func TestEncoder(t *testing.T) {
-	executeTestCases(t, tcsInline)
+	for i := range tcsInline {
+		tcsInline[i].inline = true
+	}
+	executeTestCases(t, append(tcsBlock, tcsInline...))
 }
 
 func executeTestCases(t *testing.T, testCases []testCase) {

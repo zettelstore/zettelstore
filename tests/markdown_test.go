@@ -15,7 +15,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -42,34 +41,6 @@ type markdownTestCase struct {
 	Section   string `json:"section"`
 }
 
-// exceptions lists all CommonMark tests that should not be tested for identical HTML output
-var exceptions = []string{
-	" - foo\n   - bar\n\t - baz\n", // 9
-	"<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\nokay\n", // 170
-	"<script>\nfoo\n</script>1. *bar*\n",                       // 178
-	"- foo\n  - bar\n    - baz\n      - boo\n",                 // 294
-	"10) foo\n    - bar\n",                                     // 296
-	"- # Foo\n- Bar\n  ---\n  baz\n",                           // 300
-	"- foo\n\n- bar\n\n\n- baz\n",                              // 306
-	"- foo\n  - bar\n    - baz\n\n\n      bim\n",               // 307
-	"1. a\n\n  2. b\n\n   3. c\n",                              // 311
-	"1. a\n\n  2. b\n\n    3. c\n",                             // 313
-	"- a\n- b\n\n- c\n",                                        // 314
-	"* a\n*\n\n* c\n",                                          // 315
-	"- a\n- b\n\n  [ref]: /url\n- d\n",                         // 317
-	"- a\n  - b\n\n    c\n- d\n",                               // 319
-	"* a\n  > b\n  >\n* c\n",                                   // 320
-	"- a\n  > b\n  ```\n  c\n  ```\n- d\n",                     // 321
-	"- a\n  - b\n",                                             // 323
-	"<http://foo.bar.`baz>`\n",                                 // 345
-	"[foo<http://example.com/?search=](uri)>\n",                // 525
-	"[foo<http://example.com/?search=][ref]>\n\n[ref]: /uri\n", // 537
-	"<http://example.com?find=\\*>\n",                          // 581
-	"<http://foo.bar.baz/test?q=hello&id=22&boolean>\n",        // 594
-}
-
-var reHeadingID = regexp.MustCompile(` id="[^"]*"`)
-
 func TestEncoderAvailability(t *testing.T) {
 	t.Parallel()
 	encoderMissing := false
@@ -95,16 +66,10 @@ func TestMarkdownSpec(t *testing.T) {
 	if err = json.Unmarshal(content, &testcases); err != nil {
 		panic(err)
 	}
-	excMap := make(map[string]bool, len(exceptions))
-	for _, exc := range exceptions {
-		excMap[exc] = true
-	}
+
 	for _, tc := range testcases {
 		ast := parser.ParseBlocks(input.NewInput(tc.Markdown), nil, "markdown")
 		testAllEncodings(t, tc, ast)
-		if _, found := excMap[tc.Markdown]; !found {
-			testHTMLEncoding(t, tc, ast)
-		}
 		testZmkEncoding(t, tc, ast)
 	}
 }
@@ -118,31 +83,6 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode)
 			sb.Reset()
 		})
 	}
-}
-
-func testHTMLEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
-	htmlEncoder := encoder.Create(api.EncoderHTML, &encoder.Environment{Xhtml: true})
-	var sb strings.Builder
-	testID := tc.Example*100 + 1
-	t.Run(fmt.Sprintf("Encode md html %v", testID), func(st *testing.T) {
-		htmlEncoder.WriteBlocks(&sb, ast)
-		gotHTML := sb.String()
-		sb.Reset()
-
-		mdHTML := tc.HTML
-		mdHTML = strings.ReplaceAll(mdHTML, "\"MAILTO:", "\"mailto:")
-		gotHTML = strings.ReplaceAll(gotHTML, " class=\"zs-external\"", "")
-		gotHTML = strings.ReplaceAll(gotHTML, "%2A", "*") // url.QueryEscape
-		if strings.Count(gotHTML, "<h") > 0 {
-			gotHTML = reHeadingID.ReplaceAllString(gotHTML, "")
-		}
-		if gotHTML != mdHTML {
-			mdHTML = strings.ReplaceAll(mdHTML, "<li>\n", "<li>")
-			if gotHTML != mdHTML {
-				st.Errorf("\nCMD: %q\nExp: %q\nGot: %q", tc.Markdown, mdHTML, gotHTML)
-			}
-		}
-	})
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {

@@ -12,7 +12,7 @@ package encoder_test
 
 var tcsInline = []testCase{
 	{
-		descr: "Empty Zettelmarkup should produce near nothing",
+		descr: "Empty Zettelmarkup should produce near nothing (inline)",
 		zmk:   "",
 		expect: expectMap{
 			encoderDJSON:  `[]`,
@@ -23,32 +23,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Empty Zettelmarkup should produce near nothing (inline)",
-		zmk:    "",
-		inline: true,
-		expect: expectMap{
-			encoderDJSON:  `[]`,
-			encoderHTML:   "",
-			encoderNative: ``,
-			encoderText:   "",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
-		descr: "Simple text: Hello, world",
+		descr: "Simple text: Hello, world (inline)",
 		zmk:   "Hello, world",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Para","i":[{"t":"Text","s":"Hello,"},{"t":"Space"},{"t":"Text","s":"world"}]}]`,
-			encoderHTML:   "<p>Hello, world</p>\n", // TODO: remove \n
-			encoderNative: `[Para Text "Hello,",Space,Text "world"]`,
-			encoderText:   "Hello, world",
-			encoderZmk:    "Hello, world\n\n", // TODO: remove \n
-		},
-	},
-	{
-		descr:  "Simple text: Hello, world (inline)",
-		zmk:    "Hello, world",
-		inline: true,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Text","s":"Hello,"},{"t":"Space"},{"t":"Text","s":"world"}]`,
 			encoderHTML:   "Hello, world",
@@ -58,9 +34,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Italic formatting",
-		zmk:    "//italic//",
-		inline: true,
+		descr: "Italic formatting",
+		zmk:   "//italic//",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Italic","i":[{"t":"Text","s":"italic"}]}]`,
 			encoderHTML:   "<i>italic</i>",
@@ -70,9 +45,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Emphasized formatting",
-		zmk:    "//emph//{-}",
-		inline: true,
+		descr: "Emphasized formatting",
+		zmk:   "//emph//{-}",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Emph","i":[{"t":"Text","s":"emph"}]}]`,
 			encoderHTML:   "<em>emph</em>",
@@ -82,9 +56,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Bold formatting",
-		zmk:    "**bold**",
-		inline: true,
+		descr: "Bold formatting",
+		zmk:   "**bold**",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Bold","i":[{"t":"Text","s":"bold"}]}]`,
 			encoderHTML:   "<b>bold</b>",
@@ -94,9 +67,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Strong formatting",
-		zmk:    "**strong**{-}",
-		inline: true,
+		descr: "Strong formatting",
+		zmk:   "**strong**{-}",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Strong","i":[{"t":"Text","s":"strong"}]}]`,
 			encoderHTML:   "<strong>strong</strong>",
@@ -106,9 +78,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Underline formatting",
-		zmk:    "__underline__",
-		inline: true,
+		descr: "Underline formatting",
+		zmk:   "__underline__",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Underline","i":[{"t":"Text","s":"underline"}]}]`,
 			encoderHTML:   "<u>underline</u>",
@@ -118,9 +89,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Insert formatting",
-		zmk:    "__insert__{-}",
-		inline: true,
+		descr: "Insert formatting",
+		zmk:   "__insert__{-}",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Insert","i":[{"t":"Text","s":"insert"}]}]`,
 			encoderHTML:   "<ins>insert</ins>",
@@ -130,9 +100,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Strike formatting",
-		zmk:    "~~strike~~",
-		inline: true,
+		descr: "Strike formatting",
+		zmk:   "~~strike~~",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Strikethrough","i":[{"t":"Text","s":"strike"}]}]`,
 			encoderHTML:   "<s>strike</s>",
@@ -142,9 +111,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Delete formatting",
-		zmk:    "~~delete~~{-}",
-		inline: true,
+		descr: "Delete formatting",
+		zmk:   "~~delete~~{-}",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"delete"}]}]`,
 			encoderHTML:   "<del>delete</del>",
@@ -154,9 +122,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Update formatting",
-		zmk:    "~~old~~{-}__new__{-}",
-		inline: true,
+		descr: "Update formatting",
+		zmk:   "~~old~~{-}__new__{-}",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"old"}]},{"t":"Insert","i":[{"t":"Text","s":"new"}]}]`,
 			encoderHTML:   "<del>old</del><ins>new</ins>",
@@ -166,9 +133,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Monospace formatting",
-		zmk:    "''monospace''",
-		inline: true,
+		descr: "Monospace formatting",
+		zmk:   "''monospace''",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Mono","i":[{"t":"Text","s":"monospace"}]}]`,
 			encoderHTML:   `<span style="font-family:monospace">monospace</span>`,
@@ -178,9 +144,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Superscript formatting",
-		zmk:    "^^superscript^^",
-		inline: true,
+		descr: "Superscript formatting",
+		zmk:   "^^superscript^^",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Super","i":[{"t":"Text","s":"superscript"}]}]`,
 			encoderHTML:   `<sup>superscript</sup>`,
@@ -190,9 +155,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Subscript formatting",
-		zmk:    ",,subscript,,",
-		inline: true,
+		descr: "Subscript formatting",
+		zmk:   ",,subscript,,",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Sub","i":[{"t":"Text","s":"subscript"}]}]`,
 			encoderHTML:   `<sub>subscript</sub>`,
@@ -202,9 +166,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Quotes formatting",
-		zmk:    `""quotes""`,
-		inline: true,
+		descr: "Quotes formatting",
+		zmk:   `""quotes""`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Quote","i":[{"t":"Text","s":"quotes"}]}]`,
 			encoderHTML:   `"quotes"`,
@@ -214,9 +177,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Quotes formatting (german)",
-		zmk:    `""quotes""{lang=de}`,
-		inline: true,
+		descr: "Quotes formatting (german)",
+		zmk:   `""quotes""{lang=de}`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Quote","a":{"lang":"de"},"i":[{"t":"Text","s":"quotes"}]}]`,
 			encoderHTML:   `<span lang="de">&bdquo;quotes&ldquo;</span>`,
@@ -226,9 +188,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Quotation formatting",
-		zmk:    `<<quotation<<`,
-		inline: true,
+		descr: "Quotation formatting",
+		zmk:   `<<quotation<<`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Quotation","i":[{"t":"Text","s":"quotation"}]}]`,
 			encoderHTML:   `<q>quotation</q>`,
@@ -238,9 +199,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Small formatting",
-		zmk:    `;;small;;`,
-		inline: true,
+		descr: "Small formatting",
+		zmk:   `;;small;;`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Small","i":[{"t":"Text","s":"small"}]}]`,
 			encoderHTML:   `<small>small</small>`,
@@ -250,9 +210,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Span formatting",
-		zmk:    `::span::`,
-		inline: true,
+		descr: "Span formatting",
+		zmk:   `::span::`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Span","i":[{"t":"Text","s":"span"}]}]`,
 			encoderHTML:   `<span>span</span>`,
@@ -262,9 +221,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Code formatting",
-		zmk:    "``code``",
-		inline: true,
+		descr: "Code formatting",
+		zmk:   "``code``",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Code","s":"code"}]`,
 			encoderHTML:   `<code>code</code>`,
@@ -274,9 +232,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Input formatting",
-		zmk:    `++input++`,
-		inline: true,
+		descr: "Input formatting",
+		zmk:   `++input++`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Input","s":"input"}]`,
 			encoderHTML:   `<kbd>input</kbd>`,
@@ -286,9 +243,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Output formatting",
-		zmk:    `==output==`,
-		inline: true,
+		descr: "Output formatting",
+		zmk:   `==output==`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Output","s":"output"}]`,
 			encoderHTML:   `<samp>output</samp>`,
@@ -298,9 +254,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Nested Span Quote formatting",
-		zmk:    `::""abc""::{lang=fr}`,
-		inline: true,
+		descr: "Nested Span Quote formatting",
+		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Span","a":{"lang":"fr"},"i":[{"t":"Quote","i":[{"t":"Text","s":"abc"}]}]}]`,
 			encoderHTML:   `<span lang="fr">&laquo;&nbsp;abc&nbsp;&raquo;</span>`,
@@ -310,9 +265,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Simple Citation",
-		zmk:    `[@Stern18]`,
-		inline: true,
+		descr: "Simple Citation",
+		zmk:   `[@Stern18]`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Cite","s":"Stern18"}]`,
 			encoderHTML:   `Stern18`, // TODO
@@ -322,9 +276,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "No comment",
-		zmk:    `% comment`,
-		inline: true,
+		descr: "No comment",
+		zmk:   `% comment`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Text","s":"%"},{"t":"Space"},{"t":"Text","s":"comment"}]`,
 			encoderHTML:   `% comment`,
@@ -334,9 +287,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Line comment",
-		zmk:    `%% line comment`,
-		inline: true,
+		descr: "Line comment",
+		zmk:   `%% line comment`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Comment","s":"line comment"}]`,
 			encoderHTML:   `<!-- line comment -->`,
@@ -346,9 +298,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Comment after text",
-		zmk:    `Text %% comment`,
-		inline: true,
+		descr: "Comment after text",
+		zmk:   `Text %% comment`,
 		expect: expectMap{
 			// TODO: Space before comment should be removed
 			encoderDJSON: `[{"t":"Text","s":"Text"},{"t":"Space"},{"t":"Comment","s":"comment"}]`,
@@ -361,9 +312,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Simple footnote",
-		zmk:    `[^footnote]`,
-		inline: true,
+		descr: "Simple footnote",
+		zmk:   `[^footnote]`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Footnote","i":[{"t":"Text","s":"footnote"}]}]`,
 			encoderHTML:   `<sup id="fnref:0"><a href="#fn:0" class="zs-footnote-ref" role="doc-noteref">0</a></sup>`,
@@ -373,9 +323,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "Simple mark",
-		zmk:    `[!mark]`,
-		inline: true,
+		descr: "Simple mark",
+		zmk:   `[!mark]`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Mark","s":"mark"}]`,
 			encoderHTML:   ``,
@@ -385,9 +334,8 @@ var tcsInline = []testCase{
 		},
 	},
 	{
-		descr:  "",
-		zmk:    ``,
-		inline: true,
+		descr: "",
+		zmk:   ``,
 		expect: expectMap{
 			encoderDJSON:  `[]`,
 			encoderHTML:   ``,
@@ -397,7 +345,3 @@ var tcsInline = []testCase{
 		},
 	},
 }
-
-// func TestEncoderInline(t *testing.T) {
-// 	executeTestCases(t, tcsInline)
-// }

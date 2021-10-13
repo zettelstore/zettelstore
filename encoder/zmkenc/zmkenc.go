@@ -101,11 +101,12 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.ParaNode:
-		ast.Walk(v, n.Inlines)
-		v.b.WriteByte('\n')
-		if len(v.prefix) == 0 {
-			v.b.WriteByte('\n')
+	case *ast.BlockListNode:
+		for i, bn := range n.List {
+			if i > 0 {
+				v.b.WriteByte('\n')
+			}
+			ast.Walk(v, bn)
 		}
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -116,7 +117,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.HRuleNode:
 		v.b.WriteString("---")
 		v.visitAttributes(n.Attrs)
-		v.b.WriteByte('\n')
 	case *ast.NestedListNode:
 		v.visitNestedList(n)
 	case *ast.DescriptionListNode:
@@ -158,15 +158,26 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
+var mapVerbatimKind = map[ast.VerbatimKind]string{
+	ast.VerbatimComment: "%%%",
+	ast.VerbatimHTML:    "???",
+	ast.VerbatimProg:    "```",
+}
+
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
+	kind, ok := mapVerbatimKind[vn.Kind]
+	if !ok {
+		panic(fmt.Sprintf("Unknown verbatim kind %d", vn.Kind))
+	}
+
 	// TODO: scan cn.Lines to find embedded "`"s at beginning
-	v.b.WriteString("```")
+	v.b.WriteString(kind)
 	v.visitAttributes(vn.Attrs)
 	v.b.WriteByte('\n')
 	for _, line := range vn.Lines {
 		v.b.WriteStrings(line, "\n")
 	}
-	v.b.WriteString("```\n")
+	v.b.WriteString(kind)
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
@@ -185,12 +196,12 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(rn.Attrs)
 	v.b.WriteByte('\n')
 	ast.Walk(v, rn.Blocks)
+	v.b.WriteByte('\n')
 	v.b.WriteString(kind)
 	if rn.Inlines != nil {
 		v.b.WriteByte(' ')
 		ast.Walk(v, rn.Inlines)
 	}
-	v.b.WriteByte('\n')
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
@@ -200,7 +211,6 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.b.WriteByte(' ')
 	ast.Walk(v, hn.Inlines)
 	v.visitAttributes(hn.Attrs)
-	v.b.WriteByte('\n')
 }
 
 var mapNestedListKind = map[ast.NestedListKind]byte{
@@ -211,13 +221,16 @@ var mapNestedListKind = map[ast.NestedListKind]byte{
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.prefix = append(v.prefix, mapNestedListKind[ln.Kind])
-	for _, item := range ln.Items {
+	for i, item := range ln.Items {
+		if i > 0 {
+			v.b.WriteByte('\n')
+		}
 		v.b.Write(v.prefix)
 		v.b.WriteByte(' ')
 		for i, in := range item {
 			if i > 0 {
+				v.b.WriteByte('\n')
 				if _, ok := in.(*ast.ParaNode); ok {
-					v.b.WriteByte('\n')
 					for j := 0; j <= len(v.prefix); j++ {
 						v.b.WriteByte(' ')
 					}
@@ -227,19 +240,19 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 		}
 	}
 	v.prefix = v.prefix[:len(v.prefix)-1]
-	v.b.WriteByte('\n')
 }
 
 func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
-	for _, descr := range dn.Descriptions {
+	for i, descr := range dn.Descriptions {
+		if i > 0 {
+			v.b.WriteByte('\n')
+		}
 		v.b.WriteString("; ")
 		ast.Walk(v, descr.Term)
-		v.b.WriteByte('\n')
 
 		for _, b := range descr.Descriptions {
-			v.b.WriteString(": ")
+			v.b.WriteString("\n: ")
 			ast.WalkDescriptionSlice(v, b)
-			v.b.WriteByte('\n')
 		}
 	}
 }
@@ -266,7 +279,10 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 		}
 		v.b.WriteByte('\n')
 	}
-	for _, row := range tn.Rows {
+	for i, row := range tn.Rows {
+		if i > 0 {
+			v.b.WriteByte('\n')
+		}
 		for pos, cell := range row {
 			v.b.WriteByte('|')
 			if cell.Align != tn.Align[pos] {
@@ -274,9 +290,7 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 			}
 			ast.Walk(v, cell.Inlines)
 		}
-		v.b.WriteByte('\n')
 	}
-	v.b.WriteByte('\n')
 }
 
 var escapeSeqs = map[string]bool{

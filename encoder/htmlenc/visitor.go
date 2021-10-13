@@ -33,23 +33,34 @@ type visitor struct {
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack
 	textEnc       encoder.Encoder
+	addEol        bool
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 	var lang string
+	var addEol bool
 	if he.env != nil {
 		lang = he.env.Lang
+		addEol = he.env.AddEOL
 	}
 	return &visitor{
 		env:     he.env,
 		b:       encoder.NewBufWriter(w),
 		lang:    newLangStack(lang),
 		textEnc: encoder.Create(api.EncoderText, nil),
+		addEol:  addEol,
 	}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		for i, bn := range n.List {
+			if i > 0 {
+				v.b.WriteByte('\n')
+			}
+			ast.Walk(v, bn)
+		}
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")
 		ast.Walk(v, n.Inlines)
@@ -64,9 +75,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteString("<hr")
 		v.visitAttributes(n.Attrs)
 		if v.env.IsXHTML() {
-			v.b.WriteString(" />\n")
+			v.b.WriteString(" />")
 		} else {
-			v.b.WriteString(">\n")
+			v.b.WriteBytes('>')
 		}
 	case *ast.NestedListNode:
 		v.visitNestedList(n)

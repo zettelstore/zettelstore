@@ -20,6 +20,7 @@ type Environment struct {
 	Lang           string // default language
 	Interactive    bool   // Encoded data will be placed in interactive content
 	Xhtml          bool   // use XHTML syntax instead of HTML syntax
+	AddEOL         bool   // add \n at end of last block node
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
 	IgnoreMeta     map[string]bool

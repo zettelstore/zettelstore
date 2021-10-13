@@ -33,7 +33,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 			v.writeHTMLEscaped(line)
 			v.b.WriteByte('\n')
 		}
-		v.b.WriteString("</code></pre>\n")
+		v.b.WriteString("</code></pre>")
 		v.visibleSpace = oldVisible
 
 	case ast.VerbatimComment:
@@ -43,7 +43,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 				v.writeHTMLEscaped(line)
 				v.b.WriteByte('\n')
 			}
-			v.b.WriteString("-->\n")
+			v.b.WriteString("-->")
 		}
 
 	case ast.VerbatimHTML:
@@ -120,11 +120,11 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteString(">\n")
 	ast.Walk(v, rn.Blocks)
 	if rn.Inlines != nil {
-		v.b.WriteString("<cite>")
+		v.b.WriteString("\n<cite>")
 		ast.Walk(v, rn.Inlines)
-		v.b.WriteString("</cite>\n")
+		v.b.WriteString("</cite>")
 	}
-	v.b.WriteStrings("</", code, ">\n")
+	v.b.WriteStrings("\n</", code, ">")
 	v.inVerse = oldVerse
 }
 
@@ -146,7 +146,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	}
 	v.b.WriteByte('>')
 	ast.Walk(v, hn.Inlines)
-	v.b.WriteStrings("</h", strLvl, ">\n")
+	v.b.WriteStrings("</h", strLvl, ">")
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
@@ -178,7 +178,7 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 		v.writeItemSliceOrPara(item, compact)
 		v.b.WriteString("</li>\n")
 	}
-	v.b.WriteStrings("</", code, ">\n")
+	v.b.WriteStrings("</", code, ">")
 }
 
 func (v *visitor) writeQuotationList(ln *ast.NestedListNode) {
@@ -251,7 +251,13 @@ func (v *visitor) writeItemSliceOrPara(ins ast.ItemSlice, compact bool) {
 			return
 		}
 	}
-	ast.WalkItemSlice(v, ins)
+	for i, in := range ins {
+		if i >= 0 {
+			v.b.WriteByte('\n')
+		}
+		ast.Walk(v, in)
+	}
+	v.b.WriteByte('\n')
 }
 
 func (v *visitor) writeDescriptionsSlice(ds ast.DescriptionSlice) {
@@ -277,7 +283,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 			v.b.WriteString("</dd>\n")
 		}
 	}
-	v.b.WriteString("</dl>\n")
+	v.b.WriteString("</dl>")
 }
 
 func (v *visitor) visitTable(tn *ast.TableNode) {
@@ -294,7 +300,7 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 		}
 		v.b.WriteString("</tbody>\n")
 	}
-	v.b.WriteString("</table>\n")
+	v.b.WriteString("</table>")
 }
 
 var alignStyle = map[ast.Alignment]string{
@@ -333,5 +339,5 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 }
 
 func (v *visitor) writeEndPara() {
-	v.b.WriteString("</p>\n")
+	v.b.WriteString("</p>")
 }
