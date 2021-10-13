@@ -33,22 +33,18 @@ type visitor struct {
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack
 	textEnc       encoder.Encoder
-	addEol        bool
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 	var lang string
-	var addEol bool
 	if he.env != nil {
 		lang = he.env.Lang
-		addEol = he.env.AddEOL
 	}
 	return &visitor{
 		env:     he.env,
 		b:       encoder.NewBufWriter(w),
 		lang:    newLangStack(lang),
 		textEnc: encoder.Create(api.EncoderText, nil),
-		addEol:  addEol,
 	}
 }
 
