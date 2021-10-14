@@ -274,19 +274,19 @@ func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
 // parseHeading parses a head line.
 func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 	inp := cp.inp
-	lvl := cp.countDelim(inp.Ch)
-	if lvl < 3 {
+	delims := cp.countDelim(inp.Ch)
+	if delims < 3 {
 		return nil, false
-	}
-	if lvl > 7 {
-		lvl = 7
 	}
 	if inp.Ch != ' ' {
 		return nil, false
 	}
 	inp.Next()
 	cp.skipSpace()
-	hn = &ast.HeadingNode{Level: lvl - 1, Inlines: &ast.InlineListNode{}}
+	if delims > 7 {
+		delims = 7
+	}
+	hn = &ast.HeadingNode{Level: delims - 2, Inlines: &ast.InlineListNode{}}
 	for {
 		if input.IsEOLEOS(inp.Ch) {
 			return hn, true

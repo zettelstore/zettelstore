@@ -132,7 +132,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.lang.push(hn.Attrs)
 	defer v.lang.pop()
 
-	lvl := hn.Level
+	lvl := hn.Level + 1
 	if lvl > 6 {
 		lvl = 6 // HTML has H1..H6
 	}

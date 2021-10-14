@@ -205,10 +205,8 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
-	for i := 0; i <= hn.Level; i++ {
-		v.b.WriteByte('=')
-	}
-	v.b.WriteByte(' ')
+	const headingSigns = "========= "
+	v.b.WriteString(headingSigns[len(headingSigns)-hn.Level-3:])
 	ast.Walk(v, hn.Inlines)
 	v.visitAttributes(hn.Attrs)
 }
