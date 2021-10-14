@@ -100,13 +100,11 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 		back = remRefs(back, zi.forward)
 		updated = true
 	}
-	if len(zi.meta) > 0 {
-		for k, refs := range zi.meta {
-			if len(refs.backward) > 0 {
-				m.Set(k, refs.backward.String())
-				back = remRefs(back, refs.backward)
-				updated = true
-			}
+	for k, refs := range zi.meta {
+		if len(refs.backward) > 0 {
+			m.Set(k, refs.backward.String())
+			back = remRefs(back, refs.backward)
+			updated = true
 		}
 	}
 	if len(back) > 0 {

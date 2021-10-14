@@ -24,7 +24,7 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Simple text: Hello, world (inline)",
-		zmk:   "Hello, world",
+		zmk:   `Hello, world`,
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Text","s":"Hello,"},{"t":"Space"},{"t":"Text","s":"world"}]`,
 			encoderHTML:   "Hello, world",

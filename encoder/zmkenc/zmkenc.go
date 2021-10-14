@@ -232,19 +232,23 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 		}
 		v.b.Write(v.prefix)
 		v.b.WriteByte(' ')
-		for i, in := range item {
-			if i > 0 {
+		for j, in := range item {
+			if j > 0 {
 				v.b.WriteByte('\n')
 				if _, ok := in.(*ast.ParaNode); ok {
-					for j := 0; j <= len(v.prefix); j++ {
-						v.b.WriteByte(' ')
-					}
+					v.writePrefixSpaces()
 				}
 			}
 			ast.Walk(v, in)
 		}
 	}
 	v.prefix = v.prefix[:len(v.prefix)-1]
+}
+
+func (v *visitor) writePrefixSpaces() {
+	for i := 0; i <= len(v.prefix); i++ {
+		v.b.WriteByte(' ')
+	}
 }
 
 func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
@@ -270,31 +274,39 @@ var alignCode = map[ast.Alignment]string{
 }
 
 func (v *visitor) visitTable(tn *ast.TableNode) {
-	if len(tn.Header) > 0 {
-		for pos, cell := range tn.Header {
-			v.b.WriteString("|=")
-			colAlign := tn.Align[pos]
-			if cell.Align != colAlign {
-				v.b.WriteString(alignCode[cell.Align])
-			}
-			ast.Walk(v, cell.Inlines)
-			if colAlign != ast.AlignDefault {
-				v.b.WriteString(alignCode[colAlign])
-			}
-		}
+	if header := tn.Header; len(header) > 0 {
+		v.writeTableHeader(header, tn.Align)
 		v.b.WriteByte('\n')
 	}
 	for i, row := range tn.Rows {
 		if i > 0 {
 			v.b.WriteByte('\n')
 		}
-		for pos, cell := range row {
-			v.b.WriteByte('|')
-			if cell.Align != tn.Align[pos] {
-				v.b.WriteString(alignCode[cell.Align])
-			}
-			ast.Walk(v, cell.Inlines)
+		v.writeTableRow(row, tn.Align)
+	}
+}
+
+func (v *visitor) writeTableHeader(header ast.TableRow, align []ast.Alignment) {
+	for pos, cell := range header {
+		v.b.WriteString("|=")
+		colAlign := align[pos]
+		if cell.Align != colAlign {
+			v.b.WriteString(alignCode[cell.Align])
 		}
+		ast.Walk(v, cell.Inlines)
+		if colAlign != ast.AlignDefault {
+			v.b.WriteString(alignCode[colAlign])
+		}
+	}
+}
+
+func (v *visitor) writeTableRow(row ast.TableRow, align []ast.Alignment) {
+	for pos, cell := range row {
+		v.b.WriteByte('|')
+		if cell.Align != align[pos] {
+			v.b.WriteString(alignCode[cell.Align])
+		}
+		ast.Walk(v, cell.Inlines)
 	}
 }
 

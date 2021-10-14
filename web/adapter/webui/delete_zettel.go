@@ -103,11 +103,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 
 func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []simpleLink {
 	zidMap := make(map[string]bool)
-	if values, ok := m.GetList(api.KeyBackward); ok {
-		for _, val := range values {
-			zidMap[val] = true
-		}
-	}
+	addListValues(zidMap, m, api.KeyBackward)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		inverseKey := kd.Inverse
 		if inverseKey == "" {
@@ -120,11 +116,7 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 				zidMap[val] = true
 			}
 		case meta.TypeIDSet:
-			if values, ok := m.GetList(inverseKey); ok {
-				for _, val := range values {
-					zidMap[val] = true
-				}
-			}
+			addListValues(zidMap, m, inverseKey)
 		}
 	}
 	values := make([]string, 0, len(zidMap))
@@ -133,4 +125,12 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 	}
 	sort.Strings(values)
 	return wui.encodeZidLinks(values, getTextTitle)
+}
+
+func addListValues(zidMap map[string]bool, m *meta.Meta, key string) {
+	if values, ok := m.GetList(key); ok {
+		for _, val := range values {
+			zidMap[val] = true
+		}
+	}
 }
