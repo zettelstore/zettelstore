@@ -292,7 +292,7 @@ func TestComment(t *testing.T) {
 		{"%% % a", "(PARA {% % a})"},
 		{"%%a", "(PARA {% a})"},
 		{"a%%b", "(PARA a {% b})"},
-		{"a %%b", "(PARA a SP {% b})"},
+		{"a %%b", "(PARA a {% b})"},
 		{" %%b", "(PARA {% b})"},
 		{"%%b ", "(PARA {% b })"},
 		{"100%", "(PARA 100%)"},

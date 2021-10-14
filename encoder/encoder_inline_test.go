@@ -301,14 +301,11 @@ var tcsInline = []zmkTestCase{
 		descr: "Comment after text",
 		zmk:   `Text %% comment`,
 		expect: expectMap{
-			// TODO: Space before comment should be removed
-			encoderDJSON: `[{"t":"Text","s":"Text"},{"t":"Space"},{"t":"Comment","s":"comment"}]`,
-			encoderHTML:  `Text <!-- comment -->`,
-			// TODO: Space before comment should be removed
-			encoderNative: `Text "Text",Space,Comment "comment"`,
-			// TODO: Space at end should be removed
-			encoderText: `Text `,
-			encoderZmk:  useZmk,
+			encoderDJSON:  `[{"t":"Text","s":"Text"},{"t":"Comment","s":"comment"}]`,
+			encoderHTML:   `Text <!-- comment -->`,
+			encoderNative: `Text "Text",Comment "comment"`,
+			encoderText:   `Text`,
+			encoderZmk:    useZmk,
 		},
 	},
 	{
@@ -318,7 +315,7 @@ var tcsInline = []zmkTestCase{
 			encoderDJSON:  `[{"t":"Footnote","i":[{"t":"Text","s":"footnote"}]}]`,
 			encoderHTML:   `<sup id="fnref:0"><a href="#fn:0" class="zs-footnote-ref" role="doc-noteref">0</a></sup>`,
 			encoderNative: `Footnote [Text "footnote"]`,
-			encoderText:   ` footnote`, // TODO: remove leading space
+			encoderText:   `footnote`,
 			encoderZmk:    useZmk,
 		},
 	},

@@ -255,6 +255,9 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	case ast.LiteralOutput:
 		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Text)
 	case ast.LiteralComment:
+		if v.inlinePos > 0 {
+			v.b.WriteByte(' ')
+		}
 		v.b.WriteString("<!-- ")
 		v.writeHTMLEscaped(ln.Text) // writeCommentEscaped
 		v.b.WriteString(" -->")

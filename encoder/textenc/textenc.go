@@ -97,7 +97,8 @@ func (*textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, err
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b encoder.BufWriter
+	b         encoder.BufWriter
+	inlinePos int
 }
 
 func newVisitor(w io.Writer) *visitor {
@@ -108,6 +109,13 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
 		v.visitBlockList(n)
+	case *ast.InlineListNode:
+		for i, in := range n.List {
+			v.inlinePos = i
+			ast.Walk(v, in)
+		}
+		v.inlinePos = 0
+		return nil
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
 		return nil
@@ -149,8 +157,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		return nil
 	case *ast.FootnoteNode:
-		v.b.WriteByte(' ')
-		return v // No 'return nil' to write text
+		if v.inlinePos > 0 {
+			v.b.WriteByte(' ')
+		}
+		// No 'return nil' to write text
 	case *ast.LiteralNode:
 		if n.Kind != ast.LiteralComment {
 			v.b.WriteString(n.Text)

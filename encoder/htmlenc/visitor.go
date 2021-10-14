@@ -33,6 +33,7 @@ type visitor struct {
 	inInteractive bool // Rendered interactive HTML code
 	lang          langStack
 	textEnc       encoder.Encoder
+	inlinePos     int // Element position in inline list node
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
@@ -57,6 +58,12 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			}
 			ast.Walk(v, bn)
 		}
+	case *ast.InlineListNode:
+		for i, in := range n.List {
+			v.inlinePos = i
+			ast.Walk(v, in)
+		}
+		v.inlinePos = 0
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")
 		ast.Walk(v, n.Inlines)
@@ -86,7 +93,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TextNode:
 		v.writeHTMLEscaped(n.Text)
 	case *ast.TagNode:
-		// TODO: erst mal als span. Link wäre gut, muss man vermutlich via Callback lösen.
 		v.b.WriteString("<span class=\"zettel-tag\">#")
 		v.writeHTMLEscaped(n.Tag)
 		v.b.WriteString("</span>")

@@ -87,9 +87,10 @@ func (ze *zmkEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, e
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b      encoder.BufWriter
-	prefix []byte
-	enc    *zmkEncoder
+	b         encoder.BufWriter
+	prefix    []byte
+	enc       *zmkEncoder
+	inlinePos int
 }
 
 func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
@@ -108,6 +109,12 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			}
 			ast.Walk(v, bn)
 		}
+	case *ast.InlineListNode:
+		for i, in := range n.List {
+			v.inlinePos = i
+			ast.Walk(v, in)
+		}
+		v.inlinePos = 0
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
 	case *ast.RegionNode:
@@ -427,6 +434,9 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	case ast.LiteralOutput:
 		v.writeLiteral('=', ln.Attrs, ln.Text)
 	case ast.LiteralComment:
+		if v.inlinePos > 0 {
+			v.b.WriteByte(' ')
+		}
 		v.b.WriteStrings("%% ", ln.Text)
 	case ast.LiteralHTML:
 		v.b.WriteString("``")

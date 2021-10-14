@@ -419,6 +419,11 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 						fromPos++
 						again = true
 					}
+				case *ast.LiteralNode:
+					if nn.Kind == ast.LiteralComment {
+						ins[toPos] = ins[fromPos]
+						fromPos++
+					}
 				}
 			}
 		case *ast.BreakNode:
