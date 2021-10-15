@@ -112,7 +112,7 @@ func (pp *postProcessor) visitTable(tn *ast.TableNode) {
 	pp.visitTableRows(tn, width)
 }
 
-func (pp *postProcessor) visitTableHeader(tn *ast.TableNode) {
+func (*postProcessor) visitTableHeader(tn *ast.TableNode) {
 	for pos, cell := range tn.Header {
 		ins := cell.Inlines.List
 		if len(ins) == 0 {
@@ -225,7 +225,7 @@ var mapSemantic = map[ast.FormatKind]ast.FormatKind{
 	ast.FormatStrike: ast.FormatDelete,
 }
 
-func (pp *postProcessor) visitFormat(fn *ast.FormatNode) {
+func (*postProcessor) visitFormat(fn *ast.FormatNode) {
 	if fn.Attrs.HasDefault() {
 		if newKind, ok := mapSemantic[fn.Kind]; ok {
 			fn.Attrs.RemoveDefault()
@@ -437,7 +437,7 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 }
 
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.
-func (pp *postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos int) int {
+func (*postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos int) int {
 	ins := iln.List
 	for toPos > 0 {
 		switch n := ins[toPos-1].(type) {
@@ -456,7 +456,7 @@ func (pp *postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos i
 	return toPos
 }
 
-func (pp *postProcessor) processInlineListInplace(iln *ast.InlineListNode) {
+func (*postProcessor) processInlineListInplace(iln *ast.InlineListNode) {
 	for _, in := range iln.List {
 		if n, ok := in.(*ast.TextNode); ok {
 			if n.Text == "..." {
