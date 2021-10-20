@@ -18,18 +18,20 @@ import (
 	"zettelstore.de/c/api"
 )
 
+const (
+	abcZid   = api.ZettelID("20211020121000")
+	abc10Zid = api.ZettelID("20211020121100")
+)
+
 func TestZettelTransclusion(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
 
-	const (
-		abcZid      = api.ZettelID("20211020121000")
-		abc10000Zid = api.ZettelID("20211020121400")
-	)
+	const abc10000Zid = api.ZettelID("20211020121400")
 	contentMap := map[api.ZettelID]int{
 		abcZid:                         1,
-		api.ZettelID("20211020121100"): 10,
+		abc10Zid:                       10,
 		api.ZettelID("20211020121145"): 100,
 		api.ZettelID("20211020121300"): 1000,
 	}
@@ -70,6 +72,30 @@ func TestZettelTransclusion(t *testing.T) {
 		return
 	}
 	checkContentContains(t, abc10000Zid, content, "Too many transclusions")
+}
+
+func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("reader", "reader")
+
+	zettelData, err := c.GetZettelJSON(context.Background(), api.ZidEmoji)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	expectedEnc := "base64"
+	if got := zettelData.Encoding; expectedEnc != got {
+		t.Errorf("Zettel %q: encoding %q expected, but got %q", abcZid, expectedEnc, got)
+	}
+
+	content, err := c.GetEvaluatedZettel(context.Background(), abc10Zid, api.EncoderHTML)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	expectedContent := "<img src=\"data:image/gif;" + expectedEnc + "," + zettelData.Content
+	checkContentContains(t, abc10Zid, content, expectedContent)
 }
 
 func stringHead(s string) string {
