@@ -67,7 +67,7 @@ func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig con
 		port:       port,
 		env:        env,
 		rtConfig:   rtConfig,
-		astMap:     map[id.Zid]*ast.ZettelNode{},
+		costMap:    map[id.Zid]embedCost{},
 		embedMap:   map[string]*ast.InlineListNode{},
 		embedCount: 0,
 		marker:     &ast.ZettelNode{},
@@ -80,10 +80,15 @@ type evaluator struct {
 	port       Port
 	env        *Environment
 	rtConfig   config.Config
-	astMap     map[id.Zid]*ast.ZettelNode
+	costMap    map[id.Zid]embedCost
 	marker     *ast.ZettelNode
 	embedMap   map[string]*ast.InlineListNode
 	embedCount int
+}
+
+type embedCost struct {
+	zn *ast.ZettelNode
+	ec int
 }
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
@@ -183,6 +188,12 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 }
 
 func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
+	if maxTrans := e.rtConfig.GetMaxTransclusions(); e.embedCount > maxTrans {
+		e.embedCount = maxTrans + 1 // To prevent e.embedCount from counting
+		return createErrorText(en,
+			"Too", "many", "transclusions", "(must", "be", "at", "most", strconv.Itoa(maxTrans)+",",
+			"see", "runtime", "configuration", "key", "max-transclusions):")
+	}
 	switch en.Material.(type) {
 	case *ast.ReferenceMaterialNode:
 	case *ast.BLOBMaterialNode:
@@ -224,14 +235,17 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		return createErrorText(en, "Not", "embeddable (syntax="+syntax+"):")
 	}
 
-	zn, ok := e.astMap[zid]
+	cost, ok := e.costMap[zid]
+	zn := cost.zn
 	if zn == e.marker {
 		return createErrorText(en, "Recursive", "transclusion:")
 	}
 	if !ok {
-		e.astMap[zid] = e.marker
+		ec := e.embedCount
+		e.costMap[zid] = embedCost{zn: e.marker, ec: ec}
 		zn = e.evaluateEmbeddedZettel(zettel, syntax)
-		e.astMap[zid] = zn
+		e.costMap[zid] = embedCost{zn: zn, ec: e.embedCount - ec}
+		e.embedCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
 	}
 
 	result, ok := e.embedMap[ref.Ref.Value]
@@ -245,8 +259,8 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 
 	e.embedCount++
-	if maxTrans := e.rtConfig.GetMaxTransclusions(); e.embedCount > maxTrans {
-		return createErrorText(en, "Too", "many", "transclusions ("+strconv.Itoa(maxTrans)+"):")
+	if ec := cost.ec; ec > 0 {
+		e.embedCount += cost.ec
 	}
 	return result
 }
@@ -294,7 +308,7 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 		OnlyRef: true,
 	}
 	text := ast.CreateInlineListNodeFromWords(msgWords...)
-	text.Append(&ast.SpaceNode{Lexeme: " "}, ln)
+	text.Append(&ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
 	fn := &ast.FormatNode{
 		Kind:    ast.FormatMonospace,
 		Inlines: text,
