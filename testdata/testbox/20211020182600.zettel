@@ -1,0 +1,7 @@
+id: 20211020182600
+title: Self-recursive transclusion
+role: zettel
+syntax: zmk
+modified: 20211020182712
+
+{{20211020182600}}

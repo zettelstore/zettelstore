@@ -47,11 +47,11 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 40
+		ownerZettel      = 46
 		configRoleZettel = 27
 		writerZettel     = ownerZettel - 22
 		readerZettel     = ownerZettel - 22
-		creatorZettel    = ownerZettel - 30
+		creatorZettel    = 10
 		publicZettel     = 7
 	)
 

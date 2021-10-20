@@ -1,0 +1,8 @@
+id: 20211020185400
+title: Self embed zettel
+role: zettel
+syntax: zmk
+modified: 20211020185512
+
+{{#mark}}
+[!mark] ABC

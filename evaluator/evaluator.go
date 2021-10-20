@@ -253,8 +253,11 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		// Search for text to be embedded.
 		result = findInlineList(zn.Ast, ref.Ref.URL.Fragment)
 		e.embedMap[ref.Ref.Value] = result
-		if result.IsEmpty() {
-			return createErrorText(en, "Nothing", "to", "transclude:")
+	}
+	if result.IsEmpty() {
+		return &ast.LiteralNode{
+			Kind: ast.LiteralComment,
+			Text: "Nothing to transclude: " + en.Material.(*ast.ReferenceMaterialNode).Ref.String(),
 		}
 	}
 
@@ -301,12 +304,7 @@ func doEmbedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.E
 }
 
 func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
-	ref := en.Material.(*ast.ReferenceMaterialNode)
-	ln := &ast.LinkNode{
-		Ref:     ref.Ref,
-		Inlines: ast.CreateInlineListNodeFromWords(ref.Ref.String()),
-		OnlyRef: true,
-	}
+	ln := linkNodeToEmbeddedReference(en)
 	text := ast.CreateInlineListNodeFromWords(msgWords...)
 	text.Append(&ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
 	fn := &ast.FormatNode{
@@ -319,6 +317,16 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn
+}
+
+func linkNodeToEmbeddedReference(en *ast.EmbedNode) *ast.LinkNode {
+	ref := en.Material.(*ast.ReferenceMaterialNode)
+	ln := &ast.LinkNode{
+		Ref:     ref.Ref,
+		Inlines: ast.CreateInlineListNodeFromWords(ref.Ref.String()),
+		OnlyRef: true,
+	}
+	return ln
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {

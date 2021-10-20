@@ -1,0 +1,6 @@
+id: 20211020184342
+title: Transclude empty Zettel
+role: zettel
+syntax: zmk
+
+{{20211020184300}}

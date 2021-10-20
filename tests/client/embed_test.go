@@ -18,7 +18,7 @@ import (
 	"zettelstore.de/c/api"
 )
 
-func TestEmbeddedZettel(t *testing.T) {
+func TestZettelTransclusion(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
@@ -63,6 +63,13 @@ func TestEmbeddedZettel(t *testing.T) {
 			t.Errorf("Unexpected content for zettel %q\nExpect: %q\nGot:    %q", zid, expect, got)
 		}
 	}
+
+	content, err := c.GetEvaluatedZettel(context.Background(), abc10000Zid, api.EncoderHTML)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	checkContentContains(t, abc10000Zid, content, "Too many transclusions")
 }
 
 func stringHead(s string) string {
@@ -79,4 +86,68 @@ func stringTail(s string) string {
 		return s
 	}
 	return "..." + s[len(s)-maxLen-3:]
+}
+
+func TestRecursiveTransclusion(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+
+	const (
+		selfRecursiveZid      = api.ZettelID("20211020182600")
+		indirectRecursive1Zid = api.ZettelID("20211020183700")
+		indirectRecursive2Zid = api.ZettelID("20211020183800")
+	)
+	recursiveZettel := map[api.ZettelID]api.ZettelID{
+		selfRecursiveZid:      selfRecursiveZid,
+		indirectRecursive1Zid: indirectRecursive2Zid,
+		indirectRecursive2Zid: indirectRecursive1Zid,
+	}
+	for zid, errZid := range recursiveZettel {
+		content, err := c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		checkContentContains(t, zid, content, "Recursive transclusion")
+		checkContentContains(t, zid, content, string(errZid))
+	}
+}
+func TestNothingToTransclude(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+
+	const (
+		transZid = api.ZettelID("20211020184342")
+		emptyZid = api.ZettelID("20211020184300")
+	)
+	content, err := c.GetEvaluatedZettel(context.Background(), transZid, api.EncoderHTML)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	checkContentContains(t, transZid, content, "<!-- Nothing to transclude")
+	checkContentContains(t, transZid, content, string(emptyZid))
+}
+
+func TestSelfEmbedRef(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+
+	const selfEmbedZid = api.ZettelID("20211020185400")
+	content, err := c.GetEvaluatedZettel(context.Background(), selfEmbedZid, api.EncoderHTML)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	checkContentContains(t, selfEmbedZid, content, "Self embed reference")
+}
+
+func checkContentContains(t *testing.T, zid api.ZettelID, content, expected string) {
+	if !strings.Contains(content, expected) {
+		t.Helper()
+		t.Errorf("Zettel %q should contain %q, but does not: %q", zid, expected, content)
+	}
 }
