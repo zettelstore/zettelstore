@@ -205,11 +205,14 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	ref := en.Material.(*ast.ReferenceMaterialNode)
 	switch ref.Ref.State {
 	case ast.RefStateInvalid:
+		e.embedCount++
 		return e.createErrorImage(en)
 	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
+		e.embedCount++
 		return createErrorText(en, "Self", "embed", "reference:")
 	case ast.RefStateBroken:
+		e.embedCount++
 		return e.createErrorImage(en)
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
@@ -223,6 +226,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err != nil {
+		e.embedCount++
 		return e.createErrorImage(en)
 	}
 
@@ -232,12 +236,14 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 	if !parser.IsTextParser(syntax) {
 		// Not embeddable.
+		e.embedCount++
 		return createErrorText(en, "Not", "embeddable (syntax="+syntax+"):")
 	}
 
 	cost, ok := e.costMap[zid]
 	zn := cost.zn
 	if zn == e.marker {
+		e.embedCount++
 		return createErrorText(en, "Recursive", "transclusion:")
 	}
 	if !ok {
@@ -247,6 +253,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		e.costMap[zid] = embedCost{zn: zn, ec: e.embedCount - ec}
 		e.embedCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
 	}
+	e.embedCount++
 
 	result, ok := e.embedMap[ref.Ref.Value]
 	if !ok {
@@ -261,7 +268,6 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		}
 	}
 
-	e.embedCount++
 	if ec := cost.ec; ec > 0 {
 		e.embedCount += cost.ec
 	}
