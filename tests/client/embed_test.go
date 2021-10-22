@@ -35,17 +35,14 @@ func TestZettelTransclusion(t *testing.T) {
 		api.ZettelID("20211020121145"): 100,
 		api.ZettelID("20211020121300"): 1000,
 	}
-	zettelData, err := c.GetZettelJSON(context.Background(), abcZid)
+	content, err := c.GetZettel(context.Background(), abcZid, api.PartContent)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if encoding := zettelData.Encoding; encoding != "" {
-		t.Errorf("No encoding expected for zettel %q, but got %q", abcZid, encoding)
-	}
-	baseContent := zettelData.Content
+	baseContent := content
 	for zid, siz := range contentMap {
-		content, err := c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
+		content, err = c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -66,7 +63,7 @@ func TestZettelTransclusion(t *testing.T) {
 		}
 	}
 
-	content, err := c.GetEvaluatedZettel(context.Background(), abc10000Zid, api.EncoderHTML)
+	content, err = c.GetEvaluatedZettel(context.Background(), abc10000Zid, api.EncoderHTML)
 	if err != nil {
 		t.Error(err)
 		return
