@@ -127,7 +127,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityOwner,
 		},
-		domain.NewContent("")},
+		domain.NewContent(nil)},
 	id.MustParse(api.ZidLicense): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore License",
@@ -282,7 +282,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeySyntax:     "css",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
-		domain.NewContent("/* User-defined CSS */")},
+		domain.NewContent([]byte("/* User-defined CSS */"))},
 	id.EmojiZid: {
 		constHeader{
 			api.KeyTitle:      "Generic Emoji",
@@ -308,7 +308,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeySyntax:     api.ValueSyntaxZmk,
 			api.KeyVisibility: api.ValueVisibilityCreator,
 		},
-		domain.NewContent("")},
+		domain.NewContent(nil)},
 	id.MustParse(api.ZidTemplateNewUser): {
 		constHeader{
 			api.KeyTitle:                       "New User",
@@ -319,7 +319,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.NewPrefix + api.KeyUserRole:   api.ValueUserRoleReader,
 			api.KeyVisibility:                  api.ValueVisibilityOwner,
 		},
-		domain.NewContent("")},
+		domain.NewContent(nil)},
 	id.DefaultHomeZid: {
 		constHeader{
 			api.KeyTitle:  "Home",
@@ -331,58 +331,58 @@ var constZettelMap = map[id.Zid]constZettel{
 }
 
 //go:embed license.txt
-var contentLicense string
+var contentLicense []byte
 
 //go:embed contributors.zettel
-var contentContributors string
+var contentContributors []byte
 
 //go:embed dependencies.zettel
-var contentDependencies string
+var contentDependencies []byte
 
 //go:embed base.mustache
-var contentBaseMustache string
+var contentBaseMustache []byte
 
 //go:embed login.mustache
-var contentLoginMustache string
+var contentLoginMustache []byte
 
 //go:embed zettel.mustache
-var contentZettelMustache string
+var contentZettelMustache []byte
 
 //go:embed info.mustache
-var contentInfoMustache string
+var contentInfoMustache []byte
 
 //go:embed context.mustache
-var contentContextMustache string
+var contentContextMustache []byte
 
 //go:embed form.mustache
-var contentFormMustache string
+var contentFormMustache []byte
 
 //go:embed rename.mustache
-var contentRenameMustache string
+var contentRenameMustache []byte
 
 //go:embed delete.mustache
-var contentDeleteMustache string
+var contentDeleteMustache []byte
 
 //go:embed listzettel.mustache
-var contentListZettelMustache string
+var contentListZettelMustache []byte
 
 //go:embed listroles.mustache
-var contentListRolesMustache string
+var contentListRolesMustache []byte
 
 //go:embed listtags.mustache
-var contentListTagsMustache string
+var contentListTagsMustache []byte
 
 //go:embed error.mustache
-var contentErrorMustache string
+var contentErrorMustache []byte
 
 //go:embed base.css
-var contentBaseCSS string
+var contentBaseCSS []byte
 
 //go:embed emoji_spin.gif
-var contentEmoji string
+var contentEmoji []byte
 
 //go:embed newtoc.zettel
-var contentNewTOCZettel string
+var contentNewTOCZettel []byte
 
 //go:embed home.zettel
-var contentHomeZettel string
+var contentHomeZettel []byte

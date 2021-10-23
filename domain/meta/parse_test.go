@@ -20,7 +20,7 @@ import (
 )
 
 func parseMetaStr(src string) *meta.Meta {
-	return meta.NewFromInput(testID, input.NewInput(src))
+	return meta.NewFromInput(testID, input.NewInput([]byte(src)))
 }
 
 func TestEmpty(t *testing.T) {
@@ -88,7 +88,7 @@ func TestNewFromInput(t *testing.T) {
 	}
 
 	// Test, whether input position is correct.
-	inp := input.NewInput("---\na:b\n---\nX")
+	inp := input.NewInput([]byte("---\na:b\n---\nX"))
 	m := meta.NewFromInput(testID, inp)
 	exp := []meta.Pair{{"a", "b"}}
 	if got := m.Pairs(true); !equalPairs(exp, got) {

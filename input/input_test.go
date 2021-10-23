@@ -19,7 +19,7 @@ import (
 
 func TestEatEOL(t *testing.T) {
 	t.Parallel()
-	inp := input.NewInput("")
+	inp := input.NewInput(nil)
 	inp.EatEOL()
 	if inp.Ch != input.EOS {
 		t.Errorf("No EOS found: %q", inp.Ch)
@@ -28,7 +28,7 @@ func TestEatEOL(t *testing.T) {
 		t.Errorf("Pos != 0: %d", inp.Pos)
 	}
 
-	inp = input.NewInput("ABC")
+	inp = input.NewInput([]byte("ABC"))
 	if inp.Ch != 'A' {
 		t.Errorf("First ch != 'A', got %q", inp.Ch)
 	}
@@ -51,7 +51,7 @@ func TestScanEntity(t *testing.T) {
 		{"&quot;", "\""},
 	}
 	for id, tc := range testcases {
-		inp := input.NewInput(tc.text)
+		inp := input.NewInput([]byte(tc.text))
 		got, ok := inp.ScanEntity()
 		if !ok {
 			if tc.exp != "" {

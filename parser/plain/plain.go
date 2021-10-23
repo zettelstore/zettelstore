@@ -87,7 +87,7 @@ func readLines(inp *input.Input) (lines []string) {
 			return lines
 		}
 		inp.SkipToEOL()
-		lines = append(lines, inp.Src[posL:inp.Pos])
+		lines = append(lines, string(inp.Src[posL:inp.Pos]))
 	}
 }
 
@@ -102,7 +102,7 @@ func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.
 	return ast.CreateInlineListNode(&ast.LiteralNode{
 		Kind:  kind,
 		Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
-		Text:  inp.Src[0:inp.Pos],
+		Text:  string(inp.Src[0:inp.Pos]),
 	})
 }
 
@@ -131,7 +131,7 @@ func scanSVG(inp *input.Input) string {
 	for input.IsSpace(inp.Ch) {
 		inp.Next()
 	}
-	svgSrc := inp.Src[inp.Pos:]
+	svgSrc := string(inp.Src[inp.Pos:])
 	if !strings.HasPrefix(svgSrc, "<svg ") {
 		return ""
 	}

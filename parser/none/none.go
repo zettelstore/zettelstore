@@ -91,7 +91,7 @@ func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 			Kind:  ast.FormatSpan,
 			Attrs: &ast.Attributes{Attrs: map[string]string{"class": "warning"}},
 			Inlines: ast.CreateInlineListNodeFromWords(
-				"parser.meta.ParseInlines:", "not", "possible", "("+inp.Src[0:inp.Pos]+")",
+				"parser.meta.ParseInlines:", "not", "possible", "("+string(inp.Src[0:inp.Pos])+")",
 			),
 		},
 	)

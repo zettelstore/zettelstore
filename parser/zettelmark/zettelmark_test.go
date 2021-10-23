@@ -47,7 +47,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 	for tcn, tc := range tcs {
 		t.Run(fmt.Sprintf("TC=%02d,src=%q", tcn, tc.source), func(st *testing.T) {
 			st.Helper()
-			inp := input.NewInput(tc.source)
+			inp := input.NewInput([]byte(tc.source))
 			bns := parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)
 			var tv TestVisitor
 			ast.Walk(&tv, bns)

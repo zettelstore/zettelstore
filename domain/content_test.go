@@ -28,7 +28,7 @@ func TestContentIsBinary(t *testing.T) {
 		{string([]byte{0}), true},
 	}
 	for i, tc := range td {
-		content := domain.NewContent(tc.s)
+		content := domain.NewContent([]byte(tc.s))
 		got := content.IsBinary()
 		if got != tc.exp {
 			t.Errorf("TC=%d: expected %v, got %v", i, tc.exp, got)

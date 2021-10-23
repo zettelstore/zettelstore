@@ -58,7 +58,7 @@ func TestEncoder(t *testing.T) {
 func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 	t.Helper()
 	for testNum, tc := range testCases {
-		inp := input.NewInput(tc.zmk)
+		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
 			pe = &peInlines{iln: parser.ParseInlines(inp, api.ValueSyntaxZmk)}

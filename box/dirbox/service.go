@@ -75,7 +75,7 @@ func (cmd *fileGetMeta) run() {
 //
 // Retrieves the meta data and the content of a zettel.
 
-func getMetaContent(dp *dirBox, entry *directory.Entry, zid id.Zid) (*meta.Meta, string, error) {
+func getMetaContent(dp *dirBox, entry *directory.Entry, zid id.Zid) (*meta.Meta, []byte, error) {
 	rc := make(chan resGetMetaContent)
 	dp.getFileChan(zid) <- &fileGetMetaContent{entry, rc}
 	res := <-rc
@@ -89,13 +89,13 @@ type fileGetMetaContent struct {
 }
 type resGetMetaContent struct {
 	meta    *meta.Meta
-	content string
+	content []byte
 	err     error
 }
 
 func (cmd *fileGetMetaContent) run() {
 	var m *meta.Meta
-	var content string
+	var content []byte
 	var err error
 
 	entry := cmd.entry
@@ -227,12 +227,12 @@ func (cmd *fileDeleteZettel) run() {
 
 // Utility functions ----------------------------------------
 
-func readFileContent(path string) (string, error) {
+func readFileContent(path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(data), nil
+	return data, nil
 }
 
 func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
@@ -244,10 +244,10 @@ func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
 	return meta.NewFromInput(zid, inp), nil
 }
 
-func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, string, error) {
+func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, []byte, error) {
 	src, err := readFileContent(path)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 	inp := input.NewInput(src)
 	meta := meta.NewFromInput(zid, inp)

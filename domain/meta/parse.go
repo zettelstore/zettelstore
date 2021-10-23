@@ -65,19 +65,19 @@ func parseHeader(m *Meta, inp *input.Input) {
 	if inp.Ch == ':' {
 		inp.Next()
 	}
-	var val string
+	var val []byte
 	for {
 		skipSpace(inp)
 		pos = inp.Pos
 		skipToEOL(inp)
-		val += inp.Src[pos:inp.Pos]
+		val = append(val, inp.Src[pos:inp.Pos]...)
 		inp.EatEOL()
 		if !input.IsSpace(inp.Ch) {
 			break
 		}
-		val += " "
+		val = append(val, ' ')
 	}
-	addToMeta(m, key, val)
+	addToMeta(m, string(key), string(val))
 }
 
 func skipSpace(inp *input.Input) {

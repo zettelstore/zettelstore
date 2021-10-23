@@ -72,7 +72,7 @@ func (*compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) 
 			if genContent := gen.content; genContent != nil {
 				return domain.Zettel{
 					Meta:    m,
-					Content: domain.NewContent(genContent(m)),
+					Content: domain.NewContent([]byte(genContent(m))),
 				}, nil
 			}
 			return domain.Zettel{Meta: m}, nil

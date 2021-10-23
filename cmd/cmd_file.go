@@ -63,7 +63,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		inp := input.NewInput(string(src))
+		inp := input.NewInput(src)
 		m := meta.NewFromInput(id.New(true), inp)
 		return m, inp, nil
 	}
@@ -72,7 +72,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	inp := input.NewInput(string(src))
+	inp := input.NewInput(src)
 	m := meta.NewFromInput(id.New(true), inp)
 
 	if len(args) > 1 {
@@ -80,7 +80,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		inp = input.NewInput(string(src))
+		inp = input.NewInput(src)
 	}
 	return m, inp, nil
 }

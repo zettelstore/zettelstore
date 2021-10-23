@@ -107,7 +107,7 @@ func (cp *zmkP) parseAttributeValue(
 			}
 			fallthrough
 		case ' ', '}':
-			updateAttrs(attrs, key, inp.Src[posV:inp.Pos])
+			updateAttrs(attrs, key, string(inp.Src[posV:inp.Pos]))
 			return true
 		}
 		inp.Next()
@@ -169,7 +169,7 @@ func (cp *zmkP) parseAttributes(sameLine bool) *ast.Attributes {
 			inp.Next()
 		}
 		if pos < inp.Pos {
-			return &ast.Attributes{Attrs: map[string]string{"": inp.Src[pos:inp.Pos]}}
+			return &ast.Attributes{Attrs: map[string]string{"": string(inp.Src[pos:inp.Pos])}}
 		}
 
 		// No immediate name: skip spaces
@@ -217,7 +217,7 @@ func (cp *zmkP) parseAttributeValues(sameLine bool, attrs map[string]string) boo
 			if posC == inp.Pos {
 				return false
 			}
-			updateAttrs(attrs, "class", inp.Src[posC:inp.Pos])
+			updateAttrs(attrs, "class", string(inp.Src[posC:inp.Pos]))
 		case '=':
 			delete(attrs, "")
 			if !cp.parseAttributeValue("", attrs, sameLine) {

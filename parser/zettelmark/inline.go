@@ -101,7 +101,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
 		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '/', '*', '_', '~', '\'', '^', ',', '<', '"', ';', ':', '+', '`', runeModGrave, '=', '\\', '-', '&':
-			return &ast.TextNode{Text: inp.Src[pos:inp.Pos]}
+			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
 }
@@ -134,7 +134,7 @@ func (cp *zmkP) parseBackslashRest() *ast.TextNode {
 	}
 	pos := inp.Pos
 	inp.Next()
-	return &ast.TextNode{Text: inp.Src[pos:inp.Pos]}
+	return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 }
 
 func (cp *zmkP) parseSpace() *ast.SpaceNode {
@@ -145,7 +145,7 @@ func (cp *zmkP) parseSpace() *ast.SpaceNode {
 		switch inp.Ch {
 		case ' ', '\t':
 		default:
-			return &ast.SpaceNode{Lexeme: inp.Src[pos:inp.Pos]}
+			return &ast.SpaceNode{Lexeme: string(inp.Src[pos:inp.Pos])}
 		}
 	}
 }
@@ -211,7 +211,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 	if !cp.readReferenceToClose(closeCh) {
 		return "", nil, false
 	}
-	ref = inp.Src[pos:inp.Pos]
+	ref = string(inp.Src[pos:inp.Pos])
 	inp.Next()
 	if inp.Ch != closeCh {
 		return "", nil, false
@@ -306,7 +306,7 @@ loop:
 		return nil, false
 	}
 	attrs := cp.parseAttributes(false)
-	return &ast.CiteNode{Key: inp.Src[pos:posL], Inlines: ins, Attrs: attrs}, true
+	return &ast.CiteNode{Key: string(inp.Src[pos:posL]), Inlines: ins, Attrs: attrs}, true
 }
 
 func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
@@ -368,7 +368,7 @@ func (cp *zmkP) parseMark() (*ast.MarkNode, bool) {
 		}
 		inp.Next()
 	}
-	mn := &ast.MarkNode{Text: inp.Src[pos:inp.Pos]}
+	mn := &ast.MarkNode{Text: string(inp.Src[pos:inp.Pos])}
 	inp.Next()
 	return mn, true
 }
@@ -382,9 +382,9 @@ func (cp *zmkP) parseTag() ast.InlineNode {
 		inp.Next()
 	}
 	if pos == inp.Pos || inp.Ch == '#' {
-		return &ast.TextNode{Text: inp.Src[posH:inp.Pos]}
+		return &ast.TextNode{Text: string(inp.Src[posH:inp.Pos])}
 	}
-	return &ast.TagNode{Tag: inp.Src[pos:inp.Pos]}
+	return &ast.TagNode{Tag: string(inp.Src[pos:inp.Pos])}
 }
 
 func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
@@ -400,7 +400,7 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {
-			return &ast.LiteralNode{Kind: ast.LiteralComment, Text: inp.Src[pos:inp.Pos]}, true
+			return &ast.LiteralNode{Kind: ast.LiteralComment, Text: string(inp.Src[pos:inp.Pos])}, true
 		}
 		inp.Next()
 	}
