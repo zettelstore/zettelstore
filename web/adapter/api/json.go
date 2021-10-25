@@ -51,7 +51,7 @@ func buildZettelFromJSONData(r *http.Request, zid id.Zid) (domain.Zettel, error)
 	}
 	m := meta.New(zid)
 	for k, v := range zettelData.Meta {
-		m.Set(k, v)
+		m.Set(meta.RemoveNonGraphic(k), meta.RemoveNonGraphic(v))
 	}
 	zettel.Meta = m
 	if err := zettel.Content.SetDecoded(zettelData.Content, zettelData.Encoding); err != nil {
