@@ -40,24 +40,25 @@ func TestZettelTransclusion(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	baseContent := content
+	baseContent := string(content)
 	for zid, siz := range contentMap {
 		content, err = c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
+		sContent := string(content)
 		prefix := "<p>"
-		if !strings.HasPrefix(content, prefix) {
-			t.Errorf("Content of zettel %q does not start with %q: %q", zid, prefix, stringHead(content))
+		if !strings.HasPrefix(sContent, prefix) {
+			t.Errorf("Content of zettel %q does not start with %q: %q", zid, prefix, stringHead(sContent))
 			continue
 		}
 		suffix := "</p>"
-		if !strings.HasSuffix(content, suffix) {
-			t.Errorf("Content of zettel %q does not end with %q: %q", zid, suffix, stringTail(content))
+		if !strings.HasSuffix(sContent, suffix) {
+			t.Errorf("Content of zettel %q does not end with %q: %q", zid, suffix, stringTail(sContent))
 			continue
 		}
-		got := content[len(prefix) : len(content)-len(suffix)]
+		got := sContent[len(prefix) : len(content)-len(suffix)]
 		if expect := strings.Repeat(baseContent, siz); expect != got {
 			t.Errorf("Unexpected content for zettel %q\nExpect: %q\nGot:    %q", zid, expect, got)
 		}
@@ -68,7 +69,7 @@ func TestZettelTransclusion(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, abc10000Zid, content, "Too many transclusions")
+	checkContentContains(t, abc10000Zid, string(content), "Too many transclusions")
 }
 
 func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
@@ -92,7 +93,7 @@ func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
 		return
 	}
 	expectedContent := "<img src=\"data:image/gif;" + expectedEnc + "," + zettelData.Content
-	checkContentContains(t, abc10Zid, content, expectedContent)
+	checkContentContains(t, abc10Zid, string(content), expectedContent)
 }
 
 func stringHead(s string) string {
@@ -132,8 +133,9 @@ func TestRecursiveTransclusion(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		checkContentContains(t, zid, content, "Recursive transclusion")
-		checkContentContains(t, zid, content, string(errZid))
+		sContent := string(content)
+		checkContentContains(t, zid, sContent, "Recursive transclusion")
+		checkContentContains(t, zid, sContent, string(errZid))
 	}
 }
 func TestNothingToTransclude(t *testing.T) {
@@ -150,8 +152,9 @@ func TestNothingToTransclude(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, transZid, content, "<!-- Nothing to transclude")
-	checkContentContains(t, transZid, content, string(emptyZid))
+	sContent := string(content)
+	checkContentContains(t, transZid, sContent, "<!-- Nothing to transclude")
+	checkContentContains(t, transZid, sContent, string(emptyZid))
 }
 
 func TestSelfEmbedRef(t *testing.T) {
@@ -165,7 +168,7 @@ func TestSelfEmbedRef(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, selfEmbedZid, content, "Self embed reference")
+	checkContentContains(t, selfEmbedZid, string(content), "Self embed reference")
 }
 
 func checkContentContains(t *testing.T, zid api.ZettelID, content, expected string) {
