@@ -228,11 +228,7 @@ func (cmd *fileDeleteZettel) run() {
 // Utility functions ----------------------------------------
 
 func readFileContent(path string) ([]byte, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+	return os.ReadFile(path)
 }
 
 func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
