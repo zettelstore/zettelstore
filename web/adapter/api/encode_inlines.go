@@ -12,9 +12,9 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -86,10 +86,10 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 }
 
 func encodeInlines(encdr encoder.Encoder, inl *ast.InlineListNode) (string, error) {
-	var content strings.Builder
-	_, err := encdr.WriteInlines(&content, inl)
+	var buf bytes.Buffer
+	_, err := encdr.WriteInlines(&buf, inl)
 	if err != nil {
 		return "", err
 	}
-	return content.String(), nil
+	return buf.String(), nil
 }

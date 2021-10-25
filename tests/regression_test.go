@@ -12,13 +12,13 @@
 package tests
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -117,9 +117,9 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.
 	t.Helper()
 
 	if enc := encoder.Create(enc, nil); enc != nil {
-		var sb strings.Builder
-		enc.WriteMeta(&sb, zn.Meta, parser.ParseMetadata)
-		checkFileContent(t, resultName, sb.String())
+		var buf bytes.Buffer
+		enc.WriteMeta(&buf, zn.Meta, parser.ParseMetadata)
+		checkFileContent(t, resultName, buf.String())
 		return
 	}
 	panic(fmt.Sprintf("Unknown writer encoding %q", enc))

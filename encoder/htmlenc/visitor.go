@@ -12,6 +12,7 @@
 package htmlenc
 
 import (
+	"bytes"
 	"io"
 	"sort"
 	"strconv"
@@ -161,10 +162,10 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 }
 
 func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
-	var sb strings.Builder
-	_, err := v.textEnc.WriteInlines(&sb, evalMeta(value))
+	var buf bytes.Buffer
+	_, err := v.textEnc.WriteInlines(&buf, evalMeta(value))
 	if err == nil {
-		return sb.String()
+		return buf.String()
 	}
 	return ""
 }

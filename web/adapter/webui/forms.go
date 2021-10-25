@@ -12,6 +12,7 @@
 package webui
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 
@@ -32,6 +33,11 @@ type formZettelData struct {
 	IsTextContent bool
 	Content       string
 }
+
+var (
+	bsCRLF = []byte{'\r', '\n'}
+	bsLF   = []byte{'\n'}
+)
 
 func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 	err := r.ParseForm()
@@ -63,7 +69,10 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 		return domain.Zettel{
 			Meta: m,
 			Content: domain.NewContent(
-				[]byte(strings.ReplaceAll(strings.TrimSpace(values[0]), "\r\n", "\n"))),
+				bytes.ReplaceAll(
+					bytes.TrimSpace([]byte(values[0])),
+					bsCRLF,
+					bsLF)),
 		}, true, nil
 	}
 	return domain.Zettel{

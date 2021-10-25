@@ -327,7 +327,7 @@ var ignoreAfterBS = map[byte]bool{
 // cleanText removes backslashes from TextNodes and expands entities
 func cleanText(text []byte, cleanBS bool) string {
 	lastPos := 0
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for pos, ch := range text {
 		if pos < lastPos {
 			continue
@@ -335,22 +335,22 @@ func cleanText(text []byte, cleanBS bool) string {
 		if ch == '&' {
 			inp := input.NewInput([]byte(text[pos:]))
 			if s, ok := inp.ScanEntity(); ok {
-				sb.Write(text[lastPos:pos])
-				sb.WriteString(s)
+				buf.Write(text[lastPos:pos])
+				buf.WriteString(s)
 				lastPos = pos + inp.Pos
 			}
 			continue
 		}
 		if cleanBS && ch == '\\' && pos < len(text)-1 && ignoreAfterBS[text[pos+1]] {
-			sb.Write(text[lastPos:pos])
-			sb.WriteByte(text[pos+1])
+			buf.Write(text[lastPos:pos])
+			buf.WriteByte(text[pos+1])
 			lastPos = pos + 2
 		}
 	}
 	if lastPos < len(text) {
-		sb.Write(text[lastPos:])
+		buf.Write(text[lastPos:])
 	}
-	return sb.String()
+	return buf.String()
 }
 
 func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) []ast.InlineNode {
@@ -358,31 +358,28 @@ func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) []ast.InlineNode {
 		&ast.LiteralNode{
 			Kind:  ast.LiteralProg,
 			Attrs: nil, //TODO
-			Text:  cleanCodeSpan(string(node.Text(p.source))),
+			Text:  cleanCodeSpan(node.Text(p.source)),
 		},
 	}
 }
 
-func cleanCodeSpan(text string) string {
-	if text == "" {
+func cleanCodeSpan(text []byte) string {
+	if len(text) == 0 {
 		return ""
 	}
 	lastPos := 0
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for pos, ch := range text {
 		if ch == '\n' {
-			sb.WriteString(text[lastPos:pos])
+			buf.Write(text[lastPos:pos])
 			if pos < len(text)-1 {
-				sb.WriteByte(' ')
+				buf.WriteByte(' ')
 			}
 			lastPos = pos + 1
 		}
 	}
-	if lastPos == 0 {
-		return text
-	}
-	sb.WriteString(text[lastPos:])
-	return sb.String()
+	buf.Write(text[lastPos:])
+	return buf.String()
 }
 
 func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
@@ -432,16 +429,15 @@ func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
 
 func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
 	iln := p.acceptInlineChildren(node)
-	var sb strings.Builder
-	_, err := p.textEnc.WriteInlines(&sb, iln)
+	var buf bytes.Buffer
+	_, err := p.textEnc.WriteInlines(&buf, iln)
 	if err != nil {
 		panic(err)
 	}
-	text := sb.String()
-	if text == "" {
+	if buf.Len() == 0 {
 		return nil
 	}
-	return ast.CreateInlineListNode(&ast.TextNode{Text: text})
+	return ast.CreateInlineListNode(&ast.TextNode{Text: buf.String()})
 }
 
 func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {

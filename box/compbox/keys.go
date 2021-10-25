@@ -12,8 +12,8 @@
 package compbox
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
@@ -27,13 +27,13 @@ func genKeysM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genKeysC(*meta.Meta) string {
+func genKeysC(*meta.Meta) []byte {
 	keys := meta.GetSortedKeyDescriptions()
-	var sb strings.Builder
-	sb.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")
+	var buf bytes.Buffer
+	buf.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")
 	for _, kd := range keys {
-		fmt.Fprintf(&sb,
+		fmt.Fprintf(&buf,
 			"|%v|%v|%v|%v\n", kd.Name, kd.Type.Name, kd.IsComputed(), kd.IsProperty())
 	}
-	return sb.String()
+	return buf.Bytes()
 }

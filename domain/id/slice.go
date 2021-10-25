@@ -13,8 +13,8 @@
 package id
 
 import (
+	"bytes"
 	"sort"
-	"strings"
 )
 
 // Slice is a sequence of zettel identifier. A special case is a sorted slice.
@@ -58,12 +58,12 @@ func (zs Slice) String() string {
 	if len(zs) == 0 {
 		return ""
 	}
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for i, zid := range zs {
 		if i > 0 {
-			sb.WriteByte(' ')
+			buf.WriteByte(' ')
 		}
-		sb.WriteString(zid.String())
+		buf.WriteString(zid.String())
 	}
-	return sb.String()
+	return buf.String()
 }

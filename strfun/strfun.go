@@ -12,6 +12,7 @@
 package strfun
 
 import (
+	"bytes"
 	"strings"
 	"unicode/utf8"
 )
@@ -35,14 +36,14 @@ func JustifyLeft(s string, maxLen int, pad rune) string {
 		runes[maxLen-1] = '\u2025'
 	}
 
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for _, r := range runes {
-		sb.WriteRune(r)
+		buf.WriteRune(r)
 	}
 	for i := 0; i < maxLen-len(runes); i++ {
-		sb.WriteRune(pad)
+		buf.WriteRune(pad)
 	}
-	return sb.String()
+	return buf.String()
 }
 
 // SplitLines splits the given string into a list of lines.

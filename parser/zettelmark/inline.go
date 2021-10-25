@@ -12,8 +12,8 @@
 package zettelmark
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
@@ -474,7 +474,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 	}
 	fn := &ast.LiteralNode{Kind: kind}
 	inp.Next()
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false
@@ -484,14 +484,14 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 				inp.Next()
 				inp.Next()
 				fn.Attrs = cp.parseAttributes(false)
-				fn.Text = sb.String()
+				fn.Text = buf.String()
 				return fn, true
 			}
-			sb.WriteRune(fch)
+			buf.WriteRune(fch)
 			inp.Next()
 		} else {
 			tn := cp.parseText()
-			sb.WriteString(tn.Text)
+			buf.WriteString(tn.Text)
 		}
 	}
 }

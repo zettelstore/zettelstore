@@ -12,11 +12,11 @@
 package webui
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
 	"sort"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -89,9 +89,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		for i, p := range pairs {
-			var html strings.Builder
-			wui.writeHTMLMetaValue(ctx, &html, p.Key, p.Value, getTextTitle, evaluate, &envEval, &envHTML)
-			metaData[i] = metaDataInfo{p.Key, html.String()}
+			var buf bytes.Buffer
+			wui.writeHTMLMetaValue(ctx, &buf, p.Key, p.Value, getTextTitle, evaluate, &envEval, &envHTML)
+			metaData[i] = metaDataInfo{p.Key, buf.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)

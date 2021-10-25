@@ -12,10 +12,10 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -75,44 +75,43 @@ func TestMarkdownSpec(t *testing.T) {
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
-	var sb strings.Builder
+	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc, nil).WriteBlocks(&sb, ast)
-			sb.Reset()
+			encoder.Create(enc, nil).WriteBlocks(&buf, ast)
+			buf.Reset()
 		})
 	}
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
 	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
-	var sb strings.Builder
+	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
-		zmkEncoder.WriteBlocks(&sb, ast)
-		gotFirst := sb.String()
-		sb.Reset()
+		buf.Reset()
+		zmkEncoder.WriteBlocks(&buf, ast)
+		// gotFirst := buf.String()
 
 		testID = tc.Example*100 + 2
-		secondAst := parser.ParseBlocks(input.NewInput([]byte(gotFirst)), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, secondAst)
-		gotSecond := sb.String()
-		sb.Reset()
+		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
+		buf.Reset()
+		zmkEncoder.WriteBlocks(&buf, secondAst)
+		gotSecond := buf.String()
 
 		// if gotFirst != gotSecond {
 		// 	st.Errorf("\nCMD: %q\n1st: %q\n2nd: %q", tc.Markdown, gotFirst, gotSecond)
 		// }
 
 		testID = tc.Example*100 + 3
-		thirdAst := parser.ParseBlocks(input.NewInput([]byte(gotFirst)), nil, "zmk")
-		zmkEncoder.WriteBlocks(&sb, thirdAst)
-		gotThird := sb.String()
-		sb.Reset()
+		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
+		buf.Reset()
+		zmkEncoder.WriteBlocks(&buf, thirdAst)
+		gotThird := buf.String()
 
 		if gotSecond != gotThird {
 			st.Errorf("\n1st: %q\n2nd: %q", gotSecond, gotThird)
 		}
 	})
-
 }

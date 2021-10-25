@@ -12,6 +12,7 @@
 package zettelmark_test
 
 import (
+	"bytes"
 	"fmt"
 	"sort"
 	"strings"
@@ -672,145 +673,145 @@ func TestTemp(t *testing.T) {
 
 // TestVisitor serializes the abstract syntax tree to a string.
 type TestVisitor struct {
-	b strings.Builder
+	buf bytes.Buffer
 }
 
-func (tv *TestVisitor) String() string { return tv.b.String() }
+func (tv *TestVisitor) String() string { return tv.buf.String() }
 
 func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.InlineListNode:
 		tv.visitInlineList(n)
 	case *ast.ParaNode:
-		tv.b.WriteString("(PARA")
+		tv.buf.WriteString("(PARA")
 		ast.Walk(tv, n.Inlines)
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 	case *ast.VerbatimNode:
 		code, ok := mapVerbatimKind[n.Kind]
 		if !ok {
 			panic(fmt.Sprintf("Unknown verbatim code %v", n.Kind))
 		}
-		tv.b.WriteString(code)
+		tv.buf.WriteString(code)
 		for _, line := range n.Lines {
-			tv.b.WriteByte('\n')
-			tv.b.WriteString(line)
+			tv.buf.WriteByte('\n')
+			tv.buf.WriteString(line)
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.RegionNode:
 		code, ok := mapRegionKind[n.Kind]
 		if !ok {
 			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
-		tv.b.WriteString(code)
+		tv.buf.WriteString(code)
 		if n.Blocks != nil && len(n.Blocks.List) > 0 {
-			tv.b.WriteByte(' ')
+			tv.buf.WriteByte(' ')
 			ast.Walk(tv, n.Blocks)
 		}
 		if n.Inlines != nil {
-			tv.b.WriteString(" (LINE")
+			tv.buf.WriteString(" (LINE")
 			ast.Walk(tv, n.Inlines)
-			tv.b.WriteByte(')')
+			tv.buf.WriteByte(')')
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HeadingNode:
-		fmt.Fprintf(&tv.b, "(H%d", n.Level)
+		fmt.Fprintf(&tv.buf, "(H%d", n.Level)
 		ast.Walk(tv, n.Inlines)
 		if n.Fragment != "" {
-			tv.b.WriteString(" #")
-			tv.b.WriteString(n.Fragment)
+			tv.buf.WriteString(" #")
+			tv.buf.WriteString(n.Fragment)
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HRuleNode:
-		tv.b.WriteString("(HR)")
+		tv.buf.WriteString("(HR)")
 		tv.visitAttributes(n.Attrs)
 	case *ast.NestedListNode:
-		tv.b.WriteString(mapNestedListKind[n.Kind])
+		tv.buf.WriteString(mapNestedListKind[n.Kind])
 		for _, item := range n.Items {
-			tv.b.WriteString(" {")
+			tv.buf.WriteString(" {")
 			ast.WalkItemSlice(tv, item)
-			tv.b.WriteByte('}')
+			tv.buf.WriteByte('}')
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 	case *ast.DescriptionListNode:
-		tv.b.WriteString("(DL")
+		tv.buf.WriteString("(DL")
 		for _, def := range n.Descriptions {
-			tv.b.WriteString(" (DT")
+			tv.buf.WriteString(" (DT")
 			ast.Walk(tv, def.Term)
-			tv.b.WriteByte(')')
+			tv.buf.WriteByte(')')
 			for _, b := range def.Descriptions {
-				tv.b.WriteString(" (DD ")
+				tv.buf.WriteString(" (DD ")
 				ast.WalkDescriptionSlice(tv, b)
-				tv.b.WriteByte(')')
+				tv.buf.WriteByte(')')
 			}
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 	case *ast.TableNode:
-		tv.b.WriteString("(TAB")
+		tv.buf.WriteString("(TAB")
 		if len(n.Header) > 0 {
-			tv.b.WriteString(" (TR")
+			tv.buf.WriteString(" (TR")
 			for _, cell := range n.Header {
-				tv.b.WriteString(" (TH")
-				tv.b.WriteString(alignString[cell.Align])
+				tv.buf.WriteString(" (TH")
+				tv.buf.WriteString(alignString[cell.Align])
 				ast.Walk(tv, cell.Inlines)
-				tv.b.WriteString(")")
+				tv.buf.WriteString(")")
 			}
-			tv.b.WriteString(")")
+			tv.buf.WriteString(")")
 		}
 		if len(n.Rows) > 0 {
-			tv.b.WriteString(" ")
+			tv.buf.WriteString(" ")
 			for _, row := range n.Rows {
-				tv.b.WriteString("(TR")
+				tv.buf.WriteString("(TR")
 				for i, cell := range row {
 					if i == 0 {
-						tv.b.WriteString(" ")
+						tv.buf.WriteString(" ")
 					}
-					tv.b.WriteString("(TD")
-					tv.b.WriteString(alignString[cell.Align])
+					tv.buf.WriteString("(TD")
+					tv.buf.WriteString(alignString[cell.Align])
 					ast.Walk(tv, cell.Inlines)
-					tv.b.WriteString(")")
+					tv.buf.WriteString(")")
 				}
-				tv.b.WriteString(")")
+				tv.buf.WriteString(")")
 			}
 		}
-		tv.b.WriteString(")")
+		tv.buf.WriteString(")")
 	case *ast.BLOBNode:
-		tv.b.WriteString("(BLOB ")
-		tv.b.WriteString(n.Syntax)
-		tv.b.WriteString(")")
+		tv.buf.WriteString("(BLOB ")
+		tv.buf.WriteString(n.Syntax)
+		tv.buf.WriteString(")")
 	case *ast.TextNode:
-		tv.b.WriteString(n.Text)
+		tv.buf.WriteString(n.Text)
 	case *ast.TagNode:
-		tv.b.WriteByte('#')
-		tv.b.WriteString(n.Tag)
-		tv.b.WriteByte('#')
+		tv.buf.WriteByte('#')
+		tv.buf.WriteString(n.Tag)
+		tv.buf.WriteByte('#')
 	case *ast.SpaceNode:
 		if len(n.Lexeme) == 1 {
-			tv.b.WriteString("SP")
+			tv.buf.WriteString("SP")
 		} else {
-			fmt.Fprintf(&tv.b, "SP%d", len(n.Lexeme))
+			fmt.Fprintf(&tv.buf, "SP%d", len(n.Lexeme))
 		}
 	case *ast.BreakNode:
 		if n.Hard {
-			tv.b.WriteString("HB")
+			tv.buf.WriteString("HB")
 		} else {
-			tv.b.WriteString("SB")
+			tv.buf.WriteString("SB")
 		}
 	case *ast.LinkNode:
-		fmt.Fprintf(&tv.b, "(LINK %v", n.Ref)
+		fmt.Fprintf(&tv.buf, "(LINK %v", n.Ref)
 		ast.Walk(tv, n.Inlines)
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.EmbedNode:
 		switch m := n.Material.(type) {
 		case *ast.ReferenceMaterialNode:
-			fmt.Fprintf(&tv.b, "(EMBED %v", m.Ref)
+			fmt.Fprintf(&tv.buf, "(EMBED %v", m.Ref)
 			if n.Inlines != nil {
 				ast.Walk(tv, n.Inlines)
 			}
-			tv.b.WriteByte(')')
+			tv.buf.WriteByte(')')
 			tv.visitAttributes(n.Attrs)
 		case *ast.BLOBMaterialNode:
 			panic("TODO: zmktest blob")
@@ -818,46 +819,46 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown material type %t for %v", n.Material, n.Material))
 		}
 	case *ast.CiteNode:
-		fmt.Fprintf(&tv.b, "(CITE %s", n.Key)
+		fmt.Fprintf(&tv.buf, "(CITE %s", n.Key)
 		if n.Inlines != nil {
 			ast.Walk(tv, n.Inlines)
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.FootnoteNode:
-		tv.b.WriteString("(FN")
+		tv.buf.WriteString("(FN")
 		ast.Walk(tv, n.Inlines)
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
-		tv.b.WriteString("(MARK")
+		tv.buf.WriteString("(MARK")
 		if n.Text != "" {
-			tv.b.WriteString(" \"")
-			tv.b.WriteString(n.Text)
-			tv.b.WriteByte('"')
+			tv.buf.WriteString(" \"")
+			tv.buf.WriteString(n.Text)
+			tv.buf.WriteByte('"')
 		}
 		if n.Fragment != "" {
-			tv.b.WriteString(" #")
-			tv.b.WriteString(n.Fragment)
+			tv.buf.WriteString(" #")
+			tv.buf.WriteString(n.Fragment)
 		}
-		tv.b.WriteByte(')')
+		tv.buf.WriteByte(')')
 	case *ast.FormatNode:
-		fmt.Fprintf(&tv.b, "{%c", mapFormatKind[n.Kind])
+		fmt.Fprintf(&tv.buf, "{%c", mapFormatKind[n.Kind])
 		ast.Walk(tv, n.Inlines)
-		tv.b.WriteByte('}')
+		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	case *ast.LiteralNode:
 		code, ok := mapLiteralKind[n.Kind]
 		if !ok {
 			panic(fmt.Sprintf("No element for code %v", n.Kind))
 		}
-		tv.b.WriteByte('{')
-		tv.b.WriteRune(code)
+		tv.buf.WriteByte('{')
+		tv.buf.WriteRune(code)
 		if n.Text != "" {
-			tv.b.WriteByte(' ')
-			tv.b.WriteString(n.Text)
+			tv.buf.WriteByte(' ')
+			tv.buf.WriteString(n.Text)
 		}
-		tv.b.WriteByte('}')
+		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	default:
 		return tv
@@ -911,7 +912,7 @@ var mapLiteralKind = map[ast.LiteralKind]rune{
 
 func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
 	for _, in := range iln.List {
-		tv.b.WriteByte(' ')
+		tv.buf.WriteByte(' ')
 		ast.Walk(tv, in)
 	}
 }
@@ -920,7 +921,7 @@ func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	tv.b.WriteString("[ATTR")
+	tv.buf.WriteString("[ATTR")
 
 	keys := make([]string, 0, len(a.Attrs))
 	for k := range a.Attrs {
@@ -929,20 +930,20 @@ func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		tv.b.WriteByte(' ')
-		tv.b.WriteString(k)
+		tv.buf.WriteByte(' ')
+		tv.buf.WriteString(k)
 		v := a.Attrs[k]
 		if len(v) > 0 {
-			tv.b.WriteByte('=')
+			tv.buf.WriteByte('=')
 			if strings.ContainsRune(v, ' ') {
-				tv.b.WriteByte('"')
-				tv.b.WriteString(v)
-				tv.b.WriteByte('"')
+				tv.buf.WriteByte('"')
+				tv.buf.WriteString(v)
+				tv.buf.WriteByte('"')
 			} else {
-				tv.b.WriteString(v)
+				tv.buf.WriteString(v)
 			}
 		}
 	}
 
-	tv.b.WriteByte(']')
+	tv.buf.WriteByte(']')
 }

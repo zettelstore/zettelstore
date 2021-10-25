@@ -245,9 +245,5 @@ func readZipFileContent(reader *zip.ReadCloser, name string) ([]byte, error) {
 		return nil, err
 	}
 	defer f.Close()
-	buf, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	return buf, nil
+	return io.ReadAll(f)
 }

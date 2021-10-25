@@ -12,9 +12,9 @@
 package manager
 
 import (
+	"bytes"
 	"context"
 	"errors"
-	"strings"
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain"
@@ -30,14 +30,14 @@ func (mgr *Manager) Location() string {
 	if len(mgr.boxes) <= 2 {
 		return "NONE"
 	}
-	var sb strings.Builder
+	var buf bytes.Buffer
 	for i := 0; i < len(mgr.boxes)-2; i++ {
 		if i > 0 {
-			sb.WriteString(", ")
+			buf.WriteString(", ")
 		}
-		sb.WriteString(mgr.boxes[i].Location())
+		buf.WriteString(mgr.boxes[i].Location())
 	}
-	return sb.String()
+	return buf.String()
 }
 
 // CanCreateZettel returns true, if box could possibly create a new zettel.

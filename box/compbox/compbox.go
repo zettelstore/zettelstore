@@ -39,7 +39,7 @@ type compBox struct {
 var myConfig *meta.Meta
 var myZettel = map[id.Zid]struct {
 	meta    func(id.Zid) *meta.Meta
-	content func(*meta.Meta) string
+	content func(*meta.Meta) []byte
 }{
 	id.MustParse(api.ZidVersion):              {genVersionBuildM, genVersionBuildC},
 	id.MustParse(api.ZidHost):                 {genVersionHostM, genVersionHostC},
@@ -72,7 +72,7 @@ func (*compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) 
 			if genContent := gen.content; genContent != nil {
 				return domain.Zettel{
 					Meta:    m,
-					Content: domain.NewContent([]byte(genContent(m))),
+					Content: domain.NewContent(genContent(m)),
 				}, nil
 			}
 			return domain.Zettel{Meta: m}, nil
