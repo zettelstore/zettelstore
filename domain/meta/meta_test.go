@@ -237,3 +237,26 @@ func pairs2meta(pairs []string) *Meta {
 	}
 	return m
 }
+
+func TestRemoveNonGraphic(t *testing.T) {
+	testCases := []struct {
+		inp string
+		exp string
+	}{
+		{"", ""},
+		{" ", ""},
+		{"a", "a"},
+		{"a ", "a"},
+		{"a b", "a b"},
+		{"\n", ""},
+		{"a\n", "a"},
+		{"a\nb", "a b"},
+		{"a\tb", "a b"},
+	}
+	for i, tc := range testCases {
+		got := RemoveNonGraphic(tc.inp)
+		if tc.exp != got {
+			t.Errorf("%q/%d: expected %q, but got %q", tc.inp, i, tc.exp, got)
+		}
+	}
+}

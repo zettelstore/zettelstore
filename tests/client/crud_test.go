@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/client"
 )
 
 // ---------------------------------------------------------------------------
@@ -56,14 +57,11 @@ Example content.`
 		t.Error("Cannot rename", zid, ":", err)
 		newZid = zid
 	}
-	err = c.DeleteZettel(context.Background(), newZid)
-	if err != nil {
-		t.Error("Cannot delete", zid, ":", err)
-		return
-	}
+
+	doDelete(t, c, newZid)
 }
 
-func TestCreateRenameDeleteZettelJSON(t *testing.T) {
+func TestCreateGetRenameDeleteZettelJSON(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("creator", "creator")
@@ -87,11 +85,34 @@ func TestCreateRenameDeleteZettelJSON(t *testing.T) {
 		t.Error("Cannot rename", zid, ":", err)
 		newZid = zid
 	}
-	err = c.DeleteZettel(context.Background(), newZid)
+
+	c.SetAuth("owner", "owner")
+	doDelete(t, c, newZid)
+}
+
+func TestCreateGetDeleteZettelJSON(t *testing.T) {
+	// Is not to be allowed to run in parallel with other tests.
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	zid, err := c.CreateZettelJSON(context.Background(), &api.ZettelDataJSON{
+		Meta: api.ZettelMeta{
+			api.KeyTitle: "A\nTitle", // \n must be converted into a space
+		},
+	})
 	if err != nil {
-		t.Error("Cannot delete", zid, ":", err)
+		t.Error("Cannot create zettel:", err)
 		return
 	}
+	z, err := c.GetZettelJSON(context.Background(), zid)
+	if err != nil {
+		t.Error("Cannot get zettel:", zid, err)
+	} else {
+		exp := "A Title"
+		if got := z.Meta[api.KeyTitle]; got != exp {
+			t.Errorf("Expected title %q, but got %q", exp, got)
+		}
+	}
+	doDelete(t, c, zid)
 }
 
 func TestUpdateZettel(t *testing.T) {
@@ -125,11 +146,7 @@ Empty`
 		t.Errorf("Expected zettel %q, got %q", newZettel, zt)
 	}
 	// Must delete to clean up for next tests
-	err = c.DeleteZettel(context.Background(), api.ZidDefaultHome)
-	if err != nil {
-		t.Error("Cannot delete", api.ZidDefaultHome, ":", err)
-		return
-	}
+	doDelete(t, c, api.ZidDefaultHome)
 }
 
 func TestUpdateZettelJSON(t *testing.T) {
@@ -162,9 +179,13 @@ func TestUpdateZettelJSON(t *testing.T) {
 
 	// Must delete to clean up for next tests
 	c.SetAuth("owner", "owner")
-	err = c.DeleteZettel(context.Background(), api.ZidDefaultHome)
+	doDelete(t, c, api.ZidDefaultHome)
+}
+
+func doDelete(t *testing.T, c *client.Client, zid api.ZettelID) {
+	err := c.DeleteZettel(context.Background(), zid)
 	if err != nil {
-		t.Error("Cannot delete", api.ZidDefaultHome, ":", err)
-		return
+		t.Helper()
+		t.Error("Cannot delete", zid, ":", err)
 	}
 }

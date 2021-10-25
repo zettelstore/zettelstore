@@ -48,6 +48,7 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 	var m *meta.Meta
 	if postMeta, ok := trimmedFormValue(r, "meta"); ok {
 		m = meta.NewFromInput(zid, input.NewInput([]byte(postMeta)))
+		m.Sanitize()
 	} else {
 		m = meta.New(zid)
 	}
@@ -83,7 +84,7 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 
 func trimmedFormValue(r *http.Request, key string) (string, bool) {
 	if values, ok := r.PostForm[key]; ok && len(values) > 0 {
-		value := strings.TrimSpace(values[0])
+		value := meta.RemoveNonGraphic(values[0])
 		if len(value) > 0 {
 			return value, true
 		}

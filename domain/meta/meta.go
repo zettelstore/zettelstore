@@ -12,9 +12,12 @@
 package meta
 
 import (
+	"bytes"
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
@@ -324,4 +327,39 @@ func equalValue(key, val string, other *Meta, allowComputed bool) bool {
 		}
 	}
 	return true
+}
+
+// Sanitize all metadata keys and values, so that they can be written safely into a file.
+func (m *Meta) Sanitize() {
+	if m == nil {
+		return
+	}
+	for k, v := range m.pairs {
+		m.pairs[RemoveNonGraphic(k)] = RemoveNonGraphic(v)
+	}
+}
+
+// RemoveNonGraphic changes the given string not to include non-graphical characters.
+// It is needed to sanitize meta data.
+func RemoveNonGraphic(s string) string {
+	if s == "" {
+		return ""
+	}
+	pos := 0
+	var buf bytes.Buffer
+	for pos < len(s) {
+		nextPos := strings.IndexFunc(s[pos:], func(r rune) bool { return !unicode.IsGraphic(r) })
+		if nextPos < 0 {
+			break
+		}
+		buf.WriteString(s[pos:nextPos])
+		buf.WriteByte(' ')
+		_, size := utf8.DecodeRuneInString(s[nextPos:])
+		pos = nextPos + size
+	}
+	if pos == 0 {
+		return strings.TrimSpace(s)
+	}
+	buf.WriteString(s[pos:])
+	return strings.TrimSpace(buf.String())
 }

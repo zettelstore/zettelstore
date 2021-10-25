@@ -46,7 +46,6 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	if m.Zid.IsValid() {
 		return m.Zid, nil // TODO: new error: already exists
 	}
-
 	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
 		m.Set(api.KeyTitle, uc.rtConfig.GetDefaultTitle())
 	}
