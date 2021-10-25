@@ -28,7 +28,7 @@ func TestCreateGetRenameDeleteZettel(t *testing.T) {
 Example content.`
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	zid, err := c.CreateZettel(context.Background(), zettel)
+	zid, err := c.CreateZettel(context.Background(), []byte(zettel))
 	if err != nil {
 		t.Error("Cannot create zettel:", err)
 		return
@@ -47,7 +47,7 @@ role: zettel
 syntax: zmk
 
 Example content.`
-	if data != exp {
+	if string(data) != exp {
 		t.Errorf("Expected zettel data: %q, but got %q", exp, data)
 	}
 	newZid := nextZid(zid)
@@ -102,7 +102,7 @@ func TestUpdateZettel(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if !strings.HasPrefix(z, "title: Home\n") {
+	if !strings.HasPrefix(string(z), "title: Home\n") {
 		t.Error("Got unexpected zettel", z)
 		return
 	}
@@ -111,7 +111,7 @@ role: zettel
 syntax: zmk
 
 Empty`
-	err = c.UpdateZettel(context.Background(), api.ZidDefaultHome, newZettel)
+	err = c.UpdateZettel(context.Background(), api.ZidDefaultHome, []byte(newZettel))
 	if err != nil {
 		t.Error(err)
 		return
@@ -121,7 +121,7 @@ Empty`
 		t.Error(err)
 		return
 	}
-	if zt != newZettel {
+	if string(zt) != newZettel {
 		t.Errorf("Expected zettel %q, got %q", newZettel, zt)
 	}
 	// Must delete to clean up for next tests
