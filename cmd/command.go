@@ -26,7 +26,6 @@ type Command struct {
 	LineServer bool                // Start admin line server
 	Flags      func(*flag.FlagSet) // function to set up flag.FlagSet
 	flags      *flag.FlagSet       // flags that belong to the command
-
 }
 
 // CommandFunc is the function that executes the command.

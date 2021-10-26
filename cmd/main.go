@@ -115,6 +115,7 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			} else {
 				val = "dir:" + val
 			}
+			deleteConfiguredBoxes(cfg)
 			cfg.Set(keyBoxOneURI, val)
 		case "r":
 			cfg.Set(keyReadOnly, flg.Value.String())
@@ -132,6 +133,14 @@ func parsePort(s string) (string, error) {
 		return "", err
 	}
 	return strconv.Itoa(port), nil
+}
+
+func deleteConfiguredBoxes(cfg *meta.Meta) {
+	for _, p := range cfg.PairsRest(false) {
+		if key := p.Key; strings.HasPrefix(key, kernel.BoxURIs) {
+			cfg.Delete(key)
+		}
+	}
 }
 
 const (
