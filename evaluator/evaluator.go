@@ -204,16 +204,13 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 
 	ref := en.Material.(*ast.ReferenceMaterialNode)
 	switch ref.Ref.State {
-	case ast.RefStateInvalid:
+	case ast.RefStateInvalid, ast.RefStateBroken:
 		e.embedCount++
 		return e.createErrorImage(en)
 	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
 		e.embedCount++
 		return createErrorText(en, "Self", "embed", "reference:")
-	case ast.RefStateBroken:
-		e.embedCount++
-		return e.createErrorImage(en)
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:

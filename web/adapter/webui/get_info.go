@@ -90,7 +90,13 @@ func (wui *WebUI) MakeGetInfoHandler(
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		for i, p := range pairs {
 			var html strings.Builder
-			wui.writeHTMLMetaValue(ctx, &html, p.Key, p.Value, getTextTitle, evaluate, &envEval, &envHTML)
+			wui.writeHTMLMetaValue(
+				&html, p.Key, p.Value,
+				getTextTitle,
+				func(val string) *ast.InlineListNode {
+					return evaluate.RunMetadata(ctx, val, &envEval)
+				},
+				&envHTML)
 			metaData[i] = metaDataInfo{p.Key, html.String()}
 		}
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)

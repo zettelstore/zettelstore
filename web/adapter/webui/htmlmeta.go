@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -32,11 +33,13 @@ import (
 
 var space = []byte{' '}
 
+type evalMetadataFunc = func(string) *ast.InlineListNode
+
 func (wui *WebUI) writeHTMLMetaValue(
-	ctx context.Context,
-	w io.Writer, key, value string,
+	w io.Writer,
+	key, value string,
 	getTextTitle getTextTitleFunc,
-	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	evalMetadata evalMetadataFunc,
 	envEnc *encoder.Environment,
 ) {
 	switch kt := meta.Type(key); kt {
@@ -67,7 +70,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeWordSet:
 		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(ctx, value, evaluate, envEval, api.EncoderHTML, envEnc))
+		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, api.EncoderHTML, envEnc))
 	default:
 		strfun.HTMLEscape(w, value, false)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -196,28 +199,37 @@ func (wui *WebUI) encodeTitleAsHTML(
 	envHTML *encoder.Environment,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
-	return encodeZmkMetadata(ctx, plainTitle, evaluate, envEval, api.EncoderHTML, envHTML)
+	return encodeZmkMetadata(
+		plainTitle,
+		func(val string) *ast.InlineListNode {
+			return evaluate.RunMetadata(ctx, plainTitle, envEval)
+		},
+		api.EncoderHTML, envHTML)
 }
 
 func (wui *WebUI) encodeTitleAsText(
 	ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
-	return encodeZmkMetadata(ctx, plainTitle, evaluate, nil, api.EncoderText, nil)
+	return encodeZmkMetadata(
+		plainTitle,
+		func(val string) *ast.InlineListNode {
+			return evaluate.RunMetadata(ctx, plainTitle, nil)
+		},
+		api.EncoderHTML, nil)
 }
 
 func encodeZmkMetadata(
-	ctx context.Context, value string,
-	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	value string, evalMetadata evalMetadataFunc,
 	enc api.EncodingEnum, envHTML *encoder.Environment,
 ) string {
-	iln := evaluate.RunMetadata(ctx, value, envEval)
+	iln := evalMetadata(value)
 	if iln.IsEmpty() {
 		return ""
 	}
 	result, err := encodeInlines(iln, enc, envHTML)
-	if err == nil {
-		return result
+	if err != nil {
+		return err.Error()
 	}
-	return err.Error()
+	return result
 }
