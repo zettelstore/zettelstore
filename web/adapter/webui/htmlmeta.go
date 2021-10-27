@@ -216,7 +216,7 @@ func (wui *WebUI) encodeTitleAsText(
 		func(val string) *ast.InlineListNode {
 			return evaluate.RunMetadata(ctx, plainTitle, nil)
 		},
-		api.EncoderHTML, nil)
+		api.EncoderText, nil)
 }
 
 func encodeZmkMetadata(
