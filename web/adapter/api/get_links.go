@@ -58,7 +58,7 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 
 		outData.Cites = stringCites(summary.Cites)
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		encodeJSONData(w, outData)
 	}
 }

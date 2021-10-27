@@ -28,7 +28,7 @@ func MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		encodeJSONData(w, api.RoleListJSON{Roles: roleList})
 	}
 }

@@ -37,8 +37,7 @@ func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel
 			return
 		}
 		u := a.NewURLBuilder('z').SetZid(api.ZettelID(newZid.String())).String()
-		h := w.Header()
-		h.Set(api.HeaderContentType, ctPlainText)
+		h := adapter.PrepareHeader(w, ctPlainText)
 		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
 		if _, err = w.Write(newZid.Bytes()); err != nil {
@@ -64,8 +63,7 @@ func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) htt
 			return
 		}
 		u := a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String()
-		h := w.Header()
-		h.Set(api.HeaderContentType, ctJSON)
+		h := adapter.PrepareHeader(w, ctJSON)
 		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
 		if err = encodeJSONData(w, api.ZidJSON{ID: api.ZettelID(newZid.String())}); err != nil {

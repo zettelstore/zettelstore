@@ -26,7 +26,7 @@ import (
 func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.withAuth() {
-			w.Header().Set(api.HeaderContentType, ctJSON)
+			adapter.PrepareHeader(w, ctJSON)
 			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
 			return
 		}
@@ -45,7 +45,7 @@ func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		writeJSONToken(w, string(token), a.tokenLifetime)
 	}
 }
@@ -82,7 +82,7 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			w.Header().Set(api.HeaderContentType, ctJSON)
+			adapter.PrepareHeader(w, ctJSON)
 			writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			return
 		}
@@ -93,7 +93,7 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		writeJSONToken(w, string(token), a.tokenLifetime)
 	}
 }

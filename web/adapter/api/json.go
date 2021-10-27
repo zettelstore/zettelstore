@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/web/adapter"
 )
 
 func encodeJSONData(w io.Writer, data interface{}) error {
@@ -34,7 +35,7 @@ func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) e
 		outList[i].ID = api.ZettelID(m.Zid.String())
 		outList[i].Meta = m.Map()
 	}
-	w.Header().Set(api.HeaderContentType, ctJSON)
+	adapter.PrepareHeader(w, ctJSON)
 	return encodeJSONData(w, api.ZidMetaRelatedList{
 		ID:   api.ZettelID(m.Zid.String()),
 		Meta: m.Map(),
