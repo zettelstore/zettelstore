@@ -105,6 +105,11 @@ func TestListZettel(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	compareZettelList(t, pl, l)
+}
+
+func compareZettelList(t *testing.T, pl [][]byte, l []api.ZidMetaJSON) {
+	t.Helper()
 	if len(pl) != len(l) {
 		t.Errorf("Different list lenght: Plain=%d, JSON=%d", len(pl), len(l))
 	} else {

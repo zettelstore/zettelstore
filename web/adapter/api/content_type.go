@@ -26,11 +26,10 @@ var mapEncoding2CT = map[api.EncodingEnum]string{
 }
 
 func encoding2ContentType(enc api.EncodingEnum) string {
-	ct, ok := mapEncoding2CT[enc]
-	if !ok {
-		return "application/octet-stream"
+	if ct, ok := mapEncoding2CT[enc]; ok {
+		return ct
 	}
-	return ct
+	return "application/octet-stream"
 }
 
 var mapSyntax2CT = map[string]string{

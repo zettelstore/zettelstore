@@ -25,12 +25,27 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
+// PrepareHeader sets the HTTP header to defined values.
+func PrepareHeader(w http.ResponseWriter, contentType string) http.Header {
+	h := w.Header()
+	if contentType != "" {
+		h.Set(api.HeaderContentType, contentType)
+	}
+	// h.Set("Content-Security-Policy","")  // TODO
+	h.Set("Permissions-Policy", "payment=(), usb=()")
+	h.Set("Referrer-Policy", "no-referrer")
+	h.Set("X-Content-Type-Options", "nosniff")
+	h.Set("X-Frame-Options", "sameorigin")
+	return h
+}
+
 // ReportUsecaseError returns an appropriate HTTP status code for errors in use cases.
 func ReportUsecaseError(w http.ResponseWriter, err error) {
 	code, text := CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
 		log.Printf("%v: %v", text, err)
 	}
+	// TODO: must call PrepareHeader somehow
 	http.Error(w, text, code)
 }
 

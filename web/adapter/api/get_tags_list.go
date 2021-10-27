@@ -30,7 +30,6 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
 		tagMap := make(map[string][]api.ZettelID, len(tagData))
 		for tag, metaList := range tagData {
 			zidList := make([]api.ZettelID, 0, len(metaList))
@@ -39,6 +38,7 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			}
 			tagMap[tag] = zidList
 		}
+		adapter.PrepareHeader(w, ctJSON)
 		encodeJSONData(w, api.TagListJSON{Tags: tagMap})
 	}
 }

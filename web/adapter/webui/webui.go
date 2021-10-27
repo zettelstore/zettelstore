@@ -322,7 +322,7 @@ func (wui *WebUI) renderTemplateStatus(
 	err = t.Render(&content, data)
 	if err == nil {
 		base.Content = content.String()
-		w.Header().Set(api.HeaderContentType, "text/html; charset=utf-8")
+		adapter.PrepareHeader(w, "text/html; charset=utf-8")
 		w.WriteHeader(code)
 		err = bt.Render(w, base)
 	}

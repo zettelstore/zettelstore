@@ -396,36 +396,9 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 		fromPos++
 		switch in := ins[toPos].(type) {
 		case *ast.TextNode:
-			for fromPos < maxPos {
-				if tn, ok := ins[fromPos].(*ast.TextNode); ok {
-					in.Text = in.Text + tn.Text
-					fromPos++
-				} else {
-					break
-				}
-			}
+			fromPos = processTextNode(ins, maxPos, in, fromPos)
 		case *ast.SpaceNode:
-			if fromPos < maxPos {
-				switch nn := ins[fromPos].(type) {
-				case *ast.BreakNode:
-					if len(in.Lexeme) > 1 {
-						nn.Hard = true
-						ins[toPos] = nn
-						fromPos++
-					}
-				case *ast.TextNode:
-					if pp.inVerse {
-						ins[toPos] = &ast.TextNode{Text: strings.Repeat("\u00a0", len(in.Lexeme)) + nn.Text}
-						fromPos++
-						again = true
-					}
-				case *ast.LiteralNode:
-					if nn.Kind == ast.LiteralComment {
-						ins[toPos] = ins[fromPos]
-						fromPos++
-					}
-				}
-			}
+			again, fromPos = pp.processSpaceNode(ins, maxPos, in, toPos, again, fromPos)
 		case *ast.BreakNode:
 			if pp.inVerse {
 				in.Hard = true
@@ -434,6 +407,45 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 		toPos++
 	}
 	return again, toPos
+}
+
+func processTextNode(ins []ast.InlineNode, maxPos int, in *ast.TextNode, fromPos int) int {
+	for fromPos < maxPos {
+		if tn, ok := ins[fromPos].(*ast.TextNode); ok {
+			in.Text = in.Text + tn.Text
+			fromPos++
+		} else {
+			break
+		}
+	}
+	return fromPos
+}
+
+func (pp *postProcessor) processSpaceNode(
+	ins []ast.InlineNode, maxPos int, in *ast.SpaceNode, toPos int, again bool, fromPos int,
+) (bool, int) {
+	if fromPos < maxPos {
+		switch nn := ins[fromPos].(type) {
+		case *ast.BreakNode:
+			if len(in.Lexeme) > 1 {
+				nn.Hard = true
+				ins[toPos] = nn
+				fromPos++
+			}
+		case *ast.TextNode:
+			if pp.inVerse {
+				ins[toPos] = &ast.TextNode{Text: strings.Repeat("\u00a0", len(in.Lexeme)) + nn.Text}
+				fromPos++
+				again = true
+			}
+		case *ast.LiteralNode:
+			if nn.Kind == ast.LiteralComment {
+				ins[toPos] = ins[fromPos]
+				fromPos++
+			}
+		}
+	}
+	return again, fromPos
 }
 
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.

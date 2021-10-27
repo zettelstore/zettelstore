@@ -32,7 +32,7 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, api.ZettelJSON{
 			ID:       api.ZettelID(z.Meta.Zid.String()),
@@ -64,11 +64,11 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 				_, err = z.Content.Write(w)
 			}
 		case partMeta:
-			w.Header().Set(api.HeaderContentType, ctPlainText)
+			adapter.PrepareHeader(w, ctPlainText)
 			_, err = z.Meta.Write(w, false)
 		case partContent:
 			if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, a.rtConfig)); ok {
-				w.Header().Set(api.HeaderContentType, ct)
+				adapter.PrepareHeader(w, ct)
 			}
 			_, err = z.Content.Write(w)
 		}
@@ -108,7 +108,7 @@ func MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		err = encodeJSONData(w, api.MetaJSON{
 			Meta: m.Map(),
 		})

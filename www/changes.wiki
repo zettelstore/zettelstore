@@ -2,12 +2,15 @@
 
 <a name="0_0_16"></a>
 <h2>Changes for Version 0.0.16 (pending)</h2>
-  *  Add API endpoint <tt>/</tt> to retrieve HTMl and text encoded strings from
-     given ZettelMarkup encoded values. This will be used to render a HTML page
-     from a given zettel: in many cases the title of a zettel must be treated
-     separately.
+  *  API client software is now a [https://zettelstore.de/client/|separate]
+     project.
+     (breaking)
+  *  Add API endpoint <tt>POST /v</tt> to retrieve HTMl and text encoded
+     strings from given ZettelMarkup encoded values. This will be used to
+     render a HTML page from a given zettel: in many cases the title of
+     a zettel must be treated separately.
      (minor: api)
-  *  Add API endpoint <tt>/m</tt> to retrieve just the metadata of a zettel.
+  *  Add API endpoint <tt>/m</tt> to retrieve only the metadata of a zettel.
      (minor: api)
   *  New metadata value <tt>content-tags</tt> contains the tags that were given
      in the zettel content. To put it simply, <tt>all-tags</tt> = <tt>tags</tt>
@@ -15,9 +18,27 @@
      (minor)
   *  Calculating the context of a zettel stops at the home zettel.
      (minor: api, webui)
-  *  When renaming or deleting a zettel, a warning will be given, if otherf
-     zettel reference the given zettel.
+  *  When renaming or deleting a zettel, a warning will be given, if other
+     zettel references the given zettel, or when &ldquo;deleting&rdquo; will
+     uncover zettel in overlay box.
      (minor: webui)
+  *  Fix: do not allow control characters in JSON-based creating/updating API.
+     Otherwise, the created / updated zettel might not be parseable by the
+     software (but still by a human). In certain cases, even the WebUI might be
+     affected.
+     (minor: api, webui)
+  *  Fix: when a very log word (longer than width of browser window) is given,
+     still allow to scroll horizontally.
+     (minor: webui)
+  *  Initial support for HTTP security headers (Permissions-Policy,
+     Referrer-Policy, X-Content-Type-Options, X-Frame-Options). Header values
+     are currently some constant values. Support for header
+     Content-Security-Policy will follow later (it should be customizable).
+     (minor: api, webui)
+  *  Separate repository for [https://zettelstore.de/contrib/|contributed]
+     software. First entry is a software for creating a presentation by using
+     zettel.
+     (info)
 
 <a name="0_0_15"></a>
 <h2>Changes for Version 0.0.15 (2021-09-17)</h2>

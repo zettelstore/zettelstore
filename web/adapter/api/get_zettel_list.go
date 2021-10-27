@@ -47,7 +47,7 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			})
 		}
 
-		w.Header().Set(api.HeaderContentType, ctJSON)
+		adapter.PrepareHeader(w, ctJSON)
 		err = encodeJSONData(w, api.ZettelListJSON{
 			Query: queryText.String(),
 			List:  result,
@@ -70,7 +70,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(api.HeaderContentType, ctPlainText)
+		adapter.PrepareHeader(w, ctPlainText)
 		for _, m := range metaList {
 			_, err = fmt.Fprintln(w, m.Zid.String(), config.GetTitle(m, a.rtConfig))
 			if err != nil {

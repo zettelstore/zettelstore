@@ -63,7 +63,7 @@ func (a *API) writeEncodedZettelPart(
 		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid.String(), encStr))
 		return
 	}
-	w.Header().Set(api.HeaderContentType, encoding2ContentType(enc))
+	adapter.PrepareHeader(w, encoding2ContentType(enc))
 	var err error
 	switch part {
 	case partZettel:
