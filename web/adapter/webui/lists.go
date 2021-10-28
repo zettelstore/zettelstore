@@ -113,7 +113,7 @@ type tagInfo struct {
 	Size   string
 }
 
-var fontSizes = [...]int{75, 83, 100, 117, 150, 200}
+const fontSizes = 6 // Must be the number of CSS classes zs-font-size-* in base.css
 
 func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTags usecase.ListTags) {
 	ctx := r.Context()
@@ -144,7 +144,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	}
 	sort.Ints(countList)
 	for pos, count := range countList {
-		countMap[count] = fontSizes[(pos*len(fontSizes))/len(countList)]
+		countMap[count] = (pos * fontSizes) / len(countList)
 	}
 	for i := 0; i < len(tagsList); i++ {
 		count := tagsList[i].iCount

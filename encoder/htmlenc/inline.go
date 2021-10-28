@@ -188,7 +188,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		return
 	case ast.FormatMonospace:
 		code = "span"
-		attrs = attrs.Set("style", "font-family:monospace")
+		attrs = attrs.AddClass("zs-monospace")
 	case ast.FormatQuote:
 		v.visitQuotes(fn)
 		return

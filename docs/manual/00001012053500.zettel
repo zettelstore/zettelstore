@@ -3,7 +3,7 @@ title: API: Retrieve evaluated metadata and content of an existing zettel in var
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210826224328
+modified: 20211028191044
 
 The [[endpoint|00001012920000]] to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the zettel identifier (14 digits).
 
@@ -35,7 +35,7 @@ Others are ""[[html|00001012920510]]"", ""[[text|00001012920519]]"", and some mo
 <meta name="zs-published" content="00001012053500">
 </head>
 <body>
-<p>The <a href="/v/00001012920000?_enc=html">endpoint</a> to work with metadata and content of a specific zettel is <span style="font-family:monospace">/v/{ID}</span>, where <span style="font-family:monospace">{ID}</span> is a placeholder for the zettel identifier (14 digits).</p>
+<p>The <a href="00001012920000">endpoint</a> to work with evaluated metadata and content of a specific zettel is <span class="zs-monospace">/v/{ID}</span>, where <span class="zs-monospace">{ID}</span> is a placeholder for the zettel identifier (14 digits).</p>
 ...
 ```
 

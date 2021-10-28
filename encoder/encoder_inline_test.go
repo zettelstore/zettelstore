@@ -137,7 +137,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   "''monospace''",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Mono","i":[{"t":"Text","s":"monospace"}]}]`,
-			encoderHTML:   `<span style="font-family:monospace">monospace</span>`,
+			encoderHTML:   `<span class="zs-monospace">monospace</span>`,
 			encoderNative: `Mono [Text "monospace"]`,
 			encoderText:   "monospace",
 			encoderZmk:    useZmk,
