@@ -5,6 +5,10 @@
   *  API client software is now a [https://zettelstore.de/client/|separate]
      project.
      (breaking)
+  *  Initial support for HTTP security headers (Content-Security-Policy,
+     Permissions-Policy, Referrer-Policy, X-Content-Type-Options,
+     X-Frame-Options). Header values are currently some constant values.
+     (possibly breaking: api, webui)
   *  Add API endpoint <tt>POST /v</tt> to retrieve HTMl and text encoded
      strings from given ZettelMarkup encoded values. This will be used to
      render a HTML page from a given zettel: in many cases the title of
@@ -30,11 +34,6 @@
   *  Fix: when a very log word (longer than width of browser window) is given,
      still allow to scroll horizontally.
      (minor: webui)
-  *  Initial support for HTTP security headers (Permissions-Policy,
-     Referrer-Policy, X-Content-Type-Options, X-Frame-Options). Header values
-     are currently some constant values. Support for header
-     Content-Security-Policy will follow later (it should be customizable).
-     (minor: api, webui)
   *  Separate repository for [https://zettelstore.de/contrib/|contributed]
      software. First entry is a software for creating a presentation by using
      zettel.
