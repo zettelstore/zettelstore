@@ -244,6 +244,16 @@
     border-style: none !important;
     font-weight: bold;
   }
+  .zs-ta-left { text-align:left }
+  .zs-ta-center { text-align:center }
+  .zs-ta-right { text-align:right }
+  .zs-monospace { font-family:monospace }
+  .zs-font-size-0 { font-size:75% }
+  .zs-font-size-1 { font-size:83% }
+  .zs-font-size-2 { font-size:100% }
+  .zs-font-size-3 { font-size:117% }
+  .zs-font-size-4 { font-size:150% }
+  .zs-font-size-5 { font-size:200% }
   kbd {
     background: hsl(210, 5%, 100%);
     border: 1px solid hsl(210, 5%, 70%);

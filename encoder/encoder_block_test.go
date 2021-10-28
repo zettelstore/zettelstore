@@ -271,11 +271,11 @@ and much more
 			encoderDJSON: `[{"t":"Table","p":[[[">",[{"t":"Text","s":"h1"}]],["",[{"t":"Text","s":"h2"}]],[":",[{"t":"Text","s":"h3"}]]],[[["<",[{"t":"Text","s":"c1"}]],["",[{"t":"Text","s":"c2"}]],[":",[{"t":"Text","s":"c3"}]]],[[">",[{"t":"Text","s":"f1"}]],["",[{"t":"Text","s":"f2"}]],[":",[{"t":"Text","s":"=f3"}]]]]]}]`,
 			encoderHTML: `<table>
 <thead>
-<tr><th style="text-align:right">h1</th><th>h2</th><th style="text-align:center">h3</th></tr>
+<tr><th class="zs-ta-right">h1</th><th>h2</th><th class="zs-ta-center">h3</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:left">c1</td><td>c2</td><td style="text-align:center">c3</td></tr>
-<tr><td style="text-align:right">f1</td><td>f2</td><td style="text-align:center">=f3</td></tr>
+<tr><td class="zs-ta-left">c1</td><td>c2</td><td class="zs-ta-center">c3</td></tr>
+<tr><td class="zs-ta-right">f1</td><td>f2</td><td class="zs-ta-center">=f3</td></tr>
 </tbody>
 </table>`,
 			encoderNative: `[Table
