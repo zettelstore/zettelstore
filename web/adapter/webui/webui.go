@@ -322,9 +322,8 @@ func (wui *WebUI) renderTemplateStatus(
 	var content bytes.Buffer
 	err = t.Render(&content, data)
 	if err == nil {
+		prepareAndWriteHeader(w, code)
 		base.Content = content.String()
-		adapter.PrepareHeader(w, "text/html; charset=utf-8")
-		w.WriteHeader(code)
 		err = bt.Render(w, base)
 	}
 	if err != nil {
@@ -343,6 +342,17 @@ func (wui *WebUI) NewURLBuilder(key byte) *api.URLBuilder { return wui.ab.NewURL
 func (wui *WebUI) clearToken(ctx context.Context, w http.ResponseWriter) context.Context {
 	return wui.ab.ClearToken(ctx, w)
 }
+
 func (wui *WebUI) setToken(w http.ResponseWriter, token []byte) {
 	wui.ab.SetToken(w, token, wui.tokenLifetime)
+}
+
+func prepareAndWriteHeader(w http.ResponseWriter, statusCode int) {
+	h := adapter.PrepareHeader(w, "text/html; charset=utf-8")
+	h.Set("Content-Security-Policy", "default-src 'self'; img-src * data:; style-src 'self' 'unsafe-inline'")
+	h.Set("Permissions-Policy", "payment=(), usb=()")
+	h.Set("Referrer-Policy", "no-referrer")
+	h.Set("X-Content-Type-Options", "nosniff")
+	h.Set("X-Frame-Options", "sameorigin")
+	w.WriteHeader(statusCode)
 }

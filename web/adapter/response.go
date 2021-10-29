@@ -31,11 +31,6 @@ func PrepareHeader(w http.ResponseWriter, contentType string) http.Header {
 	if contentType != "" {
 		h.Set(api.HeaderContentType, contentType)
 	}
-	h.Set("Content-Security-Policy", "default-src 'self'; img-src * data:; style-src 'self' 'unsafe-inline'")
-	h.Set("Permissions-Policy", "payment=(), usb=()")
-	h.Set("Referrer-Policy", "no-referrer")
-	h.Set("X-Content-Type-Options", "nosniff")
-	h.Set("X-Frame-Options", "sameorigin")
 	return h
 }
 
