@@ -349,7 +349,7 @@ func (wui *WebUI) setToken(w http.ResponseWriter, token []byte) {
 func prepareAndWriteHeader(w http.ResponseWriter, statusCode int) {
 	h := adapter.PrepareHeader(w, "text/html; charset=utf-8")
 	h.Set("Content-Security-Policy", "default-src 'self'; img-src * data:; style-src 'self' 'unsafe-inline'")
-	h.Set("Permissions-Policy", "payment=(), usb=()")
+	h.Set("Permissions-Policy", "payment=(), interest-cohort=()")
 	h.Set("Referrer-Policy", "no-referrer")
 	h.Set("X-Content-Type-Options", "nosniff")
 	h.Set("X-Frame-Options", "sameorigin")
