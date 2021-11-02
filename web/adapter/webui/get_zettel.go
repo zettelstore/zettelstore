@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -157,12 +156,12 @@ func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.En
 		return "", errNoSuchEncoding
 	}
 
-	var content strings.Builder
-	_, err := encdr.WriteInlines(&content, is)
+	var buf bytes.Buffer
+	_, err := encdr.WriteInlines(&buf, is)
 	if err != nil {
 		return "", err
 	}
-	return content.String(), nil
+	return buf.String(), nil
 }
 
 func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
@@ -171,12 +170,12 @@ func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Env
 		return "", errNoSuchEncoding
 	}
 
-	var content strings.Builder
-	_, err := encdr.WriteBlocks(&content, bln)
+	var buf bytes.Buffer
+	_, err := encdr.WriteBlocks(&buf, bln)
 	if err != nil {
 		return "", err
 	}
-	return content.String(), nil
+	return buf.String(), nil
 }
 
 func encodeMeta(
@@ -188,12 +187,12 @@ func encodeMeta(
 		return "", errNoSuchEncoding
 	}
 
-	var content strings.Builder
-	_, err := encdr.WriteMeta(&content, m, evalMeta)
+	var buf bytes.Buffer
+	_, err := encdr.WriteMeta(&buf, m, evalMeta)
 	if err != nil {
 		return "", err
 	}
-	return content.String(), nil
+	return buf.String(), nil
 }
 
 func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {

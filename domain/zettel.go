@@ -23,5 +23,5 @@ type Zettel struct {
 
 // Equal compares two zettel for equality.
 func (z Zettel) Equal(o Zettel, allowComputed bool) bool {
-	return z.Meta.Equal(o.Meta, allowComputed) && z.Content == o.Content
+	return z.Meta.Equal(o.Meta, allowComputed) && z.Content.Equal(&o.Content)
 }

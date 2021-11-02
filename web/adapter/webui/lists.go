@@ -12,12 +12,12 @@
 package webui
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
@@ -288,13 +288,13 @@ func (wui *WebUI) listTitleSearch(prefix string, s *search.Search) string {
 	if s == nil {
 		return wui.rtConfig.GetSiteName()
 	}
-	var sb strings.Builder
-	sb.WriteString(prefix)
+	var buf bytes.Buffer
+	buf.WriteString(prefix)
 	if s != nil {
-		sb.WriteString(": ")
-		s.Print(&sb)
+		buf.WriteString(": ")
+		s.Print(&buf)
 	}
-	return sb.String()
+	return buf.String()
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.

@@ -22,7 +22,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -67,7 +66,7 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 			return
 		}
 		m := origZettel.Meta
-		title := parser.ParseInlines(input.NewInput(config.GetTitle(m, wui.rtConfig)), api.ValueSyntaxZmk)
+		title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
 		textTitle, err := encodeInlines(title, api.EncoderText, nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)

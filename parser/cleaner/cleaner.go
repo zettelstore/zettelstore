@@ -12,8 +12,8 @@
 package cleaner
 
 import (
+	"bytes"
 	"strconv"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -64,12 +64,12 @@ func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
 		return
 	}
 	if hn.Slug == "" {
-		var sb strings.Builder
-		_, err := cv.textEnc.WriteInlines(&sb, hn.Inlines)
+		var buf bytes.Buffer
+		_, err := cv.textEnc.WriteInlines(&buf, hn.Inlines)
 		if err != nil {
 			return
 		}
-		hn.Slug = strfun.Slugify(sb.String())
+		hn.Slug = strfun.Slugify(buf.String())
 	}
 	if hn.Slug != "" {
 		hn.Fragment = cv.addIdentifier(hn.Slug, hn)

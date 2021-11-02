@@ -69,7 +69,7 @@ func buildZettelFromPlainData(r *http.Request, zid id.Zid) (domain.Zettel, error
 	if err != nil {
 		return domain.Zettel{}, err
 	}
-	inp := input.NewInput(string(b))
+	inp := input.NewInput(b)
 	m := meta.NewFromInput(zid, inp)
 	return domain.Zettel{
 		Meta:    m,

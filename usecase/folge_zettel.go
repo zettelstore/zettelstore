@@ -45,5 +45,5 @@ func (uc FolgeZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m.Set(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
 	m.Set(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	m.Set(api.KeyPrecursor, origMeta.Zid.String())
-	return domain.Zettel{Meta: m, Content: domain.NewContent("")}
+	return domain.Zettel{Meta: m, Content: domain.NewContent(nil)}
 }

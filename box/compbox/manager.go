@@ -12,8 +12,8 @@
 package compbox
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
@@ -27,15 +27,15 @@ func genManagerM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genManagerC(*meta.Meta) string {
+func genManagerC(*meta.Meta) []byte {
 	kvl := kernel.Main.GetServiceStatistics(kernel.BoxService)
 	if len(kvl) == 0 {
-		return "No statistics available"
+		return nil
 	}
-	var sb strings.Builder
-	sb.WriteString("|=Name|=Value>\n")
+	var buf bytes.Buffer
+	buf.WriteString("|=Name|=Value>\n")
 	for _, kv := range kvl {
-		fmt.Fprintf(&sb, "| %v | %v\n", kv.Key, kv.Value)
+		fmt.Fprintf(&buf, "| %v | %v\n", kv.Key, kv.Value)
 	}
-	return sb.String()
+	return buf.Bytes()
 }

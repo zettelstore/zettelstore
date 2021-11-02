@@ -193,7 +193,7 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 			return nil, false
 		}
 		inp.SkipToEOL()
-		rn.Lines = append(rn.Lines, inp.Src[posL:inp.Pos])
+		rn.Lines = append(rn.Lines, string(inp.Src[posL:inp.Pos]))
 	}
 }
 

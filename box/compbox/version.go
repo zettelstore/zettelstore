@@ -12,8 +12,6 @@
 package compbox
 
 import (
-	"fmt"
-
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -32,24 +30,25 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyVisibility, api.ValueVisibilityPublic)
 	return m
 }
-func genVersionBuildC(*meta.Meta) string {
-	return kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string)
+func genVersionBuildC(*meta.Meta) []byte {
+	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 }
 
 func genVersionHostM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Host")
 }
-func genVersionHostC(*meta.Meta) string {
-	return kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string)
+func genVersionHostC(*meta.Meta) []byte {
+	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string))
 }
 
 func genVersionOSM(zid id.Zid) *meta.Meta {
 	return getVersionMeta(zid, "Zettelstore Operating System")
 }
-func genVersionOSC(*meta.Meta) string {
-	return fmt.Sprintf(
-		"%v/%v",
-		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string),
-		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoArch).(string),
-	)
+func genVersionOSC(*meta.Meta) []byte {
+	goOS := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string)
+	goArch := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoArch).(string)
+	result := make([]byte, 0, len(goOS)+len(goArch)+1)
+	result = append(result, goOS...)
+	result = append(result, '/')
+	return append(result, goArch...)
 }

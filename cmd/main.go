@@ -93,7 +93,7 @@ func readConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
 	if err != nil {
 		return meta.New(id.Invalid)
 	}
-	return meta.NewFromInput(id.Invalid, input.NewInput(string(content)))
+	return meta.NewFromInput(id.Invalid, input.NewInput(content))
 }
 
 func getConfig(fs *flag.FlagSet) *meta.Meta {

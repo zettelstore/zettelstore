@@ -120,7 +120,7 @@ func (zp *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 	defer reader.Close()
 
 	var m *meta.Meta
-	var src string
+	var src []byte
 	var inMeta bool
 	if entry.metaInHeader {
 		src, err = readZipFileContent(reader, entry.contentName)
@@ -239,15 +239,11 @@ func readZipMetaFile(reader *zip.ReadCloser, zid id.Zid, name string) (*meta.Met
 	return meta.NewFromInput(zid, inp), nil
 }
 
-func readZipFileContent(reader *zip.ReadCloser, name string) (string, error) {
+func readZipFileContent(reader *zip.ReadCloser, name string) ([]byte, error) {
 	f, err := reader.Open(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer f.Close()
-	buf, err := io.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
-	return string(buf), nil
+	return io.ReadAll(f)
 }

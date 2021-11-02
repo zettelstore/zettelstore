@@ -12,7 +12,7 @@
 package compbox
 
 import (
-	"strings"
+	"bytes"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
@@ -29,25 +29,25 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genConfigZettelC(*meta.Meta) string {
-	var sb strings.Builder
+func genConfigZettelC(*meta.Meta) []byte {
+	var buf bytes.Buffer
 	for i, p := range myConfig.Pairs(false) {
 		if i > 0 {
-			sb.WriteByte('\n')
+			buf.WriteByte('\n')
 		}
-		sb.WriteString("; ''")
-		sb.WriteString(p.Key)
-		sb.WriteString("''")
+		buf.WriteString("; ''")
+		buf.WriteString(p.Key)
+		buf.WriteString("''")
 		if p.Value != "" {
-			sb.WriteString("\n: ``")
+			buf.WriteString("\n: ``")
 			for _, r := range p.Value {
 				if r == '`' {
-					sb.WriteByte('\\')
+					buf.WriteByte('\\')
 				}
-				sb.WriteRune(r)
+				buf.WriteRune(r)
 			}
-			sb.WriteString("``")
+			buf.WriteString("``")
 		}
 	}
-	return sb.String()
+	return buf.Bytes()
 }

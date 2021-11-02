@@ -12,6 +12,7 @@
 package meta_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -37,9 +38,9 @@ func newMeta(title string, tags []string, syntax string) *meta.Meta {
 }
 func assertWriteMeta(t *testing.T, m *meta.Meta, expected string) {
 	t.Helper()
-	sb := strings.Builder{}
-	m.Write(&sb, true)
-	if got := sb.String(); got != expected {
+	var buf bytes.Buffer
+	m.Write(&buf, true)
+	if got := buf.String(); got != expected {
 		t.Errorf("\nExp: %q\ngot: %q", expected, got)
 	}
 }

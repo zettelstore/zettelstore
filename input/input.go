@@ -20,7 +20,7 @@ import (
 // Input is an abstract input source
 type Input struct {
 	// Read-only, will never change
-	Src string // The source string
+	Src []byte // The source string
 
 	// Read-only, will change
 	Ch      rune // current character
@@ -29,7 +29,7 @@ type Input struct {
 }
 
 // NewInput creates a new input source.
-func NewInput(src string) *Input {
+func NewInput(src []byte) *Input {
 	inp := &Input{Src: src}
 	inp.Next()
 	return inp
@@ -44,7 +44,7 @@ func (inp *Input) Next() {
 		inp.Pos = inp.readPos
 		r, w := rune(inp.Src[inp.readPos]), 1
 		if r >= utf8.RuneSelf {
-			r, w = utf8.DecodeRuneInString(inp.Src[inp.readPos:])
+			r, w = utf8.DecodeRune(inp.Src[inp.readPos:])
 		}
 		inp.readPos += w
 		inp.Ch = r
@@ -67,7 +67,7 @@ func (inp *Input) PeekN(n int) rune {
 	if pos < len(inp.Src) {
 		r := rune(inp.Src[pos])
 		if r >= utf8.RuneSelf {
-			r, _ = utf8.DecodeRuneInString(inp.Src[pos:])
+			r, _ = utf8.DecodeRune(inp.Src[pos:])
 		}
 		if r == '\t' {
 			return ' '
@@ -195,7 +195,7 @@ func (inp *Input) scanEntityNamed(pos int) (string, bool) {
 			return "", false
 		case ';':
 			inp.Next()
-			es := inp.Src[pos:inp.Pos]
+			es := string(inp.Src[pos:inp.Pos])
 			ues := html.UnescapeString(es)
 			if es == ues {
 				return "", false

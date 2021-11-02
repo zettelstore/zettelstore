@@ -12,9 +12,9 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
@@ -34,7 +34,7 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		var queryText strings.Builder
+		var queryText bytes.Buffer
 		if s != nil {
 			s.Print(&queryText)
 		}

@@ -11,8 +11,8 @@
 package encoder_test
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -58,7 +58,7 @@ func TestEncoder(t *testing.T) {
 func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 	t.Helper()
 	for testNum, tc := range testCases {
-		inp := input.NewInput(tc.zmk)
+		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
 			pe = &peInlines{iln: parser.ParseInlines(inp, api.ValueSyntaxZmk)}
@@ -102,11 +102,11 @@ type peInlines struct {
 }
 
 func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
-	var sb strings.Builder
-	if _, err := encdr.WriteInlines(&sb, in.iln); err != nil {
+	var buf bytes.Buffer
+	if _, err := encdr.WriteInlines(&buf, in.iln); err != nil {
 		return "", err
 	}
-	return sb.String(), nil
+	return buf.String(), nil
 }
 
 func (peInlines) mode() string { return "inline" }
@@ -116,11 +116,11 @@ type peBlocks struct {
 }
 
 func (bl peBlocks) encode(encdr encoder.Encoder) (string, error) {
-	var sb strings.Builder
-	if _, err := encdr.WriteBlocks(&sb, bl.bln); err != nil {
+	var buf bytes.Buffer
+	if _, err := encdr.WriteBlocks(&buf, bl.bln); err != nil {
 		return "", err
 	}
-	return sb.String(), nil
+	return buf.String(), nil
 
 }
 func (peBlocks) mode() string { return "block" }
