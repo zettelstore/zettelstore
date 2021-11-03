@@ -386,17 +386,18 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind]string{
-	ast.FormatEmph:      "Emph",
-	ast.FormatStrong:    "Strong",
-	ast.FormatMonospace: "Mono",
-	ast.FormatDelete:    "Delete",
-	ast.FormatInsert:    "Insert",
-	ast.FormatSuper:     "Super",
-	ast.FormatSub:       "Sub",
-	ast.FormatQuote:     "Quote",
-	ast.FormatQuotation: "Quotation",
-	ast.FormatSmall:     "Small",
-	ast.FormatSpan:      "Span",
+	ast.FormatEmphDeprecated: "EmphD",
+	ast.FormatEmph:           "Emph",
+	ast.FormatStrong:         "Strong",
+	ast.FormatMonospace:      "Mono",
+	ast.FormatDelete:         "Delete",
+	ast.FormatInsert:         "Insert",
+	ast.FormatSuper:          "Super",
+	ast.FormatSub:            "Sub",
+	ast.FormatQuote:          "Quote",
+	ast.FormatQuotation:      "Quotation",
+	ast.FormatSmall:          "Small",
+	ast.FormatSpan:           "Span",
 }
 
 var mapLiteralKind = map[ast.LiteralKind]string{

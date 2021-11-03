@@ -402,17 +402,18 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatEmph:      []byte("__"),
-	ast.FormatStrong:    []byte("**"),
-	ast.FormatInsert:    []byte(">>"),
-	ast.FormatDelete:    []byte("~~"),
-	ast.FormatSuper:     []byte("^^"),
-	ast.FormatSub:       []byte(",,"),
-	ast.FormatQuotation: []byte("<<"),
-	ast.FormatQuote:     []byte("\"\""),
-	ast.FormatSmall:     []byte(";;"),
-	ast.FormatSpan:      []byte("::"),
-	ast.FormatMonospace: []byte("''"),
+	ast.FormatEmphDeprecated: []byte("__"),
+	ast.FormatEmph:           []byte("__"),
+	ast.FormatStrong:         []byte("**"),
+	ast.FormatInsert:         []byte(">>"),
+	ast.FormatDelete:         []byte("~~"),
+	ast.FormatSuper:          []byte("^^"),
+	ast.FormatSub:            []byte(",,"),
+	ast.FormatQuotation:      []byte("<<"),
+	ast.FormatQuote:          []byte("\"\""),
+	ast.FormatSmall:          []byte(";;"),
+	ast.FormatSpan:           []byte("::"),
+	ast.FormatMonospace:      []byte("''"),
 }
 
 func (v *visitor) visitFormat(fn *ast.FormatNode) {

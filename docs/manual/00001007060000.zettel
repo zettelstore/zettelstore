@@ -3,7 +3,7 @@ title: Zettelmarkup: Summary of Formatting Characters
 role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103151326
+modified: 20211103173317
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
@@ -22,19 +22,19 @@ The following table gives an overview about the use of all characters that begin
 | '',''  | (free) | [[Subscripted text|00001007040100]]
 | ''-''  | [[Horizonal rule|00001007030400]] | ""[[en-dash|00001007040000]]""
 | ''.''  | (free) | [[Horizontal ellipsis|00001007040000]]
-| ''/''  | (free) | [[Emphasized text|00001007040100]]
+| ''/''  | (free) | [[//Emphasized text//|00001007040100]] (deprecated for v0.0.17)
 | '':''  | [[Region block|00001007030800]] / [[description text|00001007030100]] | [[Inline region|00001007040100]]
 | '';''  | [[Description term|00001007030100]] | [[Small text|00001007040100]]
 | ''<''  | [[Quotation block|00001007030600]] | [[Short inline quote|00001007040100]]
 | ''=''  | [[Headings|00001007030300]] | [[Computer output|00001007040200]]
-| ''>''  | [[Quotation lists|00001007030200]] | (blocked: to remove anyambiguity with quotation lists)
+| ''>''  | [[Quotation lists|00001007030200]] | [[Inserted text|00001007040100]]
 | ''?''  | (free) | (free)
 | ''@''  | (free) | (reserved)
 | ''[''  | (reserved)  | [[Linked material|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
 | ''\\'' | (blocked by inline meaning) | [[Escape character|00001007040000]]
 | '']''  | (reserved) | End of link, citation key, footnote, mark
 | ''^''  | (free) | [[Superscripted text|00001007040100]]
-| ''_''  | (free) | [[Inserted text|00001007040100]]
+| ''_''  | (free) | [[Emphasized text|00001007040100]]
 | ''`''  | [[Verbatim block|00001007030500]] | [[Literal text|00001007040200]]
 | ''{''  | (reserved) | [[Embedded material|00001007040300]], [[Attribute|00001007050000]]
 | ''|''  | [[Table row / table cell|00001007031000]] | Separator within link and embed formatting

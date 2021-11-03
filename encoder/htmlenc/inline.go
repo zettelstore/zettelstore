@@ -159,6 +159,8 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	var code string
 	attrs := fn.Attrs.Clone()
 	switch fn.Kind {
+	case ast.FormatEmphDeprecated:
+		code, attrs = "em", attrs.AddClass("zs-deprecated")
 	case ast.FormatEmph:
 		code = "em"
 	case ast.FormatStrong:

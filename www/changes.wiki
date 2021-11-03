@@ -12,7 +12,8 @@
      reason is the collision with URLs that also contain the characters
      <tt>//</tt>. The ZMK encoding of a zettel may help with the transition
      (<tt>/v/{ZettelID}?_part=zettel&amp;_enc=zmk</tt>, on the Info page of
-     each zettel in the WebUI).
+     each zettel in the WebUI). Additionally, all deprecated uses of
+     <tt>//</tt> will be rendered with a dashed box within the WebUI.
      (breaking: Zettelmarkup).
   *  API client software is now a [https://zettelstore.de/client/|separate]
      project.

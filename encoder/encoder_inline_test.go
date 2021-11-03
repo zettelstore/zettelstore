@@ -46,13 +46,13 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Emphasized formatting (deprecated)",
-		zmk:   "//emph//",
+		zmk:   "//emphd//",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Emph","i":[{"t":"Text","s":"emph"}]}]`,
-			encoderHTML:   "<em>emph</em>",
-			encoderNative: `Emph [Text "emph"]`,
-			encoderText:   "emph",
-			encoderZmk:    "__emph__",
+			encoderDJSON:  `[{"t":"EmphD","i":[{"t":"Text","s":"emphd"}]}]`,
+			encoderHTML:   `<em class="deprecated">emphd</em>`,
+			encoderNative: `EmphD [Text "emphd"]`,
+			encoderText:   "emphd",
+			encoderZmk:    "__emphd__",
 		},
 	},
 	{
