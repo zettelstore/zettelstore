@@ -3,9 +3,9 @@ title: API: Select zettel based on their metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211004124509
+modified: 20211103164030
 
-Every query parameter that does //not// begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
+Every query parameter that does __not__ begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
 According to the [[type|00001006030000]] of a metadata key, zettel are possibly selected.
 All [[supported|00001006020000]] metadata keys have a well-defined type.
 User-defined keys have the type ''e'' (string, possibly empty).
@@ -16,7 +16,7 @@ For example, if you want to retrieve all zettel that contain the string ""API"" 
 {"query":"title MATCH API","list":[{"id":"00001012921000","meta":{"title":"API: JSON structure of an access token","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920500","meta":{"title":"Formats available by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920000","meta":{"title":"Endpoints used by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}}, ...
 ```
 
-However, if you want all zettel that does //not// match a given value, you must prefix the value with the exclamation mark character (""!"", ''U+0021'').
+However, if you want all zettel that does not match a given value, you must prefix the value with the exclamation mark character (""!"", ''U+0021'').
 For example, if you want to retrieve all zettel that do not contain the string ""API"" in their title, your request will be:
 ```sh
 # curl 'http://127.0.0.1:23123/j?title=!API'
@@ -30,7 +30,7 @@ But the situation is different for a key like [[''url''|00001006020000#url]].
 Both ``curl 'http://localhost:23123/j?url='`` and ``curl 'http://localhost:23123/j?url=!'`` may result in an empty list.
 
 The empty query parameter values matches all zettel that contain the given metadata key.
-Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does //not// contain the given metadata key.
+Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does not contain the given metadata key.
 This is in contrast to above rule that the metadata value must exist before a match is done.
 For example ``curl 'http://localhost:23123/j?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
 

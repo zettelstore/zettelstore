@@ -98,6 +98,7 @@ func TestText(t *testing.T) {
 		{"...?", "(PARA \u2026?)"},
 		{"...-", "(PARA ...-)"},
 		{"a...b", "(PARA a...b)"},
+		// {"http://a, http://b", "(PARA http://a, SP http://b)"},
 	})
 }
 
@@ -302,12 +303,17 @@ func TestComment(t *testing.T) {
 
 func TestFormat(t *testing.T) {
 	t.Parallel()
-	for _, ch := range []string{"/", "*", "_", "~", "'", "^", ",", "<", "\"", ";", ":"} {
+	// Not for Insert / '>', because collision with quoted list
+	for _, ch := range []string{"_", "*", "~", "'", "^", ",", "<", "\"", ";", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
 			{"$$$", "(PARA $$$)"},
 			{"$$$$", "(PARA {$})"},
+		}))
+	}
+	for _, ch := range []string{"_", "*", ">", "~", "'", "^", ",", "<", "\"", ";", ":"} {
+		checkTcs(t, replace(ch, TestCases{
 			{"$$a$$", "(PARA {$ a})"},
 			{"$$a$$$", "(PARA {$ a} $)"},
 			{"$$$a$$", "(PARA {$ $a})"},
@@ -324,9 +330,9 @@ func TestFormat(t *testing.T) {
 		}))
 	}
 	checkTcs(t, TestCases{
-		{"//****//", "(PARA {/ {*}})"},
-		{"//**a**//", "(PARA {/ {* a}})"},
-		{"//**//**", "(PARA // {* //})"},
+		{"__****__", "(PARA {_ {*}})"},
+		{"__**a**__", "(PARA {_ {* a}})"},
+		{"__**__**", "(PARA __ {* __})"},
 	})
 }
 
@@ -362,10 +368,10 @@ func TestLiteral(t *testing.T) {
 func TestMixFormatCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
-		{"//abc//\n**def**", "(PARA {/ abc} SB {* def})"},
+		{"__abc__\n**def**", "(PARA {_ abc} SB {* def})"},
 		{"++abc++\n==def==", "(PARA {+ abc} SB {= def})"},
-		{"//abc//\n==def==", "(PARA {/ abc} SB {= def})"},
-		{"//abc//\n``def``", "(PARA {/ abc} SB {` def})"},
+		{"__abc__\n==def==", "(PARA {_ abc} SB {= def})"},
+		{"__abc__\n``def``", "(PARA {_ abc} SB {` def})"},
 		{"\"\"ghi\"\"\n::abc::\n``def``\n", "(PARA {\" ghi} SB {: abc} SB {` def})"},
 	})
 }
@@ -466,7 +472,7 @@ func TestHeading(t *testing.T) {
 		{"======= h", "(H5 h #h)"},
 		{"======== h", "(H5 h #h)"},
 		{"=", "(PARA =)"},
-		{"=== h=//=a//", "(H1 h= {/ =a} #h-a)"},
+		{"=== h=__=a__", "(H1 h= {_ =a} #h-a)"},
 		{"=\n", "(PARA =)"},
 		{"a=", "(PARA a=)"},
 		{" =", "(PARA =)"},
@@ -890,9 +896,9 @@ var alignString = map[ast.Alignment]string{
 }
 
 var mapFormatKind = map[ast.FormatKind]rune{
-	ast.FormatEmph:      '/',
+	ast.FormatEmph:      '_',
 	ast.FormatStrong:    '*',
-	ast.FormatInsert:    '_',
+	ast.FormatInsert:    '>',
 	ast.FormatDelete:    '~',
 	ast.FormatMonospace: '\'',
 	ast.FormatSuper:     '^',

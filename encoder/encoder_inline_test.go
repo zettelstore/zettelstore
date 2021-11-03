@@ -35,13 +35,24 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Emphasized formatting",
-		zmk:   "//emph//",
+		zmk:   "__emph__",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Emph","i":[{"t":"Text","s":"emph"}]}]`,
 			encoderHTML:   "<em>emph</em>",
 			encoderNative: `Emph [Text "emph"]`,
 			encoderText:   "emph",
 			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Emphasized formatting (deprecated)",
+		zmk:   "//emph//",
+		expect: expectMap{
+			encoderDJSON:  `[{"t":"Emph","i":[{"t":"Text","s":"emph"}]}]`,
+			encoderHTML:   "<em>emph</em>",
+			encoderNative: `Emph [Text "emph"]`,
+			encoderText:   "emph",
+			encoderZmk:    "__emph__",
 		},
 	},
 	{
@@ -57,7 +68,7 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Insert formatting",
-		zmk:   "__insert__",
+		zmk:   ">>insert>>",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Insert","i":[{"t":"Text","s":"insert"}]}]`,
 			encoderHTML:   "<ins>insert</ins>",
@@ -79,7 +90,7 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Update formatting",
-		zmk:   "~~old~~__new__",
+		zmk:   "~~old~~>>new>>",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"old"}]},{"t":"Insert","i":[{"t":"Text","s":"new"}]}]`,
 			encoderHTML:   "<del>old</del><ins>new</ins>",

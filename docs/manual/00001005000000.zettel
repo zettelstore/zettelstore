@@ -3,7 +3,7 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20210614165848
+modified: 20211103163918
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -32,7 +32,7 @@ This allows zettel to be sorted naturally by creation time.
 
 Since the only restriction on zettel identifiers are the 14 digits, you are free to use other digit sequences.
 The [[configuration zettel|00001004020000]] is one prominent example, as well as these manual zettel.
-You can create these special zettel identifiers either with the //rename// function of Zettelstore or by manually renaming the underlying zettel files.
+You can create these special zettel identifiers either with the __rename__ function of Zettelstore or by manually renaming the underlying zettel files.
 
 It is allowed that the file name contains other characters after the 14 digits.
 These are ignored by Zettelstore.
@@ -78,11 +78,11 @@ Now we have two places where zettel are stored: in the specific directory and wi
 
 === Boxes: other ways to store zettel
 As described above, a zettel may be stored as a file inside a directory or inside the Zettelstore software itself.
-Zettelstore allows other ways to store zettel by providing an abstraction called //box//.[^Formerly, zettel were stored physically in boxes, often made of wood.]
+Zettelstore allows other ways to store zettel by providing an abstraction called __box__.[^Formerly, zettel were stored physically in boxes, often made of wood.]
 
 A file directory which stores zettel is called a ""directory box"".
 But zettel may be also stored in a ZIP file, which is called ""file box"".
-For testing purposes, zettel may be stored in volatile memeory (called //RAM//).
+For testing purposes, zettel may be stored in volatile memory (called __RAM__).
 This way is called ""memory box"".
 
 Other types of boxes could be added to Zettelstore.

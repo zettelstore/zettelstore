@@ -2,6 +2,18 @@
 
 <a name="0_0_16"></a>
 <h2>Changes for Version 0.0.16 (pending)</h2>
+  *  Remove visual Zettelmarkup (italic, underline). Semantic Zettelmarkup
+     (emphasize, insert) is still allowed, but got a different syntax. The new
+     syntax for <ins>inserted text</ins> is <tt>&gt;&gt;inserted&gt;&gt;</tt>,
+     while its previous syntax now denotes <em>emphasized text</em>:
+     <tt>__emphasized__</tt>. The previous syntax for emphasized text is now
+     deprecated: <tt>//deprecated emphasized//</tt>. Starting with
+     Version&nbsp;0.0.17, the deprecated syntax will not be supported. The
+     reason is the collision with URLs that also contain the characters
+     <tt>//</tt>. The ZMK encoding of a zettel may help with the transition
+     (<tt>/v/{ZettelID}?_part=zettel&amp;_enc=zmk</tt>, on the Info page of
+     each zettel in the WebUI).
+     (breaking: Zettelmarkup).
   *  API client software is now a [https://zettelstore.de/client/|separate]
      project.
      (breaking)
@@ -9,10 +21,10 @@
      Permissions-Policy, Referrer-Policy, X-Content-Type-Options,
      X-Frame-Options). Header values are currently some constant values.
      (possibly breaking: api, webui)
-  *  Remove visual Zettelmarkup (italic, bold, underline, striketrough).
-     Semantic Zettelmarkup (emphasize, strong, insert, delete) is still allowed
-     and replaces the visual elements syntactically. The visual appearance
-     should not change (depends on your changes / additions to CSS zettel).
+  *  Remove visual Zettelmarkup (bold, striketrough). Semantic Zettelmarkup
+     (strong, delete) is still allowed and replaces the visual elements
+     syntactically. The visual appearance should not change (depends on your
+     changes / additions to CSS zettel).
      (possibly breaking: Zettelmarkup).
   *  Add API endpoint <tt>POST /v</tt> to retrieve HTMl and text encoded
      strings from given ZettelMarkup encoded values. This will be used to

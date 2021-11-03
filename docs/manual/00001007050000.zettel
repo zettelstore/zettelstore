@@ -3,7 +3,7 @@ title: Zettelmarkup: Attributes
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20210830161438
+modified: 20211103162617
 
 Attributes allows to modify the way how material is presented.
 Alternatively, they provide additional information to markup elements.
@@ -24,15 +24,16 @@ Within the quotation marks, the backslash character functions as an escape chara
 
 Some examples:
 
-* ``{key=value}`` sets the attribute //key// to value //value//.
+* ``{key=value}`` sets the attribute __key__ to value __value__.
 * ``{key="value with space"}`` sets the attribute to the given value.
 * ``{key="value with quote \\" (and backslash \\\\)"}``
-* ``{name}`` sets the attribute //name//. It has no corresponding value. It is
-  equivalent to ``{name=}``.
-* ``{=key}`` sets the //generic attribute//{-} to the given value. It is mostly
-  used for modifying behaviour according to a programming language.
-* ``{.key}`` sets the //class attribute//{-} to the given value. It is
-  equivalent to ``{class=key}``. 
+* ``{name}`` sets the attribute __name__.
+  It has no corresponding value.
+  It is equivalent to ``{name=}``.
+* ``{=key}`` sets the __generic attribute__ to the given value.
+  It is mostly used for modifying behaviour according to a programming language.
+* ``{.key}`` sets the __class attribute__ to the given value.
+  It is equivalent to ``{class=key}``. 
 
 In these examples, ``key`` must conform the the syntax of attribute keys, even if it is used as a value.
 
@@ -47,7 +48,7 @@ In ``{=key1 =key2}``, the first key is ignored.
 Therefore it is equivalent to ``{=key2}``.
 
 The key ""''-''"" (just hyphen-minus) is special.
-It is called //default attribute//{-} and has a markup specific meaning.
+It is called __default attribute__ and has a markup specific meaning.
 For example, when used for plain text, it replaces the non-visible space with a visible representation:
 
 * ++``Hello, world``{-}++ produces ==Hello, world=={-}.

@@ -3,9 +3,9 @@ title: API: Shape the list of zettel metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905203719
+modified: 20211103162259
 
-In most cases, it is not essential to list //all// zettel.
+In most cases, it is not essential to list __all__ zettel.
 Typically, you are interested only in a subset of the zettel maintained by your Zettelstore.
 This is done by adding some query parameters to the general ''GET /j'' request.
 

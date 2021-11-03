@@ -3,12 +3,12 @@ title: Zettelmarkup: Tables
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20210523185812
+modified: 20211103161859
 
 Tables are used to show some data in a two-dimenensional fashion.
-In zettelmarkup, table are not specified explicitly, but by entering //table rows//.
+In zettelmarkup, table are not specified explicitly, but by entering __table rows__.
 Therefore, a table can be seen as a sequence of table rows.
-A table row is nothing as a sequence of //table cells//.
+A table row is nothing as a sequence of __table cells__.
 The length of a table is the number of table rows, the width of a table is the maximum length of its rows.
 
 The first cell of a row must begin with the vertical bar character (""''|''"", ''U+007C'') at the first position of a line.
@@ -32,7 +32,7 @@ will be rendered in HTML as:
 :::
 
 === Header row
-If any cell in the first row of a table contains an equal sing character (""''=''"", ''U+003D'') as the very first character, then this first row will be interpreted as a //table header// row.
+If any cell in the first row of a table contains an equal sing character (""''=''"", ''U+003D'') as the very first character, then this first row will be interpreted as a __table header__ row.
 
 For example:
 ```zmk

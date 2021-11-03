@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210525161623
+modified: 20211103161956
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -60,7 +60,7 @@ modified: 20210525161623
 
   If the key specifies a list value, all other list values with a number greater than the given key are deleted.
   You can use the special number ""0"" to delete all values.
-  E.g. ``set-config box box-uri-0 any_text`` will remove all values of the list //box-uri-//.
+  E.g. ``set-config box box-uri-0 any_text`` will remove all values of the list __box-uri-__.
 ; ''shutdown''
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).
 ; ''start SERVICE''

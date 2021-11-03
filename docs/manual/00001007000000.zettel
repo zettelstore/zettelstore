@@ -1,8 +1,9 @@
 id: 00001007000000
 title: Zettelmarkup
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211103162744
 
 Zettelmarkup is a rich plain-text based markup language for writing zettel content.
 Besides the zettel content, Zettelmarkup is also used for specifying the title of a zettel, regardless of the syntax of a zettel.
@@ -21,7 +22,7 @@ This could create problems with longevity as well as security problems.
 
 Zettelmarkup is a rich markup language, but it focusses on relatively short zettel content.
 It allows embedding other content, simple tables, quotations, description lists, and images.
-It provides a broad range of inline formatting, including //emphasized//{-}, **strong**{-}, __underlined__, ;;small;;, ~~deleted~~{-} and __inserted__{-} text.
+It provides a broad range of inline formatting, including __emphasized__, **strong**, ;;small;;, ~~deleted~~{-} and >>inserted>> text.
 Footnotes[^like this] are supported, links to other zettel and to external material, as well as citation keys.
 
 Zettelmarkup might be seen as a proprietary markup language.

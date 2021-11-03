@@ -1,8 +1,9 @@
 id: 00001007030300
 title: Zettelmarkup: Headings
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211103163105
 
 To specify a (sub-) section of a zettel, you should use the headings syntax: at
 the beginning of a new line type at least three equal signs (""''=''"", ''U+003D''), plus at least one
@@ -32,7 +33,7 @@ The heading level is translated to a HTML heading by adding 1 to the level, e.g.
 The ==<h1>=={=html} tag is rendered for the zettel title.
 
 This syntax is often used in a similar way in wiki implementation.
-However, trailing equal signs are //not//{-} removed, they are part of the heading text.
+However, trailing equal signs are __not__ removed, they are part of the heading text.
 
 If you use command line tools, you can easily create a draft table of contents with the command:
 

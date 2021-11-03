@@ -3,7 +3,7 @@ title: Zettelstore boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211004174424
+modified: 20211103163225
 
 A Zettelstore must store its zettel somehow and somewhere.
 In most cases you want to store your zettel as files in a directory.
@@ -13,7 +13,7 @@ An example are the [[predefined zettel|00001005090000]] that come with a Zettels
 They are stored within the software itself.
 In another situation you may want to store your zettel volatile, e.g. if you want to provide a sandbox for experimenting.
 
-To cope with these (and more) situations, you configure Zettelstore to use one or more //boxes//{-}.
+To cope with these (and more) situations, you configure Zettelstore to use one or more __boxes__.
 This is done via the ''box-uri-X'' keys of the [[startup configuration|00001004010000#box-uri-X]] (X is a number).
 Boxes are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]], somehow similar to web addresses.
 

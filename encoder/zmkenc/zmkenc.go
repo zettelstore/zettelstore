@@ -402,9 +402,9 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatEmph:      []byte("//"),
+	ast.FormatEmph:      []byte("__"),
 	ast.FormatStrong:    []byte("**"),
-	ast.FormatInsert:    []byte("__"),
+	ast.FormatInsert:    []byte(">>"),
 	ast.FormatDelete:    []byte("~~"),
 	ast.FormatSuper:     []byte("^^"),
 	ast.FormatSub:       []byte(",,"),
