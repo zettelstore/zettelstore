@@ -890,10 +890,10 @@ var alignString = map[ast.Alignment]string{
 }
 
 var mapFormatKind = map[ast.FormatKind]rune{
-	ast.FormatItalic:    '/',
-	ast.FormatBold:      '*',
-	ast.FormatUnder:     '_',
-	ast.FormatStrike:    '~',
+	ast.FormatEmph:      '/',
+	ast.FormatStrong:    '*',
+	ast.FormatInsert:    '_',
+	ast.FormatDelete:    '~',
 	ast.FormatMonospace: '\'',
 	ast.FormatSuper:     '^',
 	ast.FormatSub:       ',',

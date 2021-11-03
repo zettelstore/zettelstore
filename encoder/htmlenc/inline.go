@@ -159,20 +159,12 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	var code string
 	attrs := fn.Attrs.Clone()
 	switch fn.Kind {
-	case ast.FormatItalic:
-		code = "i"
 	case ast.FormatEmph:
 		code = "em"
-	case ast.FormatBold:
-		code = "b"
 	case ast.FormatStrong:
 		code = "strong"
-	case ast.FormatUnder:
-		code = "u" // TODO: ändern in <span class="XXX">
 	case ast.FormatInsert:
 		code = "ins"
-	case ast.FormatStrike:
-		code = "s"
 	case ast.FormatDelete:
 		code = "del"
 	case ast.FormatSuper:
@@ -187,8 +179,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		v.writeSpan(fn.Inlines, processSpanAttributes(attrs))
 		return
 	case ast.FormatMonospace:
-		code = "span"
-		attrs = attrs.AddClass("zs-monospace")
+		code, attrs = "span", attrs.AddClass("zs-monospace")
 	case ast.FormatQuote:
 		v.visitQuotes(fn)
 		return

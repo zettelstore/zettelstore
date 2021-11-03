@@ -1,8 +1,9 @@
 id: 00001007040100
 title: Zettelmarkup: Text Formatting
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211103145716
 
 Text formatting is the way to make your text visually different.
 Every text formatting element begins with two same characters.
@@ -13,18 +14,14 @@ Text formatting can be nested, up to a reasonable limit.
 
 The following characters begin a text formatting:
 
-* The slash character (""''/''"", ''U+002F'') emphasizes its text. Often, such text is rendered in italics. If the default attribute is specified, the emphasized text is not just rendered as such, but also internally marked as emphasized.
+* The slash character (""''/''"", ''U+002F'') emphasizes its text.
 ** Example: ``abc //def// ghi`` is rendered in HTML as: ::abc //def// ghi::{=example}.
-** Example: ``abc //def//{-} ghi`` is rendered in HTML as: ::abc //def//{-} ghi::{=example}.
-* The asterisk character (""''*''"", ''U+002A'') strongly emphasized its enclosed text. The text is often rendered in bold. Again, the default attribute will force a explicit semantic meaning of strong emphasizing.
+* The asterisk character (""''*''"", ''U+002A'') strongly emphasized its enclosed text.
 ** Example: ``abc **def** ghi`` is rendered in HTML as: ::abc **def** ghi::{=example}.
-** Example: ``abc **def**{-} ghi`` is rendered in HTML as: ::abc **def**{-} ghi::{=example}.
-* The low line character (""''_''"", ''U+005F'') produces underlined text. If the default attribute was specified, it is semantically rendered as inserted text.
+* The low line character (""''_''"", ''U+005F'') marks text as inserted.
 ** Example: ``abc __def__ ghi`` is rendered in HTML as: ::abc __def__ ghi::{=example}.
-** Example: ``abc __def__{-} ghi`` is rendered in HTML as: ::abc __def__{-} ghi::{=example}.
-* Similar, the tilde character (""''~''"", ''U+007E'') produces text that is strike-through. If the default attribute was specified, it is semantically rendered as deleted text.
+* Similar, the tilde character (""''~''"", ''U+007E'') marks deleted text.
 ** Example: ``abc ~~def~~ ghi`` is rendered in HTML as: ::abc ~~def~~ ghi::{=example}.
-** Example: ``abc ~~def~~{-} ghi`` is rendered in HTML as: ::abc ~~def~~{-} ghi::{=example}.
 * The apostrophe character (""''\'''"", ''U+0027'') renders text in mono-space / fixed font width.
 ** Example: ``abc ''def'' ghi`` is rendered in HTML as: ::abc ''def'' ghi::{=example}.
 * The circumflex accent character (""''^''"", ''U+005E'') allows to enter superscripted text.

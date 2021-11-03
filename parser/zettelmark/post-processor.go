@@ -63,7 +63,6 @@ func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	case *ast.FootnoteNode:
 		return pp
 	case *ast.FormatNode:
-		pp.visitFormat(n)
 		return pp
 	}
 	return nil
@@ -216,22 +215,6 @@ func initialText(ins []ast.InlineNode) *ast.TextNode {
 		return tn
 	}
 	return nil
-}
-
-var mapSemantic = map[ast.FormatKind]ast.FormatKind{
-	ast.FormatItalic: ast.FormatEmph,
-	ast.FormatBold:   ast.FormatStrong,
-	ast.FormatUnder:  ast.FormatInsert,
-	ast.FormatStrike: ast.FormatDelete,
-}
-
-func (*postProcessor) visitFormat(fn *ast.FormatNode) {
-	if fn.Attrs.HasDefault() {
-		if newKind, ok := mapSemantic[fn.Kind]; ok {
-			fn.Attrs.RemoveDefault()
-			fn.Kind = newKind
-		}
-	}
 }
 
 func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {

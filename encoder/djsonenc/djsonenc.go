@@ -386,14 +386,10 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind]string{
-	ast.FormatItalic:    "Italic",
 	ast.FormatEmph:      "Emph",
-	ast.FormatBold:      "Bold",
 	ast.FormatStrong:    "Strong",
 	ast.FormatMonospace: "Mono",
-	ast.FormatStrike:    "Strikethrough",
 	ast.FormatDelete:    "Delete",
-	ast.FormatUnder:     "Underline",
 	ast.FormatInsert:    "Insert",
 	ast.FormatSuper:     "Super",
 	ast.FormatSub:       "Sub",

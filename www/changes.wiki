@@ -9,6 +9,11 @@
      Permissions-Policy, Referrer-Policy, X-Content-Type-Options,
      X-Frame-Options). Header values are currently some constant values.
      (possibly breaking: api, webui)
+  *  Remove visual Zettelmarkup (italic, bold, underline, striketrough).
+     Semantic Zettelmarkup (emphasize, strong, insert, delete) is still allowed
+     and replaces the visual elements syntactically. The visual appearance
+     should not change (depends on your changes / additions to CSS zettel).
+     (possibly breaking: Zettelmarkup).
   *  Add API endpoint <tt>POST /v</tt> to retrieve HTMl and text encoded
      strings from given ZettelMarkup encoded values. This will be used to
      render a HTML page from a given zettel: in many cases the title of

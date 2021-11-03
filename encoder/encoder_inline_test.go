@@ -34,19 +34,8 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Italic formatting",
-		zmk:   "//italic//",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Italic","i":[{"t":"Text","s":"italic"}]}]`,
-			encoderHTML:   "<i>italic</i>",
-			encoderNative: `Italic [Text "italic"]`,
-			encoderText:   "italic",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Emphasized formatting",
-		zmk:   "//emph//{-}",
+		zmk:   "//emph//",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Emph","i":[{"t":"Text","s":"emph"}]}]`,
 			encoderHTML:   "<em>emph</em>",
@@ -56,19 +45,8 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Bold formatting",
-		zmk:   "**bold**",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Bold","i":[{"t":"Text","s":"bold"}]}]`,
-			encoderHTML:   "<b>bold</b>",
-			encoderNative: `Bold [Text "bold"]`,
-			encoderText:   "bold",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Strong formatting",
-		zmk:   "**strong**{-}",
+		zmk:   "**strong**",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Strong","i":[{"t":"Text","s":"strong"}]}]`,
 			encoderHTML:   "<strong>strong</strong>",
@@ -78,19 +56,8 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Underline formatting",
-		zmk:   "__underline__",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Underline","i":[{"t":"Text","s":"underline"}]}]`,
-			encoderHTML:   "<u>underline</u>",
-			encoderNative: `Underline [Text "underline"]`,
-			encoderText:   "underline",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Insert formatting",
-		zmk:   "__insert__{-}",
+		zmk:   "__insert__",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Insert","i":[{"t":"Text","s":"insert"}]}]`,
 			encoderHTML:   "<ins>insert</ins>",
@@ -100,19 +67,8 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Strike formatting",
-		zmk:   "~~strike~~",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Strikethrough","i":[{"t":"Text","s":"strike"}]}]`,
-			encoderHTML:   "<s>strike</s>",
-			encoderNative: `Strikethrough [Text "strike"]`,
-			encoderText:   "strike",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Delete formatting",
-		zmk:   "~~delete~~{-}",
+		zmk:   "~~delete~~",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"delete"}]}]`,
 			encoderHTML:   "<del>delete</del>",
@@ -123,7 +79,7 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Update formatting",
-		zmk:   "~~old~~{-}__new__{-}",
+		zmk:   "~~old~~__new__",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"Delete","i":[{"t":"Text","s":"old"}]},{"t":"Insert","i":[{"t":"Text","s":"new"}]}]`,
 			encoderHTML:   "<del>old</del><ins>new</ins>",

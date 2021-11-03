@@ -202,13 +202,9 @@ type FormatKind uint8
 // Constants for FormatCode
 const (
 	_               FormatKind = iota
-	FormatItalic               // Italic text.
-	FormatEmph                 // Semantically emphasized text.
-	FormatBold                 // Bold text.
-	FormatStrong               // Semantically strongly emphasized text.
-	FormatUnder                // Underlined text.
+	FormatEmph                 // Emphasized text.
+	FormatStrong               // Strongly emphasized text.
 	FormatInsert               // Inserted text.
-	FormatStrike               // Text that is no longer relevant or no longer accurate.
 	FormatDelete               // Deleted text.
 	FormatSuper                // Superscripted text.
 	FormatSub                  // SubscriptedText.

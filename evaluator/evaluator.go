@@ -315,7 +315,7 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 		Inlines: text,
 	}
 	fn = &ast.FormatNode{
-		Kind:    ast.FormatBold,
+		Kind:    ast.FormatStrong,
 		Inlines: ast.CreateInlineListNode(fn),
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")

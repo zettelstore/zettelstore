@@ -407,10 +407,10 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 }
 
 var mapRuneFormat = map[rune]ast.FormatKind{
-	'/':  ast.FormatItalic,
-	'*':  ast.FormatBold,
-	'_':  ast.FormatUnder,
-	'~':  ast.FormatStrike,
+	'/':  ast.FormatEmph,
+	'*':  ast.FormatStrong,
+	'_':  ast.FormatInsert,
+	'~':  ast.FormatDelete,
 	'\'': ast.FormatMonospace,
 	'^':  ast.FormatSuper,
 	',':  ast.FormatSub,

@@ -481,14 +481,10 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatItalic:    []byte("Italic"),
 	ast.FormatEmph:      []byte("Emph"),
-	ast.FormatBold:      []byte("Bold"),
 	ast.FormatStrong:    []byte("Strong"),
-	ast.FormatUnder:     []byte("Underline"),
 	ast.FormatInsert:    []byte("Insert"),
 	ast.FormatMonospace: []byte("Mono"),
-	ast.FormatStrike:    []byte("Strikethrough"),
 	ast.FormatDelete:    []byte("Delete"),
 	ast.FormatSuper:     []byte("Super"),
 	ast.FormatSub:       []byte("Sub"),

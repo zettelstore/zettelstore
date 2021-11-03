@@ -402,13 +402,9 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatItalic:    []byte("//"),
 	ast.FormatEmph:      []byte("//"),
-	ast.FormatBold:      []byte("**"),
 	ast.FormatStrong:    []byte("**"),
-	ast.FormatUnder:     []byte("__"),
 	ast.FormatInsert:    []byte("__"),
-	ast.FormatStrike:    []byte("~~"),
 	ast.FormatDelete:    []byte("~~"),
 	ast.FormatSuper:     []byte("^^"),
 	ast.FormatSub:       []byte(",,"),
@@ -424,17 +420,10 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	if !ok {
 		panic(fmt.Sprintf("Unknown format kind %d", fn.Kind))
 	}
-	attrs := fn.Attrs
-	switch fn.Kind {
-	case ast.FormatEmph, ast.FormatStrong, ast.FormatInsert, ast.FormatDelete:
-		attrs = attrs.Clone()
-		attrs.Set("-", "")
-	}
-
 	v.b.Write(kind)
 	ast.Walk(v, fn.Inlines)
 	v.b.Write(kind)
-	v.visitAttributes(attrs)
+	v.visitAttributes(fn.Attrs)
 }
 
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
