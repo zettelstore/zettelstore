@@ -49,7 +49,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   "//emphd//",
 		expect: expectMap{
 			encoderDJSON:  `[{"t":"EmphD","i":[{"t":"Text","s":"emphd"}]}]`,
-			encoderHTML:   `<em class="deprecated">emphd</em>`,
+			encoderHTML:   `<em class="zs-deprecated">emphd</em>`,
 			encoderNative: `EmphD [Text "emphd"]`,
 			encoderText:   "emphd",
 			encoderZmk:    "__emphd__",
