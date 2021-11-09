@@ -79,7 +79,7 @@ func (rt *httpRouter) addRoute(key byte, method server.Method, handler http.Hand
 	}
 	mh[method] = handler
 	if method == server.MethodGet {
-		if handler := mh[server.MethodHead]; handler == nil {
+		if prevHandler := mh[server.MethodHead]; prevHandler == nil {
 			mh[server.MethodHead] = handler
 		}
 	}
