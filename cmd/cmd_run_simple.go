@@ -27,7 +27,7 @@ func flgSimpleRun(fs *flag.FlagSet) {
 func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
 	kern := kernel.Main
 	listenAddr := kern.GetConfig(kernel.WebService, kernel.WebListenAddress).(string)
-	exitCode, err := doRun(false)
+	exitCode, err := doRun()
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 		kern.Log()
 		kern.Log("--------------------------")

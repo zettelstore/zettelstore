@@ -115,7 +115,7 @@ func (ws *webService) Start(kern *myKernel) error {
 		kern.doLog("Unable to create Web Server:", err)
 		return err
 	}
-	if kern.debug {
+	if kern.core.GetConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
 	if err := srvw.Run(); err != nil {

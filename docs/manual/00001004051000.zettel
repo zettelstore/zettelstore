@@ -3,7 +3,7 @@ title: The ''run'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210712234419
+modified: 20211109172046
 
 === ``zettelstore run``
 This starts the web service.
@@ -43,6 +43,6 @@ zettelstore run [-a PORT] [-c CONFIGFILE] [-d DIR] [-debug] [-p PORT] [-r] [-v]
 
   This allows to publish your content without any risks of unauthorized changes.
 ; [!v]''-v''
-: Be more verbose in writing logs.
+: Be more verbose when writing logs.
 
 Command line options take precedence over [[configuration file|00001004010000]] options.

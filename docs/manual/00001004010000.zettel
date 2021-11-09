@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211103163804
+modified: 20211109172143
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -31,6 +31,13 @@ The following keys are supported:
 
   If no ''box-uri-1'' key is given, the overall effect will be the same as if only ''box-uri-1'' was specified with the value ''dir://.zettel''.
   In this case, even a key ''box-uri-2'' will be ignored.
+; [!debug-mode]''debug-mode''
+: Allows to debug the Zettelstore software (mostly used by the developers).
+  Disables any timeout values of the internal web server and does not send some security-related data.
+
+  Do not enable it for a production server.
+
+  Default: ''false''
 ; [!default-dir-box-type]''default-dir-box-type''
 : Specifies the default value for the (sub-) type of [[directory boxes|00001004011400#type]].
   Zettel are typically stored in such boxes.
@@ -80,6 +87,6 @@ The following keys are supported:
   Default: ''"/"''.
 
   This allows to use a forwarding proxy [[server|00001010090100]] in front of the Zettelstore.
-; ''verbose''
-: Be more verbose inf logging data.
+; [!verbose-mode]''verbose-mode''
+: Be more verbose when logging data.
   Default: false

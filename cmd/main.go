@@ -117,6 +117,8 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			}
 			deleteConfiguredBoxes(cfg)
 			cfg.Set(keyBoxOneURI, val)
+		case "debug":
+			cfg.Set(keyDebug, flg.Value.String())
 		case "r":
 			cfg.Set(keyReadOnly, flg.Value.String())
 		case "v":
@@ -145,6 +147,7 @@ func deleteConfiguredBoxes(cfg *meta.Meta) {
 
 const (
 	keyAdminPort         = "admin-port"
+	keyDebug             = "debug-mode"
 	keyDefaultDirBoxType = "default-dir-box-type"
 	keyInsecureCookie    = "insecure-cookie"
 	keyListenAddr        = "listen-addr"
@@ -155,11 +158,12 @@ const (
 	keyTokenLifetimeHTML = "token-lifetime-html"
 	keyTokenLifetimeAPI  = "token-lifetime-api"
 	keyURLPrefix         = "url-prefix"
-	keyVerbose           = "verbose"
+	keyVerbose           = "verbose-mode"
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
-	ok := setConfigValue(true, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
+	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, cfg.GetBool(keyDebug))
+	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
 		ok = setConfigValue(ok, kernel.CoreService, kernel.CorePort, val)
 	}

@@ -30,9 +30,6 @@ type Kernel interface {
 	// WaitForShutdown blocks the call until Shutdown is called.
 	WaitForShutdown()
 
-	// SetDebug to enable/disable debug mode
-	SetDebug(enable bool) bool
-
 	// Shutdown the service. Waits for all concurrent activities to stop.
 	Shutdown(silent bool)
 
@@ -94,6 +91,7 @@ const (
 
 // Constants for core service system keys.
 const (
+	CoreDebug     = "debug"
 	CoreGoArch    = "go-arch"
 	CoreGoOS      = "go-os"
 	CoreGoVersion = "go-version"

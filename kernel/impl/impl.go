@@ -32,7 +32,6 @@ type myKernel struct {
 	wg        sync.WaitGroup
 	mx        sync.RWMutex
 	interrupt chan os.Signal
-	debug     bool
 
 	core coreService
 	cfg  configService
@@ -124,6 +123,11 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetConfig(kernel.CoreGoArch),
 		))
 		kern.doLog("Licensed under the latest version of the EUPL (European Union Public License)")
+		if kern.core.GetConfig(kernel.CoreDebug).(bool) {
+			kern.doLog("-------------------------------------------------")
+			kern.doLog("WARNING: DEBUG MODE, DO NO USE THIS IN PRODUCTION")
+			kern.doLog("-------------------------------------------------")
+		}
 		if kern.auth.GetConfig(kernel.AuthReadonly).(bool) {
 			kern.doLog("Read-only mode")
 		}
@@ -143,14 +147,6 @@ func (kern *myKernel) shutdown() {
 
 func (kern *myKernel) WaitForShutdown() {
 	kern.wg.Wait()
-}
-
-func (kern *myKernel) SetDebug(enable bool) bool {
-	kern.mx.Lock()
-	prevDebug := kern.debug
-	kern.debug = enable
-	kern.mx.Unlock()
-	return prevDebug
 }
 
 // --- Shutdown operation ----------------------------------------------------

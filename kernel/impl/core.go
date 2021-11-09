@@ -41,6 +41,7 @@ type recoverInfo struct {
 func (cs *coreService) Initialize() {
 	cs.mapRecover = make(map[string]recoverInfo)
 	cs.descr = descriptionMap{
+		kernel.CoreDebug:     {"Debug mode", parseBool, false},
 		kernel.CoreGoArch:    {"Go processor architecture", nil, false},
 		kernel.CoreGoOS:      {"Go Operating System", nil, false},
 		kernel.CoreGoVersion: {"Go Version", nil, false},
@@ -70,6 +71,7 @@ func (cs *coreService) Initialize() {
 		},
 	}
 	cs.next = interfaceMap{
+		kernel.CoreDebug:     false,
 		kernel.CoreGoArch:    runtime.GOARCH,
 		kernel.CoreGoOS:      runtime.GOOS,
 		kernel.CoreGoVersion: runtime.Version(),

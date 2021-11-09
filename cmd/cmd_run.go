@@ -36,21 +36,14 @@ func flgRun(fs *flag.FlagSet) {
 	fs.Bool("debug", false, "debug mode")
 }
 
-func withDebug(fs *flag.FlagSet) bool {
-	dbg := fs.Lookup("debug")
-	return dbg != nil && dbg.Value.String() == "true"
-}
-
 func runFunc(fs *flag.FlagSet, _ *meta.Meta) (int, error) {
-	exitCode, err := doRun(withDebug(fs))
+	exitCode, err := doRun()
 	kernel.Main.WaitForShutdown()
 	return exitCode, err
 }
 
-func doRun(debug bool) (int, error) {
-	kern := kernel.Main
-	kern.SetDebug(debug)
-	if err := kern.StartService(kernel.WebService); err != nil {
+func doRun() (int, error) {
+	if err := kernel.Main.StartService(kernel.WebService); err != nil {
 		return 1, err
 	}
 	return 0, nil
