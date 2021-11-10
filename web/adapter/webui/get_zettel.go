@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -49,9 +50,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-			// EmbedImage: false,
-			GetImageRef: func(zid id.Zid) *ast.Reference {
-				return wui.createImageReference(zid)
+			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.MaterialNode {
+				return wui.createImageMaterial(zettel.Meta.Zid)
 			},
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)

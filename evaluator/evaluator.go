@@ -30,11 +30,10 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	GetTagRef    func(string) *ast.Reference
-	GetHostedRef func(string) *ast.Reference
-	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
-	EmbedImage   bool
-	GetImageRef  func(zid id.Zid) *ast.Reference
+	GetTagRef        func(string) *ast.Reference
+	GetHostedRef     func(string) *ast.Reference
+	GetFoundRef      func(zid id.Zid, fragment string) *ast.Reference
+	GetImageMaterial func(zettel domain.Zettel, syntax string) ast.MaterialNode
 }
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
@@ -278,37 +277,23 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 }
 
 func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
-	zid := id.EmojiZid
-	if gir := e.env.GetImageRef; gir != nil {
-		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zid)}
+	errorZid := id.EmojiZid
+	if gim := e.env.GetImageMaterial; gim != nil {
+		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), errorZid)
+		if err != nil {
+			panic(err)
+		}
+		en.Material = gim(zettel, e.getSyntax(zettel.Meta))
 		return en
 	}
-	if !e.env.EmbedImage {
-		en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(zid.String())}
-		return en
-	}
-	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
-	if err == nil {
-		return e.doEmbedImage(en, zettel)
-	}
-	panic(err)
-}
-
-func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
-	if gir := e.env.GetImageRef; gir != nil {
-		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zettel.Meta.Zid)}
-		return en
-	}
-	if e.env.EmbedImage {
-		return e.doEmbedImage(en, zettel)
-	}
+	en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(errorZid.String())}
 	return en
 }
 
-func (e *evaluator) doEmbedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
-	en.Material = &ast.BLOBMaterialNode{
-		Blob:   zettel.Content.AsBytes(),
-		Syntax: e.getSyntax(zettel.Meta),
+func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
+	if gim := e.env.GetImageMaterial; gim != nil {
+		en.Material = gim(zettel, e.getSyntax(zettel.Meta))
+		return en
 	}
 	return en
 }

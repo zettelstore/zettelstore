@@ -23,9 +23,9 @@ func redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {
 	http.Redirect(w, r, ub.String(), http.StatusFound)
 }
 
-func (wui *WebUI) createImageReference(zid id.Zid) *ast.Reference {
+func (wui *WebUI) createImageMaterial(zid id.Zid) ast.MaterialNode {
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	ref := ast.ParseReference(ub.String())
 	ref.State = ast.RefStateFound
-	return ref
+	return &ast.ReferenceMaterialNode{Ref: ref}
 }

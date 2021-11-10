@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
@@ -81,9 +82,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-			// EmbedImage: false,
-			GetImageRef: func(zid id.Zid) *ast.Reference {
-				return wui.createImageReference(zid)
+			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.MaterialNode {
+				return wui.createImageMaterial(zettel.Meta.Zid)
 			},
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)

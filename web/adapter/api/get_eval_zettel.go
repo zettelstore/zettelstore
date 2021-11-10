@@ -16,6 +16,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
@@ -36,12 +37,14 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		q := r.URL.Query()
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
-		var embedImage bool
+		var env evaluator.Environment
 		if enc == api.EncoderHTML {
-			embedImage = true
-		}
-		env := evaluator.Environment{
-			EmbedImage: embedImage,
+			env.GetImageMaterial = func(zettel domain.Zettel, syntax string) ast.MaterialNode {
+				return &ast.BLOBMaterialNode{
+					Blob:   zettel.Content.AsBytes(),
+					Syntax: syntax,
+				}
+			}
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
 		if err != nil {
