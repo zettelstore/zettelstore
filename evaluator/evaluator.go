@@ -30,10 +30,11 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	EmbedImage   bool
 	GetTagRef    func(string) *ast.Reference
 	GetHostedRef func(string) *ast.Reference
 	GetFoundRef  func(zid id.Zid, fragment string) *ast.Reference
+	EmbedImage   bool
+	GetImageRef  func(zid id.Zid) *ast.Reference
 }
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
@@ -227,11 +228,9 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 		return e.createErrorImage(en)
 	}
 
-	syntax := e.getSyntax(zettel.Meta)
-	if parser.IsImageFormat(syntax) {
-		return e.embedImage(en, zettel, syntax)
-	}
-	if !parser.IsTextParser(syntax) {
+	if syntax := e.getSyntax(zettel.Meta); parser.IsImageFormat(syntax) {
+		return e.embedImage(en, zettel)
+	} else if !parser.IsTextParser(syntax) {
 		// Not embeddable.
 		e.embedCount++
 		return createErrorText(en, "Not", "embeddable (syntax="+syntax+"):")
@@ -246,7 +245,7 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	if !ok {
 		ec := e.embedCount
 		e.costMap[zid] = embedCost{zn: e.marker, ec: ec}
-		zn = e.evaluateEmbeddedZettel(zettel, syntax)
+		zn = e.evaluateEmbeddedZettel(zettel)
 		e.costMap[zid] = embedCost{zn: zn, ec: e.embedCount - ec}
 		e.embedCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
 	}
@@ -280,28 +279,36 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 
 func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
 	zid := id.EmojiZid
+	if gir := e.env.GetImageRef; gir != nil {
+		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zid)}
+		return en
+	}
 	if !e.env.EmbedImage {
 		en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(zid.String())}
 		return en
 	}
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err == nil {
-		return doEmbedImage(en, zettel, e.getSyntax(zettel.Meta))
+		return e.doEmbedImage(en, zettel)
 	}
 	panic(err)
 }
 
-func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
+	if gir := e.env.GetImageRef; gir != nil {
+		en.Material = &ast.ReferenceMaterialNode{Ref: gir(zettel.Meta.Zid)}
+		return en
+	}
 	if e.env.EmbedImage {
-		return doEmbedImage(en, zettel, syntax)
+		return e.doEmbedImage(en, zettel)
 	}
 	return en
 }
 
-func doEmbedImage(en *ast.EmbedNode, zettel domain.Zettel, syntax string) *ast.EmbedNode {
+func (e *evaluator) doEmbedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
 	en.Material = &ast.BLOBMaterialNode{
 		Blob:   zettel.Content.AsBytes(),
-		Syntax: syntax,
+		Syntax: e.getSyntax(zettel.Meta),
 	}
 	return en
 }
@@ -332,8 +339,8 @@ func linkNodeToEmbeddedReference(en *ast.EmbedNode) *ast.LinkNode {
 	return ln
 }
 
-func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel, syntax string) *ast.ZettelNode {
-	zn := parser.ParseZettel(zettel, syntax, e.rtConfig)
+func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
+	zn := parser.ParseZettel(zettel, e.getSyntax(zettel.Meta), e.rtConfig)
 	ast.Walk(e, zn.Ast)
 	return zn
 }

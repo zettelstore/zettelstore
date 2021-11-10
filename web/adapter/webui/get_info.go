@@ -72,7 +72,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
 		envEval := evaluator.Environment{
-			EmbedImage: true,
 			GetTagRef: func(s string) *ast.Reference {
 				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)
 			},
@@ -81,6 +80,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 			},
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
+			},
+			// EmbedImage: false,
+			GetImageRef: func(zid id.Zid) *ast.Reference {
+				return wui.createImageReference(zid)
 			},
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)

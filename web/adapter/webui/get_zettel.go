@@ -40,7 +40,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		q := r.URL.Query()
 		env := evaluator.Environment{
-			EmbedImage: true,
 			GetTagRef: func(s string) *ast.Reference {
 				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)
 			},
@@ -49,6 +48,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			},
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
+			},
+			// EmbedImage: false,
+			GetImageRef: func(zid id.Zid) *ast.Reference {
+				return wui.createImageReference(zid)
 			},
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
