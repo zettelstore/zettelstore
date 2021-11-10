@@ -131,12 +131,12 @@ func getVersion() string {
 
 func findExec(cmd string) string {
 	if path, err := executeCommand(nil, "which", cmd); err == nil && path != "" {
-		return path
+		return strings.TrimSpace(path)
 	}
 	return ""
 }
 
-func cmdCheck() error {
+func cmdCheck(forRelease bool) error {
 	if err := checkGoTest("./..."); err != nil {
 		return err
 	}
@@ -146,10 +146,13 @@ func cmdCheck() error {
 	if err := checkGoLint(); err != nil {
 		return err
 	}
-	if err := checkShadow(); err != nil {
+	if err := checkShadow(forRelease); err != nil {
 		return err
 	}
-	if err := checkStaticcheck(); err != nil {
+	if err := checkStaticcheck(forRelease); err != nil {
+		return err
+	}
+	if err := checkUnparam(forRelease); err != nil {
 		return err
 	}
 	return checkFossilExtra()
@@ -190,12 +193,12 @@ func checkGoLint() error {
 	return err
 }
 
-func checkShadow() error {
-	path := findExec("shadow")
+func checkShadow(forRelease bool) error {
+	path, err := findExecStrict("shadow", forRelease)
 	if path == "" {
-		return nil
+		return err
 	}
-	out, err := executeCommand(nil, strings.TrimSpace(path), "-strict", "./...")
+	out, err := executeCommand(nil, path, "-strict", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some shadowed variables found")
 		if len(out) > 0 {
@@ -204,8 +207,13 @@ func checkShadow() error {
 	}
 	return err
 }
-func checkStaticcheck() error {
-	out, err := executeCommand(nil, "staticcheck", "./...")
+
+func checkStaticcheck(forRelease bool) error {
+	path, err := findExecStrict("staticcheck", forRelease)
+	if path == "" {
+		return err
+	}
+	out, err := executeCommand(nil, path, "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some staticcheck problems found")
 		if len(out) > 0 {
@@ -213,6 +221,40 @@ func checkStaticcheck() error {
 		}
 	}
 	return err
+}
+
+func checkUnparam(forRelease bool) error {
+	path, err := findExecStrict("unparam", forRelease)
+	if path == "" {
+		return err
+	}
+	out, err := executeCommand(nil, path, "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some unparam problems found")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+	}
+	if forRelease {
+		if out2, err2 := executeCommand(nil, path, "-exported", "-tests", "./..."); err2 != nil {
+			fmt.Fprintln(os.Stderr, "Some optional unparam problems found")
+			if len(out2) > 0 {
+				fmt.Fprintln(os.Stderr, out2)
+			}
+			if err == nil {
+				return err2
+			}
+		}
+	}
+	return err
+}
+
+func findExecStrict(cmd string, forRelease bool) (string, error) {
+	path := findExec(cmd)
+	if path != "" || !forRelease {
+		return path, nil
+	}
+	return "", errors.New("Command '" + cmd + "' not installed, but required for release")
 }
 
 func checkFossilExtra() error {
@@ -390,7 +432,7 @@ func getReleaseVersionData() (string, string) {
 }
 
 func cmdRelease() error {
-	if err := cmdCheck(); err != nil {
+	if err := cmdCheck(true); err != nil {
 		return err
 	}
 	base, fossil := getReleaseVersionData()
@@ -499,17 +541,18 @@ Options:
   -v       Verbose output.
 
 Commands:
-  build    Build the software for local computer.
-  check    Check current working state: execute tests, static analysis tools,
-           extra files, ...
-           Is automatically done when releasing the software.
-  clean    Remove all build and release directories.
-  help     Outputs this text.
-  manual   Create a ZIP file with all manual zettel
-  release  Create the software for various platforms and put them in
-           appropriate named ZIP files.
-  testapi  Starts a Zettelstore and execute API tests.
-  version  Print the current version of the software.
+  build     Build the software for local computer.
+  check     Check current working state: execute tests,
+            static analysis tools, extra files, ...
+            Is automatically done when releasing the software.
+  clean     Remove all build and release directories.
+  help      Outputs this text.
+  manual    Create a ZIP file with all manual zettel
+  relcheck  Check current working state for release.
+  release   Create the software for various platforms and put them in
+            appropriate named ZIP files.
+  testapi   Starts a Zettelstore and execute API tests.
+  version   Print the current version of the software.
 
 All commands can be abbreviated as long as they remain unique.`)
 }
@@ -538,7 +581,9 @@ func main() {
 		case "v", "ve", "ver", "vers", "versi", "versio", "version":
 			fmt.Print(getVersion())
 		case "ch", "che", "chec", "check":
-			err = cmdCheck()
+			err = cmdCheck(false)
+		case "relc", "relch", "relche", "relchec", "relcheck":
+			err = cmdCheck(true)
 		case "t", "te", "tes", "test", "testa", "testap", "testapi":
 			cmdTestAPI()
 		case "h", "he", "hel", "help":

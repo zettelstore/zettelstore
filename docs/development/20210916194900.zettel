@@ -2,16 +2,12 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20211004141620
+modified: 20211110193448
 
-# Check for unused parameters and execute some more static checks:
-#* ``unparam ./...``
-#* ``unparam -exported -tests ./...``
-#* ``staticcheck ./...``
 # Clean up your Go workspace:
 #* ``go run tools/build.go clean`` (alternatively: ``make clean``).
 # All internal tests must succeed:
-#* ``go run tools/build.go check`` (alternatively: ``make check``).
+#* ``go run tools/build.go relcheck`` (alternatively: ``make relcheck``).
 # The API tests must succeed on every development platform:
 #* ``go run tools/build.go testapi`` (alternatively: ``make api``).
 # Run [[linkchecker|https://linkchecker.github.io/linkchecker/]] with the manual:
