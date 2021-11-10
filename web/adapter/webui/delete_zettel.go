@@ -93,7 +93,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel)
 			return
 		}
 
-		if err := deleteZettel.Run(r.Context(), zid); err != nil {
+		if err = deleteZettel.Run(r.Context(), zid); err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}

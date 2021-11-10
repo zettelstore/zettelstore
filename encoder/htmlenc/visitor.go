@@ -137,7 +137,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		v.writeTags(tags)
 		ignore[api.KeyAllTags] = true
 		ignore[api.KeyTags] = true
-	} else if tags, ok := m.Get(api.KeyTags); ok {
+	} else if tags, ok = m.Get(api.KeyTags); ok {
 		v.writeTags(tags)
 		ignore[api.KeyTags] = true
 	}

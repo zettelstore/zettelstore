@@ -134,8 +134,8 @@ func (a *myAuth) CheckToken(token []byte, k auth.TokenKind) (auth.TokenData, err
 		return auth.TokenData{}, ErrNoIdent
 	}
 	if zidS, ok := claims.Set["zid"].(string); ok {
-		if zid, err := id.Parse(zidS); err == nil {
-			if kind, ok := claims.Set["_tk"].(float64); ok {
+		if zid, err2 := id.Parse(zidS); err2 == nil {
+			if kind, ok2 := claims.Set["_tk"].(float64); ok2 {
 				if auth.TokenKind(kind) == k {
 					return auth.TokenData{
 						Token:   token,

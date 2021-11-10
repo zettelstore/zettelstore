@@ -41,7 +41,7 @@ func TestSimple(t *testing.T) {
 
 	count := 0
 	for ; count < 1000; count++ {
-		action, _, _ := ar.Dequeue()
+		action, _, _ = ar.Dequeue()
 		if action == arNothing {
 			break
 		}

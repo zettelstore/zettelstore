@@ -37,7 +37,7 @@ func ParseReference(s string) *Reference {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
 	if len(u.Scheme)+len(u.Opaque)+len(u.Host) == 0 && u.User == nil {
-		if _, err := id.Parse(u.Path); err == nil {
+		if _, err = id.Parse(u.Path); err == nil {
 			return &Reference{URL: u, Value: s, State: RefStateZettel}
 		}
 		if u.Path == "" && u.Fragment != "" {

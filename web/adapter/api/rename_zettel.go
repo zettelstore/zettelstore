@@ -34,7 +34,7 @@ func MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		if err := renameZettel.Run(r.Context(), zid, newZid); err != nil {
+		if err = renameZettel.Run(r.Context(), zid, newZid); err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
@@ -45,7 +45,7 @@ func MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc
 func getDestinationZid(r *http.Request) (id.Zid, bool) {
 	if values, ok := r.Header[api.HeaderDestination]; ok {
 		for _, value := range values {
-			if zid, ok := getZidFromURL(value); ok {
+			if zid, ok2 := getZidFromURL(value); ok2 {
 				return zid, true
 			}
 		}

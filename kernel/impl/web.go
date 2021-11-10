@@ -48,7 +48,7 @@ func (ws *webService) Initialize() {
 				if err != nil {
 					return nil
 				}
-				if _, err := net.LookupPort("tcp", port); err != nil {
+				if _, err = net.LookupPort("tcp", port); err != nil {
 					return nil
 				}
 				return net.JoinHostPort(host, port)
@@ -118,7 +118,7 @@ func (ws *webService) Start(kern *myKernel) error {
 	if kern.core.GetConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
-	if err := srvw.Run(); err != nil {
+	if err = srvw.Run(); err != nil {
 		kern.doLog("Unable to start Web Service:", err)
 		return err
 	}

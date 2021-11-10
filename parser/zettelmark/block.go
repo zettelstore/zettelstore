@@ -541,7 +541,7 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
 		lpn.Inlines.Append(pn.Inlines.List...)
 	} else {
-		descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
+		descrPos = len(cp.descrl.Descriptions[defPos].Descriptions) - 1
 		cp.descrl.Descriptions[defPos].Descriptions[descrPos] = append(cp.descrl.Descriptions[defPos].Descriptions[descrPos], pn)
 	}
 	return true

@@ -32,7 +32,7 @@ func MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.Handle
 			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
-		if err := updateZettel.Run(r.Context(), zettel, true); err != nil {
+		if err = updateZettel.Run(r.Context(), zettel, true); err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
@@ -53,7 +53,7 @@ func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc
 			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
-		if err := updateZettel.Run(r.Context(), zettel, true); err != nil {
+		if err = updateZettel.Run(r.Context(), zettel, true); err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}

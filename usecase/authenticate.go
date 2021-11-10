@@ -57,14 +57,14 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 	}
 
 	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
-		ok, err := cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
+		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
 			return nil, err
 		}
 		if ok {
-			token, err := uc.token.GetToken(identMeta, d, k)
-			if err != nil {
-				return nil, err
+			token, err2 := uc.token.GetToken(identMeta, d, k)
+			if err2 != nil {
+				return nil, err2
 			}
 			return token, nil
 		}

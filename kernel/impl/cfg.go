@@ -172,7 +172,7 @@ func (cfg *myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta {
 	cfg.mx.RLock()
 	for k, d := range defaultKeys {
 		if _, ok := result.Get(k); !ok {
-			if val, ok := cfg.data.Get(d); ok && val != "" {
+			if val, ok2 := cfg.data.Get(d); ok2 && val != "" {
 				if result == m {
 					result = m.Clone()
 				}

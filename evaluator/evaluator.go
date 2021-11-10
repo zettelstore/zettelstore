@@ -111,12 +111,12 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedNode:
-			in := e.evalEmbedNode(n)
-			if ln, ok := in.(*ast.InlineListNode); ok {
+			in2 := e.evalEmbedNode(n)
+			if ln, ok := in2.(*ast.InlineListNode); ok {
 				iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
 				i += len(ln.List) - 1
 			} else {
-				iln.List[i] = in
+				iln.List[i] = in2
 			}
 		}
 	}

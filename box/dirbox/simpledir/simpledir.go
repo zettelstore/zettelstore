@@ -87,8 +87,8 @@ func (ss *simpleService) getEntries() (map[id.Zid]*directory.Entry, error) {
 		if len(match) == 0 {
 			continue
 		}
-		zid, err := id.Parse(match[1])
-		if err != nil {
+		zid, err2 := id.Parse(match[1])
+		if err2 != nil {
 			continue
 		}
 		var entry *directory.Entry

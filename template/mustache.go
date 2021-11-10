@@ -337,7 +337,7 @@ func (tmpl *Template) parseSection(section *sectionNode) error {
 		case '#', '^':
 			name := strings.TrimSpace(tag[1:])
 			sn := &sectionNode{name, tag[0] == '^', tmpl.curline, []node{}}
-			err := tmpl.parseSection(sn)
+			err = tmpl.parseSection(sn)
 			if err != nil {
 				return err
 			}
@@ -409,7 +409,7 @@ func (tmpl *Template) parse() error {
 		case '#', '^':
 			name := strings.TrimSpace(tag[1:])
 			sn := &sectionNode{name, tag[0] == '^', tmpl.curline, []node{}}
-			err := tmpl.parseSection(sn)
+			err = tmpl.parseSection(sn)
 			if err != nil {
 				return err
 			}
@@ -564,7 +564,7 @@ func (tmpl *Template) renderSection(w io.Writer, section *sectionNode, stack []r
 			stack = append(stack, enumeration[0])
 			for _, elem := range enumeration {
 				stack[topStack] = elem
-				if err := tmpl.renderNodes(w, section.nodes, stack); err != nil {
+				if err = tmpl.renderNodes(w, section.nodes, stack); err != nil {
 					return err
 				}
 			}
@@ -614,7 +614,7 @@ func (tmpl *Template) renderNode(w io.Writer, node node, stack []reflect.Value) 
 		if err != nil {
 			return err
 		}
-		if err := partial.renderTemplate(w, stack); err != nil {
+		if err = partial.renderTemplate(w, stack); err != nil {
 			return err
 		}
 	}

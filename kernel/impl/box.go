@@ -80,7 +80,7 @@ func (ps *boxService) Start(kern *myKernel) error {
 		return err
 	}
 	kern.doLog("Start Box Manager:", mgr.Location())
-	if err := mgr.Start(context.Background()); err != nil {
+	if err = mgr.Start(context.Background()); err != nil {
 		kern.doLog("Unable to start box manager:", err)
 	}
 	kern.cfg.setBox(mgr)

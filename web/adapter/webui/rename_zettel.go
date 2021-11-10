@@ -95,7 +95,7 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel)
 			return
 		}
 
-		if err := renameZettel.Run(r.Context(), curZid, newZid); err != nil {
+		if err = renameZettel.Run(r.Context(), curZid, newZid); err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}

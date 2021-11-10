@@ -207,14 +207,14 @@ func TestSpec(t *testing.T) {
 		if enabled == nil {
 			continue
 		}
-		b, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
+		b, err2 := os.ReadFile(path)
+		if err2 != nil {
+			t.Fatal(err2)
 		}
 		var suite specTestSuite
-		err = json.Unmarshal(b, &suite)
-		if err != nil {
-			t.Fatal(err)
+		err2 = json.Unmarshal(b, &suite)
+		if err2 != nil {
+			t.Fatal(err2)
 		}
 		for _, test := range suite.Tests {
 			runTest(t, file, &test)

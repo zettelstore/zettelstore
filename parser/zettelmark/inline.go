@@ -447,7 +447,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 			}
 			fn.Inlines.Append(&ast.TextNode{Text: string(fch)})
 		} else if in := cp.parseInline(); in != nil {
-			if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
+			if _, ok = in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 				return nil, false
 			}
 			fn.Inlines.Append(in)

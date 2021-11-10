@@ -243,12 +243,12 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 	}
 	refs := collect.Order(parser.ParseZettel(menu, "", wui.rtConfig))
 	for _, ref := range refs {
-		zid, err := id.Parse(ref.URL.Path)
-		if err != nil {
+		zid, err2 := id.Parse(ref.URL.Path)
+		if err2 != nil {
 			continue
 		}
-		m, err := wui.box.GetMeta(ctx, zid)
-		if err != nil {
+		m, err2 := wui.box.GetMeta(ctx, zid)
+		if err2 != nil {
 			continue
 		}
 		if !wui.policy.CanRead(user, m) {
@@ -257,10 +257,10 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseMetadata(title)
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		menuTitle, err := encodeInlines(astTitle, api.EncoderHTML, &env)
-		if err != nil {
-			menuTitle, err = encodeInlines(astTitle, api.EncoderText, nil)
-			if err != nil {
+		menuTitle, err2 := encodeInlines(astTitle, api.EncoderHTML, &env)
+		if err2 != nil {
+			menuTitle, err2 = encodeInlines(astTitle, api.EncoderText, nil)
+			if err2 != nil {
 				menuTitle = title
 			}
 		}

@@ -76,7 +76,7 @@ func getInput(args []string) (*meta.Meta, *input.Input, error) {
 	m := meta.NewFromInput(id.New(true), inp)
 
 	if len(args) > 1 {
-		src, err := os.ReadFile(args[1])
+		src, err = os.ReadFile(args[1])
 		if err != nil {
 			return nil, nil, err
 		}

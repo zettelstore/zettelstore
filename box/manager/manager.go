@@ -235,7 +235,7 @@ func (mgr *Manager) Start(ctx context.Context) error {
 			continue
 		}
 		for j := i + 1; j < len(mgr.boxes); j++ {
-			if ssj, ok := mgr.boxes[j].(box.StartStopper); ok {
+			if ssj, ok2 := mgr.boxes[j].(box.StartStopper); ok2 {
 				ssj.Stop(ctx)
 			}
 		}

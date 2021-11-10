@@ -45,8 +45,8 @@ func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
 		return nil, nil, err
 	}
 	for _, ref := range collect.Order(zn) {
-		if zid, err := id.Parse(ref.URL.Path); err == nil {
-			if m, err := uc.port.GetMeta(ctx, zid); err == nil {
+		if collectedZid, err2 := id.Parse(ref.URL.Path); err2 == nil {
+			if m, err3 := uc.port.GetMeta(ctx, collectedZid); err3 == nil {
 				result = append(result, m)
 			}
 		}

@@ -28,7 +28,7 @@ func MakeDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc
 			return
 		}
 
-		if err := deleteZettel.Run(r.Context(), zid); err != nil {
+		if err = deleteZettel.Run(r.Context(), zid); err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}

@@ -64,8 +64,8 @@ func (zp *zipBox) Start(context.Context) error {
 		if len(match) < 1 {
 			continue
 		}
-		zid, err := id.Parse(match[1])
-		if err != nil {
+		zid, err2 := id.Parse(match[1])
+		if err2 != nil {
 			continue
 		}
 		zp.addFile(zid, f.Name, match[3])
@@ -174,8 +174,8 @@ func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 	}
 	defer reader.Close()
 	for zid, entry := range zp.zettel {
-		m, err := readZipMeta(reader, zid, entry)
-		if err != nil {
+		m, err2 := readZipMeta(reader, zid, entry)
+		if err2 != nil {
 			continue
 		}
 		zp.enricher.Enrich(ctx, m, zp.number)

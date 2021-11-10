@@ -146,7 +146,7 @@ func cmdCheck() error {
 	if err := checkGoLint(); err != nil {
 		return err
 	}
-	if err := checkGoVetShadow(); err != nil {
+	if err := checkShadow(); err != nil {
 		return err
 	}
 	if err := checkStaticcheck(); err != nil {
@@ -190,12 +190,12 @@ func checkGoLint() error {
 	return err
 }
 
-func checkGoVetShadow() error {
+func checkShadow() error {
 	path := findExec("shadow")
 	if path == "" {
 		return nil
 	}
-	out, err := executeCommand(nil, "go", "vet", "-vettool", strings.TrimSpace(path), "./...")
+	out, err := executeCommand(nil, strings.TrimSpace(path), "-strict", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some shadowed variables found")
 		if len(out) > 0 {

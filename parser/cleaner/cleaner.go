@@ -101,7 +101,7 @@ func (cv *cleanVisitor) addIdentifier(id string, node ast.Node) string {
 		prefix := id + "-"
 		for count := 1; ; count++ {
 			newID := prefix + strconv.Itoa(count)
-			if n, ok := cv.ids[newID]; !ok || n == node {
+			if n2, ok2 := cv.ids[newID]; !ok2 || n2 == node {
 				cv.ids[newID] = node
 				return newID
 			}

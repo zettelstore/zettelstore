@@ -206,7 +206,7 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 	if err != nil {
 		return
 	}
-	if _, err := mgr.GetMeta(ctx, zid); err != nil {
+	if _, err = mgr.GetMeta(ctx, zid); err != nil {
 		zi.AddDeadRef(zid)
 		return
 	}

@@ -51,13 +51,13 @@ func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
 	cdata := manager.ConnectData{Config: testConfig, Enricher: &noEnrich{}, Notify: nil}
 	for _, entry := range entries {
 		if entry.IsDir() {
-			u, err := url.Parse("dir://" + filepath.Join(root, entry.Name()) + "?type=" + kernel.BoxDirTypeSimple)
-			if err != nil {
-				panic(err)
+			u, err2 := url.Parse("dir://" + filepath.Join(root, entry.Name()) + "?type=" + kernel.BoxDirTypeSimple)
+			if err2 != nil {
+				panic(err2)
 			}
-			box, err := manager.Connect(u, &noAuth{}, &cdata)
-			if err != nil {
-				panic(err)
+			box, err2 := manager.Connect(u, &noAuth{}, &cdata)
+			if err2 != nil {
+				panic(err2)
 			}
 			boxes = append(boxes, box)
 		}
@@ -136,9 +136,9 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		panic(err)
 	}
 	for _, meta := range metaList {
-		zettel, err := p.GetZettel(context.Background(), meta.Zid)
-		if err != nil {
-			panic(err)
+		zettel, err2 := p.GetZettel(context.Background(), meta.Zid)
+		if err2 != nil {
+			panic(err2)
 		}
 		z := parser.ParseZettel(zettel, "", testConfig)
 		for _, enc := range encodings {
@@ -148,7 +148,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 			})
 		}
 	}
-	if err := ss.Stop(context.Background()); err != nil {
+	if err = ss.Stop(context.Background()); err != nil {
 		panic(err)
 	}
 }

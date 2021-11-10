@@ -80,7 +80,7 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) ht
 			return
 		}
 
-		if err := updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
+		if err = updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
