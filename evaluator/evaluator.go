@@ -276,6 +276,13 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	return m.GetDefault(api.KeySyntax, "")
 }
 
+func (e *evaluator) getTitle(m *meta.Meta) string {
+	if cfg := e.rtConfig; cfg != nil {
+		return config.GetTitle(m, cfg)
+	}
+	return m.GetDefault(api.KeyTitle, "")
+}
+
 func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
 	errorZid := id.EmojiZid
 	if gim := e.env.GetImageMaterial; gim != nil {
@@ -284,9 +291,17 @@ func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
 			panic(err)
 		}
 		en.Material = gim(zettel, e.getSyntax(zettel.Meta))
+		if en.Inlines == nil {
+			if title := e.getTitle(zettel.Meta); title != "" {
+				en.Inlines = parser.ParseMetadata(title)
+			}
+		}
 		return en
 	}
 	en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(errorZid.String())}
+	if en.Inlines == nil {
+		en.Inlines = parser.ParseMetadata("Error placeholder")
+	}
 	return en
 }
 
