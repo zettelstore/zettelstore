@@ -241,9 +241,6 @@ func checkUnparam(forRelease bool) error {
 			if len(out2) > 0 {
 				fmt.Fprintln(os.Stderr, out2)
 			}
-			if err == nil {
-				return err2
-			}
 		}
 	}
 	return err
