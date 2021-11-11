@@ -14,7 +14,6 @@ package manager
 import (
 	"context"
 	"io"
-	"log"
 	"net/url"
 	"sort"
 	"sync"
@@ -73,7 +72,7 @@ var registry = map[string]createFunc{}
 // Register the encoder for later retrieval.
 func Register(scheme string, create createFunc) {
 	if _, ok := registry[scheme]; ok {
-		log.Fatalf("Box with scheme %q already registered", scheme)
+		panic(scheme)
 	}
 	registry[scheme] = create
 }

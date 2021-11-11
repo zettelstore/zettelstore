@@ -84,7 +84,7 @@ func (cs *coreService) Initialize() {
 	}
 }
 
-func (cs *coreService) Start(kern *myKernel) error {
+func (cs *coreService) Start(*myKernel) error {
 	cs.started = true
 	return nil
 }

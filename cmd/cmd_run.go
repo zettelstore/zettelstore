@@ -16,7 +16,6 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter/api"
@@ -36,7 +35,7 @@ func flgRun(fs *flag.FlagSet) {
 	fs.Bool("debug", false, "debug mode")
 }
 
-func runFunc(fs *flag.FlagSet, _ *meta.Meta) (int, error) {
+func runFunc(*flag.FlagSet) (int, error) {
 	exitCode, err := doRun()
 	kernel.Main.WaitForShutdown()
 	return exitCode, err

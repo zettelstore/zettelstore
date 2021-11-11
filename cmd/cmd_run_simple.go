@@ -16,7 +16,6 @@ import (
 	"os"
 	"strings"
 
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 )
 
@@ -24,7 +23,7 @@ func flgSimpleRun(fs *flag.FlagSet) {
 	fs.String("d", "", "zettel directory")
 }
 
-func runSimpleFunc(fs *flag.FlagSet, cfg *meta.Meta) (int, error) {
+func runSimpleFunc(*flag.FlagSet) (int, error) {
 	kern := kernel.Main
 	listenAddr := kern.GetConfig(kernel.WebService, kernel.WebListenAddress).(string)
 	exitCode, err := doRun()

@@ -42,14 +42,14 @@ func (ss *simpleService) Start() error {
 	return err
 }
 
-func (ss *simpleService) Stop() error {
+func (*simpleService) Stop() error {
 	return nil
 }
 
 func (ss *simpleService) NumEntries() (int, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	entries, err := ss.getEntries()
+	entries, err := ss.doGetEntries()
 	if err == nil {
 		return len(entries), nil
 	}
@@ -59,7 +59,7 @@ func (ss *simpleService) NumEntries() (int, error) {
 func (ss *simpleService) GetEntries() ([]*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	entrySet, err := ss.getEntries()
+	entrySet, err := ss.doGetEntries()
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,8 @@ func (ss *simpleService) GetEntries() ([]*directory.Entry, error) {
 	}
 	return result, nil
 }
-func (ss *simpleService) getEntries() (map[id.Zid]*directory.Entry, error) {
+
+func (ss *simpleService) doGetEntries() (map[id.Zid]*directory.Entry, error) {
 	dirEntries, err := os.ReadDir(ss.dirPath)
 	if err != nil {
 		return nil, err
@@ -131,9 +132,10 @@ func updateEntry(entry *directory.Entry, path, ext string) {
 func (ss *simpleService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	return ss.getEntry(zid)
+	return ss.doGetEntry(zid)
 }
-func (ss *simpleService) getEntry(zid id.Zid) (*directory.Entry, error) {
+
+func (ss *simpleService) doGetEntry(zid id.Zid) (*directory.Entry, error) {
 	pattern := filepath.Join(ss.dirPath, zid.String()) + "*.*"
 	paths, err := filepath.Glob(pattern)
 	if err != nil {
@@ -157,7 +159,7 @@ func (ss *simpleService) GetNew() (*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
-		entry, err := ss.getEntry(zid)
+		entry, err := ss.doGetEntry(zid)
 		if err != nil {
 			return false, nil
 		}
@@ -169,17 +171,17 @@ func (ss *simpleService) GetNew() (*directory.Entry, error) {
 	return &directory.Entry{Zid: zid}, nil
 }
 
-func (ss *simpleService) UpdateEntry(entry *directory.Entry) error {
+func (*simpleService) UpdateEntry(*directory.Entry) error {
 	// Nothing to to, since the actual file update is done by dirbox.
 	return nil
 }
 
-func (ss *simpleService) RenameEntry(curEntry, newEntry *directory.Entry) error {
+func (*simpleService) RenameEntry(_, _ *directory.Entry) error {
 	// Nothing to to, since the actual file rename is done by dirbox.
 	return nil
 }
 
-func (ss *simpleService) DeleteEntry(zid id.Zid) error {
+func (*simpleService) DeleteEntry(id.Zid) error {
 	// Nothing to to, since the actual file delete is done by dirbox.
 	return nil
 }

@@ -108,7 +108,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 		if strSig := sig.String(); strSig != "" {
 			kern.doLog("Shut down Zettelstore:", strSig)
 		}
-		kern.shutdown()
+		kern.doShutdown()
 		kern.wg.Done()
 	}()
 
@@ -141,7 +141,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 	}
 }
 
-func (kern *myKernel) shutdown() {
+func (kern *myKernel) doShutdown() {
 	kern.StopService(kernel.CoreService) // Will stop all other services.
 }
 
@@ -164,7 +164,7 @@ func (s *shutdownSignal) String() string {
 	}
 	return "shutdown"
 }
-func (s *shutdownSignal) Signal() { /* Just a signal */ }
+func (*shutdownSignal) Signal() { /* Just a signal */ }
 
 // --- Log operation ---------------------------------------------------------
 
@@ -174,7 +174,7 @@ func (kern *myKernel) Log(args ...interface{}) {
 	defer kern.mx.Unlock()
 	kern.doLog(args...)
 }
-func (kern *myKernel) doLog(args ...interface{}) {
+func (*myKernel) doLog(args ...interface{}) {
 	log.Println(args...)
 }
 

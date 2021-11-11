@@ -41,7 +41,7 @@ const (
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
-		Func: func(*flag.FlagSet, *meta.Meta) (int, error) {
+		Func: func(*flag.FlagSet) (int, error) {
 			fmt.Println("Available commands:")
 			for _, name := range List() {
 				fmt.Printf("- %q\n", name)
@@ -51,7 +51,7 @@ func init() {
 	})
 	RegisterCommand(Command{
 		Name:   "version",
-		Func:   func(*flag.FlagSet, *meta.Meta) (int, error) { return 0, nil },
+		Func:   func(*flag.FlagSet) (int, error) { return 0, nil },
 		Header: true,
 	})
 	RegisterCommand(Command{
@@ -258,7 +258,7 @@ func executeCommand(name string, args ...string) int {
 	}
 	setupOperations(cfg, command.Boxes)
 	kernel.Main.Start(command.Header, command.LineServer)
-	exitCode, err := command.Func(fs, cfg)
+	exitCode, err := command.Func(fs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
