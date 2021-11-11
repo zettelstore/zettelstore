@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
-<a name="0_0_16"></a>
-<h2>Changes for Version 0.0.16 (pending)</h2>
+<a name="0_2"></a>
+<h2>Changes for Version 0.2 (pending)</h2>
+
+<a name="0_1"></a>
+<h2>Changes for Version 0.1 (2021-11-11)</h2>
   *  Remove visual Zettelmarkup (italic, underline). Semantic Zettelmarkup
      (emphasize, insert) is still allowed, but got a different syntax. The new
      syntax for <ins>inserted text</ins> is <tt>&gt;&gt;inserted&gt;&gt;</tt>,
