@@ -1,9 +1,9 @@
 <title>Change Log</title>
 
-<a name="0_2"></a>
-<h2>Changes for Version 0.2 (pending)</h2>
+<a name="0_2_0"></a>
+<h2>Changes for Version 0.2.0 (pending)</h2>
 
-<a name="0_1"></a>
+<a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>
   *  Remove visual Zettelmarkup (italic, underline). Semantic Zettelmarkup
      (emphasize, insert) is still allowed, but got a different syntax. The new
@@ -11,7 +11,7 @@
      while its previous syntax now denotes <em>emphasized text</em>:
      <tt>__emphasized__</tt>. The previous syntax for emphasized text is now
      deprecated: <tt>//deprecated emphasized//</tt>. Starting with
-     Version&nbsp;0.0.17, the deprecated syntax will not be supported. The
+     Version&nbsp;0.2.0, the deprecated syntax will not be supported. The
      reason is the collision with URLs that also contain the characters
      <tt>//</tt>. The ZMK encoding of a zettel may help with the transition
      (<tt>/v/{ZettelID}?_part=zettel&amp;_enc=zmk</tt>, on the Info page of
@@ -52,13 +52,17 @@
      software (but still by a human). In certain cases, even the WebUI might be
      affected.
      (minor: api, webui)
-  *  Fix: when a very log word (longer than width of browser window) is given,
+  *  Fix: when a very long word (longer than width of browser window) is given,
      still allow to scroll horizontally.
      (minor: webui)
   *  Separate repository for [https://zettelstore.de/contrib/|contributed]
      software. First entry is a software for creating a presentation by using
      zettel.
      (info)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
+  *  v0.1.1 (2021-11-12) updates the documentation, mostly related to the
+     deprecation of the <tt>//</tt> markup.
 
 <a name="0_0_15"></a>
 <h2>Changes for Version 0.0.15 (2021-09-17)</h2>

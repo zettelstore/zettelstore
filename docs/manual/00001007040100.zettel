@@ -3,7 +3,7 @@ title: Zettelmarkup: Text Formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103161716
+modified: 20211113175248
 
 Text formatting is the way to make your text visually different.
 Every text formatting element begins with two same characters.
@@ -17,12 +17,12 @@ The following characters begin a text formatting:
 * The low line character (""''_''"", ''U+005F'') emphasizes its text.
 ** Example: ``abc __def__ ghi`` is rendered in HTML as: ::abc __def__ ghi::{=example}.
 ** The slash character (""''/''"", ''U+002F'') is still allowed to emphasize text, but its use is deprecated.
-   With version 0.0.17 it will no longer be supported. 
+   With [[version 0.2.0|https://zettelstore.de/home/doc/trunk/www/changes.wiki#0_2_0]] it will no longer be supported. 
 *** Example: ``abc //def// ghi`` is rendered in HTML as: ::abc //def// ghi::{=example}.
 * The asterisk character (""''*''"", ''U+002A'') strongly emphasized its enclosed text.
 ** Example: ``abc **def** ghi`` is rendered in HTML as: ::abc **def** ghi::{=example}.
-* The low line character (""''_''"", ''U+005F'') marks text as inserted.
-** Example: ``abc __def__ ghi`` is rendered in HTML as: ::abc __def__ ghi::{=example}.
+* The greater-than sign character (""''>''"", ''U+003E'') marks text as inserted.
+** Example: ``abc >>def>> ghi`` is rendered in HTML as: ::abc >>def>> ghi::{=example}.
 * Similar, the tilde character (""''~''"", ''U+007E'') marks deleted text.
 ** Example: ``abc ~~def~~ ghi`` is rendered in HTML as: ::abc ~~def~~ ghi::{=example}.
 * The apostrophe character (""''\'''"", ''U+0027'') renders text in mono-space / fixed font width.

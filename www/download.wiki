@@ -21,6 +21,6 @@ Unzip the appropriate file, install and execute Zettelstore according to the man
 
 <h2>Zettel for the manual</h2>
 As a starter, you can download the zettel for the manual
-[/uv/manual-0.1.zip|here]. Just unzip the contained files and put them into
+[/uv/manual-0.1.1.zip|here]. Just unzip the contained files and put them into
 your zettel folder or configure a file box to read the zettel directly from the
 ZIP file.
