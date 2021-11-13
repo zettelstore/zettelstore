@@ -45,17 +45,6 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Emphasized formatting (deprecated)",
-		zmk:   "//emphd//",
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"EmphD","i":[{"t":"Text","s":"emphd"}]}]`,
-			encoderHTML:   `<em class="zs-deprecated">emphd</em>`,
-			encoderNative: `EmphD [Text "emphd"]`,
-			encoderText:   "emphd",
-			encoderZmk:    "__emphd__",
-		},
-	},
-	{
 		descr: "Strong formatting",
 		zmk:   "**strong**",
 		expect: expectMap{

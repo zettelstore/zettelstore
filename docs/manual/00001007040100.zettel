@@ -3,7 +3,7 @@ title: Zettelmarkup: Text Formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211113175248
+modified: 20211113183544
 
 Text formatting is the way to make your text visually different.
 Every text formatting element begins with two same characters.
@@ -16,9 +16,6 @@ The following characters begin a text formatting:
 
 * The low line character (""''_''"", ''U+005F'') emphasizes its text.
 ** Example: ``abc __def__ ghi`` is rendered in HTML as: ::abc __def__ ghi::{=example}.
-** The slash character (""''/''"", ''U+002F'') is still allowed to emphasize text, but its use is deprecated.
-   With [[version 0.2.0|https://zettelstore.de/home/doc/trunk/www/changes.wiki#0_2_0]] it will no longer be supported. 
-*** Example: ``abc //def// ghi`` is rendered in HTML as: ::abc //def// ghi::{=example}.
 * The asterisk character (""''*''"", ''U+002A'') strongly emphasized its enclosed text.
 ** Example: ``abc **def** ghi`` is rendered in HTML as: ::abc **def** ghi::{=example}.
 * The greater-than sign character (""''>''"", ''U+003E'') marks text as inserted.
@@ -39,4 +36,4 @@ The following characters begin a text formatting:
 * The semicolon character (""'';''"", ''U+003B'') specifies text that should be rendered with small characters.
 ** Example: ``abc ;;def;; ghi`` is rendered in HTML as: ::abc ;;def;; ghi::{=example}.
 * The colon character (""'':''"", ''U+003A'') mark some text that should belong together. It fills a similar role as [[region blocks|00001007030800]], but just for inline elements.
-** Example: ``abc ::def::{style=color:green} ghi`` is rendered in HTML as: abc ::def::{style=color:green} ghi.
+** Example: ``abc ::def::{=example} ghi`` is rendered in HTML as: abc ::def::{=example} ghi.

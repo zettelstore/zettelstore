@@ -481,18 +481,17 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatEmphDeprecated: []byte("EmphD"),
-	ast.FormatEmph:           []byte("Emph"),
-	ast.FormatStrong:         []byte("Strong"),
-	ast.FormatInsert:         []byte("Insert"),
-	ast.FormatMonospace:      []byte("Mono"),
-	ast.FormatDelete:         []byte("Delete"),
-	ast.FormatSuper:          []byte("Super"),
-	ast.FormatSub:            []byte("Sub"),
-	ast.FormatQuote:          []byte("Quote"),
-	ast.FormatQuotation:      []byte("Quotation"),
-	ast.FormatSmall:          []byte("Small"),
-	ast.FormatSpan:           []byte("Span"),
+	ast.FormatEmph:      []byte("Emph"),
+	ast.FormatStrong:    []byte("Strong"),
+	ast.FormatInsert:    []byte("Insert"),
+	ast.FormatMonospace: []byte("Mono"),
+	ast.FormatDelete:    []byte("Delete"),
+	ast.FormatSuper:     []byte("Super"),
+	ast.FormatSub:       []byte("Sub"),
+	ast.FormatQuote:     []byte("Quote"),
+	ast.FormatQuotation: []byte("Quotation"),
+	ast.FormatSmall:     []byte("Small"),
+	ast.FormatSpan:      []byte("Span"),
 }
 
 var mapLiteralKind = map[ast.LiteralKind][]byte{
