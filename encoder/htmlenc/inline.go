@@ -173,8 +173,6 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		code = "sub"
 	case ast.FormatQuotation:
 		code = "q"
-	case ast.FormatSmall:
-		code = "small"
 	case ast.FormatSpan:
 		v.writeSpan(fn.Inlines, processSpanAttributes(attrs))
 		return

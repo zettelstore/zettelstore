@@ -395,7 +395,6 @@ var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatSub:       "Sub",
 	ast.FormatQuote:     "Quote",
 	ast.FormatQuotation: "Quotation",
-	ast.FormatSmall:     "Small",
 	ast.FormatSpan:      "Span",
 }
 

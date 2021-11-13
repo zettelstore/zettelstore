@@ -210,7 +210,6 @@ const (
 	FormatSub                  // SubscriptedText.
 	FormatQuote                // Quoted text.
 	FormatQuotation            // Quotation text.
-	FormatSmall                // Smaller text.
 	FormatSpan                 // Generic inline container.
 	FormatMonospace            // Monospaced text.
 )

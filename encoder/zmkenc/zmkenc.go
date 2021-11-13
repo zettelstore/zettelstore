@@ -312,15 +312,14 @@ func (v *visitor) writeTableRow(row ast.TableRow, align []ast.Alignment) {
 
 var escapeSeqs = map[string]bool{
 	"\\":   true,
-	"//":   true,
-	"**":   true,
 	"__":   true,
+	"**":   true,
 	"~~":   true,
 	"^^":   true,
 	",,":   true,
 	"<<":   true,
+	">>":   true,
 	"\"\"": true,
-	";;":   true,
 	"::":   true,
 	"''":   true,
 	"``":   true,
@@ -410,7 +409,6 @@ var mapFormatKind = map[ast.FormatKind][]byte{
 	ast.FormatSub:       []byte(",,"),
 	ast.FormatQuotation: []byte("<<"),
 	ast.FormatQuote:     []byte("\"\""),
-	ast.FormatSmall:     []byte(";;"),
 	ast.FormatSpan:      []byte("::"),
 	ast.FormatMonospace: []byte("''"),
 }

@@ -490,7 +490,6 @@ var mapFormatKind = map[ast.FormatKind][]byte{
 	ast.FormatSub:       []byte("Sub"),
 	ast.FormatQuote:     []byte("Quote"),
 	ast.FormatQuotation: []byte("Quotation"),
-	ast.FormatSmall:     []byte("Small"),
 	ast.FormatSpan:      []byte("Span"),
 }
 

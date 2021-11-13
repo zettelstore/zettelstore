@@ -304,7 +304,7 @@ func TestComment(t *testing.T) {
 func TestFormat(t *testing.T) {
 	t.Parallel()
 	// Not for Insert / '>', because collision with quoted list
-	for _, ch := range []string{"_", "*", "~", "'", "^", ",", "<", "\"", ";", ":"} {
+	for _, ch := range []string{"_", "*", "~", "'", "^", ",", "<", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -312,7 +312,7 @@ func TestFormat(t *testing.T) {
 			{"$$$$", "(PARA {$})"},
 		}))
 	}
-	for _, ch := range []string{"_", "*", ">", "~", "'", "^", ",", "<", "\"", ";", ":"} {
+	for _, ch := range []string{"_", "*", ">", "~", "'", "^", ",", "<", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$$a$$", "(PARA {$ a})"},
 			{"$$a$$$", "(PARA {$ a} $)"},
@@ -905,7 +905,6 @@ var mapFormatKind = map[ast.FormatKind]rune{
 	ast.FormatSub:       ',',
 	ast.FormatQuote:     '"',
 	ast.FormatQuotation: '<',
-	ast.FormatSmall:     ';',
 	ast.FormatSpan:      ':',
 }
 

@@ -155,17 +155,6 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Small formatting",
-		zmk:   `;;small;;`,
-		expect: expectMap{
-			encoderDJSON:  `[{"t":"Small","i":[{"t":"Text","s":"small"}]}]`,
-			encoderHTML:   `<small>small</small>`,
-			encoderNative: `Small [Text "small"]`,
-			encoderText:   `small`,
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Span formatting",
 		zmk:   `::span::`,
 		expect: expectMap{

@@ -3,7 +3,7 @@ title: Zettelmarkup: Text Formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211113183544
+modified: 20211113193440
 
 Text formatting is the way to make your text visually different.
 Every text formatting element begins with two same characters.
@@ -33,7 +33,5 @@ The following characters begin a text formatting:
 * The quotation mark character (""''"''"", ''U+0022'') produces the right typographic quotation marks according to the [[specified language|00001007050100]].
 ** Example: ``""To be or not""`` is rendered in HTML as: ::""To be or not""::{=example}.
 ** Example: ``""Sein oder nicht""{lang=de}`` is rendered in HTML as: ::""Sein oder nicht""{lang=de}::{=example}.
-* The semicolon character (""'';''"", ''U+003B'') specifies text that should be rendered with small characters.
-** Example: ``abc ;;def;; ghi`` is rendered in HTML as: ::abc ;;def;; ghi::{=example}.
 * The colon character (""'':''"", ''U+003A'') mark some text that should belong together. It fills a similar role as [[region blocks|00001007030800]], but just for inline elements.
 ** Example: ``abc ::def::{=example} ghi`` is rendered in HTML as: abc ::def::{=example} ghi.
