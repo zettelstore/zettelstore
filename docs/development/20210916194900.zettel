@@ -2,8 +2,10 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20211110193448
+modified: 20211113182134
 
+# Sync with the official repository
+#* ``fossil sync -u``
 # Clean up your Go workspace:
 #* ``go run tools/build.go clean`` (alternatively: ``make clean``).
 # All internal tests must succeed:
