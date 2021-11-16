@@ -144,6 +144,6 @@ func (ws *webService) Stop(kern *myKernel) error {
 	return err
 }
 
-func (ws *webService) GetStatistics() []kernel.KeyValue {
+func (*webService) GetStatistics() []kernel.KeyValue {
 	return nil
 }

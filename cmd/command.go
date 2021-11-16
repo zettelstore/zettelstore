@@ -22,7 +22,7 @@ type Command struct {
 	Boxes      bool                // if true then boxes will be set up
 	Header     bool                // Print a heading on startup
 	LineServer bool                // Start admin line server
-	Flags      func(*flag.FlagSet) // function to set up flag.FlagSet
+	SetFlags   func(*flag.FlagSet) // function to set up flag.FlagSet
 	flags      *flag.FlagSet       // flags that belong to the command
 }
 
@@ -45,8 +45,8 @@ func RegisterCommand(cmd Command) {
 		panic("Command already registered: " + cmd.Name)
 	}
 	cmd.flags = flag.NewFlagSet(cmd.Name, flag.ExitOnError)
-	if cmd.Flags != nil {
-		cmd.Flags(cmd.flags)
+	if cmd.SetFlags != nil {
+		cmd.SetFlags(cmd.flags)
 	}
 	commands[cmd.Name] = cmd
 }

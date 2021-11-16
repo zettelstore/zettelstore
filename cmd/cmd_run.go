@@ -100,7 +100,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(
 		ucParseZettel, &ucEvaluate, ucGetMeta, ucGetAllMeta))
-	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginOutHandler())
 	webSrv.AddZettelRoute('k', server.MethodGet, wui.MakeZettelContextHandler(
 		ucZettelContext, &ucEvaluate))
 

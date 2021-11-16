@@ -60,19 +60,19 @@ func init() {
 		Boxes:      true,
 		Header:     true,
 		LineServer: true,
-		Flags:      flgRun,
+		SetFlags:   flgRun,
 	})
 	RegisterCommand(Command{
-		Name:   "run-simple",
-		Func:   runSimpleFunc,
-		Boxes:  true,
-		Header: true,
-		Flags:  flgSimpleRun,
+		Name:     "run-simple",
+		Func:     runSimpleFunc,
+		Boxes:    true,
+		Header:   true,
+		SetFlags: flgSimpleRun,
 	})
 	RegisterCommand(Command{
 		Name: "file",
 		Func: cmdFile,
-		Flags: func(fs *flag.FlagSet) {
+		SetFlags: func(fs *flag.FlagSet) {
 			fs.String("t", api.EncoderHTML.String(), "target output encoding")
 		},
 	})
