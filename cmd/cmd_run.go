@@ -67,7 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucDelete := usecase.NewDeleteZettel(protectedBoxManager)
 	ucUpdate := usecase.NewUpdateZettel(protectedBoxManager)
 	ucRename := usecase.NewRenameZettel(protectedBoxManager)
-	ucUnlinkedRefs := usecase.NewUnlinkedReferences(protectedBoxManager)
+	ucUnlinkedRefs := usecase.NewUnlinkedReferences(protectedBoxManager, rtConfig)
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 
