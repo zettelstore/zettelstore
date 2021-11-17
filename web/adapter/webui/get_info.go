@@ -47,6 +47,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 	evaluate *usecase.Evaluate,
 	getMeta usecase.GetMeta,
 	getAllMeta usecase.GetAllMeta,
+	unlinkedRefs usecase.UnlinkedReferences,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -68,9 +69,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.reportError(ctx, w, err)
 			return
 		}
-
-		summary := collect.References(zn)
-		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
 		envEval := evaluator.Environment{
 			GetTagRef: func(s string) *ast.Reference {
@@ -102,13 +100,23 @@ func (wui *WebUI) MakeGetInfoHandler(
 				&envHTML)
 			metaData[i] = metaDataInfo{p.Key, buf.String()}
 		}
+		summary := collect.References(zn)
+		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
+
+		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
+		unlinkedMeta, err := unlinkedRefs.Run(ctx, zid, textTitle)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
+
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)
 		if err != nil {
 			endnotes = ""
 		}
 
-		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		user := wui.getUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
@@ -135,6 +143,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
+			HasUnLinks     bool
+			UnLinks        []simpleLink
 			EvalMatrix     []matrixLine
 			ParseMatrix    []matrixLine
 			HasShadowLinks bool
@@ -155,12 +165,14 @@ func (wui *WebUI) MakeGetInfoHandler(
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
 			DeleteURL:      wui.NewURLBuilder('d').SetZid(apiZid).String(),
 			MetaData:       metaData,
-			HasLinks:       len(extLinks)+len(locLinks) > 0,
+			HasLinks:       len(extLinks)+len(locLinks)+len(unLinks) > 0,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
+			HasUnLinks:     len(unLinks) > 0,
+			UnLinks:        unLinks,
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),
 			ParseMatrix:    wui.infoAPIMatrixPlain('p', zid),
 			HasShadowLinks: len(shadowLinks) > 0,
