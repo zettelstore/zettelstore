@@ -185,9 +185,6 @@ func (wui *WebUI) MakeSearchHandler(ucSearch usecase.Search, evaluate *usecase.E
 		title := wui.listTitleSearch("Search", s)
 		wui.renderMetaList(
 			ctx, w, title, s, func(s *search.Search) ([]*meta.Meta, error) {
-				if !s.EnrichNeeded() {
-					ctx = box.NoEnrichContext(ctx)
-				}
 				return ucSearch.Run(ctx, s)
 			},
 			evaluate,
