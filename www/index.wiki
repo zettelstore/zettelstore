@@ -28,7 +28,7 @@ packages may be experimental.
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_1|Change summary]
   *  [/timeline?p=v0.1.2&bt=v0.0.15&y=ci|Check-ins for version 0.1.2],
-     [/vdiff?to=v0.1&from=v0.0.15|content diff]
+     [/vdiff?to=v0.1.2&from=v0.0.15|content diff]
   *  [/timeline?df=v0.1&y=ci|Check-ins derived from the 0.1 release],
      [/vdiff?from=v0.1&to=trunk|content diff]
   *  [./plan.wiki|Limitations and planned improvements]
