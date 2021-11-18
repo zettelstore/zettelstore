@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
@@ -25,10 +24,8 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
-	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -106,7 +103,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
-		unlinkedMeta, err := unlinkedRefs.Run(ctx, textTitle, createUnlinkedRefsSearch(zn.InhMeta))
+		unlinkedMeta, err := unlinkedRefs.Run(
+			ctx, textTitle, adapter.AddUnlinkedRefsToSearch(nil, zn.InhMeta))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -207,18 +205,6 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 		locLinks = append(locLinks, localLink{ref.IsValid(), ref.String()})
 	}
 	return locLinks, extLinks
-}
-
-func createUnlinkedRefsSearch(m *meta.Meta) *search.Search {
-	var result *search.Search
-	result = result.AddExpr(api.KeyID, "!="+m.Zid.String())
-	for _, sZid := range m.GetListOrNil(api.KeyBackward) {
-		result = result.AddExpr(api.KeyID, "!="+sZid)
-	}
-	for _, sZid := range m.GetListOrNil(api.KeyFolge) {
-		result = result.AddExpr(api.KeyID, "!="+sZid)
-	}
-	return result
 }
 
 func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {

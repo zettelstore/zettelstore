@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package adapter provides handlers for web requests.
 package adapter
 
 import (
@@ -160,4 +159,17 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 		return usecase.ZettelContextForward
 	}
 	return usecase.ZettelContextBoth
+}
+
+// AddUnlinkedRefsToSearch inspects metadata and enhances the given search to ignore
+// some zettel identifier.
+func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
+	s = s.AddExpr(api.KeyID, "!="+m.Zid.String())
+	for _, sZid := range m.GetListOrNil(api.KeyBackward) {
+		s = s.AddExpr(api.KeyID, "!="+sZid)
+	}
+	for _, sZid := range m.GetListOrNil(api.KeyFolge) {
+		s = s.AddExpr(api.KeyID, "!="+sZid)
+	}
+	return s
 }
