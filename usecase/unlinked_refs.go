@@ -51,20 +51,19 @@ func NewUnlinkedReferences(port UnlinkedReferencesPort, rtConfig config.Config) 
 }
 
 // Run executes the usecase with already evaluated title value.
-func (uc *UnlinkedReferences) Run(ctx context.Context, zid id.Zid, title string) ([]*meta.Meta, error) {
+func (uc *UnlinkedReferences) Run(ctx context.Context, title string, s *search.Search) ([]*meta.Meta, error) {
 	words := makeWords(title)
-	var s *search.Search
+	if len(words) == 0 {
+		return nil, nil
+	}
 	for _, word := range words {
 		s = s.AddExpr("", "="+word)
-	}
-	if s == nil {
-		return nil, nil
 	}
 	candidates, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err
 	}
-	candidates = uc.filterCandidates(ctx, zid, candidates, words)
+	candidates = uc.filterCandidates(ctx, candidates, words)
 	return candidates, nil
 }
 
@@ -74,12 +73,9 @@ func makeWords(text string) []string {
 	})
 }
 
-func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, zid id.Zid, candidates []*meta.Meta, words []string) []*meta.Meta {
+func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, candidates []*meta.Meta, words []string) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
 	for _, cand := range candidates {
-		if zid == cand.Zid || linksTo(zid, cand) {
-			continue
-		}
 		zettel, err := uc.port.GetZettel(ctx, cand.Zid)
 		if err != nil {
 			continue
@@ -95,27 +91,6 @@ func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, zid id.Zid, 
 		result = append(result, cand)
 	}
 	return result
-}
-
-// linksTo returns true, if any metadata from source mentions zid
-func linksTo(zid id.Zid, source *meta.Meta) bool {
-	zidVal := zid.String()
-	for _, pair := range source.PairsRest(true) {
-		key := pair.Key
-		switch meta.Type(key) {
-		case meta.TypeID:
-			if zidVal == pair.Value {
-				return true
-			}
-		case meta.TypeIDSet:
-			for _, val := range meta.ListFromValue(pair.Value) {
-				if zidVal == val {
-					return true
-				}
-			}
-		}
-	}
-	return false
 }
 
 func containsWords(zn *ast.ZettelNode, words []string) bool {
