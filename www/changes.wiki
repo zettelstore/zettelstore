@@ -5,6 +5,10 @@
 
 <a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>
+  *  v0.1.2 (2021-11-18) fixes a bug when selecting zettel from a list when
+     more than one comparison is negated.
+  *  v0.1.1 (2021-11-12) updates the documentation, mostly related to the
+     deprecation of the <tt>//</tt> markup.
   *  Remove visual Zettelmarkup (italic, underline). Semantic Zettelmarkup
      (emphasize, insert) is still allowed, but got a different syntax. The new
      syntax for <ins>inserted text</ins> is <tt>&gt;&gt;inserted&gt;&gt;</tt>,
@@ -61,8 +65,6 @@
      (info)
   *  Many smaller bug fixes and inprovements, to the software and to the
      documentation.
-  *  v0.1.1 (2021-11-12) updates the documentation, mostly related to the
-     deprecation of the <tt>//</tt> markup.
 
 <a name="0_0_15"></a>
 <h2>Changes for Version 0.0.15 (2021-09-17)</h2>
