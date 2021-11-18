@@ -24,10 +24,10 @@ packages may be experimental.
 
 [https://twitter.com/zettelstore|Stay tuned]&hellip;
 <hr>
-<h3>Latest Release: 0.1 (2021-11-11)</h3>
+<h3>Latest Release: 0.1.2 (2021-11-18)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_1|Change summary]
-  *  [/timeline?p=v0.1&bt=v0.0.15&y=ci|Check-ins for version 0.1],
+  *  [/timeline?p=v0.1.2&bt=v0.0.15&y=ci|Check-ins for version 0.1.2],
      [/vdiff?to=v0.1&from=v0.0.15|content diff]
   *  [/timeline?df=v0.1&y=ci|Check-ins derived from the 0.1 release],
      [/vdiff?from=v0.1&to=trunk|content diff]
