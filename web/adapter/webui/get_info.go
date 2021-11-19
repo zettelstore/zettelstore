@@ -103,13 +103,18 @@ func (wui *WebUI) MakeGetInfoHandler(
 		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
 
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
+		phrase := q.Get(api.QueryKeyPhrase)
+		if phrase == "" {
+			phrase = textTitle
+		}
 		unlinkedMeta, err := unlinkedRefs.Run(
-			ctx, textTitle, adapter.AddUnlinkedRefsToSearch(nil, zn.InhMeta))
+			ctx, phrase, adapter.AddUnlinkedRefsToSearch(nil, zn.InhMeta))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
+		withUnLinks := len(unLinks) > 0 || phrase != ""
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)
@@ -145,6 +150,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ExtNewWindow   string
 			HasUnLinks     bool
 			UnLinks        []simpleLink
+			UnLinksPhrase  string
+			QueryKeyPhrase string
 			EvalMatrix     []matrixLine
 			ParseMatrix    []matrixLine
 			HasShadowLinks bool
@@ -165,14 +172,16 @@ func (wui *WebUI) MakeGetInfoHandler(
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
 			DeleteURL:      wui.NewURLBuilder('d').SetZid(apiZid).String(),
 			MetaData:       metaData,
-			HasLinks:       len(extLinks)+len(locLinks)+len(unLinks) > 0,
+			HasLinks:       len(extLinks) > 0 || len(locLinks) > 0 || withUnLinks,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
-			HasUnLinks:     len(unLinks) > 0,
+			HasUnLinks:     withUnLinks,
 			UnLinks:        unLinks,
+			UnLinksPhrase:  phrase,
+			QueryKeyPhrase: api.QueryKeyPhrase,
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),
 			ParseMatrix:    wui.infoAPIMatrixPlain('p', zid),
 			HasShadowLinks: len(shadowLinks) > 0,

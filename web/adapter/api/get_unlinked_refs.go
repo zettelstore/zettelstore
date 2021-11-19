@@ -41,7 +41,7 @@ func MakeListUnlinkedMetaHandler(
 		}
 
 		q := r.URL.Query()
-		phrase := q.Get("_phrase")
+		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
 			zmkTitle := zm.GetDefault(api.KeyTitle, "")
 			ilnTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
