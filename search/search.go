@@ -69,12 +69,36 @@ const RandomOrder = "_random"
 type compareOp uint8
 
 const (
-	cmpDefault compareOp = iota
+	cmpUnknown compareOp = iota
+	cmpDefault
+	cmpNotDefault
 	cmpEqual
+	cmpNotEqual
 	cmpPrefix
+	cmpNoPrefix
 	cmpSuffix
+	cmpNoSuffix
 	cmpContains
+	cmpNotContains
 )
+
+var negateMap = map[compareOp]compareOp{
+	cmpUnknown:     cmpUnknown,
+	cmpDefault:     cmpNotDefault,
+	cmpNotDefault:  cmpDefault,
+	cmpEqual:       cmpNotEqual,
+	cmpNotEqual:    cmpEqual,
+	cmpPrefix:      cmpNoPrefix,
+	cmpNoPrefix:    cmpPrefix,
+	cmpSuffix:      cmpNoSuffix,
+	cmpNoSuffix:    cmpSuffix,
+	cmpContains:    cmpNotContains,
+	cmpNotContains: cmpContains,
+}
+
+func (op compareOp) negate() compareOp {
+	return negateMap[op]
+}
 
 type expValue struct {
 	value  string
@@ -92,10 +116,12 @@ func (s *Search) AddExpr(key, val string) *Search {
 	defer s.mx.Unlock()
 	if key == "" {
 		s.search = append(s.search, expValue{value: val, op: op, negate: negate})
-	} else if s.tags == nil {
-		s.tags = expTagValues{key: {{value: val, op: op, negate: negate}}}
 	} else {
-		s.tags[key] = append(s.tags[key], expValue{value: val, op: op, negate: negate})
+		if s.tags == nil {
+			s.tags = expTagValues{key: {{value: val, op: op, negate: negate}}}
+		} else {
+			s.tags[key] = append(s.tags[key], expValue{value: val, op: op, negate: negate})
+		}
 	}
 	return s
 }
