@@ -28,44 +28,43 @@ func MakeListUnlinkedMetaHandler(
 	evaluate *usecase.Evaluate,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := parseNullableZid(r.URL.Path[1:])
+		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			http.NotFound(w, r)
 			return
 		}
-		result := api.ZidMetaRelatedList{
-			ID: api.ZettelID(zid.String()),
+		ctx := r.Context()
+		zm, err := getMeta.Run(ctx, zid)
+		if err != nil {
+			adapter.ReportUsecaseError(w, err)
+			return
 		}
 
 		q := r.URL.Query()
-		s := adapter.GetSearch(q)
-		words := q.Get("_words")
-		ctx := r.Context()
-		if zid != id.Invalid && words == "" {
-			zm, err := getMeta.Run(ctx, zid)
-			if err != nil {
-				adapter.ReportUsecaseError(w, err)
-				return
-			}
-			result.Meta = zm.Map()
+		phrase := q.Get("_phrase")
+		if phrase == "" {
 			zmkTitle := zm.GetDefault(api.KeyTitle, "")
 			ilnTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
 			encdr := encoder.Create(api.EncoderText, nil)
 			var b strings.Builder
 			_, err = encdr.WriteInlines(&b, ilnTitle)
 			if err == nil {
-				words = b.String()
+				phrase = b.String()
 			}
-			s = adapter.AddUnlinkedRefsToSearch(s, zm)
 		}
 
-		metaList, err := unlinkedRefs.Run(ctx, words, s)
+		metaList, err := unlinkedRefs.Run(
+			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetSearch(q), zm))
 		if err != nil {
 			adapter.ReportUsecaseError(w, err)
 			return
 		}
 
-		result.List = make([]api.ZidMetaJSON, 0, len(metaList))
+		result := api.ZidMetaRelatedList{
+			ID:   api.ZettelID(zid.String()),
+			Meta: zm.Map(),
+			List: make([]api.ZidMetaJSON, 0, len(metaList)),
+		}
 		for _, m := range metaList {
 			result.List = append(result.List, api.ZidMetaJSON{
 				ID:   api.ZettelID(m.Zid.String()),
@@ -78,11 +77,4 @@ func MakeListUnlinkedMetaHandler(
 			adapter.InternalServerError(w, "Write unlinked references JSON", err)
 		}
 	}
-}
-
-func parseNullableZid(text string) (id.Zid, error) {
-	if text == id.Invalid.String() {
-		return id.Invalid, nil
-	}
-	return id.Parse(text)
 }

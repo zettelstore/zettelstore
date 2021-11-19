@@ -59,12 +59,17 @@ func (uc *UnlinkedReferences) Run(ctx context.Context, title string, s *search.S
 	for _, word := range words {
 		s = s.AddExpr("", "="+word)
 	}
+
+	// Limit applies to the filtering process, not to SelectMeta
+	limit := s.GetLimit()
+	s = s.SetLimit(0)
+
 	candidates, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err
 	}
-	candidates = uc.filterCandidates(ctx, candidates, words)
-	return candidates, nil
+	s = s.SetLimit(limit) // Restore limit
+	return s.Limit(uc.filterCandidates(ctx, candidates, words)), nil
 }
 
 func makeWords(text string) []string {
