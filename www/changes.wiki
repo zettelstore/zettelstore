@@ -4,6 +4,12 @@
 <h2>Changes for Version 0.2.0 (pending)</h2>
   *  Remove support for <tt>;;small text;;</tt> Zettelmarkup.
      (breaking: Zettelmarkup)
+  *  Show unlinked references in info page of each zettel. Unlinked references
+     are phrases within zettel content that might reference another zettel with
+     the same title as the phase.
+     (major: webui)
+  *  Add endpoint <tt>/u/{ID}</tt> to retrieve unlinked references.
+     (major: api)
   *  Remove support for <tt>//deprecated emphasized//</tt> Zettelmarkup.
      (minor: Zettelmarkup)
 
