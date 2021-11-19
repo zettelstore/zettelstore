@@ -85,7 +85,11 @@ func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, candidates [
 		if err != nil {
 			continue
 		}
-		zn, err := parser.ParseZettel(zettel, "", uc.rtConfig), nil
+		syntax := zettel.Meta.GetDefault(api.KeySyntax, "")
+		if !parser.IsTextParser(syntax) {
+			continue
+		}
+		zn, err := parser.ParseZettel(zettel, syntax, nil), nil
 		if err != nil {
 			continue
 		}
