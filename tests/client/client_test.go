@@ -295,6 +295,25 @@ func TestGetZettelLinks(t *testing.T) {
 	}
 }
 
+func TestGetUnlinkedReferences(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	zl, err := c.GetUnlinkedReferences(context.Background(), api.ZidDefaultHome, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !checkZid(t, api.ZidDefaultHome, zl.ID) {
+		return
+	}
+	l := zl.List
+	if got := len(l); got != 1 {
+		t.Errorf("Expected list of length 1, got %d", got)
+		return
+	}
+}
+
 func TestListTags(t *testing.T) {
 	t.Parallel()
 	c := getClient()
