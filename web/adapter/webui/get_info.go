@@ -114,7 +114,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
-		withUnLinks := len(unLinks) > 0 || phrase != ""
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)
@@ -142,13 +141,11 @@ func (wui *WebUI) MakeGetInfoHandler(
 			CanDelete      bool
 			DeleteURL      string
 			MetaData       []metaDataInfo
-			HasLinks       bool
 			HasLocLinks    bool
 			LocLinks       []localLink
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
-			HasUnLinks     bool
 			UnLinks        []simpleLink
 			UnLinksPhrase  string
 			QueryKeyPhrase string
@@ -172,13 +169,11 @@ func (wui *WebUI) MakeGetInfoHandler(
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
 			DeleteURL:      wui.NewURLBuilder('d').SetZid(apiZid).String(),
 			MetaData:       metaData,
-			HasLinks:       len(extLinks) > 0 || len(locLinks) > 0 || withUnLinks,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
-			HasUnLinks:     withUnLinks,
 			UnLinks:        unLinks,
 			UnLinksPhrase:  phrase,
 			QueryKeyPhrase: api.QueryKeyPhrase,

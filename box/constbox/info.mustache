@@ -11,7 +11,6 @@
 </header>
 <h2>Interpreted Metadata</h2>
 <table>{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>{{/MetaData}}</table>
-{{#HasLinks}}
 <h2>References</h2>
 {{#HasLocLinks}}
 <h3>Local</h3>
@@ -30,21 +29,16 @@
 {{/ExtLinks}}
 </ul>
 {{/HasExtLinks}}
-{{#HasUnLinks}}
 <h3>Unlinked</h3>
 <ul>
 {{#UnLinks}}
 <li><a href="{{{URL}}}">{{{Text}}}</a></li>
 {{/UnLinks}}
 </ul>
-{{#UnLinksPhrase}}
 <form>
-<label for="phrase">Phrase</label>
+<label for="phrase">Search Phrase</label>
 <input class="zs-input" type="text" id="phrase" name="{{QueryKeyPhrase}}" placeholder="Phrase.." value="{{UnLinksPhrase}}">
 </form>
-{{/UnLinksPhrase}}
-{{/HasUnLinks}}
-{{/HasLinks}}
 <h2>Parts and encodings</h2>
 <table>
 {{#EvalMatrix}}
