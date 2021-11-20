@@ -272,7 +272,7 @@ func (s *Search) EnrichNeeded() bool {
 // CompileMatch returns a function to match meta data based on select specification.
 func (s *Search) CompileMatch(searcher Searcher) MetaMatchFunc {
 	if s == nil {
-		return selectNone
+		return selectAlways
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
@@ -285,37 +285,29 @@ func (s *Search) CompileMatch(searcher Searcher) MetaMatchFunc {
 	return compileNoPreMatch(compMeta, compSearch, s.negate)
 }
 
-func selectNone(*meta.Meta) bool { return true }
+func selectAlways(*meta.Meta) bool { return true }
+func selectNever(*meta.Meta) bool  { return false }
 
 func compilePreMatch(preMatch, compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
 	if compMeta == nil {
 		if compSearch == nil {
 			return preMatch
 		}
-		if negate {
-			return func(m *meta.Meta) bool { return preMatch(m) && !compSearch(m) }
-		}
-		return func(m *meta.Meta) bool { return preMatch(m) && compSearch(m) }
+		return func(m *meta.Meta) bool { return preMatch(m) && (compSearch(m) != negate) }
 	}
 	if compSearch == nil {
-		if negate {
-			return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
-		}
-		return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
+		return func(m *meta.Meta) bool { return preMatch(m) && (compMeta(m) != negate) }
 	}
-	if negate {
-		return func(m *meta.Meta) bool { return preMatch(m) && (!compMeta(m) || !compSearch(m)) }
-	}
-	return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) && compSearch(m) }
+	return func(m *meta.Meta) bool { return preMatch(m) && ((compMeta(m) && compSearch(m)) != negate) }
 }
 
 func compileNoPreMatch(compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
 	if compMeta == nil {
 		if compSearch == nil {
 			if negate {
-				return func(m *meta.Meta) bool { return false }
+				return selectNever
 			}
-			return selectNone
+			return selectAlways
 		}
 		if negate {
 			return func(m *meta.Meta) bool { return !compSearch(m) }

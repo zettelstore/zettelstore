@@ -14,18 +14,17 @@ import (
 	"fmt"
 	"strings"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 )
 
-type matchFunc func(value string) bool
+type matchValueFunc func(value string) bool
 
-func matchNever(string) bool  { return false }
-func matchAlways(string) bool { return true }
+func matchValueNever(string) bool  { return false }
+func matchValueAlways(string) bool { return true }
 
 type matchSpec struct {
 	key   string
-	match matchFunc
+	match matchValueFunc
 }
 
 // compileSelect calculates a selection func based on the given select criteria.
@@ -46,7 +45,7 @@ func createSelectSpecs(tags map[string][]expValue) (posSpecs, negSpecs []matchSp
 		}
 		if always, never := countEmptyValues(values); always+never > 0 {
 			if never == 0 {
-				posSpecs = append(posSpecs, matchSpec{key, matchAlways})
+				posSpecs = append(posSpecs, matchSpec{key, matchValueAlways})
 				continue
 			}
 			if always == 0 {
@@ -70,19 +69,18 @@ func createSelectSpecs(tags map[string][]expValue) (posSpecs, negSpecs []matchSp
 
 func countEmptyValues(values []expValue) (always, never int) {
 	for _, v := range values {
-		if v.value != "" {
-			continue
-		}
-		if v.negate {
-			never++
-		} else {
-			always++
+		if v.value == "" {
+			if v.negate {
+				never++
+			} else {
+				always++
+			}
 		}
 	}
 	return always, never
 }
 
-func createPosNegMatchFunc(key string, values []expValue) (posMatch, negMatch matchFunc) {
+func createPosNegMatchFunc(key string, values []expValue) (posMatch, negMatch matchValueFunc) {
 	posValues := make([]opValue, 0, len(values))
 	negValues := make([]opValue, 0, len(values))
 	for _, val := range values {
@@ -101,7 +99,7 @@ type opValue struct {
 	op    compareOp
 }
 
-func createMatchFunc(key string, values []opValue) matchFunc {
+func createMatchFunc(key string, values []opValue) matchValueFunc {
 	if len(values) == 0 {
 		return nil
 	}
@@ -109,7 +107,7 @@ func createMatchFunc(key string, values []opValue) matchFunc {
 	case meta.TypeBool:
 		return createMatchBoolFunc(values)
 	case meta.TypeCredential:
-		return matchNever
+		return matchValueNever
 	case meta.TypeID, meta.TypeTimestamp: // ID and timestamp use the same layout
 		return createMatchIDFunc(values)
 	case meta.TypeIDSet:
@@ -129,7 +127,7 @@ type boolPredicate func(bool) bool
 func boolSame(value bool) bool   { return value }
 func boolNegate(value bool) bool { return value }
 
-func createMatchBoolFunc(values []opValue) matchFunc {
+func createMatchBoolFunc(values []opValue) matchValueFunc {
 	preds := make([]boolPredicate, len(values))
 	for i, v := range values {
 		positiveTest := false
@@ -159,7 +157,7 @@ func createMatchBoolFunc(values []opValue) matchFunc {
 	}
 }
 
-func createMatchIDFunc(values []opValue) matchFunc {
+func createMatchIDFunc(values []opValue) matchValueFunc {
 	preds := valuesToStringPredicates(values, cmpPrefix)
 	return func(value string) bool {
 		for _, pred := range preds {
@@ -171,7 +169,7 @@ func createMatchIDFunc(values []opValue) matchFunc {
 	}
 }
 
-func createMatchIDSetFunc(values []opValue) matchFunc {
+func createMatchIDSetFunc(values []opValue) matchValueFunc {
 	predList := valuesToStringSetPredicates(preprocessSet(values), cmpPrefix)
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
@@ -186,7 +184,7 @@ func createMatchIDSetFunc(values []opValue) matchFunc {
 	}
 }
 
-func createMatchTagSetFunc(values []opValue) matchFunc {
+func createMatchTagSetFunc(values []opValue) matchValueFunc {
 	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), cmpEqual)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
@@ -222,7 +220,7 @@ func processTagSet(valueSet [][]opValue) [][]opValue {
 	return result
 }
 
-func createMatchWordFunc(values []opValue) matchFunc {
+func createMatchWordFunc(values []opValue) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), cmpEqual)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -235,7 +233,7 @@ func createMatchWordFunc(values []opValue) matchFunc {
 	}
 }
 
-func createMatchWordSetFunc(values []opValue) matchFunc {
+func createMatchWordSetFunc(values []opValue) matchValueFunc {
 	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), cmpEqual)
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
@@ -250,7 +248,7 @@ func createMatchWordSetFunc(values []opValue) matchFunc {
 	}
 }
 
-func createMatchStringFunc(values []opValue) matchFunc {
+func createMatchStringFunc(values []opValue) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), cmpContains)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -373,41 +371,57 @@ func makeStringSetPredicate(neededValue string, compare compareStringFunc, found
 
 func resolveDefaultOp(op, defOp compareOp) compareOp {
 	if op == cmpDefault {
-		op = defOp
-	} else if op == cmpNotDefault {
-		op = defOp.negate()
+		return defOp
+	}
+	if op == cmpNotDefault {
+		return defOp.negate()
 	}
 	return op
 }
 
 func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
+	if len(nomatch) == 0 {
+		// Optimize for simple cases: only negative or only positive matching
+
+		if len(posSpecs) == 0 {
+			return func(m *meta.Meta) bool { return matchMetaNegSpecs(m, negSpecs) }
+		}
+		if len(negSpecs) == 0 {
+			return func(m *meta.Meta) bool { return matchMetaPosSpecs(m, posSpecs) }
+		}
+	}
 	return func(m *meta.Meta) bool {
-		for _, key := range nomatch {
-			if _, ok := getMeta(m, key); ok {
-				return false
-			}
-		}
-		for _, s := range posSpecs {
-			if value, ok := getMeta(m, s.key); !ok || !s.match(value) {
-				return false
-			}
-		}
-		for _, s := range negSpecs {
-			if s.match == nil {
-				if _, ok := m.Get(s.key); ok {
-					return false
-				}
-			} else if value, ok := getMeta(m, s.key); !ok || !s.match(value) {
-				return false
-			}
-		}
-		return true
+		return matchMetaNoMatch(m, nomatch) &&
+			matchMetaPosSpecs(m, posSpecs) &&
+			matchMetaNegSpecs(m, negSpecs)
 	}
 }
 
-func getMeta(m *meta.Meta, key string) (string, bool) {
-	if key == api.KeyTags {
-		return m.Get(api.KeyAllTags)
+func matchMetaNoMatch(m *meta.Meta, nomatch []string) bool {
+	for _, key := range nomatch {
+		if _, ok := m.Get(key); ok {
+			return false
+		}
 	}
-	return m.Get(key)
+	return true
+}
+func matchMetaPosSpecs(m *meta.Meta, posSpecs []matchSpec) bool {
+	for _, s := range posSpecs {
+		if value, ok := m.Get(s.key); !ok || !s.match(value) {
+			return false
+		}
+	}
+	return true
+}
+func matchMetaNegSpecs(m *meta.Meta, negSpecs []matchSpec) bool {
+	for _, s := range negSpecs {
+		if s.match == nil {
+			if _, ok := m.Get(s.key); ok {
+				return false
+			}
+		} else if value, ok := m.Get(s.key); !ok || !s.match(value) {
+			return false
+		}
+	}
+	return true
 }
