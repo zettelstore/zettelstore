@@ -297,25 +297,26 @@ type stringPredicate func(string) bool
 func valuesToStringPredicates(values []opValue, defOp compareOp) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
+		opVal := v.value // loop variable is used in closure --> save needed value
 		switch op := resolveDefaultOp(v.op, defOp); op {
 		case cmpEqual:
-			result[i] = func(value string) bool { return value == v.value }
+			result[i] = func(metaVal string) bool { return metaVal == opVal }
 		case cmpNotEqual:
-			result[i] = func(value string) bool { return value != v.value }
+			result[i] = func(metaVal string) bool { return metaVal != opVal }
 		case cmpPrefix:
-			result[i] = func(value string) bool { return strings.HasPrefix(value, v.value) }
+			result[i] = func(metaVal string) bool { return strings.HasPrefix(metaVal, opVal) }
 		case cmpNoPrefix:
-			result[i] = func(value string) bool { return !strings.HasPrefix(value, v.value) }
+			result[i] = func(metaVal string) bool { return !strings.HasPrefix(metaVal, opVal) }
 		case cmpSuffix:
-			result[i] = func(value string) bool { return strings.HasSuffix(value, v.value) }
+			result[i] = func(metaVal string) bool { return strings.HasSuffix(metaVal, opVal) }
 		case cmpNoSuffix:
-			result[i] = func(value string) bool { return !strings.HasSuffix(value, v.value) }
+			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
 		case cmpContains:
-			result[i] = func(value string) bool { return strings.Contains(value, v.value) }
+			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
 		case cmpNotContains:
-			result[i] = func(value string) bool { return !strings.Contains(value, v.value) }
+			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
 		default:
-			panic(fmt.Sprintf("Unknown compare operation %d/%d", op, v.op))
+			panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))
 		}
 	}
 	return result
@@ -328,25 +329,26 @@ func valuesToStringSetPredicates(values [][]opValue, defOp compareOp) [][]string
 	for i, val := range values {
 		elemPreds := make([]stringSetPredicate, len(val))
 		for j, v := range val {
+			opVal := v.value // loop variable is used in closure --> save needed value
 			switch op := resolveDefaultOp(v.op, defOp); op {
 			case cmpEqual:
-				elemPreds[j] = makeStringSetPredicate(v.value, stringEqual, true)
+				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
 			case cmpNotEqual:
-				elemPreds[j] = makeStringSetPredicate(v.value, stringEqual, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
 			case cmpPrefix:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.HasPrefix, true)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, true)
 			case cmpNoPrefix:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.HasPrefix, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, false)
 			case cmpSuffix:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.HasSuffix, true)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, true)
 			case cmpNoSuffix:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.HasSuffix, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, false)
 			case cmpContains:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.Contains, true)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
 			case cmpNotContains:
-				elemPreds[j] = makeStringSetPredicate(v.value, strings.Contains, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
 			default:
-				panic(fmt.Sprintf("Unknown compare operation %d/%d", op, v.op))
+				panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))
 			}
 		}
 		result[i] = elemPreds
@@ -359,9 +361,9 @@ func stringEqual(val1, val2 string) bool { return val1 == val2 }
 type compareStringFunc func(val1, val2 string) bool
 
 func makeStringSetPredicate(neededValue string, compare compareStringFunc, foundResult bool) stringSetPredicate {
-	return func(value []string) bool {
-		for _, elem := range value {
-			if compare(elem, neededValue) {
+	return func(metaVals []string) bool {
+		for _, metaVal := range metaVals {
+			if compare(metaVal, neededValue) {
 				return foundResult
 			}
 		}
