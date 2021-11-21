@@ -165,11 +165,15 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 // some zettel identifier.
 func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
 	s = s.AddExpr(api.KeyID, "!="+m.Zid.String())
-	for _, sZid := range m.GetListOrNil(api.KeyBackward) {
-		s = s.AddExpr(api.KeyID, "!="+sZid)
-	}
-	for _, sZid := range m.GetListOrNil(api.KeyFolge) {
-		s = s.AddExpr(api.KeyID, "!="+sZid)
+	for _, pair := range m.PairsRest(true) {
+		switch meta.Type(pair.Key) {
+		case meta.TypeID:
+			s = s.AddExpr(api.KeyID, "!="+pair.Value)
+		case meta.TypeIDSet:
+			for _, value := range meta.ListFromValue(pair.Value) {
+				s = s.AddExpr(api.KeyID, "!="+value)
+			}
+		}
 	}
 	return s
 }
