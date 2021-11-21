@@ -65,3 +65,23 @@ func TestIsValid(t *testing.T) {
 		}
 	}
 }
+
+var sResult string // to disable compiler optimization in loop below
+
+func BenchmarkString(b *testing.B) {
+	var s string
+	for n := 0; n < b.N; n++ {
+		s = id.Zid(12345678901200).String()
+	}
+	sResult = s
+}
+
+var bResult []byte // to disable compiler optimization in loop below
+
+func BenchmarkBytes(b *testing.B) {
+	var bs []byte
+	for n := 0; n < b.N; n++ {
+		bs = id.Zid(12345678901200).Bytes()
+	}
+	bResult = bs
+}

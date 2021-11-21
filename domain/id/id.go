@@ -91,24 +91,53 @@ func MustParse(s api.ZettelID) Zid {
 	panic(err)
 }
 
-const digits = "0123456789"
-
 // String converts the zettel identification to a string of 14 digits.
 // Only defined for valid ids.
 func (zid Zid) String() string {
-	return string(zid.Bytes())
+	var result [14]byte
+	zid.bytes(&result)
+	return string(result[:])
 }
 
 // Bytes converts the zettel identification to a byte slice of 14 digits.
 // Only defined for valid ids.
 func (zid Zid) Bytes() []byte {
-	n := uint64(zid)
-	result := make([]byte, 14)
-	for i := 13; i >= 0; i-- {
-		result[i] = digits[n%10]
-		n /= 10
-	}
-	return result
+	var result [14]byte
+	zid.bytes(&result)
+	return result[:]
+}
+
+// bytes convert the Zid into a fixed byte array.
+//
+// Based on idea by Daniel Lemire: "Converting integers to fix-digit representations quickly"
+// https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/
+func (zid Zid) bytes(result *[14]byte) {
+	date := uint64(zid) / 1000000
+	fullyear := date / 10000
+	century := fullyear / 100
+	year := fullyear % 100
+	monthday := date % 10000
+	month := monthday / 100
+	day := monthday % 100
+	time := uint64(zid) % 1000000
+	hmtime := time / 100
+	second := time % 100
+	hour := hmtime / 100
+	minute := hmtime % 100
+	result[0] = byte(century/10) + '0'
+	result[1] = byte(century%10) + '0'
+	result[2] = byte(year/10) + '0'
+	result[3] = byte(year%10) + '0'
+	result[4] = byte(month/10) + '0'
+	result[5] = byte(month%10) + '0'
+	result[6] = byte(day/10) + '0'
+	result[7] = byte(day%10) + '0'
+	result[8] = byte(hour/10) + '0'
+	result[9] = byte(hour%10) + '0'
+	result[10] = byte(minute/10) + '0'
+	result[11] = byte(minute%10) + '0'
+	result[12] = byte(second/10) + '0'
+	result[13] = byte(second%10) + '0'
 }
 
 // IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
