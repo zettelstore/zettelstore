@@ -28,6 +28,9 @@ func (s *Search) String() string {
 
 // Print the search to a writer.
 func (s *Search) Print(w io.Writer) {
+	if s == nil {
+		return
+	}
 	if s.negate {
 		io.WriteString(w, "NOT (")
 	}
