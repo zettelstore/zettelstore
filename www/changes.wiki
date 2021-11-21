@@ -10,6 +10,11 @@
      (major: webui)
   *  Add endpoint <tt>/u/{ID}</tt> to retrieve unlinked references.
      (major: api)
+  *  Selecting zettel based on their metadata allows the same syntax as
+     searching for zettel content. For example, you can list all zettel that
+     have an identifier not ending with <tt>00</tt> by using the query
+     <tt>id=!&lt;00</tt>.
+     (minor: api, webui)
   *  Remove support for <tt>//deprecated emphasized//</tt> Zettelmarkup.
      (minor: Zettelmarkup)
 

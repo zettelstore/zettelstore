@@ -15,12 +15,22 @@ import (
 	"io"
 	"sort"
 	"strconv"
+	"strings"
 
 	"zettelstore.de/c/api"
 )
 
+func (s *Search) String() string {
+	var sb strings.Builder
+	s.Print(&sb)
+	return sb.String()
+}
+
 // Print the search to a writer.
 func (s *Search) Print(w io.Writer) {
+	if s == nil {
+		return
+	}
 	if s.negate {
 		io.WriteString(w, "NOT (")
 	}
@@ -93,7 +103,7 @@ func printSelectExprValues(w io.Writer, values []expValue) {
 		case cmpDefault:
 			io.WriteString(w, " MATCH ")
 		case cmpEqual:
-			io.WriteString(w, " HAS ")
+			io.WriteString(w, " EQUAL ")
 		case cmpPrefix:
 			io.WriteString(w, " PREFIX ")
 		case cmpSuffix:

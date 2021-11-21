@@ -3,7 +3,7 @@ title: API: Select zettel based on their metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211103164030
+modified: 20211121170308
 
 Every query parameter that does __not__ begin with the low line character (""_"", ''U+005F'') is treated as the name of a [[metadata|00001006010000]] key.
 According to the [[type|00001006030000]] of a metadata key, zettel are possibly selected.
@@ -33,6 +33,9 @@ The empty query parameter values matches all zettel that contain the given metad
 Similar, if you specify just the exclamation mark character as a query parameter value, only those zettel match that does not contain the given metadata key.
 This is in contrast to above rule that the metadata value must exist before a match is done.
 For example ``curl 'http://localhost:23123/j?back=!&backward='`` returns all zettel that are reachable via other zettel, but also references these zettel.
+
+As stated above, the exact rule for comparison depends on the [[type|00001006030000]] of the specified metadata key.
+By using a [[simple search syntax|00001012051890]], you are able to specify other comparison operations.[^One is the already mentioned exclamation mark character.]
 
 Above example shows that all sub-expressions of a select specification must be true so that no zettel is rejected from the final list.
 

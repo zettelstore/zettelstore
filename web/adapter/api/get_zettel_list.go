@@ -12,7 +12,6 @@
 package api
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 
@@ -34,11 +33,6 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		var queryText bytes.Buffer
-		if s != nil {
-			s.Print(&queryText)
-		}
-
 		result := make([]api.ZidMetaJSON, 0, len(metaList))
 		for _, m := range metaList {
 			result = append(result, api.ZidMetaJSON{
@@ -49,7 +43,7 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		adapter.PrepareHeader(w, ctJSON)
 		err = encodeJSONData(w, api.ZettelListJSON{
-			Query: queryText.String(),
+			Query: s.String(),
 			List:  result,
 		})
 		if err != nil {

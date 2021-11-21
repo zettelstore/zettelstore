@@ -37,9 +37,9 @@ func TestMatchZidNegate(t *testing.T) {
 		m := meta.New(id.MustParse(tc.zid))
 		if matchFunc(m) != tc.exp {
 			if tc.exp {
-				t.Errorf("%d: meta %v must match %v", i, m.Zid, s)
+				t.Errorf("%d: meta %v must match %q", i, m.Zid, s)
 			} else {
-				t.Errorf("%d: meta %v must not match %v", i, m.Zid, s)
+				t.Errorf("%d: meta %v must not match %q", i, m.Zid, s)
 			}
 		}
 	}
