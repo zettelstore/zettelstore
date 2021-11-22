@@ -80,11 +80,31 @@ func makeWords(text string) []string {
 
 func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, candidates []*meta.Meta, words []string) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
+candLoop:
 	for _, cand := range candidates {
 		zettel, err := uc.port.GetZettel(ctx, cand.Zid)
 		if err != nil {
 			continue
 		}
+		v := unlinkedVisitor{
+			words: words,
+			found: false,
+		}
+		v.text = v.joinWords(words)
+
+		for _, pair := range zettel.Meta.Pairs(false) {
+			if meta.Type(pair.Key) != meta.TypeZettelmarkup {
+				continue
+			}
+			iln := parser.ParseMetadata(pair.Value)
+			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, iln)
+			ast.Walk(&v, iln)
+			if v.found {
+				result = append(result, cand)
+				continue candLoop
+			}
+		}
+
 		syntax := zettel.Meta.GetDefault(api.KeySyntax, "")
 		if !parser.IsTextParser(syntax) {
 			continue
@@ -94,22 +114,12 @@ func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, candidates [
 			continue
 		}
 		evaluator.EvaluateZettel(ctx, uc.port, nil, uc.rtConfig, zn)
-		if !containsWords(zn, words) {
-			continue
+		ast.Walk(&v, zn.Ast)
+		if v.found {
+			result = append(result, cand)
 		}
-		result = append(result, cand)
 	}
 	return result
-}
-
-func containsWords(zn *ast.ZettelNode, words []string) bool {
-	v := unlinkedVisitor{
-		words: words,
-		found: false,
-	}
-	v.text = v.joinWords(words)
-	ast.Walk(&v, zn.Ast)
-	return v.found
 }
 
 func (*unlinkedVisitor) joinWords(words []string) string {
