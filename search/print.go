@@ -58,32 +58,9 @@ func (s *Search) Print(w io.Writer) {
 		space = true
 	}
 
-	if ord := s.order; len(ord) > 0 {
-		switch ord {
-		case api.KeyID:
-			// Ignore
-		case RandomOrder:
-			space = printSpace(w, space)
-			io.WriteString(w, "RANDOM")
-		default:
-			space = printSpace(w, space)
-			io.WriteString(w, "SORT ")
-			io.WriteString(w, ord)
-			if s.descending {
-				io.WriteString(w, " DESC")
-			}
-		}
-	}
-	if off := s.offset; off > 0 {
-		space = printSpace(w, space)
-		io.WriteString(w, "OFFSET ")
-		io.WriteString(w, strconv.Itoa(off))
-	}
-	if lim := s.limit; lim > 0 {
-		_ = printSpace(w, space)
-		io.WriteString(w, "LIMIT ")
-		io.WriteString(w, strconv.Itoa(lim))
-	}
+	space = printOrder(w, s.order, s.descending, space)
+	space = printPosInt(w, "OFFSET", s.offset, space)
+	_ = printPosInt(w, "LIMIT", s.limit, space)
 }
 
 func printSelectExprValues(w io.Writer, values []expValue) {
@@ -121,9 +98,41 @@ func printSelectExprValues(w io.Writer, values []expValue) {
 	}
 }
 
+func printOrder(w io.Writer, order string, descending, withSpace bool) bool {
+	if len(order) > 0 {
+		switch order {
+		case api.KeyID:
+			// Ignore
+		case RandomOrder:
+			withSpace = printSpace(w, withSpace)
+			io.WriteString(w, "RANDOM")
+		default:
+			withSpace = printSpace(w, withSpace)
+			io.WriteString(w, "SORT ")
+			io.WriteString(w, order)
+			if descending {
+				io.WriteString(w, " DESC")
+			}
+		}
+	}
+	return withSpace
+}
+
+func printPosInt(w io.Writer, key string, val int, space bool) bool {
+	if val > 0 {
+		space = printSpace(w, space)
+		io.WriteString(w, key)
+		w.Write(bsSpace)
+		io.WriteString(w, strconv.Itoa(val))
+	}
+	return space
+}
+
+var bsSpace = []byte{' '}
+
 func printSpace(w io.Writer, space bool) bool {
 	if space {
-		io.WriteString(w, " ")
+		w.Write(bsSpace)
 	}
 	return true
 }

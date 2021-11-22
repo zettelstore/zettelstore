@@ -95,7 +95,7 @@ func MustParse(s api.ZettelID) Zid {
 // Only defined for valid ids.
 func (zid Zid) String() string {
 	var result [14]byte
-	zid.bytes(&result)
+	zid.toByteArray(&result)
 	return string(result[:])
 }
 
@@ -103,15 +103,15 @@ func (zid Zid) String() string {
 // Only defined for valid ids.
 func (zid Zid) Bytes() []byte {
 	var result [14]byte
-	zid.bytes(&result)
+	zid.toByteArray(&result)
 	return result[:]
 }
 
-// bytes convert the Zid into a fixed byte array.
+// toByteArray converts the Zid into a fixed byte array, usable for printing.
 //
 // Based on idea by Daniel Lemire: "Converting integers to fix-digit representations quickly"
 // https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/
-func (zid Zid) bytes(result *[14]byte) {
+func (zid Zid) toByteArray(result *[14]byte) {
 	date := uint64(zid) / 1000000
 	fullyear := date / 10000
 	century := fullyear / 100
