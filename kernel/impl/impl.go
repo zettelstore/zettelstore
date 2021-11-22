@@ -18,7 +18,9 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/debug"
+	"runtime/pprof"
 	"strconv"
 	"sync"
 	"syscall"
@@ -32,6 +34,11 @@ type myKernel struct {
 	wg        sync.WaitGroup
 	mx        sync.RWMutex
 	interrupt chan os.Signal
+
+	profileName string
+	fileName    string
+	profileFile *os.File
+	profile     *pprof.Profile
 
 	core coreService
 	cfg  configService
@@ -147,6 +154,7 @@ func (kern *myKernel) doShutdown() {
 
 func (kern *myKernel) WaitForShutdown() {
 	kern.wg.Wait()
+	kern.doStopProfiling()
 }
 
 // --- Shutdown operation ----------------------------------------------------
@@ -188,6 +196,62 @@ func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
 	os.Stderr.Write(stack)
 	kern.core.updateRecoverInfo(name, recoverInfo, stack)
 	return true
+}
+
+// --- Profiling ---------------------------------------------------------
+
+func (kern *myKernel) StartProfiling(profileName, fileName string) error {
+	kern.mx.Lock()
+	defer kern.mx.Unlock()
+	return kern.doStartProfiling(profileName, fileName)
+}
+func (kern *myKernel) doStartProfiling(profileName, fileName string) error {
+	if kern.profileName != "" {
+		return nil // TODO: error already started
+	}
+	kern.profileName = profileName
+	kern.fileName = fileName
+	if profileName == kernel.ProfileCPU {
+		f, err := os.Create(fileName)
+		if err != nil {
+			return err
+		}
+		kern.profileFile = f
+		return pprof.StartCPUProfile(f)
+	}
+	profile := pprof.Lookup(profileName)
+	if profile == nil {
+		return nil // TODO: not found
+	}
+	kern.profile = profile
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	kern.profileFile = f
+	runtime.GC() // get up-to-date statistics
+	profile.WriteTo(f, 0)
+	return nil
+}
+
+func (kern *myKernel) StopProfiling() error {
+	kern.mx.Lock()
+	defer kern.mx.Unlock()
+	return kern.doStopProfiling()
+}
+func (kern *myKernel) doStopProfiling() error {
+	if kern.profileName == "" {
+		return nil // No profile started
+	}
+	if kern.profileName == kernel.ProfileCPU {
+		pprof.StopCPUProfile()
+	}
+	err := kern.profileFile.Close()
+	kern.profileName = ""
+	kern.fileName = ""
+	kern.profile = nil
+	kern.profileFile = nil
+	return err
 }
 
 // --- Service handling --------------------------------------------------

@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211103161956
+modified: 20211122175810
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -23,7 +23,9 @@ modified: 20211103161956
 
   The value for ''RECOVER'' can be obtained via the command ``stat core``, which lists all overview data about all recoveries.
 ; ''echo''
-: Toggles the echo mode, where each command is printed before execution
+: Toggles the echo mode, where each command is printed before execution.
+; ''end-profile''
+: Stops profiling the application.
 ; ''env''
 : Display environment values.
 ; ''help''
@@ -50,6 +52,18 @@ modified: 20211103161956
   ``next-config SERVICE`` shows only the next configuration data of the given service.
 
   ``next-config SERVICE KEY`` shows the next configuration data for the given service and key.
+; ''profile [PROFILE] [FILE]''
+: Starts to profile the software with the profile PROFILE and writes profiling data to file FILE.
+  If PROFILE is not given, a value ''CPU'' is assumed, which specifies to profile CPU usage.
+  If FILE is not given, a value ''PROFILE.prof'' will be used.
+
+  Other values for ''PROFILE'' are: ''goroutine'', ''heap'', ''allocs'', ''threadcreate'', ''block'', and ''mutex''.
+  In the future, more values may be appropriate.
+  See the [[Go documentation|https://pkg.go.dev/runtime/pprof#Profile]] for details.
+
+  This feature is dependent on the internal implementation language of Zettelstore, Go.
+  It may be removed without any further notice at any time.
+  In most cases, it is a tool for software developers to optimize Zettelstore's internal workings.
 ; ''restart SERVICE''
 : Restart the given service and all other that depend on this.
 ; ''services''

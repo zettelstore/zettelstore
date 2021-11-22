@@ -11,11 +11,16 @@
 // Package main is the starting point for the zettelstore command.
 package main
 
-import "zettelstore.de/z/cmd"
+import (
+	"os"
+
+	"zettelstore.de/z/cmd"
+)
 
 // Version variable. Will be filled by build process.
 var version string = ""
 
 func main() {
-	cmd.Main("Zettelstore", version)
+	exitCode := cmd.Main("Zettelstore", version)
+	os.Exit(exitCode)
 }
