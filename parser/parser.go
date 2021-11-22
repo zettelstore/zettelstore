@@ -131,5 +131,6 @@ func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *a
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
 		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax),
+		Syntax:  syntax,
 	}
 }

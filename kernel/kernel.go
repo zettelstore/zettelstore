@@ -39,6 +39,19 @@ type Kernel interface {
 	// LogRecover outputs some information about the previous panic.
 	LogRecover(name string, recoverInfo interface{}) bool
 
+	// StartProfiling starts profiling the software according to a profile.
+	// It is an error to start more than one profile.
+	//
+	// profileName is a valid profile (see runtime/pprof/Lookup()), or the
+	// value "cpu" for profiling the CPI.
+	// fileName is the name of the file where the results are written to.
+	StartProfiling(profileName, fileName string) error
+
+	// StopProfiling stops the current profiling and writes the result to
+	// the file, which was named during StartProfiling().
+	// It will always be called before the software stops its operations.
+	StopProfiling() error
+
 	// SetConfig stores a configuration value.
 	SetConfig(srv Service, key, value string) bool
 
@@ -75,6 +88,12 @@ type Unit struct{}
 
 // ShutdownChan is a channel used to signal a system shutdown.
 type ShutdownChan <-chan Unit
+
+// Constants for profile names.
+const (
+	ProfileCPU  = "CPU"
+	ProfileHead = "heap"
+)
 
 // Service specifies a service, e.g. web, ...
 type Service uint8

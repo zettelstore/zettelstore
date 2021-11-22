@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package none provides a none-parser for meta data.
+// Package none provides a none-parser, e.g. for zettel with just metadata.
 package none
 
 import (
@@ -29,70 +29,11 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 }
-
-func parseBlocks(_ *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
-	descrlist := &ast.DescriptionListNode{}
-	for _, p := range m.Pairs(true) {
-		descrlist.Descriptions = append(
-			descrlist.Descriptions, getDescription(p.Key, p.Value))
-	}
-	return &ast.BlockListNode{List: []ast.BlockNode{descrlist}}
-}
-
-func getDescription(key, value string) ast.Description {
-	return ast.Description{
-		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
-		Descriptions: []ast.DescriptionSlice{{
-			&ast.ParaNode{
-				Inlines: convertToInlineList(value, meta.Type(key)),
-			}},
-		},
-	}
-}
-
-func convertToInlineList(value string, dt *meta.DescriptionType) *ast.InlineListNode {
-	var sliceData []string
-	if dt.IsSet {
-		sliceData = meta.ListFromValue(value)
-		if len(sliceData) == 0 {
-			return &ast.InlineListNode{}
-		}
-	} else {
-		sliceData = []string{value}
-	}
-	var makeLink bool
-	switch dt {
-	case meta.TypeID, meta.TypeIDSet:
-		makeLink = true
-	}
-
-	result := make([]ast.InlineNode, 0, 2*len(sliceData)-1)
-	for i, val := range sliceData {
-		if i > 0 {
-			result = append(result, &ast.SpaceNode{Lexeme: " "})
-		}
-		tn := &ast.TextNode{Text: val}
-		if makeLink {
-			result = append(result, &ast.LinkNode{
-				Ref:     ast.ParseReference(val),
-				Inlines: ast.CreateInlineListNode(tn),
-			})
-		} else {
-			result = append(result, tn)
-		}
-	}
-	return ast.CreateInlineListNode(result...)
+func parseBlocks(*input.Input, *meta.Meta, string) *ast.BlockListNode {
+	return &ast.BlockListNode{}
 }
 
 func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 	inp.SkipToEOL()
-	return ast.CreateInlineListNode(
-		&ast.FormatNode{
-			Kind:  ast.FormatSpan,
-			Attrs: &ast.Attributes{Attrs: map[string]string{"class": "warning"}},
-			Inlines: ast.CreateInlineListNodeFromWords(
-				"parser.meta.ParseInlines:", "not", "possible", "("+string(inp.Src[0:inp.Pos])+")",
-			),
-		},
-	)
+	return &ast.InlineListNode{}
 }

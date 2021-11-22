@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -164,8 +163,9 @@ var commands = map[string]command{
 			return true
 		},
 	},
-	"env":        {"show environment values", cmdEnvironment},
-	"get-config": {"show current configuration data", cmdGetConfig},
+	"end-profile": {"stop profiling", cmdEndProfile},
+	"env":         {"show environment values", cmdEnvironment},
+	"get-config":  {"show current configuration data", cmdGetConfig},
 	"header": {
 		"toggle table header",
 		func(sess *cmdSession, cmd string, args []string) bool {
@@ -180,6 +180,7 @@ var commands = map[string]command{
 	},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
+	"profile":     {"start profiling", cmdProfile},
 	"restart":     {"restart service", cmdRestart},
 	"services":    {"show available services", cmdServices},
 	"set-config":  {"set next configuration data", cmdSetConfig},
@@ -388,6 +389,31 @@ func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service,
 		return 0, false
 	}
 	return srvD.srvnum, true
+}
+
+func cmdProfile(sess *cmdSession, cmd string, args []string) bool {
+	var profileName string
+	if len(args) < 1 {
+		profileName = kernel.ProfileCPU
+	} else {
+		profileName = args[0]
+	}
+	var fileName string
+	if len(args) < 2 {
+		fileName = profileName + ".prof"
+	} else {
+		fileName = args[1]
+	}
+	if err := sess.kern.doStartProfiling(profileName, fileName); err != nil {
+		sess.println("Error:", err.Error())
+	}
+	return true
+}
+func cmdEndProfile(sess *cmdSession, cmd string, args []string) bool {
+	if err := sess.kern.doStopProfiling(); err != nil {
+		sess.println("Error:", err.Error())
+	}
+	return true
 }
 
 func cmdMetrics(sess *cmdSession, _ string, _ []string) bool {

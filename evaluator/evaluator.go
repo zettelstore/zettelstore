@@ -47,6 +47,11 @@ var emptyEnv Environment
 // EvaluateZettel evaluates the given zettel in the given context, with the
 // given ports, and the given environment.
 func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
+	if zn.Syntax == api.ValueSyntaxNone {
+		// AST is empty, evaluate to a description list of metadata.
+		zn.Ast = evaluateMetadata(zn.InhMeta)
+		return
+	}
 	evaluateNode(ctx, port, env, rtConfig, zn.Ast)
 	cleaner.CleanBlockList(zn.Ast)
 }

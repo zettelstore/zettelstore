@@ -266,17 +266,25 @@ func executeCommand(name string, args ...string) int {
 	return exitCode
 }
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
+
 // Main is the real entrypoint of the zettelstore.
-func Main(progName, buildVersion string) {
+func Main(progName, buildVersion string) int {
 	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreProgname, progName)
 	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreVersion, buildVersion)
-	var exitCode int
-	if len(os.Args) <= 1 {
-		exitCode = runSimple()
-	} else {
-		exitCode = executeCommand(os.Args[1], os.Args[2:]...)
+	flag.Parse()
+	if *cpuprofile != "" || *memprofile != "" {
+		if *cpuprofile != "" {
+			kernel.Main.StartProfiling(kernel.ProfileCPU, *cpuprofile)
+		} else {
+			kernel.Main.StartProfiling(kernel.ProfileHead, *memprofile)
+		}
+		defer kernel.Main.StopProfiling()
 	}
-	if exitCode != 0 {
-		os.Exit(exitCode)
+	args := flag.Args()
+	if len(args) == 0 {
+		return runSimple()
 	}
+	return executeCommand(args[0], args[1:]...)
 }
