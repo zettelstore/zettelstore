@@ -12,6 +12,7 @@
 package impl
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -200,6 +201,9 @@ func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
 
 // --- Profiling ---------------------------------------------------------
 
+var errProfileInWork = errors.New("already profiling")
+var errProfileNotFound = errors.New("profile not found")
+
 func (kern *myKernel) StartProfiling(profileName, fileName string) error {
 	kern.mx.Lock()
 	defer kern.mx.Unlock()
@@ -207,27 +211,34 @@ func (kern *myKernel) StartProfiling(profileName, fileName string) error {
 }
 func (kern *myKernel) doStartProfiling(profileName, fileName string) error {
 	if kern.profileName != "" {
-		return nil // TODO: error already started
+		return errProfileInWork
 	}
-	kern.profileName = profileName
-	kern.fileName = fileName
 	if profileName == kernel.ProfileCPU {
 		f, err := os.Create(fileName)
 		if err != nil {
 			return err
 		}
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			f.Close()
+			return err
+		}
+		kern.profileName = profileName
+		kern.fileName = fileName
 		kern.profileFile = f
-		return pprof.StartCPUProfile(f)
+		return err
 	}
 	profile := pprof.Lookup(profileName)
 	if profile == nil {
-		return nil // TODO: not found
+		return errProfileNotFound
 	}
-	kern.profile = profile
 	f, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
+	kern.profileName = profileName
+	kern.fileName = fileName
+	kern.profile = profile
 	kern.profileFile = f
 	runtime.GC() // get up-to-date statistics
 	profile.WriteTo(f, 0)

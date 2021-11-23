@@ -391,7 +391,7 @@ func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service,
 	return srvD.srvnum, true
 }
 
-func cmdProfile(sess *cmdSession, cmd string, args []string) bool {
+func cmdProfile(sess *cmdSession, _ string, args []string) bool {
 	var profileName string
 	if len(args) < 1 {
 		profileName = kernel.ProfileCPU
@@ -409,7 +409,7 @@ func cmdProfile(sess *cmdSession, cmd string, args []string) bool {
 	}
 	return true
 }
-func cmdEndProfile(sess *cmdSession, cmd string, args []string) bool {
+func cmdEndProfile(sess *cmdSession, _ string, _ []string) bool {
 	if err := sess.kern.doStopProfiling(); err != nil {
 		sess.println("Error:", err.Error())
 	}
