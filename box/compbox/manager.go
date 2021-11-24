@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package compbox provides zettel that have computed content.
 package compbox
 
 import (

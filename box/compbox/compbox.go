@@ -46,6 +46,7 @@ var myZettel = map[id.Zid]struct {
 	id.MustParse(api.ZidOperatingSystem):      {genVersionOSM, genVersionOSC},
 	id.MustParse(api.ZidBoxManager):           {genManagerM, genManagerC},
 	id.MustParse(api.ZidMetadataKey):          {genKeysM, genKeysC},
+	id.MustParse(api.ZidParser):               {genParserM, genParserC},
 	id.MustParse(api.ZidStartupConfiguration): {genConfigZettelM, genConfigZettelC},
 }
 

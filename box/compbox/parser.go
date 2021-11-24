@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -13,26 +13,37 @@ package compbox
 import (
 	"bytes"
 	"fmt"
+	"sort"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/parser"
 )
 
-func genKeysM(zid id.Zid) *meta.Meta {
+func genParserM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(api.KeyTitle, "Zettelstore Supported Metadata Keys")
+	m.Set(api.KeyTitle, "Zettelstore Supported Parser")
 	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
 
-func genKeysC(*meta.Meta) []byte {
-	keys := meta.GetSortedKeyDescriptions()
+func genParserC(*meta.Meta) []byte {
 	var buf bytes.Buffer
-	buf.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")
-	for _, kd := range keys {
-		fmt.Fprintf(&buf,
-			"|%v|%v|%v|%v\n", kd.Name, kd.Type.Name, kd.IsComputed(), kd.IsProperty())
+	buf.WriteString("|=Syntax<|=Alt. Value(s):|=Text Parser?:|=Image Format?:\n")
+	syntaxes := parser.GetSyntaxes()
+	sort.Strings(syntaxes)
+	for _, syntax := range syntaxes {
+		info := parser.Get(syntax)
+		if info.Name != syntax {
+			continue
+		}
+		altNames := info.AltNames
+		sort.Strings(altNames)
+		fmt.Fprintf(
+			&buf, "|%v|%v|%v|%v\n",
+			syntax, strings.Join(altNames, ", "), info.IsTextParser, info.IsImageFormat)
 	}
 	return buf.Bytes()
 }

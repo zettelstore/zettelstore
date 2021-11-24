@@ -20,6 +20,9 @@
   *  Add options to profile the software. Profiling can be enabled at the
      command line or via the administrator console.
      (minor)
+  *  Add computed zettel that lists all supported parser / recognized zettel
+     syntaxes.
+     (minor)
 
 <a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>

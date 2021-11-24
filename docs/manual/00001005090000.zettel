@@ -3,7 +3,7 @@ title: List of predefined zettel
 role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
-modified: 20211124170944
+modified: 20211124193533
 
 The following table lists all predefined zettel with their purpose.
 
@@ -16,6 +16,7 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000000006]] | Zettelstore Dependencies | Lists all licensed content
 | [[00000000000020]] | Zettelstore Box Manager | Contains some statistics about zettel boxes and the the index process
 | [[00000000000090]] | Zettelstore Supported Metadata Keys | Contains all supported metadata keys, their [[types|00001006030000]], and more
+| [[00000000000092]] | Zettelstore Supported Parser | Lists all supported values for metadata [[syntax|00001006020000#syntax]] that are recognized by Zettelstore
 | [[00000000000096]] | Zettelstore Startup Configuration | Contains the effective values of the [[startup configuration|00001004010000]]
 | [[00000000000100]] | Zettelstore Runtime Configuration | Allows to [[configure Zettelstore at runtime|00001004020000]]
 | [[00000000010100]] | Zettelstore Base HTML Template | Contains the general layout of the HTML view
