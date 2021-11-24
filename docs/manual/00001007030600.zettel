@@ -1,8 +1,9 @@
 id: 00001007030600
 title: Zettelmarkup: Quotation Blocks
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211124174017
 
 A simple way to enter a quotation is to use the [[quotation list|00001007030200]].
 A quotation list loosely follows the convention of quoting text within emails.
@@ -27,7 +28,7 @@ A quotation with an embedded quotation
 <<<{style=color:green}
 Embedded
 <<< Embedded Author
-<<<<
+<<<< Quotation Author
 ```
 will be rendered in HTML as:
 :::example

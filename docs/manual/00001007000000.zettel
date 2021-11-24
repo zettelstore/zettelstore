@@ -3,7 +3,7 @@ title: Zettelmarkup
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211113193357
+modified: 20211124173311
 
 Zettelmarkup is a rich plain-text based markup language for writing zettel content.
 Besides the zettel content, Zettelmarkup is also used for specifying the title of a zettel, regardless of the syntax of a zettel.
@@ -26,7 +26,7 @@ It provides a broad range of inline formatting, including __emphasized__, **stro
 Footnotes[^like this] are supported, links to other zettel and to external material, as well as citation keys.
 
 Zettelmarkup might be seen as a proprietary markup language.
-But if you want to use Markdown/CommonMark and you need support for footnotes, you'll end up with a proprietary extension.
+But if you want to use [[Markdown/CommonMark|00001008010000]] and you need support for footnotes or tables, you'll end up with proprietary extensions.
 However, the Zettelstore supports CommonMark as a zettel syntax, so you can mix both Zettelmarkup zettel and CommonMark zettel in one store to get the best of both worlds.
 
 * [[General principles|00001007010000]]

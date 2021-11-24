@@ -3,6 +3,7 @@ title: Supported values for metadata key ''read-only''
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20211124132040
 
 A zettel can be marked as read-only, if it contains a metadata value for key
 [[''read-only''|00001006020000#read-only]].
@@ -15,7 +16,7 @@ If there is no metadata value for key ''read-only'' or if its [[boolean value|00
 is interpreted as ""false"", anybody can modify the zettel.
 
 If the metadata value is something else (the value ""true"" is recommended),
-the user cannot modify the zettel through the web interface.
+the user cannot modify the zettel through the [[web user interface|00001014000000]].
 However, if the zettel is stored as a file in a [[directory box|00001004011400]],
 the zettel could be modified using an external editor.
 
@@ -34,7 +35,7 @@ users with that role (or a role with lower rights) are not allowed to modify the
   Only the owner of the Zettelstore can modify the zettel.
 
 If the metadata value is something else (one of the values ""true"" or ""owner"" is recommended),
-no user is allowed modify the zettel through the web interface.
+no user is allowed modify the zettel through the [[web user interface|00001014000000]].
 However, if the zettel is accessible as a file in a [[directory box|00001004011400]],
 the zettel could be modified using an external editor.
 Typically the owner of a Zettelstore have such an access.

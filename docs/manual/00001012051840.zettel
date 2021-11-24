@@ -3,7 +3,7 @@ title: API: Shape the list of zettel metadata by searching the content
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211121165041
+modified: 20211124182444
 
 The query parameter ""''_s''"" allows to provide a string for a full-text search of all zettel.
 The search string will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
@@ -14,4 +14,4 @@ Otherwise, the content of each zettel is examined to just contain the words of t
 You are allowed to specify this query parameter more than once.
 All results will be intersected, i.e. a zettel will be included into the list if all of the provided values match.
 
-This parameter loosely resembles the search box of the web user interface.
+This parameter loosely resembles the search form of the [[web user interface|00001014000000]].

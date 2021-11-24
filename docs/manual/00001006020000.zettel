@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20211103163613
+modified: 20211124141832
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -93,9 +93,9 @@ Most keys conform to a [[type|00001006030000]].
 ; [!url]''url''
 : Defines an URL / URI for this zettel that possibly references external material.
   One use case is to specify the document that the current zettel comments on.
-  The URL will be rendered special on the web user interface if you use the default template.
+  The URL will be rendered special in the [[web user interface|00001014000000]] if you use the default template.
 ; [!user-id]''user-id''
-: Provides some unique user identification for a user zettel.
+: Provides some unique user identification for an [[user zettel|00001010040200]].
   It is used as a user name for authentication.
 
   It is only used for zettel with a ''role'' value of ""user"".

@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103162150
+modified: 20211124165337
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -37,7 +37,7 @@ The backslash character (""''\\''"", ''U+005C'') gives the next character anothe
 * If a space character follows, it is converted in a non-breaking space (''U+00A0'').
 * If a line ending follows the backslash character, the line break is converted from a __soft break__ into a __hard break__.
 * Every other character is taken as itself, but without the interpretation of a Zettelmarkup element.
-  For example, if you want to enter a ""'']''"" into a footnote text, you should escape it with a backslash.
+  For example, if you want to enter a ""'']''"" into a [[footnote text|00001007040330]], you should escape it with a backslash.
 
 ==== Tag
 Any text that begins with a number sign character (""''#''"", ''U+0023''), followed by a non-empty sequence of Unicode letters, Unicode digits, the hyphen-minus character (""''-''"", ''U+002D''), or the low line character (""''_''"", ''U+005F'') is interpreted as an __inline tag__.

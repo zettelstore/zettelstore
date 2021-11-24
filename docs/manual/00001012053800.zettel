@@ -3,14 +3,14 @@ title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211103163027
+modified: 20211124180826
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
 
 The context is defined by a __direction__, a __depth__, and a __limit__:
 * Direction: connections are directed.
-  For example, the metadata value of ''backward'' lists all zettel that link to the current zettel, while ''formward'' list all zettel to which the current zettel links.
+  For example, the metadata value of ''backward'' lists all zettel that link to the current zettel, while ''forward'' list all zettel to which the current zettel links to.
   When you are only interested in one direction, set the parameter ''dir'' either to the value ""backward"" or ""forward"".
   All other values, including a missing value, is interpreted as ""both"".
 * Depth: a direct connection has depth 1, an indirect connection is the length of the shortest path between two zettel.
@@ -55,7 +55,7 @@ Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the
 === Keys
 The following top-level JSON keys are returned:
 ; ''id''
-: The zettel identifier for which the context was requested.
+: The [[zettel identifier|00001006050000]] for which the context was requested.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
 ; ''list''

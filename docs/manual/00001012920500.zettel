@@ -1,9 +1,9 @@
 id: 00001012920500
-title: Encodings available by the API
+title: Encodings available via the [[API|00001012000000]]
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20210727120214
+modified: 20211124140517
 
 A zettel representation can be encoded in various formats for further processing.
 

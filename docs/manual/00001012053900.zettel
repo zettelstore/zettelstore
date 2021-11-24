@@ -3,7 +3,7 @@ title: API: Retrieve unlinked references to an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211119140140
+modified: 20211124180858
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -39,7 +39,7 @@ Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the
 
 This call searches within all zettel whether the title of the specified zettel occurs there.
 The other zettel must not link to the specified zettel.
-The title must not occur within a link (e.g. to another zettel), in a heading, in a citation, and must have a uniform formatting.
+The title must not occur within a link (e.g. to another zettel), in a [[heading|00001007030300]], in a [[citation|00001007040340]], and must have a uniform formatting.
 The match must be exact, but is case-insensitive.
 
 If the title of the specified zettel contains some extra character that probably reduce the number of found unlinked references,
@@ -55,7 +55,7 @@ In addition, you are allowed to specify all query parameter to [[select zettel b
 === Keys
 The following top-level JSON keys are returned:
 ; ''id''
-: The zettel identifier for which the context was requested.
+: The [[zettel identifier|00001006050000]] for which the unlinked references were requested.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
 ; ''list''

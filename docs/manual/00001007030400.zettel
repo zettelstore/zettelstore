@@ -1,8 +1,9 @@
 id: 00001007030400
-title: Zettelmarkup: Horizontal Rule
+title: Zettelmarkup: Horizontal Rules / Thematic Break
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211124174251
 
 To signal a thematic break, you can specify a horizonal rule.
 This is done by entering at least three hyphen-minus characters (""''-''"", ''U+002D'') at the first position of a line.

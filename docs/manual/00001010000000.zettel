@@ -3,6 +3,7 @@ title: Security
 role: manual
 tags: #configuration #manual #security #zettelstore
 syntax: zmk
+modified: 20211124140614
 
 Your zettel could contain sensitive content.
 You probably want to ensure that only authorized person can read and/or modify them.
@@ -39,7 +40,7 @@ It is up to you.
 
 If someone is authenticated as the owner of the Zettelstore (hopefully you), no restrictions apply.
 But as an owner, you can create ""user zettel"" to allow others to access your Zettelstore in various ways.
-Even if you do not want to share your Zettelstore with other persons, creating user zettel can be useful if you plan to access your Zettelstore via the API.
+Even if you do not want to share your Zettelstore with other persons, creating user zettel can be useful if you plan to access your Zettelstore via the [[API|00001012000000]].
 
 Additionally, you can specify that a zettel is publicily visible.
 In this case no one has to authenticate itself to see the content of the zettel.

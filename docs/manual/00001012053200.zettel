@@ -3,7 +3,7 @@ title: API: Create a new zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210905204325
+modified: 20211124180030
 
 A zettel is created by adding it to the [[list of zettel|00001012000000#zettel-lists]].
 Therefore, the [[endpoint|00001012920000]] to create a new zettel is also ''/j'', but you must send the data of the new zettel via a HTTP POST request.
@@ -35,7 +35,7 @@ The new zettel will have no content, its title will be set to the value of [[''d
 ```
 If creating the zettel was successful, the HTTP response will contain a JSON object with one key:
 ; ''"id"''
-: Contains the zettel identifier of the created zettel for further usage.
+: Contains the [[zettel identifier|00001006050000]] of the created zettel for further usage.
 
 In addition, the HTTP response header contains a key ''Location'' with a relative URL for the new zettel.
 A client must prepend the HTTP protocol scheme, the host name, and (optional, but often needed) the post number to make it an absolute URL.
@@ -56,7 +56,7 @@ This is the same format as used by storing zettel within a [[directory box|00001
 
 === HTTP Status codes
 ; ''201''
-: Zettel creation was successful, the body contains a JSON object that contains its zettel identifier.
+: Zettel creation was successful, the body contains its [[zettel identifier|00001006050000]] (JSON object or plain text).
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.

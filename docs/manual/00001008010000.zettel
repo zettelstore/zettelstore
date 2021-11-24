@@ -3,7 +3,7 @@ title: Use Markdown within Zettelstore
 role: manual
 tags: #manual #markdown #zettelstore
 syntax: zmk
-modified: 20210726191610
+modified: 20211124134155
 
 If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
 Zettelstore supports [[CommonMark|https://commonmark.org/]], an [[attempt|https://xkcd.com/927/]] to unify all the different, divergent dialects of Markdown.
@@ -44,4 +44,4 @@ Any HTML text that might contain the ``<script>`` tag or the ``<iframe>`` tag is
 This may lead to unexpected results if you depend on these.
 Other [[encodings|00001012920500]] may still contain the full HTML text.
 
-Any external client of Zettelstore, which does not use Zettelstore's HTML encoding, must be programmed to take care of malicious code.
+Any external client of Zettelstore, which does not use Zettelstore's [[HTML encoding|00001012920510]], must be programmed to take care of malicious code.

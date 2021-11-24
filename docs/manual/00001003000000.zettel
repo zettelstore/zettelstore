@@ -3,6 +3,7 @@ title: Installation of the Zettelstore software
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
+modified: 20211124131535
 
 === The curious user
 You just want to check out the Zettelstore software
@@ -14,7 +15,7 @@ You just want to check out the Zettelstore software
 * Open the URI [[http://localhost:23123]] with your web browser.
   It will present you a mostly empty Zettelstore.
   There will be a zettel titled ""[[Home|00010000000000]]"" that contains some helpful information.
-* Please read the instructions for the web-based user interface and learn about the various ways to write zettel.
+* Please read the instructions for the [[web-based user interface|00001014000000]] and learn about the various ways to write zettel.
 * If you restart your device, please make sure to start your Zettelstore again.
 
 === The intermediate user

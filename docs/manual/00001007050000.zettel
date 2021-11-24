@@ -3,7 +3,7 @@ title: Zettelmarkup: Attributes
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103162617
+modified: 20211124174947
 
 Attributes allows to modify the way how material is presented.
 Alternatively, they provide additional information to markup elements.
@@ -54,7 +54,7 @@ For example, when used for plain text, it replaces the non-visible space with a 
 * ++``Hello, world``{-}++ produces ==Hello, world=={-}.
 * ++``Hello, world``++ produces ==Hello, world==.
 
-For some block elements, there is a syntax variant if you only want to specify a generic attribute.
+For some [[block-structured elements|00001007030000]], there is a syntax variant if you only want to specify a generic attribute.
 For all line-range blocks you can specify the generic attributes directly in the first line, after the three (or more) block characters.
 
 ```
@@ -89,7 +89,7 @@ is not allowed. Same for
 green"}
 ```.
 
-For inlines, the attributes must immediately follow the inline markup.
+For [[inline-structued elements|00001007040000]], the attributes must immediately follow the inline markup.
 However, the attributes may be continued on the next line when a space or line ending character is possible.
 
 ``::GREEN::{style=color:green}`` is allowed, but not ``::GREEN:: {style=color:green}``.

@@ -3,13 +3,13 @@ title: API: Encode Zettelmarkup inline material as HTML/Text
 role: zettel
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211111145202
+modified: 20211124175431
 
 To encode [[Zettelmarkup inline material|00001007040000]] send a HTTP POST request to the [[endpoint|00001012920000]] ''/v''.
 The POST body must contain a JSON encoded list of Zettelmarkup inline material to be encoded:
 
 ; ''first-zmk''
-: Contains the first Zettelmarkup encoded material.
+: Contains the first [[Zettelmarkup encoded|00001007000000]] inline-structured elements.
   This will be encoded as [[HTML|00001012920510]] and [[Text|00001012920519]].
 ; ''other-zmk''
 : Contain more material.
@@ -34,7 +34,7 @@ If successful, the call will return the following JSON document:
 : HTML encoding of the corresponding value in ''other-zmk''.
 
 Encoding takes place in the context of all other zettel in the Zettelstore.
-For example, links and images are evaluated according to this context.
+For example, [[links|00001007040310]] and images are evaluated according to this context.
 
 A simple example:
 ```sh

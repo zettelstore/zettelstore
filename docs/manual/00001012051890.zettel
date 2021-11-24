@@ -1,9 +1,9 @@
 id: 00001012051890
-title: Search syntax (simple)
+title: API: Search syntax (simple)
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211121170705
+modified: 20211124135846
 
 If the search string starts with the exclamation mark character (""!"", ''U+0021''), it will be removed and the query matches all values that **do not match** the search string.
 

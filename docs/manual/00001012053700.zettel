@@ -3,7 +3,7 @@ title: API: Retrieve references of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210825225643
+modified: 20211124180813
 
 The web of zettel is one important value of a Zettelstore.
 Many zettel references other zettel, embedded material, external/local material or, via citations, external literature.
@@ -31,7 +31,7 @@ Formatted, this translates into:
 === Kind
 The following top-level JSON keys are returned:
 ; ''id''
-: The zettel identifier for which the references were requested.
+: The [[zettel identifier|00001006050000]] for which the references were requested.
 ; ''linked''
 : A JSON object that contains information about incoming and outgoing [[links|00001007040300#links]].
 ; ''embedded''

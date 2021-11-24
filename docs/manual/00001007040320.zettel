@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline Embedding / Transclusion
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20210811162201
+modified: 20211124183250
 
 To some degree, an specification for embedded material is conceptually not too far away from a specification for [[linked material|00001007040310]].
 Both contain a reference specification and optionally some text.
@@ -16,7 +16,7 @@ The curly brackets delimits either a reference specification or some text, a ver
 One difference to a link: if the text was not given, an empty string is assumed.
 
 The reference must point to some content, either zettel content or URL-referenced content.
-If the referenced zettel does not exist, or is not readable, a spinning emoji is presented as a visual hint:
+If the referenced zettel does not exist, or is not readable, a [[spinning emoji|00000000040001]] is presented as a visual hint:
  
 Example: ``{{00000000000000}}`` will be rendered as ::{{00000000000000}}::{=example}.
 

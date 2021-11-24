@@ -3,7 +3,7 @@ title: Zettelmarkup: Tables
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103161859
+modified: 20211124174218
 
 Tables are used to show some data in a two-dimenensional fashion.
 In zettelmarkup, table are not specified explicitly, but by entering __table rows__.
@@ -91,9 +91,9 @@ will be rendered in HTML as:
 
 === Rows to be ignored
 A line that begins with the sequence ''|%'' (vertical bar character (""''|''"", ''U+007C''), followed by a percent sign character (“%”, U+0025)) will be ignored.
-This allows to specify a horizontal rule that is not rendered.
+For example, this allows to specify a horizontal rule that is not rendered.
 Such tables are emitted by some commands of the [[administrator console|00001004100000]].
-For example, the command ``get-config box`` will emit
+For example, the command ``get-config box`` will emit:
 ```
 |=Key        | Value  | Description
 |%-----------+--------+---------------------------

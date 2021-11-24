@@ -3,7 +3,7 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20211103163918
+modified: 20211124183108
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -11,13 +11,13 @@ Typically, file names and file content must comply to specific rules so that Zet
 If you add, delete, or change zettel files with other tools, e.g. a text editor, Zettelstore will monitor these actions.
 
 Zettelstore provides additional services to the user.
-Via a builtin web interface you can work with zettel in various ways.
+Via the builtin [[web user interface|00001014000000]] you can work with zettel in various ways.
 For example, you are able to list zettel, to create new zettel, to edit them, or to delete them.
 You can view zettel details and relations between zettel.
 
-In addition, Zettelstore provides an ""application programming interface"" (API) that allows other software to communicate with the Zettelstore.
+In addition, Zettelstore provides an ""application programming interface"" ([[API|00001012000000]]) that allows other software to communicate with the Zettelstore.
 Zettelstore becomes extensible by external software.
-For example, a more sophisticated web interface could be build, or an application for your mobile device that allows you to send content to your Zettelstore as new zettel.
+For example, a more sophisticated user interface could be build, or an application for your mobile device that allows you to send content to your Zettelstore as new zettel.
 
 === Where zettel are stored
 
@@ -27,7 +27,7 @@ The directory has to be specified at [[startup time|00001004010000]].
 Nested directories are not supported (yet).
 
 Every file in this directory that should be monitored by Zettelstore must have a file name that begins with 14 digits (0-9), the [[zettel identifier|00001006050000]].
-If you create a new zettel via the web interface or the API, the zettel identifier will be the timestamp of the current date and time (format is ''YYYYMMDDhhmmss'').
+If you create a new zettel via the [[web user interface|00001014000000]] or via the [[API|00001012053200]], the zettel identifier will be the timestamp of the current date and time (format is ''YYYYMMDDhhmmss'').
 This allows zettel to be sorted naturally by creation time.
 
 Since the only restriction on zettel identifiers are the 14 digits, you are free to use other digit sequences.
@@ -55,14 +55,14 @@ Here the ''.zettel'' extension will signal that the metadata and the zettel cont
 
 Zettelstore contains some [[predefined zettel|00001005090000]] to work properly.
 The [[configuration zettel|00001004020000]] is one example.
-To render the builtin web interface, some templates are used, as well as a layout specification in CSS.
-The icon that visualizes a broken image is a predefined GIF image.
+To render the builtin [[web user interface|00001014000000]], some templates are used, as well as a [[layout specification in CSS|00000000020001]].
+The icon that visualizes a broken image is a [[predefined GIF image|00000000040001]].
 All of these are visible to the Zettelstore as zettel.
 
 One reason for this is to allow you to modify these zettel to adapt Zettelstore to your needs and visual preferences.
 
 Where are these zettel stored?
-They are stored within the Zettelstore software itself, because one design goal was to have just one executable file to use Zettelstore.
+They are stored within the Zettelstore software itself, because one [[design goal|00001002000000]] was to have just one executable file to use Zettelstore.
 But data stored within an executable programm cannot be changed later[^Well, it can, but it is a very bad idea to allow this. Mostly for security reasons.].
 
 To allow changing predefined zettel, both the file store and the internal zettel store are internally chained together.
@@ -76,7 +76,7 @@ Now we have two places where zettel are stored: in the specific directory and wi
 
 * [[List of predefined zettel|00001005090000]]
 
-=== Boxes: other ways to store zettel
+=== Boxes: alternative ways to store zettel
 As described above, a zettel may be stored as a file inside a directory or inside the Zettelstore software itself.
 Zettelstore allows other ways to store zettel by providing an abstraction called __box__.[^Formerly, zettel were stored physically in boxes, often made of wood.]
 

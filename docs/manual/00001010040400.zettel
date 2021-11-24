@@ -1,8 +1,9 @@
 id: 00001010040400
 title: Authentication process
+role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
-role: manual
+modified: 20211124141915
 
 When someone tries to authenticate itself with an user identifier / ""user name"" and a password, the following process is executed:
 
@@ -14,4 +15,4 @@ When someone tries to authenticate itself with an user identifier / ""user name"
 # If the zettel does not have a value for the meta key ''credential'', authentication fails.
 # The value of the meta key ''credential'' is compared with the given password.
   If they do not match, authentication fails.
-The authentication is successful, because the Zettelstore has an owner, the identifier matches a user zettel, and the password conforms to the stored credential.
+The authentication is successful, because the Zettelstore has an owner, the identifier matches an [[user zettel|00001010040200]], and the password conforms to the stored credential.

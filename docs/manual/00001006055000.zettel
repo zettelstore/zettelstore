@@ -3,7 +3,7 @@ title: Reserved zettel identifier
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20211001125243
+modified: 20211124182600
 
 [[Zettel identifier|00001006050000]] are typically created by examine the current date and time.
 By renaming a zettel, you are able to provide any sequence of 14 digits.
@@ -32,7 +32,7 @@ The request must include the following data:
 |= From | To | Description
 | 00000000000000 | 0000000000000 | This is an invalid zettel identifier
 | 00000000000001 | 0000009999999 | [[Predefined zettel|00001005090000]]
-| 00000100000000 | 0000019999999 | Zettelstore manual
+| 00000100000000 | 0000019999999 | This [[Zettelstore manual|00001000000000]]
 | 00000200000000 | 0000899999999 | Reserved for future use
 | 00009000000000 | 0000999999999 | Reserved for applications
 

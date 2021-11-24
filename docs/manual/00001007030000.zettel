@@ -1,8 +1,9 @@
 id: 00001007030000
-title: Zettelmarkup: Blocks-Structured Elements
+title: Zettelmarkup: Block-Structured Elements
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20211124174747
 
 Every markup for blocks-structured elements (""blocks"") begins at the very first position of a line.
 
@@ -33,10 +34,10 @@ This allows line-range blocks to be nested.
 Additionally, all other blocks elements are allowed in line-range blocks.
 
 * [[Verbatim blocks|00001007030500]] do not interpret their content,
-* [[Quotation blocks|00001007030600]] specify a block-length quotation,
-* [[Verse blocks|00001007030700]] allow to enter poetry, lyrics and similar text, where line endings are important
-* [[Region blocks|00001007030800]] just mark a region, e.g. for common formatting
-* [[Comment blocks|00001007030900]] allow to enter text that will be ignored when rendered
+* [[Quotation blocks|00001007030600]] specify a block-length quotations,
+* [[Verse blocks|00001007030700]] allow to enter poetry, lyrics and similar text, where line endings are important,
+* [[Region blocks|00001007030800]] just mark regions, e.g. for common formatting,
+* [[Comment blocks|00001007030900]] allow to enter text that will be ignored when rendered.
 
 === Tables
 

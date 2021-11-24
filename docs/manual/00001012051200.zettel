@@ -3,7 +3,7 @@ title: API: List metadata of all zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211004124401
+modified: 20211124175849
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/j''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
@@ -14,7 +14,7 @@ If successful, the output is a JSON object:
 ```
 
 The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
-These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the zettel identifier), , and ''"meta"'' (value as a JSON object).
+These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the [[zettel identifier|00001006050000]]), and ''"meta"'' (value as a JSON object).
 The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
 
 Additionally, the JSON object contains a key ''"query"'' with a string value.
@@ -79,7 +79,7 @@ In this special case, the metadata of each zettel just contains the four default
 
 [!plain]Alternatively, you can retrieve the list of zettel in a simple, plain format using the [[endpoint|00001012920000]] ''/z''.
 In this case, a plain text document is returned, with one line per zettel.
-Each line contains in the first 14 characters the zettel identifier.
+Each line contains in the first 14 characters the [[zettel identifier|00001006050000]].
 Separated by a space character, the title of the zettel follows:
 
 ```sh

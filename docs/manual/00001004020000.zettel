@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210810103936
+modified: 20211124175528
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called ""configuration zettel"".
@@ -31,7 +31,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
   Default: ''zettel''.
 ; [!default-syntax]''default-syntax''
 : Syntax to be used, if a zettel specifies no ''syntax'' [[meta key|00001006020000]].
-  Default: ''zmk'' (""Zettelmarkup"").
+  Default: ''zmk'' (""[[Zettelmarkup|00001007000000]]"").
 ; [!default-title]''default-title''
 : Title to be used, if a zettel specifies no ''title'' [[meta key|00001006020000]].
   Default: ''Untitled''.
@@ -41,7 +41,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : Visibility to be used, if zettel does not specify a value for the [[''visibility''|00001006020000#visibility]] metadata key.
   Default: ''login''.
 ; [!expert-mode]''expert-mode''
-: If set to a boolean true value, all zettel with [[visibility ""expert""|00001010070200]] will be shown (to the owner, if authentication is enabled; to all, otherwise).
+: If set to a boolean true value, all zettel with [[visibility ""expert""|00001010070200]] will be shown (to the owner, if [[authentication is enabled|00001010040100]]; to all, otherwise).
   This affects most computed zettel.
   Default: False.
 ; [!footer-html]''footer-html''
@@ -53,7 +53,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : Specifies the identifier of the zettel, that should be presented for the default view / home view.
   If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
 ; [!marker-external]''marker-external''
-: Some HTML code that is displayed after a reference to external material.
+: Some HTML code that is displayed after a [[reference to external material|00001007040310]].
   Default: ''&\#10138;'', to display a ""&#10138;"" sign.
 ; [!max-transclusions]''max-transclusions''
 : Maximum number of indirect transclusion.

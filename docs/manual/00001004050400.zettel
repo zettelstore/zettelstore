@@ -3,7 +3,7 @@ title: The ''version'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210712234031
+modified: 20211124182041
 
 Emits some information about the Zettelstore's version.
 This allows you to check, whether your installed Zettelstore is 
@@ -25,3 +25,6 @@ Licensed under the latest version of the EUPL (European Union Public License)
 ```
 In this example, Zettelstore is running in the released version ""1.0.2"" and was compiled using [[Go, version 1.16.5|https://golang.org/doc/go1.16]].
 The software was build for running under a Linux operating system with an ""amd64"" processor.
+
+The build version is also stored in the public, [[predefined|00001005090000]] zettel titled ""[[Zettelstore Version|00000000000001]]"".
+However, to access this zettel, you need a [[running zettelstore|00001004051000]].
