@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -107,6 +108,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		if phrase == "" {
 			phrase = textTitle
 		}
+		phrase = strings.TrimSpace(phrase)
 		unlinkedMeta, err := unlinkedRefs.Run(
 			ctx, phrase, adapter.AddUnlinkedRefsToSearch(nil, zn.InhMeta))
 		if err != nil {
