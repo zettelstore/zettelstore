@@ -353,8 +353,16 @@ func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
 		}
 		metaList = metaList[s.offset:]
 	}
+	return s.Limit(metaList)
+}
+
+// Limit returns only s.GetLimit() elements of the given list.
+func (s *Search) Limit(metaList []*meta.Meta) []*meta.Meta {
+	if s == nil {
+		return metaList
+	}
 	if s.limit > 0 && s.limit < len(metaList) {
-		metaList = metaList[:s.limit]
+		return metaList[:s.limit]
 	}
 	return metaList
 }

@@ -9,6 +9,12 @@
      have an identifier not ending with <tt>00</tt> by using the query
      <tt>id=!&lt;00</tt>.
      (minor: api, webui)
+  *  Show unlinked references in info page of each zettel. Unlinked references
+     are phrases within zettel content that might reference another zettel with
+     the same title as the phase.
+     (major: webui)
+  *  Add endpoint <tt>/u/{ID}</tt> to retrieve unlinked references.
+     (major: api)
   *  Remove support for <tt>//deprecated emphasized//</tt> Zettelmarkup.
      (minor: Zettelmarkup)
   *  Add options to profile the software. Profiling can be enabled at the

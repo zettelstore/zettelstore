@@ -1,0 +1,73 @@
+id: 00001012053900
+title: API: Retrieve unlinked references to an existing zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20211119140140
+
+The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
+If the number of zettel grow, some of these connections are missing.
+There are various reasons for this.
+Maybe, you forgot that a zettel exists.
+Or you add a zettel later, but forgot that previous zettel already mention its title.
+
+__Unlinked references__ are phrases in a zettel that mention the title of another, currently unlinked zettel.
+
+To retrieve unlinked references to an existing zettel, use the [[endpoint|00001012920000]] ''/u/{ID}''.
+
+````
+# curl 'http://127.0.0.1:23123/u/00001007000000'
+{"id": "00001007000000","meta": {...},"list": [{"id": "00001012070500","meta": {...}},{"id": "00001006020000","meta": {...}}]}
+````
+Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
+````json
+{
+  "id": "00001007000000",
+  "meta": {...},
+  "list": [
+    {
+      "id": "00001012070500",
+      "meta": {...}
+    },
+    {
+      "id": "00001006020000",
+      "meta": {...}
+    }
+  ]
+}
+````
+
+This call searches within all zettel whether the title of the specified zettel occurs there.
+The other zettel must not link to the specified zettel.
+The title must not occur within a link (e.g. to another zettel), in a heading, in a citation, and must have a uniform formatting.
+The match must be exact, but is case-insensitive.
+
+If the title of the specified zettel contains some extra character that probably reduce the number of found unlinked references,
+you can specify the title phase to be searched for as a query parameter ''_phrase'':
+
+````
+# curl 'http://127.0.0.1:23123/u/00001007000000?phrase=markdown'
+{"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...}},{"id": "00001004020000","meta": {...}}]}
+````
+
+In addition, you are allowed to specify all query parameter to [[select zettel based on their metadata|00001012051810]], to [[limit the length of the returned list|00001012051830]], and to [[sort the returned list|00001012052000]]. You are allowed to limit the search only for those zettel with some [[specific content|00001012051840]].
+
+=== Keys
+The following top-level JSON keys are returned:
+; ''id''
+: The zettel identifier for which the context was requested.
+; ''meta'':
+: The metadata of the zettel, encoded as a JSON object.
+; ''list''
+: A list of JSON objects with keys ''id'' and ''meta'' that describe zettel with unlinked references.
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.
+; ''400''
+: Request was not valid.
+; ''403''
+: You are not allowed to retrieve data of the given zettel.
+; ''404''
+: Zettel not found.
+  You probably used a zettel identifier that is not used in the Zettelstore.
