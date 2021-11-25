@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
 package ast
 
 // Definition of Block nodes.

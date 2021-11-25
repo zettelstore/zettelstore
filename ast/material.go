@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
 package ast
 
 // MaterialNode references the various types of zettel material.

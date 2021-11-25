@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
 package ast
 
 // Definitions of inline nodes.
@@ -38,7 +37,7 @@ func CreateInlineListNodeFromWords(words ...string) *InlineListNode {
 	return &InlineListNode{List: inl}
 }
 
-// WalkChildren walks down to the descriptions.
+// WalkChildren walks down to the list.
 func (iln *InlineListNode) WalkChildren(v Visitor) {
 	for _, bn := range iln.List {
 		Walk(v, bn)

@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
 package ast
 
 // Visitor is a visitor for walking the AST.
@@ -21,6 +20,12 @@ func Walk(v Visitor, node Node) {
 	if v = v.Visit(node); v == nil {
 		return
 	}
+
+	// Implementation note:
+	// It is much faster to use interface dispatching than to use a switch statement.
+	// On my "cpu: Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz", a switch statement
+	// implementation tooks approx 940-980 ns/op. Interface dispatching is in the
+	// range of 900-930 ns/op.
 	node.WalkChildren(v)
 	v.Visit(nil)
 }

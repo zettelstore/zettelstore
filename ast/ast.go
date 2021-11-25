@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
+// Package ast provides the abstract syntax tree for parsed zettel content.
 package ast
 
 import (

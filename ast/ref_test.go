@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast_test provides the tests for the abstract syntax tree.
 package ast_test
 
 import (

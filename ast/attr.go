@@ -8,12 +8,9 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package ast provides the abstract syntax tree.
 package ast
 
-import (
-	"strings"
-)
+import "strings"
 
 // Attributes store additional information about some node types.
 type Attributes struct {
