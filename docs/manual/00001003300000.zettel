@@ -1,0 +1,26 @@
+id: 00001003300000
+title: Zettelstore installation for the intermediate user
+role: manual
+tags: #installation #manual #zettelstore
+syntax: zmk
+modified: 20211125190643
+
+You already tried the Zettelstore software and now you want to use it permanently.
+Zettelstore should start automatically when you log into your computer.
+
+* Grab the appropriate executable and copy it into the appropriate directory
+* If you want to place your zettel into another directory, or if you want more than one [[Zettelstore box|00001004011200]], or if you want to [[enable authentication|00001010040100]], or if you want to tweak your Zettelstore in some other way, create an appropriate [[startup configuration file|00001004010000]].
+* If you created a startup configuration file, you need to test it:
+** Start a command line prompt for your operating system.
+** Navigate to the directory, where you placed the Zettelstore executable.
+   In most cases, this is done by the command ``cd DIR``, where ''DIR'' denotes the directory, where you placed the executable.
+** Start the Zettelstore:
+*** On Windows execute the command ``zettelstore.exe run -c CONFIG_FILE``
+*** On macOS execute the command ``./iZettelstore run -c CONFIG_FILE``
+*** On Linux execute the command ``./zettelstore run -c CONFIG_FILE``
+** In all cases ''CONFIG_FILE'' must be substituted by file name where you wrote the startup configuration.
+** If you encounter some error messages, update the startup configuration, and try again.
+* Depending on your operating system, there are different ways to register Zettelstore to start automatically:
+** [[Windows|00001003305000]]
+** macOS
+** Linux

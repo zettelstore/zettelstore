@@ -1,0 +1,119 @@
+id: 00001003305000
+title: Enable Zettelstore to start automatically on Windows
+role: manual
+tags: #installation #manual #zettelstore
+syntax: zmk
+modified: 20211125201602
+
+Windows is a complicated beast. There are several ways to automatically start Zettelstore.
+
+=== Startup folder
+
+One way is to use the [[autostart folder|https://support.microsoft.com/en-us/windows/add-an-app-to-run-automatically-at-startup-in-windows-10-150da165-dcd9-7230-517b-cf3c295d89dd]].
+Open the folder where you have placed in the Explorer.
+Create a shortcut file for the Zettelstore executable.
+There are some ways to do this:
+* Execute a right-click on the executable, and choose the menu entry ""Create shortcut"",
+* Execute a right-click on the executable, and then click Send To > Desktop (Create shortcut).
+* Drag the executable to your Desktop with pressing the ++Alt++-Key.
+
+If you have created the shortcut file, you must move it into the Startup folder.
+Press the Windows logo key and the key ++R++, type ''shell:startup''.
+Select the OK button.
+This will open the Startup folder.
+Move the shortcut file into this folder.
+
+The next time you log into your computer, Zettelstore will be started automatically.
+However, it remains visible, at least in the task bar.
+
+You can modify the behavior by changing some properties of the shortcut file.
+
+=== Task scheduler
+
+The Windows Task scheduler allows you to start Zettelstore as an background task.
+
+This is both an advantage and a disadvantage.
+
+On the plus side, Zettelstore runs in the background, and it does not disturbs you.
+All you have to do is to open your web browser, enter the appropriate URL, and there you go.
+
+On the negative side, you will not be notified when you enter the wrong data in the Task scheduler and Zettelstore fails to start.
+This can be mitigated by first using the command line prompt to start Zettelstore with the appropriate options.
+Once everything works, you can register Zettelstore to be automatically started by the task scheduler.
+There you should make sure that you have followed the first steps as described on the [[parent page|00001003300000]].
+
+To sart the Task scheduler management console, press the Windows logo key and the key ++R++, type ''taskschd.msc''.
+Select the OK button.
+
+{{00001003305102}}
+
+This will start the ""Task Scheduler"".
+
+Now, create a new task with ""Create Task ...""
+
+{{00001003305104}}
+
+Enter a name for the task, e.g. ""Zettelstore"" and select the options ""Run whether user is logged in or not"" and ""Do not store password.""
+
+{{00001003305106}}
+
+Create a new trigger.
+
+{{00001003305108}}
+
+Select the option ""At startup"".
+
+{{00001003305110}}
+
+Create a new action.
+
+{{00001003305112}}
+
+The next steps are the trickiest.
+
+If you did not created a startup configuration file, then create an action that starts a program.
+Enter the file path where you placed the Zettelstore executable.
+The ""Browse ..."" button helps you with that.[^I store my Zettelstore executable in the sub-directory ''bin'' of my home directory.]
+
+It is essential that you also enter a directory, which serves as the environment for your zettelstore.
+The (sub-) directory ''zettel'', which will contain your zettel, will be placed in this directory.
+If you leave the field ""Start in (optional)"" empty, the directory will be an internal Windows system directory (most likely: ''C:\\Windows\\System32'').
+
+If you press the OK button, the ""Create Task"" tab shows up as on the right image.
+
+{{00001003305114}}\ {{00001003305116}}
+
+If you have created a startup configuration file, you must enter something into the field ""Add arguments (optional)"".
+Unfortunately, the text box is too narrow to fully see its content.
+
+I have entered the string ''run -c "C:\\Users\\Detlef Stern\\bin\\zsconfig.txt"'', because my startup configuration file has the name ''zsconfig.txt'' and I placed it into the same folder that also contains the Zettelstore executable.
+Maybe you have to adapt to this.
+
+You must also enter appropriate data for the other form fields.
+If you press the OK button, the ""Create Task"" tab shows up as on the right image.
+
+{{00001003305118}}\ {{00001003305120}}
+
+You should disable any additional conditions, since you typically want to use Zettelstore unconditionally.
+Especially, make sure that ""Start the task only if the computer is on AC power"" is disabled.
+Otherwise Zettelstore will not start if you run on battery power.
+
+{{00001003305122}}
+
+On the ""Settings"" tab, you should disable the option ""Stop the task if it runs longer than:"".
+
+{{00001003305124}}
+
+After entering the data, press the OK button.
+Under some circumstances, Windows asks for permission and you have to enter your password.
+
+As the last step, you could run the freshly created task manually.
+
+Open your browser, enter the appropriate URL and use your Zettelstore.
+In case of errors, the task will most likely stop immediately.
+Make sure that all data you have entered is valid.
+To not forget to check the content of the startup configuration file.
+Use the command prompt to debug your configuration.
+
+Sometimes, for example when your computer was in stand-by and it wakes up, these tasks are not started.
+In this case execute the task scheduler and run the task manually.

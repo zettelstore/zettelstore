@@ -1,0 +1,53 @@
+id: 00001003600000
+title: Installation of Zettelstore on a server
+role: manual
+tags: #installation #manual #zettelstore
+syntax: zmk
+modified: 20211125185833
+
+You want to provide a shared Zettelstore that can be used from your various devices.
+Installing Zettelstore as a Linux service is not that hard.
+
+Grab the appropriate executable and copy it into the appropriate directory:
+```sh
+# sudo mv zettelstore /usr/local/bin/zettelstore
+```
+Create a group named ''zettelstore'':
+```sh
+# sudo groupadd --system zettelstore
+```
+Create a system user of that group, named ''zettelstore'', with a home folder:
+```sh
+# sudo useradd --system --gid zettelstore \
+    --create-home --home-dir /var/lib/zettelstore \
+    --shell /usr/sbin/nologin \
+    --comment "Zettelstore server" \
+    zettelstore
+```
+Create a systemd service file and store it into ''/etc/systemd/system/zettelstore.service'':
+```ini
+[Unit]
+Description=Zettelstore
+After=network.target
+
+[Service]
+Type=simple
+User=zettelstore
+Group=zettelstore
+ExecStart=/usr/local/bin/zettelstore run -d /var/lib/zettelstore
+WorkingDirectory=/var/lib/zettelstore
+
+[Install]
+WantedBy=multi-user.target
+```
+Double-check everything. Now you can enable and start the zettelstore as a service:
+```sh
+# sudo systemctl daemon-reload
+# sudo systemctl enable zettelstore
+# sudo systemctl start zettelstore
+```
+Use the commands ``systemctl``{=sh} and ``journalctl``{=sh} to manage the service, e.g.:
+```sh
+# sudo systemctl status zettelstore  # verify that it is running
+# sudo journalctl -u zettelstore     # obtain the output of the running zettelstore
+```
