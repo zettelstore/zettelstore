@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package filebox provides boxes that are stored in a file.
 package filebox
 
 import (

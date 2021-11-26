@@ -47,12 +47,12 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 46
-		configRoleZettel = 27
+		ownerZettel      = 47
+		configRoleZettel = 28
 		writerZettel     = ownerZettel - 23
 		readerZettel     = ownerZettel - 23
-		creatorZettel    = 10
-		publicZettel     = 7
+		creatorZettel    = 7
+		publicZettel     = 4
 	)
 
 	testdata := []struct {
@@ -96,7 +96,7 @@ func TestListZettel(t *testing.T) {
 		t.Errorf("Query should be %q, but is %q", expQ, q)
 	}
 	got := len(l)
-	if got != 27 {
+	if got != configRoleZettel {
 		t.Errorf("List of length %d expected, but got %d\n%v", configRoleZettel, got, l)
 	}
 

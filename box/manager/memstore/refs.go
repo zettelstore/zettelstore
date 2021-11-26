@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package memstore stored the index in main memory.
 package memstore
 
 import "zettelstore.de/z/domain/id"

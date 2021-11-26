@@ -8,15 +8,14 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package policy provides some interfaces and implementation for authorization policies.
 package policy
 
 import "zettelstore.de/z/domain/meta"
 
 type roPolicy struct{}
 
-func (p *roPolicy) CanCreate(user, newMeta *meta.Meta) bool         { return false }
-func (p *roPolicy) CanRead(user, m *meta.Meta) bool                 { return true }
-func (p *roPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool { return false }
-func (p *roPolicy) CanRename(user, m *meta.Meta) bool               { return false }
-func (p *roPolicy) CanDelete(user, m *meta.Meta) bool               { return false }
+func (*roPolicy) CanCreate(user, newMeta *meta.Meta) bool         { return false }
+func (*roPolicy) CanRead(user, m *meta.Meta) bool                 { return true }
+func (*roPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool { return false }
+func (*roPolicy) CanRename(user, m *meta.Meta) bool               { return false }
+func (*roPolicy) CanDelete(user, m *meta.Meta) bool               { return false }

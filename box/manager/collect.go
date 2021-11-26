@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package manager coordinates the various boxes and indexes of a Zettelstore.
 package manager
 
 import (

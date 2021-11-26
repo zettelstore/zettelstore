@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package notifydir manages the notified directory part of a dirstore.
 package notifydir
 
 import (

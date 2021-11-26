@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package policy provides some interfaces and implementation for authorization policies.
 package policy
 
 import (

@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package box provides a generic interface to zettel boxes.
 package box
 
 import (

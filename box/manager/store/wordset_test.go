@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package store contains general index data for storing a zettel index.
 package store_test
 
 import (

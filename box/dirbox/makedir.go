@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package dirbox provides a directory-based zettel box.
 package dirbox
 
 import (

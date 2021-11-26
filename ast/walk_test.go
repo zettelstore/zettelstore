@@ -76,4 +76,4 @@ func BenchmarkWalk(b *testing.B) {
 
 type benchVisitor struct{}
 
-func (bv *benchVisitor) Visit(node ast.Node) ast.Visitor { return bv }
+func (bv *benchVisitor) Visit(ast.Node) ast.Visitor { return bv }
