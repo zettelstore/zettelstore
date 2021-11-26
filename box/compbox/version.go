@@ -26,7 +26,7 @@ func getVersionMeta(zid id.Zid, title string) *meta.Meta {
 
 func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m := getVersionMeta(zid, "Zettelstore Version")
-	m.Set(api.KeyVisibility, api.ValueVisibilityPublic)
+	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
 func genVersionBuildC(*meta.Meta) []byte {
