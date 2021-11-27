@@ -312,7 +312,7 @@ var constZettelMap = map[id.Zid]constZettel{
 	id.MustParse(api.ZidTemplateNewUser): {
 		constHeader{
 			api.KeyTitle:                       "New User",
-			api.KeyRole:                        api.ValueRoleUser,
+			api.KeyRole:                        api.ValueRoleConfiguration,
 			api.KeySyntax:                      api.ValueSyntaxNone,
 			meta.NewPrefix + api.KeyCredential: "",
 			meta.NewPrefix + api.KeyUserID:     "",

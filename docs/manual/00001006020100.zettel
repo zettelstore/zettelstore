@@ -3,15 +3,10 @@ title: Supported Zettel Roles
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210727120817
+modified: 20211127174441
 
 The [[''role'' key|00001006020000#role]] defines what kind of zettel you are writing.
-The following values are used internally by Zettelstore and must exist:
-
-; [!user]''user''
-: If you want to use [[authentication|00001010000000]], all zettel that identify users of the zettel store must have this role.
-
-Beside of this, you are free to define your own roles.
+You are free to define your own roles.
 
 The role ''zettel'' is predefined as the default role, but you can [[change this|00001004020000#default-role]].
 
@@ -22,7 +17,7 @@ Some roles are defined for technical reasons:
   Most prominent is [[00000000000100]], as described in [[00001004020000]].
 ; [!manual]''manual''
 : All zettel that document the inner workings of the Zettelstore software.
-  This role is used in this specific Zettelstore.
+  This role is only used in this specific Zettelstore.
 
 If you adhere to the process outlined by Niklas Luhmann, a zettel could have one of the following three roles:
 

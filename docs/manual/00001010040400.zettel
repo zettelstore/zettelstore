@@ -3,7 +3,7 @@ title: Authentication process
 role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20211124141915
+modified: 20211127174943
 
 When someone tries to authenticate itself with an user identifier / ""user name"" and a password, the following process is executed:
 
@@ -11,7 +11,6 @@ When someone tries to authenticate itself with an user identifier / ""user name"
 # Retrieve all zettel, where the meta key ''user-id'' has the same value as the given user identification. If the list is empty, authentication fails.
 # From above list, the zettel with the numerically smallest identifier is selected.
   Or in other words: the oldest zettel is selected[^This is done to prevent an attacker from creating a new note with the same user identification].
-# If the zettel does not have role ''user'', authentication fails.
 # If the zettel does not have a value for the meta key ''credential'', authentication fails.
 # The value of the meta key ''credential'' is compared with the given password.
   If they do not match, authentication fails.

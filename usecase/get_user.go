@@ -51,15 +51,10 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	// will authenticate.
 	identMeta, err := uc.port.GetMeta(ctx, uc.authz.Owner())
 	if err == nil && identMeta.GetDefault(api.KeyUserID, "") == ident {
-		if role, ok := identMeta.Get(api.KeyRole); !ok ||
-			role != api.ValueRoleUser {
-			return nil, nil
-		}
 		return identMeta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
 	var s *search.Search
-	s = s.AddExpr(api.KeyRole, api.ValueRoleUser)
 	s = s.AddExpr(api.KeyUserID, ident)
 	metaList, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {

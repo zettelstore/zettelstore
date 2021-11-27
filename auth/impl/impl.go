@@ -70,9 +70,6 @@ func (a *myAuth) IsReadonly() bool { return a.readonly }
 
 const reqHash = jwt.HS512
 
-// ErrNoUser signals that the meta data has no role value 'user'.
-var ErrNoUser = errors.New("auth: meta is no user")
-
 // ErrNoIdent signals that the 'ident' key is missing.
 var ErrNoIdent = errors.New("auth: missing ident")
 
@@ -84,9 +81,6 @@ var ErrNoZid = errors.New("auth: missing zettel id")
 
 // GetToken returns a token to be used for authentification.
 func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind) ([]byte, error) {
-	if role, ok := ident.Get(api.KeyRole); !ok || role != api.ValueRoleUser {
-		return nil, ErrNoUser
-	}
 	subject, ok := ident.Get(api.KeyUserID)
 	if !ok || subject == "" {
 		return nil, ErrNoIdent

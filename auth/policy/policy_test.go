@@ -579,35 +579,35 @@ func newAnon() *meta.Meta { return nil }
 func newCreator() *meta.Meta {
 	user := meta.New(creatorZid)
 	user.Set(api.KeyTitle, "Creator")
-	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserID, "ceator")
 	user.Set(api.KeyUserRole, api.ValueUserRoleCreator)
 	return user
 }
 func newReader() *meta.Meta {
 	user := meta.New(readerZid)
 	user.Set(api.KeyTitle, "Reader")
-	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserID, "reader")
 	user.Set(api.KeyUserRole, api.ValueUserRoleReader)
 	return user
 }
 func newWriter() *meta.Meta {
 	user := meta.New(writerZid)
 	user.Set(api.KeyTitle, "Writer")
-	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserID, "writer")
 	user.Set(api.KeyUserRole, api.ValueUserRoleWriter)
 	return user
 }
 func newOwner() *meta.Meta {
 	user := meta.New(ownerZid)
 	user.Set(api.KeyTitle, "Owner")
-	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserID, "owner")
 	user.Set(api.KeyUserRole, api.ValueUserRoleOwner)
 	return user
 }
 func newOwner2() *meta.Meta {
 	user := meta.New(owner2Zid)
 	user.Set(api.KeyTitle, "Owner 2")
-	user.Set(api.KeyRole, api.ValueRoleUser)
+	user.Set(api.KeyUserID, "owner-2")
 	user.Set(api.KeyUserRole, api.ValueUserRoleOwner)
 	return user
 }
@@ -679,6 +679,6 @@ func newRoOwnerZettel() *meta.Meta {
 func newUserZettel() *meta.Meta {
 	m := meta.New(userZid)
 	m.Set(api.KeyTitle, "Any User")
-	m.Set(api.KeyRole, api.ValueRoleUser)
+	m.Set(api.KeyUserID, "any")
 	return m
 }
