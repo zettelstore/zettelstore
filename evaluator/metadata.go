@@ -17,7 +17,7 @@ import (
 
 func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
 	descrlist := &ast.DescriptionListNode{}
-	for _, p := range m.Pairs(true) {
+	for _, p := range m.Pairs(false) {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getMetadataDescription(p.Key, p.Value))
 	}
