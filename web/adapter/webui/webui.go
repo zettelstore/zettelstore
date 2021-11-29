@@ -56,6 +56,7 @@ type WebUI struct {
 	listZettelURL string
 	listRolesURL  string
 	listTagsURL   string
+	refreshURL    string
 	withAuth      bool
 	loginURL      string
 	logoutURL     string
@@ -91,6 +92,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 		listZettelURL: ab.NewURLBuilder('h').String(),
 		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
+		refreshURL:    ab.NewURLBuilder('g').AppendQuery("_c", "r").String(),
 		withAuth:      authz.WithAuth(),
 		loginURL:      loginoutBase.String(),
 		logoutURL:     loginoutBase.AppendQuery("logout", "").String(),
@@ -143,6 +145,10 @@ func (wui *WebUI) canDelete(ctx context.Context, user, m *meta.Meta) bool {
 	return wui.policy.CanDelete(user, m) && wui.box.CanDeleteZettel(ctx, m.Zid)
 }
 
+func (wui *WebUI) canRefresh(user *meta.Meta) bool {
+	return wui.policy.CanRefresh(user)
+}
+
 func (wui *WebUI) getTemplate(
 	ctx context.Context, templateID id.Zid) (*template.Template, error) {
 	if t, ok := wui.cacheGetTemplate(templateID); ok {
@@ -182,6 +188,8 @@ type baseData struct {
 	ListZettelURL     string
 	ListRolesURL      string
 	ListTagsURL       string
+	CanRefresh        bool
+	RefreshURL        string
 	HasNewZettelLinks bool
 	NewZettelLinks    []simpleLink
 	SearchURL         string
@@ -216,6 +224,8 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *me
 	data.ListZettelURL = wui.listZettelURL
 	data.ListRolesURL = wui.listRolesURL
 	data.ListTagsURL = wui.listTagsURL
+	data.CanRefresh = wui.canRefresh(user)
+	data.RefreshURL = wui.refreshURL
 	data.HasNewZettelLinks = len(newZettelLinks) > 0
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
