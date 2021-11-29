@@ -26,7 +26,6 @@ import (
 type simpleService struct {
 	dirPath  string
 	notifier notify.Notifier
-	errStart error
 	mx       sync.Mutex
 	entries  entrySet
 }
@@ -34,21 +33,14 @@ type simpleService struct {
 type entrySet map[id.Zid]*directory.Entry
 
 // NewService creates a new directory service.
-func NewService(directoryPath string) directory.Service {
-	sdn, err := notify.NewSimpleDirNotifier(directoryPath)
+func NewService(directoryPath string, notifier notify.Notifier) directory.Service {
 	return &simpleService{
 		dirPath:  directoryPath,
-		notifier: sdn,
-		errStart: err,
+		notifier: notifier,
 	}
 }
 
 func (ss *simpleService) Start() error {
-	ss.mx.Lock()
-	defer ss.mx.Unlock()
-	if ss.errStart != nil {
-		return ss.errStart
-	}
 	go ss.updateEvents()
 	return nil
 }

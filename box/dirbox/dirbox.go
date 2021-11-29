@@ -114,14 +114,17 @@ func (dp *dirBox) Location() string {
 
 func (dp *dirBox) Start(context.Context) error {
 	dp.mxCmds.Lock()
+	defer dp.mxCmds.Unlock()
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
 	for i := uint32(0); i < dp.fSrvs; i++ {
 		cc := make(chan fileCmd)
 		go fileService(cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	dp.setupDirService()
-	dp.mxCmds.Unlock()
+	err := dp.setupDirService()
+	if err != nil {
+		panic(err)
+	}
 	if dp.dirSrv == nil {
 		panic("No directory service")
 	}
