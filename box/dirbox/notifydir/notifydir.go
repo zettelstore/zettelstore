@@ -66,6 +66,8 @@ func (srv *notifyService) Stop() error {
 	return nil
 }
 
+func (*notifyService) Refresh() error { return nil }
+
 func (srv *notifyService) notifyChange(reason box.UpdateReason, zid id.Zid) {
 	if chci := srv.infos; chci != nil {
 		chci <- box.UpdateInfo{Reason: reason, Zid: zid}

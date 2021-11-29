@@ -128,6 +128,10 @@ func (dp *dirBox) Start(context.Context) error {
 	return dp.dirSrv.Start()
 }
 
+func (dp *dirBox) Refresh(_ context.Context) error {
+	return dp.dirSrv.Refresh()
+}
+
 func (dp *dirBox) Stop(_ context.Context) error {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil

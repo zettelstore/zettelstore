@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -127,4 +126,13 @@ func (ps *boxService) GetStatistics() []kernel.KeyValue {
 
 func (ps *boxService) DumpIndex(w io.Writer) {
 	ps.manager.Dump(w)
+}
+
+func (ps *boxService) Refresh() error {
+	ps.mxService.RLock()
+	defer ps.mxService.RUnlock()
+	if ps.manager != nil {
+		return ps.manager.Refresh(context.Background())
+	}
+	return nil
 }

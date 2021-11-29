@@ -273,6 +273,23 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	return err
 }
 
+func (mgr *Manager) Refresh(ctx context.Context) error {
+	mgr.mgrMx.Lock()
+	defer mgr.mgrMx.Unlock()
+	if !mgr.started {
+		return box.ErrStopped
+	}
+	var err error
+	for _, bx := range mgr.boxes {
+		if rb, ok := bx.(box.Refresher); ok {
+			if err1 := rb.Refresh(ctx); err1 != nil && err == nil {
+				err = err1
+			}
+		}
+	}
+	return err
+}
+
 // ReadStats populates st with box statistics.
 func (mgr *Manager) ReadStats(st *box.Stats) {
 	mgr.mgrMx.RLock()

@@ -181,6 +181,7 @@ var commands = map[string]command{
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
 	"profile":     {"start profiling", cmdProfile},
+	"refresh":     {"refresh box data", cmdRefresh},
 	"restart":     {"restart service", cmdRestart},
 	"services":    {"show available services", cmdServices},
 	"set-config":  {"set next configuration data", cmdSetConfig},
@@ -462,6 +463,12 @@ func cmdDumpIndex(sess *cmdSession, _ string, _ []string) bool {
 	sess.kern.DumpIndex(sess.w)
 	return true
 }
+
+func cmdRefresh(sess *cmdSession, _ string, _ []string) bool {
+	sess.kern.box.Refresh()
+	return true
+}
+
 func cmdDumpRecover(sess *cmdSession, cmd string, args []string) bool {
 	if len(args) == 0 {
 		sess.usage(cmd, "RECOVER")

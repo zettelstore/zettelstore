@@ -46,11 +46,15 @@ func NewService(directoryPath string) directory.Service {
 func (ss *simpleService) Start() error {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	// _, err := os.ReadDir(ss.dirPath)
 	if ss.errStart != nil {
 		return ss.errStart
 	}
 	go ss.updateEvents()
+	return nil
+}
+
+func (ss *simpleService) Refresh() error {
+	ss.notifier.Refresh()
 	return nil
 }
 

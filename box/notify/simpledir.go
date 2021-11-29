@@ -13,10 +13,10 @@ package notify
 import "path/filepath"
 
 type simpleDirNotifier struct {
-	events chan Event
-	done   chan struct{}
-	reload chan struct{}
-	path   string
+	events  chan Event
+	done    chan struct{}
+	refresh chan struct{}
+	path    string
 }
 
 // NewSimpleDirNotifier creates a directory based notifier that will not receive
@@ -27,10 +27,10 @@ func NewSimpleDirNotifier(path string) (Notifier, error) {
 		return nil, err
 	}
 	sdn := &simpleDirNotifier{
-		events: make(chan Event),
-		done:   make(chan struct{}),
-		reload: make(chan struct{}),
-		path:   absPath,
+		events:  make(chan Event),
+		done:    make(chan struct{}),
+		refresh: make(chan struct{}),
+		path:    absPath,
 	}
 	go sdn.eventLoop()
 	return sdn, nil
@@ -40,13 +40,13 @@ func (sdn *simpleDirNotifier) Events() <-chan Event {
 	return sdn.events
 }
 
-func (sdn *simpleDirNotifier) Reload() {
-	sdn.reload <- struct{}{}
+func (sdn *simpleDirNotifier) Refresh() {
+	sdn.refresh <- struct{}{}
 }
 
 func (sdn *simpleDirNotifier) eventLoop() {
 	defer close(sdn.events)
-	defer close(sdn.reload)
+	defer close(sdn.refresh)
 	if !listDirElements(sdn.path, sdn.events, sdn.done) {
 		return
 	}
@@ -54,7 +54,7 @@ func (sdn *simpleDirNotifier) eventLoop() {
 		select {
 		case <-sdn.done:
 			return
-		case <-sdn.reload:
+		case <-sdn.refresh:
 			listDirElements(sdn.path, sdn.events, sdn.done)
 		}
 	}

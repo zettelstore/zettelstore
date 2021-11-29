@@ -161,3 +161,8 @@ func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	}
 	return box.NewErrNotAllowed("Delete", user, zid)
 }
+
+func (pp *polBox) Refresh(ctx context.Context) error {
+	// TODO: check for authorization
+	return pp.box.Refresh(ctx)
+}

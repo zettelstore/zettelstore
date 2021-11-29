@@ -102,9 +102,16 @@ type StartStopper interface {
 	Stop(ctx context.Context) error
 }
 
+// Refresher allow to refresh their internal data.
+type Refresher interface {
+	// Refresh the box data.
+	Refresh(context.Context) error
+}
+
 // Box is to be used outside the box package and its descendants.
 type Box interface {
 	BaseBox
+	Refresher
 
 	// FetchZids returns the set of all zettel identifer managed by the box.
 	FetchZids(ctx context.Context) (id.Set, error)

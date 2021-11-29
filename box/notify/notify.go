@@ -18,8 +18,8 @@ type Notifier interface {
 	// Return the channel
 	Events() <-chan Event
 
-	// Signal a reload of the container. This will result in some events.
-	Reload()
+	// Signal a refresh of the container. This will result in some events.
+	Refresh()
 
 	// Close the notifier (and eventually the channel)
 	Close()

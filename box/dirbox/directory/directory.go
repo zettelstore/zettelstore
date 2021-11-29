@@ -17,6 +17,7 @@ import "zettelstore.de/z/domain/id"
 type Service interface {
 	Start() error
 	Stop() error
+	Refresh() error
 	NumEntries() (int, error)
 	GetEntries() ([]*Entry, error)
 	GetEntry(zid id.Zid) (*Entry, error)

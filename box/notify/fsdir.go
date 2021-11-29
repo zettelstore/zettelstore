@@ -19,12 +19,12 @@ import (
 )
 
 type fsdirNotifier struct {
-	events chan Event
-	done   chan struct{}
-	reload chan struct{}
-	base   *fsnotify.Watcher
-	path   string
-	parent string
+	events  chan Event
+	done    chan struct{}
+	refresh chan struct{}
+	base    *fsnotify.Watcher
+	path    string
+	parent  string
 }
 
 // NewFSDirNotifier creates a directory based notifier that receives notifications
@@ -49,12 +49,12 @@ func NewFSDirNotifier(path string) (Notifier, error) {
 	watcher.Add(absPath)
 
 	fsdn := &fsdirNotifier{
-		events: make(chan Event),
-		reload: make(chan struct{}),
-		done:   make(chan struct{}),
-		base:   watcher,
-		path:   absPath,
-		parent: absParentDir,
+		events:  make(chan Event),
+		refresh: make(chan struct{}),
+		done:    make(chan struct{}),
+		base:    watcher,
+		path:    absPath,
+		parent:  absParentDir,
 	}
 	go fsdn.eventLoop()
 	return fsdn, nil
@@ -64,14 +64,14 @@ func (fsdn *fsdirNotifier) Events() <-chan Event {
 	return fsdn.events
 }
 
-func (fsdn *fsdirNotifier) Reload() {
-	fsdn.reload <- struct{}{}
+func (fsdn *fsdirNotifier) Refresh() {
+	fsdn.refresh <- struct{}{}
 }
 
 func (fsdn *fsdirNotifier) eventLoop() {
 	defer fsdn.base.Close()
 	defer close(fsdn.events)
-	defer close(fsdn.reload)
+	defer close(fsdn.refresh)
 	if !listDirElements(fsdn.path, fsdn.events, fsdn.done) {
 		return
 	}
@@ -88,7 +88,7 @@ func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 	select {
 	case <-fsdn.done:
 		return false
-	case <-fsdn.reload:
+	case <-fsdn.refresh:
 		listDirElements(fsdn.path, fsdn.events, fsdn.done)
 	case err, ok := <-fsdn.base.Errors:
 		if !ok {
