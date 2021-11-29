@@ -40,7 +40,7 @@ func NewService(directoryPath string, rescanTime time.Duration, chci chan<- box.
 }
 
 // Start makes the directory service operational.
-func (srv *notifyService) Start() error {
+func (srv *notifyService) Start() {
 	tick := make(chan struct{})
 	rawEvents := make(chan *fileEvent)
 	events := make(chan *fileEvent)
@@ -56,17 +56,15 @@ func (srv *notifyService) Start() error {
 	srv.done = make(chan struct{})
 	go ping(tick, srv.rescanTime, srv.done)
 	<-ready
-	return nil
 }
 
 // Stop stops the directory service.
-func (srv *notifyService) Stop() error {
+func (srv *notifyService) Stop() {
 	close(srv.done)
 	srv.done = nil
-	return nil
 }
 
-func (*notifyService) Refresh() error { return nil }
+func (*notifyService) Refresh() {}
 
 func (srv *notifyService) notifyChange(reason box.UpdateReason, zid id.Zid) {
 	if chci := srv.infos; chci != nil {
@@ -75,25 +73,25 @@ func (srv *notifyService) notifyChange(reason box.UpdateReason, zid id.Zid) {
 }
 
 // NumEntries returns the number of managed zettel.
-func (srv *notifyService) NumEntries() (int, error) {
+func (srv *notifyService) NumEntries() int {
 	resChan := make(chan resNumEntries)
 	srv.cmds <- &cmdNumEntries{resChan}
-	return <-resChan, nil
+	return <-resChan
 }
 
 // GetEntries returns an unsorted list of all current directory entries.
-func (srv *notifyService) GetEntries() ([]*directory.Entry, error) {
+func (srv *notifyService) GetEntries() []*directory.Entry {
 	resChan := make(chan resGetEntries)
 	srv.cmds <- &cmdGetEntries{resChan}
-	return <-resChan, nil
+	return <-resChan
 }
 
 // GetEntry returns the entry with the specified zettel id. If there is no such
 // zettel id, an empty entry is returned.
-func (srv *notifyService) GetEntry(zid id.Zid) (*directory.Entry, error) {
+func (srv *notifyService) GetEntry(zid id.Zid) *directory.Entry {
 	resChan := make(chan resGetEntry)
 	srv.cmds <- &cmdGetEntry{zid, resChan}
-	return <-resChan, nil
+	return <-resChan
 }
 
 // GetNew returns an entry with a new zettel id.
@@ -105,11 +103,10 @@ func (srv *notifyService) GetNew() (id.Zid, error) {
 }
 
 // UpdateEntry notifies the directory of an updated entry.
-func (srv *notifyService) UpdateEntry(entry *directory.Entry) error {
+func (srv *notifyService) UpdateEntry(entry *directory.Entry) {
 	resChan := make(chan struct{})
 	srv.cmds <- &cmdUpdateEntry{entry, resChan}
 	<-resChan
-	return nil
 }
 
 // RenameEntry notifies the directory of an renamed entry.
@@ -120,9 +117,8 @@ func (srv *notifyService) RenameEntry(curEntry, newEntry *directory.Entry) error
 }
 
 // DeleteEntry removes a zettel id from the directory of entries.
-func (srv *notifyService) DeleteEntry(zid id.Zid) error {
+func (srv *notifyService) DeleteEntry(zid id.Zid) {
 	resChan := make(chan struct{})
 	srv.cmds <- &cmdDeleteEntry{zid, resChan}
 	<-resChan
-	return nil
 }

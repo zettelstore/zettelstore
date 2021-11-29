@@ -15,16 +15,16 @@ import "zettelstore.de/z/domain/id"
 
 // Service is the interface of a directory service.
 type Service interface {
-	Start() error
-	Stop() error
-	Refresh() error
-	NumEntries() (int, error)
-	GetEntries() ([]*Entry, error)
-	GetEntry(zid id.Zid) (*Entry, error)
+	Start()
+	Stop()
+	Refresh()
+	NumEntries() int
+	GetEntries() []*Entry
+	GetEntry(zid id.Zid) *Entry
 	GetNew() (id.Zid, error)
-	UpdateEntry(entry *Entry) error
+	UpdateEntry(entry *Entry)
 	RenameEntry(curEntry, newEntry *Entry) error
-	DeleteEntry(zid id.Zid) error
+	DeleteEntry(zid id.Zid)
 }
 
 // MetaSpec defines all possibilities where meta data can be stored.
