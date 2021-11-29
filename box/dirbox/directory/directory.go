@@ -20,7 +20,7 @@ type Service interface {
 	NumEntries() (int, error)
 	GetEntries() ([]*Entry, error)
 	GetEntry(zid id.Zid) (*Entry, error)
-	GetNew() (*Entry, error)
+	GetNew() (id.Zid, error)
 	UpdateEntry(entry *Entry) error
 	RenameEntry(curEntry, newEntry *Entry) error
 	DeleteEntry(zid id.Zid) error

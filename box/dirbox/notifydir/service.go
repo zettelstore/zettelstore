@@ -194,8 +194,8 @@ type cmdNewEntry struct {
 	result chan<- resNewEntry
 }
 type resNewEntry struct {
-	entry *directory.Entry
-	err   error
+	zid id.Zid
+	err error
 }
 
 func (cmd *cmdNewEntry) run(m dirMap) {
@@ -204,12 +204,12 @@ func (cmd *cmdNewEntry) run(m dirMap) {
 		return !ok, nil
 	})
 	if err != nil {
-		cmd.result <- resNewEntry{nil, err}
+		cmd.result <- resNewEntry{id.Invalid, err}
 		return
 	}
 	entry := &directory.Entry{Zid: zid}
 	m[zid] = entry
-	cmd.result <- resNewEntry{&directory.Entry{Zid: zid}, nil}
+	cmd.result <- resNewEntry{zid, nil}
 }
 
 type cmdUpdateEntry struct {

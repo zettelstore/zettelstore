@@ -95,11 +95,11 @@ func (srv *notifyService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 }
 
 // GetNew returns an entry with a new zettel id.
-func (srv *notifyService) GetNew() (*directory.Entry, error) {
+func (srv *notifyService) GetNew() (id.Zid, error) {
 	resChan := make(chan resNewEntry)
 	srv.cmds <- &cmdNewEntry{resChan}
 	result := <-resChan
-	return result.entry, result.err
+	return result.zid, result.err
 }
 
 // UpdateEntry notifies the directory of an updated entry.

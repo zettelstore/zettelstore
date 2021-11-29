@@ -173,7 +173,7 @@ func (ss *simpleService) doGetEntry(zid id.Zid) (*directory.Entry, error) {
 	return entry, nil
 }
 
-func (ss *simpleService) GetNew() (*directory.Entry, error) {
+func (ss *simpleService) GetNew() (id.Zid, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
@@ -187,9 +187,9 @@ func (ss *simpleService) GetNew() (*directory.Entry, error) {
 		return !entry.IsValid(), nil
 	})
 	if err != nil {
-		return nil, err
+		return id.Invalid, err
 	}
-	return &directory.Entry{Zid: zid}, nil
+	return zid, nil
 }
 
 func (ss *simpleService) UpdateEntry(entry *directory.Entry) error {

@@ -167,17 +167,18 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 		return id.Invalid, box.ErrReadOnly
 	}
 
-	entry, err := dp.dirSrv.GetNew()
+	newZid, err := dp.dirSrv.GetNew()
 	if err != nil {
 		return id.Invalid, err
 	}
 	meta := zettel.Meta
-	meta.Zid = entry.Zid
-	dp.updateEntryFromMeta(entry, meta)
+	meta.Zid = newZid
+	entry := directory.Entry{Zid: newZid}
+	dp.updateEntryFromMeta(&entry, meta)
 
-	err = setZettel(dp, entry, zettel)
+	err = setZettel(dp, &entry, zettel)
 	if err == nil {
-		dp.dirSrv.UpdateEntry(entry)
+		dp.dirSrv.UpdateEntry(&entry)
 	}
 	dp.notifyChanged(box.OnUpdate, meta.Zid)
 	return meta.Zid, err
