@@ -207,8 +207,7 @@ func (cmd *cmdNewEntry) run(m dirMap) {
 		cmd.result <- resNewEntry{id.Invalid, err}
 		return
 	}
-	entry := &directory.Entry{Zid: zid}
-	m[zid] = entry
+	m[zid] = &directory.Entry{Zid: zid}
 	cmd.result <- resNewEntry{zid, nil}
 }
 
