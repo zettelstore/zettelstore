@@ -273,6 +273,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 	return err
 }
 
+// Refresh internal box data.
 func (mgr *Manager) Refresh(ctx context.Context) error {
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()

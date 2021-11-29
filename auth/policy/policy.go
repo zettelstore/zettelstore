@@ -64,3 +64,7 @@ func (p *prePolicy) CanRename(user, m *meta.Meta) bool {
 func (p *prePolicy) CanDelete(user, m *meta.Meta) bool {
 	return m != nil && p.post.CanDelete(user, m)
 }
+
+func (p *prePolicy) CanRefresh(user *meta.Meta) bool {
+	return p.post.CanRefresh(user)
+}

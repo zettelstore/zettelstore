@@ -132,6 +132,14 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 	return o.userIsOwner(user)
 }
 
+func (o *ownerPolicy) CanRefresh(user *meta.Meta) bool {
+	switch userRole := o.manager.GetUserRole(user); userRole {
+	case meta.UserRoleUnknown, meta.UserRoleCreator:
+		return false
+	}
+	return true
+}
+
 func (o *ownerPolicy) checkVisibility(user *meta.Meta, vis meta.Visibility) (bool, bool) {
 	if vis == meta.VisibilityExpert {
 		return o.userIsOwner(user) && o.authConfig.GetExpertMode(), true
