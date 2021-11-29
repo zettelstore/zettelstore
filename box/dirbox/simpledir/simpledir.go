@@ -12,96 +12,110 @@
 package simpledir
 
 import (
-	"os"
 	"path/filepath"
 	"regexp"
 	"sync"
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/dirbox/directory"
+	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain/id"
 )
 
 // simpleService specifies a directory service without scanning.
 type simpleService struct {
-	dirPath string
-	mx      sync.Mutex
+	dirPath  string
+	notifier notify.Notifier
+	errStart error
+	mx       sync.Mutex
+	entries  entrySet
 }
+
+type entrySet map[id.Zid]*directory.Entry
 
 // NewService creates a new directory service.
 func NewService(directoryPath string) directory.Service {
+	sdn, err := notify.NewSimpleDirNotifier(directoryPath)
 	return &simpleService{
-		dirPath: directoryPath,
+		dirPath:  directoryPath,
+		notifier: sdn,
+		errStart: err,
 	}
 }
 
 func (ss *simpleService) Start() error {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	_, err := os.ReadDir(ss.dirPath)
-	return err
+	// _, err := os.ReadDir(ss.dirPath)
+	if ss.errStart != nil {
+		return ss.errStart
+	}
+	go ss.updateEvents()
+	return nil
 }
 
-func (*simpleService) Stop() error {
+func (ss *simpleService) Stop() error {
+	ss.notifier.Close()
 	return nil
+}
+
+func (ss *simpleService) updateEvents() {
+	var newEntries entrySet
+	for ev := range ss.notifier.Events() {
+		switch ev.Op {
+		case notify.Error:
+			newEntries = nil
+			panic(ev.Err)
+		case notify.Make:
+			newEntries = make(entrySet)
+		case notify.List:
+			if ev.Name == "" {
+				ss.mx.Lock()
+				ss.entries = newEntries
+				newEntries = nil
+				ss.mx.Unlock()
+				continue
+			}
+			if newEntries != nil {
+				ss.addEntry(newEntries, ev.Name)
+			}
+		}
+	}
 }
 
 func (ss *simpleService) NumEntries() (int, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	entries, err := ss.doGetEntries()
-	if err == nil {
-		return len(entries), nil
-	}
-	return 0, err
+	return len(ss.entries), nil
 }
 
 func (ss *simpleService) GetEntries() ([]*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	entrySet, err := ss.doGetEntries()
-	if err != nil {
-		return nil, err
-	}
-	result := make([]*directory.Entry, 0, len(entrySet))
-	for _, entry := range entrySet {
+	result := make([]*directory.Entry, 0, len(ss.entries))
+	for _, entry := range ss.entries {
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
-func (ss *simpleService) doGetEntries() (map[id.Zid]*directory.Entry, error) {
-	dirEntries, err := os.ReadDir(ss.dirPath)
-	if err != nil {
-		return nil, err
+func (ss *simpleService) addEntry(entries entrySet, name string) {
+	match := matchValidFileName(name)
+	if len(match) == 0 {
+		return
 	}
-	entrySet := make(map[id.Zid]*directory.Entry)
-	for _, dirEntry := range dirEntries {
-		if dirEntry.IsDir() {
-			continue
-		}
-		if info, err1 := dirEntry.Info(); err1 != nil || !info.Mode().IsRegular() {
-			continue
-		}
-		name := dirEntry.Name()
-		match := matchValidFileName(name)
-		if len(match) == 0 {
-			continue
-		}
-		zid, err2 := id.Parse(match[1])
-		if err2 != nil {
-			continue
-		}
-		var entry *directory.Entry
-		if e, ok := entrySet[zid]; ok {
-			entry = e
-		} else {
-			entry = &directory.Entry{Zid: zid}
-			entrySet[zid] = entry
-		}
-		updateEntry(entry, filepath.Join(ss.dirPath, name), match[3])
+	zid, err2 := id.Parse(match[1])
+	if err2 != nil {
+		return
 	}
-	return entrySet, nil
+	var entry *directory.Entry
+	if e, ok := entries[zid]; ok {
+		entry = e
+	} else {
+		entry = &directory.Entry{Zid: zid}
+		entries[zid] = entry
+	}
+	updateEntry(entry, filepath.Join(ss.dirPath, name), match[3])
 }
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -132,7 +146,11 @@ func updateEntry(entry *directory.Entry, path, ext string) {
 func (ss *simpleService) GetEntry(zid id.Zid) (*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
-	return ss.doGetEntry(zid)
+	entry, err := ss.doGetEntry(zid)
+	if err != nil {
+		ss.entries[zid] = entry
+	}
+	return entry, err
 }
 
 func (ss *simpleService) doGetEntry(zid id.Zid) (*directory.Entry, error) {
@@ -159,6 +177,9 @@ func (ss *simpleService) GetNew() (*directory.Entry, error) {
 	ss.mx.Lock()
 	defer ss.mx.Unlock()
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
+		if _, found := ss.entries[zid]; found {
+			return false, nil
+		}
 		entry, err := ss.doGetEntry(zid)
 		if err != nil {
 			return false, nil
@@ -171,17 +192,26 @@ func (ss *simpleService) GetNew() (*directory.Entry, error) {
 	return &directory.Entry{Zid: zid}, nil
 }
 
-func (*simpleService) UpdateEntry(*directory.Entry) error {
-	// Nothing to to, since the actual file update is done by dirbox.
+func (ss *simpleService) UpdateEntry(entry *directory.Entry) error {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	ss.entries[entry.Zid] = entry
 	return nil
 }
 
-func (*simpleService) RenameEntry(_, _ *directory.Entry) error {
-	// Nothing to to, since the actual file rename is done by dirbox.
+func (ss *simpleService) RenameEntry(oldEntry, newEntry *directory.Entry) error {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	if _, found := ss.entries[oldEntry.Zid]; found {
+		delete(ss.entries, oldEntry.Zid)
+		ss.entries[newEntry.Zid] = newEntry
+	}
 	return nil
 }
 
-func (*simpleService) DeleteEntry(id.Zid) error {
-	// Nothing to to, since the actual file delete is done by dirbox.
+func (ss *simpleService) DeleteEntry(zid id.Zid) error {
+	ss.mx.Lock()
+	defer ss.mx.Unlock()
+	delete(ss.entries, zid)
 	return nil
 }
