@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/kernel/logger"
 	"zettelstore.de/z/web/server"
 )
 
@@ -33,8 +34,8 @@ type Kernel interface {
 	// Shutdown the service. Waits for all concurrent activities to stop.
 	Shutdown(silent bool)
 
-	// Log some activity.
-	Log(args ...interface{})
+	// Return the kernel logger.
+	GetKernelLogger() *logger.Logger
 
 	// LogRecover outputs some information about the previous panic.
 	LogRecover(name string, recoverInfo interface{}) bool

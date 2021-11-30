@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -21,6 +20,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/kernel/logger"
 	"zettelstore.de/z/strfun"
 )
 
@@ -38,7 +38,8 @@ type recoverInfo struct {
 	stack []byte
 }
 
-func (cs *coreService) Initialize() {
+func (cs *coreService) Initialize(logger *logger.Logger) {
+	cs.logger = logger
 	cs.mapRecover = make(map[string]recoverInfo)
 	cs.descr = descriptionMap{
 		kernel.CoreDebug:     {"Debug mode", parseBool, false},
@@ -83,6 +84,8 @@ func (cs *coreService) Initialize() {
 		cs.next[kernel.CoreHostname] = hn
 	}
 }
+
+func (cs *coreService) GetLogger() *logger.Logger { return cs.logger }
 
 func (cs *coreService) Start(*myKernel) error {
 	cs.started = true

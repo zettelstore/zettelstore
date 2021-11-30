@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -20,6 +19,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/kernel/logger"
 )
 
 type parseFunc func(string) interface{}
@@ -43,6 +43,7 @@ func (m interfaceMap) Clone() interfaceMap {
 }
 
 type srvConfig struct {
+	logger   *logger.Logger
 	mxConfig sync.RWMutex
 	frozen   bool
 	descr    descriptionMap

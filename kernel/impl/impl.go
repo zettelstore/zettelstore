@@ -15,7 +15,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -23,15 +22,17 @@ import (
 	"runtime/debug"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/kernel/logger"
 )
 
 // myKernel is the main internal kernel.
 type myKernel struct {
-	// started   bool
+	logger    *logger.Logger
 	wg        sync.WaitGroup
 	mx        sync.RWMutex
 	interrupt chan os.Signal
@@ -54,8 +55,9 @@ type myKernel struct {
 }
 
 type serviceDescr struct {
-	srv  service
-	name string
+	srv      service
+	name     string
+	logLevel logger.Level
 }
 type serviceData struct {
 	srv    service
@@ -71,14 +73,15 @@ func init() {
 // create and start a new kernel.
 func createAndStart() kernel.Kernel {
 	kern := &myKernel{
+		logger:    logger.New(),
 		interrupt: make(chan os.Signal, 5),
 	}
 	kern.srvs = map[kernel.Service]serviceDescr{
-		kernel.CoreService:   {&kern.core, "core"},
-		kernel.ConfigService: {&kern.cfg, "config"},
-		kernel.AuthService:   {&kern.auth, "auth"},
-		kernel.BoxService:    {&kern.box, "box"},
-		kernel.WebService:    {&kern.web, "web"},
+		kernel.CoreService:   {&kern.core, "core", logger.InfoLevel},
+		kernel.ConfigService: {&kern.cfg, "config", logger.InfoLevel},
+		kernel.AuthService:   {&kern.auth, "auth", logger.InfoLevel},
+		kernel.BoxService:    {&kern.box, "box", logger.InfoLevel},
+		kernel.WebService:    {&kern.web, "web", logger.InfoLevel},
 	}
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
 	for key, srvD := range kern.srvs {
@@ -86,7 +89,8 @@ func createAndStart() kernel.Kernel {
 			panic(fmt.Sprintf("Key %q already given for service %v", key, srvD.name))
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
-		srvD.srv.Initialize()
+		l := logger.New().Level(srvD.logLevel).Prefix(strings.ToUpper(srvD.name))
+		srvD.srv.Initialize(l)
 	}
 	kern.depStart = serviceDependency{
 		kernel.CoreService:   nil,
@@ -114,7 +118,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 		// Wait for interrupt.
 		sig := <-kern.interrupt
 		if strSig := sig.String(); strSig != "" {
-			kern.doLog("Shut down Zettelstore:", strSig)
+			kern.logger.Info().Msg("Shut down Zettelstore: " + strSig)
 		}
 		kern.doShutdown()
 		kern.wg.Done()
@@ -122,7 +126,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 
 	kern.StartService(kernel.CoreService)
 	if headline {
-		kern.doLog(fmt.Sprintf(
+		kern.logger.Info().Msg(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
 			kern.core.GetConfig(kernel.CoreProgname),
 			kern.core.GetConfig(kernel.CoreVersion),
@@ -130,14 +134,14 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetConfig(kernel.CoreGoOS),
 			kern.core.GetConfig(kernel.CoreGoArch),
 		))
-		kern.doLog("Licensed under the latest version of the EUPL (European Union Public License)")
+		kern.logger.Info().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
 		if kern.core.GetConfig(kernel.CoreDebug).(bool) {
-			kern.doLog("-------------------------------------------------")
-			kern.doLog("WARNING: DEBUG MODE, DO NO USE THIS IN PRODUCTION")
-			kern.doLog("-------------------------------------------------")
+			kern.logger.Warn().Msg("----------------------------------------")
+			kern.logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
+			kern.logger.Warn().Msg("----------------------------------------")
 		}
 		if kern.auth.GetConfig(kernel.AuthReadonly).(bool) {
-			kern.doLog("Read-only mode")
+			kern.logger.Info().Msg("Read-only mode")
 		}
 	}
 	if lineServer {
@@ -177,14 +181,8 @@ func (*shutdownSignal) Signal() { /* Just a signal */ }
 
 // --- Log operation ---------------------------------------------------------
 
-// Log some activity.
-func (kern *myKernel) Log(args ...interface{}) {
-	kern.mx.Lock()
-	defer kern.mx.Unlock()
-	kern.doLog(args...)
-}
-func (*myKernel) doLog(args ...interface{}) {
-	log.Println(args...)
+func (kern *myKernel) GetKernelLogger() *logger.Logger {
+	return kern.logger
 }
 
 // LogRecover outputs some information about the previous panic.
@@ -192,7 +190,7 @@ func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 	return kern.doLogRecover(name, recoverInfo)
 }
 func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
-	kern.Log(name, "recovered from:", recoverInfo)
+	kern.logger.Fatal().Str("recovered_from", fmt.Sprint(recoverInfo)).Msg(name)
 	stack := debug.Stack()
 	os.Stderr.Write(stack)
 	kern.core.updateRecoverInfo(name, recoverInfo, stack)
@@ -385,7 +383,10 @@ func (kern *myKernel) DumpIndex(w io.Writer) {
 
 type service interface {
 	// Initialize the data for the service.
-	Initialize()
+	Initialize(*logger.Logger)
+
+	// Get service logger.
+	GetLogger() *logger.Logger
 
 	// ConfigDescriptions returns a sorted list of configuration descriptions.
 	ConfigDescriptions() []serviceConfigDescription

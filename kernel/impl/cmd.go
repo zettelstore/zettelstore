@@ -16,9 +16,11 @@ import (
 	"os"
 	"runtime/metrics"
 	"sort"
+	"strconv"
 	"strings"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/kernel/logger"
 	"zettelstore.de/z/strfun"
 )
 
@@ -178,6 +180,7 @@ var commands = map[string]command{
 			return true
 		},
 	},
+	"log-level":   {"get/set log level", cmdLogLevel},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
 	"profile":     {"start profiling", cmdProfile},
@@ -375,6 +378,53 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 		table = append(table, []string{kv.Key, kv.Value})
 	}
 	sess.printTable(table)
+	return true
+}
+
+func cmdLogLevel(sess *cmdSession, cmd string, args []string) bool {
+	if len(args) == 0 {
+		// Write log levels
+		names := make([]string, 0, len(sess.kern.srvNames))
+		for name := range sess.kern.srvNames {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		level := sess.kern.logger.GetLevel()
+		table := [][]string{
+			{"Service", "Level", "Name"},
+			{"kernel", strconv.Itoa(int(level)), level.String()},
+		}
+		for _, name := range names {
+			level = sess.kern.srvNames[name].srv.GetLogger().GetLevel()
+			table = append(table, []string{name, strconv.Itoa(int(level)), level.String()})
+		}
+		sess.printTable(table)
+		return true
+	}
+	var l *logger.Logger
+	name := args[0]
+	if name == "kernel" {
+		l = sess.kern.logger
+	} else {
+		srvD, ok := sess.kern.srvNames[name]
+		if !ok {
+			sess.println("Unknown service", args[0])
+			return true
+		}
+		l = srvD.srv.GetLogger()
+	}
+
+	if len(args) == 1 {
+		level := l.GetLevel()
+		sess.println(strconv.Itoa(int(level)), level.String())
+		return true
+	}
+	uval, err := strconv.ParseUint(args[1], 10, 8)
+	if err != nil || (!logger.Level(uval).IsValid()) {
+		sess.println("Invalid level", args[1], err.Error())
+		return true
+	}
+	l.Level(logger.Level(uval))
 	return true
 }
 

@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -22,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/kernel/logger"
 )
 
 type configService struct {
@@ -30,7 +30,8 @@ type configService struct {
 	rtConfig  *myConfig
 }
 
-func (cs *configService) Initialize() {
+func (cs *configService) Initialize(logger *logger.Logger) {
+	cs.logger = logger
 	cs.descr = descriptionMap{
 		api.KeyDefaultCopyright: {"Default copyright", parseString, true},
 		api.KeyDefaultLang:      {"Default language", parseString, true},
@@ -78,9 +79,10 @@ func (cs *configService) Initialize() {
 		api.KeyZettelFileSyntax:  nil,
 	}
 }
+func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
 
-func (cs *configService) Start(kern *myKernel) error {
-	kern.doLog("Start Config Service")
+func (cs *configService) Start(*myKernel) error {
+	cs.logger.Info().Msg("Start Service")
 	data := meta.New(id.ConfigurationZid)
 	for _, kv := range cs.GetNextConfigList() {
 		data.Set(kv.Key, fmt.Sprintf("%v", kv.Value))
@@ -97,8 +99,8 @@ func (cs *configService) IsStarted() bool {
 	return cs.rtConfig != nil
 }
 
-func (cs *configService) Stop(kern *myKernel) error {
-	kern.doLog("Stop Config Service")
+func (cs *configService) Stop(*myKernel) error {
+	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
 	cs.rtConfig = nil
 	cs.mxService.Unlock()

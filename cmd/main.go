@@ -205,7 +205,7 @@ func setServiceConfig(cfg *meta.Meta) error {
 func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{}) bool {
 	done := kernel.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
 	if !done {
-		kernel.Main.Log("unable to set configuration:", key, val)
+		kernel.Main.GetKernelLogger().Error().Str(key, fmt.Sprint(val)).Msg("Unable to set configuration")
 	}
 	return ok && done
 }
@@ -216,8 +216,9 @@ func setupOperations(cfg *meta.Meta, withBoxes bool) {
 		err := raiseFdLimit()
 		if err != nil {
 			srvm := kernel.Main
-			srvm.Log("Raising some limitions did not work:", err)
-			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			logger := srvm.GetKernelLogger()
+			logger.Fatal().Err("error", err).Msg("Raising some limitions did not work")
+			logger.Fatal().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
 		}
 		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {
