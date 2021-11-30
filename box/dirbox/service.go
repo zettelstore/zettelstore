@@ -19,9 +19,18 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/kernel"
 )
 
 func fileService(cmds <-chan fileCmd) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("FileService", r)
+			go fileService(cmds)
+		}
+	}()
+
 	for cmd := range cmds {
 		cmd.run()
 	}
