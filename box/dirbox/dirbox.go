@@ -262,6 +262,7 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 		// Existing zettel, but new in this box.
 		entry = &directory.Entry{Zid: meta.Zid}
 		dp.updateEntryFromMeta(entry, meta)
+		dp.dirSrv.UpdateEntry(entry)
 	} else if entry.MetaSpec == directory.MetaSpecNone {
 		defaultMeta := filebox.CalcDefaultMeta(entry.Zid, entry.ContentExt)
 		if !meta.Equal(defaultMeta, true) {

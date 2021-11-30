@@ -11,8 +11,8 @@
 package dirbox
 
 import (
+	"zettelstore.de/z/box/dirbox/directory"
 	"zettelstore.de/z/box/dirbox/notifydir"
-	"zettelstore.de/z/box/dirbox/simpledir"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/kernel"
 )
@@ -38,7 +38,7 @@ func (dp *dirBox) setupDirService() error {
 		if err != nil {
 			return err
 		}
-		dp.dirSrv = simpledir.NewService(dp.dir, notifier)
+		dp.dirSrv = directory.NewService(dp.dir, notifier)
 		dp.mustNotify = true
 	default:
 		dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
