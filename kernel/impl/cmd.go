@@ -256,9 +256,8 @@ func showConfig(sess *cmdSession, args []string,
 		}
 		return
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
-	if !ok {
-		sess.println("Unknown service:", args[0])
+	srvD, found := getService(sess, args[0])
+	if !found {
 		return
 	}
 	if len(args) == 1 {
@@ -292,9 +291,8 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 		sess.usage(cmd, "SERVICE KEY VALUE")
 		return true
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
-	if !ok {
-		sess.println("Unknown service:", args[0])
+	srvD, found := getService(sess, args[0])
+	if !found {
 		return true
 	}
 	newValue := strings.Join(args[2:], " ")
@@ -305,14 +303,8 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdServices(sess *cmdSession, _ string, _ []string) bool {
-	names := make([]string, 0, len(sess.kern.srvNames))
-	for name := range sess.kern.srvNames {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
 	table := [][]string{{"Service", "Status"}}
-	for _, name := range names {
+	for _, name := range sortedServiceNames(sess) {
 		if sess.kern.srvNames[name].srv.IsStarted() {
 			table = append(table, []string{name, "started"})
 		} else {
@@ -364,9 +356,8 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 		sess.usage(cmd, "SERVICE")
 		return true
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
+	srvD, ok := getService(sess, args[0])
 	if !ok {
-		sess.println("Unknown service", args[0])
 		return true
 	}
 	kvl := srvD.srv.GetStatistics()
@@ -381,20 +372,15 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
-func cmdLogLevel(sess *cmdSession, cmd string, args []string) bool {
+func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 	if len(args) == 0 {
 		// Write log levels
-		names := make([]string, 0, len(sess.kern.srvNames))
-		for name := range sess.kern.srvNames {
-			names = append(names, name)
-		}
-		sort.Strings(names)
 		level := sess.kern.logger.GetLevel()
 		table := [][]string{
 			{"Service", "Level", "Name"},
 			{"kernel", strconv.Itoa(int(level)), level.String()},
 		}
-		for _, name := range names {
+		for _, name := range sortedServiceNames(sess) {
 			level = sess.kern.srvNames[name].srv.GetLogger().GetLevel()
 			table = append(table, []string{name, strconv.Itoa(int(level)), level.String()})
 		}
@@ -406,9 +392,8 @@ func cmdLogLevel(sess *cmdSession, cmd string, args []string) bool {
 	if name == "kernel" {
 		l = sess.kern.logger
 	} else {
-		srvD, ok := sess.kern.srvNames[name]
+		srvD, ok := getService(sess, name)
 		if !ok {
-			sess.println("Unknown service", args[0])
 			return true
 		}
 		l = srvD.srv.GetLogger()
@@ -433,9 +418,8 @@ func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service,
 		sess.usage(cmd, "SERVICE")
 		return 0, false
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
+	srvD, ok := getService(sess, args[0])
 	if !ok {
-		sess.println("Unknown service", args[0])
 		return 0, false
 	}
 	return srvD.srvnum, true
@@ -552,4 +536,21 @@ func cmdEnvironment(sess *cmdSession, _ string, _ []string) bool {
 	}
 	sess.printTable(table)
 	return true
+}
+
+func sortedServiceNames(sess *cmdSession) []string {
+	names := make([]string, 0, len(sess.kern.srvNames))
+	for name := range sess.kern.srvNames {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func getService(sess *cmdSession, name string) (serviceData, bool) {
+	srvD, found := sess.kern.srvNames[name]
+	if !found {
+		sess.println("Unknown service", name)
+	}
+	return srvD, found
 }

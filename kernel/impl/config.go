@@ -150,12 +150,12 @@ func (cfg *srvConfig) GetNextConfig(key string) interface{} {
 }
 
 func (cfg *srvConfig) GetConfigList(all bool) []kernel.KeyDescrValue {
-	return cfg.getConfigList(all, cfg.GetConfig)
+	return cfg.getOneConfigList(all, cfg.GetConfig)
 }
 func (cfg *srvConfig) GetNextConfigList() []kernel.KeyDescrValue {
-	return cfg.getConfigList(true, cfg.GetNextConfig)
+	return cfg.getOneConfigList(true, cfg.GetNextConfig)
 }
-func (cfg *srvConfig) getConfigList(all bool, getConfig func(string) interface{}) []kernel.KeyDescrValue {
+func (cfg *srvConfig) getOneConfigList(all bool, getConfig func(string) interface{}) []kernel.KeyDescrValue {
 	if len(cfg.descr) == 0 {
 		return nil
 	}

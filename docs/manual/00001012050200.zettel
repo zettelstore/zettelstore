@@ -3,11 +3,11 @@ title: API: Authenticate a client
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210726123709
+modified: 20211202121032
 
 Authentication for future API calls is done by sending a [[user identification|00001010040200]] and a password to the Zettelstore to obtain an [[access token|00001010040700]].
 This token has to be used for other API calls.
-It is valid for a relatively short amount of time, as configured with the key ''token-timeout-api'' of the [[startup configuration|00001004010000]] (typically 10 minutes).
+It is valid for a relatively short amount of time, as configured with the key ''token-lifetime-api'' of the [[startup configuration|00001004010000#token-lifetime-api]] (typically 10 minutes).
 
 The simplest way is to send user identification (''IDENT'') and password (''PASSWORD'') via [[HTTP Basic Authentication|https://tools.ietf.org/html/rfc7617]] and send them to the [[endpoint|00001012920000]] ''/a'' with a POST request:
 ```sh
