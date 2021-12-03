@@ -18,7 +18,7 @@ import (
 func startLineServer(kern *myKernel, listenAddr string) error {
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		kern.logger.Fatal().Err("error", err).Msg("Unable to start Line Command Server")
+		kern.logger.Fatal().Err(err).Msg("Unable to start Line Command Server")
 		return err
 	}
 	kern.logger.Info().Str("listen", listenAddr).Msg("Start Line Command Server")
@@ -39,7 +39,7 @@ func lineServer(ln net.Listener, kern *myKernel) {
 		conn, err := ln.Accept()
 		if err != nil {
 			// handle error
-			kern.logger.Error().Err("error", err).Msg("Unable to accept connection")
+			kern.logger.Error().Err(err).Msg("Unable to accept connection")
 			break
 		}
 		go handleLineConnection(conn, kern)

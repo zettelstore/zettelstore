@@ -65,7 +65,7 @@ func (as *authService) Start(*myKernel) error {
 	owner := as.GetNextConfig(kernel.AuthOwner).(id.Zid)
 	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
-		as.logger.Fatal().Err("error", err).Msg("Unable to create manager")
+		as.logger.Fatal().Err(err).Msg("Unable to create manager")
 		return err
 	}
 	as.logger.Info().Msg("Start Manager")

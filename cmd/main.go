@@ -217,8 +217,8 @@ func setupOperations(cfg *meta.Meta, withBoxes bool) {
 		if err != nil {
 			srvm := kernel.Main
 			logger := srvm.GetKernelLogger()
-			logger.Fatal().Err("error", err).Msg("Raising some limitions did not work")
-			logger.Fatal().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			logger.Error().Err(err).Msg("Raising some limitions did not work")
+			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
 		}
 		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {

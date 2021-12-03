@@ -375,13 +375,13 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 	if len(args) == 0 {
 		// Write log levels
-		level := sess.kern.logger.GetLevel()
+		level := sess.kern.logger.Level()
 		table := [][]string{
 			{"Service", "Level", "Name"},
 			{"kernel", strconv.Itoa(int(level)), level.String()},
 		}
 		for _, name := range sortedServiceNames(sess) {
-			level = sess.kern.srvNames[name].srv.GetLogger().GetLevel()
+			level = sess.kern.srvNames[name].srv.GetLogger().Level()
 			table = append(table, []string{name, strconv.Itoa(int(level)), level.String()})
 		}
 		sess.printTable(table)
@@ -400,7 +400,7 @@ func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 	}
 
 	if len(args) == 1 {
-		level := l.GetLevel()
+		level := l.Level()
 		sess.println(strconv.Itoa(int(level)), level.String())
 		return true
 	}
@@ -409,7 +409,7 @@ func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 		sess.println("Invalid level", args[1], err.Error())
 		return true
 	}
-	l.Level(logger.Level(uval))
+	l.SetLevel(logger.Level(uval))
 	return true
 }
 

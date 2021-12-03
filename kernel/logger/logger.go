@@ -14,7 +14,6 @@ package logger
 import (
 	"log"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -23,31 +22,47 @@ type Level uint8
 
 // Constants for Level
 const (
-	NoLevel       Level = iota // the absent log level
-	TraceLevel                 // Log most internal activities
-	DebugLevel                 // Log most data updates
-	InfoLevel                  // Log normal activities
-	WarnLevel                  // Log event that can be easily recovered
-	ErrorLevel                 // Log (persistent) errors
-	FatalLevel                 // Log event that cannot be recovered within an internal acitivty
-	PanicLevel                 // Log event that must stop the software
-	DisabledLevel              // Logging is disabled
+	NoLevel        Level = iota // the absent log level
+	DisabledLevel               // Logging is disabled
+	TraceLevel                  // Log most internal activities
+	DebugLevel                  // Log most data updates
+	InfoLevel                   // Log normal activities
+	WarnLevel                   // Log event that can be easily recovered
+	ErrorLevel                  // Log (persistent) errors
+	FatalLevel                  // Log event that cannot be recovered within an internal acitivty
+	PanicLevel                  // Log event that must stop the software
+	MandatoryLevel              // Log only mandatory events
+	maxLevel
 )
 
-var strLevel = [...]string{
+var logLevel = [...]string{
 	"     ",
+	"DISAB",
 	"TRACE",
 	"DEBUG",
 	"INFO ",
 	"WARN ",
 	"ERROR",
-	"FATAL",
+	"FSTAL",
 	"PANIC",
-	"DISAB",
+	">>>>>",
+}
+
+var strLevel = [...]string{
+	"",
+	"disabled",
+	"trace",
+	"debug",
+	"info",
+	"warn",
+	"error",
+	"fatal",
+	"panic",
+	"mandatory",
 }
 
 // IsValid returns true, if the level is a valid level
-func (l Level) IsValid() bool { return NoLevel < l && l <= DisabledLevel }
+func (l Level) IsValid() bool { return NoLevel < l && l < maxLevel }
 
 func (l Level) String() string {
 	if l.IsValid() {
@@ -68,11 +83,11 @@ type Logger struct {
 // This function must only be called from a kernel implementation, not from
 // code that tries to log something.
 func New() *Logger {
-	return (&Logger{}).Level(InfoLevel)
+	return (&Logger{}).SetLevel(InfoLevel)
 }
 
-// Level sets the level of the logger.
-func (l *Logger) Level(newLevel Level) *Logger {
+// SetLevel sets the level of the logger.
+func (l *Logger) SetLevel(newLevel Level) *Logger {
 	if l != nil {
 		l.mx.Lock()
 		l.level = newLevel
@@ -81,8 +96,8 @@ func (l *Logger) Level(newLevel Level) *Logger {
 	return l
 }
 
-// GetLevel returns the current level of the given logger
-func (l *Logger) GetLevel() Level {
+// Level returns the current level of the given logger
+func (l *Logger) Level() Level {
 	if l != nil {
 		l.mx.RLock()
 		result := l.level
@@ -121,26 +136,11 @@ func (l *Logger) Fatal() *Message { return newMessage(l, FatalLevel) }
 // Panic creates a message suitable for panicing.
 func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 
-func (l *Logger) write(m *Message) {
-	var message string
-	if len(m.pairs) == 0 {
-		message = m.text
-	} else {
-		var sb strings.Builder
-		sb.WriteString(m.text)
-		for _, p := range m.pairs {
-			sb.WriteByte(' ')
-			if text := p.text; text != "" {
-				sb.WriteString(p.text)
-				sb.WriteByte('=')
-			}
-			sb.WriteString(p.val)
-		}
-		message = sb.String()
-	}
-	if l.prefix == "" {
-		log.Println(strLevel[m.level], message)
-	} else {
-		log.Println(strLevel[m.level], l.prefix, message)
-	}
+// Mandatory creates a message that will always logged, except when logging
+// is disabled.
+func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
+
+func (l *Logger) Write(p []byte) (int, error) {
+	log.Print(string(p))
+	return len(p), nil
 }

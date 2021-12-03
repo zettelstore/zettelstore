@@ -89,7 +89,7 @@ func createAndStart() kernel.Kernel {
 			panic(fmt.Sprintf("Key %q already given for service %v", key, srvD.name))
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
-		l := logger.New().Level(srvD.logLevel).Prefix(strings.ToUpper(srvD.name))
+		l := logger.New().SetLevel(srvD.logLevel).Prefix(strings.ToUpper(srvD.name))
 		srvD.srv.Initialize(l)
 	}
 	kern.depStart = serviceDependency{
@@ -118,7 +118,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 		// Wait for interrupt.
 		sig := <-kern.interrupt
 		if strSig := sig.String(); strSig != "" {
-			kern.logger.Info().Msg("Shut down Zettelstore: " + strSig)
+			kern.logger.Info().Str("signal", strSig).Msg("Shut down Zettelstore")
 		}
 		kern.doShutdown()
 		kern.wg.Done()
@@ -126,7 +126,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 
 	kern.StartService(kernel.CoreService)
 	if headline {
-		kern.logger.Info().Msg(fmt.Sprintf(
+		kern.logger.Mandatory().Msg(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
 			kern.core.GetConfig(kernel.CoreProgname),
 			kern.core.GetConfig(kernel.CoreVersion),
@@ -134,7 +134,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetConfig(kernel.CoreGoOS),
 			kern.core.GetConfig(kernel.CoreGoArch),
 		))
-		kern.logger.Info().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
+		kern.logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
 		if kern.core.GetConfig(kernel.CoreDebug).(bool) {
 			kern.logger.Warn().Msg("----------------------------------------")
 			kern.logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")

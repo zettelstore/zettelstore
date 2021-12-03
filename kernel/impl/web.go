@@ -115,14 +115,14 @@ func (ws *webService) Start(kern *myKernel) error {
 	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
-		ws.logger.Fatal().Err("error", err).Msg("Unable to create")
+		ws.logger.Fatal().Err(err).Msg("Unable to create")
 		return err
 	}
 	if kern.core.GetConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
 	if err = srvw.Run(); err != nil {
-		ws.logger.Fatal().Err("error", err).Msg("Unable to start")
+		ws.logger.Fatal().Err(err).Msg("Unable to start")
 		return err
 	}
 	ws.logger.Info().Str("listen", listenAddr).Msg("Start Service")

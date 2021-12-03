@@ -29,12 +29,9 @@ func runSimpleFunc(*flag.FlagSet) (int, error) {
 	listenAddr := kern.GetConfig(kernel.WebService, kernel.WebListenAddress).(string)
 	exitCode, err := doRun()
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
-		logger.Info().Msg("")
-		logger.Info().Msg("--------------------------")
-		logger.Info().Msg("Open your browser and enter the following URL:")
-		logger.Info().Msg("")
-		logger.Info().Msg(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
-		logger.Info().Msg("")
+		logger.Mandatory().Msg(strings.Repeat("--------------------", 3))
+		logger.Mandatory().Msg("Open your browser and enter the following URL:")
+		logger.Mandatory().Msg(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
 	}
 	kern.WaitForShutdown()
 	return exitCode, err
