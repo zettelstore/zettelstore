@@ -21,7 +21,7 @@ func startLineServer(kern *myKernel, listenAddr string) error {
 		kern.logger.Fatal().Err(err).Msg("Unable to start Line Command Server")
 		return err
 	}
-	kern.logger.Info().Str("listen", listenAddr).Msg("Start Line Command Server")
+	kern.logger.Mandatory().Str("listen", listenAddr).Msg("Start Line Command Server")
 	go func() { lineServer(ln, kern) }()
 	return nil
 }
