@@ -11,7 +11,6 @@
 package notifydir
 
 import (
-	"log"
 	"time"
 
 	"zettelstore.de/z/box"
@@ -130,7 +129,7 @@ func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<
 				}
 				srv.notifyChange(box.OnReload, id.Invalid)
 			case fileStatusError:
-				log.Println("DIRBOX", "ERROR", ev.err)
+				kernel.Main.GetLogger(kernel.BoxService).Warn().Err(ev.err).Msg("DIRBOX")
 			case fileStatusUpdate:
 				srv.processFileUpdateEvent(ev, curMap, newMap)
 			case fileStatusDelete:

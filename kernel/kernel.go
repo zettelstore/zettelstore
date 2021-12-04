@@ -62,6 +62,9 @@ type Kernel interface {
 	// GetConfigList returns a sorted list of configuration data.
 	GetConfigList(Service) []KeyDescrValue
 
+	// GetLogger returns a logger for the given service.
+	GetLogger(Service) *logger.Logger
+
 	// StartService start the given service.
 	StartService(Service) error
 

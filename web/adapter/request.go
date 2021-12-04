@@ -11,7 +11,6 @@
 package adapter
 
 import (
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -19,6 +18,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 )
@@ -27,7 +27,7 @@ import (
 func GetCredentialsViaForm(r *http.Request) (ident, cred string, ok bool) {
 	err := r.ParseForm()
 	if err != nil {
-		log.Println(err)
+		kernel.Main.GetLogger(kernel.WebService).Info().Err(err).Msg("Unable to parse form")
 		return "", "", false
 	}
 

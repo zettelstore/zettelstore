@@ -12,8 +12,9 @@
 package adapter
 
 import (
-	"log"
 	"net/http"
+
+	"zettelstore.de/z/kernel"
 )
 
 // BadRequest signals HTTP status code 400.
@@ -34,15 +35,11 @@ func NotFound(w http.ResponseWriter, text string) {
 // InternalServerError signals HTTP status code 500.
 func InternalServerError(w http.ResponseWriter, text string, err error) {
 	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	if text == "" {
-		log.Println(err)
-	} else {
-		log.Printf("%v: %v", text, err)
-	}
+	kernel.Main.GetLogger(kernel.WebService).Error().Err(err).Msg(text)
 }
 
 // NotImplemented signals HTTP status code 501
 func NotImplemented(w http.ResponseWriter, text string) {
 	http.Error(w, text, http.StatusNotImplemented)
-	log.Println(text)
+	kernel.Main.GetLogger(kernel.WebService).Error().Msg(text)
 }

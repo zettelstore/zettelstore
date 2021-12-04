@@ -13,7 +13,6 @@ package parser
 
 import (
 	"fmt"
-	"log"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -71,8 +70,7 @@ func Get(name string) *Info {
 	if pi := registry["plain"]; pi != nil {
 		return pi
 	}
-	log.Printf("No parser for %q found", name)
-	panic("No default parser registered")
+	panic(fmt.Sprintf("No parser for %q found", name))
 }
 
 // IsTextParser returns whether the given syntax parses text into an AST or not.

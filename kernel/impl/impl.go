@@ -291,6 +291,7 @@ func (kern *myKernel) GetConfigList(srvnum kernel.Service) []kernel.KeyDescrValu
 	}
 	return nil
 }
+
 func (kern *myKernel) GetServiceStatistics(srvnum kernel.Service) []kernel.KeyValue {
 	kern.mx.RLock()
 	defer kern.mx.RUnlock()
@@ -298,6 +299,15 @@ func (kern *myKernel) GetServiceStatistics(srvnum kernel.Service) []kernel.KeyVa
 		return srvD.srv.GetStatistics()
 	}
 	return nil
+}
+
+func (kern *myKernel) GetLogger(srvnum kernel.Service) *logger.Logger {
+	kern.mx.RLock()
+	defer kern.mx.RUnlock()
+	if srvD, ok := kern.srvs[srvnum]; ok {
+		return srvD.srv.GetLogger()
+	}
+	return kern.GetKernelLogger()
 }
 
 func (kern *myKernel) StartService(srvnum kernel.Service) error {
