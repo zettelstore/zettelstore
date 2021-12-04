@@ -15,6 +15,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -73,11 +74,11 @@ func (l Level) String() string {
 
 // Logger represents an objects that emits logging messages.
 type Logger struct {
-	w      io.Writer
-	mx     sync.RWMutex // protects level, prefix, and buf
-	level  Level
-	prefix string
-	buf    []byte
+	w        io.Writer
+	levelVal uint32
+	mx       sync.RWMutex // protects prefix and buf
+	prefix   string
+	buf      []byte
 }
 
 // New creates a new logger for the given service.
@@ -86,18 +87,16 @@ type Logger struct {
 // code that tries to log something.
 func New(w io.Writer) *Logger {
 	return &Logger{
-		w:     w,
-		level: InfoLevel,
-		buf:   make([]byte, 0, 500),
+		w:        w,
+		levelVal: uint32(InfoLevel),
+		buf:      make([]byte, 0, 500),
 	}
 }
 
 // SetLevel sets the level of the logger.
 func (l *Logger) SetLevel(newLevel Level) *Logger {
 	if l != nil {
-		l.mx.Lock()
-		l.level = newLevel
-		l.mx.Unlock()
+		atomic.StoreUint32(&l.levelVal, uint32(newLevel))
 	}
 	return l
 }
@@ -105,10 +104,7 @@ func (l *Logger) SetLevel(newLevel Level) *Logger {
 // Level returns the current level of the given logger
 func (l *Logger) Level() Level {
 	if l != nil {
-		l.mx.RLock()
-		result := l.level
-		l.mx.RUnlock()
-		return result
+		return Level(atomic.LoadUint32(&l.levelVal))
 	}
 	return NeverLevel
 }
