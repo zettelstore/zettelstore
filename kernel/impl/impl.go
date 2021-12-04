@@ -73,7 +73,7 @@ func init() {
 // create and start a new kernel.
 func createAndStart() kernel.Kernel {
 	kern := &myKernel{
-		logger:    logger.New(),
+		logger:    logger.New(os.Stderr),
 		interrupt: make(chan os.Signal, 5),
 	}
 	kern.srvs = map[kernel.Service]serviceDescr{
@@ -89,7 +89,7 @@ func createAndStart() kernel.Kernel {
 			panic(fmt.Sprintf("Key %q already given for service %v", key, srvD.name))
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
-		l := logger.New().SetLevel(srvD.logLevel).Prefix(strings.ToUpper(srvD.name))
+		l := logger.New(os.Stderr).SetLevel(srvD.logLevel).Prefix(strings.ToUpper(srvD.name))
 		srvD.srv.Initialize(l)
 	}
 	kern.depStart = serviceDependency{

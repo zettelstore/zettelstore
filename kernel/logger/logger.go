@@ -12,7 +12,7 @@
 package logger
 
 import (
-	"log"
+	"io"
 	"strconv"
 	"sync"
 )
@@ -73,6 +73,7 @@ func (l Level) String() string {
 
 // Logger represents an objects that emits logging messages.
 type Logger struct {
+	w      io.Writer
 	mx     sync.RWMutex
 	level  Level
 	prefix string
@@ -82,8 +83,8 @@ type Logger struct {
 //
 // This function must only be called from a kernel implementation, not from
 // code that tries to log something.
-func New() *Logger {
-	return (&Logger{}).SetLevel(InfoLevel)
+func New(w io.Writer) *Logger {
+	return (&Logger{w: w}).SetLevel(InfoLevel)
 }
 
 // SetLevel sets the level of the logger.
@@ -141,6 +142,8 @@ func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
 
 func (l *Logger) Write(p []byte) (int, error) {
-	log.Print(string(p))
-	return len(p), nil
+	l.mx.Lock()
+	siz, err := l.w.Write(p)
+	l.mx.Unlock()
+	return siz, err
 }

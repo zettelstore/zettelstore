@@ -10,6 +10,8 @@
 
 package logger
 
+import "time"
+
 // Message presents a message to log.
 type Message struct {
 	logger *Logger
@@ -67,7 +69,8 @@ func (m *Message) write(text string) {
 
 	// Ensure m.buf is big enough.
 	bufLen := len(m.buf)
-	neededCap := len(level) + bufLen
+	const datetimeLen = 20
+	neededCap := datetimeLen + len(level) + bufLen
 	if l := len(prefix); l > 0 {
 		neededCap += l
 		neededCap++
@@ -88,11 +91,26 @@ func (m *Message) write(text string) {
 		}
 	}
 
-	c := copy(m.buf[0:], level)
+	now := time.Now()
+	year, month, day := now.Date()
+	itoa(m.buf, year, 4)
+	m.buf[4] = '-'
+	itoa(m.buf[5:], int(month), 2)
+	m.buf[7] = '-'
+	itoa(m.buf[8:], day, 2)
+	m.buf[10] = ' '
+	hour, minute, second := now.Clock()
+	itoa(m.buf[11:], hour, 2)
+	m.buf[13] = ':'
+	itoa(m.buf[14:], minute, 2)
+	m.buf[16] = ':'
+	itoa(m.buf[17:], second, 2)
+	m.buf[19] = ' '
+	c := datetimeLen + copy(m.buf[datetimeLen:], level)
 	if len(prefix) > 0 {
 		m.buf[c] = ' '
-		d := copy(m.buf[c+1:], prefix)
-		c = c + 1 + d
+		c++
+		c += copy(m.buf[c:], prefix)
 	}
 	if text != "" {
 		m.buf[c] = ' '
@@ -110,4 +128,12 @@ func growBuf(buf []byte, n int) []byte {
 		toAppend -= len(spaces)
 	}
 	return append(buf, spaces[:toAppend]...)
+}
+
+func itoa(buf []byte, i, wid int) {
+	for bp := wid - 1; bp >= 0; bp-- {
+		q := i / 10
+		buf[bp] = byte('0' + i - q*10)
+		i = q
+	}
 }
