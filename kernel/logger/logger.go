@@ -15,6 +15,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // Level defines the possible log levels
@@ -22,8 +23,7 @@ type Level uint8
 
 // Constants for Level
 const (
-	NoLevel        Level = iota // the absent log level
-	DisabledLevel               // Logging is disabled
+	_              Level = iota // the absent log level
 	TraceLevel                  // Log most internal activities
 	DebugLevel                  // Log most data updates
 	InfoLevel                   // Log normal activities
@@ -32,25 +32,24 @@ const (
 	FatalLevel                  // Log event that cannot be recovered within an internal acitivty
 	PanicLevel                  // Log event that must stop the software
 	MandatoryLevel              // Log only mandatory events
-	maxLevel
+	NeverLevel                  // Logging is disabled
 )
 
 var logLevel = [...]string{
 	"     ",
-	"DISAB",
 	"TRACE",
 	"DEBUG",
 	"INFO ",
 	"WARN ",
 	"ERROR",
-	"FSTAL",
+	"FATAL",
 	"PANIC",
 	">>>>>",
+	"NEVER",
 }
 
 var strLevel = [...]string{
 	"",
-	"disabled",
 	"trace",
 	"debug",
 	"info",
@@ -59,10 +58,11 @@ var strLevel = [...]string{
 	"fatal",
 	"panic",
 	"mandatory",
+	"disabled",
 }
 
 // IsValid returns true, if the level is a valid level
-func (l Level) IsValid() bool { return NoLevel < l && l < maxLevel }
+func (l Level) IsValid() bool { return TraceLevel <= l && l <= NeverLevel }
 
 func (l Level) String() string {
 	if l.IsValid() {
@@ -74,9 +74,10 @@ func (l Level) String() string {
 // Logger represents an objects that emits logging messages.
 type Logger struct {
 	w      io.Writer
-	mx     sync.RWMutex
+	mx     sync.RWMutex // protects level, prefix, and buf
 	level  Level
 	prefix string
+	buf    []byte
 }
 
 // New creates a new logger for the given service.
@@ -84,7 +85,11 @@ type Logger struct {
 // This function must only be called from a kernel implementation, not from
 // code that tries to log something.
 func New(w io.Writer) *Logger {
-	return (&Logger{w: w}).SetLevel(InfoLevel)
+	return &Logger{
+		w:     w,
+		level: InfoLevel,
+		buf:   make([]byte, 0, 500),
+	}
 }
 
 // SetLevel sets the level of the logger.
@@ -105,7 +110,7 @@ func (l *Logger) Level() Level {
 		l.mx.RUnlock()
 		return result
 	}
-	return DisabledLevel
+	return NeverLevel
 }
 
 // Prefix sets the prefix, but only once.
@@ -141,9 +146,53 @@ func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 // is disabled.
 func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
 
-func (l *Logger) Write(p []byte) (int, error) {
+var eol = []byte{'\n'}
+
+func (l *Logger) writeMessage(level Level, text string, p []byte) error {
+	now := time.Now()
+	year, month, day := now.Date()
+	hour, minute, second := now.Clock()
+
 	l.mx.Lock()
-	siz, err := l.w.Write(p)
+	l.buf = l.buf[:0]
+	buf := l.buf
+	itoa(&buf, year, 4)
+	buf = append(buf, '-')
+	itoa(&buf, int(month), 2)
+	buf = append(buf, '-')
+	itoa(&buf, day, 2)
+	buf = append(buf, ' ')
+	itoa(&buf, hour, 2)
+	buf = append(buf, ':')
+	itoa(&buf, minute, 2)
+	buf = append(buf, ':')
+	itoa(&buf, second, 2)
+	buf = append(buf, ' ')
+	buf = append(buf, logLevel[level]...)
+	buf = append(buf, ' ')
+	if prefix := l.prefix; prefix != "" {
+		buf = append(buf, prefix...)
+		buf = append(buf, ' ')
+	}
+	buf = append(buf, text...)
+	write := l.w.Write
+	_, err := write(buf)
+	if len(p) > 0 && err == nil {
+		_, err = write(p)
+	}
+	if err == nil {
+		write(eol)
+	}
 	l.mx.Unlock()
-	return siz, err
+	return err
+}
+
+func itoa(buf *[]byte, i, wid int) {
+	var b [20]byte
+	for bp := wid - 1; bp >= 0; bp-- {
+		q := i / 10
+		b[bp] = byte('0' + i - q*10)
+		i = q
+	}
+	*buf = append(*buf, b[:wid]...)
 }
