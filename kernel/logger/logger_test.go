@@ -18,6 +18,30 @@ import (
 	"zettelstore.de/z/kernel/logger"
 )
 
+func TestParseLevel(t *testing.T) {
+	testcases := []struct {
+		text string
+		exp  logger.Level
+	}{
+		{"tra", logger.TraceLevel},
+		{"deb", logger.DebugLevel},
+		{"info", logger.InfoLevel},
+		{"warn", logger.WarnLevel},
+		{"err", logger.ErrorLevel},
+		{"fata", logger.FatalLevel},
+		{"pan", logger.PanicLevel},
+		{"manda", logger.MandatoryLevel},
+		{"dis", logger.NeverLevel},
+		{"d", logger.Level(0)},
+	}
+	for i, tc := range testcases {
+		got := logger.ParseLevel(tc.text)
+		if got != tc.exp {
+			t.Errorf("%d: ParseLevel(%q) == %q, but got %q", i, tc.text, tc.exp, got)
+		}
+	}
+}
+
 func BenchmarkDisabled(b *testing.B) {
 	log := logger.New(os.Stderr).SetLevel(logger.NeverLevel)
 	for n := 0; n < b.N; n++ {

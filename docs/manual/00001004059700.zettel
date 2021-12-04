@@ -1,0 +1,26 @@
+id: 00001004059700
+title: List of supported logging levels
+role: manual
+tags: #configuration #manual #zettelstore
+syntax: zmk
+modified: 20211204192330
+
+Zettelstore supports various levels of logging output.
+This allows you to see the inner workings of Zettelstore, or to avoid it.
+
+Each level has an associated name and number.
+A lower number signals more logging output.
+
+|= Name | Numeric :| Description
+| Trace | 1 | Show most of the inner workings
+| Debug | 2 | Show many internal values that might be interesting for a [[Zettelstore developer|00000000000005]].
+| Info  | 3 | Display information about an event. In most cases, there is no required action expected from you.
+| Warn  | 4 | Show a warning, i.e. an event that might become an error or more.
+| Error | 5 | Notify about an error, which was handled automatically. User intervention is not required, in most cases.
+| Fatal | 6 | Notify about a significant error that cannot be handled automatically. At least some important functionality is disabled.
+| Panic | 7 | The application is in an uncertain state and notifies you about its panic.
+| Mandatory | 8 | Important message will be shown, e.g. the Zettelstore version at startup time.
+| Disabled | 9 | No messages will be shown
+
+If you set the logging level to a certain value, only messages with the same or higher numerical value will be shown.
+E.g. if you set the logging level to ""warn"", no ""trace"", ""debug"", and ""info"" messages are shown, but ""warn"", ""error"", ""fatal"", ""panic"", and ""mandatory"" messages.

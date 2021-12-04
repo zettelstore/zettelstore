@@ -404,12 +404,17 @@ func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 		sess.println(strconv.Itoa(int(level)), level.String())
 		return true
 	}
+
 	uval, err := strconv.ParseUint(args[1], 10, 8)
-	if err != nil || (!logger.Level(uval).IsValid()) {
-		sess.println("Invalid level", args[1], err.Error())
+	lv := logger.Level(uval)
+	if err != nil || !lv.IsValid() {
+		lv = logger.ParseLevel(args[1])
+	}
+	if !lv.IsValid() {
+		sess.println("Invalid level:", args[1])
 		return true
 	}
-	l.SetLevel(logger.Level(uval))
+	l.SetLevel(lv)
 	return true
 }
 

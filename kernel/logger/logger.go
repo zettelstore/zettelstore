@@ -14,6 +14,7 @@ package logger
 import (
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -24,7 +25,7 @@ type Level uint8
 
 // Constants for Level
 const (
-	_              Level = iota // the absent log level
+	noLevel        Level = iota // the absent log level
 	TraceLevel                  // Log most internal activities
 	DebugLevel                  // Log most data updates
 	InfoLevel                   // Log normal activities
@@ -70,6 +71,16 @@ func (l Level) String() string {
 		return strLevel[l]
 	}
 	return strconv.Itoa(int(l))
+}
+
+// ParseLevel returns the recognized level.
+func ParseLevel(text string) Level {
+	for lv := TraceLevel; lv <= NeverLevel; lv++ {
+		if len(text) > 2 && strings.HasPrefix(strLevel[lv], text) {
+			return lv
+		}
+	}
+	return noLevel
 }
 
 // Logger represents an objects that emits logging messages.
