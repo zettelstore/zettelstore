@@ -4,17 +4,20 @@
 <h2>Changes for Version 0.2.0 (pending)</h2>
   *  Remove support for <tt>;;small text;;</tt> Zettelmarkup.
      (breaking: Zettelmarkup)
-  *  Selecting zettel based on their metadata allows the same syntax as
-     searching for zettel content. For example, you can list all zettel that
-     have an identifier not ending with <tt>00</tt> by using the query
-     <tt>id=!&lt;00</tt>.
-     (minor: api, webui)
+  *  On macOS, the downloadable executable program is now called
+     &ldquo;zettelstore&rdquo;, as on all other Unix-like platforms.
+     (possibly breaking: macOS)
   *  Show unlinked references in info page of each zettel. Unlinked references
      are phrases within zettel content that might reference another zettel with
      the same title as the phase.
      (major: webui)
   *  Add endpoint <tt>/u/{ID}</tt> to retrieve unlinked references.
      (major: api)
+  *  Selecting zettel based on their metadata allows the same syntax as
+     searching for zettel content. For example, you can list all zettel that
+     have an identifier not ending with <tt>00</tt> by using the query
+     <tt>id=!&lt;00</tt>.
+     (minor: api, webui)
   *  Remove support for <tt>//deprecated emphasized//</tt> Zettelmarkup.
      (minor: Zettelmarkup)
   *  Add options to profile the software. Profiling can be enabled at the

@@ -441,8 +441,8 @@ func cmdRelease() error {
 	}{
 		{"amd64", "linux", nil, "zettelstore"},
 		{"arm", "linux", []string{"GOARM=6"}, "zettelstore"},
-		{"amd64", "darwin", nil, "iZettelstore"},
-		{"arm64", "darwin", nil, "iZettelstore"},
+		{"amd64", "darwin", nil, "zettelstore"},
+		{"arm64", "darwin", nil, "zettelstore"},
 		{"amd64", "windows", nil, "zettelstore.exe"},
 	}
 	for _, rel := range releases {
