@@ -12,10 +12,8 @@
 package logger
 
 import (
-	"io"
 	"strconv"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -85,22 +83,20 @@ func ParseLevel(text string) Level {
 
 // Logger represents an objects that emits logging messages.
 type Logger struct {
-	w        io.Writer
+	lw       LogWriter
 	levelVal uint32
-	mx       sync.RWMutex // protects prefix and buf
 	prefix   string
-	buf      []byte
 }
 
 // New creates a new logger for the given service.
 //
 // This function must only be called from a kernel implementation, not from
 // code that tries to log something.
-func New(w io.Writer) *Logger {
+func New(lw LogWriter, prefix string) *Logger {
 	return &Logger{
-		w:        w,
+		lw:       lw,
 		levelVal: uint32(InfoLevel),
-		buf:      make([]byte, 0, 500),
+		prefix:   prefix,
 	}
 }
 
@@ -118,14 +114,6 @@ func (l *Logger) Level() Level {
 		return Level(atomic.LoadUint32(&l.levelVal))
 	}
 	return NeverLevel
-}
-
-// Prefix sets the prefix, but only once.
-func (l *Logger) Prefix(newPrefix string) *Logger {
-	if l != nil && l.prefix == "" {
-		l.prefix = (newPrefix + "      ")[:6]
-	}
-	return l
 }
 
 // Trace creates a tracing message.
@@ -153,53 +141,6 @@ func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 // is disabled.
 func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
 
-var eol = []byte{'\n'}
-
-func (l *Logger) writeMessage(level Level, text string, p []byte) error {
-	now := time.Now()
-	year, month, day := now.Date()
-	hour, minute, second := now.Clock()
-
-	l.mx.Lock()
-	l.buf = l.buf[:0]
-	buf := l.buf
-	itoa(&buf, year, 4)
-	buf = append(buf, '-')
-	itoa(&buf, int(month), 2)
-	buf = append(buf, '-')
-	itoa(&buf, day, 2)
-	buf = append(buf, ' ')
-	itoa(&buf, hour, 2)
-	buf = append(buf, ':')
-	itoa(&buf, minute, 2)
-	buf = append(buf, ':')
-	itoa(&buf, second, 2)
-	buf = append(buf, ' ')
-	buf = append(buf, logLevel[level]...)
-	buf = append(buf, ' ')
-	if prefix := l.prefix; prefix != "" {
-		buf = append(buf, prefix...)
-		buf = append(buf, ' ')
-	}
-	buf = append(buf, text...)
-	write := l.w.Write
-	_, err := write(buf)
-	if len(p) > 0 && err == nil {
-		_, err = write(p)
-	}
-	if err == nil {
-		write(eol)
-	}
-	l.mx.Unlock()
-	return err
-}
-
-func itoa(buf *[]byte, i, wid int) {
-	var b [20]byte
-	for bp := wid - 1; bp >= 0; bp-- {
-		q := i / 10
-		b[bp] = byte('0' + i - q*10)
-		i = q
-	}
-	*buf = append(*buf, b[:wid]...)
+func (l *Logger) writeMessage(level Level, msg string, details []byte) error {
+	return l.lw.WriteMessage(level, time.Now(), l.prefix, msg, details)
 }

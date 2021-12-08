@@ -11,9 +11,9 @@
 package logger_test
 
 import (
-	"io"
 	"os"
 	"testing"
+	"time"
 
 	"zettelstore.de/z/kernel/logger"
 )
@@ -43,35 +43,41 @@ func TestParseLevel(t *testing.T) {
 }
 
 func BenchmarkDisabled(b *testing.B) {
-	log := logger.New(os.Stderr).SetLevel(logger.NeverLevel)
+	log := logger.New(logger.NewLogWriterAdapter(os.Stderr), "").SetLevel(logger.NeverLevel)
 	for n := 0; n < b.N; n++ {
 		log.Info().Str("key", "val").Msg("Benchmark")
 	}
 }
 
+type testLogWriter struct{}
+
+func (tlw *testLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix string, msg string, details []byte) error {
+	return nil
+}
+
 func BenchmarkStrMessage(b *testing.B) {
-	log := logger.New(io.Discard)
+	log := logger.New(&testLogWriter{}, "")
 	for n := 0; n < b.N; n++ {
 		log.Info().Str("key", "val").Msg("Benchmark")
 	}
 }
 
 func BenchmarkStrNoMessage(b *testing.B) {
-	log := logger.New(io.Discard)
+	log := logger.New(&testLogWriter{}, "")
 	for n := 0; n < b.N; n++ {
 		log.Info().Str("key", "val").Msg("")
 	}
 }
 
 func BenchmarkMessage(b *testing.B) {
-	log := logger.New(io.Discard)
+	log := logger.New(&testLogWriter{}, "")
 	for n := 0; n < b.N; n++ {
 		log.Info().Msg("Benchmark")
 	}
 }
 
 func BenchmarkNoMessage(b *testing.B) {
-	log := logger.New(io.Discard)
+	log := logger.New(&testLogWriter{}, "")
 	for n := 0; n < b.N; n++ {
 		log.Info().Msg("")
 	}

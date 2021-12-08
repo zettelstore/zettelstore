@@ -10,9 +10,7 @@
 
 package logger
 
-import (
-	"sync"
-)
+import "sync"
 
 // Message presents a message to log.
 type Message struct {
