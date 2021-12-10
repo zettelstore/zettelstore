@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 )
 
 type configService struct {

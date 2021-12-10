@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/web/server/impl"
 )

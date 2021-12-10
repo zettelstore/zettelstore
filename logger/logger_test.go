@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 )
 
 func TestParseLevel(t *testing.T) {

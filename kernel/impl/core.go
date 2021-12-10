@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
 )
 

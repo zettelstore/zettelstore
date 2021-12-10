@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 )
 

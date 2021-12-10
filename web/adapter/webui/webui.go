@@ -29,7 +29,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"

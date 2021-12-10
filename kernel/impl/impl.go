@@ -27,7 +27,7 @@ import (
 	"syscall"
 
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 )
 
 // myKernel is the main internal kernel.

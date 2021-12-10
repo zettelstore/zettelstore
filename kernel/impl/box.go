@@ -19,7 +19,7 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/kernel/logger"
+	"zettelstore.de/z/logger"
 )
 
 type boxService struct {
