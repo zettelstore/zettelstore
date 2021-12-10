@@ -370,10 +370,11 @@ func (kern *myKernel) doRestartService(srvnum kernel.Service) error {
 }
 
 func (kern *myKernel) StopService(srvnum kernel.Service) error {
-	kern.mx.RLock()
-	defer kern.mx.RUnlock()
+	kern.mx.Lock()
+	defer kern.mx.Unlock()
 	return kern.doStopService(srvnum)
 }
+
 func (kern *myKernel) doStopService(srvnum kernel.Service) error {
 	for _, srv := range kern.sortDependency(srvnum, kern.depStop, false) {
 		if err := srv.Stop(kern); err != nil {

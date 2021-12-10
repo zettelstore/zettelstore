@@ -171,7 +171,11 @@ func setServiceConfig(cfg *meta.Meta) error {
 			kernel.Main.SetGlobalLogLevel(level)
 		}
 	}
-	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, cfg.GetBool(keyDebug))
+	debugMode := cfg.GetBool(keyDebug)
+	if debugMode && kernel.Main.GetKernelLogger().Level() > logger.DebugLevel {
+		kernel.Main.SetGlobalLogLevel(logger.DebugLevel)
+	}
+	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, debugMode)
 	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
 		ok = setConfigValue(ok, kernel.CoreService, kernel.CorePort, val)
