@@ -71,6 +71,14 @@ func (l Level) String() string {
 	return strconv.Itoa(int(l))
 }
 
+// Format returns a string representation suitable for logging.
+func (l Level) Format() string {
+	if l.IsValid() {
+		return logLevel[l]
+	}
+	return strconv.Itoa(int(l))
+}
+
 // ParseLevel returns the recognized level.
 func ParseLevel(text string) Level {
 	for lv := TraceLevel; lv <= NeverLevel; lv++ {
@@ -86,6 +94,11 @@ type Logger struct {
 	lw       LogWriter
 	levelVal uint32
 	prefix   string
+}
+
+// LogWriter writes log messages to their specified destinations.
+type LogWriter interface {
+	WriteMessage(level Level, ts time.Time, prefix string, msg string, details []byte) error
 }
 
 // New creates a new logger for the given service.

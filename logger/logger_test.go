@@ -11,6 +11,7 @@
 package logger_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -43,10 +44,17 @@ func TestParseLevel(t *testing.T) {
 }
 
 func BenchmarkDisabled(b *testing.B) {
-	log := logger.New(logger.NewLogWriterAdapter(os.Stderr), "").SetLevel(logger.NeverLevel)
+	log := logger.New(&stderrLogWriter{}, "").SetLevel(logger.NeverLevel)
 	for n := 0; n < b.N; n++ {
 		log.Info().Str("key", "val").Msg("Benchmark")
 	}
+}
+
+type stderrLogWriter struct{}
+
+func (tlw *stderrLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix string, msg string, details []byte) error {
+	fmt.Fprintf(os.Stderr, "%v %v %v %v %v\n", level.Format(), ts, prefix, msg, string(details))
+	return nil
 }
 
 type testLogWriter struct{}

@@ -72,7 +72,7 @@ func init() {
 
 // create and start a new kernel.
 func createAndStart() kernel.Kernel {
-	lw := logger.NewLogWriterAdapter(os.Stderr)
+	lw := newKernelLogWriter()
 	kern := &myKernel{
 		logger:    logger.New(lw, ""),
 		interrupt: make(chan os.Signal, 5),
