@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211204192534
+modified: 20211210184654
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -40,7 +40,7 @@ modified: 20211204192534
   ``get-config SERVICE KEY`` shows the current configuration data for the given service and key.
 ; ''header''
 : Toggles the header mode, where each table is show with a header nor not.
-; ''log-level''
+; [!log-level]''log-level''
 : Displays or sets the [[logging level|00001004059700]] for the kernel or a service.
 
   ``log-level`` shows all known log level.

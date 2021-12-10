@@ -186,6 +186,17 @@ func (kern *myKernel) GetKernelLogger() *logger.Logger {
 	return kern.logger
 }
 
+func (kern *myKernel) SetGlobalLogLevel(level logger.Level) {
+	if level.IsValid() {
+		kern.mx.RLock()
+		kern.logger.SetLevel(level)
+		for _, srvD := range kern.srvs {
+			srvD.srv.GetLogger().SetLevel(level)
+		}
+		kern.mx.RUnlock()
+	}
+}
+
 // LogRecover outputs some information about the previous panic.
 func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 	return kern.doLogRecover(name, recoverInfo)
@@ -309,6 +320,16 @@ func (kern *myKernel) GetLogger(srvnum kernel.Service) *logger.Logger {
 		return srvD.srv.GetLogger()
 	}
 	return kern.GetKernelLogger()
+}
+
+func (kern *myKernel) SetLevel(srvnum kernel.Service, level logger.Level) {
+	if level.IsValid() {
+		kern.mx.RLock()
+		if srvD, ok := kern.srvs[srvnum]; ok {
+			srvD.srv.GetLogger().SetLevel(level)
+		}
+		kern.mx.RUnlock()
+	}
 }
 
 func (kern *myKernel) StartService(srvnum kernel.Service) error {

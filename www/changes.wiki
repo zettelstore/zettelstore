@@ -20,6 +20,9 @@
      (minor: api, webui)
   *  Remove support for <tt>//deprecated emphasized//</tt> Zettelmarkup.
      (minor: Zettelmarkup)
+  *  Add command line flag <tt>-l LEVEL</tt> to specify an application global
+     logging level.
+     (minor)
   *  Add options to profile the software. Profiling can be enabled at the
      command line or via the administrator console.
      (minor)

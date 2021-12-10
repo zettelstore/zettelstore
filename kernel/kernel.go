@@ -34,8 +34,11 @@ type Kernel interface {
 	// Shutdown the service. Waits for all concurrent activities to stop.
 	Shutdown(silent bool)
 
-	// Return the kernel logger.
+	// GetKernelLogger returns the kernel logger.
 	GetKernelLogger() *logger.Logger
+
+	// SetGlobalLogLevel sets the level for all logger maintained by the kernel.
+	SetGlobalLogLevel(logger.Level)
 
 	// LogRecover outputs some information about the previous panic.
 	LogRecover(name string, recoverInfo interface{}) bool
@@ -64,6 +67,9 @@ type Kernel interface {
 
 	// GetLogger returns a logger for the given service.
 	GetLogger(Service) *logger.Logger
+
+	// SetLevel sets the logging level for the given service.
+	SetLevel(Service, logger.Level)
 
 	// StartService start the given service.
 	StartService(Service) error

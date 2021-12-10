@@ -31,6 +31,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 )
 
@@ -117,6 +118,8 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			}
 			deleteConfiguredBoxes(cfg)
 			cfg.Set(keyBoxOneURI, val)
+		case "l":
+			cfg.Set(keyLogLevel, flg.Value.String())
 		case "debug":
 			cfg.Set(keyDebug, flg.Value.String())
 		case "r":
@@ -151,6 +154,7 @@ const (
 	keyDefaultDirBoxType = "default-dir-box-type"
 	keyInsecureCookie    = "insecure-cookie"
 	keyListenAddr        = "listen-addr"
+	keyLogLevel          = "log-level"
 	keyOwner             = "owner"
 	keyPersistentCookie  = "persistent-cookie"
 	keyBoxOneURI         = kernel.BoxURIs + "1"
@@ -162,6 +166,11 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
+	if strLevel, found := cfg.Get(keyLogLevel); found {
+		if level := logger.ParseLevel(strLevel); level.IsValid() {
+			kernel.Main.SetGlobalLogLevel(level)
+		}
+	}
 	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, cfg.GetBool(keyDebug))
 	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {

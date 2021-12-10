@@ -13,6 +13,8 @@ package cmd
 import (
 	"flag"
 	"sort"
+
+	"zettelstore.de/z/logger"
 )
 
 // Command stores information about commands / sub-commands.
@@ -45,6 +47,8 @@ func RegisterCommand(cmd Command) {
 		panic("Command already registered: " + cmd.Name)
 	}
 	cmd.flags = flag.NewFlagSet(cmd.Name, flag.ExitOnError)
+	cmd.flags.String("l", logger.InfoLevel.String(), "global log level")
+
 	if cmd.SetFlags != nil {
 		cmd.SetFlags(cmd.flags)
 	}
