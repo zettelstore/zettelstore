@@ -98,7 +98,7 @@ type Logger struct {
 
 // LogWriter writes log messages to their specified destinations.
 type LogWriter interface {
-	WriteMessage(level Level, ts time.Time, prefix string, msg string, details []byte) error
+	WriteMessage(level Level, ts time.Time, prefix, msg string, details []byte) error
 }
 
 // New creates a new logger for the given service.

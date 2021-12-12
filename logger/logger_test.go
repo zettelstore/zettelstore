@@ -52,14 +52,14 @@ func BenchmarkDisabled(b *testing.B) {
 
 type stderrLogWriter struct{}
 
-func (tlw *stderrLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix string, msg string, details []byte) error {
+func (*stderrLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix, msg string, details []byte) error {
 	fmt.Fprintf(os.Stderr, "%v %v %v %v %v\n", level.Format(), ts, prefix, msg, string(details))
 	return nil
 }
 
 type testLogWriter struct{}
 
-func (tlw *testLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix string, msg string, details []byte) error {
+func (*testLogWriter) WriteMessage(logger.Level, time.Time, string, string, []byte) error {
 	return nil
 }
 

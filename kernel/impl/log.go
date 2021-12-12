@@ -31,7 +31,7 @@ func newKernelLogWriter() *kernelLogWriter {
 	}
 }
 
-func (lwa *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix string, msg string, details []byte) error {
+func (lwa *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix, msg string, details []byte) error {
 	lwa.mx.Lock()
 	lwa.buf = lwa.buf[:0]
 	buf := lwa.buf
