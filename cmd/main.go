@@ -166,14 +166,14 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
+	debugMode := cfg.GetBool(keyDebug)
+	if debugMode && kernel.Main.GetKernelLogger().Level() > logger.DebugLevel {
+		kernel.Main.SetGlobalLogLevel(logger.DebugLevel)
+	}
 	if strLevel, found := cfg.Get(keyLogLevel); found {
 		if level := logger.ParseLevel(strLevel); level.IsValid() {
 			kernel.Main.SetGlobalLogLevel(level)
 		}
-	}
-	debugMode := cfg.GetBool(keyDebug)
-	if debugMode && kernel.Main.GetKernelLogger().Level() > logger.DebugLevel {
-		kernel.Main.SetGlobalLogLevel(logger.DebugLevel)
 	}
 	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, debugMode)
 	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
