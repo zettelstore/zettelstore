@@ -21,6 +21,8 @@ import (
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/search"
 )
 
@@ -35,6 +37,7 @@ type Authenticate struct {
 	token     auth.TokenManager
 	port      AuthenticatePort
 	ucGetUser GetUser
+	log       *logger.Logger
 }
 
 // NewAuthenticate creates a new use case.
@@ -43,6 +46,7 @@ func NewAuthenticate(token auth.TokenManager, authz auth.AuthzManager, port Auth
 		token:     token,
 		port:      port,
 		ucGetUser: NewGetUser(authz, port),
+		log:       kernel.Main.GetLogger(kernel.AuthService),
 	}
 }
 
@@ -52,6 +56,7 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
 
 	if identMeta == nil || err != nil {
+		uc.log.Info().Str("ident", ident).Err(err).Msg("No user")
 		compensateCompare()
 		return nil, err
 	}
@@ -59,17 +64,22 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
 		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
+			uc.log.Info().Str("ident", ident).Err(err).Msg("Comparing credentials")
 			return nil, err
 		}
 		if ok {
 			token, err2 := uc.token.GetToken(identMeta, d, k)
 			if err2 != nil {
+				uc.log.Info().Str("ident", ident).Err(err).Msg("No token found")
 				return nil, err2
 			}
+			uc.log.Info().Str("ident", ident).Msg("Successful")
 			return token, nil
 		}
+		uc.log.Info().Str("ident", ident).Msg("Credentials don't match")
 		return nil, nil
 	}
+	uc.log.Info().Str("ident", ident).Msg("No credential stored")
 	compensateCompare()
 	return nil, nil
 }
