@@ -3,7 +3,7 @@
 You must install the following software:
 
 * A current, supported [release of Go](https://golang.org/doc/devel/release.html),
-* [golint](https://github.com/golang/lint|golint),
+* [staticcheck](https://staticcheck.io/),
 * [Fossil](https://fossil-scm.org/).
 
 ## Clone the repository
@@ -33,16 +33,13 @@ go run tools/build.go [-v] COMMAND
 The flag `-v` enables the verbose mode.
 It outputs all commands called by the tool.
 
-`COMMAND` is one of:
+Some important `COMMAND`s are:
 
 * `build`: builds the software with correct version information and puts it
   into a freshly created directory <tt>bin</tt>.
 * `check`: checks the current state of the working directory to be ready for
   release (or commit).
-* `release`: executes `check` command and if this was successful, builds the
-  software for various platforms, and creates ZIP files for each executable.
-  Everything is put in the directory <tt>releases</tt>.
-* `clean`: removes the directories <tt>bin</tt> and <tt>releases</tt>.
+* `clean`: removes the build directories and cleans the Go cache.
 * `version`: prints the current version information.
 
 Therefore, the easiest way to build your own version of the Zettelstore
