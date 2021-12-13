@@ -21,6 +21,8 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 func init() {
@@ -32,6 +34,7 @@ func init() {
 }
 
 type compBox struct {
+	log      *logger.Logger
 	number   int
 	enricher box.Enricher
 }
@@ -52,7 +55,12 @@ var myZettel = map[id.Zid]struct {
 
 // Get returns the one program box.
 func getCompBox(boxNumber int, mf box.Enricher) box.ManagedBox {
-	return &compBox{number: boxNumber, enricher: mf}
+	return &compBox{
+		log: kernel.Main.GetLogger(kernel.BoxService).Clone().
+			Str("box", "comp").Int("boxnum", int64(boxNumber)).Child(),
+		number:   boxNumber,
+		enricher: mf,
+	}
 }
 
 // Setup remembers important values.

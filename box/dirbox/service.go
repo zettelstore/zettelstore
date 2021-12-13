@@ -19,16 +19,26 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
-func fileService(cmds <-chan fileCmd) {
+func fileService(log *logger.Logger, cmds <-chan fileCmd) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("FileService", r)
+			go fileService(log, cmds)
+		}
+	}()
+
 	for cmd := range cmds {
-		cmd.run()
+		cmd.run(log)
 	}
 }
 
 type fileCmd interface {
-	run()
+	run(*logger.Logger)
 }
 
 // COMMAND: getMeta ----------------------------------------
@@ -52,7 +62,7 @@ type resGetMeta struct {
 	err  error
 }
 
-func (cmd *fileGetMeta) run() {
+func (cmd *fileGetMeta) run(*logger.Logger) {
 	entry := cmd.entry
 	var m *meta.Meta
 	var err error
@@ -92,7 +102,7 @@ type resGetMetaContent struct {
 	err     error
 }
 
-func (cmd *fileGetMetaContent) run() {
+func (cmd *fileGetMetaContent) run(*logger.Logger) {
 	var m *meta.Meta
 	var content []byte
 	var err error
@@ -135,9 +145,9 @@ type fileSetZettel struct {
 }
 type resSetZettel = error
 
-func (cmd *fileSetZettel) run() {
+func (cmd *fileSetZettel) run(log *logger.Logger) {
 	var err error
-	switch cmd.entry.MetaSpec {
+	switch ms := cmd.entry.MetaSpec; ms {
 	case directory.MetaSpecFile:
 		err = cmd.runMetaSpecFile()
 	case directory.MetaSpecHeader:
@@ -147,6 +157,7 @@ func (cmd *fileSetZettel) run() {
 		// update entry in dir
 		err = writeFileContent(cmd.entry.ContentPath, cmd.zettel.Content.AsString())
 	default:
+		log.Panic().Uint("metaspec", uint64(ms)).Msg("set")
 		panic("TODO: ???")
 	}
 	cmd.rc <- err
@@ -204,10 +215,10 @@ type fileDeleteZettel struct {
 }
 type resDeleteZettel = error
 
-func (cmd *fileDeleteZettel) run() {
+func (cmd *fileDeleteZettel) run(log *logger.Logger) {
 	var err error
 
-	switch cmd.entry.MetaSpec {
+	switch ms := cmd.entry.MetaSpec; ms {
 	case directory.MetaSpecFile:
 		err1 := os.Remove(cmd.entry.MetaPath)
 		err = os.Remove(cmd.entry.ContentPath)
@@ -219,6 +230,7 @@ func (cmd *fileDeleteZettel) run() {
 	case directory.MetaSpecNone:
 		err = os.Remove(cmd.entry.ContentPath)
 	default:
+		log.Panic().Uint("metaspec", uint64(ms)).Msg("delete")
 		panic("TODO: ???")
 	}
 	cmd.rc <- err

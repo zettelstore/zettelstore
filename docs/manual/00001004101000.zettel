@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211122175810
+modified: 20211210184654
 
 ; ''bye''
 : Closes the connection to the administrator console.
@@ -39,7 +39,16 @@ modified: 20211122175810
 
   ``get-config SERVICE KEY`` shows the current configuration data for the given service and key.
 ; ''header''
-: Toggles the header mode, where each table is show with a header nor not. 
+: Toggles the header mode, where each table is show with a header nor not.
+; [!log-level]''log-level''
+: Displays or sets the [[logging level|00001004059700]] for the kernel or a service.
+
+  ``log-level`` shows all known log level.
+
+  ``log-level NAME`` shows log level for the given service or for the kernel.
+
+  ``log-level NAME VALUE`` sets the log level for the given service or for the kernel.
+  ''VALUE'' is either the name of the log level or its numerical value.
 ; ''metrics''
 : Displays some values that reflect the inner workings of Zettelstore.
   See [[here|https://golang.org/pkg/runtime/metrics/]] for a technical description of these values.

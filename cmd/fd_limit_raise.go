@@ -14,8 +14,10 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"syscall"
+
+	"zettelstore.de/z/kernel"
 )
 
 const minFiles = 1048576
@@ -42,7 +44,8 @@ func raiseFdLimit() error {
 		return err
 	}
 	if rLimit.Cur < minFiles {
-		log.Printf("Make sure you have no more than %d files in all your boxes if you enabled notification\n", rLimit.Cur)
+		msg := fmt.Sprintf("Make sure you have no more than %d files in all your boxes if you enabled notification\n", rLimit.Cur)
+		kernel.Main.GetKernelLogger().Mandatory().Msg(msg)
 	}
 	return nil
 }

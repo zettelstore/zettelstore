@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -18,6 +17,7 @@ import (
 	"time"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/web/server/impl"
 )
@@ -39,7 +39,8 @@ const (
 	WebURLPrefix         = "prefix"
 )
 
-func (ws *webService) Initialize() {
+func (ws *webService) Initialize(logger *logger.Logger) {
+	ws.logger = logger
 	ws.descr = descriptionMap{
 		kernel.WebListenAddress: {
 			"Listen address",
@@ -103,6 +104,8 @@ func makeDurationParser(defDur, minDur, maxDur time.Duration) parseFunc {
 	}
 }
 
+func (ws *webService) GetLogger() *logger.Logger { return ws.logger }
+
 func (ws *webService) Start(kern *myKernel) error {
 	listenAddr := ws.GetNextConfig(kernel.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(kernel.WebURLPrefix).(string)
@@ -112,17 +115,17 @@ func (ws *webService) Start(kern *myKernel) error {
 	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
-		kern.doLog("Unable to create Web Server:", err)
+		ws.logger.Fatal().Err(err).Msg("Unable to create")
 		return err
 	}
 	if kern.core.GetConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
 	if err = srvw.Run(); err != nil {
-		kern.doLog("Unable to start Web Service:", err)
+		ws.logger.Fatal().Err(err).Msg("Unable to start")
 		return err
 	}
-	kern.doLog("Start Web Service:", listenAddr)
+	ws.logger.Mandatory().Str("listen", listenAddr).Msg("Start Service")
 	ws.mxService.Lock()
 	ws.srvw = srvw
 	ws.mxService.Unlock()
@@ -135,8 +138,8 @@ func (ws *webService) IsStarted() bool {
 	return ws.srvw != nil
 }
 
-func (ws *webService) Stop(kern *myKernel) error {
-	kern.doLog("Stop Web Service")
+func (ws *webService) Stop(*myKernel) error {
+	ws.logger.Info().Msg("Stop Service")
 	err := ws.srvw.Stop()
 	ws.mxService.Lock()
 	ws.srvw = nil

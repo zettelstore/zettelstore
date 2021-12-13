@@ -16,7 +16,7 @@ Zettelstore should start automatically when you log into your computer.
    In most cases, this is done by the command ``cd DIR``, where ''DIR'' denotes the directory, where you placed the executable.
 ** Start the Zettelstore:
 *** On Windows execute the command ``zettelstore.exe run -c CONFIG_FILE``
-*** On macOS execute the command ``./iZettelstore run -c CONFIG_FILE``
+*** On macOS execute the command ``./zettelstore run -c CONFIG_FILE``
 *** On Linux execute the command ``./zettelstore run -c CONFIG_FILE``
 ** In all cases ''CONFIG_FILE'' must be substituted by file name where you wrote the startup configuration.
 ** If you encounter some error messages, update the startup configuration, and try again.

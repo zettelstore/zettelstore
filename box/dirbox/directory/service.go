@@ -11,6 +11,7 @@
 package directory
 
 import (
+	"fmt"
 	"path/filepath"
 	"regexp"
 	"sync"
@@ -18,11 +19,12 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 // dirService specifies a directory service for file based zettel.
 type dirService struct {
+	log      *logger.Logger
 	dirPath  string
 	notifier notify.Notifier
 	mx       sync.RWMutex
@@ -32,8 +34,9 @@ type dirService struct {
 type entrySet map[id.Zid]*Entry
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, notifier notify.Notifier) Service {
+func NewService(log *logger.Logger, directoryPath string, notifier notify.Notifier) Service {
 	return &dirService{
+		log:      log,
 		dirPath:  directoryPath,
 		notifier: notifier,
 	}
@@ -124,7 +127,7 @@ func (ds *dirService) updateEvents() {
 		switch ev.Op {
 		case notify.Error:
 			newEntries = nil
-			kernel.Main.Log("ERROR", ev.Err)
+			ds.log.Warn().Err(ev.Err).Msg("from notifier")
 		case notify.Make:
 			newEntries = make(entrySet)
 		case notify.List:
@@ -151,7 +154,7 @@ func (ds *dirService) updateEvents() {
 			deleteEntry(ds.entries, ev.Name)
 			ds.mx.Unlock()
 		default:
-			kernel.Main.Log("Unknown event", ev)
+			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown event")
 		}
 	}
 }

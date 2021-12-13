@@ -19,6 +19,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/kernel"
 )
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -55,6 +56,14 @@ const (
 )
 
 func watchDirectory(directory string, events chan<- *fileEvent, tick <-chan struct{}) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("WatchDirectory", r)
+			go watchDirectory(directory, events, tick)
+		}
+	}()
+
 	defer close(events)
 
 	var watcher *fsnotify.Watcher
@@ -251,6 +260,14 @@ func mergeEvents(events []*fileEvent, ev *fileEvent) bool {
 }
 
 func collectEvents(out chan<- *fileEvent, in <-chan *fileEvent) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("CollectEvents", r)
+			go collectEvents(out, in)
+		}
+	}()
+
 	defer close(out)
 
 	var sendTime time.Time

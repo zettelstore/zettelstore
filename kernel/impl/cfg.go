@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -22,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 type configService struct {
@@ -30,7 +30,8 @@ type configService struct {
 	rtConfig  *myConfig
 }
 
-func (cs *configService) Initialize() {
+func (cs *configService) Initialize(logger *logger.Logger) {
+	cs.logger = logger
 	cs.descr = descriptionMap{
 		api.KeyDefaultCopyright: {"Default copyright", parseString, true},
 		api.KeyDefaultLang:      {"Default language", parseString, true},
@@ -78,15 +79,16 @@ func (cs *configService) Initialize() {
 		api.KeyZettelFileSyntax:  nil,
 	}
 }
+func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
 
-func (cs *configService) Start(kern *myKernel) error {
-	kern.doLog("Start Config Service")
+func (cs *configService) Start(*myKernel) error {
+	cs.logger.Info().Msg("Start Service")
 	data := meta.New(id.ConfigurationZid)
 	for _, kv := range cs.GetNextConfigList() {
 		data.Set(kv.Key, fmt.Sprintf("%v", kv.Value))
 	}
 	cs.mxService.Lock()
-	cs.rtConfig = newConfig(data)
+	cs.rtConfig = newConfig(cs.logger, data)
 	cs.mxService.Unlock()
 	return nil
 }
@@ -97,8 +99,8 @@ func (cs *configService) IsStarted() bool {
 	return cs.rtConfig != nil
 }
 
-func (cs *configService) Stop(kern *myKernel) error {
-	kern.doLog("Stop Config Service")
+func (cs *configService) Stop(*myKernel) error {
+	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
 	cs.rtConfig = nil
 	cs.mxService.Unlock()
@@ -115,14 +117,16 @@ func (cs *configService) setBox(mgr box.Manager) {
 
 // myConfig contains all runtime configuration data relevant for the software.
 type myConfig struct {
+	log  *logger.Logger
 	mx   sync.RWMutex
 	orig *meta.Meta
 	data *meta.Meta
 }
 
 // New creates a new Config value.
-func newConfig(orig *meta.Meta) *myConfig {
+func newConfig(logger *logger.Logger, orig *meta.Meta) *myConfig {
 	cfg := myConfig{
+		log:  logger,
 		orig: orig,
 		data: orig.Clone(),
 	}
@@ -140,8 +144,11 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 	}
 	cfg.mx.Lock()
 	for _, pair := range cfg.data.Pairs(false) {
-		if val, ok := m.Get(pair.Key); ok {
-			cfg.data.Set(pair.Key, val)
+		key := pair.Key
+		if val, ok := m.Get(key); ok {
+			cfg.data.Set(key, val)
+		} else if defVal, defFound := cfg.orig.Get(key); defFound {
+			cfg.data.Set(key, defVal)
 		}
 	}
 	cfg.mx.Unlock()
@@ -149,6 +156,7 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 }
 
 func (cfg *myConfig) observe(ci box.UpdateInfo) {
+	cfg.log.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
 		go func() { cfg.doUpdate(ci.Box) }()
 	}

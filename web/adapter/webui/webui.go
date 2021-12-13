@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -30,6 +29,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
@@ -38,6 +38,7 @@ import (
 
 // WebUI holds all data for delivering the web ui.
 type WebUI struct {
+	logger   *logger.Logger
 	debug    bool
 	ab       server.AuthBuilder
 	authz    auth.AuthzManager
@@ -77,6 +78,7 @@ func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config,
 	mgr box.Manager, pol auth.Policy) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
 	wui := &WebUI{
+		logger:   kernel.Main.GetLogger(kernel.WebService),
 		debug:    kernel.Main.GetConfig(kernel.CoreService, kernel.CoreDebug).(bool),
 		ab:       ab,
 		rtConfig: rtConfig,
@@ -294,7 +296,7 @@ func (wui *WebUI) renderTemplate(
 func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
-		log.Printf("%v: %v", text, err)
+		wui.logger.Error().Err(err).Msg(text)
 	}
 	user := wui.getUser(ctx)
 	var base baseData
@@ -345,7 +347,7 @@ func (wui *WebUI) renderTemplateStatus(
 		}
 	}
 	if err != nil {
-		log.Println("Unable to write HTML via template", err)
+		wui.logger.Error().Err(err).Msg("Unable to write HTML via template")
 	}
 }
 

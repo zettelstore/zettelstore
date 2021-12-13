@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -19,10 +18,10 @@ import (
 func startLineServer(kern *myKernel, listenAddr string) error {
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		kern.doLog("Unable to start Line Command Server:", err)
+		kern.logger.Fatal().Err(err).Msg("Unable to start Line Command Server")
 		return err
 	}
-	kern.doLog("Start Line Command Server:", listenAddr)
+	kern.logger.Mandatory().Str("listen", listenAddr).Msg("Start Line Command Server")
 	go func() { lineServer(ln, kern) }()
 	return nil
 }
@@ -40,7 +39,7 @@ func lineServer(ln net.Listener, kern *myKernel) {
 		conn, err := ln.Accept()
 		if err != nil {
 			// handle error
-			kern.doLog("Unable to accept connection:", err)
+			kern.logger.Error().Err(err).Msg("Unable to accept connection")
 			break
 		}
 		go handleLineConnection(conn, kern)

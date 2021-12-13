@@ -11,16 +11,24 @@
 package notifydir
 
 import (
-	"log"
 	"time"
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/dirbox/directory"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/kernel"
 )
 
 // ping sends every tick a signal to reload the directory list
 func ping(tick chan<- struct{}, rescanTime time.Duration, done <-chan struct{}) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("Ping", r)
+			go ping(tick, rescanTime, done)
+		}
+	}()
+
 	ticker := time.NewTicker(rescanTime)
 	defer close(tick)
 	for {
@@ -92,6 +100,14 @@ func deleteFromMap(dm dirMap, ev *fileEvent) {
 
 // directoryService is the main service.
 func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<- int) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("DirectoryService", r)
+			go srv.directoryService(events, ready)
+		}
+	}()
+
 	curMap := make(dirMap)
 	var newMap dirMap
 	for {
@@ -113,7 +129,7 @@ func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<
 				}
 				srv.notifyChange(box.OnReload, id.Invalid)
 			case fileStatusError:
-				log.Println("DIRBOX", "ERROR", ev.err)
+				srv.log.Warn().Err(ev.err).Msg("FSNotify")
 			case fileStatusUpdate:
 				srv.processFileUpdateEvent(ev, curMap, newMap)
 			case fileStatusDelete:

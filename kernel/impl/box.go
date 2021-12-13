@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 type boxService struct {
@@ -28,7 +29,8 @@ type boxService struct {
 	createManager kernel.CreateBoxManagerFunc
 }
 
-func (ps *boxService) Initialize() {
+func (ps *boxService) Initialize(logger *logger.Logger) {
+	ps.logger = logger
 	ps.descr = descriptionMap{
 		kernel.BoxDefaultDirType: {
 			"Default directory box type",
@@ -61,6 +63,8 @@ func (ps *boxService) Initialize() {
 	}
 }
 
+func (ps *boxService) GetLogger() *logger.Logger { return ps.logger }
+
 func (ps *boxService) Start(kern *myKernel) error {
 	boxURIs := make([]*url.URL, 0, 4)
 	format := kernel.BoxURIs + "%d"
@@ -75,12 +79,12 @@ func (ps *boxService) Start(kern *myKernel) error {
 	defer ps.mxService.Unlock()
 	mgr, err := ps.createManager(boxURIs, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
-		kern.doLog("Unable to create box manager:", err)
+		ps.logger.Fatal().Err(err).Msg("Unable to create manager")
 		return err
 	}
-	kern.doLog("Start Box Manager:", mgr.Location())
+	ps.logger.Mandatory().Str("location", mgr.Location()).Msg("Start Manager")
 	if err = mgr.Start(context.Background()); err != nil {
-		kern.doLog("Unable to start box manager:", err)
+		ps.logger.Fatal().Err(err).Msg("Unable to start manager")
 	}
 	kern.cfg.setBox(mgr)
 	ps.manager = mgr
@@ -93,8 +97,8 @@ func (ps *boxService) IsStarted() bool {
 	return ps.manager != nil
 }
 
-func (ps *boxService) Stop(kern *myKernel) error {
-	kern.doLog("Stop Box Manager")
+func (ps *boxService) Stop(*myKernel) error {
+	ps.logger.Info().Msg("Stop Manager")
 	ps.mxService.RLock()
 	mgr := ps.manager
 	ps.mxService.RUnlock()

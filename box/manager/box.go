@@ -48,6 +48,7 @@ func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 
 // CreateZettel creates a new zettel.
 func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+	mgr.mgrLog.Trace().Msg("CreateZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -58,6 +59,7 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 
 // GetZettel retrieves a specific zettel.
 func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+	mgr.mgrLog.Trace().Zid(zid).Msg("GetZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -76,6 +78,7 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 
 // GetAllZettel retrieves a specific zettel from all managed boxes.
 func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error) {
+	mgr.mgrLog.Trace().Zid(zid).Msg("GetAllZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -93,6 +96,7 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zett
 
 // GetMeta retrieves just the meta data of a specific zettel.
 func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	mgr.mgrLog.Trace().Zid(zid).Msg("GetMeta")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -111,6 +115,7 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 
 // GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
 func (mgr *Manager) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error) {
+	mgr.mgrLog.Trace().Zid(zid).Msg("GetAllMeta")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -128,6 +133,7 @@ func (mgr *Manager) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, e
 
 // FetchZids returns the set of all zettel identifer managed by the box.
 func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
+	mgr.mgrLog.Trace().Msg("FetchZids")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -146,6 +152,11 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
 func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+	if msg := mgr.mgrLog.Debug(); msg.Enabled() {
+		msg.Str("query", s.String()).Msg("SelectMeta")
+	} else {
+		mgr.mgrLog.Trace().Msg("SelectMeta")
+	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -188,6 +199,7 @@ func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) b
 
 // UpdateZettel updates an existing zettel.
 func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+	mgr.mgrLog.Trace().Zid(zettel.Meta.Zid).Msg("UpdateZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -220,6 +232,7 @@ func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 
 // RenameZettel changes the current zid to a new zid.
 func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+	mgr.mgrLog.Trace().Zid(curZid).Zid(newZid).Msg("RenameZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {
@@ -254,6 +267,7 @@ func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 
 // DeleteZettel removes the zettel from the box.
 func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
+	mgr.mgrLog.Trace().Zid(zid).Msg("DeleteZettel")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if !mgr.started {

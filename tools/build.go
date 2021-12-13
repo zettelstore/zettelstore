@@ -143,13 +143,10 @@ func cmdCheck(forRelease bool) error {
 	if err := checkGoVet(); err != nil {
 		return err
 	}
-	if err := checkGoLint(); err != nil {
-		return err
-	}
 	if err := checkShadow(forRelease); err != nil {
 		return err
 	}
-	if err := checkStaticcheck(forRelease); err != nil {
+	if err := checkStaticcheck(); err != nil {
 		return err
 	}
 	if err := checkUnparam(forRelease); err != nil {
@@ -184,15 +181,6 @@ func checkGoVet() error {
 	return err
 }
 
-func checkGoLint() error {
-	out, err := executeCommand(nil, "golint", "./...")
-	if out != "" {
-		fmt.Fprintln(os.Stderr, "Some lints failed")
-		fmt.Fprint(os.Stderr, out)
-	}
-	return err
-}
-
 func checkShadow(forRelease bool) error {
 	path, err := findExecStrict("shadow", forRelease)
 	if path == "" {
@@ -208,12 +196,8 @@ func checkShadow(forRelease bool) error {
 	return err
 }
 
-func checkStaticcheck(forRelease bool) error {
-	path, err := findExecStrict("staticcheck", forRelease)
-	if path == "" {
-		return err
-	}
-	out, err := executeCommand(nil, path, "./...")
+func checkStaticcheck() error {
+	out, err := executeCommand(nil, "staticcheck", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some staticcheck problems found")
 		if len(out) > 0 {
@@ -441,8 +425,8 @@ func cmdRelease() error {
 	}{
 		{"amd64", "linux", nil, "zettelstore"},
 		{"arm", "linux", []string{"GOARM=6"}, "zettelstore"},
-		{"amd64", "darwin", nil, "iZettelstore"},
-		{"arm64", "darwin", nil, "iZettelstore"},
+		{"amd64", "darwin", nil, "zettelstore"},
+		{"arm64", "darwin", nil, "zettelstore"},
 		{"amd64", "windows", nil, "zettelstore.exe"},
 	}
 	for _, rel := range releases {
@@ -543,12 +527,12 @@ Commands:
             static analysis tools, extra files, ...
             Is automatically done when releasing the software.
   clean     Remove all build and release directories.
-  help      Outputs this text.
+  help      Output this text.
   manual    Create a ZIP file with all manual zettel
   relcheck  Check current working state for release.
   release   Create the software for various platforms and put them in
             appropriate named ZIP files.
-  testapi   Starts a Zettelstore and execute API tests.
+  testapi   Start a Zettelstore and execute API tests.
   version   Print the current version of the software.
 
 All commands can be abbreviated as long as they remain unique.`)

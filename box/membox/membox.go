@@ -21,17 +21,25 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 func init() {
 	manager.Register(
 		"mem",
 		func(u *url.URL, cdata *manager.ConnectData) (box.ManagedBox, error) {
-			return &memBox{u: u, cdata: *cdata}, nil
+			return &memBox{
+				log: kernel.Main.GetLogger(kernel.BoxService).Clone().
+					Str("box", "mem").Int("boxnum", int64(cdata.Number)).Child(),
+				u:     u,
+				cdata: *cdata,
+			}, nil
 		})
 }
 
 type memBox struct {
+	log    *logger.Logger
 	u      *url.URL
 	cdata  manager.ConnectData
 	zettel map[id.Zid]domain.Zettel

@@ -16,9 +16,11 @@ import (
 	"os"
 	"runtime/metrics"
 	"sort"
+	"strconv"
 	"strings"
 
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
 )
 
@@ -178,6 +180,7 @@ var commands = map[string]command{
 			return true
 		},
 	},
+	"log-level":   {"get/set log level", cmdLogLevel},
 	"metrics":     {"show Go runtime metrics", cmdMetrics},
 	"next-config": {"show next configuration data", cmdNextConfig},
 	"profile":     {"start profiling", cmdProfile},
@@ -254,9 +257,8 @@ func showConfig(sess *cmdSession, args []string,
 		}
 		return
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
-	if !ok {
-		sess.println("Unknown service:", args[0])
+	srvD, found := getService(sess, args[0])
+	if !found {
 		return
 	}
 	if len(args) == 1 {
@@ -290,9 +292,8 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 		sess.usage(cmd, "SERVICE KEY VALUE")
 		return true
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
-	if !ok {
-		sess.println("Unknown service:", args[0])
+	srvD, found := getService(sess, args[0])
+	if !found {
 		return true
 	}
 	newValue := strings.Join(args[2:], " ")
@@ -303,14 +304,8 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdServices(sess *cmdSession, _ string, _ []string) bool {
-	names := make([]string, 0, len(sess.kern.srvNames))
-	for name := range sess.kern.srvNames {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
 	table := [][]string{{"Service", "Status"}}
-	for _, name := range names {
+	for _, name := range sortedServiceNames(sess) {
 		if sess.kern.srvNames[name].srv.IsStarted() {
 			table = append(table, []string{name, "started"})
 		} else {
@@ -362,9 +357,8 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 		sess.usage(cmd, "SERVICE")
 		return true
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
+	srvD, ok := getService(sess, args[0])
 	if !ok {
-		sess.println("Unknown service", args[0])
 		return true
 	}
 	kvl := srvD.srv.GetStatistics()
@@ -379,14 +373,59 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 	return true
 }
 
+func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
+	if len(args) == 0 {
+		// Write log levels
+		level := sess.kern.logger.Level()
+		table := [][]string{
+			{"Service", "Level", "Name"},
+			{"kernel", strconv.Itoa(int(level)), level.String()},
+		}
+		for _, name := range sortedServiceNames(sess) {
+			level = sess.kern.srvNames[name].srv.GetLogger().Level()
+			table = append(table, []string{name, strconv.Itoa(int(level)), level.String()})
+		}
+		sess.printTable(table)
+		return true
+	}
+	var l *logger.Logger
+	name := args[0]
+	if name == "kernel" {
+		l = sess.kern.logger
+	} else {
+		srvD, ok := getService(sess, name)
+		if !ok {
+			return true
+		}
+		l = srvD.srv.GetLogger()
+	}
+
+	if len(args) == 1 {
+		level := l.Level()
+		sess.println(strconv.Itoa(int(level)), level.String())
+		return true
+	}
+
+	uval, err := strconv.ParseUint(args[1], 10, 8)
+	lv := logger.Level(uval)
+	if err != nil || !lv.IsValid() {
+		lv = logger.ParseLevel(args[1])
+	}
+	if !lv.IsValid() {
+		sess.println("Invalid level:", args[1])
+		return true
+	}
+	l.SetLevel(lv)
+	return true
+}
+
 func lookupService(sess *cmdSession, cmd string, args []string) (kernel.Service, bool) {
 	if len(args) == 0 {
 		sess.usage(cmd, "SERVICE")
 		return 0, false
 	}
-	srvD, ok := sess.kern.srvNames[args[0]]
+	srvD, ok := getService(sess, args[0])
 	if !ok {
-		sess.println("Unknown service", args[0])
 		return 0, false
 	}
 	return srvD.srvnum, true
@@ -509,4 +548,21 @@ func cmdEnvironment(sess *cmdSession, _ string, _ []string) bool {
 	}
 	sess.printTable(table)
 	return true
+}
+
+func sortedServiceNames(sess *cmdSession) []string {
+	names := make([]string, 0, len(sess.kern.srvNames))
+	for name := range sess.kern.srvNames {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func getService(sess *cmdSession, name string) (serviceData, bool) {
+	srvD, found := sess.kern.srvNames[name]
+	if !found {
+		sess.println("Unknown service", name)
+	}
+	return srvD, found
 }

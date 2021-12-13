@@ -30,6 +30,8 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 func init() {
@@ -39,7 +41,12 @@ func init() {
 			return nil, err
 		}
 		dirSrvSpec, defWorker, maxWorker := getDirSrvInfo(u.Query().Get("type"))
+		var log *logger.Logger
+		if krnl := kernel.Main; krnl != nil {
+			log = krnl.GetLogger(kernel.BoxService).Clone().Str("box", "dir").Int("boxnum", int64(cdata.Number)).Child()
+		}
 		dp := dirBox{
+			log:        log,
 			number:     cdata.Number,
 			location:   u.String(),
 			readonly:   getQueryBool(u, "readonly"),
@@ -94,6 +101,7 @@ func getQueryInt(u *url.URL, key string, min, def, max int) int {
 
 // dirBox uses a directory to store zettel as files.
 type dirBox struct {
+	log        *logger.Logger
 	number     int
 	location   string
 	readonly   bool
@@ -118,10 +126,10 @@ func (dp *dirBox) Start(context.Context) error {
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
 	for i := uint32(0); i < dp.fSrvs; i++ {
 		cc := make(chan fileCmd)
-		go fileService(cc)
+		go fileService(dp.log.Clone().Str("sub", "file").Uint("fn", uint64(i)).Child(), cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
-	err := dp.setupDirService()
+	err := dp.setupDirService(dp.log.Clone().Str("sub", "dirsrv").Child())
 	if err != nil {
 		panic(err)
 	}

@@ -3,7 +3,7 @@ title: Access token
 role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20211124131831
+modified: 20211202120950
 
 If an user is authenticated, an ""access token"" is created that must be sent with every request to prove the identity of the caller.
 Otherwise the user will not be recognized by Zettelstore.
@@ -18,7 +18,7 @@ Every time a web page is displayed, a fresh token is created and stored inside t
 
 If the user was authenticated via the API, the access token will be returned as the content of the response.
 Typically, the lifetime of this token is more short term, e.g. 10 minutes.
-It is specified by the ''token-timeout-api'' value of the startup configuration.
+It is specified by the ''token-lifetime-api'' value of the startup configuration.
 If you need more time, you can either [[re-authenticate|00001012050200]] the user or use an API call to [[renew the access token|00001012050400]].
 
 If you remotely access your Zettelstore via HTTP (not via HTTPS, which allows encrypted communication), your must set the ''insecure-cookie'' value of the startup configuration to ''true''.

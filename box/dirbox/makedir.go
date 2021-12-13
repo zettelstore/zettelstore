@@ -15,6 +15,7 @@ import (
 	"zettelstore.de/z/box/dirbox/notifydir"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
@@ -31,17 +32,17 @@ func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
 	panic("unable to set default dir box type: " + dirType)
 }
 
-func (dp *dirBox) setupDirService() error {
+func (dp *dirBox) setupDirService(log *logger.Logger) error {
 	switch dp.dirSrvSpec {
 	case dirSrvSimple:
 		notifier, err := notify.NewSimpleDirNotifier(dp.dir)
 		if err != nil {
 			return err
 		}
-		dp.dirSrv = directory.NewService(dp.dir, notifier)
+		dp.dirSrv = directory.NewService(log, dp.dir, notifier)
 		dp.mustNotify = true
 	default:
-		dp.dirSrv = notifydir.NewService(dp.dir, dp.dirRescan, dp.cdata.Notify)
+		dp.dirSrv = notifydir.NewService(log, dp.dir, dp.dirRescan, dp.cdata.Notify)
 		dp.mustNotify = false
 	}
 	return nil

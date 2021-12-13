@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 )
 
 func init() {
@@ -32,6 +33,8 @@ func init() {
 			return nil, errors.New("unknown extension '" + ext + "' in box URL: " + u.String())
 		}
 		return &zipBox{
+			log: kernel.Main.GetLogger(kernel.BoxService).Clone().
+				Str("box", "zip").Int("boxnum", int64(cdata.Number)).Child(),
 			number:   cdata.Number,
 			name:     path,
 			enricher: cdata.Enricher,

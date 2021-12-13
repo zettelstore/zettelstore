@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package impl provides the kernel implementation.
 package impl
 
 import (
@@ -17,6 +16,7 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 type authService struct {
@@ -26,7 +26,8 @@ type authService struct {
 	createManager kernel.CreateAuthManagerFunc
 }
 
-func (as *authService) Initialize() {
+func (as *authService) Initialize(logger *logger.Logger) {
+	as.logger = logger
 	as.descr = descriptionMap{
 		kernel.AuthOwner: {
 			"Owner's zettel id",
@@ -55,17 +56,19 @@ func (as *authService) Initialize() {
 	}
 }
 
-func (as *authService) Start(kern *myKernel) error {
+func (as *authService) GetLogger() *logger.Logger { return as.logger }
+
+func (as *authService) Start(*myKernel) error {
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
 	readonlyMode := as.GetNextConfig(kernel.AuthReadonly).(bool)
 	owner := as.GetNextConfig(kernel.AuthOwner).(id.Zid)
 	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
-		kern.doLog("Unable to create auth manager:", err)
+		as.logger.Fatal().Err(err).Msg("Unable to create manager")
 		return err
 	}
-	kern.doLog("Start Auth Manager")
+	as.logger.Info().Msg("Start Manager")
 	as.manager = authMgr
 	return nil
 }
@@ -76,14 +79,12 @@ func (as *authService) IsStarted() bool {
 	return as.manager != nil
 }
 
-func (as *authService) Stop(kern *myKernel) error {
-	kern.doLog("Stop Auth Manager")
+func (as *authService) Stop(*myKernel) error {
+	as.logger.Info().Msg("Stop Manager")
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
 	as.manager = nil
 	return nil
 }
 
-func (as *authService) GetStatistics() []kernel.KeyValue {
-	return nil
-}
+func (*authService) GetStatistics() []kernel.KeyValue { return nil }

@@ -25,15 +25,13 @@ func flgSimpleRun(fs *flag.FlagSet) {
 
 func runSimpleFunc(*flag.FlagSet) (int, error) {
 	kern := kernel.Main
+	logger := kern.GetKernelLogger()
 	listenAddr := kern.GetConfig(kernel.WebService, kernel.WebListenAddress).(string)
 	exitCode, err := doRun()
 	if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
-		kern.Log()
-		kern.Log("--------------------------")
-		kern.Log("Open your browser and enter the following URL:")
-		kern.Log()
-		kern.Log(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
-		kern.Log()
+		logger.Mandatory().Msg(strings.Repeat("--------------------", 3))
+		logger.Mandatory().Msg("Open your browser and enter the following URL:")
+		logger.Mandatory().Msg(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
 	}
 	kern.WaitForShutdown()
 	return exitCode, err

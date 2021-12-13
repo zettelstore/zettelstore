@@ -31,6 +31,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 )
 
@@ -117,6 +118,8 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			}
 			deleteConfiguredBoxes(cfg)
 			cfg.Set(keyBoxOneURI, val)
+		case "l":
+			cfg.Set(keyLogLevel, flg.Value.String())
 		case "debug":
 			cfg.Set(keyDebug, flg.Value.String())
 		case "r":
@@ -151,6 +154,7 @@ const (
 	keyDefaultDirBoxType = "default-dir-box-type"
 	keyInsecureCookie    = "insecure-cookie"
 	keyListenAddr        = "listen-addr"
+	keyLogLevel          = "log-level"
 	keyOwner             = "owner"
 	keyPersistentCookie  = "persistent-cookie"
 	keyBoxOneURI         = kernel.BoxURIs + "1"
@@ -162,7 +166,16 @@ const (
 )
 
 func setServiceConfig(cfg *meta.Meta) error {
-	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, cfg.GetBool(keyDebug))
+	debugMode := cfg.GetBool(keyDebug)
+	if debugMode && kernel.Main.GetKernelLogger().Level() > logger.DebugLevel {
+		kernel.Main.SetGlobalLogLevel(logger.DebugLevel)
+	}
+	if strLevel, found := cfg.Get(keyLogLevel); found {
+		if level := logger.ParseLevel(strLevel); level.IsValid() {
+			kernel.Main.SetGlobalLogLevel(level)
+		}
+	}
+	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, debugMode)
 	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
 		ok = setConfigValue(ok, kernel.CoreService, kernel.CorePort, val)
@@ -205,7 +218,7 @@ func setServiceConfig(cfg *meta.Meta) error {
 func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{}) bool {
 	done := kernel.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
 	if !done {
-		kernel.Main.Log("unable to set configuration:", key, val)
+		kernel.Main.GetKernelLogger().Error().Str(key, fmt.Sprint(val)).Msg("Unable to set configuration")
 	}
 	return ok && done
 }
@@ -216,8 +229,9 @@ func setupOperations(cfg *meta.Meta, withBoxes bool) {
 		err := raiseFdLimit()
 		if err != nil {
 			srvm := kernel.Main
-			srvm.Log("Raising some limitions did not work:", err)
-			srvm.Log("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			logger := srvm.GetKernelLogger()
+			logger.Error().Err(err).Msg("Raising some limitions did not work")
+			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
 		}
 		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {

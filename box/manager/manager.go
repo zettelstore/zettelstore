@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 // ConnectData contains all administration related values.
@@ -89,6 +90,7 @@ func GetSchemes() []string {
 
 // Manager is a coordinating box.
 type Manager struct {
+	mgrLog       *logger.Logger
 	mgrMx        sync.RWMutex
 	started      bool
 	rtConfig     config.Config
@@ -100,6 +102,7 @@ type Manager struct {
 	propertyKeys map[string]bool // Set of property key names
 
 	// Indexer data
+	idxLog   *logger.Logger
 	idxStore store.Store
 	idxAr    *anterooms
 	idxReady chan struct{} // Signal a non-empty anteroom to background task
@@ -119,11 +122,14 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 			propertyKeys[kd.Name] = true
 		}
 	}
+	boxLog := kernel.Main.GetLogger(kernel.BoxService)
 	mgr := &Manager{
+		mgrLog:       boxLog.Clone().Str("box", "manager").Child(),
 		rtConfig:     rtConfig,
 		infos:        make(chan box.UpdateInfo, len(boxURIs)*10),
 		propertyKeys: propertyKeys,
 
+		idxLog:   boxLog.Clone().Str("box", "index").Child(),
 		idxStore: memstore.New(),
 		idxAr:    newAnterooms(10),
 		idxReady: make(chan struct{}, 1),
@@ -187,6 +193,7 @@ func (mgr *Manager) notifier() {
 		select {
 		case ci, ok := <-mgr.infos:
 			if ok {
+				mgr.mgrLog.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("notifier")
 				mgr.idxEnqueue(ci.Reason, ci.Zid)
 				if ci.Box == nil {
 					ci.Box = mgr
