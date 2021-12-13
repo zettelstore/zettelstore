@@ -129,7 +129,7 @@ func (srv *notifyService) directoryService(events <-chan *fileEvent, ready chan<
 				}
 				srv.notifyChange(box.OnReload, id.Invalid)
 			case fileStatusError:
-				kernel.Main.GetLogger(kernel.BoxService).Warn().Err(ev.err).Msg("DIRBOX")
+				srv.log.Warn().Err(ev.err).Msg("FSNotify")
 			case fileStatusUpdate:
 				srv.processFileUpdateEvent(ev, curMap, newMap)
 			case fileStatusDelete:

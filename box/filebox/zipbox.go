@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/logger"
 )
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -38,6 +39,7 @@ type zipEntry struct {
 }
 
 type zipBox struct {
+	log      *logger.Logger
 	number   int
 	name     string
 	enricher box.Enricher

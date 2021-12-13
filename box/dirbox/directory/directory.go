@@ -27,7 +27,7 @@ type Service interface {
 }
 
 // MetaSpec defines all possibilities where meta data can be stored.
-type MetaSpec int
+type MetaSpec uint8
 
 // Constants for MetaSpec
 const (
@@ -41,10 +41,10 @@ const (
 type Entry struct {
 	Zid         id.Zid
 	MetaSpec    MetaSpec // location of meta information
+	Duplicates  bool     // multiple content files
 	MetaPath    string   // file path of meta information
 	ContentPath string   // file path of zettel content
 	ContentExt  string   // (normalized) file extension of zettel content
-	Duplicates  bool     // multiple content files
 }
 
 // IsValid checks whether the entry is valid.

@@ -22,6 +22,8 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 func init() {
@@ -29,6 +31,8 @@ func init() {
 		" const",
 		func(u *url.URL, cdata *manager.ConnectData) (box.ManagedBox, error) {
 			return &constBox{
+				log: kernel.Main.GetLogger(kernel.BoxService).Clone().
+					Str("box", "const").Int("boxnum", int64(cdata.Number)).Child(),
 				number:   cdata.Number,
 				zettel:   constZettelMap,
 				enricher: cdata.Enricher,
@@ -44,6 +48,7 @@ type constZettel struct {
 }
 
 type constBox struct {
+	log      *logger.Logger
 	number   int
 	zettel   map[id.Zid]constZettel
 	enricher box.Enricher

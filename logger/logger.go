@@ -180,7 +180,9 @@ func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
 // Clone creates a message to clone the logger.
 func (l *Logger) Clone() *Message {
 	msg := newMessage(l, NeverLevel)
-	msg.level = noLevel
+	if msg != nil {
+		msg.level = noLevel
+	}
 	return msg
 }
 

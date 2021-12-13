@@ -17,10 +17,12 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/dirbox/directory"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/logger"
 )
 
 // notifyService specifies a directory scan service.
 type notifyService struct {
+	log        *logger.Logger
 	dirPath    string
 	rescanTime time.Duration
 	done       chan struct{}
@@ -29,8 +31,9 @@ type notifyService struct {
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string, rescanTime time.Duration, chci chan<- box.UpdateInfo) directory.Service {
+func NewService(log *logger.Logger, directoryPath string, rescanTime time.Duration, chci chan<- box.UpdateInfo) directory.Service {
 	srv := &notifyService{
+		log:        log,
 		dirPath:    directoryPath,
 		rescanTime: rescanTime,
 		cmds:       make(chan dirCmd),

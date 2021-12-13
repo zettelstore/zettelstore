@@ -20,17 +20,20 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/dirbox/directory"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/logger"
 )
 
 // simpleService specifies a directory service without scanning.
 type simpleService struct {
+	log     *logger.Logger
 	dirPath string
 	mx      sync.Mutex
 }
 
 // NewService creates a new directory service.
-func NewService(directoryPath string) directory.Service {
+func NewService(log *logger.Logger, directoryPath string) directory.Service {
 	return &simpleService{
+		log:     log,
 		dirPath: directoryPath,
 	}
 }
