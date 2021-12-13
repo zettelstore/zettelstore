@@ -11,6 +11,7 @@
 package logger
 
 import (
+	"strconv"
 	"sync"
 
 	"zettelstore.de/z/domain/id"
@@ -85,6 +86,16 @@ func (m *Message) Err(err error) *Message {
 		return m.Str("error", err.Error())
 	}
 	return m
+}
+
+// Int adds an integer to the full message
+func (m *Message) Int(text string, i int64) *Message {
+	return m.Str(text, strconv.FormatInt(i, 10))
+}
+
+// Uint adds an unsigned integer to the full message
+func (m *Message) Uint(text string, u uint64) *Message {
+	return m.Str(text, strconv.FormatUint(u, 10))
 }
 
 // Zid adds a zettel identifier to the full message

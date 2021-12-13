@@ -80,7 +80,7 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 		case arNothing:
 			return
 		case arReload:
-			mgr.log.Trace().Msg("reload index")
+			mgr.idxLog.Trace().Msg("reload")
 			roomNum = 0
 			zids, err := mgr.FetchZids(ctx)
 			if err == nil {
@@ -94,7 +94,7 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 				mgr.idxMx.Unlock()
 			}
 		case arUpdate:
-			mgr.log.Trace().Zid(zid).Msg("index update")
+			mgr.idxLog.Trace().Zid(zid).Msg("update")
 			zettel, err := mgr.GetZettel(ctx, zid)
 			if err != nil {
 				// TODO: on some errors put the zid into a "try later" set
@@ -108,13 +108,13 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 			mgr.idxMx.Unlock()
 			mgr.idxUpdateZettel(ctx, zettel)
 		case arDelete:
-			mgr.log.Trace().Zid(zid).Msg("index delete")
+			mgr.idxLog.Trace().Zid(zid).Msg("delete")
 			if _, err := mgr.GetMeta(ctx, zid); err == nil {
 				// Zettel was not deleted. This might occur, if zettel was
 				// deleted in secondary dirbox, but is still present in
 				// first dirbox (or vice versa). Re-index zettel in case
 				// a hidden zettel was recovered
-				mgr.log.Trace().Zid(zid).Msg("index not deleted")
+				mgr.idxLog.Trace().Zid(zid).Msg("not deleted")
 				mgr.idxAr.Enqueue(zid, arUpdate)
 			}
 			mgr.idxMx.Lock()

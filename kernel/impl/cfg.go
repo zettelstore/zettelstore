@@ -88,7 +88,7 @@ func (cs *configService) Start(*myKernel) error {
 		data.Set(kv.Key, fmt.Sprintf("%v", kv.Value))
 	}
 	cs.mxService.Lock()
-	cs.rtConfig = newConfig(data)
+	cs.rtConfig = newConfig(cs.logger, data)
 	cs.mxService.Unlock()
 	return nil
 }
@@ -117,14 +117,16 @@ func (cs *configService) setBox(mgr box.Manager) {
 
 // myConfig contains all runtime configuration data relevant for the software.
 type myConfig struct {
+	log  *logger.Logger
 	mx   sync.RWMutex
 	orig *meta.Meta
 	data *meta.Meta
 }
 
 // New creates a new Config value.
-func newConfig(orig *meta.Meta) *myConfig {
+func newConfig(logger *logger.Logger, orig *meta.Meta) *myConfig {
 	cfg := myConfig{
+		log:  logger,
 		orig: orig,
 		data: orig.Clone(),
 	}
@@ -142,8 +144,11 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 	}
 	cfg.mx.Lock()
 	for _, pair := range cfg.data.Pairs(false) {
-		if val, ok := m.Get(pair.Key); ok {
-			cfg.data.Set(pair.Key, val)
+		key := pair.Key
+		if val, ok := m.Get(key); ok {
+			cfg.data.Set(key, val)
+		} else if defVal, defFound := cfg.orig.Get(key); defFound {
+			cfg.data.Set(key, defVal)
 		}
 	}
 	cfg.mx.Unlock()
@@ -151,6 +156,7 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 }
 
 func (cfg *myConfig) observe(ci box.UpdateInfo) {
+	cfg.log.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
 		go func() { cfg.doUpdate(ci.Box) }()
 	}
