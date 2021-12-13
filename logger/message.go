@@ -10,7 +10,11 @@
 
 package logger
 
-import "sync"
+import (
+	"sync"
+
+	"zettelstore.de/z/domain/id"
+)
 
 // Message presents a message to log.
 type Message struct {
@@ -20,12 +24,18 @@ type Message struct {
 }
 
 func newMessage(logger *Logger, level Level) *Message {
-	if logger != nil && logger.Level() <= level {
-		m := messagePool.Get().(*Message)
-		m.logger = logger
-		m.level = level
-		m.buf = m.buf[:0]
-		return m
+	if logger != nil {
+		realLogger := logger
+		for realLogger.parent != nil {
+			realLogger = realLogger.parent
+		}
+		if realLogger.Level() <= level {
+			m := messagePool.Get().(*Message)
+			m.logger = realLogger
+			m.level = level
+			m.buf = append(m.buf[:0], logger.context...)
+			return m
+		}
 	}
 	return nil
 }
@@ -58,6 +68,17 @@ func (m *Message) Str(text, val string) *Message {
 	return m
 }
 
+// Bytes adds a byte slice value to the full message
+func (m *Message) Bytes(text string, val []byte) *Message {
+	if m.Enabled() {
+		buf := append(m.buf, ',', ' ')
+		buf = append(buf, text...)
+		buf = append(buf, '=')
+		m.buf = append(buf, val...)
+	}
+	return m
+}
+
 // Err adds an error value to the full message
 func (m *Message) Err(err error) *Message {
 	if err != nil {
@@ -66,10 +87,20 @@ func (m *Message) Err(err error) *Message {
 	return m
 }
 
+// Zid adds a zettel identifier to the full message
+func (m *Message) Zid(zid id.Zid) *Message {
+	return m.Bytes("zid", zid.Bytes())
+}
+
 // Msg add the given text to the message and writes it to the log.
 func (m *Message) Msg(text string) {
 	if m.Enabled() {
 		m.logger.writeMessage(m.level, text, m.buf)
 		recycleMessage(m)
 	}
+}
+
+// Child creates a child logger with context of this message.
+func (m *Message) Child() *Logger {
+	return newFromMessage(m)
 }

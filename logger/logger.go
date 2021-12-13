@@ -94,6 +94,8 @@ type Logger struct {
 	lw       LogWriter
 	levelVal uint32
 	prefix   string
+	parent   *Logger
+	context  []byte
 }
 
 // LogWriter writes log messages to their specified destinations.
@@ -110,12 +112,33 @@ func New(lw LogWriter, prefix string) *Logger {
 		lw:       lw,
 		levelVal: uint32(InfoLevel),
 		prefix:   prefix,
+		parent:   nil,
+		context:  nil,
+	}
+}
+
+func newFromMessage(msg *Message) *Logger {
+	if msg == nil {
+		return nil
+	}
+	parent := msg.logger
+	context := make([]byte, 0, len(msg.buf))
+	context = append(context, msg.buf...)
+	return &Logger{
+		lw:       nil,
+		levelVal: 0,
+		prefix:   "",
+		parent:   parent,
+		context:  context,
 	}
 }
 
 // SetLevel sets the level of the logger.
 func (l *Logger) SetLevel(newLevel Level) *Logger {
 	if l != nil {
+		if l.parent != nil {
+			panic("try to set level for child logger")
+		}
 		atomic.StoreUint32(&l.levelVal, uint32(newLevel))
 	}
 	return l
@@ -153,6 +176,13 @@ func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 // Mandatory creates a message that will always logged, except when logging
 // is disabled.
 func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
+
+// Clone creates a message to clone the logger.
+func (l *Logger) Clone() *Message {
+	msg := newMessage(l, NeverLevel)
+	msg.level = noLevel
+	return msg
+}
 
 func (l *Logger) writeMessage(level Level, msg string, details []byte) error {
 	return l.lw.WriteMessage(level, time.Now(), l.prefix, msg, details)

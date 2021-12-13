@@ -202,9 +202,8 @@ func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 	return kern.doLogRecover(name, recoverInfo)
 }
 func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
-	kern.logger.Fatal().Str("recovered_from", fmt.Sprint(recoverInfo)).Msg(name)
 	stack := debug.Stack()
-	os.Stderr.Write(stack)
+	kern.logger.Fatal().Str("recovered_from", fmt.Sprint(recoverInfo)).Bytes("stack", stack).Msg(name)
 	kern.core.updateRecoverInfo(name, recoverInfo, stack)
 	return true
 }

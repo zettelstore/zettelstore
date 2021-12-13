@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 )
 
 // ConnectData contains all administration related values.
@@ -89,6 +90,7 @@ func GetSchemes() []string {
 
 // Manager is a coordinating box.
 type Manager struct {
+	log          *logger.Logger
 	mgrMx        sync.RWMutex
 	started      bool
 	rtConfig     config.Config
@@ -120,6 +122,7 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 		}
 	}
 	mgr := &Manager{
+		log:          kernel.Main.GetLogger(kernel.BoxService).Clone().Str("box", "manager").Child(),
 		rtConfig:     rtConfig,
 		infos:        make(chan box.UpdateInfo, len(boxURIs)*10),
 		propertyKeys: propertyKeys,
@@ -187,6 +190,7 @@ func (mgr *Manager) notifier() {
 		select {
 		case ci, ok := <-mgr.infos:
 			if ok {
+				mgr.log.Trace().Zid(ci.Zid).Msg("notifier")
 				mgr.idxEnqueue(ci.Reason, ci.Zid)
 				if ci.Box == nil {
 					ci.Box = mgr

@@ -70,13 +70,6 @@ func BenchmarkStrMessage(b *testing.B) {
 	}
 }
 
-func BenchmarkStrNoMessage(b *testing.B) {
-	log := logger.New(&testLogWriter{}, "")
-	for n := 0; n < b.N; n++ {
-		log.Info().Str("key", "val").Msg("")
-	}
-}
-
 func BenchmarkMessage(b *testing.B) {
 	log := logger.New(&testLogWriter{}, "")
 	for n := 0; n < b.N; n++ {
@@ -84,9 +77,9 @@ func BenchmarkMessage(b *testing.B) {
 	}
 }
 
-func BenchmarkNoMessage(b *testing.B) {
-	log := logger.New(&testLogWriter{}, "")
+func BenchmarkCloneStrMessage(b *testing.B) {
+	log := logger.New(&testLogWriter{}, "").Clone().Str("sss", "ttt").Child()
 	for n := 0; n < b.N; n++ {
-		log.Info().Msg("")
+		log.Info().Msg("123456789")
 	}
 }
