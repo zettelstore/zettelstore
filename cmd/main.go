@@ -230,7 +230,7 @@ func setupOperations(cfg *meta.Meta, withBoxes bool) {
 		if err != nil {
 			srvm := kernel.Main
 			logger := srvm.GetKernelLogger()
-			logger.Error().Err(err).Msg("Raising some limitions did not work")
+			logger.IfErr(err).Msg("Raising some limitions did not work")
 			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
 			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
 		}

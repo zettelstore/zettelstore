@@ -39,7 +39,7 @@ func lineServer(ln net.Listener, kern *myKernel) {
 		conn, err := ln.Accept()
 		if err != nil {
 			// handle error
-			kern.logger.Error().Err(err).Msg("Unable to accept connection")
+			kern.logger.IfErr(err).Msg("Unable to accept connection")
 			break
 		}
 		go handleLineConnection(conn, kern)

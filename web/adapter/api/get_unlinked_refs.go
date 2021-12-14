@@ -22,7 +22,7 @@ import (
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".
-func MakeListUnlinkedMetaHandler(
+func (a *API) MakeListUnlinkedMetaHandler(
 	getMeta usecase.GetMeta,
 	unlinkedRefs usecase.UnlinkedReferences,
 	evaluate *usecase.Evaluate,
@@ -36,7 +36,7 @@ func MakeListUnlinkedMetaHandler(
 		ctx := r.Context()
 		zm, err := getMeta.Run(ctx, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -56,7 +56,7 @@ func MakeListUnlinkedMetaHandler(
 		metaList, err := unlinkedRefs.Run(
 			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetSearch(q), zm))
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -73,8 +73,8 @@ func MakeListUnlinkedMetaHandler(
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
-		if err = encodeJSONData(w, result); err != nil {
-			adapter.InternalServerError(w, "Write unlinked references JSON", err)
-		}
+		w.WriteHeader(http.StatusOK)
+		err = encodeJSONData(w, result)
+		a.log.IfErr(err).Zid(zid).Msg("Write Unlinked References")
 	}
 }

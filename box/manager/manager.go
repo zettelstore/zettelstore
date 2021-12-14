@@ -193,7 +193,7 @@ func (mgr *Manager) notifier() {
 		select {
 		case ci, ok := <-mgr.infos:
 			if ok {
-				mgr.mgrLog.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("notifier")
+				mgr.mgrLog.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("notifier")
 				mgr.idxEnqueue(ci.Reason, ci.Zid)
 				if ci.Box == nil {
 					ci.Box = mgr

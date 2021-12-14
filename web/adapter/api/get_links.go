@@ -24,7 +24,7 @@ import (
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
+func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -35,7 +35,7 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		q := r.URL.Query()
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), nil)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		summary := collect.References(zn)
@@ -59,7 +59,9 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		outData.Cites = stringCites(summary.Cites)
 
 		adapter.PrepareHeader(w, ctJSON)
-		encodeJSONData(w, outData)
+		w.WriteHeader(http.StatusOK)
+		err = encodeJSONData(w, outData)
+		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Links")
 	}
 }
 

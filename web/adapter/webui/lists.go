@@ -79,15 +79,13 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 	ctx := r.Context()
 	roleList, err := listRole.Run(ctx)
 	if err != nil {
-		adapter.ReportUsecaseError(w, err)
+		wui.reportError(ctx, w, err)
 		return
 	}
 
-	roleInfos := make([]roleInfo, 0, len(roleList))
-	for _, role := range roleList {
-		roleInfos = append(
-			roleInfos,
-			roleInfo{role, wui.NewURLBuilder('h').AppendQuery("role", role).String()})
+	roleInfos := make([]roleInfo, len(roleList))
+	for i, role := range roleList {
+		roleInfos[i] = roleInfo{role, wui.NewURLBuilder('h').AppendQuery("role", role).String()}
 	}
 
 	user := wui.getUser(ctx)
@@ -178,7 +176,7 @@ func (wui *WebUI) MakeSearchHandler(ucSearch usecase.Search, evaluate *usecase.E
 		ctx := r.Context()
 		s := adapter.GetSearch(query)
 		if s == nil {
-			redirectFound(w, r, wui.NewURLBuilder('h'))
+			wui.redirectFound(w, r, wui.NewURLBuilder('h'))
 			return
 		}
 

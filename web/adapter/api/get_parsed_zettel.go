@@ -39,7 +39,7 @@ func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.H
 		part := getPart(q, partContent)
 		zn, err := parseZettel.Run(r.Context(), zid, q.Get(api.KeySyntax))
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		a.writeEncodedZettelPart(w, zn, parser.ParseMetadata, enc, encStr, part)
@@ -64,6 +64,7 @@ func (a *API) writeEncodedZettelPart(
 		return
 	}
 	adapter.PrepareHeader(w, encoding2ContentType(enc))
+	w.WriteHeader(http.StatusOK)
 	var err error
 	switch part {
 	case partZettel:
@@ -73,7 +74,5 @@ func (a *API) writeEncodedZettelPart(
 	case partContent:
 		_, err = encdr.WriteContent(w, zn)
 	}
-	if err != nil {
-		adapter.InternalServerError(w, "Write encoded zettel", err)
-	}
+	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
 }

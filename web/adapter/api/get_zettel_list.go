@@ -22,14 +22,14 @@ import (
 )
 
 // MakeListMetaHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 		s := adapter.GetSearch(q)
 		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -42,13 +42,12 @@ func MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
+		w.WriteHeader(http.StatusOK)
 		err = encodeJSONData(w, api.ZettelListJSON{
 			Query: s.String(),
 			List:  result,
 		})
-		if err != nil {
-			adapter.InternalServerError(w, "Write Zettel list JSON", err)
-		}
+		a.log.IfErr(err).Msg("Write JSON List")
 	}
 }
 
@@ -60,19 +59,18 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		s := adapter.GetSearch(q)
 		metaList, err := listMeta.Run(ctx, s)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
 		adapter.PrepareHeader(w, ctPlainText)
+		w.WriteHeader(http.StatusOK)
 		for _, m := range metaList {
 			_, err = fmt.Fprintln(w, m.Zid.String(), config.GetTitle(m, a.rtConfig))
 			if err != nil {
 				break
 			}
 		}
-		if err != nil {
-			adapter.InternalServerError(w, "Write Zettel list plain", err)
-		}
+		a.log.IfErr(err).Msg("Write Plain List")
 	}
 }

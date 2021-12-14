@@ -25,14 +25,15 @@ import (
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel.
-func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
+func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		z, err := getZettelFromPath(r.Context(), w, r, getZettel)
+		z, err := a.getZettelFromPath(r.Context(), w, r, getZettel)
 		if err != nil {
 			return
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
+		w.WriteHeader(http.StatusOK)
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(w, api.ZettelJSON{
 			ID:       api.ZettelID(z.Meta.Zid.String()),
@@ -40,22 +41,21 @@ func MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 			Encoding: encoding,
 			Content:  content,
 		})
-		if err != nil {
-			adapter.InternalServerError(w, "Write Zettel JSON", err)
-		}
+		a.log.IfErr(err).Msg("Write JSON Zettel")
 	}
 }
 
 // MakeGetPlainZettelHandler creates a new HTTP handler to return a zettel in plain formar
 func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		z, err := getZettelFromPath(box.NoEnrichContext(r.Context()), w, r, getZettel)
+		z, err := a.getZettelFromPath(box.NoEnrichContext(r.Context()), w, r, getZettel)
 		if err != nil {
 			return
 		}
 
 		switch getPart(r.URL.Query(), partContent) {
 		case partZettel:
+			w.WriteHeader(http.StatusOK)
 			_, err = z.Meta.Write(w, false)
 			if err == nil {
 				_, err = w.Write([]byte{'\n'})
@@ -65,20 +65,20 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 			}
 		case partMeta:
 			adapter.PrepareHeader(w, ctPlainText)
+			w.WriteHeader(http.StatusOK)
 			_, err = z.Meta.Write(w, false)
 		case partContent:
 			if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, a.rtConfig)); ok {
 				adapter.PrepareHeader(w, ct)
 			}
+			w.WriteHeader(http.StatusOK)
 			_, err = z.Content.Write(w)
 		}
-		if err != nil {
-			adapter.InternalServerError(w, "Write plain zettel", err)
-		}
+		a.log.IfErr(err).Zid(z.Meta.Zid).Msg("Write Plain Zettel")
 	}
 }
 
-func getZettelFromPath(ctx context.Context, w http.ResponseWriter, r *http.Request, getZettel usecase.GetZettel) (domain.Zettel, error) {
+func (a *API) getZettelFromPath(ctx context.Context, w http.ResponseWriter, r *http.Request, getZettel usecase.GetZettel) (domain.Zettel, error) {
 	zid, err := id.Parse(r.URL.Path[1:])
 	if err != nil {
 		http.NotFound(w, r)
@@ -87,14 +87,14 @@ func getZettelFromPath(ctx context.Context, w http.ResponseWriter, r *http.Reque
 
 	z, err := getZettel.Run(ctx, zid)
 	if err != nil {
-		adapter.ReportUsecaseError(w, err)
+		a.reportUsecaseError(w, err)
 		return domain.Zettel{}, err
 	}
 	return z, nil
 }
 
 // MakeGetMetaHandler creates a new HTTP handler to return metadata of a zettel.
-func MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
+func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -104,16 +104,15 @@ func MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 
 		m, err := getMeta.Run(r.Context(), zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
+		w.WriteHeader(http.StatusOK)
 		err = encodeJSONData(w, api.MetaJSON{
 			Meta: m.Map(),
 		})
-		if err != nil {
-			adapter.InternalServerError(w, "Write Meta JSON", err)
-		}
+		a.log.IfErr(err).Zid(zid).Msg("Write JSON Meta")
 	}
 }

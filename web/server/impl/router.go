@@ -12,6 +12,7 @@
 package impl
 
 import (
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 )
 
@@ -38,6 +40,7 @@ var mapMethod = map[string]server.Method{
 
 // httpRouter handles all routing for zettelstore.
 type httpRouter struct {
+	log         *logger.Logger
 	urlPrefix   string
 	auth        auth.TokenManager
 	minKey      byte
@@ -50,7 +53,8 @@ type httpRouter struct {
 }
 
 // initializeRouter creates a new, empty router with the given root handler.
-func (rt *httpRouter) initializeRouter(urlPrefix string, auth auth.TokenManager) {
+func (rt *httpRouter) initializeRouter(log *logger.Logger, urlPrefix string, auth auth.TokenManager) {
+	rt.log = log
 	rt.urlPrefix = urlPrefix
 	rt.auth = auth
 	rt.minKey = 255
@@ -108,9 +112,19 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	var withDebug bool
+	if msg := rt.log.Debug(); msg.Enabled() {
+		withDebug = true
+		w = &traceResponseWriter{original: w}
+		msg.Str("method", r.Method).Str("uri", r.RequestURI).Msg("ServeHTTP")
+	}
+
 	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
 		if len(r.URL.Path) < prefixLen || r.URL.Path[:prefixLen] != rt.urlPrefix {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			if withDebug {
+				rt.log.Debug().Int("sc", int64(w.(*traceResponseWriter).statusCode)).Msg("/ServeHTTP/prefix")
+			}
 			return
 		}
 		r.URL.Path = r.URL.Path[prefixLen-1:]
@@ -118,7 +132,13 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	match := rt.reURL.FindStringSubmatch(r.URL.Path)
 	if len(match) != 3 {
 		rt.mux.ServeHTTP(w, rt.addUserContext(r))
+		if withDebug {
+			rt.log.Debug().Int("sc", int64(w.(*traceResponseWriter).statusCode)).Msg("match other")
+		}
 		return
+	}
+	if withDebug {
+		rt.log.Debug().Str("key", match[1]).Str("zid", match[2]).Msg("path match")
 	}
 
 	key := match[1][0]
@@ -133,10 +153,16 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if handler := mh[method]; handler != nil {
 			r.URL.Path = "/" + match[2]
 			handler.ServeHTTP(w, rt.addUserContext(r))
+			if withDebug {
+				rt.log.Debug().Int("sc", int64(w.(*traceResponseWriter).statusCode)).Msg("/ServeHTTP")
+			}
 			return
 		}
 	}
 	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+	if withDebug {
+		rt.log.Debug().Int("sc", int64(w.(*traceResponseWriter).statusCode)).Msg("no match")
+	}
 }
 
 func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
@@ -190,4 +216,19 @@ func getHeaderToken(r *http.Request) []byte {
 		return nil
 	}
 	return []byte(auth[len(prefix):])
+}
+
+type traceResponseWriter struct {
+	original   http.ResponseWriter
+	statusCode int
+}
+
+func (w *traceResponseWriter) Header() http.Header         { return w.original.Header() }
+func (w *traceResponseWriter) Write(p []byte) (int, error) { return w.original.Write(p) }
+func (w *traceResponseWriter) WriteHeader(statusCode int) {
+	w.statusCode = statusCode
+	w.original.WriteHeader(statusCode)
+}
+func (w *traceResponseWriter) WriteString(s string) (int, error) {
+	return io.WriteString(w.original, s)
 }

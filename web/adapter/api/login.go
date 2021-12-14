@@ -35,7 +35,7 @@ func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc
 			var err error
 			token, err = ucAuth.Run(r.Context(), ident, cred, a.tokenLifetime, auth.KindJSON)
 			if err != nil {
-				adapter.ReportUsecaseError(w, err)
+				a.reportUsecaseError(w, err)
 				return
 			}
 		}
@@ -46,7 +46,9 @@ func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
-		writeJSONToken(w, string(token), a.tokenLifetime)
+		w.WriteHeader(http.StatusOK)
+		err := writeJSONToken(w, string(token), a.tokenLifetime)
+		a.log.IfErr(err).Msg("Login")
 	}
 }
 
@@ -60,9 +62,9 @@ func retrieveIdentCred(r *http.Request) (string, string) {
 	return "", ""
 }
 
-func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) {
+func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
 	je := json.NewEncoder(w)
-	je.Encode(api.AuthJSON{
+	return je.Encode(api.AuthJSON{
 		Token:   token,
 		Type:    "Bearer",
 		Expires: int(lifetime / time.Second),
@@ -83,17 +85,21 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
 			adapter.PrepareHeader(w, ctJSON)
-			writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
+			w.WriteHeader(http.StatusOK)
+			err := writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
+			a.log.IfErr(err).Msg("Write old token")
 			return
 		}
 
 		// Token is a little bit aged. Create a new one
 		token, err := a.getToken(authData.User)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		adapter.PrepareHeader(w, ctJSON)
-		writeJSONToken(w, string(token), a.tokenLifetime)
+		w.WriteHeader(http.StatusOK)
+		err = writeJSONToken(w, string(token), a.tokenLifetime)
+		a.log.IfErr(err).Msg("Write renewed token")
 	}
 }

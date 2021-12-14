@@ -36,6 +36,7 @@ func writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) e
 		outList[i].Meta = m.Map()
 	}
 	adapter.PrepareHeader(w, ctJSON)
+	w.WriteHeader(http.StatusOK)
 	return encodeJSONData(w, api.ZidMetaRelatedList{
 		ID:   api.ZettelID(m.Zid.String()),
 		Meta: m.Map(),

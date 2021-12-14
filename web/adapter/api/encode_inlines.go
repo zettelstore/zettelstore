@@ -78,10 +78,9 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
+		w.WriteHeader(http.StatusOK)
 		err := encodeJSONData(w, respJSON)
-		if err != nil {
-			adapter.InternalServerError(w, "Write JSON for encoded Zettelmarkup", err)
-		}
+		a.log.IfErr(err).Msg("Write JSON Inlines")
 	}
 }
 

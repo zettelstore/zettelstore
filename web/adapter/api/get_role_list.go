@@ -19,16 +19,18 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-// MakeListRoleHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
+// MakeListRoleHandler creates a new HTTP handler for the use case "list roles".
+func (a *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		roleList, err := listRole.Run(r.Context())
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
 		adapter.PrepareHeader(w, ctJSON)
-		encodeJSONData(w, api.RoleListJSON{Roles: roleList})
+		w.WriteHeader(http.StatusOK)
+		err = encodeJSONData(w, api.RoleListJSON{Roles: roleList})
+		a.log.IfErr(err).Msg("Write Roles")
 	}
 }

@@ -18,11 +18,10 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeRenameZettelHandler creates a new HTTP handler to update a zettel.
-func MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
+func (a *API) MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -35,7 +34,7 @@ func MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc
 			return
 		}
 		if err = renameZettel.Run(r.Context(), zid, newZid); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)

@@ -21,12 +21,12 @@ import (
 )
 
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
+func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 		tagData, err := listTags.Run(r.Context(), iMinCount)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -39,6 +39,8 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			tagMap[tag] = zidList
 		}
 		adapter.PrepareHeader(w, ctJSON)
-		encodeJSONData(w, api.TagListJSON{Tags: tagMap})
+		w.WriteHeader(http.StatusOK)
+		err = encodeJSONData(w, api.TagListJSON{Tags: tagMap})
+		a.log.IfErr(err).Msg("Write Tags")
 	}
 }

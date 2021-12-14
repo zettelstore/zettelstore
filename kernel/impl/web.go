@@ -112,7 +112,7 @@ func (ws *webService) Start(kern *myKernel) error {
 	persistentCookie := ws.GetNextConfig(kernel.WebPersistentCookie).(bool)
 	secureCookie := ws.GetNextConfig(kernel.WebSecureCookie).(bool)
 
-	srvw := impl.New(listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
+	srvw := impl.New(ws.logger, listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
 		ws.logger.Fatal().Err(err).Msg("Unable to create")
