@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -61,11 +62,18 @@ func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) htt
 			a.reportUsecaseError(w, err)
 			return
 		}
-		u := a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String()
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.ZidJSON{ID: api.ZettelID(newZid.String())})
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(newZid).Msg("Unable to store new Zid in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		h := adapter.PrepareHeader(w, ctJSON)
-		h.Set(api.HeaderLocation, u)
+		h.Set(api.HeaderLocation, a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String())
 		w.WriteHeader(http.StatusCreated)
-		err = encodeJSONData(w, api.ZidJSON{ID: api.ZettelID(newZid.String())})
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Zid(newZid).Msg("Create JSON Zettel")
 	}
 }

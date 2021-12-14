@@ -44,8 +44,8 @@ func (a *API) MakeZettelContextHandler(getContext usecase.ZettelContext) http.Ha
 			a.reportUsecaseError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
-		err = writeMetaList(w, metaList[0], metaList[1:])
+
+		err = a.writeMetaList(w, metaList[0], metaList[1:])
 		a.log.IfErr(err).Zid(zid).Msg("Write Context")
 	}
 }

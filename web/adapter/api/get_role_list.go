@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -28,9 +29,17 @@ func (a *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 			return
 		}
 
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.RoleListJSON{Roles: roleList})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store role list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		adapter.PrepareHeader(w, ctJSON)
 		w.WriteHeader(http.StatusOK)
-		err = encodeJSONData(w, api.RoleListJSON{Roles: roleList})
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Msg("Write Roles")
 	}
 }

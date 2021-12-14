@@ -35,7 +35,7 @@ func (a *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerF
 			a.reportUsecaseError(w, err)
 			return
 		}
-		err = writeMetaList(w, start, metas)
-		a.log.IfErr(err).Msg("Write Zettel Order")
+		err = a.writeMetaList(w, start, metas)
+		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Order")
 	}
 }

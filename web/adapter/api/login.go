@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -26,8 +27,8 @@ import (
 func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.withAuth() {
-			adapter.PrepareHeader(w, ctJSON)
-			writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
+			err := a.writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
+			a.log.IfErr(err).Msg("Login/free")
 			return
 		}
 		var token []byte
@@ -45,9 +46,7 @@ func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		err := writeJSONToken(w, string(token), a.tokenLifetime)
+		err := a.writeJSONToken(w, string(token), a.tokenLifetime)
 		a.log.IfErr(err).Msg("Login")
 	}
 }
@@ -62,13 +61,23 @@ func retrieveIdentCred(r *http.Request) (string, string) {
 	return "", ""
 }
 
-func writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
-	je := json.NewEncoder(w)
-	return je.Encode(api.AuthJSON{
+func (a *API) writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
+	var buf bytes.Buffer
+	je := json.NewEncoder(&buf)
+	err := je.Encode(api.AuthJSON{
 		Token:   token,
 		Type:    "Bearer",
 		Expires: int(lifetime / time.Second),
 	})
+	if err != nil {
+		a.log.Fatal().Err(err).Msg("Unable to store token in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return nil
+	}
+	adapter.PrepareHeader(w, ctJSON)
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(buf.Bytes())
+	return err
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
@@ -84,9 +93,7 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			adapter.PrepareHeader(w, ctJSON)
-			w.WriteHeader(http.StatusOK)
-			err := writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
+			err := a.writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			a.log.IfErr(err).Msg("Write old token")
 			return
 		}
@@ -97,9 +104,7 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 			a.reportUsecaseError(w, err)
 			return
 		}
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		err = writeJSONToken(w, string(token), a.tokenLifetime)
+		err = a.writeJSONToken(w, string(token), a.tokenLifetime)
 		a.log.IfErr(err).Msg("Write renewed token")
 	}
 }

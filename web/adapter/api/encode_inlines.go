@@ -77,9 +77,17 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 			}
 		}
 
+		var buf bytes.Buffer
+		err := encodeJSONData(&buf, respJSON)
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store inlines in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		adapter.PrepareHeader(w, ctJSON)
 		w.WriteHeader(http.StatusOK)
-		err := encodeJSONData(w, respJSON)
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Msg("Write JSON Inlines")
 	}
 }

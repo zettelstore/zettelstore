@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 
@@ -63,16 +64,27 @@ func (a *API) writeEncodedZettelPart(
 		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid.String(), encStr))
 		return
 	}
-	adapter.PrepareHeader(w, encoding2ContentType(enc))
-	w.WriteHeader(http.StatusOK)
 	var err error
+	var buf bytes.Buffer
 	switch part {
 	case partZettel:
-		_, err = encdr.WriteZettel(w, zn, evalMeta)
+		_, err = encdr.WriteZettel(&buf, zn, evalMeta)
 	case partMeta:
-		_, err = encdr.WriteMeta(w, zn.InhMeta, evalMeta)
+		_, err = encdr.WriteMeta(&buf, zn.InhMeta, evalMeta)
 	case partContent:
-		_, err = encdr.WriteContent(w, zn)
+		_, err = encdr.WriteContent(&buf, zn)
 	}
+	if err != nil {
+		a.log.Fatal().Err(err).Zid(zn.Zid).Msg("Unable to store data in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if buf.Len() == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	adapter.PrepareHeader(w, encoding2ContentType(enc))
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(buf.Bytes())
 	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
 }

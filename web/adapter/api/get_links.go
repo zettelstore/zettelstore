@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -58,9 +59,16 @@ func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 
 		outData.Cites = stringCites(summary.Cites)
 
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, outData)
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store links in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 		adapter.PrepareHeader(w, ctJSON)
 		w.WriteHeader(http.StatusOK)
-		err = encodeJSONData(w, outData)
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Links")
 	}
 }

@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 
@@ -41,12 +42,20 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			})
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		err = encodeJSONData(w, api.ZettelListJSON{
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.ZettelListJSON{
 			Query: s.String(),
 			List:  result,
 		})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store meta list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		adapter.PrepareHeader(w, ctJSON)
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Msg("Write JSON List")
 	}
 }
@@ -63,14 +72,24 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		adapter.PrepareHeader(w, ctPlainText)
-		w.WriteHeader(http.StatusOK)
+		var buf bytes.Buffer
 		for _, m := range metaList {
-			_, err = fmt.Fprintln(w, m.Zid.String(), config.GetTitle(m, a.rtConfig))
+			_, err = fmt.Fprintln(&buf, m.Zid.String(), config.GetTitle(m, a.rtConfig))
 			if err != nil {
-				break
+				a.log.Fatal().Err(err).Msg("Unable to store plain list in buffer")
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
 			}
 		}
+
+		if buf.Len() == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		adapter.PrepareHeader(w, ctPlainText)
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Msg("Write Plain List")
 	}
 }

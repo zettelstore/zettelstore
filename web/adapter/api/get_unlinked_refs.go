@@ -11,6 +11,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 
@@ -72,9 +73,17 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			})
 		}
 
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, result)
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store unlinked references in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		adapter.PrepareHeader(w, ctJSON)
 		w.WriteHeader(http.StatusOK)
-		err = encodeJSONData(w, result)
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Zid(zid).Msg("Write Unlinked References")
 	}
 }

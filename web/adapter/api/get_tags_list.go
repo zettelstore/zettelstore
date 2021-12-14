@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 	"strconv"
 
@@ -38,9 +39,18 @@ func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			}
 			tagMap[tag] = zidList
 		}
+
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.TagListJSON{Tags: tagMap})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store tag list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
 		adapter.PrepareHeader(w, ctJSON)
 		w.WriteHeader(http.StatusOK)
-		err = encodeJSONData(w, api.TagListJSON{Tags: tagMap})
+		_, err = w.Write(buf.Bytes())
 		a.log.IfErr(err).Msg("Write Tags")
 	}
 }
