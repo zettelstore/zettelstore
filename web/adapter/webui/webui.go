@@ -38,7 +38,7 @@ import (
 
 // WebUI holds all data for delivering the web ui.
 type WebUI struct {
-	logger   *logger.Logger
+	log      *logger.Logger
 	debug    bool
 	ab       server.AuthBuilder
 	authz    auth.AuthzManager
@@ -74,11 +74,11 @@ type webuiBox interface {
 }
 
 // New creates a new WebUI struct.
-func New(ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
+func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
 	wui := &WebUI{
-		logger:   kernel.Main.GetLogger(kernel.WebService),
+		log:      log,
 		debug:    kernel.Main.GetConfig(kernel.CoreService, kernel.CoreDebug).(bool),
 		ab:       ab,
 		rtConfig: rtConfig,
@@ -296,7 +296,7 @@ func (wui *WebUI) renderTemplate(
 func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
-		wui.logger.Error().Err(err).Msg(text)
+		wui.log.IfErr(err).Msg(text)
 	}
 	user := wui.getUser(ctx)
 	var base baseData
@@ -320,12 +320,14 @@ func (wui *WebUI) renderTemplateStatus(
 
 	bt, err := wui.getTemplate(ctx, id.BaseTemplateZid)
 	if err != nil {
-		adapter.InternalServerError(w, "Unable to get base template", err)
+		wui.log.IfErr(err).Zid(id.BaseTemplateZid).Msg("Unable to get template")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	t, err := wui.getTemplate(ctx, templateID)
 	if err != nil {
-		adapter.InternalServerError(w, "Unable to get template", err)
+		wui.log.IfErr(err).Zid(templateID).Msg("Unable to get template")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	if user := wui.getUser(ctx); user != nil {
@@ -347,7 +349,7 @@ func (wui *WebUI) renderTemplateStatus(
 		}
 	}
 	if err != nil {
-		wui.logger.Error().Err(err).Msg("Unable to write HTML via template")
+		wui.log.IfErr(err).Msg("Unable to write HTML via template")
 	}
 }
 

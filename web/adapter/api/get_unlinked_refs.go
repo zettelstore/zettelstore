@@ -11,6 +11,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 
@@ -22,7 +23,7 @@ import (
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".
-func MakeListUnlinkedMetaHandler(
+func (a *API) MakeListUnlinkedMetaHandler(
 	getMeta usecase.GetMeta,
 	unlinkedRefs usecase.UnlinkedReferences,
 	evaluate *usecase.Evaluate,
@@ -36,7 +37,7 @@ func MakeListUnlinkedMetaHandler(
 		ctx := r.Context()
 		zm, err := getMeta.Run(ctx, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -56,7 +57,7 @@ func MakeListUnlinkedMetaHandler(
 		metaList, err := unlinkedRefs.Run(
 			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetSearch(q), zm))
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -72,9 +73,15 @@ func MakeListUnlinkedMetaHandler(
 			})
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		if err = encodeJSONData(w, result); err != nil {
-			adapter.InternalServerError(w, "Write unlinked references JSON", err)
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, result)
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store unlinked references in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
+
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Zid(zid).Msg("Write Unlinked References")
 	}
 }

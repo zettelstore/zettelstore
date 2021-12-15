@@ -19,10 +19,12 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
 )
 
 type myServer struct {
+	log              *logger.Logger
 	server           httpServer
 	router           httpRouter
 	persistentCookie bool
@@ -30,12 +32,13 @@ type myServer struct {
 }
 
 // New creates a new web server.
-func New(listenAddr, urlPrefix string, persistentCookie, secureCookie bool, auth auth.TokenManager) server.Server {
+func New(log *logger.Logger, listenAddr, urlPrefix string, persistentCookie, secureCookie bool, auth auth.TokenManager) server.Server {
 	srv := myServer{
+		log:              log,
 		persistentCookie: persistentCookie,
 		secureCookie:     secureCookie,
 	}
-	srv.router.initializeRouter(urlPrefix, auth)
+	srv.router.initializeRouter(log, urlPrefix, auth)
 	srv.server.initializeHTTPServer(listenAddr, &srv.router)
 	return &srv
 }
@@ -79,11 +82,16 @@ func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Durati
 	if srv.persistentCookie && d > 0 {
 		cookie.Expires = time.Now().Add(d).Add(30 * time.Second).UTC()
 	}
+	srv.log.Debug().Bytes("token", token).Msg("SetToken")
 	http.SetCookie(w, &cookie)
 }
 
 // ClearToken invalidates the session cookie by sending an empty one.
 func (srv *myServer) ClearToken(ctx context.Context, w http.ResponseWriter) context.Context {
+	if authData := srv.GetAuthData(ctx); authData == nil {
+		// No authentication data stored in session, nothing to do.
+		return ctx
+	}
 	if w != nil {
 		srv.SetToken(w, nil, 0)
 	}

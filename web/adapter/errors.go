@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,11 +11,7 @@
 // Package adapter provides handlers for web requests.
 package adapter
 
-import (
-	"net/http"
-
-	"zettelstore.de/z/kernel"
-)
+import "net/http"
 
 // BadRequest signals HTTP status code 400.
 func BadRequest(w http.ResponseWriter, text string) {
@@ -30,16 +26,4 @@ func Forbidden(w http.ResponseWriter, text string) {
 // NotFound signals HTTP status code 404.
 func NotFound(w http.ResponseWriter, text string) {
 	http.Error(w, text, http.StatusNotFound)
-}
-
-// InternalServerError signals HTTP status code 500.
-func InternalServerError(w http.ResponseWriter, text string, err error) {
-	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	kernel.Main.GetLogger(kernel.WebService).Error().Err(err).Msg(text)
-}
-
-// NotImplemented signals HTTP status code 501
-func NotImplemented(w http.ResponseWriter, text string) {
-	http.Error(w, text, http.StatusNotImplemented)
-	kernel.Main.GetLogger(kernel.WebService).Error().Msg(text)
 }

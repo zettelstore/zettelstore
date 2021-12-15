@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -20,11 +21,10 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
-func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
+func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -35,7 +35,7 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		q := r.URL.Query()
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), nil)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		summary := collect.References(zn)
@@ -58,8 +58,16 @@ func MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 
 		outData.Cites = stringCites(summary.Cites)
 
-		adapter.PrepareHeader(w, ctJSON)
-		encodeJSONData(w, outData)
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, outData)
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store links in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Links")
 	}
 }
 

@@ -21,7 +21,7 @@ import (
 )
 
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
-func MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc {
+func (a *API) MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -41,9 +41,11 @@ func MakeZettelContextHandler(getContext usecase.ZettelContext) http.HandlerFunc
 		ctx := r.Context()
 		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
-		writeMetaList(w, metaList[0], metaList[1:])
+
+		err = a.writeMetaList(w, metaList[0], metaList[1:])
+		a.log.IfErr(err).Zid(zid).Msg("Write Context")
 	}
 }

@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -27,22 +28,21 @@ func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel
 		ctx := r.Context()
 		zettel, err := buildZettelFromPlainData(r, id.Invalid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
 
 		newZid, err := createZettel.Run(ctx, zettel)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		u := a.NewURLBuilder('z').SetZid(api.ZettelID(newZid.String())).String()
 		h := adapter.PrepareHeader(w, ctPlainText)
 		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
-		if _, err = w.Write(newZid.Bytes()); err != nil {
-			adapter.InternalServerError(w, "Write Plain", err)
-		}
+		_, err = w.Write(newZid.Bytes())
+		a.log.IfErr(err).Zid(newZid).Msg("Create Plain Zettel")
 	}
 }
 
@@ -53,21 +53,27 @@ func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) htt
 		ctx := r.Context()
 		zettel, err := buildZettelFromJSONData(r, id.Invalid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
 
 		newZid, err := createZettel.Run(ctx, zettel)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
-		u := a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String()
-		h := adapter.PrepareHeader(w, ctJSON)
-		h.Set(api.HeaderLocation, u)
-		w.WriteHeader(http.StatusCreated)
-		if err = encodeJSONData(w, api.ZidJSON{ID: api.ZettelID(newZid.String())}); err != nil {
-			adapter.InternalServerError(w, "Write JSON", err)
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.ZidJSON{ID: api.ZettelID(newZid.String())})
+		if err != nil {
+			a.log.Fatal().Err(err).Zid(newZid).Msg("Unable to store new Zid in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
+
+		h := adapter.PrepareHeader(w, ctJSON)
+		h.Set(api.HeaderLocation, a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String())
+		w.WriteHeader(http.StatusCreated)
+		_, err = w.Write(buf.Bytes())
+		a.log.IfErr(err).Zid(newZid).Msg("Create JSON Zettel")
 	}
 }

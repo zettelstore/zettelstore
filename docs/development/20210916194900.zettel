@@ -2,7 +2,7 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20211113182134
+modified: 20211214181017
 
 # Sync with the official repository
 #* ``fossil sync -u``
@@ -14,7 +14,7 @@ modified: 20211113182134
 #* ``go run tools/build.go testapi`` (alternatively: ``make api``).
 # Run [[linkchecker|https://linkchecker.github.io/linkchecker/]] with the manual:
 #* ``go run -race cmd/zettelstore/main.go run -d docs/manual``
-#* ``linkchecker  http://127.0.0.1:23123 2>&1 | tee lc.txt``
+#* ``linkchecker http://127.0.0.1:23123 2>&1 | tee lc.txt``
 #* Check all ""Error: 404 Not Found""
 #* Check all ""Error: 403 Forbidden"": allowed for endpoint ''/p'' with encoding ''html'' for those zettel that are accessible only in ''expert-mode''.
 #* Try to resolve other error messages and warnings

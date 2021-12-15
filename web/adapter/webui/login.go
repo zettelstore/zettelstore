@@ -27,7 +27,7 @@ func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 		query := r.URL.Query()
 		if query.Has("logout") {
 			wui.clearToken(r.Context(), w)
-			redirectFound(w, r, wui.NewURLBuilder('/'))
+			wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 			return
 		}
 		wui.renderLoginForm(wui.clearToken(r.Context(), w), w, false)
@@ -50,7 +50,7 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 func (wui *WebUI) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !wui.authz.WithAuth() {
-			redirectFound(w, r, wui.NewURLBuilder('/'))
+			wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 			return
 		}
 		ctx := r.Context()
@@ -70,6 +70,6 @@ func (wui *WebUI) MakePostLoginHandler(ucAuth usecase.Authenticate) http.Handler
 		}
 
 		wui.setToken(w, token)
-		redirectFound(w, r, wui.NewURLBuilder('/'))
+		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }

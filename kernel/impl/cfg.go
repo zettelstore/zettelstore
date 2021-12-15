@@ -156,7 +156,7 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 }
 
 func (cfg *myConfig) observe(ci box.UpdateInfo) {
-	cfg.log.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
+	cfg.log.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
 		go func() { cfg.doUpdate(ci.Box) }()
 	}

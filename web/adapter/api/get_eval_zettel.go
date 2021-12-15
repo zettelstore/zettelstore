@@ -47,7 +47,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		evalMeta := func(value string) *ast.InlineListNode {

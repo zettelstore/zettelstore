@@ -18,8 +18,10 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-func redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {
-	http.Redirect(w, r, ub.String(), http.StatusFound)
+func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {
+	us := ub.String()
+	wui.log.Debug().Str("uri", us).Msg("redirect")
+	http.Redirect(w, r, us, http.StatusFound)
 }
 
 func (wui *WebUI) createImageMaterial(zid id.Zid) ast.MaterialNode {

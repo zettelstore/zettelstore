@@ -12,7 +12,9 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"net/http"
 	"time"
 
 	"zettelstore.de/c/api"
@@ -20,11 +22,14 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/logger"
+	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
 )
 
 // API holds all data and methods for delivering API call results.
 type API struct {
+	log      *logger.Logger
 	b        server.Builder
 	rtConfig config.Config
 	authz    auth.AuthzManager
@@ -35,8 +40,9 @@ type API struct {
 }
 
 // New creates a new API object.
-func New(b server.Builder, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth, rtConfig config.Config) *API {
+func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth, rtConfig config.Config) *API {
 	a := &API{
+		log:      log,
 		b:        b,
 		authz:    authz,
 		token:    token,
@@ -60,4 +66,26 @@ func (a *API) getAuthData(ctx context.Context) *server.AuthData {
 func (a *API) withAuth() bool { return a.authz.WithAuth() }
 func (a *API) getToken(ident *meta.Meta) ([]byte, error) {
 	return a.token.GetToken(ident, a.tokenLifetime, auth.KindJSON)
+}
+
+func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {
+	code, text := adapter.CodeMessageFromError(err)
+	if code == http.StatusInternalServerError {
+		a.log.IfErr(err).Msg(text)
+		http.Error(w, http.StatusText(code), code)
+		return
+	}
+	// TODO: must call PrepareHeader somehow
+	http.Error(w, text, code)
+}
+
+func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) error {
+	if buf.Len() == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+	adapter.PrepareHeader(w, contentType)
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write(buf.Bytes())
+	return err
 }

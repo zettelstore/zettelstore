@@ -32,6 +32,8 @@
 
 <a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>
+  *  v0.1.3 (2021-12-15) fixes a bug where the modification date could be set
+     when a new zettel is created.
   *  v0.1.2 (2021-11-18) fixes a bug when selecting zettel from a list when
      more than one comparison is negated.
   *  v0.1.1 (2021-11-12) updates the documentation, mostly related to the

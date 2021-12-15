@@ -20,7 +20,7 @@ import (
 )
 
 // MakeUpdatePlainZettelHandler creates a new HTTP handler to update a zettel.
-func MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func (a *API) MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -29,11 +29,11 @@ func MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.Handle
 		}
 		zettel, err := buildZettelFromPlainData(r, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
 		if err = updateZettel.Run(r.Context(), zettel, true); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -41,7 +41,7 @@ func MakeUpdatePlainZettelHandler(updateZettel usecase.UpdateZettel) http.Handle
 }
 
 // MakeUpdateZettelHandler creates a new HTTP handler to update a zettel.
-func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func (a *API) MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -50,11 +50,11 @@ func MakeUpdateZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc
 		}
 		zettel, err := buildZettelFromJSONData(r, zid)
 		if err != nil {
-			adapter.ReportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
+			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
 		}
 		if err = updateZettel.Run(r.Context(), zettel, true); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)

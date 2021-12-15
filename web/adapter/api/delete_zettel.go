@@ -16,11 +16,10 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func MakeDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc {
+func (a *API) MakeDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -29,7 +28,7 @@ func MakeDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc
 		}
 
 		if err = deleteZettel.Run(r.Context(), zid); err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)

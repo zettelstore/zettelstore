@@ -12,21 +12,21 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
 	"strconv"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
-func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
+func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
 		tagData, err := listTags.Run(r.Context(), iMinCount)
 		if err != nil {
-			adapter.ReportUsecaseError(w, err)
+			a.reportUsecaseError(w, err)
 			return
 		}
 
@@ -38,7 +38,16 @@ func MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			}
 			tagMap[tag] = zidList
 		}
-		adapter.PrepareHeader(w, ctJSON)
-		encodeJSONData(w, api.TagListJSON{Tags: tagMap})
+
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.TagListJSON{Tags: tagMap})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store tag list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Msg("Write Tags")
 	}
 }

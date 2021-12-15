@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
 )
@@ -32,16 +31,6 @@ func PrepareHeader(w http.ResponseWriter, contentType string) http.Header {
 		h.Set(api.HeaderContentType, contentType)
 	}
 	return h
-}
-
-// ReportUsecaseError returns an appropriate HTTP status code for errors in use cases.
-func ReportUsecaseError(w http.ResponseWriter, err error) {
-	code, text := CodeMessageFromError(err)
-	if code == http.StatusInternalServerError {
-		kernel.Main.GetLogger(kernel.WebService).Error().Err(err).Msg(text)
-	}
-	// TODO: must call PrepareHeader somehow
-	http.Error(w, text, code)
 }
 
 // ErrBadRequest is returned if the caller made an invalid HTTP request.

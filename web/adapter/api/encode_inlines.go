@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakePostEncodeInlinesHandler creates a new HTTP handler to encode given
@@ -77,11 +76,16 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 			}
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		err := encodeJSONData(w, respJSON)
+		var buf bytes.Buffer
+		err := encodeJSONData(&buf, respJSON)
 		if err != nil {
-			adapter.InternalServerError(w, "Write JSON for encoded Zettelmarkup", err)
+			a.log.Fatal().Err(err).Msg("Unable to store inlines in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
+
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Msg("Write JSON Inlines")
 	}
 }
 
