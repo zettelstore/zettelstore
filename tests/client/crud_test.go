@@ -94,9 +94,11 @@ func TestCreateGetDeleteZettelJSON(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("owner", "owner")
+	wrongModified := "19691231115959"
 	zid, err := c.CreateZettelJSON(context.Background(), &api.ZettelDataJSON{
 		Meta: api.ZettelMeta{
-			api.KeyTitle: "A\nTitle", // \n must be converted into a space
+			api.KeyTitle:    "A\nTitle", // \n must be converted into a space
+			api.KeyModified: wrongModified,
 		},
 	})
 	if err != nil {
@@ -110,6 +112,9 @@ func TestCreateGetDeleteZettelJSON(t *testing.T) {
 		exp := "A Title"
 		if got := z.Meta[api.KeyTitle]; got != exp {
 			t.Errorf("Expected title %q, but got %q", exp, got)
+		}
+		if got := z.Meta[api.KeyModified]; got != "" {
+			t.Errorf("Create allowed to set the modified key: %q", got)
 		}
 	}
 	doDelete(t, c, zid)
@@ -163,6 +168,8 @@ func TestUpdateZettelJSON(t *testing.T) {
 	}
 	newTitle := "New Home"
 	z.Meta[api.KeyTitle] = newTitle
+	wrongModified := "19691231235959"
+	z.Meta[api.KeyModified] = wrongModified
 	err = c.UpdateZettelJSON(context.Background(), api.ZidDefaultHome, z)
 	if err != nil {
 		t.Error(err)
@@ -175,6 +182,9 @@ func TestUpdateZettelJSON(t *testing.T) {
 	}
 	if got := zt.Meta[api.KeyTitle]; got != newTitle {
 		t.Errorf("Title of zettel is not %q, but %q", newTitle, got)
+	}
+	if got := zt.Meta[api.KeyModified]; got == wrongModified {
+		t.Errorf("Update did not change the modified key: %q", got)
 	}
 
 	// Must delete to clean up for next tests

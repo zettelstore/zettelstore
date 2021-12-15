@@ -55,6 +55,7 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
 		m.Set(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	}
+	m.Delete(api.KeyModified)
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 
 	zettel.Content.TrimSpace()
