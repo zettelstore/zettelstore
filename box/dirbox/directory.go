@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package directory
+package dirbox
 
 import (
 	"fmt"
@@ -22,48 +22,76 @@ import (
 	"zettelstore.de/z/logger"
 )
 
+// dirMetaSpec defines all possibilities where meta data can be stored.
+type dirMetaSpec uint8
+
+// Constants for MetaSpec
+const (
+	_                 dirMetaSpec = iota
+	dirMetaSpecNone               // no meta information
+	dirMetaSpecFile               // meta information is in meta file
+	dirMetaSpecHeader             // meta information is in header
+)
+
+// dirEntry stores everything for a directory entry.
+type dirEntry struct {
+	zid         id.Zid
+	metaSpec    dirMetaSpec // location of meta information
+	duplicates  bool        // multiple content files
+	metaPath    string      // file path of meta information
+	contentPath string      // file path of zettel content
+	contentExt  string      // (normalized) file extension of zettel content
+}
+
+// isValid checks whether the entry is valid.
+func (e *dirEntry) isValid() bool {
+	return e != nil && e.zid.IsValid()
+}
+
 // dirService specifies a directory service for file based zettel.
 type dirService struct {
 	log      *logger.Logger
 	dirPath  string
 	notifier notify.Notifier
+	infos    chan<- box.UpdateInfo
 	mx       sync.RWMutex
 	entries  entrySet
 }
 
-type entrySet map[id.Zid]*Entry
+type entrySet map[id.Zid]*dirEntry
 
-// NewService creates a new directory service.
-func NewService(log *logger.Logger, directoryPath string, notifier notify.Notifier) Service {
+// newDirService creates a new directory service.
+func newDirService(log *logger.Logger, directoryPath string, notifier notify.Notifier, chci chan<- box.UpdateInfo) *dirService {
 	return &dirService{
 		log:      log,
 		dirPath:  directoryPath,
 		notifier: notifier,
+		infos:    chci,
 	}
 }
 
-func (ds *dirService) Start() {
+func (ds *dirService) startDirService() {
 	go ds.updateEvents()
 }
 
-func (ds *dirService) Refresh() {
+func (ds *dirService) refreshDirService() {
 	ds.notifier.Refresh()
 }
 
-func (ds *dirService) Stop() {
+func (ds *dirService) stopDirService() {
 	ds.notifier.Close()
 }
 
-func (ds *dirService) NumEntries() int {
+func (ds *dirService) countDirEntries() int {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	return len(ds.entries)
 }
 
-func (ds *dirService) GetEntries() []*Entry {
+func (ds *dirService) getDirEntries() []*dirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
-	result := make([]*Entry, 0, len(ds.entries))
+	result := make([]*dirEntry, 0, len(ds.entries))
 	for _, entry := range ds.entries {
 		copiedEntry := *entry
 		result = append(result, &copiedEntry)
@@ -71,7 +99,7 @@ func (ds *dirService) GetEntries() []*Entry {
 	return result
 }
 
-func (ds *dirService) GetEntry(zid id.Zid) *Entry {
+func (ds *dirService) getDirEntry(zid id.Zid) *dirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	foundEntry := ds.entries[zid]
@@ -82,7 +110,7 @@ func (ds *dirService) GetEntry(zid id.Zid) *Entry {
 	return &result
 }
 
-func (ds *dirService) GetNew() (id.Zid, error) {
+func (ds *dirService) calcNewDirEntry() (id.Zid, error) {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
@@ -92,30 +120,30 @@ func (ds *dirService) GetNew() (id.Zid, error) {
 	if err != nil {
 		return id.Invalid, err
 	}
-	ds.entries[zid] = &Entry{Zid: zid}
+	ds.entries[zid] = &dirEntry{zid: zid}
 	return zid, nil
 }
 
-func (ds *dirService) UpdateEntry(updatedEntry *Entry) {
+func (ds *dirService) updateDirEntry(updatedEntry *dirEntry) {
 	entry := *updatedEntry
 	ds.mx.Lock()
-	ds.entries[entry.Zid] = &entry
+	ds.entries[entry.zid] = &entry
 	ds.mx.Unlock()
 }
 
-func (ds *dirService) RenameEntry(oldEntry, newEntry *Entry) error {
+func (ds *dirService) renameDirEntry(oldEntry, newEntry *dirEntry) error {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
-	if _, found := ds.entries[newEntry.Zid]; found {
-		return &box.ErrInvalidID{Zid: newEntry.Zid}
+	if _, found := ds.entries[newEntry.zid]; found {
+		return &box.ErrInvalidID{Zid: newEntry.zid}
 	}
-	delete(ds.entries, oldEntry.Zid)
+	delete(ds.entries, oldEntry.zid)
 	entry := *newEntry
-	ds.entries[entry.Zid] = &entry
+	ds.entries[entry.zid] = &entry
 	return nil
 }
 
-func (ds *dirService) DeleteEntry(zid id.Zid) {
+func (ds *dirService) deleteDirEntry(zid id.Zid) {
 	ds.mx.Lock()
 	delete(ds.entries, zid)
 	ds.mx.Unlock()
@@ -124,10 +152,11 @@ func (ds *dirService) DeleteEntry(zid id.Zid) {
 func (ds *dirService) updateEvents() {
 	var newEntries entrySet
 	for ev := range ds.notifier.Events() {
+		ds.log.Trace().Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
 		switch ev.Op {
 		case notify.Error:
 			newEntries = nil
-			ds.log.Warn().Err(ev.Err).Msg("from notifier")
+			ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
 		case notify.Make:
 			newEntries = make(entrySet)
 		case notify.List:
@@ -136,10 +165,11 @@ func (ds *dirService) updateEvents() {
 				ds.entries = newEntries
 				newEntries = nil
 				ds.mx.Unlock()
+				ds.notifyChange(box.OnReload, id.Invalid)
 				continue
 			}
 			if newEntries != nil {
-				ds.updateEntry(newEntries, ev.Name)
+				ds.onUpdateFileEvent(newEntries, ev.Name)
 			}
 		case notify.Destroy:
 			ds.mx.Lock()
@@ -147,11 +177,11 @@ func (ds *dirService) updateEvents() {
 			ds.mx.Unlock()
 		case notify.Update:
 			ds.mx.Lock()
-			ds.updateEntry(ds.entries, ev.Name)
+			ds.onUpdateFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
 		case notify.Delete:
 			ds.mx.Lock()
-			deleteEntry(ds.entries, ev.Name)
+			ds.onDeleteFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
 		default:
 			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown event")
@@ -177,16 +207,16 @@ func seekZidExt(name string) (id.Zid, string) {
 	return zid, match[3]
 }
 
-func fetchEntry(entries entrySet, zid id.Zid) *Entry {
+func fetchdirEntry(entries entrySet, zid id.Zid) *dirEntry {
 	if entry, found := entries[zid]; found {
 		return entry
 	}
-	entry := &Entry{Zid: zid}
+	entry := &dirEntry{zid: zid}
 	entries[zid] = entry
 	return entry
 }
 
-func (ds *dirService) updateEntry(entries entrySet, name string) {
+func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) {
 	if entries == nil {
 		return
 	}
@@ -194,33 +224,27 @@ func (ds *dirService) updateEntry(entries entrySet, name string) {
 	if zid == id.Invalid {
 		return
 	}
-	entry := fetchEntry(entries, zid)
+	entry := fetchdirEntry(entries, zid)
 	path := filepath.Join(ds.dirPath, name)
-	// 	enhanceEntry(entry, path, ext)
-	// }
 
-	// func enhanceEntry(entry *Entry, path, ext string) {
 	if ext == "meta" {
-		entry.MetaSpec = MetaSpecFile
-		entry.MetaPath = path
-		return
-	}
-	if entry.ContentExt != "" && entry.ContentExt != ext {
-		entry.Duplicates = true
-		return
-	}
-	if entry.MetaSpec != MetaSpecFile {
+		entry.metaSpec = dirMetaSpecFile
+		entry.metaPath = path
+	} else if entry.contentExt != "" && entry.contentExt != ext {
+		entry.duplicates = true
+	} else if entry.metaSpec != dirMetaSpecFile {
 		if ext == "zettel" {
-			entry.MetaSpec = MetaSpecHeader
+			entry.metaSpec = dirMetaSpecHeader
 		} else {
-			entry.MetaSpec = MetaSpecNone
+			entry.metaSpec = dirMetaSpecNone
 		}
 	}
-	entry.ContentPath = path
-	entry.ContentExt = ext
+	entry.contentPath = path
+	entry.contentExt = ext
+	ds.notifyChange(box.OnUpdate, zid)
 }
 
-func deleteEntry(entries entrySet, name string) {
+func (ds *dirService) onDeleteFileEvent(entries entrySet, name string) {
 	if entries == nil {
 		return
 	}
@@ -230,11 +254,18 @@ func deleteEntry(entries entrySet, name string) {
 	}
 	if ext == "meta" {
 		if entry, found := entries[zid]; found {
-			if entry.MetaSpec == MetaSpecFile {
-				entry.MetaSpec = MetaSpecNone
+			if entry.metaSpec == dirMetaSpecFile {
+				entry.metaSpec = dirMetaSpecNone
 				return
 			}
 		}
 	}
 	delete(entries, zid)
+	ds.notifyChange(box.OnDelete, zid)
+}
+
+func (ds *dirService) notifyChange(reason box.UpdateReason, zid id.Zid) {
+	if chci := ds.infos; chci != nil {
+		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
+	}
 }
