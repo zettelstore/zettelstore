@@ -10,10 +10,14 @@
 
 package notify
 
-import "os"
+import (
+	"os"
+
+	"zettelstore.de/z/logger"
+)
 
 // listDirElements write all files within the directory path as events.
-func listDirElements(dirPath string, events chan<- Event, done <-chan struct{}) bool {
+func listDirElements(log *logger.Logger, dirPath string, events chan<- Event, done <-chan struct{}) bool {
 	select {
 	case events <- Event{Op: Make}:
 	case <-done:
@@ -31,8 +35,10 @@ func listDirElements(dirPath string, events chan<- Event, done <-chan struct{}) 
 		if info, err1 := entry.Info(); err1 != nil || !info.Mode().IsRegular() {
 			continue
 		}
+		name := entry.Name()
+		log.Trace().Str("name", name).Msg("File listed")
 		select {
-		case events <- Event{Op: List, Name: entry.Name()}:
+		case events <- Event{Op: List, Name: name}:
 		case <-done:
 			return false
 		}

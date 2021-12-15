@@ -16,9 +16,11 @@ import (
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"zettelstore.de/z/logger"
 )
 
 type fsdirNotifier struct {
+	log     *logger.Logger
 	events  chan Event
 	done    chan struct{}
 	refresh chan struct{}
@@ -29,7 +31,7 @@ type fsdirNotifier struct {
 
 // NewFSDirNotifier creates a directory based notifier that receives notifications
 // from the file system.
-func NewFSDirNotifier(path string) (Notifier, error) {
+func NewFSDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -49,6 +51,7 @@ func NewFSDirNotifier(path string) (Notifier, error) {
 	watcher.Add(absPath)
 
 	fsdn := &fsdirNotifier{
+		log:     log,
 		events:  make(chan Event),
 		refresh: make(chan struct{}),
 		done:    make(chan struct{}),
@@ -72,7 +75,7 @@ func (fsdn *fsdirNotifier) eventLoop() {
 	defer fsdn.base.Close()
 	defer close(fsdn.events)
 	defer close(fsdn.refresh)
-	if !listDirElements(fsdn.path, fsdn.events, fsdn.done) {
+	if !listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done) {
 		return
 	}
 	for fsdn.readAndProcessEvent() {
@@ -89,7 +92,7 @@ func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 	case <-fsdn.done:
 		return false
 	case <-fsdn.refresh:
-		listDirElements(fsdn.path, fsdn.events, fsdn.done)
+		listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done)
 	case err, ok := <-fsdn.base.Errors:
 		if !ok {
 			return false
@@ -125,6 +128,7 @@ const updateFsOps = fsnotify.Create | fsnotify.Write
 
 func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 	if ev.Op&deleteFsOps != 0 {
+		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory removed")
 		fsdn.base.Remove(fsdn.path)
 		select {
 		case fsdn.events <- Event{Op: Destroy}:
@@ -136,19 +140,22 @@ func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 	if ev.Op&fsnotify.Create != 0 {
 		err := fsdn.base.Add(fsdn.path)
 		if err != nil {
+			fsdn.log.IfErr(err).Str("name", fsdn.path).Msg("Unable to add directory")
 			select {
 			case fsdn.events <- Event{Op: Error, Err: err}:
 			case <-fsdn.done:
 				return false
 			}
 		}
-		return listDirElements(fsdn.path, fsdn.events, fsdn.done)
+		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory added")
+		return listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done)
 	}
 	return true
 }
 
 func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
 	if ev.Op&deleteFsOps != 0 {
+		fsdn.log.Trace().Str("name", ev.Name).Uint("op", uint64(ev.Op)).Msg("File deleted")
 		select {
 		case fsdn.events <- Event{Op: Delete, Name: filepath.Base(ev.Name)}:
 		case <-fsdn.done:
@@ -160,6 +167,7 @@ func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
 		if fi, err := os.Lstat(ev.Name); err != nil || !fi.Mode().IsRegular() {
 			return true
 		}
+		fsdn.log.Trace().Str("name", ev.Name).Uint("op", uint64(ev.Op)).Msg("File updated")
 		select {
 		case fsdn.events <- Event{Op: Update, Name: filepath.Base(ev.Name)}:
 		case <-fsdn.done:

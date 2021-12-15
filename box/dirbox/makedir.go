@@ -35,7 +35,7 @@ func getDirSrvInfo(dirType string) (directoryServiceSpec, int, int) {
 func (dp *dirBox) setupDirService(log *logger.Logger) error {
 	switch dp.dirSrvSpec {
 	case dirSrvSimple:
-		notifier, err := notify.NewSimpleDirNotifier(dp.dir)
+		notifier, err := notify.NewSimpleDirNotifier(log.Clone().Str("notify", "simple").Child(), dp.dir)
 		if err != nil {
 			return err
 		}

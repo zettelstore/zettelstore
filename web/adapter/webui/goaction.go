@@ -27,6 +27,6 @@ func (wui *WebUI) MakeGetGoActionHandler(ucRefresh usecase.Refresh) http.Handler
 			wui.reportError(ctx, w, err)
 			return
 		}
-		redirectFound(w, r, wui.NewURLBuilder('/'))
+		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
 }
