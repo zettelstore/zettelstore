@@ -83,8 +83,7 @@ func (a *API) writeEncodedZettelPart(
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	adapter.PrepareHeader(w, encoding2ContentType(enc))
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(buf.Bytes())
+
+	err = writeBuffer(w, &buf, encoding2ContentType(enc))
 	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
 }

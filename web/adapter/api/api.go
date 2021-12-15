@@ -12,6 +12,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"time"
@@ -76,4 +77,15 @@ func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {
 	}
 	// TODO: must call PrepareHeader somehow
 	http.Error(w, text, code)
+}
+
+func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) error {
+	if buf.Len() == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+	adapter.PrepareHeader(w, contentType)
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write(buf.Bytes())
+	return err
 }

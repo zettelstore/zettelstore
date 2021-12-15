@@ -22,7 +22,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel.
@@ -47,9 +46,7 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Msg("Write JSON Zettel")
 	}
 }
@@ -87,13 +84,7 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		if buf.Len() == 0 {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		adapter.PrepareHeader(w, contentType)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, contentType)
 		a.log.IfErr(err).Zid(z.Meta.Zid).Msg("Write Plain Zettel")
 	}
 }
@@ -138,9 +129,7 @@ func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Zid(zid).Msg("Write JSON Meta")
 	}
 }

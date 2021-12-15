@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/web/adapter"
 )
 
 func encodeJSONData(w io.Writer, data interface{}) error {
@@ -49,10 +48,7 @@ func (a *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*met
 		return nil
 	}
 
-	adapter.PrepareHeader(w, ctJSON)
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(buf.Bytes())
-	return err
+	return writeBuffer(w, &buf, ctJSON)
 }
 
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (domain.Zettel, error) {

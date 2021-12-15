@@ -53,9 +53,7 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Msg("Write JSON List")
 	}
 }
@@ -82,14 +80,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			}
 		}
 
-		if buf.Len() == 0 {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		adapter.PrepareHeader(w, ctPlainText)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctPlainText)
 		a.log.IfErr(err).Msg("Write Plain List")
 	}
 }

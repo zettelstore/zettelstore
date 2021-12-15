@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakePostEncodeInlinesHandler creates a new HTTP handler to encode given
@@ -85,9 +84,7 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Msg("Write JSON Inlines")
 	}
 }

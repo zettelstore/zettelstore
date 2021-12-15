@@ -81,9 +81,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Zid(zid).Msg("Write Unlinked References")
 	}
 }

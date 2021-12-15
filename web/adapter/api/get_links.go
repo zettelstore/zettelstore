@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetLinksHandler creates a new API handler to return links to other material.
@@ -66,9 +65,8 @@ func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Links")
 	}
 }

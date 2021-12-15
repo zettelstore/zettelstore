@@ -74,10 +74,8 @@ func (a *API) writeJSONToken(w http.ResponseWriter, token string, lifetime time.
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return nil
 	}
-	adapter.PrepareHeader(w, ctJSON)
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(buf.Bytes())
-	return err
+
+	return writeBuffer(w, &buf, ctJSON)
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.

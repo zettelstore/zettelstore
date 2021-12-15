@@ -18,7 +18,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
@@ -48,9 +47,7 @@ func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			return
 		}
 
-		adapter.PrepareHeader(w, ctJSON)
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write(buf.Bytes())
+		err = writeBuffer(w, &buf, ctJSON)
 		a.log.IfErr(err).Msg("Write Tags")
 	}
 }
