@@ -3,7 +3,7 @@ title: Configure file directory boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211124135711
+modified: 20211216152540
 
 Under certain circumstances, it is preferable to further configure a file directory box.
 This is done by appending query parameters after the base box URI ''dir:\//DIR''.
@@ -12,8 +12,7 @@ The following parameters are supported:
 
 |= Parameter:|Description|Default value:|
 |type|(Sub-) Type of the directory service|(value of ''[[default-dir-box-type|00001004010000#default-dir-box-type]]'')
-|rescan|Time (in seconds) after which the directory should be scanned fully|600
-|worker|Number of worker that can access the directory in parallel|(depends on type)
+|worker|Number of worker that can access the directory in parallel|7
 |readonly|Allow only operations that do not create or change zettel|n/a
 
 === Type
@@ -28,31 +27,10 @@ The following values are supported:
 ; simple
 : Is not able to detect external changes.
   Works on all platforms.
-  Is a little slower than other implementations (up to three times slower).
+  Is a little slower than other implementations (up to three times).
 ; notify
 : Automatically detect external changes.
   Tries to optimize performance, at a little cost of main memory (RAM).
-
-=== Rescan
-When the parameter ''type'' is set to ""notify"", Zettelstore automatically detects changes to zettel files that originates from other software.
-It is done on a ""best-effort"" basis.
-Under certain circumstances it is possible that Zettelstore does not detect a change done by another software.
-
-To cope with this unlikely, but still possible event, Zettelstore re-scans periodically the file directory.
-The time interval is configured by the ''rescan'' parameter, e.g.
-```
-box-uri-1: dir:///home/zettel?rescan=300
-```
-This makes Zettelstore to re-scan the directory ''/home/zettel/'' every 300 seconds, i.e. 5 minutes.
-
-For a Zettelstore with many zettel, re-scanning the directory may take a while, especially if it is stored on a remote computer (e.g. via CIFS/SMB or NFS).
-In this case, you should adjust the parameter value.
-
-Please note that a directory re-scan invalidates all internal data of a Zettelstore.
-It might trigger a re-build of the backlink database (and other internal databases).
-Therefore a large value is preferred.
-
-This value is ignored for other directory box types, such as ""simple"".
 
 === Worker
 Internally, Zettelstore parallels concurrent requests for a zettel or its metadata.
@@ -68,10 +46,9 @@ On smaller hardware[^In comparison to a normal desktop or laptop computer], such
 Every worker needs some amount of main memory (RAM) and some amount of processing power.
 On bigger hardware, with some fast file services, a bigger value could result in higher performance, if needed.
 
-For a directory box of type ""notify"", the default value is: 7.
-The directory box type ""simple"" limits the value to a maximum of 1, i.e. no concurrency is possible with this type of directory box.
-
-For various reasons, the value should be a prime number, with a maximum value of 1499.
+For various reasons, the value should be a prime number.
+The software might enforce this restriction by selecting the next prime number of a specified non-prime value.
+The default value is 7, the minimum value is 1, the maximum value is 1499.
 
 === Readonly
 Sometimes you may want to provide zettel from a file directory box, but you want to disallow any changes.

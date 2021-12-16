@@ -43,7 +43,6 @@ func init() {
 		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
-		dirSrvSpec, defWorker, maxWorker := getDirSrvInfo(log, u.Query().Get("type"))
 		dp := dirBox{
 			log:        log,
 			number:     cdata.Number,
@@ -51,11 +50,36 @@ func init() {
 			readonly:   getQueryBool(u, "readonly"),
 			cdata:      *cdata,
 			dir:        path,
-			notifySpec: dirSrvSpec,
-			fSrvs:      uint32(getQueryInt(u, "worker", 1, defWorker, maxWorker)),
+			notifySpec: getDirSrvInfo(log, u.Query().Get("type")),
+			fSrvs:      makePrime(uint32(getQueryInt(u, "worker", 1, 7, 1499))),
 		}
 		return &dp, nil
 	})
+}
+
+func makePrime(n uint32) uint32 {
+	for !isPrime(n) {
+		n++
+	}
+	return n
+}
+
+func isPrime(n uint32) bool {
+	if n == 0 {
+		return false
+	}
+	if n <= 3 {
+		return true
+	}
+	if n%2 == 0 {
+		return false
+	}
+	for i := uint32(3); i*i <= n; i += 2 {
+		if n%i == 0 {
+			return false
+		}
+	}
+	return true
 }
 
 type notifyTypeSpec int
@@ -67,19 +91,19 @@ const (
 	dirNotifyFS
 )
 
-func getDirSrvInfo(log *logger.Logger, notifyType string) (notifyTypeSpec, int, int) {
+func getDirSrvInfo(log *logger.Logger, notifyType string) notifyTypeSpec {
 	for count := 0; count < 2; count++ {
 		switch notifyType {
 		case kernel.BoxDirTypeNotify:
-			return dirNotifyFS, 7, 1499
+			return dirNotifyFS
 		case kernel.BoxDirTypeSimple:
-			return dirNotifySimple, 1, 1
+			return dirNotifySimple
 		default:
 			notifyType = kernel.Main.GetConfig(kernel.BoxService, kernel.BoxDefaultDirType).(string)
 		}
 	}
-	log.Panic().Str("notifyType", notifyType).Msg("Unable to set notify type")
-	panic("unable to set notify type: " + notifyType)
+	log.Error().Str("notifyType", notifyType).Msg("Unable to set notify type, using a default")
+	return dirNotifySimple
 }
 
 func getDirPath(u *url.URL) string {
@@ -122,7 +146,6 @@ type dirBox struct {
 	dir        string
 	notifySpec notifyTypeSpec
 	dirSrv     *dirService
-	mustNotify bool
 	fSrvs      uint32
 	fCmds      []chan fileCmd
 	mxCmds     sync.RWMutex
@@ -147,12 +170,11 @@ func (dp *dirBox) Start(context.Context) error {
 	switch dp.notifySpec {
 	case dirNotifySimple:
 		notifier, err = notify.NewSimpleDirNotifier(dp.log.Clone().Str("notify", "simple").Child(), dp.dir)
-		dp.mustNotify = true
 	default:
 		notifier, err = notify.NewFSDirNotifier(dp.log.Clone().Str("notify", "fs").Child(), dp.dir)
-		dp.mustNotify = false
 	}
 	if err != nil {
+		dp.log.Panic().Err(err).Msg("Unable to create directory supervisor")
 		panic(err)
 	}
 	dp.dirSrv = newDirService(
@@ -181,10 +203,8 @@ func (dp *dirBox) Stop(_ context.Context) error {
 }
 
 func (dp *dirBox) notifyChanged(reason box.UpdateReason, zid id.Zid) {
-	if dp.mustNotify {
-		if chci := dp.cdata.Notify; chci != nil {
-			chci <- box.UpdateInfo{Reason: reason, Zid: zid}
-		}
+	if chci := dp.cdata.Notify; chci != nil {
+		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
 	}
 }
 
