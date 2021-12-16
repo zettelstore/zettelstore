@@ -238,9 +238,14 @@ func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	if ext == "meta" {
 		entry.metaSpec = dirMetaSpecFile
 		entry.metaPath = path
-	} else if entry.contentExt != "" && entry.contentExt != ext {
+		return zid
+	}
+	if entry.contentExt != "" && entry.contentExt != ext {
 		entry.duplicates = true
-	} else if entry.metaSpec != dirMetaSpecFile {
+		ds.log.Warn().Str("name", path).Msg("Duplicate content (is ignored)")
+		return zid
+	}
+	if entry.metaSpec != dirMetaSpecFile {
 		if ext == "zettel" {
 			entry.metaSpec = dirMetaSpecHeader
 		} else {
