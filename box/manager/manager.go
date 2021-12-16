@@ -171,15 +171,6 @@ func (mgr *Manager) RegisterObserver(f box.UpdateFunc) {
 	}
 }
 
-func (mgr *Manager) notifyObserver(ci *box.UpdateInfo) {
-	mgr.mxObserver.RLock()
-	observers := mgr.observers
-	mgr.mxObserver.RUnlock()
-	for _, ob := range observers {
-		ob(*ci)
-	}
-}
-
 func (mgr *Manager) notifier() {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
@@ -189,12 +180,27 @@ func (mgr *Manager) notifier() {
 		}
 	}()
 
+	tsLastEvent := time.Now()
+	cache := destutterCache{}
 	for {
 		select {
 		case ci, ok := <-mgr.infos:
 			if ok {
-				mgr.mgrLog.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("notifier")
-				mgr.idxEnqueue(ci.Reason, ci.Zid)
+				now := time.Now()
+				if len(cache) > 1 && tsLastEvent.Add(10*time.Second).Before(now) {
+					// Cache contains entries and is definitely outdated
+					mgr.mgrLog.Trace().Msg("clean destutter cache")
+					cache = destutterCache{}
+				}
+				tsLastEvent = now
+
+				reason, zid := ci.Reason, ci.Zid
+				mgr.mgrLog.Debug().Uint("reason", uint64(reason)).Zid(zid).Msg("notifier")
+				if ignoreUpdate(cache, now, reason, zid) {
+					mgr.mgrLog.Trace().Uint("reason", uint64(reason)).Zid(zid).Msg("notifier ignored")
+					continue
+				}
+				mgr.idxEnqueue(reason, zid)
 				if ci.Box == nil {
 					ci.Box = mgr
 				}
@@ -204,6 +210,25 @@ func (mgr *Manager) notifier() {
 			return
 		}
 	}
+}
+
+type destutterData struct {
+	deadAt time.Time
+	reason box.UpdateReason
+}
+type destutterCache = map[id.Zid]destutterData
+
+func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, zid id.Zid) bool {
+	if dsd, found := cache[zid]; found {
+		if dsd.reason == reason && dsd.deadAt.After(now) {
+			return true
+		}
+	}
+	cache[zid] = destutterData{
+		deadAt: now.Add(500 * time.Millisecond),
+		reason: reason,
+	}
+	return false
 }
 
 func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
@@ -220,6 +245,15 @@ func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 	select {
 	case mgr.idxReady <- struct{}{}:
 	default:
+	}
+}
+
+func (mgr *Manager) notifyObserver(ci *box.UpdateInfo) {
+	mgr.mxObserver.RLock()
+	observers := mgr.observers
+	mgr.mxObserver.RUnlock()
+	for _, ob := range observers {
+		ob(*ci)
 	}
 }
 

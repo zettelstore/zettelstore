@@ -162,13 +162,18 @@ func (ds *dirService) updateEvents() {
 		case notify.List:
 			if ev.Name == "" {
 				ds.mx.Lock()
+				zids := make(id.Slice, 0, len(newEntries))
+				for zid := range newEntries {
+					zids = append(zids, zid)
+				}
 				ds.entries = newEntries
 				newEntries = nil
 				ds.mx.Unlock()
+				for _, zid := range zids {
+					ds.notifyChange(box.OnUpdate, zid)
+				}
 				ds.notifyChange(box.OnReload, id.Invalid)
-				continue
-			}
-			if newEntries != nil {
+			} else if newEntries != nil {
 				ds.onUpdateFileEvent(newEntries, ev.Name)
 			}
 		case notify.Destroy:
@@ -177,8 +182,11 @@ func (ds *dirService) updateEvents() {
 			ds.mx.Unlock()
 		case notify.Update:
 			ds.mx.Lock()
-			ds.onUpdateFileEvent(ds.entries, ev.Name)
+			zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
+			if zid != id.Invalid {
+				ds.notifyChange(box.OnUpdate, zid)
+			}
 		case notify.Delete:
 			ds.mx.Lock()
 			ds.onDeleteFileEvent(ds.entries, ev.Name)
@@ -216,13 +224,13 @@ func fetchdirEntry(entries entrySet, zid id.Zid) *dirEntry {
 	return entry
 }
 
-func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) {
+func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	if entries == nil {
-		return
+		return id.Invalid
 	}
 	zid, ext := seekZidExt(name)
 	if zid == id.Invalid {
-		return
+		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
 	path := filepath.Join(ds.dirPath, name)
@@ -241,7 +249,7 @@ func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) {
 	}
 	entry.contentPath = path
 	entry.contentExt = ext
-	ds.notifyChange(box.OnUpdate, zid)
+	return zid
 }
 
 func (ds *dirService) onDeleteFileEvent(entries entrySet, name string) {
@@ -266,6 +274,7 @@ func (ds *dirService) onDeleteFileEvent(entries entrySet, name string) {
 
 func (ds *dirService) notifyChange(reason box.UpdateReason, zid id.Zid) {
 	if chci := ds.infos; chci != nil {
+		ds.log.Trace().Zid(zid).Uint("reason", uint64(reason)).Msg("notifyChange")
 		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
 	}
 }

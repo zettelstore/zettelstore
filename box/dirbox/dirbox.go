@@ -204,6 +204,7 @@ func (dp *dirBox) Stop(_ context.Context) error {
 
 func (dp *dirBox) notifyChanged(reason box.UpdateReason, zid id.Zid) {
 	if chci := dp.cdata.Notify; chci != nil {
+		dp.log.Trace().Zid(zid).Uint("reason", uint64(reason)).Msg("notifyChanged")
 		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
 	}
 }
