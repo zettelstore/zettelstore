@@ -409,6 +409,7 @@ func (kern *myKernel) sortDependency(
 	}
 	return append(result, srvD.srv)
 }
+
 func (kern *myKernel) DumpIndex(w io.Writer) {
 	kern.box.DumpIndex(w)
 }

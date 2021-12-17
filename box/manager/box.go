@@ -165,15 +165,19 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
 		if rejected[zid] {
+			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 			return
 		}
 		if _, ok := selected[zid]; ok {
+			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
 			return
 		}
 		if match(m) {
 			selected[zid] = m
+			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
 			rejected[zid] = true
+			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/reject")
 		}
 	}
 	for _, p := range mgr.boxes {

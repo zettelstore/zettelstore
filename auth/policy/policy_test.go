@@ -50,6 +50,7 @@ func TestPolicies(t *testing.T) {
 			testWrite(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 			testRename(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 			testDelete(tt, pol, ts.withAuth, ts.readonly, ts.expert)
+			testRefresh(tt, pol, ts.withAuth, ts.readonly, ts.expert)
 		})
 	}
 }
@@ -557,6 +558,35 @@ func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 	for _, tc := range testCases {
 		t.Run("Delete", func(tt *testing.T) {
 			got := pol.CanDelete(tc.user, tc.meta)
+			if tc.exp != got {
+				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
+			}
+		})
+	}
+}
+
+func testRefresh(t *testing.T, pol auth.Policy, withAuth, _, _ bool) {
+	t.Helper()
+	anonUser := newAnon()
+	creator := newCreator()
+	reader := newReader()
+	writer := newWriter()
+	owner := newOwner()
+	owner2 := newOwner2()
+	testCases := []struct {
+		user *meta.Meta
+		exp  bool
+	}{
+		{anonUser, !withAuth},
+		{creator, !withAuth},
+		{reader, true},
+		{writer, true},
+		{owner, true},
+		{owner2, true},
+	}
+	for _, tc := range testCases {
+		t.Run("Refresh", func(tt *testing.T) {
+			got := pol.CanRefresh(tc.user)
 			if tc.exp != got {
 				tt.Errorf("exp=%v, but got=%v", tc.exp, got)
 			}

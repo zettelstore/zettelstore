@@ -41,6 +41,10 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 	return ap.pre.CanDelete(user, m) && ap.checkVisibility(m)
 }
 
+func (ap *anonPolicy) CanRefresh(user *meta.Meta) bool {
+	return ap.pre.CanRefresh(user)
+}
+
 func (ap *anonPolicy) checkVisibility(m *meta.Meta) bool {
 	if ap.authConfig.GetVisibility(m) == meta.VisibilityExpert {
 		return ap.authConfig.GetExpertMode()

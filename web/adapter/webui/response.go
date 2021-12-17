@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package webui provides web-UI handlers for web requests.
 package webui
 
 import (
