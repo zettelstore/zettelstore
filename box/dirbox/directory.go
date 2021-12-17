@@ -48,17 +48,37 @@ func (e *dirEntry) isValid() bool {
 	return e != nil && e.zid.IsValid()
 }
 
+type entrySet map[id.Zid]*dirEntry
+
+// directoryState signal the internal state of the service.
+//
+// The following state transitions are possible:
+// --newDirService--> dsCreated
+// dsCreated --startDirService--> dsStarting
+// dsStarting --last list notification--> dsWorking
+// dsWorking --directory missing--> dsMissing
+// dsMissing --last list notification--> dsWorking
+// --stopDirService--> dsStopping
+type directoryState uint8
+
+const (
+	dsCreated  directoryState = iota
+	dsStarting                // Reading inital scan
+	dsWorking                 // Initial scan complete, fully operational
+	dsMissing                 // Directory is missing
+	dsStopping                // Service is shut down
+)
+
 // dirService specifies a directory service for file based zettel.
 type dirService struct {
 	log      *logger.Logger
 	dirPath  string
 	notifier notify.Notifier
 	infos    chan<- box.UpdateInfo
-	mx       sync.RWMutex
+	mx       sync.RWMutex // protects status, entries
+	state    directoryState
 	entries  entrySet
 }
-
-type entrySet map[id.Zid]*dirEntry
 
 var ErrNoDirectory = errors.New("no zettel directory found")
 
@@ -69,10 +89,14 @@ func newDirService(log *logger.Logger, directoryPath string, notifier notify.Not
 		dirPath:  directoryPath,
 		notifier: notifier,
 		infos:    chci,
+		state:    dsCreated,
 	}
 }
 
 func (ds *dirService) startDirService() {
+	ds.mx.Lock()
+	ds.state = dsStarting
+	ds.mx.Unlock()
 	go ds.updateEvents()
 }
 
@@ -81,6 +105,9 @@ func (ds *dirService) refreshDirService() {
 }
 
 func (ds *dirService) stopDirService() {
+	ds.mx.Lock()
+	ds.state = dsStopping
+	ds.mx.Unlock()
 	ds.notifier.Close()
 }
 
@@ -183,38 +210,46 @@ func (ds *dirService) deleteDirEntry(zid id.Zid) error {
 func (ds *dirService) updateEvents() {
 	var newEntries entrySet
 	for ev := range ds.notifier.Events() {
-		ds.log.Trace().Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
+		ds.mx.RLock()
+		state := ds.state
+		ds.mx.RUnlock()
+
+		if msg := ds.log.Trace(); msg.Enabled() {
+			msg.Uint("state", uint64(state)).Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
+		}
+		if state == dsStopping {
+			break
+		}
+
 		switch ev.Op {
 		case notify.Error:
 			newEntries = nil
-			ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
+			if state != dsMissing {
+				ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
+			}
 		case notify.Make:
 			newEntries = make(entrySet)
 		case notify.List:
 			if ev.Name == "" {
+				zids := getNewZids(newEntries)
 				ds.mx.Lock()
-				zids := make(id.Slice, 0, len(newEntries))
-				for zid := range newEntries {
-					zids = append(zids, zid)
-				}
+				fromMissing := ds.state == dsMissing
+				prevEntries := ds.entries
 				ds.entries = newEntries
-				newEntries = nil
+				ds.state = dsWorking
 				ds.mx.Unlock()
-				for _, zid := range zids {
-					ds.notifyChange(box.OnUpdate, zid)
+				newEntries = nil
+				ds.onCreateDirectory(zids, prevEntries)
+				if fromMissing {
+					ds.log.Info().Str("path", ds.dirPath).Msg("Zettel directory found")
 				}
-				ds.notifyChange(box.OnReload, id.Invalid)
 			} else if newEntries != nil {
 				ds.onUpdateFileEvent(newEntries, ev.Name)
 			}
 		case notify.Destroy:
-			ds.mx.Lock()
-			entries := ds.entries
-			ds.entries = nil
-			ds.mx.Unlock()
-			for zid := range entries {
-				ds.notifyChange(box.OnDelete, zid)
-			}
+			newEntries = nil
+			ds.onDestroyDirectory()
+			ds.log.Error().Str("path", ds.dirPath).Msg("Zettel directory missing")
 		case notify.Update:
 			ds.mx.Lock()
 			zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
@@ -227,8 +262,43 @@ func (ds *dirService) updateEvents() {
 			ds.onDeleteFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
 		default:
-			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown event")
+			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
 		}
+	}
+}
+
+func getNewZids(entries entrySet) id.Slice {
+	zids := make(id.Slice, 0, len(entries))
+	for zid := range entries {
+		zids = append(zids, zid)
+	}
+	return zids
+}
+
+func (ds *dirService) onCreateDirectory(zids id.Slice, prevEntries entrySet) {
+	for _, zid := range zids {
+		ds.notifyChange(box.OnUpdate, zid)
+		delete(prevEntries, zid)
+	}
+
+	// These were previously stored, by are not found now.
+	// Notify system that these were deleted, e.g. for updating the index.
+	for zid := range prevEntries {
+		ds.notifyChange(box.OnDelete, zid)
+	}
+
+	// This may be not needed any more.
+	ds.notifyChange(box.OnReload, id.Invalid)
+}
+
+func (ds *dirService) onDestroyDirectory() {
+	ds.mx.Lock()
+	entries := ds.entries
+	ds.entries = nil
+	ds.state = dsMissing
+	ds.mx.Unlock()
+	for zid := range entries {
+		ds.notifyChange(box.OnDelete, zid)
 	}
 }
 
