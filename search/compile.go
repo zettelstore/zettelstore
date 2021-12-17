@@ -18,137 +18,79 @@ import (
 	"strings"
 
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/strfun"
 )
 
-func compileFullSearch(searcher Searcher, search []expValue) MetaMatchFunc {
-	normSearch := compileNormalizedSearch(searcher, search)
-	plainSearch := compilePlainSearch(searcher, search)
-	if normSearch == nil {
-		if plainSearch == nil {
-			return nil
-		}
-		return plainSearch
+func compileIndexSearch(searcher Searcher, search []expValue) (RetrieveFunc, RetrieveFunc) {
+	if len(search) == 0 {
+		return nil, nil
 	}
-	if plainSearch == nil {
-		return normSearch
-	}
-	return func(m *meta.Meta) bool {
-		return normSearch(m) || plainSearch(m)
-	}
+	positives, negatives := prepareSearchWords(search)
+	return compileRetrieveZids(searcher, positives), compileRetrieveZids(searcher, negatives)
 }
 
-func compileNormalizedSearch(searcher Searcher, search []expValue) MetaMatchFunc {
-	var positives, negatives []expValue
-	posSet := make(map[string]bool)
-	negSet := make(map[string]bool)
+type expValueMap map[string]expValue
+
+func prepareSearchWords(search []expValue) (positives, negatives []expValue) {
+	posSet := make(expValueMap, len(search))
+	negSet := make(expValueMap, len(search))
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
 			if val.negate {
-				if _, ok := negSet[word]; !ok {
-					negSet[word] = true
-					negatives = append(negatives, expValue{
-						value:  word,
-						op:     val.op,
-						negate: true,
-					})
+				negSet[word] = expValue{
+					value:  word,
+					op:     val.op,
+					negate: true,
 				}
 			} else {
-				if _, ok := posSet[word]; !ok {
-					posSet[word] = true
-					positives = append(positives, expValue{
-						value:  word,
-						op:     val.op,
-						negate: false,
-					})
+				posSet[word] = expValue{
+					value:  word,
+					op:     val.op,
+					negate: false,
 				}
 			}
 		}
 	}
-	return compileSearch(searcher, positives, negatives)
-}
-func compilePlainSearch(searcher Searcher, search []expValue) MetaMatchFunc {
-	var positives, negatives []expValue
+
 	for _, val := range search {
+		word := strings.ToLower(strings.TrimSpace(val.value))
 		if val.negate {
-			negatives = append(negatives, expValue{
-				value:  strings.ToLower(strings.TrimSpace(val.value)),
+			negSet[word] = expValue{
+				value:  word,
 				op:     val.op,
 				negate: true,
-			})
+			}
 		} else {
-			positives = append(positives, expValue{
-				value:  strings.ToLower(strings.TrimSpace(val.value)),
+			posSet[word] = expValue{
+				value:  word,
 				op:     val.op,
 				negate: false,
-			})
+			}
 		}
 	}
-	return compileSearch(searcher, positives, negatives)
+	return expValueMaptoList(posSet), expValueMaptoList(negSet)
 }
 
-func compileSearch(searcher Searcher, poss, negs []expValue) MetaMatchFunc {
-	if len(poss) == 0 {
-		if len(negs) == 0 {
-			return nil
-		}
-		return makeNegOnlySearch(searcher, negs)
+func expValueMaptoList(expSet expValueMap) []expValue {
+	result := make([]expValue, 0, len(expSet))
+	for _, val := range expSet {
+		result = append(result, val)
 	}
-	if len(negs) == 0 {
-		return makePosOnlySearch(searcher, poss)
-	}
-	return makePosNegSearch(searcher, poss, negs)
-}
-
-func makePosOnlySearch(searcher Searcher, poss []expValue) MetaMatchFunc {
-	retrievePos := compileRetrieveZids(searcher, poss)
-	var ids id.Set
-	return func(m *meta.Meta) bool {
-		if ids == nil {
-			ids = retrievePos()
-		}
-		_, ok := ids[m.Zid]
-		return ok
-	}
-}
-
-func makeNegOnlySearch(searcher Searcher, negs []expValue) MetaMatchFunc {
-	retrieveNeg := compileRetrieveZids(searcher, negs)
-	var ids id.Set
-	return func(m *meta.Meta) bool {
-		if ids == nil {
-			ids = retrieveNeg()
-		}
-		_, ok := ids[m.Zid]
-		return !ok
-	}
-}
-
-func makePosNegSearch(searcher Searcher, poss, negs []expValue) MetaMatchFunc {
-	retrievePos := compileRetrieveZids(searcher, poss)
-	retrieveNeg := compileRetrieveZids(searcher, negs)
-	var ids id.Set
-	return func(m *meta.Meta) bool {
-		if ids == nil {
-			ids = retrievePos()
-			ids.Remove(retrieveNeg())
-		}
-		_, okPos := ids[m.Zid]
-		return okPos
-	}
+	return result
 }
 
 func compileRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
+	if len(values) == 0 {
+		return func() id.Set { return id.Set{} }
+	}
+
 	selFuncs := make([]selectorFunc, 0, len(values))
 	stringVals := make([]string, 0, len(values))
 	for _, val := range values {
 		selFuncs = append(selFuncs, compileSelectOp(searcher, val.op))
 		stringVals = append(stringVals, val.value)
 	}
-	if len(selFuncs) == 0 {
-		return func() id.Set { return id.NewSet() }
-	}
+
 	if len(selFuncs) == 1 {
 		return func() id.Set { return selFuncs[0](stringVals[0]) }
 	}
