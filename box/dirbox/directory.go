@@ -11,6 +11,7 @@
 package dirbox
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"sync"
@@ -59,6 +60,8 @@ type dirService struct {
 
 type entrySet map[id.Zid]*dirEntry
 
+var ErrNoDirectory = errors.New("no zettel directory found")
+
 // newDirService creates a new directory service.
 func newDirService(log *logger.Logger, directoryPath string, notifier notify.Notifier, chci chan<- box.UpdateInfo) *dirService {
 	return &dirService{
@@ -81,15 +84,27 @@ func (ds *dirService) stopDirService() {
 	ds.notifier.Close()
 }
 
+func (ds *dirService) logMissingEntry(action string) error {
+	err := ErrNoDirectory
+	ds.log.Info().Err(err).Str("action", action).Msg("Unable to get directory information")
+	return err
+}
+
 func (ds *dirService) countDirEntries() int {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
+	if ds.entries == nil {
+		return 0
+	}
 	return len(ds.entries)
 }
 
 func (ds *dirService) getDirEntries() []*dirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
+	if ds.entries == nil {
+		return nil
+	}
 	result := make([]*dirEntry, 0, len(ds.entries))
 	for _, entry := range ds.entries {
 		copiedEntry := *entry
@@ -101,6 +116,9 @@ func (ds *dirService) getDirEntries() []*dirEntry {
 func (ds *dirService) getDirEntry(zid id.Zid) *dirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
+	if ds.entries == nil {
+		return nil
+	}
 	foundEntry := ds.entries[zid]
 	if foundEntry == nil {
 		return nil
@@ -110,8 +128,11 @@ func (ds *dirService) getDirEntry(zid id.Zid) *dirEntry {
 }
 
 func (ds *dirService) calcNewDirEntry() (id.Zid, error) {
-	ds.mx.RLock()
-	defer ds.mx.RUnlock()
+	ds.mx.Lock()
+	defer ds.mx.Unlock()
+	if ds.entries == nil {
+		return id.Invalid, ds.logMissingEntry("new")
+	}
 	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
 		_, found := ds.entries[zid]
 		return !found, nil
@@ -123,16 +144,23 @@ func (ds *dirService) calcNewDirEntry() (id.Zid, error) {
 	return zid, nil
 }
 
-func (ds *dirService) updateDirEntry(updatedEntry *dirEntry) {
+func (ds *dirService) updateDirEntry(updatedEntry *dirEntry) error {
 	entry := *updatedEntry
 	ds.mx.Lock()
+	defer ds.mx.Unlock()
+	if ds.entries == nil {
+		return ds.logMissingEntry("update")
+	}
 	ds.entries[entry.zid] = &entry
-	ds.mx.Unlock()
+	return nil
 }
 
 func (ds *dirService) renameDirEntry(oldEntry, newEntry *dirEntry) error {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
+	if ds.entries == nil {
+		return ds.logMissingEntry("rename")
+	}
 	if _, found := ds.entries[newEntry.zid]; found {
 		return &box.ErrInvalidID{Zid: newEntry.zid}
 	}
@@ -142,10 +170,14 @@ func (ds *dirService) renameDirEntry(oldEntry, newEntry *dirEntry) error {
 	return nil
 }
 
-func (ds *dirService) deleteDirEntry(zid id.Zid) {
+func (ds *dirService) deleteDirEntry(zid id.Zid) error {
 	ds.mx.Lock()
+	defer ds.mx.Unlock()
+	if ds.entries == nil {
+		return ds.logMissingEntry("delete")
+	}
 	delete(ds.entries, zid)
-	ds.mx.Unlock()
+	return nil
 }
 
 func (ds *dirService) updateEvents() {
@@ -177,8 +209,12 @@ func (ds *dirService) updateEvents() {
 			}
 		case notify.Destroy:
 			ds.mx.Lock()
+			entries := ds.entries
 			ds.entries = nil
 			ds.mx.Unlock()
+			for zid := range entries {
+				ds.notifyChange(box.OnDelete, zid)
+			}
 		case notify.Update:
 			ds.mx.Lock()
 			zid := ds.onUpdateFileEvent(ds.entries, ev.Name)

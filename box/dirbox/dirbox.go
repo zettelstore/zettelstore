@@ -241,7 +241,7 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 
 	err = setZettel(dp, &entry, zettel)
 	if err == nil {
-		dp.dirSrv.updateDirEntry(&entry)
+		err = dp.dirSrv.updateDirEntry(&entry)
 	}
 	dp.notifyChanged(box.OnUpdate, meta.Zid)
 	return meta.Zid, err
@@ -438,8 +438,11 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if !entry.isValid() {
 		return box.ErrNotFound
 	}
-	dp.dirSrv.deleteDirEntry(zid)
-	err := deleteZettel(dp, entry, zid)
+	err := dp.dirSrv.deleteDirEntry(zid)
+	if err != nil {
+		return nil
+	}
+	err = deleteZettel(dp, entry, zid)
 	if err == nil {
 		dp.notifyChanged(box.OnDelete, zid)
 	}
