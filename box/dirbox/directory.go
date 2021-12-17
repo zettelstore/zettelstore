@@ -12,7 +12,6 @@ package dirbox
 
 import (
 	"fmt"
-	"path/filepath"
 	"regexp"
 	"sync"
 
@@ -38,8 +37,8 @@ type dirEntry struct {
 	zid         id.Zid
 	metaSpec    dirMetaSpec // location of meta information
 	duplicates  bool        // multiple content files
-	metaPath    string      // file path of meta information
-	contentPath string      // file path of zettel content
+	metaName    string      // file name of meta information
+	contentName string      // file name of zettel content
 	contentExt  string      // (normalized) file extension of zettel content
 }
 
@@ -233,16 +232,15 @@ func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
-	path := filepath.Join(ds.dirPath, name)
 
 	if ext == "meta" {
 		entry.metaSpec = dirMetaSpecFile
-		entry.metaPath = path
+		entry.metaName = name
 		return zid
 	}
 	if entry.contentExt != "" && entry.contentExt != ext {
 		entry.duplicates = true
-		ds.log.Warn().Str("name", path).Msg("Duplicate content (is ignored)")
+		ds.log.Warn().Str("name", name).Msg("Duplicate content (is ignored)")
 		return zid
 	}
 	if entry.metaSpec != dirMetaSpecFile {
@@ -252,7 +250,7 @@ func (ds *dirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 			entry.metaSpec = dirMetaSpecNone
 		}
 	}
-	entry.contentPath = path
+	entry.contentName = name
 	entry.contentExt = ext
 	return zid
 }

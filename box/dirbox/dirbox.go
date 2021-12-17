@@ -161,7 +161,7 @@ func (dp *dirBox) Start(context.Context) error {
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
 	for i := uint32(0); i < dp.fSrvs; i++ {
 		cc := make(chan fileCmd)
-		go fileService(dp.log.Clone().Str("sub", "file").Uint("fn", uint64(i)).Child(), cc)
+		go fileService(i, dp.log.Clone().Str("sub", "file").Uint("fn", uint64(i)).Child(), dp.dir, cc)
 		dp.fCmds = append(dp.fCmds, cc)
 	}
 
@@ -336,21 +336,20 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 
 func (dp *dirBox) updateEntryFromMeta(entry *dirEntry, meta *meta.Meta) {
 	entry.metaSpec, entry.contentExt = dp.calcSpecExt(meta)
-	basePath := dp.calcBasePath(entry)
+	baseName := dp.calcBaseName(entry)
 	if entry.metaSpec == dirMetaSpecFile {
-		entry.metaPath = basePath + ".meta"
+		entry.metaName = baseName + ".meta"
 	}
-	entry.contentPath = basePath + "." + entry.contentExt
+	entry.contentName = baseName + "." + entry.contentExt
 	entry.duplicates = false
 }
 
-func (dp *dirBox) calcBasePath(entry *dirEntry) string {
-	p := entry.contentPath
-	if p == "" {
-		return filepath.Join(dp.dir, entry.zid.String())
+func (dp *dirBox) calcBaseName(entry *dirEntry) string {
+	if p := entry.contentName; p != "" {
+		// ContentName w/o the file extension
+		return p[0 : len(p)-len(filepath.Ext(p))]
 	}
-	// ContentPath w/o the file extension
-	return p[0 : len(p)-len(filepath.Ext(p))]
+	return entry.zid.String()
 }
 
 func (dp *dirBox) calcSpecExt(m *meta.Meta) (dirMetaSpec, string) {
@@ -399,8 +398,8 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	newEntry := dirEntry{
 		zid:         newZid,
 		metaSpec:    curEntry.metaSpec,
-		metaPath:    renamePath(curEntry.metaPath, curZid, newZid),
-		contentPath: renamePath(curEntry.contentPath, curZid, newZid),
+		metaName:    renameFilename(curEntry.metaName, curZid, newZid),
+		contentName: renameFilename(curEntry.contentName, curZid, newZid),
 		contentExt:  curEntry.contentExt,
 	}
 
@@ -461,11 +460,9 @@ func (dp *dirBox) cleanupMeta(m *meta.Meta) {
 	}
 }
 
-func renamePath(path string, curID, newID id.Zid) string {
-	dir, file := filepath.Split(path)
-	if cur := curID.String(); strings.HasPrefix(file, cur) {
-		file = newID.String() + file[len(cur):]
-		return filepath.Join(dir, file)
+func renameFilename(name string, curID, newID id.Zid) string {
+	if cur := curID.String(); strings.HasPrefix(name, cur) {
+		name = newID.String() + name[len(cur):]
 	}
-	return path
+	return name
 }
