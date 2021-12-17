@@ -13,6 +13,11 @@
      (major: webui)
   *  Add endpoint <tt>/u/{ID}</tt> to retrieve unlinked references.
      (major: api)
+  *  The internal handling of zettel files is rewritten. This allows less
+     reloads ands detects when the directory containing the zettel files is
+     removed. The WebUI and the admin console allow to manually refresh the
+     internal state on demand.
+     (major: box, webui)
   *  Selecting zettel based on their metadata allows the same syntax as
      searching for zettel content. For example, you can list all zettel that
      have an identifier not ending with <tt>00</tt> by using the query
