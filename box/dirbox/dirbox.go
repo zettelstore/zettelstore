@@ -145,7 +145,7 @@ type dirBox struct {
 	cdata      manager.ConnectData
 	dir        string
 	notifySpec notifyTypeSpec
-	dirSrv     *dirService
+	dirSrv     *notify.DirService
 	fSrvs      uint32
 	fCmds      []chan fileCmd
 	mxCmds     sync.RWMutex
@@ -177,25 +177,25 @@ func (dp *dirBox) Start(context.Context) error {
 		dp.log.Panic().Err(err).Msg("Unable to create directory supervisor")
 		panic(err)
 	}
-	dp.dirSrv = newDirService(
+	dp.dirSrv = notify.NewDirService(
 		dp.log.Clone().Str("sub", "dirsrv").Child(),
 		dp.dir,
 		notifier,
 		dp.cdata.Notify,
 	)
-	dp.dirSrv.startDirService()
+	dp.dirSrv.Start()
 	return nil
 }
 
 func (dp *dirBox) Refresh(_ context.Context) error {
-	dp.dirSrv.refreshDirService()
+	dp.dirSrv.Refresh()
 	return nil
 }
 
 func (dp *dirBox) Stop(_ context.Context) error {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil
-	dirSrv.stopDirService()
+	dirSrv.Stop()
 	for _, c := range dp.fCmds {
 		close(c)
 	}
@@ -230,26 +230,26 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 		return id.Invalid, box.ErrReadOnly
 	}
 
-	newZid, err := dp.dirSrv.calcNewDirEntry()
+	newZid, err := dp.dirSrv.CalcNewDirEntry()
 	if err != nil {
 		return id.Invalid, err
 	}
 	meta := zettel.Meta
 	meta.Zid = newZid
-	entry := dirEntry{zid: newZid}
+	entry := notify.DirEntry{Zid: newZid}
 	dp.updateEntryFromMeta(&entry, meta)
 
 	err = setZettel(dp, &entry, zettel)
 	if err == nil {
-		err = dp.dirSrv.updateDirEntry(&entry)
+		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
 	dp.notifyChanged(box.OnUpdate, meta.Zid)
 	return meta.Zid, err
 }
 
 func (dp *dirBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
-	entry := dp.dirSrv.getDirEntry(zid)
-	if !entry.isValid() {
+	entry := dp.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
 		return domain.Zettel{}, box.ErrNotFound
 	}
 	m, c, err := getMetaContent(dp, entry, zid)
@@ -262,8 +262,8 @@ func (dp *dirBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 }
 
 func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry := dp.dirSrv.getDirEntry(zid)
-	if !entry.isValid() {
+	entry := dp.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
 		return nil, box.ErrNotFound
 	}
 	m, err := getMeta(dp, entry, zid)
@@ -275,21 +275,21 @@ func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 }
 
 func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
-	entries := dp.dirSrv.getDirEntries()
+	entries := dp.dirSrv.GetDirEntries()
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyZid")
 	for _, entry := range entries {
-		handle(entry.zid)
+		handle(entry.Zid)
 	}
 	return nil
 }
 
 func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
-	entries := dp.dirSrv.getDirEntries()
+	entries := dp.dirSrv.GetDirEntries()
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyMeta")
 
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
-		m, err := getMeta(dp, entry, entry.zid)
+		m, err := getMeta(dp, entry, entry.Zid)
 		if err != nil {
 			dp.log.Trace().Err(err).Msg("ApplyMeta/getMeta")
 			return err
@@ -314,17 +314,17 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	if !meta.Zid.IsValid() {
 		return &box.ErrInvalidID{Zid: meta.Zid}
 	}
-	entry := dp.dirSrv.getDirEntry(meta.Zid)
-	if !entry.isValid() {
+	entry := dp.dirSrv.GetDirEntry(meta.Zid)
+	if !entry.IsValid() {
 		// Existing zettel, but new in this box.
-		entry = &dirEntry{zid: meta.Zid}
+		entry = &notify.DirEntry{Zid: meta.Zid}
 		dp.updateEntryFromMeta(entry, meta)
-		dp.dirSrv.updateDirEntry(entry)
-	} else if entry.metaSpec == dirMetaSpecNone {
-		defaultMeta := filebox.CalcDefaultMeta(entry.zid, entry.contentExt)
+		dp.dirSrv.UpdateDirEntry(entry)
+	} else if entry.MetaSpec == notify.DirMetaSpecNone {
+		defaultMeta := filebox.CalcDefaultMeta(entry.Zid, entry.ContentExt)
 		if !meta.Equal(defaultMeta, true) {
 			dp.updateEntryFromMeta(entry, meta)
-			dp.dirSrv.updateDirEntry(entry)
+			dp.dirSrv.UpdateDirEntry(entry)
 		}
 	}
 	err := setZettel(dp, entry, zettel)
@@ -334,39 +334,39 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	return err
 }
 
-func (dp *dirBox) updateEntryFromMeta(entry *dirEntry, meta *meta.Meta) {
-	entry.metaSpec, entry.contentExt = dp.calcSpecExt(meta)
+func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
+	entry.MetaSpec, entry.ContentExt = dp.calcSpecExt(meta)
 	baseName := dp.calcBaseName(entry)
-	if entry.metaSpec == dirMetaSpecFile {
-		entry.metaName = baseName + ".meta"
+	if entry.MetaSpec == notify.DirMetaSpecFile {
+		entry.MetaName = baseName + ".meta"
 	}
-	entry.contentName = baseName + "." + entry.contentExt
-	entry.duplicates = false
+	entry.ContentName = baseName + "." + entry.ContentExt
+	entry.Duplicates = false
 }
 
-func (dp *dirBox) calcBaseName(entry *dirEntry) string {
-	if p := entry.contentName; p != "" {
+func (dp *dirBox) calcBaseName(entry *notify.DirEntry) string {
+	if p := entry.ContentName; p != "" {
 		// ContentName w/o the file extension
 		return p[0 : len(p)-len(filepath.Ext(p))]
 	}
-	return entry.zid.String()
+	return entry.Zid.String()
 }
 
-func (dp *dirBox) calcSpecExt(m *meta.Meta) (dirMetaSpec, string) {
+func (dp *dirBox) calcSpecExt(m *meta.Meta) (notify.DirMetaSpec, string) {
 	if m.YamlSep {
-		return dirMetaSpecHeader, "zettel"
+		return notify.DirMetaSpecHeader, "zettel"
 	}
 	syntax := m.GetDefault(api.KeySyntax, "bin")
 	switch syntax {
 	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
-		return dirMetaSpecHeader, "zettel"
+		return notify.DirMetaSpecHeader, "zettel"
 	}
 	for _, s := range dp.cdata.Config.GetZettelFileSyntax() {
 		if s == syntax {
-			return dirMetaSpecHeader, "zettel"
+			return notify.DirMetaSpecHeader, "zettel"
 		}
 	}
-	return dirMetaSpecFile, syntax
+	return notify.DirMetaSpecFile, syntax
 }
 
 func (dp *dirBox) AllowRenameZettel(context.Context, id.Zid) bool {
@@ -377,8 +377,8 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	if curZid == newZid {
 		return nil
 	}
-	curEntry := dp.dirSrv.getDirEntry(curZid)
-	if !curEntry.isValid() {
+	curEntry := dp.dirSrv.GetDirEntry(curZid)
+	if !curEntry.IsValid() {
 		return box.ErrNotFound
 	}
 	if dp.readonly {
@@ -395,22 +395,22 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 		return err
 	}
 
-	newEntry := dirEntry{
-		zid:         newZid,
-		metaSpec:    curEntry.metaSpec,
-		metaName:    renameFilename(curEntry.metaName, curZid, newZid),
-		contentName: renameFilename(curEntry.contentName, curZid, newZid),
-		contentExt:  curEntry.contentExt,
+	newEntry := notify.DirEntry{
+		Zid:         newZid,
+		MetaSpec:    curEntry.MetaSpec,
+		MetaName:    renameFilename(curEntry.MetaName, curZid, newZid),
+		ContentName: renameFilename(curEntry.ContentName, curZid, newZid),
+		ContentExt:  curEntry.ContentExt,
 	}
 
-	if err = dp.dirSrv.renameDirEntry(curEntry, &newEntry); err != nil {
+	if err = dp.dirSrv.RenameDirEntry(curEntry, &newEntry); err != nil {
 		return err
 	}
 	oldMeta.Zid = newZid
 	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
 	if err = setZettel(dp, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
-		dp.dirSrv.renameDirEntry(&newEntry, curEntry)
+		dp.dirSrv.RenameDirEntry(&newEntry, curEntry)
 		return err
 	}
 	err = deleteZettel(dp, curEntry, curZid)
@@ -425,8 +425,8 @@ func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	if dp.readonly {
 		return false
 	}
-	entry := dp.dirSrv.getDirEntry(zid)
-	return entry.isValid()
+	entry := dp.dirSrv.GetDirEntry(zid)
+	return entry.IsValid()
 }
 
 func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
@@ -434,11 +434,11 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 		return box.ErrReadOnly
 	}
 
-	entry := dp.dirSrv.getDirEntry(zid)
-	if !entry.isValid() {
+	entry := dp.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
 		return box.ErrNotFound
 	}
-	err := dp.dirSrv.deleteDirEntry(zid)
+	err := dp.dirSrv.DeleteDirEntry(zid)
 	if err != nil {
 		return nil
 	}
@@ -451,7 +451,7 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 
 func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = dp.readonly
-	st.Zettel = dp.dirSrv.countDirEntries()
+	st.Zettel = dp.dirSrv.CountDirEntries()
 }
 
 func (dp *dirBox) cleanupMeta(m *meta.Meta) {
