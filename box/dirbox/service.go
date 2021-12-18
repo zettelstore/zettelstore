@@ -162,7 +162,6 @@ func (cmd *fileSetZettel) run(log *logger.Logger, dirPath string) {
 		err = writeFileContent(filepath.Join(dirPath, cmd.entry.ContentName), cmd.zettel.Content.AsString())
 	default:
 		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at set")
-		panic("TODO: ???")
 	}
 	cmd.rc <- err
 }
@@ -237,7 +236,6 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 		err = os.Remove(contentPath)
 	default:
 		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at delete")
-		panic("TODO: ???")
 	}
 	cmd.rc <- err
 }

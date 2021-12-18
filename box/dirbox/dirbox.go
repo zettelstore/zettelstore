@@ -174,8 +174,9 @@ func (dp *dirBox) Start(context.Context) error {
 		notifier, err = notify.NewFSDirNotifier(dp.log.Clone().Str("notify", "fs").Child(), dp.dir)
 	}
 	if err != nil {
-		dp.log.Panic().Err(err).Msg("Unable to create directory supervisor")
-		panic(err)
+		dp.log.Fatal().Err(err).Msg("Unable to create directory supervisor")
+		dp.stopFileServices()
+		return err
 	}
 	dp.dirSrv = notify.NewDirService(
 		dp.log.Clone().Str("sub", "dirsrv").Child(),
@@ -195,11 +196,17 @@ func (dp *dirBox) Refresh(_ context.Context) error {
 func (dp *dirBox) Stop(_ context.Context) error {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil
-	dirSrv.Stop()
+	if dirSrv != nil {
+		dirSrv.Stop()
+	}
+	dp.stopFileServices()
+	return nil
+}
+
+func (dp *dirBox) stopFileServices() {
 	for _, c := range dp.fCmds {
 		close(c)
 	}
-	return nil
 }
 
 func (dp *dirBox) notifyChanged(reason box.UpdateReason, zid id.Zid) {
