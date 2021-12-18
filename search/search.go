@@ -303,7 +303,7 @@ func (s *Search) compileMatch() MetaMatchFunc {
 	return compMeta
 }
 
-func matchAlways(*meta.Meta) bool { return false }
+func matchAlways(*meta.Meta) bool { return true }
 func matchNever(*meta.Meta) bool  { return false }
 
 // Sort applies the sorter to the slice of meta data.

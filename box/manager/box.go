@@ -194,9 +194,9 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 				retrieved[zid] = m
 			}
 		}
-	}
-	if match == nil {
-		return convertMetaToSortedList(retrieved, s), nil
+		if match == nil {
+			return convertMetaToSortedList(retrieved, s), nil
+		}
 	}
 
 	selected := metaMap{}
@@ -214,7 +214,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
 			return
 		}
-		if preMatch(m) && match(m) {
+		if preMatch(m) && (match == nil || match(m)) {
 			selected[zid] = m
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
