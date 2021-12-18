@@ -34,21 +34,35 @@ type fsdirNotifier struct {
 func NewFSDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
+		log.Debug().Err(err).Str("path", path).Msg("Unable to create absolute path")
+		return nil, err
+	}
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Debug().Err(err).Str("absPath", absPath).Msg("Unable to create watcher")
 		return nil, err
 	}
 	absParentDir := filepath.Dir(absPath)
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
+	errParent := watcher.Add(absParentDir)
+	err = watcher.Add(absPath)
+	if errParent != nil {
+		if err != nil {
+			log.Error().
+				Str("parentDir", absParentDir).Err(errParent).
+				Str("path", absPath).Err(err).
+				Msg("Unable to access Zettel directory and its parent directory")
+			watcher.Close()
+			return nil, err
+		}
+		log.Warn().
+			Str("parentDir", absParentDir).Err(errParent).
+			Msg("Parent of Zettel directory cannot be supervised")
+		log.Warn().Str("path", absPath).
+			Msg("Zettelstore might not detect a deletion or movement of the Zettel directory")
+	} else if err != nil {
+		// Not a problem, if container is not available. It might become available later.
+		log.Warn().Err(err).Str("path", absPath).Msg("Zettel directory not available")
 	}
-	err = watcher.Add(absParentDir)
-	if err != nil {
-		watcher.Close()
-		return nil, err
-	}
-
-	// Not a problem, if container is not available. It might become available later.
-	watcher.Add(absPath)
 
 	fsdn := &fsdirNotifier{
 		log:     log,

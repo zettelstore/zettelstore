@@ -85,6 +85,7 @@ func (ps *boxService) Start(kern *myKernel) error {
 	ps.logger.Mandatory().Str("location", mgr.Location()).Msg("Start Manager")
 	if err = mgr.Start(context.Background()); err != nil {
 		ps.logger.Fatal().Err(err).Msg("Unable to start manager")
+		return err
 	}
 	kern.cfg.setBox(mgr)
 	ps.manager = mgr
