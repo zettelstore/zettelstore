@@ -87,7 +87,7 @@ func createAndStart() kernel.Kernel {
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
 	for key, srvD := range kern.srvs {
 		if _, ok := kern.srvNames[srvD.name]; ok {
-			panic(fmt.Sprintf("Key %q already given for service %v", key, srvD.name))
+			kern.logger.Panic().Str("service", srvD.name).Msg("Service data already set")
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
 		l := logger.New(lw, strings.ToUpper(srvD.name)).SetLevel(srvD.logLevel)
