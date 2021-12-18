@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package id provides domain specific types, constants, and functions about
-// zettel identifier.
 package id_test
 
 import (
@@ -61,7 +59,7 @@ func TestSetSorted(t *testing.T) {
 	}
 }
 
-func TestSetIntersection(t *testing.T) {
+func TestSetIntersectOrSet(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		s1, s2 id.Set
@@ -69,22 +67,22 @@ func TestSetIntersection(t *testing.T) {
 	}{
 		{nil, nil, nil},
 		{id.NewSet(), nil, nil},
+		{nil, id.NewSet(), nil},
 		{id.NewSet(), id.NewSet(), nil},
 		{id.NewSet(1), nil, nil},
+		{nil, id.NewSet(1), id.Slice{1}},
 		{id.NewSet(1), id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(1), nil},
 		{id.NewSet(1), id.NewSet(2), nil},
+		{id.NewSet(2), id.NewSet(1), nil},
 		{id.NewSet(1), id.NewSet(1), id.Slice{1}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.Sorted()
 		sl2 := tc.s2.Sorted()
-		got := tc.s1.Intersect(tc.s2).Sorted()
+		got := tc.s1.IntersectOrSet(tc.s2).Sorted()
 		if !got.Equal(tc.exp) {
-			t.Errorf("%d: %v.Intersect(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
-		}
-		got = id.NewSet(sl2...).Intersect(id.NewSet(sl1...)).Sorted()
-		if !got.Equal(tc.exp) {
-			t.Errorf("%d: %v.Intersect(%v) should be %v, but got %v", i, sl2, sl1, tc.exp, got)
+			t.Errorf("%d: %v.IntersectOrSet(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
 		}
 	}
 }

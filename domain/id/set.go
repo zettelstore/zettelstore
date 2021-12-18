@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package id provides domain specific types, constants, and functions about
-// zettel identifier.
 package id
 
 // Set is a set of zettel identifier
@@ -73,10 +71,15 @@ func (s Set) Sorted() Slice {
 	return nil
 }
 
-// Intersect removes all zettel identifier that are not in the other set.
+// IntersectOrSet removes all zettel identifier that are not in the other set.
 // Both sets can be modified by this method. One of them is the set returned.
-// It contains the intersection of both.
-func (s Set) Intersect(other Set) Set {
+// It contains the intersection of both, if s is not nil.
+//
+// If s == nil, then the other set is always returned.
+func (s Set) IntersectOrSet(other Set) Set {
+	if s == nil {
+		return other
+	}
 	if len(s) > len(other) {
 		s, other = other, s
 	}

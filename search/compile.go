@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package search provides a zettel search.
 package search
 
 // This file is about "compiling" a search expression into a function.
@@ -21,132 +20,141 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
+type searchOp struct {
+	s  string
+	op compareOp
+}
+type searchFunc func(string) id.Set
+type searchCallMap map[searchOp]searchFunc
+
+func emptySearchFunc() id.Set { return id.Set{} }
+
 func compileIndexSearch(searcher Searcher, search []expValue) (RetrieveFunc, RetrieveFunc) {
 	if len(search) == 0 {
 		return nil, nil
 	}
-	posNorm, posPlain, negatives := prepareSearchWords(search)
-	return compileRetrievePosZids(searcher, posNorm, posPlain), compileRetrieveNegZids(searcher, negatives)
+	posNorm, posPlain, negatives := prepareSearchCalls(searcher, search)
+	if hasConflictingCalls(posNorm, posPlain, negatives) {
+		return emptySearchFunc, emptySearchFunc
+	}
+	if isSuperset(posNorm, posPlain) {
+		posPlain = nil
+	}
+
+	negRetrieveFunc := emptySearchFunc
+	if len(negatives) > 0 {
+		negRetrieveFunc = func() id.Set {
+			var result id.Set
+			for val, sf := range negatives {
+				result = result.Add(sf(val.s))
+			}
+			return result
+
+		}
+	}
+	return compileRetrievePosZids(posNorm, posPlain), negRetrieveFunc
 }
 
-type expValueMap map[string]expValue
-
-func prepareSearchWords(search []expValue) (posNorm, posPlain, negatives []expValue) {
-	posNormSet := make(expValueMap, len(search))
-	negSet := make(expValueMap, len(search))
+func prepareSearchCalls(searcher Searcher, search []expValue) (posNorm, posPlain, negatives searchCallMap) {
+	posNorm = make(searchCallMap, len(search))
+	negatives = make(searchCallMap, len(search))
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
+			sf := getSearchFunc(searcher, val.op)
 			if val.negate {
-				negSet[word] = expValue{
-					value:  word,
-					op:     val.op,
-					negate: true,
-				}
+				negatives[searchOp{s: word, op: val.op}] = sf
 			} else {
-				posNormSet[word] = expValue{
-					value:  word,
-					op:     val.op,
-					negate: false,
-				}
+				posNorm[searchOp{s: word, op: val.op}] = sf
 			}
 		}
 	}
 
-	posPlainSet := make(expValueMap, len(search))
+	posPlain = make(searchCallMap, len(search))
 	for _, val := range search {
 		word := strings.ToLower(strings.TrimSpace(val.value))
+		sf := getSearchFunc(searcher, val.op)
 		if val.negate {
-			negSet[word] = expValue{
-				value:  word,
-				op:     val.op,
-				negate: true,
-			}
+			negatives[searchOp{s: word, op: val.op}] = sf
 		} else {
-			posPlainSet[word] = expValue{
-				value:  word,
-				op:     val.op,
-				negate: false,
-			}
+			posPlain[searchOp{s: word, op: val.op}] = sf
 		}
 	}
-	return expValueMaptoList(posNormSet), expValueMaptoList(posPlainSet), expValueMaptoList(negSet)
+	return posNorm, posPlain, negatives
 }
 
-func expValueMaptoList(expSet expValueMap) []expValue {
-	result := make([]expValue, 0, len(expSet))
-	for _, val := range expSet {
-		result = append(result, val)
+func hasConflictingCalls(posNorm, posPlain, negatives searchCallMap) bool {
+	for val := range negatives {
+		if _, found := posNorm[val]; found {
+			return true
+		}
+		if _, found := posPlain[val]; found {
+			return true
+		}
 	}
-	return result
+	return false
 }
-func compileRetrievePosZids(searcher Searcher, normValues, plainValues []expValue) func() id.Set {
-	if len(normValues) == 0 {
-		if len(plainValues) == 0 {
+
+func isSuperset(posNorm, posPlain searchCallMap) bool {
+	for c := range posPlain {
+		if _, found := posNorm[c]; !found {
+			return false
+		}
+	}
+	return true
+}
+
+type searchResults map[searchOp]id.Set
+
+func compileRetrievePosZids(normCalls, plainCalls searchCallMap) func() id.Set {
+	if len(normCalls) == 0 {
+		if len(plainCalls) == 0 {
 			return emptySearchFunc
 		}
-		return compilePosRetrieveZids(searcher, plainValues)
+		return compilePosRetrieveZids(plainCalls)
 	}
-	if len(plainValues) == 0 {
-		return compilePosRetrieveZids(searcher, normValues)
+	if len(plainCalls) == 0 {
+		return compilePosRetrieveZids(normCalls)
 	}
-	normRetriever := compilePosRetrieveZids(searcher, normValues)
-	plainRetriever := compilePosRetrieveZids(searcher, plainValues)
-	return func() id.Set {
-		return normRetriever().Add(plainRetriever())
-	}
+	return func() id.Set { return searchPositives(normCalls, plainCalls) }
 }
 
-func compilePosRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
-	selFuncs, stringVals := getSearcherCalls(searcher, values)
-	if len(selFuncs) == 1 {
-		return makeSimpleSearchFunc(selFuncs[0], stringVals[0])
-	}
+func compilePosRetrieveZids(searchCalls searchCallMap) func() id.Set {
 	return func() id.Set {
-		result := selFuncs[0](stringVals[0])
-		for i, f := range selFuncs[1:] {
-			result = result.Intersect(f(stringVals[i+1]))
+		var result id.Set
+		for c, sf := range searchCalls {
+			result = result.IntersectOrSet(sf(c.s))
 		}
 		return result
 	}
 }
 
-func compileRetrieveNegZids(searcher Searcher, values []expValue) func() id.Set {
-	if len(values) == 0 {
-		return emptySearchFunc
-	}
-
-	selFuncs, stringVals := getSearcherCalls(searcher, values)
-	if len(selFuncs) == 1 {
-		return makeSimpleSearchFunc(selFuncs[0], stringVals[0])
-	}
-	return func() id.Set {
-		result := selFuncs[0](stringVals[0])
-		for i, f := range selFuncs[1:] {
-			result = result.Add(f(stringVals[i+1]))
+func searchPositives(normCalls, plainCalls searchCallMap) id.Set {
+	var cache searchResults
+	var plainResult id.Set
+	for c, sf := range plainCalls {
+		result := sf(c.s)
+		if _, found := normCalls[c]; found {
+			if cache == nil {
+				cache = make(searchResults)
+			}
+			cache[c] = result
 		}
-		return result
+		plainResult = plainResult.IntersectOrSet(result)
 	}
-}
-
-type selectorFunc func(string) id.Set
-
-func getSearcherCalls(searcher Searcher, values []expValue) ([]selectorFunc, []string) {
-	selFuncs := make([]selectorFunc, 0, len(values))
-	stringVals := make([]string, 0, len(values))
-	for _, val := range values {
-		selFuncs = append(selFuncs, compileSelectOp(searcher, val.op))
-		stringVals = append(stringVals, val.value)
+	var normResult id.Set
+	for c, sf := range normCalls {
+		if cache != nil {
+			if result, found := cache[c]; found {
+				normResult = normResult.IntersectOrSet(result)
+				continue
+			}
+		}
+		normResult = normResult.IntersectOrSet(sf(c.s))
 	}
-	return selFuncs, stringVals
+	return normResult.Add(plainResult)
 }
 
-func emptySearchFunc() id.Set { return id.Set{} }
-
-func makeSimpleSearchFunc(selFunc selectorFunc, arg string) func() id.Set {
-	return func() id.Set { return selFunc(arg) }
-}
-
-func compileSelectOp(searcher Searcher, op compareOp) selectorFunc {
+func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 	switch op {
 	case cmpDefault, cmpContains:
 		return searcher.SearchContains
