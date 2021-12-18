@@ -40,6 +40,19 @@ func NewSetCap(c int, zids ...Zid) Set {
 	return result
 }
 
+// Add all member from the other set.
+func (s Set) Add(other Set) Set {
+	if s == nil && len(other) > 0 {
+		s = make(Set, len(other))
+	}
+	for zid, ok := range other {
+		if ok {
+			s[zid] = true
+		}
+	}
+	return s
+}
+
 // AddSlice adds all identifier of the given slice to the set.
 func (s Set) AddSlice(sl Slice) {
 	for _, zid := range sl {

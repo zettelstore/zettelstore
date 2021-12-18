@@ -25,14 +25,14 @@ func compileIndexSearch(searcher Searcher, search []expValue) (RetrieveFunc, Ret
 	if len(search) == 0 {
 		return nil, nil
 	}
-	positives, negatives := prepareSearchWords(search)
-	return compileRetrieveZids(searcher, positives), compileRetrieveZids(searcher, negatives)
+	posNorm, posPlain, negatives := prepareSearchWords(search)
+	return compileRetrievePosZids(searcher, posNorm, posPlain), compileRetrieveNegZids(searcher, negatives)
 }
 
 type expValueMap map[string]expValue
 
-func prepareSearchWords(search []expValue) (positives, negatives []expValue) {
-	posSet := make(expValueMap, len(search))
+func prepareSearchWords(search []expValue) (posNorm, posPlain, negatives []expValue) {
+	posNormSet := make(expValueMap, len(search))
 	negSet := make(expValueMap, len(search))
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
@@ -43,7 +43,7 @@ func prepareSearchWords(search []expValue) (positives, negatives []expValue) {
 					negate: true,
 				}
 			} else {
-				posSet[word] = expValue{
+				posNormSet[word] = expValue{
 					value:  word,
 					op:     val.op,
 					negate: false,
@@ -52,6 +52,7 @@ func prepareSearchWords(search []expValue) (positives, negatives []expValue) {
 		}
 	}
 
+	posPlainSet := make(expValueMap, len(search))
 	for _, val := range search {
 		word := strings.ToLower(strings.TrimSpace(val.value))
 		if val.negate {
@@ -61,14 +62,14 @@ func prepareSearchWords(search []expValue) (positives, negatives []expValue) {
 				negate: true,
 			}
 		} else {
-			posSet[word] = expValue{
+			posPlainSet[word] = expValue{
 				value:  word,
 				op:     val.op,
 				negate: false,
 			}
 		}
 	}
-	return expValueMaptoList(posSet), expValueMaptoList(negSet)
+	return expValueMaptoList(posNormSet), expValueMaptoList(posPlainSet), expValueMaptoList(negSet)
 }
 
 func expValueMaptoList(expSet expValueMap) []expValue {
@@ -78,21 +79,27 @@ func expValueMaptoList(expSet expValueMap) []expValue {
 	}
 	return result
 }
-
-func compileRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
-	if len(values) == 0 {
-		return func() id.Set { return id.Set{} }
+func compileRetrievePosZids(searcher Searcher, normValues, plainValues []expValue) func() id.Set {
+	if len(normValues) == 0 {
+		if len(plainValues) == 0 {
+			return emptySearchFunc
+		}
+		return compilePosRetrieveZids(searcher, plainValues)
 	}
-
-	selFuncs := make([]selectorFunc, 0, len(values))
-	stringVals := make([]string, 0, len(values))
-	for _, val := range values {
-		selFuncs = append(selFuncs, compileSelectOp(searcher, val.op))
-		stringVals = append(stringVals, val.value)
+	if len(plainValues) == 0 {
+		return compilePosRetrieveZids(searcher, normValues)
 	}
+	normRetriever := compilePosRetrieveZids(searcher, normValues)
+	plainRetriever := compilePosRetrieveZids(searcher, plainValues)
+	return func() id.Set {
+		return normRetriever().Add(plainRetriever())
+	}
+}
 
+func compilePosRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
+	selFuncs, stringVals := getSearcherCalls(searcher, values)
 	if len(selFuncs) == 1 {
-		return func() id.Set { return selFuncs[0](stringVals[0]) }
+		return makeSimpleSearchFunc(selFuncs[0], stringVals[0])
 	}
 	return func() id.Set {
 		result := selFuncs[0](stringVals[0])
@@ -103,7 +110,41 @@ func compileRetrieveZids(searcher Searcher, values []expValue) func() id.Set {
 	}
 }
 
+func compileRetrieveNegZids(searcher Searcher, values []expValue) func() id.Set {
+	if len(values) == 0 {
+		return emptySearchFunc
+	}
+
+	selFuncs, stringVals := getSearcherCalls(searcher, values)
+	if len(selFuncs) == 1 {
+		return makeSimpleSearchFunc(selFuncs[0], stringVals[0])
+	}
+	return func() id.Set {
+		result := selFuncs[0](stringVals[0])
+		for i, f := range selFuncs[1:] {
+			result = result.Add(f(stringVals[i+1]))
+		}
+		return result
+	}
+}
+
 type selectorFunc func(string) id.Set
+
+func getSearcherCalls(searcher Searcher, values []expValue) ([]selectorFunc, []string) {
+	selFuncs := make([]selectorFunc, 0, len(values))
+	stringVals := make([]string, 0, len(values))
+	for _, val := range values {
+		selFuncs = append(selFuncs, compileSelectOp(searcher, val.op))
+		stringVals = append(stringVals, val.value)
+	}
+	return selFuncs, stringVals
+}
+
+func emptySearchFunc() id.Set { return id.Set{} }
+
+func makeSimpleSearchFunc(selFunc selectorFunc, arg string) func() id.Set {
+	return func() id.Set { return selFunc(arg) }
+}
 
 func compileSelectOp(searcher Searcher, op compareOp) selectorFunc {
 	switch op {
