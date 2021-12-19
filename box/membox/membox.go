@@ -112,22 +112,26 @@ func (mp *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return zettel.Meta.Clone(), nil
 }
 
-func (mp *memBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
+func (mp *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
 	mp.mx.RLock()
 	defer mp.mx.RUnlock()
 	for zid := range mp.zettel {
-		handle(zid)
+		if constraint.Contains(zid) {
+			handle(zid)
+		}
 	}
 	return nil
 }
 
-func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
+func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
 	mp.mx.RLock()
 	defer mp.mx.RUnlock()
-	for _, zettel := range mp.zettel {
-		m := zettel.Meta.Clone()
-		mp.cdata.Enricher.Enrich(ctx, m, mp.cdata.Number)
-		handle(m)
+	for zid, zettel := range mp.zettel {
+		if constraint.Contains(zid) {
+			m := zettel.Meta.Clone()
+			mp.cdata.Enricher.Enrich(ctx, m, mp.cdata.Number)
+			handle(m)
+		}
 	}
 	return nil
 }

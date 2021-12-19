@@ -16,6 +16,28 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
+func TestSetContains(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		s   id.Set
+		zid id.Zid
+		exp bool
+	}{
+		{nil, id.Invalid, true},
+		{nil, 14, true},
+		{id.NewSet(), id.Invalid, false},
+		{id.NewSet(), 1, false},
+		{id.NewSet(), id.Invalid, false},
+		{id.NewSet(1), 1, true},
+	}
+	for i, tc := range testcases {
+		got := tc.s.Contains(tc.zid)
+		if got != tc.exp {
+			t.Errorf("%d: %v.Contains(%v) == %v, but got %v", i, tc.s, tc.zid, tc.exp, got)
+		}
+	}
+}
+
 func TestSetAdd(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {

@@ -145,7 +145,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	}
 	result := id.Set{}
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -169,8 +169,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 
 	preMatch, posSearch, negSearch, match := s.Compile(mgr)
 
-	var retrieved metaMap
-	var rejected id.Set
+	var constrained, rejected id.Set
 	if negSearch != nil {
 		rejected = negSearch()
 	} else {
@@ -184,14 +183,18 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		if len(candidates) == 0 {
 			return nil, nil
 		}
-		retrieved = make(metaMap, len(candidates))
-		for zid := range candidates {
-			m, err := mgr.doGetMeta(ctx, zid)
-			if err != nil {
-				return nil, err
-			}
+		retrieved := make(metaMap, len(candidates))
+		constrained = make(id.Set, len(candidates))
+		handleSearch := func(m *meta.Meta) {
 			if preMatch(m) {
+				zid := m.Zid
 				retrieved[zid] = m
+				constrained[zid] = true
+			}
+		}
+		for _, p := range mgr.boxes {
+			if err := p.ApplyMeta(ctx, handleSearch, candidates); err != nil {
+				return nil, err
 			}
 		}
 		if match == nil {
@@ -202,10 +205,6 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	selected := metaMap{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
-		if retrieved != nil && retrieved[zid] == nil {
-			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/notRetrieved")
-			return
-		}
 		if rejected[zid] {
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 			return
@@ -223,7 +222,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		}
 	}
 	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta); err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta, constrained); err != nil {
 			return nil, err
 		}
 	}

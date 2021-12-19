@@ -38,6 +38,11 @@ func NewSetCap(c int, zids ...Zid) Set {
 	return result
 }
 
+// Contains return true if the set is nil or if the set contains the given Zettel identifier.
+func (s Set) Contains(zid Zid) bool {
+	return s == nil || s[zid]
+}
+
 // Add all member from the other set.
 func (s Set) Add(other Set) Set {
 	if s == nil && len(other) > 0 {

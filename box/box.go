@@ -73,11 +73,11 @@ type MetaFunc func(*meta.Meta)
 type ManagedBox interface {
 	BaseBox
 
-	// Apply identifier of every zettel to the given function.
-	ApplyZid(context.Context, ZidFunc) error
+	// Apply identifier of every zettel to the given function, if set contains zid.
+	ApplyZid(context.Context, ZidFunc, id.Set) error
 
-	// Apply metadata of every zettel to the given function.
-	ApplyMeta(context.Context, MetaFunc) error
+	// Apply metadata of every zettel to the given function, if set contains zid.
+	ApplyMeta(context.Context, MetaFunc, id.Set) error
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)

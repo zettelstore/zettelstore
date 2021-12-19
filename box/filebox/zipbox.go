@@ -161,20 +161,28 @@ func (zp *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return readZipMeta(reader, zid, entry)
 }
 
-func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
+func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
 	for zid := range zp.zettel {
-		handle(zid)
+		if constraint.Contains(zid) {
+			handle(zid)
+		}
 	}
 	return nil
 }
 
-func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
+func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
+	if constraint != nil && len(constraint) == 0 {
+		return nil
+	}
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 	for zid, entry := range zp.zettel {
+		if !constraint.Contains(zid) {
+			continue
+		}
 		m, err2 := readZipMeta(reader, zid, entry)
 		if err2 != nil {
 			continue

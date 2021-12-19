@@ -136,7 +136,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		panic(err)
 	}
 	metaList := []*meta.Meta{}
-	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) })
+	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) }, nil)
 	if err != nil {
 		panic(err)
 	}
