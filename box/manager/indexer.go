@@ -12,6 +12,7 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -31,6 +32,9 @@ import (
 func (mgr *Manager) SearchEqual(word string) id.Set {
 	found := mgr.idxStore.SearchEqual(word)
 	mgr.idxLog.Debug().Str("word", word).Int("found", int64(len(found))).Msg("SearchEqual")
+	if msg := mgr.idxLog.Trace(); msg.Enabled() {
+		msg.Str("ids", fmt.Sprint(found)).Msg("IDs")
+	}
 	return found
 }
 
@@ -39,6 +43,9 @@ func (mgr *Manager) SearchEqual(word string) id.Set {
 func (mgr *Manager) SearchPrefix(prefix string) id.Set {
 	found := mgr.idxStore.SearchPrefix(prefix)
 	mgr.idxLog.Debug().Str("prefix", prefix).Int("found", int64(len(found))).Msg("SearchPrefix")
+	if msg := mgr.idxLog.Trace(); msg.Enabled() {
+		msg.Str("ids", fmt.Sprint(found)).Msg("IDs")
+	}
 	return found
 }
 
@@ -47,6 +54,9 @@ func (mgr *Manager) SearchPrefix(prefix string) id.Set {
 func (mgr *Manager) SearchSuffix(suffix string) id.Set {
 	found := mgr.idxStore.SearchSuffix(suffix)
 	mgr.idxLog.Debug().Str("suffix", suffix).Int("found", int64(len(found))).Msg("SearchSuffix")
+	if msg := mgr.idxLog.Trace(); msg.Enabled() {
+		msg.Str("ids", fmt.Sprint(found)).Msg("IDs")
+	}
 	return found
 }
 
@@ -54,7 +64,10 @@ func (mgr *Manager) SearchSuffix(suffix string) id.Set {
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
 func (mgr *Manager) SearchContains(s string) id.Set {
 	found := mgr.idxStore.SearchContains(s)
-	mgr.idxLog.Debug().Str("s", s).Int("fount", int64(len(found))).Msg("SearchContains")
+	mgr.idxLog.Debug().Str("s", s).Int("found", int64(len(found))).Msg("SearchContains")
+	if msg := mgr.idxLog.Trace(); msg.Enabled() {
+		msg.Str("ids", fmt.Sprint(found)).Msg("IDs")
+	}
 	return found
 }
 

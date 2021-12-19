@@ -102,6 +102,10 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
+	return mgr.doGetMeta(ctx, zid)
+}
+
+func (mgr *Manager) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	for i, p := range mgr.boxes {
 		if m, err := p.GetMeta(ctx, zid); err != box.ErrNotFound {
 			if err == nil {
@@ -141,13 +145,15 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	}
 	result := id.Set{}
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, nil)
 		if err != nil {
 			return nil, err
 		}
 	}
 	return result, nil
 }
+
+type metaMap map[id.Zid]*meta.Meta
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
@@ -160,8 +166,43 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	selected, rejected := map[id.Zid]*meta.Meta{}, id.Set{}
-	match := s.CompileMatch(mgr)
+
+	preMatch, posSearch, negSearch, match := s.Compile(mgr)
+
+	var constrained, rejected id.Set
+	if negSearch != nil {
+		rejected = negSearch()
+	} else {
+		rejected = id.Set{}
+	}
+	if posSearch != nil {
+		candidates := posSearch()
+		if negSearch != nil {
+			candidates.Remove(rejected)
+		}
+		if len(candidates) == 0 {
+			return nil, nil
+		}
+		retrieved := make(metaMap, len(candidates))
+		constrained = make(id.Set, len(candidates))
+		handleSearch := func(m *meta.Meta) {
+			if preMatch(m) {
+				zid := m.Zid
+				retrieved[zid] = m
+				constrained[zid] = true
+			}
+		}
+		for _, p := range mgr.boxes {
+			if err := p.ApplyMeta(ctx, handleSearch, candidates); err != nil {
+				return nil, err
+			}
+		}
+		if match == nil {
+			return convertMetaToSortedList(retrieved, s), nil
+		}
+	}
+
+	selected := metaMap{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
 		if rejected[zid] {
@@ -172,7 +213,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
 			return
 		}
-		if match(m) {
+		if preMatch(m) && (match == nil || match(m)) {
 			selected[zid] = m
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
@@ -181,15 +222,19 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		}
 	}
 	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta); err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta, constrained); err != nil {
 			return nil, err
 		}
 	}
+	return convertMetaToSortedList(selected, s), nil
+}
+
+func convertMetaToSortedList(selected metaMap, s *search.Search) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(selected))
 	for _, m := range selected {
 		result = append(result, m)
 	}
-	return s.Sort(result), nil
+	return s.Sort(result)
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.

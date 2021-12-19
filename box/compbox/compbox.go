@@ -102,8 +102,11 @@ func (*compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return nil, box.ErrNotFound
 }
 
-func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
+func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
 	for zid, gen := range myZettel {
+		if !constraint.Contains(zid) {
+			continue
+		}
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {
 				handle(zid)
@@ -113,8 +116,11 @@ func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	return nil
 }
 
-func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
+func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
 	for zid, gen := range myZettel {
+		if !constraint.Contains(zid) {
+			continue
+		}
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)

@@ -27,8 +27,8 @@ type matchSpec struct {
 	match matchValueFunc
 }
 
-// compileSelect calculates a selection func based on the given select criteria.
-func compileSelect(tags expTagValues) MetaMatchFunc {
+// compileMeta calculates a selection func based on the given select criteria.
+func compileMeta(tags expTagValues) MetaMatchFunc {
 	posSpecs, negSpecs, nomatch := createSelectSpecs(tags)
 	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(nomatch) > 0 {
 		return makeSearchMetaMatchFunc(posSpecs, negSpecs, nomatch)

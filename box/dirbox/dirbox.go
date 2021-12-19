@@ -281,8 +281,8 @@ func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return m, nil
 }
 
-func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
-	entries := dp.dirSrv.GetDirEntries()
+func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
+	entries := dp.dirSrv.GetDirEntries(constraint)
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyZid")
 	for _, entry := range entries {
 		handle(entry.Zid)
@@ -290,8 +290,8 @@ func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	return nil
 }
 
-func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
-	entries := dp.dirSrv.GetDirEntries()
+func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
+	entries := dp.dirSrv.GetDirEntries(constraint)
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyMeta")
 
 	// The following loop could be parallelized if needed for performance.

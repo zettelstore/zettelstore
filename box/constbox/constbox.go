@@ -76,18 +76,22 @@ func (cp *constBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return nil, box.ErrNotFound
 }
 
-func (cp *constBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
+func (cp *constBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
 	for zid := range cp.zettel {
-		handle(zid)
+		if constraint.Contains(zid) {
+			handle(zid)
+		}
 	}
 	return nil
 }
 
-func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
+func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
 	for zid, zettel := range cp.zettel {
-		m := meta.NewWithData(zid, zettel.header)
-		cp.enricher.Enrich(ctx, m, cp.number)
-		handle(m)
+		if constraint.Contains(zid) {
+			m := meta.NewWithData(zid, zettel.header)
+			cp.enricher.Enrich(ctx, m, cp.number)
+			handle(m)
+		}
 	}
 	return nil
 }

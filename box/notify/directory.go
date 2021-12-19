@@ -125,16 +125,18 @@ func (ds *DirService) CountDirEntries() int {
 	return len(ds.entries)
 }
 
-func (ds *DirService) GetDirEntries() []*DirEntry {
+func (ds *DirService) GetDirEntries(constraint id.Set) []*DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {
 		return nil
 	}
 	result := make([]*DirEntry, 0, len(ds.entries))
-	for _, entry := range ds.entries {
-		copiedEntry := *entry
-		result = append(result, &copiedEntry)
+	for zid, entry := range ds.entries {
+		if constraint.Contains(zid) {
+			copiedEntry := *entry
+			result = append(result, &copiedEntry)
+		}
 	}
 	return result
 }
