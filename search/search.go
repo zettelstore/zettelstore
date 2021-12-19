@@ -253,8 +253,7 @@ func (s *Search) GetLimit() int {
 }
 
 // EnrichNeeded returns true, if the search references a metadata key that
-// is calculated via metadata enrichments. In most cases this is a computed
-// value. Metadata "tags" is an exception to this rule.
+// is calculated via metadata enrichments.
 func (s *Search) EnrichNeeded() bool {
 	if s == nil {
 		return false
@@ -262,14 +261,11 @@ func (s *Search) EnrichNeeded() bool {
 	s.mx.RLock()
 	defer s.mx.RUnlock()
 	for key := range s.tags {
-		if meta.IsComputed(key) || key == api.KeyTags {
+		if meta.IsComputed(key) {
 			return true
 		}
 	}
-	if order := s.order; order != "" && (meta.IsComputed(order) || order == api.KeyTags) {
-		return true
-	}
-	return false
+	return meta.IsComputed(s.order)
 }
 
 // Compile preprocesses the search and returns a function to query the index
@@ -279,10 +275,11 @@ func (s *Search) Compile(searcher Searcher) (MetaMatchFunc, RetrieveFunc, Retrie
 		return nil, nil, nil, nil
 	}
 	posFunc, negFunc := compileIndexSearch(searcher, s.search)
+	match := s.compileMatch()
 	if preMatch := s.preMatch; preMatch != nil {
-		return s.preMatch, posFunc, negFunc, s.compileMatch()
+		return s.preMatch, posFunc, negFunc, match
 	}
-	return matchAlways, posFunc, negFunc, s.compileMatch()
+	return matchAlways, posFunc, negFunc, match
 }
 
 // compileMatch returns a function to match metadata based on select specification.
