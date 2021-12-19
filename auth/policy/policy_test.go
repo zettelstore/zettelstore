@@ -565,24 +565,18 @@ func testDelete(t *testing.T, pol auth.Policy, withAuth, readonly, expert bool) 
 	}
 }
 
-func testRefresh(t *testing.T, pol auth.Policy, withAuth, _, _ bool) {
+func testRefresh(t *testing.T, pol auth.Policy, withAuth, _, expert bool) {
 	t.Helper()
-	anonUser := newAnon()
-	creator := newCreator()
-	reader := newReader()
-	writer := newWriter()
-	owner := newOwner()
-	owner2 := newOwner2()
 	testCases := []struct {
 		user *meta.Meta
 		exp  bool
 	}{
-		{anonUser, !withAuth},
-		{creator, !withAuth},
-		{reader, true},
-		{writer, true},
-		{owner, true},
-		{owner2, true},
+		{newAnon(), expert},
+		{newCreator(), !withAuth || expert},
+		{newReader(), true},
+		{newWriter(), true},
+		{newOwner(), true},
+		{newOwner2(), true},
 	}
 	for _, tc := range testCases {
 		t.Run("Refresh", func(tt *testing.T) {
