@@ -271,24 +271,39 @@ func (s *Search) EnrichNeeded() bool {
 	return meta.IsComputed(s.order)
 }
 
-// Compile preprocesses the search and returns a function to query the index
-// and a predicate for matiching metadata.
-func (s *Search) Compile(searcher Searcher) (MetaMatchFunc, RetrievePredicate, MetaMatchFunc) {
-	if s == nil {
-		return nil, alwaysIncluded, nil
+// RetrieveIndex and return a predicate to ask for results.
+func (s *Search) RetrieveIndex(searcher Searcher) RetrievePredicate {
+	if s == nil || len(s.search) == 0 {
+		return alwaysIncluded
 	}
-	pred := compileIndexSearch(searcher, s.search)
-	match := s.compileMatch()
-	if preMatch := s.preMatch; preMatch != nil {
-		return s.preMatch, pred, match
+	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, s.search)
+	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
+		return neverIncluded
 	}
-	return matchAlways, pred, match
+
+	positives := retrievePositives(normCalls, plainCalls)
+	if positives == nil {
+		// No positive search for words, must contain only words for a negative search.
+		// Otherwise len(search) == 0 (see above)
+		negatives := retrieveNegatives(negCalls)
+		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+	}
+	if len(positives) == 0 {
+		// Positive search didn't found anything. We can omit the negative search.
+		return neverIncluded
+	}
+	if len(negCalls) == 0 {
+		// Positive search found something, but there is no negative search.
+		return func(zid id.Zid) bool { return positives.Contains(zid) }
+	}
+	negatives := retrieveNegatives(negCalls)
+	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
 }
 
-// compileMatch returns a function to match metadata based on select specification.
-func (s *Search) compileMatch() MetaMatchFunc {
+// CompileMatch returns a function to match metadata based on select specification.
+func (s *Search) CompileMatch() MetaMatchFunc {
 	if s == nil {
-		return nil
+		return matchAlways
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
@@ -298,7 +313,19 @@ func (s *Search) compileMatch() MetaMatchFunc {
 		if compMeta == nil {
 			return matchNever
 		}
+		if preMatch := s.preMatch; preMatch != nil {
+			return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
+		}
 		return func(m *meta.Meta) bool { return !compMeta(m) }
+	}
+	if preMatch := s.preMatch; preMatch != nil {
+		if compMeta == nil {
+			return preMatch
+		}
+		return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
+	}
+	if compMeta == nil {
+		return matchAlways
 	}
 	return compMeta
 }

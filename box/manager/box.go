@@ -167,7 +167,8 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	preMatch, searchPred, match := s.Compile(mgr)
+	searchPred := s.RetrieveIndex(mgr)
+	match := s.CompileMatch()
 
 	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
@@ -180,7 +181,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
 			return
 		}
-		if preMatch(m) && (match == nil || match(m)) {
+		if match(m) {
 			selected[zid] = m
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
@@ -193,15 +194,11 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			return nil, err
 		}
 	}
-	return convertMetaToSortedList(selected, s), nil
-}
-
-func convertMetaToSortedList(selected metaMap, s *search.Search) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(selected))
 	for _, m := range selected {
 		result = append(result, m)
 	}
-	return s.Sort(result)
+	return s.Sort(result), nil
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.

@@ -10,7 +10,7 @@
 
 package search
 
-// This file is about "compiling" a search expression into a function.
+// This file contains helper functions to search within the index.
 
 import (
 	"fmt"
@@ -30,35 +30,7 @@ type searchCallMap map[searchOp]searchFunc
 func alwaysIncluded(id.Zid) bool { return true }
 func neverIncluded(id.Zid) bool  { return false }
 
-func compileIndexSearch(searcher Searcher, search []expValue) RetrievePredicate {
-	if len(search) == 0 {
-		return alwaysIncluded
-	}
-	normCalls, plainCalls, negCalls := prepareSearchCalls(searcher, search)
-	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
-		return neverIncluded
-	}
-
-	positives := searchPositives(normCalls, plainCalls)
-	if positives == nil {
-		// No positive search for words, must contain only words for a negative search.
-		// Otherwise len(search) == 0 (see above)
-		negatives := searchNegatives(negCalls)
-		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
-	}
-	if len(positives) == 0 {
-		// Positive search didn't found anything. We can omit the negative search.
-		return neverIncluded
-	}
-	if len(negCalls) == 0 {
-		// Positive search found something, but there is no negative search.
-		return func(zid id.Zid) bool { return positives.Contains(zid) }
-	}
-	negatives := searchNegatives(negCalls)
-	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
-}
-
-func prepareSearchCalls(searcher Searcher, search []expValue) (normCalls, plainCalls, negCalls searchCallMap) {
+func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plainCalls, negCalls searchCallMap) {
 	normCalls = make(searchCallMap, len(search))
 	negCalls = make(searchCallMap, len(search))
 	for _, val := range search {
@@ -97,7 +69,7 @@ func hasConflictingCalls(normCalls, plainCalls, negCalls searchCallMap) bool {
 	return false
 }
 
-func searchPositives(normCalls, plainCalls searchCallMap) id.Set {
+func retrievePositives(normCalls, plainCalls searchCallMap) id.Set {
 	if isSuperset(normCalls, plainCalls) {
 		var normResult id.Set
 		for c, sf := range normCalls {
@@ -141,7 +113,7 @@ func isSuperset(normCalls, plainCalls searchCallMap) bool {
 	return true
 }
 
-func searchNegatives(negCalls searchCallMap) id.Set {
+func retrieveNegatives(negCalls searchCallMap) id.Set {
 	var negatives id.Set
 	for val, sf := range negCalls {
 		negatives = negatives.Add(sf(val.s))
