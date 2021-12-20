@@ -127,7 +127,8 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 
 	kern.StartService(kernel.CoreService)
 	if headline {
-		kern.logger.Mandatory().Msg(fmt.Sprintf(
+		logger := kern.logger
+		logger.Mandatory().Msg(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
 			kern.core.GetConfig(kernel.CoreProgname),
 			kern.core.GetConfig(kernel.CoreVersion),
@@ -135,14 +136,14 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetConfig(kernel.CoreGoOS),
 			kern.core.GetConfig(kernel.CoreGoArch),
 		))
-		kern.logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
+		logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
 		if kern.core.GetConfig(kernel.CoreDebug).(bool) {
-			kern.logger.Warn().Msg("----------------------------------------")
-			kern.logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
-			kern.logger.Warn().Msg("----------------------------------------")
+			logger.Warn().Msg("----------------------------------------")
+			logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
+			logger.Warn().Msg("----------------------------------------")
 		}
 		if kern.auth.GetConfig(kernel.AuthReadonly).(bool) {
-			kern.logger.Info().Msg("Read-only mode")
+			logger.Info().Msg("Read-only mode")
 		}
 	}
 	if lineServer {

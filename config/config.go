@@ -64,7 +64,10 @@ type Config interface {
 
 // AuthConfig are relevant configuration values for authentication.
 type AuthConfig interface {
-	// GetExpertMode returns the current value of the "expert-mode" key
+	// GetSimpleMode returns true if system tuns in simple-mode.
+	GetSimpleMode() bool
+
+	// GetExpertMode returns the current value of the "expert-mode" key.
 	GetExpertMode() bool
 
 	// GetVisibility returns the visibility value of the metadata.

@@ -36,16 +36,13 @@ func flgRun(fs *flag.FlagSet) {
 }
 
 func runFunc(*flag.FlagSet) (int, error) {
-	exitCode, err := doRun()
+	var exitCode int
+	err := kernel.Main.StartService(kernel.WebService)
+	if err != nil {
+		exitCode = 1
+	}
 	kernel.Main.WaitForShutdown()
 	return exitCode, err
-}
-
-func doRun() (int, error) {
-	if err := kernel.Main.StartService(kernel.WebService); err != nil {
-		return 1, err
-	}
-	return 0, nil
 }
 
 func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth.Manager, rtConfig config.Config) {

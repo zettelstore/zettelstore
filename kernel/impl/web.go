@@ -11,8 +11,10 @@
 package impl
 
 import (
+	"fmt"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -118,7 +120,7 @@ func (ws *webService) Start(kern *myKernel) error {
 		ws.logger.Fatal().Err(err).Msg("Unable to create")
 		return err
 	}
-	if kern.core.GetConfig(kernel.CoreDebug).(bool) {
+	if kern.core.GetNextConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
 	if err = srvw.Run(); err != nil {
@@ -129,6 +131,16 @@ func (ws *webService) Start(kern *myKernel) error {
 	ws.mxService.Lock()
 	ws.srvw = srvw
 	ws.mxService.Unlock()
+
+	if kern.cfg.GetConfig(kernel.ConfigSimpleMode).(bool) {
+		listenAddr := ws.GetNextConfig(kernel.WebListenAddress).(string)
+		if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
+			ws.logger.Mandatory().Msg(strings.Repeat("--------------------", 3))
+			ws.logger.Mandatory().Msg("Open your browser and enter the following URL:")
+			ws.logger.Mandatory().Msg(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
+		}
+	}
+
 	return nil
 }
 
