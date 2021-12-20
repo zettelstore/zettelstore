@@ -45,8 +45,8 @@ func (s Set) Contains(zid Zid) bool {
 
 // Add all member from the other set.
 func (s Set) Add(other Set) Set {
-	if s == nil && len(other) > 0 {
-		s = make(Set, len(other))
+	if s == nil {
+		return other
 	}
 	for zid, ok := range other {
 		if ok {

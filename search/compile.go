@@ -27,7 +27,6 @@ type searchOp struct {
 type searchFunc func(string) id.Set
 type searchCallMap map[searchOp]searchFunc
 
-func emptySearchFunc() id.Set    { return id.Set{} }
 func alwaysIncluded(id.Zid) bool { return true }
 func neverIncluded(id.Zid) bool  { return false }
 
@@ -35,114 +34,79 @@ func compileIndexSearch(searcher Searcher, search []expValue) RetrievePredicate 
 	if len(search) == 0 {
 		return alwaysIncluded
 	}
-	posNorm, posPlain, negCalls := prepareSearchCalls(searcher, search)
-	if hasConflictingCalls(posNorm, posPlain, negCalls) {
+	normCalls, plainCalls, negCalls := prepareSearchCalls(searcher, search)
+	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
 		return neverIncluded
 	}
-	if isSuperset(posNorm, posPlain) {
-		posPlain = nil
-	}
 
-	var positives, negatives id.Set
-	if posFuncs := compileRetrievePosZids(posNorm, posPlain); posFuncs != nil {
-		positives = posFuncs()
-	}
-	for val, sf := range negCalls {
-		negatives = negatives.Add(sf(val.s))
-	}
-
+	positives := searchPositives(normCalls, plainCalls)
 	if positives == nil {
-		if len(negatives) == 0 {
-			return alwaysIncluded
-		}
+		// No positive search for words, must contain only words for a negative search.
+		// Otherwise len(search) == 0 (see above)
+		negatives := searchNegatives(negCalls)
 		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
 	}
 	if len(positives) == 0 {
-		if len(negatives) == 0 {
-			return neverIncluded
-		}
-		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+		// Positive search didn't found anything. We can omit the negative search.
+		return neverIncluded
 	}
-	if len(negatives) == 0 {
+	if len(negCalls) == 0 {
+		// Positive search found something, but there is no negative search.
 		return func(zid id.Zid) bool { return positives.Contains(zid) }
 	}
+	negatives := searchNegatives(negCalls)
 	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
 }
 
-func prepareSearchCalls(searcher Searcher, search []expValue) (posNorm, posPlain, negatives searchCallMap) {
-	posNorm = make(searchCallMap, len(search))
-	negatives = make(searchCallMap, len(search))
+func prepareSearchCalls(searcher Searcher, search []expValue) (normCalls, plainCalls, negCalls searchCallMap) {
+	normCalls = make(searchCallMap, len(search))
+	negCalls = make(searchCallMap, len(search))
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
 			sf := getSearchFunc(searcher, val.op)
 			if val.negate {
-				negatives[searchOp{s: word, op: val.op}] = sf
+				negCalls[searchOp{s: word, op: val.op}] = sf
 			} else {
-				posNorm[searchOp{s: word, op: val.op}] = sf
+				normCalls[searchOp{s: word, op: val.op}] = sf
 			}
 		}
 	}
 
-	posPlain = make(searchCallMap, len(search))
+	plainCalls = make(searchCallMap, len(search))
 	for _, val := range search {
 		word := strings.ToLower(strings.TrimSpace(val.value))
 		sf := getSearchFunc(searcher, val.op)
 		if val.negate {
-			negatives[searchOp{s: word, op: val.op}] = sf
+			negCalls[searchOp{s: word, op: val.op}] = sf
 		} else {
-			posPlain[searchOp{s: word, op: val.op}] = sf
+			plainCalls[searchOp{s: word, op: val.op}] = sf
 		}
 	}
-	return posNorm, posPlain, negatives
+	return normCalls, plainCalls, negCalls
 }
 
-func hasConflictingCalls(posNorm, posPlain, negatives searchCallMap) bool {
-	for val := range negatives {
-		if _, found := posNorm[val]; found {
+func hasConflictingCalls(normCalls, plainCalls, negCalls searchCallMap) bool {
+	for val := range negCalls {
+		if _, found := normCalls[val]; found {
 			return true
 		}
-		if _, found := posPlain[val]; found {
+		if _, found := plainCalls[val]; found {
 			return true
 		}
 	}
 	return false
 }
 
-func isSuperset(posNorm, posPlain searchCallMap) bool {
-	for c := range posPlain {
-		if _, found := posNorm[c]; !found {
-			return false
-		}
-	}
-	return true
-}
-
-type searchResults map[searchOp]id.Set
-
-func compileRetrievePosZids(normCalls, plainCalls searchCallMap) func() id.Set {
-	if len(normCalls) == 0 {
-		if len(plainCalls) == 0 {
-			return emptySearchFunc
-		}
-		return compilePosRetrieveZids(plainCalls)
-	}
-	if len(plainCalls) == 0 {
-		return compilePosRetrieveZids(normCalls)
-	}
-	return func() id.Set { return searchPositives(normCalls, plainCalls) }
-}
-
-func compilePosRetrieveZids(searchCalls searchCallMap) func() id.Set {
-	return func() id.Set {
-		var result id.Set
-		for c, sf := range searchCalls {
-			result = result.IntersectOrSet(sf(c.s))
-		}
-		return result
-	}
-}
-
 func searchPositives(normCalls, plainCalls searchCallMap) id.Set {
+	if isSuperset(normCalls, plainCalls) {
+		var normResult id.Set
+		for c, sf := range normCalls {
+			normResult = normResult.IntersectOrSet(sf(c.s))
+		}
+		return normResult
+	}
+
+	type searchResults map[searchOp]id.Set
 	var cache searchResults
 	var plainResult id.Set
 	for c, sf := range plainCalls {
@@ -166,6 +130,23 @@ func searchPositives(normCalls, plainCalls searchCallMap) id.Set {
 		normResult = normResult.IntersectOrSet(sf(c.s))
 	}
 	return normResult.Add(plainResult)
+}
+
+func isSuperset(normCalls, plainCalls searchCallMap) bool {
+	for c := range plainCalls {
+		if _, found := normCalls[c]; !found {
+			return false
+		}
+	}
+	return true
+}
+
+func searchNegatives(negCalls searchCallMap) id.Set {
+	var negatives id.Set
+	for val, sf := range negCalls {
+		negatives = negatives.Add(sf(val.s))
+	}
+	return negatives
 }
 
 func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
