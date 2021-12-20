@@ -239,7 +239,7 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 		return id.Invalid, box.ErrReadOnly
 	}
 
-	newZid, err := dp.dirSrv.CalcNewDirEntry()
+	newZid, err := dp.dirSrv.SetNewDirEntry()
 	if err != nil {
 		return id.Invalid, err
 	}
@@ -466,7 +466,7 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 
 func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = dp.readonly
-	st.Zettel = dp.dirSrv.CountDirEntries()
+	st.Zettel = dp.dirSrv.NumDirEntries()
 	dp.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
