@@ -47,20 +47,20 @@ type zipBox struct {
 	zettel   map[id.Zid]*zipEntry // no lock needed, because read-only after creation
 }
 
-func (zp *zipBox) Location() string {
-	if strings.HasPrefix(zp.name, "/") {
-		return "file://" + zp.name
+func (zb *zipBox) Location() string {
+	if strings.HasPrefix(zb.name, "/") {
+		return "file://" + zb.name
 	}
-	return "file:" + zp.name
+	return "file:" + zb.name
 }
 
-func (zp *zipBox) Start(context.Context) error {
-	reader, err := zip.OpenReader(zp.name)
+func (zb *zipBox) Start(context.Context) error {
+	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
-	zp.zettel = make(map[id.Zid]*zipEntry)
+	zb.zettel = make(map[id.Zid]*zipEntry)
 	for _, f := range reader.File {
 		match := matchValidFileName(f.Name)
 		if len(match) < 1 {
@@ -70,16 +70,16 @@ func (zp *zipBox) Start(context.Context) error {
 		if err2 != nil {
 			continue
 		}
-		zp.addFile(zid, f.Name, match[3])
+		zb.addFile(zid, f.Name, match[3])
 	}
 	return nil
 }
 
-func (zp *zipBox) addFile(zid id.Zid, name, ext string) {
-	entry := zp.zettel[zid]
+func (zb *zipBox) addFile(zid id.Zid, name, ext string) {
+	entry := zb.zettel[zid]
 	if entry == nil {
 		entry = &zipEntry{}
-		zp.zettel[zid] = entry
+		zb.zettel[zid] = entry
 	}
 	switch ext {
 	case "zettel":
@@ -99,23 +99,24 @@ func (zp *zipBox) addFile(zid id.Zid, name, ext string) {
 	}
 }
 
-func (zp *zipBox) Stop(context.Context) error {
-	zp.zettel = nil
+func (zb *zipBox) Stop(context.Context) error {
+	zb.zettel = nil
 	return nil
 }
 
 func (*zipBox) CanCreateZettel(context.Context) bool { return false }
 
-func (*zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (zb *zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+	zb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (zp *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
-	entry, ok := zp.zettel[zid]
+func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+	entry, ok := zb.zettel[zid]
 	if !ok {
 		return domain.Zettel{}, box.ErrNotFound
 	}
-	reader, err := zip.OpenReader(zp.name)
+	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
 		return domain.Zettel{}, err
 	}
@@ -146,24 +147,28 @@ func (zp *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 		m = CalcDefaultMeta(zid, entry.contentExt)
 	}
 	CleanupMeta(m, zid, entry.contentExt, inMeta, false)
+	zb.log.Trace().Msg("GetZettel")
 	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
 }
 
-func (zp *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry, ok := zp.zettel[zid]
+func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+	entry, ok := zb.zettel[zid]
 	if !ok {
 		return nil, box.ErrNotFound
 	}
-	reader, err := zip.OpenReader(zp.name)
+	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
 		return nil, err
 	}
 	defer reader.Close()
-	return readZipMeta(reader, zid, entry)
+	m, err := readZipMeta(reader, zid, entry)
+	zb.log.Trace().Err(err).Msg("GetMeta")
+	return m, err
 }
 
-func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
-	for zid := range zp.zettel {
+func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+	zb.log.Trace().Int("entries", int64(len(zb.zettel))).Msg("ApplyZid")
+	for zid := range zb.zettel {
 		if constraint(zid) {
 			handle(zid)
 		}
@@ -171,13 +176,14 @@ func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint sea
 	return nil
 }
 
-func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
-	reader, err := zip.OpenReader(zp.name)
+func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
-	for zid, entry := range zp.zettel {
+	zb.log.Trace().Int("entries", int64(len(zb.zettel))).Msg("ApplyMeta")
+	for zid, entry := range zb.zettel {
 		if !constraint(zid) {
 			continue
 		}
@@ -185,7 +191,7 @@ func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 		if err2 != nil {
 			continue
 		}
-		zp.enricher.Enrich(ctx, m, zp.number)
+		zb.enricher.Enrich(ctx, m, zb.number)
 		handle(m)
 	}
 	return nil
@@ -193,32 +199,40 @@ func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 
 func (*zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
-func (*zipBox) UpdateZettel(context.Context, domain.Zettel) error { return box.ErrReadOnly }
+func (zb *zipBox) UpdateZettel(context.Context, domain.Zettel) error {
+	zb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
+	return box.ErrReadOnly
+}
 
-func (zp *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	_, ok := zp.zettel[zid]
+func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
+	_, ok := zb.zettel[zid]
 	return !ok
 }
 
-func (zp *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
-	if _, ok := zp.zettel[curZid]; ok {
-		return box.ErrReadOnly
+func (zb *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
+	err := box.ErrNotFound
+	if _, ok := zb.zettel[curZid]; ok {
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	zb.log.Trace().Err(err).Msg("RenameZettel")
+	return err
 }
 
 func (*zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (zp *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
-	if _, ok := zp.zettel[zid]; ok {
-		return box.ErrReadOnly
+func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+	err := box.ErrNotFound
+	if _, ok := zb.zettel[zid]; ok {
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	zb.log.Trace().Err(err).Msg("DeleteZettel")
+	return err
 }
 
-func (zp *zipBox) ReadStats(st *box.ManagedBoxStats) {
+func (zb *zipBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = true
-	st.Zettel = len(zp.zettel)
+	st.Zettel = len(zb.zettel)
+	zb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
 func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *zipEntry) (m *meta.Meta, err error) {

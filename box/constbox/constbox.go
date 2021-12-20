@@ -59,26 +59,32 @@ func (*constBox) Location() string { return "const:" }
 
 func (*constBox) CanCreateZettel(context.Context) bool { return false }
 
-func (*constBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (cb *constBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (cp *constBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
-	if z, ok := cp.zettel[zid]; ok {
+func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+	if z, ok := cb.zettel[zid]; ok {
+		cb.log.Trace().Msg("GetZettel")
 		return domain.Zettel{Meta: meta.NewWithData(zid, z.header), Content: z.content}, nil
 	}
+	cb.log.Trace().Err(box.ErrNotFound).Msg("GetZettel")
 	return domain.Zettel{}, box.ErrNotFound
 }
 
-func (cp *constBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	if z, ok := cp.zettel[zid]; ok {
+func (cb *constBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+	if z, ok := cb.zettel[zid]; ok {
+		cb.log.Trace().Msg("GetMeta")
 		return meta.NewWithData(zid, z.header), nil
 	}
+	cb.log.Trace().Err(box.ErrNotFound).Msg("GetMeta")
 	return nil, box.ErrNotFound
 }
 
-func (cp *constBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
-	for zid := range cp.zettel {
+func (cb *constBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+	cb.log.Trace().Int("entries", int64(len(cb.zettel))).Msg("ApplyZid")
+	for zid := range cb.zettel {
 		if constraint(zid) {
 			handle(zid)
 		}
@@ -86,11 +92,12 @@ func (cp *constBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint s
 	return nil
 }
 
-func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
-	for zid, zettel := range cp.zettel {
+func (cb *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+	cb.log.Trace().Int("entries", int64(len(cb.zettel))).Msg("ApplyMeta")
+	for zid, zettel := range cb.zettel {
 		if constraint(zid) {
 			m := meta.NewWithData(zid, zettel.header)
-			cp.enricher.Enrich(ctx, m, cp.number)
+			cb.enricher.Enrich(ctx, m, cb.number)
 			handle(m)
 		}
 	}
@@ -99,31 +106,40 @@ func (cp *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrai
 
 func (*constBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
-func (*constBox) UpdateZettel(context.Context, domain.Zettel) error { return box.ErrReadOnly }
+func (cb *constBox) UpdateZettel(context.Context, domain.Zettel) error {
+	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
+	return box.ErrReadOnly
+}
 
-func (cp *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	_, ok := cp.zettel[zid]
+func (cb *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
+	_, ok := cb.zettel[zid]
 	return !ok
 }
 
-func (cp *constBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
-	if _, ok := cp.zettel[curZid]; ok {
-		return box.ErrReadOnly
+func (cb *constBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
+	err := box.ErrNotFound
+	if _, ok := cb.zettel[curZid]; ok {
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	cb.log.Trace().Err(err).Msg("RenameZettel")
+	return err
 }
+
 func (*constBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (cp *constBox) DeleteZettel(_ context.Context, zid id.Zid) error {
-	if _, ok := cp.zettel[zid]; ok {
-		return box.ErrReadOnly
+func (cb *constBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+	err := box.ErrNotFound
+	if _, ok := cb.zettel[zid]; ok {
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	cb.log.Trace().Err(err).Msg("DeleteZettel")
+	return err
 }
 
-func (cp *constBox) ReadStats(st *box.ManagedBoxStats) {
+func (cb *constBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = true
-	st.Zettel = len(cp.zettel)
+	st.Zettel = len(cb.zettel)
+	cb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
 const syntaxTemplate = "mustache"

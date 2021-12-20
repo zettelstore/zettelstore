@@ -316,6 +316,7 @@ func (mgr *Manager) Stop(ctx context.Context) error {
 
 // Refresh internal box data.
 func (mgr *Manager) Refresh(ctx context.Context) error {
+	mgr.mgrLog.Debug().Msg("Refresh")
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
 	if !mgr.started {
@@ -334,6 +335,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 
 // ReadStats populates st with box statistics.
 func (mgr *Manager) ReadStats(st *box.Stats) {
+	mgr.mgrLog.Debug().Msg("ReadStats")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	subStats := make([]box.ManagedBoxStats, len(mgr.boxes))

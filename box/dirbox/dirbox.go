@@ -191,6 +191,7 @@ func (dp *dirBox) Start(context.Context) error {
 
 func (dp *dirBox) Refresh(_ context.Context) error {
 	dp.dirSrv.Refresh()
+	dp.log.Trace().Msg("Refresh")
 	return nil
 }
 
@@ -252,6 +253,7 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
 	dp.notifyChanged(box.OnUpdate, meta.Zid)
+	dp.log.Trace().Err(err).Zid(meta.Zid).Msg("CreateZettel")
 	return meta.Zid, err
 }
 
@@ -266,6 +268,7 @@ func (dp *dirBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 	}
 	dp.cleanupMeta(m)
 	zettel := domain.Zettel{Meta: m, Content: domain.NewContent(c)}
+	dp.log.Trace().Msg("GetZettel")
 	return zettel, nil
 }
 
@@ -279,6 +282,7 @@ func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 		return nil, err
 	}
 	dp.cleanupMeta(m)
+	dp.log.Trace().Msg("GetZettel")
 	return m, nil
 }
 
@@ -339,6 +343,7 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	if err == nil {
 		dp.notifyChanged(box.OnUpdate, meta.Zid)
 	}
+	dp.log.Trace().Err(err).Msg("UpdateZettel")
 	return err
 }
 
@@ -426,6 +431,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 		dp.notifyChanged(box.OnDelete, curZid)
 		dp.notifyChanged(box.OnUpdate, newZid)
 	}
+	dp.log.Trace().Err(err).Msg("RenameZettel")
 	return err
 }
 
@@ -454,12 +460,14 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if err == nil {
 		dp.notifyChanged(box.OnDelete, zid)
 	}
+	dp.log.Trace().Err(err).Msg("DeleteZettel")
 	return err
 }
 
 func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = dp.readonly
 	st.Zettel = dp.dirSrv.CountDirEntries()
+	dp.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
 func (dp *dirBox) cleanupMeta(m *meta.Meta) {
