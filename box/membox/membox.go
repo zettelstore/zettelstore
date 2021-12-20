@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -112,22 +113,22 @@ func (mp *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return zettel.Meta.Clone(), nil
 }
 
-func (mp *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
+func (mp *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
 	mp.mx.RLock()
 	defer mp.mx.RUnlock()
 	for zid := range mp.zettel {
-		if constraint.Contains(zid) {
+		if constraint(zid) {
 			handle(zid)
 		}
 	}
 	return nil
 }
 
-func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
+func (mp *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
 	mp.mx.RLock()
 	defer mp.mx.RUnlock()
 	for zid, zettel := range mp.zettel {
-		if constraint.Contains(zid) {
+		if constraint(zid) {
 			m := zettel.Meta.Clone()
 			mp.cdata.Enricher.Enrich(ctx, m, mp.cdata.Number)
 			handle(m)

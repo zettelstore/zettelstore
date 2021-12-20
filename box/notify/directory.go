@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 // DirMetaSpec defines all possibilities where meta data can be stored.
@@ -125,7 +126,7 @@ func (ds *DirService) CountDirEntries() int {
 	return len(ds.entries)
 }
 
-func (ds *DirService) GetDirEntries(constraint id.Set) []*DirEntry {
+func (ds *DirService) GetDirEntries(constraint search.RetrievePredicate) []*DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {
@@ -133,7 +134,7 @@ func (ds *DirService) GetDirEntries(constraint id.Set) []*DirEntry {
 	}
 	result := make([]*DirEntry, 0, len(ds.entries))
 	for zid, entry := range ds.entries {
-		if constraint.Contains(zid) {
+		if constraint(zid) {
 			copiedEntry := *entry
 			result = append(result, &copiedEntry)
 		}

@@ -47,6 +47,9 @@ type MetaMatchFunc func(*meta.Meta) bool
 // RetrieveFunc retrieves the index based on a Search.
 type RetrieveFunc func() id.Set
 
+// RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
+type RetrievePredicate func(id.Zid) bool
+
 // Search specifies a mechanism for selecting zettel.
 type Search struct {
 	mx sync.RWMutex // Protects other attributes
@@ -270,16 +273,16 @@ func (s *Search) EnrichNeeded() bool {
 
 // Compile preprocesses the search and returns a function to query the index
 // and a predicate for matiching metadata.
-func (s *Search) Compile(searcher Searcher) (MetaMatchFunc, RetrieveFunc, RetrieveFunc, MetaMatchFunc) {
+func (s *Search) Compile(searcher Searcher) (MetaMatchFunc, RetrievePredicate, MetaMatchFunc) {
 	if s == nil {
-		return nil, nil, nil, nil
+		return nil, alwaysIncluded, nil
 	}
-	posFunc, negFunc := compileIndexSearch(searcher, s.search)
+	pred := compileIndexSearch(searcher, s.search)
 	match := s.compileMatch()
 	if preMatch := s.preMatch; preMatch != nil {
-		return s.preMatch, posFunc, negFunc, match
+		return s.preMatch, pred, match
 	}
-	return matchAlways, posFunc, negFunc, match
+	return matchAlways, pred, match
 }
 
 // compileMatch returns a function to match metadata based on select specification.

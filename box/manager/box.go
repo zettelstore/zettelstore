@@ -145,7 +145,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	}
 	result := id.Set{}
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, nil)
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, func(id.Zid) bool { return true })
 		if err != nil {
 			return nil, err
 		}
@@ -167,42 +167,9 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	preMatch, posSearch, negSearch, match := s.Compile(mgr)
+	preMatch, searchPred, match := s.Compile(mgr)
 
-	var constrained, rejected id.Set
-	if negSearch != nil {
-		rejected = negSearch()
-	} else {
-		rejected = id.Set{}
-	}
-	if posSearch != nil {
-		candidates := posSearch()
-		if negSearch != nil {
-			candidates.Remove(rejected)
-		}
-		if len(candidates) == 0 {
-			return nil, nil
-		}
-		retrieved := make(metaMap, len(candidates))
-		constrained = make(id.Set, len(candidates))
-		handleSearch := func(m *meta.Meta) {
-			if preMatch(m) {
-				zid := m.Zid
-				retrieved[zid] = m
-				constrained[zid] = true
-			}
-		}
-		for _, p := range mgr.boxes {
-			if err := p.ApplyMeta(ctx, handleSearch, candidates); err != nil {
-				return nil, err
-			}
-		}
-		if match == nil {
-			return convertMetaToSortedList(retrieved, s), nil
-		}
-	}
-
-	selected := metaMap{}
+	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
 		if rejected[zid] {
@@ -222,7 +189,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		}
 	}
 	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta, constrained); err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta, searchPred); err != nil {
 			return nil, err
 		}
 	}

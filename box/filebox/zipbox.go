@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
@@ -161,26 +162,23 @@ func (zp *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return readZipMeta(reader, zid, entry)
 }
 
-func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
+func (zp *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
 	for zid := range zp.zettel {
-		if constraint.Contains(zid) {
+		if constraint(zid) {
 			handle(zid)
 		}
 	}
 	return nil
 }
 
-func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
-	if constraint != nil && len(constraint) == 0 {
-		return nil
-	}
+func (zp *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
 	reader, err := zip.OpenReader(zp.name)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 	for zid, entry := range zp.zettel {
-		if !constraint.Contains(zid) {
+		if !constraint(zid) {
 			continue
 		}
 		m, err2 := readZipMeta(reader, zid, entry)

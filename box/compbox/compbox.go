@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -102,9 +103,9 @@ func (*compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return nil, box.ErrNotFound
 }
 
-func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Set) error {
+func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
 	for zid, gen := range myZettel {
-		if !constraint.Contains(zid) {
+		if !constraint(zid) {
 			continue
 		}
 		if genMeta := gen.meta; genMeta != nil {
@@ -116,9 +117,9 @@ func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint id.Se
 	return nil
 }
 
-func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint id.Set) error {
+func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
 	for zid, gen := range myZettel {
-		if !constraint.Contains(zid) {
+		if !constraint(zid) {
 			continue
 		}
 		if genMeta := gen.meta; genMeta != nil {

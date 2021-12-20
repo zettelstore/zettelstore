@@ -27,32 +27,46 @@ type searchOp struct {
 type searchFunc func(string) id.Set
 type searchCallMap map[searchOp]searchFunc
 
-func emptySearchFunc() id.Set { return id.Set{} }
+func emptySearchFunc() id.Set    { return id.Set{} }
+func alwaysIncluded(id.Zid) bool { return true }
+func neverIncluded(id.Zid) bool  { return false }
 
-func compileIndexSearch(searcher Searcher, search []expValue) (RetrieveFunc, RetrieveFunc) {
+func compileIndexSearch(searcher Searcher, search []expValue) RetrievePredicate {
 	if len(search) == 0 {
-		return nil, nil
+		return alwaysIncluded
 	}
-	posNorm, posPlain, negatives := prepareSearchCalls(searcher, search)
-	if hasConflictingCalls(posNorm, posPlain, negatives) {
-		return emptySearchFunc, emptySearchFunc
+	posNorm, posPlain, negCalls := prepareSearchCalls(searcher, search)
+	if hasConflictingCalls(posNorm, posPlain, negCalls) {
+		return neverIncluded
 	}
 	if isSuperset(posNorm, posPlain) {
 		posPlain = nil
 	}
 
-	negRetrieveFunc := emptySearchFunc
-	if len(negatives) > 0 {
-		negRetrieveFunc = func() id.Set {
-			var result id.Set
-			for val, sf := range negatives {
-				result = result.Add(sf(val.s))
-			}
-			return result
-
-		}
+	var positives, negatives id.Set
+	if posFuncs := compileRetrievePosZids(posNorm, posPlain); posFuncs != nil {
+		positives = posFuncs()
 	}
-	return compileRetrievePosZids(posNorm, posPlain), negRetrieveFunc
+	for val, sf := range negCalls {
+		negatives = negatives.Add(sf(val.s))
+	}
+
+	if positives == nil {
+		if len(negatives) == 0 {
+			return alwaysIncluded
+		}
+		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+	}
+	if len(positives) == 0 {
+		if len(negatives) == 0 {
+			return neverIncluded
+		}
+		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+	}
+	if len(negatives) == 0 {
+		return func(zid id.Zid) bool { return positives.Contains(zid) }
+	}
+	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
 }
 
 func prepareSearchCalls(searcher Searcher, search []expValue) (posNorm, posPlain, negatives searchCallMap) {
