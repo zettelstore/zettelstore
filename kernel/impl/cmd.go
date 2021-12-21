@@ -296,8 +296,11 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	if !found {
 		return true
 	}
+	key := args[1]
 	newValue := strings.Join(args[2:], " ")
-	if !srvD.srv.SetConfig(args[1], newValue) {
+	if srvD.srv.SetConfig(key, newValue) {
+		sess.kern.logger.Mandatory().Str("key", key).Str("value", newValue).Msg("Update system configuration")
+	} else {
 		sess.println("Unable to set key", args[1], "to value", newValue)
 	}
 	return true
@@ -374,15 +377,16 @@ func cmdStat(sess *cmdSession, cmd string, args []string) bool {
 }
 
 func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
+	kern := sess.kern
 	if len(args) == 0 {
 		// Write log levels
-		level := sess.kern.logger.Level()
+		level := kern.logger.Level()
 		table := [][]string{
 			{"Service", "Level", "Name"},
 			{"kernel", strconv.Itoa(int(level)), level.String()},
 		}
 		for _, name := range sortedServiceNames(sess) {
-			level = sess.kern.srvNames[name].srv.GetLogger().Level()
+			level = kern.srvNames[name].srv.GetLogger().Level()
 			table = append(table, []string{name, strconv.Itoa(int(level)), level.String()})
 		}
 		sess.printTable(table)
@@ -391,7 +395,7 @@ func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 	var l *logger.Logger
 	name := args[0]
 	if name == "kernel" {
-		l = sess.kern.logger
+		l = kern.logger
 	} else {
 		srvD, ok := getService(sess, name)
 		if !ok {
@@ -406,15 +410,17 @@ func cmdLogLevel(sess *cmdSession, _ string, args []string) bool {
 		return true
 	}
 
-	uval, err := strconv.ParseUint(args[1], 10, 8)
+	level := args[1]
+	uval, err := strconv.ParseUint(level, 10, 8)
 	lv := logger.Level(uval)
 	if err != nil || !lv.IsValid() {
-		lv = logger.ParseLevel(args[1])
+		lv = logger.ParseLevel(level)
 	}
 	if !lv.IsValid() {
-		sess.println("Invalid level:", args[1])
+		sess.println("Invalid level:", level)
 		return true
 	}
+	kern.logger.Mandatory().Str("name", name).Str("level", lv.String()).Msg("Update log level")
 	l.SetLevel(lv)
 	return true
 }
@@ -444,15 +450,21 @@ func cmdProfile(sess *cmdSession, _ string, args []string) bool {
 	} else {
 		fileName = args[1]
 	}
-	if err := sess.kern.doStartProfiling(profileName, fileName); err != nil {
+	kern := sess.kern
+	if err := kern.doStartProfiling(profileName, fileName); err != nil {
 		sess.println("Error:", err.Error())
+	} else {
+		kern.logger.Mandatory().Str("profile", profileName).Str("file", fileName).Msg("Start profiling")
 	}
 	return true
 }
 func cmdEndProfile(sess *cmdSession, _ string, _ []string) bool {
-	if err := sess.kern.doStopProfiling(); err != nil {
+	kern := sess.kern
+	err := kern.doStopProfiling()
+	if err != nil {
 		sess.println("Error:", err.Error())
 	}
+	kern.logger.Mandatory().Err(err).Msg("Stop profiling")
 	return true
 }
 
@@ -504,7 +516,9 @@ func cmdDumpIndex(sess *cmdSession, _ string, _ []string) bool {
 }
 
 func cmdRefresh(sess *cmdSession, _ string, _ []string) bool {
-	sess.kern.box.Refresh()
+	kern := sess.kern
+	kern.logger.Mandatory().Msg("Refresh")
+	kern.box.Refresh()
 	return true
 }
 

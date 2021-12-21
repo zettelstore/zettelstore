@@ -18,10 +18,10 @@ import (
 func startLineServer(kern *myKernel, listenAddr string) error {
 	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
-		kern.logger.Fatal().Err(err).Msg("Unable to start Line Command Server")
+		kern.logger.Fatal().Err(err).Msg("Unable to start administration console")
 		return err
 	}
-	kern.logger.Mandatory().Str("listen", listenAddr).Msg("Start Line Command Server")
+	kern.logger.Mandatory().Str("listen", listenAddr).Msg("Start administration console")
 	go func() { lineServer(ln, kern) }()
 	return nil
 }
@@ -56,6 +56,7 @@ func handleLineConnection(conn net.Conn, kern *myKernel) {
 		}
 	}()
 
+	kern.logger.Mandatory().Str("from", conn.RemoteAddr().String()).Msg("Start session on administration console")
 	cmds := cmdSession{}
 	cmds.initialize(conn, kern)
 	s := bufio.NewScanner(conn)
