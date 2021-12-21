@@ -35,6 +35,6 @@ func NewRefresh(log *logger.Logger, port RefreshPort) Refresh {
 // Run executes the use case.
 func (uc *Refresh) Run(ctx context.Context) error {
 	err := uc.port.Refresh(ctx)
-	uc.log.Info().Err(err).Msg("Refresh internal data")
+	uc.log.Info().User(ctx).Err(err).Msg("Refresh internal data")
 	return err
 }

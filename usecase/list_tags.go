@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (

@@ -57,7 +57,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv, authManager, rtConfig, authManager, boxManager, authPolicy)
 
 	authLog := kern.GetLogger(kernel.AuthService)
-	ucLog := kern.GetLogger(kernel.CoreService)
+	ucLog := kern.GetLogger(kernel.CoreService).WithUser(webSrv)
 	ucAuthenticate := usecase.NewAuthenticate(authLog, authManager, authManager, boxManager)
 	ucCreateZettel := usecase.NewCreateZettel(ucLog, rtConfig, protectedBoxManager)
 	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)

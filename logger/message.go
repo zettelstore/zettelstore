@@ -11,9 +11,11 @@
 package logger
 
 import (
+	"context"
 	"strconv"
 	"sync"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 )
 
@@ -26,13 +28,9 @@ type Message struct {
 
 func newMessage(logger *Logger, level Level) *Message {
 	if logger != nil {
-		realLogger := logger
-		for realLogger.parent != nil {
-			realLogger = realLogger.parent
-		}
-		if realLogger.Level() <= level {
+		if logger.topParent.Level() <= level {
 			m := messagePool.Get().(*Message)
-			m.logger = realLogger
+			m.logger = logger
 			m.level = level
 			m.buf = append(m.buf[:0], logger.context...)
 			return m
@@ -96,6 +94,23 @@ func (m *Message) Int(text string, i int64) *Message {
 // Uint adds an unsigned integer to the full message
 func (m *Message) Uint(text string, u uint64) *Message {
 	return m.Str(text, strconv.FormatUint(u, 10))
+}
+
+// User adds the user-id field of the given user to the message.
+func (m *Message) User(ctx context.Context) *Message {
+	if m.Enabled() {
+		if up := m.logger.uProvider; up != nil {
+			if user := up.GetUser(ctx); user != nil {
+				m.buf = append(m.buf, ", user="...)
+				if userID, found := user.Get(api.KeyUserID); found {
+					m.buf = append(m.buf, userID...)
+				} else {
+					m.buf = append(m.buf, user.Zid.Bytes()...)
+				}
+			}
+		}
+	}
+	return m
 }
 
 // Zid adds a zettel identifier to the full message

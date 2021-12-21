@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2021 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -37,6 +37,6 @@ func NewDeleteZettel(log *logger.Logger, port DeleteZettelPort) DeleteZettel {
 // Run executes the use case.
 func (uc *DeleteZettel) Run(ctx context.Context, zid id.Zid) error {
 	err := uc.port.DeleteZettel(ctx, zid)
-	uc.log.Info().Zid(zid).Err(err).Msg("Delete zettel")
+	uc.log.Info().User(ctx).Zid(zid).Err(err).Msg("Delete zettel")
 	return err
 }

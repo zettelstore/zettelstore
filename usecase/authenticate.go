@@ -54,7 +54,7 @@ func (uc *Authenticate) Run(ctx context.Context, ident, credential string, d tim
 	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
 
 	if identMeta == nil || err != nil {
-		uc.log.Info().Str("ident", ident).Err(err).Msg("No user")
+		uc.log.Info().Str("ident", ident).Err(err).Msg("No user with given ident found")
 		compensateCompare()
 		return nil, err
 	}
@@ -62,16 +62,16 @@ func (uc *Authenticate) Run(ctx context.Context, ident, credential string, d tim
 	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
 		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
-			uc.log.Info().Str("ident", ident).Err(err).Msg("Comparing credentials")
+			uc.log.Info().Str("ident", ident).Err(err).Msg("Error while comparing credentials")
 			return nil, err
 		}
 		if ok {
 			token, err2 := uc.token.GetToken(identMeta, d, k)
 			if err2 != nil {
-				uc.log.Info().Str("ident", ident).Err(err).Msg("No token found")
+				uc.log.Info().Str("ident", ident).Err(err).Msg("Unable to produce authentication token")
 				return nil, err2
 			}
-			uc.log.Info().Str("ident", ident).Msg("Successful")
+			uc.log.Info().Str("user", ident).Msg("Successful")
 			return token, nil
 		}
 		uc.log.Info().Str("ident", ident).Msg("Credentials don't match")

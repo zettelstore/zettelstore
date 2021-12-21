@@ -62,6 +62,6 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, 
 
 	zettel.Content.TrimSpace()
 	zid, err := uc.port.CreateZettel(ctx, zettel)
-	uc.log.Info().Zid(zid).Err(err).Msg("Create zettel")
+	uc.log.Info().User(ctx).Zid(zid).Err(err).Msg("Create zettel")
 	return zid, err
 }

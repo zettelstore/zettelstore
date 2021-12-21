@@ -60,6 +60,6 @@ func (uc *RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
 		return &ErrZidInUse{Zid: newZid}
 	}
 	err := uc.port.RenameZettel(ctx, curZid, newZid)
-	uc.log.Info().Zid(curZid).Err(err).Zid(newZid).Msg("Rename zettel")
+	uc.log.Info().User(ctx).Zid(curZid).Err(err).Zid(newZid).Msg("Rename zettel")
 	return err
 }
