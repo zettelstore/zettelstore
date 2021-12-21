@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -24,7 +23,7 @@ import (
 )
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user via API.
-func (a *API) MakePostLoginHandler(ucAuth usecase.Authenticate) http.HandlerFunc {
+func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.withAuth() {
 			err := a.writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)

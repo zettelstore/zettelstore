@@ -17,7 +17,7 @@ import (
 )
 
 // MakeGetGoActionHandler creates a new HTTP handler to execute certain commands.
-func (wui *WebUI) MakeGetGoActionHandler(ucRefresh usecase.Refresh) http.HandlerFunc {
+func (wui *WebUI) MakeGetGoActionHandler(ucRefresh *usecase.Refresh) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

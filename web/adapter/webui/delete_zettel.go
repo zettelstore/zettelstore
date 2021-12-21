@@ -83,7 +83,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc {
+func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])

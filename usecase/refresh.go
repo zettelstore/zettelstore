@@ -10,7 +10,11 @@
 
 package usecase
 
-import "context"
+import (
+	"context"
+
+	"zettelstore.de/z/logger"
+)
 
 // RefreshPort is the interface used by this use case.
 type RefreshPort interface {
@@ -19,15 +23,18 @@ type RefreshPort interface {
 
 // Refresh is the data for this use case.
 type Refresh struct {
+	log  *logger.Logger
 	port RefreshPort
 }
 
 // NewRefresh creates a new use case.
-func NewRefresh(port RefreshPort) Refresh {
-	return Refresh{port: port}
+func NewRefresh(log *logger.Logger, port RefreshPort) Refresh {
+	return Refresh{log: log, port: port}
 }
 
 // Run executes the use case.
-func (uc Refresh) Run(ctx context.Context) error {
-	return uc.port.Refresh(ctx)
+func (uc *Refresh) Run(ctx context.Context) error {
+	err := uc.port.Refresh(ctx)
+	uc.log.Info().Err(err).Msg("Refresh internal data")
+	return err
 }

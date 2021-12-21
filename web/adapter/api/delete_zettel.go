@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -19,7 +18,7 @@ import (
 )
 
 // MakeDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func (a *API) MakeDeleteZettelHandler(deleteZettel usecase.DeleteZettel) http.HandlerFunc {
+func (a *API) MakeDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

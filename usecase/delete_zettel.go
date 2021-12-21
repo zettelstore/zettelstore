@@ -8,13 +8,13 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (
 	"context"
 
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/logger"
 )
 
 // DeleteZettelPort is the interface used by this use case.
@@ -25,15 +25,18 @@ type DeleteZettelPort interface {
 
 // DeleteZettel is the data for this use case.
 type DeleteZettel struct {
+	log  *logger.Logger
 	port DeleteZettelPort
 }
 
 // NewDeleteZettel creates a new use case.
-func NewDeleteZettel(port DeleteZettelPort) DeleteZettel {
-	return DeleteZettel{port: port}
+func NewDeleteZettel(log *logger.Logger, port DeleteZettelPort) DeleteZettel {
+	return DeleteZettel{log: log, port: port}
 }
 
 // Run executes the use case.
-func (uc DeleteZettel) Run(ctx context.Context, zid id.Zid) error {
-	return uc.port.DeleteZettel(ctx, zid)
+func (uc *DeleteZettel) Run(ctx context.Context, zid id.Zid) error {
+	err := uc.port.DeleteZettel(ctx, zid)
+	uc.log.Info().Zid(zid).Err(err).Msg("Delete zettel")
+	return err
 }

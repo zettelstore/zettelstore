@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -23,7 +22,7 @@ import (
 
 // MakePostCreatePlainZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
+func (a *API) MakePostCreatePlainZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zettel, err := buildZettelFromPlainData(r, id.Invalid)
@@ -48,7 +47,7 @@ func (a *API) MakePostCreatePlainZettelHandler(createZettel usecase.CreateZettel
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (a *API) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
+func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zettel, err := buildZettelFromJSONData(r, id.Invalid)

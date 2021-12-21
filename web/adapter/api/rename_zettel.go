@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -21,7 +20,7 @@ import (
 )
 
 // MakeRenameZettelHandler creates a new HTTP handler to update a zettel.
-func (a *API) MakeRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
+func (a *API) MakeRenameZettelHandler(renameZettel *usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

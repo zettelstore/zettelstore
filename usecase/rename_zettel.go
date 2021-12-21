@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (
@@ -17,6 +16,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/logger"
 )
 
 // RenameZettelPort is the interface used by this use case.
@@ -30,6 +30,7 @@ type RenameZettelPort interface {
 
 // RenameZettel is the data for this use case.
 type RenameZettel struct {
+	log  *logger.Logger
 	port RenameZettelPort
 }
 
@@ -41,12 +42,12 @@ func (err *ErrZidInUse) Error() string {
 }
 
 // NewRenameZettel creates a new use case.
-func NewRenameZettel(port RenameZettelPort) RenameZettel {
-	return RenameZettel{port: port}
+func NewRenameZettel(log *logger.Logger, port RenameZettelPort) RenameZettel {
+	return RenameZettel{log: log, port: port}
 }
 
 // Run executes the use case.
-func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
+func (uc *RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
 	noEnrichCtx := box.NoEnrichContext(ctx)
 	if _, err := uc.port.GetMeta(noEnrichCtx, curZid); err != nil {
 		return err
@@ -58,5 +59,7 @@ func (uc RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
 	if _, err := uc.port.GetMeta(noEnrichCtx, newZid); err == nil {
 		return &ErrZidInUse{Zid: newZid}
 	}
-	return uc.port.RenameZettel(ctx, curZid, newZid)
+	err := uc.port.RenameZettel(ctx, curZid, newZid)
+	uc.log.Info().Zid(curZid).Err(err).Zid(newZid).Msg("Rename zettel")
+	return err
 }
