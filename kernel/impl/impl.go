@@ -65,24 +65,29 @@ type serviceData struct {
 }
 type serviceDependency map[kernel.Service][]kernel.Service
 
-// create and start a new kernel.
+const (
+	defaultNormalLogLevel = logger.InfoLevel
+	defaultSimpleLogLevel = logger.WarnLevel
+)
+
+// create a new kernel.
 func init() {
-	kernel.Main = createAndStart()
+	kernel.Main = createKernel()
 }
 
-// create and start a new kernel.
-func createAndStart() kernel.Kernel {
+// create a new kernel.
+func createKernel() kernel.Kernel {
 	lw := newKernelLogWriter()
 	kern := &myKernel{
-		logger:    logger.New(lw, ""),
+		logger:    logger.New(lw, "").SetLevel(defaultNormalLogLevel),
 		interrupt: make(chan os.Signal, 5),
 	}
 	kern.srvs = map[kernel.Service]serviceDescr{
-		kernel.CoreService:   {&kern.core, "core", logger.InfoLevel},
-		kernel.ConfigService: {&kern.cfg, "config", logger.InfoLevel},
-		kernel.AuthService:   {&kern.auth, "auth", logger.InfoLevel},
-		kernel.BoxService:    {&kern.box, "box", logger.InfoLevel},
-		kernel.WebService:    {&kern.web, "web", logger.InfoLevel},
+		kernel.CoreService:   {&kern.core, "core", defaultNormalLogLevel},
+		kernel.ConfigService: {&kern.cfg, "config", defaultNormalLogLevel},
+		kernel.AuthService:   {&kern.auth, "auth", defaultNormalLogLevel},
+		kernel.BoxService:    {&kern.box, "box", defaultNormalLogLevel},
+		kernel.WebService:    {&kern.web, "web", defaultNormalLogLevel},
 	}
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
 	for key, srvD := range kern.srvs {
@@ -112,6 +117,9 @@ func createAndStart() kernel.Kernel {
 func (kern *myKernel) Start(headline, lineServer bool) {
 	for _, srvD := range kern.srvs {
 		srvD.srv.Freeze()
+	}
+	if kern.cfg.GetConfig(kernel.ConfigSimpleMode).(bool) {
+		kern.SetGlobalLogLevel(defaultSimpleLogLevel)
 	}
 	kern.wg.Add(1)
 	signal.Notify(kern.interrupt, os.Interrupt, syscall.SIGTERM)

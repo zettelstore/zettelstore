@@ -127,7 +127,7 @@ func (ws *webService) Start(kern *myKernel) error {
 		ws.logger.Fatal().Err(err).Msg("Unable to start")
 		return err
 	}
-	ws.logger.Mandatory().Str("listen", listenAddr).Msg("Start Service")
+	ws.logger.Info().Str("listen", listenAddr).Msg("Start Service")
 	ws.mxService.Lock()
 	ws.srvw = srvw
 	ws.mxService.Unlock()
