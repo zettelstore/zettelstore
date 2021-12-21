@@ -295,7 +295,7 @@ func runSimple() int {
 	dir := "./zettel"
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
-		os.Exit(1)
+		return 1
 	}
 	return executeCommand("run-simple", "-d", dir)
 }
