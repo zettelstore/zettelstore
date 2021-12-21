@@ -89,5 +89,5 @@ type Server interface {
 
 	SetDebug()
 	Run() error
-	Stop() error
+	Stop()
 }

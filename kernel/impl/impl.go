@@ -363,9 +363,7 @@ func (kern *myKernel) RestartService(srvnum kernel.Service) error {
 func (kern *myKernel) doRestartService(srvnum kernel.Service) error {
 	deps := kern.sortDependency(srvnum, kern.depStop, false)
 	for _, srv := range deps {
-		if err := srv.Stop(kern); err != nil {
-			return err
-		}
+		srv.Stop(kern)
 	}
 	for i := len(deps) - 1; i >= 0; i-- {
 		srv := deps[i]
@@ -385,9 +383,7 @@ func (kern *myKernel) StopService(srvnum kernel.Service) error {
 
 func (kern *myKernel) doStopService(srvnum kernel.Service) error {
 	for _, srv := range kern.sortDependency(srvnum, kern.depStop, false) {
-		if err := srv.Stop(kern); err != nil {
-			return err
-		}
+		srv.Stop(kern)
 	}
 	return nil
 }
@@ -464,7 +460,7 @@ type service interface {
 	IsStarted() bool
 
 	// Stop the service.
-	Stop(*myKernel) error
+	Stop(*myKernel)
 }
 
 type serviceConfigDescription struct{ Key, Descr string }

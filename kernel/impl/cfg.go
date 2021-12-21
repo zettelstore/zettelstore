@@ -101,12 +101,11 @@ func (cs *configService) IsStarted() bool {
 	return cs.rtConfig != nil
 }
 
-func (cs *configService) Stop(*myKernel) error {
+func (cs *configService) Stop(*myKernel) {
 	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
 	cs.rtConfig = nil
 	cs.mxService.Unlock()
-	return nil
 }
 
 func (*configService) GetStatistics() []kernel.KeyValue {

@@ -99,7 +99,7 @@ type StartStopper interface {
 	Start(ctx context.Context) error
 
 	// Stop the started box. Now only the Start() function is allowed.
-	Stop(ctx context.Context) error
+	Stop(ctx context.Context)
 }
 
 // Refresher allow to refresh their internal data.

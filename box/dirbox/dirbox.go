@@ -195,14 +195,13 @@ func (dp *dirBox) Refresh(_ context.Context) error {
 	return nil
 }
 
-func (dp *dirBox) Stop(_ context.Context) error {
+func (dp *dirBox) Stop(_ context.Context) {
 	dirSrv := dp.dirSrv
 	dp.dirSrv = nil
 	if dirSrv != nil {
 		dirSrv.Stop()
 	}
 	dp.stopFileServices()
-	return nil
 }
 
 func (dp *dirBox) stopFileServices() {

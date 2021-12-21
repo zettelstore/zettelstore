@@ -64,11 +64,10 @@ func (mb *memBox) Start(context.Context) error {
 	return nil
 }
 
-func (mb *memBox) Stop(context.Context) error {
+func (mb *memBox) Stop(context.Context) {
 	mb.mx.Lock()
 	mb.zettel = nil
 	mb.mx.Unlock()
-	return nil
 }
 
 func (*memBox) CanCreateZettel(context.Context) bool { return true }

@@ -127,6 +127,6 @@ func updateContext(ctx context.Context, user *meta.Meta, data *auth.TokenData) c
 		})
 }
 
-func (srv *myServer) SetDebug()   { srv.server.SetDebug() }
-func (srv *myServer) Run() error  { return srv.server.Run() }
-func (srv *myServer) Stop() error { return srv.server.Stop() }
+func (srv *myServer) SetDebug()  { srv.server.SetDebug() }
+func (srv *myServer) Run() error { return srv.server.Run() }
+func (srv *myServer) Stop()      { srv.server.Stop() }

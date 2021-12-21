@@ -150,13 +150,12 @@ func (ws *webService) IsStarted() bool {
 	return ws.srvw != nil
 }
 
-func (ws *webService) Stop(*myKernel) error {
+func (ws *webService) Stop(*myKernel) {
 	ws.logger.Info().Msg("Stop Service")
-	err := ws.srvw.Stop()
+	ws.srvw.Stop()
 	ws.mxService.Lock()
 	ws.srvw = nil
 	ws.mxService.Unlock()
-	return err
 }
 
 func (*webService) GetStatistics() []kernel.KeyValue {

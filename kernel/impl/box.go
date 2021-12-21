@@ -98,16 +98,15 @@ func (ps *boxService) IsStarted() bool {
 	return ps.manager != nil
 }
 
-func (ps *boxService) Stop(*myKernel) error {
+func (ps *boxService) Stop(*myKernel) {
 	ps.logger.Info().Msg("Stop Manager")
 	ps.mxService.RLock()
 	mgr := ps.manager
 	ps.mxService.RUnlock()
-	err := mgr.Stop(context.Background())
+	mgr.Stop(context.Background())
 	ps.mxService.Lock()
 	ps.manager = nil
 	ps.mxService.Unlock()
-	return err
 }
 
 func (ps *boxService) GetStatistics() []kernel.KeyValue {

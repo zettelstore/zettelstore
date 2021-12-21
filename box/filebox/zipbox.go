@@ -99,9 +99,8 @@ func (zb *zipBox) addFile(zid id.Zid, name, ext string) {
 	}
 }
 
-func (zb *zipBox) Stop(context.Context) error {
+func (zb *zipBox) Stop(context.Context) {
 	zb.zettel = nil
-	return nil
 }
 
 func (*zipBox) CanCreateZettel(context.Context) bool { return false }

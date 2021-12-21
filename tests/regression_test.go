@@ -153,9 +153,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 			})
 		}
 	}
-	if err = ss.Stop(context.Background()); err != nil {
-		panic(err)
-	}
+	ss.Stop(context.Background())
 }
 
 type myConfig struct{}
