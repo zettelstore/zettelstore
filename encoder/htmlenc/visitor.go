@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package htmlenc encodes the abstract syntax tree into HTML5.
 package htmlenc
 
 import (
@@ -201,23 +200,22 @@ func (v *visitor) writeMeta(prefix, key, value string) {
 }
 
 func (v *visitor) writeEndnotes() {
-	footnotes := v.env.GetCleanFootnotes()
-	if len(footnotes) > 0 {
-		v.b.WriteString("<ol class=\"zs-endnotes\">\n")
-		for i := 0; i < len(footnotes); i++ {
-			// Do not use a range loop above, because a footnote may contain
-			// a footnote. Therefore v.enc.footnote may grow during the loop.
-			fn := footnotes[i]
-			n := strconv.Itoa(i + 1)
-			v.b.WriteStrings("<li id=\"fn:", n, "\" role=\"doc-endnote\">")
-			ast.Walk(v, fn.Inlines)
-			v.b.WriteStrings(
-				" <a href=\"#fnref:",
-				n,
-				"\" class=\"zs-footnote-backref\" role=\"doc-backlink\">&#x21a9;&#xfe0e;</a></li>\n")
-		}
-		v.b.WriteString("</ol>\n")
+	fn, fnNum := v.env.PopFootnote()
+	if fn == nil {
+		return
 	}
+	v.b.WriteString("\n<ol class=\"zs-endnotes\">\n")
+	for fn != nil {
+		n := strconv.Itoa(fnNum)
+		v.b.WriteStrings("<li value=\"", n, "\" id=\"fn:", n, "\" role=\"doc-endnote\">")
+		ast.Walk(v, fn.Inlines)
+		v.b.WriteStrings(
+			" <a href=\"#fnref:",
+			n,
+			"\" class=\"zs-footnote-backref\" role=\"doc-backlink\">&#x21a9;&#xfe0e;</a></li>\n")
+		fn, fnNum = v.env.PopFootnote()
+	}
+	v.b.WriteString("</ol>\n")
 }
 
 // visitAttributes write HTML attributes

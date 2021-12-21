@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package encoder provides a generic interface to encode the abstract syntax
-// tree into some text form.
 package encoder
 
 import "zettelstore.de/z/ast"
@@ -23,7 +21,8 @@ type Environment struct {
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
 	IgnoreMeta     map[string]bool
-	footnotes      []*ast.FootnoteNode // Stores footnotes detected while encoding
+	footnotes      []footnoteInfo // Stores footnotes detected while encoding
+	footnoteNum    int
 }
 
 // IsInteractive returns true, if Interactive is enabled and currently embedded
@@ -42,21 +41,32 @@ func (env *Environment) HasNewWindow() bool {
 	return env != nil && env.NewWindow
 }
 
+type footnoteInfo struct {
+	fn  *ast.FootnoteNode
+	num int
+}
+
 // AddFootnote adds a footnote node to the environment and returns the number of that footnote.
 func (env *Environment) AddFootnote(fn *ast.FootnoteNode) int {
 	if env == nil {
 		return 0
 	}
-	env.footnotes = append(env.footnotes, fn)
-	return len(env.footnotes)
+	env.footnoteNum++
+	env.footnotes = append(env.footnotes, footnoteInfo{fn: fn, num: env.footnoteNum})
+	return env.footnoteNum
 }
 
-// GetCleanFootnotes returns the list of remembered footnote and forgets about them.
-func (env *Environment) GetCleanFootnotes() []*ast.FootnoteNode {
+// PopFootnote returns the next footnote and removes it from the list.
+func (env *Environment) PopFootnote() (*ast.FootnoteNode, int) {
 	if env == nil {
-		return nil
+		return nil, -1
 	}
-	result := env.footnotes
-	env.footnotes = nil
-	return result
+	if len(env.footnotes) == 0 {
+		env.footnotes = nil
+		env.footnoteNum = 0
+		return nil, -1
+	}
+	fni := env.footnotes[0]
+	env.footnotes = env.footnotes[1:]
+	return fni.fn, fni.num
 }
