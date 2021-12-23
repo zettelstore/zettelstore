@@ -348,20 +348,20 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 
 func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
 	entry.MetaSpec, entry.ContentExt = dp.calcSpecExt(meta)
-	baseName := dp.calcBaseName(entry)
+
+	var baseName string
+	if p := entry.ContentName; p != "" {
+		// ContentName w/o the file extension
+		baseName = p[0 : len(p)-len(filepath.Ext(p))]
+	} else {
+		baseName = entry.Zid.String()
+	}
+
 	if entry.MetaSpec == notify.DirMetaSpecFile {
 		entry.MetaName = baseName + ".meta"
 	}
 	entry.ContentName = baseName + "." + entry.ContentExt
 	entry.Duplicates = false
-}
-
-func (dp *dirBox) calcBaseName(entry *notify.DirEntry) string {
-	if p := entry.ContentName; p != "" {
-		// ContentName w/o the file extension
-		return p[0 : len(p)-len(filepath.Ext(p))]
-	}
-	return entry.Zid.String()
 }
 
 func (dp *dirBox) calcSpecExt(m *meta.Meta) (notify.DirMetaSpec, string) {

@@ -228,10 +228,26 @@ func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{})
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withBoxes bool) {
+func executeCommand(name string, args ...string) int {
+	command, ok := Get(name)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
+		return 1
+	}
+	fs := command.GetFlags()
+	if err := fs.Parse(args); err != nil {
+		fmt.Fprintf(os.Stderr, "%s: unable to parse flags: %v %v\n", name, args, err)
+		return 1
+	}
+	cfg := getConfig(fs)
+	if err := setServiceConfig(cfg); err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
+		return 2
+	}
+
 	kern := kernel.Main
 	var createManager kernel.CreateBoxManagerFunc
-	if withBoxes {
+	if command.Boxes {
 		err := raiseFdLimit()
 		if err != nil {
 			logger := kern.GetKernelLogger()
@@ -257,26 +273,7 @@ func setupOperations(cfg *meta.Meta, withBoxes bool) {
 			return nil
 		},
 	)
-}
 
-func executeCommand(name string, args ...string) int {
-	command, ok := Get(name)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Unknown command %q\n", name)
-		return 1
-	}
-	fs := command.GetFlags()
-	if err := fs.Parse(args); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: unable to parse flags: %v %v\n", name, args, err)
-		return 1
-	}
-	cfg := getConfig(fs)
-	if err := setServiceConfig(cfg); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
-		return 2
-	}
-	setupOperations(cfg, command.Boxes)
-	kern := kernel.Main
 	if command.Simple {
 		kern.SetConfig(kernel.ConfigService, kernel.ConfigSimpleMode, "true")
 	}
