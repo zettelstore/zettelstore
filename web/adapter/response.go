@@ -71,7 +71,7 @@ func CodeMessageFromError(err error) (int, string) {
 
 // CreateTagReference builds a reference to list all tags.
 func CreateTagReference(b server.Builder, key byte, enc, s string) *ast.Reference {
-	u := b.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyTags, s)
+	u := b.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyAllTags, s)
 	ref := ast.ParseReference(u.String())
 	ref.State = ast.RefStateHosted
 	return ref

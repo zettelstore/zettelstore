@@ -73,11 +73,11 @@ type MetaFunc func(*meta.Meta)
 type ManagedBox interface {
 	BaseBox
 
-	// Apply identifier of every zettel to the given function.
-	ApplyZid(context.Context, ZidFunc) error
+	// Apply identifier of every zettel to the given function, if predicate returns true.
+	ApplyZid(context.Context, ZidFunc, search.RetrievePredicate) error
 
-	// Apply metadata of every zettel to the given function.
-	ApplyMeta(context.Context, MetaFunc) error
+	// Apply metadata of every zettel to the given function, if predicate returns true.
+	ApplyMeta(context.Context, MetaFunc, search.RetrievePredicate) error
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)
@@ -99,7 +99,7 @@ type StartStopper interface {
 	Start(ctx context.Context) error
 
 	// Stop the started box. Now only the Start() function is allowed.
-	Stop(ctx context.Context) error
+	Stop(ctx context.Context)
 }
 
 // Refresher allow to refresh their internal data.

@@ -295,27 +295,24 @@ func (mgr *Manager) Start(ctx context.Context) error {
 }
 
 // Stop the started box. Now only the Start() function is allowed.
-func (mgr *Manager) Stop(ctx context.Context) error {
+func (mgr *Manager) Stop(ctx context.Context) {
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
 	if !mgr.started {
-		return box.ErrStopped
+		return
 	}
 	close(mgr.done)
-	var err error
 	for _, p := range mgr.boxes {
 		if ss, ok := p.(box.StartStopper); ok {
-			if err1 := ss.Stop(ctx); err1 != nil && err == nil {
-				err = err1
-			}
+			ss.Stop(ctx)
 		}
 	}
 	mgr.started = false
-	return err
 }
 
 // Refresh internal box data.
 func (mgr *Manager) Refresh(ctx context.Context) error {
+	mgr.mgrLog.Debug().Msg("Refresh")
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
 	if !mgr.started {
@@ -334,6 +331,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 
 // ReadStats populates st with box statistics.
 func (mgr *Manager) ReadStats(st *box.Stats) {
+	mgr.mgrLog.Debug().Msg("ReadStats")
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	subStats := make([]box.ManagedBoxStats, len(mgr.boxes))

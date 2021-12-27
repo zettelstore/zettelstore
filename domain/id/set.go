@@ -8,8 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package id provides domain specific types, constants, and functions about
-// zettel identifier.
 package id
 
 // Set is a set of zettel identifier
@@ -40,6 +38,24 @@ func NewSetCap(c int, zids ...Zid) Set {
 	return result
 }
 
+// Contains return true if the set is nil or if the set contains the given Zettel identifier.
+func (s Set) Contains(zid Zid) bool {
+	return s == nil || s[zid]
+}
+
+// Add all member from the other set.
+func (s Set) Add(other Set) Set {
+	if s == nil {
+		return other
+	}
+	for zid, ok := range other {
+		if ok {
+			s[zid] = true
+		}
+	}
+	return s
+}
+
 // AddSlice adds all identifier of the given slice to the set.
 func (s Set) AddSlice(sl Slice) {
 	for _, zid := range sl {
@@ -60,10 +76,15 @@ func (s Set) Sorted() Slice {
 	return nil
 }
 
-// Intersect removes all zettel identifier that are not in the other set.
+// IntersectOrSet removes all zettel identifier that are not in the other set.
 // Both sets can be modified by this method. One of them is the set returned.
-// It contains the intersection of both.
-func (s Set) Intersect(other Set) Set {
+// It contains the intersection of both, if s is not nil.
+//
+// If s == nil, then the other set is always returned.
+func (s Set) IntersectOrSet(other Set) Set {
+	if s == nil {
+		return other
+	}
 	if len(s) > len(other) {
 		s, other = other, s
 	}

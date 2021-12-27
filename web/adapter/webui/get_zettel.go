@@ -203,7 +203,7 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 		ub := wui.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
-			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery("tags", tag).String()}
+			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery(api.KeyAllTags, tag).String()}
 			ub.ClearQuery()
 		}
 	}

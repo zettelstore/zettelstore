@@ -127,7 +127,7 @@ func (wui *WebUI) renderZettelForm(
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (wui *WebUI) MakePostCreateZettelHandler(createZettel usecase.CreateZettel) http.HandlerFunc {
+func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zettel, hasContent, err := parseZettelForm(r, id.Invalid)

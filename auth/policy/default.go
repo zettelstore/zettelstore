@@ -28,7 +28,7 @@ func (d *defaultPolicy) CanWrite(user, oldMeta, _ *meta.Meta) bool {
 func (d *defaultPolicy) CanRename(user, m *meta.Meta) bool { return d.canChange(user, m) }
 func (d *defaultPolicy) CanDelete(user, m *meta.Meta) bool { return d.canChange(user, m) }
 
-func (*defaultPolicy) CanRefresh(*meta.Meta) bool { return true }
+func (*defaultPolicy) CanRefresh(user *meta.Meta) bool { return user != nil }
 
 func (d *defaultPolicy) canChange(user, m *meta.Meta) bool {
 	metaRo, ok := m.Get(api.KeyReadOnly)

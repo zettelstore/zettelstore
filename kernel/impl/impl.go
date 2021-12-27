@@ -65,29 +65,34 @@ type serviceData struct {
 }
 type serviceDependency map[kernel.Service][]kernel.Service
 
-// create and start a new kernel.
+const (
+	defaultNormalLogLevel = logger.InfoLevel
+	defaultSimpleLogLevel = logger.WarnLevel
+)
+
+// create a new kernel.
 func init() {
-	kernel.Main = createAndStart()
+	kernel.Main = createKernel()
 }
 
-// create and start a new kernel.
-func createAndStart() kernel.Kernel {
+// create a new kernel.
+func createKernel() kernel.Kernel {
 	lw := newKernelLogWriter()
 	kern := &myKernel{
-		logger:    logger.New(lw, ""),
+		logger:    logger.New(lw, "").SetLevel(defaultNormalLogLevel),
 		interrupt: make(chan os.Signal, 5),
 	}
 	kern.srvs = map[kernel.Service]serviceDescr{
-		kernel.CoreService:   {&kern.core, "core", logger.InfoLevel},
-		kernel.ConfigService: {&kern.cfg, "config", logger.InfoLevel},
-		kernel.AuthService:   {&kern.auth, "auth", logger.InfoLevel},
-		kernel.BoxService:    {&kern.box, "box", logger.InfoLevel},
-		kernel.WebService:    {&kern.web, "web", logger.InfoLevel},
+		kernel.CoreService:   {&kern.core, "core", defaultNormalLogLevel},
+		kernel.ConfigService: {&kern.cfg, "config", defaultNormalLogLevel},
+		kernel.AuthService:   {&kern.auth, "auth", defaultNormalLogLevel},
+		kernel.BoxService:    {&kern.box, "box", defaultNormalLogLevel},
+		kernel.WebService:    {&kern.web, "web", defaultNormalLogLevel},
 	}
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
 	for key, srvD := range kern.srvs {
 		if _, ok := kern.srvNames[srvD.name]; ok {
-			panic(fmt.Sprintf("Key %q already given for service %v", key, srvD.name))
+			kern.logger.Panic().Str("service", srvD.name).Msg("Service data already set")
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
 		l := logger.New(lw, strings.ToUpper(srvD.name)).SetLevel(srvD.logLevel)
@@ -113,6 +118,9 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 	for _, srvD := range kern.srvs {
 		srvD.srv.Freeze()
 	}
+	if kern.cfg.GetConfig(kernel.ConfigSimpleMode).(bool) {
+		kern.SetGlobalLogLevel(defaultSimpleLogLevel)
+	}
 	kern.wg.Add(1)
 	signal.Notify(kern.interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -127,7 +135,8 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 
 	kern.StartService(kernel.CoreService)
 	if headline {
-		kern.logger.Mandatory().Msg(fmt.Sprintf(
+		logger := kern.logger
+		logger.Mandatory().Msg(fmt.Sprintf(
 			"%v %v (%v@%v/%v)",
 			kern.core.GetConfig(kernel.CoreProgname),
 			kern.core.GetConfig(kernel.CoreVersion),
@@ -135,14 +144,14 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetConfig(kernel.CoreGoOS),
 			kern.core.GetConfig(kernel.CoreGoArch),
 		))
-		kern.logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
+		logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
 		if kern.core.GetConfig(kernel.CoreDebug).(bool) {
-			kern.logger.Warn().Msg("----------------------------------------")
-			kern.logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
-			kern.logger.Warn().Msg("----------------------------------------")
+			logger.Warn().Msg("----------------------------------------")
+			logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
+			logger.Warn().Msg("----------------------------------------")
 		}
 		if kern.auth.GetConfig(kernel.AuthReadonly).(bool) {
-			kern.logger.Info().Msg("Read-only mode")
+			logger.Info().Msg("Read-only mode")
 		}
 	}
 	if lineServer {
@@ -354,9 +363,7 @@ func (kern *myKernel) RestartService(srvnum kernel.Service) error {
 func (kern *myKernel) doRestartService(srvnum kernel.Service) error {
 	deps := kern.sortDependency(srvnum, kern.depStop, false)
 	for _, srv := range deps {
-		if err := srv.Stop(kern); err != nil {
-			return err
-		}
+		srv.Stop(kern)
 	}
 	for i := len(deps) - 1; i >= 0; i-- {
 		srv := deps[i]
@@ -376,9 +383,7 @@ func (kern *myKernel) StopService(srvnum kernel.Service) error {
 
 func (kern *myKernel) doStopService(srvnum kernel.Service) error {
 	for _, srv := range kern.sortDependency(srvnum, kern.depStop, false) {
-		if err := srv.Stop(kern); err != nil {
-			return err
-		}
+		srv.Stop(kern)
 	}
 	return nil
 }
@@ -455,7 +460,7 @@ type service interface {
 	IsStarted() bool
 
 	// Stop the service.
-	Stop(*myKernel) error
+	Stop(*myKernel)
 }
 
 type serviceConfigDescription struct{ Key, Descr string }

@@ -42,6 +42,9 @@ func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 }
 
 func (ap *anonPolicy) CanRefresh(user *meta.Meta) bool {
+	if ap.authConfig.GetExpertMode() || ap.authConfig.GetSimpleMode() {
+		return true
+	}
 	return ap.pre.CanRefresh(user)
 }
 

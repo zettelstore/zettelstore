@@ -136,7 +136,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		panic(err)
 	}
 	metaList := []*meta.Meta{}
-	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) })
+	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) }, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -153,9 +153,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 			})
 		}
 	}
-	if err = ss.Stop(context.Background()); err != nil {
-		panic(err)
-	}
+	ss.Stop(context.Background())
 }
 
 type myConfig struct{}
@@ -174,6 +172,7 @@ func (*myConfig) GetSiteName() string                      { return "" }
 func (*myConfig) GetYAMLHeader() bool                      { return false }
 func (*myConfig) GetZettelFileSyntax() []string            { return nil }
 
+func (*myConfig) GetSimpleMode() bool                          { return false }
 func (*myConfig) GetExpertMode() bool                          { return false }
 func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetDefaultVisibility() }
 func (*myConfig) GetMaxTransclusions() int                     { return 1024 }

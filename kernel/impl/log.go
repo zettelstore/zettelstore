@@ -48,6 +48,9 @@ func (lwa *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefi
 	buf = append(buf, '\n')
 	_, err := os.Stdout.Write(buf)
 	lwa.mx.Unlock()
+	if level == logger.PanicLevel {
+		panic(err)
+	}
 	return err
 }
 

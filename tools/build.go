@@ -430,7 +430,8 @@ func cmdRelease() error {
 		{"amd64", "windows", nil, "zettelstore.exe"},
 	}
 	for _, rel := range releases {
-		env := append(rel.env, "GOARCH="+rel.arch, "GOOS="+rel.os)
+		env := append([]string{}, rel.env...)
+		env = append(env, "GOARCH="+rel.arch, "GOOS="+rel.os)
 		env = append(env, directProxy...)
 		zsName := filepath.Join("releases", rel.name)
 		if err := doBuild(env, calcVersion(base, fossil), zsName); err != nil {

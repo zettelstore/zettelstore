@@ -70,9 +70,9 @@ func (srv *httpServer) Run() error {
 }
 
 // Stop the web server.
-func (srv *httpServer) Stop() error {
+func (srv *httpServer) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	return srv.Shutdown(ctx)
+	srv.Shutdown(ctx)
 }

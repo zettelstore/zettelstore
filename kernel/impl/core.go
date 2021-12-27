@@ -92,9 +92,8 @@ func (cs *coreService) Start(*myKernel) error {
 	return nil
 }
 func (cs *coreService) IsStarted() bool { return cs.started }
-func (cs *coreService) Stop(*myKernel) error {
+func (cs *coreService) Stop(*myKernel) {
 	cs.started = false
-	return nil
 }
 
 func (cs *coreService) GetStatistics() []kernel.KeyValue {

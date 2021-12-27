@@ -131,6 +131,11 @@ const (
 	CoreVersion   = "version"
 )
 
+// Constants for config service keys.
+const (
+	ConfigSimpleMode = "simple-mode"
+)
+
 // Constants for authentication service keys.
 const (
 	AuthOwner    = "owner"

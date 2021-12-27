@@ -44,6 +44,12 @@ type Searcher interface {
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
 type MetaMatchFunc func(*meta.Meta) bool
 
+// RetrieveFunc retrieves the index based on a Search.
+type RetrieveFunc func() id.Set
+
+// RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
+type RetrievePredicate func(id.Zid) bool
+
 // Search specifies a mechanism for selecting zettel.
 type Search struct {
 	mx sync.RWMutex // Protects other attributes
@@ -250,8 +256,7 @@ func (s *Search) GetLimit() int {
 }
 
 // EnrichNeeded returns true, if the search references a metadata key that
-// is calculated via metadata enrichments. In most cases this is a computed
-// value. Metadata "tags" is an exception to this rule.
+// is calculated via metadata enrichments.
 func (s *Search) EnrichNeeded() bool {
 	if s == nil {
 		return false
@@ -259,72 +264,74 @@ func (s *Search) EnrichNeeded() bool {
 	s.mx.RLock()
 	defer s.mx.RUnlock()
 	for key := range s.tags {
-		if meta.IsComputed(key) || key == api.KeyTags {
+		if meta.IsComputed(key) {
 			return true
 		}
 	}
-	if order := s.order; order != "" && (meta.IsComputed(order) || order == api.KeyTags) {
-		return true
-	}
-	return false
+	return meta.IsComputed(s.order)
 }
 
-// CompileMatch returns a function to match meta data based on select specification.
-func (s *Search) CompileMatch(searcher Searcher) MetaMatchFunc {
+// RetrieveIndex and return a predicate to ask for results.
+func (s *Search) RetrieveIndex(searcher Searcher) RetrievePredicate {
+	if s == nil || len(s.search) == 0 {
+		return alwaysIncluded
+	}
+	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, s.search)
+	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
+		return neverIncluded
+	}
+
+	positives := retrievePositives(normCalls, plainCalls)
+	if positives == nil {
+		// No positive search for words, must contain only words for a negative search.
+		// Otherwise len(search) == 0 (see above)
+		negatives := retrieveNegatives(negCalls)
+		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+	}
+	if len(positives) == 0 {
+		// Positive search didn't found anything. We can omit the negative search.
+		return neverIncluded
+	}
+	if len(negCalls) == 0 {
+		// Positive search found something, but there is no negative search.
+		return func(zid id.Zid) bool { return positives.Contains(zid) }
+	}
+	negatives := retrieveNegatives(negCalls)
+	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
+}
+
+// CompileMatch returns a function to match metadata based on select specification.
+func (s *Search) CompileMatch() MetaMatchFunc {
 	if s == nil {
-		return selectAlways
+		return matchAlways
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
-	compMeta := compileSelect(s.tags)
-	compSearch := compileFullSearch(searcher, s.search)
-	if preMatch := s.preMatch; preMatch != nil {
-		return compilePreMatch(preMatch, compMeta, compSearch, s.negate)
+	compMeta := compileMeta(s.tags)
+	if s.negate {
+		if compMeta == nil {
+			return matchNever
+		}
+		if preMatch := s.preMatch; preMatch != nil {
+			return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
+		}
+		return func(m *meta.Meta) bool { return !compMeta(m) }
 	}
-	return compileNoPreMatch(compMeta, compSearch, s.negate)
-}
-
-func selectAlways(*meta.Meta) bool { return true }
-func selectNever(*meta.Meta) bool  { return false }
-
-func compilePreMatch(preMatch, compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
-	if compMeta == nil {
-		if compSearch == nil {
+	if preMatch := s.preMatch; preMatch != nil {
+		if compMeta == nil {
 			return preMatch
 		}
-		return func(m *meta.Meta) bool { return preMatch(m) && (compSearch(m) != negate) }
+		return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
 	}
-	if compSearch == nil {
-		return func(m *meta.Meta) bool { return preMatch(m) && (compMeta(m) != negate) }
+	if compMeta == nil {
+		return matchAlways
 	}
-	return func(m *meta.Meta) bool { return preMatch(m) && ((compMeta(m) && compSearch(m)) != negate) }
+	return compMeta
 }
 
-func compileNoPreMatch(compMeta, compSearch MetaMatchFunc, negate bool) MetaMatchFunc {
-	if compMeta == nil {
-		if compSearch == nil {
-			if negate {
-				return selectNever
-			}
-			return selectAlways
-		}
-		if negate {
-			return func(m *meta.Meta) bool { return !compSearch(m) }
-		}
-		return compSearch
-	}
-	if compSearch == nil {
-		if negate {
-			return func(m *meta.Meta) bool { return !compMeta(m) }
-		}
-		return compMeta
-	}
-	if negate {
-		return func(m *meta.Meta) bool { return !compMeta(m) || !compSearch(m) }
-	}
-	return func(m *meta.Meta) bool { return compMeta(m) && compSearch(m) }
-}
+func matchAlways(*meta.Meta) bool { return true }
+func matchNever(*meta.Meta) bool  { return false }
 
 // Sort applies the sorter to the slice of meta data.
 func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {

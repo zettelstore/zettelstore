@@ -61,6 +61,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			func(val string) interface{} { return strings.Fields(val) },
 			true,
 		},
+		kernel.ConfigSimpleMode: {"Simple mode", cs.noFrozen(parseBool), true},
 	}
 	cs.next = interfaceMap{
 		api.KeyDefaultCopyright:  "",
@@ -77,6 +78,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		api.KeySiteName:          "Zettelstore",
 		api.KeyYAMLHeader:        false,
 		api.KeyZettelFileSyntax:  nil,
+		kernel.ConfigSimpleMode:  false,
 	}
 }
 func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
@@ -99,12 +101,11 @@ func (cs *configService) IsStarted() bool {
 	return cs.rtConfig != nil
 }
 
-func (cs *configService) Stop(*myKernel) error {
+func (cs *configService) Stop(*myKernel) {
 	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
 	cs.rtConfig = nil
 	cs.mxService.Unlock()
-	return nil
 }
 
 func (*configService) GetStatistics() []kernel.KeyValue {
@@ -278,7 +279,10 @@ func (cfg *myConfig) GetZettelFileSyntax() []string {
 
 // --- AuthConfig
 
-// GetExpertMode returns the current value of the "expert-mode" key
+// GetSimpleMode returns true if system tuns in simple-mode.
+func (cfg *myConfig) GetSimpleMode() bool { return cfg.getBool(kernel.ConfigSimpleMode) }
+
+// GetExpertMode returns the current value of the "expert-mode" key.
 func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(api.KeyExpertMode) }
 
 // GetVisibility returns the visibility value, or "login" if none is given.

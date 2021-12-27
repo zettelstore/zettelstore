@@ -12,10 +12,13 @@
 package logger
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"zettelstore.de/z/domain/meta"
 )
 
 // Level defines the possible log levels
@@ -91,11 +94,12 @@ func ParseLevel(text string) Level {
 
 // Logger represents an objects that emits logging messages.
 type Logger struct {
-	lw       LogWriter
-	levelVal uint32
-	prefix   string
-	parent   *Logger
-	context  []byte
+	lw        LogWriter
+	levelVal  uint32
+	prefix    string
+	context   []byte
+	topParent *Logger
+	uProvider UserProvider
 }
 
 // LogWriter writes log messages to their specified destinations.
@@ -111,35 +115,38 @@ func New(lw LogWriter, prefix string) *Logger {
 	if prefix != "" && len(prefix) < 6 {
 		prefix = (prefix + "     ")[:6]
 	}
-	return &Logger{
-		lw:       lw,
-		levelVal: uint32(InfoLevel),
-		prefix:   prefix,
-		parent:   nil,
-		context:  nil,
+	result := &Logger{
+		lw:        lw,
+		levelVal:  uint32(InfoLevel),
+		prefix:    prefix,
+		context:   nil,
+		uProvider: nil,
 	}
+	result.topParent = result
+	return result
 }
 
 func newFromMessage(msg *Message) *Logger {
 	if msg == nil {
 		return nil
 	}
-	parent := msg.logger
+	logger := msg.logger
 	context := make([]byte, 0, len(msg.buf))
 	context = append(context, msg.buf...)
 	return &Logger{
-		lw:       nil,
-		levelVal: 0,
-		prefix:   "",
-		parent:   parent,
-		context:  context,
+		lw:        nil,
+		levelVal:  0,
+		prefix:    logger.prefix,
+		context:   context,
+		topParent: logger.topParent,
+		uProvider: nil,
 	}
 }
 
 // SetLevel sets the level of the logger.
 func (l *Logger) SetLevel(newLevel Level) *Logger {
 	if l != nil {
-		if l.parent != nil {
+		if l.topParent != l {
 			panic("try to set level for child logger")
 		}
 		atomic.StoreUint32(&l.levelVal, uint32(newLevel))
@@ -197,6 +204,23 @@ func (l *Logger) Clone() *Message {
 	return msg
 }
 
+// UserProvider allows to retrieve an user metadata from a context.
+type UserProvider interface {
+	GetUser(ctx context.Context) *meta.Meta
+}
+
+// WithUser creates a derivied logger that allows to retrieve and log user identifer.
+func (l *Logger) WithUser(up UserProvider) *Logger {
+	return &Logger{
+		lw:        nil,
+		levelVal:  0,
+		prefix:    l.prefix,
+		context:   l.context,
+		topParent: l.topParent,
+		uProvider: up,
+	}
+}
+
 func (l *Logger) writeMessage(level Level, msg string, details []byte) error {
-	return l.lw.WriteMessage(level, time.Now(), l.prefix, msg, details)
+	return l.topParent.lw.WriteMessage(level, time.Now(), l.prefix, msg, details)
 }

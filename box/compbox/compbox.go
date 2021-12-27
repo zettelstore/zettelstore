@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 func init() {
@@ -70,40 +71,50 @@ func (*compBox) Location() string { return "" }
 
 func (*compBox) CanCreateZettel(context.Context) bool { return false }
 
-func (*compBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (cb *compBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (*compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
 	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
 			if genContent := gen.content; genContent != nil {
+				cb.log.Trace().Msg("GetMeta/Content")
 				return domain.Zettel{
 					Meta:    m,
 					Content: domain.NewContent(genContent(m)),
 				}, nil
 			}
+			cb.log.Trace().Msg("GetMeta/NoContent")
 			return domain.Zettel{Meta: m}, nil
 		}
 	}
+	cb.log.Trace().Err(box.ErrNotFound).Msg("GetZettel/Err")
 	return domain.Zettel{}, box.ErrNotFound
 }
 
-func (*compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+func (cb *compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	if gen, ok := myZettel[zid]; ok {
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
+				cb.log.Trace().Msg("GetMeta")
 				return m, nil
 			}
 		}
 	}
+	cb.log.Trace().Err(box.ErrNotFound).Msg("GetMeta/Err")
 	return nil, box.ErrNotFound
 }
 
-func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
+func (cb *compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+	cb.log.Trace().Int("entries", int64(len(myZettel))).Msg("ApplyMeta")
 	for zid, gen := range myZettel {
+		if !constraint(zid) {
+			continue
+		}
 		if genMeta := gen.meta; genMeta != nil {
 			if genMeta(zid) != nil {
 				handle(zid)
@@ -113,12 +124,16 @@ func (*compBox) ApplyZid(_ context.Context, handle box.ZidFunc) error {
 	return nil
 }
 
-func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
+func (cb *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+	cb.log.Trace().Int("entries", int64(len(myZettel))).Msg("ApplyMeta")
 	for zid, gen := range myZettel {
+		if !constraint(zid) {
+			continue
+		}
 		if genMeta := gen.meta; genMeta != nil {
 			if m := genMeta(zid); m != nil {
 				updateMeta(m)
-				pp.enricher.Enrich(ctx, m, pp.number)
+				cb.enricher.Enrich(ctx, m, cb.number)
 				handle(m)
 			}
 		}
@@ -128,32 +143,40 @@ func (pp *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc) error {
 
 func (*compBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
-func (*compBox) UpdateZettel(context.Context, domain.Zettel) error { return box.ErrReadOnly }
+func (cb *compBox) UpdateZettel(context.Context, domain.Zettel) error {
+	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
+	return box.ErrReadOnly
+}
 
 func (*compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := myZettel[zid]
 	return !ok
 }
 
-func (*compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
+func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
+	err := box.ErrNotFound
 	if _, ok := myZettel[curZid]; ok {
-		return box.ErrReadOnly
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	cb.log.Trace().Err(err).Msg("RenameZettel")
+	return err
 }
 
 func (*compBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (*compBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+func (cb *compBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+	err := box.ErrNotFound
 	if _, ok := myZettel[zid]; ok {
-		return box.ErrReadOnly
+		err = box.ErrReadOnly
 	}
-	return box.ErrNotFound
+	cb.log.Trace().Err(err).Msg("DeleteZettel")
+	return err
 }
 
-func (*compBox) ReadStats(st *box.ManagedBoxStats) {
+func (cb *compBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = true
 	st.Zettel = len(myZettel)
+	cb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
 func updateMeta(m *meta.Meta) {

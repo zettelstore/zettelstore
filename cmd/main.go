@@ -64,11 +64,16 @@ func init() {
 		SetFlags:   flgRun,
 	})
 	RegisterCommand(Command{
-		Name:     "run-simple",
-		Func:     runSimpleFunc,
-		Boxes:    true,
-		Header:   true,
-		SetFlags: flgSimpleRun,
+		Name:   "run-simple",
+		Func:   runFunc,
+		Simple: true,
+		Boxes:  true,
+		Header: true,
+		// LineServer: true,
+		SetFlags: func(fs *flag.FlagSet) {
+			// fs.Uint("a", 0, "port number kernel service (0=disable)")
+			fs.String("d", "", "zettel directory")
+		},
 	})
 	RegisterCommand(Command{
 		Name: "file",
@@ -223,37 +228,6 @@ func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{})
 	return ok && done
 }
 
-func setupOperations(cfg *meta.Meta, withBoxes bool) {
-	var createManager kernel.CreateBoxManagerFunc
-	if withBoxes {
-		err := raiseFdLimit()
-		if err != nil {
-			srvm := kernel.Main
-			logger := srvm.GetKernelLogger()
-			logger.IfErr(err).Msg("Raising some limitions did not work")
-			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
-			srvm.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
-		}
-		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {
-			compbox.Setup(cfg)
-			return manager.New(boxURIs, authManager, rtConfig)
-		}
-	} else {
-		createManager = func([]*url.URL, auth.Manager, config.Config) (box.Manager, error) { return nil, nil }
-	}
-
-	kernel.Main.SetCreators(
-		func(readonly bool, owner id.Zid) (auth.Manager, error) {
-			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
-		},
-		createManager,
-		func(srv server.Server, plMgr box.Manager, authMgr auth.Manager, rtConfig config.Config) error {
-			setupRouting(srv, plMgr, authMgr, rtConfig)
-			return nil
-		},
-	)
-}
-
 func executeCommand(name string, args ...string) int {
 	command, ok := Get(name)
 	if !ok {
@@ -270,14 +244,57 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 		return 2
 	}
-	setupOperations(cfg, command.Boxes)
-	kernel.Main.Start(command.Header, command.LineServer)
+
+	kern := kernel.Main
+	var createManager kernel.CreateBoxManagerFunc
+	if command.Boxes {
+		err := raiseFdLimit()
+		if err != nil {
+			logger := kern.GetKernelLogger()
+			logger.IfErr(err).Msg("Raising some limitions did not work")
+			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
+			kern.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
+		}
+		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {
+			compbox.Setup(cfg)
+			return manager.New(boxURIs, authManager, rtConfig)
+		}
+	} else {
+		createManager = func([]*url.URL, auth.Manager, config.Config) (box.Manager, error) { return nil, nil }
+	}
+
+	kern.SetCreators(
+		func(readonly bool, owner id.Zid) (auth.Manager, error) {
+			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
+		},
+		createManager,
+		func(srv server.Server, plMgr box.Manager, authMgr auth.Manager, rtConfig config.Config) error {
+			setupRouting(srv, plMgr, authMgr, rtConfig)
+			return nil
+		},
+	)
+
+	if command.Simple {
+		kern.SetConfig(kernel.ConfigService, kernel.ConfigSimpleMode, "true")
+	}
+	kern.Start(command.Header, command.LineServer)
 	exitCode, err := command.Func(fs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
 	}
-	kernel.Main.Shutdown(true)
+	kern.Shutdown(true)
 	return exitCode
+}
+
+// runSimple is called, when the user just starts the software via a double click
+// or via a simple call ``./zettelstore`` on the command line.
+func runSimple() int {
+	dir := "./zettel"
+	if err := os.MkdirAll(dir, 0750); err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
+		return 1
+	}
+	return executeCommand("run-simple", "-d", dir)
 }
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")

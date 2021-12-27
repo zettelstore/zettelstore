@@ -64,7 +64,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 
 // MakeEditSetZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (wui *WebUI) MakeEditSetZettelHandler(updateZettel usecase.UpdateZettel) http.HandlerFunc {
+func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])

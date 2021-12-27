@@ -82,9 +82,10 @@ func (ps *boxService) Start(kern *myKernel) error {
 		ps.logger.Fatal().Err(err).Msg("Unable to create manager")
 		return err
 	}
-	ps.logger.Mandatory().Str("location", mgr.Location()).Msg("Start Manager")
+	ps.logger.Info().Str("location", mgr.Location()).Msg("Start Manager")
 	if err = mgr.Start(context.Background()); err != nil {
 		ps.logger.Fatal().Err(err).Msg("Unable to start manager")
+		return err
 	}
 	kern.cfg.setBox(mgr)
 	ps.manager = mgr
@@ -97,16 +98,15 @@ func (ps *boxService) IsStarted() bool {
 	return ps.manager != nil
 }
 
-func (ps *boxService) Stop(*myKernel) error {
+func (ps *boxService) Stop(*myKernel) {
 	ps.logger.Info().Msg("Stop Manager")
 	ps.mxService.RLock()
 	mgr := ps.manager
 	ps.mxService.RUnlock()
-	err := mgr.Stop(context.Background())
+	mgr.Stop(context.Background())
 	ps.mxService.Lock()
 	ps.manager = nil
 	ps.mxService.Unlock()
-	return err
 }
 
 func (ps *boxService) GetStatistics() []kernel.KeyValue {

@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (
@@ -55,6 +54,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	}
 	// Owner was not found or has another ident. Try via list search.
 	var s *search.Search
+	s = s.AddExpr("", "="+ident)
 	s = s.AddExpr(api.KeyUserID, ident)
 	metaList, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {

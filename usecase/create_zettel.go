@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (
@@ -18,6 +17,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/logger"
 )
 
 // CreateZettelPort is the interface used by this use case.
@@ -28,20 +28,22 @@ type CreateZettelPort interface {
 
 // CreateZettel is the data for this use case.
 type CreateZettel struct {
+	log      *logger.Logger
 	rtConfig config.Config
 	port     CreateZettelPort
 }
 
 // NewCreateZettel creates a new use case.
-func NewCreateZettel(rtConfig config.Config, port CreateZettelPort) CreateZettel {
+func NewCreateZettel(log *logger.Logger, rtConfig config.Config, port CreateZettelPort) CreateZettel {
 	return CreateZettel{
+		log:      log,
 		rtConfig: rtConfig,
 		port:     port,
 	}
 }
 
 // Run executes the use case.
-func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	m := zettel.Meta
 	if m.Zid.IsValid() {
 		return m.Zid, nil // TODO: new error: already exists
@@ -59,5 +61,7 @@ func (uc CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, e
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 
 	zettel.Content.TrimSpace()
-	return uc.port.CreateZettel(ctx, zettel)
+	zid, err := uc.port.CreateZettel(ctx, zettel)
+	uc.log.Info().User(ctx).Zid(zid).Err(err).Msg("Create zettel")
+	return zid, err
 }

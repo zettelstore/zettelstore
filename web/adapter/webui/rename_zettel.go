@@ -68,7 +68,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.
-func (wui *WebUI) MakePostRenameZettelHandler(renameZettel usecase.RenameZettel) http.HandlerFunc {
+func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		curZid, err := id.Parse(r.URL.Path[1:])

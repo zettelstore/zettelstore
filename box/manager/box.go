@@ -102,6 +102,10 @@ func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
+	return mgr.doGetMeta(ctx, zid)
+}
+
+func (mgr *Manager) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	for i, p := range mgr.boxes {
 		if m, err := p.GetMeta(ctx, zid); err != box.ErrNotFound {
 			if err == nil {
@@ -141,13 +145,15 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	}
 	result := id.Set{}
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, func(id.Zid) bool { return true })
 		if err != nil {
 			return nil, err
 		}
 	}
 	return result, nil
 }
+
+type metaMap map[id.Zid]*meta.Meta
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
@@ -160,8 +166,11 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	if !mgr.started {
 		return nil, box.ErrStopped
 	}
-	selected, rejected := map[id.Zid]*meta.Meta{}, id.Set{}
-	match := s.CompileMatch(mgr)
+
+	searchPred := s.RetrieveIndex(mgr)
+	match := s.CompileMatch()
+
+	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
 		if rejected[zid] {
@@ -181,7 +190,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		}
 	}
 	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta); err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta, searchPred); err != nil {
 			return nil, err
 		}
 	}

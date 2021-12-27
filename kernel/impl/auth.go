@@ -79,12 +79,11 @@ func (as *authService) IsStarted() bool {
 	return as.manager != nil
 }
 
-func (as *authService) Stop(*myKernel) error {
+func (as *authService) Stop(*myKernel) {
 	as.logger.Info().Msg("Stop Manager")
 	as.mxService.Lock()
-	defer as.mxService.Unlock()
 	as.manager = nil
-	return nil
+	as.mxService.Unlock()
 }
 
 func (*authService) GetStatistics() []kernel.KeyValue { return nil }

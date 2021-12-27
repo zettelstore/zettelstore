@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/search"
 )
 
 // DirMetaSpec defines all possibilities where meta data can be stored.
@@ -79,7 +80,8 @@ type DirService struct {
 	entries  entrySet
 }
 
-var ErrNoDirectory = errors.New("no zettel directory found")
+// ErrNoDirectory signals missing directory data.
+var ErrNoDirectory = errors.New("unable to retrieve zettel directory information")
 
 // NewDirService creates a new directory service.
 func NewDirService(log *logger.Logger, directoryPath string, notifier Notifier, chci chan<- box.UpdateInfo) *DirService {
@@ -92,6 +94,7 @@ func NewDirService(log *logger.Logger, directoryPath string, notifier Notifier, 
 	}
 }
 
+// Start the directory service.
 func (ds *DirService) Start() {
 	ds.mx.Lock()
 	ds.state = dsStarting
@@ -99,10 +102,12 @@ func (ds *DirService) Start() {
 	go ds.updateEvents()
 }
 
+// Refresh the directory entries.
 func (ds *DirService) Refresh() {
 	ds.notifier.Refresh()
 }
 
+// Stop the directory service.
 func (ds *DirService) Stop() {
 	ds.mx.Lock()
 	ds.state = dsStopping
@@ -116,7 +121,8 @@ func (ds *DirService) logMissingEntry(action string) error {
 	return err
 }
 
-func (ds *DirService) CountDirEntries() int {
+// NumDirEntries returns the number of entries in the directory.
+func (ds *DirService) NumDirEntries() int {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {
@@ -125,20 +131,24 @@ func (ds *DirService) CountDirEntries() int {
 	return len(ds.entries)
 }
 
-func (ds *DirService) GetDirEntries() []*DirEntry {
+// GetDirEntries returns a list of directory entries, which satisfy the given constraint.
+func (ds *DirService) GetDirEntries(constraint search.RetrievePredicate) []*DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {
 		return nil
 	}
 	result := make([]*DirEntry, 0, len(ds.entries))
-	for _, entry := range ds.entries {
-		copiedEntry := *entry
-		result = append(result, &copiedEntry)
+	for zid, entry := range ds.entries {
+		if constraint(zid) {
+			copiedEntry := *entry
+			result = append(result, &copiedEntry)
+		}
 	}
 	return result
 }
 
+// GetDirEntry returns a directory entry with the given zid, or nil if not found.
 func (ds *DirService) GetDirEntry(zid id.Zid) *DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
@@ -153,7 +163,9 @@ func (ds *DirService) GetDirEntry(zid id.Zid) *DirEntry {
 	return &result
 }
 
-func (ds *DirService) CalcNewDirEntry() (id.Zid, error) {
+// SetNewDirEntry calculates an empty directory entry with an unused identifier and
+// stores it in the directory.
+func (ds *DirService) SetNewDirEntry() (id.Zid, error) {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
@@ -170,6 +182,7 @@ func (ds *DirService) CalcNewDirEntry() (id.Zid, error) {
 	return zid, nil
 }
 
+// UpdateDirEntry updates an directory entry in place.
 func (ds *DirService) UpdateDirEntry(updatedEntry *DirEntry) error {
 	entry := *updatedEntry
 	ds.mx.Lock()
@@ -181,6 +194,7 @@ func (ds *DirService) UpdateDirEntry(updatedEntry *DirEntry) error {
 	return nil
 }
 
+// RenameDirEntry replaces an existing directory entry with a new one.
 func (ds *DirService) RenameDirEntry(oldEntry, newEntry *DirEntry) error {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
@@ -196,6 +210,7 @@ func (ds *DirService) RenameDirEntry(oldEntry, newEntry *DirEntry) error {
 	return nil
 }
 
+// DeleteDirEntry removes a entry from the directory.
 func (ds *DirService) DeleteDirEntry(zid id.Zid) error {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()

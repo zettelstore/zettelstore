@@ -21,6 +21,7 @@ import (
 type Command struct {
 	Name       string              // command name as it appears on the command line
 	Func       CommandFunc         // function that executes a command
+	Simple     bool                // Operate in simple-mode
 	Boxes      bool                // if true then boxes will be set up
 	Header     bool                // Print a heading on startup
 	LineServer bool                // Start admin line server

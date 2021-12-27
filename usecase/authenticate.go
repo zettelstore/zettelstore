@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package usecase provides (business) use cases for the zettelstore.
 package usecase
 
 import (
@@ -21,7 +20,6 @@ import (
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/search"
 )
@@ -34,29 +32,29 @@ type AuthenticatePort interface {
 
 // Authenticate is the data for this use case.
 type Authenticate struct {
+	log       *logger.Logger
 	token     auth.TokenManager
 	port      AuthenticatePort
 	ucGetUser GetUser
-	log       *logger.Logger
 }
 
 // NewAuthenticate creates a new use case.
-func NewAuthenticate(token auth.TokenManager, authz auth.AuthzManager, port AuthenticatePort) Authenticate {
+func NewAuthenticate(log *logger.Logger, token auth.TokenManager, authz auth.AuthzManager, port AuthenticatePort) Authenticate {
 	return Authenticate{
+		log:       log,
 		token:     token,
 		port:      port,
 		ucGetUser: NewGetUser(authz, port),
-		log:       kernel.Main.GetLogger(kernel.AuthService),
 	}
 }
 
 // Run executes the use case.
-func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time.Duration, k auth.TokenKind) ([]byte, error) {
+func (uc *Authenticate) Run(ctx context.Context, ident, credential string, d time.Duration, k auth.TokenKind) ([]byte, error) {
 	identMeta, err := uc.ucGetUser.Run(ctx, ident)
 	defer addDelay(time.Now(), 500*time.Millisecond, 100*time.Millisecond)
 
 	if identMeta == nil || err != nil {
-		uc.log.Info().Str("ident", ident).Err(err).Msg("No user")
+		uc.log.Info().Str("ident", ident).Err(err).Msg("No user with given ident found")
 		compensateCompare()
 		return nil, err
 	}
@@ -64,16 +62,16 @@ func (uc Authenticate) Run(ctx context.Context, ident, credential string, d time
 	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
 		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
-			uc.log.Info().Str("ident", ident).Err(err).Msg("Comparing credentials")
+			uc.log.Info().Str("ident", ident).Err(err).Msg("Error while comparing credentials")
 			return nil, err
 		}
 		if ok {
 			token, err2 := uc.token.GetToken(identMeta, d, k)
 			if err2 != nil {
-				uc.log.Info().Str("ident", ident).Err(err).Msg("No token found")
+				uc.log.Info().Str("ident", ident).Err(err).Msg("Unable to produce authentication token")
 				return nil, err2
 			}
-			uc.log.Info().Str("ident", ident).Msg("Successful")
+			uc.log.Info().Str("user", ident).Msg("Successful")
 			return token, nil
 		}
 		uc.log.Info().Str("ident", ident).Msg("Credentials don't match")
