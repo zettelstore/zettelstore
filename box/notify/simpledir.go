@@ -21,7 +21,7 @@ type simpleDirNotifier struct {
 	events  chan Event
 	done    chan struct{}
 	refresh chan struct{}
-	path    string
+	fetcher EntryFetcher
 }
 
 // NewSimpleDirNotifier creates a directory based notifier that will not receive
@@ -36,7 +36,21 @@ func NewSimpleDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 		events:  make(chan Event),
 		done:    make(chan struct{}),
 		refresh: make(chan struct{}),
-		path:    absPath,
+		fetcher: newDirPathFetcher(absPath),
+	}
+	go sdn.eventLoop()
+	return sdn, nil
+}
+
+// NewSimpleZipNotifier creates a zip-file based notifier that will not receive
+// any notifications from the operating system.
+func NewSimpleZipNotifier(log *logger.Logger, zipPath string) (Notifier, error) {
+	sdn := &simpleDirNotifier{
+		log:     log,
+		events:  make(chan Event),
+		done:    make(chan struct{}),
+		refresh: make(chan struct{}),
+		fetcher: newZipPathFetcher(zipPath),
 	}
 	go sdn.eventLoop()
 	return sdn, nil
@@ -53,7 +67,7 @@ func (sdn *simpleDirNotifier) Refresh() {
 func (sdn *simpleDirNotifier) eventLoop() {
 	defer close(sdn.events)
 	defer close(sdn.refresh)
-	if !listDirElements(sdn.log, sdn.path, sdn.events, sdn.done) {
+	if !listDirElements(sdn.log, sdn.fetcher, sdn.events, sdn.done) {
 		return
 	}
 	for {
@@ -61,7 +75,7 @@ func (sdn *simpleDirNotifier) eventLoop() {
 		case <-sdn.done:
 			return
 		case <-sdn.refresh:
-			listDirElements(sdn.log, sdn.path, sdn.events, sdn.done)
+			listDirElements(sdn.log, sdn.fetcher, sdn.events, sdn.done)
 		}
 	}
 }

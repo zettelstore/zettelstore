@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -45,6 +46,8 @@ type zipBox struct {
 	name     string
 	enricher box.Enricher
 	zettel   map[id.Zid]*zipEntry // no lock needed, because read-only after creation
+	notify   chan<- box.UpdateInfo
+	dirSrv   *notify.DirService
 }
 
 func (zb *zipBox) Location() string {
@@ -59,7 +62,12 @@ func (zb *zipBox) Start(context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
+	reader.Close()
+	zipNotifier, err := notify.NewSimpleZipNotifier(zb.log, zb.name)
+	if err != nil {
+		return err
+	}
+	zb.dirSrv = notify.NewDirService(zb.log, zipNotifier, zb.notify)
 	zb.zettel = make(map[id.Zid]*zipEntry)
 	for _, f := range reader.File {
 		match := matchValidFileName(f.Name)

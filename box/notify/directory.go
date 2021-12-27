@@ -84,10 +84,9 @@ type DirService struct {
 var ErrNoDirectory = errors.New("unable to retrieve zettel directory information")
 
 // NewDirService creates a new directory service.
-func NewDirService(log *logger.Logger, directoryPath string, notifier Notifier, chci chan<- box.UpdateInfo) *DirService {
+func NewDirService(log *logger.Logger, notifier Notifier, chci chan<- box.UpdateInfo) *DirService {
 	return &DirService{
 		log:      log,
-		dirPath:  directoryPath,
 		notifier: notifier,
 		infos:    chci,
 		state:    dsCreated,
