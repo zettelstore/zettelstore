@@ -14,10 +14,10 @@ import (
 	"archive/zip"
 	"context"
 	"io"
-	"regexp"
 	"strings"
 
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -26,25 +26,13 @@ import (
 	"zettelstore.de/z/search"
 )
 
-var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
-
-func matchValidFileName(name string) []string {
-	return validFileName.FindStringSubmatch(name)
-}
-
-type zipEntry struct {
-	metaName     string
-	contentName  string
-	contentExt   string // (normalized) file extension of zettel content
-	metaInHeader bool
-}
-
 type zipBox struct {
 	log      *logger.Logger
 	number   int
 	name     string
 	enricher box.Enricher
-	zettel   map[id.Zid]*zipEntry // no lock needed, because read-only after creation
+	notify   chan<- box.UpdateInfo
+	dirSrv   *notify.DirService
 }
 
 func (zb *zipBox) Location() string {
@@ -59,60 +47,37 @@ func (zb *zipBox) Start(context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
-	zb.zettel = make(map[id.Zid]*zipEntry)
-	for _, f := range reader.File {
-		match := matchValidFileName(f.Name)
-		if len(match) < 1 {
-			continue
-		}
-		zid, err2 := id.Parse(match[1])
-		if err2 != nil {
-			continue
-		}
-		zb.addFile(zid, f.Name, match[3])
+	reader.Close()
+	zipNotifier, err := notify.NewSimpleZipNotifier(zb.log, zb.name)
+	if err != nil {
+		return err
 	}
+	zb.dirSrv = notify.NewDirService(zb.log, zipNotifier, zb.notify)
+	zb.dirSrv.Start()
 	return nil
 }
 
-func (zb *zipBox) addFile(zid id.Zid, name, ext string) {
-	entry := zb.zettel[zid]
-	if entry == nil {
-		entry = &zipEntry{}
-		zb.zettel[zid] = entry
-	}
-	switch ext {
-	case "zettel":
-		if entry.contentExt == "" {
-			entry.contentName = name
-			entry.contentExt = ext
-			entry.metaInHeader = true
-		}
-	case "meta":
-		entry.metaName = name
-		entry.metaInHeader = false
-	default:
-		if entry.contentExt == "" {
-			entry.contentExt = ext
-			entry.contentName = name
-		}
-	}
+func (zb *zipBox) Refresh(_ context.Context) error {
+	zb.dirSrv.Refresh()
+	zb.log.Trace().Msg("Refresh")
+	return nil
 }
 
 func (zb *zipBox) Stop(context.Context) {
-	zb.zettel = nil
+	zb.dirSrv.Stop()
 }
 
 func (*zipBox) CanCreateZettel(context.Context) bool { return false }
 
 func (zb *zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
-	zb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
-	return id.Invalid, box.ErrReadOnly
+	err := box.ErrReadOnly
+	zb.log.Trace().Err(err).Msg("CreateZettel")
+	return id.Invalid, err
 }
 
 func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
-	entry, ok := zb.zettel[zid]
-	if !ok {
+	entry := zb.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
 		return domain.Zettel{}, box.ErrNotFound
 	}
 	reader, err := zip.OpenReader(zb.name)
@@ -124,35 +89,38 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 	var m *meta.Meta
 	var src []byte
 	var inMeta bool
-	if entry.metaInHeader {
-		src, err = readZipFileContent(reader, entry.contentName)
+
+	switch entry.MetaSpec {
+	case notify.DirMetaSpecFile:
+		m, err = readZipMetaFile(reader, zid, entry.MetaName)
+		if err != nil {
+			return domain.Zettel{}, err
+		}
+		src, err = readZipFileContent(reader, entry.ContentName)
+		if err != nil {
+			return domain.Zettel{}, err
+		}
+		inMeta = true
+	case notify.DirMetaSpecHeader:
+		src, err = readZipFileContent(reader, entry.ContentName)
 		if err != nil {
 			return domain.Zettel{}, err
 		}
 		inp := input.NewInput(src)
 		m = meta.NewFromInput(zid, inp)
 		src = src[inp.Pos:]
-	} else if metaName := entry.metaName; metaName != "" {
-		m, err = readZipMetaFile(reader, zid, metaName)
-		if err != nil {
-			return domain.Zettel{}, err
-		}
-		src, err = readZipFileContent(reader, entry.contentName)
-		if err != nil {
-			return domain.Zettel{}, err
-		}
-		inMeta = true
-	} else {
-		m = CalcDefaultMeta(zid, entry.contentExt)
+	default:
+		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
-	CleanupMeta(m, zid, entry.contentExt, inMeta, false)
-	zb.log.Trace().Msg("GetZettel")
+
+	CleanupMeta(m, zid, entry.ContentExt, inMeta, false)
+	zb.log.Trace().Zid(zid).Msg("GetZettel")
 	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
 }
 
 func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry, ok := zb.zettel[zid]
-	if !ok {
+	entry := zb.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
 		return nil, box.ErrNotFound
 	}
 	reader, err := zip.OpenReader(zb.name)
@@ -161,16 +129,15 @@ func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	}
 	defer reader.Close()
 	m, err := readZipMeta(reader, zid, entry)
-	zb.log.Trace().Err(err).Msg("GetMeta")
+	zb.log.Trace().Err(err).Zid(zid).Msg("GetMeta")
 	return m, err
 }
 
 func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
-	zb.log.Trace().Int("entries", int64(len(zb.zettel))).Msg("ApplyZid")
-	for zid := range zb.zettel {
-		if constraint(zid) {
-			handle(zid)
-		}
+	entries := zb.dirSrv.GetDirEntries(constraint)
+	zb.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyZid")
+	for _, entry := range entries {
+		handle(entry.Zid)
 	}
 	return nil
 }
@@ -181,12 +148,13 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 		return err
 	}
 	defer reader.Close()
-	zb.log.Trace().Int("entries", int64(len(zb.zettel))).Msg("ApplyMeta")
-	for zid, entry := range zb.zettel {
-		if !constraint(zid) {
+	entries := zb.dirSrv.GetDirEntries(constraint)
+	zb.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyMeta")
+	for _, entry := range entries {
+		if !constraint(entry.Zid) {
 			continue
 		}
-		m, err2 := readZipMeta(reader, zid, entry)
+		m, err2 := readZipMeta(reader, entry.Zid, entry)
 		if err2 != nil {
 			continue
 		}
@@ -199,19 +167,24 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 func (*zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
 
 func (zb *zipBox) UpdateZettel(context.Context, domain.Zettel) error {
-	zb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
-	return box.ErrReadOnly
+	err := box.ErrReadOnly
+	zb.log.Trace().Err(err).Msg("UpdateZettel")
+	return err
 }
 
 func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	_, ok := zb.zettel[zid]
-	return !ok
+	entry := zb.dirSrv.GetDirEntry(zid)
+	return !entry.IsValid()
 }
 
-func (zb *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
-	err := box.ErrNotFound
-	if _, ok := zb.zettel[curZid]; ok {
-		err = box.ErrReadOnly
+func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
+	err := box.ErrReadOnly
+	if curZid == newZid {
+		err = nil
+	}
+	curEntry := zb.dirSrv.GetDirEntry(curZid)
+	if !curEntry.IsValid() {
+		err = box.ErrNotFound
 	}
 	zb.log.Trace().Err(err).Msg("RenameZettel")
 	return err
@@ -220,9 +193,10 @@ func (zb *zipBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 func (*zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
-	err := box.ErrNotFound
-	if _, ok := zb.zettel[zid]; ok {
-		err = box.ErrReadOnly
+	err := box.ErrReadOnly
+	entry := zb.dirSrv.GetDirEntry(zid)
+	if !entry.IsValid() {
+		err = box.ErrNotFound
 	}
 	zb.log.Trace().Err(err).Msg("DeleteZettel")
 	return err
@@ -230,22 +204,23 @@ func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 
 func (zb *zipBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = true
-	st.Zettel = len(zb.zettel)
+	st.Zettel = zb.dirSrv.NumDirEntries()
 	zb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
-func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *zipEntry) (m *meta.Meta, err error) {
+func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m *meta.Meta, err error) {
 	var inMeta bool
-	if entry.metaInHeader {
-		m, err = readZipMetaFile(reader, zid, entry.contentName)
-	} else if metaName := entry.metaName; metaName != "" {
-		m, err = readZipMetaFile(reader, zid, entry.metaName)
+	switch entry.MetaSpec {
+	case notify.DirMetaSpecFile:
+		m, err = readZipMetaFile(reader, zid, entry.MetaName)
 		inMeta = true
-	} else {
-		m = CalcDefaultMeta(zid, entry.contentExt)
+	case notify.DirMetaSpecHeader:
+		m, err = readZipMetaFile(reader, zid, entry.ContentName)
+	default:
+		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 	if err == nil {
-		CleanupMeta(m, zid, entry.contentExt, inMeta, false)
+		CleanupMeta(m, zid, entry.ContentExt, inMeta, false)
 	}
 	return m, err
 }

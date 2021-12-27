@@ -38,6 +38,7 @@ func init() {
 			number:   cdata.Number,
 			name:     path,
 			enricher: cdata.Enricher,
+			notify:   cdata.Notify,
 		}, nil
 	})
 }

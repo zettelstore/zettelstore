@@ -26,6 +26,7 @@ type fsdirNotifier struct {
 	refresh chan struct{}
 	base    *fsnotify.Watcher
 	path    string
+	fetcher EntryFetcher
 	parent  string
 }
 
@@ -71,6 +72,7 @@ func NewFSDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 		done:    make(chan struct{}),
 		base:    watcher,
 		path:    absPath,
+		fetcher: newDirPathFetcher(absPath),
 		parent:  absParentDir,
 	}
 	go fsdn.eventLoop()
@@ -89,7 +91,7 @@ func (fsdn *fsdirNotifier) eventLoop() {
 	defer fsdn.base.Close()
 	defer close(fsdn.events)
 	defer close(fsdn.refresh)
-	if !listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done) {
+	if !listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done) {
 		return
 	}
 	for fsdn.readAndProcessEvent() {
@@ -106,7 +108,7 @@ func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 	case <-fsdn.done:
 		return false
 	case <-fsdn.refresh:
-		listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done)
+		listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done)
 	case err, ok := <-fsdn.base.Errors:
 		if !ok {
 			return false
@@ -162,7 +164,7 @@ func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 			}
 		}
 		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory added")
-		return listDirElements(fsdn.log, fsdn.path, fsdn.events, fsdn.done)
+		return listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done)
 	}
 	return true
 }

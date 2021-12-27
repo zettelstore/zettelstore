@@ -181,7 +181,6 @@ func (dp *dirBox) Start(context.Context) error {
 	}
 	dp.dirSrv = notify.NewDirService(
 		dp.log.Clone().Str("sub", "dirsrv").Child(),
-		dp.dir,
 		notifier,
 		dp.cdata.Notify,
 	)
