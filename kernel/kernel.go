@@ -14,6 +14,7 @@ package kernel
 import (
 	"io"
 	"net/url"
+	"time"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
@@ -70,6 +71,9 @@ type Kernel interface {
 
 	// SetLevel sets the logging level for the given service.
 	SetLevel(Service, logger.Level)
+
+	// RetrieveLogEntries returns all buffered log entries.
+	RetrieveLogEntries() []LogEntry
 
 	// StartService start the given service.
 	StartService(Service) error
@@ -169,6 +173,14 @@ type KeyDescrValue struct{ Key, Descr, Value string }
 
 // KeyValue is a pair of key and value.
 type KeyValue struct{ Key, Value string }
+
+// LogEntry stores values of one log line written by a logger.Logger
+type LogEntry struct {
+	Level   logger.Level
+	TS      time.Time
+	Prefix  string
+	Message []byte
+}
 
 // CreateAuthManagerFunc is called to create a new auth manager.
 type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)

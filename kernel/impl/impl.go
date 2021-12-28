@@ -32,6 +32,7 @@ import (
 
 // myKernel is the main internal kernel.
 type myKernel struct {
+	logWriter *kernelLogWriter
 	logger    *logger.Logger
 	wg        sync.WaitGroup
 	mx        sync.RWMutex
@@ -77,8 +78,9 @@ func init() {
 
 // create a new kernel.
 func createKernel() kernel.Kernel {
-	lw := newKernelLogWriter()
+	lw := newKernelLogWriter(8192)
 	kern := &myKernel{
+		logWriter: lw,
 		logger:    logger.New(lw, "").SetLevel(defaultNormalLogLevel),
 		interrupt: make(chan os.Signal, 5),
 	}
@@ -204,6 +206,10 @@ func (kern *myKernel) SetGlobalLogLevel(level logger.Level) {
 		}
 		kern.mx.RUnlock()
 	}
+}
+
+func (kern *myKernel) RetrieveLogEntries() []kernel.LogEntry {
+	return kern.logWriter.retrieveLogEntries()
 }
 
 // LogRecover outputs some information about the previous panic.

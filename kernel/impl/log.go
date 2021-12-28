@@ -15,26 +15,47 @@ import (
 	"sync"
 	"time"
 
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 )
 
 // kernelLogWriter adapts an io.Writer to a LogWriter
 type kernelLogWriter struct {
-	mx  sync.Mutex // protects buf and serializes w.Write
-	buf []byte
+	mx       sync.RWMutex // protects buf, serializes w.Write and retrieveLogEntries
+	buf      []byte
+	writePos int
+	data     []logEntry
+	full     bool
 }
 
 // newKernelLogWriter creates a new LogWriter for kernel logging.
-func newKernelLogWriter() *kernelLogWriter {
+func newKernelLogWriter(capacity int) *kernelLogWriter {
+	if capacity < 1 {
+		capacity = 1
+	}
 	return &kernelLogWriter{
-		buf: make([]byte, 0, 500),
+		buf:  make([]byte, 0, 500),
+		data: make([]logEntry, capacity),
 	}
 }
 
-func (lwa *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix, msg string, details []byte) error {
-	lwa.mx.Lock()
-	lwa.buf = lwa.buf[:0]
-	buf := lwa.buf
+func (klw *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix, msg string, details []byte) error {
+	klw.mx.Lock()
+	klw.data[klw.writePos] = logEntry{
+		level:   level,
+		ts:      ts,
+		prefix:  prefix,
+		msg:     msg,
+		details: append([]byte(nil), details...),
+	}
+	klw.writePos++
+	if klw.writePos >= cap(klw.data) {
+		klw.writePos = 0
+		klw.full = true
+	}
+
+	klw.buf = klw.buf[:0]
+	buf := klw.buf
 	addTimestamp(&buf, ts)
 	buf = append(buf, ' ')
 	buf = append(buf, level.Format()...)
@@ -47,7 +68,8 @@ func (lwa *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefi
 	buf = append(buf, details...)
 	buf = append(buf, '\n')
 	_, err := os.Stdout.Write(buf)
-	lwa.mx.Unlock()
+
+	klw.mx.Unlock()
 	if level == logger.PanicLevel {
 		panic(err)
 	}
@@ -79,4 +101,46 @@ func itoa(buf *[]byte, i, wid int) {
 		i = q
 	}
 	*buf = append(*buf, b[:wid]...)
+}
+
+type logEntry struct {
+	level   logger.Level
+	ts      time.Time
+	prefix  string
+	msg     string
+	details []byte
+}
+
+func (klw *kernelLogWriter) retrieveLogEntries() []kernel.LogEntry {
+	klw.mx.RLock()
+	defer klw.mx.RUnlock()
+
+	if !klw.full {
+		if klw.writePos == 0 {
+			return nil
+		}
+		result := make([]kernel.LogEntry, klw.writePos)
+		for i := 0; i < klw.writePos; i++ {
+			copyE2E(&result[i], &klw.data[i])
+		}
+		return result
+	}
+	result := make([]kernel.LogEntry, cap(klw.data))
+	pos := 0
+	for j := klw.writePos; j < cap(klw.data); j++ {
+		copyE2E(&result[pos], &klw.data[j])
+		pos++
+	}
+	for j := 0; j < klw.writePos; j++ {
+		copyE2E(&result[pos], &klw.data[j])
+		pos++
+	}
+	return result
+}
+
+func copyE2E(result *kernel.LogEntry, origin *logEntry) {
+	result.Level = origin.level
+	result.TS = origin.ts
+	result.Prefix = origin.prefix
+	result.Message = append(append([]byte(nil), origin.msg...), origin.details...)
 }

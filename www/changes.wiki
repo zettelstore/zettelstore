@@ -28,6 +28,8 @@
   *  Add command line flag <tt>-l LEVEL</tt> to specify an application global
      logging level.
      (minor)
+  *  Add computed zettel that contains the last 8192 log messages.
+     (minor)
   *  Add options to profile the software. Profiling can be enabled at the
      command line or via the administrator console.
      (minor)
