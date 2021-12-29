@@ -57,10 +57,9 @@ func (zb *zipBox) Start(context.Context) error {
 	return nil
 }
 
-func (zb *zipBox) Refresh(_ context.Context) error {
+func (zb *zipBox) Refresh(_ context.Context) {
 	zb.dirSrv.Refresh()
 	zb.log.Trace().Msg("Refresh")
-	return nil
 }
 
 func (zb *zipBox) Stop(context.Context) {

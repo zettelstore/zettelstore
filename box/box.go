@@ -105,13 +105,12 @@ type StartStopper interface {
 // Refresher allow to refresh their internal data.
 type Refresher interface {
 	// Refresh the box data.
-	Refresh(context.Context) error
+	Refresh(context.Context)
 }
 
 // Box is to be used outside the box package and its descendants.
 type Box interface {
 	BaseBox
-	Refresher
 
 	// FetchZids returns the set of all zettel identifer managed by the box.
 	FetchZids(ctx context.Context) (id.Set, error)
@@ -124,6 +123,9 @@ type Box interface {
 
 	// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
 	GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error)
+
+	// Refresh the data from the box and from its managed sub-boxes.
+	Refresh(context.Context) error
 }
 
 // Stats record stattistics about a box.

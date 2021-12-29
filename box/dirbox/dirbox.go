@@ -188,10 +188,9 @@ func (dp *dirBox) Start(context.Context) error {
 	return nil
 }
 
-func (dp *dirBox) Refresh(_ context.Context) error {
+func (dp *dirBox) Refresh(_ context.Context) {
 	dp.dirSrv.Refresh()
 	dp.log.Trace().Msg("Refresh")
-	return nil
 }
 
 func (dp *dirBox) Stop(_ context.Context) {
