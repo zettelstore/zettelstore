@@ -98,7 +98,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		withAuth:      authz.WithAuth(),
 		loginURL:      loginoutBase.String(),
 		logoutURL:     loginoutBase.AppendQuery("logout", "").String(),
-		searchURL:     ab.NewURLBuilder('f').String(),
+		searchURL:     ab.NewURLBuilder('h').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)

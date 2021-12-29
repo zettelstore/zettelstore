@@ -56,17 +56,27 @@ func (wui *WebUI) renderZettelList(
 	query := r.URL.Query()
 	s := adapter.GetSearch(query)
 	ctx := r.Context()
-	title := wui.listTitleSearch("Select", s)
-	wui.renderMetaList(
-		ctx, w, title, s,
-		func(s *search.Search) ([]*meta.Meta, error) {
-			if !s.EnrichNeeded() {
-				ctx = box.NoEnrichContext(ctx)
-			}
-			return listMeta.Run(ctx, s)
-		},
-		evaluate,
-	)
+	title := wui.listTitleSearch(s)
+
+	if !s.EnrichNeeded() {
+		ctx = box.NoEnrichContext(ctx)
+	}
+	metaList, err := listMeta.Run(ctx, s)
+	if err != nil {
+		wui.reportError(ctx, w, err)
+		return
+	}
+	user := wui.getUser(ctx)
+	metas := wui.buildHTMLMetaList(ctx, metaList, evaluate)
+	var base baseData
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
+	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
+		Title string
+		Metas []simpleLink
+	}{
+		Title: title,
+		Metas: metas,
+	})
 }
 
 type roleInfo struct {
@@ -168,27 +178,6 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	})
 }
 
-// MakeSearchHandler creates a new HTTP handler for the use case "search".
-func (wui *WebUI) MakeSearchHandler(ucSearch usecase.Search, evaluate *usecase.Evaluate) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		query := r.URL.Query()
-		ctx := r.Context()
-		s := adapter.GetSearch(query)
-		if s == nil {
-			wui.redirectFound(w, r, wui.NewURLBuilder('h'))
-			return
-		}
-
-		title := wui.listTitleSearch("Search", s)
-		wui.renderMetaList(
-			ctx, w, title, s, func(s *search.Search) ([]*meta.Meta, error) {
-				return ucSearch.Run(ctx, s)
-			},
-			evaluate,
-		)
-	}
-}
-
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
 func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -251,43 +240,12 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 	return val
 }
 
-func (wui *WebUI) renderMetaList(
-	ctx context.Context,
-	w http.ResponseWriter,
-	title string,
-	s *search.Search,
-	ucMetaList func(sorter *search.Search) ([]*meta.Meta, error),
-	evaluate *usecase.Evaluate,
-) {
-
-	metaList, err := ucMetaList(s)
-	if err != nil {
-		wui.reportError(ctx, w, err)
-		return
-	}
-	user := wui.getUser(ctx)
-	metas := wui.buildHTMLMetaList(ctx, metaList, evaluate)
-	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
-	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
-		Title string
-		Metas []simpleLink
-	}{
-		Title: title,
-		Metas: metas,
-	})
-}
-
-func (wui *WebUI) listTitleSearch(prefix string, s *search.Search) string {
+func (wui *WebUI) listTitleSearch(s *search.Search) string {
 	if s == nil {
 		return wui.rtConfig.GetSiteName()
 	}
 	var buf bytes.Buffer
-	buf.WriteString(prefix)
-	if s != nil {
-		buf.WriteString(": ")
-		s.Print(&buf)
-	}
+	s.Print(&buf)
 	return buf.String()
 }
 

@@ -97,8 +97,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 			ucGetZettel, usecase.NewNewZettel()))
 		webSrv.AddZettelRoute('g', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 	}
-	webSrv.AddListRoute('f', server.MethodGet, wui.MakeSearchHandler(
-		usecase.NewSearch(protectedBoxManager), &ucEvaluate))
 	webSrv.AddListRoute('g', server.MethodGet, wui.MakeGetGoActionHandler(&ucRefresh))
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(
 		ucListMeta, ucListRoles, ucListTags, &ucEvaluate))
