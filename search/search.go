@@ -271,14 +271,41 @@ func (s *Search) EnrichNeeded() bool {
 	return meta.IsComputed(s.order)
 }
 
-// RetrieveIndex and return a predicate to ask for results.
-func (s *Search) RetrieveIndex(searcher Searcher) RetrievePredicate {
-	if s == nil || len(s.search) == 0 {
-		return alwaysIncluded
+// RetrieveAndCompileMatch queries the search index and returns a predicate
+// for its results and returns a matching predicate.
+func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, MetaMatchFunc) {
+	if s == nil {
+		return alwaysIncluded, matchAlways
+	}
+	s.mx.Lock()
+	pred := s.retrieveIndex(searcher)
+	match := s.compileMatch()
+	s.mx.Unlock()
+
+	if pred == nil {
+		if match == nil {
+			if s.negate {
+				return neverIncluded, matchNever
+			}
+			return alwaysIncluded, matchAlways
+		}
+		return alwaysIncluded, match
+	}
+	if match == nil {
+		return pred, matchAlways
+	}
+	return pred, match
+}
+
+// retrieveIndex and return a predicate to ask for results.
+func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
+	negate := s.negate
+	if len(s.search) == 0 {
+		return nil
 	}
 	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, s.search)
 	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
-		return neverIncluded
+		return s.neverWithNegate()
 	}
 
 	positives := retrievePositives(normCalls, plainCalls)
@@ -286,48 +313,49 @@ func (s *Search) RetrieveIndex(searcher Searcher) RetrievePredicate {
 		// No positive search for words, must contain only words for a negative search.
 		// Otherwise len(search) == 0 (see above)
 		negatives := retrieveNegatives(negCalls)
-		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+		return func(zid id.Zid) bool { return negatives.Contains(zid) == negate }
 	}
 	if len(positives) == 0 {
 		// Positive search didn't found anything. We can omit the negative search.
-		return neverIncluded
+		return s.neverWithNegate()
 	}
 	if len(negCalls) == 0 {
 		// Positive search found something, but there is no negative search.
-		return func(zid id.Zid) bool { return positives.Contains(zid) }
+		return func(zid id.Zid) bool { return positives.Contains(zid) != negate }
 	}
 	negatives := retrieveNegatives(negCalls)
-	return func(zid id.Zid) bool { return positives.Contains(zid) && !negatives.Contains(zid) }
+	return func(zid id.Zid) bool {
+		return (positives.Contains(zid) && !negatives.Contains(zid)) != negate
+	}
 }
 
-// CompileMatch returns a function to match metadata based on select specification.
-func (s *Search) CompileMatch() MetaMatchFunc {
-	if s == nil {
-		return matchAlways
-	}
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
-	compMeta := compileMeta(s.tags)
+func (s *Search) neverWithNegate() RetrievePredicate {
 	if s.negate {
-		if compMeta == nil {
-			return matchNever
-		}
-		if preMatch := s.preMatch; preMatch != nil {
-			return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
-		}
-		return func(m *meta.Meta) bool { return !compMeta(m) }
+		return alwaysIncluded
 	}
-	if preMatch := s.preMatch; preMatch != nil {
-		if compMeta == nil {
-			return preMatch
-		}
-		return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
-	}
+	return neverIncluded
+}
+
+// compileMatch returns a function to match metadata based on select specification.
+func (s *Search) compileMatch() MetaMatchFunc {
+	compMeta := compileMeta(s.tags)
+	preMatch := s.preMatch
 	if compMeta == nil {
-		return matchAlways
+		if preMatch == nil {
+			return nil
+		}
+		return preMatch
 	}
-	return compMeta
+	if s.negate {
+		if preMatch == nil {
+			return func(m *meta.Meta) bool { return !compMeta(m) }
+		}
+		return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
+	}
+	if preMatch == nil {
+		return compMeta
+	}
+	return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
 }
 
 func matchAlways(*meta.Meta) bool { return true }

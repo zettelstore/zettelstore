@@ -167,9 +167,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	searchPred := s.RetrieveIndex(mgr)
-	match := s.CompileMatch()
-
+	searchPred, match := s.RetrieveAndCompileMatch(mgr)
 	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
