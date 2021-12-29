@@ -41,17 +41,20 @@ func newKernelLogWriter(capacity int) *kernelLogWriter {
 
 func (klw *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefix, msg string, details []byte) error {
 	klw.mx.Lock()
-	klw.data[klw.writePos] = logEntry{
-		level:   level,
-		ts:      ts,
-		prefix:  prefix,
-		msg:     msg,
-		details: append([]byte(nil), details...),
-	}
-	klw.writePos++
-	if klw.writePos >= cap(klw.data) {
-		klw.writePos = 0
-		klw.full = true
+
+	if level > logger.DebugLevel {
+		klw.data[klw.writePos] = logEntry{
+			level:   level,
+			ts:      ts,
+			prefix:  prefix,
+			msg:     msg,
+			details: append([]byte(nil), details...),
+		}
+		klw.writePos++
+		if klw.writePos >= cap(klw.data) {
+			klw.writePos = 0
+			klw.full = true
+		}
 	}
 
 	klw.buf = klw.buf[:0]
@@ -142,5 +145,5 @@ func copyE2E(result *kernel.LogEntry, origin *logEntry) {
 	result.Level = origin.level
 	result.TS = origin.ts
 	result.Prefix = origin.prefix
-	result.Message = append(append([]byte(nil), origin.msg...), origin.details...)
+	result.Message = origin.msg + string(origin.details)
 }

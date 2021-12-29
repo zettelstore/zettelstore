@@ -12,7 +12,6 @@ package compbox
 
 import (
 	"bytes"
-	"fmt"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
@@ -23,17 +22,27 @@ import (
 func genLogM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Log")
-	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
+	m.Set(api.KeySyntax, api.ValueSyntaxText)
 	return m
 }
+
 func genLogC(*meta.Meta) []byte {
+	const tsFormat = "2006-01-02 15:04:05.999999"
+	entries := kernel.Main.RetrieveLogEntries()
 	var buf bytes.Buffer
-	buf.WriteString("|=No>|Timestamp|Level|Prefix|Message\n")
-	for i, entry := range kernel.Main.RetrieveLogEntries() {
-		fmt.Fprintf(&buf,
-			"|%d|%v|%v|%v|%s\n",
-			i+1, entry.TS.Format("2006-01-02 15:04:05.999999"),
-			entry.Level, entry.Prefix, entry.Message)
+	for _, entry := range entries {
+		ts := entry.TS.Format(tsFormat)
+		buf.WriteString(ts)
+		for j := len(ts); j < len(tsFormat); j++ {
+			buf.WriteByte('0')
+		}
+		buf.WriteByte(' ')
+		buf.WriteString(entry.Level.Format())
+		buf.WriteByte(' ')
+		buf.WriteString(entry.Prefix)
+		buf.WriteByte(' ')
+		buf.WriteString(entry.Message)
+		buf.WriteByte('\n')
 	}
 	return buf.Bytes()
 }

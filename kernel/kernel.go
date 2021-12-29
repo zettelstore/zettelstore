@@ -179,7 +179,7 @@ type LogEntry struct {
 	Level   logger.Level
 	TS      time.Time
 	Prefix  string
-	Message []byte
+	Message string
 }
 
 // CreateAuthManagerFunc is called to create a new auth manager.

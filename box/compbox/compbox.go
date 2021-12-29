@@ -182,7 +182,9 @@ func (cb *compBox) ReadStats(st *box.ManagedBoxStats) {
 
 func updateMeta(m *meta.Meta) {
 	m.Set(api.KeyNoIndex, api.ValueTrue)
-	m.Set(api.KeySyntax, api.ValueSyntaxZmk)
+	if _, ok := m.Get(api.KeySyntax); !ok {
+		m.Set(api.KeySyntax, api.ValueSyntaxZmk)
+	}
 	m.Set(api.KeyRole, api.ValueRoleConfiguration)
 	m.Set(api.KeyLang, api.ValueLangEN)
 	m.Set(api.KeyReadOnly, api.ValueTrue)
