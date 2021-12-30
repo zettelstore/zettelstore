@@ -3,7 +3,7 @@ title: API: List metadata of all zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124175849
+modified: 20211231000100
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/j''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
@@ -90,6 +90,13 @@ Separated by a space character, the title of the zettel follows:
 00001012050200 API: Authenticate a client
 00001012000000 API
 ```
+
+=== Note
+This request will always return a list of metadata, provided the request was syntactically correct.
+There will never be a HTTP status code 403 (Forbidden), even if [[authentication was enabled|00001010040100]] and you did not provide a valid access token.
+In this case, the resulting list might be quite short (some zettel will have [[public visibility|00001010070200]]) or the list might be empty.
+
+With this call, you cannot differentiate between an empty result list (e.g because your [[content search|00001012051840]] did not found a zettel with the specified term) and an empty list because of missing authorization (e.g. an invalid access token).
 
 === HTTP Status codes
 ; ''200''

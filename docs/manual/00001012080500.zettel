@@ -1,0 +1,40 @@
+id: 00001012080500
+title: API: Refresh internal data
+role: zettel
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20211230234431
+
+Zettelstore maintains some internal data to allow faster operations.
+
+One example is the [[content search|00001012051840]] for a term: Zettelstore does not need to scan all zettel to find all occurrences for the term.
+Instead, all word are stored internally, with a list of zettel where they occur.
+
+Another example is the way to determine which zettel are stored in a [[ZIP file|00001004011200]].
+Scanning a ZIP file is a lengthy operation, therefore Zettelstore maintains a directory of zettel for each ZIP file.
+
+All these internal data may become stale.
+This should not happen, but when it comes e.g. to file handling, every operating systems behaves differently in very subtle ways.
+
+To avoid stopping and re-starting Zettelstore, you can use the API to force Zettelstore to refresh its internal data if you think it is needed.
+To do this, you must send a HTTP POST request to the [[endpoint|00001012920000]] ''/x'' and you must specify the query parameter ''_cmd=refresh''.
+
+```sh
+# curl -X POST 'http://127.0.0.1:23123/x?_cmd=refresh'
+```
+
+If successful, you will get a HTTP status code 204 (No Content) with an empty HTTP body.
+
+The request will be successful if either:
+* [[Authentication is enabled|00001010040100]] and you [[provide a valid access token|00001012050600]],
+* Authentication is not enabled and you started Zettelstore with the [[run-simple|00001004051100]] command or [[expert-mode|00001004020000#expert-mode]] is set to ""true"".
+
+=== HTTP Status codes
+; ''204''
+: Operation was successful, the body is empty.
+; ''400''
+: Request was not valid. 
+  There are several reasons for this.
+  Most likely, no query parameter ''_cmd'' was given, or it did not contain the value ""refresh"".
+; ''403''
+: You are not allowed to perform this operation.

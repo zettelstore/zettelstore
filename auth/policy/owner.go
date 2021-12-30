@@ -134,7 +134,9 @@ func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 
 func (o *ownerPolicy) CanRefresh(user *meta.Meta) bool {
 	switch userRole := o.manager.GetUserRole(user); userRole {
-	case meta.UserRoleUnknown, meta.UserRoleCreator:
+	case meta.UserRoleUnknown:
+		return o.authConfig.GetSimpleMode()
+	case meta.UserRoleCreator:
 		return o.authConfig.GetExpertMode() || o.authConfig.GetSimpleMode()
 	}
 	return true

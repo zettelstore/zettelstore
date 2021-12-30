@@ -314,6 +314,23 @@ func TestGetUnlinkedReferences(t *testing.T) {
 	}
 }
 
+func TestExecuteCommand(t *testing.T) {
+	c := getClient()
+	err := c.ExecuteCommand(context.Background(), api.Command("xyz"))
+	if err == nil {
+		t.Error("No error, but 400 Bad Request expected")
+	}
+	err = c.ExecuteCommand(context.Background(), api.CommandRefresh)
+	if err == nil {
+		t.Error("No error, but 403 Forbidden expected")
+	}
+	c.SetAuth("owner", "owner")
+	err = c.ExecuteCommand(context.Background(), api.CommandRefresh)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestListTags(t *testing.T) {
 	t.Parallel()
 	c := getClient()

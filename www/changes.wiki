@@ -23,8 +23,8 @@
      (major)
   *  The internal handling of zettel files is rewritten. This allows less
      reloads ands detects when the directory containing the zettel files is
-     removed. The WebUI and the admin console allow to manually refresh the
-     internal state on demand.
+     removed. The API, WebUI, and the admin console allow to manually refresh
+     the internal state on demand.
      (major: box, webui)
   *  Selecting zettel based on their metadata allows the same syntax as
      searching for zettel content. For example, you can list all zettel that

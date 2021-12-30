@@ -580,7 +580,7 @@ func testRefresh(t *testing.T, pol auth.Policy, withAuth, expert, simple bool) {
 		user *meta.Meta
 		exp  bool
 	}{
-		{newAnon(), expert || simple},
+		{newAnon(), (!withAuth && expert) || simple},
 		{newCreator(), !withAuth || expert || simple},
 		{newReader(), true},
 		{newWriter(), true},
