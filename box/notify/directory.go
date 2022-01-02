@@ -299,9 +299,6 @@ func (ds *DirService) onCreateDirectory(zids id.Slice, prevEntries entrySet) {
 	for zid := range prevEntries {
 		ds.notifyChange(box.OnDelete, zid)
 	}
-
-	// This may be not needed any more.
-	ds.notifyChange(box.OnReload, id.Invalid)
 }
 
 func (ds *DirService) onDestroyDirectory() {

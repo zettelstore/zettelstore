@@ -287,10 +287,8 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	go mgr.notifier()
 	go mgr.idxIndexer()
 
-	// mgr.startIndexer(mgr)
 	mgr.started = true
 	mgr.mgrMx.Unlock()
-	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	return nil
 }
 
@@ -318,6 +316,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 	if !mgr.started {
 		return box.ErrStopped
 	}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	for _, bx := range mgr.boxes {
 		if rb, ok := bx.(box.Refresher); ok {
 			rb.Refresh(ctx)
