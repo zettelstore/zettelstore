@@ -39,6 +39,9 @@
   *  Add computed zettel that lists all supported parser / recognized zettel
      syntaxes.
      (minor)
+  *  If there is nothing to return, use HTTP status code 204, instead of 200 +
+     <tt>Content-Length: 0</tt>.
+     (minor: api)
 
 <a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>

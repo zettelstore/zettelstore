@@ -3,7 +3,7 @@ title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124180238
+modified: 20220102232215
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -66,7 +66,10 @@ For example, to retrieve some data about this zettel you are currently viewing, 
 
 === HTTP Status codes
 ; ''200''
-: Retrieval was successful, the body contains an appropriate JSON object.
+: Retrieval was successful, the body contains an appropriate JSON object / plain zettel data.
+; ''204''
+: Request was valid, but there is no data to be returned.
+  Most likely, you specified the query parameter ''_part=content'', but the zettel does not contain any content.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.
