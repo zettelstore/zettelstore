@@ -60,6 +60,6 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasConten
 		zettel.Content.TrimSpace()
 	}
 	err = uc.port.UpdateZettel(ctx, zettel)
-	uc.log.Debug().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
+	uc.log.Sense().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
 	return err
 }

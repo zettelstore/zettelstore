@@ -29,6 +29,7 @@ const (
 	noLevel        Level = iota // the absent log level
 	TraceLevel                  // Log most internal activities
 	DebugLevel                  // Log most data updates
+	SenseLevel                  // Log activities of minor interest
 	InfoLevel                   // Log normal activities
 	WarnLevel                   // Log event that can be easily recovered
 	ErrorLevel                  // Log (persistent) errors
@@ -42,6 +43,7 @@ var logLevel = [...]string{
 	"     ",
 	"TRACE",
 	"DEBUG",
+	"SENSE",
 	"INFO ",
 	"WARN ",
 	"ERROR",
@@ -55,6 +57,7 @@ var strLevel = [...]string{
 	"",
 	"trace",
 	"debug",
+	"sense",
 	"info",
 	"warn",
 	"error",
@@ -167,6 +170,9 @@ func (l *Logger) Trace() *Message { return newMessage(l, TraceLevel) }
 
 // Debug creates a debug message.
 func (l *Logger) Debug() *Message { return newMessage(l, DebugLevel) }
+
+// Sense creates a message suitable for sensing data.
+func (l *Logger) Sense() *Message { return newMessage(l, SenseLevel) }
 
 // Info creates a message suitable for information data.
 func (l *Logger) Info() *Message { return newMessage(l, InfoLevel) }
