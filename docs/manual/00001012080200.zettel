@@ -3,17 +3,17 @@ title: API: Check for authentication
 role: zettel
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220103234356
+modified: 20220103235531
 
 API clients typically wants to know, whether [[authentication is enabled|00001010040100]] or not.
 If authentication is enabled, they present some form of user interface to get user name and password for the actual authentication.
 Then they try to [[obtain an access token|00001012050200]].
 If authentication is disabled, these steps are not needed.
 
-To check for enabled authentication, you must send a HTTP POST request to the [[endpoint|00001012920000]] ''/x'' and you must specify the query parameter ''_cmd=authenticate''.
+To check for enabled authentication, you must send a HTTP POST request to the [[endpoint|00001012920000]] ''/x'' and you must specify the query parameter ''_cmd=authenticated''.
 
 ```sh
-# curl -X POST 'http://127.0.0.1:23123/x?_cmd=authenticate'
+# curl -X POST 'http://127.0.0.1:23123/x?_cmd=authenticated'
 ```
 
 If authentication is not enabled, you will get a HTTP status code 200 (OK) with an empty HTTP body.
