@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore-client.
 //
@@ -320,11 +320,19 @@ func TestExecuteCommand(t *testing.T) {
 	if err == nil {
 		t.Error("No error, but 400 Bad Request expected")
 	}
+	err = c.ExecuteCommand(context.Background(), api.CommandAuthenticated)
+	if err == nil {
+		t.Error("No error, but 401 Unauthorized expected (Auth)")
+	}
 	err = c.ExecuteCommand(context.Background(), api.CommandRefresh)
 	if err == nil {
-		t.Error("No error, but 403 Forbidden expected")
+		t.Error("No error, but 403 Forbidden expected (Refresh)")
 	}
 	c.SetAuth("owner", "owner")
+	err = c.ExecuteCommand(context.Background(), api.CommandAuthenticated)
+	if err != nil {
+		t.Error(err)
+	}
 	err = c.ExecuteCommand(context.Background(), api.CommandRefresh)
 	if err != nil {
 		t.Error(err)

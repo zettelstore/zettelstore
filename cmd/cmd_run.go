@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -59,6 +59,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	authLog := kern.GetLogger(kernel.AuthService)
 	ucLog := kern.GetLogger(kernel.CoreService).WithUser(webSrv)
 	ucAuthenticate := usecase.NewAuthenticate(authLog, authManager, authManager, boxManager)
+	ucIsAuth := usecase.NewIsAuthenticated(ucLog, webSrv, authManager)
 	ucCreateZettel := usecase.NewCreateZettel(ucLog, rtConfig, protectedBoxManager)
 	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
@@ -125,7 +126,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		ucGetMeta, ucUnlinkedRefs, &ucEvaluate))
 	webSrv.AddListRoute('v', server.MethodPost, a.MakePostEncodeInlinesHandler(ucEvaluate))
 	webSrv.AddZettelRoute('v', server.MethodGet, a.MakeGetEvalZettelHandler(ucEvaluate))
-	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucRefresh))
+	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
 	webSrv.AddZettelRoute('x', server.MethodGet, a.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', server.MethodGet, a.MakeListPlainHandler(ucListMeta))
 	webSrv.AddZettelRoute('z', server.MethodGet, a.MakeGetPlainZettelHandler(ucGetZettel))

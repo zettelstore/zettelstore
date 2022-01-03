@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,6 +11,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -18,22 +19,41 @@ import (
 )
 
 // MakePostCommandHandler creates a new HTTP handler to execute certain commands.
-func (a *API) MakePostCommandHandler(ucRefresh *usecase.Refresh) http.HandlerFunc {
+func (a *API) MakePostCommandHandler(
+	ucIsAuth *usecase.IsAuthenticated,
+	ucRefresh *usecase.Refresh,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 		cmd := q.Get(api.QueryKeyCommand)
 		switch api.Command(cmd) {
+		case api.CommandAuthenticated:
+			a.handleIsAuthenticated(ctx, w, ucIsAuth)
+			return
 		case api.CommandRefresh:
 			err := ucRefresh.Run(ctx)
 			if err != nil {
 				a.reportUsecaseError(w, err)
 				return
 			}
-		default:
-			http.Error(w, "Unknown command", http.StatusBadRequest)
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+		http.Error(w, "Unknown command", http.StatusBadRequest)
+	}
+}
+
+func (a *API) handleIsAuthenticated(
+	ctx context.Context, w http.ResponseWriter, ucIsAuth *usecase.IsAuthenticated) {
+	switch ucIsAuth.Run(ctx) {
+	case usecase.IsAuthenticatedDisabled:
+		w.WriteHeader(http.StatusOK)
+	case usecase.IsAuthenticatedAndValid:
 		w.WriteHeader(http.StatusNoContent)
+	case usecase.IsAuthenticatedAndInvalid:
+		w.WriteHeader(http.StatusUnauthorized)
+	default:
+		http.Error(w, "Unexpected result value", http.StatusInternalServerError)
 	}
 }

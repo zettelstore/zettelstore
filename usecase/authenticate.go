@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -98,4 +98,50 @@ func addDelay(start time.Time, durDelay, minDelay time.Duration) {
 	} else {
 		time.Sleep(minDelay + jitter)
 	}
+}
+
+// IsAuthenticatedPort contains method for this usecase.
+type IsAuthenticatedPort interface {
+	GetUser(context.Context) *meta.Meta
+}
+
+// IsAuthenticated cheks if the caller is alrwady authenticated.
+type IsAuthenticated struct {
+	log   *logger.Logger
+	port  IsAuthenticatedPort
+	authz auth.AuthzManager
+}
+
+// NewIsAuthenticated creates a new use case object.
+func NewIsAuthenticated(log *logger.Logger, port IsAuthenticatedPort, authz auth.AuthzManager) IsAuthenticated {
+	return IsAuthenticated{
+		log:   log,
+		port:  port,
+		authz: authz,
+	}
+}
+
+// IsAuthenticatedResult is an enumeration.
+type IsAuthenticatedResult uint8
+
+// Values for IsAuthenticatedResult.
+const (
+	_ IsAuthenticatedResult = iota
+	IsAuthenticatedDisabled
+	IsAuthenticatedAndValid
+	IsAuthenticatedAndInvalid
+)
+
+// Run executes the use case.
+func (uc *IsAuthenticated) Run(ctx context.Context) IsAuthenticatedResult {
+	if !uc.authz.WithAuth() {
+		uc.log.Sense().Str("auth", "disabled").Msg("IsAuthenticated")
+		return IsAuthenticatedDisabled
+	}
+	if uc.port.GetUser(ctx) == nil {
+		uc.log.Sense().Msg("IsAuthenticated is false")
+		return IsAuthenticatedAndInvalid
+	}
+	uc.log.Sense().Msg("IsAuthenticated is true")
+	return IsAuthenticatedAndValid
 }
