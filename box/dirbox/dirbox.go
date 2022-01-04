@@ -356,7 +356,7 @@ func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
 	}
 
 	if entry.MetaSpec == notify.DirMetaSpecFile {
-		entry.MetaName = baseName + ".meta"
+		entry.MetaName = notify.MakeMetaFilename(baseName)
 	}
 	entry.ContentName = baseName + "." + entry.ContentExt
 	entry.Duplicates = nil

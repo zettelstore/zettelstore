@@ -3,7 +3,7 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20211124183108
+modified: 20220104213511
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -37,14 +37,16 @@ You can create these special zettel identifiers either with the __rename__ funct
 It is allowed that the file name contains other characters after the 14 digits.
 These are ignored by Zettelstore.
 
-The file name must have an file extension.
-Two file extensions are used by Zettelstore: ''.meta'' and ''.zettel''.
-Other file extensions are used to determine the ""syntax"" of a zettel.
+Two filename extensions are used by Zettelstore:
+# ''.zettel'' is a format that stores metadata and content together in one file,
+# the empty file extension is used, when the content must be stored in its own file, e.g. image data;
+  in this case, the filename just the 14 digits of the zettel identifier, and optional characters except the period ''"."''.  
+Other filename extensions are used to determine the ""syntax"" of a zettel.
 This allows to use other content within the Zettelstore, e.g. images or HTML templates.
 
 For example, you want to store an important figure in the Zettelstore that is encoded as a ''.png'' file.
 Since each zettel contains some metadata, e.g. the title of the figure, the question arises where these data should be stores.
-The solution is a ''.meta'' file with the same zettel identifier.
+The solution is a metafile with the same zettel identifier, but without a filename extension.
 Zettelstore recognizes this situation and reads in both files for the one zettel containing the figure.
 It maintains this relationship as long as theses files exists.
 

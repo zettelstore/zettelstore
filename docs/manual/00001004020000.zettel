@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211124175528
+modified: 20220104213858
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called ""configuration zettel"".
@@ -18,8 +18,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : Default language to be used when displaying content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''lang''. Default: ''en''.
 
-  This value is also used to specify the language for all non-zettel content,
-  e.g. lists or search results.
+  This value is also used to specify the language for all non-zettel content, e.g. lists or search results.
 
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
 ; [!default-license]''default-license''
@@ -67,19 +66,13 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : If true, metadata and content will be separated by ''-\--\\n'' instead of an empty line (''\\n\\n'').
   Default: ''false''.
 
-  You will probably use this key, if you are working with another software
-  processing [[Markdown|https://daringfireball.net/projects/markdown/]] that
-  uses a subset of [[YAML|https://yaml.org/]] to specify metadata.
+  You will probably use this key, if you are working with another software processing [[Markdown|https://daringfireball.net/projects/markdown/]] that uses a subset of [[YAML|https://yaml.org/]] to specify metadata.
 ; [!zettel-file-syntax]''zettel-file-syntax''
-: If you create a new zettel with a syntax different to ""meta"" and ""zmk"",
-  Zettelstore will store the zettel as two files: one for the metadata
-  (file extension ''.meta'') and one for the content (file extension based on
-  the syntax value).
+: If you create a new zettel with a syntax different to ""meta"" and ""zmk"", Zettelstore will store the zettel as two files:
+  one for the metadata (file without a filename extension) and another for the content (file extension based on the syntax value).
   If you want to specify alternative syntax values, for which you want new zettel to be stored in one file (file extension ''.zettel''), you can use this key.
   All values are case-insensitive, duplicates are removed.
 
-  For example, you could use this key if you're working with Markdown syntax
-  and you want to store metadata and content in one ''.zettel'' file.
+  For example, you could use this key if you're working with Markdown syntax and you want to store metadata and content in one ''.zettel'' file.
 
-  If ''yaml-header'' evaluates to true, a zettel is always stored in one
-  ''.zettel'' file.
+  If ''yaml-header'' evaluates to true, a zettel is always stored in one ''.zettel'' file.

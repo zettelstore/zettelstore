@@ -3,7 +3,7 @@ title: Use Markdown within Zettelstore
 role: manual
 tags: #manual #markdown #zettelstore
 syntax: zmk
-modified: 20211124134155
+modified: 20220104212753
 
 If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
 Zettelstore supports [[CommonMark|https://commonmark.org/]], an [[attempt|https://xkcd.com/927/]] to unify all the different, divergent dialects of Markdown.
@@ -26,7 +26,7 @@ Similar for the syntax ''markdown''.
 If you want to process the files that store the zettel content, e.g. with some other Markdown tools, this may be important.
 Not every Markdown tool allows both file extensions.
 
-BTW, metadata is stored in a file with the extension ''.meta'', if neither ''yaml-header'' nor ''zettel-file-syntax'' is set.
+BTW, metadata is stored in a file without a file extension, if neither ''yaml-header'' nor ''zettel-file-syntax'' is set.
 
 === Security aspects
 

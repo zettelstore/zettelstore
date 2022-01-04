@@ -13,7 +13,9 @@ package notify
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 
 	"zettelstore.de/z/box"
@@ -312,7 +314,7 @@ func (ds *DirService) onDestroyDirectory() {
 	}
 }
 
-var validFileName = regexp.MustCompile(`^(\d{14}).*(\.(.+))$`)
+var validFileName = regexp.MustCompile(`^(\d{14}).*?(\.(.+))?$`)
 
 func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
@@ -349,14 +351,31 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	}
 	entry := fetchdirEntry(entries, zid)
 
-	if ext == "meta" {
+	if ext == "" {
+		if metaName := entry.MetaName; strings.HasSuffix(metaName, ".meta") {
+			if entry.ContentExt == "" {
+				entry.ContentName = entry.MetaName
+				entry.ContentExt = "meta"
+			} else {
+				dupName := ds.addDuplicate(entry, metaName, "")
+				ds.log.Warn().Str("name", dupName).Msg("Duplicate content (is ignored)")
+			}
+		}
 		entry.MetaSpec = DirMetaSpecFile
 		entry.MetaName = name
 		return zid
 	}
+	if ext == "meta" {
+		if entry.MetaName == "" {
+			ds.log.Warn().Str("name", name).Msg("Metadata file should not end with .meta any more")
+			entry.MetaSpec = DirMetaSpecFile
+			entry.MetaName = name
+			return zid
+		}
+	}
 	if entry.ContentExt != "" && entry.ContentExt != ext {
-		entry.Duplicates = append(entry.Duplicates, name)
-		ds.log.Warn().Str("name", name).Msg("Duplicate content (is ignored)")
+		dupName := ds.addDuplicate(entry, name, ext)
+		ds.log.Warn().Str("name", dupName).Msg("Duplicate content (is ignored)")
 		return zid
 	}
 	if entry.MetaSpec != DirMetaSpecFile {
@@ -371,6 +390,35 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	return zid
 }
 
+func (ds *DirService) addDuplicate(entry *DirEntry, name, ext string) string {
+	if ds.extLess(entry.ContentExt, ext) {
+		tempName := entry.ContentName
+		entry.ContentName = name
+		entry.ContentExt = filepath.Ext(name)[1:]
+		name = tempName
+	}
+	for _, dupName := range entry.Duplicates {
+		if name == dupName {
+			return name
+		}
+	}
+	entry.Duplicates = append(entry.Duplicates, name)
+	return name
+}
+
+func (*DirService) extLess(curExt, newExt string) bool {
+	if newExt == "" {
+		return false
+	}
+	if curExt == "meta" {
+		return true
+	}
+	if newExt == "zettel" {
+		return true
+	}
+	return false
+}
+
 func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if entries == nil {
 		return
@@ -379,16 +427,45 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if zid == id.Invalid {
 		return
 	}
-	if ext == "meta" {
-		if entry, found := entries[zid]; found {
-			if entry.MetaSpec == DirMetaSpecFile {
-				entry.MetaSpec = DirMetaSpecNone
+	entry, found := entries[zid]
+	if !found {
+		return
+	}
+	for i, dupName := range entry.Duplicates {
+		if dupName == name {
+			ds.removeDuplicate(entry, i)
+			return
+		}
+	}
+	if ext == "" {
+		for i, dupName := range entry.Duplicates {
+			if strings.HasSuffix(dupName, ".meta") {
+				entry.MetaName = dupName
+				ds.removeDuplicate(entry, i)
 				return
 			}
+		}
+		if entry.MetaSpec == DirMetaSpecFile {
+			entry.MetaSpec = DirMetaSpecNone
+			return
+		}
+	}
+	if ext == "meta" {
+		if entry.MetaSpec == DirMetaSpecFile {
+			entry.MetaSpec = DirMetaSpecNone
+			return
 		}
 	}
 	delete(entries, zid)
 	ds.notifyChange(box.OnDelete, zid)
+}
+
+func (*DirService) removeDuplicate(entry *DirEntry, i int) {
+	if len(entry.Duplicates) == 1 {
+		entry.Duplicates = nil
+		return
+	}
+	entry.Duplicates = entry.Duplicates[:i+copy(entry.Duplicates[i:], entry.Duplicates[i+1:])]
 }
 
 func (ds *DirService) notifyChange(reason box.UpdateReason, zid id.Zid) {

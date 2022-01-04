@@ -2,6 +2,12 @@
 
 <a name="0_2_0"></a>
 <h2>Changes for Version 0.2.0 (pending)</h2>
+  *  External metadata (e.g. for zettel with file extension other than
+     ".zettel") are stored in files without an extension. Metadata files with
+     extension ".meta" are still recognized, but result in a warning message.
+     In a future version, ".meta" files will be treated as ordinary content
+     files, possibly resulting in duplicate content.
+     (breaking: directory and file box)
   *  Remove support for <tt>;;small text;;</tt> Zettelmarkup.
      (breaking: Zettelmarkup)
   *  On macOS, the downloadable executable program is now called

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,6 +16,11 @@ import (
 
 	"zettelstore.de/z/logger"
 )
+
+// MakeMetaFilename builds the name of the file containing metadata.
+func MakeMetaFilename(basename string) string {
+	return basename //+ ".meta"
+}
 
 // EntryFetcher return a list of (file) names of an directory.
 type EntryFetcher interface {
