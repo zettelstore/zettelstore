@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -77,7 +77,7 @@ func CalcDefaultMeta(zid id.Zid, ext string) *meta.Meta {
 }
 
 // CleanupMeta enhances the given metadata.
-func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta, duplicates bool) {
+func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, duplicates []string) {
 	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
 		m.Set(api.KeyTitle, zid.String())
 	}
@@ -93,7 +93,7 @@ func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta, duplicates bool) 
 		}
 	}
 
-	if duplicates {
-		m.Set(api.KeyDuplicates, api.ValueTrue)
+	if len(duplicates) > 0 {
+		m.Set(api.KeyDuplicates, strings.Join(duplicates, " "))
 	}
 }

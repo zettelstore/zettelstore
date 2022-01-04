@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -112,7 +112,7 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 
-	CleanupMeta(m, zid, entry.ContentExt, inMeta, false)
+	CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.Duplicates)
 	zb.log.Trace().Zid(zid).Msg("GetZettel")
 	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
 }
@@ -219,7 +219,7 @@ func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m 
 		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 	if err == nil {
-		CleanupMeta(m, zid, entry.ContentExt, inMeta, false)
+		CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.Duplicates)
 	}
 	return m, err
 }

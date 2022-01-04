@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -37,10 +37,10 @@ const (
 type DirEntry struct {
 	Zid         id.Zid
 	MetaSpec    DirMetaSpec // location of meta information
-	Duplicates  bool        // multiple content files
 	MetaName    string      // file name of meta information
 	ContentName string      // file name of zettel content
 	ContentExt  string      // (normalized) file extension of zettel content
+	Duplicates  []string    // list of other content files
 }
 
 // IsValid checks whether the entry is valid.
@@ -355,7 +355,7 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 		return zid
 	}
 	if entry.ContentExt != "" && entry.ContentExt != ext {
-		entry.Duplicates = true
+		entry.Duplicates = append(entry.Duplicates, name)
 		ds.log.Warn().Str("name", name).Msg("Duplicate content (is ignored)")
 		return zid
 	}

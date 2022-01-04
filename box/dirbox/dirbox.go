@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -359,7 +359,7 @@ func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
 		entry.MetaName = baseName + ".meta"
 	}
 	entry.ContentName = baseName + "." + entry.ContentExt
-	entry.Duplicates = false
+	entry.Duplicates = nil
 }
 
 func (dp *dirBox) calcSpecExt(m *meta.Meta) (notify.DirMetaSpec, string) {
