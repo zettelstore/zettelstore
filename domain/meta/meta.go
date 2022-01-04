@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -116,6 +116,7 @@ func init() {
 	registerKey(api.KeyRole, TypeWord, usageUser, "")
 	registerKey(api.KeyTags, TypeTagSet, usageUser, "")
 	registerKey(api.KeySyntax, TypeWord, usageUser, "")
+
 	registerKey(api.KeyAllTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
@@ -134,6 +135,7 @@ func init() {
 	registerKey(api.KeyPrecursor, TypeIDSet, usageUser, api.KeyFolge)
 	registerKey(api.KeyPublished, TypeTimestamp, usageProperty, "")
 	registerKey(api.KeyReadOnly, TypeWord, usageUser, "")
+	registerKey(api.KeySummary, TypeZettelmarkup, usageUser, "")
 	registerKey(api.KeyURL, TypeURL, usageUser, "")
 	registerKey(api.KeyUserID, TypeWord, usageUser, "")
 	registerKey(api.KeyUserRole, TypeWord, usageUser, "")
