@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -171,7 +171,7 @@ func (cmd *fileSetZettel) setMetaSpecFile(dirPath string) error {
 	if err == nil {
 		err = writeFileZid(f, cmd.zettel.Meta.Zid)
 		if err == nil {
-			_, err = cmd.zettel.Meta.Write(f, true)
+			_, err = cmd.zettel.Meta.Write(f, false)
 			if err1 := f.Close(); err == nil {
 				err = err1
 			}
@@ -188,7 +188,7 @@ func (cmd *fileSetZettel) setMetaSpecHeader(dirPath string) error {
 	if err == nil {
 		err = writeFileZid(f, cmd.zettel.Meta.Zid)
 		if err == nil {
-			_, err = cmd.zettel.Meta.WriteAsHeader(f, true)
+			_, err = cmd.zettel.Meta.WriteAsHeader(f, false)
 			if err == nil {
 				_, err = f.WriteString(cmd.zettel.Content.AsString())
 				if err1 := f.Close(); err == nil {
@@ -236,6 +236,12 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 		err = os.Remove(contentPath)
 	default:
 		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at delete")
+	}
+	for _, dupName := range entry.Duplicates {
+		err1 := os.Remove(filepath.Join(dirPath, dupName))
+		if err == nil {
+			err = err1
+		}
 	}
 	cmd.rc <- err
 }

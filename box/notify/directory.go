@@ -196,19 +196,34 @@ func (ds *DirService) UpdateDirEntry(updatedEntry *DirEntry) error {
 }
 
 // RenameDirEntry replaces an existing directory entry with a new one.
-func (ds *DirService) RenameDirEntry(oldEntry, newEntry *DirEntry) error {
+func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntry, error) {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
-		return ds.logMissingEntry("rename")
+		return DirEntry{}, ds.logMissingEntry("rename")
 	}
-	if _, found := ds.entries[newEntry.Zid]; found {
-		return &box.ErrInvalidID{Zid: newEntry.Zid}
+	if _, found := ds.entries[newZid]; found {
+		return DirEntry{}, &box.ErrInvalidID{Zid: newZid}
 	}
-	delete(ds.entries, oldEntry.Zid)
-	entry := *newEntry
-	ds.entries[entry.Zid] = &entry
-	return nil
+	oldZid := oldEntry.Zid
+	newEntry := DirEntry{
+		Zid:         newZid,
+		MetaSpec:    oldEntry.MetaSpec,
+		MetaName:    renameFilename(oldEntry.MetaName, oldZid, newZid),
+		ContentName: renameFilename(oldEntry.ContentName, oldZid, newZid),
+		ContentExt:  oldEntry.ContentExt,
+		// Duplicates must not be set, because duplicates will be deleted
+	}
+	delete(ds.entries, oldZid)
+	ds.entries[newZid] = &newEntry
+	return newEntry, nil
+}
+
+func renameFilename(name string, curID, newID id.Zid) string {
+	if cur := curID.String(); strings.HasPrefix(name, cur) {
+		name = newID.String() + name[len(cur):]
+	}
+	return name
 }
 
 // DeleteDirEntry removes a entry from the directory.

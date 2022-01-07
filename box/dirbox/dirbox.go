@@ -18,7 +18,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"sync"
 
 	"zettelstore.de/c/api"
@@ -405,22 +404,15 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 		return err
 	}
 
-	newEntry := notify.DirEntry{
-		Zid:         newZid,
-		MetaSpec:    curEntry.MetaSpec,
-		MetaName:    renameFilename(curEntry.MetaName, curZid, newZid),
-		ContentName: renameFilename(curEntry.ContentName, curZid, newZid),
-		ContentExt:  curEntry.ContentExt,
-	}
-
-	if err = dp.dirSrv.RenameDirEntry(curEntry, &newEntry); err != nil {
+	newEntry, err := dp.dirSrv.RenameDirEntry(curEntry, newZid)
+	if err != nil {
 		return err
 	}
 	oldMeta.Zid = newZid
 	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
 	if err = setZettel(dp, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
-		dp.dirSrv.RenameDirEntry(&newEntry, curEntry)
+		dp.dirSrv.RenameDirEntry(&newEntry, curZid)
 		return err
 	}
 	err = deleteZettel(dp, curEntry, curZid)
@@ -474,11 +466,4 @@ func (dp *dirBox) cleanupMeta(m *meta.Meta) {
 	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
 		m.Set(api.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
 	}
-}
-
-func renameFilename(name string, curID, newID id.Zid) string {
-	if cur := curID.String(); strings.HasPrefix(name, cur) {
-		name = newID.String() + name[len(cur):]
-	}
-	return name
 }
