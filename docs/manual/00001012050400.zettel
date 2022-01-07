@@ -3,7 +3,7 @@ title: API: Renew an access token
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20210726123745
+modified: 20220107215751
 
 An access token is only valid for a certain duration.
 Since the [[authentication process|00001012050200]] will need some processing time, there is a way to renew the token without providing full authentication data.
@@ -17,12 +17,21 @@ Send a HTTP PUT request to the [[endpoint|00001012920000]] ''/a'' and include th
 You may receive a new access token, or the current one if it was obtained not a long time ago.
 However, the lifetime of the returned [[access token|00001012921000]] is accurate.
 
+If [[authentication is not enabled|00001010040100]] and you send a renew request, no checking is done and you receive an artificial token immediate, without any delay:
+
+```sh
+# curl -X PUT -H 'Authorization: Bearer freeaccess' http://127.0.0.1:23123/a
+{"token":"freeaccess","token_type":"Bearer","expires_in":316224000}
+```
+
+In this case, it is even possible to omit the access token.
+
 === HTTP Status codes
 ; ''200''
 : Renew process was successful, the body contains an [[appropriate JSON object|00001012921000]].
 ; ''400''
 : The renew process was not successful.
   There are several reasons for this.
-  Maybe authorization was not [[enabled|00001010040100]], or the access bearer token was not valid.
+  Maybe access bearer token was not valid.
 
   Probably you should [[authenticate|00001012050200]] again with user identification and password.

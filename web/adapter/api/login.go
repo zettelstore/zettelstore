@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -81,6 +81,11 @@ func (a *API) writeJSONToken(w http.ResponseWriter, token string, lifetime time.
 func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		if !a.withAuth() {
+			err := a.writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
+			a.log.IfErr(err).Msg("Refresh/free")
+			return
+		}
 		authData := a.getAuthData(ctx)
 		if authData == nil || len(authData.Token) == 0 || authData.User == nil {
 			adapter.BadRequest(w, "Not authenticated")

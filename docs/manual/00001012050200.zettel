@@ -3,7 +3,7 @@ title: API: Authenticate a client
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211202121032
+modified: 20220107215844
 
 Authentication for future API calls is done by sending a [[user identification|00001010040200]] and a password to the Zettelstore to obtain an [[access token|00001010040700]].
 This token has to be used for other API calls.
@@ -32,6 +32,15 @@ In all cases, you will receive an JSON object will all [[relevant data|000010129
 **Important:** obtaining a token is a time-intensive process.
 Zettelstore will delay every request to obtain a token for a certain amount of time.
 Please take into account that this request will take approximately 500 milliseconds, under certain circumstances more.
+
+However, if [[authentication is not enabled|00001010040100]] and you send an authentication request, no user identification/password checking is done and you receive an artificial token immediate, without any delay:
+
+```sh
+# curl -X POST -u IDENT:PASSWORD http://127.0.0.1:23123/a
+{"token":"freeaccess","token_type":"Bearer","expires_in":316224000}
+```
+
+In this case, it is even possible to omit the user identification/password.
 
 === HTTP Status codes
 In all cases of successful authentication, a JSON object is returned, which contains the token under the key ''"token"''.
