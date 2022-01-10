@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -16,11 +16,23 @@ import (
 	"io"
 )
 
-// Write writes a zettel meta to a writer.
+// Write writes metadata to a writer. If "allowComputed" is true, then
+// computed values are also written, but not property values.
 func (m *Meta) Write(w io.Writer, allowComputed bool) (int, error) {
 	var buf bytes.Buffer
-	for _, p := range m.Pairs(allowComputed) {
-		buf.WriteString(p.Key)
+	for _, p := range m.Pairs(true) {
+		key := p.Key
+		kd := GetDescription(key)
+		if allowComputed {
+			if kd.IsProperty() {
+				continue
+			}
+		} else {
+			if kd.IsComputed() {
+				continue
+			}
+		}
+		buf.WriteString(key)
 		buf.WriteString(": ")
 		buf.WriteString(p.Value)
 		buf.WriteByte('\n')
@@ -33,7 +45,9 @@ var (
 	yamlSep = []byte{'-', '-', '-', '\n'}
 )
 
-// WriteAsHeader writes the zettel meta to the writer, plus the separators
+// WriteAsHeader writes metadata to the writer, plus the separators.
+// If "allowComputed" is true, then // computed values are also written, but not
+// property values.
 func (m *Meta) WriteAsHeader(w io.Writer, allowComputed bool) (int, error) {
 	var lb, lc, la int
 	var err error

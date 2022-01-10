@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -70,12 +70,13 @@ var (
 		"-number": TypeNumber,
 		"-role":   TypeWord,
 		"-url":    TypeURL,
+		"-zettel": TypeID,
 		"-zid":    TypeID,
 	}
 )
 
 // Type returns a type hint for the given key. If no type hint is specified,
-// TypeUnknown is returned.
+// TypeEmpty is returned.
 func Type(key string) *DescriptionType {
 	if k, ok := registeredKeys[key]; ok {
 		return k.Type

@@ -120,7 +120,7 @@ func init() {
 	registerKey(api.KeyAllTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
-	registerKey(api.KeyBoxNumber, TypeNumber, usageComputed, "")
+	registerKey(api.KeyBoxNumber, TypeNumber, usageProperty, "")
 	registerKey(api.KeyContentTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyCopyright, TypeString, usageUser, "")
 	registerKey(api.KeyCredential, TypeCredential, usageUser, "")
@@ -140,24 +140,6 @@ func init() {
 	registerKey(api.KeyUserID, TypeWord, usageUser, "")
 	registerKey(api.KeyUserRole, TypeWord, usageUser, "")
 	registerKey(api.KeyVisibility, TypeWord, usageUser, "")
-
-	// Keys for runtime configuration zettel
-	// See: https://zettelstore.de/manual/h/00001004020000
-	registerKey(api.KeyDefaultCopyright, TypeString, usageUser, "")
-	registerKey(api.KeyDefaultLang, TypeWord, usageUser, "")
-	registerKey(api.KeyDefaultLicense, TypeEmpty, usageUser, "")
-	registerKey(api.KeyDefaultRole, TypeWord, usageUser, "")
-	registerKey(api.KeyDefaultSyntax, TypeWord, usageUser, "")
-	registerKey(api.KeyDefaultTitle, TypeZettelmarkup, usageUser, "")
-	registerKey(api.KeyDefaultVisibility, TypeWord, usageUser, "")
-	registerKey(api.KeyExpertMode, TypeBool, usageUser, "")
-	registerKey(api.KeyFooterHTML, TypeString, usageUser, "")
-	registerKey(api.KeyHomeZettel, TypeID, usageUser, "")
-	registerKey(api.KeyMarkerExternal, TypeEmpty, usageUser, "")
-	registerKey(api.KeyMaxTransclusions, TypeNumber, usageUser, "")
-	registerKey(api.KeySiteName, TypeString, usageUser, "")
-	registerKey(api.KeyYAMLHeader, TypeBool, usageUser, "")
-	registerKey(api.KeyZettelFileSyntax, TypeWordSet, usageUser, "")
 }
 
 // NewPrefix is the prefix for metadata key in template zettel for creating new zettel.

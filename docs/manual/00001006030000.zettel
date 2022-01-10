@@ -3,15 +3,17 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210830132855
+modified: 20220110161544
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
 User-defined metadata keys conform also to a type, based on the suffix of the key.
+
 |=Suffix|Type
 | ''-number'' | [[Number|00001006033000]]
 | ''-role'' | [[Word|00001006035500]]
 | ''-url'' | [[URL|00001006035000]]
+| ''-zettel''  | [[Identifier|00001006032000]]
 | ''-zid''  | [[Identifier|00001006032000]]
 | any other suffix | [[EString|00001006031500]]
 
@@ -19,7 +21,7 @@ The name of the metadata key is bound to the key type
 
 Every key type has an associated validation rule to check values of the given type.
 There is also a rule how values are matched, e.g. against a search term when selecting some zettel.
-And there is a rule, how values compare for sorting.
+And there is a rule how values compare for sorting.
 
 * [[Boolean|00001006030500]]
 * [[Credential|00001006031000]]

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -30,15 +30,36 @@ type configService struct {
 	rtConfig  *myConfig
 }
 
+// Predefined Metadata keys for runtime configuration
+// See: https://zettelstore.de/manual/h/00001004020000
+const (
+	keyDefaultCopyright  = "default-copyright"
+	keyDefaultLang       = "default-lang"
+	keyDefaultLicense    = "default-license"
+	keyDefaultRole       = "default-role"
+	keyDefaultSyntax     = "default-syntax"
+	keyDefaultTitle      = "default-title"
+	keyDefaultVisibility = "default-visibility"
+	keyExpertMode        = "expert-mode"
+	keyFooterHTML        = "footer-html"
+	keyHomeZettel        = "home-zettel"
+	keyMarkerExternal    = "marker-external"
+	keyMaxTransclusions  = "max-transclusions"
+	keySiteName          = "site-name"
+	keyYAMLHeader        = "yaml-header"
+	keyZettelFileSyntax  = "zettel-file-syntax"
+)
+
 func (cs *configService) Initialize(logger *logger.Logger) {
 	cs.logger = logger
 	cs.descr = descriptionMap{
-		api.KeyDefaultCopyright: {"Default copyright", parseString, true},
-		api.KeyDefaultLang:      {"Default language", parseString, true},
-		api.KeyDefaultRole:      {"Default role", parseString, true},
-		api.KeyDefaultSyntax:    {"Default syntax", parseString, true},
-		api.KeyDefaultTitle:     {"Default title", parseString, true},
-		api.KeyDefaultVisibility: {
+		keyDefaultCopyright: {"Default copyright", parseString, true},
+		keyDefaultLang:      {"Default language", parseString, true},
+		keyDefaultLicense:   {"Default license", parseString, true},
+		keyDefaultRole:      {"Default role", parseString, true},
+		keyDefaultSyntax:    {"Default syntax", parseString, true},
+		keyDefaultTitle:     {"Default title", parseString, true},
+		keyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
 				vis := meta.GetVisibility(val)
@@ -49,14 +70,14 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			},
 			true,
 		},
-		api.KeyExpertMode:       {"Expert mode", parseBool, true},
-		api.KeyFooterHTML:       {"Footer HTML", parseString, true},
-		api.KeyHomeZettel:       {"Home zettel", parseZid, true},
-		api.KeyMarkerExternal:   {"Marker external URL", parseString, true},
-		api.KeyMaxTransclusions: {"Maximum transclusions", parseInt, true},
-		api.KeySiteName:         {"Site name", parseString, true},
-		api.KeyYAMLHeader:       {"YAML header", parseBool, true},
-		api.KeyZettelFileSyntax: {
+		keyExpertMode:       {"Expert mode", parseBool, true},
+		keyFooterHTML:       {"Footer HTML", parseString, true},
+		keyHomeZettel:       {"Home zettel", parseZid, true},
+		keyMarkerExternal:   {"Marker external URL", parseString, true},
+		keyMaxTransclusions: {"Maximum transclusions", parseInt, true},
+		keySiteName:         {"Site name", parseString, true},
+		keyYAMLHeader:       {"YAML header", parseBool, true},
+		keyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) interface{} { return strings.Fields(val) },
 			true,
@@ -64,21 +85,22 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		kernel.ConfigSimpleMode: {"Simple mode", cs.noFrozen(parseBool), true},
 	}
 	cs.next = interfaceMap{
-		api.KeyDefaultCopyright:  "",
-		api.KeyDefaultLang:       api.ValueLangEN,
-		api.KeyDefaultRole:       api.ValueRoleZettel,
-		api.KeyDefaultSyntax:     api.ValueSyntaxZmk,
-		api.KeyDefaultTitle:      "Untitled",
-		api.KeyDefaultVisibility: meta.VisibilityLogin,
-		api.KeyExpertMode:        false,
-		api.KeyFooterHTML:        "",
-		api.KeyHomeZettel:        id.DefaultHomeZid,
-		api.KeyMarkerExternal:    "&#10138;",
-		api.KeyMaxTransclusions:  1024,
-		api.KeySiteName:          "Zettelstore",
-		api.KeyYAMLHeader:        false,
-		api.KeyZettelFileSyntax:  nil,
-		kernel.ConfigSimpleMode:  false,
+		keyDefaultCopyright:     "",
+		keyDefaultLang:          api.ValueLangEN,
+		keyDefaultLicense:       "",
+		keyDefaultRole:          api.ValueRoleZettel,
+		keyDefaultSyntax:        api.ValueSyntaxZmk,
+		keyDefaultTitle:         "Untitled",
+		keyDefaultVisibility:    meta.VisibilityLogin,
+		keyExpertMode:           false,
+		keyFooterHTML:           "",
+		keyHomeZettel:           id.DefaultHomeZid,
+		keyMarkerExternal:       "&#10138;",
+		keyMaxTransclusions:     1024,
+		keySiteName:             "Zettelstore",
+		keyYAMLHeader:           false,
+		keyZettelFileSyntax:     nil,
+		kernel.ConfigSimpleMode: false,
 	}
 }
 func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
@@ -164,12 +186,13 @@ func (cfg *myConfig) observe(ci box.UpdateInfo) {
 }
 
 var defaultKeys = map[string]string{
-	api.KeyCopyright: api.KeyDefaultCopyright,
-	api.KeyLang:      api.KeyDefaultLang,
-	api.KeyLicense:   api.KeyDefaultLicense,
-	api.KeyRole:      api.KeyDefaultRole,
-	api.KeySyntax:    api.KeyDefaultSyntax,
-	api.KeyTitle:     api.KeyDefaultTitle,
+	api.KeyCopyright:  keyDefaultCopyright,
+	api.KeyLang:       keyDefaultLang,
+	api.KeyLicense:    keyDefaultLicense,
+	api.KeyRole:       keyDefaultRole,
+	api.KeySyntax:     keyDefaultSyntax,
+	api.KeyTitle:      keyDefaultTitle,
+	api.KeyVisibility: keyDefaultVisibility,
 }
 
 // AddDefaultValues enriches the given meta data with its default values.
@@ -207,28 +230,28 @@ func (cfg *myConfig) getBool(key string) bool {
 }
 
 // GetDefaultTitle returns the current value of the "default-title" key.
-func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(api.KeyDefaultTitle) }
+func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(keyDefaultTitle) }
 
 // GetDefaultRole returns the current value of the "default-role" key.
-func (cfg *myConfig) GetDefaultRole() string { return cfg.getString(api.KeyDefaultRole) }
+func (cfg *myConfig) GetDefaultRole() string { return cfg.getString(keyDefaultRole) }
 
 // GetDefaultSyntax returns the current value of the "default-syntax" key.
-func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(api.KeyDefaultSyntax) }
+func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(keyDefaultSyntax) }
 
 // GetDefaultLang returns the current value of the "default-lang" key.
-func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(api.KeyDefaultLang) }
+func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(keyDefaultLang) }
 
 // GetSiteName returns the current value of the "site-name" key.
-func (cfg *myConfig) GetSiteName() string { return cfg.getString(api.KeySiteName) }
+func (cfg *myConfig) GetSiteName() string { return cfg.getString(keySiteName) }
 
 // GetHomeZettel returns the value of the "home-zettel" key.
 func (cfg *myConfig) GetHomeZettel() id.Zid {
-	val := cfg.getString(api.KeyHomeZettel)
+	val := cfg.getString(keyHomeZettel)
 	if homeZid, err := id.Parse(val); err == nil {
 		return homeZid
 	}
 	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(api.KeyHomeZettel)
+	val, _ = cfg.orig.Get(keyHomeZettel)
 	homeZid, _ := id.Parse(val)
 	cfg.mx.RUnlock()
 	return homeZid
@@ -236,12 +259,12 @@ func (cfg *myConfig) GetHomeZettel() id.Zid {
 
 // GetDefaultVisibility returns the default value for zettel visibility.
 func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
-	val := cfg.getString(api.KeyDefaultVisibility)
+	val := cfg.getString(keyDefaultVisibility)
 	if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
 		return vis
 	}
 	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(api.KeyDefaultVisibility)
+	val, _ = cfg.orig.Get(keyDefaultVisibility)
 	vis := meta.GetVisibility(val)
 	cfg.mx.RUnlock()
 	return vis
@@ -250,7 +273,7 @@ func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cfg *myConfig) GetMaxTransclusions() int {
 	cfg.mx.RLock()
-	val, ok := cfg.data.GetNumber(api.KeyMaxTransclusions)
+	val, ok := cfg.data.GetNumber(keyMaxTransclusions)
 	cfg.mx.RUnlock()
 	if ok && val > 0 {
 		return val
@@ -259,22 +282,22 @@ func (cfg *myConfig) GetMaxTransclusions() int {
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
-func (cfg *myConfig) GetYAMLHeader() bool { return cfg.getBool(api.KeyYAMLHeader) }
+func (cfg *myConfig) GetYAMLHeader() bool { return cfg.getBool(keyYAMLHeader) }
 
 // GetMarkerExternal returns the current value of the "marker-external" key.
 func (cfg *myConfig) GetMarkerExternal() string {
-	return cfg.getString(api.KeyMarkerExternal)
+	return cfg.getString(keyMarkerExternal)
 }
 
 // GetFooterHTML returns HTML code that should be embedded into the footer
 // of each WebUI page.
-func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(api.KeyFooterHTML) }
+func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(keyFooterHTML) }
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cfg *myConfig) GetZettelFileSyntax() []string {
 	cfg.mx.RLock()
 	defer cfg.mx.RUnlock()
-	return cfg.data.GetListOrNil(api.KeyZettelFileSyntax)
+	return cfg.data.GetListOrNil(keyZettelFileSyntax)
 }
 
 // --- AuthConfig
@@ -283,7 +306,7 @@ func (cfg *myConfig) GetZettelFileSyntax() []string {
 func (cfg *myConfig) GetSimpleMode() bool { return cfg.getBool(kernel.ConfigSimpleMode) }
 
 // GetExpertMode returns the current value of the "expert-mode" key.
-func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(api.KeyExpertMode) }
+func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(keyExpertMode) }
 
 // GetVisibility returns the visibility value, or "login" if none is given.
 func (cfg *myConfig) GetVisibility(m *meta.Meta) meta.Visibility {
