@@ -246,7 +246,11 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 }
 
 func (v *visitor) writeHTMLEscaped(s string) {
-	strfun.HTMLEscape(&v.b, s, v.visibleSpace)
+	if v.visibleSpace {
+		strfun.HTMLEscapeVisible(&v.b, s)
+	} else {
+		strfun.HTMLEscape(&v.b, s)
+	}
 }
 
 func (v *visitor) writeQuotedEscaped(s string) {

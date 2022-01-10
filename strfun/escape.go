@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -11,50 +11,45 @@
 // Package strfun provides some string functions.
 package strfun
 
-import "io"
+import (
+	"io"
+	"strings"
+)
+
+const (
+	htmlQuot     = "&quot;" // longer than "&39;", but often requested in standards
+	htmlAmp      = "&amp;"
+	htmlNull     = "\uFFFD"
+	htmlVisSpace = "\u2423"
+)
 
 var (
-	htmlQuot     = []byte("&quot;") // shorter than "&39;", but often requested in standards
-	htmlAmp      = []byte("&amp;")
-	htmlLt       = []byte("&lt;")
-	htmlGt       = []byte("&gt;")
-	htmlNull     = []byte("\uFFFD")
-	htmlVisSpace = []byte("\u2423")
+	bhtmlQuot = []byte(htmlQuot) // shorter than "&39;", but often requested in standards
+	bhtmlAmp  = []byte(htmlAmp)
+	bhtmlNull = []byte(htmlNull)
+)
+
+var (
+	htmlEscapes = []string{`&`, htmlAmp,
+		`<`, "&lt;",
+		`>`, "&gt;",
+		`"`, htmlQuot,
+		"\000", htmlNull,
+	}
+	htmlEscaper    = strings.NewReplacer(htmlEscapes...)
+	htmlVisEscapes = append(htmlEscapes,
+		" ", htmlVisSpace,
+		"\u00a0", htmlVisSpace,
+	)
+	htmlVisEscaper = strings.NewReplacer(htmlVisEscapes...)
 )
 
 // HTMLEscape writes to w the escaped HTML equivalent of the given string.
-// If visibleSpace is true, each space is written as U-2423.
-func HTMLEscape(w io.Writer, s string, visibleSpace bool) {
-	last := 0
-	var html []byte
-	lenS := len(s)
-	for i := 0; i < lenS; i++ {
-		switch s[i] {
-		case '\000':
-			html = htmlNull
-		case ' ':
-			if visibleSpace {
-				html = htmlVisSpace
-			} else {
-				continue
-			}
-		case '"':
-			html = htmlQuot
-		case '&':
-			html = htmlAmp
-		case '<':
-			html = htmlLt
-		case '>':
-			html = htmlGt
-		default:
-			continue
-		}
-		io.WriteString(w, s[last:i])
-		w.Write(html)
-		last = i + 1
-	}
-	io.WriteString(w, s[last:])
-}
+func HTMLEscape(w io.Writer, s string) (int, error) { return htmlEscaper.WriteString(w, s) }
+
+// HTMLEscapeVisible writes to w the escaped HTML equivalent of the given string.
+// Each space is written as U-2423.
+func HTMLEscapeVisible(w io.Writer, s string) (int, error) { return htmlVisEscaper.WriteString(w, s) }
 
 // HTMLAttrEscape writes to w the escaped HTML equivalent of the given string to be used
 // in attributes.
@@ -65,11 +60,11 @@ func HTMLAttrEscape(w io.Writer, s string) {
 	for i := 0; i < lenS; i++ {
 		switch s[i] {
 		case '\000':
-			html = htmlNull
+			html = bhtmlNull
 		case '"':
-			html = htmlQuot
+			html = bhtmlQuot
 		case '&':
-			html = htmlAmp
+			html = bhtmlAmp
 		default:
 			continue
 		}

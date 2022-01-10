@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -601,8 +601,7 @@ func (tmpl *Template) renderNode(w io.Writer, node node, stack []reflect.Value) 
 			if n.raw {
 				fmt.Fprint(w, val.Interface())
 			} else {
-				s := fmt.Sprint(val.Interface())
-				strfun.HTMLEscape(w, s, false)
+				strfun.HTMLEscape(w, fmt.Sprint(val.Interface()))
 			}
 		}
 	case *sectionNode:
