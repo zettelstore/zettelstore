@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -17,7 +17,7 @@ import (
 
 func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
 	descrlist := &ast.DescriptionListNode{}
-	for _, p := range m.Pairs(false) {
+	for _, p := range m.Pairs() {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getMetadataDescription(p.Key, p.Value))
 	}

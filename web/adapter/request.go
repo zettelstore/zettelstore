@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -165,7 +165,7 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 // some zettel identifier.
 func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
 	s = s.AddExpr(api.KeyID, "!="+m.Zid.String())
-	for _, pair := range m.PairsRest(true) {
+	for _, pair := range m.ComputedPairsRest() {
 		switch meta.Type(pair.Key) {
 		case meta.TypeID:
 			s = s.AddExpr(api.KeyID, "!="+pair.Value)

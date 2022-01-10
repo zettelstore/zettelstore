@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -40,7 +40,7 @@ func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 // WriteMeta encodes metadata as text.
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	buf := encoder.NewBufWriter(w)
-	for _, pair := range m.Pairs(true) {
+	for _, pair := range m.ComputedPairs() {
 		switch meta.Type(pair.Key) {
 		case meta.TypeBool:
 			writeBool(&buf, pair.Value)

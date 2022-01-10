@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -82,7 +82,7 @@ func TestNewFromInput(t *testing.T) {
 	}
 	for i, tc := range testcases {
 		meta := parseMetaStr(tc.input)
-		if got := meta.Pairs(true); !equalPairs(tc.exp, got) {
+		if got := meta.Pairs(); !equalPairs(tc.exp, got) {
 			t.Errorf("TC=%d: expected=%v, got=%v", i, tc.exp, got)
 		}
 	}
@@ -91,7 +91,7 @@ func TestNewFromInput(t *testing.T) {
 	inp := input.NewInput([]byte("---\na:b\n---\nX"))
 	m := meta.NewFromInput(testID, inp)
 	exp := []meta.Pair{{"a", "b"}}
-	if got := m.Pairs(true); !equalPairs(exp, got) {
+	if got := m.Pairs(); !equalPairs(exp, got) {
 		t.Errorf("Expected=%v, got=%v", exp, got)
 	}
 	expCh := 'X'

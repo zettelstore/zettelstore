@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -30,7 +30,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 
 func genConfigZettelC(*meta.Meta) []byte {
 	var buf bytes.Buffer
-	for i, p := range myConfig.Pairs(false) {
+	for i, p := range myConfig.Pairs() {
 		if i > 0 {
 			buf.WriteByte('\n')
 		}

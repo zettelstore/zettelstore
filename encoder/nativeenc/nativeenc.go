@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -192,7 +192,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	v.writeMetaString(m, api.KeyRole, "Role")
 	v.writeMetaList(m, api.KeyTags, "Tags")
 	v.writeMetaString(m, api.KeySyntax, "Syntax")
-	pairs := m.PairsRest(true)
+	pairs := m.ComputedPairsRest()
 	if len(pairs) == 0 {
 		return
 	}

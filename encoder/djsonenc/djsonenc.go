@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -476,7 +476,7 @@ func (v *visitor) writeContentStart(code rune) {
 }
 
 func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	for i, p := range m.Pairs(true) {
+	for i, p := range m.ComputedPairs() {
 		if i > 0 {
 			v.b.WriteByte(',')
 		}

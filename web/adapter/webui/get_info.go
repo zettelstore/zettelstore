@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -86,7 +86,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{Lang: lang}
-		pairs := zn.Meta.Pairs(true)
+		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		for i, p := range pairs {

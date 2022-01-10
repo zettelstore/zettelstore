@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -35,7 +35,7 @@ func (NewZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m.Set(api.KeySyntax, om.GetDefault(api.KeySyntax, ""))
 
 	const prefixLen = len(meta.NewPrefix)
-	for _, pair := range om.PairsRest(false) {
+	for _, pair := range om.PairsRest() {
 		if key := pair.Key; len(key) > prefixLen && key[0:prefixLen] == meta.NewPrefix {
 			m.Set(key[prefixLen:], pair.Value)
 		}

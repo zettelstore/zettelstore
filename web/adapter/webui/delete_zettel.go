@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -73,7 +73,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 			Incoming    []simpleLink
 		}{
 			Zid:         zid.String(),
-			MetaPairs:   m.Pairs(true),
+			MetaPairs:   m.ComputedPairs(),
 			HasShadows:  shadowedBox != "",
 			ShadowedBox: shadowedBox,
 			HasIncoming: len(incomingLinks) > 0,

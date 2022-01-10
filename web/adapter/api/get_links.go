@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -45,7 +45,7 @@ func (a *API) MakeGetLinksHandler(evaluate usecase.Evaluate) http.HandlerFunc {
 		outData.Linked.Outgoing = idRefs(zetRefs)
 		outData.Linked.Local = stringRefs(locRefs)
 		outData.Linked.External = stringRefs(extRefs)
-		for _, p := range zn.Meta.PairsRest(false) {
+		for _, p := range zn.Meta.PairsRest() {
 			if meta.Type(p.Key) == meta.TypeURL {
 				outData.Linked.Meta = append(outData.Linked.Meta, p.Value)
 			}

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -68,7 +68,7 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 		}
 		result = append(result, m)
 
-		for _, p := range m.PairsRest(true) {
+		for _, p := range m.ComputedPairsRest() {
 			tasks.addPair(ctx, uc.port, p.Key, p.Value, curDepth+1, isBackward, isForward)
 		}
 	}

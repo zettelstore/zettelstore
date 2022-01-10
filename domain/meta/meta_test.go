@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -150,17 +150,17 @@ func TestDefaultHeader(t *testing.T) {
 	addToMeta(m, "H2", "D2")
 	addToMeta(m, "H1", "D1.1")
 	exp := map[string]string{"h1": "d1 D1.1", "h2": "D2"}
-	checkHeader(t, exp, m.Pairs(true))
+	checkHeader(t, exp, m.Pairs())
 	addToMeta(m, "", "d0")
-	checkHeader(t, exp, m.Pairs(true))
+	checkHeader(t, exp, m.Pairs())
 	addToMeta(m, "h3", "")
 	exp["h3"] = ""
-	checkHeader(t, exp, m.Pairs(true))
+	checkHeader(t, exp, m.Pairs())
 	addToMeta(m, "h3", "  ")
-	checkHeader(t, exp, m.Pairs(true))
+	checkHeader(t, exp, m.Pairs())
 	addToMeta(m, "h4", " ")
 	exp["h4"] = ""
-	checkHeader(t, exp, m.Pairs(true))
+	checkHeader(t, exp, m.Pairs())
 }
 
 func TestDelete(t *testing.T) {

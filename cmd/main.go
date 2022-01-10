@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -146,7 +146,7 @@ func parsePort(s string) (string, error) {
 }
 
 func deleteConfiguredBoxes(cfg *meta.Meta) {
-	for _, p := range cfg.PairsRest(false) {
+	for _, p := range cfg.PairsRest() {
 		if key := p.Key; strings.HasPrefix(key, kernel.BoxURIs) {
 			cfg.Delete(key)
 		}

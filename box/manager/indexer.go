@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -186,7 +186,7 @@ func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
 }
 
 func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData) {
-	for _, pair := range m.Pairs(false) {
+	for _, pair := range m.Pairs() {
 		descr := meta.GetDescription(pair.Key)
 		if descr.IsComputed() {
 			continue

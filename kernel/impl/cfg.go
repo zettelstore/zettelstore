@@ -166,7 +166,7 @@ func (cfg *myConfig) doUpdate(p box.Box) error {
 		return err
 	}
 	cfg.mx.Lock()
-	for _, pair := range cfg.data.Pairs(false) {
+	for _, pair := range cfg.data.Pairs() {
 		key := pair.Key
 		if val, ok := m.Get(key); ok {
 			cfg.data.Set(key, val)

@@ -245,41 +245,64 @@ func (m *Meta) GetDefault(key, def string) string {
 	return def
 }
 
-// Pairs returns all key/values pairs stored, in a specific order. First come
+// Pairs returns not computed key/values pairs stored, in a specific order.
+// First come the pairs with predefined keys: MetaTitleKey, MetaTagsKey, MetaSyntaxKey,
+// MetaContextKey. Then all other pairs are append to the list, ordered by key.
+func (m *Meta) Pairs() []Pair {
+	return m.doPairs(m.getFirstKeys(), notComputedKey)
+}
+
+// ComputedPairs returns all key/values pairs stored, in a specific order. First come
 // the pairs with predefined keys: MetaTitleKey, MetaTagsKey, MetaSyntaxKey,
 // MetaContextKey. Then all other pairs are append to the list, ordered by key.
-func (m *Meta) Pairs(allowComputed bool) []Pair {
-	return m.doPairs(true, allowComputed)
+func (m *Meta) ComputedPairs() []Pair {
+	return m.doPairs(m.getFirstKeys(), anyKey)
 }
 
-// PairsRest returns all key/values pairs stored, except the values with
+// PairsRest returns not computed key/values pairs stored, except the values with
 // predefined keys. The pairs are ordered by key.
-func (m *Meta) PairsRest(allowComputed bool) []Pair {
-	return m.doPairs(false, allowComputed)
+func (m *Meta) PairsRest() []Pair {
+	result := make([]Pair, 0, len(m.pairs))
+	return m.doPairs(result, notComputedKey)
 }
 
-func (m *Meta) doPairs(first, allowComputed bool) []Pair {
+// ComputedPairsRest returns all key/values pairs stored, except the values with
+// predefined keys. The pairs are ordered by key.
+func (m *Meta) ComputedPairsRest() []Pair {
 	result := make([]Pair, 0, len(m.pairs))
-	if first {
-		for _, key := range firstKeys {
-			if value, ok := m.pairs[key]; ok {
-				result = append(result, Pair{key, value})
-			}
+	return m.doPairs(result, anyKey)
+}
+
+func notComputedKey(key string) bool { return !IsComputed(key) }
+func anyKey(string) bool             { return true }
+
+func (m *Meta) doPairs(firstKeys []Pair, addKeyPred func(string) bool) []Pair {
+	keys := m.getKeysRest(addKeyPred)
+	for _, k := range keys {
+		firstKeys = append(firstKeys, Pair{k, m.pairs[k]})
+	}
+	return firstKeys
+}
+
+func (m *Meta) getFirstKeys() []Pair {
+	result := make([]Pair, 0, len(m.pairs))
+	for _, key := range firstKeys {
+		if value, ok := m.pairs[key]; ok {
+			result = append(result, Pair{key, value})
 		}
 	}
+	return result
+}
 
-	keys := make([]string, 0, len(m.pairs)-len(result))
+func (m *Meta) getKeysRest(addKeyPred func(string) bool) []string {
+	keys := make([]string, 0, len(m.pairs))
 	for k := range m.pairs {
-		if !firstKeySet[k] && (allowComputed || !IsComputed(k)) {
+		if !firstKeySet[k] && addKeyPred(k) {
 			keys = append(keys, k)
 		}
 	}
 	sort.Strings(keys)
-
-	for _, k := range keys {
-		result = append(result, Pair{k, m.pairs[k]})
-	}
-	return result
+	return keys
 }
 
 // Delete removes a key from the data.

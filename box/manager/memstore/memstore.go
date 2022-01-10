@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -251,7 +251,7 @@ func addBackwardZids(result id.Set, zid id.Zid, zi *zettelIndex) {
 }
 
 func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
-	for _, p := range m.PairsRest(false) {
+	for _, p := range m.PairsRest() {
 		switch meta.Type(p.Key) {
 		case meta.TypeID:
 			if zid, err := id.Parse(p.Value); err == nil {

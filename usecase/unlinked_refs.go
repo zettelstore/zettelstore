@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -92,7 +92,7 @@ candLoop:
 		}
 		v.text = v.joinWords(words)
 
-		for _, pair := range zettel.Meta.Pairs(false) {
+		for _, pair := range zettel.Meta.Pairs() {
 			if meta.Type(pair.Key) != meta.TypeZettelmarkup {
 				continue
 			}

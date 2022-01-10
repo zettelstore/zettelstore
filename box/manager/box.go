@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -216,7 +216,7 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	}
 	// Remove all (computed) properties from metadata before storing the zettel.
 	zettel.Meta = zettel.Meta.Clone()
-	for _, p := range zettel.Meta.PairsRest(true) {
+	for _, p := range zettel.Meta.ComputedPairsRest() {
 		if mgr.propertyKeys[p.Key] {
 			zettel.Meta.Delete(p.Key)
 		}

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -141,7 +141,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		ignore[api.KeyTags] = true
 	}
 
-	for _, p := range m.Pairs(true) {
+	for _, p := range m.ComputedPairs() {
 		key := p.Key
 		if ignore[key] {
 			continue

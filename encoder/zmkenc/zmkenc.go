@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -53,7 +53,7 @@ func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eval
 }
 
 func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	for _, p := range m.Pairs(true) {
+	for _, p := range m.ComputedPairs() {
 		key := p.Key
 		v.b.WriteStrings(key, ": ")
 		if meta.Type(key) == meta.TypeZettelmarkup {
