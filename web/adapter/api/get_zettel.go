@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -63,7 +63,7 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 		var contentType string
 		switch getPart(r.URL.Query(), partContent) {
 		case partZettel:
-			_, err = z.Meta.Write(&buf, false)
+			_, err = z.Meta.Write(&buf)
 			if err == nil {
 				err = buf.WriteByte('\n')
 			}
@@ -72,7 +72,7 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 			}
 		case partMeta:
 			contentType = ctPlainText
-			_, err = z.Meta.Write(&buf, false)
+			_, err = z.Meta.Write(&buf)
 		case partContent:
 			if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, a.rtConfig)); ok {
 				contentType = ct

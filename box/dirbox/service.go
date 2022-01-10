@@ -171,7 +171,7 @@ func (cmd *fileSetZettel) setMetaSpecFile(dirPath string) error {
 	if err == nil {
 		err = writeFileZid(f, cmd.zettel.Meta.Zid)
 		if err == nil {
-			_, err = cmd.zettel.Meta.Write(f, true)
+			_, err = cmd.zettel.Meta.WriteComputed(f)
 			if err1 := f.Close(); err == nil {
 				err = err1
 			}
@@ -188,7 +188,7 @@ func (cmd *fileSetZettel) setMetaSpecHeader(dirPath string) error {
 	if err == nil {
 		err = writeFileZid(f, cmd.zettel.Meta.Zid)
 		if err == nil {
-			_, err = cmd.zettel.Meta.WriteAsHeader(f, true)
+			_, err = cmd.zettel.Meta.WriteAsHeader(f)
 			if err == nil {
 				_, err = f.WriteString(cmd.zettel.Content.AsString())
 				if err1 := f.Close(); err == nil {

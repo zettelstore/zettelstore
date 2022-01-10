@@ -79,6 +79,14 @@ func IsComputed(name string) bool {
 	return false
 }
 
+// IsProperty returns true, if key denotes a property metadata value.
+func IsProperty(name string) bool {
+	if kd, ok := registeredKeys[name]; ok {
+		return kd.IsProperty()
+	}
+	return false
+}
+
 // Inverse returns the name of the inverse key.
 func Inverse(name string) string {
 	if kd, ok := registeredKeys[name]; ok {

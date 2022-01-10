@@ -11,44 +11,56 @@
 // Package meta provides the domain specific type 'meta'.
 package meta
 
-import (
-	"bytes"
-	"io"
-)
+import "io"
 
-// Write writes metadata to a writer. If "allowComputed" is true, then
-// computed values are also written, but not property values.
-func (m *Meta) Write(w io.Writer, allowComputed bool) (int, error) {
-	var buf bytes.Buffer
+// Write writes metadata to a writer, excluding computed and propery values.
+func (m *Meta) Write(w io.Writer) (int, error) {
+	return m.doWrite(w, IsComputed)
+}
+
+// WriteComputed writes metadata to a writer, including computed values,
+// but excluding property values.
+func (m *Meta) WriteComputed(w io.Writer) (int, error) {
+	return m.doWrite(w, IsProperty)
+}
+
+func (m *Meta) doWrite(w io.Writer, ignoreKeyPred func(string) bool) (length int, err error) {
 	for _, p := range m.Pairs(true) {
 		key := p.Key
-		kd := GetDescription(key)
-		if allowComputed {
-			if kd.IsProperty() {
-				continue
-			}
-		} else {
-			if kd.IsComputed() {
-				continue
-			}
+		if ignoreKeyPred(key) {
+			continue
 		}
-		buf.WriteString(key)
-		buf.WriteString(": ")
-		buf.WriteString(p.Value)
-		buf.WriteByte('\n')
+		if err != nil {
+			break
+		}
+		var l int
+		l, err = io.WriteString(w, key)
+		length += l
+		if err == nil {
+			l, err = w.Write(colonSpace)
+			length += l
+		}
+		if err == nil {
+			l, err = io.WriteString(w, p.Value)
+			length += l
+		}
+		if err == nil {
+			l, err = w.Write(newline)
+			length += l
+		}
 	}
-	return w.Write(buf.Bytes())
+	return length, err
 }
 
 var (
-	newline = []byte{'\n'}
-	yamlSep = []byte{'-', '-', '-', '\n'}
+	colonSpace = []byte{':', ' '}
+	newline    = []byte{'\n'}
+	yamlSep    = []byte{'-', '-', '-', '\n'}
 )
 
 // WriteAsHeader writes metadata to the writer, plus the separators.
-// If "allowComputed" is true, then // computed values are also written, but not
-// property values.
-func (m *Meta) WriteAsHeader(w io.Writer, allowComputed bool) (int, error) {
+// It writes all computed values, except property values.
+func (m *Meta) WriteAsHeader(w io.Writer) (int, error) {
 	var lb, lc, la int
 	var err error
 
@@ -58,7 +70,7 @@ func (m *Meta) WriteAsHeader(w io.Writer, allowComputed bool) (int, error) {
 			return lb, err
 		}
 	}
-	lc, err = m.Write(w, allowComputed)
+	lc, err = m.WriteComputed(w)
 	if err != nil {
 		return lb + lc, err
 	}
