@@ -49,20 +49,25 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 		incomingLinks := wui.encodeIncoming(m, getTextTitle)
+		uselessFiles := retrieveUselessFiles(m)
 
 		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Rename Zettel "+zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
-			Zid         string
-			MetaPairs   []meta.Pair
-			HasIncoming bool
-			Incoming    []simpleLink
+			Zid             string
+			MetaPairs       []meta.Pair
+			HasIncoming     bool
+			Incoming        []simpleLink
+			HasUselessFiles bool
+			UselessFiles    []string
 		}{
-			Zid:         zid.String(),
-			MetaPairs:   m.ComputedPairs(),
-			HasIncoming: len(incomingLinks) > 0,
-			Incoming:    incomingLinks,
+			Zid:             zid.String(),
+			MetaPairs:       m.ComputedPairs(),
+			HasIncoming:     len(incomingLinks) > 0,
+			Incoming:        incomingLinks,
+			HasUselessFiles: len(uselessFiles) > 0,
+			UselessFiles:    uselessFiles,
 		})
 	}
 }

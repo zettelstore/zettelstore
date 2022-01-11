@@ -20,6 +20,17 @@
 </ul>
 </div>
 {{/HasIncoming}}
+{{#HasUselessFiles}}
+<div class="zs-warning">
+<h2>Warning!</h2>
+<p>Deleting this zettel will also delete the following files, so that they will not be interpreted as content for this zettel.</p>
+<ul>
+{{#UselessFiles}}
+<li>{{{.}}}</li>
+{{/UselessFiles}}
+</ul>
+</div>
+{{/HasUselessFiles}}
 <dl>
 {{#MetaPairs}}
 <dt>{{Key}}:</dt><dd>{{Value}}</dd>

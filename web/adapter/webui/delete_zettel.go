@@ -60,26 +60,38 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 			getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
 			incomingLinks = wui.encodeIncoming(m, getTextTitle)
 		}
+		uselessFiles := retrieveUselessFiles(m)
 
 		user := wui.getUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), user, &base)
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
-			Zid         string
-			MetaPairs   []meta.Pair
-			HasShadows  bool
-			ShadowedBox string
-			HasIncoming bool
-			Incoming    []simpleLink
+			Zid             string
+			MetaPairs       []meta.Pair
+			HasShadows      bool
+			ShadowedBox     string
+			HasIncoming     bool
+			Incoming        []simpleLink
+			HasUselessFiles bool
+			UselessFiles    []string
 		}{
-			Zid:         zid.String(),
-			MetaPairs:   m.ComputedPairs(),
-			HasShadows:  shadowedBox != "",
-			ShadowedBox: shadowedBox,
-			HasIncoming: len(incomingLinks) > 0,
-			Incoming:    incomingLinks,
+			Zid:             zid.String(),
+			MetaPairs:       m.ComputedPairs(),
+			HasShadows:      shadowedBox != "",
+			ShadowedBox:     shadowedBox,
+			HasIncoming:     len(incomingLinks) > 0,
+			Incoming:        incomingLinks,
+			HasUselessFiles: len(uselessFiles) > 0,
+			UselessFiles:    uselessFiles,
 		})
 	}
+}
+
+func retrieveUselessFiles(m *meta.Meta) []string {
+	if val, found := m.Get(api.KeyUselessFiles); found {
+		return []string{val}
+	}
+	return nil
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
