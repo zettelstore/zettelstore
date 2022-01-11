@@ -3,10 +3,11 @@ title: IdentifierSet Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20220111103731
 
 Values of this type denote a (sorted) set of [[zettel identifier|00001006050000]].
 
-A set is different to a list, as no duplicates are allowed.
+A set is different to a list, as no duplicate values are allowed.
 
 === Allowed values
 Must be at least one sequence of 14 digits (""0""--""9""), separated by space characters.

@@ -3,10 +3,11 @@ title: WordSet Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+modified: 20220111103714
 
 Values of this type denote a (sorted) set of [[words|00001006035500]].
 
-A set is different to a list, as no duplicates are allowed.
+A set is different to a list, as no duplicate values are allowed.
 
 === Allowed values
 Must be a sequence of at least one word, separated by space characters.

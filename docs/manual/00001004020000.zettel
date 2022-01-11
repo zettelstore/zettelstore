@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220110161636
+modified: 20220111103757
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -71,7 +71,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : If you create a new zettel with a syntax different to ""zmk"", Zettelstore will store the zettel as two files:
   one for the metadata (file without a filename extension) and another for the content (file extension based on the syntax value).
   If you want to specify alternative syntax values, for which you want new zettel to be stored in one file (file extension ''.zettel''), you can use this key.
-  All values are case-insensitive, duplicates are removed.
+  All values are case-insensitive, duplicate values are removed.
 
   For example, you could use this key if you're working with Markdown syntax and you want to store metadata and content in one ''.zettel'' file.
 

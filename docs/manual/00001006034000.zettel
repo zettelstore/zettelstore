@@ -3,11 +3,11 @@ title: TagSet Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210817201410
+modified: 20220111103723
 
 Values of this type denote a (sorted) set of tags.
 
-A set is different to a list, as no duplicates are allowed.
+A set is different to a list, as no duplicate values are allowed.
 
 === Allowed values
 Every tag must must begin with the number sign character (""''#''"", ''U+0023''), followed by at least one printable character.
