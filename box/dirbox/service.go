@@ -237,7 +237,7 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 	default:
 		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at delete")
 	}
-	for _, dupName := range entry.Duplicates {
+	for _, dupName := range entry.UselessFiles {
 		err1 := os.Remove(filepath.Join(dirPath, dupName))
 		if err == nil {
 			err = err1
@@ -276,7 +276,7 @@ func cmdCleanupMeta(m *meta.Meta, entry *notify.DirEntry) {
 		m,
 		entry.Zid, entry.ContentExt,
 		entry.MetaSpec == notify.DirMetaSpecFile,
-		entry.Duplicates,
+		entry.UselessFiles,
 	)
 }
 

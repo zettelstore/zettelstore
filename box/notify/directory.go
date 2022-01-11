@@ -37,12 +37,12 @@ const (
 
 // DirEntry stores everything for a directory entry.
 type DirEntry struct {
-	Zid         id.Zid
-	MetaSpec    DirMetaSpec // location of meta information
-	MetaName    string      // file name of meta information
-	ContentName string      // file name of zettel content
-	ContentExt  string      // (normalized) file extension of zettel content
-	Duplicates  []string    // list of other content files
+	Zid          id.Zid
+	MetaSpec     DirMetaSpec // location of meta information
+	MetaName     string      // file name of meta information
+	ContentName  string      // file name of zettel content
+	ContentExt   string      // (normalized) file extension of zettel content
+	UselessFiles []string    // list of other content files
 }
 
 // IsValid checks whether the entry is valid.
@@ -412,12 +412,12 @@ func (ds *DirService) addDuplicate(entry *DirEntry, name, ext string) string {
 		entry.ContentExt = filepath.Ext(name)[1:]
 		name = tempName
 	}
-	for _, dupName := range entry.Duplicates {
+	for _, dupName := range entry.UselessFiles {
 		if name == dupName {
 			return name
 		}
 	}
-	entry.Duplicates = append(entry.Duplicates, name)
+	entry.UselessFiles = append(entry.UselessFiles, name)
 	return name
 }
 
@@ -446,14 +446,14 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if !found {
 		return
 	}
-	for i, dupName := range entry.Duplicates {
+	for i, dupName := range entry.UselessFiles {
 		if dupName == name {
 			ds.removeDuplicate(entry, i)
 			return
 		}
 	}
 	if ext == "" {
-		for i, dupName := range entry.Duplicates {
+		for i, dupName := range entry.UselessFiles {
 			if strings.HasSuffix(dupName, ".meta") {
 				entry.MetaName = dupName
 				ds.removeDuplicate(entry, i)
@@ -476,11 +476,11 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 }
 
 func (*DirService) removeDuplicate(entry *DirEntry, i int) {
-	if len(entry.Duplicates) == 1 {
-		entry.Duplicates = nil
+	if len(entry.UselessFiles) == 1 {
+		entry.UselessFiles = nil
 		return
 	}
-	entry.Duplicates = entry.Duplicates[:i+copy(entry.Duplicates[i:], entry.Duplicates[i+1:])]
+	entry.UselessFiles = entry.UselessFiles[:i+copy(entry.UselessFiles[i:], entry.UselessFiles[i+1:])]
 }
 
 func (ds *DirService) notifyChange(reason box.UpdateReason, zid id.Zid) {

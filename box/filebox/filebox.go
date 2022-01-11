@@ -77,7 +77,7 @@ func CalcDefaultMeta(zid id.Zid, ext string) *meta.Meta {
 }
 
 // CleanupMeta enhances the given metadata.
-func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, duplicates []string) {
+func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, uselessFiles []string) {
 	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
 		m.Set(api.KeyTitle, zid.String())
 	}
@@ -93,7 +93,7 @@ func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, duplicates [
 		}
 	}
 
-	if len(duplicates) > 0 {
-		m.Set(api.KeyDuplicates, strings.Join(duplicates, " "))
+	if len(uselessFiles) > 0 {
+		m.Set(api.KeyUselessFiles, strings.Join(uselessFiles, " "))
 	}
 }

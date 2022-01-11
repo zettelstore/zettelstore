@@ -112,7 +112,7 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 
-	CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.Duplicates)
+	CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.UselessFiles)
 	zb.log.Trace().Zid(zid).Msg("GetZettel")
 	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
 }
@@ -219,7 +219,7 @@ func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m 
 		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 	if err == nil {
-		CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.Duplicates)
+		CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.UselessFiles)
 	}
 	return m, err
 }

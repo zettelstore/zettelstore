@@ -358,7 +358,7 @@ func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
 		entry.MetaName = notify.MakeMetaFilename(baseName)
 	}
 	entry.ContentName = baseName + "." + entry.ContentExt
-	entry.Duplicates = nil
+	entry.UselessFiles = nil
 }
 
 func (dp *dirBox) calcSpecExt(m *meta.Meta) (notify.DirMetaSpec, string) {
