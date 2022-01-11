@@ -65,17 +65,25 @@ type resGetMeta struct {
 	err  error
 }
 
-func (cmd *fileGetMeta) run(_ *logger.Logger, dirPath string) {
-	entry := cmd.entry
+func (cmd *fileGetMeta) run(log *logger.Logger, dirPath string) {
 	var m *meta.Meta
 	var err error
-	switch entry.MetaSpec {
-	case notify.DirMetaSpecFile:
-		m, err = parseMetaFile(entry.Zid, filepath.Join(dirPath, entry.MetaName))
-	case notify.DirMetaSpecHeader:
-		m, _, err = parseMetaContentFile(entry.Zid, filepath.Join(dirPath, entry.ContentName))
-	default:
-		m = filebox.CalcDefaultMeta(entry.Zid, entry.ContentExt)
+
+	entry := cmd.entry
+	zid := entry.Zid
+	if metaName := entry.MetaName; metaName == "" {
+		contentName := entry.ContentName
+		contentExt := entry.ContentExt
+		if contentName == "" || contentExt == "" {
+			log.Panic().Zid(zid).Msg("No meta, no content in getMeta")
+		}
+		if entry.HasMetaInContent() {
+			m, _, err = parseMetaContentFile(zid, filepath.Join(dirPath, contentName))
+		} else {
+			m = filebox.CalcDefaultMeta(zid, contentExt)
+		}
+	} else {
+		m, err = parseMetaFile(zid, filepath.Join(dirPath, metaName))
 	}
 	if err == nil {
 		cmdCleanupMeta(m, entry)
@@ -105,24 +113,35 @@ type resGetMetaContent struct {
 	err     error
 }
 
-func (cmd *fileGetMetaContent) run(_ *logger.Logger, dirPath string) {
+func (cmd *fileGetMetaContent) run(log *logger.Logger, dirPath string) {
 	var m *meta.Meta
 	var content []byte
 	var err error
 
 	entry := cmd.entry
-	contentPath := filepath.Join(dirPath, entry.ContentName)
-	switch entry.MetaSpec {
-	case notify.DirMetaSpecFile:
-		m, err = parseMetaFile(entry.Zid, filepath.Join(dirPath, entry.MetaName))
-		if err == nil {
-			content, err = readFileContent(contentPath)
+	zid := entry.Zid
+	contentName := entry.ContentName
+	contentExt := entry.ContentExt
+	contentPath := filepath.Join(dirPath, contentName)
+	if metaName := entry.MetaName; metaName == "" {
+		if contentName == "" || contentExt == "" {
+			log.Panic().Zid(zid).Msg("No meta, no content in getMetaContent")
 		}
-	case notify.DirMetaSpecHeader:
-		m, content, err = parseMetaContentFile(entry.Zid, contentPath)
-	default:
-		m = filebox.CalcDefaultMeta(entry.Zid, entry.ContentExt)
-		content, err = readFileContent(contentPath)
+		if entry.HasMetaInContent() {
+			m, content, err = parseMetaContentFile(zid, contentPath)
+		} else {
+			m = filebox.CalcDefaultMeta(zid, contentExt)
+			content, err = os.ReadFile(contentPath)
+		}
+	} else {
+		m, err = parseMetaFile(zid, filepath.Join(dirPath, metaName))
+		if contentName != "" {
+			var err1 error
+			content, err1 = os.ReadFile(contentPath)
+			if err == nil {
+				err = err1
+			}
+		}
 	}
 	if err == nil {
 		cmdCleanupMeta(m, entry)
@@ -150,52 +169,63 @@ type fileSetZettel struct {
 type resSetZettel = error
 
 func (cmd *fileSetZettel) run(log *logger.Logger, dirPath string) {
-	var err error
-	switch ms := cmd.entry.MetaSpec; ms {
-	case notify.DirMetaSpecFile:
-		err = cmd.setMetaSpecFile(dirPath)
-	case notify.DirMetaSpecHeader:
-		err = cmd.setMetaSpecHeader(dirPath)
-	case notify.DirMetaSpecNone:
-		// TODO: if meta has some additional infos: write meta to new .meta;
-		// update entry in dir
-		err = writeFileContent(filepath.Join(dirPath, cmd.entry.ContentName), cmd.zettel.Content.AsString())
-	default:
-		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at set")
+	entry := cmd.entry
+	zid := entry.Zid
+	contentName := entry.ContentName
+	m := cmd.zettel.Meta
+	content := cmd.zettel.Content.AsBytes()
+	metaName := entry.MetaName
+	if metaName == "" {
+		if contentName == "" {
+			log.Panic().Zid(zid).Msg("No meta, no content in setZettel")
+		}
+		contentPath := filepath.Join(dirPath, contentName)
+		if entry.HasMetaInContent() {
+			err := writeZettelFile(contentPath, m, content)
+			cmd.rc <- err
+			return
+		}
+		err := writeFileContent(contentPath, content)
+		cmd.rc <- err
+		return
+	}
+
+	err := writeMetaFile(filepath.Join(dirPath, metaName), m)
+	if err == nil && contentName != "" {
+		err = writeFileContent(filepath.Join(dirPath, contentName), content)
 	}
 	cmd.rc <- err
 }
 
-func (cmd *fileSetZettel) setMetaSpecFile(dirPath string) error {
-	f, err := openFileWrite(filepath.Join(dirPath, cmd.entry.MetaName))
+func writeMetaFile(metaPath string, m *meta.Meta) error {
+	metaFile, err := openFileWrite(metaPath)
+	if err != nil {
+		return err
+	}
+	err = writeFileZid(metaFile, m.Zid)
 	if err == nil {
-		err = writeFileZid(f, cmd.zettel.Meta.Zid)
-		if err == nil {
-			_, err = cmd.zettel.Meta.WriteComputed(f)
-			if err1 := f.Close(); err == nil {
-				err = err1
-			}
-			if err == nil {
-				err = writeFileContent(filepath.Join(dirPath, cmd.entry.ContentName), cmd.zettel.Content.AsString())
-			}
-		}
+		_, err = m.WriteComputed(metaFile)
+	}
+	if err1 := metaFile.Close(); err == nil {
+		err = err1
 	}
 	return err
 }
 
-func (cmd *fileSetZettel) setMetaSpecHeader(dirPath string) error {
-	f, err := openFileWrite(filepath.Join(dirPath, cmd.entry.ContentName))
+func writeZettelFile(contentPath string, m *meta.Meta, content []byte) error {
+	zettelFile, err := openFileWrite(contentPath)
+	if err != nil {
+		return err
+	}
+	err = writeFileZid(zettelFile, m.Zid)
 	if err == nil {
-		err = writeFileZid(f, cmd.zettel.Meta.Zid)
-		if err == nil {
-			_, err = cmd.zettel.Meta.WriteAsHeader(f)
-			if err == nil {
-				_, err = f.WriteString(cmd.zettel.Content.AsString())
-				if err1 := f.Close(); err == nil {
-					err = err1
-				}
-			}
-		}
+		_, err = m.WriteAsHeader(zettelFile)
+	}
+	if err == nil {
+		_, err = zettelFile.Write(content)
+	}
+	if err1 := zettelFile.Close(); err == nil {
+		err = err1
 	}
 	return err
 }
@@ -222,20 +252,21 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 	var err error
 
 	entry := cmd.entry
-	contentPath := filepath.Join(dirPath, entry.ContentName)
-	switch ms := entry.MetaSpec; ms {
-	case notify.DirMetaSpecFile:
-		err1 := os.Remove(filepath.Join(dirPath, entry.MetaName))
+	contentName := entry.ContentName
+	contentPath := filepath.Join(dirPath, contentName)
+	if metaName := entry.MetaName; metaName == "" {
+		if contentName == "" {
+			log.Panic().Zid(entry.Zid).Msg("No meta, no content in getMetaContent")
+		}
 		err = os.Remove(contentPath)
+	} else {
+		if contentName != "" {
+			err = os.Remove(contentPath)
+		}
+		err1 := os.Remove(filepath.Join(dirPath, metaName))
 		if err == nil {
 			err = err1
 		}
-	case notify.DirMetaSpecHeader:
-		err = os.Remove(contentPath)
-	case notify.DirMetaSpecNone:
-		err = os.Remove(contentPath)
-	default:
-		log.Panic().Uint("metaspec", uint64(ms)).Msg("Unknown metaSpec at delete")
 	}
 	for _, dupName := range entry.UselessFiles {
 		err1 := os.Remove(filepath.Join(dirPath, dupName))
@@ -248,12 +279,8 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 
 // Utility functions ----------------------------------------
 
-func readFileContent(path string) ([]byte, error) {
-	return os.ReadFile(path)
-}
-
 func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
-	src, err := readFileContent(path)
+	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +289,7 @@ func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
 }
 
 func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, []byte, error) {
-	src, err := readFileContent(path)
+	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -295,10 +322,10 @@ func writeFileZid(f *os.File, zid id.Zid) error {
 	return err
 }
 
-func writeFileContent(path, content string) error {
+func writeFileContent(path string, content []byte) error {
 	f, err := openFileWrite(path)
 	if err == nil {
-		_, err = f.WriteString(content)
+		_, err = f.Write(content)
 		if err1 := f.Close(); err == nil {
 			err = err1
 		}

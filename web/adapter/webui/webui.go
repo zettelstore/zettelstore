@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -296,7 +296,7 @@ func (wui *WebUI) renderTemplate(
 func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
-		wui.log.IfErr(err).Msg(text)
+		wui.log.Error().Msg(err.Error())
 	}
 	user := wui.getUser(ctx)
 	var base baseData

@@ -22,7 +22,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/box/filebox"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
@@ -242,7 +241,7 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	meta := zettel.Meta
 	meta.Zid = newZid
 	entry := notify.DirEntry{Zid: newZid}
-	dp.updateEntryFromMeta(&entry, meta)
+	dp.updateEntryFromMetaContent(&entry, meta, zettel.Content)
 
 	err = setZettel(dp, &entry, zettel)
 	if err == nil {
@@ -326,15 +325,9 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	if !entry.IsValid() {
 		// Existing zettel, but new in this box.
 		entry = &notify.DirEntry{Zid: meta.Zid}
-		dp.updateEntryFromMeta(entry, meta)
-		dp.dirSrv.UpdateDirEntry(entry)
-	} else if entry.MetaSpec == notify.DirMetaSpecNone {
-		defaultMeta := filebox.CalcDefaultMeta(entry.Zid, entry.ContentExt)
-		if !meta.Equal(defaultMeta, true) {
-			dp.updateEntryFromMeta(entry, meta)
-			dp.dirSrv.UpdateDirEntry(entry)
-		}
 	}
+	dp.updateEntryFromMetaContent(entry, meta, zettel.Content)
+	dp.dirSrv.UpdateDirEntry(entry)
 	err := setZettel(dp, entry, zettel)
 	if err == nil {
 		dp.notifyChanged(box.OnUpdate, meta.Zid)
@@ -343,39 +336,8 @@ func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	return err
 }
 
-func (dp *dirBox) updateEntryFromMeta(entry *notify.DirEntry, meta *meta.Meta) {
-	entry.MetaSpec, entry.ContentExt = dp.calcSpecExt(meta)
-
-	var baseName string
-	if p := entry.ContentName; p != "" {
-		// ContentName w/o the file extension
-		baseName = p[0 : len(p)-len(filepath.Ext(p))]
-	} else {
-		baseName = entry.Zid.String()
-	}
-
-	if entry.MetaSpec == notify.DirMetaSpecFile {
-		entry.MetaName = notify.MakeMetaFilename(baseName)
-	}
-	entry.ContentName = baseName + "." + entry.ContentExt
-	entry.UselessFiles = nil
-}
-
-func (dp *dirBox) calcSpecExt(m *meta.Meta) (notify.DirMetaSpec, string) {
-	if m.YamlSep {
-		return notify.DirMetaSpecHeader, "zettel"
-	}
-	syntax := m.GetDefault(api.KeySyntax, "bin")
-	switch syntax {
-	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
-		return notify.DirMetaSpecHeader, "zettel"
-	}
-	for _, s := range dp.cdata.Config.GetZettelFileSyntax() {
-		if s == syntax {
-			return notify.DirMetaSpecHeader, "zettel"
-		}
-	}
-	return notify.DirMetaSpecFile, syntax
+func (dp *dirBox) updateEntryFromMetaContent(entry *notify.DirEntry, m *meta.Meta, content domain.Content) {
+	entry.SetupFromMetaContent(m, content, dp.cdata.Config.GetZettelFileSyntax)
 }
 
 func (dp *dirBox) AllowRenameZettel(context.Context, id.Zid) bool {
