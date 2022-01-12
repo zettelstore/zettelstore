@@ -11,8 +11,10 @@
 package dirbox
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"time"
 
 	"zettelstore.de/z/box/filebox"
 	"zettelstore.de/z/box/notify"
@@ -44,16 +46,23 @@ type fileCmd interface {
 	run(*logger.Logger, string)
 }
 
-// COMMAND: getMeta ----------------------------------------
+const serviceTimeout = 5 * time.Second // must be shorter than the web servers timeout values for reading+writing.
+
+// COMMAND: srvGetMeta ----------------------------------------
 //
 // Retrieves the meta data from a zettel.
 
-func getMeta(dp *dirBox, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, error) {
-	rc := make(chan resGetMeta)
+func (dp *dirBox) srvGetMeta(ctx context.Context, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, error) {
+	rc := make(chan resGetMeta, 1)
 	dp.getFileChan(zid) <- &fileGetMeta{entry, rc}
-	res := <-rc
-	close(rc)
-	return res.meta, res.err
+	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
+	defer cancel()
+	select {
+	case res := <-rc:
+		return res.meta, res.err
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
 }
 
 type fileGetMeta struct {
@@ -91,16 +100,21 @@ func (cmd *fileGetMeta) run(log *logger.Logger, dirPath string) {
 	cmd.rc <- resGetMeta{m, err}
 }
 
-// COMMAND: getMetaContent ----------------------------------------
+// COMMAND: srvGetMetaContent ----------------------------------------
 //
 // Retrieves the meta data and the content of a zettel.
 
-func getMetaContent(dp *dirBox, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, []byte, error) {
-	rc := make(chan resGetMetaContent)
+func (dp *dirBox) srvGetMetaContent(ctx context.Context, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, []byte, error) {
+	rc := make(chan resGetMetaContent, 1)
 	dp.getFileChan(zid) <- &fileGetMetaContent{entry, rc}
-	res := <-rc
-	close(rc)
-	return res.meta, res.content, res.err
+	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
+	defer cancel()
+	select {
+	case res := <-rc:
+		return res.meta, res.content, res.err
+	case <-ctx.Done():
+		return nil, nil, ctx.Err()
+	}
 }
 
 type fileGetMetaContent struct {
@@ -149,16 +163,21 @@ func (cmd *fileGetMetaContent) run(log *logger.Logger, dirPath string) {
 	cmd.rc <- resGetMetaContent{m, content, err}
 }
 
-// COMMAND: setZettel ----------------------------------------
+// COMMAND: srvSetZettel ----------------------------------------
 //
 // Writes a new or exsting zettel.
 
-func setZettel(dp *dirBox, entry *notify.DirEntry, zettel domain.Zettel) error {
-	rc := make(chan resSetZettel)
+func (dp *dirBox) srvSetZettel(ctx context.Context, entry *notify.DirEntry, zettel domain.Zettel) error {
+	rc := make(chan resSetZettel, 1)
 	dp.getFileChan(zettel.Meta.Zid) <- &fileSetZettel{entry, zettel, rc}
-	err := <-rc
-	close(rc)
-	return err
+	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
+	defer cancel()
+	select {
+	case err := <-rc:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 type fileSetZettel struct {
@@ -230,16 +249,21 @@ func writeZettelFile(contentPath string, m *meta.Meta, content []byte) error {
 	return err
 }
 
-// COMMAND: deleteZettel ----------------------------------------
+// COMMAND: srvDeleteZettel ----------------------------------------
 //
 // Deletes an existing zettel.
 
-func deleteZettel(dp *dirBox, entry *notify.DirEntry, zid id.Zid) error {
-	rc := make(chan resDeleteZettel)
+func (dp *dirBox) srvDeleteZettel(ctx context.Context, entry *notify.DirEntry, zid id.Zid) error {
+	rc := make(chan resDeleteZettel, 1)
 	dp.getFileChan(zid) <- &fileDeleteZettel{entry, rc}
-	err := <-rc
-	close(rc)
-	return err
+	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
+	defer cancel()
+	select {
+	case err := <-rc:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 type fileDeleteZettel struct {

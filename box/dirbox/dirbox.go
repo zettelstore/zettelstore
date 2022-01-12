@@ -229,7 +229,7 @@ func (dp *dirBox) CanCreateZettel(_ context.Context) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
 	if dp.readonly {
 		return id.Invalid, box.ErrReadOnly
 	}
@@ -243,7 +243,7 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	entry := notify.DirEntry{Zid: newZid}
 	dp.updateEntryFromMetaContent(&entry, meta, zettel.Content)
 
-	err = setZettel(dp, &entry, zettel)
+	err = dp.srvSetZettel(ctx, &entry, zettel)
 	if err == nil {
 		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
@@ -252,32 +252,36 @@ func (dp *dirBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	return meta.Zid, err
 }
 
-func (dp *dirBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
 		return domain.Zettel{}, box.ErrNotFound
 	}
-	m, c, err := getMetaContent(dp, entry, zid)
+	m, c, err := dp.srvGetMetaContent(ctx, entry, zid)
 	if err != nil {
 		return domain.Zettel{}, err
 	}
 	dp.cleanupMeta(m)
 	zettel := domain.Zettel{Meta: m, Content: domain.NewContent(c)}
-	dp.log.Trace().Msg("GetZettel")
+	dp.log.Trace().Zid(zid).Msg("GetZettel")
 	return zettel, nil
 }
 
-func (dp *dirBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	m, err := dp.doGetMeta(ctx, zid)
+	dp.log.Trace().Zid(zid).Err(err).Msg("GetMeta")
+	return m, err
+}
+func (dp *dirBox) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
 		return nil, box.ErrNotFound
 	}
-	m, err := getMeta(dp, entry, zid)
+	m, err := dp.srvGetMeta(ctx, entry, zid)
 	if err != nil {
 		return nil, err
 	}
 	dp.cleanupMeta(m)
-	dp.log.Trace().Msg("GetZettel")
 	return m, nil
 }
 
@@ -296,7 +300,7 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 
 	// The following loop could be parallelized if needed for performance.
 	for _, entry := range entries {
-		m, err := getMeta(dp, entry, entry.Zid)
+		m, err := dp.srvGetMeta(ctx, entry, entry.Zid)
 		if err != nil {
 			dp.log.Trace().Err(err).Msg("ApplyMeta/getMeta")
 			return err
@@ -312,27 +316,28 @@ func (dp *dirBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
+func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}
 
 	meta := zettel.Meta
-	if !meta.Zid.IsValid() {
-		return &box.ErrInvalidID{Zid: meta.Zid}
+	zid := meta.Zid
+	if !zid.IsValid() {
+		return &box.ErrInvalidID{Zid: zid}
 	}
-	entry := dp.dirSrv.GetDirEntry(meta.Zid)
+	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
 		// Existing zettel, but new in this box.
-		entry = &notify.DirEntry{Zid: meta.Zid}
+		entry = &notify.DirEntry{Zid: zid}
 	}
 	dp.updateEntryFromMetaContent(entry, meta, zettel.Content)
 	dp.dirSrv.UpdateDirEntry(entry)
-	err := setZettel(dp, entry, zettel)
+	err := dp.srvSetZettel(ctx, entry, zettel)
 	if err == nil {
-		dp.notifyChanged(box.OnUpdate, meta.Zid)
+		dp.notifyChanged(box.OnUpdate, zid)
 	}
-	dp.log.Trace().Err(err).Msg("UpdateZettel")
+	dp.log.Trace().Zid(zid).Err(err).Msg("UpdateZettel")
 	return err
 }
 
@@ -357,11 +362,11 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	}
 
 	// Check whether zettel with new ID already exists in this box.
-	if _, err := dp.GetMeta(ctx, newZid); err == nil {
+	if _, err := dp.doGetMeta(ctx, newZid); err == nil {
 		return &box.ErrInvalidID{Zid: newZid}
 	}
 
-	oldMeta, oldContent, err := getMetaContent(dp, curEntry, curZid)
+	oldMeta, oldContent, err := dp.srvGetMetaContent(ctx, curEntry, curZid)
 	if err != nil {
 		return err
 	}
@@ -372,17 +377,17 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	}
 	oldMeta.Zid = newZid
 	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
-	if err = setZettel(dp, &newEntry, newZettel); err != nil {
+	if err = dp.srvSetZettel(ctx, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
 		dp.dirSrv.RenameDirEntry(&newEntry, curZid)
 		return err
 	}
-	err = deleteZettel(dp, curEntry, curZid)
+	err = dp.srvDeleteZettel(ctx, curEntry, curZid)
 	if err == nil {
 		dp.notifyChanged(box.OnDelete, curZid)
 		dp.notifyChanged(box.OnUpdate, newZid)
 	}
-	dp.log.Trace().Err(err).Msg("RenameZettel")
+	dp.log.Trace().Zid(curZid).Zid(newZid).Err(err).Msg("RenameZettel")
 	return err
 }
 
@@ -394,7 +399,7 @@ func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	return entry.IsValid()
 }
 
-func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}
@@ -407,11 +412,11 @@ func (dp *dirBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	if err != nil {
 		return nil
 	}
-	err = deleteZettel(dp, entry, zid)
+	err = dp.srvDeleteZettel(ctx, entry, zid)
 	if err == nil {
 		dp.notifyChanged(box.OnDelete, zid)
 	}
-	dp.log.Trace().Err(err).Msg("DeleteZettel")
+	dp.log.Trace().Zid(zid).Err(err).Msg("DeleteZettel")
 	return err
 }
 
