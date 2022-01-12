@@ -20,8 +20,11 @@ They are planned to be solved.
   *  Changing the content syntax is not reflected in file extension.
   *  File names with additional text besides the zettel identifier are not
      always preserved.
-  *  A running Zettelstore does not always detect when a directory box is
-     removed. In case, it expects some zettel that cannot be retrieved.
+  *  Some file systems differentiate filenames with different cases (e.g. some
+     on Linux, sometimes on macOS), others do not (default on macOS, most on
+     Windows). Zettelstore is not able to detect these differences. Do not put
+     files in your directory boxes and in files boxes that differ only by upper
+     / lower case letters.
   *  &hellip;
 
 <h3>Planned improvements</h3>
