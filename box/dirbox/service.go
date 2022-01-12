@@ -301,8 +301,9 @@ func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, []byte, error) {
 func cmdCleanupMeta(m *meta.Meta, entry *notify.DirEntry) {
 	filebox.CleanupMeta(
 		m,
-		entry.Zid, entry.ContentExt,
-		entry.MetaSpec == notify.DirMetaSpecFile,
+		entry.Zid,
+		entry.ContentExt,
+		entry.MetaName != "",
 		entry.UselessFiles,
 	)
 }

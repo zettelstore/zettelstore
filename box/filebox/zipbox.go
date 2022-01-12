@@ -89,27 +89,34 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 	var src []byte
 	var inMeta bool
 
-	switch entry.MetaSpec {
-	case notify.DirMetaSpecFile:
-		m, err = readZipMetaFile(reader, zid, entry.MetaName)
+	contentName := entry.ContentName
+	if metaName := entry.MetaName; metaName == "" {
+		if contentName == "" {
+			zb.log.Panic().Zid(zid).Msg("No meta, no content in zipBox.GetZettel")
+		}
+		src, err = readZipFileContent(reader, entry.ContentName)
 		if err != nil {
 			return domain.Zettel{}, err
 		}
-		src, err = readZipFileContent(reader, entry.ContentName)
+		if entry.HasMetaInContent() {
+			inp := input.NewInput(src)
+			m = meta.NewFromInput(zid, inp)
+			src = src[inp.Pos:]
+		} else {
+			m = CalcDefaultMeta(zid, entry.ContentExt)
+		}
+	} else {
+		m, err = readZipMetaFile(reader, zid, metaName)
 		if err != nil {
 			return domain.Zettel{}, err
 		}
 		inMeta = true
-	case notify.DirMetaSpecHeader:
-		src, err = readZipFileContent(reader, entry.ContentName)
-		if err != nil {
-			return domain.Zettel{}, err
+		if contentName != "" {
+			src, err = readZipFileContent(reader, entry.ContentName)
+			if err != nil {
+				return domain.Zettel{}, err
+			}
 		}
-		inp := input.NewInput(src)
-		m = meta.NewFromInput(zid, inp)
-		src = src[inp.Pos:]
-	default:
-		m = CalcDefaultMeta(zid, entry.ContentExt)
 	}
 
 	CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.UselessFiles)
@@ -127,7 +134,7 @@ func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 		return nil, err
 	}
 	defer reader.Close()
-	m, err := readZipMeta(reader, zid, entry)
+	m, err := zb.readZipMeta(reader, zid, entry)
 	zb.log.Trace().Err(err).Zid(zid).Msg("GetMeta")
 	return m, err
 }
@@ -153,7 +160,7 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 		if !constraint(entry.Zid) {
 			continue
 		}
-		m, err2 := readZipMeta(reader, entry.Zid, entry)
+		m, err2 := zb.readZipMeta(reader, entry.Zid, entry)
 		if err2 != nil {
 			continue
 		}
@@ -207,16 +214,21 @@ func (zb *zipBox) ReadStats(st *box.ManagedBoxStats) {
 	zb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
-func readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m *meta.Meta, err error) {
+func (zb *zipBox) readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m *meta.Meta, err error) {
 	var inMeta bool
-	switch entry.MetaSpec {
-	case notify.DirMetaSpecFile:
-		m, err = readZipMetaFile(reader, zid, entry.MetaName)
-		inMeta = true
-	case notify.DirMetaSpecHeader:
-		m, err = readZipMetaFile(reader, zid, entry.ContentName)
-	default:
-		m = CalcDefaultMeta(zid, entry.ContentExt)
+	if metaName := entry.MetaName; metaName == "" {
+		contentName := entry.ContentName
+		contentExt := entry.ContentExt
+		if contentName == "" || contentExt == "" {
+			zb.log.Panic().Zid(zid).Msg("No meta, no content in getMeta")
+		}
+		if entry.HasMetaInContent() {
+			m, err = readZipMetaFile(reader, zid, contentName)
+		} else {
+			m = CalcDefaultMeta(zid, contentExt)
+		}
+	} else {
+		m, err = readZipMetaFile(reader, zid, metaName)
 	}
 	if err == nil {
 		CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.UselessFiles)

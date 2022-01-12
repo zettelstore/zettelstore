@@ -18,125 +18,12 @@ import (
 	"strings"
 	"sync"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
 )
-
-const (
-	extZettel = "zettel" // file contains metadata and content
-	extBin    = "bin"    // file contains binary content
-	extTxt    = "txt"    // file contains non-binary content
-)
-
-func extIsMetaAndContent(ext string) bool { return ext == extZettel }
-
-// DirMetaSpec defines all possibilities where meta data can be stored.
-type DirMetaSpec uint8
-
-// Constants for MetaSpec
-const (
-	_                 DirMetaSpec = iota
-	DirMetaSpecNone               // no meta information
-	DirMetaSpecFile               // meta information is in meta file
-	DirMetaSpecHeader             // meta information is in header
-)
-
-// DirEntry stores everything for a directory entry.
-type DirEntry struct {
-	Zid          id.Zid
-	MetaSpec     DirMetaSpec // location of meta information
-	MetaName     string      // file name of meta information
-	ContentName  string      // file name of zettel content
-	ContentExt   string      // (normalized) file extension of zettel content
-	UselessFiles []string    // list of other content files
-}
-
-// IsValid checks whether the entry is valid.
-func (e *DirEntry) IsValid() bool {
-	return e != nil && e.Zid.IsValid()
-}
-
-// HasMetaInContent returns true, if metadata will be stored in the content file.
-func (e *DirEntry) HasMetaInContent() bool {
-	return e.IsValid() && extIsMetaAndContent(e.ContentExt)
-}
-
-func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content domain.Content, getZettelFileSyntax func() []string) {
-	if e.Zid != m.Zid {
-		panic("Zid differ")
-	}
-	if contentName := e.ContentName; contentName != "" {
-		if !extIsMetaAndContent(e.ContentExt) && e.MetaName == "" {
-			e.MetaName = e.calcBaseName(contentName)
-		}
-		return
-	}
-
-	syntax := m.GetDefault(api.KeySyntax, "")
-	ext := calcContentExt(syntax, m.YamlSep, getZettelFileSyntax)
-	metaName := e.MetaName
-	eimc := extIsMetaAndContent(ext)
-	if eimc {
-		if metaName != "" {
-			ext = contentExtWithMeta(syntax, content)
-		}
-		e.ContentName = e.calcBaseName(metaName) + "." + ext
-		e.ContentExt = ext
-	} else {
-		if len(content.AsBytes()) > 0 {
-			e.ContentName = e.calcBaseName(metaName) + "." + ext
-			e.ContentExt = ext
-		}
-		if metaName == "" {
-			e.MetaName = e.calcBaseName(e.ContentName)
-		}
-	}
-}
-
-func contentExtWithMeta(syntax string, content domain.Content) string {
-	p := parser.Get(syntax)
-	if content.IsBinary() {
-		if p.IsImageFormat {
-			return syntax
-		}
-		return extBin
-	}
-	if p.IsImageFormat {
-		return extTxt
-	}
-	return syntax
-}
-
-func calcContentExt(syntax string, yamlSep bool, getZettelFileSyntax func() []string) string {
-	if yamlSep {
-		return extZettel
-	}
-	switch syntax {
-	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
-		return extZettel
-	}
-	for _, s := range getZettelFileSyntax() {
-		if s == syntax {
-			return extZettel
-		}
-	}
-	return syntax
-
-}
-
-func (e *DirEntry) calcBaseName(name string) string {
-	if name == "" {
-		return e.Zid.String()
-	}
-	return name[0 : len(name)-len(filepath.Ext(name))]
-
-}
 
 type entrySet map[id.Zid]*DirEntry
 
@@ -296,7 +183,6 @@ func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntr
 	oldZid := oldEntry.Zid
 	newEntry := DirEntry{
 		Zid:         newZid,
-		MetaSpec:    oldEntry.MetaSpec,
 		MetaName:    renameFilename(oldEntry.MetaName, oldZid, newZid),
 		ContentName: renameFilename(oldEntry.ContentName, oldZid, newZid),
 		ContentExt:  oldEntry.ContentExt,
@@ -453,7 +339,7 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
-	dupName1, dupName2 := updateEntry(entry, name, ext)
+	dupName1, dupName2 := updateEntry(ds.log, entry, name, ext)
 	if dupName1 != "" {
 		ds.log.Warn().Str("name", dupName1).Msg("Duplicate content (is ignored)")
 		if dupName2 != "" {
@@ -484,15 +370,9 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if ext == entry.ContentExt && name == entry.ContentName {
 		entry.ContentName = ""
 		entry.ContentExt = ""
-		if entry.MetaName == "" {
-			entry.MetaSpec = DirMetaSpecNone
-		} else {
-			entry.MetaSpec = DirMetaSpecHeader
-		}
 		replayUpdateUselessFiles(entry)
 	} else if name == entry.MetaName {
 		entry.MetaName = ""
-		entry.MetaSpec = DirMetaSpecNone
 		replayUpdateUselessFiles(entry)
 	}
 	if entry.ContentName == "" && entry.MetaName == "" {
@@ -516,20 +396,25 @@ func replayUpdateUselessFiles(entry *DirEntry) {
 	}
 	entry.UselessFiles = make([]string, 0, len(uselessFiles))
 	for _, name := range uselessFiles {
-		updateEntry(entry, name, onlyExt(name))
+		updateEntry(nil, entry, name, onlyExt(name))
 	}
 }
-func updateEntry(entry *DirEntry, name, ext string) (string, string) {
-	if entry.MetaSpec != DirMetaSpecHeader && (ext == "" || ext == "meta") {
-		return updateEntryMeta(entry, name, ext), ""
+
+const extMeta = "meta"
+
+func updateEntry(log *logger.Logger, entry *DirEntry, name, ext string) (string, string) {
+	if (ext == "" || ext == extMeta) && !extIsMetaAndContent(entry.ContentExt) {
+		return updateEntryMeta(log, entry, name, ext), ""
 	}
 	return updateEntryContent(entry, name, ext)
 }
-func updateEntryMeta(entry *DirEntry, name, ext string) string {
+func updateEntryMeta(log *logger.Logger, entry *DirEntry, name, ext string) string {
 	metaName := entry.MetaName
 	if metaName == "" {
+		if log != nil && ext == extMeta {
+			log.Warn().Str("name", name).Msg("Metadata file should not end with .meta any more")
+		}
 		entry.MetaName = name
-		entry.MetaSpec = DirMetaSpecFile
 		return ""
 	}
 	if metaName == name {
@@ -555,7 +440,6 @@ func updateEntryMeta(entry *DirEntry, name, ext string) string {
 func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 	contentName := entry.ContentName
 	if contentName == "" {
-		entry.MetaSpec = metaSpecFromExt(ext)
 		entry.ContentName = name
 		entry.ContentExt = ext
 		return "", ""
@@ -574,15 +458,11 @@ func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 	if contentExt == extZettel {
 		return addUselessFile(entry, name), ""
 	}
-	metaSpec := entry.MetaSpec
-	spec := metaSpecFromExt(ext)
 	if ext == extZettel {
-		entry.MetaSpec = spec
 		entry.ContentName = name
 		entry.ContentExt = ext
 		contentName = addUselessFile(entry, contentName)
-		if metaSpec == DirMetaSpecFile {
-			metaName := entry.MetaName
+		if metaName := entry.MetaName; metaName != "" {
 			metaName = addUselessFile(entry, metaName)
 			entry.MetaName = ""
 			return contentName, metaName
@@ -613,12 +493,7 @@ func onlyExt(name string) string {
 	}
 	return ext[1:]
 }
-func metaSpecFromExt(ext string) DirMetaSpec {
-	if ext == extZettel {
-		return DirMetaSpecHeader
-	}
-	return DirMetaSpecNone
-}
+
 func newNameIsBetter(oldName, newName string) bool {
 	if len(oldName) < len(newName) {
 		return false
@@ -674,7 +549,7 @@ func newExtSyntaxIsBetter(oldExt, newExt string) bool {
 	return newExtCompareIsBetter(oldExt, newExt)
 }
 
-func newExtCompareIsBetter(oldExt string, newExt string) bool {
+func newExtCompareIsBetter(oldExt, newExt string) bool {
 	oldLen := len(oldExt)
 	newLen := len(newExt)
 	if oldLen < newLen {
