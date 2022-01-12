@@ -34,6 +34,8 @@
      removed. The API, WebUI, and the admin console allow to manually refresh
      the internal state on demand.
      (major: box, webui)
+  *  <tt>.zettel</tt> files with YAML header are now correctly written.
+     (bug)
   *  Selecting zettel based on their metadata allows the same syntax as
      searching for zettel content. For example, you can list all zettel that
      have an identifier not ending with <tt>00</tt> by using the query

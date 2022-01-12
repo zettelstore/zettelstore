@@ -55,29 +55,4 @@ func (m *Meta) doWrite(w io.Writer, ignoreKeyPred func(string) bool) (length int
 var (
 	colonSpace = []byte{':', ' '}
 	newline    = []byte{'\n'}
-	yamlSep    = []byte{'-', '-', '-', '\n'}
 )
-
-// WriteAsHeader writes metadata to the writer, plus the separators.
-// It writes all computed values, except property values.
-func (m *Meta) WriteAsHeader(w io.Writer) (int, error) {
-	var lb, lc, la int
-	var err error
-
-	if m.YamlSep {
-		lb, err = w.Write(yamlSep)
-		if err != nil {
-			return lb, err
-		}
-	}
-	lc, err = m.WriteComputed(w)
-	if err != nil {
-		return lb + lc, err
-	}
-	if m.YamlSep {
-		la, err = w.Write(yamlSep)
-	} else {
-		la, err = w.Write(newline)
-	}
-	return lb + lc + la, err
-}

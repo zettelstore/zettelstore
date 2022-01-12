@@ -12,6 +12,7 @@ package dirbox
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"time"
@@ -236,15 +237,42 @@ func writeZettelFile(contentPath string, m *meta.Meta, content []byte) error {
 	if err != nil {
 		return err
 	}
-	err = writeFileZid(zettelFile, m.Zid)
 	if err == nil {
-		_, err = m.WriteAsHeader(zettelFile)
+		err = writeMetaHeader(zettelFile, m)
 	}
 	if err == nil {
 		_, err = zettelFile.Write(content)
 	}
 	if err1 := zettelFile.Close(); err == nil {
 		err = err1
+	}
+	return err
+}
+
+var (
+	newline = []byte{'\n'}
+	yamlSep = []byte{'-', '-', '-', '\n'}
+)
+
+func writeMetaHeader(w io.Writer, m *meta.Meta) (err error) {
+	if m.YamlSep {
+		_, err = w.Write(yamlSep)
+		if err != nil {
+			return err
+		}
+	}
+	err = writeFileZid(w, m.Zid)
+	if err != nil {
+		return err
+	}
+	_, err = m.WriteComputed(w)
+	if err != nil {
+		return err
+	}
+	if m.YamlSep {
+		_, err = w.Write(yamlSep)
+	} else {
+		_, err = w.Write(newline)
 	}
 	return err
 }
@@ -336,12 +364,12 @@ func openFileWrite(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 }
 
-func writeFileZid(f *os.File, zid id.Zid) error {
-	_, err := f.WriteString("id: ")
+func writeFileZid(w io.Writer, zid id.Zid) error {
+	_, err := io.WriteString(w, "id: ")
 	if err == nil {
-		_, err = f.Write(zid.Bytes())
+		_, err = w.Write(zid.Bytes())
 		if err == nil {
-			_, err = f.WriteString("\n")
+			_, err = io.WriteString(w, "\n")
 		}
 	}
 	return err
