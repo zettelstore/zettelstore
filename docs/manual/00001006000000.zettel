@@ -3,7 +3,7 @@ title: Layout of a Zettel
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20210903210655
+modified: 20220113185522
 
 A zettel consists of two parts: the metadata and the zettel content.
 Metadata gives some information mostly about the zettel content, how it should be interpreted, how it is sorted within Zettelstore.
@@ -21,7 +21,7 @@ To some degree, the zettel identifier is part of the metadata..
 
 The zettel content is your valuable content.
 Zettelstore contains some predefined parsers that interpret the zettel content to the syntax of the zettel.
-This includes markup languages, like [[Zettelmarkup|00001007000000]] and [[CommonMark|https://commonmark.org/]].
+This includes markup languages, like [[Zettelmarkup|00001007000000]] and [[CommonMark|00001008010500]].
 Other text formats are also supported, like CSS and HTML templates.
 Plain text content is always Unicode, encoded as UTF-8.
 Other character encodings are not supported and will never be[^This is not a real problem, since every modern software should support UTF-8 as an encoding.].

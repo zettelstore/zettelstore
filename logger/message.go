@@ -67,6 +67,15 @@ func (m *Message) Str(text, val string) *Message {
 	return m
 }
 
+// Bool adds a boolean value to the full message
+func (m *Message) Bool(text string, val bool) {
+	if val {
+		m.Str(text, "true")
+	} else {
+		m.Str(text, "false")
+	}
+}
+
 // Bytes adds a byte slice value to the full message
 func (m *Message) Bytes(text string, val []byte) *Message {
 	if m.Enabled() {

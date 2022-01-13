@@ -3,10 +3,10 @@ title: Use Markdown within Zettelstore
 role: manual
 tags: #manual #markdown #zettelstore
 syntax: zmk
-modified: 20220104212753
+modified: 20220113185400
 
 If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
-Zettelstore supports [[CommonMark|https://commonmark.org/]], an [[attempt|https://xkcd.com/927/]] to unify all the different, divergent dialects of Markdown.
+Zettelstore supports the [[CommonMark|00001008010500]] dialect of Markdown.
 
 === Use Markdown as the default markup language of Zettelstore
 

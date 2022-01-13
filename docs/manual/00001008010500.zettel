@@ -1,0 +1,26 @@
+id: 00001008010500
+title: CommonMark
+role: manual
+tags: #manual #markdown #zettelstore
+syntax: zmk
+modified: 20220113193000
+url: https://commonmark.org/
+
+[[CommonMark|https://commonmark.org/]] is a Markdown dialect, an [[attempt|https://xkcd.com/927/]] to unify all the different, divergent dialects of Markdown by providing an unambiguous syntax specification for Markdown, together with a suite of comprehensive tests to validate implementation.
+
+Time will show, if this attempt is successful.
+
+However, CommonMark is a well specified Markdown dialect, in contrast to most (if not all) other dialects.
+Other software adopts CommonMark somehow, notably [[GitHub Flavored Markdown|https://github.github.com/gfm/]] (GFM).
+But they provide proprietary extensions, which makes it harder to change to another CommonMark implementation if needed.
+Plus, they sometimes build on an older specification of CommonMark.
+
+Zettelstore supports the latest CommonMark [[specification version 0.30 (2021-06-19)|https://spec.commonmark.org/0.30/]].
+If possible, Zettelstore will adapt to newer versions when they are available.
+
+To provide CommonMark support, Zettelstore uses currently the [[Goldmark|https://github.com/yuin/goldmark]] implementation, which passes all validation tests of CommonMark.
+Internally, CommonMark is translated into some kind of superset of [[Zettelmarkup|00001007000000]], which additionally allows to use HTML code.[^Effectively, Markdown and CommonMark are itself supersets of HTML.]
+This Zettelmarkup superset is later [[encoded|00001012920500]], often into [[HTML|00001012920510]].
+Because Zettelstore HTML encoding philosophy differs a little bit to that of CommonMark, Zettelstore itself will not pass the CommonMark test suite fully.
+However, no CommonMark language element will fail to be encoded as HTML.
+In most cases, the differences are not visible for an user, but only by comparing the generated HTML code.
