@@ -15,6 +15,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"testing"
@@ -314,20 +315,31 @@ func TestGetUnlinkedReferences(t *testing.T) {
 	}
 }
 
+func failNoErrorOrNoCode(t *testing.T, err error, goodCode int) bool {
+	if err != nil {
+		if cErr, ok := err.(*client.Error); ok {
+			if cErr.StatusCode == goodCode {
+				return false
+			}
+			t.Errorf("Expect status code %d, but got client error %v", goodCode, cErr)
+		} else {
+			t.Errorf("Expect status code %d, but got non-client error %v", goodCode, err)
+		}
+	} else {
+		t.Errorf("No error returned, but status code %d expected", goodCode)
+	}
+	return true
+}
+
 func TestExecuteCommand(t *testing.T) {
 	c := getClient()
 	err := c.ExecuteCommand(context.Background(), api.Command("xyz"))
-	if err == nil {
-		t.Error("No error, but 400 Bad Request expected")
-	}
+	failNoErrorOrNoCode(t, err, http.StatusBadRequest)
 	err = c.ExecuteCommand(context.Background(), api.CommandAuthenticated)
-	if err == nil {
-		t.Error("No error, but 401 Unauthorized expected (Auth)")
-	}
+	failNoErrorOrNoCode(t, err, http.StatusUnauthorized)
 	err = c.ExecuteCommand(context.Background(), api.CommandRefresh)
-	if err == nil {
-		t.Error("No error, but 403 Forbidden expected (Refresh)")
-	}
+	failNoErrorOrNoCode(t, err, http.StatusForbidden)
+
 	c.SetAuth("owner", "owner")
 	err = c.ExecuteCommand(context.Background(), api.CommandAuthenticated)
 	if err != nil {
