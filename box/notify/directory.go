@@ -469,6 +469,14 @@ func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 		}
 		return contentName, ""
 	}
+	if strings.HasPrefix(contentName, name) {
+		entry.ContentName = name
+		entry.ContentExt = ext
+		return addUselessFile(entry, contentName), ""
+	}
+	if strings.HasPrefix(name, contentName) {
+		return addUselessFile(entry, name), ""
+	}
 	if newExtIsBetter(contentExt, ext) {
 		entry.ContentName = name
 		entry.ContentExt = ext
