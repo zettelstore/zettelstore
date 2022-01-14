@@ -3,7 +3,7 @@ title: Zettelstore installation for the intermediate user
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
-modified: 20211125190643
+modified: 20220114175754
 
 You already tried the Zettelstore software and now you want to use it permanently.
 Zettelstore should start automatically when you log into your computer.
@@ -22,5 +22,5 @@ Zettelstore should start automatically when you log into your computer.
 ** If you encounter some error messages, update the startup configuration, and try again.
 * Depending on your operating system, there are different ways to register Zettelstore to start automatically:
 ** [[Windows|00001003305000]]
-** macOS
-** Linux
+** [[macOS|00001003310000]]
+** [[Linux|00001003315000]]

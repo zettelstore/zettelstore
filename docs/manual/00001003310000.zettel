@@ -1,0 +1,38 @@
+id: 00001003310000
+title: Enable Zettelstore to start automatically on macOS
+role: manual
+tags: #installation #manual #zettelstore
+syntax: zmk
+modified: 20220114191306
+
+There are several ways to automatically start Zettelstore.
+
+=== Login Items
+
+Via macOS's system preferences, everybody is able to specify executables that are started when a user is logged in.
+To do this, start system preferences and select ""Users & Groups"".
+
+{{00001003310104}}
+
+In the next screen, select the current user and then click on ""Login Items"".
+
+{{00001003310106}}
+
+Click on the plus sign at the bottom and select the Zettelstore executable.
+
+{{00001003310108}}
+
+Optionally select the ""Hide"" check box.
+
+{{00001003310110}}
+
+The next time you log into your macOS computer, Zettelstore will be started automatically.
+
+Unfortunately, hiding the Zettelstore windows does not always work.
+Therefore, this method is just a way to automate navigating to the directory where the zettelstore executable is placed and to click on that icon.
+
+If you don't want the Zettelstore window, you should try the next method.
+
+=== Launch Agent
+
+[[https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html]]

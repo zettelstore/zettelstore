@@ -1,0 +1,8 @@
+id: 00001003315000
+title: Enable Zettelstore to start automatically on Linux
+role: manual
+tags: #installation #manual #zettelstore
+syntax: zmk
+modified: 20220114191404
+
+Since there is no such thing as the one Linux, there are several ways to automatically start Zettelstore.
