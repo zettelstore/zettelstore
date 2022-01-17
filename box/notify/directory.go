@@ -469,14 +469,6 @@ func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 		}
 		return contentName, ""
 	}
-	if strings.HasPrefix(contentName, name) {
-		entry.ContentName = name
-		entry.ContentExt = ext
-		return addUselessFile(entry, contentName), ""
-	}
-	if strings.HasPrefix(name, contentName) {
-		return addUselessFile(entry, name), ""
-	}
 	if newExtIsBetter(contentExt, ext) {
 		entry.ContentName = name
 		entry.ContentExt = ext
@@ -523,48 +515,32 @@ func init() {
 func newExtIsBetter(oldExt, newExt string) bool {
 	oldSyntax := supportedSyntax[oldExt]
 	if oldSyntax != supportedSyntax[newExt] {
-		return oldSyntax
+		return !oldSyntax
 	}
 	if oldSyntax {
-		return newExtSyntaxIsBetter(oldExt, newExt)
+		if oldExt == "zmk" {
+			return false
+		}
+		if newExt == "zmk" {
+			return true
+		}
+		oldInfo := parser.Get(oldExt)
+		newInfo := parser.Get(newExt)
+		if oldTextParser := oldInfo.IsTextParser; oldTextParser != newInfo.IsTextParser {
+			return !oldTextParser
+		}
+		if oldImageFormat := oldInfo.IsImageFormat; oldImageFormat != newInfo.IsImageFormat {
+			return oldImageFormat
+		}
+		if oldPrimary := isPrimarySyntax[oldExt]; oldPrimary != isPrimarySyntax[newExt] {
+			return !oldPrimary
+		}
 	}
-	if strings.HasPrefix(oldExt, newExt) {
-		return false
-	}
-	if strings.HasPrefix(newExt, oldExt) {
-		return true
-	}
-	return newExtCompareIsBetter(oldExt, newExt)
-}
-func newExtSyntaxIsBetter(oldExt, newExt string) bool {
-	if oldExt == "zmk" {
-		return false
-	}
-	if newExt == "zmk" {
-		return true
-	}
-	oldInfo := parser.Get(oldExt)
-	newInfo := parser.Get(newExt)
-	if oldTextParser := oldInfo.IsTextParser; oldTextParser != newInfo.IsTextParser {
-		return !oldTextParser
-	}
-	if oldImageFormat := oldInfo.IsImageFormat; oldImageFormat != newInfo.IsImageFormat {
-		return oldImageFormat
-	}
-	if oldPrimary := isPrimarySyntax[oldExt]; oldPrimary != isPrimarySyntax[newExt] {
-		return !oldPrimary
-	}
-	return newExtCompareIsBetter(oldExt, newExt)
-}
 
-func newExtCompareIsBetter(oldExt, newExt string) bool {
 	oldLen := len(oldExt)
 	newLen := len(newExt)
-	if oldLen < newLen {
-		return false
-	}
-	if newLen < oldLen {
-		return true
+	if oldLen != newLen {
+		return newLen < oldLen
 	}
 	return newExt < oldExt
 }

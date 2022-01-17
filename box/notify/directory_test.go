@@ -13,7 +13,13 @@ package notify
 import (
 	"testing"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
+	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
+	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
+	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
+	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.
+	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
 
 func TestSeekZidExt(t *testing.T) {
@@ -34,6 +40,32 @@ func TestSeekZidExt(t *testing.T) {
 			t.Errorf("seekZidExt(%q) == %v, but got %v", tc.name, tc.zid, gotZid)
 		} else if gotExt != tc.ext {
 			t.Errorf("seekZidExt(%q) == %q, but got %q", tc.name, tc.ext, gotExt)
+		}
+	}
+}
+
+func TestNewExtIsBetter(t *testing.T) {
+	extVals := []string{
+		// Main Formats
+		api.ValueSyntaxZmk, "markdown", "md",
+		// Other supported text formats
+		"css", "txt", "html", api.ValueSyntaxNone, "mustache", "text", "plain",
+		// Supported graphics formats
+		"gif", "png", "svg", "jpeg", "jpg",
+		// Unsupported syntax values
+		"gz", "cpp", "tar", "cppc",
+	}
+	for oldI, oldExt := range extVals {
+		for newI, newExt := range extVals {
+			if oldI <= newI {
+				continue
+			}
+			if !newExtIsBetter(oldExt, newExt) {
+				t.Errorf("newExtIsBetter(%q, %q) == true, but got false", oldExt, newExt)
+			}
+			if newExtIsBetter(newExt, oldExt) {
+				t.Errorf("newExtIsBetter(%q, %q) == false, but got true", newExt, oldExt)
+			}
 		}
 	}
 }
