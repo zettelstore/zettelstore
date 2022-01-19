@@ -60,6 +60,10 @@
   *  Metadata key <tt>duplicates</tt> stores the duplicate file names, instead
      of just a boolean value that there were duplicate file names.
      (minor)
+  *  Document autostarting Zettelstore on Windows, macOS, and Linux.
+     (minor)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_1"></a><a name="0_1_0"></a>
 <h2>Changes for Version 0.1 (2021-11-11)</h2>

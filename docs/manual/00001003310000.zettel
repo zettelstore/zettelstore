@@ -3,9 +3,12 @@ title: Enable Zettelstore to start automatically on macOS
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
-modified: 20220114191306
+modified: 20220119124635
 
 There are several ways to automatically start Zettelstore.
+
+* [[Login Items|#login-items]]
+* [[Launch Agent|#launch-agent]]
 
 === Login Items
 
@@ -29,10 +32,63 @@ Optionally select the ""Hide"" check box.
 The next time you log into your macOS computer, Zettelstore will be started automatically.
 
 Unfortunately, hiding the Zettelstore windows does not always work.
-Therefore, this method is just a way to automate navigating to the directory where the zettelstore executable is placed and to click on that icon.
+Therefore, this method is just a way to automate navigating to the directory where the Zettelstore executable is placed and to click on that icon.
 
 If you don't want the Zettelstore window, you should try the next method.
 
 === Launch Agent
 
-[[https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html]]
+If you want to execute Zettelstore automatically and less visible, and if you know a little bit about working in the terminal application, then you could try to run Zettelstore under the control of the [[Launchd system|https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html]].
+
+First, you have to create a description for ""Launchd"".
+This is a text file named ''zettelstore.plist'' with the following content.
+It assumes that you have copied the Zettelstore executable in a local folder called ''~/bin'' and have created a file for [[startup configuration|00001004010000]] called ''zettelstore.cfg'', which is placed in the same folder[^If you are not using a confguration file, just remove the lines ``<string>-c</string>`` and ``<string>/Users/USERNAME/bin/zettelstore.cfg</string>``.]:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Label</key>
+		<string>de.zettelstore</string>
+
+		<key>ProgramArguments</key>
+		<array>
+			<string>/Users/USERNAME/bin/zettelstore</string>
+			<string>run</string>
+			<string>-c</string>
+			<string>/Users/USERNAME/bin/zettelstore.cfg</string>
+		</array>
+
+		<key>WorkingDirectory</key>
+		<string>/Users/USERNAME</string>
+
+		<key>EnvironmentVariables</key>
+		<dict>
+			<key>HOME</key>
+			<string>/Users/USERNAME</string>
+		</dict>
+
+		<key>KeepAlive</key>
+		<true/>
+
+		<key>LowPriorityIO</key>
+		<true/>
+
+		<key>ProcessType</key>
+		<string>Background</string>
+
+		<key>StandardOutPath</key>
+		<string>/Users/USERNAME/Library/Logs/Zettelstore.log</string>
+
+		<key>StandardErrorPath</key>
+		<string>/Users/USERNAME/Library/Logs/Zettelstore-Errors.log</string>
+	</dict>
+</plist>
+```
+
+You must substitute all occurrences of ''USERNAME'' with your user name.
+
+Place this file into the user specific folder ''~/Library/LaunchAgents''.
+
+Log out and in again, or execute the command ``launchctl load ~/Library/LaunchAgents/zettelstore.plist``.

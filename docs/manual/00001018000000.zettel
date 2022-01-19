@@ -3,9 +3,18 @@ title: Troubleshooting
 role: zettel
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20211027125603
+modified: 20220119140045
 
 This page lists some problems and their solutions that may occur when using your Zettelstore.
+
+=== Installation
+* **Problem:** When you double-click on the Zettelstore executable icon, macOS complains that Zettelstore is an application from an unknown developer.
+  Therefore, it will not start Zettelstore.
+** **Solution:** Press the ++Ctrl++ while opening the context menu of the Zettelstore executable with a right-click.
+   A dialog is then opened where you can acknowledge that you understand the possible risks when you start Zettelstore.
+   This dialog is only resented once for a given Zettelstore executable.
+* **Problem:** When you double-click on the Zettelstore executable icon, Windows complains that Zettelstore is an application from an unknown developer.
+** **Solution:** Windows displays a dialog where you can acknowledge possible risks and allows to start Zettelstore.
 
 === Authentication
 * **Problem:** [[Authentication is enabled|00001010040100]] for a local running Zettelstore and there is a valid [[user zettel|00001010040200]] for the owner.
