@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
-<a name="0_2_0"></a>
-<h2>Changes for Version 0.2.0 (pending)</h2>
+<a name="0_3"></a>
+<h2>Changes for Version 0.3 (pending)</h2>
+
+<a name="0_2"></a>
+<h2>Changes for Version 0.2 (2022-01-19)</h2>
   *  Remove support for <tt>;;small text;;</tt> Zettelmarkup.
      (breaking: Zettelmarkup)
   *  On macOS, the downloadable executable program is now called
