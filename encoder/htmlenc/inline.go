@@ -96,12 +96,14 @@ func (v *visitor) visitEmbed(en *ast.EmbedNode) {
 		v.b.WriteString("<img src=\"")
 		v.writeReference(m.Ref)
 	case *ast.BLOBMaterialNode:
-		v.b.WriteString("<img src=\"data:image/")
 		switch m.Syntax {
 		case "svg":
-			v.b.WriteString("svg+xml;utf8,")
-			v.writeQuotedEscaped(string(m.Blob))
+			// v.b.WriteString("svg+xml;utf8,")
+			// v.writeQuotedEscaped(string(m.Blob))
+			v.b.Write(m.Blob)
+			return
 		default:
+			v.b.WriteString("<img src=\"data:image/")
 			v.b.WriteStrings(m.Syntax, ";base64,")
 			v.b.WriteBase64(m.Blob)
 		}
