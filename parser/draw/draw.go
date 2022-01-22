@@ -22,8 +22,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "draw",
 		AltNames:      []string{},
-		IsTextParser:  false,
-		IsImageFormat: true,
+		IsTextParser:  true,
+		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
 	})
@@ -40,7 +40,7 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNo
 func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 	svg, err := parseDraw(inp)
 	if err != nil || len(svg) == 0 {
-		return nil
+		return nil // TODO: besser Fehlertext als AST
 	}
 	return ast.CreateInlineListNode(&ast.EmbedNode{
 		Material: &ast.BLOBMaterialNode{
@@ -51,10 +51,10 @@ func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 }
 
 func parseDraw(inp *input.Input) ([]byte, error) {
-	canvas, err := NewCanvas(inp.Src[inp.Pos:], 8, false)
+	canvas, err := NewCanvas(inp.Src[inp.Pos:], 8, true)
 	if err != nil {
 		return nil, err
 	}
-	svg := CanvasToSVG(canvas, false, "", 9, 16)
+	svg := CanvasToSVG(canvas, true, "", 9, 16)
 	return svg, nil
 }
