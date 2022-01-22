@@ -37,7 +37,7 @@ type Canvas interface {
 func NewCanvas(data []byte, tabWidth int, noBlur bool) (Canvas, error) {
 	c := &canvas{
 		options: map[string]map[string]interface{}{
-			"__a2s__closed__options__": map[string]interface{}{
+			"__a2s__closed__options__": {
 				"fill":   "#fff",
 				"filter": "url(#dsFilter)",
 			},
