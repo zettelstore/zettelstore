@@ -29,35 +29,10 @@ const (
 	// Point effect tags.
 	dotTag  = "    <circle cx=\"%g\" cy=\"%g\" r=\"3\" fill=\"#000\" />\n"
 	tickTag = "    <line x1=\"%g\" y1=\"%g\" x2=\"%g\" y2=\"%g\" stroke-width=\"1\" />\n"
-
-	// TODO(dhobsd): Fine tune.
-	blurDef = `  <defs>
-    <filter id="dsFilter" width="150%%" height="150%%">
-      <feOffset result="offOut" in="SourceGraphic" dx="2" dy="2"/>
-      <feColorMatrix result="matrixOut" in="offOut" type="matrix" values="0.2 0 0 0 0 0 0.2 0 0 0 0 0 0.2 0 0 0 0 0 1 0"/>
-      <feGaussianBlur result="blurOut" in="matrixOut" stdDeviation="3"/>
-      <feBlend in="SourceGraphic" in2="blurOut" mode="normal"/>
-    </filter>
-    <marker id="iPointer"
-      viewBox="0 0 10 10" refX="5" refY="5"
-      markerUnits="strokeWidth"
-      markerWidth="%g" markerHeight="%g"
-      orient="auto">
-      <path d="M 10 0 L 10 10 L 0 5 z" />
-    </marker>
-    <marker id="Pointer"
-      viewBox="0 0 10 10" refX="5" refY="5"
-      markerUnits="strokeWidth"
-      markerWidth="%g" markerHeight="%g"
-      orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 z" />
-    </marker>
-  </defs>
-`
 )
 
 // CanvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
-func CanvasToSVG(c Canvas, noBlur bool, font string, scaleX, scaleY int) []byte {
+func CanvasToSVG(c Canvas, font string, scaleX, scaleY int) []byte {
 	if len(font) == 0 {
 		font = defaultFont
 	}
@@ -67,9 +42,6 @@ func CanvasToSVG(c Canvas, noBlur bool, font string, scaleX, scaleY int) []byte 
 	// larger. The down side is potential escaping errors.
 	b := &bytes.Buffer{}
 	fmt.Fprintf(b, svgTag, (c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
-	x := float64(scaleX - 1)
-	y := float64(scaleY - 1)
-	fmt.Fprintf(b, blurDef, x, y, x, y)
 
 	options := c.Options()
 	getOpts := func(tag string) string {
@@ -94,11 +66,7 @@ func CanvasToSVG(c Canvas, noBlur bool, font string, scaleX, scaleY int) []byte 
 	}
 
 	// 3 passes, first closed paths, then open paths, then text.
-	if noBlur {
-		io.WriteString(b, "  <g id=\"closed\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\">\n")
-	} else {
-		io.WriteString(b, "  <g id=\"closed\" filter=\"url(#dsFilter)\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\">\n")
-	}
+	io.WriteString(b, "  <g id=\"closed\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\">\n")
 	for i, obj := range c.Objects() {
 		if obj.IsClosed() && !obj.IsText() {
 			opts := ""

@@ -29,18 +29,29 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNode {
-	iln := parseInlines(inp, syntax)
+func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
+	font := m.GetDefault("font", "")
+	scaleX := m.GetNumber("x-scale", 8)
+	scaleY := m.GetNumber("y-scale", 16)
+	iln := parseDraw(inp, font, scaleX, scaleY)
 	if iln == nil {
 		return nil
 	}
 	return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: iln}}}
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
-	svg, err := parseDraw(inp)
-	if err != nil || len(svg) == 0 {
-		return nil // TODO: besser Fehlertext als AST
+func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
+	return parseDraw(inp, "", 8, 16)
+}
+
+func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineListNode {
+	canvas, err := NewCanvas(inp.Src[inp.Pos:], 8)
+	if err != nil {
+		return nil // TODO: Fehlertext err.Error()
+	}
+	svg := CanvasToSVG(canvas, font, scaleX, scaleY)
+	if len(svg) == 0 {
+		return nil // TODO: Fehlertext "no image"
 	}
 	return ast.CreateInlineListNode(&ast.EmbedNode{
 		Material: &ast.BLOBMaterialNode{
@@ -48,13 +59,4 @@ func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
 			Syntax: "svg",
 		},
 	})
-}
-
-func parseDraw(inp *input.Input) ([]byte, error) {
-	canvas, err := NewCanvas(inp.Src[inp.Pos:], 8, true)
-	if err != nil {
-		return nil, err
-	}
-	svg := CanvasToSVG(canvas, true, "", 9, 16)
-	return svg, nil
 }
