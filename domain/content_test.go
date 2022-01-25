@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -32,6 +32,26 @@ func TestContentIsBinary(t *testing.T) {
 		got := content.IsBinary()
 		if got != tc.exp {
 			t.Errorf("TC=%d: expected %v, got %v", i, tc.exp, got)
+		}
+	}
+}
+
+func TestTrimSpace(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		in, exp string
+	}{
+		{"", ""},
+		{"abc", "abc"},
+		{" abc", " abc"},
+		{"abc ", "abc"},
+	}
+	for _, tc := range testcases {
+		c := domain.NewContent([]byte(tc.in))
+		c.TrimSpace()
+		got := c.AsString()
+		if got != tc.exp {
+			t.Errorf("TrimSpace(%q) should be %q, but got %q", tc.in, tc.exp, got)
 		}
 	}
 }

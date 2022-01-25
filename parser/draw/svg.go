@@ -26,8 +26,16 @@ func CanvasToSVG(c *Canvas, font string, scaleX, scaleY int) []byte {
 
 	b := bytes.Buffer{}
 	fmt.Fprintf(&b,
-		"<svg width=\"%dpx\" height=\"%dpx\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">",
+		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
 		(c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
+	x := float64(scaleX - 1)
+	y := float64(scaleY - 1)
+	fmt.Fprintf(&b,
+		`<marker id="iPointer" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="M 10 0 L 10 10 L 0 5 z" /></marker>`,
+		x, y)
+	fmt.Fprintf(&b,
+		`<marker id="Pointer" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" /></marker>`,
+		x, y)
 
 	// 3 passes, first closed paths, then open paths, then text.
 	writeClosedPaths(&b, c, scaleX, scaleY)
