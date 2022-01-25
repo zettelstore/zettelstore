@@ -15,7 +15,7 @@ func TestNewCanvas(t *testing.T) {
 		input     []string
 		strings   []string
 		texts     []string
-		points    [][]Point
+		points    [][]point
 		allPoints bool
 	}{
 		// 0 Small box
@@ -27,7 +27,7 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(0,0) (1,0) (2,0) (2,1) (2,2) (1,2) (0,2) (0,1)]}"},
 			[]string{""},
-			[][]Point{{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 2}, {X: 0, Y: 2}}},
+			[][]point{{{x: 0, y: 0}, {x: 2, y: 0}, {x: 2, y: 2}, {x: 0, y: 2}}},
 			false,
 		},
 
@@ -39,9 +39,9 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(0,0) (1,0) (1,1) (0,1)]}"},
 			[]string{""},
-			[][]Point{
+			[][]point{
 				{
-					{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1},
+					{x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}, {x: 0, y: 1},
 				},
 			},
 			false,
@@ -57,7 +57,7 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(1,1) (2,1) (3,1) (3,2) (3,3) (2,3) (1,3) (1,2)]}"},
 			[]string{""},
-			[][]Point{{{X: 1, Y: 1}, {X: 3, Y: 1}, {X: 3, Y: 3}, {X: 1, Y: 3}}},
+			[][]point{{{x: 1, y: 1}, {x: 3, y: 1}, {x: 3, y: 3}, {x: 1, y: 3}}},
 			false,
 		},
 
@@ -70,10 +70,10 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Text{(1,1) \"foo bar\"}", "Text{(0,2) \"b  baz\"}", "Text{(9,2) \"bee\"}"},
 			[]string{"foo bar", "b  baz", "bee"},
-			[][]Point{
-				{{X: 1, Y: 1}, {X: 7, Y: 1}},
-				{{X: 0, Y: 2}, {X: 5, Y: 2}},
-				{{X: 9, Y: 2}, {X: 11, Y: 2}},
+			[][]point{
+				{{x: 1, y: 1}, {x: 7, y: 1}},
+				{{x: 0, y: 2}, {x: 5, y: 2}},
+				{{x: 9, y: 2}, {x: 11, y: 2}},
 			},
 			false,
 		},
@@ -87,9 +87,9 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(0,0) (1,0) (2,0) (3,0) (3,1) (3,2) (2,2) (1,2) (0,2) (0,1)]}", "Text{(1,1) \"Hi\"}"},
 			[]string{"", "Hi"},
-			[][]Point{
-				{{X: 0, Y: 0}, {X: 3, Y: 0}, {X: 3, Y: 2}, {X: 0, Y: 2}},
-				{{X: 1, Y: 1}, {X: 2, Y: 1}},
+			[][]point{
+				{{x: 0, y: 0}, {x: 3, y: 0}, {x: 3, y: 2}, {x: 0, y: 2}},
+				{{x: 1, y: 1}, {x: 2, y: 1}},
 			},
 			false,
 		},
@@ -125,18 +125,18 @@ func TestNewCanvas(t *testing.T) {
 				"Path{[(4,14) (5,14) (6,14) (7,14) (8,14) (9,14) (9,15) (9,16) (9,17) (9,18) (9,19) (9,20) (8,20) (7,20) (6,20) (5,20) (4,20) (4,19) (4,18) (3,18) (2,18) (1,18) (0,18) (0,17) (0,16) (1,16) (2,16) (3,16) (4,16) (4,15)]}",
 			},
 			[]string{"", "", ""},
-			[][]Point{
+			[][]point{
 				{
-					{X: 4, Y: 0}, {X: 9, Y: 0}, {X: 9, Y: 2}, {X: 14, Y: 2},
-					{X: 14, Y: 4}, {X: 0, Y: 4}, {X: 0, Y: 2}, {X: 4, Y: 2},
+					{x: 4, y: 0}, {x: 9, y: 0}, {x: 9, y: 2}, {x: 14, y: 2},
+					{x: 14, y: 4}, {x: 0, y: 4}, {x: 0, y: 2}, {x: 4, y: 2},
 				},
 				{
-					{X: 0, Y: 6}, {X: 5, Y: 6}, {X: 5, Y: 8}, {X: 9, Y: 8},
-					{X: 9, Y: 10}, {X: 5, Y: 10}, {X: 5, Y: 12}, {X: 0, Y: 12},
+					{x: 0, y: 6}, {x: 5, y: 6}, {x: 5, y: 8}, {x: 9, y: 8},
+					{x: 9, y: 10}, {x: 5, y: 10}, {x: 5, y: 12}, {x: 0, y: 12},
 				},
 				{
-					{X: 4, Y: 14}, {X: 9, Y: 14}, {X: 9, Y: 20}, {X: 4, Y: 20},
-					{X: 4, Y: 18}, {X: 0, Y: 18}, {X: 0, Y: 16}, {X: 4, Y: 16},
+					{x: 4, y: 14}, {x: 9, y: 14}, {x: 9, y: 20}, {x: 4, y: 20},
+					{x: 4, y: 18}, {x: 0, y: 18}, {x: 0, y: 16}, {x: 4, y: 16},
 				},
 			},
 			false,
@@ -158,9 +158,9 @@ func TestNewCanvas(t *testing.T) {
 				"Path{[(2,2) (3,2) (4,2) (4,3) (4,4) (3,4) (2,4) (2,3)]}",
 			},
 			[]string{"", ""},
-			[][]Point{
-				{{X: 0, Y: 0}, {X: 6, Y: 0}, {X: 6, Y: 6}, {X: 0, Y: 6}},
-				{{X: 2, Y: 2}, {X: 4, Y: 2}, {X: 4, Y: 4}, {X: 2, Y: 4}},
+			[][]point{
+				{{x: 0, y: 0}, {x: 6, y: 0}, {x: 6, y: 6}, {x: 0, y: 6}},
+				{{x: 2, y: 2}, {x: 4, y: 2}, {x: 4, y: 4}, {x: 2, y: 4}},
 			},
 			false,
 		},
@@ -223,29 +223,29 @@ func TestNewCanvas(t *testing.T) {
 				"", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 				"Editor", "Document", "Window", "Window", "Window", "View", "Document",
 			},
-			[][]Point{
-				{{X: 6, Y: 0}, {X: 13, Y: 0}, {X: 13, Y: 2}, {X: 6, Y: 2}},
-				{{X: 14, Y: 1}, {X: 36, Y: 1}, {X: 36, Y: 3, Hint: 3}},
-				{{X: 14, Y: 1}, {X: 27, Y: 1}, {X: 27, Y: 23}, {X: 22, Y: 23, Hint: 3}},
-				{{X: 10, Y: 3}, {X: 10, Y: 4, Hint: 3}},
-				{{X: 31, Y: 4}, {X: 40, Y: 4}, {X: 40, Y: 6}, {X: 31, Y: 6}},
-				{{X: 6, Y: 5}, {X: 13, Y: 5}, {X: 13, Y: 7}, {X: 6, Y: 7}},
-				{{X: 9, Y: 8}, {X: 9, Y: 9}},
-				{{X: 9, Y: 9}, {X: 3, Y: 9}, {X: 3, Y: 11, Hint: 3}},
-				{{X: 9, Y: 9}, {X: 17, Y: 9}, {X: 17, Y: 11, Hint: 3}},
-				{{X: 0, Y: 12}, {X: 7, Y: 12}, {X: 7, Y: 14}, {X: 0, Y: 14}},
-				{{X: 13, Y: 12}, {X: 20, Y: 12}, {X: 20, Y: 14}, {X: 13, Y: 14}},
-				{{X: 16, Y: 15}, {X: 16, Y: 16, Hint: 3}},
-				{{X: 14, Y: 17}, {X: 19, Y: 17}, {X: 19, Y: 19}, {X: 14, Y: 19}},
-				{{X: 16, Y: 20}, {X: 16, Y: 21, Hint: 3}},
-				{{X: 12, Y: 22}, {X: 21, Y: 22}, {X: 21, Y: 24}, {X: 12, Y: 24}},
-				{{X: 7, Y: 1}, {X: 12, Y: 1}},
-				{{X: 32, Y: 5}, {X: 39, Y: 5}},
-				{{X: 7, Y: 6}, {X: 12, Y: 6}},
-				{{X: 1, Y: 13}, {X: 6, Y: 13}},
-				{{X: 14, Y: 13}, {X: 19, Y: 13}},
-				{{X: 15, Y: 18}, {X: 18, Y: 18}},
-				{{X: 13, Y: 23}, {X: 20, Y: 23}},
+			[][]point{
+				{{x: 6, y: 0}, {x: 13, y: 0}, {x: 13, y: 2}, {x: 6, y: 2}},
+				{{x: 14, y: 1}, {x: 36, y: 1}, {x: 36, y: 3, hint: 3}},
+				{{x: 14, y: 1}, {x: 27, y: 1}, {x: 27, y: 23}, {x: 22, y: 23, hint: 3}},
+				{{x: 10, y: 3}, {x: 10, y: 4, hint: 3}},
+				{{x: 31, y: 4}, {x: 40, y: 4}, {x: 40, y: 6}, {x: 31, y: 6}},
+				{{x: 6, y: 5}, {x: 13, y: 5}, {x: 13, y: 7}, {x: 6, y: 7}},
+				{{x: 9, y: 8}, {x: 9, y: 9}},
+				{{x: 9, y: 9}, {x: 3, y: 9}, {x: 3, y: 11, hint: 3}},
+				{{x: 9, y: 9}, {x: 17, y: 9}, {x: 17, y: 11, hint: 3}},
+				{{x: 0, y: 12}, {x: 7, y: 12}, {x: 7, y: 14}, {x: 0, y: 14}},
+				{{x: 13, y: 12}, {x: 20, y: 12}, {x: 20, y: 14}, {x: 13, y: 14}},
+				{{x: 16, y: 15}, {x: 16, y: 16, hint: 3}},
+				{{x: 14, y: 17}, {x: 19, y: 17}, {x: 19, y: 19}, {x: 14, y: 19}},
+				{{x: 16, y: 20}, {x: 16, y: 21, hint: 3}},
+				{{x: 12, y: 22}, {x: 21, y: 22}, {x: 21, y: 24}, {x: 12, y: 24}},
+				{{x: 7, y: 1}, {x: 12, y: 1}},
+				{{x: 32, y: 5}, {x: 39, y: 5}},
+				{{x: 7, y: 6}, {x: 12, y: 6}},
+				{{x: 1, y: 13}, {x: 6, y: 13}},
+				{{x: 14, y: 13}, {x: 19, y: 13}},
+				{{x: 15, y: 18}, {x: 18, y: 18}},
+				{{x: 13, y: 23}, {x: 20, y: 23}},
 			},
 			false,
 		},
@@ -291,7 +291,7 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(9,1) (10,1) (11,1) (11,2) (11,3) (10,3) (9,3) (9,2)]}"},
 			[]string{""},
-			[][]Point{{{X: 9, Y: 1}, {X: 11, Y: 1}, {X: 11, Y: 3}, {X: 9, Y: 3}}},
+			[][]point{{{x: 9, y: 1}, {x: 11, y: 1}, {x: 11, y: 3}, {x: 9, y: 3}}},
 			false,
 		},
 
@@ -306,9 +306,9 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(0,0) (1,1) (2,2) (3,3) (4,4)]}", "Path{[(11,0) (10,1) (9,2) (8,3) (7,4)]}"},
 			[]string{"", ""},
-			[][]Point{
-				{{X: 0, Y: 0, Hint: 2}, {X: 4, Y: 4, Hint: 3}},
-				{{X: 11, Y: 0, Hint: 2}, {X: 7, Y: 4, Hint: 3}},
+			[][]point{
+				{{x: 0, y: 0, hint: 2}, {x: 4, y: 4, hint: 3}},
+				{{x: 11, y: 0, hint: 2}, {x: 7, y: 4, hint: 3}},
 			},
 			false,
 		},
@@ -329,15 +329,15 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(3,0) (4,0) (5,0) (6,0) (7,0) (8,0) (9,0) (10,1) (11,2) (12,3) (12,4) (12,5) (12,6) (11,7) (10,8) (9,9) (8,9) (7,9) (6,9) (5,9) (4,9) (3,9) (2,8) (1,7) (0,6) (0,5) (0,4) (0,3) (1,2) (2,1)]}"},
 			[]string{""},
-			[][]Point{{
-				{X: 3, Y: 0},
-				{X: 9, Y: 0},
-				{X: 12, Y: 3},
-				{X: 12, Y: 6},
-				{X: 9, Y: 9},
-				{X: 3, Y: 9},
-				{X: 0, Y: 6},
-				{X: 0, Y: 3},
+			[][]point{{
+				{x: 3, y: 0},
+				{x: 9, y: 0},
+				{x: 12, y: 3},
+				{x: 12, y: 6},
+				{x: 9, y: 9},
+				{x: 3, y: 9},
+				{x: 0, y: 6},
+				{x: 0, y: 3},
 			}},
 			false,
 		},
@@ -370,19 +370,19 @@ func TestNewCanvas(t *testing.T) {
 				"Text{(20,6) \"svg\"}",
 			},
 			[]string{"", "", "", "", "", "", "", "", "", "ascii", "2", "svg"},
-			[][]Point{
-				{{X: 0, Y: 0}, {X: 26, Y: 0}, {X: 26, Y: 8}, {X: 0, Y: 8}},
-				{{X: 2, Y: 2}, {X: 8, Y: 2}, {X: 8, Y: 5}, {X: 2, Y: 5}},
-				{{X: 2, Y: 2}, {X: 8, Y: 2}, {X: 8, Y: 5}, {X: 6, Y: 5}, {X: 6, Y: 4}, {X: 4, Y: 4}, {X: 4, Y: 3}, {X: 6, Y: 3}},
-				{{X: 10, Y: 2}, {X: 16, Y: 2}, {X: 16, Y: 4}, {X: 13, Y: 4, Hint: 3}},
-				{{X: 10, Y: 2}, {X: 16, Y: 2}, {X: 16, Y: 5}, {X: 10, Y: 5}},
-				{{X: 18, Y: 2}, {X: 24, Y: 2}, {X: 24, Y: 3}, {X: 21, Y: 3, Hint: 3}},
-				{{X: 18, Y: 2}, {X: 24, Y: 2}, {X: 24, Y: 5}, {X: 18, Y: 5}, {X: 18, Y: 4}, {X: 21, Y: 4, Hint: 3}},
-				{{X: 18, Y: 2}, {X: 24, Y: 2}, {X: 24, Y: 5}, {X: 18, Y: 5}},
-				{{X: 10, Y: 3}, {X: 13, Y: 3, Hint: 3}},
-				{{X: 3, Y: 6}, {X: 7, Y: 6}},
-				{{X: 13, Y: 6}},
-				{{X: 20, Y: 6}, {X: 22, Y: 6}},
+			[][]point{
+				{{x: 0, y: 0}, {x: 26, y: 0}, {x: 26, y: 8}, {x: 0, y: 8}},
+				{{x: 2, y: 2}, {x: 8, y: 2}, {x: 8, y: 5}, {x: 2, y: 5}},
+				{{x: 2, y: 2}, {x: 8, y: 2}, {x: 8, y: 5}, {x: 6, y: 5}, {x: 6, y: 4}, {x: 4, y: 4}, {x: 4, y: 3}, {x: 6, y: 3}},
+				{{x: 10, y: 2}, {x: 16, y: 2}, {x: 16, y: 4}, {x: 13, y: 4, hint: 3}},
+				{{x: 10, y: 2}, {x: 16, y: 2}, {x: 16, y: 5}, {x: 10, y: 5}},
+				{{x: 18, y: 2}, {x: 24, y: 2}, {x: 24, y: 3}, {x: 21, y: 3, hint: 3}},
+				{{x: 18, y: 2}, {x: 24, y: 2}, {x: 24, y: 5}, {x: 18, y: 5}, {x: 18, y: 4}, {x: 21, y: 4, hint: 3}},
+				{{x: 18, y: 2}, {x: 24, y: 2}, {x: 24, y: 5}, {x: 18, y: 5}},
+				{{x: 10, y: 3}, {x: 13, y: 3, hint: 3}},
+				{{x: 3, y: 6}, {x: 7, y: 6}},
+				{{x: 13, y: 6}},
+				{{x: 20, y: 6}, {x: 22, y: 6}},
 			},
 			false,
 		},
@@ -396,36 +396,36 @@ func TestNewCanvas(t *testing.T) {
 			},
 			[]string{"Path{[(1,0) (2,0) (3,0) (4,0) (5,0) (6,0) (7,0) (8,0) (9,0) (10,0) (11,0) (12,0) (13,0)]}", "Path{[(1,2) (2,2) (3,2) (4,2) (5,2) (6,2) (7,2) (8,2) (9,2) (10,2) (11,2) (12,2) (13,2)]}"},
 			[]string{"", ""},
-			[][]Point{
+			[][]point{
 				{
-					{X: 1, Y: 0, Hint: 0},
-					{X: 2, Y: 0, Hint: 0},
-					{X: 3, Y: 0, Hint: 0},
-					{X: 4, Y: 0, Hint: 0},
-					{X: 5, Y: 0, Hint: 0},
-					{X: 6, Y: 0, Hint: 0},
-					{X: 7, Y: 0, Hint: 4},
-					{X: 8, Y: 0, Hint: 0},
-					{X: 9, Y: 0, Hint: 0},
-					{X: 10, Y: 0, Hint: 0},
-					{X: 11, Y: 0, Hint: 0},
-					{X: 12, Y: 0, Hint: 0},
-					{X: 13, Y: 0, Hint: 3},
+					{x: 1, y: 0, hint: 0},
+					{x: 2, y: 0, hint: 0},
+					{x: 3, y: 0, hint: 0},
+					{x: 4, y: 0, hint: 0},
+					{x: 5, y: 0, hint: 0},
+					{x: 6, y: 0, hint: 0},
+					{x: 7, y: 0, hint: 4},
+					{x: 8, y: 0, hint: 0},
+					{x: 9, y: 0, hint: 0},
+					{x: 10, y: 0, hint: 0},
+					{x: 11, y: 0, hint: 0},
+					{x: 12, y: 0, hint: 0},
+					{x: 13, y: 0, hint: 3},
 				},
 				{
-					{X: 1, Y: 2, Hint: 2},
-					{X: 2, Y: 2, Hint: 0},
-					{X: 3, Y: 2, Hint: 0},
-					{X: 4, Y: 2, Hint: 0},
-					{X: 5, Y: 2, Hint: 0},
-					{X: 6, Y: 2, Hint: 0},
-					{X: 7, Y: 2, Hint: 5},
-					{X: 8, Y: 2, Hint: 0},
-					{X: 9, Y: 2, Hint: 0},
-					{X: 10, Y: 2, Hint: 0},
-					{X: 11, Y: 2, Hint: 0},
-					{X: 12, Y: 2, Hint: 0},
-					{X: 13, Y: 2, Hint: 0},
+					{x: 1, y: 2, hint: 2},
+					{x: 2, y: 2, hint: 0},
+					{x: 3, y: 2, hint: 0},
+					{x: 4, y: 2, hint: 0},
+					{x: 5, y: 2, hint: 0},
+					{x: 6, y: 2, hint: 0},
+					{x: 7, y: 2, hint: 5},
+					{x: 8, y: 2, hint: 0},
+					{x: 9, y: 2, hint: 0},
+					{x: 10, y: 2, hint: 0},
+					{x: 11, y: 2, hint: 0},
+					{x: 12, y: 2, hint: 0},
+					{x: 13, y: 2, hint: 0},
 				},
 			},
 			true,
@@ -468,7 +468,7 @@ func TestNewCanvasBroken(t *testing.T) {
 		input   []string
 		strings []string
 		texts   []string
-		corners [][]Point
+		corners [][]point
 	}{
 		// 0 URL
 		{
@@ -477,7 +477,7 @@ func TestNewCanvasBroken(t *testing.T) {
 			},
 			[]string{"Text{(0,0) \"github.com/foo/bar\"}"},
 			[]string{"github.com/foo/bar"},
-			[][]Point{{{X: 0, Y: 0}, {X: 17, Y: 0}}},
+			[][]point{{{x: 0, y: 0}, {x: 17, y: 0}}},
 		},
 
 		// 1 Merged boxes
@@ -490,9 +490,9 @@ func TestNewCanvasBroken(t *testing.T) {
 			[]string{"Path{[(0,0) (1,0) (2,0) (3,0) (4,0) (4,1) (4,2) (3,2) (2,2) (1,2) (0,2) (0,1)]}", "Path{[(0,0) (1,0) (2,0) (3,0) (4,0) (4,1) (4,2) (3,2) (2,2) (2,1)]}"},
 			[]string{"", ""},
 			// TODO(dhobsd): BROKEN.
-			[][]Point{
-				{{X: 0, Y: 0}, {X: 4, Y: 0}, {X: 4, Y: 2}, {X: 0, Y: 2}},
-				{{X: 0, Y: 0}, {X: 4, Y: 0}, {X: 4, Y: 2}, {X: 2, Y: 2}, {X: 2, Y: 1}},
+			[][]point{
+				{{x: 0, y: 0}, {x: 4, y: 0}, {x: 4, y: 2}, {x: 0, y: 2}},
+				{{x: 0, y: 0}, {x: 4, y: 0}, {x: 4, y: 2}, {x: 2, y: 2}, {x: 2, y: 1}},
 			},
 		},
 
@@ -511,10 +511,10 @@ func TestNewCanvasBroken(t *testing.T) {
 				"Path{[(0,0) (1,0) (2,0) (3,0) (4,0) (5,0) (5,1) (5,2) (4,2) (3,2) (3,1)]}",
 			},
 			[]string{"", "", ""},
-			[][]Point{
-				{{X: 0, Y: 0}, {X: 5, Y: 0}, {X: 5, Y: 2}, {X: 0, Y: 2}},
-				{{X: 0, Y: 0}, {X: 5, Y: 0}, {X: 5, Y: 2}, {X: 2, Y: 2}, {X: 2, Y: 1}},
-				{{X: 0, Y: 0}, {X: 5, Y: 0}, {X: 5, Y: 2}, {X: 3, Y: 2}, {X: 3, Y: 1}},
+			[][]point{
+				{{x: 0, y: 0}, {x: 5, y: 0}, {x: 5, y: 2}, {x: 0, y: 2}},
+				{{x: 0, y: 0}, {x: 5, y: 0}, {x: 5, y: 2}, {x: 2, y: 2}, {x: 2, y: 1}},
+				{{x: 0, y: 0}, {x: 5, y: 0}, {x: 5, y: 2}, {x: 3, y: 2}, {x: 3, y: 1}},
 			},
 		},
 	}
@@ -545,36 +545,36 @@ func TestNewCanvasBroken(t *testing.T) {
 func TestPointsToCorners(t *testing.T) {
 	t.Parallel()
 	data := []struct {
-		in       []Point
-		expected []Point
+		in       []point
+		expected []point
 		closed   bool
 	}{
 		{
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}},
 			false,
 		},
 		{
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}},
-			[]Point{{X: 0, Y: 0}, {X: 2, Y: 0}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}},
+			[]point{{x: 0, y: 0}, {x: 2, y: 0}},
 			false,
 		},
 		{
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}},
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}},
 			false,
 		},
 		{
-			[]Point{
-				{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 1}, {X: 2, Y: 2},
-				{X: 1, Y: 2}, {X: 0, Y: 2}, {X: 0, Y: 1},
+			[]point{
+				{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 2, y: 1}, {x: 2, y: 2},
+				{x: 1, y: 2}, {x: 0, y: 2}, {x: 0, y: 1},
 			},
-			[]Point{{X: 0, Y: 0}, {X: 2, Y: 0}, {X: 2, Y: 2}, {X: 0, Y: 2}},
+			[]point{{x: 0, y: 0}, {x: 2, y: 0}, {x: 2, y: 2}, {x: 0, y: 2}},
 			true,
 		},
 		{
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}},
-			[]Point{{X: 0, Y: 0}, {X: 1, Y: 0}, {X: 1, Y: 1}, {X: 0, Y: 1}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}, {x: 0, y: 1}},
+			[]point{{x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}, {x: 0, y: 1}},
 			// TODO(dhobsd): Unexpected; broken.
 			false,
 		},
@@ -635,15 +635,15 @@ func BenchmarkT(b *testing.B) {
 
 // Private details.
 
-func getPoints(objs []Object) [][]Point {
-	out := [][]Point{}
+func getPoints(objs []*object) [][]point {
+	out := [][]point{}
 	for _, obj := range objs {
 		out = append(out, obj.Points())
 	}
 	return out
 }
 
-func getTexts(objs []Object) []string {
+func getTexts(objs []*object) []string {
 	out := []string{}
 	for _, obj := range objs {
 		t := obj.Text()
@@ -658,7 +658,7 @@ func getTexts(objs []Object) []string {
 	return out
 }
 
-func getStrings(objs []Object) []string {
+func getStrings(objs []*object) []string {
 	out := []string{}
 	for _, obj := range objs {
 		out = append(out, obj.String())
@@ -666,8 +666,8 @@ func getStrings(objs []Object) []string {
 	return out
 }
 
-func getCorners(objs []Object) [][]Point {
-	out := make([][]Point, len(objs))
+func getCorners(objs []*object) [][]point {
+	out := make([][]point, len(objs))
 	for i, obj := range objs {
 		out[i] = obj.Corners()
 	}

@@ -14,29 +14,12 @@ import (
 	"unicode/utf8"
 )
 
-// Canvas provides methods for returning objects from an underlying textual grid.
-type Canvas interface {
-	// A canvas has an underlying visual representation. The fmt.Stringer interface for this
-	// interface provides a view into the underlying grid.
-	fmt.Stringer
-	// Objects returns all the objects found in the underlying grid.
-	Objects() []Object
-	// Size returns the visual dimensions of the Canvas.
-	Size() image.Point
-	// Options returns a map of options to apply to Objects based on the object's tag. This
-	// maps tag name to a map of option names to options.
-	Options() map[string]map[string]interface{}
-	// EnclosingObjects returns the set of objects that contain this point in order from most
-	// to least specific.
-	EnclosingObjects(p Point) []Object
-}
-
 // NewCanvas returns a new Canvas, initialized from the provided data. If tabWidth is set to a non-negative
 // value, that value will be used to convert tabs to spaces within the grid. Creation of the Canvas
 // can fail if the diagram contains invalid UTF-8 sequences.
-func NewCanvas(data []byte, tabWidth int) (Canvas, error) {
-	c := &canvas{
-		options: map[string]map[string]interface{}{
+func NewCanvas(data []byte, tabWidth int) (*Canvas, error) {
+	c := &Canvas{
+		options: optionMaps{
 			"__a2s__closed__options__": {
 				"fill": "#fff",
 			},
@@ -131,46 +114,55 @@ func expandTabs(line []byte, tabWidth int) ([]byte, error) {
 	return out, nil
 }
 
-// canvas is the parsed source data.
-type canvas struct {
+type optionMaps map[string]map[string]interface{}
+
+// Canvas is the parsed source data.
+type Canvas struct {
 	// (0,0) is top left.
 	grid    []char
 	visited []bool
 	objects objects
 	size    image.Point
-	options map[string]map[string]interface{}
+	options optionMaps
 }
 
-func (c *canvas) String() string {
+// String provides a view into the underlying grid.
+func (c *Canvas) String() string {
 	return fmt.Sprintf("%+v", c.grid)
 }
 
-func (c *canvas) Objects() []Object {
+// Objects returns all the objects found in the underlying grid.
+func (c *Canvas) Objects() []*object {
 	return c.objects
 }
 
-func (c *canvas) Size() image.Point {
+// Size returns the visual dimensions of the Canvas.
+func (c *Canvas) Size() image.Point {
 	return c.size
 }
 
-func (c *canvas) Options() map[string]map[string]interface{} {
+// Options returns a map of options to apply to Objects based on the object's tag. This
+// maps tag name to a map of option names to options.
+func (c *Canvas) Options() optionMaps {
 	return c.options
 }
 
-func (c *canvas) EnclosingObjects(p Point) []Object {
-	maxTL := Point{X: -1, Y: -1}
+// EnclosingObjects returns the set of objects that contain this point in order from most
+// to least specific.
+func (c *Canvas) EnclosingObjects(p point) []*object {
+	maxTL := point{x: -1, y: -1}
 
-	var q []Object
+	var q []*object
 	for _, o := range c.objects {
 		// An object can't really contain another unless it is a polygon.
 		if !o.IsClosed() {
 			continue
 		}
 
-		if o.HasPoint(p) && o.Corners()[0].X > maxTL.X && o.Corners()[0].Y > maxTL.Y {
+		if o.HasPoint(p) && o.Corners()[0].x > maxTL.x && o.Corners()[0].y > maxTL.y {
 			q = append(q, o)
-			maxTL.X = o.Corners()[0].X
-			maxTL.Y = o.Corners()[0].Y
+			maxTL.x = o.Corners()[0].x
+			maxTL.y = o.Corners()[0].y
 		}
 	}
 
@@ -178,15 +170,15 @@ func (c *canvas) EnclosingObjects(p Point) []Object {
 }
 
 // findObjects finds all objects (lines, polygons, and text) within the underlying grid.
-func (c *canvas) findObjects() {
-	p := Point{}
+func (c *Canvas) findObjects() {
+	p := point{}
 
 	// Find any new paths by starting with a point that wasn't yet visited, beginning at the top
 	// left of the grid.
 	for y := 0; y < c.size.Y; y++ {
-		p.Y = y
+		p.y = y
 		for x := 0; x < c.size.X; x++ {
-			p.X = x
+			p.x = x
 			if c.isVisited(p) {
 				continue
 			}
@@ -195,7 +187,7 @@ func (c *canvas) findObjects() {
 				// connecting points. This will generate multiple objects if multiple
 				// paths (either open or closed) are found.
 				c.visit(p)
-				objs := c.scanPath([]Point{p})
+				objs := c.scanPath([]point{p})
 				for _, obj := range objs {
 					// For all points in all objects found, mark the points as visited.
 					for _, p := range obj.Points() {
@@ -209,9 +201,9 @@ func (c *canvas) findObjects() {
 
 	// A second pass through the grid attempts to identify any text within the grid.
 	for y := 0; y < c.size.Y; y++ {
-		p.Y = y
+		p.y = y
 		for x := 0; x < c.size.X; x++ {
-			p.X = x
+			p.x = x
 			if c.isVisited(p) {
 				continue
 			}
@@ -236,7 +228,7 @@ func (c *canvas) findObjects() {
 
 // scanPath tries to complete a total path (for lines or polygons) starting with some partial path.
 // It recurses when it finds multiple unvisited outgoing paths.
-func (c *canvas) scanPath(points []Point) objects {
+func (c *Canvas) scanPath(points []point) objects {
 	cur := points[len(points)-1]
 	next := c.next(cur)
 
@@ -259,11 +251,11 @@ func (c *canvas) scanPath(points []Point) objects {
 	// If we have hit a point that can create a closed path, create an object and close
 	// the path. Additionally, recurse to other progress directions in case e.g. an open
 	// path spawns from this point. Paths are always closed vertically.
-	if cur.X == points[0].X && cur.Y == points[0].Y+1 {
+	if cur.x == points[0].x && cur.y == points[0].y+1 {
 		o := &object{points: points}
 		o.seal(c)
 		r := objects{o}
-		return append(r, c.scanPath([]Point{cur})...)
+		return append(r, c.scanPath([]point{cur})...)
 	}
 
 	// We scan depth-first instead of breadth-first, making it possible to find a
@@ -274,7 +266,7 @@ func (c *canvas) scanPath(points []Point) objects {
 			continue
 		}
 		c.visit(n)
-		p2 := make([]Point, len(points)+1)
+		p2 := make([]point, len(points)+1)
 		copy(p2, points)
 		p2[len(p2)-1] = n
 		objs = append(objs, c.scanPath(p2)...)
@@ -286,51 +278,51 @@ func (c *canvas) scanPath(points []Point) objects {
 // progress to the left or right, vertical progress above or below, or diagonal progress to NW,
 // NE, SW, and SE. It skips any points already visited, and returns all of the possible progress
 // points.
-func (c *canvas) next(pos Point) []Point {
+func (c *Canvas) next(pos point) []point {
 	// Our caller must have called c.visit prior to calling this function.
 	if !c.isVisited(pos) {
 		panic(fmt.Errorf("internal error; revisiting %s", pos))
 	}
 
-	var out []Point
+	var out []point
 
 	ch := c.at(pos)
 	if ch.canHorizontal() {
-		nextHorizontal := func(p Point) {
+		nextHorizontal := func(p point) {
 			if !c.isVisited(p) && c.at(p).canHorizontal() {
 				out = append(out, p)
 			}
 		}
 		if c.canLeft(pos) {
 			n := pos
-			n.X--
+			n.x--
 			nextHorizontal(n)
 		}
 		if c.canRight(pos) {
 			n := pos
-			n.X++
+			n.x++
 			nextHorizontal(n)
 		}
 	}
 	if ch.canVertical() {
-		nextVertical := func(p Point) {
+		nextVertical := func(p point) {
 			if !c.isVisited(p) && c.at(p).canVertical() {
 				out = append(out, p)
 			}
 		}
 		if c.canUp(pos) {
 			n := pos
-			n.Y--
+			n.y--
 			nextVertical(n)
 		}
 		if c.canDown(pos) {
 			n := pos
-			n.Y++
+			n.y++
 			nextVertical(n)
 		}
 	}
 	if c.canDiagonal(pos) {
-		nextDiagonal := func(from, to Point) {
+		nextDiagonal := func(from, to point) {
 			if !c.isVisited(to) && c.at(to).canDiagonalFrom(c.at(from)) {
 				out = append(out, to)
 			}
@@ -338,28 +330,28 @@ func (c *canvas) next(pos Point) []Point {
 		if c.canUp(pos) {
 			if c.canLeft(pos) {
 				n := pos
-				n.X--
-				n.Y--
+				n.x--
+				n.y--
 				nextDiagonal(pos, n)
 			}
 			if c.canRight(pos) {
 				n := pos
-				n.X++
-				n.Y--
+				n.x++
+				n.y--
 				nextDiagonal(pos, n)
 			}
 		}
 		if c.canDown(pos) {
 			if c.canLeft(pos) {
 				n := pos
-				n.X--
-				n.Y++
+				n.x--
+				n.y++
 				nextDiagonal(pos, n)
 			}
 			if c.canRight(pos) {
 				n := pos
-				n.X++
-				n.Y++
+				n.x++
+				n.y++
 				nextDiagonal(pos, n)
 			}
 		}
@@ -372,8 +364,8 @@ func (c *canvas) next(pos Point) []Point {
 var objTagRE = regexp.MustCompile(`(\d+)\s*,\s*(\d+)$`)
 
 // scanText extracts a line of text.
-func (c *canvas) scanText(start Point) Object {
-	obj := &object{points: []Point{start}, isText: true}
+func (c *Canvas) scanText(start point) *object {
+	obj := &object{points: []point{start}, isText: true}
 	whiteSpaceStreak := 0
 	cur := start
 
@@ -382,13 +374,13 @@ func (c *canvas) scanText(start Point) Object {
 	tagDef := []rune{}
 
 	for c.canRight(cur) {
-		if cur.X == start.X && c.at(cur).isObjectStartTag() {
+		if cur.x == start.x && c.at(cur).isObjectStartTag() {
 			tagged++
-		} else if cur.X > start.X && c.at(cur).isObjectEndTag() {
+		} else if cur.x > start.x && c.at(cur).isObjectEndTag() {
 			tagged++
 		}
 
-		cur.X++
+		cur.x++
 		if c.isVisited(cur) {
 			// If the point is already visited, we hit a polygon or a line.
 			break
@@ -446,7 +438,7 @@ func (c *canvas) scanText(start Point) Object {
 				if targetY, err1 := strconv.ParseInt(matches[2], 10, 0); err1 == nil {
 					for i, o := range c.objects {
 						corner := o.Corners()[0]
-						if corner.X == int(targetX) && corner.Y == int(targetY) {
+						if corner.x == int(targetX) && corner.y == int(targetY) {
 							c.objects[i].SetTag(t)
 							break
 						}
@@ -477,44 +469,44 @@ func (c *canvas) scanText(start Point) Object {
 	return obj
 }
 
-func (c *canvas) at(p Point) char {
-	return c.grid[p.Y*c.size.X+p.X]
+func (c *Canvas) at(p point) char {
+	return c.grid[p.y*c.size.X+p.x]
 }
 
-func (c *canvas) isVisited(p Point) bool {
-	return c.visited[p.Y*c.size.X+p.X]
+func (c *Canvas) isVisited(p point) bool {
+	return c.visited[p.y*c.size.X+p.x]
 }
 
-func (c *canvas) visit(p Point) {
+func (c *Canvas) visit(p point) {
 	// TODO(dhobsd): Change code to ensure that visit() is called once and only
 	// once per point.
-	c.visited[p.Y*c.size.X+p.X] = true
+	c.visited[p.y*c.size.X+p.x] = true
 }
 
-func (c *canvas) unvisit(p Point) {
-	o := p.Y*c.size.X + p.X
+func (c *Canvas) unvisit(p point) {
+	o := p.y*c.size.X + p.x
 	if !c.visited[o] {
 		panic(fmt.Errorf("internal error: point %+v never visited", p))
 	}
 	c.visited[o] = false
 }
 
-func (c *canvas) canLeft(p Point) bool {
-	return p.X > 0
+func (c *Canvas) canLeft(p point) bool {
+	return p.x > 0
 }
 
-func (c *canvas) canRight(p Point) bool {
-	return p.X < c.size.X-1
+func (c *Canvas) canRight(p point) bool {
+	return p.x < c.size.X-1
 }
 
-func (c *canvas) canUp(p Point) bool {
-	return p.Y > 0
+func (c *Canvas) canUp(p point) bool {
+	return p.y > 0
 }
 
-func (c *canvas) canDown(p Point) bool {
-	return p.Y < c.size.Y-1
+func (c *Canvas) canDown(p point) bool {
+	return p.y < c.size.Y-1
 }
 
-func (c *canvas) canDiagonal(p Point) bool {
+func (c *Canvas) canDiagonal(p point) bool {
 	return (c.canLeft(p) || c.canRight(p)) && (c.canUp(p) || c.canDown(p))
 }

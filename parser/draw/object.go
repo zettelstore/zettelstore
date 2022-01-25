@@ -5,70 +5,55 @@ package draw
 
 import "fmt"
 
-// Object is an interface for working with open paths (lines), closed paths (polygons), or text.
-type Object interface {
-	fmt.Stringer
-	// Points returns all the points occupied by this Object. Every object has at least one point,
-	// and all points are both in-order and contiguous.
-	Points() []Point
-	// HasPoint returns true if the object contains the supplied Point coordinates.
-	HasPoint(Point) bool
-	// Corners returns all the corners (change of direction) along the path.
-	Corners() []Point
-	// IsClosed is true if the object is composed of a closed path.
-	IsClosed() bool
-	// IsDashed is true if this object is a path object, and lines should be drawn dashed.
-	IsDashed() bool
-	// IsText returns true if the object is textual and does not represent a path.
-	IsText() bool
-	// Text returns the text associated with this Object if textual, and nil otherwise.
-	Text() []rune
-	// SetTag sets an options tag on this Object so the renderer may look up options.
-	SetTag(string)
-	// Tag returns the tag of this object, if any.
-	Tag() string
-}
-
-// object implements Object and represents one of an open path, a closed path, or text.
+// object represents one of an open path, a closed path, or text.
 type object struct {
 	// points always starts with the top most, then left most point, proceeding to the right.
-	points   []Point
+	points   []point
 	isText   bool
 	text     []rune
-	corners  []Point
+	corners  []point
 	isClosed bool
 	isDashed bool
 	tag      string
 }
 
-func (o *object) Points() []Point {
+// Points returns all the points occupied by this Object. Every object has at least one point,
+// and all points are both in-order and contiguous.
+func (o *object) Points() []point {
 	return o.points
 }
 
-func (o *object) Corners() []Point {
+// Corners returns all the corners (change of direction) along the path.
+func (o *object) Corners() []point {
 	return o.corners
 }
 
+// IsClosed is true if the object is composed of a closed path.
 func (o *object) IsClosed() bool {
 	return o.isClosed
 }
 
+// IsText returns true if the object is textual and does not represent a path.
 func (o *object) IsText() bool {
 	return o.isText
 }
 
+// IsDashed is true if this object is a path object, and lines should be drawn dashed.
 func (o *object) IsDashed() bool {
 	return o.isDashed
 }
 
+// Text returns the text associated with this object if textual, and nil otherwise.
 func (o *object) Text() []rune {
 	return o.text
 }
 
+// SetTag sets an options tag on this object so the renderer may look up options.
 func (o *object) SetTag(s string) {
 	o.tag = s
 }
 
+// Tag returns the tag of this object, if any.
 func (o *object) Tag() string {
 	return o.tag
 }
@@ -83,13 +68,13 @@ func (o *object) String() string {
 // HasPoint determines whether the supplied point lives inside the object. Since we support complex
 // convex and concave polygons, we need to do a full point-in-polygon test. The algorithm implemented
 // comes from the more efficient, less-clever version at http://alienryderflex.com/polygon/.
-func (o *object) HasPoint(p Point) bool {
+func (o *object) HasPoint(p point) bool {
 	hasPoint := false
 	ncorners := len(o.corners)
 	j := ncorners - 1
 	for i := 0; i < ncorners; i++ {
-		if (o.corners[i].Y < p.Y && o.corners[j].Y >= p.Y || o.corners[j].Y < p.Y && o.corners[i].Y >= p.Y) && (o.corners[i].X <= p.X || o.corners[j].X <= p.X) {
-			if o.corners[i].X+(p.Y-o.corners[i].Y)/(o.corners[j].Y-o.corners[i].Y)*(o.corners[j].X-o.corners[i].X) < p.X {
+		if (o.corners[i].y < p.y && o.corners[j].y >= p.y || o.corners[j].y < p.y && o.corners[i].y >= p.y) && (o.corners[i].x <= p.x || o.corners[j].x <= p.x) {
+			if o.corners[i].x+(p.y-o.corners[i].y)/(o.corners[j].y-o.corners[i].y)*(o.corners[j].x-o.corners[i].x) < p.x {
 				hasPoint = !hasPoint
 			}
 		}
@@ -100,13 +85,13 @@ func (o *object) HasPoint(p Point) bool {
 }
 
 // seal finalizes the object, setting its text, its corners, and its various rendering hints.
-func (o *object) seal(c *canvas) {
+func (o *object) seal(c *Canvas) {
 	if c.at(o.points[0]).isArrow() {
-		o.points[0].Hint = StartMarker
+		o.points[0].hint = startMarker
 	}
 
 	if c.at(o.points[len(o.points)-1]).isArrow() {
-		o.points[len(o.points)-1].Hint = EndMarker
+		o.points[len(o.points)-1].hint = endMarker
 	}
 
 	o.corners, o.isClosed = pointsToCorners(o.points)
@@ -115,9 +100,9 @@ func (o *object) seal(c *canvas) {
 	for i, p := range o.points {
 		if !o.IsText() {
 			if c.at(p).isTick() {
-				o.points[i].Hint = Tick
+				o.points[i].hint = tick
 			} else if c.at(p).isDot() {
-				o.points[i].Hint = Dot
+				o.points[i].hint = dot
 			}
 
 			if c.at(p).isDashed() {
@@ -125,8 +110,8 @@ func (o *object) seal(c *canvas) {
 			}
 
 			for _, corner := range o.corners {
-				if corner.X == p.X && corner.Y == p.Y && c.at(p).isRoundedCorner() {
-					o.points[i].Hint = RoundedCorner
+				if corner.x == p.x && corner.y == p.y && c.at(p).isRoundedCorner() {
+					o.points[i].hint = roundedCorner
 				}
 			}
 		}
@@ -135,7 +120,7 @@ func (o *object) seal(c *canvas) {
 }
 
 // objects implements a sortable collection of Object interfaces.
-type objects []Object
+type objects []*object
 
 func (o objects) Len() int      { return len(o) }
 func (o objects) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
@@ -153,10 +138,10 @@ func (o objects) Less(i, j int) bool {
 	}
 	lp := l.Points()[0]
 	rp := r.Points()[0]
-	if lp.Y != rp.Y {
-		return lp.Y < rp.Y
+	if lp.y != rp.y {
+		return lp.y < rp.y
 	}
-	return lp.X < rp.X
+	return lp.x < rp.x
 }
 
 const (
@@ -172,13 +157,13 @@ const (
 // pointsToCorners returns all the corners (points at which there is a change of directionality) for
 // a path. It additionally returns a truth value indicating whether the points supplied indicate a
 // closed path.
-func pointsToCorners(points []Point) ([]Point, bool) {
+func pointsToCorners(points []point) ([]point, bool) {
 	l := len(points)
 	// A path containing fewer than 3 points can neither be closed, nor change direction.
 	if l < 3 {
 		return points, false
 	}
-	out := []Point{points[0]}
+	out := []point{points[0]}
 
 	dir := dirNone
 	if isHorizontal(points[0], points[1]) {
