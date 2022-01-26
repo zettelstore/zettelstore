@@ -45,7 +45,7 @@ func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 }
 
 func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineListNode {
-	canvas, err := NewCanvas(inp.Src[inp.Pos:], 8)
+	canvas, err := newCanvas(inp.Src[inp.Pos:], 8)
 	if err != nil {
 		return nil // TODO: Fehlertext err.Error()
 	}

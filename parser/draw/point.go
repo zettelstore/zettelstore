@@ -1,36 +1,42 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
 import "fmt"
 
 // A renderHint suggests ways the SVG renderer may appropriately represent this point.
-type renderHint int
+type renderHint uint8
 
 const (
-	// noHint indicates no hints are provided for this point.
-	_ renderHint = iota
-	// roundedCorner indicates the renderer should smooth corners on this path.
-	roundedCorner
-	// startMarker indicates this point should have an SVG marker-start attribute.
-	startMarker
-	// endMarker indicates this point should have an SVG marker-end attribute.
-	endMarker
-	// tick indicates the renderer should mark a tick in the path at this point.
-	tick
-	// dot indicates the renderer should insert a filled dot in the path at this point.
-	dot
+	_             renderHint = iota
+	roundedCorner            // the renderer should smooth corners on this path.
+	startMarker              // this point should have an SVG marker-start attribute.
+	endMarker                // this point should have an SVG marker-end attribute.
+	tick                     // the renderer should mark a tick in the path at this point.
+	dot                      // the renderer should insert a filled dot in the path at this point.
 )
 
 // A point is an X,Y coordinate in the diagram's grid. The grid represents (0, 0) as the top-left
 // of the diagram. The point also provides hints to the renderer as to how it should be interpreted.
 type point struct {
-	// The x coordinate of this point.
-	x int
-	// The y coordinate of this point.
-	y int
-	// Hints for the renderer.
+	x, y int
 	hint renderHint
 }
 

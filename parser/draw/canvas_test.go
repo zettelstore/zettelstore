@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -392,7 +408,7 @@ func TestNewCanvas(t *testing.T) {
 			[]string{
 				" ------x----->",
 				"",
-				" <-----o------",
+				" <-----*------",
 			},
 			[]string{"Path{[(1,0) (2,0) (3,0) (4,0) (5,0) (6,0) (7,0) (8,0) (9,0) (10,0) (11,0) (12,0) (13,0)]}", "Path{[(1,2) (2,2) (3,2) (4,2) (5,2) (6,2) (7,2) (8,2) (9,2) (10,2) (11,2) (12,2) (13,2)]}"},
 			[]string{"", ""},
@@ -432,7 +448,7 @@ func TestNewCanvas(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		c, err := NewCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		c, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
@@ -519,7 +535,7 @@ func TestNewCanvasBroken(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		c, err := NewCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		c, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
@@ -622,7 +638,7 @@ func BenchmarkT(b *testing.B) {
 	}
 	expected := 30 * b.N
 	b.ResetTimer()
-	c, err := NewCanvas(input, 8)
+	c, err := newCanvas(input, 8)
 	if err != nil {
 		b.Fatalf("Error creating canvas: %s", err)
 	}

@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -9,9 +25,9 @@ import "fmt"
 type object struct {
 	// points always starts with the top most, then left most point, proceeding to the right.
 	points   []point
-	isText   bool
 	text     []rune
 	corners  []point
+	isText   bool
 	isClosed bool
 	isDashed bool
 	tag      string
@@ -33,11 +49,6 @@ func (o *object) IsClosed() bool {
 	return o.isClosed
 }
 
-// IsText returns true if the object is textual and does not represent a path.
-func (o *object) IsText() bool {
-	return o.isText
-}
-
 // IsDashed is true if this object is a path object, and lines should be drawn dashed.
 func (o *object) IsDashed() bool {
 	return o.isDashed
@@ -57,6 +68,10 @@ func (o *object) SetTag(s string) {
 func (o *object) Tag() string {
 	return o.tag
 }
+
+func (o *object) IsOpenPath() bool   { return !o.isClosed && !o.isText }
+func (o *object) IsClosedPath() bool { return o.isClosed && !o.isText }
+func (o *object) IsText() bool       { return o.isText }
 
 func (o *object) String() string {
 	if o.IsText() {

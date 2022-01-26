@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -9,51 +25,53 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	// TODO(dhobsd): Investigate using SVGo?
-)
-
-const (
-	defaultFont = "monospace"
-
-	pathTag = "%s<path id=\"%s%d\" %sd=\"%s\" />%s"
 )
 
 // CanvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
 func CanvasToSVG(c *Canvas, font string, scaleX, scaleY int) []byte {
 	if len(font) == 0 {
-		font = defaultFont
+		font = "monospace"
 	}
 
 	b := bytes.Buffer{}
 	fmt.Fprintf(&b,
 		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
 		(c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
-	x := float64(scaleX - 1)
-	y := float64(scaleY - 1)
-	fmt.Fprintf(&b,
-		`<marker id="iPointer" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="M 10 0 L 10 10 L 0 5 z" /></marker>`,
-		x, y)
-	fmt.Fprintf(&b,
-		`<marker id="Pointer" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" /></marker>`,
-		x, y)
+	writeMarkerDefs(&b, scaleX, scaleY)
 
 	// 3 passes, first closed paths, then open paths, then text.
 	writeClosedPaths(&b, c, scaleX, scaleY)
 	writeOpenPaths(&b, c, scaleX, scaleY)
 	writeTexts(&b, c, escape(font), scaleX, scaleY)
+
 	io.WriteString(&b, "</svg>")
 	return b.Bytes()
 }
 
+const (
+	nameStartMarker = "iPointer"
+	nameEndMarker   = "Pointer"
+)
+
+func writeMarkerDefs(w io.Writer, scaleX, scaleY int) {
+	const markerTag = `<marker id="%s" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="%s" /></marker>`
+	x := float64(scaleX - 3)
+	y := float64(scaleY - 3)
+	fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
+	fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
+}
+
+const pathTag = `%s<path id="%s%d" %sd="%s" />%s`
+
 func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
-	io.WriteString(w, "<g id=\"closed\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\">")
+	io.WriteString(w, `<g id="closed" stroke="#000" stroke-width="2" fill="none">`)
 	for i, obj := range c.Objects() {
-		if !obj.IsClosed() || obj.IsText() {
+		if !obj.IsClosedPath() {
 			continue
 		}
 		opts := ""
 		if obj.IsDashed() {
-			opts = "stroke-dasharray=\"5 5\" "
+			opts = `stroke-dasharray="5 5" `
 		}
 
 		tag := obj.Tag()
@@ -75,9 +93,12 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 }
 
 func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
-	io.WriteString(w, "<g id=\"lines\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\">")
+	const optStartMarker = `marker-start="url(#` + nameStartMarker + `)" `
+	const optEndMarker = `marker-end="url(#` + nameEndMarker + `)" `
+
+	io.WriteString(w, `<g id="lines" stroke="#000" stroke-width="2" fill="none">`)
 	for i, obj := range c.Objects() {
-		if obj.IsClosed() || obj.IsText() {
+		if !obj.IsOpenPath() {
 			continue
 		}
 		points := obj.Points()
@@ -85,9 +106,9 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 			switch p.hint {
 			case dot:
 				sp := scale(p, scaleX, scaleY)
-				fmt.Fprintf(w, "<circle cx=\"%g\" cy=\"%g\" r=\"3\" fill=\"#000\" />", sp.X, sp.Y)
+				fmt.Fprintf(w, `<circle cx="%g" cy="%g" r="3" fill="#000" />`, sp.X, sp.Y)
 			case tick:
-				const tickTag = "<line x1=\"%g\" y1=\"%g\" x2=\"%g\" y2=\"%g\" stroke-width=\"1\" />"
+				const tickTag = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="1" />`
 
 				p := scale(p, scaleX, scaleY)
 				p1, p2 := p, p
@@ -100,13 +121,13 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 
 		opts := ""
 		if obj.IsDashed() {
-			opts += "stroke-dasharray=\"5 5\" "
+			opts += `stroke-dasharray="5 5" `
 		}
 		if points[0].hint == startMarker {
-			opts += "marker-start=\"url(#iPointer)\" "
+			opts += optStartMarker
 		}
 		if points[len(points)-1].hint == endMarker {
-			opts += "marker-end=\"url(#Pointer)\" "
+			opts += optEndMarker
 		}
 
 		options := c.Options()
@@ -124,9 +145,11 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 }
 
 func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
-	fmt.Fprintf(w,
-		"<g id=\"text\" stroke=\"none\" style=\"font-family:%s;font-size:15.2px\">",
-		font)
+	fontSize := float64(scaleY) * 0.75
+	deltaX := float64(scaleX) / 4
+	deltaY := float64(scaleY) / 4
+	fmt.Fprintf(
+		w, `<g id="text" stroke="none" style="font-family:%s;font-size:%gpx">`, font, fontSize)
 	for i, obj := range c.Objects() {
 		if !obj.IsText() {
 			continue
@@ -163,8 +186,8 @@ func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
 		}
 		sp := scale(obj.Points()[0], scaleX, scaleY)
 		fmt.Fprintf(w,
-			"%s<text id=\"obj%d\" x=\"%g\" y=\"%g\" fill=\"%s\">%s</text>%s",
-			startLink, i, sp.X, sp.Y, color, escape(text), endLink)
+			`%s<text id="obj%d" x="%g" y="%g" fill="%s">%s</text>%s`,
+			startLink, i, sp.X-deltaX, sp.Y+deltaY, color, escape(text), endLink)
 	}
 	io.WriteString(w, "</g>")
 }
@@ -179,10 +202,10 @@ func getTagOpts(options optionMaps, tag string) string {
 
 			switch v := v.(type) {
 			case string:
-				opts += fmt.Sprintf("%s=\"%s\" ", k, v)
+				opts += fmt.Sprintf(`%s="%s" `, k, v)
 			default:
 				// TODO(dhobsd): Implement.
-				opts += fmt.Sprintf("%s=\"UNIMPLEMENTED\" ", k)
+				opts += fmt.Sprintf(`%s="UNIMPLEMENTED" `, k)
 			}
 		}
 	}

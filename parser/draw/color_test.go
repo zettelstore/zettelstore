@@ -1,11 +1,25 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestParseHexColor(t *testing.T) {
 	t.Parallel()

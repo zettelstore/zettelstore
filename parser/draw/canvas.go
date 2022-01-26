@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -14,10 +30,10 @@ import (
 	"unicode/utf8"
 )
 
-// NewCanvas returns a new Canvas, initialized from the provided data. If tabWidth is set to a non-negative
+// newCanvas returns a new Canvas, initialized from the provided data. If tabWidth is set to a non-negative
 // value, that value will be used to convert tabs to spaces within the grid. Creation of the Canvas
 // can fail if the diagram contains invalid UTF-8 sequences.
-func NewCanvas(data []byte, tabWidth int) (*Canvas, error) {
+func newCanvas(data []byte, tabWidth int) (*Canvas, error) {
 	c := &Canvas{
 		options: optionMaps{
 			"__a2s__closed__options__": {

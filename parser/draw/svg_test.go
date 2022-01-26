@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -21,7 +37,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"|Hi:",
 				"+--+",
 			},
-			910,
+			909,
 		},
 
 		// 1 Box with non-existent ref
@@ -31,7 +47,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"|[a]  |",
 				"'-----'",
 			},
-			996,
+			995,
 		},
 
 		// 2 Box with ref, change background color of container with #RRGGBB
@@ -67,7 +83,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				"[a]: {\"fill\":\"#000000\",\"a2s:label\":\"abcd\",\"a2s:delref\":1}",
 			},
-			997,
+			996,
 		},
 
 		// 5 Ticks and dots in lines.
@@ -75,9 +91,9 @@ func TestCanvasToSVG(t *testing.T) {
 			[]string{
 				" ------x----->",
 				"",
-				" <-----o------",
+				" <-----*------",
 			},
-			1210,
+			1208,
 		},
 
 		// 6 Just text
@@ -107,7 +123,7 @@ func TestCanvasToSVG(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		canvas, err := NewCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		canvas, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
 		if err != nil {
 			t.Fatalf("Error creating canvas: %s", err)
 		}

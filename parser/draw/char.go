@@ -1,5 +1,21 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//
+// This file was originally created by the ASCIIToSVG contributors under an MIT
+// license, but later changed to fulfil the needs of Zettelstore. The following
+// statements affects the original code as found on
+// https://github.com/asciitosvg/asciitosvg (Commit:
+// ca82a5ce41e2190a05e07af6e8b3ea4e3256a283, 2020-11-20):
+//
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//-----------------------------------------------------------------------------
 
 package draw
 
@@ -102,7 +118,7 @@ func (c char) isTick() bool {
 }
 
 func (c char) isDot() bool {
-	return c == 'o'
+	return c == '*'
 }
 
 // Diagonal transitions are special: you can move lines diagonally, you can move diagonally from
@@ -110,9 +126,11 @@ func (c char) isDot() bool {
 func (c char) canDiagonalFrom(from char) bool {
 	if from.isArrowVertical() || from.isCorner() {
 		return c.isDiagonal()
-	} else if from.isDiagonal() {
+	}
+	if from.isDiagonal() {
 		return c.isDiagonal() || c.isCorner() || c.isArrowVertical() || c.isHorizontal() || c.isVertical()
-	} else if from.isHorizontal() || from.isVertical() {
+	}
+	if from.isHorizontal() || from.isVertical() {
 		return c.isDiagonal()
 	}
 	return false
