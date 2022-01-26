@@ -195,11 +195,11 @@ func (m *Meta) GetListOrNil(key string) []string {
 }
 
 // GetNumber retrieves the numeric value of a given key.
-func (m *Meta) GetNumber(key string) (int, bool) {
+func (m *Meta) GetNumber(key string, def int) int {
 	if value, ok := m.Get(key); ok {
 		if num, err := strconv.Atoi(value); err == nil {
-			return num, true
+			return num
 		}
 	}
-	return 0, false
+	return def
 }

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -67,12 +67,8 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 	}
 	if values, ok := r.PostForm["content"]; ok && len(values) > 0 {
 		return domain.Zettel{
-			Meta: m,
-			Content: domain.NewContent(
-				bytes.ReplaceAll(
-					bytes.TrimSpace([]byte(values[0])),
-					bsCRLF,
-					bsLF)),
+			Meta:    m,
+			Content: domain.NewContent(bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)),
 		}, true, nil
 	}
 	return domain.Zettel{

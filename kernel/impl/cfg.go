@@ -272,13 +272,14 @@ func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
 
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cfg *myConfig) GetMaxTransclusions() int {
+	const defaultValue = 1024
 	cfg.mx.RLock()
-	val, ok := cfg.data.GetNumber(keyMaxTransclusions)
+	val := cfg.data.GetNumber(keyMaxTransclusions, defaultValue)
 	cfg.mx.RUnlock()
-	if ok && val > 0 {
+	if val > 0 {
 		return val
 	}
-	return 1024
+	return defaultValue
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
