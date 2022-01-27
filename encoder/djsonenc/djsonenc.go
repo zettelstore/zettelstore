@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -152,8 +152,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		writeEscaped(&v.b, n.Ref.String())
 		v.writeContentStart('i')
 		ast.Walk(v, n.Inlines)
-	case *ast.EmbedNode:
-		v.visitEmbed(n)
+	case *ast.EmbedRefNode:
+		v.visitEmbedRef(n)
+	case *ast.EmbedBLOBNode:
+		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
 		v.writeNodeStart("Cite")
 		v.visitAttributes(n.Attrs)
@@ -340,30 +342,34 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateExternal: "external",
 }
 
-func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.writeNodeStart("Embed")
 	v.visitAttributes(en.Attrs)
-	switch m := en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-		v.writeContentStart('s')
-		writeEscaped(&v.b, m.Ref.String())
-	case *ast.BLOBMaterialNode:
-		v.writeContentStart('j')
-		v.b.WriteString("\"s\":")
-		writeEscaped(&v.b, m.Syntax)
-		switch m.Syntax {
-		case "svg":
-			v.writeContentStart('q')
-			writeEscaped(&v.b, string(m.Blob))
-		default:
-			v.writeContentStart('o')
-			v.b.WriteBase64(m.Blob)
-			v.b.WriteByte('"')
-		}
-		v.b.WriteByte('}')
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
+	v.writeContentStart('s')
+	writeEscaped(&v.b, en.Ref.String())
+
+	if en.Inlines != nil {
+		v.writeContentStart('i')
+		ast.Walk(v, en.Inlines)
 	}
+}
+
+func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
+	v.writeNodeStart("EmbedBLOB")
+	v.visitAttributes(en.Attrs)
+	v.writeContentStart('j')
+	v.b.WriteString("\"s\":")
+	writeEscaped(&v.b, en.Syntax)
+	switch en.Syntax {
+	case "svg":
+		v.writeContentStart('q')
+		writeEscaped(&v.b, string(en.Blob))
+	default:
+		v.writeContentStart('o')
+		v.b.WriteBase64(en.Blob)
+		v.b.WriteByte('"')
+	}
+	v.b.WriteByte('}')
 
 	if en.Inlines != nil {
 		v.writeContentStart('i')

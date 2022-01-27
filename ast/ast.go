@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -75,6 +75,13 @@ type DescriptionSlice []DescriptionNode
 type InlineNode interface {
 	Node
 	inlineNode()
+}
+
+// InlineEmbedNode is a node that specifies some embeddings in inline mode.
+// It is abstract, b/c there are different concrete type implementations.
+type InlineEmbedNode interface {
+	InlineNode
+	inlineEmbedNode()
 }
 
 // Reference is a reference to external or internal material.

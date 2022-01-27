@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -138,8 +138,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.EmbedNode:
-		v.visitEmbed(n)
+	case *ast.EmbedRefNode:
+		v.visitEmbedRef(n)
+	case *ast.EmbedBLOBNode:
+		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
 		v.b.WriteString("Cite")
 		v.visitAttributes(n.Attrs)
@@ -436,29 +438,33 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteByte(']')
 }
 
-func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("Embed")
 	v.visitAttributes(en.Attrs)
-	switch m := en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-		v.b.WriteByte(' ')
-		v.b.WriteString(mapRefState[m.Ref.State])
-		v.b.WriteString(" \"")
-		v.writeEscaped(m.Ref.String())
-		v.b.WriteByte('"')
-	case *ast.BLOBMaterialNode:
-		v.b.WriteStrings(" {\"", m.Syntax, "\" \"")
-		switch m.Syntax {
-		case "svg":
-			v.writeEscaped(string(m.Blob))
-		default:
-			v.b.WriteString("\" \"")
-			v.b.WriteBase64(m.Blob)
-		}
-		v.b.WriteString("\"}")
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
+	v.b.WriteByte(' ')
+	v.b.WriteString(mapRefState[en.Ref.State])
+	v.b.WriteString(" \"")
+	v.writeEscaped(en.Ref.String())
+	v.b.WriteByte('"')
+
+	if en.Inlines != nil {
+		v.b.WriteString(" [")
+		ast.Walk(v, en.Inlines)
+		v.b.WriteByte(']')
 	}
+}
+
+func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
+	v.b.WriteString("EmbedBLOB")
+	v.visitAttributes(en.Attrs)
+	v.b.WriteStrings(" {\"", en.Syntax, "\" \"")
+	if en.Syntax == "svg" {
+		v.writeEscaped(string(en.Blob))
+	} else {
+		v.b.WriteString("\" \"")
+		v.b.WriteBase64(en.Blob)
+	}
+	v.b.WriteString("\"}")
 
 	if en.Inlines != nil {
 		v.b.WriteString(" [")

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -139,7 +139,7 @@ func (v *unlinkedVisitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.HeadingNode:
 		return nil
-	case *ast.LinkNode, *ast.EmbedNode, *ast.CiteNode:
+	case *ast.LinkNode, *ast.EmbedRefNode, *ast.EmbedBLOBNode, *ast.CiteNode:
 		return nil
 	}
 	return v

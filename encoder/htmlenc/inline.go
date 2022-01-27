@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -87,29 +87,39 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, iln *ast
 	v.b.WriteString("</a>")
 }
 
-func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.lang.push(en.Attrs)
 	defer v.lang.pop()
 
-	switch m := en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-		v.b.WriteString("<img src=\"")
-		v.writeReference(m.Ref)
-	case *ast.BLOBMaterialNode:
-		switch m.Syntax {
-		case "svg":
-			// v.b.WriteString("svg+xml;utf8,")
-			// v.writeQuotedEscaped(string(m.Blob))
-			v.b.Write(m.Blob)
-			return
-		default:
-			v.b.WriteString("<img src=\"data:image/")
-			v.b.WriteStrings(m.Syntax, ";base64,")
-			v.b.WriteBase64(m.Blob)
-		}
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
+	v.b.WriteString("<img src=\"")
+	v.writeReference(en.Ref)
+	v.b.WriteString("\" alt=\"")
+	if en.Inlines != nil {
+		ast.Walk(v, en.Inlines)
 	}
+	v.b.WriteByte('"')
+	v.visitAttributes(en.Attrs)
+	if v.env.IsXHTML() {
+		v.b.WriteString(" />")
+	} else {
+		v.b.WriteByte('>')
+	}
+}
+
+func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
+	v.lang.push(en.Attrs)
+	defer v.lang.pop()
+
+	if en.Syntax == "svg" {
+		v.b.WriteString(`<span class="zs-svg">`)
+		v.b.Write(en.Blob)
+		v.b.WriteString("</span>")
+		return
+	}
+
+	v.b.WriteString("<img src=\"data:image/")
+	v.b.WriteStrings(en.Syntax, ";base64,")
+	v.b.WriteBase64(en.Blob)
 	v.b.WriteString("\" alt=\"")
 	if en.Inlines != nil {
 		ast.Walk(v, en.Inlines)

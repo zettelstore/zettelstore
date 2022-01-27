@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -810,20 +810,15 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		ast.Walk(tv, n.Inlines)
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
-	case *ast.EmbedNode:
-		switch m := n.Material.(type) {
-		case *ast.ReferenceMaterialNode:
-			fmt.Fprintf(&tv.buf, "(EMBED %v", m.Ref)
-			if n.Inlines != nil {
-				ast.Walk(tv, n.Inlines)
-			}
-			tv.buf.WriteByte(')')
-			tv.visitAttributes(n.Attrs)
-		case *ast.BLOBMaterialNode:
-			panic("TODO: zmktest blob")
-		default:
-			panic(fmt.Sprintf("Unknown material type %t for %v", n.Material, n.Material))
+	case *ast.EmbedRefNode:
+		fmt.Fprintf(&tv.buf, "(EMBED %v", n.Ref)
+		if n.Inlines != nil {
+			ast.Walk(tv, n.Inlines)
 		}
+		tv.buf.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.EmbedBLOBNode:
+		panic("TODO: zmktest blob")
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.buf, "(CITE %s", n.Key)
 		if n.Inlines != nil {

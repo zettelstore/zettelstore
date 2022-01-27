@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -33,7 +33,7 @@ type Environment struct {
 	GetTagRef        func(string) *ast.Reference
 	GetHostedRef     func(string) *ast.Reference
 	GetFoundRef      func(zid id.Zid, fragment string) *ast.Reference
-	GetImageMaterial func(zettel domain.Zettel, syntax string) ast.MaterialNode
+	GetImageMaterial func(zettel domain.Zettel, syntax string) ast.InlineEmbedNode
 }
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
@@ -115,8 +115,8 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 			iln.List[i] = e.visitTag(n)
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
-		case *ast.EmbedNode:
-			in2 := e.evalEmbedNode(n)
+		case *ast.EmbedRefNode:
+			in2 := e.evalEmbedRefNode(n)
 			if ln, ok := in2.(*ast.InlineListNode); ok {
 				iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
 				i += len(ln.List) - 1
@@ -192,23 +192,16 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 	return ln
 }
 
-func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
+func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	if maxTrans := e.rtConfig.GetMaxTransclusions(); e.embedCount > maxTrans {
 		e.embedCount = maxTrans + 1 // To prevent e.embedCount from counting
 		return createErrorText(en,
 			"Too", "many", "transclusions", "(must", "be", "at", "most", strconv.Itoa(maxTrans)+",",
 			"see", "runtime", "configuration", "key", "max-transclusions):")
 	}
-	switch en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-	case *ast.BLOBMaterialNode:
-		return en
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
-	}
 
-	ref := en.Material.(*ast.ReferenceMaterialNode)
-	switch ref.Ref.State {
+	ref := en.Ref
+	switch ref.State {
 	case ast.RefStateInvalid, ast.RefStateBroken:
 		e.embedCount++
 		return e.createErrorImage(en)
@@ -219,10 +212,10 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:
-		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.Ref.State, ref.Ref))
+		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
 	}
 
-	zid, err := id.Parse(ref.Ref.URL.Path)
+	zid, err := id.Parse(ref.URL.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -255,16 +248,16 @@ func (e *evaluator) evalEmbedNode(en *ast.EmbedNode) ast.InlineNode {
 	}
 	e.embedCount++
 
-	result, ok := e.embedMap[ref.Ref.Value]
+	result, ok := e.embedMap[ref.Value]
 	if !ok {
 		// Search for text to be embedded.
-		result = findInlineList(zn.Ast, ref.Ref.URL.Fragment)
-		e.embedMap[ref.Ref.Value] = result
+		result = findInlineList(zn.Ast, ref.URL.Fragment)
+		e.embedMap[ref.Value] = result
 	}
 	if result.IsEmpty() {
 		return &ast.LiteralNode{
 			Kind: ast.LiteralComment,
-			Text: "Nothing to transclude: " + en.Material.(*ast.ReferenceMaterialNode).Ref.String(),
+			Text: "Nothing to transclude: " + ref.String(),
 		}
 	}
 
@@ -288,37 +281,54 @@ func (e *evaluator) getTitle(m *meta.Meta) string {
 	return m.GetDefault(api.KeyTitle, "")
 }
 
-func (e *evaluator) createErrorImage(en *ast.EmbedNode) *ast.EmbedNode {
+func (e *evaluator) createErrorImage(en *ast.EmbedRefNode) ast.InlineEmbedNode {
 	errorZid := id.EmojiZid
 	if gim := e.env.GetImageMaterial; gim != nil {
 		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), errorZid)
 		if err != nil {
 			panic(err)
 		}
-		en.Material = gim(zettel, e.getSyntax(zettel.Meta))
-		if en.Inlines == nil {
+		inlines := en.Inlines
+		if inlines == nil {
 			if title := e.getTitle(zettel.Meta); title != "" {
-				en.Inlines = parser.ParseMetadata(title)
+				inlines = parser.ParseMetadata(title)
 			}
 		}
-		return en
+		result := gim(zettel, e.getSyntax(zettel.Meta))
+		switch er := result.(type) {
+		case *ast.EmbedRefNode:
+			er.Inlines = inlines
+			er.Attrs = en.Attrs
+		case *ast.EmbedBLOBNode:
+			er.Inlines = inlines
+			er.Attrs = en.Attrs
+		}
+		return result
 	}
-	en.Material = &ast.ReferenceMaterialNode{Ref: ast.ParseReference(errorZid.String())}
+	en.Ref = ast.ParseReference(errorZid.String())
 	if en.Inlines == nil {
 		en.Inlines = parser.ParseMetadata("Error placeholder")
 	}
 	return en
 }
 
-func (e *evaluator) embedImage(en *ast.EmbedNode, zettel domain.Zettel) *ast.EmbedNode {
+func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.InlineEmbedNode {
 	if gim := e.env.GetImageMaterial; gim != nil {
-		en.Material = gim(zettel, e.getSyntax(zettel.Meta))
-		return en
+		result := gim(zettel, e.getSyntax(zettel.Meta))
+		switch er := result.(type) {
+		case *ast.EmbedRefNode:
+			er.Inlines = en.Inlines
+			er.Attrs = en.Attrs
+		case *ast.EmbedBLOBNode:
+			er.Inlines = en.Inlines
+			er.Attrs = en.Attrs
+		}
+		return result
 	}
 	return en
 }
 
-func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
+func createErrorText(en *ast.EmbedRefNode, msgWords ...string) ast.InlineNode {
 	ln := linkNodeToEmbeddedReference(en)
 	text := ast.CreateInlineListNodeFromWords(msgWords...)
 	text.Append(&ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
@@ -334,11 +344,10 @@ func createErrorText(en *ast.EmbedNode, msgWords ...string) ast.InlineNode {
 	return fn
 }
 
-func linkNodeToEmbeddedReference(en *ast.EmbedNode) *ast.LinkNode {
-	ref := en.Material.(*ast.ReferenceMaterialNode)
+func linkNodeToEmbeddedReference(en *ast.EmbedRefNode) *ast.LinkNode {
 	ln := &ast.LinkNode{
-		Ref:     ref.Ref,
-		Inlines: ast.CreateInlineListNodeFromWords(ref.Ref.String()),
+		Ref:     en.Ref,
+		Inlines: ast.CreateInlineListNodeFromWords(en.Ref.String()),
 		OnlyRef: true,
 	}
 	return ln

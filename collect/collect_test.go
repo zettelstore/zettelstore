@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -60,7 +60,7 @@ func TestEmbed(t *testing.T) {
 		Ast: &ast.BlockListNode{List: []ast.BlockNode{
 			&ast.ParaNode{
 				Inlines: ast.CreateInlineListNode(
-					&ast.EmbedNode{Material: &ast.ReferenceMaterialNode{Ref: parseRef("12345678901234")}},
+					&ast.EmbedRefNode{Ref: parseRef("12345678901234")},
 				),
 			},
 		}},

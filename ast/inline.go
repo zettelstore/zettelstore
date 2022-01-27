@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -121,17 +121,38 @@ func (ln *LinkNode) WalkChildren(v Visitor) {
 
 // --------------------------------------------------------------------------
 
-// EmbedNode contains the specified embedded material.
-type EmbedNode struct {
-	Material MaterialNode    // The material to be embedded
-	Inlines  *InlineListNode // Optional text associated with the image.
-	Attrs    *Attributes     // Optional attributes
+// EmbedRefNode contains the specified embedded reference material.
+type EmbedRefNode struct {
+	Ref     *Reference      // The reference to be embedded.
+	Inlines *InlineListNode // Optional text associated with the image.
+	Attrs   *Attributes     // Optional attributes
 }
 
-func (*EmbedNode) inlineNode() { /* Just a marker */ }
+func (*EmbedRefNode) inlineNode()      { /* Just a marker */ }
+func (*EmbedRefNode) inlineEmbedNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
-func (en *EmbedNode) WalkChildren(v Visitor) {
+func (en *EmbedRefNode) WalkChildren(v Visitor) {
+	if iln := en.Inlines; iln != nil {
+		Walk(v, iln)
+	}
+}
+
+// --------------------------------------------------------------------------
+
+// EmbedBLOBNode contains the specified embedded BLOB material.
+type EmbedBLOBNode struct {
+	Blob    []byte          // BLOB data itself.
+	Syntax  string          // Syntax of Blob
+	Inlines *InlineListNode // Optional text associated with the image.
+	Attrs   *Attributes     // Optional attributes
+}
+
+func (*EmbedBLOBNode) inlineNode()      { /* Just a marker */ }
+func (*EmbedBLOBNode) inlineEmbedNode() { /* Just a marker */ }
+
+// WalkChildren walks to the text that describes the embedded material.
+func (en *EmbedBLOBNode) WalkChildren(v Visitor) {
 	if iln := en.Inlines; iln != nil {
 		Walk(v, iln)
 	}

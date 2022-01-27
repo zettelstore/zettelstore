@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -348,10 +348,10 @@ func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
-			return &ast.EmbedNode{
-				Material: &ast.ReferenceMaterialNode{Ref: r},
-				Inlines:  iln,
-				Attrs:    attrs,
+			return &ast.EmbedRefNode{
+				Ref:     r,
+				Inlines: iln,
+				Attrs:   attrs,
 			}, true
 		}
 	}

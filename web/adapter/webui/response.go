@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -24,9 +24,9 @@ func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.
 	http.Redirect(w, r, us, http.StatusFound)
 }
 
-func (wui *WebUI) createImageMaterial(zid id.Zid) ast.MaterialNode {
+func (wui *WebUI) createImageMaterial(zid id.Zid) ast.InlineEmbedNode {
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	ref := ast.ParseReference(ub.String())
 	ref.State = ast.RefStateFound
-	return &ast.ReferenceMaterialNode{Ref: ref}
+	return &ast.EmbedRefNode{Ref: ref}
 }

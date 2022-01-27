@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -54,10 +54,8 @@ func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineLis
 	if len(svg) == 0 {
 		return nil // TODO: Fehlertext "no image"
 	}
-	return ast.CreateInlineListNode(&ast.EmbedNode{
-		Material: &ast.BLOBMaterialNode{
-			Blob:   svg,
-			Syntax: "svg",
-		},
+	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
+		Blob:   svg,
+		Syntax: "svg",
 	})
 }

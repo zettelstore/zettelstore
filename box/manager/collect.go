@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -54,10 +54,8 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 		data.itags.Add("#" + strings.ToLower(n.Tag))
 	case *ast.LinkNode:
 		data.addRef(n.Ref)
-	case *ast.EmbedNode:
-		if m, ok := n.Material.(*ast.ReferenceMaterialNode); ok {
-			data.addRef(m.Ref)
-		}
+	case *ast.EmbedRefNode:
+		data.addRef(n.Ref)
 	case *ast.LiteralNode:
 		data.addText(n.Text)
 	}

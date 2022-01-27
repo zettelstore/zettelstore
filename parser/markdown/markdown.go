@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -419,10 +419,10 @@ func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
 	return []ast.InlineNode{
-		&ast.EmbedNode{
-			Material: &ast.ReferenceMaterialNode{Ref: ref},
-			Inlines:  p.flattenInlineList(node),
-			Attrs:    attrs,
+		&ast.EmbedRefNode{
+			Ref:     ref,
+			Inlines: p.flattenInlineList(node),
+			Attrs:   attrs,
 		},
 	}
 }

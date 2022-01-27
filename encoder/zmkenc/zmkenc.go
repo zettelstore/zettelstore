@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -144,8 +144,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBreak(n)
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.EmbedNode:
-		v.visitEmbed(n)
+	case *ast.EmbedRefNode:
+		v.visitEmbedRef(n)
+	case *ast.EmbedBLOBNode:
+		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
 		v.visitCite(n)
 	case *ast.FootnoteNode:
@@ -374,20 +376,17 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteStrings(ln.Ref.String(), "]]")
 }
 
-func (v *visitor) visitEmbed(en *ast.EmbedNode) {
-	switch m := en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-		v.b.WriteString("{{")
-		if en.Inlines != nil {
-			ast.Walk(v, en.Inlines)
-			v.b.WriteByte('|')
-		}
-		v.b.WriteStrings(m.Ref.String(), "}}")
-	case *ast.BLOBMaterialNode:
-		panic("TODO")
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
+func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
+	v.b.WriteString("{{")
+	if en.Inlines != nil {
+		ast.Walk(v, en.Inlines)
+		v.b.WriteByte('|')
 	}
+	v.b.WriteStrings(en.Ref.String(), "}}")
+}
+
+func (*visitor) visitEmbedBLOB(*ast.EmbedBLOBNode) {
+	panic("TODO")
 }
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
