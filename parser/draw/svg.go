@@ -55,8 +55,8 @@ const (
 
 func writeMarkerDefs(w io.Writer, scaleX, scaleY int) {
 	const markerTag = `<marker id="%s" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="%s" /></marker>`
-	x := float64(scaleX - 3)
-	y := float64(scaleY - 3)
+	x := float64(scaleX) / 2
+	y := float64(scaleY) / 2
 	fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
 	fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
 }
@@ -108,14 +108,10 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 				sp := scale(p, scaleX, scaleY)
 				fmt.Fprintf(w, `<circle cx="%g" cy="%g" r="3" fill="#000" />`, sp.X, sp.Y)
 			case tick:
-				const tickTag = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="2" />`
-
-				p := scale(p, scaleX, scaleY)
-				p1, p2 := p, p
-				fmt.Fprintf(w, tickTag, p1.X-4, p1.Y-4, p2.X+4, p2.Y+4)
-
-				p1, p2 = p, p
-				fmt.Fprintf(w, tickTag, p1.X+4, p1.Y-4, p2.X-4, p2.Y+4)
+				sp := scale(p, scaleX, scaleY)
+				const tickLine = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="2" />`
+				fmt.Fprintf(w, tickLine, sp.X-4, sp.Y-4, sp.X+4, sp.Y+4)
+				fmt.Fprintf(w, tickLine, sp.X+4, sp.Y-4, sp.X-4, sp.Y+4)
 			}
 		}
 

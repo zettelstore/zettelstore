@@ -165,10 +165,8 @@ func (c *Canvas) Options() optionMaps {
 
 // EnclosingObjects returns the set of objects that contain this point in order from most
 // to least specific.
-func (c *Canvas) EnclosingObjects(p point) []*object {
+func (c *Canvas) EnclosingObjects(p point) (q []*object) {
 	maxTL := point{x: -1, y: -1}
-
-	var q []*object
 	for _, o := range c.objects {
 		// An object can't really contain another unless it is a polygon.
 		if !o.IsClosed() {
@@ -181,7 +179,6 @@ func (c *Canvas) EnclosingObjects(p point) []*object {
 			maxTL.y = o.Corners()[0].y
 		}
 	}
-
 	return q
 }
 
