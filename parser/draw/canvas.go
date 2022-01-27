@@ -135,11 +135,13 @@ type optionMaps map[string]map[string]interface{}
 // Canvas is the parsed source data.
 type Canvas struct {
 	// (0,0) is top left.
-	grid    []char
-	visited []bool
-	objects objects
-	size    image.Point
-	options optionMaps
+	grid           []char
+	visited        []bool
+	objects        objects
+	size           image.Point
+	options        optionMaps
+	hasStartMarker bool
+	hasEndMarker   bool
 }
 
 // String provides a view into the underlying grid.

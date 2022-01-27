@@ -103,10 +103,12 @@ func (o *object) HasPoint(p point) bool {
 func (o *object) seal(c *Canvas) {
 	if c.at(o.points[0]).isArrow() {
 		o.points[0].hint = startMarker
+		c.hasStartMarker = true
 	}
 
 	if c.at(o.points[len(o.points)-1]).isArrow() {
 		o.points[len(o.points)-1].hint = endMarker
+		c.hasEndMarker = true
 	}
 
 	o.corners, o.isClosed = pointsToCorners(o.points)

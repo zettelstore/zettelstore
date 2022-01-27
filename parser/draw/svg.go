@@ -38,7 +38,7 @@ func CanvasToSVG(c *Canvas, font string, scaleX, scaleY int) []byte {
 	fmt.Fprintf(&b,
 		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
 		(c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
-	writeMarkerDefs(&b, scaleX, scaleY)
+	writeMarkerDefs(&b, c, scaleX, scaleY)
 
 	// 3 passes, first closed paths, then open paths, then text.
 	writeClosedPaths(&b, c, scaleX, scaleY)
@@ -54,21 +54,29 @@ const (
 	nameEndMarker   = "Pointer"
 )
 
-func writeMarkerDefs(w io.Writer, scaleX, scaleY int) {
+func writeMarkerDefs(w io.Writer, c *Canvas, scaleX, scaleY int) {
 	const markerTag = `<marker id="%s" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="%s" /></marker>`
 	x := float64(scaleX) / 2
 	y := float64(scaleY) / 2
-	fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
-	fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
+	if c.hasStartMarker {
+		fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
+	}
+	if c.hasEndMarker {
+		fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
+	}
 }
 
 const pathTag = `%s<path id="%s%d" %sd="%s" />%s`
 
 func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
-	io.WriteString(w, `<g id="closed" stroke="#000" stroke-width="2" fill="none">`)
+	first := true
 	for i, obj := range c.Objects() {
 		if !obj.IsClosedPath() {
 			continue
+		}
+		if first {
+			io.WriteString(w, `<g id="closed" stroke="#000" stroke-width="2" fill="none">`)
+			first = false
 		}
 		opts := ""
 		if obj.IsDashed() {
@@ -90,17 +98,23 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 
 		fmt.Fprintf(w, pathTag, startLink, "closed", i, opts, flatten(obj.Points(), scaleX, scaleY)+"Z", endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
 func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 	const optStartMarker = `marker-start="url(#` + nameStartMarker + `)" `
 	const optEndMarker = `marker-end="url(#` + nameEndMarker + `)" `
 
-	io.WriteString(w, `<g id="lines" stroke="#000" stroke-width="2" fill="none">`)
+	first := true
 	for i, obj := range c.Objects() {
 		if !obj.IsOpenPath() {
 			continue
+		}
+		if first {
+			io.WriteString(w, `<g id="lines" stroke="#000" stroke-width="2" fill="none">`)
+			first = false
 		}
 		points := obj.Points()
 		for _, p := range points {
@@ -138,18 +152,23 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 		}
 		fmt.Fprintf(w, pathTag, startLink, "open", i, opts, flatten(points, scaleX, scaleY), endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
 func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
 	fontSize := float64(scaleY) * 0.75
 	deltaX := float64(scaleX) / 4
 	deltaY := float64(scaleY) / 4
-	fmt.Fprintf(
-		w, `<g id="text" stroke="none" style="font-family:%s;font-size:%gpx">`, font, fontSize)
+	first := true
 	for i, obj := range c.Objects() {
 		if !obj.IsText() {
 			continue
+		}
+		if first {
+			fmt.Fprintf(w, `<g id="text" stroke="none" style="font-family:%s;font-size:%gpx">`, font, fontSize)
+			first = false
 		}
 
 		// Look up the fill of the containing box to determine what text color to use.
@@ -186,7 +205,9 @@ func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
 			`%s<text id="obj%d" x="%g" y="%g" fill="%s">%s</text>%s`,
 			startLink, i, sp.X-deltaX, sp.Y+deltaY, color, escape(text), endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
 func getTagOpts(options optionMaps, tag string) string {
