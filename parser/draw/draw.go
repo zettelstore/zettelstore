@@ -12,6 +12,7 @@
 package draw
 
 import (
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -20,7 +21,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "draw",
+		Name:          api.ValueSyntaxDraw,
 		AltNames:      []string{},
 		IsTextParser:  true,
 		IsImageFormat: false,

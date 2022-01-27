@@ -507,21 +507,10 @@ func (c *Canvas) unvisit(p point) {
 	c.visited[o] = false
 }
 
-func (c *Canvas) canLeft(p point) bool {
-	return p.x > 0
-}
-
-func (c *Canvas) canRight(p point) bool {
-	return p.x < c.size.X-1
-}
-
-func (c *Canvas) canUp(p point) bool {
-	return p.y > 0
-}
-
-func (c *Canvas) canDown(p point) bool {
-	return p.y < c.size.Y-1
-}
+func (*Canvas) canLeft(p point) bool    { return p.x > 0 }
+func (c *Canvas) canRight(p point) bool { return p.x < c.size.X-1 }
+func (*Canvas) canUp(p point) bool      { return p.y > 0 }
+func (c *Canvas) canDown(p point) bool  { return p.y < c.size.Y-1 }
 
 func (c *Canvas) canDiagonal(p point) bool {
 	return (c.canLeft(p) || c.canRight(p)) && (c.canUp(p) || c.canDown(p))
