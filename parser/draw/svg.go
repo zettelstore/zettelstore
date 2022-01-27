@@ -21,10 +21,11 @@ package draw
 
 import (
 	"bytes"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"strings"
+
+	"zettelstore.de/z/strfun"
 )
 
 // CanvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
@@ -238,9 +239,7 @@ func findTextColor(c *Canvas, o *object) (string, error) {
 
 func escape(s string) string {
 	b := bytes.Buffer{}
-	if err := xml.EscapeText(&b, []byte(s)); err != nil {
-		panic(err)
-	}
+	strfun.XMLEscape(&b, s)
 	return b.String()
 }
 

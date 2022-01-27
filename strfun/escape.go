@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -17,22 +17,18 @@ import (
 )
 
 const (
-	htmlQuot     = "&quot;" // longer than "&39;", but often requested in standards
+	htmlQuot     = "&quot;" // longer than "&#34;", but often requested in standards
 	htmlAmp      = "&amp;"
+	htmlLt       = "&lt;"
+	htmlGt       = "&gt;"
 	htmlNull     = "\uFFFD"
 	htmlVisSpace = "\u2423"
 )
 
 var (
-	bhtmlQuot = []byte(htmlQuot) // shorter than "&39;", but often requested in standards
-	bhtmlAmp  = []byte(htmlAmp)
-	bhtmlNull = []byte(htmlNull)
-)
-
-var (
 	htmlEscapes = []string{`&`, htmlAmp,
-		`<`, "&lt;",
-		`>`, "&gt;",
+		`<`, htmlLt,
+		`>`, htmlGt,
 		`"`, htmlQuot,
 		"\000", htmlNull,
 	}
@@ -51,6 +47,16 @@ func HTMLEscape(w io.Writer, s string) (int, error) { return htmlEscaper.WriteSt
 // Each space is written as U-2423.
 func HTMLEscapeVisible(w io.Writer, s string) (int, error) { return htmlVisEscaper.WriteString(w, s) }
 
+var (
+	escQuot = []byte(htmlQuot) // longer than "&#34;", but often requested in standards
+	escAmp  = []byte(htmlAmp)
+	escApos = []byte("apos;") // longer than "&#39", but sometimes requested in tests
+	escLt   = []byte(htmlLt)
+	escGt   = []byte(htmlGt)
+	escTab  = []byte("&#9;")
+	escNull = []byte(htmlNull)
+)
+
 // HTMLAttrEscape writes to w the escaped HTML equivalent of the given string to be used
 // in attributes.
 func HTMLAttrEscape(w io.Writer, s string) {
@@ -60,16 +66,47 @@ func HTMLAttrEscape(w io.Writer, s string) {
 	for i := 0; i < lenS; i++ {
 		switch s[i] {
 		case '\000':
-			html = bhtmlNull
+			html = escNull
 		case '"':
-			html = bhtmlQuot
+			html = escQuot
 		case '&':
-			html = bhtmlAmp
+			html = escAmp
 		default:
 			continue
 		}
 		io.WriteString(w, s[last:i])
 		w.Write(html)
+		last = i + 1
+	}
+	io.WriteString(w, s[last:])
+}
+
+// XMLEscape writes the string to the given writer, where every rune that has a special
+// meaning in XML is escaped.
+func XMLEscape(w io.Writer, s string) {
+	var esc []byte
+	last := 0
+	for i, ch := range s {
+		switch ch {
+		case '\000':
+			esc = escNull
+		case '"':
+			esc = escQuot
+		case '\'':
+			esc = escApos
+		case '&':
+			esc = escAmp
+		case '<':
+			esc = escLt
+		case '>':
+			esc = escGt
+		case '\t':
+			esc = escTab
+		default:
+			continue
+		}
+		io.WriteString(w, s[last:i])
+		w.Write(esc)
 		last = i + 1
 	}
 	io.WriteString(w, s[last:])
