@@ -108,7 +108,7 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 				sp := scale(p, scaleX, scaleY)
 				fmt.Fprintf(w, `<circle cx="%g" cy="%g" r="3" fill="#000" />`, sp.X, sp.Y)
 			case tick:
-				const tickTag = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="1" />`
+				const tickTag = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="2" />`
 
 				p := scale(p, scaleX, scaleY)
 				p1, p2 := p, p
