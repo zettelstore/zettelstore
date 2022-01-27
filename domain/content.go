@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -18,6 +18,8 @@ import (
 	"io"
 	"unicode"
 	"unicode/utf8"
+
+	"zettelstore.de/z/input"
 )
 
 // Content is just the content of a zettel.
@@ -68,7 +70,20 @@ func (zc *Content) TrimSpace() {
 	if zc.isBinary {
 		return
 	}
-	zc.data = bytes.TrimRightFunc(zc.data, unicode.IsSpace)
+	inp := input.NewInput(zc.data)
+	pos := inp.Pos
+	for inp.Ch != input.EOS {
+		if input.IsEOLEOS(inp.Ch) {
+			inp.Next()
+			pos = inp.Pos
+			continue
+		}
+		if !input.IsSpace(inp.Ch) {
+			break
+		}
+		inp.Next()
+	}
+	zc.data = bytes.TrimRightFunc(inp.Src[pos:], unicode.IsSpace)
 }
 
 // Encode content for future transmission.

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -42,9 +42,15 @@ func TestTrimSpace(t *testing.T) {
 		in, exp string
 	}{
 		{"", ""},
+		{" ", ""},
 		{"abc", "abc"},
 		{" abc", " abc"},
 		{"abc ", "abc"},
+		{"\nabc", "abc"},
+		{" \nabc", "abc"},
+		{" \n abc", " abc"},
+		{" \n\n abc", " abc"},
+		{" \n \n abc", " abc"},
 	}
 	for _, tc := range testcases {
 		c := domain.NewContent([]byte(tc.in))
