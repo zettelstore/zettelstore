@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -85,6 +85,9 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 			cp.lists = nil
 			cp.descrl = nil
 			bn, success = cp.parseRow(), true
+		case '{':
+			cp.clearStacked()
+			bn, success = cp.parseBlockEmbed()
 		}
 
 		if success {
@@ -612,4 +615,46 @@ func (cp *zmkP) parseCell() *ast.TableCell {
 		}
 		l = append(l, cp.parseInline())
 	}
+}
+
+// parseBlockEmbed parses '{' '{' '{' ZID '}' '}' '}'
+func (cp *zmkP) parseBlockEmbed() (ast.BlockNode, bool) {
+	delims := cp.countDelim('{')
+	if delims != 3 {
+		return nil, false
+	}
+	inp := cp.inp
+	posA, posE := inp.Pos, 0
+loop:
+	for {
+		switch inp.Ch {
+		case input.EOS, '\n', '\r', ' ':
+			return nil, false
+		case '\\':
+			inp.Next()
+			switch inp.Ch {
+			case input.EOS, '\n', '\r':
+				return nil, false
+			}
+		case '}':
+			posE = inp.Pos
+			if posA >= posE {
+				return nil, false
+			}
+			inp.Next()
+			if inp.Ch != '}' {
+				continue
+			}
+			inp.Next()
+			if inp.Ch != '}' {
+				continue
+			}
+			break loop
+		}
+		inp.Next()
+	}
+	inp.SkipToEOL()
+	refText := string(inp.Src[posA:posE])
+	ref := ast.ParseReference(refText)
+	return &ast.BlockEmbedNode{Ref: ref}, true
 }
