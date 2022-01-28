@@ -69,12 +69,12 @@ func (o *object) Tag() string {
 	return o.tag
 }
 
-func (o *object) IsOpenPath() bool   { return !o.isClosed && !o.isText }
-func (o *object) IsClosedPath() bool { return o.isClosed && !o.isText }
-func (o *object) IsText() bool       { return o.isText }
+func (o *object) isOpenPath() bool   { return !o.isClosed && !o.isText }
+func (o *object) isClosedPath() bool { return o.isClosed && !o.isText }
+func (o *object) isJustText() bool   { return o.isText }
 
 func (o *object) String() string {
-	if o.IsText() {
+	if o.isJustText() {
 		return fmt.Sprintf("Text{%s %q}", o.points[0], string(o.text))
 	}
 	return fmt.Sprintf("Path{%v}", o.points)
@@ -100,7 +100,7 @@ func (o *object) HasPoint(p point) bool {
 }
 
 // seal finalizes the object, setting its text, its corners, and its various rendering hints.
-func (o *object) seal(c *Canvas) {
+func (o *object) seal(c *canvas) {
 	if c.at(o.points[0]).isArrow() {
 		o.points[0].hint = startMarker
 		c.hasStartMarker = true
@@ -115,7 +115,7 @@ func (o *object) seal(c *Canvas) {
 	o.text = make([]rune, len(o.points))
 
 	for i, p := range o.points {
-		if !o.IsText() {
+		if !o.isJustText() {
 			if c.at(p).isTick() {
 				o.points[i].hint = tick
 			} else if c.at(p).isDot() {
@@ -148,8 +148,8 @@ func (o objects) Less(i, j int) bool {
 	// support z-indexing of objects through an a2s tag.
 	l := o[i]
 	r := o[j]
-	lt := l.IsText()
-	rt := r.IsText()
+	lt := l.isJustText()
+	rt := r.isJustText()
 	if lt != rt {
 		return rt
 	}

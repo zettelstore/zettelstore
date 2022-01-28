@@ -28,16 +28,19 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// CanvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
-func CanvasToSVG(c *Canvas, font string, scaleX, scaleY int) []byte {
+// canvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
+func canvasToSVG(c *canvas, font string, scaleX, scaleY int) []byte {
+	if len(c.objects()) == 0 {
+		return nil
+	}
 	if font == "" {
 		font = "monospace"
 	}
 
-	b := bytes.Buffer{}
+	var b bytes.Buffer
 	fmt.Fprintf(&b,
 		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
-		(c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
+		(c.size().X+1)*scaleX, (c.size().Y+1)*scaleY)
 	writeMarkerDefs(&b, c, scaleX, scaleY)
 
 	// 3 passes, first closed paths, then open paths, then text.
@@ -54,7 +57,7 @@ const (
 	nameEndMarker   = "Pointer"
 )
 
-func writeMarkerDefs(w io.Writer, c *Canvas, scaleX, scaleY int) {
+func writeMarkerDefs(w io.Writer, c *canvas, scaleX, scaleY int) {
 	const markerTag = `<marker id="%s" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="%s" /></marker>`
 	x := float64(scaleX) / 2
 	y := float64(scaleY) / 2
@@ -68,10 +71,10 @@ func writeMarkerDefs(w io.Writer, c *Canvas, scaleX, scaleY int) {
 
 const pathTag = `%s<path id="%s%d" %sd="%s" />%s`
 
-func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
+func writeClosedPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 	first := true
-	for i, obj := range c.Objects() {
-		if !obj.IsClosedPath() {
+	for i, obj := range c.objects() {
+		if !obj.isClosedPath() {
 			continue
 		}
 		if first {
@@ -87,7 +90,7 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 		if tag == "" {
 			tag = "__a2s__closed__options__"
 		}
-		options := c.Options()
+		options := c.options()
 		opts += getTagOpts(options, tag)
 
 		startLink, endLink := "", ""
@@ -103,13 +106,13 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 	}
 }
 
-func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
+func writeOpenPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 	const optStartMarker = `marker-start="url(#` + nameStartMarker + `)" `
 	const optEndMarker = `marker-end="url(#` + nameEndMarker + `)" `
 
 	first := true
-	for i, obj := range c.Objects() {
-		if !obj.IsOpenPath() {
+	for i, obj := range c.objects() {
+		if !obj.isOpenPath() {
 			continue
 		}
 		if first {
@@ -141,7 +144,7 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 			opts += optEndMarker
 		}
 
-		options := c.Options()
+		options := c.options()
 		tag := obj.Tag()
 		opts += getTagOpts(options, tag)
 
@@ -157,13 +160,13 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 	}
 }
 
-func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
+func writeTexts(w io.Writer, c *canvas, font string, scaleX, scaleY int) {
 	fontSize := float64(scaleY) * 0.75
 	deltaX := float64(scaleX) / 4
 	deltaY := float64(scaleY) / 4
 	first := true
-	for i, obj := range c.Objects() {
-		if !obj.IsText() {
+	for i, obj := range c.objects() {
+		if !obj.isJustText() {
 			continue
 		}
 		if first {
@@ -172,16 +175,13 @@ func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
 		}
 
 		// Look up the fill of the containing box to determine what text color to use.
-		color, err := findTextColor(c, obj)
-		if err != nil {
-			fmt.Printf("Error figuring out text color: %s\n", err)
-		}
+		color := findTextColor(c, obj)
 
 		startLink, endLink := "", ""
 		text := string(obj.Text())
 		tag := obj.Tag()
 		if tag != "" {
-			options := c.Options()
+			options := c.options()
 			if label, ok := options[tag]["a2s:label"]; ok {
 				text = label.(string)
 			}
@@ -230,18 +230,18 @@ func getTagOpts(options optionMaps, tag string) string {
 	return opts
 }
 
-func findTextColor(c *Canvas, o *object) (string, error) {
+func findTextColor(c *canvas, o *object) string {
 	// If the tag on the text object is a special reference, that's the color we should use
 	// for the text.
-	options := c.Options()
+	options := c.options()
 	if tag := o.Tag(); objTagRE.MatchString(tag) {
 		if fill, ok := options[tag]["fill"]; ok {
-			return fill.(string), nil
+			return fill.(string)
 		}
 	}
 
 	// Otherwise, find the most specific fill and calibrate the color based on that.
-	if containers := c.EnclosingObjects(o.Points()[0]); containers != nil {
+	if containers := c.enclosingObjects(o.Points()[0]); containers != nil {
 		for _, container := range containers {
 			if tag := container.Tag(); tag != "" {
 				if fill, ok := options[tag]["fill"]; ok {
@@ -255,7 +255,7 @@ func findTextColor(c *Canvas, o *object) (string, error) {
 	}
 
 	// Default to black.
-	return "#000", nil
+	return "#000"
 }
 
 func escape(s string) string {
@@ -356,12 +356,11 @@ func flatten(points []point, scaleX, scaleY int) string {
 
 			fmt.Fprintf(&result, "L %g %g Q %g %g %g %g ", sx, sy, cx, cy, ex, ey)
 		} else {
-			// Oh, the horrors of drawing a straight line...
+			// Just draw a straight line.
 			fmt.Fprintf(&result, "L %g %g ", p.X, p.Y)
 		}
 
 		pp = p
 	}
-
 	return result.String()
 }

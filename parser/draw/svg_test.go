@@ -127,7 +127,7 @@ func TestCanvasToSVG(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error creating canvas: %s", err)
 		}
-		actual := string(CanvasToSVG(canvas, "", 9, 16))
+		actual := string(canvasToSVG(canvas, "", 9, 16))
 		// TODO(dhobsd): Use golden file? Worth postponing once output is actually
 		// nice.
 		if line.length != len(actual) {

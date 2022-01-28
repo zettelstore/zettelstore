@@ -30,10 +30,16 @@ func init() {
 	})
 }
 
+const (
+	defaultFont   = ""
+	defaultScaleX = 10
+	defaultScaleY = 20
+)
+
 func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
-	font := m.GetDefault("font", "")
-	scaleX := m.GetNumber("x-scale", 8)
-	scaleY := m.GetNumber("y-scale", 16)
+	font := m.GetDefault("font", defaultFont)
+	scaleX := m.GetNumber("x-scale", defaultScaleX)
+	scaleY := m.GetNumber("y-scale", defaultScaleY)
 	iln := parseDraw(inp, font, scaleX, scaleY)
 	if iln == nil {
 		return nil
@@ -42,18 +48,31 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
 }
 
 func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
-	return parseDraw(inp, "", 8, 16)
+	return parseDraw(inp, defaultFont, defaultScaleX, defaultScaleY)
 }
 
 func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineListNode {
 	canvas, err := newCanvas(inp.Src[inp.Pos:], 8)
 	if err != nil {
-		return nil // TODO: Fehlertext err.Error()
+		return &ast.InlineListNode{
+			List: []ast.InlineNode{
+				&ast.TextNode{Text: "Error:"},
+				&ast.SpaceNode{Lexeme: " "},
+				&ast.TextNode{Text: err.Error()},
+			},
+		}
 	}
-	svg := CanvasToSVG(canvas, font, scaleX, scaleY)
+	svg := canvasToSVG(canvas, font, scaleX, scaleY)
 	if len(svg) == 0 {
-		return nil // TODO: Fehlertext "no image"
+		return &ast.InlineListNode{
+			List: []ast.InlineNode{
+				&ast.TextNode{Text: "NO"},
+				&ast.SpaceNode{Lexeme: " "},
+				&ast.TextNode{Text: "IMAGE"},
+			},
+		}
 	}
+
 	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
 		Blob:   svg,
 		Syntax: api.ValueSyntaxSVG,

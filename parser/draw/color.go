@@ -87,17 +87,17 @@ func colorToRGB(c string) (r, g, b int, err error) {
 // difference of at least 125 and a color difference of at least 500. Folks can style their colors
 // as they like, but our default text color is black, so the color difference for text is just the
 // sum of the components.
-func textColor(c string) (string, error) {
+func textColor(c string) string {
 	r, g, b, err := colorToRGB(c)
 	if err != nil {
-		return "#000", err
+		return "#000"
 	}
 
 	brightness := (r*299 + g*587 + b*114) / 1000
 	difference := r + g + b
 	if brightness < 125 && difference < 500 {
-		return "#fff", nil
+		return "#fff"
 	}
 
-	return "#000", nil
+	return "#000"
 }
