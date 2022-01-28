@@ -14,6 +14,7 @@ package plain
 import (
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -23,7 +24,7 @@ import (
 func init() {
 	parser.Register(&parser.Info{
 		Name:          "txt",
-		AltNames:      []string{"plain", "text"},
+		AltNames:      []string{"plain", api.ValueSyntaxText},
 		IsTextParser:  false,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
@@ -46,7 +47,7 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          "svg",
+		Name:          api.ValueSyntaxSVG,
 		AltNames:      []string{},
 		IsTextParser:  false,
 		IsImageFormat: true,

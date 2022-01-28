@@ -458,7 +458,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.b.WriteString("EmbedBLOB")
 	v.visitAttributes(en.Attrs)
 	v.b.WriteStrings(" {\"", en.Syntax, "\" \"")
-	if en.Syntax == "svg" {
+	if en.Syntax == api.ValueSyntaxSVG {
 		v.writeEscaped(string(en.Blob))
 	} else {
 		v.b.WriteString("\" \"")

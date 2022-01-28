@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -50,9 +50,9 @@ func TestNewExtIsBetter(t *testing.T) {
 		// Main Formats
 		api.ValueSyntaxZmk, api.ValueSyntaxDraw, "markdown", "md",
 		// Other supported text formats
-		"css", "txt", "html", api.ValueSyntaxNone, "mustache", "text", "plain",
+		"css", "txt", "html", api.ValueSyntaxNone, "mustache", api.ValueSyntaxText, "plain",
 		// Supported graphics formats
-		"gif", "png", "svg", "jpeg", "jpg",
+		api.ValueSyntaxGif, "png", api.ValueSyntaxSVG, "jpeg", "jpg",
 		// Unsupported syntax values
 		"gz", "cpp", "tar", "cppc",
 	}

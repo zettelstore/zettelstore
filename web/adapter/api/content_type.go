@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -33,23 +33,22 @@ func encoding2ContentType(enc api.EncodingEnum) string {
 }
 
 var mapSyntax2CT = map[string]string{
-	"css":      "text/css; charset=utf-8",
-	"gif":      "image/gif",
-	"html":     "text/html; charset=utf-8",
-	"jpeg":     "image/jpeg",
-	"jpg":      "image/jpeg",
-	"js":       "text/javascript; charset=utf-8",
-	"pdf":      "application/pdf",
-	"png":      "image/png",
-	"svg":      "image/svg+xml",
-	"xml":      "text/xml; charset=utf-8",
-	"zmk":      "text/x-zmk; charset=utf-8",
-	"plain":    ctPlainText,
-	"text":     ctPlainText,
-	"markdown": "text/markdown; charset=utf-8",
-	"md":       "text/markdown; charset=utf-8",
-	"mustache": ctPlainText,
-	//"graphviz":      "text/vnd.graphviz; charset=utf-8",
+	"css":               "text/css; charset=utf-8",
+	api.ValueSyntaxGif:  "image/gif",
+	"html":              "text/html; charset=utf-8",
+	"jpeg":              "image/jpeg",
+	"jpg":               "image/jpeg",
+	"js":                "text/javascript; charset=utf-8",
+	"pdf":               "application/pdf",
+	"png":               "image/png",
+	api.ValueSyntaxSVG:  "image/svg+xml",
+	"xml":               "text/xml; charset=utf-8",
+	api.ValueSyntaxZmk:  "text/x-zmk; charset=utf-8",
+	"plain":             ctPlainText,
+	api.ValueSyntaxText: ctPlainText,
+	"markdown":          "text/markdown; charset=utf-8",
+	"md":                "text/markdown; charset=utf-8",
+	"mustache":          ctPlainText,
 }
 
 func syntax2contentType(syntax string) (string, bool) {

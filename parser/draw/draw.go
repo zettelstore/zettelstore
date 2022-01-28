@@ -56,6 +56,6 @@ func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineLis
 	}
 	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
 		Blob:   svg,
-		Syntax: "svg",
+		Syntax: api.ValueSyntaxSVG,
 	})
 }

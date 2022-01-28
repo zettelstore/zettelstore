@@ -360,11 +360,10 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.writeContentStart('j')
 	v.b.WriteString("\"s\":")
 	writeEscaped(&v.b, en.Syntax)
-	switch en.Syntax {
-	case "svg":
+	if en.Syntax == api.ValueSyntaxSVG {
 		v.writeContentStart('q')
 		writeEscaped(&v.b, string(en.Blob))
-	default:
+	} else {
 		v.writeContentStart('o')
 		v.b.WriteBase64(en.Blob)
 		v.b.WriteByte('"')
