@@ -387,8 +387,8 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteStrings(en.Ref.String(), "}}")
 }
 
-func (*visitor) visitEmbedBLOB(*ast.EmbedBLOBNode) {
-	panic("TODO")
+func (v *visitor) visitEmbedBLOB(*ast.EmbedBLOBNode) {
+	v.b.WriteString("{{TODO: display inline BLOB}}")
 }
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
