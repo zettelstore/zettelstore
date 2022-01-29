@@ -68,42 +68,150 @@ func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig con
 		env = &emptyEnv
 	}
 	e := evaluator{
-		ctx:        ctx,
-		port:       port,
-		env:        env,
-		rtConfig:   rtConfig,
-		costMap:    map[id.Zid]embedCost{},
-		embedMap:   map[string]*ast.InlineListNode{},
-		embedCount: 0,
-		marker:     &ast.ZettelNode{},
+		ctx:             ctx,
+		port:            port,
+		env:             env,
+		rtConfig:        rtConfig,
+		transcludeMax:   rtConfig.GetMaxTransclusions(),
+		transcludeCount: 0,
+		costMap:         map[id.Zid]transcludeCost{},
+		embedMap:        map[string]*ast.InlineListNode{},
+		marker:          &ast.ZettelNode{},
 	}
 	ast.Walk(&e, n)
 }
 
 type evaluator struct {
-	ctx        context.Context
-	port       Port
-	env        *Environment
-	rtConfig   config.Config
-	costMap    map[id.Zid]embedCost
-	marker     *ast.ZettelNode
-	embedMap   map[string]*ast.InlineListNode
-	embedCount int
+	ctx             context.Context
+	port            Port
+	env             *Environment
+	rtConfig        config.Config
+	transcludeMax   int
+	transcludeCount int
+	costMap         map[id.Zid]transcludeCost
+	marker          *ast.ZettelNode
+	embedMap        map[string]*ast.InlineListNode
 }
 
-type embedCost struct {
+type transcludeCost struct {
 	zn *ast.ZettelNode
 	ec int
 }
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockListNode:
+		e.visitBlockList(n)
 	case *ast.InlineListNode:
 		e.visitInlineList(n)
 	default:
 		return e
 	}
 	return nil
+}
+
+func (e *evaluator) visitBlockList(bln *ast.BlockListNode) {
+	for i := 0; i < len(bln.List); i++ {
+		bn := bln.List[i]
+		ast.Walk(e, bn)
+		switch n := bn.(type) {
+		case *ast.TranscludeNode:
+			bn2 := e.evalTransclusionNode(n)
+			if ln, ok := bn2.(*ast.BlockListNode); ok {
+				bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
+				i += len(ln.List) - 1
+			} else {
+				bln.List[i] = bn2
+			}
+		}
+	}
+}
+
+func replaceWithBlockNodes(bns []ast.BlockNode, i int, replaceBns []ast.BlockNode) []ast.BlockNode {
+	if len(replaceBns) == 1 {
+		bns[i] = replaceBns[0]
+		return bns
+	}
+	newIns := make([]ast.BlockNode, 0, len(bns)+len(replaceBns)-1)
+	if i > 0 {
+		newIns = append(newIns, bns[:i]...)
+	}
+	if len(replaceBns) > 0 {
+		newIns = append(newIns, replaceBns...)
+	}
+	if i+1 < len(bns) {
+		newIns = append(newIns, bns[i+1:]...)
+	}
+	return newIns
+}
+
+func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
+	ref := tn.Ref
+
+	// To prevent e.embedCount from counting
+	if errText := e.checkMaxTransclusions(ref); errText != nil {
+		return makeBlockNode(errText)
+	}
+	switch ref.State {
+	case ast.RefStateInvalid, ast.RefStateBroken:
+		e.transcludeCount++
+		return makeBlockNode(createInlineErrorText(ref, "Invalid", "or", "broken", "transclusion", "reference:"))
+	case ast.RefStateZettel, ast.RefStateFound:
+	case ast.RefStateSelf:
+		e.transcludeCount++
+		return makeBlockNode(createInlineErrorText(ref, "Self", "transclusion", "reference:"))
+	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+		return tn
+	default:
+		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
+	}
+
+	zid, err := id.Parse(ref.URL.Path)
+	if err != nil {
+		panic(err)
+	}
+
+	cost, ok := e.costMap[zid]
+	zn := cost.zn
+	if zn == e.marker {
+		e.transcludeCount++
+		return makeBlockNode(createInlineErrorText(ref, "Recursive", "transclusion:"))
+	}
+	if !ok {
+		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
+		if err != nil {
+			e.transcludeCount++
+			return makeBlockNode(createInlineErrorText(ref, "Unable", "to", "get", "zettel:"))
+		}
+		ec := e.transcludeCount
+		e.costMap[zid] = transcludeCost{zn: e.marker, ec: ec}
+		zn = e.evaluateEmbeddedZettel(zettel)
+		e.costMap[zid] = transcludeCost{zn: zn, ec: e.transcludeCount - ec}
+		e.transcludeCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
+	}
+	e.transcludeCount++
+	if ec := cost.ec; ec > 0 {
+		e.transcludeCount += cost.ec
+	}
+	return zn.Ast
+}
+
+func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
+	if maxTrans := e.transcludeMax; e.transcludeCount > maxTrans {
+		e.transcludeCount = maxTrans + 1
+		return createInlineErrorText(ref,
+			"Too", "many", "transclusions", "(must", "be", "at", "most", strconv.Itoa(maxTrans)+",",
+			"see", "runtime", "configuration", "key", "max-transclusions):")
+	}
+	return nil
+}
+
+func makeBlockNode(in ast.InlineNode) ast.BlockNode {
+	return &ast.ParaNode{
+		Inlines: &ast.InlineListNode{
+			List: []ast.InlineNode{in},
+		},
+	}
 }
 
 func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
@@ -193,22 +301,21 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 }
 
 func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
-	if maxTrans := e.rtConfig.GetMaxTransclusions(); e.embedCount > maxTrans {
-		e.embedCount = maxTrans + 1 // To prevent e.embedCount from counting
-		return createErrorText(en,
-			"Too", "many", "transclusions", "(must", "be", "at", "most", strconv.Itoa(maxTrans)+",",
-			"see", "runtime", "configuration", "key", "max-transclusions):")
+	ref := en.Ref
+
+	// To prevent e.embedCount from counting
+	if errText := e.checkMaxTransclusions(ref); errText != nil {
+		return errText
 	}
 
-	ref := en.Ref
 	switch ref.State {
 	case ast.RefStateInvalid, ast.RefStateBroken:
-		e.embedCount++
-		return e.createErrorImage(en)
+		e.transcludeCount++
+		return e.createInlineErrorImage(en)
 	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
-		e.embedCount++
-		return createErrorText(en, "Self", "embed", "reference:")
+		e.transcludeCount++
+		return createInlineErrorText(ref, "Self", "embed", "reference:")
 	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:
@@ -221,32 +328,32 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err != nil {
-		e.embedCount++
-		return e.createErrorImage(en)
+		e.transcludeCount++
+		return e.createInlineErrorImage(en)
 	}
 
 	if syntax := e.getSyntax(zettel.Meta); parser.IsImageFormat(syntax) {
 		return e.embedImage(en, zettel)
 	} else if !parser.IsTextParser(syntax) {
 		// Not embeddable.
-		e.embedCount++
-		return createErrorText(en, "Not", "embeddable (syntax="+syntax+"):")
+		e.transcludeCount++
+		return createInlineErrorText(ref, "Not", "embeddable (syntax="+syntax+"):")
 	}
 
 	cost, ok := e.costMap[zid]
 	zn := cost.zn
 	if zn == e.marker {
-		e.embedCount++
-		return createErrorText(en, "Recursive", "transclusion:")
+		e.transcludeCount++
+		return createInlineErrorText(ref, "Recursive", "transclusion:")
 	}
 	if !ok {
-		ec := e.embedCount
-		e.costMap[zid] = embedCost{zn: e.marker, ec: ec}
+		ec := e.transcludeCount
+		e.costMap[zid] = transcludeCost{zn: e.marker, ec: ec}
 		zn = e.evaluateEmbeddedZettel(zettel)
-		e.costMap[zid] = embedCost{zn: zn, ec: e.embedCount - ec}
-		e.embedCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
+		e.costMap[zid] = transcludeCost{zn: zn, ec: e.transcludeCount - ec}
+		e.transcludeCount = 0 // No stack needed, because embedding is done left-recursive, depth-first.
 	}
-	e.embedCount++
+	e.transcludeCount++
 
 	result, ok := e.embedMap[ref.Value]
 	if !ok {
@@ -262,7 +369,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 
 	if ec := cost.ec; ec > 0 {
-		e.embedCount += cost.ec
+		e.transcludeCount += cost.ec
 	}
 	return result
 }
@@ -281,7 +388,7 @@ func (e *evaluator) getTitle(m *meta.Meta) string {
 	return m.GetDefault(api.KeyTitle, "")
 }
 
-func (e *evaluator) createErrorImage(en *ast.EmbedRefNode) ast.InlineEmbedNode {
+func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbedNode {
 	errorZid := id.EmojiZid
 	if gim := e.env.GetImageMaterial; gim != nil {
 		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), errorZid)
@@ -328,8 +435,8 @@ func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.I
 	return en
 }
 
-func createErrorText(en *ast.EmbedRefNode, msgWords ...string) ast.InlineNode {
-	ln := linkNodeToEmbeddedReference(en)
+func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
+	ln := linkNodeToReference(ref)
 	text := ast.CreateInlineListNodeFromWords(msgWords...)
 	text.Append(&ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
 	fn := &ast.FormatNode{
@@ -344,10 +451,10 @@ func createErrorText(en *ast.EmbedRefNode, msgWords ...string) ast.InlineNode {
 	return fn
 }
 
-func linkNodeToEmbeddedReference(en *ast.EmbedRefNode) *ast.LinkNode {
+func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
 	ln := &ast.LinkNode{
-		Ref:     en.Ref,
-		Inlines: ast.CreateInlineListNodeFromWords(en.Ref.String()),
+		Ref:     ref,
+		Inlines: ast.CreateInlineListNodeFromWords(ref.String()),
 		OnlyRef: true,
 	}
 	return ln

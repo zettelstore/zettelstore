@@ -17,6 +17,8 @@ type BlockListNode struct {
 	List []BlockNode
 }
 
+func (*BlockListNode) blockNode() { /* Just a marker */ }
+
 // WalkChildren walks down to the descriptions.
 func (bln *BlockListNode) WalkChildren(v Visitor) {
 	for _, bn := range bln.List {
