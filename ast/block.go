@@ -236,16 +236,16 @@ func (tn *TableNode) WalkChildren(v Visitor) {
 
 //--------------------------------------------------------------------------
 
-// BlockEmbedNode specifies block content from other zettel to embedded in
+// TranscludeNode specifies block content from other zettel to embedded in
 // current zettel
-type BlockEmbedNode struct {
+type TranscludeNode struct {
 	Ref *Reference
 }
 
-func (*BlockEmbedNode) blockNode() { /* Just a marker */ }
+func (*TranscludeNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (*BlockEmbedNode) WalkChildren(Visitor) { /* No children*/ }
+func (*TranscludeNode) WalkChildren(Visitor) { /* No children*/ }
 
 //--------------------------------------------------------------------------
 

@@ -47,6 +47,8 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 		for _, line := range n.Lines {
 			data.addText(line)
 		}
+	case *ast.TranscludeNode:
+		data.addRef(n.Ref)
 	case *ast.TextNode:
 		data.addText(n.Text)
 	case *ast.TagNode:

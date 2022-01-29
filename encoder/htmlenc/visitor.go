@@ -88,6 +88,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitDescriptionList(n)
 	case *ast.TableNode:
 		v.visitTable(n)
+	case *ast.TranscludeNode:
+		return nil // Nothing to write. Or: an iFrame?
 	case *ast.BLOBNode:
 		v.visitBLOB(n)
 	case *ast.TextNode:

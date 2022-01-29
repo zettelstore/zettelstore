@@ -114,6 +114,12 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitDescriptionList(n)
 	case *ast.TableNode:
 		v.visitTable(n)
+	case *ast.TranscludeNode:
+		v.writeNodeStart("Transclude")
+		v.writeContentStart('q')
+		writeEscaped(&v.b, mapRefState[n.Ref.State])
+		v.writeContentStart('s')
+		writeEscaped(&v.b, n.Ref.String())
 	case *ast.BLOBNode:
 		v.writeNodeStart("Blob")
 		v.writeContentStart('q')

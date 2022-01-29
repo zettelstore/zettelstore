@@ -130,6 +130,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitDescriptionList(n)
 	case *ast.TableNode:
 		v.visitTable(n)
+	case *ast.TranscludeNode:
+		v.b.WriteStrings("{{{", n.Ref.String(), "}}}")
 	case *ast.BLOBNode:
 		v.b.WriteStrings(
 			"%% Unable to display BLOB with title '", n.Title,

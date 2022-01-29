@@ -87,7 +87,7 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 			bn, success = cp.parseRow(), true
 		case '{':
 			cp.clearStacked()
-			bn, success = cp.parseBlockEmbed()
+			bn, success = cp.parseTransclusion()
 		}
 
 		if success {
@@ -617,8 +617,8 @@ func (cp *zmkP) parseCell() *ast.TableCell {
 	}
 }
 
-// parseBlockEmbed parses '{' '{' '{' ZID '}' '}' '}'
-func (cp *zmkP) parseBlockEmbed() (ast.BlockNode, bool) {
+// parseTransclusion parses '{' '{' '{' ZID '}' '}' '}'
+func (cp *zmkP) parseTransclusion() (ast.BlockNode, bool) {
 	delims := cp.countDelim('{')
 	if delims != 3 {
 		return nil, false
@@ -656,5 +656,5 @@ loop:
 	inp.SkipToEOL()
 	refText := string(inp.Src[posA:posE])
 	ref := ast.ParseReference(refText)
-	return &ast.BlockEmbedNode{Ref: ref}, true
+	return &ast.TranscludeNode{Ref: ref}, true
 }

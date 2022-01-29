@@ -602,12 +602,12 @@ func TestTable(t *testing.T) {
 func TestBlockEmbed(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
-		{"{{{a}}}", "(BEMBED a)"},
-		{"{{{a}}}b", "(BEMBED a)"},
-		{"{{{a}}}}", "(BEMBED a)"},
-		{"{{{a\\}}}}", "(BEMBED a%5C%7D)"},
-		{"{{{a\\}}}}b", "(BEMBED a%5C%7D)"},
-		{"{{{a}}", "(PARA (EMBED %7Ba))"},
+		{"{{{a}}}", "(TRANSCLUDE a)"},
+		{"{{{a}}}b", "(TRANSCLUDE a)"},
+		{"{{{a}}}}", "(TRANSCLUDE a)"},
+		{"{{{a\\}}}}", "(TRANSCLUDE a%5C%7D)"},
+		{"{{{a\\}}}}b", "(TRANSCLUDE a%5C%7D)"},
+		{"{{{a}}", "(PARA (TRANSCLUDE %7Ba))"},
 	})
 }
 
@@ -795,8 +795,8 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			}
 		}
 		tv.buf.WriteString(")")
-	case *ast.BlockEmbedNode:
-		fmt.Fprintf(&tv.buf, "(BEMBED %v)", n.Ref)
+	case *ast.TranscludeNode:
+		fmt.Fprintf(&tv.buf, "(TRANSCLUDE %v)", n.Ref)
 	case *ast.BLOBNode:
 		tv.buf.WriteString("(BLOB ")
 		tv.buf.WriteString(n.Syntax)
