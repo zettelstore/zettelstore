@@ -23,24 +23,25 @@ import (
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
 
-func TestSeekZidExt(t *testing.T) {
+func TestSeekZid(t *testing.T) {
 	testcases := []struct {
 		name string
 		zid  id.Zid
-		ext  string
 	}{
-		{"", id.Invalid, ""},
-		{"12345678901234.ext", id.Zid(12345678901234), "ext"},
-		{"12345678901234 abc.ext", id.Zid(12345678901234), "ext"},
-		{"12345678901234", id.Zid(12345678901234), ""},
-		{"12345678901234 def", id.Zid(12345678901234), ""},
+		{"", id.Invalid},
+		{"1", id.Invalid},
+		{"1234567890123", id.Invalid},
+		{" 12345678901234", id.Invalid},
+		{"12345678901234", id.Zid(12345678901234)},
+		{"12345678901234.ext", id.Zid(12345678901234)},
+		{"12345678901234 abc.ext", id.Zid(12345678901234)},
+		{"12345678901234.abc.ext", id.Zid(12345678901234)},
+		{"12345678901234 def", id.Zid(12345678901234)},
 	}
 	for _, tc := range testcases {
-		gotZid, gotExt := seekZidExt(tc.name)
+		gotZid := seekZid(tc.name)
 		if gotZid != tc.zid {
-			t.Errorf("seekZidExt(%q) == %v, but got %v", tc.name, tc.zid, gotZid)
-		} else if gotExt != tc.ext {
-			t.Errorf("seekZidExt(%q) == %q, but got %q", tc.name, tc.ext, gotExt)
+			t.Errorf("seekZid(%q) == %v, but got %v", tc.name, tc.zid, gotZid)
 		}
 	}
 }

@@ -303,22 +303,22 @@ func (ds *DirService) onDestroyDirectory() {
 	}
 }
 
-var validFileName = regexp.MustCompile(`^(\d{14}).*?(\.(.+))?$`)
+var validFileName = regexp.MustCompile(`^(\d{14})`)
 
 func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
 }
 
-func seekZidExt(name string) (id.Zid, string) {
+func seekZid(name string) id.Zid {
 	match := matchValidFileName(name)
 	if len(match) == 0 {
-		return id.Invalid, ""
+		return id.Invalid
 	}
 	zid, err := id.Parse(match[1])
 	if err != nil {
-		return id.Invalid, ""
+		return id.Invalid
 	}
-	return zid, match[3]
+	return zid
 }
 
 func fetchdirEntry(entries entrySet, zid id.Zid) *DirEntry {
@@ -334,12 +334,12 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	if entries == nil {
 		return id.Invalid
 	}
-	zid, ext := seekZidExt(name)
+	zid := seekZid(name)
 	if zid == id.Invalid {
 		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
-	dupName1, dupName2 := updateEntry(entry, name, ext)
+	dupName1, dupName2 := ds.updateEntry(entry, name)
 	if dupName1 != "" {
 		ds.log.Warn().Str("name", dupName1).Msg("Duplicate content (is ignored)")
 		if dupName2 != "" {
@@ -353,7 +353,7 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if entries == nil {
 		return
 	}
-	zid, ext := seekZidExt(name)
+	zid := seekZid(name)
 	if zid == id.Invalid {
 		return
 	}
@@ -367,7 +367,7 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 			return
 		}
 	}
-	if ext == entry.ContentExt && name == entry.ContentName {
+	if name == entry.ContentName {
 		entry.ContentName = ""
 		entry.ContentExt = ""
 		ds.replayUpdateUselessFiles(entry)
@@ -396,7 +396,7 @@ func (ds *DirService) replayUpdateUselessFiles(entry *DirEntry) {
 	}
 	entry.UselessFiles = make([]string, 0, len(uselessFiles))
 	for _, name := range uselessFiles {
-		updateEntry(entry, name, onlyExt(name))
+		ds.updateEntry(entry, name)
 	}
 	if len(uselessFiles) == len(entry.UselessFiles) {
 		return
@@ -412,11 +412,33 @@ loop:
 	}
 }
 
-func updateEntry(entry *DirEntry, name, ext string) (string, string) {
-	if !extIsMetaAndContent(entry.ContentExt) && ext == "" {
-		return updateEntryMeta(entry, name), ""
+func (ds *DirService) updateEntry(entry *DirEntry, name string) (string, string) {
+	ext := onlyExt(name)
+	if !extIsMetaAndContent(entry.ContentExt) {
+		if ext == "" {
+			return updateEntryMeta(entry, name), ""
+		}
+		if entry.MetaName == "" {
+			if nameWithoutExt(name, ext) == entry.ContentName {
+				// We have marked a file as content file, but it is a metadata file,
+				// because it is the same as the new file without extension.
+				entry.MetaName = entry.ContentName
+				entry.ContentName = ""
+				entry.ContentExt = ""
+				ds.replayUpdateUselessFiles(entry)
+			} else if entry.ContentName != "" && nameWithoutExt(entry.ContentName, entry.ContentExt) == name {
+				// We have already a valid content file, and new file should serve as metadata file,
+				// because it is the same as the content file without extension.
+				entry.MetaName = name
+				return "", ""
+			}
+		}
 	}
 	return updateEntryContent(entry, name, ext)
+}
+
+func nameWithoutExt(name, ext string) string {
+	return name[0 : len(name)-len(ext)-1]
 }
 
 func updateEntryMeta(entry *DirEntry, name string) string {
