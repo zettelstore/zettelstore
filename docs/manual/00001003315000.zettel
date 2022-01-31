@@ -3,14 +3,14 @@ title: Enable Zettelstore to start automatically on Linux
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
-modified: 20220119130917
+modified: 20220131162209
 
 Since there is no such thing as the one Linux, there are too many different ways to automatically start Zettelstore.
 
 * One way is to interpret your Linux desktop system as a server and use the [[recipe to install Zettelstore on a server|00001003600000]].
 * If you are using the [[Gnome Desktop|https://www.gnome.org/]], you could use the tool [[Tweak|https://wiki.gnome.org/action/show/Apps/Tweaks]] (formerly known as ""GNOME Tweak Tool"" or just ""Tweak Tool"").
   It allows to specify application that should run on startup / login.
-* [[KDE|https://kde.org/]] provides a system setting to [[autostart|https://userbase.kde.org/System_Settings/Autostart]] applications.
+* [[KDE|https://kde.org/]] provides a system setting to [[autostart|https://docs.kde.org/stable5/en/plasma-workspace/kcontrol/autostart/]] applications.
 * [[Xfce|https://xfce.org/]] allows to specify [[autostart applications|https://docs.xfce.org/xfce/xfce4-session/preferences#application_autostart]].
 * [[LXDE|https://www.lxde.org/]] uses [[LXSession Edit|https://wiki.lxde.org/en/LXSession_Edit]] to allow users to specify autostart applications.
 
