@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -12,6 +12,7 @@
 package htmlenc
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -29,27 +30,23 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 		v.b.WriteString("<pre><code")
 		v.visitAttributes(vn.Attrs)
 		v.b.WriteByte('>')
-		for _, line := range vn.Lines {
-			v.writeHTMLEscaped(line)
-			v.b.WriteByte('\n')
-		}
+		v.writeHTMLEscaped(string(vn.Content))
 		v.b.WriteString("</code></pre>")
 		v.visibleSpace = oldVisible
 
 	case ast.VerbatimComment:
 		if vn.Attrs.HasDefault() {
 			v.b.WriteString("<!--\n")
-			for _, line := range vn.Lines {
-				v.writeHTMLEscaped(line)
-				v.b.WriteByte('\n')
-			}
-			v.b.WriteString("-->")
+			v.writeHTMLEscaped(string(vn.Content))
+			v.b.WriteString("\n-->")
 		}
 
 	case ast.VerbatimHTML:
-		for _, line := range vn.Lines {
-			if !ignoreHTMLText(line) {
-				v.b.WriteStrings(line, "\n")
+		lines := bytes.Split(vn.Content, []byte{'\n'})
+		for _, line := range lines {
+			sLine := string(line)
+			if !ignoreHTMLText(sLine) {
+				v.b.WriteStrings(sLine, "\n")
 			}
 		}
 	default:

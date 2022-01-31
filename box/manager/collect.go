@@ -44,9 +44,7 @@ func collectInlineIndexData(iln *ast.InlineListNode, data *collectData) {
 func (data *collectData) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.VerbatimNode:
-		for _, line := range n.Lines {
-			data.addText(line)
-		}
+		data.addText(string(n.Content))
 	case *ast.TranscludeNode:
 		data.addRef(n.Ref)
 	case *ast.TextNode:

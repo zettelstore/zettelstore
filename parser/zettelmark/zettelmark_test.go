@@ -710,9 +710,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown verbatim code %v", n.Kind))
 		}
 		tv.buf.WriteString(code)
-		for _, line := range n.Lines {
+		if len(n.Content) > 0 {
 			tv.buf.WriteByte('\n')
-			tv.buf.WriteString(line)
+			tv.buf.Write(n.Content)
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)

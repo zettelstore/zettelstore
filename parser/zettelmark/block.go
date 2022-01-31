@@ -181,7 +181,7 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 	default:
 		panic(fmt.Sprintf("%q is not a verbatim char", fch))
 	}
-	rn = &ast.VerbatimNode{Kind: kind, Attrs: attrs}
+	rn = &ast.VerbatimNode{Kind: kind, Attrs: attrs, Content: make([]byte, 0, 512)}
 	for {
 		inp.EatEOL()
 		posL := inp.Pos
@@ -196,7 +196,10 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 			return nil, false
 		}
 		inp.SkipToEOL()
-		rn.Lines = append(rn.Lines, string(inp.Src[posL:inp.Pos]))
+		if len(rn.Content) > 0 {
+			rn.Content = append(rn.Content, '\n')
+		}
+		rn.Content = append(rn.Content, inp.Src[posL:inp.Pos]...)
 	}
 }
 

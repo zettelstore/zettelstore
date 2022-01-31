@@ -48,11 +48,11 @@ func (pn *ParaNode) WalkChildren(v Visitor) {
 
 //--------------------------------------------------------------------------
 
-// VerbatimNode contains lines of uninterpreted text
+// VerbatimNode contains uninterpreted text
 type VerbatimNode struct {
-	Kind  VerbatimKind
-	Attrs *Attributes
-	Lines []string
+	Kind    VerbatimKind
+	Attrs   *Attributes
+	Content []byte
 }
 
 // VerbatimKind specifies the format that is applied to code inline nodes.

@@ -262,12 +262,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	v.b.Write(kind)
 	v.visitAttributes(vn.Attrs)
 	v.b.WriteString(" \"")
-	for i, line := range vn.Lines {
-		if i > 0 {
-			v.b.Write(rawNewline)
-		}
-		v.writeEscaped(line)
-	}
+	v.writeEscaped(string(vn.Content))
 	v.b.WriteString("\"]")
 }
 

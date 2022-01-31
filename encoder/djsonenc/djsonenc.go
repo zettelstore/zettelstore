@@ -212,12 +212,8 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	}
 	v.writeNodeStart(kind)
 	v.visitAttributes(vn.Attrs)
-	v.writeContentStart('l')
-	for i, line := range vn.Lines {
-		v.writeComma(i)
-		writeEscaped(&v.b, line)
-	}
-	v.b.WriteByte(']')
+	v.writeContentStart('s')
+	writeEscaped(&v.b, string(vn.Content))
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
@@ -468,7 +464,6 @@ var contentCode = map[rune][]byte{
 	'g': []byte(",\"g\":["),  // General list
 	'i': []byte(",\"i\":"),   // List of inlines
 	'j': []byte(",\"j\":{"),  // Embedded JSON object
-	'l': []byte(",\"l\":["),  // List of lines
 	'n': []byte(",\"n\":"),   // Number
 	'o': []byte(",\"o\":\""), // Byte object
 	'p': []byte(",\"p\":["),  // Generic tuple

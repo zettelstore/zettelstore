@@ -175,10 +175,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	if vn.Kind == ast.VerbatimComment {
 		return
 	}
-	for i, line := range vn.Lines {
-		v.writePosChar(i, '\n')
-		v.b.WriteString(line)
-	}
+	v.b.Write(vn.Content)
 }
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {

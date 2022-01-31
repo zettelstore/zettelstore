@@ -125,9 +125,9 @@ func (*mdP) acceptThematicBreak() *ast.HRuleNode {
 
 func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimProg,
-		Attrs: nil, //TODO
-		Lines: p.acceptRawText(node),
+		Kind:    ast.VerbatimProg,
+		Attrs:   nil, //TODO
+		Content: p.acceptRawText(node),
 	}
 }
 
@@ -137,15 +137,15 @@ func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNo
 		attrs = attrs.Set("class", "language-"+cleanText(language, true))
 	}
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimProg,
-		Attrs: attrs,
-		Lines: p.acceptRawText(node),
+		Kind:    ast.VerbatimProg,
+		Attrs:   attrs,
+		Content: p.acceptRawText(node),
 	}
 }
 
-func (p *mdP) acceptRawText(node gmAst.Node) []string {
+func (p *mdP) acceptRawText(node gmAst.Node) []byte {
 	lines := node.Lines()
-	result := make([]string, 0, lines.Len())
+	result := make([]byte, 0, 512)
 	for i := 0; i < lines.Len(); i++ {
 		s := lines.At(i)
 		line := s.Value(p.source)
@@ -156,7 +156,10 @@ func (p *mdP) acceptRawText(node gmAst.Node) []string {
 				line = line[0 : l-1]
 			}
 		}
-		result = append(result, string(line))
+		if i > 0 {
+			result = append(result, '\n')
+		}
+		result = append(result, line...)
 	}
 	return result
 }
@@ -212,17 +215,20 @@ func (p *mdP) acceptTextBlock(node *gmAst.TextBlock) ast.ItemNode {
 }
 
 func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
-	lines := p.acceptRawText(node)
+	content := p.acceptRawText(node)
 	if node.HasClosure() {
-		closure := string(node.ClosureLine.Value(p.source))
+		closure := node.ClosureLine.Value(p.source)
 		if l := len(closure); l > 1 && closure[l-1] == '\n' {
 			closure = closure[:l-1]
 		}
-		lines = append(lines, closure)
+		if len(content) > 1 {
+			content = append(content, '\n')
+		}
+		content = append(content, closure...)
 	}
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimHTML,
-		Lines: lines,
+		Kind:    ast.VerbatimHTML,
+		Content: content,
 	}
 }
 

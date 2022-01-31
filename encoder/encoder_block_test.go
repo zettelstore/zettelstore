@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -37,7 +37,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple block comment",
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CommentBlock","l":["No","render"]}]`,
+			encoderDJSON:  `[{"t":"CommentBlock","s":"No\nrender"}]`,
 			encoderHTML:   ``,
 			encoderNative: `[CommentBlock "No\nrender"]`,
 			encoderText:   ``,
@@ -48,7 +48,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Rendered block comment",
 		zmk:   "%%%{-}\nRender\n%%%",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CommentBlock","a":{"-":""},"l":["Render"]}]`,
+			encoderDJSON:  `[{"t":"CommentBlock","a":{"-":""},"s":"Render"}]`,
 			encoderHTML:   "<!--\nRender\n-->",
 			encoderNative: `[CommentBlock ("",[-]) "Render"]`,
 			encoderText:   ``,
@@ -217,8 +217,8 @@ and much more
 		descr: "Simple Verbatim",
 		zmk:   "```\nHello\nWorld\n```",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CodeBlock","l":["Hello","World"]}]`,
-			encoderHTML:   "<pre><code>Hello\nWorld\n</code></pre>",
+			encoderDJSON:  `[{"t":"CodeBlock","s":"Hello\nWorld"}]`,
+			encoderHTML:   "<pre><code>Hello\nWorld</code></pre>",
 			encoderNative: `[CodeBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
 			encoderZmk:    useZmk,

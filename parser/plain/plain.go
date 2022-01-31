@@ -73,22 +73,26 @@ func parseBlocksHTML(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockLi
 func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
 	return &ast.BlockListNode{List: []ast.BlockNode{
 		&ast.VerbatimNode{
-			Kind:  kind,
-			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
-			Lines: readLines(inp),
+			Kind:    kind,
+			Attrs:   &ast.Attributes{Attrs: map[string]string{"": syntax}},
+			Content: readContent(inp),
 		},
 	}}
 }
 
-func readLines(inp *input.Input) (lines []string) {
+func readContent(inp *input.Input) []byte {
+	result := make([]byte, 0, len(inp.Src)-inp.Pos+1)
 	for {
 		inp.EatEOL()
 		posL := inp.Pos
 		if inp.Ch == input.EOS {
-			return lines
+			return result
 		}
 		inp.SkipToEOL()
-		lines = append(lines, string(inp.Src[posL:inp.Pos]))
+		if len(result) > 0 {
+			result = append(result, '\n')
+		}
+		result = append(result, inp.Src[posL:inp.Pos]...)
 	}
 }
 

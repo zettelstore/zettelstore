@@ -185,9 +185,8 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	v.b.WriteString(kind)
 	v.visitAttributes(vn.Attrs)
 	v.b.WriteByte('\n')
-	for _, line := range vn.Lines {
-		v.b.WriteStrings(line, "\n")
-	}
+	v.b.Write(vn.Content)
+	v.b.WriteByte('\n')
 	v.b.WriteString(kind)
 }
 
