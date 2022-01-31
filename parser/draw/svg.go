@@ -39,7 +39,7 @@ func canvasToSVG(c *canvas, font string, scaleX, scaleY int) []byte {
 
 	var b bytes.Buffer
 	fmt.Fprintf(&b,
-		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
+		`<svg class="zs-draw" width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
 		(c.size().X+1)*scaleX, (c.size().Y+1)*scaleY)
 	writeMarkerDefs(&b, c, scaleX, scaleY)
 

@@ -37,7 +37,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"|Hi:",
 				"+--+",
 			},
-			494,
+			510,
 		},
 
 		// 1 Box with non-existent ref
@@ -47,7 +47,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"|[a]  |",
 				"'-----'",
 			},
-			580,
+			596,
 		},
 
 		// 2 Box with ref, change background color of container with #RRGGBB
@@ -59,7 +59,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				"[a]: {\"fill\":\"#000000\"}",
 			},
-			675,
+			691,
 		},
 
 		// 3 Box with ref && fill, change label
@@ -71,7 +71,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				"[a]: {\"fill\":\"#000000\",\"a2s:label\":\"abcdefg\"}",
 			},
-			639,
+			655,
 		},
 
 		// 4 Box with ref && fill && label, remove ref
@@ -83,7 +83,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				"[a]: {\"fill\":\"#000000\",\"a2s:label\":\"abcd\",\"a2s:delref\":1}",
 			},
-			581,
+			597,
 		},
 
 		// 5 Ticks and dots in lines.
@@ -93,7 +93,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				" <-----*------",
 			},
-			1072,
+			1088,
 		},
 
 		// 6 Just text
@@ -101,7 +101,7 @@ func TestCanvasToSVG(t *testing.T) {
 			[]string{
 				" foo",
 			},
-			261,
+			277,
 		},
 
 		// 7 Just text with a deleting reference
@@ -110,7 +110,7 @@ func TestCanvasToSVG(t *testing.T) {
 				" foo",
 				"[1,0]: {\"a2s:delref\":1,\"a2s:label\":\"foo\"}",
 			},
-			262,
+			278,
 		},
 
 		// 8 Just text with a link
@@ -119,7 +119,7 @@ func TestCanvasToSVG(t *testing.T) {
 				" foo",
 				"[1,0]: {\"a2s:delref\":1, \"a2s:link\":\"https://github.com/asciitosvg/asciitosvg\"}",
 			},
-			306,
+			322,
 		},
 	}
 	for i, line := range data {

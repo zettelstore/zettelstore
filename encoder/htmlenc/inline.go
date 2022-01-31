@@ -111,9 +111,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	defer v.lang.pop()
 
 	if en.Syntax == api.ValueSyntaxSVG {
-		v.b.WriteString(`<span class="zs-svg">`)
 		v.b.Write(en.Blob)
-		v.b.WriteString("</span>")
 		return
 	}
 
