@@ -114,15 +114,16 @@ func (e *evaluator) visitBlockList(bln *ast.BlockListNode) {
 	for i := 0; i < len(bln.List); i++ {
 		bn := bln.List[i]
 		ast.Walk(e, bn)
-		switch n := bn.(type) {
-		case *ast.TranscludeNode:
-			bn2 := e.evalTransclusionNode(n)
-			if ln, ok := bn2.(*ast.BlockListNode); ok {
-				bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
-				i += len(ln.List) - 1
-			} else {
-				bln.List[i] = bn2
-			}
+		tn, ok := bn.(*ast.TranscludeNode)
+		if !ok {
+			continue
+		}
+		bn2 := e.evalTransclusionNode(tn)
+		if ln, ok2 := bn2.(*ast.BlockListNode); ok2 {
+			bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
+			i += len(ln.List) - 1
+		} else {
+			bln.List[i] = bn2
 		}
 	}
 }
@@ -178,8 +179,8 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		return makeBlockNode(createInlineErrorText(ref, "Recursive", "transclusion:"))
 	}
 	if !ok {
-		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
-		if err != nil {
+		zettel, err1 := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
+		if err1 != nil {
 			e.transcludeCount++
 			return makeBlockNode(createInlineErrorText(ref, "Unable", "to", "get", "zettel:"))
 		}

@@ -619,8 +619,7 @@ func (cp *zmkP) parseCell() *ast.TableCell {
 
 // parseTransclusion parses '{' '{' '{' ZID '}' '}' '}'
 func (cp *zmkP) parseTransclusion() (ast.BlockNode, bool) {
-	delims := cp.countDelim('{')
-	if delims != 3 {
+	if cp.countDelim('{') != 3 {
 		return nil, false
 	}
 	inp := cp.inp

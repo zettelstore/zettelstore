@@ -607,7 +607,7 @@ func TestBlockEmbed(t *testing.T) {
 		{"{{{a}}}}", "(TRANSCLUDE a)"},
 		{"{{{a\\}}}}", "(TRANSCLUDE a%5C%7D)"},
 		{"{{{a\\}}}}b", "(TRANSCLUDE a%5C%7D)"},
-		{"{{{a}}", "(PARA (TRANSCLUDE %7Ba))"},
+		{"{{{a}}", "(PARA (EMBED %7Ba))"},
 	})
 }
 
