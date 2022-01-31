@@ -3,7 +3,7 @@ title: Zettelmarkup: Block-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124174747
+modified: 20220131153748
 
 Every markup for blocks-structured elements (""blocks"") begins at the very first position of a line.
 
@@ -23,6 +23,7 @@ Ordered lists, unordered lists, and quotation lists can be combined into [[neste
 
 * [[Headings|00001007030300]] allow to structure the content of a zettel.
 * The [[horizontal rule|00001007030400]] signals a thematic break
+* A [[transclusion|00001007031100]] embeds the content of one zettel into another.
 
 === Line-range blocks
 

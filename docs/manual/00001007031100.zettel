@@ -1,0 +1,37 @@
+id: 00001007031100
+title: Zettelmarkup: Transclusion
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20220131160744
+
+Transclusion allows to include the content of another zettel into the current zettel just by referencing the other zettel.
+
+A transclusion specification begins with three consecutive left curly bracket characters (""''{''"", ''U+007B'') at the first position of a line and ends with three consecutive right curly bracket characters (""''}''"", ''U+007D'').
+The curly brackets delimit the [[zettel identifier|00001006050000]] to be included.
+
+First, the referenced zettel is read.
+If it contains some transclusions itself, these will be expanded, recursively.
+When a recursion is detected, expansion does not take place.
+Instead an error message replaces the transclude specification.
+
+An error message is also given, if the zettel cannot be read or if too many transclusions are made.
+The maximum number of transclusion can be controlled by setting the value [[''max-transclusions''|00001004020000#max-transclusions]] of the runtime configuration zettel.
+
+If everything went well, the referenced, expanded zettel will replace the transclusion element.
+
+For example, to include the text of the Zettel titled ""Zettel identifier"", just specify its identifier [[''00001006050000''|00001006050000]] in the transclude element:
+```zmk
+{{{00001006050000}}}
+```
+This will result in:
+:::example
+{{{00001006050000}}}
+:::
+
+Please note: if the referenced zettel is changed, all transclusions will also change.
+
+This allows, for example, to create a bigger document just by transcluding smaller zettel.
+
+=== See also
+[[Inline-mode transclusion|00001007040324]] does not work at the paragraph / block level, but is used for [[inline-structured elements|00001007040000]].

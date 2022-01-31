@@ -8,6 +8,8 @@
      (breaking: directory and file/zip box)
   *  Add syntax &ldquo;draw&rdquo; to produce some graphical representations.
      (major)
+  *  Add Zettelmarkup syntax to specify full transclusion of other zettel.
+     (major: Zettelmarkup)
   *  A previously duplicate file that is now useful (because another file was
      deleted) is now logged as such.
      (minor: directory and file/zip box)
