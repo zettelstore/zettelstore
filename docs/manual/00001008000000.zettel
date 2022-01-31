@@ -3,7 +3,7 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220113185444
+modified: 20220131141205
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -22,6 +22,8 @@ The following syntax values are supported:
 
 ; [!css]''css''
 : A [[Cascading Style Sheet|https://www.w3.org/Style/CSS/]], to be used when rendering a zettel as HTML.
+; [!draw]''draw''
+: A simple [[language|00001008050000]] to ""draw"" a graphic by using some simple Unicode characters.
 ; [!gif]''gif''; [!jpeg]''jpeg''; [!jpg]''jpg''; [!png]''png''
 : The formats for pixel graphics.
   Typically the data is stored in a separate file and the syntax is given in the metafile, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2.0, the metafile had the file extension ''.meta'']
@@ -44,7 +46,6 @@ The following syntax values are supported:
   The zettel content is ignored.
 ; [!svg]''svg''
 : A [[Scalable Vector Graphics|https://www.w3.org/TR/SVG2/]].
-  The icon for external material is an example.
 ; [!text]''text'', [!plain]''plain'', [!txt]''txt''
 : Just plain text that must not be interpreted further.
 ; [!zmk]''zmk''
