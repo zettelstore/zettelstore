@@ -6,6 +6,9 @@
      files. Previoulsy, they were interpreted as metadata files. The
      interpretation as metadata files was deprecated in version 0.2.
      (breaking: directory and file/zip box)
+  *  A previously duplicate file that is now useful (because another file was
+     deleted) is now logged as such.
+     (minor: directory and file/zip box)
 
 <a name="0_2"></a>
 <h2>Changes for Version 0.2 (2022-01-19)</h2>

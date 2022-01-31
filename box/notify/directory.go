@@ -370,10 +370,10 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if ext == entry.ContentExt && name == entry.ContentName {
 		entry.ContentName = ""
 		entry.ContentExt = ""
-		replayUpdateUselessFiles(entry)
+		ds.replayUpdateUselessFiles(entry)
 	} else if name == entry.MetaName {
 		entry.MetaName = ""
-		replayUpdateUselessFiles(entry)
+		ds.replayUpdateUselessFiles(entry)
 	}
 	if entry.ContentName == "" && entry.MetaName == "" {
 		delete(entries, zid)
@@ -389,7 +389,7 @@ func removeDuplicate(entry *DirEntry, i int) {
 	entry.UselessFiles = entry.UselessFiles[:i+copy(entry.UselessFiles[i:], entry.UselessFiles[i+1:])]
 }
 
-func replayUpdateUselessFiles(entry *DirEntry) {
+func (ds *DirService) replayUpdateUselessFiles(entry *DirEntry) {
 	uselessFiles := entry.UselessFiles
 	if len(uselessFiles) == 0 {
 		return
@@ -397,6 +397,18 @@ func replayUpdateUselessFiles(entry *DirEntry) {
 	entry.UselessFiles = make([]string, 0, len(uselessFiles))
 	for _, name := range uselessFiles {
 		updateEntry(entry, name, onlyExt(name))
+	}
+	if len(uselessFiles) == len(entry.UselessFiles) {
+		return
+	}
+loop:
+	for _, prevName := range uselessFiles {
+		for _, newName := range entry.UselessFiles {
+			if prevName == newName {
+				continue loop
+			}
+		}
+		ds.log.Info().Str("name", prevName).Msg("Previous duplicate file becomes useful")
 	}
 }
 
