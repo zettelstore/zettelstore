@@ -61,7 +61,8 @@ type VerbatimKind uint8
 // Constants for VerbatimCode
 const (
 	_               VerbatimKind = iota
-	VerbatimProg                 // Program code.
+	VerbatimZettel               // Zettel content
+	VerbatimProg                 // Program code
 	VerbatimComment              // Block comment
 	VerbatimHTML                 // Block HTML, e.g. for Markdown
 )

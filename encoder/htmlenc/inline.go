@@ -255,7 +255,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Text)
 	case ast.LiteralOutput:
 		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Text)
-	case ast.LiteralComment:
+	case ast.LiteralZettel, ast.LiteralComment:
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')
 		}

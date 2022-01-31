@@ -72,7 +72,7 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			in, success = cp.parseComment()
 		case '_', '*', '>', '~', '\'', '^', ',', '<', '"', ':':
 			in, success = cp.parseFormat()
-		case '+', '`', '=', runeModGrave:
+		case '@', '+', '`', '=', runeModGrave:
 			in, success = cp.parseLiteral()
 		case '\\':
 			return cp.parseBackslash()
@@ -100,7 +100,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '\'', '^', ',', '<', '"', ':', '+', '`', runeModGrave, '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '\'', '^', ',', '<', '"', ':', '+', '@', '`', runeModGrave, '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -454,6 +454,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 }
 
 var mapRuneLiteral = map[rune]ast.LiteralKind{
+	'@':          ast.LiteralZettel,
 	'`':          ast.LiteralProg,
 	runeModGrave: ast.LiteralProg,
 	'+':          ast.LiteralKeyb,

@@ -22,6 +22,11 @@ import (
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	switch vn.Kind {
+	case ast.VerbatimZettel:
+		v.b.WriteString("<!--\n")
+		v.visitAttributes(vn.Attrs)
+		v.writeHTMLEscaped(string(vn.Content))
+		v.b.WriteString("\n-->")
 	case ast.VerbatimProg:
 		oldVisible := v.visibleSpace
 		if vn.Attrs != nil {

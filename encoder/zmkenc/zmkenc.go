@@ -170,6 +170,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
+	ast.VerbatimZettel:  "@@@",
 	ast.VerbatimComment: "%%%",
 	ast.VerbatimHTML:    "???",
 	ast.VerbatimProg:    "```",
@@ -181,7 +182,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 		panic(fmt.Sprintf("Unknown verbatim kind %d", vn.Kind))
 	}
 
-	// TODO: scan cn.Lines to find embedded "`"s at beginning
+	// TODO: scan cn.Lines to find embedded kind[0]s at beginning
 	v.b.WriteString(kind)
 	v.visitAttributes(vn.Attrs)
 	v.b.WriteByte('\n')
@@ -426,6 +427,8 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
+	case ast.LiteralZettel:
+		v.writeLiteral('@', ln.Attrs, ln.Text)
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Text)
 	case ast.LiteralKeyb:

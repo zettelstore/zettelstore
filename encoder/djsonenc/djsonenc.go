@@ -200,6 +200,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
+	ast.VerbatimZettel:  "ZettelBlock",
 	ast.VerbatimProg:    "CodeBlock",
 	ast.VerbatimComment: "CommentBlock",
 	ast.VerbatimHTML:    "HTMLBlock",
@@ -406,6 +407,7 @@ var mapFormatKind = map[ast.FormatKind]string{
 }
 
 var mapLiteralKind = map[ast.LiteralKind]string{
+	ast.LiteralZettel:  "Zettel",
 	ast.LiteralProg:    "Code",
 	ast.LiteralKeyb:    "Input",
 	ast.LiteralOutput:  "Output",

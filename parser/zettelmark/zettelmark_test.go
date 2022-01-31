@@ -338,7 +338,7 @@ func TestFormat(t *testing.T) {
 
 func TestLiteral(t *testing.T) {
 	t.Parallel()
-	for _, ch := range []string{"`", "+", "="} {
+	for _, ch := range []string{"@", "`", "+", "="} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -404,7 +404,16 @@ func TestEntity(t *testing.T) {
 	})
 }
 
-func TestVerbatim(t *testing.T) {
+func TestVerbatimZettel(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"@@@\n@@@", "(ZETTEL)"},
+		{"@@@\nabc\n@@@", "(ZETTEL\nabc)"},
+		{"@@@@draw\nabc\n@@@@", "(ZETTEL\nabc)[ATTR =draw]"},
+	})
+}
+
+func TestVerbatimCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"```\n```", "(PROG)"},
@@ -413,6 +422,15 @@ func TestVerbatim(t *testing.T) {
 		{"````\nabc\n````", "(PROG\nabc)"},
 		{"````\nabc\n```\n````", "(PROG\nabc\n```)"},
 		{"````go\nabc\n````", "(PROG\nabc)[ATTR =go]"},
+	})
+}
+
+func TestVerbatimComment(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"%%%\n%%%", "(COMMENT)"},
+		{"%%%\nabc\n%%%", "(COMMENT\nabc)"},
+		{"%%%%go\nabc\n%%%%", "(COMMENT\nabc)[ATTR =go]"},
 	})
 }
 
@@ -882,7 +900,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
-	ast.VerbatimProg: "(PROG",
+	ast.VerbatimZettel:  "(ZETTEL",
+	ast.VerbatimProg:    "(PROG",
+	ast.VerbatimComment: "(COMMENT",
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
@@ -918,6 +938,7 @@ var mapFormatKind = map[ast.FormatKind]rune{
 }
 
 var mapLiteralKind = map[ast.LiteralKind]rune{
+	ast.LiteralZettel:  '@',
 	ast.LiteralProg:    '`',
 	ast.LiteralKeyb:    '+',
 	ast.LiteralOutput:  '=',

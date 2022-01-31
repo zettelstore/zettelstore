@@ -249,6 +249,7 @@ func (v *visitor) writeMetaList(m *meta.Meta, key, native string) {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind][]byte{
+	ast.VerbatimZettel:  []byte("[ZettelBlock"),
 	ast.VerbatimProg:    []byte("[CodeBlock"),
 	ast.VerbatimComment: []byte("[CommentBlock"),
 	ast.VerbatimHTML:    []byte("[HTMLBlock"),
@@ -501,6 +502,7 @@ var mapFormatKind = map[ast.FormatKind][]byte{
 }
 
 var mapLiteralKind = map[ast.LiteralKind][]byte{
+	ast.LiteralZettel:  []byte("Zettel"),
 	ast.LiteralProg:    []byte("Code"),
 	ast.LiteralKeyb:    []byte("Input"),
 	ast.LiteralOutput:  []byte("Output"),

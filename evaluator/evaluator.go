@@ -114,17 +114,21 @@ func (e *evaluator) visitBlockList(bln *ast.BlockListNode) {
 	for i := 0; i < len(bln.List); i++ {
 		bn := bln.List[i]
 		ast.Walk(e, bn)
-		tn, ok := bn.(*ast.TranscludeNode)
-		if !ok {
-			continue
+		switch n := bn.(type) {
+		case *ast.VerbatimNode:
+			transcludeNode(bln, i, e.evalVerbatimNode(n))
+		case *ast.TranscludeNode:
+			transcludeNode(bln, i, e.evalTransclusionNode(n))
 		}
-		bn2 := e.evalTransclusionNode(tn)
-		if ln, ok2 := bn2.(*ast.BlockListNode); ok2 {
-			bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
-			i += len(ln.List) - 1
-		} else {
-			bln.List[i] = bn2
-		}
+	}
+}
+
+func transcludeNode(bln *ast.BlockListNode, i int, bn ast.BlockNode) {
+	if ln, ok := bn.(*ast.BlockListNode); ok {
+		bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
+		i += len(ln.List) - 1
+	} else {
+		bln.List[i] = bn
 	}
 }
 
@@ -144,6 +148,33 @@ func replaceWithBlockNodes(bns []ast.BlockNode, i int, replaceBns []ast.BlockNod
 		newIns = append(newIns, bns[i+1:]...)
 	}
 	return newIns
+}
+
+func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
+	if vn.Kind != ast.VerbatimZettel {
+		return vn
+	}
+	m := meta.New(id.Invalid)
+	m.Set(api.KeySyntax, getSyntax(vn.Attrs, api.ValueSyntaxDraw))
+	zettel := domain.Zettel{
+		Meta:    m,
+		Content: domain.NewContent(vn.Content),
+	}
+	e.transcludeCount++
+	zn := e.evaluateEmbeddedZettel(zettel)
+	return zn.Ast
+}
+
+func getSyntax(a *ast.Attributes, defSyntax string) string {
+	if a != nil {
+		if val, ok := a.Get(api.KeySyntax); ok {
+			return val
+		}
+		if val, ok := a.Get(""); ok {
+			return val
+		}
+	}
+	return defSyntax
 }
 
 func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
@@ -202,7 +233,7 @@ func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
 		e.transcludeCount = maxTrans + 1
 		return createInlineErrorText(ref,
 			"Too", "many", "transclusions", "(must", "be", "at", "most", strconv.Itoa(maxTrans)+",",
-			"see", "runtime", "configuration", "key", "max-transclusions):")
+			"see", "runtime", "configuration", "key", "max-transclusions)")
 	}
 	return nil
 }
@@ -225,14 +256,19 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedRefNode:
-			in2 := e.evalEmbedRefNode(n)
-			if ln, ok := in2.(*ast.InlineListNode); ok {
-				iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
-				i += len(ln.List) - 1
-			} else {
-				iln.List[i] = in2
-			}
+			embedNode(iln, i, e.evalEmbedRefNode(n))
+		case *ast.LiteralNode:
+			embedNode(iln, i, e.evalLiteralNode(n))
 		}
+	}
+}
+
+func embedNode(iln *ast.InlineListNode, i int, in ast.InlineNode) {
+	if ln, ok := in.(*ast.InlineListNode); ok {
+		iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
+		i += len(ln.List) - 1
+	} else {
+		iln.List[i] = in
 	}
 }
 
@@ -375,6 +411,28 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	return result
 }
 
+func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
+	if ln.Kind != ast.LiteralZettel {
+		return ln
+	}
+	m := meta.New(id.Invalid)
+	m.Set(api.KeySyntax, getSyntax(ln.Attrs, api.ValueSyntaxDraw))
+	zettel := domain.Zettel{
+		Meta:    m,
+		Content: domain.NewContent([]byte(ln.Text)),
+	}
+	e.transcludeCount++
+	zn := e.evaluateEmbeddedZettel(zettel)
+	result := findInlineList(zn.Ast, "")
+	if result.IsEmpty() {
+		return &ast.LiteralNode{
+			Kind: ast.LiteralComment,
+			Text: "Nothing to transclude",
+		}
+	}
+	return result
+}
+
 func (e *evaluator) getSyntax(m *meta.Meta) string {
 	if cfg := e.rtConfig; cfg != nil {
 		return config.GetSyntax(m, cfg)
@@ -437,9 +495,11 @@ func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.I
 }
 
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
-	ln := linkNodeToReference(ref)
 	text := ast.CreateInlineListNodeFromWords(msgWords...)
-	text.Append(&ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
+	if ref != nil {
+		ln := linkNodeToReference(ref)
+		text.Append(&ast.TextNode{Text: ":"}, &ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
+	}
 	fn := &ast.FormatNode{
 		Kind:    ast.FormatMonospace,
 		Inlines: text,

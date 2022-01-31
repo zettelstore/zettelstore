@@ -256,8 +256,9 @@ type LiteralKind uint8
 // Constants for LiteralCode
 const (
 	_              LiteralKind = iota
-	LiteralProg                // Inline program code.
-	LiteralKeyb                // Keyboard strokes.
+	LiteralZettel              // Zettel content
+	LiteralProg                // Inline program code
+	LiteralKeyb                // Keyboard strokes
 	LiteralOutput              // Sample output.
 	LiteralComment             // Inline comment
 	LiteralHTML                // Inline HTML, e.g. for Markdown
