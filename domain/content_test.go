@@ -46,11 +46,14 @@ func TestTrimSpace(t *testing.T) {
 		{"abc", "abc"},
 		{" abc", " abc"},
 		{"abc ", "abc"},
+		{"abc \n", "abc"},
+		{"abc\n ", "abc"},
 		{"\nabc", "abc"},
 		{" \nabc", "abc"},
 		{" \n abc", " abc"},
 		{" \n\n abc", " abc"},
 		{" \n \n abc", " abc"},
+		{" \n \n abc \n \n ", " abc"},
 	}
 	for _, tc := range testcases {
 		c := domain.NewContent([]byte(tc.in))
