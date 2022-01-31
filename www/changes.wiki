@@ -2,6 +2,10 @@
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (pending)</h2>
+  *  Zettel files with extension <tt>.meta</tt> are now treated as content
+     files. Previoulsy, they were interpreted as metadata files. The
+     interpretation as metadata files was deprecated in version 0.2.
+     (breaking: directory and file/zip box)
 
 <a name="0_2"></a>
 <h2>Changes for Version 0.2 (2022-01-19)</h2>
@@ -682,4 +686,3 @@ instead of GitHub. To access older versions, use the Git repository under
 <a name="0_0_1"></a>
 <h2>Changes for Version 0.0.1 (2020-08-21)</h2>
   *  Initial public release.
-

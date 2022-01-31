@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -339,7 +339,7 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
-	dupName1, dupName2 := updateEntry(ds.log, entry, name, ext)
+	dupName1, dupName2 := updateEntry(entry, name, ext)
 	if dupName1 != "" {
 		ds.log.Warn().Str("name", dupName1).Msg("Duplicate content (is ignored)")
 		if dupName2 != "" {
@@ -396,47 +396,33 @@ func replayUpdateUselessFiles(entry *DirEntry) {
 	}
 	entry.UselessFiles = make([]string, 0, len(uselessFiles))
 	for _, name := range uselessFiles {
-		updateEntry(nil, entry, name, onlyExt(name))
+		updateEntry(entry, name, onlyExt(name))
 	}
 }
 
-const extMeta = "meta"
-
-func updateEntry(log *logger.Logger, entry *DirEntry, name, ext string) (string, string) {
-	if (ext == "" || ext == extMeta) && !extIsMetaAndContent(entry.ContentExt) {
-		return updateEntryMeta(log, entry, name, ext), ""
+func updateEntry(entry *DirEntry, name, ext string) (string, string) {
+	if !extIsMetaAndContent(entry.ContentExt) && ext == "" {
+		return updateEntryMeta(entry, name), ""
 	}
 	return updateEntryContent(entry, name, ext)
 }
-func updateEntryMeta(log *logger.Logger, entry *DirEntry, name, ext string) string {
+
+func updateEntryMeta(entry *DirEntry, name string) string {
 	metaName := entry.MetaName
 	if metaName == "" {
-		if log != nil && ext == extMeta {
-			log.Warn().Str("name", name).Msg("Metadata file should not end with .meta any more")
-		}
 		entry.MetaName = name
 		return ""
 	}
 	if metaName == name {
 		return ""
 	}
-	metaExt := onlyExt(metaName)
-	if metaExt == ext {
-		if newNameIsBetter(metaName, name) {
-			entry.MetaName = name
-			return addUselessFile(entry, metaName)
-		}
-		return addUselessFile(entry, name)
-	}
-	if metaExt == "" {
-		return addUselessFile(entry, name)
-	}
-	if ext == "" {
+	if newNameIsBetter(metaName, name) {
 		entry.MetaName = name
 		return addUselessFile(entry, metaName)
 	}
-	panic(name)
+	return addUselessFile(entry, name)
 }
+
 func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 	contentName := entry.ContentName
 	if contentName == "" {
