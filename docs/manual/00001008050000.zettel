@@ -3,7 +3,7 @@ title: The ""draw"" language
 role: manual
 tags: #graphic #manual #zettelstore
 syntax: zmk
-modified: 20220131151747
+modified: 20220131152128
 
 Sometimes, <<a picture is worth a thousand words<<.
 To create some graphical representations, Zettelstore provides a simple mechanism.
@@ -15,7 +15,6 @@ For example, to create a picture containing two boxes that are connected via an 
 +-------+       +-------+
 ```
 Zettelstore translates this to:
-
 {{{00001008050005}}}
 
 Technically spoken, the drawing is translated to a [[SVG|00001008000000#svg]] element.

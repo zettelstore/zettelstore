@@ -142,7 +142,7 @@ func (cp *zmkP) parsePara() *ast.ParaNode {
 			ch := cp.inp.Ch
 			switch ch {
 			// Must contain all cases from above switch in parseBlock.
-			case input.EOS, '\n', '\r', '`', runeModGrave, '%', '"', '<', '=', '-', '*', '#', '>', ';', ':', ' ', '|':
+			case input.EOS, '\n', '\r', '`', runeModGrave, '%', '"', '<', '=', '-', '*', '#', '>', ';', ':', ' ', '|', '{':
 				return pn
 			}
 		}
