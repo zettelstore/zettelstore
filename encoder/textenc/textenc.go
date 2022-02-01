@@ -165,7 +165,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		// No 'return nil' to write text
 	case *ast.LiteralNode:
 		if n.Kind != ast.LiteralComment {
-			v.b.WriteString(n.Text)
+			v.b.Write(n.Content)
 		}
 	}
 	return v

@@ -181,7 +181,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.Write(kind)
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" \"")
-		v.writeEscaped(n.Text)
+		v.writeEscaped(string(n.Content))
 		v.b.WriteByte('"')
 	default:
 		return v

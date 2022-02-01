@@ -887,9 +887,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 		tv.buf.WriteByte('{')
 		tv.buf.WriteRune(code)
-		if n.Text != "" {
+		if len(n.Content) > 0 {
 			tv.buf.WriteByte(' ')
-			tv.buf.WriteString(n.Text)
+			tv.buf.Write(n.Content)
 		}
 		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)

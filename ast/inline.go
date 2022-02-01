@@ -245,9 +245,9 @@ func (fn *FormatNode) WalkChildren(v Visitor) {
 
 // LiteralNode specifies some uninterpreted text.
 type LiteralNode struct {
-	Kind  LiteralKind
-	Attrs *Attributes // Optional attributes.
-	Text  string
+	Kind    LiteralKind
+	Attrs   *Attributes // Optional attributes.
+	Content []byte
 }
 
 // LiteralKind specifies the format that is applied to code inline nodes.

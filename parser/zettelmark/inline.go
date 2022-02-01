@@ -400,7 +400,10 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {
-			return &ast.LiteralNode{Kind: ast.LiteralComment, Text: string(inp.Src[pos:inp.Pos])}, true
+			return &ast.LiteralNode{
+				Kind:    ast.LiteralComment,
+				Content: append([]byte(nil), inp.Src[pos:inp.Pos]...),
+			}, true
 		}
 		inp.Next()
 	}
@@ -484,7 +487,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 				inp.Next()
 				inp.Next()
 				fn.Attrs = cp.parseAttributes(false)
-				fn.Text = buf.String()
+				fn.Content = buf.Bytes()
 				return fn, true
 			}
 			buf.WriteRune(fch)

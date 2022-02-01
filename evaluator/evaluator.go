@@ -401,8 +401,8 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 	if result.IsEmpty() {
 		return &ast.LiteralNode{
-			Kind: ast.LiteralComment,
-			Text: "Nothing to transclude: " + ref.String(),
+			Kind:    ast.LiteralComment,
+			Content: append([]byte("Nothing to transclude: "), ref.String()...),
 		}
 	}
 
@@ -417,11 +417,11 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 		return ln
 	}
 	e.transcludeCount++
-	result := e.evaluateEmbeddedInline([]byte(ln.Text), getSyntax(ln.Attrs, api.ValueSyntaxDraw))
+	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, api.ValueSyntaxDraw))
 	if result.IsEmpty() {
 		return &ast.LiteralNode{
-			Kind: ast.LiteralComment,
-			Text: "Nothing to transclude",
+			Kind:    ast.LiteralComment,
+			Content: []byte("Nothing to transclude"),
 		}
 	}
 	return result

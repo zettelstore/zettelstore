@@ -248,28 +248,28 @@ func (v *visitor) visitQuotes(fn *ast.FormatNode) {
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralProg:
-		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Text)
+		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Content)
 	case ast.LiteralKeyb:
-		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Text)
+		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Content)
 	case ast.LiteralOutput:
-		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Text)
+		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Content)
 	case ast.LiteralZettel, ast.LiteralComment:
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')
 		}
 		v.b.WriteString("<!-- ")
-		v.writeHTMLEscaped(ln.Text) // writeCommentEscaped
+		v.writeHTMLEscaped(string(ln.Content)) // writeCommentEscaped
 		v.b.WriteString(" -->")
 	case ast.LiteralHTML:
-		if !ignoreHTMLText(ln.Text) {
-			v.b.WriteString(ln.Text)
+		if !ignoreHTMLText(string(ln.Content)) {
+			v.b.Write(ln.Content)
 		}
 	default:
 		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
 }
 
-func (v *visitor) writeLiteral(codeS, codeE string, attrs *ast.Attributes, text string) {
+func (v *visitor) writeLiteral(codeS, codeE string, attrs *ast.Attributes, content []byte) {
 	oldVisible := v.visibleSpace
 	if attrs != nil {
 		v.visibleSpace = attrs.HasDefault()
@@ -277,7 +277,7 @@ func (v *visitor) writeLiteral(codeS, codeE string, attrs *ast.Attributes, text 
 	v.b.WriteString(codeS)
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.writeHTMLEscaped(text)
+	v.writeHTMLEscaped(string(content))
 	v.b.WriteString(codeE)
 	v.visibleSpace = oldVisible
 }

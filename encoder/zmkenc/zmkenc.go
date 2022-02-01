@@ -428,30 +428,31 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralZettel:
-		v.writeLiteral('@', ln.Attrs, ln.Text)
+		v.writeLiteral('@', ln.Attrs, ln.Content)
 	case ast.LiteralProg:
-		v.writeLiteral('`', ln.Attrs, ln.Text)
+		v.writeLiteral('`', ln.Attrs, ln.Content)
 	case ast.LiteralKeyb:
-		v.writeLiteral('+', ln.Attrs, ln.Text)
+		v.writeLiteral('+', ln.Attrs, ln.Content)
 	case ast.LiteralOutput:
-		v.writeLiteral('=', ln.Attrs, ln.Text)
+		v.writeLiteral('=', ln.Attrs, ln.Content)
 	case ast.LiteralComment:
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')
 		}
-		v.b.WriteStrings("%% ", ln.Text)
+		v.b.WriteString("%% ")
+		v.b.Write(ln.Content)
 	case ast.LiteralHTML:
 		v.b.WriteString("``")
-		v.writeEscaped(ln.Text, '`')
+		v.writeEscaped(string(ln.Content), '`')
 		v.b.WriteString("``{=html,.warning}")
 	default:
 		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
 }
 
-func (v *visitor) writeLiteral(code byte, attrs *ast.Attributes, text string) {
+func (v *visitor) writeLiteral(code byte, attrs *ast.Attributes, content []byte) {
 	v.b.WriteBytes(code, code)
-	v.writeEscaped(text, code)
+	v.writeEscaped(string(content), code)
 	v.b.WriteBytes(code, code)
 	v.visitAttributes(attrs)
 }

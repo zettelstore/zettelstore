@@ -14,7 +14,6 @@ package markdown
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	gm "github.com/yuin/goldmark"
 	gmAst "github.com/yuin/goldmark/ast"
@@ -363,16 +362,16 @@ func cleanText(text []byte, cleanBS bool) string {
 func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) []ast.InlineNode {
 	return []ast.InlineNode{
 		&ast.LiteralNode{
-			Kind:  ast.LiteralProg,
-			Attrs: nil, //TODO
-			Text:  cleanCodeSpan(node.Text(p.source)),
+			Kind:    ast.LiteralProg,
+			Attrs:   nil, //TODO
+			Content: cleanCodeSpan(node.Text(p.source)),
 		},
 	}
 }
 
-func cleanCodeSpan(text []byte) string {
+func cleanCodeSpan(text []byte) []byte {
 	if len(text) == 0 {
-		return ""
+		return nil
 	}
 	lastPos := 0
 	var buf bytes.Buffer
@@ -386,7 +385,7 @@ func cleanCodeSpan(text []byte) string {
 		}
 	}
 	buf.Write(text[lastPos:])
-	return buf.String()
+	return buf.Bytes()
 }
 
 func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
@@ -469,16 +468,16 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {
 }
 
 func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) []ast.InlineNode {
-	segs := make([]string, 0, node.Segments.Len())
+	segs := make([][]byte, 0, node.Segments.Len())
 	for i := 0; i < node.Segments.Len(); i++ {
 		segment := node.Segments.At(i)
-		segs = append(segs, string(segment.Value(p.source)))
+		segs = append(segs, segment.Value(p.source))
 	}
 	return []ast.InlineNode{
 		&ast.LiteralNode{
-			Kind:  ast.LiteralHTML,
-			Attrs: nil, // TODO: add HTML as language
-			Text:  strings.Join(segs, ""),
+			Kind:    ast.LiteralHTML,
+			Attrs:   nil, // TODO: add HTML as language
+			Content: bytes.Join(segs, nil),
 		},
 	}
 }

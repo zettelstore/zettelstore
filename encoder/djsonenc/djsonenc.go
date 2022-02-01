@@ -191,7 +191,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeNodeStart(kind)
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('s')
-		writeEscaped(&v.b, n.Text)
+		writeEscaped(&v.b, string(n.Content))
 	default:
 		return v
 	}
