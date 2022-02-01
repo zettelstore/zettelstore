@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -31,16 +31,18 @@ import (
 type API struct {
 	log      *logger.Logger
 	b        server.Builder
-	rtConfig config.Config
 	authz    auth.AuthzManager
 	token    auth.TokenManager
 	auth     server.Auth
+	rtConfig config.Config
+	policy   auth.Policy
 
 	tokenLifetime time.Duration
 }
 
 // New creates a new API object.
-func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token auth.TokenManager, auth server.Auth, rtConfig config.Config) *API {
+func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token auth.TokenManager,
+	auth server.Auth, rtConfig config.Config, pol auth.Policy) *API {
 	a := &API{
 		log:      log,
 		b:        b,
@@ -48,6 +50,7 @@ func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token au
 		token:    token,
 		auth:     auth,
 		rtConfig: rtConfig,
+		policy:   pol,
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeAPI).(time.Duration),
 	}
@@ -88,4 +91,25 @@ func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) e
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write(buf.Bytes())
 	return err
+}
+
+func (a *API) getRights(ctx context.Context, m *meta.Meta) (result api.ZettelRights) {
+	pol := a.policy
+	user := a.auth.GetUser(ctx)
+	if pol.CanCreate(user, m) {
+		result |= api.ZettelCanCreate
+	}
+	if pol.CanRead(user, m) {
+		result |= api.ZettelCanRead
+	}
+	if pol.CanWrite(user, m, m) {
+		result |= api.ZettelCanWrite
+	}
+	if pol.CanRename(user, m) {
+		result |= api.ZettelCanRename
+	}
+	if pol.CanDelete(user, m) {
+		result |= api.ZettelCanDelete
+	}
+	return result
 }

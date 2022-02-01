@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -27,27 +27,30 @@ import (
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel.
 func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		z, err := a.getZettelFromPath(r.Context(), w, r, getZettel)
+		ctx := r.Context()
+		z, err := a.getZettelFromPath(ctx, w, r, getZettel)
 		if err != nil {
 			return
 		}
+		m := z.Meta
 
 		var buf bytes.Buffer
 		content, encoding := z.Content.Encode()
 		err = encodeJSONData(&buf, api.ZettelJSON{
-			ID:       api.ZettelID(z.Meta.Zid.String()),
-			Meta:     z.Meta.Map(),
+			ID:       api.ZettelID(m.Zid.String()),
+			Meta:     m.Map(),
 			Encoding: encoding,
 			Content:  content,
+			Rights:   a.getRights(ctx, m),
 		})
 		if err != nil {
-			a.log.Fatal().Err(err).Zid(z.Meta.Zid).Msg("Unable to store zettel in buffer")
+			a.log.Fatal().Err(err).Zid(m.Zid).Msg("Unable to store zettel in buffer")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		err = writeBuffer(w, &buf, ctJSON)
-		a.log.IfErr(err).Msg("Write JSON Zettel")
+		a.log.IfErr(err).Zid(m.Zid).Msg("Write JSON Zettel")
 	}
 }
 

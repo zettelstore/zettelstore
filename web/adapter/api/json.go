@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -13,6 +13,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -29,11 +30,12 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
-func (a *API) writeMetaList(w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
+func (a *API) writeMetaList(ctx context.Context, w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
 	outList := make([]api.ZidMetaJSON, len(metaList))
 	for i, m := range metaList {
 		outList[i].ID = api.ZettelID(m.Zid.String())
 		outList[i].Meta = m.Map()
+		outList[i].Rights = a.getRights(ctx, m)
 	}
 
 	var buf bytes.Buffer

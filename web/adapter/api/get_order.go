@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -35,7 +35,7 @@ func (a *API) MakeGetOrderHandler(zettelOrder usecase.ZettelOrder) http.HandlerF
 			a.reportUsecaseError(w, err)
 			return
 		}
-		err = a.writeMetaList(w, start, metas)
+		err = a.writeMetaList(ctx, w, start, metas)
 		a.log.IfErr(err).Zid(zid).Msg("Write Zettel Order")
 	}
 }

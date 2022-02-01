@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -68,8 +68,9 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		}
 		for _, m := range metaList {
 			result.List = append(result.List, api.ZidMetaJSON{
-				ID:   api.ZettelID(m.Zid.String()),
-				Meta: m.Map(),
+				ID:     api.ZettelID(m.Zid.String()),
+				Meta:   m.Map(),
+				Rights: a.getRights(ctx, m),
 			})
 		}
 

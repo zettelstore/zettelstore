@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -37,8 +37,9 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		result := make([]api.ZidMetaJSON, 0, len(metaList))
 		for _, m := range metaList {
 			result = append(result, api.ZidMetaJSON{
-				ID:   api.ZettelID(m.Zid.String()),
-				Meta: m.Map(),
+				ID:     api.ZettelID(m.Zid.String()),
+				Meta:   m.Map(),
+				Rights: a.getRights(ctx, m),
 			})
 		}
 
