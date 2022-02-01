@@ -13,9 +13,12 @@ package api
 
 import "zettelstore.de/c/api"
 
-const ctHTML = "text/html; charset=utf-8"
-const ctJSON = "application/json"
-const ctPlainText = "text/plain; charset=utf-8"
+const (
+	ctHTML      = "text/html; charset=utf-8"
+	ctJSON      = "application/json"
+	ctPlainText = "text/plain; charset=utf-8"
+	ctSVG       = "image/svg+xml"
+)
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
 	api.EncoderHTML:   ctHTML,
@@ -34,14 +37,15 @@ func encoding2ContentType(enc api.EncodingEnum) string {
 
 var mapSyntax2CT = map[string]string{
 	"css":               "text/css; charset=utf-8",
+	api.ValueSyntaxDraw: ctSVG,
 	api.ValueSyntaxGif:  "image/gif",
-	"html":              "text/html; charset=utf-8",
+	api.ValueSyntaxHTML: "text/html; charset=utf-8",
 	"jpeg":              "image/jpeg",
 	"jpg":               "image/jpeg",
 	"js":                "text/javascript; charset=utf-8",
 	"pdf":               "application/pdf",
 	"png":               "image/png",
-	api.ValueSyntaxSVG:  "image/svg+xml",
+	api.ValueSyntaxSVG:  ctSVG,
 	"xml":               "text/xml; charset=utf-8",
 	api.ValueSyntaxZmk:  "text/x-zmk; charset=utf-8",
 	"plain":             ctPlainText,

@@ -36,7 +36,7 @@ func TestParserType(t *testing.T) {
 		text   bool
 		image  bool
 	}{
-		{"html", false, false},
+		{api.ValueSyntaxHTML, false, false},
 		{"css", false, false},
 		{api.ValueSyntaxDraw, true, false},
 		{api.ValueSyntaxGif, false, true},

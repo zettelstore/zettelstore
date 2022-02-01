@@ -31,7 +31,7 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          "html",
+		Name:          api.ValueSyntaxHTML,
 		AltNames:      []string{},
 		IsTextParser:  false,
 		IsImageFormat: false,
