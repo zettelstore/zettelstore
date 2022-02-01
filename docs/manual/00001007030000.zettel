@@ -3,7 +3,7 @@ title: Zettelmarkup: Block-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220131153748
+modified: 20220201133655
 
 Every markup for blocks-structured elements (""blocks"") begins at the very first position of a line.
 
@@ -39,6 +39,7 @@ Additionally, all other blocks elements are allowed in line-range blocks.
 * [[Verse blocks|00001007030700]] allow to enter poetry, lyrics and similar text, where line endings are important,
 * [[Region blocks|00001007030800]] just mark regions, e.g. for common formatting,
 * [[Comment blocks|00001007030900]] allow to enter text that will be ignored when rendered.
+* [[Inline-Zettel blocks|00001007031200]] provide a mechanism to specify zettel content with a new syntax without creating a new zettel.
 
 === Tables
 

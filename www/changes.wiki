@@ -10,6 +10,9 @@
      (major)
   *  Add Zettelmarkup syntax to specify full transclusion of other zettel.
      (major: Zettelmarkup)
+  *  Add Zettelmarkup syntax to specify inline-zettel, both for
+     block-structured and for inline-structured elements.
+     (major: Zettelmarkup)
   *  A previously duplicate file that is now useful (because another file was
      deleted) is now logged as such.
      (minor: directory and file/zip box)

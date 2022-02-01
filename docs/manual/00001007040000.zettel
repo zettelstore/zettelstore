@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124165337
+modified: 20220201150815
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -16,7 +16,7 @@ Sometimes, you want to enter characters that have no representation on your keyb
   Some of these elements explicitly support [[attributes|00001007050000]].
 
 ; Literal-like formatting
-: Sometime you want to render the text as it is.
+: Sometime you want to enter the text as it is.
 : This is the core motivation of [[literal-like formatting|00001007040200]].
 
 ; Reference-like text

@@ -3,11 +3,11 @@ title: Zettelmarkup: Summary of Formatting Characters
 role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124171238
+modified: 20220201151829
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
-|= Character :|= Blocks <|= Inlines <
+|= Character :|= [[Blocks|00001007030000]] <|= [[Inlines|00001007040000]] <
 | ''!''  | (free) | (free)
 | ''"''  | [[Verse block|00001007030700]] | [[Typographic quotation mark|00001007040100]]
 | ''#''  | [[Ordered list|00001007030200]] | [[Tag|00001007040000]]
@@ -29,14 +29,14 @@ The following table gives an overview about the use of all characters that begin
 | ''=''  | [[Headings|00001007030300]] | [[Computer output|00001007040200]]
 | ''>''  | [[Quotation lists|00001007030200]] | [[Inserted text|00001007040100]]
 | ''?''  | (free) | (free)
-| ''@''  | (free) | (reserved)
+| ''@''  | [[Inline-Zettel blocks|00001007031200]] | [[Inline-zettel snippets|00001007040200#inline-zettel-snippet]]
 | ''[''  | (reserved)  | [[Linked material|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
 | ''\\'' | (blocked by inline meaning) | [[Escape character|00001007040000]]
 | '']''  | (reserved) | End of [[link|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
 | ''^''  | (free) | [[Superscripted text|00001007040100]]
 | ''_''  | (free) | [[Emphasized text|00001007040100]]
 | ''`''  | [[Verbatim block|00001007030500]] | [[Literal text|00001007040200]]
-| ''{''  | (reserved) | [[Embedded material|00001007040300]], [[Attribute|00001007050000]]
+| ''{''  | [[Transclusion|00001007031100]] | [[Embedded material|00001007040300]], [[Attribute|00001007050000]]
 | ''|''  | [[Table row / table cell|00001007031000]] | Separator within link and [[embed|00001007040320]] formatting
-| ''}''  | (reserved) | End of embedded material, End of Attribute
+| ''}''  | End of [[Transclusion|00001007031100]] | End of embedded material, End of Attribute
 | ''~''  | (free) | [[Deleted text|00001007040100]]

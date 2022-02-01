@@ -1,9 +1,0 @@
-id: 00001008050005
-title: Two connected boxes
-role: manual
-tags: #graphic #manual #zettelstore
-syntax: draw
-
-+-------+       +-------+
-| Box 1 | ----> | Box 2 |
-+-------+       +-------+
