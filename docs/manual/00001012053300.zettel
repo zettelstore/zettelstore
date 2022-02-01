@@ -3,7 +3,7 @@ title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220102232215
+modified: 20220201180121
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -32,8 +32,26 @@ Pretty-printed, this results in:
   },
   "encoding": "",
   "content": "The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' (...)
+  "rights": 62
 }
 ```
+
+The following keys of the JSON object are used:
+; ''"id"''
+: The zettel identifier of the zettel you requested.
+; ''"meta"''
+: References an embedded JSON object with only string values.
+  The name/value pairs of this objects are interpreted as the metadata of the new zettel.
+  Please consider the [[list of supported metadata keys|00001006020000]] (and their value types).
+; ''"encoding"''
+: States how the content is encoded.
+  Currently, only two values are allowed: the empty string (''""'') that specifies an empty encoding, and the string ''"base64"'' that specifies the [[standard Base64 encoding|https://www.rfc-editor.org/rfc/rfc4648.txt]].
+  Other values will result in a HTTP response status code ''400''.
+; ''"content"''
+: Is a string value that contains the content of the zettel to be created.
+  Typically, text content is not encoded, and binary content is encoded via Base64.
+; ''"rights"''
+: An integer number that describes the [[access rights|00001012921200]] for the zettel.
 
 [!plain]Additionally, you can retrieve the plain zettel, without using JSON.
 Just change the [[endpoint|00001012920000]] to ''/z/{ID}''

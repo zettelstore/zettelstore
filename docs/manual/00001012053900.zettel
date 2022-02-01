@@ -3,7 +3,7 @@ title: API: Retrieve unlinked references to an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124180858
+modified: 20220201181307
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -17,7 +17,7 @@ To retrieve unlinked references to an existing zettel, use the [[endpoint|000010
 
 ````
 # curl 'http://127.0.0.1:23123/u/00001007000000'
-{"id": "00001007000000","meta": {...},"list": [{"id": "00001012070500","meta": {...}},{"id": "00001006020000","meta": {...}}]}
+{"id": "00001007000000","meta": {...},"list": [{"id": "00001012070500","meta": {...},"rights":62},...{"id": "00001006020000","meta": {...},"rights":62}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
@@ -27,11 +27,14 @@ Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the
   "list": [
     {
       "id": "00001012070500",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     },
+    ...
     {
       "id": "00001006020000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     }
   ]
 }
@@ -47,7 +50,7 @@ you can specify the title phase to be searched for as a query parameter ''_phras
 
 ````
 # curl 'http://127.0.0.1:23123/u/00001007000000?phrase=markdown'
-{"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...}},{"id": "00001004020000","meta": {...}}]}
+{"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...},"rights":62},{"id": "00001004020000","meta": {...},"rights":62}]}
 ````
 
 In addition, you are allowed to specify all query parameter to [[select zettel based on their metadata|00001012051810]], to [[limit the length of the returned list|00001012051830]], and to [[sort the returned list|00001012052000]]. You are allowed to limit the search only for those zettel with some [[specific content|00001012051840]].
@@ -59,7 +62,7 @@ The following top-level JSON keys are returned:
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
 ; ''list''
-: A list of JSON objects with keys ''id'' and ''meta'' that describe zettel with unlinked references.
+: A list of JSON objects with keys ''id'', ''meta'', and ''rights'' that describe zettel with unlinked references.
 
 === HTTP Status codes
 ; ''200''
