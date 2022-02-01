@@ -24,7 +24,7 @@ packages may be experimental.
 
 [https://twitter.com/zettelstore|Stay tuned]&hellip;
 <hr>
-<h3>Latest Release: 0.2 (2022-01-19)</h3>
+<h3>Latest Release: 0.2.1 (2022-02-01)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_2|Change summary]
   *  [/timeline?p=v0.2&bt=v0.1&y=ci|Check-ins for version 0.2],

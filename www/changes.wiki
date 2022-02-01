@@ -5,6 +5,7 @@
 
 <a name="0_2"></a>
 <h2>Changes for Version 0.2 (2022-01-19)</h2>
+  *  v0.2.1 (2021-02-01) updates the license year in some documents
   *  Remove support for <tt>;;small text;;</tt> Zettelmarkup.
      (breaking: Zettelmarkup)
   *  On macOS, the downloadable executable program is now called
