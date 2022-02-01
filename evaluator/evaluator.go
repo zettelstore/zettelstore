@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
 )
@@ -415,15 +416,8 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 	if ln.Kind != ast.LiteralZettel {
 		return ln
 	}
-	m := meta.New(id.Invalid)
-	m.Set(api.KeySyntax, getSyntax(ln.Attrs, api.ValueSyntaxDraw))
-	zettel := domain.Zettel{
-		Meta:    m,
-		Content: domain.NewContent([]byte(ln.Text)),
-	}
 	e.transcludeCount++
-	zn := e.evaluateEmbeddedZettel(zettel)
-	result := findInlineList(zn.Ast, "")
+	result := e.evaluateEmbeddedInline([]byte(ln.Text), getSyntax(ln.Attrs, api.ValueSyntaxDraw))
 	if result.IsEmpty() {
 		return &ast.LiteralNode{
 			Kind: ast.LiteralComment,
@@ -521,6 +515,10 @@ func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
 	return ln
 }
 
+func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) *ast.InlineListNode {
+	return parser.ParseInlines(input.NewInput(content), syntax)
+}
+
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
 	zn := parser.ParseZettel(zettel, e.getSyntax(zettel.Meta), e.rtConfig)
 	ast.Walk(e, zn.Ast)
@@ -529,7 +527,7 @@ func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode
 
 func findInlineList(bnl *ast.BlockListNode, fragment string) *ast.InlineListNode {
 	if fragment == "" {
-		return firstFirstTopLevelParagraph(bnl.List)
+		return bnl.List.FirstParagraphInlines()
 	}
 	fs := fragmentSearcher{
 		fragment: fragment,
@@ -537,20 +535,6 @@ func findInlineList(bnl *ast.BlockListNode, fragment string) *ast.InlineListNode
 	}
 	ast.Walk(&fs, bnl)
 	return fs.result
-}
-
-func firstFirstTopLevelParagraph(bns []ast.BlockNode) *ast.InlineListNode {
-	for _, bn := range bns {
-		pn, ok := bn.(*ast.ParaNode)
-		if !ok {
-			continue
-		}
-		inl := pn.Inlines
-		if inl != nil && len(inl.List) > 0 {
-			return inl
-		}
-	}
-	return nil
 }
 
 type fragmentSearcher struct {
@@ -566,7 +550,7 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 	case *ast.BlockListNode:
 		for i, bn := range n.List {
 			if hn, ok := bn.(*ast.HeadingNode); ok && hn.Fragment == fs.fragment {
-				fs.result = firstFirstTopLevelParagraph(n.List[i+1:])
+				fs.result = n.List[i+1:].FirstParagraphInlines()
 				return nil
 			}
 			ast.Walk(fs, bn)

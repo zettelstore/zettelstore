@@ -41,6 +41,27 @@ type BlockNode interface {
 	blockNode()
 }
 
+// BlockSlice is a slice of BlockNodes.
+type BlockSlice []BlockNode
+
+// FirstParagraphInlines returns the inline list of the first paragraph that
+// contains a inline list.
+func (bns BlockSlice) FirstParagraphInlines() *InlineListNode {
+	if len(bns) > 0 {
+		for _, bn := range bns {
+			pn, ok := bn.(*ParaNode)
+			if !ok {
+				continue
+			}
+			inl := pn.Inlines
+			if inl != nil && len(inl.List) > 0 {
+				return inl
+			}
+		}
+	}
+	return nil
+}
+
 // ItemNode is a node that can occur as a list item.
 type ItemNode interface {
 	BlockNode

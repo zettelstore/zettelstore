@@ -14,7 +14,7 @@ package ast
 
 // BlockListNode is a list of BlockNodes.
 type BlockListNode struct {
-	List []BlockNode
+	List BlockSlice
 }
 
 func (*BlockListNode) blockNode() { /* Just a marker */ }

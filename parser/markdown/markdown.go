@@ -44,8 +44,9 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
 	return p.acceptBlockChildren(p.docNode)
 }
 
-func parseInlines(*input.Input, string) *ast.InlineListNode {
-	panic("markdown.parseInline not yet implemented")
+func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+	bln := parseBlocks(inp, nil, syntax)
+	return bln.List.FirstParagraphInlines()
 }
 
 func parseMarkdown(inp *input.Input) *mdP {
