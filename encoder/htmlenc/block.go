@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 )
 
@@ -329,7 +330,9 @@ func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {
 
 func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 	switch bn.Syntax {
-	case "gif", "jpeg", "png":
+	case api.ValueSyntaxSVG:
+		v.b.Write(bn.Blob)
+	case api.ValueSyntaxGif, "jpeg", "png":
 		v.b.WriteStrings("<img src=\"data:image/", bn.Syntax, ";base64,")
 		v.b.WriteBase64(bn.Blob)
 		v.b.WriteString("\" title=\"")

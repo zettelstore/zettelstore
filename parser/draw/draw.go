@@ -31,50 +31,62 @@ func init() {
 }
 
 const (
-	defaultFont   = ""
-	defaultScaleX = 10
-	defaultScaleY = 20
+	defaultTabSize = 8
+	defaultFont    = ""
+	defaultScaleX  = 10
+	defaultScaleY  = 20
 )
 
 func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
 	font := m.GetDefault("font", defaultFont)
 	scaleX := m.GetNumber("x-scale", defaultScaleX)
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
-	iln := parseDraw(inp, font, scaleX, scaleY)
-	if iln == nil {
-		return nil
-	}
-	return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: iln}}}
-}
-
-func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
-	return parseDraw(inp, defaultFont, defaultScaleX, defaultScaleY)
-}
-
-func parseDraw(inp *input.Input, font string, scaleX, scaleY int) *ast.InlineListNode {
-	canvas, err := newCanvas(inp.Src[inp.Pos:], 8)
+	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
-		return &ast.InlineListNode{
-			List: []ast.InlineNode{
-				&ast.TextNode{Text: "Error:"},
-				&ast.SpaceNode{Lexeme: " "},
-				&ast.TextNode{Text: err.Error()},
-			},
-		}
+		return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: canvasErrMsg(err)}}}
 	}
 	svg := canvasToSVG(canvas, font, scaleX, scaleY)
 	if len(svg) == 0 {
-		return &ast.InlineListNode{
-			List: []ast.InlineNode{
-				&ast.TextNode{Text: "NO"},
-				&ast.SpaceNode{Lexeme: " "},
-				&ast.TextNode{Text: "IMAGE"},
-			},
-		}
+		return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: noSVGErrMsg()}}}
 	}
+	return &ast.BlockListNode{List: []ast.BlockNode{&ast.BLOBNode{
+		Title:  "",
+		Syntax: api.ValueSyntaxSVG,
+		Blob:   svg,
+	}}}
+}
 
+func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
+	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
+	if err != nil {
+		return canvasErrMsg(err)
+	}
+	svg := canvasToSVG(canvas, defaultFont, defaultScaleX, defaultScaleY)
+	if len(svg) == 0 {
+		return noSVGErrMsg()
+	}
 	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
 		Blob:   svg,
 		Syntax: api.ValueSyntaxSVG,
 	})
+}
+
+func canvasErrMsg(err error) *ast.InlineListNode {
+	return &ast.InlineListNode{
+		List: []ast.InlineNode{
+			&ast.TextNode{Text: "Error:"},
+			&ast.SpaceNode{Lexeme: " "},
+			&ast.TextNode{Text: err.Error()},
+		},
+	}
+}
+
+func noSVGErrMsg() *ast.InlineListNode {
+	return &ast.InlineListNode{
+		List: []ast.InlineNode{
+			&ast.TextNode{Text: "NO"},
+			&ast.SpaceNode{Lexeme: " "},
+			&ast.TextNode{Text: "IMAGE"},
+		},
+	}
 }

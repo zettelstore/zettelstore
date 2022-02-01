@@ -90,6 +90,7 @@ type visitor struct {
 	b         encoder.BufWriter
 	prefix    []byte
 	enc       *zmkEncoder
+	inVerse   bool
 	inlinePos int
 }
 
@@ -103,12 +104,7 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockListNode:
-		for i, bn := range n.List {
-			if i > 0 {
-				v.b.WriteByte('\n')
-			}
-			ast.Walk(v, bn)
-		}
+		v.visitBlockList(n)
 	case *ast.InlineListNode:
 		for i, in := range n.List {
 			v.inlinePos = i
@@ -133,9 +129,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TranscludeNode:
 		v.b.WriteStrings("{{{", n.Ref.String(), "}}}")
 	case *ast.BLOBNode:
-		v.b.WriteStrings(
-			"%% Unable to display BLOB with title '", n.Title,
-			"' and syntax '", n.Syntax, "'.")
+		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.visitText(n)
 	case *ast.TagNode:
@@ -169,10 +163,26 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
+func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
+	var lastWasParagraph bool
+	for i, bn := range bln.List {
+		if i > 0 {
+			v.b.WriteByte('\n')
+			if lastWasParagraph && !v.inVerse {
+				if _, ok := bn.(*ast.ParaNode); ok {
+					v.b.WriteByte('\n')
+				}
+			}
+		}
+		ast.Walk(v, bn)
+		_, lastWasParagraph = bn.(*ast.ParaNode)
+	}
+}
+
 var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimZettel:  "@@@",
 	ast.VerbatimComment: "%%%",
-	ast.VerbatimHTML:    "???",
+	ast.VerbatimHTML:    "@@@", // Attribute is set to {="html"}
 	ast.VerbatimProg:    "```",
 }
 
@@ -206,7 +216,10 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteString(kind)
 	v.visitAttributes(rn.Attrs)
 	v.b.WriteByte('\n')
+	saveInVerse := v.inVerse
+	v.inVerse = rn.Kind == ast.RegionVerse
 	ast.Walk(v, rn.Blocks)
+	v.inVerse = saveInVerse
 	v.b.WriteByte('\n')
 	v.b.WriteString(kind)
 	if rn.Inlines != nil {
@@ -314,6 +327,17 @@ func (v *visitor) writeTableRow(row ast.TableRow, align []ast.Alignment) {
 	}
 }
 
+func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
+	if bn.Syntax == api.ValueSyntaxSVG {
+		v.b.WriteStrings("@@@", bn.Syntax, "\n")
+		v.b.Write(bn.Blob)
+		v.b.WriteString("@@@\n")
+		return
+	}
+	v.b.WriteStrings(
+		"%% Unable to display BLOB with title '", bn.Title, "' and syntax '", bn.Syntax, "'.")
+}
+
 var escapeSeqs = map[string]bool{
 	"\\":   true,
 	"__":   true,
@@ -387,7 +411,13 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteStrings(en.Ref.String(), "}}")
 }
 
-func (v *visitor) visitEmbedBLOB(*ast.EmbedBLOBNode) {
+func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
+	if en.Syntax == api.ValueSyntaxSVG {
+		v.b.WriteString("@@")
+		v.b.Write(en.Blob)
+		v.b.WriteStrings("@@{=", en.Syntax, "}")
+		return
+	}
 	v.b.WriteString("{{TODO: display inline BLOB}}")
 }
 
@@ -427,7 +457,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
-	case ast.LiteralZettel:
+	case ast.LiteralZettel, ast.LiteralHTML:
 		v.writeLiteral('@', ln.Attrs, ln.Content)
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Content)
@@ -441,10 +471,6 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		}
 		v.b.WriteString("%% ")
 		v.b.Write(ln.Content)
-	case ast.LiteralHTML:
-		v.b.WriteString("``")
-		v.writeEscaped(string(ln.Content), '`')
-		v.b.WriteString("``{=html,.warning}")
 	default:
 		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}

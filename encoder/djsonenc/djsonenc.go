@@ -121,14 +121,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Ref.String())
 	case *ast.BLOBNode:
-		v.writeNodeStart("Blob")
-		v.writeContentStart('q')
-		writeEscaped(&v.b, n.Title)
-		v.writeContentStart('s')
-		writeEscaped(&v.b, n.Syntax)
-		v.writeContentStart('o')
-		v.b.WriteBase64(n.Blob)
-		v.b.WriteByte('"')
+		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.writeNodeStart("Text")
 		v.writeContentStart('s')
@@ -334,6 +327,24 @@ func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteByte(']')
 }
 
+func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
+	v.writeNodeStart("Blob")
+	if bn.Title != "" {
+		v.writeContentStart('q')
+		writeEscaped(&v.b, bn.Title)
+	}
+	v.writeContentStart('s')
+	writeEscaped(&v.b, bn.Syntax)
+	if bn.Syntax == api.ValueSyntaxSVG {
+		v.writeContentStart('v')
+		writeEscaped(&v.b, string(bn.Blob))
+	} else {
+		v.writeContentStart('o')
+		v.b.WriteBase64(bn.Blob)
+		v.b.WriteByte('"')
+	}
+}
+
 var mapRefState = map[ast.RefState]string{
 	ast.RefStateInvalid:  "invalid",
 	ast.RefStateZettel:   "zettel",
@@ -472,6 +483,7 @@ var contentCode = map[rune][]byte{
 	'q': []byte(",\"q\":"),   // String, if 's' is also needed
 	's': []byte(",\"s\":"),   // String
 	't': []byte("Content code 't' is not allowed"),
+	'v': []byte(",\"v\":"),                         // String, if 'q' is also needed
 	'y': []byte("Content code 'y' is not allowed"), // field after 'j'
 }
 

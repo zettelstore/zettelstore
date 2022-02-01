@@ -179,6 +179,20 @@ var tcsBlock = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Quote Block with multiple paragraphs",
+		zmk:   "<<<\nToBeOr\n\nNotToBe\n<<< Romeo",
+		expect: expectMap{
+			encoderDJSON: `[{"t":"QuoteBlock","b":[{"t":"Para","i":[{"t":"Text","s":"ToBeOr"}]},{"t":"Para","i":[{"t":"Text","s":"NotToBe"}]}],"i":[{"t":"Text","s":"Romeo"}]}]`,
+			encoderHTML:  "<blockquote>\n<p>ToBeOr</p>\n<p>NotToBe</p>\n<cite>Romeo</cite>\n</blockquote>",
+			encoderNative: `[QuoteBlock
+ [[Para Text "ToBeOr"],
+  [Para Text "NotToBe"]],
+ [Cite Text "Romeo"]]`,
+			encoderText: "ToBeOr\nNotToBe\nRomeo",
+			encoderZmk:  useZmk,
+		},
+	},
+	{
 		descr: "Verse block",
 		zmk: `"""
 A line

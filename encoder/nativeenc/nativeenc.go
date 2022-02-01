@@ -115,13 +115,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeEscaped(n.Ref.String())
 		v.b.WriteString("\"]")
 	case *ast.BLOBNode:
-		v.b.WriteString("[BLOB \"")
-		v.writeEscaped(n.Title)
-		v.b.WriteString("\" \"")
-		v.writeEscaped(n.Syntax)
-		v.b.WriteString("\" \"")
-		v.b.WriteBase64(n.Blob)
-		v.b.WriteString("\"]")
+		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.b.WriteString("Text \"")
 		v.writeEscaped(n.Text)
@@ -413,6 +407,20 @@ func (v *visitor) writeCell(cell *ast.TableCell) {
 		ast.Walk(v, cell.Inlines)
 	}
 	v.b.WriteByte(']')
+}
+
+func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
+	v.b.WriteString("[BLOB \"")
+	v.writeEscaped(bn.Title)
+	v.b.WriteString("\" \"")
+	v.writeEscaped(bn.Syntax)
+	v.b.WriteString("\" \"")
+	if bn.Syntax == api.ValueSyntaxSVG {
+		v.writeEscaped(string(bn.Blob))
+	} else {
+		v.b.WriteBase64(bn.Blob)
+	}
+	v.b.WriteString("\"]")
 }
 
 var mapRefState = map[ast.RefState]string{
