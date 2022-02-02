@@ -21,8 +21,10 @@ func (*BlockListNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the descriptions.
 func (bln *BlockListNode) WalkChildren(v Visitor) {
-	for _, bn := range bln.List {
-		Walk(v, bn)
+	if bns := bln.List; bns != nil {
+		for _, bn := range bns {
+			Walk(v, bn)
+		}
 	}
 }
 
@@ -43,7 +45,9 @@ func NewParaNode() *ParaNode { return &ParaNode{Inlines: &InlineListNode{}} }
 
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {
-	Walk(v, pn.Inlines)
+	if iln := pn.Inlines; iln != nil {
+		Walk(v, iln)
+	}
 }
 
 //--------------------------------------------------------------------------
@@ -121,7 +125,9 @@ func (*HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
 func (hn *HeadingNode) WalkChildren(v Visitor) {
-	Walk(v, hn.Inlines)
+	if iln := hn.Inlines; iln != nil {
+		Walk(v, iln)
+	}
 }
 
 //--------------------------------------------------------------------------
@@ -162,8 +168,10 @@ func (*NestedListNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the items.
 func (ln *NestedListNode) WalkChildren(v Visitor) {
-	for _, item := range ln.Items {
-		WalkItemSlice(v, item)
+	if items := ln.Items; items != nil {
+		for _, item := range items {
+			WalkItemSlice(v, item)
+		}
 	}
 }
 
@@ -184,10 +192,16 @@ func (*DescriptionListNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the descriptions.
 func (dn *DescriptionListNode) WalkChildren(v Visitor) {
-	for _, desc := range dn.Descriptions {
-		Walk(v, desc.Term)
-		for _, dns := range desc.Descriptions {
-			WalkDescriptionSlice(v, dns)
+	if descrs := dn.Descriptions; descrs != nil {
+		for _, desc := range descrs {
+			if term := desc.Term; term != nil {
+				Walk(v, term)
+			}
+			if dss := desc.Descriptions; dss != nil {
+				for _, dns := range dss {
+					WalkDescriptionSlice(v, dns)
+				}
+			}
 		}
 	}
 }
@@ -227,12 +241,20 @@ func (*TableNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
-	for _, cell := range tn.Header {
-		Walk(v, cell.Inlines)
+	if header := tn.Header; header != nil {
+		for _, cell := range header {
+			if iln := cell.Inlines; iln != nil {
+				Walk(v, iln)
+			}
+		}
 	}
-	for _, row := range tn.Rows {
-		for _, cell := range row {
-			Walk(v, cell.Inlines)
+	if rows := tn.Rows; rows != nil {
+		for _, row := range rows {
+			for _, cell := range row {
+				if iln := cell.Inlines; iln != nil {
+					Walk(v, iln)
+				}
+			}
 		}
 	}
 }

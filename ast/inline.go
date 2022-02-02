@@ -39,8 +39,10 @@ func CreateInlineListNodeFromWords(words ...string) *InlineListNode {
 
 // WalkChildren walks down to the list.
 func (iln *InlineListNode) WalkChildren(v Visitor) {
-	for _, bn := range iln.List {
-		Walk(v, bn)
+	if ins := iln.List; ins != nil {
+		for _, bn := range ins {
+			Walk(v, bn)
+		}
 	}
 }
 
@@ -204,7 +206,9 @@ func (*FootnoteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the footnote text.
 func (fn *FootnoteNode) WalkChildren(v Visitor) {
-	Walk(v, fn.Inlines)
+	if iln := fn.Inlines; iln != nil {
+		Walk(v, iln)
+	}
 }
 
 // --------------------------------------------------------------------------
@@ -238,7 +242,9 @@ func (*FormatNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the formatted text.
 func (fn *FormatNode) WalkChildren(v Visitor) {
-	Walk(v, fn.Inlines)
+	if iln := fn.Inlines; iln != nil {
+		Walk(v, iln)
+	}
 }
 
 // --------------------------------------------------------------------------
