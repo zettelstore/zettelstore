@@ -116,7 +116,8 @@ func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 			return
 		}
 
-		m, err := getMeta.Run(r.Context(), zid)
+		ctx := r.Context()
+		m, err := getMeta.Run(ctx, zid)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -124,7 +125,8 @@ func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 
 		var buf bytes.Buffer
 		err = encodeJSONData(&buf, api.MetaJSON{
-			Meta: m.Map(),
+			Meta:   m.Map(),
+			Rights: a.getRights(ctx, m),
 		})
 		if err != nil {
 			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store metadata in buffer")

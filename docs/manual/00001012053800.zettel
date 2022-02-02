@@ -3,7 +3,7 @@ title: API: Retrieve context of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220201181700
+modified: 20220202112607
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].
@@ -29,13 +29,14 @@ To retrieve the context of an existing zettel, use the [[endpoint|00001012920000
 
 ````
 # curl 'http://127.0.0.1:23123/x/00001012053800?limit=3&dir=forward&depth=2'
-{"id": "00001012053800","meta": {...},"list":[{"id": "00001012921000","meta": {...},"rights":62},{"id": "00001012920800","meta": {...},"rights":62},{"id": "00010000000000","meta": {...},"rights":62}]}
+{"id": "00001012053800","meta": {...},"rights":62,"list":[{"id": "00001012921000","meta": {...},"rights":62},{"id": "00001012920800","meta": {...},"rights":62},{"id": "00010000000000","meta": {...},"rights":62}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
   "id": "00001012053800",
   "meta": {...},
+  "rights": 62,
   "list": [
     {
       "id": "00001012921000",
@@ -61,6 +62,8 @@ The following top-level JSON keys are returned:
 : The [[zettel identifier|00001006050000]] for which the context was requested.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
+; ''rights''
+: An integer number that describes the [[access rights|00001012921200]] for the given zettel.
 ; ''list''
 : A list of JSON objects with keys ''id'', ''meta'', and ''rights'' that contains the zettel of the context.
 

@@ -62,9 +62,10 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		}
 
 		result := api.ZidMetaRelatedList{
-			ID:   api.ZettelID(zid.String()),
-			Meta: zm.Map(),
-			List: make([]api.ZidMetaJSON, 0, len(metaList)),
+			ID:     api.ZettelID(zid.String()),
+			Meta:   zm.Map(),
+			Rights: a.getRights(ctx, zm),
+			List:   make([]api.ZidMetaJSON, 0, len(metaList)),
 		}
 		for _, m := range metaList {
 			result.List = append(result.List, api.ZidMetaJSON{

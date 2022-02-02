@@ -3,7 +3,7 @@ title: API: Retrieve unlinked references to an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220201181307
+modified: 20220202112528
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -17,13 +17,14 @@ To retrieve unlinked references to an existing zettel, use the [[endpoint|000010
 
 ````
 # curl 'http://127.0.0.1:23123/u/00001007000000'
-{"id": "00001007000000","meta": {...},"list": [{"id": "00001012070500","meta": {...},"rights":62},...{"id": "00001006020000","meta": {...},"rights":62}]}
+{"id": "00001007000000","meta": {...},"rights":62,"list": [{"id": "00001012070500","meta": {...},"rights":62},...{"id": "00001006020000","meta": {...},"rights":62}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
   "id": "00001007000000",
   "meta": {...},
+  "rights": 62,
   "list": [
     {
       "id": "00001012070500",
@@ -61,6 +62,8 @@ The following top-level JSON keys are returned:
 : The [[zettel identifier|00001006050000]] for which the unlinked references were requested.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
+; ''rights''
+: An integer number that describes the [[access rights|00001012921200]] for the given zettel.
 ; ''list''
 : A list of JSON objects with keys ''id'', ''meta'', and ''rights'' that describe zettel with unlinked references.
 

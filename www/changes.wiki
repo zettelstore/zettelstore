@@ -13,6 +13,9 @@
   *  Add Zettelmarkup syntax to specify inline-zettel, both for
      block-structured and for inline-structured elements.
      (major: Zettelmarkup)
+  *  Metadata-returning API calls additionally return an indication about
+     access rights for the given zettel.
+     (minor: api)
   *  A previously duplicate file that is now useful (because another file was
      deleted) is now logged as such.
      (minor: directory and file/zip box)

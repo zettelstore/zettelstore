@@ -40,9 +40,10 @@ func (a *API) writeMetaList(ctx context.Context, w http.ResponseWriter, m *meta.
 
 	var buf bytes.Buffer
 	err := encodeJSONData(&buf, api.ZidMetaRelatedList{
-		ID:   api.ZettelID(m.Zid.String()),
-		Meta: m.Map(),
-		List: outList,
+		ID:     api.ZettelID(m.Zid.String()),
+		Meta:   m.Map(),
+		Rights: a.getRights(ctx, m),
+		List:   outList,
 	})
 	if err != nil {
 		a.log.Fatal().Err(err).Zid(m.Zid).Msg("Unable to store meta list in buffer")

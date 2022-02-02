@@ -111,5 +111,8 @@ func (a *API) getRights(ctx context.Context, m *meta.Meta) (result api.ZettelRig
 	if pol.CanDelete(user, m) {
 		result |= api.ZettelCanDelete
 	}
+	if result == 0 {
+		return api.ZettelCanNone
+	}
 	return result
 }
