@@ -516,7 +516,9 @@ func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
 }
 
 func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) *ast.InlineListNode {
-	return parser.ParseInlines(input.NewInput(content), syntax)
+	iln := parser.ParseInlines(input.NewInput(content), syntax)
+	ast.Walk(e, iln)
+	return iln
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
