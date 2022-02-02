@@ -35,7 +35,7 @@ func (cp *zmkP) parseBlockList() *ast.BlockListNode {
 	if cp.nestingLevel != 0 {
 		panic("Nesting level was not decremented")
 	}
-	return &ast.BlockListNode{List: bs}
+	return ast.CreateBlockListNode(bs...)
 }
 
 // parseBlock parses one block.

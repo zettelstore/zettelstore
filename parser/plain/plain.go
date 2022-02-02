@@ -71,13 +71,13 @@ func parseBlocksHTML(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockLi
 	return doParseBlocks(inp, syntax, ast.VerbatimHTML)
 }
 func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
-	return &ast.BlockListNode{List: []ast.BlockNode{
+	return ast.CreateBlockListNode(
 		&ast.VerbatimNode{
 			Kind:    kind,
 			Attrs:   &ast.Attributes{Attrs: map[string]string{"": syntax}},
 			Content: readContent(inp),
 		},
-	}}
+	)
 }
 
 func readContent(inp *input.Input) []byte {
@@ -116,7 +116,7 @@ func parseSVGBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockLis
 	if iln == nil {
 		return nil
 	}
-	return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: iln}}}
+	return ast.CreateBlockListNode(ast.CreateParaNode(iln))
 }
 
 func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {

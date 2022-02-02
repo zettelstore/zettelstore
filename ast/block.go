@@ -19,6 +19,11 @@ type BlockListNode struct {
 
 func (*BlockListNode) blockNode() { /* Just a marker */ }
 
+// CreateBlockListNode make a new block list node from nodes
+func CreateBlockListNode(nodes ...BlockNode) *BlockListNode {
+	return &BlockListNode{List: nodes}
+}
+
 // WalkChildren walks down to the descriptions.
 func (bln *BlockListNode) WalkChildren(v Visitor) {
 	if bns := bln.List; bns != nil {
@@ -42,6 +47,11 @@ func (*ParaNode) descriptionNode() { /* Just a marker */ }
 
 // NewParaNode creates an empty ParaNode.
 func NewParaNode() *ParaNode { return &ParaNode{Inlines: &InlineListNode{}} }
+
+// CreateParaNode creates a parameter block from inline nodes.
+func CreateParaNode(nodes ...InlineNode) *ParaNode {
+	return &ParaNode{Inlines: CreateInlineListNode(nodes...)}
+}
 
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {

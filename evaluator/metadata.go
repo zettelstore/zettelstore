@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,17 +21,15 @@ func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getMetadataDescription(p.Key, p.Value))
 	}
-	return &ast.BlockListNode{List: []ast.BlockNode{descrlist}}
+	return ast.CreateBlockListNode(descrlist)
 }
 
 func getMetadataDescription(key, value string) ast.Description {
 	return ast.Description{
 		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
 		Descriptions: []ast.DescriptionSlice{{
-			&ast.ParaNode{
-				Inlines: convertMetavalueToInlineList(value, meta.Type(key)),
-			}},
-		},
+			ast.CreateParaNode(convertMetavalueToInlineList(value, meta.Type(key))),
+		}},
 	}
 }
 

@@ -239,13 +239,7 @@ func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
 	return nil
 }
 
-func makeBlockNode(in ast.InlineNode) ast.BlockNode {
-	return &ast.ParaNode{
-		Inlines: &ast.InlineListNode{
-			List: []ast.InlineNode{in},
-		},
-	}
-}
+func makeBlockNode(in ast.InlineNode) ast.BlockNode { return ast.CreateParaNode(in) }
 
 func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 	for i := 0; i < len(iln.List); i++ {

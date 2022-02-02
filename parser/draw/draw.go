@@ -43,17 +43,17 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
 	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
-		return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: canvasErrMsg(err)}}}
+		return ast.CreateBlockListNode(ast.CreateParaNode(canvasErrMsg(err)))
 	}
 	svg := canvasToSVG(canvas, font, scaleX, scaleY)
 	if len(svg) == 0 {
-		return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: noSVGErrMsg()}}}
+		return ast.CreateBlockListNode(ast.CreateParaNode(noSVGErrMsg()))
 	}
-	return &ast.BlockListNode{List: []ast.BlockNode{&ast.BLOBNode{
+	return ast.CreateBlockListNode(&ast.BLOBNode{
 		Title:  "",
 		Syntax: api.ValueSyntaxSVG,
 		Blob:   svg,
-	}}}
+	})
 }
 
 func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
@@ -72,21 +72,9 @@ func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
 }
 
 func canvasErrMsg(err error) *ast.InlineListNode {
-	return &ast.InlineListNode{
-		List: []ast.InlineNode{
-			&ast.TextNode{Text: "Error:"},
-			&ast.SpaceNode{Lexeme: " "},
-			&ast.TextNode{Text: err.Error()},
-		},
-	}
+	return ast.CreateInlineListNodeFromWords("Error:", err.Error())
 }
 
 func noSVGErrMsg() *ast.InlineListNode {
-	return &ast.InlineListNode{
-		List: []ast.InlineNode{
-			&ast.TextNode{Text: "NO"},
-			&ast.SpaceNode{Lexeme: " "},
-			&ast.TextNode{Text: "IMAGE"},
-		},
-	}
+	return ast.CreateInlineListNodeFromWords("NO", "IMAGE")
 }

@@ -72,7 +72,7 @@ func (p *mdP) acceptBlockChildren(docNode gmAst.Node) *ast.BlockListNode {
 			result = append(result, block)
 		}
 	}
-	return &ast.BlockListNode{List: result}
+	return ast.CreateBlockListNode(result...)
 }
 
 func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {

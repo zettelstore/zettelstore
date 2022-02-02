@@ -35,13 +35,8 @@ func TestLinks(t *testing.T) {
 	}
 
 	intNode := &ast.LinkNode{Ref: parseRef("01234567890123")}
-	para := &ast.ParaNode{
-		Inlines: ast.CreateInlineListNode(
-			intNode,
-			&ast.LinkNode{Ref: parseRef("https://zettelstore.de/z")},
-		),
-	}
-	zn.Ast = &ast.BlockListNode{List: []ast.BlockNode{para}}
+	para := ast.CreateParaNode(intNode, &ast.LinkNode{Ref: parseRef("https://zettelstore.de/z")})
+	zn.Ast = ast.CreateBlockListNode(para)
 	summary = collect.References(zn)
 	if summary.Links == nil || summary.Embeds != nil {
 		t.Error("Links expected, and no images, but got:", summary.Links, "and", summary.Embeds)
@@ -57,13 +52,9 @@ func TestLinks(t *testing.T) {
 func TestEmbed(t *testing.T) {
 	t.Parallel()
 	zn := &ast.ZettelNode{
-		Ast: &ast.BlockListNode{List: []ast.BlockNode{
-			&ast.ParaNode{
-				Inlines: ast.CreateInlineListNode(
-					&ast.EmbedRefNode{Ref: parseRef("12345678901234")},
-				),
-			},
-		}},
+		Ast: ast.CreateBlockListNode(
+			ast.CreateParaNode(&ast.EmbedRefNode{Ref: parseRef("12345678901234")}),
+		),
 	}
 	summary := collect.References(zn)
 	if summary.Embeds == nil {
