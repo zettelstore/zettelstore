@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -36,14 +36,14 @@ func NewZettelIndex(zid id.Zid) *ZettelIndex {
 // AddBackRef adds a reference to a zettel where the current zettel links to
 // without any more information.
 func (zi *ZettelIndex) AddBackRef(zid id.Zid) {
-	zi.backrefs[zid] = true
+	zi.backrefs.Zid(zid)
 }
 
 // AddMetaRef adds a named reference to a zettel. On that zettel, the given
 // metadata key should point back to the current zettel.
 func (zi *ZettelIndex) AddMetaRef(key string, zid id.Zid) {
 	if zids, ok := zi.metarefs[key]; ok {
-		zids[zid] = true
+		zids.Zid(zid)
 		return
 	}
 	zi.metarefs[key] = id.NewSet(zid)
@@ -51,7 +51,7 @@ func (zi *ZettelIndex) AddMetaRef(key string, zid id.Zid) {
 
 // AddDeadRef adds a dead reference to a zettel.
 func (zi *ZettelIndex) AddDeadRef(zid id.Zid) {
-	zi.deadrefs[zid] = true
+	zi.deadrefs.Zid(zid)
 }
 
 // SetWords sets the words to the given value.

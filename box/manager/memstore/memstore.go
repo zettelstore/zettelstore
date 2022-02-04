@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -243,7 +243,7 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 
 func addBackwardZids(result id.Set, zid id.Zid, zi *zettelIndex) {
 	// Must only be called if ms.mx is read-locked!
-	result[zid] = true
+	result.Zid(zid)
 	result.AddSlice(zi.backward)
 	for _, mref := range zi.meta {
 		result.AddSlice(mref.backward)
@@ -452,7 +452,7 @@ func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelIndex) id.Set {
 			if toCheck == nil {
 				toCheck = id.NewSet()
 			}
-			toCheck[ref] = true
+			toCheck.Zid(ref)
 		}
 	}
 	return toCheck

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -11,7 +11,7 @@
 package id
 
 // Set is a set of zettel identifier
-type Set map[Zid]bool
+type Set map[Zid]struct{}
 
 // NewSet returns a new set of identifier with the given initial values.
 func NewSet(zids ...Zid) Set {
@@ -38,9 +38,22 @@ func NewSetCap(c int, zids ...Zid) Set {
 	return result
 }
 
+// Zid adds a Zid to the set.
+func (s Set) Zid(zid Zid) Set {
+	if s == nil {
+		return NewSet(zid)
+	}
+	s[zid] = struct{}{}
+	return s
+}
+
 // Contains return true if the set is nil or if the set contains the given Zettel identifier.
 func (s Set) Contains(zid Zid) bool {
-	return s == nil || s[zid]
+	if s != nil {
+		_, found := s[zid]
+		return found
+	}
+	return true
 }
 
 // Add all member from the other set.
@@ -48,10 +61,8 @@ func (s Set) Add(other Set) Set {
 	if s == nil {
 		return other
 	}
-	for zid, ok := range other {
-		if ok {
-			s[zid] = true
-		}
+	for zid := range other {
+		s[zid] = struct{}{}
 	}
 	return s
 }
@@ -59,7 +70,7 @@ func (s Set) Add(other Set) Set {
 // AddSlice adds all identifier of the given slice to the set.
 func (s Set) AddSlice(sl Slice) {
 	for _, zid := range sl {
-		s[zid] = true
+		s[zid] = struct{}{}
 	}
 }
 
@@ -88,13 +99,9 @@ func (s Set) IntersectOrSet(other Set) Set {
 	if len(s) > len(other) {
 		s, other = other, s
 	}
-	for zid, inSet := range s {
-		if !inSet {
-			delete(s, zid)
-			continue
-		}
-		otherInSet, otherOk := other[zid]
-		if !otherInSet || !otherOk {
+	for zid := range s {
+		_, otherOk := other[zid]
+		if !otherOk {
 			delete(s, zid)
 		}
 	}
@@ -106,9 +113,7 @@ func (s Set) Remove(other Set) {
 	if s == nil || other == nil {
 		return
 	}
-	for zid, inSet := range other {
-		if inSet {
-			delete(s, zid)
-		}
+	for zid := range other {
+		delete(s, zid)
 	}
 }

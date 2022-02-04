@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -132,5 +132,18 @@ func TestSetRemove(t *testing.T) {
 		if !got.Equal(tc.exp) {
 			t.Errorf("%d: %v.Remove(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
 		}
+	}
+}
+
+// func BenchmarkSet(b *testing.B) {
+// 	s := id.Set{}
+// 	for i := 0; i < b.N; i++ {
+// 		s[id.Zid(i)] = true
+// 	}
+// }
+func BenchmarkSet(b *testing.B) {
+	s := id.Set{}
+	for i := 0; i < b.N; i++ {
+		s[id.Zid(i)] = struct{}{}
 	}
 }

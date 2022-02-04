@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -145,7 +145,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	}
 	result := id.Set{}
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result[zid] = true }, func(id.Zid) bool { return true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Zid(zid) }, func(id.Zid) bool { return true })
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +171,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
-		if rejected[zid] {
+		if rejected.Contains(zid) {
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 			return
 		}
@@ -183,7 +183,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			selected[zid] = m
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
-			rejected[zid] = true
+			rejected.Zid(zid)
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/reject")
 		}
 	}

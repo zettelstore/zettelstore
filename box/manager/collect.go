@@ -79,6 +79,6 @@ func (data *collectData) addRef(ref *ast.Reference) {
 		return
 	}
 	if zid, err := id.Parse(ref.URL.Path); err == nil {
-		data.refs[zid] = true
+		data.refs.Zid(zid)
 	}
 }
