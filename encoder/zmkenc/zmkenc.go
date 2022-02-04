@@ -192,10 +192,14 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	if !ok {
 		panic(fmt.Sprintf("Unknown verbatim kind %d", vn.Kind))
 	}
+	attrs := vn.Attrs
+	if vn.Kind == ast.VerbatimHTML {
+		attrs = syntaxToHTML(attrs)
+	}
 
 	// TODO: scan cn.Lines to find embedded kind[0]s at beginning
 	v.b.WriteString(kind)
-	v.visitAttributes(vn.Attrs)
+	v.visitAttributes(attrs)
 	v.b.WriteByte('\n')
 	v.b.Write(vn.Content)
 	v.b.WriteByte('\n')
@@ -445,7 +449,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
-	case ast.LiteralZettel, ast.LiteralHTML:
+	case ast.LiteralZettel:
 		v.writeLiteral('@', ln.Attrs, ln.Content)
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Content)
@@ -459,6 +463,8 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		}
 		v.b.WriteString("%% ")
 		v.b.Write(ln.Content)
+	case ast.LiteralHTML:
+		v.writeLiteral('x', syntaxToHTML(ln.Attrs), ln.Content)
 	default:
 		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}
@@ -510,4 +516,8 @@ func (v *visitor) writeEscaped(s string, toEscape byte) {
 		}
 	}
 	v.b.WriteString(s[last:])
+}
+
+func syntaxToHTML(a *ast.Attributes) *ast.Attributes {
+	return a.Clone().Set("", api.ValueSyntaxHTML).Remove(api.KeySyntax)
 }
