@@ -217,7 +217,7 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) erro
 	// Remove all (computed) properties from metadata before storing the zettel.
 	zettel.Meta = zettel.Meta.Clone()
 	for _, p := range zettel.Meta.ComputedPairsRest() {
-		if mgr.propertyKeys[p.Key] {
+		if mgr.propertyKeys.Has(p.Key) {
 			zettel.Meta.Delete(p.Key)
 		}
 	}

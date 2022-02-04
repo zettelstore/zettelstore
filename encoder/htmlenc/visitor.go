@@ -135,19 +135,19 @@ var mapMetaKey = map[string]string{
 
 func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	ignore := v.setupIgnoreSet()
-	ignore[api.KeyTitle] = true
+	ignore.Set(api.KeyTitle)
 	if tags, ok := m.Get(api.KeyAllTags); ok {
 		v.writeTags(tags)
-		ignore[api.KeyAllTags] = true
-		ignore[api.KeyTags] = true
+		ignore.Set(api.KeyAllTags)
+		ignore.Set(api.KeyTags)
 	} else if tags, ok = m.Get(api.KeyTags); ok {
 		v.writeTags(tags)
-		ignore[api.KeyTags] = true
+		ignore.Set(api.KeyTags)
 	}
 
 	for _, p := range m.ComputedPairs() {
 		key := p.Key
-		if ignore[key] {
+		if ignore.Has(key) {
 			continue
 		}
 		value := p.Value
@@ -173,15 +173,13 @@ func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string 
 	return ""
 }
 
-func (v *visitor) setupIgnoreSet() map[string]bool {
+func (v *visitor) setupIgnoreSet() strfun.Set {
 	if v.env == nil || v.env.IgnoreMeta == nil {
-		return make(map[string]bool)
+		return make(strfun.Set)
 	}
-	result := make(map[string]bool, len(v.env.IgnoreMeta))
-	for k, v := range v.env.IgnoreMeta {
-		if v {
-			result[k] = true
-		}
+	result := make(strfun.Set, len(v.env.IgnoreMeta))
+	for k := range v.env.IgnoreMeta {
+		result.Set(k)
 	}
 	return result
 }

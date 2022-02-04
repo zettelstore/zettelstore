@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 )
 
@@ -92,11 +93,11 @@ func stringRefs(refs []*ast.Reference) []string {
 }
 
 func stringCites(cites []*ast.CiteNode) []string {
-	mapKey := make(map[string]bool)
+	mapKey := make(strfun.Set, len(cites))
 	result := make([]string, 0, len(cites))
 	for _, cn := range cites {
-		if _, ok := mapKey[cn.Key]; !ok {
-			mapKey[cn.Key] = true
+		if !mapKey.Has(cn.Key) {
+			mapKey.Set(cn.Key)
 			result = append(result, cn.Key)
 		}
 	}

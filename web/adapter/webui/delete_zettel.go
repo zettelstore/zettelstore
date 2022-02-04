@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -113,7 +114,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel
 }
 
 func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []simpleLink {
-	zidMap := make(map[string]bool)
+	zidMap := make(strfun.Set)
 	addListValues(zidMap, m, api.KeyBackward)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
 		inverseKey := kd.Inverse
@@ -124,7 +125,7 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 		switch ikd.Type {
 		case meta.TypeID:
 			if val, ok := m.Get(inverseKey); ok {
-				zidMap[val] = true
+				zidMap.Set(val)
 			}
 		case meta.TypeIDSet:
 			addListValues(zidMap, m, inverseKey)
@@ -138,10 +139,10 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 	return wui.encodeZidLinks(values, getTextTitle)
 }
 
-func addListValues(zidMap map[string]bool, m *meta.Meta, key string) {
+func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
 	if values, ok := m.GetList(key); ok {
 		for _, val := range values {
-			zidMap[val] = true
+			zidMap.Set(val)
 		}
 	}
 }

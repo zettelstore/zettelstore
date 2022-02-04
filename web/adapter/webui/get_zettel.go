@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -69,7 +70,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Xhtml:          false,
 			MarkerExternal: wui.rtConfig.GetMarkerExternal(),
 			NewWindow:      true,
-			IgnoreMeta:     map[string]bool{api.KeyTitle: true, api.KeyLang: true},
+			IgnoreMeta:     strfun.NewSet(api.KeyTitle, api.KeyLang),
 		}
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, api.EncoderHTML, &envHTML)
 		if err != nil {

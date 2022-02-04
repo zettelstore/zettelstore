@@ -321,13 +321,11 @@ func splitText(text string) []ast.InlineNode {
 	return result
 }
 
-var ignoreAfterBS = map[byte]bool{
-	'!': true, '"': true, '#': true, '$': true, '%': true, '&': true,
-	'\'': true, '(': true, ')': true, '*': true, '+': true, ',': true,
-	'-': true, '.': true, '/': true, ':': true, ';': true, '<': true,
-	'=': true, '>': true, '?': true, '@': true, '[': true, '\\': true,
-	']': true, '^': true, '_': true, '`': true, '{': true, '|': true,
-	'}': true, '~': true,
+var ignoreAfterBS = map[byte]struct{}{
+	'!': {}, '"': {}, '#': {}, '$': {}, '%': {}, '&': {}, '\'': {}, '(': {},
+	')': {}, '*': {}, '+': {}, ',': {}, '-': {}, '.': {}, '/': {}, ':': {},
+	';': {}, '<': {}, '=': {}, '>': {}, '?': {}, '@': {}, '[': {}, '\\': {},
+	']': {}, '^': {}, '_': {}, '`': {}, '{': {}, '|': {}, '}': {}, '~': {},
 }
 
 // cleanText removes backslashes from TextNodes and expands entities
@@ -347,10 +345,12 @@ func cleanText(text []byte, cleanBS bool) string {
 			}
 			continue
 		}
-		if cleanBS && ch == '\\' && pos < len(text)-1 && ignoreAfterBS[text[pos+1]] {
-			buf.Write(text[lastPos:pos])
-			buf.WriteByte(text[pos+1])
-			lastPos = pos + 2
+		if cleanBS && ch == '\\' && pos < len(text)-1 {
+			if _, found := ignoreAfterBS[text[pos+1]]; found {
+				buf.Write(text[lastPos:pos])
+				buf.WriteByte(text[pos+1])
+				lastPos = pos + 2
+			}
 		}
 	}
 	if lastPos < len(text) {

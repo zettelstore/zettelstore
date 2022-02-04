@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/strfun"
 )
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
@@ -77,19 +78,12 @@ func ignoreHTMLText(s string) bool {
 	return false
 }
 
-var specialSpanAttr = map[string]bool{
-	"example":   true,
-	"note":      true,
-	"tip":       true,
-	"important": true,
-	"caution":   true,
-	"warning":   true,
-}
+var specialSpanAttr = strfun.NewSet("example", "note", "tip", "important", "caution", "warning")
 
 func processSpanAttributes(attrs *ast.Attributes) *ast.Attributes {
 	if attrVal, ok := attrs.Get(""); ok {
 		attrVal = strings.ToLower(attrVal)
-		if specialSpanAttr[attrVal] {
+		if specialSpanAttr.Has(attrVal) {
 			attrs = attrs.Clone()
 			attrs.Remove("")
 			attrs = attrs.AddClass("zs-indication").AddClass("zs-" + attrVal)

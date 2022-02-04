@@ -16,6 +16,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/strfun"
 
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
 	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
@@ -26,11 +27,7 @@ import (
 )
 
 func TestParserType(t *testing.T) {
-	syntaxes := parser.GetSyntaxes()
-	syntaxSet := make(map[string]bool, len(syntaxes))
-	for _, syntax := range syntaxes {
-		syntaxSet[syntax] = true
-	}
+	syntaxSet := strfun.NewSet(parser.GetSyntaxes()...)
 	testCases := []struct {
 		syntax string
 		text   bool

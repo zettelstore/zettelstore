@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
+	"zettelstore.de/z/strfun"
 )
 
 type entrySet map[id.Zid]*DirEntry
@@ -521,20 +522,21 @@ func newNameIsBetter(oldName, newName string) bool {
 	return oldName > newName
 }
 
-var supportedSyntax, isPrimarySyntax map[string]bool
+var supportedSyntax, primarySyntax strfun.Set
 
 func init() {
 	syntaxList := parser.GetSyntaxes()
-	supportedSyntax = make(map[string]bool, len(syntaxList))
-	isPrimarySyntax = make(map[string]bool, len(syntaxList))
+	supportedSyntax = strfun.NewSet(syntaxList...)
+	primarySyntax = make(map[string]struct{}, len(syntaxList))
 	for _, syntax := range syntaxList {
-		supportedSyntax[syntax] = true
-		isPrimarySyntax[syntax] = parser.Get(syntax).Name == syntax
+		if parser.Get(syntax).Name == syntax {
+			primarySyntax.Set(syntax)
+		}
 	}
 }
 func newExtIsBetter(oldExt, newExt string) bool {
-	oldSyntax := supportedSyntax[oldExt]
-	if oldSyntax != supportedSyntax[newExt] {
+	oldSyntax := supportedSyntax.Has(oldExt)
+	if oldSyntax != supportedSyntax.Has(newExt) {
 		return !oldSyntax
 	}
 	if oldSyntax {
@@ -552,7 +554,7 @@ func newExtIsBetter(oldExt, newExt string) bool {
 		if oldImageFormat := oldInfo.IsImageFormat; oldImageFormat != newInfo.IsImageFormat {
 			return oldImageFormat
 		}
-		if oldPrimary := isPrimarySyntax[oldExt]; oldPrimary != isPrimarySyntax[newExt] {
+		if oldPrimary := primarySyntax.Has(oldExt); oldPrimary != primarySyntax.Has(newExt) {
 			return !oldPrimary
 		}
 	}

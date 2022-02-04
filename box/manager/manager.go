@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -28,6 +28,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/strfun"
 )
 
 // ConnectData contains all administration related values.
@@ -99,7 +100,7 @@ type Manager struct {
 	mxObserver   sync.RWMutex
 	done         chan struct{}
 	infos        chan box.UpdateInfo
-	propertyKeys map[string]bool // Set of property key names
+	propertyKeys strfun.Set // Set of property key names
 
 	// Indexer data
 	idxLog   *logger.Logger
@@ -116,10 +117,11 @@ type Manager struct {
 
 // New creates a new managing box.
 func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Config) (*Manager, error) {
-	propertyKeys := make(map[string]bool)
-	for _, kd := range meta.GetSortedKeyDescriptions() {
+	descrs := meta.GetSortedKeyDescriptions()
+	propertyKeys := make(strfun.Set, len(descrs))
+	for _, kd := range descrs {
 		if kd.IsProperty() {
-			propertyKeys[kd.Name] = true
+			propertyKeys.Set(kd.Name)
 		}
 	}
 	boxLog := kernel.Main.GetLogger(kernel.BoxService)

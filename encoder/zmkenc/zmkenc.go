@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/strfun"
 )
 
 func init() {
@@ -338,22 +339,9 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 		"%% Unable to display BLOB with title '", bn.Title, "' and syntax '", bn.Syntax, "'.")
 }
 
-var escapeSeqs = map[string]bool{
-	"\\":   true,
-	"__":   true,
-	"**":   true,
-	"~~":   true,
-	"^^":   true,
-	",,":   true,
-	"<<":   true,
-	">>":   true,
-	"\"\"": true,
-	"::":   true,
-	"''":   true,
-	"``":   true,
-	"++":   true,
-	"==":   true,
-}
+var escapeSeqs = strfun.NewSet(
+	"\\", "__", "**", "~~", "^^", ",,", "<<", ">>", `""`, "::", "''", "``", "++", "==",
+)
 
 func (v *visitor) visitText(tn *ast.TextNode) {
 	last := 0
@@ -366,7 +354,7 @@ func (v *visitor) visitText(tn *ast.TextNode) {
 		}
 		if i < len(tn.Text)-1 {
 			s := tn.Text[i : i+2]
-			if _, ok := escapeSeqs[s]; ok {
+			if escapeSeqs.Has(s) {
 				v.b.WriteString(tn.Text[last:i])
 				for j := 0; j < len(s); j++ {
 					v.b.WriteBytes('\\', s[j])

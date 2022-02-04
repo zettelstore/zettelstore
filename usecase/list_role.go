@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
+	"zettelstore.de/z/strfun"
 )
 
 // ListRolePort is the interface used by this use case.
@@ -42,10 +43,10 @@ func (uc ListRole) Run(ctx context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	roles := make(map[string]bool, 8)
+	roles := make(strfun.Set, 256)
 	for _, m := range metas {
 		if role, ok := m.Get(api.KeyRole); ok && role != "" {
-			roles[role] = true
+			roles.Set(role)
 		}
 	}
 	result := make([]string, 0, len(roles))
