@@ -25,7 +25,7 @@ import (
 )
 
 func nextZid(zid api.ZettelID) api.ZettelID {
-	numVal, err := strconv.Atoi(string(zid))
+	numVal, err := strconv.ParseUint(string(zid), 10, 64)
 	if err != nil {
 		panic(err)
 	}
