@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -23,7 +23,10 @@ import (
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
 func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		iMinCount, _ := strconv.Atoi(r.URL.Query().Get("min"))
+		iMinCount, err := strconv.Atoi(r.URL.Query().Get("min"))
+		if err != nil || iMinCount < 0 {
+			iMinCount = 0
+		}
 		tagData, err := listTags.Run(r.Context(), iMinCount)
 		if err != nil {
 			a.reportUsecaseError(w, err)

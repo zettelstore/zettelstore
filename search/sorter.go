@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -86,9 +86,9 @@ func createSortStringFunc(ml []*meta.Meta, key string, descending bool) sortFunc
 	}
 }
 
-func getNum(m *meta.Meta, key string) (int, bool) {
+func getNum(m *meta.Meta, key string) (int64, bool) {
 	if s, ok := m.Get(key); ok {
-		if i, err := strconv.Atoi(s); err == nil {
+		if i, err := strconv.ParseInt(s, 10, 64); err == nil {
 			return i, true
 		}
 	}

@@ -45,7 +45,13 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
 	if err != nil {
 		return ast.CreateBlockListNode(ast.CreateParaNode(canvasErrMsg(err)))
 	}
-	svg := canvasToSVG(canvas, font, scaleX, scaleY)
+	if scaleX < 1 || 1000000 < scaleX {
+		scaleX = defaultScaleX
+	}
+	if scaleY < 1 || 1000000 < scaleY {
+		scaleY = defaultScaleY
+	}
+	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
 	if len(svg) == 0 {
 		return ast.CreateBlockListNode(ast.CreateParaNode(noSVGErrMsg()))
 	}

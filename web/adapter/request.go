@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -127,7 +127,7 @@ func extractOrderFromQuery(values []string, s *search.Search) *search.Search {
 
 func extractOffsetFromQuery(values []string, s *search.Search) *search.Search {
 	if len(values) > 0 {
-		if offset, err := strconv.Atoi(values[0]); err == nil {
+		if offset, err := strconv.Atoi(values[0]); err == nil && offset > 0 {
 			s = s.SetOffset(offset)
 		}
 	}
@@ -136,7 +136,7 @@ func extractOffsetFromQuery(values []string, s *search.Search) *search.Search {
 
 func extractLimitFromQuery(values []string, s *search.Search) *search.Search {
 	if len(values) > 0 {
-		if limit, err := strconv.Atoi(values[0]); err == nil {
+		if limit, err := strconv.Atoi(values[0]); err == nil && limit > 0 {
 			s = s.SetLimit(limit)
 		}
 	}
