@@ -117,20 +117,20 @@ func (e *evaluator) visitBlockList(bln *ast.BlockListNode) {
 		ast.Walk(e, bn)
 		switch n := bn.(type) {
 		case *ast.VerbatimNode:
-			transcludeNode(bln, i, e.evalVerbatimNode(n))
+			i += transcludeNode(bln, i, e.evalVerbatimNode(n))
 		case *ast.TranscludeNode:
-			transcludeNode(bln, i, e.evalTransclusionNode(n))
+			i += transcludeNode(bln, i, e.evalTransclusionNode(n))
 		}
 	}
 }
 
-func transcludeNode(bln *ast.BlockListNode, i int, bn ast.BlockNode) {
+func transcludeNode(bln *ast.BlockListNode, i int, bn ast.BlockNode) int {
 	if ln, ok := bn.(*ast.BlockListNode); ok {
 		bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
-		i += len(ln.List) - 1
-	} else {
-		bln.List[i] = bn
+		return len(ln.List) - 1
 	}
+	bln.List[i] = bn
+	return 0
 }
 
 func replaceWithBlockNodes(bns []ast.BlockNode, i int, replaceBns []ast.BlockNode) []ast.BlockNode {
@@ -186,14 +186,15 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		return makeBlockNode(errText)
 	}
 	switch ref.State {
+	case ast.RefStateZettel:
+		// Only zettel references will be evaluated.
 	case ast.RefStateInvalid, ast.RefStateBroken:
 		e.transcludeCount++
 		return makeBlockNode(createInlineErrorText(ref, "Invalid", "or", "broken", "transclusion", "reference:"))
-	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
 		e.transcludeCount++
 		return makeBlockNode(createInlineErrorText(ref, "Self", "transclusion", "reference:"))
-	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return tn
 	default:
 		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
@@ -251,20 +252,20 @@ func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
 		case *ast.LinkNode:
 			iln.List[i] = e.evalLinkNode(n)
 		case *ast.EmbedRefNode:
-			embedNode(iln, i, e.evalEmbedRefNode(n))
+			i += embedNode(iln, i, e.evalEmbedRefNode(n))
 		case *ast.LiteralNode:
-			embedNode(iln, i, e.evalLiteralNode(n))
+			i += embedNode(iln, i, e.evalLiteralNode(n))
 		}
 	}
 }
 
-func embedNode(iln *ast.InlineListNode, i int, in ast.InlineNode) {
+func embedNode(iln *ast.InlineListNode, i int, in ast.InlineNode) int {
 	if ln, ok := in.(*ast.InlineListNode); ok {
 		iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
-		i += len(ln.List) - 1
-	} else {
-		iln.List[i] = in
+		return len(ln.List) - 1
 	}
+	iln.List[i] = in
+	return 0
 }
 
 func replaceWithInlineNodes(ins []ast.InlineNode, i int, replaceIns []ast.InlineNode) []ast.InlineNode {
@@ -310,11 +311,9 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 	if ref.State != ast.RefStateZettel {
 		return ln
 	}
-	zid, err := id.Parse(ref.URL.Path)
-	if err != nil {
-		panic(err)
-	}
-	_, err = e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
+
+	zid := mustParseZid(ref)
+	_, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
 	if errors.Is(err, &box.ErrNotAllowed{}) {
 		return &ast.FormatNode{
 			Kind:    ast.FormatSpan,
@@ -341,23 +340,21 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 
 	switch ref.State {
+	case ast.RefStateZettel:
+		// Only zettel references will be evaluated.
 	case ast.RefStateInvalid, ast.RefStateBroken:
 		e.transcludeCount++
 		return e.createInlineErrorImage(en)
-	case ast.RefStateZettel, ast.RefStateFound:
 	case ast.RefStateSelf:
 		e.transcludeCount++
 		return createInlineErrorText(ref, "Self", "embed", "reference:")
-	case ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:
 		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
 	}
 
-	zid, err := id.Parse(ref.URL.Path)
-	if err != nil {
-		panic(err)
-	}
+	zid := mustParseZid(ref)
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err != nil {
 		e.transcludeCount++
@@ -404,6 +401,14 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 		e.transcludeCount += cost.ec
 	}
 	return result
+}
+
+func mustParseZid(ref *ast.Reference) id.Zid {
+	zid, err := id.Parse(ref.URL.Path)
+	if err != nil {
+		panic(fmt.Sprintf("%v: %q (state %v) -> %v", err, ref.URL.Path, ref.State, ref))
+	}
+	return zid
 }
 
 func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {

@@ -120,7 +120,7 @@ const (
 	RefStateInvalid  RefState = iota // Invalid Reference
 	RefStateZettel                   // Reference to an internal zettel
 	RefStateSelf                     // Reference to same zettel with a fragment
-	RefStateFound                    // Reference to an existing internal zettel
+	RefStateFound                    // Reference to an existing internal zettel, URL is ajusted
 	RefStateBroken                   // Reference to a non-existing internal zettel
 	RefStateHosted                   // Reference to local hosted non-Zettel, without URL change
 	RefStateBased                    // Reference to local non-Zettel, to be prefixed

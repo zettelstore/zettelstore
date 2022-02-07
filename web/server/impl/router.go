@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -107,8 +107,9 @@ func (rt *httpRouter) Handle(pattern string, handler http.Handler) {
 func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Something may panic. Ensure a kernel log.
 	defer func() {
-		if r := recover(); r != nil {
-			kernel.Main.LogRecover("Web", r)
+		if reco := recover(); reco != nil {
+			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).Msg("Recover context")
+			kernel.Main.LogRecover("Web", reco)
 		}
 	}()
 
