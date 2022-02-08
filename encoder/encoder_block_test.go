@@ -26,7 +26,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple text: Hello, world",
 		zmk:   "Hello, world",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Para","i":[{"t":"Text","s":"Hello,"},{"t":"Space"},{"t":"Text","s":"world"}]}]`,
+			encoderDJSON:  `[{"":"Para","i":[{"":"Text","s":"Hello,"},{"":"Space"},{"":"Text","s":"world"}]}]`,
 			encoderHTML:   "<p>Hello, world</p>",
 			encoderNative: `[Para Text "Hello,",Space,Text "world"]`,
 			encoderText:   "Hello, world",
@@ -37,7 +37,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple block comment",
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CommentBlock","s":"No\nrender"}]`,
+			encoderDJSON:  `[{"":"CommentBlock","s":"No\nrender"}]`,
 			encoderHTML:   ``,
 			encoderNative: `[CommentBlock "No\nrender"]`,
 			encoderText:   ``,
@@ -48,7 +48,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Rendered block comment",
 		zmk:   "%%%{-}\nRender\n%%%",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CommentBlock","a":{"-":""},"s":"Render"}]`,
+			encoderDJSON:  `[{"":"CommentBlock","a":{"-":""},"s":"Render"}]`,
 			encoderHTML:   "<!--\nRender\n-->",
 			encoderNative: `[CommentBlock ("",[-]) "Render"]`,
 			encoderText:   ``,
@@ -59,7 +59,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple Heading",
 		zmk:   `=== Top`,
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Heading","n":1,"s":"top","i":[{"t":"Text","s":"Top"}]}]`,
+			encoderDJSON:  `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
 			encoderHTML:   "<h2 id=\"top\">Top</h2>",
 			encoderNative: `[Heading 1 #top Text "Top"]`,
 			encoderText:   `Top`,
@@ -70,7 +70,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Einfache Liste",
 		zmk:   "* A\n* B\n* C",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"A"}]}],[{"t":"Para","i":[{"t":"Text","s":"B"}]}],[{"t":"Para","i":[{"t":"Text","s":"C"}]}]]}]`,
+			encoderDJSON: `[{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"A"}]}],[{"":"Para","i":[{"":"Text","s":"B"}]}],[{"":"Para","i":[{"":"Text","s":"C"}]}]]}]`,
 			encoderHTML:  "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "A"]],
@@ -84,7 +84,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Schachtelliste",
 		zmk:   "* T1\n** T2\n* T3\n** T4\n* T5",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"T1"}]},{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"T2"}]}]]}],[{"t":"Para","i":[{"t":"Text","s":"T3"}]},{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"T4"}]}]]}],[{"t":"Para","i":[{"t":"Text","s":"T5"}]}]]}]`,
+			encoderDJSON: `[{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"T1"}]},{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"T2"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T3"}]},{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"T4"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T5"}]}]]}]`,
 			encoderHTML: `<ul>
 <li>
 <p>T1</p>
@@ -118,7 +118,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Zwei Listen hintereinander",
 		zmk:   "* Item1.1\n* Item1.2\n* Item1.3\n\n* Item2.1\n* Item2.2",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"Item1.1"}]}],[{"t":"Para","i":[{"t":"Text","s":"Item1.2"}]}],[{"t":"Para","i":[{"t":"Text","s":"Item1.3"}]}],[{"t":"Para","i":[{"t":"Text","s":"Item2.1"}]}],[{"t":"Para","i":[{"t":"Text","s":"Item2.2"}]}]]}]`,
+			encoderDJSON: `[{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"Item1.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.2"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.3"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.2"}]}]]}]`,
 			encoderHTML:  "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "Item1.1"]],
@@ -134,7 +134,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple horizontal rule",
 		zmk:   `---`,
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Hrule"}]`,
+			encoderDJSON:  `[{"":"Hrule"}]`,
 			encoderHTML:   "<hr>",
 			encoderNative: `[Hrule]`,
 			encoderText:   ``,
@@ -145,7 +145,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "No list after paragraph",
 		zmk:   "Text\n*abc",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Para","i":[{"t":"Text","s":"Text"},{"t":"Soft"},{"t":"Text","s":"*abc"}]}]`,
+			encoderDJSON:  `[{"":"Para","i":[{"":"Text","s":"Text"},{"":"Soft"},{"":"Text","s":"*abc"}]}]`,
 			encoderHTML:   "<p>Text\n*abc</p>",
 			encoderNative: `[Para Text "Text",Space,Text "*abc"]`,
 			encoderText:   `Text *abc`,
@@ -156,7 +156,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "A list after paragraph",
 		zmk:   "Text\n* abc",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"Para","i":[{"t":"Text","s":"Text"}]},{"t":"BulletList","c":[[{"t":"Para","i":[{"t":"Text","s":"abc"}]}]]}]`,
+			encoderDJSON: `[{"":"Para","i":[{"":"Text","s":"Text"}]},{"":"BulletList","c":[[{"":"Para","i":[{"":"Text","s":"abc"}]}]]}]`,
 			encoderHTML:  "<p>Text</p>\n<ul>\n<li>abc</li>\n</ul>",
 			encoderNative: `[Para Text "Text"],
 [BulletList
@@ -169,7 +169,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple Quote Block",
 		zmk:   "<<<\nToBeOrNotToBe\n<<< Romeo",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"QuoteBlock","b":[{"t":"Para","i":[{"t":"Text","s":"ToBeOrNotToBe"}]}],"i":[{"t":"Text","s":"Romeo"}]}]`,
+			encoderDJSON: `[{"":"QuoteBlock","b":[{"":"Para","i":[{"":"Text","s":"ToBeOrNotToBe"}]}],"i":[{"":"Text","s":"Romeo"}]}]`,
 			encoderHTML:  "<blockquote>\n<p>ToBeOrNotToBe</p>\n<cite>Romeo</cite>\n</blockquote>",
 			encoderNative: `[QuoteBlock
  [[Para Text "ToBeOrNotToBe"]],
@@ -182,7 +182,7 @@ var tcsBlock = []zmkTestCase{
 		descr: "Quote Block with multiple paragraphs",
 		zmk:   "<<<\nToBeOr\n\nNotToBe\n<<< Romeo",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"QuoteBlock","b":[{"t":"Para","i":[{"t":"Text","s":"ToBeOr"}]},{"t":"Para","i":[{"t":"Text","s":"NotToBe"}]}],"i":[{"t":"Text","s":"Romeo"}]}]`,
+			encoderDJSON: `[{"":"QuoteBlock","b":[{"":"Para","i":[{"":"Text","s":"ToBeOr"}]},{"":"Para","i":[{"":"Text","s":"NotToBe"}]}],"i":[{"":"Text","s":"Romeo"}]}]`,
 			encoderHTML:  "<blockquote>\n<p>ToBeOr</p>\n<p>NotToBe</p>\n<cite>Romeo</cite>\n</blockquote>",
 			encoderNative: `[QuoteBlock
  [[Para Text "ToBeOr"],
@@ -204,7 +204,7 @@ Paragraph
     Spacy  Para
 """ Author`,
 		expect: expectMap{
-			encoderDJSON:  "[{\"t\":\"VerseBlock\",\"b\":[{\"t\":\"Para\",\"i\":[{\"t\":\"Text\",\"s\":\"A\u00a0line\"},{\"t\":\"Hard\"},{\"t\":\"Text\",\"s\":\"\u00a0\u00a0another\u00a0line\"},{\"t\":\"Hard\"},{\"t\":\"Text\",\"s\":\"Back\"}]},{\"t\":\"Para\",\"i\":[{\"t\":\"Text\",\"s\":\"Paragraph\"}]},{\"t\":\"Para\",\"i\":[{\"t\":\"Text\",\"s\":\"\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\"}]}],\"i\":[{\"t\":\"Text\",\"s\":\"Author\"}]}]",
+			encoderDJSON:  "[{\"\":\"VerseBlock\",\"b\":[{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"A\u00a0line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"\u00a0\u00a0another\u00a0line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"Back\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"Paragraph\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\"}]}],\"i\":[{\"\":\"Text\",\"s\":\"Author\"}]}]",
 			encoderHTML:   "<div>\n<p>A\u00a0line<br>\n\u00a0\u00a0another\u00a0line<br>\nBack</p>\n<p>Paragraph</p>\n<p>\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para</p>\n<cite>Author</cite>\n</div>",
 			encoderNative: "[VerseBlock\n [[Para Text \"A\u00a0line\",Break,Text \"\u00a0\u00a0another\u00a0line\",Break,Text \"Back\"],\n  [Para Text \"Paragraph\"],\n  [Para Text \"\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\"]],\n [Cite Text \"Author\"]]",
 			encoderText:   "A\u00a0line\n\u00a0\u00a0another\u00a0line\nBack\nParagraph\n\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\nAuthor",
@@ -219,7 +219,7 @@ A simple
 and much more
 :::`,
 		expect: expectMap{
-			encoderDJSON: `[{"t":"SpanBlock","b":[{"t":"Para","i":[{"t":"Text","s":"A"},{"t":"Space"},{"t":"Text","s":"simple"},{"t":"Soft"},{"t":"Space","n":3},{"t":"Text","s":"span"},{"t":"Soft"},{"t":"Text","s":"and"},{"t":"Space"},{"t":"Text","s":"much"},{"t":"Space"},{"t":"Text","s":"more"}]}]}]`,
+			encoderDJSON: `[{"":"SpanBlock","b":[{"":"Para","i":[{"":"Text","s":"A"},{"":"Space"},{"":"Text","s":"simple"},{"":"Soft"},{"":"Space","n":3},{"":"Text","s":"span"},{"":"Soft"},{"":"Text","s":"and"},{"":"Space"},{"":"Text","s":"much"},{"":"Space"},{"":"Text","s":"more"}]}]}]`,
 			encoderHTML:  "<div>\n<p>A simple\n span\nand much more</p>\n</div>",
 			encoderNative: `[SpanBlock
  [[Para Text "A",Space,Text "simple",Space,Space 3,Text "span",Space,Text "and",Space,Text "much",Space,Text "more"]]]`,
@@ -231,7 +231,7 @@ and much more
 		descr: "Simple Verbatim",
 		zmk:   "```\nHello\nWorld\n```",
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"CodeBlock","s":"Hello\nWorld"}]`,
+			encoderDJSON:  `[{"":"CodeBlock","s":"Hello\nWorld"}]`,
 			encoderHTML:   "<pre><code>Hello\nWorld</code></pre>",
 			encoderNative: `[CodeBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
@@ -242,7 +242,7 @@ and much more
 		descr: "Simple Description List",
 		zmk:   "; Zettel\n: Paper\n: Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"DescriptionList","g":[[[{"t":"Text","s":"Zettel"}],[{"t":"Para","i":[{"t":"Text","s":"Paper"}]}],[{"t":"Para","i":[{"t":"Text","s":"Note"}]}]],[[{"t":"Text","s":"Zettelkasten"}],[{"t":"Para","i":[{"t":"Text","s":"Slip"},{"t":"Space"},{"t":"Text","s":"box"}]}]]]}]`,
+			encoderDJSON: `[{"":"DescriptionList","g":[[[{"":"Text","s":"Zettel"}],[{"":"Para","i":[{"":"Text","s":"Paper"}]}],[{"":"Para","i":[{"":"Text","s":"Note"}]}]],[[{"":"Text","s":"Zettelkasten"}],[{"":"Para","i":[{"":"Text","s":"Slip"},{"":"Space"},{"":"Text","s":"box"}]}]]]}]`,
 			encoderHTML:  "<dl>\n<dt>Zettel</dt>\n<dd>Paper</dd>\n<dd>Note</dd>\n<dt>Zettelkasten</dt>\n<dd>Slip box</dd>\n</dl>",
 			encoderNative: `[DescriptionList
  [Term [Text "Zettel"],
@@ -261,7 +261,7 @@ and much more
 		descr: "Simple Table",
 		zmk:   "|c1|c2|c3\n|d1||d3",
 		expect: expectMap{
-			encoderDJSON: `[{"t":"Table","p":[[],[[["",[{"t":"Text","s":"c1"}]],["",[{"t":"Text","s":"c2"}]],["",[{"t":"Text","s":"c3"}]]],[["",[{"t":"Text","s":"d1"}]],["",[]],["",[{"t":"Text","s":"d3"}]]]]]}]`,
+			encoderDJSON: `[{"":"Table","p":[[],[[["",[{"":"Text","s":"c1"}]],["",[{"":"Text","s":"c2"}]],["",[{"":"Text","s":"c3"}]]],[["",[{"":"Text","s":"d1"}]],["",[]],["",[{"":"Text","s":"d3"}]]]]]}]`,
 			encoderHTML: `<table>
 <tbody>
 <tr><td>c1</td><td>c2</td><td>c3</td></tr>
@@ -282,7 +282,7 @@ and much more
 |<c1|c2|:c3|
 |f1|f2|=f3`,
 		expect: expectMap{
-			encoderDJSON: `[{"t":"Table","p":[[[">",[{"t":"Text","s":"h1"}]],["",[{"t":"Text","s":"h2"}]],[":",[{"t":"Text","s":"h3"}]]],[[["<",[{"t":"Text","s":"c1"}]],["",[{"t":"Text","s":"c2"}]],[":",[{"t":"Text","s":"c3"}]]],[[">",[{"t":"Text","s":"f1"}]],["",[{"t":"Text","s":"f2"}]],[":",[{"t":"Text","s":"=f3"}]]]]]}]`,
+			encoderDJSON: `[{"":"Table","p":[[[">",[{"":"Text","s":"h1"}]],["",[{"":"Text","s":"h2"}]],[":",[{"":"Text","s":"h3"}]]],[[["<",[{"":"Text","s":"c1"}]],["",[{"":"Text","s":"c2"}]],[":",[{"":"Text","s":"c3"}]]],[[">",[{"":"Text","s":"f1"}]],["",[{"":"Text","s":"f2"}]],[":",[{"":"Text","s":"=f3"}]]]]]}]`,
 			encoderHTML: `<table>
 <thead>
 <tr><th class="zs-ta-right">h1</th><th>h2</th><th class="zs-ta-center">h3</th></tr>

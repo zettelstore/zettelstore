@@ -37,10 +37,10 @@ type jsonDetailEncoder struct {
 // WriteZettel writes the encoded zettel to the writer.
 func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteString("{\"meta\":{")
+	v.b.WriteString(`{"meta":{`)
 	v.writeMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('}')
-	v.b.WriteString(",\"content\":")
+	v.b.WriteString(`,"content":`)
 	ast.Walk(v, zn.Ast)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
@@ -238,7 +238,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	v.b.WriteString(strconv.Itoa(hn.Level))
 	if fragment := hn.Fragment; fragment != "" {
 		v.writeContentStart('s')
-		v.b.WriteStrings("\"", fragment, "\"")
+		v.b.WriteStrings(`"`, fragment, `"`)
 	}
 	v.writeContentStart('i')
 	ast.Walk(v, hn.Inlines)
@@ -315,10 +315,10 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 }
 
 var alignmentCode = map[ast.Alignment]string{
-	ast.AlignDefault: "[\"\",",
-	ast.AlignLeft:    "[\"<\",",
-	ast.AlignCenter:  "[\":\",",
-	ast.AlignRight:   "[\">\",",
+	ast.AlignDefault: `["",`,
+	ast.AlignLeft:    `["<",`,
+	ast.AlignCenter:  `[":",`,
+	ast.AlignRight:   `[">",`,
 }
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
@@ -349,7 +349,7 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateInvalid:  "invalid",
 	ast.RefStateZettel:   "zettel",
 	ast.RefStateSelf:     "self",
-	ast.RefStateFound:    "zettel",
+	ast.RefStateFound:    "found",
 	ast.RefStateBroken:   "broken",
 	ast.RefStateHosted:   "local",
 	ast.RefStateBased:    "based",
@@ -372,7 +372,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.writeNodeStart("EmbedBLOB")
 	v.visitAttributes(en.Attrs)
 	v.writeContentStart('j')
-	v.b.WriteString("\"s\":")
+	v.b.WriteString(`"s":`)
 	writeEscaped(&v.b, en.Syntax)
 	if en.Syntax == api.ValueSyntaxSVG {
 		v.writeContentStart('q')
@@ -455,35 +455,35 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 	}
 	sort.Strings(keys)
 
-	v.b.WriteString(",\"a\":{\"")
+	v.b.WriteString(`,"a":{"`)
 	for i, k := range keys {
 		if i > 0 {
-			v.b.WriteString("\",\"")
+			v.b.WriteString(`","`)
 		}
 		strfun.JSONEscape(&v.b, k)
-		v.b.WriteString("\":\"")
+		v.b.WriteString(`":"`)
 		strfun.JSONEscape(&v.b, a.Attrs[k])
 	}
-	v.b.WriteString("\"}")
+	v.b.WriteString(`"}`)
 }
 
 func (v *visitor) writeNodeStart(t string) {
-	v.b.WriteStrings("{\"t\":\"", t, "\"")
+	v.b.WriteStrings(`{"":"`, t, `"`)
 }
 
 var contentCode = map[rune][]byte{
-	'b': []byte(",\"b\":"),   // List of blocks
-	'c': []byte(",\"c\":["),  // List of list of blocks
-	'g': []byte(",\"g\":["),  // General list
-	'i': []byte(",\"i\":"),   // List of inlines
-	'j': []byte(",\"j\":{"),  // Embedded JSON object
-	'n': []byte(",\"n\":"),   // Number
-	'o': []byte(",\"o\":\""), // Byte object
-	'p': []byte(",\"p\":["),  // Generic tuple
-	'q': []byte(",\"q\":"),   // String, if 's' is also needed
-	's': []byte(",\"s\":"),   // String
+	'b': []byte(`,"b":`),  // List of blocks
+	'c': []byte(`,"c":[`), // List of list of blocks
+	'g': []byte(`,"g":[`), // General list
+	'i': []byte(`,"i":`),  // List of inlines
+	'j': []byte(`,"j":{`), // Embedded JSON object
+	'n': []byte(`,"n":`),  // Number
+	'o': []byte(`,"o":"`), // Byte object
+	'p': []byte(`,"p":[`), // Generic tuple
+	'q': []byte(`,"q":`),  // String, if 's' is also needed
+	's': []byte(`,"s":`),  // String
 	't': []byte("Content code 't' is not allowed"),
-	'v': []byte(",\"v\":"),                         // String, if 'q' is also needed
+	'v': []byte(`,"v":`),                           // String, if 'q' is also needed
 	'y': []byte("Content code 'y' is not allowed"), // field after 'j'
 }
 
@@ -503,7 +503,7 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		v.b.WriteByte('"')
 		key := p.Key
 		strfun.JSONEscape(&v.b, key)
-		v.b.WriteString("\":")
+		v.b.WriteString(`":`)
 		t := m.Type(key)
 		if t.IsSet {
 			v.writeSetValue(p.Value)
