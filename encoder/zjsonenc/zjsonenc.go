@@ -445,12 +445,12 @@ func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
 }
 
 // visitAttributes write JSON attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -462,7 +462,7 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 		}
 		strfun.JSONEscape(&v.b, k)
 		v.b.WriteString(`":"`)
-		strfun.JSONEscape(&v.b, a.Attrs[k])
+		strfun.JSONEscape(&v.b, a[k])
 	}
 	v.b.WriteString(`"}`)
 }

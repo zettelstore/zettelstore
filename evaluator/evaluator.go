@@ -166,7 +166,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 	return zn.Ast
 }
 
-func getSyntax(a *ast.Attributes, defSyntax string) string {
+func getSyntax(a ast.Attributes, defSyntax string) string {
 	if a != nil {
 		if val, ok := a.Get(api.KeySyntax); ok {
 			return val

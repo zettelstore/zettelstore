@@ -470,7 +470,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	}
 }
 
-func (v *visitor) writeLiteral(code byte, attrs *ast.Attributes, content []byte) {
+func (v *visitor) writeLiteral(code byte, attrs ast.Attributes, content []byte) {
 	v.b.WriteBytes(code, code)
 	v.writeEscaped(string(content), code)
 	v.b.WriteBytes(code, code)
@@ -478,12 +478,12 @@ func (v *visitor) writeLiteral(code byte, attrs *ast.Attributes, content []byte)
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -498,7 +498,7 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 			continue
 		}
 		v.b.WriteString(k)
-		if vl := a.Attrs[k]; len(vl) > 0 {
+		if vl := a[k]; len(vl) > 0 {
 			v.b.WriteStrings("=\"", vl)
 			v.b.WriteByte('"')
 		}
@@ -518,6 +518,6 @@ func (v *visitor) writeEscaped(s string, toEscape byte) {
 	v.b.WriteString(s[last:])
 }
 
-func syntaxToHTML(a *ast.Attributes) *ast.Attributes {
+func syntaxToHTML(a ast.Attributes) ast.Attributes {
 	return a.Clone().Set("", api.ValueSyntaxHTML).Remove(api.KeySyntax)
 }

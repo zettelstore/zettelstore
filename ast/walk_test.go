@@ -45,12 +45,10 @@ func BenchmarkWalk(b *testing.B) {
 		ast.CreateParaNode(
 			&ast.FormatNode{
 				Kind: ast.FormatEmph,
-				Attrs: &ast.Attributes{
-					Attrs: map[string]string{
-						"":      "class",
-						"color": "green",
-					},
-				},
+				Attrs: ast.Attributes(map[string]string{
+					"":      "class",
+					"color": "green",
+				}),
 				Inlines: ast.CreateInlineListNodeFromWords("This", "is", "some", "emphasized", "text."),
 			},
 			&ast.SpaceNode{Lexeme: " "},

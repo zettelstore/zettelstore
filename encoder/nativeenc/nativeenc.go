@@ -535,18 +535,18 @@ func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
 }
 
 // visitAttributes write native attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
 	v.b.WriteString(" (\"")
-	if val, ok := a.Attrs[""]; ok {
+	if val, ok := a[""]; ok {
 		v.writeEscaped(val)
 	}
 	v.b.WriteString("\",[")
@@ -556,7 +556,7 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 		}
 		v.writeComma(i)
 		v.b.WriteString(k)
-		val := a.Attrs[k]
+		val := a[k]
 		if len(val) > 0 {
 			v.b.WriteString("=\"")
 			v.writeEscaped(val)

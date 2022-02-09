@@ -71,7 +71,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	}
 }
 
-func (v *visitor) writeAHref(ref *ast.Reference, attrs *ast.Attributes, iln *ast.InlineListNode) {
+func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, iln *ast.InlineListNode) {
 	if v.env.IsInteractive(v.inInteractive) {
 		v.writeSpan(iln, attrs)
 		return
@@ -201,7 +201,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("</", code, ">")
 }
 
-func (v *visitor) writeSpan(iln *ast.InlineListNode, attrs *ast.Attributes) {
+func (v *visitor) writeSpan(iln *ast.InlineListNode, attrs ast.Attributes) {
 	v.b.WriteString("<span")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
@@ -269,7 +269,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	}
 }
 
-func (v *visitor) writeLiteral(codeS, codeE string, attrs *ast.Attributes, content []byte) {
+func (v *visitor) writeLiteral(codeS, codeE string, attrs ast.Attributes, content []byte) {
 	oldVisible := v.visibleSpace
 	if attrs != nil {
 		v.visibleSpace = attrs.HasDefault()

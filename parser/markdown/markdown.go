@@ -132,7 +132,7 @@ func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 }
 
 func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNode {
-	var attrs *ast.Attributes
+	var attrs ast.Attributes
 	if language := node.Language(p.source); len(language) > 0 {
 		attrs = attrs.Set("class", "language-"+cleanText(language, true))
 	}
@@ -175,7 +175,7 @@ func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 
 func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	kind := ast.NestedListUnordered
-	var attrs *ast.Attributes
+	var attrs ast.Attributes
 	if node.IsOrdered() {
 		kind = ast.NestedListOrdered
 		if node.Start != 1 {
@@ -404,7 +404,7 @@ func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
 
 func (p *mdP) acceptLink(node *gmAst.Link) []ast.InlineNode {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs *ast.Attributes
+	var attrs ast.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
@@ -420,7 +420,7 @@ func (p *mdP) acceptLink(node *gmAst.Link) []ast.InlineNode {
 
 func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs *ast.Attributes
+	var attrs ast.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}

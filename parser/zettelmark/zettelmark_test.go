@@ -952,14 +952,14 @@ func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
 	}
 }
 
-func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
+func (tv *TestVisitor) visitAttributes(a ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
 	tv.buf.WriteString("[ATTR")
 
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -967,7 +967,7 @@ func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 	for _, k := range keys {
 		tv.buf.WriteByte(' ')
 		tv.buf.WriteString(k)
-		v := a.Attrs[k]
+		v := a[k]
 		if len(v) > 0 {
 			tv.buf.WriteByte('=')
 			if strings.ContainsRune(v, ' ') {

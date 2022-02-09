@@ -221,12 +221,12 @@ func (v *visitor) writeEndnotes() {
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a ast.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		if k != "-" {
 			keys = append(keys, k)
 		}
@@ -238,7 +238,7 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 			continue
 		}
 		v.b.WriteStrings(" ", k)
-		vl := a.Attrs[k]
+		vl := a[k]
 		if len(vl) > 0 {
 			v.b.WriteString("=\"")
 			v.writeQuotedEscaped(vl)

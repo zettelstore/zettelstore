@@ -109,7 +109,7 @@ type LinkNode struct {
 	Ref     *Reference
 	Inlines *InlineListNode // The text associated with the link.
 	OnlyRef bool            // True if no text was specified.
-	Attrs   *Attributes     // Optional attributes
+	Attrs   Attributes      // Optional attributes
 }
 
 func (*LinkNode) inlineNode() { /* Just a marker */ }
@@ -127,7 +127,7 @@ func (ln *LinkNode) WalkChildren(v Visitor) {
 type EmbedRefNode struct {
 	Ref     *Reference      // The reference to be embedded.
 	Inlines *InlineListNode // Optional text associated with the image.
-	Attrs   *Attributes     // Optional attributes
+	Attrs   Attributes      // Optional attributes
 }
 
 func (*EmbedRefNode) inlineNode()      { /* Just a marker */ }
@@ -147,7 +147,7 @@ type EmbedBLOBNode struct {
 	Blob    []byte          // BLOB data itself.
 	Syntax  string          // Syntax of Blob
 	Inlines *InlineListNode // Optional text associated with the image.
-	Attrs   *Attributes     // Optional attributes
+	Attrs   Attributes      // Optional attributes
 }
 
 func (*EmbedBLOBNode) inlineNode()      { /* Just a marker */ }
@@ -166,7 +166,7 @@ func (en *EmbedBLOBNode) WalkChildren(v Visitor) {
 type CiteNode struct {
 	Key     string          // The citation key
 	Inlines *InlineListNode // Optional text associated with the citation.
-	Attrs   *Attributes     // Optional attributes
+	Attrs   Attributes      // Optional attributes
 }
 
 func (*CiteNode) inlineNode() { /* Just a marker */ }
@@ -199,7 +199,7 @@ func (*MarkNode) WalkChildren(Visitor) { /* No children*/ }
 // FootnoteNode contains the specified footnote.
 type FootnoteNode struct {
 	Inlines *InlineListNode // The footnote text.
-	Attrs   *Attributes     // Optional attributes
+	Attrs   Attributes      // Optional attributes
 }
 
 func (*FootnoteNode) inlineNode() { /* Just a marker */ }
@@ -216,7 +216,7 @@ func (fn *FootnoteNode) WalkChildren(v Visitor) {
 // FormatNode specifies some inline formatting.
 type FormatNode struct {
 	Kind    FormatKind
-	Attrs   *Attributes // Optional attributes.
+	Attrs   Attributes // Optional attributes.
 	Inlines *InlineListNode
 }
 
@@ -252,7 +252,7 @@ func (fn *FormatNode) WalkChildren(v Visitor) {
 // LiteralNode specifies some uninterpreted text.
 type LiteralNode struct {
 	Kind    LiteralKind
-	Attrs   *Attributes // Optional attributes.
+	Attrs   Attributes // Optional attributes.
 	Content []byte
 }
 

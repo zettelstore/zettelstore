@@ -74,7 +74,7 @@ func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) *ast.
 	return ast.CreateBlockListNode(
 		&ast.VerbatimNode{
 			Kind:    kind,
-			Attrs:   &ast.Attributes{Attrs: map[string]string{"": syntax}},
+			Attrs:   ast.Attributes(map[string]string{"": syntax}),
 			Content: readContent(inp),
 		},
 	)
@@ -106,7 +106,7 @@ func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.
 	inp.SkipToEOL()
 	return ast.CreateInlineListNode(&ast.LiteralNode{
 		Kind:    kind,
-		Attrs:   &ast.Attributes{Attrs: map[string]string{"": syntax}},
+		Attrs:   ast.Attributes(map[string]string{"": syntax}),
 		Content: append([]byte(nil), inp.Src[0:inp.Pos]...),
 	})
 }
