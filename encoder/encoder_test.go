@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,10 +21,10 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
-	_ "zettelstore.de/z/encoder/djsonenc"  // Allow to use DJSON encoder.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
+	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
@@ -41,7 +41,7 @@ type expectMap map[api.EncodingEnum]string
 const useZmk = "\000"
 
 const (
-	encoderDJSON  = api.EncoderDJSON
+	encoderZJSON  = api.EncoderZJSON
 	encoderHTML   = api.EncoderHTML
 	encoderNative = api.EncoderNative
 	encoderText   = api.EncoderText

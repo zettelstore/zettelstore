@@ -2,6 +2,9 @@
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (pending)</h2>
+  *  Encoding &ldquo;djson&rdquo; renamed to &ldquo;zjson&rdquo; (<em>zettel
+     json</em>).
+     (breaking: api; minor: webui)
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>

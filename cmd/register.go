@@ -18,10 +18,10 @@ import (
 	_ "zettelstore.de/z/box/dirbox"        // Allow to use directory box.
 	_ "zettelstore.de/z/box/filebox"       // Allow to use file box.
 	_ "zettelstore.de/z/box/membox"        // Allow to use in-memory box.
-	_ "zettelstore.de/z/encoder/djsonenc"  // Allow to use DJSON encoder.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
+	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
 	_ "zettelstore.de/z/kernel/impl"       // Allow kernel implementation to create itself
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.

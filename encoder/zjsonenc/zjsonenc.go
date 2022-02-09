@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package jsonenc encodes the abstract syntax tree into JSON.
-package jsonenc
+// Package zjsonenc encodes the abstract syntax tree into JSON.
+package zjsonenc
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderDJSON, encoder.Info{
+	encoder.Register(api.EncoderZJSON, encoder.Info{
 		Create: func(env *encoder.Environment) encoder.Encoder { return &jsonDetailEncoder{env: env} },
 	})
 }

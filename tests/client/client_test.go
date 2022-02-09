@@ -164,7 +164,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	encodings := []api.EncodingEnum{
-		api.EncoderDJSON,
+		api.EncoderZJSON,
 		api.EncoderHTML,
 		api.EncoderNative,
 		api.EncoderText,
