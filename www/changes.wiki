@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_4"></a>
+<h2>Changes for Version 0.4 (pending)</h2>
+
 <a name="0_3"></a>
-<h2>Changes for Version 0.3 (pending)</h2>
+<h2>Changes for Version 0.3 (2022-02-09)</h2>
   *  Zettel files with extension <tt>.meta</tt> are now treated as content
      files. Previoulsy, they were interpreted as metadata files. The
      interpretation as metadata files was deprecated in version 0.2.
@@ -19,6 +22,8 @@
   *  A previously duplicate file that is now useful (because another file was
      deleted) is now logged as such.
      (minor: directory and file/zip box)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_2"></a>
 <h2>Changes for Version 0.2 (2022-01-19)</h2>
