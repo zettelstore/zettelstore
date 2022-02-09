@@ -98,12 +98,12 @@ type parserEncoder interface {
 }
 
 type peInlines struct {
-	iln *ast.InlineListNode
+	iln ast.InlineListNode
 }
 
 func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	if _, err := encdr.WriteInlines(&buf, in.iln); err != nil {
+	if _, err := encdr.WriteInlines(&buf, &in.iln); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

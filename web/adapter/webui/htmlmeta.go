@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -32,7 +32,7 @@ import (
 
 var space = []byte{' '}
 
-type evalMetadataFunc = func(string) *ast.InlineListNode
+type evalMetadataFunc = func(string) ast.InlineListNode
 
 func (wui *WebUI) writeHTMLMetaValue(
 	w io.Writer,
@@ -200,7 +200,7 @@ func (wui *WebUI) encodeTitleAsHTML(
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) *ast.InlineListNode {
+		func(val string) ast.InlineListNode {
 			return evaluate.RunMetadata(ctx, plainTitle, envEval)
 		},
 		api.EncoderHTML, envHTML)
@@ -212,7 +212,7 @@ func (wui *WebUI) encodeTitleAsText(
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) *ast.InlineListNode {
+		func(val string) ast.InlineListNode {
 			return evaluate.RunMetadata(ctx, plainTitle, nil)
 		},
 		api.EncoderText, nil)
@@ -226,7 +226,7 @@ func encodeZmkMetadata(
 	if iln.IsEmpty() {
 		return ""
 	}
-	result, err := encodeInlines(iln, enc, envHTML)
+	result, err := encodeInlines(&iln, enc, envHTML)
 	if err != nil {
 		return err.Error()
 	}

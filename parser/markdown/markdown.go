@@ -43,7 +43,7 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
 	return p.acceptBlockChildren(p.docNode)
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, syntax string) ast.InlineListNode {
 	bln := parseBlocks(inp, nil, syntax)
 	return bln.List.FirstParagraphInlines()
 }
@@ -103,7 +103,7 @@ func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
 }
 
 func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
-	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
+	if iln := p.acceptInlineChildren(node); !iln.IsEmpty() {
 		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
@@ -208,7 +208,7 @@ func (p *mdP) acceptItemSlice(node gmAst.Node) ast.ItemSlice {
 }
 
 func (p *mdP) acceptTextBlock(node *gmAst.TextBlock) ast.ItemNode {
-	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
+	if iln := p.acceptInlineChildren(node); !iln.IsEmpty() {
 		return &ast.ParaNode{Inlines: iln}
 	}
 	return nil
@@ -232,7 +232,7 @@ func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
 	}
 }
 
-func (p *mdP) acceptInlineChildren(node gmAst.Node) *ast.InlineListNode {
+func (p *mdP) acceptInlineChildren(node gmAst.Node) ast.InlineListNode {
 	result := make([]ast.InlineNode, 0, node.ChildCount())
 	for child := node.FirstChild(); child != nil; child = child.NextSibling() {
 		if inlines := p.acceptInline(child); inlines != nil {
@@ -433,15 +433,15 @@ func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
 	}
 }
 
-func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
+func (p *mdP) flattenInlineList(node gmAst.Node) ast.InlineListNode {
 	iln := p.acceptInlineChildren(node)
 	var buf bytes.Buffer
-	_, err := p.textEnc.WriteInlines(&buf, iln)
+	_, err := p.textEnc.WriteInlines(&buf, &iln)
 	if err != nil {
 		panic(err)
 	}
 	if buf.Len() == 0 {
-		return nil
+		return ast.InlineListNode{}
 	}
 	return ast.CreateInlineListNode(&ast.TextNode{Text: buf.String()})
 }

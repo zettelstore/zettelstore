@@ -25,20 +25,21 @@ func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
 }
 
 func getMetadataDescription(key, value string) ast.Description {
+	iln := convertMetavalueToInlineList(value, meta.Type(key))
 	return ast.Description{
 		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
 		Descriptions: []ast.DescriptionSlice{{
-			ast.CreateParaNode(convertMetavalueToInlineList(value, meta.Type(key))),
+			ast.CreateParaNode(&iln),
 		}},
 	}
 }
 
-func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) *ast.InlineListNode {
+func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) ast.InlineListNode {
 	var sliceData []string
 	if dt.IsSet {
 		sliceData = meta.ListFromValue(value)
 		if len(sliceData) == 0 {
-			return &ast.InlineListNode{}
+			return ast.InlineListNode{}
 		}
 	} else {
 		sliceData = []string{value}

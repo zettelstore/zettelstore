@@ -46,10 +46,7 @@ func firstItemZettelReference(is ast.ItemSlice) *ast.Reference {
 	return nil
 }
 
-func firstInlineZettelReference(iln *ast.InlineListNode) (result *ast.Reference) {
-	if iln == nil {
-		return nil
-	}
+func firstInlineZettelReference(iln ast.InlineListNode) (result *ast.Reference) {
 	for _, inl := range iln.List {
 		switch in := inl.(type) {
 		case *ast.LinkNode:

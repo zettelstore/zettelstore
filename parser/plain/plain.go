@@ -96,13 +96,13 @@ func readContent(inp *input.Input) []byte {
 	}
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, syntax string) ast.InlineListNode {
 	return doParseInlines(inp, syntax, ast.LiteralProg)
 }
-func parseInlinesHTML(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlinesHTML(inp *input.Input, syntax string) ast.InlineListNode {
 	return doParseInlines(inp, syntax, ast.LiteralHTML)
 }
-func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.InlineListNode {
+func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) ast.InlineListNode {
 	inp.SkipToEOL()
 	return ast.CreateInlineListNode(&ast.LiteralNode{
 		Kind:    kind,
@@ -113,16 +113,16 @@ func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.
 
 func parseSVGBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNode {
 	iln := parseSVGInlines(inp, syntax)
-	if iln == nil {
+	if iln.IsEmpty() {
 		return nil
 	}
-	return ast.CreateBlockListNode(ast.CreateParaNode(iln))
+	return ast.CreateBlockListNode(ast.CreateParaNode(&iln))
 }
 
-func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseSVGInlines(inp *input.Input, syntax string) ast.InlineListNode {
 	svgSrc := scanSVG(inp)
 	if svgSrc == "" {
-		return nil
+		return ast.InlineListNode{}
 	}
 	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
 		Blob:   []byte(svgSrc),

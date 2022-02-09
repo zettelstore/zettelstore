@@ -38,7 +38,7 @@ func (bln *BlockListNode) WalkChildren(v Visitor) {
 // ParaNode contains just a sequence of inline elements.
 // Another name is "paragraph".
 type ParaNode struct {
-	Inlines *InlineListNode
+	Inlines InlineListNode
 }
 
 func (*ParaNode) blockNode()       { /* Just a marker */ }
@@ -46,7 +46,7 @@ func (*ParaNode) itemNode()        { /* Just a marker */ }
 func (*ParaNode) descriptionNode() { /* Just a marker */ }
 
 // NewParaNode creates an empty ParaNode.
-func NewParaNode() *ParaNode { return &ParaNode{Inlines: &InlineListNode{}} }
+func NewParaNode() *ParaNode { return &ParaNode{Inlines: InlineListNode{}} }
 
 // CreateParaNode creates a parameter block from inline nodes.
 func CreateParaNode(nodes ...InlineNode) *ParaNode {
@@ -55,9 +55,7 @@ func CreateParaNode(nodes ...InlineNode) *ParaNode {
 
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {
-	if iln := pn.Inlines; iln != nil {
-		Walk(v, iln)
-	}
+	Walk(v, &pn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -94,7 +92,7 @@ type RegionNode struct {
 	Kind    RegionKind
 	Attrs   Attributes
 	Blocks  *BlockListNode
-	Inlines *InlineListNode // Optional text at the end of the region
+	Inlines InlineListNode // Optional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
@@ -114,9 +112,7 @@ func (*RegionNode) itemNode()  { /* Just a marker */ }
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
 	Walk(v, rn.Blocks)
-	if iln := rn.Inlines; iln != nil {
-		Walk(v, iln)
-	}
+	Walk(v, &rn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -124,9 +120,9 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
 	Level    int
-	Inlines  *InlineListNode // Heading text, possibly formatted
-	Slug     string          // Heading text, normalized
-	Fragment string          // Heading text, suitable to be used as an unique URL fragment
+	Inlines  InlineListNode // Heading text, possibly formatted
+	Slug     string         // Heading text, normalized
+	Fragment string         // Heading text, suitable to be used as an unique URL fragment
 	Attrs    Attributes
 }
 
@@ -135,9 +131,7 @@ func (*HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
 func (hn *HeadingNode) WalkChildren(v Visitor) {
-	if iln := hn.Inlines; iln != nil {
-		Walk(v, iln)
-	}
+	Walk(v, &hn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -194,7 +188,7 @@ type DescriptionListNode struct {
 
 // Description is one element of a description list.
 type Description struct {
-	Term         *InlineListNode
+	Term         InlineListNode
 	Descriptions []DescriptionSlice
 }
 
@@ -203,9 +197,9 @@ func (*DescriptionListNode) blockNode() { /* Just a marker */ }
 // WalkChildren walks down to the descriptions.
 func (dn *DescriptionListNode) WalkChildren(v Visitor) {
 	if descrs := dn.Descriptions; descrs != nil {
-		for _, desc := range descrs {
-			if term := desc.Term; term != nil {
-				Walk(v, term)
+		for i, desc := range descrs {
+			if !desc.Term.IsEmpty() {
+				Walk(v, &descrs[i].Term) // Otherwise, changes in desc.Term will not go back into AST
 			}
 			if dss := desc.Descriptions; dss != nil {
 				for _, dns := range dss {
@@ -227,8 +221,8 @@ type TableNode struct {
 
 // TableCell contains the data for one table cell
 type TableCell struct {
-	Align   Alignment       // Cell alignment
-	Inlines *InlineListNode // Cell content
+	Align   Alignment      // Cell alignment
+	Inlines InlineListNode // Cell content
 }
 
 // TableRow is a slice of cells.
@@ -252,18 +246,14 @@ func (*TableNode) blockNode() { /* Just a marker */ }
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
 	if header := tn.Header; header != nil {
-		for _, cell := range header {
-			if iln := cell.Inlines; iln != nil {
-				Walk(v, iln)
-			}
+		for i := range header {
+			Walk(v, &header[i].Inlines) // Otherwise changes will not go back
 		}
 	}
 	if rows := tn.Rows; rows != nil {
 		for _, row := range rows {
-			for _, cell := range row {
-				if iln := cell.Inlines; iln != nil {
-					Walk(v, iln)
-				}
+			for i := range row {
+				Walk(v, &row[i].Inlines) // Otherwise changes will not go back
 			}
 		}
 	}

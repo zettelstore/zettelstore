@@ -47,7 +47,8 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
-			te.WriteInlines(&buf, evalMeta(pair.Value))
+			iln := evalMeta(pair.Value)
+			te.WriteInlines(&buf, &iln)
 		default:
 			buf.WriteString(pair.Value)
 		}
@@ -121,9 +122,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.RegionNode:
 		v.visitBlockList(n.Blocks)
-		if n.Inlines != nil {
+		if !n.Inlines.IsEmpty() {
 			v.b.WriteByte('\n')
-			ast.Walk(v, n.Inlines)
+			ast.Walk(v, &n.Inlines)
 		}
 		return nil
 	case *ast.NestedListNode:
@@ -155,7 +156,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.LinkNode:
 		if !n.OnlyRef {
-			ast.Walk(v, n.Inlines)
+			ast.Walk(v, &n.Inlines)
 		}
 		return nil
 	case *ast.FootnoteNode:
@@ -191,7 +192,7 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 func (v *visitor) visitDescriptionList(dl *ast.DescriptionListNode) {
 	for i, descr := range dl.Descriptions {
 		v.writePosChar(i, '\n')
-		ast.Walk(v, descr.Term)
+		ast.Walk(v, &descr.Term)
 		for _, b := range descr.Descriptions {
 			v.b.WriteByte('\n')
 			for k, d := range b {
@@ -216,7 +217,7 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 func (v *visitor) writeRow(row ast.TableRow) {
 	for i, cell := range row {
 		v.writePosChar(i, ' ')
-		ast.Walk(v, cell.Inlines)
+		ast.Walk(v, &cell.Inlines)
 	}
 }
 

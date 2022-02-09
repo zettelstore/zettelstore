@@ -94,7 +94,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.writeHTMLMetaValue(
 				&buf, p.Key, p.Value,
 				getTextTitle,
-				func(val string) *ast.InlineListNode {
+				func(val string) ast.InlineListNode {
 					return evaluate.RunMetadata(ctx, val, &envEval)
 				},
 				&envHTML)

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -269,9 +269,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseMetadata(title)
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		menuTitle, err2 := encodeInlines(astTitle, api.EncoderHTML, &env)
+		menuTitle, err2 := encodeInlines(&astTitle, api.EncoderHTML, &env)
 		if err2 != nil {
-			menuTitle, err2 = encodeInlines(astTitle, api.EncoderText, nil)
+			menuTitle, err2 = encodeInlines(&astTitle, api.EncoderText, nil)
 			if err2 != nil {
 				menuTitle = title
 			}

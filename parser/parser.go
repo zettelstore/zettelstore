@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -34,7 +34,7 @@ type Info struct {
 	IsTextParser  bool
 	IsImageFormat bool
 	ParseBlocks   func(*input.Input, *meta.Meta, string) *ast.BlockListNode
-	ParseInlines  func(*input.Input, string) *ast.InlineListNode
+	ParseInlines  func(*input.Input, string) ast.InlineListNode
 }
 
 var registry = map[string]*Info{}
@@ -99,13 +99,13 @@ func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNo
 }
 
 // ParseInlines parses some input and returns a slice of inline nodes.
-func ParseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func ParseInlines(inp *input.Input, syntax string) ast.InlineListNode {
 	return Get(syntax).ParseInlines(inp, syntax)
 }
 
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
-func ParseMetadata(value string) *ast.InlineListNode {
+func ParseMetadata(value string) ast.InlineListNode {
 	return ParseInlines(input.NewInput([]byte(value)), api.ValueSyntaxZmk)
 }
 

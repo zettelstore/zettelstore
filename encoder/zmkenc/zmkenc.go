@@ -58,7 +58,8 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		key := p.Key
 		v.b.WriteStrings(key, ": ")
 		if meta.Type(key) == meta.TypeZettelmarkup {
-			ast.Walk(v, evalMeta(p.Value))
+			iln := evalMeta(p.Value)
+			ast.Walk(v, &iln)
 		} else {
 			v.b.WriteString(p.Value)
 		}
@@ -149,7 +150,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitCite(n)
 	case *ast.FootnoteNode:
 		v.b.WriteString("[^")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.b.WriteByte(']')
 		v.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
@@ -227,16 +228,16 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.inVerse = saveInVerse
 	v.b.WriteByte('\n')
 	v.b.WriteString(kind)
-	if rn.Inlines != nil {
+	if !rn.Inlines.IsEmpty() {
 		v.b.WriteByte(' ')
-		ast.Walk(v, rn.Inlines)
+		ast.Walk(v, &rn.Inlines)
 	}
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	const headingSigns = "========= "
 	v.b.WriteString(headingSigns[len(headingSigns)-hn.Level-3:])
-	ast.Walk(v, hn.Inlines)
+	ast.Walk(v, &hn.Inlines)
 	v.visitAttributes(hn.Attrs)
 }
 
@@ -279,7 +280,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 			v.b.WriteByte('\n')
 		}
 		v.b.WriteString("; ")
-		ast.Walk(v, descr.Term)
+		ast.Walk(v, &descr.Term)
 
 		for _, b := range descr.Descriptions {
 			v.b.WriteString("\n: ")
@@ -315,7 +316,7 @@ func (v *visitor) writeTableHeader(header ast.TableRow, align []ast.Alignment) {
 		if cell.Align != colAlign {
 			v.b.WriteString(alignCode[cell.Align])
 		}
-		ast.Walk(v, cell.Inlines)
+		ast.Walk(v, &cell.Inlines)
 		if colAlign != ast.AlignDefault {
 			v.b.WriteString(alignCode[colAlign])
 		}
@@ -328,7 +329,7 @@ func (v *visitor) writeTableRow(row ast.TableRow, align []ast.Alignment) {
 		if cell.Align != align[pos] {
 			v.b.WriteString(alignCode[cell.Align])
 		}
-		ast.Walk(v, cell.Inlines)
+		ast.Walk(v, &cell.Inlines)
 	}
 }
 
@@ -388,7 +389,7 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString("[[")
 	if !ln.OnlyRef {
-		ast.Walk(v, ln.Inlines)
+		ast.Walk(v, &ln.Inlines)
 		v.b.WriteByte('|')
 	}
 	v.b.WriteStrings(ln.Ref.String(), "]]")
@@ -396,8 +397,8 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("{{")
-	if en.Inlines != nil {
-		ast.Walk(v, en.Inlines)
+	if !en.Inlines.IsEmpty() {
+		ast.Walk(v, &en.Inlines)
 		v.b.WriteByte('|')
 	}
 	v.b.WriteStrings(en.Ref.String(), "}}")
@@ -415,9 +416,9 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.b.WriteStrings("[@", cn.Key)
-	if cn.Inlines != nil {
+	if !cn.Inlines.IsEmpty() {
 		v.b.WriteString(", ")
-		ast.Walk(v, cn.Inlines)
+		ast.Walk(v, &cn.Inlines)
 	}
 	v.b.WriteByte(']')
 	v.visitAttributes(cn.Attrs)
@@ -442,7 +443,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		panic(fmt.Sprintf("Unknown format kind %d", fn.Kind))
 	}
 	v.b.Write(kind)
-	ast.Walk(v, fn.Inlines)
+	ast.Walk(v, &fn.Inlines)
 	v.b.Write(kind)
 	v.visitAttributes(fn.Attrs)
 }

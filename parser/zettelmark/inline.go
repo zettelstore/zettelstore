@@ -20,7 +20,7 @@ import (
 )
 
 // parseInlineList parses a sequence of Inlines until EOS.
-func (cp *zmkP) parseInlineList() *ast.InlineListNode {
+func (cp *zmkP) parseInlineList() ast.InlineListNode {
 	inp := cp.inp
 	var ins []ast.InlineNode
 	for inp.Ch != input.EOS {
@@ -161,7 +161,7 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 		if len(ref) > 0 {
 			onlyRef := false
 			r := ast.ParseReference(ref)
-			if iln == nil {
+			if iln.IsEmpty() {
 				iln = ast.CreateInlineListNode(&ast.TextNode{Text: ref})
 				onlyRef = true
 			}
@@ -176,19 +176,19 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	return nil, false
 }
 
-func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNode, ok bool) {
+func (cp *zmkP) parseReference(closeCh rune) (ref string, iln ast.InlineListNode, ok bool) {
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
 	pos := inp.Pos
 	hasSpace, ok := cp.readReferenceToSep(closeCh)
 	if !ok {
-		return "", nil, false
+		return "", ast.InlineListNode{}, false
 	}
 	var ins []ast.InlineNode
 	if inp.Ch == '|' { // First part must be inline text
 		if pos == inp.Pos { // [[| or {{|
-			return "", nil, false
+			return "", ast.InlineListNode{}, false
 		}
 		cp.inp = input.NewInput(inp.Src[pos:inp.Pos])
 		for {
@@ -201,7 +201,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 		cp.inp = inp
 		inp.Next()
 	} else if hasSpace {
-		return "", nil, false
+		return "", ast.InlineListNode{}, false
 	} else {
 		inp.SetPos(pos)
 	}
@@ -209,16 +209,16 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 	cp.skipSpace()
 	pos = inp.Pos
 	if !cp.readReferenceToClose(closeCh) {
-		return "", nil, false
+		return "", ast.InlineListNode{}, false
 	}
 	ref = string(inp.Src[pos:inp.Pos])
 	inp.Next()
 	if inp.Ch != closeCh {
-		return "", nil, false
+		return "", ast.InlineListNode{}, false
 	}
 	inp.Next()
 	if len(ins) == 0 {
-		return ref, nil, true
+		return ref, ast.InlineListNode{}, true
 	}
 	return ref, ast.CreateInlineListNode(ins...), true
 }
@@ -316,29 +316,26 @@ func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 		return nil, false
 	}
 	attrs := cp.parseAttributes(false)
-	if iln == nil {
-		iln = &ast.InlineListNode{}
-	}
 	return &ast.FootnoteNode{Inlines: iln, Attrs: attrs}, true
 }
 
-func (cp *zmkP) parseLinkLikeRest() (*ast.InlineListNode, bool) {
+func (cp *zmkP) parseLinkLikeRest() (ast.InlineListNode, bool) {
 	cp.skipSpace()
 	var ins []ast.InlineNode
 	inp := cp.inp
 	for inp.Ch != ']' {
 		in := cp.parseInline()
 		if in == nil {
-			return nil, false
+			return ast.InlineListNode{}, false
 		}
 		ins = append(ins, in)
 		if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
-			return nil, false
+			return ast.InlineListNode{}, false
 		}
 	}
 	inp.Next()
 	if len(ins) == 0 {
-		return nil, true
+		return ast.InlineListNode{}, true
 	}
 	return ast.CreateInlineListNode(ins...), true
 }
@@ -434,7 +431,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	fn := &ast.FormatNode{Kind: kind, Inlines: &ast.InlineListNode{}}
+	fn := &ast.FormatNode{Kind: kind, Inlines: ast.InlineListNode{}}
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false

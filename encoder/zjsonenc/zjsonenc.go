@@ -98,7 +98,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.ParaNode:
 		v.writeNodeStart("Para")
 		v.writeContentStart('i')
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
 	case *ast.RegionNode:
@@ -150,7 +150,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Ref.String())
 		v.writeContentStart('i')
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 	case *ast.EmbedRefNode:
 		v.visitEmbedRef(n)
 	case *ast.EmbedBLOBNode:
@@ -160,22 +160,22 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Key)
-		if n.Inlines != nil {
+		if !n.Inlines.IsEmpty() {
 			v.writeContentStart('i')
-			ast.Walk(v, n.Inlines)
+			ast.Walk(v, &n.Inlines)
 		}
 	case *ast.FootnoteNode:
 		v.writeNodeStart("Footnote")
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('i')
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 	case *ast.MarkNode:
 		v.visitMark(n)
 	case *ast.FormatNode:
 		v.writeNodeStart(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('i')
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 	case *ast.LiteralNode:
 		kind, ok := mapLiteralKind[n.Kind]
 		if !ok {
@@ -225,9 +225,9 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
 	ast.Walk(v, rn.Blocks)
-	if rn.Inlines != nil {
+	if !rn.Inlines.IsEmpty() {
 		v.writeContentStart('i')
-		ast.Walk(v, rn.Inlines)
+		ast.Walk(v, &rn.Inlines)
 	}
 }
 
@@ -241,7 +241,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 		v.b.WriteStrings(`"`, fragment, `"`)
 	}
 	v.writeContentStart('i')
-	ast.Walk(v, hn.Inlines)
+	ast.Walk(v, &hn.Inlines)
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
@@ -271,7 +271,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	for i, def := range dn.Descriptions {
 		v.writeComma(i)
 		v.b.WriteByte('[')
-		ast.Walk(v, def.Term)
+		ast.Walk(v, &def.Term)
 
 		if len(def.Descriptions) > 0 {
 			for _, b := range def.Descriptions {
@@ -323,7 +323,7 @@ var alignmentCode = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteString(alignmentCode[cell.Align])
-	ast.Walk(v, cell.Inlines)
+	ast.Walk(v, &cell.Inlines)
 	v.b.WriteByte(']')
 }
 
@@ -362,9 +362,9 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.writeContentStart('s')
 	writeEscaped(&v.b, en.Ref.String())
 
-	if en.Inlines != nil {
+	if !en.Inlines.IsEmpty() {
 		v.writeContentStart('i')
-		ast.Walk(v, en.Inlines)
+		ast.Walk(v, &en.Inlines)
 	}
 }
 
@@ -384,9 +384,9 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	}
 	v.b.WriteByte('}')
 
-	if en.Inlines != nil {
+	if !en.Inlines.IsEmpty() {
 		v.writeContentStart('i')
-		ast.Walk(v, en.Inlines)
+		ast.Walk(v, &en.Inlines)
 	}
 }
 
@@ -510,7 +510,8 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 			continue
 		}
 		if t == meta.TypeZettelmarkup {
-			ast.Walk(v, evalMeta(p.Value))
+			iln := evalMeta(p.Value)
+			ast.Walk(v, &iln)
 			continue
 		}
 		writeEscaped(&v.b, p.Value)

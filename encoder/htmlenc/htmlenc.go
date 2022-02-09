@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -49,9 +49,9 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
 	if hasTitle {
-		if ilnTitle := evalMeta(plainTitle); ilnTitle != nil {
+		if ilnTitle := evalMeta(plainTitle); !ilnTitle.IsEmpty() {
 			v.b.WriteString("<h1>")
-			ast.Walk(v, ilnTitle)
+			ast.Walk(v, &ilnTitle)
 			v.b.WriteString("</h1>\n")
 		}
 	}

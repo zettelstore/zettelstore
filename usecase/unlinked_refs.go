@@ -97,8 +97,8 @@ candLoop:
 				continue
 			}
 			iln := parser.ParseMetadata(pair.Value)
-			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, iln)
-			ast.Walk(&v, iln)
+			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, &iln)
+			ast.Walk(&v, &iln)
 			if v.found {
 				result = append(result, cand)
 				continue candLoop

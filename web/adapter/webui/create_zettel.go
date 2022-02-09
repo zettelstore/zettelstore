@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -66,13 +66,13 @@ func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel
 		}
 		m := origZettel.Meta
 		title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
-		textTitle, err := encodeInlines(title, api.EncoderText, nil)
+		textTitle, err := encodeInlines(&title, api.EncoderText, nil)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		htmlTitle, err := encodeInlines(title, api.EncoderHTML, &env)
+		htmlTitle, err := encodeInlines(&title, api.EncoderHTML, &env)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

@@ -50,7 +50,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 			a.reportUsecaseError(w, err)
 			return
 		}
-		evalMeta := func(value string) *ast.InlineListNode {
+		evalMeta := func(value string) ast.InlineListNode {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		a.writeEncodedZettelPart(w, zn, evalMeta, enc, encStr, part)

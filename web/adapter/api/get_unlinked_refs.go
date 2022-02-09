@@ -48,7 +48,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			ilnTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
 			encdr := encoder.Create(api.EncoderText, nil)
 			var b strings.Builder
-			_, err = encdr.WriteInlines(&b, ilnTitle)
+			_, err = encdr.WriteInlines(&b, &ilnTitle)
 			if err == nil {
 				phrase = b.String()
 			}

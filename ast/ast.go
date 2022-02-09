@@ -46,7 +46,7 @@ type BlockSlice []BlockNode
 
 // FirstParagraphInlines returns the inline list of the first paragraph that
 // contains a inline list.
-func (bns BlockSlice) FirstParagraphInlines() *InlineListNode {
+func (bns BlockSlice) FirstParagraphInlines() InlineListNode {
 	if len(bns) > 0 {
 		for _, bn := range bns {
 			pn, ok := bn.(*ParaNode)
@@ -54,12 +54,12 @@ func (bns BlockSlice) FirstParagraphInlines() *InlineListNode {
 				continue
 			}
 			inl := pn.Inlines
-			if inl != nil && len(inl.List) > 0 {
+			if len(inl.List) > 0 {
 				return inl
 			}
 		}
 	}
-	return nil
+	return InlineListNode{}
 }
 
 // ItemNode is a node that can occur as a list item.

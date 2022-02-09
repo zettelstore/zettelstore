@@ -720,7 +720,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.visitInlineList(n)
 	case *ast.ParaNode:
 		tv.buf.WriteString("(PARA")
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 	case *ast.VerbatimNode:
 		code, ok := mapVerbatimKind[n.Kind]
@@ -744,16 +744,16 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			tv.buf.WriteByte(' ')
 			ast.Walk(tv, n.Blocks)
 		}
-		if n.Inlines != nil {
+		if !n.Inlines.IsEmpty() {
 			tv.buf.WriteString(" (LINE")
-			ast.Walk(tv, n.Inlines)
+			ast.Walk(tv, &n.Inlines)
 			tv.buf.WriteByte(')')
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HeadingNode:
 		fmt.Fprintf(&tv.buf, "(H%d", n.Level)
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		if n.Fragment != "" {
 			tv.buf.WriteString(" #")
 			tv.buf.WriteString(n.Fragment)
@@ -775,7 +775,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteString("(DL")
 		for _, def := range n.Descriptions {
 			tv.buf.WriteString(" (DT")
-			ast.Walk(tv, def.Term)
+			ast.Walk(tv, &def.Term)
 			tv.buf.WriteByte(')')
 			for _, b := range def.Descriptions {
 				tv.buf.WriteString(" (DD ")
@@ -791,7 +791,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			for _, cell := range n.Header {
 				tv.buf.WriteString(" (TH")
 				tv.buf.WriteString(alignString[cell.Align])
-				ast.Walk(tv, cell.Inlines)
+				ast.Walk(tv, &cell.Inlines)
 				tv.buf.WriteString(")")
 			}
 			tv.buf.WriteString(")")
@@ -806,7 +806,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 					}
 					tv.buf.WriteString("(TD")
 					tv.buf.WriteString(alignString[cell.Align])
-					ast.Walk(tv, cell.Inlines)
+					ast.Walk(tv, &cell.Inlines)
 					tv.buf.WriteString(")")
 				}
 				tv.buf.WriteString(")")
@@ -839,13 +839,13 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		fmt.Fprintf(&tv.buf, "(LINK %v", n.Ref)
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.EmbedRefNode:
 		fmt.Fprintf(&tv.buf, "(EMBED %v", n.Ref)
-		if n.Inlines != nil {
-			ast.Walk(tv, n.Inlines)
+		if !n.Inlines.IsEmpty() {
+			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
@@ -853,14 +853,14 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		panic("TODO: zmktest blob")
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.buf, "(CITE %s", n.Key)
-		if n.Inlines != nil {
-			ast.Walk(tv, n.Inlines)
+		if !n.Inlines.IsEmpty() {
+			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.FootnoteNode:
 		tv.buf.WriteString("(FN")
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
@@ -877,7 +877,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteByte(')')
 	case *ast.FormatNode:
 		fmt.Fprintf(&tv.buf, "{%c", mapFormatKind[n.Kind])
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	case *ast.LiteralNode:

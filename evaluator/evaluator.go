@@ -76,7 +76,7 @@ func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig con
 		transcludeMax:   rtConfig.GetMaxTransclusions(),
 		transcludeCount: 0,
 		costMap:         map[id.Zid]transcludeCost{},
-		embedMap:        map[string]*ast.InlineListNode{},
+		embedMap:        map[string]ast.InlineListNode{},
 		marker:          &ast.ZettelNode{},
 	}
 	ast.Walk(&e, n)
@@ -91,7 +91,7 @@ type evaluator struct {
 	transcludeCount int
 	costMap         map[id.Zid]transcludeCost
 	marker          *ast.ZettelNode
-	embedMap        map[string]*ast.InlineListNode
+	embedMap        map[string]ast.InlineListNode
 }
 
 type transcludeCost struct {
@@ -400,7 +400,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	if ec := cost.ec; ec > 0 {
 		e.transcludeCount += cost.ec
 	}
-	return result
+	return &result
 }
 
 func mustParseZid(ref *ast.Reference) id.Zid {
@@ -423,7 +423,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 			Content: []byte("Nothing to transclude"),
 		}
 	}
-	return result
+	return &result
 }
 
 func (e *evaluator) getSyntax(m *meta.Meta) string {
@@ -448,7 +448,7 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 			panic(err)
 		}
 		inlines := en.Inlines
-		if inlines == nil {
+		if inlines.IsEmpty() {
 			if title := e.getTitle(zettel.Meta); title != "" {
 				inlines = parser.ParseMetadata(title)
 			}
@@ -465,7 +465,7 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 		return result
 	}
 	en.Ref = ast.ParseReference(errorZid.String())
-	if en.Inlines == nil {
+	if en.Inlines.IsEmpty() {
 		en.Inlines = parser.ParseMetadata("Error placeholder")
 	}
 	return en
@@ -514,9 +514,9 @@ func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
 	return ln
 }
 
-func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) *ast.InlineListNode {
+func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.InlineListNode {
 	iln := parser.ParseInlines(input.NewInput(content), syntax)
-	ast.Walk(e, iln)
+	ast.Walk(e, &iln)
 	return iln
 }
 
@@ -526,25 +526,22 @@ func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode
 	return zn
 }
 
-func findInlineList(bnl *ast.BlockListNode, fragment string) *ast.InlineListNode {
+func findInlineList(bnl *ast.BlockListNode, fragment string) ast.InlineListNode {
 	if fragment == "" {
 		return bnl.List.FirstParagraphInlines()
 	}
-	fs := fragmentSearcher{
-		fragment: fragment,
-		result:   nil,
-	}
+	fs := fragmentSearcher{fragment: fragment}
 	ast.Walk(&fs, bnl)
 	return fs.result
 }
 
 type fragmentSearcher struct {
 	fragment string
-	result   *ast.InlineListNode
+	result   ast.InlineListNode
 }
 
 func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
-	if fs.result != nil {
+	if !fs.result.IsEmpty() {
 		return nil
 	}
 	switch n := node.(type) {

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -199,7 +199,8 @@ func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *st
 				mgr.idxUpdateValue(ctx, descr.Inverse, val, zi)
 			}
 		case meta.TypeZettelmarkup:
-			collectInlineIndexData(parser.ParseMetadata(pair.Value), cData)
+			iln := parser.ParseMetadata(pair.Value)
+			collectInlineIndexData(&iln, cData)
 		case meta.TypeURL:
 			if _, err := url.Parse(pair.Value); err == nil {
 				cData.urls.Add(pair.Value)

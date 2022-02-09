@@ -158,7 +158,7 @@ func appendCells(row ast.TableRow, width int, colAlign []ast.Alignment) ast.Tabl
 	for len(row) < width {
 		row = append(row, &ast.TableCell{
 			Align:   colAlign[len(row)],
-			Inlines: &ast.InlineListNode{},
+			Inlines: ast.InlineListNode{},
 		})
 	}
 	return row
@@ -193,9 +193,7 @@ func getAlignment(ch byte) ast.Alignment {
 
 // processCell tries to recognize cell formatting.
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
-	iln := cell.Inlines
-	ins := iln.List
-	if tn := initialText(ins); tn != nil {
+	if tn := initialText(cell.Inlines.List); tn != nil {
 		align := getAlignment(tn.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
@@ -206,7 +204,7 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	} else {
 		cell.Align = colAlign
 	}
-	ast.Walk(pp, iln)
+	ast.Walk(pp, &cell.Inlines)
 }
 
 func initialText(ins []ast.InlineNode) *ast.TextNode {

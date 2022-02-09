@@ -33,7 +33,7 @@ type Encoder interface {
 
 // EvalMetaFunc is a function that takes a string of metadata and returns
 // a list of syntax elements.
-type EvalMetaFunc func(string) *ast.InlineListNode
+type EvalMetaFunc func(string) ast.InlineListNode
 
 // Some errors to signal when encoder methods are not implemented.
 var (

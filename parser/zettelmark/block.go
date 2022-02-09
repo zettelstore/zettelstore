@@ -232,7 +232,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 		Kind:    kind,
 		Attrs:   attrs,
 		Blocks:  &ast.BlockListNode{},
-		Inlines: nil,
+		Inlines: ast.InlineListNode{},
 	}
 	var lastPara *ast.ParaNode
 	inp.EatEOL()
@@ -270,7 +270,7 @@ func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
 		if in == nil {
 			return
 		}
-		if rn.Inlines == nil {
+		if rn.Inlines.IsEmpty() {
 			rn.Inlines = ast.CreateInlineListNode(in)
 		} else {
 			rn.Inlines.Append(in)
@@ -294,7 +294,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 	if delims > 7 {
 		delims = 7
 	}
-	hn = &ast.HeadingNode{Level: delims - 2, Inlines: &ast.InlineListNode{}}
+	hn = &ast.HeadingNode{Level: delims - 2, Inlines: ast.InlineListNode{}}
 	for {
 		if input.IsEOLEOS(inp.Ch) {
 			return hn, true
@@ -436,13 +436,10 @@ func (cp *zmkP) parseDefTerm() (res ast.BlockNode, success bool) {
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			if descrl.Descriptions[defPos].Term == nil {
+			if descrl.Descriptions[defPos].Term.IsEmpty() {
 				return nil, false
 			}
 			return res, true
-		}
-		if descrl.Descriptions[defPos].Term == nil {
-			descrl.Descriptions[defPos].Term = &ast.InlineListNode{}
 		}
 		descrl.Descriptions[defPos].Term.Append(in)
 		if _, ok := in.(*ast.BreakNode); ok {
@@ -465,7 +462,7 @@ func (cp *zmkP) parseDefDescr() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	defPos := len(descrl.Descriptions) - 1
-	if descrl.Descriptions[defPos].Term == nil {
+	if descrl.Descriptions[defPos].Term.IsEmpty() {
 		return nil, false
 	}
 	pn := cp.parseLinePara()
@@ -561,7 +558,7 @@ func (cp *zmkP) parseLinePara() *ast.ParaNode {
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			if pn.Inlines == nil {
+			if pn.Inlines.IsEmpty() {
 				return nil
 			}
 			return pn

@@ -116,9 +116,9 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(attrs)
 	v.b.WriteString(">\n")
 	ast.Walk(v, rn.Blocks)
-	if rn.Inlines != nil {
+	if !rn.Inlines.IsEmpty() {
 		v.b.WriteString("\n<cite>")
-		ast.Walk(v, rn.Inlines)
+		ast.Walk(v, &rn.Inlines)
 		v.b.WriteString("</cite>")
 	}
 	v.b.WriteStrings("\n</", code, ">")
@@ -142,7 +142,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 		}
 	}
 	v.b.WriteByte('>')
-	ast.Walk(v, hn.Inlines)
+	ast.Walk(v, &hn.Inlines)
 	v.b.WriteStrings("</h", strLvl, ">")
 }
 
@@ -189,7 +189,7 @@ func (v *visitor) writeQuotationList(ln *ast.NestedListNode) {
 				v.b.WriteString("<p>")
 				inPara = true
 			}
-			ast.Walk(v, pn.Inlines)
+			ast.Walk(v, &pn.Inlines)
 		} else {
 			if inPara {
 				v.writeEndPara()
@@ -244,7 +244,7 @@ func isCompactSlice(ins ast.ItemSlice) bool {
 func (v *visitor) writeItemSliceOrPara(ins ast.ItemSlice, compact bool) {
 	if compact && len(ins) == 1 {
 		if para, ok := ins[0].(*ast.ParaNode); ok {
-			ast.Walk(v, para.Inlines)
+			ast.Walk(v, &para.Inlines)
 			return
 		}
 	}
@@ -260,7 +260,7 @@ func (v *visitor) writeItemSliceOrPara(ins ast.ItemSlice, compact bool) {
 func (v *visitor) writeDescriptionsSlice(ds ast.DescriptionSlice) {
 	if len(ds) == 1 {
 		if para, ok := ds[0].(*ast.ParaNode); ok {
-			ast.Walk(v, para.Inlines)
+			ast.Walk(v, &para.Inlines)
 			return
 		}
 	}
@@ -271,7 +271,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	v.b.WriteString("<dl>\n")
 	for _, descr := range dn.Descriptions {
 		v.b.WriteString("<dt>")
-		ast.Walk(v, descr.Term)
+		ast.Walk(v, &descr.Term)
 		v.b.WriteString("</dt>\n")
 
 		for _, b := range descr.Descriptions {
@@ -315,7 +315,7 @@ func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {
 			v.b.WriteByte('>')
 		} else {
 			v.b.WriteString(alignStyle[cell.Align])
-			ast.Walk(v, cell.Inlines)
+			ast.Walk(v, &cell.Inlines)
 		}
 		v.b.WriteString(cellEnd)
 	}

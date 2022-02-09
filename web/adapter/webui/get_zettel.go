@@ -61,7 +61,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		evalMeta := func(value string) *ast.InlineListNode {
+		evalMeta := func(value string) ast.InlineListNode {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)

@@ -66,7 +66,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.inlinePos = 0
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.writeEndPara()
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -166,7 +166,8 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 
 func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
 	var buf bytes.Buffer
-	_, err := v.textEnc.WriteInlines(&buf, evalMeta(value))
+	iln := evalMeta(value)
+	_, err := v.textEnc.WriteInlines(&buf, &iln)
 	if err == nil {
 		return buf.String()
 	}
@@ -210,7 +211,7 @@ func (v *visitor) writeEndnotes() {
 	for fn != nil {
 		n := strconv.Itoa(fnNum)
 		v.b.WriteStrings("<li value=\"", n, "\" id=\"fn:", n, "\" role=\"doc-endnote\">")
-		ast.Walk(v, fn.Inlines)
+		ast.Walk(v, &fn.Inlines)
 		v.b.WriteStrings(
 			" <a href=\"#fnref:",
 			n,

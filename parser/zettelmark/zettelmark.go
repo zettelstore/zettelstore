@@ -39,10 +39,10 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
 	return bns
 }
 
-func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
 	parser := &zmkP{inp: inp}
 	iln := parser.parseInlineList()
-	postProcessInlines(iln)
+	postProcessInlines(&iln)
 	return iln
 }
 

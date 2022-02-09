@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -33,7 +33,7 @@ func parseBlocks(*input.Input, *meta.Meta, string) *ast.BlockListNode {
 	return &ast.BlockListNode{}
 }
 
-func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
 	inp.SkipToEOL()
-	return &ast.InlineListNode{}
+	return ast.InlineListNode{}
 }

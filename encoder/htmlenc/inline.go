@@ -38,25 +38,25 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 
 	switch ln.Ref.State {
 	case ast.RefStateSelf, ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased:
-		v.writeAHref(ln.Ref, ln.Attrs, ln.Inlines)
+		v.writeAHref(ln.Ref, ln.Attrs, &ln.Inlines)
 	case ast.RefStateBroken:
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("class", "zs-broken")
 		attrs = attrs.Set("title", "Zettel not found") // l10n
-		v.writeAHref(ln.Ref, attrs, ln.Inlines)
+		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
 	case ast.RefStateExternal:
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("class", "zs-external")
 		if v.env.HasNewWindow() {
 			attrs = attrs.Set("target", "_blank").Set("rel", "noopener noreferrer")
 		}
-		v.writeAHref(ln.Ref, attrs, ln.Inlines)
+		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
 		if v.env != nil {
 			v.b.WriteString(v.env.MarkerExternal)
 		}
 	default:
 		if v.env.IsInteractive(v.inInteractive) {
-			v.writeSpan(ln.Inlines, ln.Attrs)
+			v.writeSpan(&ln.Inlines, ln.Attrs)
 			return
 		}
 		v.b.WriteString("<a href=\"")
@@ -65,7 +65,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.visitAttributes(ln.Attrs)
 		v.b.WriteByte('>')
 		v.inInteractive = true
-		ast.Walk(v, ln.Inlines)
+		ast.Walk(v, &ln.Inlines)
 		v.inInteractive = false
 		v.b.WriteString("</a>")
 	}
@@ -94,9 +94,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("<img src=\"")
 	v.writeReference(en.Ref)
 	v.b.WriteString("\" alt=\"")
-	if en.Inlines != nil {
-		ast.Walk(v, en.Inlines)
-	}
+	ast.Walk(v, &en.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	if v.env.IsXHTML() {
@@ -119,9 +117,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.b.WriteStrings(en.Syntax, ";base64,")
 	v.b.WriteBase64(en.Blob)
 	v.b.WriteString("\" alt=\"")
-	if en.Inlines != nil {
-		ast.Walk(v, en.Inlines)
-	}
+	ast.Walk(v, &en.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	if v.env.IsXHTML() {
@@ -135,9 +131,9 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
 	v.b.WriteString(cn.Key)
-	if cn.Inlines != nil {
+	if len(cn.Inlines.List) > 0 {
 		v.b.WriteString(", ")
-		ast.Walk(v, cn.Inlines)
+		ast.Walk(v, &cn.Inlines)
 	}
 }
 
@@ -184,7 +180,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	case ast.FormatQuotation:
 		code = "q"
 	case ast.FormatSpan:
-		v.writeSpan(fn.Inlines, processSpanAttributes(attrs))
+		v.writeSpan(&fn.Inlines, processSpanAttributes(attrs))
 		return
 	case ast.FormatMonospace:
 		code, attrs = "span", attrs.AddClass("zs-monospace")
@@ -197,7 +193,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	ast.Walk(v, fn.Inlines)
+	ast.Walk(v, &fn.Inlines)
 	v.b.WriteStrings("</", code, ">")
 }
 
@@ -238,7 +234,7 @@ func (v *visitor) visitQuotes(fn *ast.FormatNode) {
 	}
 	openingQ, closingQ := getQuotes(v.lang.top())
 	v.b.WriteString(openingQ)
-	ast.Walk(v, fn.Inlines)
+	ast.Walk(v, &fn.Inlines)
 	v.b.WriteString(closingQ)
 	if withSpan {
 		v.b.WriteString("</span>")
