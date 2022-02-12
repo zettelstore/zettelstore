@@ -89,7 +89,7 @@ func (ze *zmkEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, e
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b         encoder.BufWriter
+	b         encoder.EncWriter
 	prefix    []byte
 	enc       *zmkEncoder
 	inVerse   bool
@@ -98,7 +98,7 @@ type visitor struct {
 
 func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 	return &visitor{
-		b:   encoder.NewBufWriter(w),
+		b:   encoder.NewEncWriter(w),
 		enc: enc,
 	}
 }

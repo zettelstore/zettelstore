@@ -79,12 +79,12 @@ func (je *jsonDetailEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) 
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b   encoder.BufWriter
+	b   encoder.EncWriter
 	env *encoder.Environment
 }
 
 func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w), env: je.env}
+	return &visitor{b: encoder.NewEncWriter(w), env: je.env}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
@@ -533,7 +533,7 @@ func (v *visitor) writeComma(pos int) {
 	}
 }
 
-func writeEscaped(b *encoder.BufWriter, s string) {
+func writeEscaped(b *encoder.EncWriter, s string) {
 	b.WriteByte('"')
 	strfun.JSONEscape(b, s)
 	b.WriteByte('"')

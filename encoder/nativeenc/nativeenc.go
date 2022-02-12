@@ -73,13 +73,13 @@ func (ne *nativeEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b     encoder.BufWriter
+	b     encoder.EncWriter
 	level int
 	env   *encoder.Environment
 }
 
 func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w), env: enc.env}
+	return &visitor{b: encoder.NewEncWriter(w), env: enc.env}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {

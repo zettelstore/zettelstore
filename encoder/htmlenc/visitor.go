@@ -27,7 +27,7 @@ import (
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
 	env           *encoder.Environment
-	b             encoder.BufWriter
+	b             encoder.EncWriter
 	visibleSpace  bool // Show space character in plain text
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
@@ -43,7 +43,7 @@ func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 	}
 	return &visitor{
 		env:     he.env,
-		b:       encoder.NewBufWriter(w),
+		b:       encoder.NewEncWriter(w),
 		lang:    newLangStack(lang),
 		textEnc: encoder.Create(api.EncoderText, nil),
 	}

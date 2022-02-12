@@ -39,7 +39,7 @@ func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 
 // WriteMeta encodes metadata as text.
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	buf := encoder.NewBufWriter(w)
+	buf := encoder.NewEncWriter(w)
 	for _, pair := range m.ComputedPairs() {
 		switch meta.Type(pair.Key) {
 		case meta.TypeBool:
@@ -58,7 +58,7 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	return length, err
 }
 
-func writeBool(buf *encoder.BufWriter, val string) {
+func writeBool(buf *encoder.EncWriter, val string) {
 	if meta.BoolValue(val) {
 		buf.WriteString("true")
 	} else {
@@ -66,7 +66,7 @@ func writeBool(buf *encoder.BufWriter, val string) {
 	}
 }
 
-func writeTagSet(buf *encoder.BufWriter, tags []string) {
+func writeTagSet(buf *encoder.EncWriter, tags []string) {
 	for i, tag := range tags {
 		if i > 0 {
 			buf.WriteByte(' ')
@@ -98,12 +98,12 @@ func (*textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, err
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b         encoder.BufWriter
+	b         encoder.EncWriter
 	inlinePos int
 }
 
 func newVisitor(w io.Writer) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w)}
+	return &visitor{b: encoder.NewEncWriter(w)}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {

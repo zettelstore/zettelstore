@@ -15,20 +15,20 @@ import (
 	"io"
 )
 
-// BufWriter is a specialized buffered writer for encoding zettel.
-type BufWriter struct {
+// EncWriter is a specialized writer for encoding zettel.
+type EncWriter struct {
 	w      io.Writer // The io.Writer to write to
 	err    error     // Collect error
 	length int       // Collected length
 }
 
-// NewBufWriter creates a new BufWriter
-func NewBufWriter(w io.Writer) BufWriter {
-	return BufWriter{w: w}
+// NewEncWriter creates a new EncWriter
+func NewEncWriter(w io.Writer) EncWriter {
+	return EncWriter{w: w}
 }
 
-// Write writes the contents of p into the buffer.
-func (w *BufWriter) Write(p []byte) (l int, err error) {
+// Write writes the content of p.
+func (w *EncWriter) Write(p []byte) (l int, err error) {
 	if w.err != nil {
 		return 0, w.err
 	}
@@ -37,8 +37,8 @@ func (w *BufWriter) Write(p []byte) (l int, err error) {
 	return l, w.err
 }
 
-// WriteString writes the contents of s into the buffer.
-func (w *BufWriter) WriteString(s string) {
+// WriteString writes the content of s.
+func (w *EncWriter) WriteString(s string) {
 	if w.err != nil {
 		return
 	}
@@ -47,28 +47,28 @@ func (w *BufWriter) WriteString(s string) {
 	w.length += l
 }
 
-// WriteStrings writes the contents of sl into the buffer.
-func (w *BufWriter) WriteStrings(sl ...string) {
+// WriteStrings writes the content of sl.
+func (w *EncWriter) WriteStrings(sl ...string) {
 	for _, s := range sl {
 		w.WriteString(s)
 	}
 }
 
-// WriteByte writes the content of b into the buffer.
-func (w *BufWriter) WriteByte(b byte) error {
+// WriteByte writes the content of b.
+func (w *EncWriter) WriteByte(b byte) error {
 	var l int
-	l, err := w.Write([]byte{b})
+	l, w.err = w.Write([]byte{b})
 	w.length += l
-	return err
+	return w.err
 }
 
-// WriteBytes writes the content of bs into the buffer.
-func (w *BufWriter) WriteBytes(bs ...byte) {
+// WriteBytes writes the content of bs.
+func (w *EncWriter) WriteBytes(bs ...byte) {
 	w.Write(bs)
 }
 
-// WriteBase64 writes the content of p into the buffer, encoded with base64.
-func (w *BufWriter) WriteBase64(p []byte) {
+// WriteBase64 writes the content of p, encoded with base64.
+func (w *EncWriter) WriteBase64(p []byte) {
 	if w.err == nil {
 		encoder := base64.NewEncoder(base64.StdEncoding, w.w)
 		var l int
@@ -82,4 +82,4 @@ func (w *BufWriter) WriteBase64(p []byte) {
 }
 
 // Flush returns the collected length and error.
-func (w *BufWriter) Flush() (int, error) { return w.length, w.err }
+func (w *EncWriter) Flush() (int, error) { return w.length, w.err }
