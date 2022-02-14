@@ -12,30 +12,6 @@ package ast
 
 // Definition of Block nodes.
 
-// BlockListNode is a list of BlockNodes.
-type BlockListNode struct {
-	List BlockSlice
-}
-
-func (*BlockListNode) blockNode() { /* Just a marker */ }
-
-// CreateBlockListNode make a new block list node from nodes
-func CreateBlockListNode(nodes ...BlockNode) BlockListNode {
-	return BlockListNode{List: nodes}
-}
-
-// WalkChildren walks down to the descriptions.
-func (bln *BlockListNode) WalkChildren(v Visitor) {
-	if bns := bln.List; bns != nil {
-		for _, bn := range bns {
-			Walk(v, bn)
-		}
-	}
-}
-
-// IsEmpty returns true if the list has no elements.
-func (bln *BlockListNode) IsEmpty() bool { return bln == nil || len(bln.List) == 0 }
-
 //--------------------------------------------------------------------------
 
 // ParaNode contains just a sequence of inline elements.
@@ -94,7 +70,7 @@ func (*VerbatimNode) WalkChildren(Visitor) { /* No children*/ }
 type RegionNode struct {
 	Kind    RegionKind
 	Attrs   Attributes
-	Blocks  BlockListNode
+	Blocks  BlockSlice
 	Inlines InlineListNode // Optional text at the end of the region
 }
 

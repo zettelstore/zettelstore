@@ -54,7 +54,7 @@ func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig c
 		return
 	}
 	evaluateNode(ctx, port, env, rtConfig, &zn.Ast)
-	cleaner.CleanBlockList(&zn.Ast)
+	cleaner.CleanBlockSlice(&zn.Ast)
 }
 
 // EvaluateInline evaluates the given inline list in the given context, with
@@ -101,8 +101,8 @@ type transcludeCost struct {
 
 func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		e.visitBlockList(n)
+	case *ast.BlockSlice:
+		e.visitBlockSlice(n)
 	case *ast.InlineListNode:
 		e.visitInlineList(n)
 	default:
@@ -111,25 +111,25 @@ func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
-func (e *evaluator) visitBlockList(bln *ast.BlockListNode) {
-	for i := 0; i < len(bln.List); i++ {
-		bn := bln.List[i]
+func (e *evaluator) visitBlockSlice(bs *ast.BlockSlice) {
+	for i := 0; i < len(*bs); i++ {
+		bn := (*bs)[i]
 		ast.Walk(e, bn)
 		switch n := bn.(type) {
 		case *ast.VerbatimNode:
-			i += transcludeNode(bln, i, e.evalVerbatimNode(n))
+			i += transcludeNode(bs, i, e.evalVerbatimNode(n))
 		case *ast.TranscludeNode:
-			i += transcludeNode(bln, i, e.evalTransclusionNode(n))
+			i += transcludeNode(bs, i, e.evalTransclusionNode(n))
 		}
 	}
 }
 
-func transcludeNode(bln *ast.BlockListNode, i int, bn ast.BlockNode) int {
-	if ln, ok := bn.(*ast.BlockListNode); ok {
-		bln.List = replaceWithBlockNodes(bln.List, i, ln.List)
-		return len(ln.List) - 1
+func transcludeNode(bln *ast.BlockSlice, i int, bn ast.BlockNode) int {
+	if ln, ok := bn.(*ast.BlockSlice); ok {
+		*bln = replaceWithBlockNodes(*bln, i, *ln)
+		return len(*ln) - 1
 	}
-	bln.List[i] = bn
+	(*bln)[i] = bn
 	return 0
 }
 
@@ -526,12 +526,12 @@ func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode
 	return zn
 }
 
-func findInlineList(bnl *ast.BlockListNode, fragment string) ast.InlineListNode {
+func findInlineList(bs *ast.BlockSlice, fragment string) ast.InlineListNode {
 	if fragment == "" {
-		return bnl.List.FirstParagraphInlines()
+		return bs.FirstParagraphInlines()
 	}
 	fs := fragmentSearcher{fragment: fragment}
-	ast.Walk(&fs, bnl)
+	ast.Walk(&fs, bs)
 	return fs.result
 }
 
@@ -545,10 +545,10 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 		return nil
 	}
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		for i, bn := range n.List {
+	case *ast.BlockSlice:
+		for i, bn := range *n {
 			if hn, ok := bn.(*ast.HeadingNode); ok && hn.Fragment == fs.fragment {
-				fs.result = n.List[i+1:].FirstParagraphInlines()
+				fs.result = (*n)[i+1:].FirstParagraphInlines()
 				return nil
 			}
 			ast.Walk(fs, bn)

@@ -167,14 +167,14 @@ func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.En
 	return buf.String(), nil
 }
 
-func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeBlocks(bs *ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
 		return "", errNoSuchEncoding
 	}
 
 	var buf bytes.Buffer
-	_, err := encdr.WriteBlocks(&buf, bln)
+	_, err := encdr.WriteBlocks(&buf, bs)
 	if err != nil {
 		return "", err
 	}

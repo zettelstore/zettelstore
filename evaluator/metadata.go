@@ -15,13 +15,13 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func evaluateMetadata(m *meta.Meta) ast.BlockListNode {
+func evaluateMetadata(m *meta.Meta) ast.BlockSlice {
 	descrlist := &ast.DescriptionListNode{}
 	for _, p := range m.Pairs() {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getMetadataDescription(p.Key, p.Value))
 	}
-	return ast.CreateBlockListNode(descrlist)
+	return ast.BlockSlice{descrlist}
 }
 
 func getMetadataDescription(key, value string) ast.Description {

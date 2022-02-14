@@ -26,7 +26,7 @@ type ZettelNode struct {
 	Content domain.Content // Original content
 	Zid     id.Zid         // Zettel identification.
 	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
-	Ast     BlockListNode  // Zettel abstract syntax tree is a sequence of block nodes.
+	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.
 	Syntax  string         // Syntax / parser that produced the Ast
 }
 
@@ -44,11 +44,22 @@ type BlockNode interface {
 // BlockSlice is a slice of BlockNodes.
 type BlockSlice []BlockNode
 
+func (*BlockSlice) blockNode() { /* Just a marker */ }
+
+// WalkChildren walks down to the descriptions.
+func (bs *BlockSlice) WalkChildren(v Visitor) {
+	if bs != nil {
+		for _, bn := range *bs {
+			Walk(v, bn)
+		}
+	}
+}
+
 // FirstParagraphInlines returns the inline list of the first paragraph that
 // contains a inline list.
-func (bns BlockSlice) FirstParagraphInlines() InlineListNode {
-	if len(bns) > 0 {
-		for _, bn := range bns {
+func (bs BlockSlice) FirstParagraphInlines() InlineListNode {
+	if len(bs) > 0 {
+		for _, bn := range bs {
 			pn, ok := bn.(*ParaNode)
 			if !ok {
 				continue

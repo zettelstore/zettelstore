@@ -21,8 +21,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// CleanBlockList cleans the given block list.
-func CleanBlockList(bln *ast.BlockListNode) { cleanNode(bln) }
+// CleanBlockSlice cleans the given block list.
+func CleanBlockSlice(bs *ast.BlockSlice) { cleanNode(bs) }
 
 // CleanInlineList cleans the given inline list.
 func CleanInlineList(iln *ast.InlineListNode) { cleanNode(iln) }

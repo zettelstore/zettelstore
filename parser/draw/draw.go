@@ -37,14 +37,14 @@ const (
 	defaultScaleY  = 20
 )
 
-func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockListNode {
+func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	font := m.GetDefault("font", defaultFont)
 	scaleX := m.GetNumber("x-scale", defaultScaleX)
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
 	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
 		iln := canvasErrMsg(err)
-		return ast.CreateBlockListNode(ast.CreateParaNode(&iln))
+		return ast.BlockSlice{ast.CreateParaNode(&iln)}
 	}
 	if scaleX < 1 || 1000000 < scaleX {
 		scaleX = defaultScaleX
@@ -55,13 +55,13 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockListNode {
 	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
 	if len(svg) == 0 {
 		iln := noSVGErrMsg()
-		return ast.CreateBlockListNode(ast.CreateParaNode(&iln))
+		return ast.BlockSlice{ast.CreateParaNode(&iln)}
 	}
-	return ast.CreateBlockListNode(&ast.BLOBNode{
+	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  "",
 		Syntax: api.ValueSyntaxSVG,
 		Blob:   svg,
-	})
+	}}
 }
 
 func parseInlines(inp *input.Input, _ string) ast.InlineListNode {

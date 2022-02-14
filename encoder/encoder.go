@@ -27,7 +27,7 @@ type Encoder interface {
 	WriteZettel(io.Writer, *ast.ZettelNode, EvalMetaFunc) (int, error)
 	WriteMeta(io.Writer, *meta.Meta, EvalMetaFunc) (int, error)
 	WriteContent(io.Writer, *ast.ZettelNode) (int, error)
-	WriteBlocks(io.Writer, *ast.BlockListNode) (int, error)
+	WriteBlocks(io.Writer, *ast.BlockSlice) (int, error)
 	WriteInlines(io.Writer, *ast.InlineListNode) (int, error)
 }
 

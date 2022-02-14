@@ -46,16 +46,16 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockListNode {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	if p := parser.Get(syntax); p != nil {
 		syntax = p.Name
 	}
 	title, _ := m.Get(api.KeyTitle)
-	return ast.CreateBlockListNode(&ast.BLOBNode{
+	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  title,
 		Syntax: syntax,
 		Blob:   []byte(inp.Src),
-	})
+	}}
 }
 
 func parseInlines(*input.Input, string) ast.InlineListNode {

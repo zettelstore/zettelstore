@@ -51,8 +51,8 @@ func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		for i, bn := range n.List {
+	case *ast.BlockSlice:
+		for i, bn := range *n {
 			if i > 0 {
 				v.b.WriteByte('\n')
 			}

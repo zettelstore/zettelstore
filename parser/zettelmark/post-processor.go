@@ -17,7 +17,7 @@ import (
 )
 
 // postProcessBlocks is the entry point for post-processing a list of block nodes.
-func postProcessBlocks(bs *ast.BlockListNode) {
+func postProcessBlocks(bs *ast.BlockSlice) {
 	pp := postProcessor{}
 	ast.Walk(&pp, bs)
 }
@@ -35,8 +35,8 @@ type postProcessor struct {
 
 func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		pp.visitBlockList(n)
+	case *ast.BlockSlice:
+		pp.visitBlockSlice(n)
 	case *ast.InlineListNode:
 		pp.visitInlineList(n)
 	case *ast.ParaNode:
@@ -74,7 +74,7 @@ func (pp *postProcessor) visitRegion(rn *ast.RegionNode) {
 	if rn.Kind == ast.RegionVerse {
 		pp.inVerse = true
 	}
-	pp.visitBlockList(&rn.Blocks)
+	pp.visitBlockSlice(&rn.Blocks)
 	pp.inVerse = oldVerse
 }
 
@@ -216,22 +216,22 @@ func initialText(ins []ast.InlineNode) *ast.TextNode {
 	return nil
 }
 
-func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {
-	if bln == nil {
+func (pp *postProcessor) visitBlockSlice(bs *ast.BlockSlice) {
+	if bs == nil {
 		return
 	}
-	if len(bln.List) == 0 {
-		bln.List = nil
+	if len(*bs) == 0 {
+		*bs = nil
 		return
 	}
-	for _, bn := range bln.List {
+	for _, bn := range *bs {
 		ast.Walk(pp, bn)
 	}
 	fromPos, toPos := 0, 0
-	for fromPos < len(bln.List) {
-		bln.List[toPos] = bln.List[fromPos]
+	for fromPos < len(*bs) {
+		(*bs)[toPos] = (*bs)[fromPos]
 		fromPos++
-		switch bn := bln.List[toPos].(type) {
+		switch bn := (*bs)[toPos].(type) {
 		case *ast.ParaNode:
 			if len(bn.Inlines.List) > 0 {
 				toPos++
@@ -242,10 +242,10 @@ func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {
 			toPos++
 		}
 	}
-	for pos := toPos; pos < len(bln.List); pos++ {
-		bln.List[pos] = nil // Allow excess nodes to be garbage collected.
+	for pos := toPos; pos < len(*bs); pos++ {
+		(*bs)[pos] = nil // Allow excess nodes to be garbage collected.
 	}
-	bln.List = bln.List[:toPos:toPos]
+	*bs = (*bs)[:toPos:toPos]
 
 }
 

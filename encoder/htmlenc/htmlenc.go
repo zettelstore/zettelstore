@@ -84,9 +84,9 @@ func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 }
 
 // WriteBlocks encodes a block slice.
-func (he *htmlEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(he, w)
-	ast.Walk(v, bln)
+	ast.Walk(v, bs)
 	v.writeEndnotes()
 	length, err := v.b.Flush()
 	return length, err

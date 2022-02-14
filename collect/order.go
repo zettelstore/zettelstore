@@ -15,10 +15,7 @@ import "zettelstore.de/z/ast"
 
 // Order of internal reference within the given zettel.
 func Order(zn *ast.ZettelNode) (result []*ast.Reference) {
-	if zn.Ast.IsEmpty() {
-		return nil
-	}
-	for _, bn := range zn.Ast.List {
+	for _, bn := range zn.Ast {
 		ln, ok := bn.(*ast.NestedListNode)
 		if !ok {
 			continue

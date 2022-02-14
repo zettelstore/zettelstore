@@ -17,11 +17,11 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// parseBlockList parses a sequence of blocks.
-func (cp *zmkP) parseBlockList() ast.BlockListNode {
+// parseBlockSlice parses a sequence of blocks.
+func (cp *zmkP) parseBlockSlice() ast.BlockSlice {
 	inp := cp.inp
 	var lastPara *ast.ParaNode
-	bs := make([]ast.BlockNode, 0, 2)
+	bs := make(ast.BlockSlice, 0, 2)
 	for inp.Ch != input.EOS {
 		bn, cont := cp.parseBlock(lastPara)
 		if bn != nil {
@@ -34,7 +34,7 @@ func (cp *zmkP) parseBlockList() ast.BlockListNode {
 	if cp.nestingLevel != 0 {
 		panic("Nesting level was not decremented")
 	}
-	return ast.CreateBlockListNode(bs...)
+	return bs
 }
 
 // parseBlock parses one block.
@@ -230,7 +230,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	rn = &ast.RegionNode{
 		Kind:    kind,
 		Attrs:   attrs,
-		Blocks:  ast.BlockListNode{},
+		Blocks:  nil,
 		Inlines: ast.InlineListNode{},
 	}
 	var lastPara *ast.ParaNode
@@ -249,7 +249,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 		}
 		bn, cont := cp.parseBlock(lastPara)
 		if bn != nil {
-			rn.Blocks.List = append(rn.Blocks.List, bn)
+			rn.Blocks = append(rn.Blocks, bn)
 		}
 		if !cont {
 			lastPara, _ = bn.(*ast.ParaNode)

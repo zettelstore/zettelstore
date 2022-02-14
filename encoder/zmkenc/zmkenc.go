@@ -72,7 +72,7 @@ func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (ze *zmkEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (ze *zmkEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
 	v := newVisitor(w, ze)
 	ast.Walk(v, bln)
 	length, err := v.b.Flush()
@@ -105,8 +105,8 @@ func newVisitor(w io.Writer, enc *zmkEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
 	case *ast.InlineListNode:
 		for i, in := range n.List {
 			v.inlinePos = i
@@ -165,9 +165,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
-func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
 	var lastWasParagraph bool
-	for i, bn := range bln.List {
+	for i, bn := range *bs {
 		if i > 0 {
 			v.b.WriteByte('\n')
 			if lastWasParagraph && !v.inVerse {

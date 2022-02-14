@@ -62,7 +62,7 @@ func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int,
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
 	v := newDetailVisitor(w, je)
 	ast.Walk(v, bln)
 	length, err := v.b.Flush()
@@ -89,8 +89,8 @@ func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
 		return nil
 	case *ast.InlineListNode:
 		v.walkInlineList(n)
@@ -426,9 +426,9 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralHTML:    "HTML",
 }
 
-func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
 	v.b.WriteByte('[')
-	for i, bn := range bln.List {
+	for i, bn := range *bs {
 		v.writeComma(i)
 		ast.Walk(v, bn)
 	}

@@ -17,7 +17,7 @@ import (
 )
 
 func BenchmarkWalk(b *testing.B) {
-	root := ast.CreateBlockListNode(
+	root := ast.BlockSlice{
 		&ast.HeadingNode{
 			Inlines: ast.CreateInlineListNodeFromWords("A", "Simple", "Heading"),
 		},
@@ -60,7 +60,7 @@ func BenchmarkWalk(b *testing.B) {
 				OnlyRef: false,
 			},
 		),
-	)
+	}
 	v := benchVisitor{}
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {

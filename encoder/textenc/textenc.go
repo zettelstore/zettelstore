@@ -32,7 +32,7 @@ type textEncoder struct{}
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta, evalMeta)
-	v.visitBlockList(&zn.Ast)
+	v.visitBlockSlice(&zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -81,9 +81,9 @@ func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (*textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
-	v.visitBlockList(bln)
+	v.visitBlockSlice(bln)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -108,8 +108,8 @@ func newVisitor(w io.Writer) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
 	case *ast.InlineListNode:
 		for i, in := range n.List {
 			v.inlinePos = i
@@ -121,7 +121,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitVerbatim(n)
 		return nil
 	case *ast.RegionNode:
-		v.visitBlockList(&n.Blocks)
+		v.visitBlockSlice(&n.Blocks)
 		if !n.Inlines.IsEmpty() {
 			v.b.WriteByte('\n')
 			ast.Walk(v, &n.Inlines)
@@ -221,8 +221,8 @@ func (v *visitor) writeRow(row ast.TableRow) {
 	}
 }
 
-func (v *visitor) visitBlockList(bns *ast.BlockListNode) {
-	for i, bn := range bns.List {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
+	for i, bn := range *bs {
 		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)
 	}

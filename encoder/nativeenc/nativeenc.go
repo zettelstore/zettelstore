@@ -56,7 +56,7 @@ func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, err
 }
 
 // WriteBlocks writes a block slice to the writer
-func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
 	v := newVisitor(w, ne)
 	ast.Walk(v, bln)
 	length, err := v.b.Flush()
@@ -84,8 +84,8 @@ func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
 	case *ast.InlineListNode:
 		v.walkInlineList(n)
 	case *ast.ParaNode:
@@ -519,8 +519,8 @@ var mapLiteralKind = map[ast.LiteralKind][]byte{
 	ast.LiteralHTML:    []byte("HTML"),
 }
 
-func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
-	for i, bn := range bln.List {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
+	for i, bn := range *bs {
 		if i > 0 {
 			v.b.WriteByte(',')
 			v.writeNewLine()

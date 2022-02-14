@@ -38,14 +38,14 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 	p := parseMarkdown(inp)
 	return p.acceptBlockChildren(p.docNode)
 }
 
 func parseInlines(inp *input.Input, syntax string) ast.InlineListNode {
-	bln := parseBlocks(inp, nil, syntax)
-	return bln.List.FirstParagraphInlines()
+	bs := parseBlocks(inp, nil, syntax)
+	return bs.FirstParagraphInlines()
 }
 
 func parseMarkdown(inp *input.Input) *mdP {
@@ -62,17 +62,17 @@ type mdP struct {
 	textEnc encoder.Encoder
 }
 
-func (p *mdP) acceptBlockChildren(docNode gmAst.Node) ast.BlockListNode {
+func (p *mdP) acceptBlockChildren(docNode gmAst.Node) ast.BlockSlice {
 	if docNode.Type() != gmAst.TypeDocument {
 		panic(fmt.Sprintf("Expected document, but got node type %v", docNode.Type()))
 	}
-	result := make([]ast.BlockNode, 0, docNode.ChildCount())
+	result := make(ast.BlockSlice, 0, docNode.ChildCount())
 	for child := docNode.FirstChild(); child != nil; child = child.NextSibling() {
 		if block := p.acceptBlock(child); block != nil {
 			result = append(result, block)
 		}
 	}
-	return ast.CreateBlockListNode(result...)
+	return result
 }
 
 func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {

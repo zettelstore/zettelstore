@@ -74,7 +74,7 @@ func TestMarkdownSpec(t *testing.T) {
 	}
 }
 
-func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
+func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
@@ -85,7 +85,7 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode)
 	}
 }
 
-func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
+func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1

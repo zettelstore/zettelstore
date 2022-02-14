@@ -33,7 +33,7 @@ type Info struct {
 	AltNames      []string
 	IsTextParser  bool
 	IsImageFormat bool
-	ParseBlocks   func(*input.Input, *meta.Meta, string) ast.BlockListNode
+	ParseBlocks   func(*input.Input, *meta.Meta, string) ast.BlockSlice
 	ParseInlines  func(*input.Input, string) ast.InlineListNode
 }
 
@@ -92,9 +92,9 @@ func IsImageFormat(syntax string) bool {
 }
 
 // ParseBlocks parses some input and returns a slice of block nodes.
-func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockListNode {
+func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	bln := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanBlockList(&bln)
+	cleaner.CleanBlockSlice(&bln)
 	return bln
 }
 

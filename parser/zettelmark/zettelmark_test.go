@@ -740,7 +740,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
 		tv.buf.WriteString(code)
-		if !n.Blocks.IsEmpty() && len(n.Blocks.List) > 0 {
+		if len(n.Blocks) > 0 {
 			tv.buf.WriteByte(' ')
 			ast.Walk(tv, &n.Blocks)
 		}
