@@ -5,6 +5,9 @@
   *  Encoding &ldquo;djson&rdquo; renamed to &ldquo;zjson&rdquo; (<em>zettel
      json</em>).
      (breaking: api; minor: webui)
+  *  A sequence of inline-structured elements can be marked, not just a point
+     in the Zettelmarkup text.
+     (minor: zettelmarkup)
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>

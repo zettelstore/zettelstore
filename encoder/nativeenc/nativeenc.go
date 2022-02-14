@@ -442,11 +442,12 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString(mapRefState[ln.Ref.State])
 	v.b.WriteString(" \"")
 	v.writeEscaped(ln.Ref.String())
-	v.b.WriteString("\" [")
+	v.b.WriteByte('"')
 	if len(ln.Inlines) > 0 {
+		v.b.WriteString(" [")
 		ast.Walk(v, &ln.Inlines)
+		v.b.WriteByte(']')
 	}
-	v.b.WriteByte(']')
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
@@ -486,7 +487,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
 	v.b.WriteString("Mark")
-	if text := mn.Text; text != "" {
+	if text := mn.Mark; text != "" {
 		v.b.WriteString(" \"")
 		v.writeEscaped(text)
 		v.b.WriteByte('"')
@@ -494,6 +495,11 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 	if fragment := mn.Fragment; fragment != "" {
 		v.b.WriteString(" #")
 		v.writeEscaped(fragment)
+	}
+	if len(mn.Inlines) > 0 {
+		v.b.WriteString(" [")
+		ast.Walk(v, &mn.Inlines)
+		v.b.WriteByte(']')
 	}
 }
 

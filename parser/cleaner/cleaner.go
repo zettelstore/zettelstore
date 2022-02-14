@@ -81,13 +81,20 @@ func (cv *cleanVisitor) visitMark(mn *ast.MarkNode) {
 		cv.hasMark = true
 		return
 	}
-	if mn.Text == "" {
+	// if mn.Mark == "" && len(mn.Inlines) > 0 {
+	// 	var buf bytes.Buffer
+	// 	_, err := cv.textEnc.WriteInlines(&buf, &mn.Inlines)
+	// 	if err == nil {
+	// 		mn.Mark = buf.String()
+	// 	}
+	// }
+	if mn.Mark == "" {
 		mn.Slug = ""
 		mn.Fragment = cv.addIdentifier("*", mn)
 		return
 	}
 	if mn.Slug == "" {
-		mn.Slug = strfun.Slugify(mn.Text)
+		mn.Slug = strfun.Slugify(mn.Mark)
 	}
 	mn.Fragment = cv.addIdentifier(mn.Slug, mn)
 }

@@ -351,14 +351,25 @@ func (cp *zmkP) parseMark() (*ast.MarkNode, bool) {
 	inp := cp.inp
 	inp.Next()
 	pos := inp.Pos
-	for inp.Ch != ']' {
+	for inp.Ch != '|' && inp.Ch != ']' {
 		if !isNameRune(inp.Ch) {
 			return nil, false
 		}
 		inp.Next()
 	}
-	mn := &ast.MarkNode{Text: string(inp.Src[pos:inp.Pos])}
-	inp.Next()
+	mark := inp.Src[pos:inp.Pos]
+	var is ast.InlineSlice
+	if inp.Ch == '|' {
+		inp.Next()
+		var ok bool
+		is, ok = cp.parseLinkLikeRest()
+		if !ok {
+			return nil, false
+		}
+	} else {
+		inp.Next()
+	}
+	mn := &ast.MarkNode{Mark: string(mark), Inlines: is}
 	return mn, true
 }
 

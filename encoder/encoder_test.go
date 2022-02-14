@@ -26,6 +26,7 @@ import (
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
+	"zettelstore.de/z/parser/cleaner"
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
 
@@ -61,7 +62,9 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
-			pe = &peInlines{is: parser.ParseInlines(inp, api.ValueSyntaxZmk)}
+			is := parser.ParseInlines(inp, api.ValueSyntaxZmk)
+			cleaner.CleanInlineSlice(&is)
+			pe = &peInlines{is: is}
 		} else {
 			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}

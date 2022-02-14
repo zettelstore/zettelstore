@@ -93,13 +93,14 @@ func IsImageFormat(syntax string) bool {
 
 // ParseBlocks parses some input and returns a slice of block nodes.
 func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
-	bln := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanBlockSlice(&bln)
-	return bln
+	bs := Get(syntax).ParseBlocks(inp, m, syntax)
+	cleaner.CleanBlockSlice(&bs)
+	return bs
 }
 
 // ParseInlines parses some input and returns a slice of inline nodes.
 func ParseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+	// Do not clean, because we don't know the context where this function will be called.
 	return Get(syntax).ParseInlines(inp, syntax)
 }
 

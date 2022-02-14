@@ -3,7 +3,7 @@ title: The ''run-simple'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20210712234203
+modified: 20220214180253
 
 === ``zettelstore run-simple``
 This sub-command is implicitly called, when an user starts Zettelstore by double-clicking on its GUI icon.
@@ -18,7 +18,7 @@ In contrast to the ''run'' sub-command, other command line parameter are not all
 zettelstore run-simple [-d DIR]
 ```
 
-; [!d]''-d DIR''
+; [!d|''-d DIR'']
 : Specifies ''DIR'' as the directory that contains all zettel.
 
   Default is ''./zettel'' (''.\\zettel'' on Windows), where ''.'' denotes the ""current directory"".

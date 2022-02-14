@@ -394,7 +394,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
 	v.writeNodeStart("Mark")
-	if text := mn.Text; text != "" {
+	if text := mn.Mark; text != "" {
 		v.writeContentStart('s')
 		writeEscaped(&v.b, text)
 	}
@@ -403,6 +403,10 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 		v.b.WriteByte('"')
 		v.b.WriteString(fragment)
 		v.b.WriteByte('"')
+	}
+	if len(mn.Inlines) > 0 {
+		v.writeContentStart('i')
+		ast.Walk(v, &mn.Inlines)
 	}
 }
 

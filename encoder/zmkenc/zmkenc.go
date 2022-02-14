@@ -154,7 +154,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteByte(']')
 		v.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
-		v.b.WriteStrings("[!", n.Text, "]")
+		v.visitMark(n)
 	case *ast.FormatNode:
 		v.visitFormat(n)
 	case *ast.LiteralNode:
@@ -422,6 +422,16 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 	}
 	v.b.WriteByte(']')
 	v.visitAttributes(cn.Attrs)
+}
+
+func (v *visitor) visitMark(mn *ast.MarkNode) {
+	v.b.WriteStrings("[!", mn.Mark)
+	if len(mn.Inlines) > 0 {
+		v.b.WriteByte('|')
+		ast.Walk(v, &mn.Inlines)
+	}
+	v.b.WriteByte(']')
+
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{

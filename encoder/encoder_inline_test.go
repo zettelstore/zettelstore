@@ -268,10 +268,21 @@ var tcsInline = []zmkTestCase{
 		descr: "Simple mark",
 		zmk:   `[!mark]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Mark","s":"mark"}]`,
-			encoderHTML:   ``,
-			encoderNative: `Mark "mark"`,
+			encoderZJSON:  `[{"":"Mark","s":"mark","q":"mark"}]`,
+			encoderHTML:   `<a id="mark"></a>`,
+			encoderNative: `Mark "mark" #mark`,
 			encoderText:   ``,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Mark with text",
+		zmk:   `[!mark|with text]`,
+		expect: expectMap{
+			encoderZJSON:  `[{"":"Mark","s":"mark","q":"mark","i":[{"":"Text","s":"with"},{"":"Space"},{"":"Text","s":"text"}]}]`,
+			encoderHTML:   `<a id="mark">with text</a>`,
+			encoderNative: `Mark "mark" #mark [Text "with",Space,Text "text"]`,
+			encoderText:   `with text`,
 			encoderZmk:    useZmk,
 		},
 	},
@@ -281,7 +292,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"external","s":"abc"}]`,
 			encoderHTML:   `<a href="abc" class="zs-external">abc</a>`,
-			encoderNative: `Link EXTERNAL "abc" []`,
+			encoderNative: `Link EXTERNAL "abc"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
 		},
@@ -292,7 +303,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"external","s":"https://zettelstore.de"}]`,
 			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">https://zettelstore.de</a>`,
-			encoderNative: `Link EXTERNAL "https://zettelstore.de" []`,
+			encoderNative: `Link EXTERNAL "https://zettelstore.de"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
 		},
@@ -314,7 +325,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100"}]`,
 			encoderHTML:   `<a href="00000000000100">00000000000100</a>`,
-			encoderNative: `Link ZETTEL "00000000000100" []`,
+			encoderNative: `Link ZETTEL "00000000000100"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
 		},
@@ -336,7 +347,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100#frag"}]`,
 			encoderHTML:   `<a href="00000000000100#frag">00000000000100#frag</a>`,
-			encoderNative: `Link ZETTEL "00000000000100#frag" []`,
+			encoderNative: `Link ZETTEL "00000000000100#frag"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
 		},
@@ -358,7 +369,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"self","s":"#frag"}]`,
 			encoderHTML:   `<a href="#frag">#frag</a>`,
-			encoderNative: `Link SELF "#frag" []`,
+			encoderNative: `Link SELF "#frag"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
 		},

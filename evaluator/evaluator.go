@@ -547,7 +547,14 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 	case *ast.InlineSlice:
 		for i, in := range *n {
 			if mn, ok := in.(*ast.MarkNode); ok && mn.Fragment == fs.fragment {
-				fs.result = skipSpaceNodes((*n)[i+1:])
+				ris := skipSpaceNodes((*n)[i+1:])
+				if len(mn.Inlines) > 0 {
+					fs.result = append(ast.InlineSlice{}, mn.Inlines...)
+					fs.result = append(fs.result, &ast.SpaceNode{Lexeme: " "})
+					fs.result = append(fs.result, ris...)
+				} else {
+					fs.result = ris
+				}
 				return nil
 			}
 			ast.Walk(fs, in)

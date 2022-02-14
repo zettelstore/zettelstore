@@ -159,6 +159,11 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			ast.Walk(v, &n.Inlines)
 		}
 		return nil
+	case *ast.MarkNode:
+		if len(n.Inlines) > 0 {
+			ast.Walk(v, &n.Inlines)
+		}
+		return nil
 	case *ast.FootnoteNode:
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')

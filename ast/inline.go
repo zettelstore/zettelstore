@@ -98,7 +98,9 @@ func (*LinkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the link text.
 func (ln *LinkNode) WalkChildren(v Visitor) {
-	Walk(v, &ln.Inlines)
+	if len(ln.Inlines) > 0 {
+		Walk(v, &ln.Inlines)
+	}
 }
 
 // --------------------------------------------------------------------------
@@ -158,15 +160,20 @@ func (cn *CiteNode) WalkChildren(v Visitor) {
 // It is a BlockNode too, because although it is typically parsed during inline
 // mode, it is moved into block mode afterwards.
 type MarkNode struct {
-	Text     string
-	Slug     string // Slugified form of Text
-	Fragment string // Unique form of Slug
+	Mark     string      // The mark text itself
+	Slug     string      // Slugified form of Mark
+	Fragment string      // Unique form of Slug
+	Inlines  InlineSlice // Marked inline content
 }
 
 func (*MarkNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
-func (*MarkNode) WalkChildren(Visitor) { /* No children*/ }
+func (mn *MarkNode) WalkChildren(v Visitor) {
+	if len(mn.Inlines) > 0 {
+		Walk(v, &mn.Inlines)
+	}
+}
 
 // --------------------------------------------------------------------------
 

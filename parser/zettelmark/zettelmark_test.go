@@ -277,6 +277,10 @@ func TestMark(t *testing.T) {
 		{"[!a_]", "(PARA (MARK \"a_\" #a))"},
 		{"[!a_][!a]", "(PARA (MARK \"a_\" #a) (MARK \"a\" #a-1))"},
 		{"[!a-b]", "(PARA (MARK \"a-b\" #a-b))"},
+		{"[!a|b]", "(PARA (MARK \"a\" #a b))"},
+		{"[!a|]", "(PARA (MARK \"a\" #a))"},
+		{"[!|b]", "(PARA (MARK #* b))"},
+		{"[!|b c]", "(PARA (MARK #* b SP c))"},
 	})
 }
 
@@ -865,14 +869,17 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
 		tv.buf.WriteString("(MARK")
-		if n.Text != "" {
+		if n.Mark != "" {
 			tv.buf.WriteString(" \"")
-			tv.buf.WriteString(n.Text)
+			tv.buf.WriteString(n.Mark)
 			tv.buf.WriteByte('"')
 		}
 		if n.Fragment != "" {
 			tv.buf.WriteString(" #")
 			tv.buf.WriteString(n.Fragment)
+		}
+		if len(n.Inlines) > 0 {
+			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
 	case *ast.FormatNode:

@@ -3,61 +3,61 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220111103609
+modified: 20220214175019
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
 
 Most keys conform to a [[type|00001006030000]].
 
-; [!all-tags]''all-tags''
+; [!all-tags|''all-tags'']
 : A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] together with all [[tags|00001007040000#tag]] that are specified within the content.
-; [!back]''back''
+; [!back|''back'']
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata, that are not referenced by this zettel.
   Basically, it is the value of [[''backward''|#bachward]], but without any zettel identifier that is contained in [[''forward''|#forward]].
-; [!backward]''backward''
+; [!backward|''backward'']
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata.
   References within invertible values are not included here, e.g. [[''precursor''|#precursor]].
-; [!box-number]''box-number''
+; [!box-number|''box-number'']
 : Is a computed value and contains the number of the box where the zettel was found.
   For all but the [[predefined zettel|00001005090000]], this number is equal to the number __X__ specified in startup configuration key [[''box-uri-__X__''|00001004010000#box-uri-x]].
-; [!copyright]''copyright''
+; [!copyright|''copyright'']
 : Defines a copyright string that will be encoded.
   If not given, the value ''default-copyright'' from the  [[configuration zettel|00001004020000#default-copyright]] will be used.
-; [!credential]''credential''
+; [!credential|''credential'']
 : Contains the hashed password, as it was emitted by [[``zettelstore password``|00001004051400]].
   It is internally created by hashing the password, the [[zettel identifier|00001006050000]], and the value of the ''ident'' key.
 
   It is only used for zettel with a ''role'' value of ""user"".
-; [!dead]''dead''
+; [!dead|''dead'']
 : Property that contains all references that does __not__ identify a zettel.
-; [!folge]''folge''
+; [!folge|''folge'']
 : Is a property that contains identifier of all zettel that reference this zettel through the [[''precursor''|#precursor]] value.
-; [!forward]''forward''
+; [!forward|''forward'']
 : Property that contains all references that identify another zettel within the content of the zettel.
-; [!id]''id''
+; [!id|''id'']
 : Contains the [[zettel identifier|00001006050000]], as given by the Zettelstore.
   It cannot be set manually, because it is a computed value.
-; [!lang]''lang''
+; [!lang|''lang'']
 : Language for the zettel.
   Mostly used for HTML rendering of the zettel.
   If not given, the value ''default-lang'' from the  [[configuration zettel|00001004020000#default-lang]] will be used.
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
-; [!license]''license''
+; [!license|''license'']
 : Defines a license string that will be rendered.
   If not given, the value ''default-license'' from the [[configuration zettel|00001004020000#default-license]] will be used.
-; [!modified]''modified''
+; [!modified|''modified'']
 : Date and time when a zettel was modified through Zettelstore.
   If you edit a zettel with an editor software outside Zettelstore, you should set it manually to an appropriate value.
 
   This is a computed value.
   There is no need to set it via Zettelstore.
-; [!no-index]''no-index''
+; [!no-index|''no-index'']
 : If set to a ""true"" value, the zettel will not be indexed and therefore not be found in full-text searches.
-; [!precursor]''precursor''
+; [!precursor|''precursor'']
 : References zettel for which this zettel is a ""Folgezettel"" / follow-up zettel.
   Basically the inverse of key [[''folge''|#folge]].
-; [!published]''published''
+; [!published|''published'']
 : This property contains the timestamp of the mast modification / creation of the zettel.
   If [[''modified''|#modified]] is set, it contains the same value.
   Otherwise, if the zettel identifier contains a valid timestamp, the identifier is used.
@@ -67,45 +67,45 @@ Most keys conform to a [[type|00001006030000]].
 
   It is a computed value.
   There is no need to set it via Zettelstore.
-; [!read-only]''read-only''
+; [!read-only|''read-only'']
 : Marks a zettel as read-only.
   The interpretation of [[supported values|00001006020400]] for this key depends, whether authentication is [[enabled|00001010040100]] or not.
-; [!role]''role''
+; [!role|''role'']
 : Defines the role of the zettel.
   Can be used for selecting zettel.
   See [[supported zettel roles|00001006020100]].
   If not given, the value ''default-role'' from the [[configuration zettel|00001004020000#default-role]] will be used.
-; [!syntax]''syntax''
+; [!syntax|''syntax'']
 : Specifies the syntax that should be used for interpreting the zettel.
   The zettel about [[other markup languages|00001008000000]] defines supported values.
   If not given, the value ''default-syntax'' from the [[configuration zettel|00001004020000#default-syntax]] will be used.
-; [!tags]''tags''
+; [!tags|''tags'']
 : Contains a space separated list of tags to describe the zettel further.
   Each Tag must begin with the number sign character (""''#''"", ''U+0023'').
-; [!title]''title''
+; [!title|''title'']
 : Specifies the title of the zettel.
   If not given, the value ''default-title'' from the [[configuration zettel|00001004020000#default-title]] will be used.
 
   You can use all [[inline-structured elements|00001007040000]] of Zettelmarkup.
-; [!url]''url''
+; [!url|''url'']
 : Defines an URL / URI for this zettel that possibly references external material.
   One use case is to specify the document that the current zettel comments on.
   The URL will be rendered special in the [[web user interface|00001014000000]] if you use the default template.
-; [!useless-files]''useless-files''
+; [!useless-files|''useless-files'']
 : Contains the file names that are rejected to serve the content of a zettel.
   Is used for [[directory boxes|00001004011400]] and [[file boxes|00001004011200#file]].
   If a zettel is renamed or deleted, these files will be deleted.
-; [!user-id]''user-id''
+; [!user-id|''user-id'']
 : Provides some unique user identification for an [[user zettel|00001010040200]].
   It is used as a user name for authentication.
 
   It is only used for zettel with a ''role'' value of ""user"".
-; [!user-role]''user-role''
+; [!user-role|''user-role'']
 : Defines the basic privileges of an authenticated user, e.g. reading / changing zettel.
   Is only valid in a user zettel.
 
   See [[User roles|00001010070300]] for more details.
-; [!visibility]''visibility''
+; [!visibility|''visibility'']
 : When you work with authentication, you can give every zettel a value to decide, who can see the zettel.
   Its default value can be set with [[''default-visibility''|00001004020000#default-visibility]] of the configuration zettel.
 

@@ -161,7 +161,11 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 		return
 	}
 	if fragment := mn.Fragment; fragment != "" {
-		v.b.WriteStrings("<a id=\"", fragment, "\"></a>")
+		v.b.WriteStrings(`<a id="`, fragment, `">`)
+		if len(mn.Inlines) > 0 {
+			ast.Walk(v, &mn.Inlines)
+		}
+		v.b.WriteString("</a>")
 	}
 }
 
