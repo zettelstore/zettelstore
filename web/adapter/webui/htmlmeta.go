@@ -32,7 +32,7 @@ import (
 
 var space = []byte{' '}
 
-type evalMetadataFunc = func(string) ast.InlineListNode
+type evalMetadataFunc = func(string) ast.InlineSlice
 
 func (wui *WebUI) writeHTMLMetaValue(
 	w io.Writer,
@@ -200,7 +200,7 @@ func (wui *WebUI) encodeTitleAsHTML(
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) ast.InlineListNode {
+		func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, plainTitle, envEval)
 		},
 		api.EncoderHTML, envHTML)
@@ -212,7 +212,7 @@ func (wui *WebUI) encodeTitleAsText(
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) ast.InlineListNode {
+		func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, plainTitle, nil)
 		},
 		api.EncoderText, nil)
@@ -222,11 +222,11 @@ func encodeZmkMetadata(
 	value string, evalMetadata evalMetadataFunc,
 	enc api.EncodingEnum, envHTML *encoder.Environment,
 ) string {
-	iln := evalMetadata(value)
-	if iln.IsEmpty() {
+	is := evalMetadata(value)
+	if len(is) == 0 {
 		return ""
 	}
-	result, err := encodeInlines(&iln, enc, envHTML)
+	result, err := encodeInlines(&is, enc, envHTML)
 	if err != nil {
 		return err.Error()
 	}

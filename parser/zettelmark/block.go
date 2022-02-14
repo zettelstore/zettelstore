@@ -97,7 +97,7 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 	cp.clearStacked()
 	pn := cp.parsePara()
 	if lastPara != nil {
-		lastPara.Inlines.Append(pn.Inlines.List...)
+		lastPara.Inlines = append(lastPara.Inlines, pn.Inlines...)
 		return nil, true
 	}
 	return pn, false
@@ -136,7 +136,7 @@ func (cp *zmkP) parsePara() *ast.ParaNode {
 		if in == nil {
 			return pn
 		}
-		pn.Inlines.Append(in)
+		pn.Inlines = append(pn.Inlines, in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			ch := cp.inp.Ch
 			switch ch {
@@ -231,7 +231,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 		Kind:    kind,
 		Attrs:   attrs,
 		Blocks:  nil,
-		Inlines: ast.InlineListNode{},
+		Inlines: nil,
 	}
 	var lastPara *ast.ParaNode
 	inp.EatEOL()
@@ -269,13 +269,8 @@ func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
 		if in == nil {
 			return
 		}
-		if rn.Inlines.IsEmpty() {
-			rn.Inlines = ast.CreateInlineListNode(in)
-		} else {
-			rn.Inlines.Append(in)
-		}
+		rn.Inlines = append(rn.Inlines, in)
 	}
-
 }
 
 // parseHeading parses a head line.
@@ -293,7 +288,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 	if delims > 7 {
 		delims = 7
 	}
-	hn = &ast.HeadingNode{Level: delims - 2, Inlines: ast.InlineListNode{}}
+	hn = &ast.HeadingNode{Level: delims - 2, Inlines: nil}
 	for {
 		if input.IsEOLEOS(inp.Ch) {
 			return hn, true
@@ -302,7 +297,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		if in == nil {
 			return hn, true
 		}
-		hn.Inlines.Append(in)
+		hn.Inlines = append(hn.Inlines, in)
 		if inp.Ch == '{' && inp.Peek() != '{' {
 			attrs := cp.parseAttributes(true)
 			hn.Attrs = attrs
@@ -435,12 +430,12 @@ func (cp *zmkP) parseDefTerm() (res ast.BlockNode, success bool) {
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			if descrl.Descriptions[defPos].Term.IsEmpty() {
+			if len(descrl.Descriptions[defPos].Term) == 0 {
 				return nil, false
 			}
 			return res, true
 		}
-		descrl.Descriptions[defPos].Term.Append(in)
+		descrl.Descriptions[defPos].Term = append(descrl.Descriptions[defPos].Term, in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			return res, true
 		}
@@ -461,7 +456,7 @@ func (cp *zmkP) parseDefDescr() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	defPos := len(descrl.Descriptions) - 1
-	if descrl.Descriptions[defPos].Term.IsEmpty() {
+	if len(descrl.Descriptions[defPos].Term) == 0 {
 		return nil, false
 	}
 	pn := cp.parseLinePara()
@@ -509,7 +504,7 @@ func (cp *zmkP) parseIndentForList(cnt int) bool {
 	}
 	lbn := ln.Items[len(ln.Items)-1]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-		lpn.Inlines.Append(pn.Inlines.List...)
+		lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
 	} else {
 		ln.Items[len(ln.Items)-1] = append(ln.Items[len(ln.Items)-1], pn)
 	}
@@ -528,7 +523,7 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 			if in == nil {
 				return true
 			}
-			cp.descrl.Descriptions[defPos].Term.Append(in)
+			cp.descrl.Descriptions[defPos].Term = append(cp.descrl.Descriptions[defPos].Term, in)
 			if _, ok := in.(*ast.BreakNode); ok {
 				return true
 			}
@@ -543,7 +538,7 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 	descrPos := len(cp.descrl.Descriptions[defPos].Descriptions) - 1
 	lbn := cp.descrl.Descriptions[defPos].Descriptions[descrPos]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
-		lpn.Inlines.Append(pn.Inlines.List...)
+		lpn.Inlines = append(lpn.Inlines, pn.Inlines...)
 	} else {
 		descrPos = len(cp.descrl.Descriptions[defPos].Descriptions) - 1
 		cp.descrl.Descriptions[defPos].Descriptions[descrPos] = append(cp.descrl.Descriptions[defPos].Descriptions[descrPos], pn)
@@ -557,12 +552,12 @@ func (cp *zmkP) parseLinePara() *ast.ParaNode {
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			if pn.Inlines.IsEmpty() {
+			if len(pn.Inlines) == 0 {
 				return nil
 			}
 			return pn
 		}
-		pn.Inlines.Append(in)
+		pn.Inlines = append(pn.Inlines, in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			return pn
 		}
@@ -603,16 +598,16 @@ func (cp *zmkP) parseRow() ast.BlockNode {
 // parseCell parses one single cell of a table row.
 func (cp *zmkP) parseCell() *ast.TableCell {
 	inp := cp.inp
-	var l []ast.InlineNode
+	var l ast.InlineSlice
 	for {
 		if input.IsEOLEOS(inp.Ch) {
 			if len(l) == 0 {
 				return nil
 			}
-			return &ast.TableCell{Inlines: ast.CreateInlineListNode(l...)}
+			return &ast.TableCell{Inlines: l}
 		}
 		if inp.Ch == '|' {
-			return &ast.TableCell{Inlines: ast.CreateInlineListNode(l...)}
+			return &ast.TableCell{Inlines: l}
 		}
 		l = append(l, cp.parseInline())
 	}

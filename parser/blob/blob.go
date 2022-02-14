@@ -58,6 +58,4 @@ func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	}}
 }
 
-func parseInlines(*input.Input, string) ast.InlineListNode {
-	return ast.InlineListNode{}
-}
+func parseInlines(*input.Input, string) ast.InlineSlice { return nil }

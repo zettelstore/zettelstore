@@ -24,8 +24,8 @@ import (
 // CleanBlockSlice cleans the given block list.
 func CleanBlockSlice(bs *ast.BlockSlice) { cleanNode(bs) }
 
-// CleanInlineList cleans the given inline list.
-func CleanInlineList(iln *ast.InlineListNode) { cleanNode(iln) }
+// CleanInlineSlice cleans the given inline list.
+func CleanInlineSlice(is *ast.InlineSlice) { cleanNode(is) }
 
 func cleanNode(n ast.Node) {
 	cv := cleanVisitor{
@@ -60,7 +60,7 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
-	if cv.doMark || hn == nil || hn.Inlines.IsEmpty() {
+	if cv.doMark || hn == nil || len(hn.Inlines) == 0 {
 		return
 	}
 	if hn.Slug == "" {

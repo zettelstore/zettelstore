@@ -17,7 +17,7 @@ package ast
 // ParaNode contains just a sequence of inline elements.
 // Another name is "paragraph".
 type ParaNode struct {
-	Inlines InlineListNode
+	Inlines InlineSlice
 }
 
 func (*ParaNode) blockNode()       { /* Just a marker */ }
@@ -25,11 +25,11 @@ func (*ParaNode) itemNode()        { /* Just a marker */ }
 func (*ParaNode) descriptionNode() { /* Just a marker */ }
 
 // NewParaNode creates an empty ParaNode.
-func NewParaNode() *ParaNode { return &ParaNode{Inlines: InlineListNode{}} }
+func NewParaNode() *ParaNode { return &ParaNode{} }
 
 // CreateParaNode creates a parameter block from inline nodes.
 func CreateParaNode(nodes ...InlineNode) *ParaNode {
-	return &ParaNode{Inlines: CreateInlineListNode(nodes...)}
+	return &ParaNode{Inlines: nodes}
 }
 
 // WalkChildren walks down the inline elements.
@@ -71,7 +71,7 @@ type RegionNode struct {
 	Kind    RegionKind
 	Attrs   Attributes
 	Blocks  BlockSlice
-	Inlines InlineListNode // Optional text at the end of the region
+	Inlines InlineSlice // Optional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
@@ -99,9 +99,9 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
 	Level    int
-	Inlines  InlineListNode // Heading text, possibly formatted
-	Slug     string         // Heading text, normalized
-	Fragment string         // Heading text, suitable to be used as an unique URL fragment
+	Inlines  InlineSlice // Heading text, possibly formatted
+	Slug     string      // Heading text, normalized
+	Fragment string      // Heading text, suitable to be used as an unique URL fragment
 	Attrs    Attributes
 }
 
@@ -167,7 +167,7 @@ type DescriptionListNode struct {
 
 // Description is one element of a description list.
 type Description struct {
-	Term         InlineListNode
+	Term         InlineSlice
 	Descriptions []DescriptionSlice
 }
 
@@ -177,7 +177,7 @@ func (*DescriptionListNode) blockNode() { /* Just a marker */ }
 func (dn *DescriptionListNode) WalkChildren(v Visitor) {
 	if descrs := dn.Descriptions; descrs != nil {
 		for i, desc := range descrs {
-			if !desc.Term.IsEmpty() {
+			if len(desc.Term) > 0 {
 				Walk(v, &descrs[i].Term) // Otherwise, changes in desc.Term will not go back into AST
 			}
 			if dss := desc.Descriptions; dss != nil {
@@ -200,8 +200,8 @@ type TableNode struct {
 
 // TableCell contains the data for one table cell
 type TableCell struct {
-	Align   Alignment      // Cell alignment
-	Inlines InlineListNode // Cell content
+	Align   Alignment   // Cell alignment
+	Inlines InlineSlice // Cell content
 }
 
 // TableRow is a slice of cells.

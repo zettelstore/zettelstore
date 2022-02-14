@@ -34,7 +34,7 @@ type Info struct {
 	IsTextParser  bool
 	IsImageFormat bool
 	ParseBlocks   func(*input.Input, *meta.Meta, string) ast.BlockSlice
-	ParseInlines  func(*input.Input, string) ast.InlineListNode
+	ParseInlines  func(*input.Input, string) ast.InlineSlice
 }
 
 var registry = map[string]*Info{}
@@ -99,13 +99,13 @@ func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 }
 
 // ParseInlines parses some input and returns a slice of inline nodes.
-func ParseInlines(inp *input.Input, syntax string) ast.InlineListNode {
+func ParseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	return Get(syntax).ParseInlines(inp, syntax)
 }
 
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
-func ParseMetadata(value string) ast.InlineListNode {
+func ParseMetadata(value string) ast.InlineSlice {
 	return ParseInlines(input.NewInput([]byte(value)), api.ValueSyntaxZmk)
 }
 

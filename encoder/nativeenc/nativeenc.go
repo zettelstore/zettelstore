@@ -56,17 +56,17 @@ func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, err
 }
 
 // WriteBlocks writes a block slice to the writer
-func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
+func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w, ne)
-	ast.Walk(v, bln)
+	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ne *nativeEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (ne *nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w, ne)
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -86,8 +86,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		v.visitBlockSlice(n)
-	case *ast.InlineListNode:
-		v.walkInlineList(n)
+	case *ast.InlineSlice:
+		v.walkInlineSlice(n)
 	case *ast.ParaNode:
 		v.b.WriteString("[Para ")
 		ast.Walk(v, &n.Inlines)
@@ -148,7 +148,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteString(" \"")
 		v.writeEscaped(n.Key)
 		v.b.WriteByte('"')
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			v.b.WriteString(" [")
 			ast.Walk(v, &n.Inlines)
 			v.b.WriteByte(']')
@@ -221,8 +221,8 @@ func (v *visitor) writeZettelmarkup(key, value string, evalMeta encoder.EvalMeta
 	v.b.WriteByte('[')
 	v.b.WriteString(key)
 	v.b.WriteByte(' ')
-	iln := evalMeta(value)
-	ast.Walk(v, &iln)
+	is := evalMeta(value)
+	ast.Walk(v, &is)
 	v.b.WriteByte(']')
 }
 
@@ -282,7 +282,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	ast.Walk(v, &rn.Blocks)
 	v.level--
 	v.b.WriteByte(']')
-	if !rn.Inlines.IsEmpty() {
+	if len(rn.Inlines) > 0 {
 		v.b.WriteByte(',')
 		v.writeNewLine()
 		v.b.WriteString("[Cite ")
@@ -403,7 +403,7 @@ var alignString = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteStrings("[Cell", alignString[cell.Align])
-	if !cell.Inlines.IsEmpty() {
+	if len(cell.Inlines) > 0 {
 		v.b.WriteByte(' ')
 		ast.Walk(v, &cell.Inlines)
 	}
@@ -458,7 +458,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.writeEscaped(en.Ref.String())
 	v.b.WriteByte('"')
 
-	if !en.Inlines.IsEmpty() {
+	if len(en.Inlines) > 0 {
 		v.b.WriteString(" [")
 		ast.Walk(v, &en.Inlines)
 		v.b.WriteByte(']')
@@ -477,7 +477,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	}
 	v.b.WriteString("\"}")
 
-	if !en.Inlines.IsEmpty() {
+	if len(en.Inlines) > 0 {
 		v.b.WriteString(" [")
 		ast.Walk(v, &en.Inlines)
 		v.b.WriteByte(']')
@@ -528,8 +528,8 @@ func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
 		ast.Walk(v, bn)
 	}
 }
-func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
-	for i, in := range iln.List {
+func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
+	for i, in := range *is {
 		v.writeComma(i)
 		ast.Walk(v, in)
 	}

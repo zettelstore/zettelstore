@@ -12,44 +12,29 @@ package ast
 
 // Definitions of inline nodes.
 
-// InlineListNode is a list of BlockNodes.
-type InlineListNode struct {
-	List []InlineNode
-}
+// InlineSlice is a list of BlockNodes.
+type InlineSlice []InlineNode
 
-func (*InlineListNode) inlineNode() { /* Just a marker */ }
+func (*InlineSlice) inlineNode() { /* Just a marker */ }
 
-// CreateInlineListNode make a new inline list node from nodes
-func CreateInlineListNode(nodes ...InlineNode) InlineListNode {
-	return InlineListNode{List: nodes}
-}
-
-// CreateInlineListNodeFromWords makes a new inline list from words,
+// CreateInlineSliceFromWords makes a new inline list from words,
 // that will be space-separated.
-func CreateInlineListNodeFromWords(words ...string) InlineListNode {
-	inl := make([]InlineNode, 0, 2*len(words)-1)
+func CreateInlineSliceFromWords(words ...string) InlineSlice {
+	inl := make(InlineSlice, 0, 2*len(words)-1)
 	for i, word := range words {
 		if i > 0 {
 			inl = append(inl, &SpaceNode{Lexeme: " "})
 		}
 		inl = append(inl, &TextNode{Text: word})
 	}
-	return InlineListNode{List: inl}
+	return inl
 }
 
 // WalkChildren walks down to the list.
-func (iln *InlineListNode) WalkChildren(v Visitor) {
-	for _, in := range iln.List {
+func (is *InlineSlice) WalkChildren(v Visitor) {
+	for _, in := range *is {
 		Walk(v, in)
 	}
-}
-
-// IsEmpty returns true if the list has no elements.
-func (iln *InlineListNode) IsEmpty() bool { return iln == nil || len(iln.List) == 0 }
-
-// Append inline node(s) to the list.
-func (iln *InlineListNode) Append(in ...InlineNode) {
-	iln.List = append(iln.List, in...)
 }
 
 // --------------------------------------------------------------------------
@@ -105,9 +90,9 @@ func (*BreakNode) WalkChildren(Visitor) { /* No children*/ }
 // LinkNode contains the specified link.
 type LinkNode struct {
 	Ref     *Reference
-	Inlines InlineListNode // The text associated with the link.
-	OnlyRef bool           // True if no text was specified.
-	Attrs   Attributes     // Optional attributes
+	Inlines InlineSlice // The text associated with the link.
+	OnlyRef bool        // True if no text was specified.
+	Attrs   Attributes  // Optional attributes
 }
 
 func (*LinkNode) inlineNode() { /* Just a marker */ }
@@ -121,9 +106,9 @@ func (ln *LinkNode) WalkChildren(v Visitor) {
 
 // EmbedRefNode contains the specified embedded reference material.
 type EmbedRefNode struct {
-	Ref     *Reference     // The reference to be embedded.
-	Inlines InlineListNode // Optional text associated with the image.
-	Attrs   Attributes     // Optional attributes
+	Ref     *Reference  // The reference to be embedded.
+	Inlines InlineSlice // Optional text associated with the image.
+	Attrs   Attributes  // Optional attributes
 }
 
 func (*EmbedRefNode) inlineNode()      { /* Just a marker */ }
@@ -138,10 +123,10 @@ func (en *EmbedRefNode) WalkChildren(v Visitor) {
 
 // EmbedBLOBNode contains the specified embedded BLOB material.
 type EmbedBLOBNode struct {
-	Blob    []byte         // BLOB data itself.
-	Syntax  string         // Syntax of Blob
-	Inlines InlineListNode // Optional text associated with the image.
-	Attrs   Attributes     // Optional attributes
+	Blob    []byte      // BLOB data itself.
+	Syntax  string      // Syntax of Blob
+	Inlines InlineSlice // Optional text associated with the image.
+	Attrs   Attributes  // Optional attributes
 }
 
 func (*EmbedBLOBNode) inlineNode()      { /* Just a marker */ }
@@ -156,9 +141,9 @@ func (en *EmbedBLOBNode) WalkChildren(v Visitor) {
 
 // CiteNode contains the specified citation.
 type CiteNode struct {
-	Key     string         // The citation key
-	Inlines InlineListNode // Optional text associated with the citation.
-	Attrs   Attributes     // Optional attributes
+	Key     string      // The citation key
+	Inlines InlineSlice // Optional text associated with the citation.
+	Attrs   Attributes  // Optional attributes
 }
 
 func (*CiteNode) inlineNode() { /* Just a marker */ }
@@ -188,8 +173,8 @@ func (*MarkNode) WalkChildren(Visitor) { /* No children*/ }
 
 // FootnoteNode contains the specified footnote.
 type FootnoteNode struct {
-	Inlines InlineListNode // The footnote text.
-	Attrs   Attributes     // Optional attributes
+	Inlines InlineSlice // The footnote text.
+	Attrs   Attributes  // Optional attributes
 }
 
 func (*FootnoteNode) inlineNode() { /* Just a marker */ }
@@ -205,7 +190,7 @@ func (fn *FootnoteNode) WalkChildren(v Visitor) {
 type FormatNode struct {
 	Kind    FormatKind
 	Attrs   Attributes // Optional attributes.
-	Inlines InlineListNode
+	Inlines InlineSlice
 }
 
 // FormatKind specifies the format that is applied to the inline nodes.

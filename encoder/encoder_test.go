@@ -61,7 +61,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
-			pe = &peInlines{iln: parser.ParseInlines(inp, api.ValueSyntaxZmk)}
+			pe = &peInlines{is: parser.ParseInlines(inp, api.ValueSyntaxZmk)}
 		} else {
 			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}
@@ -98,12 +98,12 @@ type parserEncoder interface {
 }
 
 type peInlines struct {
-	iln ast.InlineListNode
+	is ast.InlineSlice
 }
 
 func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	if _, err := encdr.WriteInlines(&buf, &in.iln); err != nil {
+	if _, err := encdr.WriteInlines(&buf, &in.is); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

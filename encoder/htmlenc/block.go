@@ -116,7 +116,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(attrs)
 	v.b.WriteString(">\n")
 	ast.Walk(v, &rn.Blocks)
-	if !rn.Inlines.IsEmpty() {
+	if len(rn.Inlines) > 0 {
 		v.b.WriteString("\n<cite>")
 		ast.Walk(v, &rn.Inlines)
 		v.b.WriteString("</cite>")
@@ -311,7 +311,7 @@ func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {
 	v.b.WriteString("<tr>")
 	for _, cell := range row {
 		v.b.WriteString(cellStart)
-		if cell.Inlines.IsEmpty() {
+		if len(cell.Inlines) == 0 {
 			v.b.WriteByte('>')
 		} else {
 			v.b.WriteString(alignStyle[cell.Align])

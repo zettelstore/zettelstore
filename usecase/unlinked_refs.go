@@ -96,9 +96,9 @@ candLoop:
 			if meta.Type(pair.Key) != meta.TypeZettelmarkup {
 				continue
 			}
-			iln := parser.ParseMetadata(pair.Value)
-			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, &iln)
-			ast.Walk(&v, &iln)
+			is := parser.ParseMetadata(pair.Value)
+			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, &is)
+			ast.Walk(&v, &is)
 			if v.found {
 				result = append(result, cand)
 				continue candLoop
@@ -134,7 +134,7 @@ type unlinkedVisitor struct {
 
 func (v *unlinkedVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.InlineListNode:
+	case *ast.InlineSlice:
 		v.checkWords(n)
 		return nil
 	case *ast.HeadingNode:
@@ -145,21 +145,21 @@ func (v *unlinkedVisitor) Visit(node ast.Node) ast.Visitor {
 	return v
 }
 
-func (v *unlinkedVisitor) checkWords(iln *ast.InlineListNode) {
-	if len(iln.List) < 2*len(v.words)-1 {
+func (v *unlinkedVisitor) checkWords(is *ast.InlineSlice) {
+	if len(*is) < 2*len(v.words)-1 {
 		return
 	}
-	for _, text := range v.splitInlineTextList(iln) {
+	for _, text := range v.splitInlineTextList(is) {
 		if strings.Contains(text, v.text) {
 			v.found = true
 		}
 	}
 }
 
-func (v *unlinkedVisitor) splitInlineTextList(iln *ast.InlineListNode) []string {
+func (v *unlinkedVisitor) splitInlineTextList(is *ast.InlineSlice) []string {
 	var result []string
 	var curList []string
-	for _, in := range iln.List {
+	for _, in := range *is {
 		switch n := in.(type) {
 		case *ast.TextNode:
 			curList = append(curList, makeWords(n.Text)...)

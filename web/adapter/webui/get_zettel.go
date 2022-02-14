@@ -61,7 +61,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		evalMeta := func(value string) ast.InlineListNode {
+		evalMeta := func(value string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
@@ -150,7 +150,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 var errNoSuchEncoding = errors.New("no such encoding")
 
 // encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeInlines(is *ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	if is == nil {
 		return "", nil
 	}

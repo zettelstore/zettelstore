@@ -39,11 +39,11 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 	return bs
 }
 
-func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
 	parser := &zmkP{inp: inp}
-	iln := parser.parseInlineList()
-	postProcessInlines(&iln)
-	return iln
+	is := parser.parseInlineSlice()
+	postProcessInlines(&is)
+	return is
 }
 
 type zmkP struct {

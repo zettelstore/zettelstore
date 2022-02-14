@@ -62,17 +62,17 @@ func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int,
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
+func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newDetailVisitor(w, je)
-	ast.Walk(v, bln)
+	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (je *jsonDetailEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newDetailVisitor(w, je)
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -92,8 +92,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.BlockSlice:
 		v.visitBlockSlice(n)
 		return nil
-	case *ast.InlineListNode:
-		v.walkInlineList(n)
+	case *ast.InlineSlice:
+		v.walkInlineSlice(n)
 		return nil
 	case *ast.ParaNode:
 		v.writeNodeStart("Para")
@@ -160,7 +160,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitAttributes(n.Attrs)
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Key)
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			v.writeContentStart('i')
 			ast.Walk(v, &n.Inlines)
 		}
@@ -225,7 +225,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
 	ast.Walk(v, &rn.Blocks)
-	if !rn.Inlines.IsEmpty() {
+	if len(rn.Inlines) > 0 {
 		v.writeContentStart('i')
 		ast.Walk(v, &rn.Inlines)
 	}
@@ -362,7 +362,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.writeContentStart('s')
 	writeEscaped(&v.b, en.Ref.String())
 
-	if !en.Inlines.IsEmpty() {
+	if len(en.Inlines) > 0 {
 		v.writeContentStart('i')
 		ast.Walk(v, &en.Inlines)
 	}
@@ -384,7 +384,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	}
 	v.b.WriteByte('}')
 
-	if !en.Inlines.IsEmpty() {
+	if len(en.Inlines) > 0 {
 		v.writeContentStart('i')
 		ast.Walk(v, &en.Inlines)
 	}
@@ -435,9 +435,9 @@ func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
 	v.b.WriteByte(']')
 }
 
-func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
+func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
 	v.b.WriteByte('[')
-	for i, in := range iln.List {
+	for i, in := range *is {
 		v.writeComma(i)
 		ast.Walk(v, in)
 	}
@@ -510,8 +510,8 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 			continue
 		}
 		if t == meta.TypeZettelmarkup {
-			iln := evalMeta(p.Value)
-			ast.Walk(v, &iln)
+			is := evalMeta(p.Value)
+			ast.Walk(v, &is)
 			continue
 		}
 		writeEscaped(&v.b, p.Value)

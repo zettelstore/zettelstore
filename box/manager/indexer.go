@@ -199,8 +199,8 @@ func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *st
 				mgr.idxUpdateValue(ctx, descr.Inverse, val, zi)
 			}
 		case meta.TypeZettelmarkup:
-			iln := parser.ParseMetadata(pair.Value)
-			collectInlineIndexData(&iln, cData)
+			is := parser.ParseMetadata(pair.Value)
+			collectInlineIndexData(&is, cData)
 		case meta.TypeURL:
 			if _, err := url.Parse(pair.Value); err == nil {
 				cData.urls.Add(pair.Value)

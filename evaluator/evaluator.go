@@ -59,9 +59,9 @@ func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig c
 
 // EvaluateInline evaluates the given inline list in the given context, with
 // the given ports, and the given environment.
-func EvaluateInline(ctx context.Context, port Port, env *Environment, rtConfig config.Config, iln *ast.InlineListNode) {
-	evaluateNode(ctx, port, env, rtConfig, iln)
-	cleaner.CleanInlineList(iln)
+func EvaluateInline(ctx context.Context, port Port, env *Environment, rtConfig config.Config, is *ast.InlineSlice) {
+	evaluateNode(ctx, port, env, rtConfig, is)
+	cleaner.CleanInlineSlice(is)
 }
 
 func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig config.Config, n ast.Node) {
@@ -76,7 +76,7 @@ func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig con
 		transcludeMax:   rtConfig.GetMaxTransclusions(),
 		transcludeCount: 0,
 		costMap:         map[id.Zid]transcludeCost{},
-		embedMap:        map[string]ast.InlineListNode{},
+		embedMap:        map[string]ast.InlineSlice{},
 		marker:          &ast.ZettelNode{},
 	}
 	ast.Walk(&e, n)
@@ -91,7 +91,7 @@ type evaluator struct {
 	transcludeCount int
 	costMap         map[id.Zid]transcludeCost
 	marker          *ast.ZettelNode
-	embedMap        map[string]ast.InlineListNode
+	embedMap        map[string]ast.InlineSlice
 }
 
 type transcludeCost struct {
@@ -103,8 +103,8 @@ func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		e.visitBlockSlice(n)
-	case *ast.InlineListNode:
-		e.visitInlineList(n)
+	case *ast.InlineSlice:
+		e.visitInlineSlice(n)
 	default:
 		return e
 	}
@@ -242,38 +242,38 @@ func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
 
 func makeBlockNode(in ast.InlineNode) ast.BlockNode { return ast.CreateParaNode(in) }
 
-func (e *evaluator) visitInlineList(iln *ast.InlineListNode) {
-	for i := 0; i < len(iln.List); i++ {
-		in := iln.List[i]
+func (e *evaluator) visitInlineSlice(is *ast.InlineSlice) {
+	for i := 0; i < len(*is); i++ {
+		in := (*is)[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {
 		case *ast.TagNode:
-			iln.List[i] = e.visitTag(n)
+			(*is)[i] = e.visitTag(n)
 		case *ast.LinkNode:
-			iln.List[i] = e.evalLinkNode(n)
+			(*is)[i] = e.evalLinkNode(n)
 		case *ast.EmbedRefNode:
-			i += embedNode(iln, i, e.evalEmbedRefNode(n))
+			i += embedNode(is, i, e.evalEmbedRefNode(n))
 		case *ast.LiteralNode:
-			i += embedNode(iln, i, e.evalLiteralNode(n))
+			i += embedNode(is, i, e.evalLiteralNode(n))
 		}
 	}
 }
 
-func embedNode(iln *ast.InlineListNode, i int, in ast.InlineNode) int {
-	if ln, ok := in.(*ast.InlineListNode); ok {
-		iln.List = replaceWithInlineNodes(iln.List, i, ln.List)
-		return len(ln.List) - 1
+func embedNode(is *ast.InlineSlice, i int, in ast.InlineNode) int {
+	if ln, ok := in.(*ast.InlineSlice); ok {
+		*is = replaceWithInlineNodes(*is, i, *ln)
+		return len(*ln) - 1
 	}
-	iln.List[i] = in
+	(*is)[i] = in
 	return 0
 }
 
-func replaceWithInlineNodes(ins []ast.InlineNode, i int, replaceIns []ast.InlineNode) []ast.InlineNode {
+func replaceWithInlineNodes(ins ast.InlineSlice, i int, replaceIns ast.InlineSlice) ast.InlineSlice {
 	if len(replaceIns) == 1 {
 		ins[i] = replaceIns[0]
 		return ins
 	}
-	newIns := make([]ast.InlineNode, 0, len(ins)+len(replaceIns)-1)
+	newIns := make(ast.InlineSlice, 0, len(ins)+len(replaceIns)-1)
 	if i > 0 {
 		newIns = append(newIns, ins[:i]...)
 	}
@@ -291,7 +291,7 @@ func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
 		fullTag := "#" + tn.Tag
 		return &ast.LinkNode{
 			Ref:     e.env.GetTagRef(fullTag),
-			Inlines: ast.CreateInlineListNodeFromWords(fullTag),
+			Inlines: ast.CreateInlineSliceFromWords(fullTag),
 		}
 	}
 	return tn
@@ -387,10 +387,10 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	result, ok := e.embedMap[ref.Value]
 	if !ok {
 		// Search for text to be embedded.
-		result = findInlineList(&zn.Ast, ref.URL.Fragment)
+		result = findInlineSlice(&zn.Ast, ref.URL.Fragment)
 		e.embedMap[ref.Value] = result
 	}
-	if result.IsEmpty() {
+	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,
 			Content: append([]byte("Nothing to transclude: "), ref.String()...),
@@ -417,7 +417,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 	}
 	e.transcludeCount++
 	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, api.ValueSyntaxDraw))
-	if result.IsEmpty() {
+	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,
 			Content: []byte("Nothing to transclude"),
@@ -448,7 +448,7 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 			panic(err)
 		}
 		inlines := en.Inlines
-		if inlines.IsEmpty() {
+		if len(inlines) == 0 {
 			if title := e.getTitle(zettel.Meta); title != "" {
 				inlines = parser.ParseMetadata(title)
 			}
@@ -465,7 +465,7 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 		return result
 	}
 	en.Ref = ast.ParseReference(errorZid.String())
-	if en.Inlines.IsEmpty() {
+	if len(en.Inlines) == 0 {
 		en.Inlines = parser.ParseMetadata("Error placeholder")
 	}
 	return en
@@ -488,10 +488,10 @@ func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.I
 }
 
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
-	text := ast.CreateInlineListNodeFromWords(msgWords...)
+	text := ast.CreateInlineSliceFromWords(msgWords...)
 	if ref != nil {
 		ln := linkNodeToReference(ref)
-		text.Append(&ast.TextNode{Text: ":"}, &ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
+		text = append(text, &ast.TextNode{Text: ":"}, &ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
 	}
 	fn := &ast.FormatNode{
 		Kind:    ast.FormatMonospace,
@@ -499,7 +499,7 @@ func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNod
 	}
 	fn = &ast.FormatNode{
 		Kind:    ast.FormatStrong,
-		Inlines: ast.CreateInlineListNode(fn),
+		Inlines: ast.InlineSlice{fn},
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn
@@ -508,16 +508,16 @@ func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNod
 func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
 	ln := &ast.LinkNode{
 		Ref:     ref,
-		Inlines: ast.CreateInlineListNodeFromWords(ref.String()),
+		Inlines: ast.CreateInlineSliceFromWords(ref.String()),
 		OnlyRef: true,
 	}
 	return ln
 }
 
-func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.InlineListNode {
-	iln := parser.ParseInlines(input.NewInput(content), syntax)
-	ast.Walk(e, &iln)
-	return iln
+func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.InlineSlice {
+	is := parser.ParseInlines(input.NewInput(content), syntax)
+	ast.Walk(e, &is)
+	return is
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
@@ -526,7 +526,7 @@ func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode
 	return zn
 }
 
-func findInlineList(bs *ast.BlockSlice, fragment string) ast.InlineListNode {
+func findInlineSlice(bs *ast.BlockSlice, fragment string) ast.InlineSlice {
 	if fragment == "" {
 		return bs.FirstParagraphInlines()
 	}
@@ -537,11 +537,11 @@ func findInlineList(bs *ast.BlockSlice, fragment string) ast.InlineListNode {
 
 type fragmentSearcher struct {
 	fragment string
-	result   ast.InlineListNode
+	result   ast.InlineSlice
 }
 
 func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
-	if !fs.result.IsEmpty() {
+	if len(fs.result) > 0 {
 		return nil
 	}
 	switch n := node.(type) {
@@ -553,10 +553,10 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 			}
 			ast.Walk(fs, bn)
 		}
-	case *ast.InlineListNode:
-		for i, in := range n.List {
+	case *ast.InlineSlice:
+		for i, in := range *n {
 			if mn, ok := in.(*ast.MarkNode); ok && mn.Fragment == fs.fragment {
-				fs.result = ast.CreateInlineListNode(skipSpaceNodes(n.List[i+1:])...)
+				fs.result = skipSpaceNodes((*n)[i+1:])
 				return nil
 			}
 			ast.Walk(fs, in)
@@ -567,7 +567,7 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
-func skipSpaceNodes(ins []ast.InlineNode) []ast.InlineNode {
+func skipSpaceNodes(ins ast.InlineSlice) ast.InlineSlice {
 	for i, in := range ins {
 		switch in.(type) {
 		case *ast.SpaceNode:

@@ -37,8 +37,8 @@ func collectZettelIndexData(zn *ast.ZettelNode, data *collectData) {
 	ast.Walk(data, &zn.Ast)
 }
 
-func collectInlineIndexData(iln *ast.InlineListNode, data *collectData) {
-	ast.Walk(data, iln)
+func collectInlineIndexData(is *ast.InlineSlice, data *collectData) {
+	ast.Walk(data, is)
 }
 
 func (data *collectData) Visit(node ast.Node) ast.Visitor {

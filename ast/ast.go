@@ -57,20 +57,19 @@ func (bs *BlockSlice) WalkChildren(v Visitor) {
 
 // FirstParagraphInlines returns the inline list of the first paragraph that
 // contains a inline list.
-func (bs BlockSlice) FirstParagraphInlines() InlineListNode {
+func (bs BlockSlice) FirstParagraphInlines() InlineSlice {
 	if len(bs) > 0 {
 		for _, bn := range bs {
 			pn, ok := bn.(*ParaNode)
 			if !ok {
 				continue
 			}
-			inl := pn.Inlines
-			if len(inl.List) > 0 {
+			if inl := pn.Inlines; len(inl) > 0 {
 				return inl
 			}
 		}
 	}
-	return InlineListNode{}
+	return nil
 }
 
 // ItemNode is a node that can occur as a list item.

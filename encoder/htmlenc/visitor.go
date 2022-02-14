@@ -58,8 +58,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			}
 			ast.Walk(v, bn)
 		}
-	case *ast.InlineListNode:
-		for i, in := range n.List {
+	case *ast.InlineSlice:
+		for i, in := range *n {
 			v.inlinePos = i
 			ast.Walk(v, in)
 		}
@@ -166,8 +166,8 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 
 func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
 	var buf bytes.Buffer
-	iln := evalMeta(value)
-	_, err := v.textEnc.WriteInlines(&buf, &iln)
+	is := evalMeta(value)
+	_, err := v.textEnc.WriteInlines(&buf, &is)
 	if err == nil {
 		return buf.String()
 	}

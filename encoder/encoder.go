@@ -28,12 +28,12 @@ type Encoder interface {
 	WriteMeta(io.Writer, *meta.Meta, EvalMetaFunc) (int, error)
 	WriteContent(io.Writer, *ast.ZettelNode) (int, error)
 	WriteBlocks(io.Writer, *ast.BlockSlice) (int, error)
-	WriteInlines(io.Writer, *ast.InlineListNode) (int, error)
+	WriteInlines(io.Writer, *ast.InlineSlice) (int, error)
 }
 
 // EvalMetaFunc is a function that takes a string of metadata and returns
 // a list of syntax elements.
-type EvalMetaFunc func(string) ast.InlineListNode
+type EvalMetaFunc func(string) ast.InlineSlice
 
 // Some errors to signal when encoder methods are not implemented.
 var (

@@ -43,8 +43,8 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
 	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
-		iln := canvasErrMsg(err)
-		return ast.BlockSlice{ast.CreateParaNode(&iln)}
+		is := canvasErrMsg(err)
+		return ast.BlockSlice{ast.CreateParaNode(&is)}
 	}
 	if scaleX < 1 || 1000000 < scaleX {
 		scaleX = defaultScaleX
@@ -54,8 +54,8 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	}
 	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
 	if len(svg) == 0 {
-		iln := noSVGErrMsg()
-		return ast.BlockSlice{ast.CreateParaNode(&iln)}
+		is := noSVGErrMsg()
+		return ast.BlockSlice{ast.CreateParaNode(&is)}
 	}
 	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  "",
@@ -64,7 +64,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	}}
 }
 
-func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
 	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
 		return canvasErrMsg(err)
@@ -73,16 +73,16 @@ func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
 	if len(svg) == 0 {
 		return noSVGErrMsg()
 	}
-	return ast.CreateInlineListNode(&ast.EmbedBLOBNode{
+	return ast.InlineSlice{&ast.EmbedBLOBNode{
 		Blob:   svg,
 		Syntax: api.ValueSyntaxSVG,
-	})
+	}}
 }
 
-func canvasErrMsg(err error) ast.InlineListNode {
-	return ast.CreateInlineListNodeFromWords("Error:", err.Error())
+func canvasErrMsg(err error) ast.InlineSlice {
+	return ast.CreateInlineSliceFromWords("Error:", err.Error())
 }
 
-func noSVGErrMsg() ast.InlineListNode {
-	return ast.CreateInlineListNodeFromWords("NO", "IMAGE")
+func noSVGErrMsg() ast.InlineSlice {
+	return ast.CreateInlineSliceFromWords("NO", "IMAGE")
 }

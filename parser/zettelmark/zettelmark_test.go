@@ -716,8 +716,8 @@ func (tv *TestVisitor) String() string { return tv.buf.String() }
 
 func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.InlineListNode:
-		tv.visitInlineList(n)
+	case *ast.InlineSlice:
+		tv.visitInlineSlice(n)
 	case *ast.ParaNode:
 		tv.buf.WriteString("(PARA")
 		ast.Walk(tv, &n.Inlines)
@@ -744,7 +744,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			tv.buf.WriteByte(' ')
 			ast.Walk(tv, &n.Blocks)
 		}
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			tv.buf.WriteString(" (LINE")
 			ast.Walk(tv, &n.Inlines)
 			tv.buf.WriteByte(')')
@@ -844,7 +844,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.visitAttributes(n.Attrs)
 	case *ast.EmbedRefNode:
 		fmt.Fprintf(&tv.buf, "(EMBED %v", n.Ref)
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
@@ -853,7 +853,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		panic("TODO: zmktest blob")
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.buf, "(CITE %s", n.Key)
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
@@ -945,8 +945,8 @@ var mapLiteralKind = map[ast.LiteralKind]rune{
 	ast.LiteralComment: '%',
 }
 
-func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
-	for _, in := range iln.List {
+func (tv *TestVisitor) visitInlineSlice(is *ast.InlineSlice) {
+	for _, in := range *is {
 		tv.buf.WriteByte(' ')
 		ast.Walk(tv, in)
 	}

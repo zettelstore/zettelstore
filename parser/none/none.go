@@ -32,7 +32,7 @@ func init() {
 
 func parseBlocks(*input.Input, *meta.Meta, string) ast.BlockSlice { return nil }
 
-func parseInlines(inp *input.Input, _ string) ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
 	inp.SkipToEOL()
-	return ast.InlineListNode{}
+	return nil
 }

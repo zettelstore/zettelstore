@@ -71,9 +71,9 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	}
 }
 
-func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, iln *ast.InlineListNode) {
+func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, is *ast.InlineSlice) {
 	if v.env.IsInteractive(v.inInteractive) {
-		v.writeSpan(iln, attrs)
+		v.writeSpan(is, attrs)
 		return
 	}
 	v.b.WriteString("<a href=\"")
@@ -82,7 +82,7 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, iln *ast.
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
 	v.inInteractive = true
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	v.inInteractive = false
 	v.b.WriteString("</a>")
 }
@@ -131,7 +131,7 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.lang.push(cn.Attrs)
 	defer v.lang.pop()
 	v.b.WriteString(cn.Key)
-	if len(cn.Inlines.List) > 0 {
+	if len(cn.Inlines) > 0 {
 		v.b.WriteString(", ")
 		ast.Walk(v, &cn.Inlines)
 	}
@@ -197,11 +197,11 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("</", code, ">")
 }
 
-func (v *visitor) writeSpan(iln *ast.InlineListNode, attrs ast.Attributes) {
+func (v *visitor) writeSpan(is *ast.InlineSlice, attrs ast.Attributes) {
 	v.b.WriteString("<span")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	v.b.WriteString("</span>")
 
 }

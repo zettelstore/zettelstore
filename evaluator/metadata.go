@@ -25,21 +25,21 @@ func evaluateMetadata(m *meta.Meta) ast.BlockSlice {
 }
 
 func getMetadataDescription(key, value string) ast.Description {
-	iln := convertMetavalueToInlineList(value, meta.Type(key))
+	is := convertMetavalueToInlineSlice(value, meta.Type(key))
 	return ast.Description{
-		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
+		Term: ast.InlineSlice{&ast.TextNode{Text: key}},
 		Descriptions: []ast.DescriptionSlice{{
-			ast.CreateParaNode(&iln),
+			ast.CreateParaNode(&is),
 		}},
 	}
 }
 
-func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) ast.InlineListNode {
+func convertMetavalueToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlice {
 	var sliceData []string
 	if dt.IsSet {
 		sliceData = meta.ListFromValue(value)
 		if len(sliceData) == 0 {
-			return ast.InlineListNode{}
+			return nil
 		}
 	} else {
 		sliceData = []string{value}
@@ -50,7 +50,7 @@ func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) ast.In
 		makeLink = true
 	}
 
-	result := make([]ast.InlineNode, 0, 2*len(sliceData)-1)
+	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
 	for i, val := range sliceData {
 		if i > 0 {
 			result = append(result, &ast.SpaceNode{Lexeme: " "})
@@ -59,11 +59,11 @@ func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) ast.In
 		if makeLink {
 			result = append(result, &ast.LinkNode{
 				Ref:     ast.ParseReference(val),
-				Inlines: ast.CreateInlineListNode(tn),
+				Inlines: ast.InlineSlice{tn},
 			})
 		} else {
 			result = append(result, tn)
 		}
 	}
-	return ast.CreateInlineListNode(result...)
+	return result
 }

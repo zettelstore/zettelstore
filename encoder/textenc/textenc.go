@@ -47,8 +47,8 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
-			iln := evalMeta(pair.Value)
-			te.WriteInlines(&buf, &iln)
+			is := evalMeta(pair.Value)
+			te.WriteInlines(&buf, &is)
 		default:
 			buf.WriteString(pair.Value)
 		}
@@ -81,17 +81,17 @@ func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockSlice) (int, error) {
+func (*textEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
-	v.visitBlockSlice(bln)
+	v.visitBlockSlice(bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (*textEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -110,8 +110,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		v.visitBlockSlice(n)
-	case *ast.InlineListNode:
-		for i, in := range n.List {
+	case *ast.InlineSlice:
+		for i, in := range *n {
 			v.inlinePos = i
 			ast.Walk(v, in)
 		}
@@ -122,7 +122,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.RegionNode:
 		v.visitBlockSlice(&n.Blocks)
-		if !n.Inlines.IsEmpty() {
+		if len(n.Inlines) > 0 {
 			v.b.WriteByte('\n')
 			ast.Walk(v, &n.Inlines)
 		}

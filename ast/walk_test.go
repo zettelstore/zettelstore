@@ -19,28 +19,28 @@ import (
 func BenchmarkWalk(b *testing.B) {
 	root := ast.BlockSlice{
 		&ast.HeadingNode{
-			Inlines: ast.CreateInlineListNodeFromWords("A", "Simple", "Heading"),
+			Inlines: ast.CreateInlineSliceFromWords("A", "Simple", "Heading"),
 		},
 		&ast.ParaNode{
-			Inlines: ast.CreateInlineListNodeFromWords("This", "is", "the", "introduction."),
+			Inlines: ast.CreateInlineSliceFromWords("This", "is", "the", "introduction."),
 		},
 		&ast.NestedListNode{
 			Kind: ast.NestedListUnordered,
 			Items: []ast.ItemSlice{
 				[]ast.ItemNode{
 					&ast.ParaNode{
-						Inlines: ast.CreateInlineListNodeFromWords("Item", "1"),
+						Inlines: ast.CreateInlineSliceFromWords("Item", "1"),
 					},
 				},
 				[]ast.ItemNode{
 					&ast.ParaNode{
-						Inlines: ast.CreateInlineListNodeFromWords("Item", "2"),
+						Inlines: ast.CreateInlineSliceFromWords("Item", "2"),
 					},
 				},
 			},
 		},
 		&ast.ParaNode{
-			Inlines: ast.CreateInlineListNodeFromWords("This", "is", "some", "intermediate", "text."),
+			Inlines: ast.CreateInlineSliceFromWords("This", "is", "some", "intermediate", "text."),
 		},
 		ast.CreateParaNode(
 			&ast.FormatNode{
@@ -49,14 +49,14 @@ func BenchmarkWalk(b *testing.B) {
 					"":      "class",
 					"color": "green",
 				}),
-				Inlines: ast.CreateInlineListNodeFromWords("This", "is", "some", "emphasized", "text."),
+				Inlines: ast.CreateInlineSliceFromWords("This", "is", "some", "emphasized", "text."),
 			},
 			&ast.SpaceNode{Lexeme: " "},
 			&ast.LinkNode{
 				Ref: &ast.Reference{
 					Value: "http://zettelstore.de",
 				},
-				Inlines: ast.CreateInlineListNodeFromWords("URL", "text."),
+				Inlines: ast.CreateInlineSliceFromWords("URL", "text."),
 				OnlyRef: false,
 			},
 		),

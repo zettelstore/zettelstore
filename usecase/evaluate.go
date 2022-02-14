@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -54,10 +54,10 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string, env *eva
 }
 
 // RunMetadata executes the use case for a metadata value.
-func (uc *Evaluate) RunMetadata(ctx context.Context, value string, env *evaluator.Environment) ast.InlineListNode {
-	iln := parser.ParseMetadata(value)
-	evaluator.EvaluateInline(ctx, uc, env, uc.rtConfig, &iln)
-	return iln
+func (uc *Evaluate) RunMetadata(ctx context.Context, value string, env *evaluator.Environment) ast.InlineSlice {
+	is := parser.ParseMetadata(value)
+	evaluator.EvaluateInline(ctx, uc, env, uc.rtConfig, &is)
+	return is
 }
 
 // GetMeta retrieves the metadata of a given zettel identifier.
