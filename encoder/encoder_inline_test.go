@@ -279,7 +279,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Dummy Link",
 		zmk:   `[[abc]]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Link","q":"external","s":"abc","i":[{"":"Text","s":"abc"}]}]`,
+			encoderZJSON:  `[{"":"Link","q":"external","s":"abc"}]`,
 			encoderHTML:   `<a href="abc" class="zs-external">abc</a>`,
 			encoderNative: `Link EXTERNAL "abc" []`,
 			encoderText:   ``,
@@ -290,7 +290,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Simple URL",
 		zmk:   `[[https://zettelstore.de]]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Link","q":"external","s":"https://zettelstore.de","i":[{"":"Text","s":"https://zettelstore.de"}]}]`,
+			encoderZJSON:  `[{"":"Link","q":"external","s":"https://zettelstore.de"}]`,
 			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">https://zettelstore.de</a>`,
 			encoderNative: `Link EXTERNAL "https://zettelstore.de" []`,
 			encoderText:   ``,
@@ -312,7 +312,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Simple Zettel ID",
 		zmk:   `[[00000000000100]]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100","i":[{"":"Text","s":"00000000000100"}]}]`,
+			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100"}]`,
 			encoderHTML:   `<a href="00000000000100">00000000000100</a>`,
 			encoderNative: `Link ZETTEL "00000000000100" []`,
 			encoderText:   ``,
@@ -334,7 +334,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Simple Zettel ID with fragment",
 		zmk:   `[[00000000000100#frag]]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100#frag","i":[{"":"Text","s":"00000000000100#frag"}]}]`,
+			encoderZJSON:  `[{"":"Link","q":"zettel","s":"00000000000100#frag"}]`,
 			encoderHTML:   `<a href="00000000000100#frag">00000000000100#frag</a>`,
 			encoderNative: `Link ZETTEL "00000000000100#frag" []`,
 			encoderText:   ``,
@@ -356,7 +356,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Fragment link to self",
 		zmk:   `[[#frag]]`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Link","q":"self","s":"#frag","i":[{"":"Text","s":"#frag"}]}]`,
+			encoderZJSON:  `[{"":"Link","q":"self","s":"#frag"}]`,
 			encoderHTML:   `<a href="#frag">#frag</a>`,
 			encoderNative: `Link SELF "#frag" []`,
 			encoderText:   ``,

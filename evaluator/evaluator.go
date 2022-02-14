@@ -490,7 +490,7 @@ func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.I
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
 	text := ast.CreateInlineSliceFromWords(msgWords...)
 	if ref != nil {
-		ln := linkNodeToReference(ref)
+		ln := &ast.LinkNode{Ref: ref}
 		text = append(text, &ast.TextNode{Text: ":"}, &ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
 	}
 	fn := &ast.FormatNode{
@@ -503,15 +503,6 @@ func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNod
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn
-}
-
-func linkNodeToReference(ref *ast.Reference) *ast.LinkNode {
-	ln := &ast.LinkNode{
-		Ref:     ref,
-		Inlines: ast.CreateInlineSliceFromWords(ref.String()),
-		OnlyRef: true,
-	}
-	return ln
 }
 
 func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.InlineSlice {

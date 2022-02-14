@@ -443,7 +443,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString(" \"")
 	v.writeEscaped(ln.Ref.String())
 	v.b.WriteString("\" [")
-	if !ln.OnlyRef {
+	if len(ln.Inlines) > 0 {
 		ast.Walk(v, &ln.Inlines)
 	}
 	v.b.WriteByte(']')

@@ -155,7 +155,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		return nil
 	case *ast.LinkNode:
-		if !n.OnlyRef {
+		if len(n.Inlines) > 0 {
 			ast.Walk(v, &n.Inlines)
 		}
 		return nil

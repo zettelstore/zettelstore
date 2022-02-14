@@ -53,11 +53,8 @@ func BenchmarkWalk(b *testing.B) {
 			},
 			&ast.SpaceNode{Lexeme: " "},
 			&ast.LinkNode{
-				Ref: &ast.Reference{
-					Value: "http://zettelstore.de",
-				},
+				Ref:     &ast.Reference{Value: "http://zettelstore.de"},
 				Inlines: ast.CreateInlineSliceFromWords("URL", "text."),
-				OnlyRef: false,
 			},
 		),
 	}

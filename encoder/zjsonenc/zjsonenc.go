@@ -149,8 +149,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		writeEscaped(&v.b, mapRefState[n.Ref.State])
 		v.writeContentStart('s')
 		writeEscaped(&v.b, n.Ref.String())
-		v.writeContentStart('i')
-		ast.Walk(v, &n.Inlines)
+		if len(n.Inlines) > 0 {
+			v.writeContentStart('i')
+			ast.Walk(v, &n.Inlines)
+		}
 	case *ast.EmbedRefNode:
 		v.visitEmbedRef(n)
 	case *ast.EmbedBLOBNode:

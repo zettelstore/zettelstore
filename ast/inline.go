@@ -91,7 +91,6 @@ func (*BreakNode) WalkChildren(Visitor) { /* No children*/ }
 type LinkNode struct {
 	Ref     *Reference
 	Inlines InlineSlice // The text associated with the link.
-	OnlyRef bool        // True if no text was specified.
 	Attrs   Attributes  // Optional attributes
 }
 

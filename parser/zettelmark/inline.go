@@ -159,16 +159,9 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	if ref, is, ok := cp.parseReference(']'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
-			onlyRef := false
-			r := ast.ParseReference(ref)
-			if len(is) == 0 {
-				is = ast.InlineSlice{&ast.TextNode{Text: ref}}
-				onlyRef = true
-			}
 			return &ast.LinkNode{
-				Ref:     r,
+				Ref:     ast.ParseReference(ref),
 				Inlines: is,
-				OnlyRef: onlyRef,
 				Attrs:   attrs,
 			}, true
 		}

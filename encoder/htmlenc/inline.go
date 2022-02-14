@@ -64,8 +64,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.b.WriteByte('"')
 		v.visitAttributes(ln.Attrs)
 		v.b.WriteByte('>')
-		v.inInteractive = true
-		ast.Walk(v, &ln.Inlines)
+		v.writeLinkInlines(&ln.Inlines, ln.Ref)
 		v.inInteractive = false
 		v.b.WriteString("</a>")
 	}
@@ -81,10 +80,18 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, is *ast.I
 	v.b.WriteByte('"')
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.inInteractive = true
-	ast.Walk(v, is)
-	v.inInteractive = false
+	v.writeLinkInlines(is, ref)
 	v.b.WriteString("</a>")
+}
+func (v *visitor) writeLinkInlines(is *ast.InlineSlice, ref *ast.Reference) {
+	saveInteractive := v.inInteractive
+	v.inInteractive = true
+	if len(*is) == 0 {
+		v.writeHTMLEscaped(ref.Value)
+	} else {
+		ast.Walk(v, is)
+	}
+	v.inInteractive = saveInteractive
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {

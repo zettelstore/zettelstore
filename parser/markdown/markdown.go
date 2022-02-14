@@ -412,7 +412,6 @@ func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: p.acceptInlineChildren(node),
-			OnlyRef: false,
 			Attrs:   attrs,
 		},
 	}
@@ -452,17 +451,11 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 		!bytes.HasPrefix(bytes.ToLower(u), []byte("mailto:")) {
 		u = append([]byte("mailto:"), u...)
 	}
-	ref := ast.ParseReference(cleanText(u, false))
-	label := node.Label(p.source)
-	if len(label) == 0 {
-		label = u
-	}
 	return ast.InlineSlice{
 		&ast.LinkNode{
-			Ref:     ref,
-			Inlines: ast.InlineSlice{&ast.TextNode{Text: string(label)}},
-			OnlyRef: true,
-			Attrs:   nil, //TODO
+			Ref:     ast.ParseReference(cleanText(u, false)),
+			Inlines: nil,
+			Attrs:   nil, // TODO
 		},
 	}
 }

@@ -388,7 +388,7 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString("[[")
-	if !ln.OnlyRef {
+	if len(ln.Inlines) > 0 {
 		ast.Walk(v, &ln.Inlines)
 		v.b.WriteByte('|')
 	}
