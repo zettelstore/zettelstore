@@ -41,37 +41,6 @@ type BlockNode interface {
 	blockNode()
 }
 
-// BlockSlice is a slice of BlockNodes.
-type BlockSlice []BlockNode
-
-func (*BlockSlice) blockNode() { /* Just a marker */ }
-
-// WalkChildren walks down to the descriptions.
-func (bs *BlockSlice) WalkChildren(v Visitor) {
-	if bs != nil {
-		for _, bn := range *bs {
-			Walk(v, bn)
-		}
-	}
-}
-
-// FirstParagraphInlines returns the inline list of the first paragraph that
-// contains a inline list.
-func (bs BlockSlice) FirstParagraphInlines() InlineSlice {
-	if len(bs) > 0 {
-		for _, bn := range bs {
-			pn, ok := bn.(*ParaNode)
-			if !ok {
-				continue
-			}
-			if inl := pn.Inlines; len(inl) > 0 {
-				return inl
-			}
-		}
-	}
-	return nil
-}
-
 // ItemNode is a node that can occur as a list item.
 type ItemNode interface {
 	BlockNode
@@ -80,18 +49,6 @@ type ItemNode interface {
 
 // ItemSlice is a slice of ItemNodes.
 type ItemSlice []ItemNode
-
-// ItemListNode is a list of BlockNodes.
-type ItemListNode struct {
-	List []ItemNode
-}
-
-// WalkChildren walks down to the descriptions.
-func (iln *ItemListNode) WalkChildren(v Visitor) {
-	for _, bn := range iln.List {
-		Walk(v, bn)
-	}
-}
 
 // DescriptionNode is a node that contains just textual description.
 type DescriptionNode interface {

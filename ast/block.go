@@ -12,6 +12,35 @@ package ast
 
 // Definition of Block nodes.
 
+// BlockSlice is a slice of BlockNodes.
+type BlockSlice []BlockNode
+
+func (*BlockSlice) blockNode() { /* Just a marker */ }
+
+// WalkChildren walks down to the descriptions.
+func (bs *BlockSlice) WalkChildren(v Visitor) {
+	if bs != nil {
+		for _, bn := range *bs {
+			Walk(v, bn)
+		}
+	}
+}
+
+// FirstParagraphInlines returns the inline list of the first paragraph that
+// contains a inline list.
+func (bs BlockSlice) FirstParagraphInlines() InlineSlice {
+	for _, bn := range bs {
+		pn, ok := bn.(*ParaNode)
+		if !ok {
+			continue
+		}
+		if inl := pn.Inlines; len(inl) > 0 {
+			return inl
+		}
+	}
+	return nil
+}
+
 //--------------------------------------------------------------------------
 
 // ParaNode contains just a sequence of inline elements.
