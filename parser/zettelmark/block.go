@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package zettelmark provides a parser for zettelmarkup.
 package zettelmark
 
 import (
@@ -19,7 +18,7 @@ import (
 )
 
 // parseBlockList parses a sequence of blocks.
-func (cp *zmkP) parseBlockList() *ast.BlockListNode {
+func (cp *zmkP) parseBlockList() ast.BlockListNode {
 	inp := cp.inp
 	var lastPara *ast.ParaNode
 	bs := make([]ast.BlockNode, 0, 2)
@@ -231,7 +230,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	rn = &ast.RegionNode{
 		Kind:    kind,
 		Attrs:   attrs,
-		Blocks:  &ast.BlockListNode{},
+		Blocks:  ast.BlockListNode{},
 		Inlines: ast.InlineListNode{},
 	}
 	var lastPara *ast.ParaNode

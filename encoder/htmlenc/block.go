@@ -115,7 +115,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteString(">\n")
-	ast.Walk(v, rn.Blocks)
+	ast.Walk(v, &rn.Blocks)
 	if !rn.Inlines.IsEmpty() {
 		v.b.WriteString("\n<cite>")
 		ast.Walk(v, &rn.Inlines)

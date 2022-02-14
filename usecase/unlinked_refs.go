@@ -114,7 +114,7 @@ candLoop:
 			continue
 		}
 		evaluator.EvaluateZettel(ctx, uc.port, nil, uc.rtConfig, zn)
-		ast.Walk(&v, zn.Ast)
+		ast.Walk(&v, &zn.Ast)
 		if v.found {
 			result = append(result, cand)
 		}

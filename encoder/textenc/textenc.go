@@ -32,7 +32,7 @@ type textEncoder struct{}
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta, evalMeta)
-	v.visitBlockList(zn.Ast)
+	v.visitBlockList(&zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -77,7 +77,7 @@ func writeTagSet(buf *encoder.EncWriter, tags []string) {
 }
 
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return te.WriteBlocks(w, zn.Ast)
+	return te.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
@@ -121,7 +121,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitVerbatim(n)
 		return nil
 	case *ast.RegionNode:
-		v.visitBlockList(n.Blocks)
+		v.visitBlockList(&n.Blocks)
 		if !n.Inlines.IsEmpty() {
 			v.b.WriteByte('\n')
 			ast.Walk(v, &n.Inlines)

@@ -15,7 +15,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
+func evaluateMetadata(m *meta.Meta) ast.BlockListNode {
 	descrlist := &ast.DescriptionListNode{}
 	for _, p := range m.Pairs() {
 		descrlist.Descriptions = append(

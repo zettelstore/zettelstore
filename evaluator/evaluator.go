@@ -53,8 +53,8 @@ func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig c
 		zn.Ast = evaluateMetadata(zn.Meta)
 		return
 	}
-	evaluateNode(ctx, port, env, rtConfig, zn.Ast)
-	cleaner.CleanBlockList(zn.Ast)
+	evaluateNode(ctx, port, env, rtConfig, &zn.Ast)
+	cleaner.CleanBlockList(&zn.Ast)
 }
 
 // EvaluateInline evaluates the given inline list in the given context, with
@@ -163,7 +163,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 	}
 	e.transcludeCount++
 	zn := e.evaluateEmbeddedZettel(zettel)
-	return zn.Ast
+	return &zn.Ast
 }
 
 func getSyntax(a ast.Attributes, defSyntax string) string {
@@ -227,7 +227,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 	if ec := cost.ec; ec > 0 {
 		e.transcludeCount += cost.ec
 	}
-	return zn.Ast
+	return &zn.Ast
 }
 
 func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
@@ -387,7 +387,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	result, ok := e.embedMap[ref.Value]
 	if !ok {
 		// Search for text to be embedded.
-		result = findInlineList(zn.Ast, ref.URL.Fragment)
+		result = findInlineList(&zn.Ast, ref.URL.Fragment)
 		e.embedMap[ref.Value] = result
 	}
 	if result.IsEmpty() {
@@ -522,7 +522,7 @@ func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.In
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
 	zn := parser.ParseZettel(zettel, e.getSyntax(zettel.Meta), e.rtConfig)
-	ast.Walk(e, zn.Ast)
+	ast.Walk(e, &zn.Ast)
 	return zn
 }
 

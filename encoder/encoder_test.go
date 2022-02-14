@@ -112,12 +112,12 @@ func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 func (peInlines) mode() string { return "inline" }
 
 type peBlocks struct {
-	bln *ast.BlockListNode
+	bln ast.BlockListNode
 }
 
 func (bl peBlocks) encode(encdr encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	if _, err := encdr.WriteBlocks(&buf, bl.bln); err != nil {
+	if _, err := encdr.WriteBlocks(&buf, &bl.bln); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

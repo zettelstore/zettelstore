@@ -20,8 +20,8 @@ type BlockListNode struct {
 func (*BlockListNode) blockNode() { /* Just a marker */ }
 
 // CreateBlockListNode make a new block list node from nodes
-func CreateBlockListNode(nodes ...BlockNode) *BlockListNode {
-	return &BlockListNode{List: nodes}
+func CreateBlockListNode(nodes ...BlockNode) BlockListNode {
+	return BlockListNode{List: nodes}
 }
 
 // WalkChildren walks down to the descriptions.
@@ -32,6 +32,9 @@ func (bln *BlockListNode) WalkChildren(v Visitor) {
 		}
 	}
 }
+
+// IsEmpty returns true if the list has no elements.
+func (bln *BlockListNode) IsEmpty() bool { return bln == nil || len(bln.List) == 0 }
 
 //--------------------------------------------------------------------------
 
@@ -91,7 +94,7 @@ func (*VerbatimNode) WalkChildren(Visitor) { /* No children*/ }
 type RegionNode struct {
 	Kind    RegionKind
 	Attrs   Attributes
-	Blocks  *BlockListNode
+	Blocks  BlockListNode
 	Inlines InlineListNode // Optional text at the end of the region
 }
 
@@ -111,7 +114,7 @@ func (*RegionNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
-	Walk(v, rn.Blocks)
+	Walk(v, &rn.Blocks)
 	Walk(v, &rn.Inlines)
 }
 

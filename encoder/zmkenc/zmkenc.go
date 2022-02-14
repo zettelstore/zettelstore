@@ -40,7 +40,7 @@ func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enco
 	} else {
 		v.b.WriteByte('\n')
 	}
-	ast.Walk(v, zn.Ast)
+	ast.Walk(v, &zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -68,7 +68,7 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 }
 
 func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ze.WriteBlocks(w, zn.Ast)
+	return ze.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
@@ -224,7 +224,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.b.WriteByte('\n')
 	saveInVerse := v.inVerse
 	v.inVerse = rn.Kind == ast.RegionVerse
-	ast.Walk(v, rn.Blocks)
+	ast.Walk(v, &rn.Blocks)
 	v.inVerse = saveInVerse
 	v.b.WriteByte('\n')
 	v.b.WriteString(kind)

@@ -29,8 +29,8 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 }
-func parseBlocks(*input.Input, *meta.Meta, string) *ast.BlockListNode {
-	return &ast.BlockListNode{}
+func parseBlocks(*input.Input, *meta.Meta, string) ast.BlockListNode {
+	return ast.BlockListNode{}
 }
 
 func parseInlines(inp *input.Input, _ string) ast.InlineListNode {

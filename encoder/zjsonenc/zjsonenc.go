@@ -41,7 +41,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMe
 	v.writeMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('}')
 	v.b.WriteString(`,"content":`)
-	ast.Walk(v, zn.Ast)
+	ast.Walk(v, &zn.Ast)
 	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
@@ -58,7 +58,7 @@ func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encod
 }
 
 func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return je.WriteBlocks(w, zn.Ast)
+	return je.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
@@ -224,7 +224,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart('b')
-	ast.Walk(v, rn.Blocks)
+	ast.Walk(v, &rn.Blocks)
 	if !rn.Inlines.IsEmpty() {
 		v.writeContentStart('i')
 		ast.Walk(v, &rn.Inlines)

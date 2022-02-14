@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package zettelmark provides a parser for zettelmarkup.
 package zettelmark
 
 import (
@@ -75,7 +74,7 @@ func (pp *postProcessor) visitRegion(rn *ast.RegionNode) {
 	if rn.Kind == ast.RegionVerse {
 		pp.inVerse = true
 	}
-	pp.visitBlockList(rn.Blocks)
+	pp.visitBlockList(&rn.Blocks)
 	pp.inVerse = oldVerse
 }
 

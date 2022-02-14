@@ -79,7 +79,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, &envHTML)
-		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
+		htmlContent, err := encodeBlocks(&zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

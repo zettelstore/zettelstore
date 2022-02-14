@@ -64,7 +64,7 @@ func BenchmarkWalk(b *testing.B) {
 	v := benchVisitor{}
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		ast.Walk(&v, root)
+		ast.Walk(&v, &root)
 	}
 }
 

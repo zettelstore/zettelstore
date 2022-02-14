@@ -38,7 +38,7 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockListNode {
 	p := parseMarkdown(inp)
 	return p.acceptBlockChildren(p.docNode)
 }
@@ -62,7 +62,7 @@ type mdP struct {
 	textEnc encoder.Encoder
 }
 
-func (p *mdP) acceptBlockChildren(docNode gmAst.Node) *ast.BlockListNode {
+func (p *mdP) acceptBlockChildren(docNode gmAst.Node) ast.BlockListNode {
 	if docNode.Type() != gmAst.TypeDocument {
 		panic(fmt.Sprintf("Expected document, but got node type %v", docNode.Type()))
 	}

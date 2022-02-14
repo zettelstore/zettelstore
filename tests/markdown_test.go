@@ -69,8 +69,8 @@ func TestMarkdownSpec(t *testing.T) {
 
 	for _, tc := range testcases {
 		ast := parser.ParseBlocks(input.NewInput([]byte(tc.Markdown)), nil, "markdown")
-		testAllEncodings(t, tc, ast)
-		testZmkEncoding(t, tc, ast)
+		testAllEncodings(t, tc, &ast)
+		testZmkEncoding(t, tc, &ast)
 	}
 }
 
@@ -97,7 +97,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 		testID = tc.Example*100 + 2
 		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
 		buf.Reset()
-		zmkEncoder.WriteBlocks(&buf, secondAst)
+		zmkEncoder.WriteBlocks(&buf, &secondAst)
 		gotSecond := buf.String()
 
 		// if gotFirst != gotSecond {
@@ -107,7 +107,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 		testID = tc.Example*100 + 3
 		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
 		buf.Reset()
-		zmkEncoder.WriteBlocks(&buf, thirdAst)
+		zmkEncoder.WriteBlocks(&buf, &thirdAst)
 		gotThird := buf.String()
 
 		if gotSecond != gotThird {

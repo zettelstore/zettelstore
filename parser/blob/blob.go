@@ -46,7 +46,7 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockListNode {
 	if p := parser.Get(syntax); p != nil {
 		syntax = p.Name
 	}

@@ -38,7 +38,7 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta e
 	v := newVisitor(w, ne)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('\n')
-	ast.Walk(v, zn.Ast)
+	ast.Walk(v, &zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -52,7 +52,7 @@ func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.E
 }
 
 func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ne.WriteBlocks(w, zn.Ast)
+	return ne.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
@@ -279,7 +279,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.writeNewLine()
 	v.b.WriteByte('[')
 	v.level++
-	ast.Walk(v, rn.Blocks)
+	ast.Walk(v, &rn.Blocks)
 	v.level--
 	v.b.WriteByte(']')
 	if !rn.Inlines.IsEmpty() {

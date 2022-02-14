@@ -51,7 +51,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 			inp := input.NewInput([]byte(tc.source))
 			bns := parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)
 			var tv TestVisitor
-			ast.Walk(&tv, bns)
+			ast.Walk(&tv, &bns)
 			got := tv.String()
 			if tc.want != got {
 				st.Errorf("\nwant=%q\n got=%q", tc.want, got)
@@ -740,9 +740,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
 		tv.buf.WriteString(code)
-		if n.Blocks != nil && len(n.Blocks.List) > 0 {
+		if !n.Blocks.IsEmpty() && len(n.Blocks.List) > 0 {
 			tv.buf.WriteByte(' ')
-			ast.Walk(tv, n.Blocks)
+			ast.Walk(tv, &n.Blocks)
 		}
 		if !n.Inlines.IsEmpty() {
 			tv.buf.WriteString(" (LINE")

@@ -37,7 +37,7 @@ const (
 	defaultScaleY  = 20
 )
 
-func parseBlocks(inp *input.Input, m *meta.Meta, _ string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockListNode {
 	font := m.GetDefault("font", defaultFont)
 	scaleX := m.GetNumber("x-scale", defaultScaleX)
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
