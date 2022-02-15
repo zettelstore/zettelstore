@@ -113,55 +113,56 @@ type expValue struct {
 }
 
 // AddExpr adds a match expression to the search.
-func (s *Search) AddExpr(key, val string) *Search {
-	val, negate, op := parseOp(strings.TrimSpace(val))
+func (s *Search) AddExpr(key, value string) *Search {
+	val := parseOp(strings.TrimSpace(value))
 	if s == nil {
 		s = new(Search)
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if key == "" {
-		s.search = append(s.search, expValue{value: val, op: op, negate: negate})
+		s.addSearch(val)
+	} else if s.tags == nil {
+		s.tags = expTagValues{key: {val}}
 	} else {
-		if s.tags == nil {
-			s.tags = expTagValues{key: {{value: val, op: op, negate: negate}}}
-		} else {
-			s.tags[key] = append(s.tags[key], expValue{value: val, op: op, negate: negate})
-		}
+		s.tags[key] = append(s.tags[key], val)
 	}
 	return s
 }
 
-func parseOp(s string) (r string, negate bool, op compareOp) {
+func (s *Search) addSearch(val expValue) { s.search = append(s.search, val) }
+
+func parseOp(s string) expValue {
 	if s == "" {
-		return s, false, cmpDefault
+		return expValue{value: s, op: cmpDefault, negate: false}
 	}
 	if s[0] == '\\' {
-		return s[1:], false, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: false}
 	}
+	negate := false
 	if s[0] == '!' {
 		negate = true
 		s = s[1:]
 	}
 	if s == "" {
-		return s, negate, cmpDefault
+		return expValue{value: s, op: cmpDefault, negate: negate}
 	}
 	if s[0] == '\\' {
-		return s[1:], negate, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: negate}
 	}
 	switch s[0] {
 	case ':':
-		return s[1:], negate, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: negate}
 	case '=':
-		return s[1:], negate, cmpEqual
+		return expValue{value: s[1:], op: cmpEqual, negate: negate}
 	case '>':
-		return s[1:], negate, cmpPrefix
+		return expValue{value: s[1:], op: cmpPrefix, negate: negate}
 	case '<':
-		return s[1:], negate, cmpSuffix
+		return expValue{value: s[1:], op: cmpSuffix, negate: negate}
 	case '~':
-		return s[1:], negate, cmpContains
+		return expValue{value: s[1:], op: cmpContains, negate: negate}
 	}
-	return s, negate, cmpDefault
+	return expValue{value: s, op: cmpDefault, negate: negate}
 }
 
 // SetNegate changes the search to reverse its selection.
