@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -125,7 +125,7 @@ func createMatchFunc(key string, values []opValue) matchValueFunc {
 type boolPredicate func(bool) bool
 
 func boolSame(value bool) bool   { return value }
-func boolNegate(value bool) bool { return value }
+func boolNegate(value bool) bool { return !value }
 
 func createMatchBoolFunc(values []opValue) matchValueFunc {
 	preds := make([]boolPredicate, len(values))
