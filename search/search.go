@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -279,8 +279,8 @@ func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, 
 		return alwaysIncluded, matchAlways
 	}
 	s.mx.Lock()
+	match := s.compileMatch() // Match might add some searches
 	pred := s.retrieveIndex(searcher)
-	match := s.compileMatch()
 	s.mx.Unlock()
 
 	if pred == nil {
@@ -339,7 +339,7 @@ func (s *Search) neverWithNegate() RetrievePredicate {
 
 // compileMatch returns a function to match metadata based on select specification.
 func (s *Search) compileMatch() MetaMatchFunc {
-	compMeta := compileMeta(s.tags)
+	compMeta := s.compileMeta()
 	preMatch := s.preMatch
 	if compMeta == nil {
 		if preMatch == nil {
