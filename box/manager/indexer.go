@@ -16,7 +16,6 @@ import (
 	"net/url"
 	"time"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/domain"
@@ -167,17 +166,11 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 }
 
 func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
-	m := zettel.Meta
-	if m.GetBool(api.KeyNoIndex) {
-		// Zettel maybe in index
-		toCheck := mgr.idxStore.DeleteZettel(ctx, m.Zid)
-		mgr.idxCheckZettel(toCheck)
-		return
-	}
-
 	var cData collectData
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(zettel, "", mgr.rtConfig), &cData)
+
+	m := zettel.Meta
 	zi := store.NewZettelIndex(m.Zid)
 	mgr.idxCollectFromMeta(ctx, m, zi, &cData)
 	mgr.idxProcessData(ctx, zi, &cData)

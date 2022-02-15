@@ -7,7 +7,7 @@ default-license: EUPL-1.2-or-later
 default-visibility: public
 footer-html: <hr><p><a href="/home/doc/trunk/www/impri.wiki">Imprint / Privacy</a></p>
 home-zettel: 00001000000000
-no-index: true
+modified: 20220215171041
 site-name: Zettelstore Manual
 visibility: owner
 

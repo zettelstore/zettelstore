@@ -8,6 +8,10 @@
   *  A sequence of inline-structured elements can be marked, not just a point
      in the Zettelmarkup text.
      (minor: zettelmarkup)
+  *  Remove support for metadata key <tt>no-index</tt> to suppress indexing
+     selected zettel. It was introduced in <a href="#0_0_11">v0.0.11</a>, but
+     disallows some future optimizations for searching zettel.
+     (minor: api, webui)
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>

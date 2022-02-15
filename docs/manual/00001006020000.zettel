@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220214175019
+modified: 20220215170918
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -52,8 +52,6 @@ Most keys conform to a [[type|00001006030000]].
 
   This is a computed value.
   There is no need to set it via Zettelstore.
-; [!no-index|''no-index'']
-: If set to a ""true"" value, the zettel will not be indexed and therefore not be found in full-text searches.
 ; [!precursor|''precursor'']
 : References zettel for which this zettel is a ""Folgezettel"" / follow-up zettel.
   Basically the inverse of key [[''folge''|#folge]].
