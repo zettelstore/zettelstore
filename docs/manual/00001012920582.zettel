@@ -3,12 +3,13 @@ title: ZJSON Encoding: List of Valid Zettelmarkup Element Objects Names
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220214190247
+modified: 20220215113239
 
 Every [[Zettelmarkup|00001007000000]] element is mapped to a JSON object will some well defined names / keys.
 
 |=Name | JSON Value | Meaning
 | ''"\"'' | string | The type of the Zettelmarkup element.
+| ''"a"'' | object | Additional attributes of the element.
 | ''"b"'' | array  | A sequence of [[block-structured|00001007030000]] elements.
 | ''"c"'' | array  | A sequence of a sequence of (sub-) list elements or [[inline-structured|00001007040000]] elements. Used for nested lists.
 | ''"g"'' | array  | A sequence of description list elements. Each description list element is itself a JSON array: first the definition term and then the descriptions.

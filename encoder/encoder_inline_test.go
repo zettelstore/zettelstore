@@ -125,7 +125,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotes formatting",
 		zmk:   `""quotes""`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Quote","i":[{"":"Text","s":"quotes"}]}]`,
+			encoderZJSON:  `[{"":"Quoted","i":[{"":"Text","s":"quotes"}]}]`,
 			encoderHTML:   `"quotes"`,
 			encoderNative: `Quote [Text "quotes"]`,
 			encoderText:   `quotes`,
@@ -136,7 +136,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotes formatting (german)",
 		zmk:   `""quotes""{lang=de}`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Quote","a":{"lang":"de"},"i":[{"":"Text","s":"quotes"}]}]`,
+			encoderZJSON:  `[{"":"Quoted","a":{"lang":"de"},"i":[{"":"Text","s":"quotes"}]}]`,
 			encoderHTML:   `<span lang="de">&bdquo;quotes&ldquo;</span>`,
 			encoderNative: `Quote ("",[lang="de"]) [Text "quotes"]`,
 			encoderText:   `quotes`,
@@ -147,7 +147,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotation formatting",
 		zmk:   `<<quotation<<`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Quotation","i":[{"":"Text","s":"quotation"}]}]`,
+			encoderZJSON:  `[{"":"Quote","i":[{"":"Text","s":"quotation"}]}]`,
 			encoderHTML:   `<q>quotation</q>`,
 			encoderNative: `Quotation [Text "quotation"]`,
 			encoderText:   `quotation`,
@@ -202,7 +202,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Nested Span Quote formatting",
 		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Span","a":{"lang":"fr"},"i":[{"":"Quote","i":[{"":"Text","s":"abc"}]}]}]`,
+			encoderZJSON:  `[{"":"Span","a":{"lang":"fr"},"i":[{"":"Quoted","i":[{"":"Text","s":"abc"}]}]}]`,
 			encoderHTML:   `<span lang="fr">&laquo;&nbsp;abc&nbsp;&raquo;</span>`,
 			encoderNative: `Span ("",[lang="fr"]) [Quote [Text "abc"]]`,
 			encoderText:   `abc`,

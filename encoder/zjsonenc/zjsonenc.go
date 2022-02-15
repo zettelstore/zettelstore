@@ -18,6 +18,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -96,8 +97,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.walkInlineSlice(n)
 		return nil
 	case *ast.ParaNode:
-		v.writeNodeStart("Para")
-		v.writeContentStart('i')
+		v.writeNodeStart(zjson.TypeParagraph)
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &n.Inlines)
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -106,7 +107,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.HeadingNode:
 		v.visitHeading(n)
 	case *ast.HRuleNode:
-		v.writeNodeStart("Hrule")
+		v.writeNodeStart(zjson.TypeBreakThematic)
 		v.visitAttributes(n.Attrs)
 	case *ast.NestedListNode:
 		v.visitNestedList(n)
@@ -115,42 +116,42 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TableNode:
 		v.visitTable(n)
 	case *ast.TranscludeNode:
-		v.writeNodeStart("Transclude")
-		v.writeContentStart('q')
+		v.writeNodeStart(zjson.TypeTransclude)
+		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, mapRefState[n.Ref.State])
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Ref.String())
 	case *ast.BLOBNode:
 		v.visitBLOB(n)
 	case *ast.TextNode:
-		v.writeNodeStart("Text")
-		v.writeContentStart('s')
+		v.writeNodeStart(zjson.TypeText)
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Text)
 	case *ast.TagNode:
-		v.writeNodeStart("Tag")
-		v.writeContentStart('s')
+		v.writeNodeStart(zjson.TypeTag)
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Tag)
 	case *ast.SpaceNode:
-		v.writeNodeStart("Space")
+		v.writeNodeStart(zjson.TypeSpace)
 		if l := len(n.Lexeme); l > 1 {
-			v.writeContentStart('n')
+			v.writeContentStart(zjson.NameNumeric)
 			v.b.WriteString(strconv.Itoa(l))
 		}
 	case *ast.BreakNode:
 		if n.Hard {
-			v.writeNodeStart("Hard")
+			v.writeNodeStart(zjson.TypeBreakHard)
 		} else {
-			v.writeNodeStart("Soft")
+			v.writeNodeStart(zjson.TypeBreakSoft)
 		}
 	case *ast.LinkNode:
-		v.writeNodeStart("Link")
+		v.writeNodeStart(zjson.TypeLink)
 		v.visitAttributes(n.Attrs)
-		v.writeContentStart('q')
+		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, mapRefState[n.Ref.State])
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Ref.String())
 		if len(n.Inlines) > 0 {
-			v.writeContentStart('i')
+			v.writeContentStart(zjson.NameInline)
 			ast.Walk(v, &n.Inlines)
 		}
 	case *ast.EmbedRefNode:
@@ -158,25 +159,25 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.EmbedBLOBNode:
 		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
-		v.writeNodeStart("Cite")
+		v.writeNodeStart(zjson.TypeCitation)
 		v.visitAttributes(n.Attrs)
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Key)
 		if len(n.Inlines) > 0 {
-			v.writeContentStart('i')
+			v.writeContentStart(zjson.NameInline)
 			ast.Walk(v, &n.Inlines)
 		}
 	case *ast.FootnoteNode:
-		v.writeNodeStart("Footnote")
+		v.writeNodeStart(zjson.TypeFootnote)
 		v.visitAttributes(n.Attrs)
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &n.Inlines)
 	case *ast.MarkNode:
 		v.visitMark(n)
 	case *ast.FormatNode:
 		v.writeNodeStart(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &n.Inlines)
 	case *ast.LiteralNode:
 		kind, ok := mapLiteralKind[n.Kind]
@@ -185,7 +186,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		v.writeNodeStart(kind)
 		v.visitAttributes(n.Attrs)
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, string(n.Content))
 	default:
 		return v
@@ -195,10 +196,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
-	ast.VerbatimZettel:  "ZettelBlock",
-	ast.VerbatimProg:    "CodeBlock",
-	ast.VerbatimComment: "CommentBlock",
-	ast.VerbatimHTML:    "HTMLBlock",
+	ast.VerbatimZettel:  zjson.TypeVerbatimZettel,
+	ast.VerbatimProg:    zjson.TypeVerbatimCode,
+	ast.VerbatimComment: zjson.TypeVerbatimComment,
+	ast.VerbatimHTML:    zjson.TypeVerbatimHTML,
 }
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
@@ -208,14 +209,14 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	}
 	v.writeNodeStart(kind)
 	v.visitAttributes(vn.Attrs)
-	v.writeContentStart('s')
+	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, string(vn.Content))
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
-	ast.RegionSpan:  "SpanBlock",
-	ast.RegionQuote: "QuoteBlock",
-	ast.RegionVerse: "VerseBlock",
+	ast.RegionSpan:  zjson.TypeBlock,
+	ast.RegionQuote: zjson.TypeExcerpt,
+	ast.RegionVerse: zjson.TypePoem,
 }
 
 func (v *visitor) visitRegion(rn *ast.RegionNode) {
@@ -225,36 +226,36 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	}
 	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
-	v.writeContentStart('b')
+	v.writeContentStart(zjson.NameBlock)
 	ast.Walk(v, &rn.Blocks)
 	if len(rn.Inlines) > 0 {
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &rn.Inlines)
 	}
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
-	v.writeNodeStart("Heading")
+	v.writeNodeStart(zjson.TypeHeading)
 	v.visitAttributes(hn.Attrs)
-	v.writeContentStart('n')
+	v.writeContentStart(zjson.NameNumeric)
 	v.b.WriteString(strconv.Itoa(hn.Level))
 	if fragment := hn.Fragment; fragment != "" {
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		v.b.WriteStrings(`"`, fragment, `"`)
 	}
-	v.writeContentStart('i')
+	v.writeContentStart(zjson.NameInline)
 	ast.Walk(v, &hn.Inlines)
 }
 
 var mapNestedListKind = map[ast.NestedListKind]string{
-	ast.NestedListOrdered:   "OrderedList",
-	ast.NestedListUnordered: "BulletList",
-	ast.NestedListQuote:     "QuoteList",
+	ast.NestedListOrdered:   zjson.TypeListOrdered,
+	ast.NestedListUnordered: zjson.TypeListBullet,
+	ast.NestedListQuote:     zjson.TypeListQuotation,
 }
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 	v.writeNodeStart(mapNestedListKind[ln.Kind])
-	v.writeContentStart('c')
+	v.writeContentStart(zjson.NameList)
 	for i, item := range ln.Items {
 		v.writeComma(i)
 		v.b.WriteByte('[')
@@ -268,8 +269,8 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 }
 
 func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
-	v.writeNodeStart("DescriptionList")
-	v.writeContentStart('g')
+	v.writeNodeStart(zjson.TypeDescription)
+	v.writeContentStart(zjson.NameDescription)
 	for i, def := range dn.Descriptions {
 		v.writeComma(i)
 		v.b.WriteByte('[')
@@ -291,8 +292,8 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 }
 
 func (v *visitor) visitTable(tn *ast.TableNode) {
-	v.writeNodeStart("Table")
-	v.writeContentStart('p')
+	v.writeNodeStart(zjson.TypeTable)
+	v.writeContentStart(zjson.NameTable)
 
 	// Table header
 	v.b.WriteByte('[')
@@ -317,14 +318,14 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 }
 
 var alignmentCode = map[ast.Alignment]string{
-	ast.AlignDefault: `["",`,
-	ast.AlignLeft:    `["<",`,
-	ast.AlignCenter:  `[":",`,
-	ast.AlignRight:   `[">",`,
+	ast.AlignDefault: ``,
+	ast.AlignLeft:    `<`,
+	ast.AlignCenter:  `:`,
+	ast.AlignRight:   `>`,
 }
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
-	v.b.WriteString(alignmentCode[cell.Align])
+	v.b.WriteStrings(`["`, alignmentCode[cell.Align], `",`)
 	ast.Walk(v, &cell.Inlines)
 	v.b.WriteByte(']')
 }
@@ -332,104 +333,104 @@ func (v *visitor) writeCell(cell *ast.TableCell) {
 func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 	v.writeNodeStart("Blob")
 	if bn.Title != "" {
-		v.writeContentStart('q')
+		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, bn.Title)
 	}
-	v.writeContentStart('s')
+	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, bn.Syntax)
 	if bn.Syntax == api.ValueSyntaxSVG {
-		v.writeContentStart('v')
+		v.writeContentStart(zjson.NameString3)
 		writeEscaped(&v.b, string(bn.Blob))
 	} else {
-		v.writeContentStart('o')
+		v.writeContentStart(zjson.NameBinary)
 		v.b.WriteBase64(bn.Blob)
 		v.b.WriteByte('"')
 	}
 }
 
 var mapRefState = map[ast.RefState]string{
-	ast.RefStateInvalid:  "invalid",
-	ast.RefStateZettel:   "zettel",
-	ast.RefStateSelf:     "self",
-	ast.RefStateFound:    "found",
-	ast.RefStateBroken:   "broken",
-	ast.RefStateHosted:   "local",
-	ast.RefStateBased:    "based",
-	ast.RefStateExternal: "external",
+	ast.RefStateInvalid:  zjson.RefStateInvalid,
+	ast.RefStateZettel:   zjson.RefStateZettel,
+	ast.RefStateSelf:     zjson.RefStateSelf,
+	ast.RefStateFound:    zjson.RefStateFound,
+	ast.RefStateBroken:   zjson.RefStateBroken,
+	ast.RefStateHosted:   zjson.RefStateHosted,
+	ast.RefStateBased:    zjson.RefStateBased,
+	ast.RefStateExternal: zjson.RefStateExternal,
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
-	v.writeNodeStart("Embed")
+	v.writeNodeStart(zjson.TypeEmbed)
 	v.visitAttributes(en.Attrs)
-	v.writeContentStart('s')
+	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, en.Ref.String())
 
 	if len(en.Inlines) > 0 {
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &en.Inlines)
 	}
 }
 
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
-	v.writeNodeStart("EmbedBLOB")
+	v.writeNodeStart(zjson.TypeEmbedBLOB)
 	v.visitAttributes(en.Attrs)
-	v.writeContentStart('j')
-	v.b.WriteString(`"s":`)
+	v.writeContentStart(zjson.NameBLOB)
+	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, en.Syntax)
 	if en.Syntax == api.ValueSyntaxSVG {
-		v.writeContentStart('q')
+		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, string(en.Blob))
 	} else {
-		v.writeContentStart('o')
+		v.writeContentStart(zjson.NameBinary)
 		v.b.WriteBase64(en.Blob)
 		v.b.WriteByte('"')
 	}
 	v.b.WriteByte('}')
 
 	if len(en.Inlines) > 0 {
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &en.Inlines)
 	}
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
-	v.writeNodeStart("Mark")
+	v.writeNodeStart(zjson.TypeMark)
 	if text := mn.Mark; text != "" {
-		v.writeContentStart('s')
+		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, text)
 	}
 	if fragment := mn.Fragment; fragment != "" {
-		v.writeContentStart('q')
+		v.writeContentStart(zjson.NameString2)
 		v.b.WriteByte('"')
 		v.b.WriteString(fragment)
 		v.b.WriteByte('"')
 	}
 	if len(mn.Inlines) > 0 {
-		v.writeContentStart('i')
+		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &mn.Inlines)
 	}
 }
 
 var mapFormatKind = map[ast.FormatKind]string{
-	ast.FormatEmph:      "Emph",
-	ast.FormatStrong:    "Strong",
-	ast.FormatMonospace: "Mono",
-	ast.FormatDelete:    "Delete",
-	ast.FormatInsert:    "Insert",
-	ast.FormatSuper:     "Super",
-	ast.FormatSub:       "Sub",
-	ast.FormatQuote:     "Quote",
-	ast.FormatQuotation: "Quotation",
-	ast.FormatSpan:      "Span",
+	ast.FormatEmph:      zjson.TypeFormatEmph,
+	ast.FormatStrong:    zjson.TypeFormatStrong,
+	ast.FormatMonospace: zjson.TypeFormatMonospace,
+	ast.FormatDelete:    zjson.TypeFormatDelete,
+	ast.FormatInsert:    zjson.TypeFormatInsert,
+	ast.FormatSuper:     zjson.TypeFormatSuper,
+	ast.FormatSub:       zjson.TypeFormatSub,
+	ast.FormatQuote:     zjson.TypeFormatQuoted,
+	ast.FormatQuotation: zjson.TypeFormatQuote,
+	ast.FormatSpan:      zjson.TypeFormatSpan,
 }
 
 var mapLiteralKind = map[ast.LiteralKind]string{
-	ast.LiteralZettel:  "Zettel",
-	ast.LiteralProg:    "Code",
-	ast.LiteralKeyb:    "Input",
-	ast.LiteralOutput:  "Output",
-	ast.LiteralComment: "Comment",
-	ast.LiteralHTML:    "HTML",
+	ast.LiteralZettel:  zjson.TypeLiteralZettel,
+	ast.LiteralProg:    zjson.TypeLiteralCode,
+	ast.LiteralKeyb:    zjson.TypeLiteralInput,
+	ast.LiteralOutput:  zjson.TypeLiteralOutput,
+	ast.LiteralComment: zjson.TypeLiteralComment,
+	ast.LiteralHTML:    zjson.TypeLiteralHTML,
 }
 
 func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
@@ -461,7 +462,7 @@ func (v *visitor) visitAttributes(a ast.Attributes) {
 	}
 	sort.Strings(keys)
 
-	v.b.WriteString(`,"a":{"`)
+	v.writeContentStart(zjson.NameAttribute)
 	for i, k := range keys {
 		if i > 0 {
 			v.b.WriteString(`","`)
@@ -477,28 +478,27 @@ func (v *visitor) writeNodeStart(t string) {
 	v.b.WriteStrings(`{"":"`, t, `"`)
 }
 
-var contentCode = map[rune][]byte{
-	'b': []byte(`,"b":`),  // List of blocks
-	'c': []byte(`,"c":[`), // List of list of blocks
-	'g': []byte(`,"g":[`), // General list
-	'i': []byte(`,"i":`),  // List of inlines
-	'j': []byte(`,"j":{`), // Embedded JSON object
-	'n': []byte(`,"n":`),  // Number
-	'o': []byte(`,"o":"`), // Byte object
-	'p': []byte(`,"p":[`), // Generic tuple
-	'q': []byte(`,"q":`),  // String, if 's' is also needed
-	's': []byte(`,"s":`),  // String
-	't': []byte("Content code 't' is not allowed"),
-	'v': []byte(`,"v":`),                           // String, if 'q' is also needed
-	'y': []byte("Content code 'y' is not allowed"), // field after 'j'
+var valueStart = map[string]string{
+	zjson.NameBlock:       "",
+	zjson.NameAttribute:   `{"`,
+	zjson.NameList:        "[",
+	zjson.NameDescription: "[",
+	zjson.NameInline:      "",
+	zjson.NameBLOB:        "{",
+	zjson.NameNumeric:     "",
+	zjson.NameBinary:      `"`,
+	zjson.NameTable:       "[",
+	zjson.NameString2:     "",
+	zjson.NameString:      "",
+	zjson.NameString3:     "",
 }
 
-func (v *visitor) writeContentStart(code rune) {
-	if b, ok := contentCode[code]; ok {
-		v.b.Write(b)
-		return
+func (v *visitor) writeContentStart(jsonName string) {
+	s, ok := valueStart[jsonName]
+	if !ok {
+		panic("Unknown object name " + jsonName)
 	}
-	panic("Unknown content code " + strconv.Itoa(int(code)))
+	v.b.WriteStrings(`,"`, jsonName, `":`, s)
 }
 
 func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
