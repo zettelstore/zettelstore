@@ -130,7 +130,12 @@ func (s *Search) AddExpr(key, value string) *Search {
 	return s
 }
 
-func (s *Search) addSearch(val expValue) { s.search = append(s.search, val) }
+func (s *Search) addSearch(val expValue) {
+	if val.op == cmpDefault {
+		val.op = cmpContains
+	}
+	s.search = append(s.search, val)
+}
 
 func parseOp(s string) expValue {
 	if s == "" {
@@ -300,7 +305,6 @@ func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, 
 
 // retrieveIndex and return a predicate to ask for results.
 func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
-	negate := s.negate
 	if len(s.search) == 0 {
 		return nil
 	}
@@ -309,6 +313,7 @@ func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
 		return s.neverWithNegate()
 	}
 
+	negate := s.negate
 	positives := retrievePositives(normCalls, plainCalls)
 	if positives == nil {
 		// No positive search for words, must contain only words for a negative search.
