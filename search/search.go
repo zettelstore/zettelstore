@@ -131,8 +131,19 @@ func (s *Search) AddExpr(key, value string) *Search {
 }
 
 func (s *Search) addSearch(val expValue) {
-	if val.op == cmpDefault {
+	if val.negate {
+		val.op = val.op.negate()
+		val.negate = false
+	}
+	switch val.op {
+	case cmpDefault:
 		val.op = cmpContains
+	case cmpNotDefault:
+		val.op = cmpContains
+		val.negate = true
+	case cmpNotEqual, cmpNoPrefix, cmpNoSuffix, cmpNotContains:
+		val.op = val.op.negate()
+		val.negate = true
 	}
 	s.search = append(s.search, val)
 }
