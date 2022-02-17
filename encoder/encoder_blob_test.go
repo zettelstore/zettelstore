@@ -39,7 +39,7 @@ var pngTestCases = []blobTestCase{
 			0x42, 0x60, 0x82,
 		},
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Blob","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
+			encoderZJSON:  `[{"":"BLOB","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
 			encoderHTML:   `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==" title="PNG">`,
 			encoderNative: `[BLOB "PNG" "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="]`,
 			encoderText:   "",

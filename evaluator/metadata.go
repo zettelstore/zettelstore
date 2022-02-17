@@ -27,10 +27,8 @@ func evaluateMetadata(m *meta.Meta) ast.BlockSlice {
 func getMetadataDescription(key, value string) ast.Description {
 	is := convertMetavalueToInlineSlice(value, meta.Type(key))
 	return ast.Description{
-		Term: ast.InlineSlice{&ast.TextNode{Text: key}},
-		Descriptions: []ast.DescriptionSlice{{
-			ast.CreateParaNode(&is),
-		}},
+		Term:         ast.InlineSlice{&ast.TextNode{Text: key}},
+		Descriptions: []ast.DescriptionSlice{{&ast.ParaNode{Inlines: is}}},
 	}
 }
 

@@ -69,6 +69,26 @@ type Search struct {
 
 type expTagValues map[string][]expValue
 
+// Clone the search value.
+func (s *Search) Clone() *Search {
+	if s == nil {
+		return nil
+	}
+	c := new(Search)
+	c.preMatch = s.preMatch
+	c.tags = make(expTagValues, len(s.tags))
+	for k, v := range s.tags {
+		c.tags[k] = v
+	}
+	c.search = append([]expValue{}, s.search...)
+	c.negate = s.negate
+	c.order = s.order
+	c.descending = s.descending
+	c.offset = s.offset
+	c.limit = s.limit
+	return c
+}
+
 // RandomOrder is a pseudo metadata key that selects a random order.
 const RandomOrder = "_random"
 
@@ -294,10 +314,12 @@ func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, 
 	if s == nil {
 		return alwaysIncluded, matchAlways
 	}
-	s.mx.Lock()
+	s = s.Clone()
 	match := s.compileMatch() // Match might add some searches
-	pred := s.retrieveIndex(searcher)
-	s.mx.Unlock()
+	var pred RetrievePredicate
+	if searcher != nil {
+		pred = s.retrieveIndex(searcher)
+	}
 
 	if pred == nil {
 		if match == nil {

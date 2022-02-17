@@ -331,7 +331,7 @@ func (v *visitor) writeCell(cell *ast.TableCell) {
 }
 
 func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
-	v.writeNodeStart("Blob")
+	v.writeNodeStart(zjson.TypeBLOB)
 	if bn.Title != "" {
 		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, bn.Title)

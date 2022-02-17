@@ -101,7 +101,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("<img src=\"")
 	v.writeReference(en.Ref)
 	v.b.WriteString("\" alt=\"")
-	ast.Walk(v, &en.Inlines)
+	ast.Walk(v, &en.Inlines) // TODO: wrong, must use textenc
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	if v.env.IsXHTML() {

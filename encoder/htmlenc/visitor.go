@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -250,14 +251,14 @@ func (v *visitor) visitAttributes(a ast.Attributes) {
 
 func (v *visitor) writeHTMLEscaped(s string) {
 	if v.visibleSpace {
-		strfun.HTMLEscapeVisible(&v.b, s)
+		html.EscapeVisible(&v.b, s)
 	} else {
-		strfun.HTMLEscape(&v.b, s)
+		html.Escape(&v.b, s)
 	}
 }
 
 func (v *visitor) writeQuotedEscaped(s string) {
-	strfun.HTMLAttrEscape(&v.b, s)
+	html.AttributeEscape(&v.b, s)
 }
 
 func (v *visitor) writeReference(ref *ast.Reference) {

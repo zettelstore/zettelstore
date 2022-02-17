@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -26,7 +27,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
-	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 )
 
@@ -71,7 +71,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, api.EncoderHTML, envEnc))
 	default:
-		strfun.HTMLEscape(w, value)
+		html.Escape(w, value)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
 	}
 }
@@ -84,18 +84,13 @@ func (wui *WebUI) writeHTMLBool(w io.Writer, key, value string) {
 	}
 }
 
-func writeCredential(w io.Writer, val string) {
-	strfun.HTMLEscape(w, val)
-}
-
-func writeEmpty(w io.Writer, val string) {
-	strfun.HTMLEscape(w, val)
-}
+func writeCredential(w io.Writer, val string) { html.Escape(w, val) }
+func writeEmpty(w io.Writer, val string)      { html.Escape(w, val) }
 
 func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTextTitle getTextTitleFunc) {
 	zid, err := id.Parse(val)
 	if err != nil {
-		strfun.HTMLEscape(w, val)
+		html.Escape(w, val)
 		return
 	}
 	title, found := getTextTitle(zid)
@@ -127,9 +122,7 @@ func (wui *WebUI) writeNumber(w io.Writer, key, val string) {
 	wui.writeLink(w, key, val, val)
 }
 
-func writeString(w io.Writer, val string) {
-	strfun.HTMLEscape(w, val)
-}
+func writeString(w io.Writer, val string) { html.Escape(w, val) }
 
 func (wui *WebUI) writeTagSet(w io.Writer, key string, tags []string) {
 	for i, tag := range tags {
@@ -147,11 +140,11 @@ func writeTimestamp(w io.Writer, ts time.Time) {
 func writeURL(w io.Writer, val string) {
 	u, err := url.Parse(val)
 	if err != nil {
-		strfun.HTMLEscape(w, val)
+		html.Escape(w, val)
 		return
 	}
 	fmt.Fprintf(w, "<a href=\"%v\"%v>", u, htmlAttrNewWindow(true))
-	strfun.HTMLEscape(w, val)
+	html.Escape(w, val)
 	io.WriteString(w, "</a>")
 }
 
@@ -170,7 +163,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 
 func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	fmt.Fprintf(w, "<a href=\"%v?%v=%v\">", wui.NewURLBuilder('h'), url.QueryEscape(key), url.QueryEscape(value))
-	strfun.HTMLEscape(w, text)
+	html.Escape(w, text)
 	io.WriteString(w, "</a>")
 }
 
