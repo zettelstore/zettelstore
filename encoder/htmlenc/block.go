@@ -109,9 +109,6 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
 	}
 
-	v.lang.push(attrs)
-	defer v.lang.pop()
-
 	v.b.WriteStrings("<", code)
 	v.visitAttributes(attrs)
 	v.b.WriteString(">\n")
@@ -126,9 +123,6 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
-	v.lang.push(hn.Attrs)
-	defer v.lang.pop()
-
 	lvl := hn.Level + 1
 	if lvl > 6 {
 		lvl = 6 // HTML has H1..H6
@@ -152,9 +146,6 @@ var mapNestedListKind = map[ast.NestedListKind]string{
 }
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
-	v.lang.push(ln.Attrs)
-	defer v.lang.pop()
-
 	if ln.Kind == ast.NestedListQuote {
 		// NestedListQuote -> HTML <blockquote> doesn't use <li>...</li>
 		v.writeQuotationList(ln)

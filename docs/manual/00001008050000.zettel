@@ -3,9 +3,9 @@ title: The ""draw"" language
 role: manual
 tags: #graphic #manual #zettelstore
 syntax: zmk
-modified: 20220201133222
+modified: 20220217180713
 
-Sometimes, <<a picture is worth a thousand words<<.
+Sometimes, ""a picture is worth a thousand words"".
 To create some graphical representations, Zettelstore provides a simple mechanism.
 Characters like ""''|''"" or ""''-''"" already provide some visual feedback.
 For example, to create a picture containing two boxes that are connected via an arrow, the following representation is possible:

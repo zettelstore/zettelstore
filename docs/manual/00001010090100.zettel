@@ -3,7 +3,7 @@ title: External server to encrypt message transport
 role: manual
 tags: #configuration #encryption #manual #security #zettelstore
 syntax: zmk
-modified: 20211027125733
+modified: 20220217180826
 
 Since Zettelstore does not encrypt the messages it exchanges with its clients, you may need some additional software to enable encryption.
 
@@ -14,8 +14,8 @@ Technically, this is not trivial.
 Any client who wants to communicate with your Zettelstore must trust the public encryption key.
 Otherwise the client cannot be sure that it is communication with your Zettelstore.
 This problem is solved in part with [[Let's Encrypt|https://letsencrypt.org/]],
-<<a free, automated, and open certificate authority (CA), run for the public’s benefit.
-It is a service provided by the [[Internet Security Research Group|https://www.abetterinternet.org/]]<<.
+""a free, automated, and open certificate authority (CA), run for the public’s benefit.
+It is a service provided by the [[Internet Security Research Group|https://www.abetterinternet.org/]]"".
 
 Alternatively, you can buy these keys for public-key encryption at ""certificate authorities"" or its dealers.
 
@@ -36,7 +36,7 @@ Other software is also possible.
 There exists software dedicated for this task of handling the encryption part.
 Some examples:
 
-* [[stunnel|https://www.stunnel.org/]] (<<a proxy designed to add TLS encryption functionality to existing clients and servers without any changes in the programs' code.<<)
+* [[stunnel|https://www.stunnel.org/]] (""a proxy designed to add TLS encryption functionality to existing clients and servers without any changes in the programs' code."")
 * [[Traefik|https://traefik.io/]]: set-up a [[router|https://docs.traefik.io/routing/routers/]].
 
 === Example configuration for Caddy

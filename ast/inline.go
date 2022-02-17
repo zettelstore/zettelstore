@@ -212,7 +212,6 @@ const (
 	FormatSuper                // Superscripted text.
 	FormatSub                  // SubscriptedText.
 	FormatQuote                // Quoted text.
-	FormatQuotation            // Quotation text.
 	FormatSpan                 // Generic inline container.
 	FormatMonospace            // Monospaced text.
 )

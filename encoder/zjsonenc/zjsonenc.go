@@ -419,8 +419,7 @@ var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatInsert:    zjson.TypeFormatInsert,
 	ast.FormatSuper:     zjson.TypeFormatSuper,
 	ast.FormatSub:       zjson.TypeFormatSub,
-	ast.FormatQuote:     zjson.TypeFormatQuoted,
-	ast.FormatQuotation: zjson.TypeFormatQuote,
+	ast.FormatQuote:     zjson.TypeFormatQuote,
 	ast.FormatSpan:      zjson.TypeFormatSpan,
 }
 

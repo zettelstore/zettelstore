@@ -14,7 +14,6 @@ package htmlenc
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -33,9 +32,6 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 }
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
-	v.lang.push(ln.Attrs)
-	defer v.lang.pop()
-
 	switch ln.Ref.State {
 	case ast.RefStateSelf, ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased:
 		v.writeAHref(ln.Ref, ln.Attrs, &ln.Inlines)
@@ -95,9 +91,6 @@ func (v *visitor) writeLinkInlines(is *ast.InlineSlice, ref *ast.Reference) {
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
-	v.lang.push(en.Attrs)
-	defer v.lang.pop()
-
 	v.b.WriteString("<img src=\"")
 	v.writeReference(en.Ref)
 	v.b.WriteString("\" alt=\"")
@@ -112,9 +105,6 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 }
 
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
-	v.lang.push(en.Attrs)
-	defer v.lang.pop()
-
 	if en.Syntax == api.ValueSyntaxSVG {
 		v.b.Write(en.Blob)
 		return
@@ -135,8 +125,6 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 }
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
-	v.lang.push(cn.Attrs)
-	defer v.lang.pop()
 	v.b.WriteString(cn.Key)
 	if len(cn.Inlines) > 0 {
 		v.b.WriteString(", ")
@@ -145,8 +133,6 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
-	v.lang.push(fn.Attrs)
-	defer v.lang.pop()
 	if v.env.IsInteractive(v.inInteractive) {
 		return
 	}
@@ -170,9 +156,6 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 func (v *visitor) visitFormat(fn *ast.FormatNode) {
-	v.lang.push(fn.Attrs)
-	defer v.lang.pop()
-
 	var code string
 	attrs := fn.Attrs.Clone()
 	switch fn.Kind {
@@ -188,16 +171,13 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		code = "sup"
 	case ast.FormatSub:
 		code = "sub"
-	case ast.FormatQuotation:
+	case ast.FormatQuote:
 		code = "q"
 	case ast.FormatSpan:
 		v.writeSpan(&fn.Inlines, processSpanAttributes(attrs))
 		return
 	case ast.FormatMonospace:
 		code, attrs = "span", attrs.AddClass("zs-monospace")
-	case ast.FormatQuote:
-		v.visitQuotes(fn)
-		return
 	default:
 		panic(fmt.Sprintf("Unknown format kind %v", fn.Kind))
 	}
@@ -215,41 +195,6 @@ func (v *visitor) writeSpan(is *ast.InlineSlice, attrs ast.Attributes) {
 	ast.Walk(v, is)
 	v.b.WriteString("</span>")
 
-}
-
-var langQuotes = map[string][2]string{
-	api.ValueLangEN: {"&ldquo;", "&rdquo;"},
-	"de":            {"&bdquo;", "&ldquo;"},
-	"fr":            {"&laquo;&nbsp;", "&nbsp;&raquo;"},
-}
-
-func getQuotes(lang string) (string, string) {
-	langFields := strings.FieldsFunc(lang, func(r rune) bool { return r == '-' || r == '_' })
-	for len(langFields) > 0 {
-		langSup := strings.Join(langFields, "-")
-		quotes, ok := langQuotes[langSup]
-		if ok {
-			return quotes[0], quotes[1]
-		}
-		langFields = langFields[0 : len(langFields)-1]
-	}
-	return "\"", "\""
-}
-
-func (v *visitor) visitQuotes(fn *ast.FormatNode) {
-	_, withSpan := fn.Attrs.Get("lang")
-	if withSpan {
-		v.b.WriteString("<span")
-		v.visitAttributes(fn.Attrs)
-		v.b.WriteByte('>')
-	}
-	openingQ, closingQ := getQuotes(v.lang.top())
-	v.b.WriteString(openingQ)
-	ast.Walk(v, &fn.Inlines)
-	v.b.WriteString(closingQ)
-	if withSpan {
-		v.b.WriteString("</span>")
-	}
 }
 
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {

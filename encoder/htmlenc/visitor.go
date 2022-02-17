@@ -32,20 +32,14 @@ type visitor struct {
 	visibleSpace  bool // Show space character in plain text
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
-	lang          langStack
 	textEnc       encoder.Encoder
 	inlinePos     int // Element position in inline list node
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
-	var lang string
-	if he.env != nil {
-		lang = he.env.Lang
-	}
 	return &visitor{
 		env:     he.env,
 		b:       encoder.NewEncWriter(w),
-		lang:    newLangStack(lang),
 		textEnc: encoder.Create(api.EncoderText, nil),
 	}
 }
