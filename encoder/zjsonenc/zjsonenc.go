@@ -14,7 +14,6 @@ package zjsonenc
 import (
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 
 	"zettelstore.de/c/api"
@@ -451,18 +450,13 @@ func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
 }
 
 // visitAttributes write JSON attributes
-func (v *visitor) visitAttributes(a ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a))
-	for k := range a {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
 
 	v.writeContentStart(zjson.NameAttribute)
-	for i, k := range keys {
+	for i, k := range a.Keys() {
 		if i > 0 {
 			v.b.WriteString(`","`)
 		}

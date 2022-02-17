@@ -14,9 +14,9 @@ package zmkenc
 import (
 	"fmt"
 	"io"
-	"sort"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -480,7 +480,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	}
 }
 
-func (v *visitor) writeLiteral(code byte, attrs ast.Attributes, content []byte) {
+func (v *visitor) writeLiteral(code byte, attrs zjson.Attributes, content []byte) {
 	v.b.WriteBytes(code, code)
 	v.writeEscaped(string(content), code)
 	v.b.WriteBytes(code, code)
@@ -488,18 +488,12 @@ func (v *visitor) writeLiteral(code byte, attrs ast.Attributes, content []byte) 
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a))
-	for k := range a {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
 	v.b.WriteByte('{')
-	for i, k := range keys {
+	for i, k := range a.Keys() {
 		if i > 0 {
 			v.b.WriteByte(' ')
 		}
@@ -528,6 +522,6 @@ func (v *visitor) writeEscaped(s string, toEscape byte) {
 	v.b.WriteString(s[last:])
 }
 
-func syntaxToHTML(a ast.Attributes) ast.Attributes {
+func syntaxToHTML(a zjson.Attributes) zjson.Attributes {
 	return a.Clone().Set("", api.ValueSyntaxHTML).Remove(api.KeySyntax)
 }

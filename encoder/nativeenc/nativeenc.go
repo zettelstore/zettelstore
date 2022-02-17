@@ -14,10 +14,10 @@ package nativeenc
 import (
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -541,22 +541,17 @@ func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
 }
 
 // visitAttributes write native attributes
-func (v *visitor) visitAttributes(a ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a))
-	for k := range a {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
 
 	v.b.WriteString(" (\"")
 	if val, ok := a[""]; ok {
 		v.writeEscaped(val)
 	}
 	v.b.WriteString("\",[")
-	for i, k := range keys {
+	for i, k := range a.Keys() {
 		if k == "" {
 			continue
 		}

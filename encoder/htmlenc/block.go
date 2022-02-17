@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/strfun"
 )
@@ -80,7 +81,7 @@ func ignoreHTMLText(s string) bool {
 
 var specialSpanAttr = strfun.NewSet("example", "note", "tip", "important", "caution", "warning")
 
-func processSpanAttributes(attrs ast.Attributes) ast.Attributes {
+func processSpanAttributes(attrs zjson.Attributes) zjson.Attributes {
 	if attrVal, ok := attrs.Get(""); ok {
 		attrVal = strings.ToLower(attrVal)
 		if specialSpanAttr.Has(attrVal) {

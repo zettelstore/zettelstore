@@ -20,6 +20,7 @@ import (
 	gmText "github.com/yuin/goldmark/text"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -132,7 +133,7 @@ func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 }
 
 func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNode {
-	var attrs ast.Attributes
+	var attrs zjson.Attributes
 	if language := node.Language(p.source); len(language) > 0 {
 		attrs = attrs.Set("class", "language-"+cleanText(language, true))
 	}
@@ -175,7 +176,7 @@ func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 
 func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	kind := ast.NestedListUnordered
-	var attrs ast.Attributes
+	var attrs zjson.Attributes
 	if node.IsOrdered() {
 		kind = ast.NestedListOrdered
 		if node.Start != 1 {
@@ -404,7 +405,7 @@ func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
 
 func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs ast.Attributes
+	var attrs zjson.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
@@ -419,7 +420,7 @@ func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 
 func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs ast.Attributes
+	var attrs zjson.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}

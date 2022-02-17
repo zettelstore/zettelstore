@@ -13,12 +13,12 @@ package htmlenc
 import (
 	"bytes"
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -217,19 +217,13 @@ func (v *visitor) writeEndnotes() {
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a))
-	for k := range a {
-		if k != "-" {
-			keys = append(keys, k)
-		}
-	}
-	sort.Strings(keys)
+	a = a.Clone().RemoveDefault()
 
-	for _, k := range keys {
+	for _, k := range a.Keys() {
 		if k == "" || k == "-" {
 			continue
 		}

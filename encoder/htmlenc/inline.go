@@ -16,6 +16,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 )
 
@@ -66,7 +67,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	}
 }
 
-func (v *visitor) writeAHref(ref *ast.Reference, attrs ast.Attributes, is *ast.InlineSlice) {
+func (v *visitor) writeAHref(ref *ast.Reference, attrs zjson.Attributes, is *ast.InlineSlice) {
 	if v.env.IsInteractive(v.inInteractive) {
 		v.writeSpan(is, attrs)
 		return
@@ -188,7 +189,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	v.b.WriteStrings("</", code, ">")
 }
 
-func (v *visitor) writeSpan(is *ast.InlineSlice, attrs ast.Attributes) {
+func (v *visitor) writeSpan(is *ast.InlineSlice, attrs zjson.Attributes) {
 	v.b.WriteString("<span")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
@@ -221,7 +222,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	}
 }
 
-func (v *visitor) writeLiteral(codeS, codeE string, attrs ast.Attributes, content []byte) {
+func (v *visitor) writeLiteral(codeS, codeE string, attrs zjson.Attributes, content []byte) {
 	oldVisible := v.visibleSpace
 	if attrs != nil {
 		v.visibleSpace = attrs.HasDefault()

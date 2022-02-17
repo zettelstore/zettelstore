@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -958,7 +959,7 @@ func (tv *TestVisitor) visitInlineSlice(is *ast.InlineSlice) {
 	}
 }
 
-func (tv *TestVisitor) visitAttributes(a ast.Attributes) {
+func (tv *TestVisitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
