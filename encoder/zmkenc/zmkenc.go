@@ -337,7 +337,7 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 	if bn.Syntax == api.ValueSyntaxSVG {
 		v.b.WriteStrings("@@@", bn.Syntax, "\n")
 		v.b.Write(bn.Blob)
-		v.b.WriteString("@@@\n")
+		v.b.WriteString("\n@@@\n")
 		return
 	}
 	v.b.WriteStrings(

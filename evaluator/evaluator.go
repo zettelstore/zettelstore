@@ -320,7 +320,7 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 		return &ast.FormatNode{
 			Kind:    ast.FormatSpan,
 			Attrs:   ln.Attrs,
-			Inlines: ln.Inlines,
+			Inlines: getLinkInline(ln),
 		}
 	} else if err != nil {
 		ln.Ref.State = ast.RefStateBroken
@@ -328,9 +328,17 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 	}
 
 	if gfr := e.env.GetFoundRef; gfr != nil {
+		ln.Inlines = getLinkInline(ln)
 		ln.Ref = gfr(zid, ref.URL.EscapedFragment())
 	}
 	return ln
+}
+
+func getLinkInline(ln *ast.LinkNode) ast.InlineSlice {
+	if ln.Inlines != nil {
+		return ln.Inlines
+	}
+	return ast.InlineSlice{&ast.TextNode{Text: ln.Ref.Value}}
 }
 
 func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
@@ -520,11 +528,33 @@ func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode
 
 func findInlineSlice(bs *ast.BlockSlice, fragment string) ast.InlineSlice {
 	if fragment == "" {
-		return bs.FirstParagraphInlines()
+		return firstInlinesToEmbed(*bs)
 	}
 	fs := fragmentSearcher{fragment: fragment}
 	ast.Walk(&fs, bs)
 	return fs.result
+}
+
+func firstInlinesToEmbed(bs ast.BlockSlice) ast.InlineSlice {
+	if ins := bs.FirstParagraphInlines(); ins != nil {
+		return ins
+	}
+	if len(bs) == 0 {
+		return nil
+	}
+	switch bn := bs[0].(type) {
+	case *ast.BLOBNode:
+		var ins ast.InlineSlice
+		if bn.Title != "" {
+			ins = ast.CreateInlineSliceFromWords(strings.Fields(bn.Title)...)
+		}
+		return ast.InlineSlice{&ast.EmbedBLOBNode{
+			Blob:    bn.Blob,
+			Syntax:  bn.Syntax,
+			Inlines: ins,
+		}}
+	}
+	return nil
 }
 
 type fragmentSearcher struct {

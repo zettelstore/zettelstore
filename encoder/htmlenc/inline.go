@@ -16,6 +16,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 )
@@ -211,7 +212,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeHTMLEscaped(string(ln.Content)) // writeCommentEscaped
 		v.b.WriteString(" -->")
 	case ast.LiteralHTML:
-		if !ignoreHTMLText(string(ln.Content)) {
+		if html.IsSave(string(ln.Content)) {
 			v.b.Write(ln.Content)
 		}
 	default:

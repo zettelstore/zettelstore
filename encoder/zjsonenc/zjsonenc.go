@@ -79,8 +79,9 @@ func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b   encoder.EncWriter
-	env *encoder.Environment
+	b       encoder.EncWriter
+	env     *encoder.Environment
+	inVerse bool // Visiting a verse block: save spaces in ZJSON object
 }
 
 func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *visitor {
@@ -132,9 +133,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		writeEscaped(&v.b, n.Tag)
 	case *ast.SpaceNode:
 		v.writeNodeStart(zjson.TypeSpace)
-		if l := len(n.Lexeme); l > 1 {
-			v.writeContentStart(zjson.NameNumeric)
-			v.b.WriteString(strconv.Itoa(l))
+		if v.inVerse {
+			v.writeContentStart(zjson.NameString)
+			writeEscaped(&v.b, n.Lexeme)
 		}
 	case *ast.BreakNode:
 		if n.Hard {
@@ -223,6 +224,10 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	if !ok {
 		panic(fmt.Sprintf("Unknown region kind %v", rn.Kind))
 	}
+	saveInVerse := v.inVerse
+	if rn.Kind == ast.RegionVerse {
+		v.inVerse = true
+	}
 	v.writeNodeStart(kind)
 	v.visitAttributes(rn.Attrs)
 	v.writeContentStart(zjson.NameBlock)
@@ -231,6 +236,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &rn.Inlines)
 	}
+	v.inVerse = saveInVerse
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
@@ -373,19 +379,16 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.writeNodeStart(zjson.TypeEmbedBLOB)
 	v.visitAttributes(en.Attrs)
-	v.writeContentStart(zjson.NameBLOB)
 	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, en.Syntax)
 	if en.Syntax == api.ValueSyntaxSVG {
-		v.writeContentStart(zjson.NameString2)
+		v.writeContentStart(zjson.NameString3)
 		writeEscaped(&v.b, string(en.Blob))
 	} else {
 		v.writeContentStart(zjson.NameBinary)
 		v.b.WriteBase64(en.Blob)
 		v.b.WriteByte('"')
 	}
-	v.b.WriteByte('}')
-
 	if len(en.Inlines) > 0 {
 		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &en.Inlines)

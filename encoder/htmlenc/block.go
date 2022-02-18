@@ -12,12 +12,12 @@
 package htmlenc
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/strfun"
@@ -50,33 +50,12 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 		}
 
 	case ast.VerbatimHTML:
-		lines := bytes.Split(vn.Content, []byte{'\n'})
-		for _, line := range lines {
-			sLine := string(line)
-			if !ignoreHTMLText(sLine) {
-				v.b.WriteStrings(sLine, "\n")
-			}
+		if html.IsSave(string(vn.Content)) {
+			v.b.Write(vn.Content)
 		}
 	default:
 		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
 	}
-}
-
-var htmlSnippetsIgnore = []string{
-	"<script",
-	"</script",
-	"<iframe",
-	"</iframe",
-}
-
-func ignoreHTMLText(s string) bool {
-	lower := strings.ToLower(s)
-	for _, snippet := range htmlSnippetsIgnore {
-		if strings.Contains(lower, snippet) {
-			return true
-		}
-	}
-	return false
 }
 
 var specialSpanAttr = strfun.NewSet("example", "note", "tip", "important", "caution", "warning")

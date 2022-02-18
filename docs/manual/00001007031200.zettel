@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline-Zettel Block
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218133350
+modified: 20220218172121
 
 An inline-zettel block allows to specify some content with another syntax without creating a new zettel.
 This is useful, for example, if you want to specify a [[simple drawing|00001008050000]] within your zettel and you are sure that you do not need the drawing in another context.
@@ -57,12 +57,14 @@ Using HTML:
 ```zmk
 @@@html
 <h1>H1 Heading</h1>
+Alea iacta est
 @@@
 ```
 will a section heading of level 1, which is not allowed within Zettelmarkup:
 :::example
 @@@html
 <h1>H1 Heading</h1>
+Alea iacta est
 @@@
 :::
 :::note

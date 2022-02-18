@@ -43,8 +43,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	scaleY := m.GetNumber("y-scale", defaultScaleY)
 	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
 	if err != nil {
-		is := canvasErrMsg(err)
-		return ast.BlockSlice{ast.CreateParaNode(&is)}
+		return ast.BlockSlice{ast.CreateParaNode(canvasErrMsg(err)...)}
 	}
 	if scaleX < 1 || 1000000 < scaleX {
 		scaleX = defaultScaleX
@@ -54,8 +53,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	}
 	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
 	if len(svg) == 0 {
-		is := noSVGErrMsg()
-		return ast.BlockSlice{ast.CreateParaNode(&is)}
+		return ast.BlockSlice{ast.CreateParaNode(noSVGErrMsg()...)}
 	}
 	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  "",
