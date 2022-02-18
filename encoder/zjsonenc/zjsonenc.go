@@ -411,21 +411,20 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind]string{
-	ast.FormatEmph:      zjson.TypeFormatEmph,
-	ast.FormatStrong:    zjson.TypeFormatStrong,
-	ast.FormatMonospace: zjson.TypeFormatMonospace,
-	ast.FormatDelete:    zjson.TypeFormatDelete,
-	ast.FormatInsert:    zjson.TypeFormatInsert,
-	ast.FormatSuper:     zjson.TypeFormatSuper,
-	ast.FormatSub:       zjson.TypeFormatSub,
-	ast.FormatQuote:     zjson.TypeFormatQuote,
-	ast.FormatSpan:      zjson.TypeFormatSpan,
+	ast.FormatEmph:   zjson.TypeFormatEmph,
+	ast.FormatStrong: zjson.TypeFormatStrong,
+	ast.FormatDelete: zjson.TypeFormatDelete,
+	ast.FormatInsert: zjson.TypeFormatInsert,
+	ast.FormatSuper:  zjson.TypeFormatSuper,
+	ast.FormatSub:    zjson.TypeFormatSub,
+	ast.FormatQuote:  zjson.TypeFormatQuote,
+	ast.FormatSpan:   zjson.TypeFormatSpan,
 }
 
 var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralZettel:  zjson.TypeLiteralZettel,
 	ast.LiteralProg:    zjson.TypeLiteralCode,
-	ast.LiteralKeyb:    zjson.TypeLiteralInput,
+	ast.LiteralInput:   zjson.TypeLiteralInput,
 	ast.LiteralOutput:  zjson.TypeLiteralOutput,
 	ast.LiteralComment: zjson.TypeLiteralComment,
 	ast.LiteralHTML:    zjson.TypeLiteralHTML,

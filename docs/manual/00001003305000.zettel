@@ -3,7 +3,7 @@ title: Enable Zettelstore to start automatically on Windows
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
-modified: 20211125201602
+modified: 20220218125541
 
 Windows is a complicated beast. There are several ways to automatically start Zettelstore.
 
@@ -15,10 +15,10 @@ Create a shortcut file for the Zettelstore executable.
 There are some ways to do this:
 * Execute a right-click on the executable, and choose the menu entry ""Create shortcut"",
 * Execute a right-click on the executable, and then click Send To > Desktop (Create shortcut).
-* Drag the executable to your Desktop with pressing the ++Alt++-Key.
+* Drag the executable to your Desktop with pressing the ''Alt''-Key.
 
 If you have created the shortcut file, you must move it into the Startup folder.
-Press the Windows logo key and the key ++R++, type ''shell:startup''.
+Press the Windows logo key and the key ''R'', type ''shell:startup''.
 Select the OK button.
 This will open the Startup folder.
 Move the shortcut file into this folder.
@@ -42,7 +42,7 @@ This can be mitigated by first using the command line prompt to start Zettelstor
 Once everything works, you can register Zettelstore to be automatically started by the task scheduler.
 There you should make sure that you have followed the first steps as described on the [[parent page|00001003300000]].
 
-To sart the Task scheduler management console, press the Windows logo key and the key ++R++, type ''taskschd.msc''.
+To sart the Task scheduler management console, press the Windows logo key and the key ''R'', type ''taskschd.msc''.
 Select the OK button.
 
 {{00001003305102}}

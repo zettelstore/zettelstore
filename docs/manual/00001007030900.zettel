@@ -1,14 +1,15 @@
 id: 00001007030900
 title: Zettelmarkup: Comment Blocks
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20220218130330
 
 Comment blocks are quite similar to [[verbatim blocks|00001007030500]]: both are used to enter text that should not be interpreted.
 While the text entered inside a verbatim block will be processed somehow, text inside a comment block will be ignored[^Well, not completely ignored: text is read, but it will typically not rendered visible.].
 Comment blocks are typically used to give some internal comments, e.g. the license of a text or some internal remarks.
 
-Comment blocks begin with at least three percent sign characters (""''%''"", ''U+0025'') at the first position of a line.
+Comment blocks begin with at least three percent sign characters (""''%''"", U+0025) at the first position of a line.
 You can add some [[attributes|00001007050000]] on the beginning line of a comment block, following the initiating characters.
 The comment block supports the default attribute: when given, the text will be rendered, e.g. as an HTML comment.
 When rendered to JSON, the comment block will not be ignored but it will output some JSON text.

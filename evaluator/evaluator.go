@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/zjson"
@@ -489,18 +490,17 @@ func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.I
 }
 
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
-	text := ast.CreateInlineSliceFromWords(msgWords...)
+	text := strings.Join(msgWords, " ")
 	if ref != nil {
-		ln := &ast.LinkNode{Ref: ref}
-		text = append(text, &ast.TextNode{Text: ":"}, &ast.SpaceNode{Lexeme: " "}, ln, &ast.TextNode{Text: "."}, &ast.SpaceNode{Lexeme: " "})
+		text += ": " + ref.String() + "."
+	}
+	ln := &ast.LiteralNode{
+		Kind:    ast.LiteralInput,
+		Content: []byte(text),
 	}
 	fn := &ast.FormatNode{
-		Kind:    ast.FormatMonospace,
-		Inlines: text,
-	}
-	fn = &ast.FormatNode{
 		Kind:    ast.FormatStrong,
-		Inlines: ast.InlineSlice{fn},
+		Inlines: ast.InlineSlice{ln},
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn

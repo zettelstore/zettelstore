@@ -191,7 +191,8 @@
     padding-top: .5rem;
     border-top: 1px solid;
   }
-  code,pre,kbd {
+  kbd { font-family:monospace }
+  code,pre {
     font-family: monospace;
     font-size: 85%;
   }
@@ -247,7 +248,6 @@
   .zs-ta-left { text-align:left }
   .zs-ta-center { text-align:center }
   .zs-ta-right { text-align:right }
-  .zs-monospace { font-family:monospace }
   .zs-font-size-0 { font-size:75% }
   .zs-font-size-1 { font-size:83% }
   .zs-font-size-2 { font-size:100% }
@@ -255,13 +255,6 @@
   .zs-font-size-4 { font-size:150% }
   .zs-font-size-5 { font-size:200% }
   .zs-deprecated { border-style: dashed; padding: .2rem }
-  kbd {
-    background: hsl(210, 5%, 100%);
-    border: 1px solid hsl(210, 5%, 70%);
-    border-radius: .25rem;
-    padding: .1rem .2rem;
-    font-size: 75%;
-  }
   .zs-meta {
     font-size:.75rem;
     color:#444;

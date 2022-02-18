@@ -1,15 +1,16 @@
 id: 00001007030700
 title: Zettelmarkup: Verse Blocks
+role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-role: manual
+modified: 20220218132432
 
 Sometimes, you want to enter text with significant space characters at the beginning of each line and with significant line endings.
 Poetry is one typical example.
 Of course, you could help yourself with hard space characters and hard line breaks, by entering a backslash character before a space character and at the end of each line.
 Using a verse block might be easier.
 
-This kind of line-range block begins with at least three quotation mark characters (""''"''"", ''U+0022'') at the first position of a line.
+This kind of line-range block begins with at least three quotation mark characters (""''"''"", U+0022) at the first position of a line.
 You can add some [[attributes|00001007050000]] on the beginning line of a verse block, following the initiating characters.
 The verse block does not support the default attribute, nor the generic attribute.
 Attributes are interpreted on HTML rendering.
@@ -28,7 +29,7 @@ A verse block with
  an
   embedded
    verse block
-"""{style=color:green}
+"""{.zs-deprecated}
 Embedded
   verse
 block
@@ -42,7 +43,7 @@ A verse block with
  an
   embedded
    verse block
-"""{style=color:green}
+"""{.zs-deprecated}
 Embedded
   verse
 block

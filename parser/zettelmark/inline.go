@@ -70,9 +70,9 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			return cp.parseTag()
 		case '%':
 			in, success = cp.parseComment()
-		case '_', '*', '>', '~', '\'', '^', ',', '"', ':':
+		case '_', '*', '>', '~', '^', ',', '"', ':':
 			in, success = cp.parseFormat()
-		case '@', '+', '`', '=', runeModGrave:
+		case '@', '\'', '`', '=', runeModGrave:
 			in, success = cp.parseLiteral()
 		case '\\':
 			return cp.parseBackslash()
@@ -100,7 +100,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '\'', '^', ',', '"', ':', '+', '@', '`', runeModGrave, '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -410,15 +410,14 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 }
 
 var mapRuneFormat = map[rune]ast.FormatKind{
-	'_':  ast.FormatEmph,
-	'*':  ast.FormatStrong,
-	'>':  ast.FormatInsert,
-	'~':  ast.FormatDelete,
-	'\'': ast.FormatMonospace,
-	'^':  ast.FormatSuper,
-	',':  ast.FormatSub,
-	'"':  ast.FormatQuote,
-	':':  ast.FormatSpan,
+	'_': ast.FormatEmph,
+	'*': ast.FormatStrong,
+	'>': ast.FormatInsert,
+	'~': ast.FormatDelete,
+	'^': ast.FormatSuper,
+	',': ast.FormatSub,
+	'"': ast.FormatQuote,
+	':': ast.FormatSpan,
 }
 
 func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
@@ -459,7 +458,7 @@ var mapRuneLiteral = map[rune]ast.LiteralKind{
 	'@':          ast.LiteralZettel,
 	'`':          ast.LiteralProg,
 	runeModGrave: ast.LiteralProg,
-	'+':          ast.LiteralKeyb,
+	'\'':         ast.LiteralInput,
 	'=':          ast.LiteralOutput,
 }
 

@@ -158,7 +158,6 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 
 func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	var code string
-	attrs := fn.Attrs.Clone()
 	switch fn.Kind {
 	case ast.FormatEmph:
 		code = "em"
@@ -175,15 +174,13 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	case ast.FormatQuote:
 		code = "q"
 	case ast.FormatSpan:
-		v.writeSpan(&fn.Inlines, processSpanAttributes(attrs))
+		v.writeSpan(&fn.Inlines, processSpanAttributes(fn.Attrs))
 		return
-	case ast.FormatMonospace:
-		code, attrs = "span", attrs.AddClass("zs-monospace")
 	default:
 		panic(fmt.Sprintf("Unknown format kind %v", fn.Kind))
 	}
 	v.b.WriteStrings("<", code)
-	v.visitAttributes(attrs)
+	v.visitAttributes(fn.Attrs)
 	v.b.WriteByte('>')
 	ast.Walk(v, &fn.Inlines)
 	v.b.WriteStrings("</", code, ">")
@@ -202,7 +199,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Content)
-	case ast.LiteralKeyb:
+	case ast.LiteralInput:
 		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Content)
 	case ast.LiteralOutput:
 		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Content)

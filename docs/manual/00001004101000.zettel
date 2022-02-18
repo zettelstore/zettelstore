@@ -3,14 +3,14 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220214175810
+modified: 20220218133526
 
 ; [!bye|''bye'']
 : Closes the connection to the administrator console.
 ; [!config|''config SERVICE'']
 : Displays all valid configuration keys for the given service.
 
-  If a key ends with the hyphen-minus character (""''-''"", ''U+002D''), the key denotes a list value.
+  If a key ends with the hyphen-minus character (""''-''"", U+002D), the key denotes a list value.
   Keys of list elements are specified by appending a number greater than zero to the key.
 ; [!crlf|''crlf'']
 : Toggles CRLF mode for console output.

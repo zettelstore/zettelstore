@@ -3,7 +3,7 @@ title: Zettelmarkup: Attributes
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124174947
+modified: 20220218132935
 
 Attributes allows to modify the way how material is presented.
 Alternatively, they provide additional information to markup elements.
@@ -16,10 +16,10 @@ Of course, more than one attribute can be specified.
 Attributes are separated by a sequence of space characters or by a comma character.
 
 An attribute normally consists of an optional key and an optional value.
-The key is a sequence of letters, digits, a hyphen-minus (""''-''"", ''U+002D'', and a low line / underscore (""''_''"", ''U+005D'').
+The key is a sequence of letters, digits, a hyphen-minus (""''-''"", U+002D, and a low line / underscore (""''_''"", U+005D).
 It can be empty.
-The value is a sequence of any character, except space and the right curly bracket (""''}''"", ''U+007D'').
-If the value must contain a space or the right curly bracket, the value can be specified within two quotation marks (""''"''"", ''U+0022'').
+The value is a sequence of any character, except space and the right curly bracket (""''}''"", U+007D).
+If the value must contain a space or the right curly bracket, the value can be specified within two quotation marks (""''"''"", U+0022).
 Within the quotation marks, the backslash character functions as an escape character to specify the quotation mark (and the backslash character too).
 
 Some examples:
@@ -31,7 +31,7 @@ Some examples:
   It has no corresponding value.
   It is equivalent to ``{name=}``.
 * ``{=key}`` sets the __generic attribute__ to the given value.
-  It is mostly used for modifying behaviour according to a programming language.
+  It is mostly used for modifying behavior according to a programming language.
 * ``{.key}`` sets the __class attribute__ to the given value.
   It is equivalent to ``{class=key}``. 
 
@@ -51,8 +51,8 @@ The key ""''-''"" (just hyphen-minus) is special.
 It is called __default attribute__ and has a markup specific meaning.
 For example, when used for plain text, it replaces the non-visible space with a visible representation:
 
-* ++``Hello, world``{-}++ produces ==Hello, world=={-}.
-* ++``Hello, world``++ produces ==Hello, world==.
+* ''``Hello, world``{-}'' produces ==Hello, world=={-}.
+* ''``Hello, world``'' produces ==Hello, world==.
 
 For some [[block-structured elements|00001007030000]], there is a syntax variant if you only want to specify a generic attribute.
 For all line-range blocks you can specify the generic attributes directly in the first line, after the three (or more) block characters.
@@ -72,41 +72,41 @@ is equivalent to
 For other blocks, the closing curly bracket must be on the same line where the block element begins.
 However, spaces are allowed between the blocks characters and the attributes.
 ```
-=== Heading {style=color:green}
+=== Heading {example}
 ```
 is allowed and equivalent to
 ```
-=== Heading{style=color:green}
+=== Heading{example}
 ```.
 But
 ```
-=== Heading {style=color:green
+=== Heading {class=example
 background=grey}
 ```
 is not allowed. Same for
 ```
-=== Heading {style=color:"
+=== Heading {background=color:"
 green"}
 ```.
 
 For [[inline-structued elements|00001007040000]], the attributes must immediately follow the inline markup.
 However, the attributes may be continued on the next line when a space or line ending character is possible.
 
-``::GREEN::{style=color:green}`` is allowed, but not ``::GREEN:: {style=color:green}``.
+``::GREEN::{example}`` is allowed, but not ``::GREEN:: {example}``.
 
 ```
-::GREEN::{style=color:green
+::GREEN::{class=example
 background=grey}
 ```
 is allowed, but not
 ```
-::GREEN::{style=color:
+::GREEN::{background=color:
 green}
 ```.
 
 However,
 ```
-::GREEN::{style=color:"
+::GREEN::{background=color:"
 green"}
 ```
 is allowed, because line endings are allowed within quotes.

@@ -3,11 +3,11 @@ title: Zettelmarkup: Nested Lists
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124172337
+modified: 20220218133902
 
 There are thee kinds of lists that can be nested: ordered lists, unordered lists, and quotation lists.
 
-Ordered lists are specified with the number sign (""''#''"", ''U+0023''), unordered lists use the asterisk (""''*''"", ''U+002A''), and quotation lists are specified with the greater-than sing (""''>''"", ''U+003E'').
+Ordered lists are specified with the number sign (""''#''"", U+0023), unordered lists use the asterisk (""''*''"", U+002A), and quotation lists are specified with the greater-than sing (""''>''"", U+003E).
 Let's call these three characters __list characters__.
 
 Any nested list item is specified by a non-empty sequence of list characters, followed by a space character and a sequence of [[inline elements|00001007040000]].

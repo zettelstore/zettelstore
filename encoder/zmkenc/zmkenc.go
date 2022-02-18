@@ -435,15 +435,14 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatEmph:      []byte("__"),
-	ast.FormatStrong:    []byte("**"),
-	ast.FormatInsert:    []byte(">>"),
-	ast.FormatDelete:    []byte("~~"),
-	ast.FormatSuper:     []byte("^^"),
-	ast.FormatSub:       []byte(",,"),
-	ast.FormatQuote:     []byte(`""`),
-	ast.FormatSpan:      []byte("::"),
-	ast.FormatMonospace: []byte("''"),
+	ast.FormatEmph:   []byte("__"),
+	ast.FormatStrong: []byte("**"),
+	ast.FormatInsert: []byte(">>"),
+	ast.FormatDelete: []byte("~~"),
+	ast.FormatSuper:  []byte("^^"),
+	ast.FormatSub:    []byte(",,"),
+	ast.FormatQuote:  []byte(`""`),
+	ast.FormatSpan:   []byte("::"),
 }
 
 func (v *visitor) visitFormat(fn *ast.FormatNode) {
@@ -463,8 +462,8 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeLiteral('@', ln.Attrs, ln.Content)
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Content)
-	case ast.LiteralKeyb:
-		v.writeLiteral('+', ln.Attrs, ln.Content)
+	case ast.LiteralInput:
+		v.writeLiteral('\'', ln.Attrs, ln.Content)
 	case ast.LiteralOutput:
 		v.writeLiteral('=', ln.Attrs, ln.Content)
 	case ast.LiteralComment:

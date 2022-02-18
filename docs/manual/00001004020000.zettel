@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220214180550
+modified: 20220218134207
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -63,7 +63,7 @@ The following metadata keys change the appearance / behavior of Zettelstore:
   Will be used when displaying some lists.
   Default: ""Zettelstore"".
 ; [!yaml-header|''yaml-header'']
-: If true, metadata and content will be separated by ''-\--\\n'' instead of an empty line (''\\n\\n'').
+: If true, metadata and content will be separated by ''---\\n'' instead of an empty line (''\\n\\n'').
   Default: ""False"".
 
   You will probably use this key, if you are working with another software processing [[Markdown|https://daringfireball.net/projects/markdown/]] that uses a subset of [[YAML|https://yaml.org/]] to specify metadata.

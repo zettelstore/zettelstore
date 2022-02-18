@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220215170918
+modified: 20220218130146
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -79,7 +79,7 @@ Most keys conform to a [[type|00001006030000]].
   If not given, the value ''default-syntax'' from the [[configuration zettel|00001004020000#default-syntax]] will be used.
 ; [!tags|''tags'']
 : Contains a space separated list of tags to describe the zettel further.
-  Each Tag must begin with the number sign character (""''#''"", ''U+0023'').
+  Each Tag must begin with the number sign character (""''#''"", U+0023).
 ; [!title|''title'']
 : Specifies the title of the zettel.
   If not given, the value ''default-title'' from the [[configuration zettel|00001004020000#default-title]] will be used.

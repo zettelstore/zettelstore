@@ -89,17 +89,6 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Monospace formatting",
-		zmk:   "''monospace''",
-		expect: expectMap{
-			encoderZJSON:  `[{"":"Mono","i":[{"":"Text","s":"monospace"}]}]`,
-			encoderHTML:   `<span class="zs-monospace">monospace</span>`,
-			encoderNative: `Mono [Text "monospace"]`,
-			encoderText:   "monospace",
-			encoderZmk:    useZmk,
-		},
-	},
-	{
 		descr: "Superscript formatting",
 		zmk:   "^^superscript^^",
 		expect: expectMap{
@@ -167,7 +156,7 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Input formatting",
-		zmk:   `++input++`,
+		zmk:   `''input''`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Input","s":"input"}]`,
 			encoderHTML:   `<kbd>input</kbd>`,

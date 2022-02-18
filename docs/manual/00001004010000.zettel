@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220214173126
+modified: 20220218130301
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -91,7 +91,7 @@ The following keys are supported:
   It is automatically extended, when a new HTML view is rendered.
 ; [!url-prefix|''url-prefix'']
 : Add the given string as a prefix to the local part of a Zettelstore local URL/URI when rendering zettel representations.
-  Must begin and end with a slash character (""''/''"", ''U+002F'').
+  Must begin and end with a slash character (""''/''"", U+002F).
   Default: ''"/"''.
 
   This allows to use a forwarding proxy [[server|00001010090100]] in front of the Zettelstore.

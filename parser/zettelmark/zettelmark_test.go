@@ -309,7 +309,7 @@ func TestComment(t *testing.T) {
 func TestFormat(t *testing.T) {
 	t.Parallel()
 	// Not for Insert / '>', because collision with quoted list
-	for _, ch := range []string{"_", "*", "~", "'", "^", ",", "\"", ":"} {
+	for _, ch := range []string{"_", "*", "~", "^", ",", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -317,7 +317,7 @@ func TestFormat(t *testing.T) {
 			{"$$$$", "(PARA {$})"},
 		}))
 	}
-	for _, ch := range []string{"_", "*", ">", "~", "'", "^", ",", "\"", ":"} {
+	for _, ch := range []string{"_", "*", ">", "~", "^", ",", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$$a$$", "(PARA {$ a})"},
 			{"$$a$$$", "(PARA {$ a} $)"},
@@ -343,7 +343,7 @@ func TestFormat(t *testing.T) {
 
 func TestLiteral(t *testing.T) {
 	t.Parallel()
-	for _, ch := range []string{"@", "`", "+", "="} {
+	for _, ch := range []string{"@", "`", "'", "="} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -363,10 +363,10 @@ func TestLiteral(t *testing.T) {
 		}))
 	}
 	checkTcs(t, TestCases{
-		{"++````++", "(PARA {+ ````})"},
-		{"++``a``++", "(PARA {+ ``a``})"},
-		{"++``++``", "(PARA {+ ``} ``)"},
-		{"++\\+++", "(PARA {+ +})"},
+		{"''````''", "(PARA {' ````})"},
+		{"''``a``''", "(PARA {' ``a``})"},
+		{"''``''``", "(PARA {' ``} ``)"},
+		{"''\\'''", "(PARA {' '})"},
 	})
 }
 
@@ -374,7 +374,7 @@ func TestMixFormatCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"__abc__\n**def**", "(PARA {_ abc} SB {* def})"},
-		{"++abc++\n==def==", "(PARA {+ abc} SB {= def})"},
+		{"''abc''\n==def==", "(PARA {' abc} SB {= def})"},
 		{"__abc__\n==def==", "(PARA {_ abc} SB {= def})"},
 		{"__abc__\n``def``", "(PARA {_ abc} SB {` def})"},
 		{"\"\"ghi\"\"\n::abc::\n``def``\n", "(PARA {\" ghi} SB {: abc} SB {` def})"},
@@ -933,21 +933,20 @@ var alignString = map[ast.Alignment]string{
 }
 
 var mapFormatKind = map[ast.FormatKind]rune{
-	ast.FormatEmph:      '_',
-	ast.FormatStrong:    '*',
-	ast.FormatInsert:    '>',
-	ast.FormatDelete:    '~',
-	ast.FormatMonospace: '\'',
-	ast.FormatSuper:     '^',
-	ast.FormatSub:       ',',
-	ast.FormatQuote:     '"',
-	ast.FormatSpan:      ':',
+	ast.FormatEmph:   '_',
+	ast.FormatStrong: '*',
+	ast.FormatInsert: '>',
+	ast.FormatDelete: '~',
+	ast.FormatSuper:  '^',
+	ast.FormatSub:    ',',
+	ast.FormatQuote:  '"',
+	ast.FormatSpan:   ':',
 }
 
 var mapLiteralKind = map[ast.LiteralKind]rune{
 	ast.LiteralZettel:  '@',
 	ast.LiteralProg:    '`',
-	ast.LiteralKeyb:    '+',
+	ast.LiteralInput:   '\'',
 	ast.LiteralOutput:  '=',
 	ast.LiteralComment: '%',
 }

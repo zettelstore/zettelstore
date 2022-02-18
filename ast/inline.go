@@ -206,16 +206,15 @@ type FormatKind uint8
 
 // Constants for FormatCode
 const (
-	_               FormatKind = iota
-	FormatEmph                 // Emphasized text.
-	FormatStrong               // Strongly emphasized text.
-	FormatInsert               // Inserted text.
-	FormatDelete               // Deleted text.
-	FormatSuper                // Superscripted text.
-	FormatSub                  // SubscriptedText.
-	FormatQuote                // Quoted text.
-	FormatSpan                 // Generic inline container.
-	FormatMonospace            // Monospaced text.
+	_            FormatKind = iota
+	FormatEmph              // Emphasized text.
+	FormatStrong            // Strongly emphasized text.
+	FormatInsert            // Inserted text.
+	FormatDelete            // Deleted text.
+	FormatSuper             // Superscripted text.
+	FormatSub               // SubscriptedText.
+	FormatQuote             // Quoted text.
+	FormatSpan              // Generic inline container.
 )
 
 func (*FormatNode) inlineNode() { /* Just a marker */ }
@@ -242,8 +241,8 @@ const (
 	_              LiteralKind = iota
 	LiteralZettel              // Zettel content
 	LiteralProg                // Inline program code
-	LiteralKeyb                // Keyboard strokes
-	LiteralOutput              // Sample output.
+	LiteralInput               // Computer input, e.g. Keyboard strokes
+	LiteralOutput              // Computer output
 	LiteralComment             // Inline comment
 	LiteralHTML                // Inline HTML, e.g. for Markdown
 )
