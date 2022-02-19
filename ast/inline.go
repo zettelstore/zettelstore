@@ -10,7 +10,11 @@
 
 package ast
 
-import "zettelstore.de/c/zjson"
+import (
+	"unicode/utf8"
+
+	"zettelstore.de/c/zjson"
+)
 
 // Definitions of inline nodes.
 
@@ -74,6 +78,11 @@ func (*SpaceNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
 func (*SpaceNode) WalkChildren(Visitor) { /* No children*/ }
+
+// Count returns the number of space runes.
+func (sn *SpaceNode) Count() int {
+	return utf8.RuneCountInString(sn.Lexeme)
+}
 
 // --------------------------------------------------------------------------
 

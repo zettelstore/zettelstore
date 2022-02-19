@@ -126,7 +126,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteByte('"')
 	case *ast.SpaceNode:
 		v.b.WriteString("Space")
-		if l := len(n.Lexeme); l > 1 {
+		if l := n.Count(); l > 1 {
 			v.b.WriteByte(' ')
 			v.b.WriteString(strconv.Itoa(l))
 		}

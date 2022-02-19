@@ -204,10 +204,10 @@ Paragraph
     Spacy  Para
 """ Author`,
 		expect: expectMap{
-			encoderZJSON:  "[{\"\":\"Poem\",\"b\":[{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"A\u00a0line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"\u00a0\u00a0another\u00a0line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"Back\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"Paragraph\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\"}]}],\"i\":[{\"\":\"Text\",\"s\":\"Author\"}]}]",
+			encoderZJSON:  "[{\"\":\"Poem\",\"b\":[{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"A\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"another\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"Back\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"Paragraph\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Space\",\"s\":\"\u00a0\u00a0\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Spacy\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Para\"}]}],\"i\":[{\"\":\"Text\",\"s\":\"Author\"}]}]",
 			encoderHTML:   "<div>\n<p>A\u00a0line<br>\n\u00a0\u00a0another\u00a0line<br>\nBack</p>\n<p>Paragraph</p>\n<p>\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para</p>\n<cite>Author</cite>\n</div>",
-			encoderNative: "[VerseBlock\n [[Para Text \"A\u00a0line\",Break,Text \"\u00a0\u00a0another\u00a0line\",Break,Text \"Back\"],\n  [Para Text \"Paragraph\"],\n  [Para Text \"\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\"]],\n [Cite Text \"Author\"]]",
-			encoderText:   "A\u00a0line\n\u00a0\u00a0another\u00a0line\nBack\nParagraph\n\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\nAuthor",
+			encoderNative: "[VerseBlock\n [[Para Text \"A\",Space,Text \"line\",Break,Space 2,Text \"another\",Space,Text \"line\",Break,Text \"Back\"],\n  [Para Text \"Paragraph\"],\n  [Para Space 4,Text \"Spacy\",Space 2,Text \"Para\"]],\n [Cite Text \"Author\"]]",
+			encoderText:   "A line\n another line\nBack\nParagraph\n Spacy Para\nAuthor",
 			encoderZmk:    "\"\"\"\nA\u00a0line\\\n\u00a0\u00a0another\u00a0line\\\nBack\nParagraph\n\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\n\"\"\" Author",
 		},
 	},

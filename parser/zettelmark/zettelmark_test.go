@@ -831,10 +831,10 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteString(n.Tag)
 		tv.buf.WriteByte('#')
 	case *ast.SpaceNode:
-		if len(n.Lexeme) == 1 {
+		if l := n.Count(); l == 1 {
 			tv.buf.WriteString("SP")
 		} else {
-			fmt.Fprintf(&tv.buf, "SP%d", len(n.Lexeme))
+			fmt.Fprintf(&tv.buf, "SP%d", l)
 		}
 	case *ast.BreakNode:
 		if n.Hard {
