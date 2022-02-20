@@ -542,8 +542,7 @@ func firstInlinesToEmbed(bs ast.BlockSlice) ast.InlineSlice {
 	if len(bs) == 0 {
 		return nil
 	}
-	switch bn := bs[0].(type) {
-	case *ast.BLOBNode:
+	if bn, ok := bs[0].(*ast.BLOBNode); ok {
 		var ins ast.InlineSlice
 		if bn.Title != "" {
 			ins = ast.CreateInlineSliceFromWords(strings.Fields(bn.Title)...)

@@ -382,7 +382,7 @@ func (pp *postProcessor) processInlineSliceCopyLoop(is *ast.InlineSlice, maxPos 
 			if pp.inVerse {
 				in.Lexeme = strings.Repeat("\u00a0", in.Count())
 			}
-			fromPos = pp.processSpaceNode(ins, maxPos, in, toPos, fromPos)
+			fromPos = processSpaceNode(ins, maxPos, in, toPos, fromPos)
 		case *ast.BreakNode:
 			if pp.inVerse {
 				in.Hard = true
@@ -405,9 +405,7 @@ func processTextNode(ins ast.InlineSlice, maxPos int, in *ast.TextNode, fromPos 
 	return fromPos
 }
 
-func (pp *postProcessor) processSpaceNode(
-	ins ast.InlineSlice, maxPos int, in *ast.SpaceNode, toPos, fromPos int,
-) int {
+func processSpaceNode(ins ast.InlineSlice, maxPos int, in *ast.SpaceNode, toPos, fromPos int) int {
 	if fromPos < maxPos {
 		switch nn := ins[fromPos].(type) {
 		case *ast.BreakNode:
