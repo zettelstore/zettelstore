@@ -21,12 +21,9 @@ package draw
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"image"
-	"regexp"
 	"sort"
-	"strconv"
 	"unicode/utf8"
 )
 
@@ -34,11 +31,7 @@ import (
 // value, that value will be used to convert tabs to spaces within the grid. Creation of the Canvas
 // can fail if the diagram contains invalid UTF-8 sequences.
 func newCanvas(data []byte, tabWidth int) (*canvas, error) {
-	c := &canvas{
-		optMaps: optionMaps{
-			"__a2s__closed__options__": {"fill": "#fff"},
-		},
-	}
+	c := &canvas{}
 
 	lines := bytes.Split(data, []byte("\n"))
 	c.siz.Y = len(lines)
@@ -128,8 +121,6 @@ func expandTabs(line []byte, tabWidth int) ([]byte, error) {
 	return out, nil
 }
 
-type optionMaps map[string]map[string]interface{}
-
 // canvas is the parsed source data.
 type canvas struct {
 	// (0,0) is top left.
@@ -137,7 +128,6 @@ type canvas struct {
 	visited        []bool
 	objs           objects
 	siz            image.Point
-	optMaps        optionMaps
 	hasStartMarker bool
 	hasEndMarker   bool
 }
@@ -150,29 +140,6 @@ func (c *canvas) objects() objects { return c.objs }
 
 // size returns the visual dimensions of the Canvas.
 func (c *canvas) size() image.Point { return c.siz }
-
-// options returns a map of options to apply to Objects based on the object's tag. This
-// maps tag name to a map of option names to options.
-func (c *canvas) options() optionMaps { return c.optMaps }
-
-// enclosingObjects returns the set of objects that contain this point in order from most
-// to least specific.
-func (c *canvas) enclosingObjects(p point) (q objects) {
-	maxTL := point{x: -1, y: -1}
-	for _, o := range c.objs {
-		// An object can't really contain another unless it is a polygon.
-		if !o.IsClosed() {
-			continue
-		}
-
-		if o.HasPoint(p) && o.Corners()[0].x > maxTL.x && o.Corners()[0].y > maxTL.y {
-			q = append(q, o)
-			maxTL.x = o.Corners()[0].x
-			maxTL.y = o.Corners()[0].y
-		}
-	}
-	return q
-}
 
 // findObjects finds all objects (lines, polygons, and text) within the underlying grid.
 func (c *canvas) findObjects() {
@@ -365,26 +332,13 @@ func (c *canvas) next(pos point) []point {
 	return out
 }
 
-// Used for matching [X, Y]: {...} tag definitions. These definitions target specific objects.
-var objTagRE = regexp.MustCompile(`(\d+)\s*,\s*(\d+)$`)
-
 // scanText extracts a line of text.
 func (c *canvas) scanText(start point) *object {
 	obj := &object{points: []point{start}, isText: true}
 	whiteSpaceStreak := 0
 	cur := start
 
-	tagged := 0
-	tag := []rune{}
-	tagDef := []rune{}
-
 	for c.canRight(cur) {
-		if cur.x == start.x && c.at(cur).isObjectStartTag() {
-			tagged++
-		} else if cur.x > start.x && c.at(cur).isObjectEndTag() {
-			tagged++
-		}
-
 		cur.x++
 		if c.isVisited(cur) {
 			// If the point is already visited, we hit a polygon or a line.
@@ -394,7 +348,7 @@ func (c *canvas) scanText(start point) *object {
 		if !ch.isTextCont() {
 			break
 		}
-		if tagged == 0 && ch.isSpace() {
+		if ch.isSpace() {
 			whiteSpaceStreak++
 			// Stop when we see 3 consecutive whitespace points.
 			if whiteSpaceStreak > 2 {
@@ -403,63 +357,7 @@ func (c *canvas) scanText(start point) *object {
 		} else {
 			whiteSpaceStreak = 0
 		}
-
-		switch tagged {
-		case 1:
-			if !c.at(cur).isObjectEndTag() {
-				tag = append(tag, rune(ch))
-			}
-		case 2:
-			if c.at(cur).isTagDefinitionSeparator() {
-				tagged++
-			} else {
-				tagged = -1
-			}
-		case 3:
-			tagDef = append(tagDef, rune(ch))
-		}
-
 		obj.points = append(obj.points, cur)
-	}
-
-	// If we found a start and end tag marker, we either need to assign the tag to the object,
-	// or we need to assign the specified options to the global canvas option space.
-	if tagged == 2 {
-		t := string(tag)
-		if container := c.enclosingObjects(start); container != nil {
-			container[0].SetTag(t)
-		}
-
-		// The tag applies to the text object as well so that properties like
-		// a2s:label can be set.
-		obj.SetTag(t)
-	} else if tagged == 3 {
-		t := string(tag)
-
-		// A tag definition targeting an object will not be found within any object; we need
-		// to do that calculation here.
-		if matches := objTagRE.FindStringSubmatch(t); matches != nil {
-			if targetX, err := strconv.ParseInt(matches[1], 10, 0); err == nil {
-				if targetY, err1 := strconv.ParseInt(matches[2], 10, 0); err1 == nil {
-					for i, o := range c.objs {
-						corner := o.Corners()[0]
-						if corner.x == int(targetX) && corner.y == int(targetY) {
-							c.objs[i].SetTag(t)
-							break
-						}
-					}
-				}
-			}
-		}
-		// This is a tag definition. Parse the JSON and assign the options to the canvas.
-		var m interface{}
-		def := []byte(string(tagDef))
-		if err := json.Unmarshal(def, &m); err == nil {
-			// The tag applies to the reference object as well, so that properties like
-			// a2s:delref can be set.
-			obj.SetTag(t)
-			c.optMaps[t] = m.(map[string]interface{})
-		}
 	}
 
 	// Trim the right side of the text object.

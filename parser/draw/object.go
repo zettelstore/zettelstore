@@ -30,7 +30,6 @@ type object struct {
 	isText   bool
 	isClosed bool
 	isDashed bool
-	tag      string
 }
 
 // Points returns all the points occupied by this Object. Every object has at least one point,
@@ -57,16 +56,6 @@ func (o *object) IsDashed() bool {
 // Text returns the text associated with this object if textual, and nil otherwise.
 func (o *object) Text() []rune {
 	return o.text
-}
-
-// SetTag sets an options tag on this object so the renderer may look up options.
-func (o *object) SetTag(s string) {
-	o.tag = s
-}
-
-// Tag returns the tag of this object, if any.
-func (o *object) Tag() string {
-	return o.tag
 }
 
 func (o *object) isOpenPath() bool   { return !o.isClosed && !o.isText }

@@ -69,7 +69,7 @@ func writeMarkerDefs(w io.Writer, c *canvas, scaleX, scaleY int) {
 	}
 }
 
-const pathTag = `%s<path id="%s%d" %sd="%s" />%s`
+const pathTag = `<path id="%s%d" %sd="%s" />`
 
 func writeClosedPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 	first := true
@@ -86,20 +86,7 @@ func writeClosedPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 			opts = `stroke-dasharray="5 5" `
 		}
 
-		tag := obj.Tag()
-		if tag == "" {
-			tag = "__a2s__closed__options__"
-		}
-		options := c.options()
-		opts += getTagOpts(options, tag)
-
-		startLink, endLink := "", ""
-		if link, ok := options[tag]["a2s:link"]; ok {
-			startLink = link.(string)
-			endLink = "</a>"
-		}
-
-		fmt.Fprintf(w, pathTag, startLink, "closed", i, opts, flatten(obj.Points(), scaleX, scaleY)+"Z", endLink)
+		fmt.Fprintf(w, pathTag, "closed", i, opts, flatten(obj.Points(), scaleX, scaleY)+"Z")
 	}
 	if !first {
 		io.WriteString(w, "</g>")
@@ -143,17 +130,7 @@ func writeOpenPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 		if points[len(points)-1].hint == endMarker {
 			opts += optEndMarker
 		}
-
-		options := c.options()
-		tag := obj.Tag()
-		opts += getTagOpts(options, tag)
-
-		startLink, endLink := "", ""
-		if link, ok := options[tag]["a2s:link"]; ok {
-			startLink = link.(string)
-			endLink = "</a>"
-		}
-		fmt.Fprintf(w, pathTag, startLink, "open", i, opts, flatten(points, scaleX, scaleY), endLink)
+		fmt.Fprintf(w, pathTag, "open", i, opts, flatten(points, scaleX, scaleY))
 	}
 	if !first {
 		io.WriteString(w, "</g>")
@@ -174,88 +151,15 @@ func writeTexts(w io.Writer, c *canvas, font string, scaleX, scaleY int) {
 			first = false
 		}
 
-		// Look up the fill of the containing box to determine what text color to use.
-		color := findTextColor(c, obj)
-
-		startLink, endLink := "", ""
 		text := string(obj.Text())
-		tag := obj.Tag()
-		if tag != "" {
-			options := c.options()
-			if label, ok := options[tag]["a2s:label"]; ok {
-				text = label.(string)
-			}
-
-			// If we're a reference, the a2s:delref tag informs us to remove our reference.
-			// TODO(dhobsd): If text is on column 0 but is not a special reference,
-			// we can't really detect that here.
-			if obj.Corners()[0].x == 0 {
-				if _, ok := options[tag]["a2s:delref"]; ok {
-					continue
-				}
-			}
-
-			if link, ok := options[tag]["a2s:link"]; ok {
-				startLink = link.(string)
-				endLink = "</a>"
-			}
-		}
 		sp := scale(obj.Points()[0], scaleX, scaleY)
 		fmt.Fprintf(w,
-			`%s<text id="obj%d" x="%g" y="%g" fill="%s">%s</text>%s`,
-			startLink, i, sp.X-deltaX, sp.Y+deltaY, color, escape(text), endLink)
+			`<text id="obj%d" x="%g" y="%g">%s</text>`,
+			i, sp.X-deltaX, sp.Y+deltaY, escape(text))
 	}
 	if !first {
 		io.WriteString(w, "</g>")
 	}
-}
-
-func getTagOpts(options optionMaps, tag string) string {
-	opts := ""
-	if tagOpts, ok := options[tag]; ok {
-		for k, v := range tagOpts {
-			if strings.HasPrefix(k, "a2s:") {
-				continue
-			}
-
-			switch v := v.(type) {
-			case string:
-				opts += fmt.Sprintf(`%s="%s" `, k, v)
-			default:
-				// TODO(dhobsd): Implement.
-				opts += fmt.Sprintf(`%s="UNIMPLEMENTED" `, k)
-			}
-		}
-	}
-	return opts
-}
-
-func findTextColor(c *canvas, o *object) string {
-	// If the tag on the text object is a special reference, that's the color we should use
-	// for the text.
-	options := c.options()
-	if tag := o.Tag(); objTagRE.MatchString(tag) {
-		if fill, ok := options[tag]["fill"]; ok {
-			return fill.(string)
-		}
-	}
-
-	// Otherwise, find the most specific fill and calibrate the color based on that.
-	if containers := c.enclosingObjects(o.Points()[0]); containers != nil {
-		for _, container := range containers {
-			if tag := container.Tag(); tag != "" {
-				if fill, ok := options[tag]["fill"]; ok {
-					if fill == "none" {
-						continue
-					}
-					return textColor(fill.(string))
-				}
-			}
-		}
-	}
-
-	// Default to black.
-	return "#000"
 }
 
 func escape(s string) string {
