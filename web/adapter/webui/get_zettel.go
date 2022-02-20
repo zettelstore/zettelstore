@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -49,7 +50,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.MaterialNode {
+			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.InlineEmbedNode {
 				return wui.createImageMaterial(zettel.Meta.Zid)
 			},
 		}
@@ -60,7 +61,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		evalMeta := func(value string) *ast.InlineListNode {
+		evalMeta := func(value string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
@@ -69,7 +70,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Xhtml:          false,
 			MarkerExternal: wui.rtConfig.GetMarkerExternal(),
 			NewWindow:      true,
-			IgnoreMeta:     map[string]bool{api.KeyTitle: true, api.KeyLang: true},
+			IgnoreMeta:     strfun.NewSet(api.KeyTitle, api.KeyLang),
 		}
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, api.EncoderHTML, &envHTML)
 		if err != nil {
@@ -78,7 +79,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, &envHTML)
-		htmlContent, err := encodeBlocks(zn.Ast, api.EncoderHTML, &envHTML)
+		htmlContent, err := encodeBlocks(&zn.Ast, api.EncoderHTML, &envHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -149,7 +150,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 var errNoSuchEncoding = errors.New("no such encoding")
 
 // encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeInlines(is *ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	if is == nil {
 		return "", nil
 	}
@@ -166,14 +167,14 @@ func encodeInlines(is *ast.InlineListNode, enc api.EncodingEnum, env *encoder.En
 	return buf.String(), nil
 }
 
-func encodeBlocks(bln *ast.BlockListNode, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeBlocks(bs *ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
 	encdr := encoder.Create(enc, env)
 	if encdr == nil {
 		return "", errNoSuchEncoding
 	}
 
 	var buf bytes.Buffer
-	_, err := encdr.WriteBlocks(&buf, bln)
+	_, err := encdr.WriteBlocks(&buf, bs)
 	if err != nil {
 		return "", err
 	}

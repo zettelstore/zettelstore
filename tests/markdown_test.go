@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,10 +21,10 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
-	_ "zettelstore.de/z/encoder/djsonenc"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/nativeenc"
 	_ "zettelstore.de/z/encoder/textenc"
+	_ "zettelstore.de/z/encoder/zjsonenc"
 	_ "zettelstore.de/z/encoder/zmkenc"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -69,12 +69,12 @@ func TestMarkdownSpec(t *testing.T) {
 
 	for _, tc := range testcases {
 		ast := parser.ParseBlocks(input.NewInput([]byte(tc.Markdown)), nil, "markdown")
-		testAllEncodings(t, tc, ast)
-		testZmkEncoding(t, tc, ast)
+		testAllEncodings(t, tc, &ast)
+		testZmkEncoding(t, tc, &ast)
 	}
 }
 
-func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
+func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
@@ -85,7 +85,7 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode)
 	}
 }
 
-func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) {
+func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
@@ -97,7 +97,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 		testID = tc.Example*100 + 2
 		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
 		buf.Reset()
-		zmkEncoder.WriteBlocks(&buf, secondAst)
+		zmkEncoder.WriteBlocks(&buf, &secondAst)
 		gotSecond := buf.String()
 
 		// if gotFirst != gotSecond {
@@ -107,7 +107,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockListNode) 
 		testID = tc.Example*100 + 3
 		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
 		buf.Reset()
-		zmkEncoder.WriteBlocks(&buf, thirdAst)
+		zmkEncoder.WriteBlocks(&buf, &thirdAst)
 		gotThird := buf.String()
 
 		if gotSecond != gotThird {

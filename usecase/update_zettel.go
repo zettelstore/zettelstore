@@ -57,8 +57,8 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasConten
 	}
 	if !hasContent {
 		zettel.Content = oldZettel.Content
-		zettel.Content.TrimSpace()
 	}
+	zettel.Content.TrimSpace()
 	err = uc.port.UpdateZettel(ctx, zettel)
 	uc.log.Sense().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
 	return err

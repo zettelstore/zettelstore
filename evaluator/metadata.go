@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -15,32 +15,29 @@ import (
 	"zettelstore.de/z/domain/meta"
 )
 
-func evaluateMetadata(m *meta.Meta) *ast.BlockListNode {
+func evaluateMetadata(m *meta.Meta) ast.BlockSlice {
 	descrlist := &ast.DescriptionListNode{}
 	for _, p := range m.Pairs() {
 		descrlist.Descriptions = append(
 			descrlist.Descriptions, getMetadataDescription(p.Key, p.Value))
 	}
-	return &ast.BlockListNode{List: []ast.BlockNode{descrlist}}
+	return ast.BlockSlice{descrlist}
 }
 
 func getMetadataDescription(key, value string) ast.Description {
+	is := convertMetavalueToInlineSlice(value, meta.Type(key))
 	return ast.Description{
-		Term: ast.CreateInlineListNode(&ast.TextNode{Text: key}),
-		Descriptions: []ast.DescriptionSlice{{
-			&ast.ParaNode{
-				Inlines: convertMetavalueToInlineList(value, meta.Type(key)),
-			}},
-		},
+		Term:         ast.InlineSlice{&ast.TextNode{Text: key}},
+		Descriptions: []ast.DescriptionSlice{{&ast.ParaNode{Inlines: is}}},
 	}
 }
 
-func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) *ast.InlineListNode {
+func convertMetavalueToInlineSlice(value string, dt *meta.DescriptionType) ast.InlineSlice {
 	var sliceData []string
 	if dt.IsSet {
 		sliceData = meta.ListFromValue(value)
 		if len(sliceData) == 0 {
-			return &ast.InlineListNode{}
+			return nil
 		}
 	} else {
 		sliceData = []string{value}
@@ -51,7 +48,7 @@ func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) *ast.I
 		makeLink = true
 	}
 
-	result := make([]ast.InlineNode, 0, 2*len(sliceData)-1)
+	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
 	for i, val := range sliceData {
 		if i > 0 {
 			result = append(result, &ast.SpaceNode{Lexeme: " "})
@@ -60,11 +57,11 @@ func convertMetavalueToInlineList(value string, dt *meta.DescriptionType) *ast.I
 		if makeLink {
 			result = append(result, &ast.LinkNode{
 				Ref:     ast.ParseReference(val),
-				Inlines: ast.CreateInlineListNode(tn),
+				Inlines: ast.InlineSlice{tn},
 			})
 		} else {
 			result = append(result, tn)
 		}
 	}
-	return ast.CreateInlineListNode(result...)
+	return result
 }

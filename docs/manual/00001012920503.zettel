@@ -1,19 +1,32 @@
 id: 00001012920503
-title: DJSON Encoding
+title: ZJSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20211124134305
+modified: 20220214184330
 
 A zettel representation that allows to process the syntactic structure of a zettel.
 It is a JSON-based encoding format, but different to the structures returned by [[endpoint|00001012920000]] ''/j/{ID}''.
 
 For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 
-* [[//v/00001012920503?_enc=djson&_part=zettel]],
-* [[//v/00001012920503?_enc=djson&_part=meta]],
-* [[//v/00001012920503?_enc=djson&_part=content]].
+* [[//v/00001012920503?_enc=zjson&_part=zettel]],
+* [[//v/00001012920503?_enc=zjson&_part=meta]],
+* [[//v/00001012920503?_enc=zjson&_part=content]].
 
 If transferred via HTTP, the content type will be ''application/json''.
 
-TODO: detailed description.
+A full zettel encoding results in a JSON object with two keys: ''"meta"'' and ''"content"''.
+Both values are the same as if you have requested just the appropriate [[part|00001012920800]].
+
+A metadata encoding results in a JSON object, where each metadata key is mapped to the same JSON object name.
+If the metadata value is of type [[Zettelmarkup|00001006036500]] it is encoded as a JSON array of objects, where each objects represents a [[Zettelmarkup|00001007000000]] element (see [[below|#zettelmarkup]] for details).
+If the metadata value is of some list type, e.g. [[IdentifierSet|00001006032500]] or [[TagSet|00001006034000]], it is encoded as an JSON array of JSON strings.
+Other types are encoded as a JSON string.
+
+The content encoding results in a JSON array of objects, where each objects represents a Zettelmarkup element.
+
+Every [!zettelmarkup|Zettelmarkup] element is encoded as a JSON object.
+These objects always contain the empty name ''""'' with a string value describing the type of Zettelmarkup element.
+Depending on the type, other one letter names denotes the details of the element.
+The meaning of these names is [[well defined|00001012920582]].

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore-client.
+// This file is part of Zettelstore.
 //
 // Zettelstore client is licensed under the latest version of the EUPL
 // (European Union Public License). Please see file LICENSE.txt for your rights
@@ -25,7 +25,7 @@ import (
 )
 
 func nextZid(zid api.ZettelID) api.ZettelID {
-	numVal, err := strconv.Atoi(string(zid))
+	numVal, err := strconv.ParseUint(string(zid), 10, 64)
 	if err != nil {
 		panic(err)
 	}
@@ -164,7 +164,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	encodings := []api.EncodingEnum{
-		api.EncoderDJSON,
+		api.EncoderZJSON,
 		api.EncoderHTML,
 		api.EncoderNative,
 		api.EncoderText,

@@ -3,7 +3,7 @@ title: Zettelmarkup: Image Embedding
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211103163657
+modified: 20220214180955
 
 Image content is assumed, if an URL is used or if the referenced zettel contains an image.
 
@@ -21,6 +21,6 @@ They must follow the last right curly bracket character immediately.
 One prominent example is to specify an explicit title attribute that is shown on certain web browsers when the zettel is rendered in HTML:
 
 Examples:
-* [!spin] ``{{Spinning Emoji|00000000040001}}{title=Emoji width=30}`` is rendered as ::{{Spinning Emoji|00000000040001}}{title=Emoji width=30}::{=example}.
+* [!spin|``{{Spinning Emoji|00000000040001}}{title=Emoji width=30}``] is rendered as ::{{Spinning Emoji|00000000040001}}{title=Emoji width=30}::{=example}.
 * The above image is also the placeholder for a non-existent zettel:
 ** ``{{00000000009999}}`` will be rendered as ::{{00000000009999}}::{=example}.

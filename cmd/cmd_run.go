@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -51,7 +51,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webLog := kern.GetLogger(kernel.WebService)
 	a := api.New(
 		webLog.Clone().Str("adapter", "api").Child(),
-		webSrv, authManager, authManager, webSrv, rtConfig)
+		webSrv, authManager, authManager, webSrv, rtConfig, authPolicy)
 	wui := webui.New(
 		webLog.Clone().Str("adapter", "wui").Child(),
 		webSrv, authManager, rtConfig, authManager, boxManager, authPolicy)

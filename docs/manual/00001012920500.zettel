@@ -3,11 +3,11 @@ title: Encodings available via the [[API|00001012000000]]
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20211124140517
+modified: 20220209114459
 
 A zettel representation can be encoded in various formats for further processing.
 
-* [[djson|00001012920503]] (default)
+* [[zjson|00001012920503]] (default)
 * [[html|00001012920510]]
 * [[native|00001012920513]]
 * [[text|00001012920519]]

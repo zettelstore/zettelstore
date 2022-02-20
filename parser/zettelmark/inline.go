@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -19,18 +19,18 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// parseInlineList parses a sequence of Inlines until EOS.
-func (cp *zmkP) parseInlineList() *ast.InlineListNode {
+// parseInlineSlice parses a sequence of Inlines until EOS.
+func (cp *zmkP) parseInlineSlice() ast.InlineSlice {
 	inp := cp.inp
-	var ins []ast.InlineNode
+	var is ast.InlineSlice
 	for inp.Ch != input.EOS {
 		in := cp.parseInline()
 		if in == nil {
 			break
 		}
-		ins = append(ins, in)
+		is = append(is, in)
 	}
-	return ast.CreateInlineListNode(ins...)
+	return is
 }
 
 func (cp *zmkP) parseInline() ast.InlineNode {
@@ -70,9 +70,9 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			return cp.parseTag()
 		case '%':
 			in, success = cp.parseComment()
-		case '_', '*', '>', '~', '\'', '^', ',', '<', '"', ':':
+		case '_', '*', '>', '~', '^', ',', '"', ':':
 			in, success = cp.parseFormat()
-		case '+', '`', '=', runeModGrave:
+		case '@', '\'', '`', '=', runeModGrave:
 			in, success = cp.parseLiteral()
 		case '\\':
 			return cp.parseBackslash()
@@ -100,7 +100,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '\'', '^', ',', '<', '"', ':', '+', '`', runeModGrave, '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -156,19 +156,12 @@ func (cp *zmkP) parseSoftBreak() *ast.BreakNode {
 }
 
 func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
-	if ref, iln, ok := cp.parseReference(']'); ok {
+	if ref, is, ok := cp.parseReference(']'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
-			onlyRef := false
-			r := ast.ParseReference(ref)
-			if iln == nil {
-				iln = ast.CreateInlineListNode(&ast.TextNode{Text: ref})
-				onlyRef = true
-			}
 			return &ast.LinkNode{
-				Ref:     r,
-				Inlines: iln,
-				OnlyRef: onlyRef,
+				Ref:     ast.ParseReference(ref),
+				Inlines: is,
 				Attrs:   attrs,
 			}, true
 		}
@@ -176,7 +169,7 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	return nil, false
 }
 
-func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNode, ok bool) {
+func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok bool) {
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
@@ -185,7 +178,6 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 	if !ok {
 		return "", nil, false
 	}
-	var ins []ast.InlineNode
 	if inp.Ch == '|' { // First part must be inline text
 		if pos == inp.Pos { // [[| or {{|
 			return "", nil, false
@@ -196,7 +188,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 			if in == nil {
 				break
 			}
-			ins = append(ins, in)
+			is = append(is, in)
 		}
 		cp.inp = inp
 		inp.Next()
@@ -217,10 +209,10 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, iln *ast.InlineListNod
 		return "", nil, false
 	}
 	inp.Next()
-	if len(ins) == 0 {
+	if len(is) == 0 {
 		return ref, nil, true
 	}
-	return ref, ast.CreateInlineListNode(ins...), true
+	return ref, is, true
 }
 
 func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
@@ -311,47 +303,44 @@ loop:
 
 func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 	cp.inp.Next()
-	iln, ok := cp.parseLinkLikeRest()
+	is, ok := cp.parseLinkLikeRest()
 	if !ok {
 		return nil, false
 	}
 	attrs := cp.parseAttributes(false)
-	if iln == nil {
-		iln = &ast.InlineListNode{}
-	}
-	return &ast.FootnoteNode{Inlines: iln, Attrs: attrs}, true
+	return &ast.FootnoteNode{Inlines: is, Attrs: attrs}, true
 }
 
-func (cp *zmkP) parseLinkLikeRest() (*ast.InlineListNode, bool) {
+func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 	cp.skipSpace()
-	var ins []ast.InlineNode
+	var is ast.InlineSlice
 	inp := cp.inp
 	for inp.Ch != ']' {
 		in := cp.parseInline()
 		if in == nil {
 			return nil, false
 		}
-		ins = append(ins, in)
+		is = append(is, in)
 		if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 			return nil, false
 		}
 	}
 	inp.Next()
-	if len(ins) == 0 {
+	if len(is) == 0 {
 		return nil, true
 	}
-	return ast.CreateInlineListNode(ins...), true
+	return is, true
 }
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
-	if ref, iln, ok := cp.parseReference('}'); ok {
+	if ref, is, ok := cp.parseReference('}'); ok {
 		attrs := cp.parseAttributes(false)
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
-			return &ast.EmbedNode{
-				Material: &ast.ReferenceMaterialNode{Ref: r},
-				Inlines:  iln,
-				Attrs:    attrs,
+			return &ast.EmbedRefNode{
+				Ref:     r,
+				Inlines: is,
+				Attrs:   attrs,
 			}, true
 		}
 	}
@@ -362,14 +351,25 @@ func (cp *zmkP) parseMark() (*ast.MarkNode, bool) {
 	inp := cp.inp
 	inp.Next()
 	pos := inp.Pos
-	for inp.Ch != ']' {
+	for inp.Ch != '|' && inp.Ch != ']' {
 		if !isNameRune(inp.Ch) {
 			return nil, false
 		}
 		inp.Next()
 	}
-	mn := &ast.MarkNode{Text: string(inp.Src[pos:inp.Pos])}
-	inp.Next()
+	mark := inp.Src[pos:inp.Pos]
+	var is ast.InlineSlice
+	if inp.Ch == '|' {
+		inp.Next()
+		var ok bool
+		is, ok = cp.parseLinkLikeRest()
+		if !ok {
+			return nil, false
+		}
+	} else {
+		inp.Next()
+	}
+	mn := &ast.MarkNode{Mark: string(mark), Inlines: is}
 	return mn, true
 }
 
@@ -400,23 +400,24 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {
-			return &ast.LiteralNode{Kind: ast.LiteralComment, Text: string(inp.Src[pos:inp.Pos])}, true
+			return &ast.LiteralNode{
+				Kind:    ast.LiteralComment,
+				Content: append([]byte(nil), inp.Src[pos:inp.Pos]...),
+			}, true
 		}
 		inp.Next()
 	}
 }
 
 var mapRuneFormat = map[rune]ast.FormatKind{
-	'_':  ast.FormatEmph,
-	'*':  ast.FormatStrong,
-	'>':  ast.FormatInsert,
-	'~':  ast.FormatDelete,
-	'\'': ast.FormatMonospace,
-	'^':  ast.FormatSuper,
-	',':  ast.FormatSub,
-	'<':  ast.FormatQuotation,
-	'"':  ast.FormatQuote,
-	':':  ast.FormatSpan,
+	'_': ast.FormatEmph,
+	'*': ast.FormatStrong,
+	'>': ast.FormatInsert,
+	'~': ast.FormatDelete,
+	'^': ast.FormatSuper,
+	',': ast.FormatSub,
+	'"': ast.FormatQuote,
+	':': ast.FormatSpan,
 }
 
 func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
@@ -431,7 +432,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	fn := &ast.FormatNode{Kind: kind, Inlines: &ast.InlineListNode{}}
+	fn := &ast.FormatNode{Kind: kind, Inlines: nil}
 	for {
 		if inp.Ch == input.EOS {
 			return nil, false
@@ -443,20 +444,21 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 				fn.Attrs = cp.parseAttributes(false)
 				return fn, true
 			}
-			fn.Inlines.Append(&ast.TextNode{Text: string(fch)})
+			fn.Inlines = append(fn.Inlines, &ast.TextNode{Text: string(fch)})
 		} else if in := cp.parseInline(); in != nil {
 			if _, ok = in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 				return nil, false
 			}
-			fn.Inlines.Append(in)
+			fn.Inlines = append(fn.Inlines, in)
 		}
 	}
 }
 
 var mapRuneLiteral = map[rune]ast.LiteralKind{
+	'@':          ast.LiteralZettel,
 	'`':          ast.LiteralProg,
 	runeModGrave: ast.LiteralProg,
-	'+':          ast.LiteralKeyb,
+	'\'':         ast.LiteralInput,
 	'=':          ast.LiteralOutput,
 }
 
@@ -483,7 +485,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 				inp.Next()
 				inp.Next()
 				fn.Attrs = cp.parseAttributes(false)
-				fn.Text = buf.String()
+				fn.Content = buf.Bytes()
 				return fn, true
 			}
 			buf.WriteRune(fch)

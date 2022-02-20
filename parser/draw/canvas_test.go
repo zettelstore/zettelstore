@@ -452,7 +452,7 @@ func TestNewCanvas(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
-		objs := c.Objects()
+		objs := c.objects()
 		if line.strings != nil {
 			if got := getStrings(objs); !reflect.DeepEqual(line.strings, got) {
 				t.Errorf("%d: expected %q, but got %q", i, line.strings, got)
@@ -539,7 +539,7 @@ func TestNewCanvasBroken(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
-		objs := c.Objects()
+		objs := c.objects()
 		if line.strings != nil {
 			if got := getStrings(objs); !reflect.DeepEqual(line.strings, got) {
 				t.Errorf("%d: expected %q, but got %q", i, line.strings, got)
@@ -643,7 +643,7 @@ func BenchmarkT(b *testing.B) {
 		b.Fatalf("Error creating canvas: %s", err)
 	}
 
-	objs := c.Objects()
+	objs := c.objects()
 	if len(objs) != expected {
 		b.Fatalf("%d != %d", len(objs), expected)
 	}
@@ -663,7 +663,7 @@ func getTexts(objs []*object) []string {
 	out := []string{}
 	for _, obj := range objs {
 		t := obj.Text()
-		if !obj.IsText() {
+		if !obj.isJustText() {
 			out = append(out, "")
 		} else if len(t) > 0 {
 			out = append(out, string(t))

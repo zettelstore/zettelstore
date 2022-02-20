@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -16,7 +16,6 @@ import (
 	"net/url"
 	"time"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/domain"
@@ -167,17 +166,11 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 }
 
 func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
-	m := zettel.Meta
-	if m.GetBool(api.KeyNoIndex) {
-		// Zettel maybe in index
-		toCheck := mgr.idxStore.DeleteZettel(ctx, m.Zid)
-		mgr.idxCheckZettel(toCheck)
-		return
-	}
-
 	var cData collectData
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(zettel, "", mgr.rtConfig), &cData)
+
+	m := zettel.Meta
 	zi := store.NewZettelIndex(m.Zid)
 	mgr.idxCollectFromMeta(ctx, m, zi, &cData)
 	mgr.idxProcessData(ctx, zi, &cData)
@@ -199,7 +192,8 @@ func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *st
 				mgr.idxUpdateValue(ctx, descr.Inverse, val, zi)
 			}
 		case meta.TypeZettelmarkup:
-			collectInlineIndexData(parser.ParseMetadata(pair.Value), cData)
+			is := parser.ParseMetadata(pair.Value)
+			collectInlineIndexData(&is, cData)
 		case meta.TypeURL:
 			if _, err := url.Parse(pair.Value); err == nil {
 				cData.urls.Add(pair.Value)

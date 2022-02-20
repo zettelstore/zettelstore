@@ -3,22 +3,22 @@ title: Zettelmarkup: Links
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124172143
+modified: 20220218131639
 
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
-Both kinds begin with two consecutive left square bracket characters (""''[''"", ''U+005B'') and ends with two consecutive right square bracket characters (""'']''"", ''U+005D'').
+Both kinds begin with two consecutive left square bracket characters (""''[''"", U+005B) and ends with two consecutive right square bracket characters (""'']''"", U+005D).
 
-The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", ''U+007C''): ``[[text|linkspecification]]``.
+The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", U+007C): ``[[text|linkspecification]]``.
 
 The second form just provides a link specification between the square brackets.
 Its text is derived from the link specification, e.g. by interpreting the link specification as text: ``[[linkspecification]]``.
 
 The link specification for another zettel within the same Zettelstore is just the [[zettel identifier|00001006050000]].
-To reference some content within a zettel, you can append a number sign character (""''#''"", ''U+0023'') and the name of the mark to the zettel identifier.
+To reference some content within a zettel, you can append a number sign character (""''#''"", U+0023) and the name of the mark to the zettel identifier.
 The resulting reference is called ""zettel reference"".
 
 To specify some material outside the Zettelstore, just use an normal Uniform Resource Identifier (URI) as defined by [[RFC\ 3986|https://tools.ietf.org/html/rfc3986]].
-If the URL begins with the slash character (""/"", ''U+002F''), or if it begins with ""./"" or with ""../"", i.e. without scheme, user info, and host name, the reference will be treated as a ""local reference"", otherwise as an ""external reference"".
+If the URL begins with the slash character (""/"", U+002F), or if it begins with ""./"" or with ""../"", i.e. without scheme, user info, and host name, the reference will be treated as a ""local reference"", otherwise as an ""external reference"".
 If the URL begins with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
 
 The text in the second form is just a sequence of [[inline elements|00001007040000]].

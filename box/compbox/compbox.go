@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -181,7 +181,6 @@ func (cb *compBox) ReadStats(st *box.ManagedBoxStats) {
 }
 
 func updateMeta(m *meta.Meta) {
-	m.Set(api.KeyNoIndex, api.ValueTrue)
 	if _, ok := m.Get(api.KeySyntax); !ok {
 		m.Set(api.KeySyntax, api.ValueSyntaxZmk)
 	}

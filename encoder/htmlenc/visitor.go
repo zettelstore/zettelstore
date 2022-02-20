@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -13,11 +13,12 @@ package htmlenc
 import (
 	"bytes"
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -27,46 +28,40 @@ import (
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
 	env           *encoder.Environment
-	b             encoder.BufWriter
+	b             encoder.EncWriter
 	visibleSpace  bool // Show space character in plain text
 	inVerse       bool // In verse block
 	inInteractive bool // Rendered interactive HTML code
-	lang          langStack
 	textEnc       encoder.Encoder
 	inlinePos     int // Element position in inline list node
 }
 
 func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
-	var lang string
-	if he.env != nil {
-		lang = he.env.Lang
-	}
 	return &visitor{
 		env:     he.env,
-		b:       encoder.NewBufWriter(w),
-		lang:    newLangStack(lang),
+		b:       encoder.NewEncWriter(w),
 		textEnc: encoder.Create(api.EncoderText, nil),
 	}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		for i, bn := range n.List {
+	case *ast.BlockSlice:
+		for i, bn := range *n {
 			if i > 0 {
 				v.b.WriteByte('\n')
 			}
 			ast.Walk(v, bn)
 		}
-	case *ast.InlineListNode:
-		for i, in := range n.List {
+	case *ast.InlineSlice:
+		for i, in := range *n {
 			v.inlinePos = i
 			ast.Walk(v, in)
 		}
 		v.inlinePos = 0
 	case *ast.ParaNode:
 		v.b.WriteString("<p>")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.writeEndPara()
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -88,6 +83,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitDescriptionList(n)
 	case *ast.TableNode:
 		v.visitTable(n)
+	case *ast.TranscludeNode:
+		return nil // Nothing to write. Or: an iFrame?
 	case *ast.BLOBNode:
 		v.visitBLOB(n)
 	case *ast.TextNode:
@@ -106,8 +103,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBreak(n)
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.EmbedNode:
-		v.visitEmbed(n)
+	case *ast.EmbedRefNode:
+		v.visitEmbedRef(n)
+	case *ast.EmbedBLOBNode:
+		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
 		v.visitCite(n)
 	case *ast.FootnoteNode:
@@ -131,19 +130,19 @@ var mapMetaKey = map[string]string{
 
 func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	ignore := v.setupIgnoreSet()
-	ignore[api.KeyTitle] = true
+	ignore.Set(api.KeyTitle)
 	if tags, ok := m.Get(api.KeyAllTags); ok {
 		v.writeTags(tags)
-		ignore[api.KeyAllTags] = true
-		ignore[api.KeyTags] = true
+		ignore.Set(api.KeyAllTags)
+		ignore.Set(api.KeyTags)
 	} else if tags, ok = m.Get(api.KeyTags); ok {
 		v.writeTags(tags)
-		ignore[api.KeyTags] = true
+		ignore.Set(api.KeyTags)
 	}
 
 	for _, p := range m.ComputedPairs() {
 		key := p.Key
-		if ignore[key] {
+		if ignore.Has(key) {
 			continue
 		}
 		value := p.Value
@@ -162,22 +161,21 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 
 func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
 	var buf bytes.Buffer
-	_, err := v.textEnc.WriteInlines(&buf, evalMeta(value))
+	is := evalMeta(value)
+	_, err := v.textEnc.WriteInlines(&buf, &is)
 	if err == nil {
 		return buf.String()
 	}
 	return ""
 }
 
-func (v *visitor) setupIgnoreSet() map[string]bool {
+func (v *visitor) setupIgnoreSet() strfun.Set {
 	if v.env == nil || v.env.IgnoreMeta == nil {
-		return make(map[string]bool)
+		return make(strfun.Set)
 	}
-	result := make(map[string]bool, len(v.env.IgnoreMeta))
-	for k, v := range v.env.IgnoreMeta {
-		if v {
-			result[k] = true
-		}
+	result := make(strfun.Set, len(v.env.IgnoreMeta))
+	for k := range v.env.IgnoreMeta {
+		result.Set(k)
 	}
 	return result
 }
@@ -208,7 +206,7 @@ func (v *visitor) writeEndnotes() {
 	for fn != nil {
 		n := strconv.Itoa(fnNum)
 		v.b.WriteStrings("<li value=\"", n, "\" id=\"fn:", n, "\" role=\"doc-endnote\">")
-		ast.Walk(v, fn.Inlines)
+		ast.Walk(v, &fn.Inlines)
 		v.b.WriteStrings(
 			" <a href=\"#fnref:",
 			n,
@@ -219,24 +217,18 @@ func (v *visitor) writeEndnotes() {
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
-		if k != "-" {
-			keys = append(keys, k)
-		}
-	}
-	sort.Strings(keys)
+	a = a.Clone().RemoveDefault()
 
-	for _, k := range keys {
+	for _, k := range a.Keys() {
 		if k == "" || k == "-" {
 			continue
 		}
 		v.b.WriteStrings(" ", k)
-		vl := a.Attrs[k]
+		vl := a[k]
 		if len(vl) > 0 {
 			v.b.WriteString("=\"")
 			v.writeQuotedEscaped(vl)
@@ -247,14 +239,14 @@ func (v *visitor) visitAttributes(a *ast.Attributes) {
 
 func (v *visitor) writeHTMLEscaped(s string) {
 	if v.visibleSpace {
-		strfun.HTMLEscapeVisible(&v.b, s)
+		html.EscapeVisible(&v.b, s)
 	} else {
-		strfun.HTMLEscape(&v.b, s)
+		html.Escape(&v.b, s)
 	}
 }
 
 func (v *visitor) writeQuotedEscaped(s string) {
-	strfun.HTMLAttrEscape(&v.b, s)
+	html.AttributeEscape(&v.b, s)
 }
 
 func (v *visitor) writeReference(ref *ast.Reference) {

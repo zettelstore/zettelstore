@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -10,7 +10,10 @@
 
 package encoder
 
-import "zettelstore.de/z/ast"
+import (
+	"zettelstore.de/z/ast"
+	"zettelstore.de/z/strfun"
+)
 
 // Environment specifies all data and functions that affects encoding.
 type Environment struct {
@@ -20,7 +23,7 @@ type Environment struct {
 	Xhtml          bool   // use XHTML syntax instead of HTML syntax
 	MarkerExternal string // Marker after link to (external) material.
 	NewWindow      bool   // open link in new window
-	IgnoreMeta     map[string]bool
+	IgnoreMeta     strfun.Set
 	footnotes      []footnoteInfo // Stores footnotes detected while encoding
 	footnoteNum    int
 }

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -10,18 +10,37 @@
 
 package ast
 
+import "zettelstore.de/c/zjson"
+
 // Definition of Block nodes.
 
-// BlockListNode is a list of BlockNodes.
-type BlockListNode struct {
-	List []BlockNode
-}
+// BlockSlice is a slice of BlockNodes.
+type BlockSlice []BlockNode
+
+func (*BlockSlice) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the descriptions.
-func (bln *BlockListNode) WalkChildren(v Visitor) {
-	for _, bn := range bln.List {
-		Walk(v, bn)
+func (bs *BlockSlice) WalkChildren(v Visitor) {
+	if bs != nil {
+		for _, bn := range *bs {
+			Walk(v, bn)
+		}
 	}
+}
+
+// FirstParagraphInlines returns the inline list of the first paragraph that
+// contains a inline list.
+func (bs BlockSlice) FirstParagraphInlines() InlineSlice {
+	for _, bn := range bs {
+		pn, ok := bn.(*ParaNode)
+		if !ok {
+			continue
+		}
+		if inl := pn.Inlines; len(inl) > 0 {
+			return inl
+		}
+	}
+	return nil
 }
 
 //--------------------------------------------------------------------------
@@ -29,7 +48,7 @@ func (bln *BlockListNode) WalkChildren(v Visitor) {
 // ParaNode contains just a sequence of inline elements.
 // Another name is "paragraph".
 type ParaNode struct {
-	Inlines *InlineListNode
+	Inlines InlineSlice
 }
 
 func (*ParaNode) blockNode()       { /* Just a marker */ }
@@ -37,20 +56,25 @@ func (*ParaNode) itemNode()        { /* Just a marker */ }
 func (*ParaNode) descriptionNode() { /* Just a marker */ }
 
 // NewParaNode creates an empty ParaNode.
-func NewParaNode() *ParaNode { return &ParaNode{Inlines: &InlineListNode{}} }
+func NewParaNode() *ParaNode { return &ParaNode{} }
+
+// CreateParaNode creates a parameter block from inline nodes.
+func CreateParaNode(nodes ...InlineNode) *ParaNode {
+	return &ParaNode{Inlines: nodes}
+}
 
 // WalkChildren walks down the inline elements.
 func (pn *ParaNode) WalkChildren(v Visitor) {
-	Walk(v, pn.Inlines)
+	Walk(v, &pn.Inlines)
 }
 
 //--------------------------------------------------------------------------
 
-// VerbatimNode contains lines of uninterpreted text
+// VerbatimNode contains uninterpreted text
 type VerbatimNode struct {
-	Kind  VerbatimKind
-	Attrs *Attributes
-	Lines []string
+	Kind    VerbatimKind
+	Attrs   zjson.Attributes
+	Content []byte
 }
 
 // VerbatimKind specifies the format that is applied to code inline nodes.
@@ -59,7 +83,8 @@ type VerbatimKind uint8
 // Constants for VerbatimCode
 const (
 	_               VerbatimKind = iota
-	VerbatimProg                 // Program code.
+	VerbatimZettel               // Zettel content
+	VerbatimProg                 // Program code
 	VerbatimComment              // Block comment
 	VerbatimHTML                 // Block HTML, e.g. for Markdown
 )
@@ -75,9 +100,9 @@ func (*VerbatimNode) WalkChildren(Visitor) { /* No children*/ }
 // RegionNode encapsulates a region of block nodes.
 type RegionNode struct {
 	Kind    RegionKind
-	Attrs   *Attributes
-	Blocks  *BlockListNode
-	Inlines *InlineListNode // Optional text at the end of the region
+	Attrs   zjson.Attributes
+	Blocks  BlockSlice
+	Inlines InlineSlice // Optional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
@@ -96,10 +121,8 @@ func (*RegionNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the blocks and the text.
 func (rn *RegionNode) WalkChildren(v Visitor) {
-	Walk(v, rn.Blocks)
-	if iln := rn.Inlines; iln != nil {
-		Walk(v, iln)
-	}
+	Walk(v, &rn.Blocks)
+	Walk(v, &rn.Inlines)
 }
 
 //--------------------------------------------------------------------------
@@ -107,10 +130,10 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
 	Level    int
-	Inlines  *InlineListNode // Heading text, possibly formatted
-	Slug     string          // Heading text, normalized
-	Fragment string          // Heading text, suitable to be used as an unique URL fragment
-	Attrs    *Attributes
+	Inlines  InlineSlice // Heading text, possibly formatted
+	Slug     string      // Heading text, normalized
+	Fragment string      // Heading text, suitable to be used as an unique URL fragment
+	Attrs    zjson.Attributes
 }
 
 func (*HeadingNode) blockNode() { /* Just a marker */ }
@@ -118,14 +141,14 @@ func (*HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
 func (hn *HeadingNode) WalkChildren(v Visitor) {
-	Walk(v, hn.Inlines)
+	Walk(v, &hn.Inlines)
 }
 
 //--------------------------------------------------------------------------
 
 // HRuleNode specifies a horizontal rule.
 type HRuleNode struct {
-	Attrs *Attributes
+	Attrs zjson.Attributes
 }
 
 func (*HRuleNode) blockNode() { /* Just a marker */ }
@@ -140,7 +163,7 @@ func (*HRuleNode) WalkChildren(Visitor) { /* No children*/ }
 type NestedListNode struct {
 	Kind  NestedListKind
 	Items []ItemSlice
-	Attrs *Attributes
+	Attrs zjson.Attributes
 }
 
 // NestedListKind specifies the actual list type.
@@ -159,8 +182,10 @@ func (*NestedListNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks down the items.
 func (ln *NestedListNode) WalkChildren(v Visitor) {
-	for _, item := range ln.Items {
-		WalkItemSlice(v, item)
+	if items := ln.Items; items != nil {
+		for _, item := range items {
+			WalkItemSlice(v, item)
+		}
 	}
 }
 
@@ -173,7 +198,7 @@ type DescriptionListNode struct {
 
 // Description is one element of a description list.
 type Description struct {
-	Term         *InlineListNode
+	Term         InlineSlice
 	Descriptions []DescriptionSlice
 }
 
@@ -181,10 +206,16 @@ func (*DescriptionListNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the descriptions.
 func (dn *DescriptionListNode) WalkChildren(v Visitor) {
-	for _, desc := range dn.Descriptions {
-		Walk(v, desc.Term)
-		for _, dns := range desc.Descriptions {
-			WalkDescriptionSlice(v, dns)
+	if descrs := dn.Descriptions; descrs != nil {
+		for i, desc := range descrs {
+			if len(desc.Term) > 0 {
+				Walk(v, &descrs[i].Term) // Otherwise, changes in desc.Term will not go back into AST
+			}
+			if dss := desc.Descriptions; dss != nil {
+				for _, dns := range dss {
+					WalkDescriptionSlice(v, dns)
+				}
+			}
 		}
 	}
 }
@@ -200,8 +231,8 @@ type TableNode struct {
 
 // TableCell contains the data for one table cell
 type TableCell struct {
-	Align   Alignment       // Cell alignment
-	Inlines *InlineListNode // Cell content
+	Align   Alignment   // Cell alignment
+	Inlines InlineSlice // Cell content
 }
 
 // TableRow is a slice of cells.
@@ -224,15 +255,32 @@ func (*TableNode) blockNode() { /* Just a marker */ }
 
 // WalkChildren walks down to the cells.
 func (tn *TableNode) WalkChildren(v Visitor) {
-	for _, cell := range tn.Header {
-		Walk(v, cell.Inlines)
+	if header := tn.Header; header != nil {
+		for i := range header {
+			Walk(v, &header[i].Inlines) // Otherwise changes will not go back
+		}
 	}
-	for _, row := range tn.Rows {
-		for _, cell := range row {
-			Walk(v, cell.Inlines)
+	if rows := tn.Rows; rows != nil {
+		for _, row := range rows {
+			for i := range row {
+				Walk(v, &row[i].Inlines) // Otherwise changes will not go back
+			}
 		}
 	}
 }
+
+//--------------------------------------------------------------------------
+
+// TranscludeNode specifies block content from other zettel to embedded in
+// current zettel
+type TranscludeNode struct {
+	Ref *Reference
+}
+
+func (*TranscludeNode) blockNode() { /* Just a marker */ }
+
+// WalkChildren does nothing.
+func (*TranscludeNode) WalkChildren(Visitor) { /* No children*/ }
 
 //--------------------------------------------------------------------------
 

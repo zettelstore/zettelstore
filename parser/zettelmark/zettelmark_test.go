@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -51,7 +52,7 @@ func checkTcs(t *testing.T, tcs TestCases) {
 			inp := input.NewInput([]byte(tc.source))
 			bns := parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)
 			var tv TestVisitor
-			ast.Walk(&tv, bns)
+			ast.Walk(&tv, &bns)
 			got := tv.String()
 			if tc.want != got {
 				st.Errorf("\nwant=%q\n got=%q", tc.want, got)
@@ -143,11 +144,11 @@ func TestLink(t *testing.T) {
 		{"[[|]]", "(PARA [[|]])"},
 		{"[[ ]]", "(PARA [[ SP ]])"},
 		{"[[\n]]", "(PARA [[ SB ]])"},
-		{"[[ a]]", "(PARA (LINK a a))"},
+		{"[[ a]]", "(PARA (LINK a))"},
 		{"[[a ]]", "(PARA [[a SP ]])"},
 		{"[[a\n]]", "(PARA [[a SB ]])"},
-		{"[[a]]", "(PARA (LINK a a))"},
-		{"[[12345678901234]]", "(PARA (LINK 12345678901234 12345678901234))"},
+		{"[[a]]", "(PARA (LINK a))"},
+		{"[[12345678901234]]", "(PARA (LINK 12345678901234))"},
 		{"[[a]", "(PARA [[a])"},
 		{"[[|a]]", "(PARA [[|a]])"},
 		{"[[b|]]", "(PARA [[b|]])"},
@@ -158,18 +159,18 @@ func TestLink(t *testing.T) {
 		{"[[b|a]", "(PARA [[b|a])"},
 		{"[[b\nc|a]]", "(PARA (LINK a b SB c))"},
 		{"[[b c|a#n]]", "(PARA (LINK a#n b SP c))"},
-		{"[[a]]go", "(PARA (LINK a a) go)"},
-		{"[[a]]{go}", "(PARA (LINK a a)[ATTR go])"},
-		{"[[[[a]]|b]]", "(PARA (LINK [[a [[a) |b]])"},
+		{"[[a]]go", "(PARA (LINK a) go)"},
+		{"[[b|a]]{go}", "(PARA (LINK a b)[ATTR go])"},
+		{"[[[[a]]|b]]", "(PARA (LINK [[a) |b]])"},
 		{"[[a[b]c|d]]", "(PARA (LINK d a[b]c))"},
 		{"[[[b]c|d]]", "(PARA (LINK d [b]c))"},
 		{"[[a[]c|d]]", "(PARA (LINK d a[]c))"},
 		{"[[a[b]|d]]", "(PARA (LINK d a[b]))"},
-		{"[[\\|]]", "(PARA (LINK %5C%7C \\|))"},
+		{"[[\\|]]", "(PARA (LINK %5C%7C))"},
 		{"[[\\||a]]", "(PARA (LINK a |))"},
 		{"[[b\\||a]]", "(PARA (LINK a b|))"},
 		{"[[b\\|c|a]]", "(PARA (LINK a b|c))"},
-		{"[[\\]]]", "(PARA (LINK %5C%5D \\]))"},
+		{"[[\\]]]", "(PARA (LINK %5C%5D))"},
 		{"[[\\]|a]]", "(PARA (LINK a ]))"},
 		{"[[b\\]|a]]", "(PARA (LINK a b]))"},
 		{"[[\\]\\||a]]", "(PARA (LINK a ]|))"},
@@ -277,6 +278,10 @@ func TestMark(t *testing.T) {
 		{"[!a_]", "(PARA (MARK \"a_\" #a))"},
 		{"[!a_][!a]", "(PARA (MARK \"a_\" #a) (MARK \"a\" #a-1))"},
 		{"[!a-b]", "(PARA (MARK \"a-b\" #a-b))"},
+		{"[!a|b]", "(PARA (MARK \"a\" #a b))"},
+		{"[!a|]", "(PARA (MARK \"a\" #a))"},
+		{"[!|b]", "(PARA (MARK #* b))"},
+		{"[!|b c]", "(PARA (MARK #* b SP c))"},
 	})
 }
 
@@ -304,7 +309,7 @@ func TestComment(t *testing.T) {
 func TestFormat(t *testing.T) {
 	t.Parallel()
 	// Not for Insert / '>', because collision with quoted list
-	for _, ch := range []string{"_", "*", "~", "'", "^", ",", "<", "\"", ":"} {
+	for _, ch := range []string{"_", "*", "~", "^", ",", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -312,7 +317,7 @@ func TestFormat(t *testing.T) {
 			{"$$$$", "(PARA {$})"},
 		}))
 	}
-	for _, ch := range []string{"_", "*", ">", "~", "'", "^", ",", "<", "\"", ":"} {
+	for _, ch := range []string{"_", "*", ">", "~", "^", ",", "\"", ":"} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$$a$$", "(PARA {$ a})"},
 			{"$$a$$$", "(PARA {$ a} $)"},
@@ -338,7 +343,7 @@ func TestFormat(t *testing.T) {
 
 func TestLiteral(t *testing.T) {
 	t.Parallel()
-	for _, ch := range []string{"`", "+", "="} {
+	for _, ch := range []string{"@", "`", "'", "="} {
 		checkTcs(t, replace(ch, TestCases{
 			{"$", "(PARA $)"},
 			{"$$", "(PARA $$)"},
@@ -358,10 +363,10 @@ func TestLiteral(t *testing.T) {
 		}))
 	}
 	checkTcs(t, TestCases{
-		{"++````++", "(PARA {+ ````})"},
-		{"++``a``++", "(PARA {+ ``a``})"},
-		{"++``++``", "(PARA {+ ``} ``)"},
-		{"++\\+++", "(PARA {+ +})"},
+		{"''````''", "(PARA {' ````})"},
+		{"''``a``''", "(PARA {' ``a``})"},
+		{"''``''``", "(PARA {' ``} ``)"},
+		{"''\\'''", "(PARA {' '})"},
 	})
 }
 
@@ -369,7 +374,7 @@ func TestMixFormatCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"__abc__\n**def**", "(PARA {_ abc} SB {* def})"},
-		{"++abc++\n==def==", "(PARA {+ abc} SB {= def})"},
+		{"''abc''\n==def==", "(PARA {' abc} SB {= def})"},
 		{"__abc__\n==def==", "(PARA {_ abc} SB {= def})"},
 		{"__abc__\n``def``", "(PARA {_ abc} SB {` def})"},
 		{"\"\"ghi\"\"\n::abc::\n``def``\n", "(PARA {\" ghi} SB {: abc} SB {` def})"},
@@ -404,7 +409,16 @@ func TestEntity(t *testing.T) {
 	})
 }
 
-func TestVerbatim(t *testing.T) {
+func TestVerbatimZettel(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"@@@\n@@@", "(ZETTEL)"},
+		{"@@@\nabc\n@@@", "(ZETTEL\nabc)"},
+		{"@@@@draw\nabc\n@@@@", "(ZETTEL\nabc)[ATTR =draw]"},
+	})
+}
+
+func TestVerbatimCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"```\n```", "(PROG)"},
@@ -413,6 +427,15 @@ func TestVerbatim(t *testing.T) {
 		{"````\nabc\n````", "(PROG\nabc)"},
 		{"````\nabc\n```\n````", "(PROG\nabc\n```)"},
 		{"````go\nabc\n````", "(PROG\nabc)[ATTR =go]"},
+	})
+}
+
+func TestVerbatimComment(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"%%%\n%%%", "(COMMENT)"},
+		{"%%%\nabc\n%%%", "(COMMENT\nabc)"},
+		{"%%%%go\nabc\n%%%%", "(COMMENT\nabc)[ATTR =go]"},
 	})
 }
 
@@ -599,6 +622,18 @@ func TestTable(t *testing.T) {
 	})
 }
 
+func TestBlockEmbed(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"{{{a}}}", "(TRANSCLUDE a)"},
+		{"{{{a}}}b", "(TRANSCLUDE a)"},
+		{"{{{a}}}}", "(TRANSCLUDE a)"},
+		{"{{{a\\}}}}", "(TRANSCLUDE a%5C%7D)"},
+		{"{{{a\\}}}}b", "(TRANSCLUDE a%5C%7D)"},
+		{"{{{a}}", "(PARA (EMBED %7Ba))"},
+	})
+}
+
 func TestBlockAttr(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
@@ -686,11 +721,11 @@ func (tv *TestVisitor) String() string { return tv.buf.String() }
 
 func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.InlineListNode:
-		tv.visitInlineList(n)
+	case *ast.InlineSlice:
+		tv.visitInlineSlice(n)
 	case *ast.ParaNode:
 		tv.buf.WriteString("(PARA")
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 	case *ast.VerbatimNode:
 		code, ok := mapVerbatimKind[n.Kind]
@@ -698,9 +733,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown verbatim code %v", n.Kind))
 		}
 		tv.buf.WriteString(code)
-		for _, line := range n.Lines {
+		if len(n.Content) > 0 {
 			tv.buf.WriteByte('\n')
-			tv.buf.WriteString(line)
+			tv.buf.Write(n.Content)
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
@@ -710,20 +745,20 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			panic(fmt.Sprintf("Unknown region code %v", n.Kind))
 		}
 		tv.buf.WriteString(code)
-		if n.Blocks != nil && len(n.Blocks.List) > 0 {
+		if len(n.Blocks) > 0 {
 			tv.buf.WriteByte(' ')
-			ast.Walk(tv, n.Blocks)
+			ast.Walk(tv, &n.Blocks)
 		}
-		if n.Inlines != nil {
+		if len(n.Inlines) > 0 {
 			tv.buf.WriteString(" (LINE")
-			ast.Walk(tv, n.Inlines)
+			ast.Walk(tv, &n.Inlines)
 			tv.buf.WriteByte(')')
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.HeadingNode:
 		fmt.Fprintf(&tv.buf, "(H%d", n.Level)
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		if n.Fragment != "" {
 			tv.buf.WriteString(" #")
 			tv.buf.WriteString(n.Fragment)
@@ -745,7 +780,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteString("(DL")
 		for _, def := range n.Descriptions {
 			tv.buf.WriteString(" (DT")
-			ast.Walk(tv, def.Term)
+			ast.Walk(tv, &def.Term)
 			tv.buf.WriteByte(')')
 			for _, b := range def.Descriptions {
 				tv.buf.WriteString(" (DD ")
@@ -761,7 +796,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 			for _, cell := range n.Header {
 				tv.buf.WriteString(" (TH")
 				tv.buf.WriteString(alignString[cell.Align])
-				ast.Walk(tv, cell.Inlines)
+				ast.Walk(tv, &cell.Inlines)
 				tv.buf.WriteString(")")
 			}
 			tv.buf.WriteString(")")
@@ -776,13 +811,15 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 					}
 					tv.buf.WriteString("(TD")
 					tv.buf.WriteString(alignString[cell.Align])
-					ast.Walk(tv, cell.Inlines)
+					ast.Walk(tv, &cell.Inlines)
 					tv.buf.WriteString(")")
 				}
 				tv.buf.WriteString(")")
 			}
 		}
 		tv.buf.WriteString(")")
+	case *ast.TranscludeNode:
+		fmt.Fprintf(&tv.buf, "(TRANSCLUDE %v)", n.Ref)
 	case *ast.BLOBNode:
 		tv.buf.WriteString("(BLOB ")
 		tv.buf.WriteString(n.Syntax)
@@ -794,10 +831,10 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteString(n.Tag)
 		tv.buf.WriteByte('#')
 	case *ast.SpaceNode:
-		if len(n.Lexeme) == 1 {
+		if l := n.Count(); l == 1 {
 			tv.buf.WriteString("SP")
 		} else {
-			fmt.Fprintf(&tv.buf, "SP%d", len(n.Lexeme))
+			fmt.Fprintf(&tv.buf, "SP%d", l)
 		}
 	case *ast.BreakNode:
 		if n.Hard {
@@ -807,50 +844,48 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		fmt.Fprintf(&tv.buf, "(LINK %v", n.Ref)
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
-	case *ast.EmbedNode:
-		switch m := n.Material.(type) {
-		case *ast.ReferenceMaterialNode:
-			fmt.Fprintf(&tv.buf, "(EMBED %v", m.Ref)
-			if n.Inlines != nil {
-				ast.Walk(tv, n.Inlines)
-			}
-			tv.buf.WriteByte(')')
-			tv.visitAttributes(n.Attrs)
-		case *ast.BLOBMaterialNode:
-			panic("TODO: zmktest blob")
-		default:
-			panic(fmt.Sprintf("Unknown material type %t for %v", n.Material, n.Material))
+	case *ast.EmbedRefNode:
+		fmt.Fprintf(&tv.buf, "(EMBED %v", n.Ref)
+		if len(n.Inlines) > 0 {
+			ast.Walk(tv, &n.Inlines)
 		}
+		tv.buf.WriteByte(')')
+		tv.visitAttributes(n.Attrs)
+	case *ast.EmbedBLOBNode:
+		panic("TODO: zmktest blob")
 	case *ast.CiteNode:
 		fmt.Fprintf(&tv.buf, "(CITE %s", n.Key)
-		if n.Inlines != nil {
-			ast.Walk(tv, n.Inlines)
+		if len(n.Inlines) > 0 {
+			ast.Walk(tv, &n.Inlines)
 		}
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.FootnoteNode:
 		tv.buf.WriteString("(FN")
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte(')')
 		tv.visitAttributes(n.Attrs)
 	case *ast.MarkNode:
 		tv.buf.WriteString("(MARK")
-		if n.Text != "" {
+		if n.Mark != "" {
 			tv.buf.WriteString(" \"")
-			tv.buf.WriteString(n.Text)
+			tv.buf.WriteString(n.Mark)
 			tv.buf.WriteByte('"')
 		}
 		if n.Fragment != "" {
 			tv.buf.WriteString(" #")
 			tv.buf.WriteString(n.Fragment)
 		}
+		if len(n.Inlines) > 0 {
+			ast.Walk(tv, &n.Inlines)
+		}
 		tv.buf.WriteByte(')')
 	case *ast.FormatNode:
 		fmt.Fprintf(&tv.buf, "{%c", mapFormatKind[n.Kind])
-		ast.Walk(tv, n.Inlines)
+		ast.Walk(tv, &n.Inlines)
 		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
 	case *ast.LiteralNode:
@@ -860,9 +895,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		}
 		tv.buf.WriteByte('{')
 		tv.buf.WriteRune(code)
-		if n.Text != "" {
+		if len(n.Content) > 0 {
 			tv.buf.WriteByte(' ')
-			tv.buf.WriteString(n.Text)
+			tv.buf.Write(n.Content)
 		}
 		tv.buf.WriteByte('}')
 		tv.visitAttributes(n.Attrs)
@@ -873,7 +908,9 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind]string{
-	ast.VerbatimProg: "(PROG",
+	ast.VerbatimZettel:  "(ZETTEL",
+	ast.VerbatimProg:    "(PROG",
+	ast.VerbatimComment: "(COMMENT",
 }
 
 var mapRegionKind = map[ast.RegionKind]string{
@@ -896,40 +933,39 @@ var alignString = map[ast.Alignment]string{
 }
 
 var mapFormatKind = map[ast.FormatKind]rune{
-	ast.FormatEmph:      '_',
-	ast.FormatStrong:    '*',
-	ast.FormatInsert:    '>',
-	ast.FormatDelete:    '~',
-	ast.FormatMonospace: '\'',
-	ast.FormatSuper:     '^',
-	ast.FormatSub:       ',',
-	ast.FormatQuote:     '"',
-	ast.FormatQuotation: '<',
-	ast.FormatSpan:      ':',
+	ast.FormatEmph:   '_',
+	ast.FormatStrong: '*',
+	ast.FormatInsert: '>',
+	ast.FormatDelete: '~',
+	ast.FormatSuper:  '^',
+	ast.FormatSub:    ',',
+	ast.FormatQuote:  '"',
+	ast.FormatSpan:   ':',
 }
 
 var mapLiteralKind = map[ast.LiteralKind]rune{
+	ast.LiteralZettel:  '@',
 	ast.LiteralProg:    '`',
-	ast.LiteralKeyb:    '+',
+	ast.LiteralInput:   '\'',
 	ast.LiteralOutput:  '=',
 	ast.LiteralComment: '%',
 }
 
-func (tv *TestVisitor) visitInlineList(iln *ast.InlineListNode) {
-	for _, in := range iln.List {
+func (tv *TestVisitor) visitInlineSlice(is *ast.InlineSlice) {
+	for _, in := range *is {
 		tv.buf.WriteByte(' ')
 		ast.Walk(tv, in)
 	}
 }
 
-func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
+func (tv *TestVisitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
 	tv.buf.WriteString("[ATTR")
 
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
+	keys := make([]string, 0, len(a))
+	for k := range a {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -937,7 +973,7 @@ func (tv *TestVisitor) visitAttributes(a *ast.Attributes) {
 	for _, k := range keys {
 		tv.buf.WriteByte(' ')
 		tv.buf.WriteString(k)
-		v := a.Attrs[k]
+		v := a[k]
 		if len(v) > 0 {
 			tv.buf.WriteByte('=')
 			if strings.ContainsRune(v, ' ') {

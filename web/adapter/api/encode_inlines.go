@@ -1,14 +1,13 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -44,15 +43,15 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 		ctx := r.Context()
 		envEval := evaluator.Environment{}
 		var respJSON api.EncodedInlineRespJSON
-		if iln := evaluate.RunMetadata(ctx, reqJSON.FirstZmk, &envEval); iln != nil {
-			s, err := encodeInlines(htmlEnc, iln)
+		if is := evaluate.RunMetadata(ctx, reqJSON.FirstZmk, &envEval); len(is) > 0 {
+			s, err := encodeInlines(htmlEnc, &is)
 			if err != nil {
 				http.Error(w, "Unable to encode first as HTML", http.StatusBadRequest)
 				return
 			}
 			respJSON.FirstHTML = s
 
-			s, err = encodeInlines(encoder.Create(api.EncoderText, nil), iln)
+			s, err = encodeInlines(encoder.Create(api.EncoderText, nil), &is)
 			if err != nil {
 				http.Error(w, "Unable to encode first as Text", http.StatusBadRequest)
 				return
@@ -63,11 +62,11 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 		if reqLen := len(reqJSON.OtherZmk); reqLen > 0 {
 			respJSON.OtherHTML = make([]string, reqLen)
 			for i, zmk := range reqJSON.OtherZmk {
-				iln := evaluate.RunMetadata(ctx, zmk, &envEval)
-				if iln == nil {
+				is := evaluate.RunMetadata(ctx, zmk, &envEval)
+				if len(is) == 0 {
 					continue
 				}
-				s, err := encodeInlines(htmlEnc, iln)
+				s, err := encodeInlines(htmlEnc, &is)
 				if err != nil {
 					http.Error(w, "Unable to encode other as HTML", http.StatusBadRequest)
 					return
@@ -89,9 +88,9 @@ func (a *API) MakePostEncodeInlinesHandler(evaluate usecase.Evaluate) http.Handl
 	}
 }
 
-func encodeInlines(encdr encoder.Encoder, inl *ast.InlineListNode) (string, error) {
+func encodeInlines(encdr encoder.Encoder, is *ast.InlineSlice) (string, error) {
 	var buf bytes.Buffer
-	_, err := encdr.WriteInlines(&buf, inl)
+	_, err := encdr.WriteInlines(&buf, is)
 	if err != nil {
 		return "", err
 	}

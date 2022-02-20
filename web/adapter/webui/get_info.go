@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -80,7 +80,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
 				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
 			},
-			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.MaterialNode {
+			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.InlineEmbedNode {
 				return wui.createImageMaterial(zettel.Meta.Zid)
 			},
 		}
@@ -94,7 +94,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.writeHTMLMetaValue(
 				&buf, p.Key, p.Value,
 				getTextTitle,
-				func(val string) *ast.InlineListNode {
+				func(val string) ast.InlineSlice {
 					return evaluate.RunMetadata(ctx, val, &envEval)
 				},
 				&envHTML)
@@ -118,7 +118,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(&ast.BlockListNode{}, api.EncoderHTML, &envHTML)
+		endnotes, err := encodeBlocks(&ast.BlockSlice{}, api.EncoderHTML, &envHTML)
 		if err != nil {
 			endnotes = ""
 		}

@@ -3,7 +3,7 @@ title: Zettelmarkup: Tables
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124174218
+modified: 20220218131107
 
 Tables are used to show some data in a two-dimenensional fashion.
 In zettelmarkup, table are not specified explicitly, but by entering __table rows__.
@@ -11,7 +11,7 @@ Therefore, a table can be seen as a sequence of table rows.
 A table row is nothing as a sequence of __table cells__.
 The length of a table is the number of table rows, the width of a table is the maximum length of its rows.
 
-The first cell of a row must begin with the vertical bar character (""''|''"", ''U+007C'') at the first position of a line.
+The first cell of a row must begin with the vertical bar character (""''|''"", U+007C) at the first position of a line.
 The other cells of a row begin with the same vertical bar character at later positions in that line.
 A cell is delimited by the vertical bar character of the next cell or by the end of the current line.
 A vertical bar character as the last character of a line will not result in a table cell.
@@ -32,7 +32,7 @@ will be rendered in HTML as:
 :::
 
 === Header row
-If any cell in the first row of a table contains an equal sing character (""''=''"", ''U+003D'') as the very first character, then this first row will be interpreted as a __table header__ row.
+If any cell in the first row of a table contains an equal sing character (""''=''"", U+003D) as the very first character, then this first row will be interpreted as a __table header__ row.
 
 For example:
 ```zmk
@@ -52,9 +52,9 @@ Inside a header row, you can specify the alignment of each header cell by a give
 The alignment of a header cell determines the alignment of every cell in the same column.
 The following characters specify the alignment:
 
-* the colon character (""'':''"", ''U+003A'') forces a centered aligment,
-* the less-than sign character (""''<''"", ''U+0060'') specifies an alignment to the left,
-* the greater-than sign character (""''>''"", ''U+0062'') will produce right aligned cells.
+* the colon character (""'':''"", U+003A) forces a centered alignment,
+* the less-than sign character (""''<''"", U+0060) specifies an alignment to the left,
+* the greater-than sign character (""''>''"", U+0062) will produce right aligned cells.
 
 If no alignment character is given, a default alignment is used.
 
@@ -90,7 +90,7 @@ will be rendered in HTML as:
 :::
 
 === Rows to be ignored
-A line that begins with the sequence ''|%'' (vertical bar character (""''|''"", ''U+007C''), followed by a percent sign character (“%”, U+0025)) will be ignored.
+A line that begins with the sequence ''|%'' (vertical bar character (""''|''"", U+007C), followed by a percent sign character (“%”, U+0025)) will be ignored.
 For example, this allows to specify a horizontal rule that is not rendered.
 Such tables are emitted by some commands of the [[administrator console|00001004100000]].
 For example, the command ``get-config box`` will emit:

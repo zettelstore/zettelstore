@@ -1,75 +1,53 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package strfun provides some string functions.
 package strfun
 
-import (
-	"io"
-	"strings"
-)
-
-const (
-	htmlQuot     = "&quot;" // longer than "&39;", but often requested in standards
-	htmlAmp      = "&amp;"
-	htmlNull     = "\uFFFD"
-	htmlVisSpace = "\u2423"
-)
+import "io"
 
 var (
-	bhtmlQuot = []byte(htmlQuot) // shorter than "&39;", but often requested in standards
-	bhtmlAmp  = []byte(htmlAmp)
-	bhtmlNull = []byte(htmlNull)
+	escQuot = []byte("&quot;") // longer than "&#34;", but often requested in standards
+	escAmp  = []byte("&amp;")
+	escApos = []byte("apos;") // longer than "&#39", but sometimes requested in tests
+	escLt   = []byte("&lt;")
+	escGt   = []byte("&gt;")
+	escTab  = []byte("&#9;")
+	escNull = []byte("\uFFFD")
 )
 
-var (
-	htmlEscapes = []string{`&`, htmlAmp,
-		`<`, "&lt;",
-		`>`, "&gt;",
-		`"`, htmlQuot,
-		"\000", htmlNull,
-	}
-	htmlEscaper    = strings.NewReplacer(htmlEscapes...)
-	htmlVisEscapes = append(htmlEscapes,
-		" ", htmlVisSpace,
-		"\u00a0", htmlVisSpace,
-	)
-	htmlVisEscaper = strings.NewReplacer(htmlVisEscapes...)
-)
-
-// HTMLEscape writes to w the escaped HTML equivalent of the given string.
-func HTMLEscape(w io.Writer, s string) (int, error) { return htmlEscaper.WriteString(w, s) }
-
-// HTMLEscapeVisible writes to w the escaped HTML equivalent of the given string.
-// Each space is written as U-2423.
-func HTMLEscapeVisible(w io.Writer, s string) (int, error) { return htmlVisEscaper.WriteString(w, s) }
-
-// HTMLAttrEscape writes to w the escaped HTML equivalent of the given string to be used
-// in attributes.
-func HTMLAttrEscape(w io.Writer, s string) {
+// XMLEscape writes the string to the given writer, where every rune that has a special
+// meaning in XML is escaped.
+func XMLEscape(w io.Writer, s string) {
+	var esc []byte
 	last := 0
-	var html []byte
-	lenS := len(s)
-	for i := 0; i < lenS; i++ {
-		switch s[i] {
+	for i, ch := range s {
+		switch ch {
 		case '\000':
-			html = bhtmlNull
+			esc = escNull
 		case '"':
-			html = bhtmlQuot
+			esc = escQuot
+		case '\'':
+			esc = escApos
 		case '&':
-			html = bhtmlAmp
+			esc = escAmp
+		case '<':
+			esc = escLt
+		case '>':
+			esc = escGt
+		case '\t':
+			esc = escTab
 		default:
 			continue
 		}
 		io.WriteString(w, s[last:i])
-		w.Write(html)
+		w.Write(esc)
 		last = i + 1
 	}
 	io.WriteString(w, s[last:])

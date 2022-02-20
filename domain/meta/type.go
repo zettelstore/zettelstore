@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -195,9 +195,9 @@ func (m *Meta) GetListOrNil(key string) []string {
 }
 
 // GetNumber retrieves the numeric value of a given key.
-func (m *Meta) GetNumber(key string, def int) int {
+func (m *Meta) GetNumber(key string, def int64) int64 {
 	if value, ok := m.Get(key); ok {
-		if num, err := strconv.Atoi(value); err == nil {
+		if num, err := strconv.ParseInt(value, 10, 64); err == nil {
 			return num
 		}
 	}

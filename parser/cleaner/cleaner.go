@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,11 +21,11 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-// CleanBlockList cleans the given block list.
-func CleanBlockList(bln *ast.BlockListNode) { cleanNode(bln) }
+// CleanBlockSlice cleans the given block list.
+func CleanBlockSlice(bs *ast.BlockSlice) { cleanNode(bs) }
 
-// CleanInlineList cleans the given inline list.
-func CleanInlineList(iln *ast.InlineListNode) { cleanNode(iln) }
+// CleanInlineSlice cleans the given inline list.
+func CleanInlineSlice(is *ast.InlineSlice) { cleanNode(is) }
 
 func cleanNode(n ast.Node) {
 	cv := cleanVisitor{
@@ -60,12 +60,12 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 }
 
 func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
-	if cv.doMark || hn == nil || hn.Inlines.IsEmpty() {
+	if cv.doMark || hn == nil || len(hn.Inlines) == 0 {
 		return
 	}
 	if hn.Slug == "" {
 		var buf bytes.Buffer
-		_, err := cv.textEnc.WriteInlines(&buf, hn.Inlines)
+		_, err := cv.textEnc.WriteInlines(&buf, &hn.Inlines)
 		if err != nil {
 			return
 		}
@@ -81,13 +81,20 @@ func (cv *cleanVisitor) visitMark(mn *ast.MarkNode) {
 		cv.hasMark = true
 		return
 	}
-	if mn.Text == "" {
+	// if mn.Mark == "" && len(mn.Inlines) > 0 {
+	// 	var buf bytes.Buffer
+	// 	_, err := cv.textEnc.WriteInlines(&buf, &mn.Inlines)
+	// 	if err == nil {
+	// 		mn.Mark = buf.String()
+	// 	}
+	// }
+	if mn.Mark == "" {
 		mn.Slug = ""
 		mn.Fragment = cv.addIdentifier("*", mn)
 		return
 	}
 	if mn.Slug == "" {
-		mn.Slug = strfun.Slugify(mn.Text)
+		mn.Slug = strfun.Slugify(mn.Mark)
 	}
 	mn.Fragment = cv.addIdentifier(mn.Slug, mn)
 }

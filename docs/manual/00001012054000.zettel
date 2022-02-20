@@ -3,7 +3,7 @@ title: API: Retrieve zettel order within an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124180917
+modified: 20220202112451
 
 Some zettel act as a ""table of contents"" for other zettel.
 The [[initial zettel|00001000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
@@ -23,33 +23,40 @@ To retrieve the zettel order of an existing zettel, use the [[endpoint|000010129
 
 ````
 # curl http://127.0.0.1:23123/o/00001000000000
-{"id":"00001000000000","meta":{...},"list":[{"id":"00001001000000","meta":{...}},{"id":"00001002000000","meta":{...}},{"id":"00001003000000","meta":{...}},{"id":"00001004000000","meta":{...}},...,{"id":"00001014000000","meta":{...}}]}
+{"id":"00001000000000","meta":{...},"rights":62,"list":[{"id":"00001001000000","meta":{...},"rights":62},{"id":"00001002000000","meta":{...},"rights":62},{"id":"00001003000000","meta":{...},"rights":62},{"id":"00001004000000","meta":{...},"rights":62},...,{"id":"00001014000000","meta":{...},"rights":62}]}
 ````
 Formatted, this translates into:[^Metadata (key ''meta'') are hidden to make the overall structure easier to read.]
 ````json
 {
   "id": "00001000000000",
+  "meta": {...},
+  "rights": 62,
   "list": [
     {
       "id": "00001001000000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     },
     {
       "id": "00001002000000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     },
     {
       "id": "00001003000000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     },
     {
       "id": "00001004000000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     },
     ...
     {
       "id": "00001014000000",
-      "meta": {...}
+      "meta": {...},
+      "rights": 62
     }
   ]
 }
@@ -60,8 +67,10 @@ The following top-level JSON keys are returned:
 : The [[zettel identifier|00001006050000]] for which the references were requested.
 ; ''meta'':
 : The metadata of the zettel, encoded as a JSON object.
+; ''rights''
+: An integer number that describes the [[access rights|00001012921200]] for the given zettel.
 ; ''list''
-: A list of JSON objects with keys ''id'' and ''meta'' that describe other zettel in the defined order.
+: A list of JSON objects with keys ''id'', ''meta'', and ''rights'' that describe other zettel in the defined order.
 
 === HTTP Status codes
 ; ''200''

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -150,7 +150,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Runtime Configuration",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     api.ValueSyntaxNone,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityOwner,
 		},
 		domain.NewContent(nil)},
@@ -189,7 +188,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Base HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentBaseMustache)},
@@ -198,7 +196,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Login Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentLoginMustache)},
@@ -207,7 +204,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentZettelMustache)},
@@ -216,7 +212,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Info HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentInfoMustache)},
@@ -225,7 +220,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Context HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentContextMustache)},
@@ -234,7 +228,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentFormMustache)},
@@ -243,7 +236,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentRenameMustache)},
@@ -252,7 +244,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentDeleteMustache)},
@@ -261,7 +252,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentListZettelMustache)},
@@ -270,7 +260,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore List Roles HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentListRolesMustache)},
@@ -279,7 +268,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore List Tags HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentListTagsMustache)},
@@ -288,7 +276,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     syntaxTemplate,
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentErrorMustache)},
@@ -297,7 +284,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore Base CSS",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     "css",
-			api.KeyNoIndex:    api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		domain.NewContent(contentBaseCSS)},

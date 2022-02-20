@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -29,7 +29,7 @@ func (a *API) MakePostCommandHandler(
 		cmd := q.Get(api.QueryKeyCommand)
 		switch api.Command(cmd) {
 		case api.CommandAuthenticated:
-			a.handleIsAuthenticated(ctx, w, ucIsAuth)
+			handleIsAuthenticated(ctx, w, ucIsAuth)
 			return
 		case api.CommandRefresh:
 			err := ucRefresh.Run(ctx)
@@ -44,8 +44,7 @@ func (a *API) MakePostCommandHandler(
 	}
 }
 
-func (a *API) handleIsAuthenticated(
-	ctx context.Context, w http.ResponseWriter, ucIsAuth *usecase.IsAuthenticated) {
+func handleIsAuthenticated(ctx context.Context, w http.ResponseWriter, ucIsAuth *usecase.IsAuthenticated) {
 	switch ucIsAuth.Run(ctx) {
 	case usecase.IsAuthenticatedDisabled:
 		w.WriteHeader(http.StatusOK)

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/strfun"
 )
 
 type keyUsage int
@@ -138,7 +139,6 @@ func init() {
 	registerKey(api.KeyLang, TypeWord, usageUser, "")
 	registerKey(api.KeyLicense, TypeEmpty, usageUser, "")
 	registerKey(api.KeyModified, TypeTimestamp, usageComputed, "")
-	registerKey(api.KeyNoIndex, TypeBool, usageUser, "")
 	registerKey(api.KeyPrecursor, TypeIDSet, usageUser, api.KeyFolge)
 	registerKey(api.KeyPublished, TypeTimestamp, usageProperty, "")
 	registerKey(api.KeyReadOnly, TypeWord, usageUser, "")
@@ -206,13 +206,10 @@ type Pair struct {
 }
 
 var firstKeys = []string{api.KeyTitle, api.KeyRole, api.KeyTags, api.KeySyntax}
-var firstKeySet map[string]bool
+var firstKeySet strfun.Set
 
 func init() {
-	firstKeySet = make(map[string]bool, len(firstKeys))
-	for _, k := range firstKeys {
-		firstKeySet[k] = true
-	}
+	firstKeySet = strfun.NewSet(firstKeys...)
 }
 
 // Set stores the given string value under the given key.
@@ -297,7 +294,7 @@ func (m *Meta) getFirstKeys() []Pair {
 func (m *Meta) getKeysRest(addKeyPred func(string) bool) []string {
 	keys := make([]string, 0, len(m.pairs))
 	for k := range m.pairs {
-		if !firstKeySet[k] && addKeyPred(k) {
+		if !firstKeySet.Has(k) && addKeyPred(k) {
 			keys = append(keys, k)
 		}
 	}
@@ -320,15 +317,15 @@ func (m *Meta) Equal(o *Meta, allowComputed bool) bool {
 	if m == nil || o == nil || m.Zid != o.Zid {
 		return false
 	}
-	tested := make(map[string]bool, len(m.pairs))
+	tested := make(strfun.Set, len(m.pairs))
 	for k, v := range m.pairs {
-		tested[k] = true
+		tested.Set(k)
 		if !equalValue(k, v, o, allowComputed) {
 			return false
 		}
 	}
 	for k, v := range o.pairs {
-		if !tested[k] && !equalValue(k, v, m, allowComputed) {
+		if !tested.Has(k) && !equalValue(k, v, m, allowComputed) {
 			return false
 		}
 	}

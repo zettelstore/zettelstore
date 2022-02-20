@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -14,6 +14,8 @@ package plain
 import (
 	"strings"
 
+	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -23,14 +25,14 @@ import (
 func init() {
 	parser.Register(&parser.Info{
 		Name:          "txt",
-		AltNames:      []string{"plain", "text"},
+		AltNames:      []string{"plain", api.ValueSyntaxText},
 		IsTextParser:  false,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          "html",
+		Name:          api.ValueSyntaxHTML,
 		AltNames:      []string{},
 		IsTextParser:  false,
 		IsImageFormat: false,
@@ -46,7 +48,7 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          "svg",
+		Name:          api.ValueSyntaxSVG,
 		AltNames:      []string{},
 		IsTextParser:  false,
 		IsImageFormat: true,
@@ -63,68 +65,70 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
 	return doParseBlocks(inp, syntax, ast.VerbatimProg)
 }
-func parseBlocksHTML(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocksHTML(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
 	return doParseBlocks(inp, syntax, ast.VerbatimHTML)
 }
-func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) *ast.BlockListNode {
-	return &ast.BlockListNode{List: []ast.BlockNode{
+func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) ast.BlockSlice {
+	return ast.BlockSlice{
 		&ast.VerbatimNode{
-			Kind:  kind,
-			Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
-			Lines: readLines(inp),
+			Kind:    kind,
+			Attrs:   zjson.Attributes{"": syntax},
+			Content: readContent(inp),
 		},
-	}}
+	}
 }
 
-func readLines(inp *input.Input) (lines []string) {
+func readContent(inp *input.Input) []byte {
+	result := make([]byte, 0, len(inp.Src)-inp.Pos+1)
 	for {
 		inp.EatEOL()
 		posL := inp.Pos
 		if inp.Ch == input.EOS {
-			return lines
+			return result
 		}
 		inp.SkipToEOL()
-		lines = append(lines, string(inp.Src[posL:inp.Pos]))
+		if len(result) > 0 {
+			result = append(result, '\n')
+		}
+		result = append(result, inp.Src[posL:inp.Pos]...)
 	}
 }
 
-func parseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	return doParseInlines(inp, syntax, ast.LiteralProg)
 }
-func parseInlinesHTML(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseInlinesHTML(inp *input.Input, syntax string) ast.InlineSlice {
 	return doParseInlines(inp, syntax, ast.LiteralHTML)
 }
-func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) *ast.InlineListNode {
+func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) ast.InlineSlice {
 	inp.SkipToEOL()
-	return ast.CreateInlineListNode(&ast.LiteralNode{
-		Kind:  kind,
-		Attrs: &ast.Attributes{Attrs: map[string]string{"": syntax}},
-		Text:  string(inp.Src[0:inp.Pos]),
-	})
+	return ast.InlineSlice{&ast.LiteralNode{
+		Kind:    kind,
+		Attrs:   zjson.Attributes{"": syntax},
+		Content: append([]byte(nil), inp.Src[0:inp.Pos]...),
+	}}
 }
 
-func parseSVGBlocks(inp *input.Input, _ *meta.Meta, syntax string) *ast.BlockListNode {
-	iln := parseSVGInlines(inp, syntax)
-	if iln == nil {
+func parseSVGBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
+	is := parseSVGInlines(inp, syntax)
+	if len(is) == 0 {
 		return nil
 	}
-	return &ast.BlockListNode{List: []ast.BlockNode{&ast.ParaNode{Inlines: iln}}}
+	return ast.BlockSlice{ast.CreateParaNode(is...)}
 }
 
-func parseSVGInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 	svgSrc := scanSVG(inp)
 	if svgSrc == "" {
 		return nil
 	}
-	return ast.CreateInlineListNode(&ast.EmbedNode{
-		Material: &ast.BLOBMaterialNode{
-			Blob:   []byte(svgSrc),
-			Syntax: syntax,
-		},
-	})
+	return ast.InlineSlice{&ast.EmbedBLOBNode{
+		Blob:   []byte(svgSrc),
+		Syntax: syntax,
+	}}
 }
 
 func scanSVG(inp *input.Input) string {

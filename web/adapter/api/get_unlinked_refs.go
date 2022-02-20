@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -45,10 +45,10 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
 			zmkTitle := zm.GetDefault(api.KeyTitle, "")
-			ilnTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
+			isTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
 			encdr := encoder.Create(api.EncoderText, nil)
 			var b strings.Builder
-			_, err = encdr.WriteInlines(&b, ilnTitle)
+			_, err = encdr.WriteInlines(&b, &isTitle)
 			if err == nil {
 				phrase = b.String()
 			}
@@ -62,14 +62,16 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		}
 
 		result := api.ZidMetaRelatedList{
-			ID:   api.ZettelID(zid.String()),
-			Meta: zm.Map(),
-			List: make([]api.ZidMetaJSON, 0, len(metaList)),
+			ID:     api.ZettelID(zid.String()),
+			Meta:   zm.Map(),
+			Rights: a.getRights(ctx, zm),
+			List:   make([]api.ZidMetaJSON, 0, len(metaList)),
 		}
 		for _, m := range metaList {
 			result.List = append(result.List, api.ZidMetaJSON{
-				ID:   api.ZettelID(m.Zid.String()),
-				Meta: m.Map(),
+				ID:     api.ZettelID(m.Zid.String()),
+				Meta:   m.Map(),
+				Rights: a.getRights(ctx, m),
 			})
 		}
 

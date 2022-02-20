@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -15,10 +15,7 @@ import "zettelstore.de/z/ast"
 
 // Order of internal reference within the given zettel.
 func Order(zn *ast.ZettelNode) (result []*ast.Reference) {
-	if zn.Ast == nil {
-		return nil
-	}
-	for _, bn := range zn.Ast.List {
+	for _, bn := range zn.Ast {
 		ln, ok := bn.(*ast.NestedListNode)
 		if !ok {
 			continue
@@ -46,18 +43,17 @@ func firstItemZettelReference(is ast.ItemSlice) *ast.Reference {
 	return nil
 }
 
-func firstInlineZettelReference(iln *ast.InlineListNode) (result *ast.Reference) {
-	if iln == nil {
-		return nil
-	}
-	for _, inl := range iln.List {
+func firstInlineZettelReference(is ast.InlineSlice) (result *ast.Reference) {
+	for _, inl := range is {
 		switch in := inl.(type) {
 		case *ast.LinkNode:
 			if ref := in.Ref; ref.IsZettel() {
 				return ref
 			}
 			result = firstInlineZettelReference(in.Inlines)
-		case *ast.EmbedNode:
+		case *ast.EmbedRefNode:
+			result = firstInlineZettelReference(in.Inlines)
+		case *ast.EmbedBLOBNode:
 			result = firstInlineZettelReference(in.Inlines)
 		case *ast.CiteNode:
 			result = firstInlineZettelReference(in.Inlines)

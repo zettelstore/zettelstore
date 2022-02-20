@@ -3,7 +3,7 @@ title: Zettelmarkup: Text Formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211113193440
+modified: 20220218131003
 
 Text formatting is the way to make your text visually different.
 Every text formatting element begins with two same characters.
@@ -14,24 +14,20 @@ Text formatting can be nested, up to a reasonable limit.
 
 The following characters begin a text formatting:
 
-* The low line character (""''_''"", ''U+005F'') emphasizes its text.
+* The low line character (""''_''"", U+005F) emphasizes its text.
 ** Example: ``abc __def__ ghi`` is rendered in HTML as: ::abc __def__ ghi::{=example}.
-* The asterisk character (""''*''"", ''U+002A'') strongly emphasized its enclosed text.
+* The asterisk character (""''*''"", U+002A) strongly emphasized its enclosed text.
 ** Example: ``abc **def** ghi`` is rendered in HTML as: ::abc **def** ghi::{=example}.
-* The greater-than sign character (""''>''"", ''U+003E'') marks text as inserted.
+* The greater-than sign character (""''>''"", U+003E) marks text as inserted.
 ** Example: ``abc >>def>> ghi`` is rendered in HTML as: ::abc >>def>> ghi::{=example}.
-* Similar, the tilde character (""''~''"", ''U+007E'') marks deleted text.
+* Similar, the tilde character (""''~''"", U+007E) marks deleted text.
 ** Example: ``abc ~~def~~ ghi`` is rendered in HTML as: ::abc ~~def~~ ghi::{=example}.
-* The apostrophe character (""''\'''"", ''U+0027'') renders text in mono-space / fixed font width.
-** Example: ``abc ''def'' ghi`` is rendered in HTML as: ::abc ''def'' ghi::{=example}.
-* The circumflex accent character (""''^''"", ''U+005E'') allows to enter superscripted text.
+* The circumflex accent character (""''^''"", U+005E) allows to enter superscripted text.
 ** Example: ``e=mc^^2^^`` is rendered in HTML as: ::e=mc^^2^^::{=example}.
-* The comma character (""'',''"", ''U+002C'') produces subscripted text.
+* The comma character (""'',''"", U+002C) produces subscripted text.
 ** Example: ``H,,2,,O`` is rendered in HTML as: ::H,,2,,O::{=example}.
-* The less-than sign character (""''<''"", ''U+003C'') marks an inline quotation.
-** Example: ``<<To be or not<<`` is rendered in HTML as: ::<<To be or not<<::{=example}.
-* The quotation mark character (""''"''"", ''U+0022'') produces the right typographic quotation marks according to the [[specified language|00001007050100]].
+* The quotation mark character (""''"''"", U+0022) marks an inline quotation, according to the [[specified language|00001007050100]].
 ** Example: ``""To be or not""`` is rendered in HTML as: ::""To be or not""::{=example}.
 ** Example: ``""Sein oder nicht""{lang=de}`` is rendered in HTML as: ::""Sein oder nicht""{lang=de}::{=example}.
-* The colon character (""'':''"", ''U+003A'') mark some text that should belong together. It fills a similar role as [[region blocks|00001007030800]], but just for inline elements.
+* The colon character (""'':''"", U+003A) mark some text that should belong together. It fills a similar role as [[region blocks|00001007030800]], but just for inline elements.
 ** Example: ``abc ::def::{=example} ghi`` is rendered in HTML as: abc ::def::{=example} ghi.

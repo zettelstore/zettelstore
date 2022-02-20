@@ -3,7 +3,7 @@ title: Zettelstore boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211103163225
+modified: 20220218134031
 
 A Zettelstore must store its zettel somehow and somewhere.
 In most cases you want to store your zettel as files in a directory.
@@ -19,20 +19,20 @@ Boxes are specified using special [[URIs|https://en.wikipedia.org/wiki/Uniform_R
 
 The following box URIs are supported:
 
-; [!dir]''dir:\//DIR''
+; [!dir|''dir://DIR'']
 : Specifies a directory where zettel files are stored.
   ''DIR'' is the file path.
-  Although it is possible to use relative file paths, such as ''./zettel'' (&rarr; URI is ''dir:\//.zettel''), it is preferable to use absolute file paths, e.g. ''/home/user/zettel''.
+  Although it is possible to use relative file paths, such as ''./zettel'' (&rarr; URI is ''dir://.zettel''), it is preferable to use absolute file paths, e.g. ''/home/user/zettel''.
 
   The directory must exist before starting the Zettelstore[^There is one exception: when Zettelstore is [[started without any parameter|00001004050000]], e.g. via double-clicking its icon, an directory called ''./zettel'' will be created.].
 
   It is possible to [[configure|00001004011400]] a directory box.
-; [!file]''file:FILE.zip'' oder ''file:/\//path/to/file.zip''
+; [!file|''file:FILE.zip'' or ''file:///path/to/file.zip'']
 : Specifies a ZIP file which contains files that store zettel.
   You can create such a ZIP file, if you zip a directory full of zettel files.
 
   This box is always read-only.
-; [!mem]''mem:''
+; [!mem|''mem:'']
 : Stores all its zettel in volatile memory.
   If you stop the Zettelstore, all changes are lost.
 

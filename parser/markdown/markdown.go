@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -14,13 +14,13 @@ package markdown
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	gm "github.com/yuin/goldmark"
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -39,13 +39,14 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 	p := parseMarkdown(inp)
 	return p.acceptBlockChildren(p.docNode)
 }
 
-func parseInlines(*input.Input, string) *ast.InlineListNode {
-	panic("markdown.parseInline not yet implemented")
+func parseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+	bs := parseBlocks(inp, nil, syntax)
+	return bs.FirstParagraphInlines()
 }
 
 func parseMarkdown(inp *input.Input) *mdP {
@@ -62,17 +63,17 @@ type mdP struct {
 	textEnc encoder.Encoder
 }
 
-func (p *mdP) acceptBlockChildren(docNode gmAst.Node) *ast.BlockListNode {
+func (p *mdP) acceptBlockChildren(docNode gmAst.Node) ast.BlockSlice {
 	if docNode.Type() != gmAst.TypeDocument {
 		panic(fmt.Sprintf("Expected document, but got node type %v", docNode.Type()))
 	}
-	result := make([]ast.BlockNode, 0, docNode.ChildCount())
+	result := make(ast.BlockSlice, 0, docNode.ChildCount())
 	for child := docNode.FirstChild(); child != nil; child = child.NextSibling() {
 		if block := p.acceptBlock(child); block != nil {
 			result = append(result, block)
 		}
 	}
-	return &ast.BlockListNode{List: result}
+	return result
 }
 
 func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
@@ -103,8 +104,8 @@ func (p *mdP) acceptBlock(node gmAst.Node) ast.ItemNode {
 }
 
 func (p *mdP) acceptParagraph(node *gmAst.Paragraph) ast.ItemNode {
-	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
-		return &ast.ParaNode{Inlines: iln}
+	if is := p.acceptInlineChildren(node); len(is) > 0 {
+		return &ast.ParaNode{Inlines: is}
 	}
 	return nil
 }
@@ -125,27 +126,27 @@ func (*mdP) acceptThematicBreak() *ast.HRuleNode {
 
 func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimProg,
-		Attrs: nil, //TODO
-		Lines: p.acceptRawText(node),
+		Kind:    ast.VerbatimProg,
+		Attrs:   nil, //TODO
+		Content: p.acceptRawText(node),
 	}
 }
 
 func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNode {
-	var attrs *ast.Attributes
+	var attrs zjson.Attributes
 	if language := node.Language(p.source); len(language) > 0 {
 		attrs = attrs.Set("class", "language-"+cleanText(language, true))
 	}
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimProg,
-		Attrs: attrs,
-		Lines: p.acceptRawText(node),
+		Kind:    ast.VerbatimProg,
+		Attrs:   attrs,
+		Content: p.acceptRawText(node),
 	}
 }
 
-func (p *mdP) acceptRawText(node gmAst.Node) []string {
+func (p *mdP) acceptRawText(node gmAst.Node) []byte {
 	lines := node.Lines()
-	result := make([]string, 0, lines.Len())
+	result := make([]byte, 0, 512)
 	for i := 0; i < lines.Len(); i++ {
 		s := lines.At(i)
 		line := s.Value(p.source)
@@ -156,7 +157,10 @@ func (p *mdP) acceptRawText(node gmAst.Node) []string {
 				line = line[0 : l-1]
 			}
 		}
-		result = append(result, string(line))
+		if i > 0 {
+			result = append(result, '\n')
+		}
+		result = append(result, line...)
 	}
 	return result
 }
@@ -172,7 +176,7 @@ func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 
 func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	kind := ast.NestedListUnordered
-	var attrs *ast.Attributes
+	var attrs zjson.Attributes
 	if node.IsOrdered() {
 		kind = ast.NestedListOrdered
 		if node.Start != 1 {
@@ -205,38 +209,41 @@ func (p *mdP) acceptItemSlice(node gmAst.Node) ast.ItemSlice {
 }
 
 func (p *mdP) acceptTextBlock(node *gmAst.TextBlock) ast.ItemNode {
-	if iln := p.acceptInlineChildren(node); iln != nil && len(iln.List) > 0 {
-		return &ast.ParaNode{Inlines: iln}
+	if is := p.acceptInlineChildren(node); len(is) > 0 {
+		return &ast.ParaNode{Inlines: is}
 	}
 	return nil
 }
 
 func (p *mdP) acceptHTMLBlock(node *gmAst.HTMLBlock) *ast.VerbatimNode {
-	lines := p.acceptRawText(node)
+	content := p.acceptRawText(node)
 	if node.HasClosure() {
-		closure := string(node.ClosureLine.Value(p.source))
+		closure := node.ClosureLine.Value(p.source)
 		if l := len(closure); l > 1 && closure[l-1] == '\n' {
 			closure = closure[:l-1]
 		}
-		lines = append(lines, closure)
+		if len(content) > 1 {
+			content = append(content, '\n')
+		}
+		content = append(content, closure...)
 	}
 	return &ast.VerbatimNode{
-		Kind:  ast.VerbatimHTML,
-		Lines: lines,
+		Kind:    ast.VerbatimHTML,
+		Content: content,
 	}
 }
 
-func (p *mdP) acceptInlineChildren(node gmAst.Node) *ast.InlineListNode {
-	result := make([]ast.InlineNode, 0, node.ChildCount())
+func (p *mdP) acceptInlineChildren(node gmAst.Node) ast.InlineSlice {
+	result := make(ast.InlineSlice, 0, node.ChildCount())
 	for child := node.FirstChild(); child != nil; child = child.NextSibling() {
 		if inlines := p.acceptInline(child); inlines != nil {
 			result = append(result, inlines...)
 		}
 	}
-	return ast.CreateInlineListNode(result...)
+	return result
 }
 
-func (p *mdP) acceptInline(node gmAst.Node) []ast.InlineNode {
+func (p *mdP) acceptInline(node gmAst.Node) ast.InlineSlice {
 	if node.Type() != gmAst.TypeInline {
 		panic(fmt.Sprintf("Expected inline node, but got %v", node.Type()))
 	}
@@ -259,13 +266,13 @@ func (p *mdP) acceptInline(node gmAst.Node) []ast.InlineNode {
 	panic(fmt.Sprintf("Unhandled inline node %v", node.Kind()))
 }
 
-func (p *mdP) acceptText(node *gmAst.Text) []ast.InlineNode {
+func (p *mdP) acceptText(node *gmAst.Text) ast.InlineSlice {
 	segment := node.Segment
 	if node.IsRaw() {
 		return splitText(string(segment.Value(p.source)))
 	}
 	ins := splitText(string(segment.Value(p.source)))
-	result := make([]ast.InlineNode, 0, len(ins)+1)
+	result := make(ast.InlineSlice, 0, len(ins)+1)
 	for _, in := range ins {
 		if tn, ok := in.(*ast.TextNode); ok {
 			tn.Text = cleanText([]byte(tn.Text), true)
@@ -281,11 +288,11 @@ func (p *mdP) acceptText(node *gmAst.Text) []ast.InlineNode {
 }
 
 // splitText transform the text into a sequence of TextNode and SpaceNode
-func splitText(text string) []ast.InlineNode {
+func splitText(text string) ast.InlineSlice {
 	if text == "" {
 		return nil
 	}
-	result := make([]ast.InlineNode, 0, 1)
+	result := make(ast.InlineSlice, 0, 1)
 
 	state := 0 // 0=unknown,1=non-spaces,2=spaces
 	lastPos := 0
@@ -315,13 +322,11 @@ func splitText(text string) []ast.InlineNode {
 	return result
 }
 
-var ignoreAfterBS = map[byte]bool{
-	'!': true, '"': true, '#': true, '$': true, '%': true, '&': true,
-	'\'': true, '(': true, ')': true, '*': true, '+': true, ',': true,
-	'-': true, '.': true, '/': true, ':': true, ';': true, '<': true,
-	'=': true, '>': true, '?': true, '@': true, '[': true, '\\': true,
-	']': true, '^': true, '_': true, '`': true, '{': true, '|': true,
-	'}': true, '~': true,
+var ignoreAfterBS = map[byte]struct{}{
+	'!': {}, '"': {}, '#': {}, '$': {}, '%': {}, '&': {}, '\'': {}, '(': {},
+	')': {}, '*': {}, '+': {}, ',': {}, '-': {}, '.': {}, '/': {}, ':': {},
+	';': {}, '<': {}, '=': {}, '>': {}, '?': {}, '@': {}, '[': {}, '\\': {},
+	']': {}, '^': {}, '_': {}, '`': {}, '{': {}, '|': {}, '}': {}, '~': {},
 }
 
 // cleanText removes backslashes from TextNodes and expands entities
@@ -341,10 +346,12 @@ func cleanText(text []byte, cleanBS bool) string {
 			}
 			continue
 		}
-		if cleanBS && ch == '\\' && pos < len(text)-1 && ignoreAfterBS[text[pos+1]] {
-			buf.Write(text[lastPos:pos])
-			buf.WriteByte(text[pos+1])
-			lastPos = pos + 2
+		if cleanBS && ch == '\\' && pos < len(text)-1 {
+			if _, found := ignoreAfterBS[text[pos+1]]; found {
+				buf.Write(text[lastPos:pos])
+				buf.WriteByte(text[pos+1])
+				lastPos = pos + 2
+			}
 		}
 	}
 	if lastPos < len(text) {
@@ -353,19 +360,19 @@ func cleanText(text []byte, cleanBS bool) string {
 	return buf.String()
 }
 
-func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) []ast.InlineNode {
-	return []ast.InlineNode{
+func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) ast.InlineSlice {
+	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Kind:  ast.LiteralProg,
-			Attrs: nil, //TODO
-			Text:  cleanCodeSpan(node.Text(p.source)),
+			Kind:    ast.LiteralProg,
+			Attrs:   nil, //TODO
+			Content: cleanCodeSpan(node.Text(p.source)),
 		},
 	}
 }
 
-func cleanCodeSpan(text []byte) string {
+func cleanCodeSpan(text []byte) []byte {
 	if len(text) == 0 {
-		return ""
+		return nil
 	}
 	lastPos := 0
 	var buf bytes.Buffer
@@ -379,15 +386,15 @@ func cleanCodeSpan(text []byte) string {
 		}
 	}
 	buf.Write(text[lastPos:])
-	return buf.String()
+	return buf.Bytes()
 }
 
-func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
+func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
 	kind := ast.FormatEmph
 	if node.Level == 2 {
 		kind = ast.FormatStrong
 	}
-	return []ast.InlineNode{
+	return ast.InlineSlice{
 		&ast.FormatNode{
 			Kind:    kind,
 			Attrs:   nil, //TODO
@@ -396,82 +403,75 @@ func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) []ast.InlineNode {
 	}
 }
 
-func (p *mdP) acceptLink(node *gmAst.Link) []ast.InlineNode {
+func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs *ast.Attributes
+	var attrs zjson.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
-	return []ast.InlineNode{
+	return ast.InlineSlice{
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: p.acceptInlineChildren(node),
-			OnlyRef: false,
 			Attrs:   attrs,
 		},
 	}
 }
 
-func (p *mdP) acceptImage(node *gmAst.Image) []ast.InlineNode {
+func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs *ast.Attributes
+	var attrs zjson.Attributes
 	if title := node.Title; len(title) > 0 {
 		attrs = attrs.Set("title", cleanText(title, true))
 	}
-	return []ast.InlineNode{
-		&ast.EmbedNode{
-			Material: &ast.ReferenceMaterialNode{Ref: ref},
-			Inlines:  p.flattenInlineList(node),
-			Attrs:    attrs,
+	return ast.InlineSlice{
+		&ast.EmbedRefNode{
+			Ref:     ref,
+			Inlines: p.flattenInlineSlice(node),
+			Attrs:   attrs,
 		},
 	}
 }
 
-func (p *mdP) flattenInlineList(node gmAst.Node) *ast.InlineListNode {
-	iln := p.acceptInlineChildren(node)
+func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
+	is := p.acceptInlineChildren(node)
 	var buf bytes.Buffer
-	_, err := p.textEnc.WriteInlines(&buf, iln)
+	_, err := p.textEnc.WriteInlines(&buf, &is)
 	if err != nil {
 		panic(err)
 	}
 	if buf.Len() == 0 {
 		return nil
 	}
-	return ast.CreateInlineListNode(&ast.TextNode{Text: buf.String()})
+	return ast.InlineSlice{&ast.TextNode{Text: buf.String()}}
 }
 
-func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) []ast.InlineNode {
+func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 	u := node.URL(p.source)
 	if node.AutoLinkType == gmAst.AutoLinkEmail &&
 		!bytes.HasPrefix(bytes.ToLower(u), []byte("mailto:")) {
 		u = append([]byte("mailto:"), u...)
 	}
-	ref := ast.ParseReference(cleanText(u, false))
-	label := node.Label(p.source)
-	if len(label) == 0 {
-		label = u
-	}
-	return []ast.InlineNode{
+	return ast.InlineSlice{
 		&ast.LinkNode{
-			Ref:     ref,
-			Inlines: ast.CreateInlineListNode(&ast.TextNode{Text: string(label)}),
-			OnlyRef: true,
-			Attrs:   nil, //TODO
+			Ref:     ast.ParseReference(cleanText(u, false)),
+			Inlines: nil,
+			Attrs:   nil, // TODO
 		},
 	}
 }
 
-func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) []ast.InlineNode {
-	segs := make([]string, 0, node.Segments.Len())
+func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) ast.InlineSlice {
+	segs := make([][]byte, 0, node.Segments.Len())
 	for i := 0; i < node.Segments.Len(); i++ {
 		segment := node.Segments.At(i)
-		segs = append(segs, string(segment.Value(p.source)))
+		segs = append(segs, segment.Value(p.source))
 	}
-	return []ast.InlineNode{
+	return ast.InlineSlice{
 		&ast.LiteralNode{
-			Kind:  ast.LiteralHTML,
-			Attrs: nil, // TODO: add HTML as language
-			Text:  strings.Join(segs, ""),
+			Kind:    ast.LiteralHTML,
+			Attrs:   nil, // TODO: add HTML as language
+			Content: bytes.Join(segs, nil),
 		},
 	}
 }

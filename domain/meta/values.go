@@ -1,17 +1,20 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta provides the domain specific type 'meta'.
 package meta
 
-import "zettelstore.de/c/api"
+import (
+	"fmt"
+
+	"zettelstore.de/c/api"
+)
 
 // Visibility enumerates the variations of the 'visibility' meta key.
 type Visibility int
@@ -34,6 +37,13 @@ var visMap = map[string]Visibility{
 	api.ValueVisibilityOwner:   VisibilityOwner,
 	api.ValueVisibilityExpert:  VisibilityExpert,
 }
+var revVisMap = map[Visibility]string{}
+
+func init() {
+	for k, v := range visMap {
+		revVisMap[v] = k
+	}
+}
 
 // GetVisibility returns the visibility value of the given string
 func GetVisibility(val string) Visibility {
@@ -41,6 +51,13 @@ func GetVisibility(val string) Visibility {
 		return vis
 	}
 	return VisibilityUnknown
+}
+
+func (v Visibility) String() string {
+	if s, ok := revVisMap[v]; ok {
+		return s
+	}
+	return fmt.Sprintf("Unknown (%d)", v)
 }
 
 // UserRole enumerates the supported values of meta key 'user-role'.

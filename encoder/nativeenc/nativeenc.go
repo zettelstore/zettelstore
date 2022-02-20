@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -14,10 +14,10 @@ package nativeenc
 import (
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -38,7 +38,7 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta e
 	v := newVisitor(w, ne)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('\n')
-	ast.Walk(v, zn.Ast)
+	ast.Walk(v, &zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -52,45 +52,45 @@ func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.E
 }
 
 func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ne.WriteBlocks(w, zn.Ast)
+	return ne.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (ne *nativeEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w, ne)
-	ast.Walk(v, bln)
+	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ne *nativeEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (ne *nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w, ne)
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b     encoder.BufWriter
+	b     encoder.EncWriter
 	level int
 	env   *encoder.Environment
 }
 
 func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w), env: enc.env}
+	return &visitor{b: encoder.NewEncWriter(w), env: enc.env}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
-	case *ast.InlineListNode:
-		v.walkInlineList(n)
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
+	case *ast.InlineSlice:
+		v.walkInlineSlice(n)
 	case *ast.ParaNode:
 		v.b.WriteString("[Para ")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -108,14 +108,14 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitDescriptionList(n)
 	case *ast.TableNode:
 		v.visitTable(n)
-	case *ast.BLOBNode:
-		v.b.WriteString("[BLOB \"")
-		v.writeEscaped(n.Title)
-		v.b.WriteString("\" \"")
-		v.writeEscaped(n.Syntax)
-		v.b.WriteString("\" \"")
-		v.b.WriteBase64(n.Blob)
+	case *ast.TranscludeNode:
+		v.b.WriteString("[Transclude ")
+		v.b.WriteString(mapRefState[n.Ref.State])
+		v.b.WriteString(" \"")
+		v.writeEscaped(n.Ref.String())
 		v.b.WriteString("\"]")
+	case *ast.BLOBNode:
+		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.b.WriteString("Text \"")
 		v.writeEscaped(n.Text)
@@ -126,7 +126,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.WriteByte('"')
 	case *ast.SpaceNode:
 		v.b.WriteString("Space")
-		if l := len(n.Lexeme); l > 1 {
+		if l := n.Count(); l > 1 {
 			v.b.WriteByte(' ')
 			v.b.WriteString(strconv.Itoa(l))
 		}
@@ -138,24 +138,26 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 	case *ast.LinkNode:
 		v.visitLink(n)
-	case *ast.EmbedNode:
-		v.visitEmbed(n)
+	case *ast.EmbedRefNode:
+		v.visitEmbedRef(n)
+	case *ast.EmbedBLOBNode:
+		v.visitEmbedBLOB(n)
 	case *ast.CiteNode:
 		v.b.WriteString("Cite")
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" \"")
 		v.writeEscaped(n.Key)
 		v.b.WriteByte('"')
-		if n.Inlines != nil {
+		if len(n.Inlines) > 0 {
 			v.b.WriteString(" [")
-			ast.Walk(v, n.Inlines)
+			ast.Walk(v, &n.Inlines)
 			v.b.WriteByte(']')
 		}
 	case *ast.FootnoteNode:
 		v.b.WriteString("Footnote")
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" [")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.MarkNode:
 		v.visitMark(n)
@@ -163,7 +165,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.Write(mapFormatKind[n.Kind])
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" [")
-		ast.Walk(v, n.Inlines)
+		ast.Walk(v, &n.Inlines)
 		v.b.WriteByte(']')
 	case *ast.LiteralNode:
 		kind, ok := mapLiteralKind[n.Kind]
@@ -173,7 +175,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.b.Write(kind)
 		v.visitAttributes(n.Attrs)
 		v.b.WriteString(" \"")
-		v.writeEscaped(n.Text)
+		v.writeEscaped(string(n.Content))
 		v.b.WriteByte('"')
 	default:
 		return v
@@ -219,7 +221,8 @@ func (v *visitor) writeZettelmarkup(key, value string, evalMeta encoder.EvalMeta
 	v.b.WriteByte('[')
 	v.b.WriteString(key)
 	v.b.WriteByte(' ')
-	ast.Walk(v, evalMeta(value))
+	is := evalMeta(value)
+	ast.Walk(v, &is)
 	v.b.WriteByte(']')
 }
 
@@ -241,6 +244,7 @@ func (v *visitor) writeMetaList(m *meta.Meta, key, native string) {
 }
 
 var mapVerbatimKind = map[ast.VerbatimKind][]byte{
+	ast.VerbatimZettel:  []byte("[ZettelBlock"),
 	ast.VerbatimProg:    []byte("[CodeBlock"),
 	ast.VerbatimComment: []byte("[CommentBlock"),
 	ast.VerbatimHTML:    []byte("[HTMLBlock"),
@@ -254,12 +258,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	v.b.Write(kind)
 	v.visitAttributes(vn.Attrs)
 	v.b.WriteString(" \"")
-	for i, line := range vn.Lines {
-		if i > 0 {
-			v.b.Write(rawNewline)
-		}
-		v.writeEscaped(line)
-	}
+	v.writeEscaped(string(vn.Content))
 	v.b.WriteString("\"]")
 }
 
@@ -280,14 +279,14 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	v.writeNewLine()
 	v.b.WriteByte('[')
 	v.level++
-	ast.Walk(v, rn.Blocks)
+	ast.Walk(v, &rn.Blocks)
 	v.level--
 	v.b.WriteByte(']')
-	if rn.Inlines != nil {
+	if len(rn.Inlines) > 0 {
 		v.b.WriteByte(',')
 		v.writeNewLine()
 		v.b.WriteString("[Cite ")
-		ast.Walk(v, rn.Inlines)
+		ast.Walk(v, &rn.Inlines)
 		v.b.WriteByte(']')
 	}
 	v.level--
@@ -301,7 +300,7 @@ func (v *visitor) visitHeading(hn *ast.HeadingNode) {
 	}
 	v.visitAttributes(hn.Attrs)
 	v.b.WriteByte(' ')
-	ast.Walk(v, hn.Inlines)
+	ast.Walk(v, &hn.Inlines)
 	v.b.WriteByte(']')
 }
 
@@ -340,7 +339,7 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 		v.writeComma(i)
 		v.writeNewLine()
 		v.b.WriteString("[Term [")
-		ast.Walk(v, descr.Term)
+		ast.Walk(v, &descr.Term)
 		v.b.WriteByte(']')
 
 		if len(descr.Descriptions) > 0 {
@@ -404,11 +403,25 @@ var alignString = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.b.WriteStrings("[Cell", alignString[cell.Align])
-	if !cell.Inlines.IsEmpty() {
+	if len(cell.Inlines) > 0 {
 		v.b.WriteByte(' ')
-		ast.Walk(v, cell.Inlines)
+		ast.Walk(v, &cell.Inlines)
 	}
 	v.b.WriteByte(']')
+}
+
+func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
+	v.b.WriteString("[BLOB \"")
+	v.writeEscaped(bn.Title)
+	v.b.WriteString("\" \"")
+	v.writeEscaped(bn.Syntax)
+	v.b.WriteString("\" \"")
+	if bn.Syntax == api.ValueSyntaxSVG {
+		v.writeEscaped(string(bn.Blob))
+	} else {
+		v.b.WriteBase64(bn.Blob)
+	}
+	v.b.WriteString("\"]")
 }
 
 var mapRefState = map[ast.RefState]string{
@@ -429,47 +442,52 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.b.WriteString(mapRefState[ln.Ref.State])
 	v.b.WriteString(" \"")
 	v.writeEscaped(ln.Ref.String())
-	v.b.WriteString("\" [")
-	if !ln.OnlyRef {
-		ast.Walk(v, ln.Inlines)
+	v.b.WriteByte('"')
+	if len(ln.Inlines) > 0 {
+		v.b.WriteString(" [")
+		ast.Walk(v, &ln.Inlines)
+		v.b.WriteByte(']')
 	}
-	v.b.WriteByte(']')
 }
 
-func (v *visitor) visitEmbed(en *ast.EmbedNode) {
+func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("Embed")
 	v.visitAttributes(en.Attrs)
-	switch m := en.Material.(type) {
-	case *ast.ReferenceMaterialNode:
-		v.b.WriteByte(' ')
-		v.b.WriteString(mapRefState[m.Ref.State])
-		v.b.WriteString(" \"")
-		v.writeEscaped(m.Ref.String())
-		v.b.WriteByte('"')
-	case *ast.BLOBMaterialNode:
-		v.b.WriteStrings(" {\"", m.Syntax, "\" \"")
-		switch m.Syntax {
-		case "svg":
-			v.writeEscaped(string(m.Blob))
-		default:
-			v.b.WriteString("\" \"")
-			v.b.WriteBase64(m.Blob)
-		}
-		v.b.WriteString("\"}")
-	default:
-		panic(fmt.Sprintf("Unknown material type %t for %v", en.Material, en.Material))
-	}
+	v.b.WriteByte(' ')
+	v.b.WriteString(mapRefState[en.Ref.State])
+	v.b.WriteString(" \"")
+	v.writeEscaped(en.Ref.String())
+	v.b.WriteByte('"')
 
-	if en.Inlines != nil {
+	if len(en.Inlines) > 0 {
 		v.b.WriteString(" [")
-		ast.Walk(v, en.Inlines)
+		ast.Walk(v, &en.Inlines)
+		v.b.WriteByte(']')
+	}
+}
+
+func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
+	v.b.WriteString("EmbedBLOB")
+	v.visitAttributes(en.Attrs)
+	v.b.WriteStrings(" {\"", en.Syntax, "\" \"")
+	if en.Syntax == api.ValueSyntaxSVG {
+		v.writeEscaped(string(en.Blob))
+	} else {
+		v.b.WriteString("\" \"")
+		v.b.WriteBase64(en.Blob)
+	}
+	v.b.WriteString("\"}")
+
+	if len(en.Inlines) > 0 {
+		v.b.WriteString(" [")
+		ast.Walk(v, &en.Inlines)
 		v.b.WriteByte(']')
 	}
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
 	v.b.WriteString("Mark")
-	if text := mn.Text; text != "" {
+	if text := mn.Mark; text != "" {
 		v.b.WriteString(" \"")
 		v.writeEscaped(text)
 		v.b.WriteByte('"')
@@ -478,31 +496,35 @@ func (v *visitor) visitMark(mn *ast.MarkNode) {
 		v.b.WriteString(" #")
 		v.writeEscaped(fragment)
 	}
+	if len(mn.Inlines) > 0 {
+		v.b.WriteString(" [")
+		ast.Walk(v, &mn.Inlines)
+		v.b.WriteByte(']')
+	}
 }
 
 var mapFormatKind = map[ast.FormatKind][]byte{
-	ast.FormatEmph:      []byte("Emph"),
-	ast.FormatStrong:    []byte("Strong"),
-	ast.FormatInsert:    []byte("Insert"),
-	ast.FormatMonospace: []byte("Mono"),
-	ast.FormatDelete:    []byte("Delete"),
-	ast.FormatSuper:     []byte("Super"),
-	ast.FormatSub:       []byte("Sub"),
-	ast.FormatQuote:     []byte("Quote"),
-	ast.FormatQuotation: []byte("Quotation"),
-	ast.FormatSpan:      []byte("Span"),
+	ast.FormatEmph:   []byte("Emph"),
+	ast.FormatStrong: []byte("Strong"),
+	ast.FormatInsert: []byte("Insert"),
+	ast.FormatDelete: []byte("Delete"),
+	ast.FormatSuper:  []byte("Super"),
+	ast.FormatSub:    []byte("Sub"),
+	ast.FormatQuote:  []byte("Quote"),
+	ast.FormatSpan:   []byte("Span"),
 }
 
 var mapLiteralKind = map[ast.LiteralKind][]byte{
+	ast.LiteralZettel:  []byte("Zettel"),
 	ast.LiteralProg:    []byte("Code"),
-	ast.LiteralKeyb:    []byte("Input"),
+	ast.LiteralInput:   []byte("Input"),
 	ast.LiteralOutput:  []byte("Output"),
 	ast.LiteralComment: []byte("Comment"),
 	ast.LiteralHTML:    []byte("HTML"),
 }
 
-func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
-	for i, bn := range bln.List {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
+	for i, bn := range *bs {
 		if i > 0 {
 			v.b.WriteByte(',')
 			v.writeNewLine()
@@ -510,36 +532,31 @@ func (v *visitor) visitBlockList(bln *ast.BlockListNode) {
 		ast.Walk(v, bn)
 	}
 }
-func (v *visitor) walkInlineList(iln *ast.InlineListNode) {
-	for i, in := range iln.List {
+func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
+	for i, in := range *is {
 		v.writeComma(i)
 		ast.Walk(v, in)
 	}
 }
 
 // visitAttributes write native attributes
-func (v *visitor) visitAttributes(a *ast.Attributes) {
+func (v *visitor) visitAttributes(a zjson.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
-	keys := make([]string, 0, len(a.Attrs))
-	for k := range a.Attrs {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
 
 	v.b.WriteString(" (\"")
-	if val, ok := a.Attrs[""]; ok {
+	if val, ok := a[""]; ok {
 		v.writeEscaped(val)
 	}
 	v.b.WriteString("\",[")
-	for i, k := range keys {
+	for i, k := range a.Keys() {
 		if k == "" {
 			continue
 		}
 		v.writeComma(i)
 		v.b.WriteString(k)
-		val := a.Attrs[k]
+		val := a[k]
 		if len(val) > 0 {
 			v.b.WriteString("=\"")
 			v.writeEscaped(val)

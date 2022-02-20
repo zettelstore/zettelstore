@@ -3,34 +3,34 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20211210184654
+modified: 20220218133526
 
-; ''bye''
+; [!bye|''bye'']
 : Closes the connection to the administrator console.
-; ''config SERVICE''
+; [!config|''config SERVICE'']
 : Displays all valid configuration keys for the given service.
 
-  If a key ends with the hyphen-minus character (""''-''"", ''U+002D''), the key denotes a list value.
+  If a key ends with the hyphen-minus character (""''-''"", U+002D), the key denotes a list value.
   Keys of list elements are specified by appending a number greater than zero to the key.
-; ''crlf''
+; [!crlf|''crlf'']
 : Toggles CRLF mode for console output.
   Changes end of line sequences between Windows mode (==\\r\\n==) and non-Windows mode (==\\n==, initial value).
   Often used on Windows telnet clients that otherwise scramble the output of commands.
-; ''dump-index''
+; [!dump-index|''dump-index'']
 : Displays the content of the internal search index.
-; ''dump-recover RECOVER''
+; [!dump-recover|''dump-recover RECOVER'']
 : Displays data about the last given recovered internal activity.
 
   The value for ''RECOVER'' can be obtained via the command ``stat core``, which lists all overview data about all recoveries.
-; ''echo''
+; [!echo|''echo'']
 : Toggles the echo mode, where each command is printed before execution.
-; ''end-profile''
+; [!end-profile|''end-profile'']
 : Stops profiling the application.
-; ''env''
+; [!env|''env'']
 : Display environment values.
-; ''help''
+; [!help|''help'']
 : Displays a list of all available commands.
-; ''get-config''
+; [!get-config|''get-config'']
 : Displays current configuration data.
 
   ``get-config`` shows all current configuration data.
@@ -38,9 +38,9 @@ modified: 20211210184654
   ``get-config SERVICE`` shows only the current configuration data of the given service.
 
   ``get-config SERVICE KEY`` shows the current configuration data for the given service and key.
-; ''header''
+; [!header|''header'']
 : Toggles the header mode, where each table is show with a header nor not.
-; [!log-level]''log-level''
+; [!log-level|''log-level'']
 : Displays or sets the [[logging level|00001004059700]] for the kernel or a service.
 
   ``log-level`` shows all known log level.
@@ -49,10 +49,10 @@ modified: 20211210184654
 
   ``log-level NAME VALUE`` sets the log level for the given service or for the kernel.
   ''VALUE'' is either the name of the log level or its numerical value.
-; ''metrics''
+; [!metrics|''metrics'']
 : Displays some values that reflect the inner workings of Zettelstore.
   See [[here|https://golang.org/pkg/runtime/metrics/]] for a technical description of these values.
-; ''next-config''
+; [!next-config|''next-config'']
 : Displays next configuration data.
   It will be the current configuration, if the corresponding services is restarted.
 
@@ -61,7 +61,7 @@ modified: 20211210184654
   ``next-config SERVICE`` shows only the next configuration data of the given service.
 
   ``next-config SERVICE KEY`` shows the next configuration data for the given service and key.
-; ''profile [PROFILE] [FILE]''
+; [!profile|''profile [PROFILE] [FILE]'']
 : Starts to profile the software with the profile PROFILE and writes profiling data to file FILE.
   If PROFILE is not given, a value ''CPU'' is assumed, which specifies to profile CPU usage.
   If FILE is not given, a value ''PROFILE.prof'' will be used.
@@ -73,22 +73,22 @@ modified: 20211210184654
   This feature is dependent on the internal implementation language of Zettelstore, Go.
   It may be removed without any further notice at any time.
   In most cases, it is a tool for software developers to optimize Zettelstore's internal workings.
-; ''restart SERVICE''
+; [!restart|''restart SERVICE'']
 : Restart the given service and all other that depend on this.
-; ''services''
+; [!services|''services'']
 : Displays s list of all available services and their current status.
-; ''set-config SERVICE KEY VALUE''
+; [!set-config|''set-config SERVICE KEY VALUE'']
 : Sets a single configuration value for the next configuration of a given service.
   It will become effective if the service is restarted.
 
   If the key specifies a list value, all other list values with a number greater than the given key are deleted.
   You can use the special number ""0"" to delete all values.
   E.g. ``set-config box box-uri-0 any_text`` will remove all values of the list __box-uri-__.
-; ''shutdown''
+; [!shutdown|''shutdown'']
 : Terminate the Zettelstore itself (and closes the connection to the administrator console).
-; ''start SERVICE''
-: Start the given bservice and all dependent services.
-; ''stat SERVICE''
+; [!start|''start SERVICE'']
+: Start the given service and all dependent services.
+; [!stat|''stat SERVICE'']
 : Display some statistical values for the given service.
-; ''stop SERVICE''
+; [!stop|''stop SERVICE'']
 : Stop the given service and all other that depend on this.

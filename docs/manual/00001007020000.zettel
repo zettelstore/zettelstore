@@ -3,19 +3,19 @@ title: Zettelmarkup: Basic Definitions
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124175237
+modified: 20220218130713
 
-Every zettelmark content consists of a sequence of Unicode codepoints.
-Unicode codepoints are called in the following as **character**s.
+Every Zettelmarkup content consists of a sequence of Unicode code-points.
+Unicode code-points are called in the following as **character**s.
 
 Characters are encoded with UTF-8.
 
 ; Line
-: A __line__ is a sequence of characters, except newline (''U+000A'') and carraige return (''U+000D''), followed by a line ending sequence or the end of content.
+: A __line__ is a sequence of characters, except newline (U+000A) and carriage return (U+000D), followed by a line ending sequence or the end of content.
 ; Line ending
 : A __line ending__ is either a newline not followed by a carriage return, a newline followed by a carriage return, or a carriage return.
   Different line can be finalized by different line endings.
 ; Empty line
 : An __empty line__ is an empty sequence of characters, followed by a line ending or the end of content.
 ; Space character
-: The __space character__ is the Unicode codepoint ''U+0020''.
+: The __space character__ is the Unicode code-point U+0020.

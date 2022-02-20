@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,11 +21,12 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
-	_ "zettelstore.de/z/encoder/djsonenc"  // Allow to use DJSON encoder.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
+	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
+	"zettelstore.de/z/parser/cleaner"
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
 
@@ -41,7 +42,7 @@ type expectMap map[api.EncodingEnum]string
 const useZmk = "\000"
 
 const (
-	encoderDJSON  = api.EncoderDJSON
+	encoderZJSON  = api.EncoderZJSON
 	encoderHTML   = api.EncoderHTML
 	encoderNative = api.EncoderNative
 	encoderText   = api.EncoderText
@@ -61,9 +62,11 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
-			pe = &peInlines{iln: parser.ParseInlines(inp, api.ValueSyntaxZmk)}
+			is := parser.ParseInlines(inp, api.ValueSyntaxZmk)
+			cleaner.CleanInlineSlice(&is)
+			pe = &peInlines{is: is}
 		} else {
-			pe = &peBlocks{bln: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
+			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
 	}
@@ -98,12 +101,12 @@ type parserEncoder interface {
 }
 
 type peInlines struct {
-	iln *ast.InlineListNode
+	is ast.InlineSlice
 }
 
 func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	if _, err := encdr.WriteInlines(&buf, in.iln); err != nil {
+	if _, err := encdr.WriteInlines(&buf, &in.is); err != nil {
 		return "", err
 	}
 	return buf.String(), nil
@@ -112,12 +115,12 @@ func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
 func (peInlines) mode() string { return "inline" }
 
 type peBlocks struct {
-	bln *ast.BlockListNode
+	bs ast.BlockSlice
 }
 
 func (bl peBlocks) encode(encdr encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	if _, err := encdr.WriteBlocks(&buf, bl.bln); err != nil {
+	if _, err := encdr.WriteBlocks(&buf, &bl.bs); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

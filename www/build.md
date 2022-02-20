@@ -4,20 +4,21 @@ You must install the following software:
 
 * A current, supported [release of Go](https://golang.org/doc/devel/release.html),
 * [staticcheck](https://staticcheck.io/),
-* [Fossil](https://fossil-scm.org/).
+* [Fossil](https://fossil-scm.org/),
+* [Git](https://git-scm.org) (so that Go can download some dependencies).
 
 ## Clone the repository
-Most of this is covered by the excellent Fossil documentation.
+Most of this is covered by the excellent Fossil [documentation](https://fossil-scm.org/home/doc/trunk/www/quickstart.wiki).
 
 1. Create a directory to store your Fossil repositories.
-   Let's assume, you have created <tt>$HOME/fossil</tt>.
-1. Clone the repository: `fossil clone https://zettelstore.de/ $HOME/fossil/zettelstore.fossil`.
+   Let's assume, you have created <tt>$HOME/fossils</tt>.
+1. Clone the repository: `fossil clone https://zettelstore.de/ $HOME/fossils/zettelstore.fossil`.
 1. Create a working directory.
    Let's assume, you have created <tt>$HOME/zettelstore</tt>.
 1. Change into this directory: `cd $HOME/zettelstore`.
-1. Open development: `fossil open $HOME/fossil/zettelstore.fossil`.
+1. Open development: `fossil open $HOME/fossils/zettelstore.fossil`.
 
-(If you are not able to use Fossil, you could try the Git mirror
+(If you are not able to use Fossil, you could try the GitHub mirror
 <https://github.com/zettelstore/zettelstore>.)
 
 ## The build tool

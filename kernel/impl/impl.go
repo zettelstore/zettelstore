@@ -407,8 +407,8 @@ func (kern *myKernel) sortDependency(
 		return nil
 	}
 	deps := srvdeps[srvnum]
-	found := make(map[service]bool, 4)
-	result := make([]service, 0, 4)
+	found := make(map[service]bool, 8)
+	result := make([]service, 0, len(found))
 	for _, dep := range deps {
 		srvDeps := kern.sortDependency(dep, srvdeps, isStarted)
 		for _, depSrv := range srvDeps {

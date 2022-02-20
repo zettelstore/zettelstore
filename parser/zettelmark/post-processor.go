@@ -1,14 +1,13 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package zettelmark provides a parser for zettelmarkup.
 package zettelmark
 
 import (
@@ -18,15 +17,15 @@ import (
 )
 
 // postProcessBlocks is the entry point for post-processing a list of block nodes.
-func postProcessBlocks(bs *ast.BlockListNode) {
+func postProcessBlocks(bs *ast.BlockSlice) {
 	pp := postProcessor{}
 	ast.Walk(&pp, bs)
 }
 
 // postProcessInlines is the entry point for post-processing a list of inline nodes.
-func postProcessInlines(iln *ast.InlineListNode) {
+func postProcessInlines(is *ast.InlineSlice) {
 	pp := postProcessor{}
-	ast.Walk(&pp, iln)
+	ast.Walk(&pp, is)
 }
 
 // postProcessor is a visitor that cleans the abstract syntax tree.
@@ -36,27 +35,27 @@ type postProcessor struct {
 
 func (pp *postProcessor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		pp.visitBlockList(n)
-	case *ast.InlineListNode:
-		pp.visitInlineList(n)
+	case *ast.BlockSlice:
+		pp.visitBlockSlice(n)
+	case *ast.InlineSlice:
+		pp.visitInlineSlice(n)
 	case *ast.ParaNode:
 		return pp
 	case *ast.RegionNode:
 		pp.visitRegion(n)
-		return pp
 	case *ast.HeadingNode:
 		return pp
 	case *ast.NestedListNode:
 		pp.visitNestedList(n)
 	case *ast.DescriptionListNode:
 		pp.visitDescriptionList(n)
-		return pp
 	case *ast.TableNode:
 		pp.visitTable(n)
 	case *ast.LinkNode:
 		return pp
-	case *ast.EmbedNode:
+	case *ast.EmbedRefNode:
+		return pp
+	case *ast.EmbedBLOBNode:
 		return pp
 	case *ast.CiteNode:
 		return pp
@@ -73,7 +72,10 @@ func (pp *postProcessor) visitRegion(rn *ast.RegionNode) {
 	if rn.Kind == ast.RegionVerse {
 		pp.inVerse = true
 	}
-	pp.visitBlockList(rn.Blocks)
+	pp.visitBlockSlice(&rn.Blocks)
+	if len(rn.Inlines) > 0 {
+		pp.visitInlineSlice(&rn.Inlines)
+	}
 	pp.inVerse = oldVerse
 }
 
@@ -85,6 +87,9 @@ func (pp *postProcessor) visitNestedList(ln *ast.NestedListNode) {
 
 func (pp *postProcessor) visitDescriptionList(dn *ast.DescriptionListNode) {
 	for i, def := range dn.Descriptions {
+		if len(def.Term) > 0 {
+			ast.Walk(pp, &dn.Descriptions[i].Term)
+		}
 		for j, b := range def.Descriptions {
 			dn.Descriptions[i].Descriptions[j] = pp.processDescriptionSlice(b)
 		}
@@ -113,7 +118,7 @@ func (pp *postProcessor) visitTable(tn *ast.TableNode) {
 
 func (*postProcessor) visitTableHeader(tn *ast.TableNode) {
 	for pos, cell := range tn.Header {
-		ins := cell.Inlines.List
+		ins := cell.Inlines
 		if len(ins) == 0 {
 			continue
 		}
@@ -156,7 +161,7 @@ func appendCells(row ast.TableRow, width int, colAlign []ast.Alignment) ast.Tabl
 	for len(row) < width {
 		row = append(row, &ast.TableCell{
 			Align:   colAlign[len(row)],
-			Inlines: &ast.InlineListNode{},
+			Inlines: nil,
 		})
 	}
 	return row
@@ -164,9 +169,8 @@ func appendCells(row ast.TableRow, width int, colAlign []ast.Alignment) ast.Tabl
 
 func isHeaderRow(row ast.TableRow) bool {
 	for _, cell := range row {
-		iln := cell.Inlines
-		if inlines := iln.List; len(inlines) > 0 {
-			if textNode, ok := inlines[0].(*ast.TextNode); ok {
+		if is := cell.Inlines; len(is) > 0 {
+			if textNode, ok := is[0].(*ast.TextNode); ok {
 				if strings.HasPrefix(textNode.Text, "=") {
 					return true
 				}
@@ -191,9 +195,7 @@ func getAlignment(ch byte) ast.Alignment {
 
 // processCell tries to recognize cell formatting.
 func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment) {
-	iln := cell.Inlines
-	ins := iln.List
-	if tn := initialText(ins); tn != nil {
+	if tn := initialText(cell.Inlines); tn != nil {
 		align := getAlignment(tn.Text[0])
 		if align == ast.AlignDefault {
 			cell.Align = colAlign
@@ -204,10 +206,10 @@ func (pp *postProcessor) processCell(cell *ast.TableCell, colAlign ast.Alignment
 	} else {
 		cell.Align = colAlign
 	}
-	ast.Walk(pp, iln)
+	ast.Walk(pp, &cell.Inlines)
 }
 
-func initialText(ins []ast.InlineNode) *ast.TextNode {
+func initialText(ins ast.InlineSlice) *ast.TextNode {
 	if len(ins) == 0 {
 		return nil
 	}
@@ -217,24 +219,24 @@ func initialText(ins []ast.InlineNode) *ast.TextNode {
 	return nil
 }
 
-func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {
-	if bln == nil {
+func (pp *postProcessor) visitBlockSlice(bs *ast.BlockSlice) {
+	if bs == nil {
 		return
 	}
-	if len(bln.List) == 0 {
-		bln.List = nil
+	if len(*bs) == 0 {
+		*bs = nil
 		return
 	}
-	for _, bn := range bln.List {
+	for _, bn := range *bs {
 		ast.Walk(pp, bn)
 	}
 	fromPos, toPos := 0, 0
-	for fromPos < len(bln.List) {
-		bln.List[toPos] = bln.List[fromPos]
+	for fromPos < len(*bs) {
+		(*bs)[toPos] = (*bs)[fromPos]
 		fromPos++
-		switch bn := bln.List[toPos].(type) {
+		switch bn := (*bs)[toPos].(type) {
 		case *ast.ParaNode:
-			if len(bn.Inlines.List) > 0 {
+			if len(bn.Inlines) > 0 {
 				toPos++
 			}
 		case *nullItemNode:
@@ -243,10 +245,10 @@ func (pp *postProcessor) visitBlockList(bln *ast.BlockListNode) {
 			toPos++
 		}
 	}
-	for pos := toPos; pos < len(bln.List); pos++ {
-		bln.List[pos] = nil // Allow excess nodes to be garbage collected.
+	for pos := toPos; pos < len(*bs); pos++ {
+		(*bs)[pos] = nil // Allow excess nodes to be garbage collected.
 	}
-	bln.List = bln.List[:toPos:toPos]
+	*bs = (*bs)[:toPos:toPos]
 
 }
 
@@ -265,7 +267,7 @@ func (pp *postProcessor) processItemSlice(ins ast.ItemSlice) ast.ItemSlice {
 		fromPos++
 		switch in := ins[toPos].(type) {
 		case *ast.ParaNode:
-			if in != nil && len(in.Inlines.List) > 0 {
+			if in != nil && len(in.Inlines) > 0 {
 				toPos++
 			}
 		case *nullItemNode:
@@ -295,7 +297,7 @@ func (pp *postProcessor) processDescriptionSlice(dns ast.DescriptionSlice) ast.D
 		fromPos++
 		switch dn := dns[toPos].(type) {
 		case *ast.ParaNode:
-			if len(dn.Inlines.List) > 0 {
+			if len(dn.Inlines) > 0 {
 				toPos++
 			}
 		case *nullDescriptionNode:
@@ -309,44 +311,46 @@ func (pp *postProcessor) processDescriptionSlice(dns ast.DescriptionSlice) ast.D
 	return dns[:toPos:toPos]
 }
 
-func (pp *postProcessor) visitInlineList(iln *ast.InlineListNode) {
-	if iln == nil {
+func (pp *postProcessor) visitInlineSlice(is *ast.InlineSlice) {
+	if is == nil {
 		return
 	}
-	if len(iln.List) == 0 {
-		iln.List = nil
+	if len(*is) == 0 {
+		*is = nil
 		return
 	}
-	for _, in := range iln.List {
+	for _, in := range *is {
 		ast.Walk(pp, in)
 	}
 
-	if !pp.inVerse {
-		processInlineSliceHead(iln)
-	}
-	toPos := pp.processInlineSliceCopy(iln)
-	toPos = pp.processInlineSliceTail(iln, toPos)
-	iln.List = iln.List[:toPos:toPos]
-	pp.processInlineListInplace(iln)
+	pp.processInlineSliceHead(is)
+	toPos := pp.processInlineSliceCopy(is)
+	toPos = pp.processInlineSliceTail(is, toPos)
+	*is = (*is)[:toPos:toPos]
+	pp.processInlineSliceInplace(is)
 }
 
 // processInlineSliceHead removes leading spaces and empty text.
-func processInlineSliceHead(iln *ast.InlineListNode) {
-	ins := iln.List
+func (pp *postProcessor) processInlineSliceHead(is *ast.InlineSlice) {
+	ins := *is
 	for i, in := range ins {
 		switch in := in.(type) {
 		case *ast.SpaceNode:
+			if pp.inVerse {
+				*is = ins[i:]
+				return
+			}
 		case *ast.TextNode:
 			if len(in.Text) > 0 {
-				iln.List = ins[i:]
+				*is = ins[i:]
 				return
 			}
 		default:
-			iln.List = ins[i:]
+			*is = ins[i:]
 			return
 		}
 	}
-	iln.List = ins[0:0]
+	*is = ins[0:0]
 }
 
 // processInlineSliceCopy goes forward through the slice and tries to eliminate
@@ -355,24 +359,18 @@ func processInlineSliceHead(iln *ast.InlineListNode) {
 // Two text nodes are merged into one.
 //
 // Two spaces following a break are merged into a hard break.
-func (pp *postProcessor) processInlineSliceCopy(iln *ast.InlineListNode) int {
-	ins := iln.List
+func (pp *postProcessor) processInlineSliceCopy(is *ast.InlineSlice) int {
+	ins := *is
 	maxPos := len(ins)
-	for {
-		again, toPos := pp.processInlineSliceCopyLoop(iln, maxPos)
-		for pos := toPos; pos < maxPos; pos++ {
-			ins[pos] = nil // Allow excess nodes to be garbage collected.
-		}
-		if !again {
-			return toPos
-		}
-		maxPos = toPos
+	toPos := pp.processInlineSliceCopyLoop(is, maxPos)
+	for pos := toPos; pos < maxPos; pos++ {
+		ins[pos] = nil // Allow excess nodes to be garbage collected.
 	}
+	return toPos
 }
 
-func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, maxPos int) (bool, int) {
-	ins := iln.List
-	again := false
+func (pp *postProcessor) processInlineSliceCopyLoop(is *ast.InlineSlice, maxPos int) int {
+	ins := *is
 	fromPos, toPos := 0, 0
 	for fromPos < maxPos {
 		ins[toPos] = ins[fromPos]
@@ -381,7 +379,10 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 		case *ast.TextNode:
 			fromPos = processTextNode(ins, maxPos, in, fromPos)
 		case *ast.SpaceNode:
-			again, fromPos = pp.processSpaceNode(ins, maxPos, in, toPos, again, fromPos)
+			if pp.inVerse {
+				in.Lexeme = strings.Repeat("\u00a0", in.Count())
+			}
+			fromPos = processSpaceNode(ins, maxPos, in, toPos, fromPos)
 		case *ast.BreakNode:
 			if pp.inVerse {
 				in.Hard = true
@@ -389,10 +390,10 @@ func (pp *postProcessor) processInlineSliceCopyLoop(iln *ast.InlineListNode, max
 		}
 		toPos++
 	}
-	return again, toPos
+	return toPos
 }
 
-func processTextNode(ins []ast.InlineNode, maxPos int, in *ast.TextNode, fromPos int) int {
+func processTextNode(ins ast.InlineSlice, maxPos int, in *ast.TextNode, fromPos int) int {
 	for fromPos < maxPos {
 		if tn, ok := ins[fromPos].(*ast.TextNode); ok {
 			in.Text = in.Text + tn.Text
@@ -404,22 +405,14 @@ func processTextNode(ins []ast.InlineNode, maxPos int, in *ast.TextNode, fromPos
 	return fromPos
 }
 
-func (pp *postProcessor) processSpaceNode(
-	ins []ast.InlineNode, maxPos int, in *ast.SpaceNode, toPos int, again bool, fromPos int,
-) (bool, int) {
+func processSpaceNode(ins ast.InlineSlice, maxPos int, in *ast.SpaceNode, toPos, fromPos int) int {
 	if fromPos < maxPos {
 		switch nn := ins[fromPos].(type) {
 		case *ast.BreakNode:
-			if len(in.Lexeme) > 1 {
+			if in.Count() > 1 {
 				nn.Hard = true
 				ins[toPos] = nn
 				fromPos++
-			}
-		case *ast.TextNode:
-			if pp.inVerse {
-				ins[toPos] = &ast.TextNode{Text: strings.Repeat("\u00a0", len(in.Lexeme)) + nn.Text}
-				fromPos++
-				again = true
 			}
 		case *ast.LiteralNode:
 			if nn.Kind == ast.LiteralComment {
@@ -428,12 +421,12 @@ func (pp *postProcessor) processSpaceNode(
 			}
 		}
 	}
-	return again, fromPos
+	return fromPos
 }
 
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.
-func (*postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos int) int {
-	ins := iln.List
+func (*postProcessor) processInlineSliceTail(is *ast.InlineSlice, toPos int) int {
+	ins := *is
 	for toPos > 0 {
 		switch n := ins[toPos-1].(type) {
 		case *ast.TextNode:
@@ -451,8 +444,8 @@ func (*postProcessor) processInlineSliceTail(iln *ast.InlineListNode, toPos int)
 	return toPos
 }
 
-func (*postProcessor) processInlineListInplace(iln *ast.InlineListNode) {
-	for _, in := range iln.List {
+func (*postProcessor) processInlineSliceInplace(is *ast.InlineSlice) {
+	for _, in := range *is {
 		if n, ok := in.(*ast.TextNode); ok {
 			if n.Text == "..." {
 				n.Text = "\u2026"

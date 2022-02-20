@@ -3,14 +3,14 @@ title: Zettelmarkup: Region Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124173940
+modified: 20220218131131
 
 Region blocks does not directly have a visual representation.
 They just group a range of lines.
 You can use region blocks to enter [[attributes|00001007050000]] that apply only to this range of lines.
 One example is to enter a multi-line warning that should be visible.
 
-This kind of line-range block begins with at least three colon characters (""'':''"", ''U+003A'') at the first position of a line[^Since a [[description text|00001007030100]] only use exactly one colon character at the first position of a line, there is no possible ambiguity between these elements.].
+This kind of line-range block begins with at least three colon characters (""'':''"", U+003A) at the first position of a line[^Since a [[description text|00001007030100]] only use exactly one colon character at the first position of a line, there is no possible ambiguity between these elements.].
 You can add some [[attributes|00001007050000]] on the beginning line of a region block, following the initiating characters.
 The region block does not support the default attribute, but it supports the generic attribute.
 Some generic attributes, like ``=note``, ``=warning`` will be rendered special.

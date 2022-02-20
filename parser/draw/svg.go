@@ -21,23 +21,27 @@ package draw
 
 import (
 	"bytes"
-	"encoding/xml"
 	"fmt"
 	"io"
 	"strings"
+
+	"zettelstore.de/z/strfun"
 )
 
-// CanvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
-func CanvasToSVG(c *Canvas, font string, scaleX, scaleY int) []byte {
-	if len(font) == 0 {
+// canvasToSVG renders the supplied asciitosvg.Canvas to SVG, based on the supplied options.
+func canvasToSVG(c *canvas, font string, scaleX, scaleY int) []byte {
+	if len(c.objects()) == 0 {
+		return nil
+	}
+	if font == "" {
 		font = "monospace"
 	}
 
-	b := bytes.Buffer{}
+	var b bytes.Buffer
 	fmt.Fprintf(&b,
-		`<svg width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
-		(c.Size().X+1)*scaleX, (c.Size().Y+1)*scaleY)
-	writeMarkerDefs(&b, scaleX, scaleY)
+		`<svg class="zs-draw" width="%dpx" height="%dpx" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
+		(c.size().X+1)*scaleX, (c.size().Y+1)*scaleY)
+	writeMarkerDefs(&b, c, scaleX, scaleY)
 
 	// 3 passes, first closed paths, then open paths, then text.
 	writeClosedPaths(&b, c, scaleX, scaleY)
@@ -53,21 +57,29 @@ const (
 	nameEndMarker   = "Pointer"
 )
 
-func writeMarkerDefs(w io.Writer, scaleX, scaleY int) {
+func writeMarkerDefs(w io.Writer, c *canvas, scaleX, scaleY int) {
 	const markerTag = `<marker id="%s" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="strokeWidth" markerWidth="%g" markerHeight="%g" orient="auto"><path d="%s" /></marker>`
-	x := float64(scaleX - 3)
-	y := float64(scaleY - 3)
-	fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
-	fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
+	x := float64(scaleX) / 2
+	y := float64(scaleY) / 2
+	if c.hasStartMarker {
+		fmt.Fprintf(w, markerTag, nameStartMarker, x, y, "M 10 0 L 10 10 L 0 5 z")
+	}
+	if c.hasEndMarker {
+		fmt.Fprintf(w, markerTag, nameEndMarker, x, y, "M 0 0 L 10 5 L 0 10 z")
+	}
 }
 
 const pathTag = `%s<path id="%s%d" %sd="%s" />%s`
 
-func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
-	io.WriteString(w, `<g id="closed" stroke="#000" stroke-width="2" fill="none">`)
-	for i, obj := range c.Objects() {
-		if !obj.IsClosedPath() {
+func writeClosedPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
+	first := true
+	for i, obj := range c.objects() {
+		if !obj.isClosedPath() {
 			continue
+		}
+		if first {
+			io.WriteString(w, `<g id="closed" stroke="#000" stroke-width="2" fill="none">`)
+			first = false
 		}
 		opts := ""
 		if obj.IsDashed() {
@@ -78,7 +90,7 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 		if tag == "" {
 			tag = "__a2s__closed__options__"
 		}
-		options := c.Options()
+		options := c.options()
 		opts += getTagOpts(options, tag)
 
 		startLink, endLink := "", ""
@@ -89,17 +101,23 @@ func writeClosedPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 
 		fmt.Fprintf(w, pathTag, startLink, "closed", i, opts, flatten(obj.Points(), scaleX, scaleY)+"Z", endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
-func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
+func writeOpenPaths(w io.Writer, c *canvas, scaleX, scaleY int) {
 	const optStartMarker = `marker-start="url(#` + nameStartMarker + `)" `
 	const optEndMarker = `marker-end="url(#` + nameEndMarker + `)" `
 
-	io.WriteString(w, `<g id="lines" stroke="#000" stroke-width="2" fill="none">`)
-	for i, obj := range c.Objects() {
-		if !obj.IsOpenPath() {
+	first := true
+	for i, obj := range c.objects() {
+		if !obj.isOpenPath() {
 			continue
+		}
+		if first {
+			io.WriteString(w, `<g id="lines" stroke="#000" stroke-width="2" fill="none">`)
+			first = false
 		}
 		points := obj.Points()
 		for _, p := range points {
@@ -108,14 +126,10 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 				sp := scale(p, scaleX, scaleY)
 				fmt.Fprintf(w, `<circle cx="%g" cy="%g" r="3" fill="#000" />`, sp.X, sp.Y)
 			case tick:
-				const tickTag = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="1" />`
-
-				p := scale(p, scaleX, scaleY)
-				p1, p2 := p, p
-				fmt.Fprintf(w, tickTag, p1.X-4, p1.Y-4, p2.X+4, p2.Y+4)
-
-				p1, p2 = p, p
-				fmt.Fprintf(w, tickTag, p1.X+4, p1.Y-4, p2.X-4, p2.Y+4)
+				sp := scale(p, scaleX, scaleY)
+				const tickLine = `<line x1="%g" y1="%g" x2="%g" y2="%g" stroke-width="2" />`
+				fmt.Fprintf(w, tickLine, sp.X-4, sp.Y-4, sp.X+4, sp.Y+4)
+				fmt.Fprintf(w, tickLine, sp.X+4, sp.Y-4, sp.X-4, sp.Y+4)
 			}
 		}
 
@@ -130,7 +144,7 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 			opts += optEndMarker
 		}
 
-		options := c.Options()
+		options := c.options()
 		tag := obj.Tag()
 		opts += getTagOpts(options, tag)
 
@@ -141,31 +155,33 @@ func writeOpenPaths(w io.Writer, c *Canvas, scaleX, scaleY int) {
 		}
 		fmt.Fprintf(w, pathTag, startLink, "open", i, opts, flatten(points, scaleX, scaleY), endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
-func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
+func writeTexts(w io.Writer, c *canvas, font string, scaleX, scaleY int) {
 	fontSize := float64(scaleY) * 0.75
 	deltaX := float64(scaleX) / 4
 	deltaY := float64(scaleY) / 4
-	fmt.Fprintf(
-		w, `<g id="text" stroke="none" style="font-family:%s;font-size:%gpx">`, font, fontSize)
-	for i, obj := range c.Objects() {
-		if !obj.IsText() {
+	first := true
+	for i, obj := range c.objects() {
+		if !obj.isJustText() {
 			continue
+		}
+		if first {
+			fmt.Fprintf(w, `<g id="text" stroke="none" style="font-family:%s;font-size:%gpx">`, font, fontSize)
+			first = false
 		}
 
 		// Look up the fill of the containing box to determine what text color to use.
-		color, err := findTextColor(c, obj)
-		if err != nil {
-			fmt.Printf("Error figuring out text color: %s\n", err)
-		}
+		color := findTextColor(c, obj)
 
 		startLink, endLink := "", ""
 		text := string(obj.Text())
 		tag := obj.Tag()
 		if tag != "" {
-			options := c.Options()
+			options := c.options()
 			if label, ok := options[tag]["a2s:label"]; ok {
 				text = label.(string)
 			}
@@ -189,7 +205,9 @@ func writeTexts(w io.Writer, c *Canvas, font string, scaleX, scaleY int) {
 			`%s<text id="obj%d" x="%g" y="%g" fill="%s">%s</text>%s`,
 			startLink, i, sp.X-deltaX, sp.Y+deltaY, color, escape(text), endLink)
 	}
-	io.WriteString(w, "</g>")
+	if !first {
+		io.WriteString(w, "</g>")
+	}
 }
 
 func getTagOpts(options optionMaps, tag string) string {
@@ -212,18 +230,18 @@ func getTagOpts(options optionMaps, tag string) string {
 	return opts
 }
 
-func findTextColor(c *Canvas, o *object) (string, error) {
+func findTextColor(c *canvas, o *object) string {
 	// If the tag on the text object is a special reference, that's the color we should use
 	// for the text.
-	options := c.Options()
+	options := c.options()
 	if tag := o.Tag(); objTagRE.MatchString(tag) {
 		if fill, ok := options[tag]["fill"]; ok {
-			return fill.(string), nil
+			return fill.(string)
 		}
 	}
 
 	// Otherwise, find the most specific fill and calibrate the color based on that.
-	if containers := c.EnclosingObjects(o.Points()[0]); containers != nil {
+	if containers := c.enclosingObjects(o.Points()[0]); containers != nil {
 		for _, container := range containers {
 			if tag := container.Tag(); tag != "" {
 				if fill, ok := options[tag]["fill"]; ok {
@@ -237,14 +255,12 @@ func findTextColor(c *Canvas, o *object) (string, error) {
 	}
 
 	// Default to black.
-	return "#000", nil
+	return "#000"
 }
 
 func escape(s string) string {
 	b := bytes.Buffer{}
-	if err := xml.EscapeText(&b, []byte(s)); err != nil {
-		panic(err)
-	}
+	strfun.XMLEscape(&b, s)
 	return b.String()
 }
 
@@ -340,12 +356,11 @@ func flatten(points []point, scaleX, scaleY int) string {
 
 			fmt.Fprintf(&result, "L %g %g Q %g %g %g %g ", sx, sy, cx, cy, ex, ey)
 		} else {
-			// Oh, the horrors of drawing a straight line...
+			// Just draw a straight line.
 			fmt.Fprintf(&result, "L %g %g ", p.X, p.Y)
 		}
 
 		pp = p
 	}
-
 	return result.String()
 }

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,7 +21,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "gif",
+		Name:          api.ValueSyntaxGif,
 		AltNames:      nil,
 		IsTextParser:  false,
 		IsImageFormat: true,
@@ -46,20 +46,16 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
 	if p := parser.Get(syntax); p != nil {
 		syntax = p.Name
 	}
 	title, _ := m.Get(api.KeyTitle)
-	return &ast.BlockListNode{List: []ast.BlockNode{
-		&ast.BLOBNode{
-			Title:  title,
-			Syntax: syntax,
-			Blob:   []byte(inp.Src),
-		},
+	return ast.BlockSlice{&ast.BLOBNode{
+		Title:  title,
+		Syntax: syntax,
+		Blob:   []byte(inp.Src),
 	}}
 }
 
-func parseInlines(*input.Input, string) *ast.InlineListNode {
-	return nil
-}
+func parseInlines(*input.Input, string) ast.InlineSlice { return nil }

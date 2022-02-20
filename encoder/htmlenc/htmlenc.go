@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -49,13 +49,13 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteString("\n</head>\n<body>\n")
 	if hasTitle {
-		if ilnTitle := evalMeta(plainTitle); ilnTitle != nil {
+		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
 			v.b.WriteString("<h1>")
-			ast.Walk(v, ilnTitle)
+			ast.Walk(v, &isTitle)
 			v.b.WriteString("</h1>\n")
 		}
 	}
-	ast.Walk(v, zn.Ast)
+	ast.Walk(v, &zn.Ast)
 	v.writeEndnotes()
 	v.b.WriteString("</body>\n</html>")
 	length, err := v.b.Flush()
@@ -80,25 +80,25 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 }
 
 func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return he.WriteBlocks(w, zn.Ast)
+	return he.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.
-func (he *htmlEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(he, w)
-	ast.Walk(v, bln)
+	ast.Walk(v, bs)
 	v.writeEndnotes()
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (he *htmlEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (he *htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(he, w)
 	if env := he.env; env != nil {
 		v.inInteractive = env.Interactive
 	}
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }

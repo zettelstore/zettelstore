@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/strfun"
 )
 
 // NewFromInput parses the meta data of a zettel.
@@ -106,10 +107,10 @@ func isHeader(ch rune) bool {
 
 type predValidElem func(string) bool
 
-func addToSet(set map[string]bool, elems []string, useElem predValidElem) {
+func addToSet(set strfun.Set, elems []string, useElem predValidElem) {
 	for _, s := range elems {
 		if len(s) > 0 && useElem(s) {
-			set[s] = true
+			set.Set(s)
 		}
 	}
 }
@@ -121,7 +122,7 @@ func addSet(m *Meta, key, val string, useElem predValidElem) {
 		oldElems = nil
 	}
 
-	set := make(map[string]bool, len(newElems)+len(oldElems))
+	set := make(strfun.Set, len(newElems)+len(oldElems))
 	addToSet(set, newElems, useElem)
 	if len(set) == 0 {
 		// Nothing to add. Maybe because of rejected elements.

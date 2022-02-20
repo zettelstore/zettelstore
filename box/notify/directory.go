@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
+	"zettelstore.de/z/strfun"
 )
 
 type entrySet map[id.Zid]*DirEntry
@@ -303,22 +304,22 @@ func (ds *DirService) onDestroyDirectory() {
 	}
 }
 
-var validFileName = regexp.MustCompile(`^(\d{14}).*?(\.(.+))?$`)
+var validFileName = regexp.MustCompile(`^(\d{14})`)
 
 func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
 }
 
-func seekZidExt(name string) (id.Zid, string) {
+func seekZid(name string) id.Zid {
 	match := matchValidFileName(name)
 	if len(match) == 0 {
-		return id.Invalid, ""
+		return id.Invalid
 	}
 	zid, err := id.Parse(match[1])
 	if err != nil {
-		return id.Invalid, ""
+		return id.Invalid
 	}
-	return zid, match[3]
+	return zid
 }
 
 func fetchdirEntry(entries entrySet, zid id.Zid) *DirEntry {
@@ -334,12 +335,12 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	if entries == nil {
 		return id.Invalid
 	}
-	zid, ext := seekZidExt(name)
+	zid := seekZid(name)
 	if zid == id.Invalid {
 		return id.Invalid
 	}
 	entry := fetchdirEntry(entries, zid)
-	dupName1, dupName2 := updateEntry(ds.log, entry, name, ext)
+	dupName1, dupName2 := ds.updateEntry(entry, name)
 	if dupName1 != "" {
 		ds.log.Warn().Str("name", dupName1).Msg("Duplicate content (is ignored)")
 		if dupName2 != "" {
@@ -353,7 +354,7 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	if entries == nil {
 		return
 	}
-	zid, ext := seekZidExt(name)
+	zid := seekZid(name)
 	if zid == id.Invalid {
 		return
 	}
@@ -367,13 +368,13 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 			return
 		}
 	}
-	if ext == entry.ContentExt && name == entry.ContentName {
+	if name == entry.ContentName {
 		entry.ContentName = ""
 		entry.ContentExt = ""
-		replayUpdateUselessFiles(entry)
+		ds.replayUpdateUselessFiles(entry)
 	} else if name == entry.MetaName {
 		entry.MetaName = ""
-		replayUpdateUselessFiles(entry)
+		ds.replayUpdateUselessFiles(entry)
 	}
 	if entry.ContentName == "" && entry.MetaName == "" {
 		delete(entries, zid)
@@ -389,54 +390,74 @@ func removeDuplicate(entry *DirEntry, i int) {
 	entry.UselessFiles = entry.UselessFiles[:i+copy(entry.UselessFiles[i:], entry.UselessFiles[i+1:])]
 }
 
-func replayUpdateUselessFiles(entry *DirEntry) {
+func (ds *DirService) replayUpdateUselessFiles(entry *DirEntry) {
 	uselessFiles := entry.UselessFiles
 	if len(uselessFiles) == 0 {
 		return
 	}
 	entry.UselessFiles = make([]string, 0, len(uselessFiles))
 	for _, name := range uselessFiles {
-		updateEntry(nil, entry, name, onlyExt(name))
+		ds.updateEntry(entry, name)
+	}
+	if len(uselessFiles) == len(entry.UselessFiles) {
+		return
+	}
+loop:
+	for _, prevName := range uselessFiles {
+		for _, newName := range entry.UselessFiles {
+			if prevName == newName {
+				continue loop
+			}
+		}
+		ds.log.Info().Str("name", prevName).Msg("Previous duplicate file becomes useful")
 	}
 }
 
-const extMeta = "meta"
-
-func updateEntry(log *logger.Logger, entry *DirEntry, name, ext string) (string, string) {
-	if (ext == "" || ext == extMeta) && !extIsMetaAndContent(entry.ContentExt) {
-		return updateEntryMeta(log, entry, name, ext), ""
+func (ds *DirService) updateEntry(entry *DirEntry, name string) (string, string) {
+	ext := onlyExt(name)
+	if !extIsMetaAndContent(entry.ContentExt) {
+		if ext == "" {
+			return updateEntryMeta(entry, name), ""
+		}
+		if entry.MetaName == "" {
+			if nameWithoutExt(name, ext) == entry.ContentName {
+				// We have marked a file as content file, but it is a metadata file,
+				// because it is the same as the new file without extension.
+				entry.MetaName = entry.ContentName
+				entry.ContentName = ""
+				entry.ContentExt = ""
+				ds.replayUpdateUselessFiles(entry)
+			} else if entry.ContentName != "" && nameWithoutExt(entry.ContentName, entry.ContentExt) == name {
+				// We have already a valid content file, and new file should serve as metadata file,
+				// because it is the same as the content file without extension.
+				entry.MetaName = name
+				return "", ""
+			}
+		}
 	}
 	return updateEntryContent(entry, name, ext)
 }
-func updateEntryMeta(log *logger.Logger, entry *DirEntry, name, ext string) string {
+
+func nameWithoutExt(name, ext string) string {
+	return name[0 : len(name)-len(ext)-1]
+}
+
+func updateEntryMeta(entry *DirEntry, name string) string {
 	metaName := entry.MetaName
 	if metaName == "" {
-		if log != nil && ext == extMeta {
-			log.Warn().Str("name", name).Msg("Metadata file should not end with .meta any more")
-		}
 		entry.MetaName = name
 		return ""
 	}
 	if metaName == name {
 		return ""
 	}
-	metaExt := onlyExt(metaName)
-	if metaExt == ext {
-		if newNameIsBetter(metaName, name) {
-			entry.MetaName = name
-			return addUselessFile(entry, metaName)
-		}
-		return addUselessFile(entry, name)
-	}
-	if metaExt == "" {
-		return addUselessFile(entry, name)
-	}
-	if ext == "" {
+	if newNameIsBetter(metaName, name) {
 		entry.MetaName = name
 		return addUselessFile(entry, metaName)
 	}
-	panic(name)
+	return addUselessFile(entry, name)
 }
+
 func updateEntryContent(entry *DirEntry, name, ext string) (string, string) {
 	contentName := entry.ContentName
 	if contentName == "" {
@@ -501,20 +522,21 @@ func newNameIsBetter(oldName, newName string) bool {
 	return oldName > newName
 }
 
-var supportedSyntax, isPrimarySyntax map[string]bool
+var supportedSyntax, primarySyntax strfun.Set
 
 func init() {
 	syntaxList := parser.GetSyntaxes()
-	supportedSyntax = make(map[string]bool, len(syntaxList))
-	isPrimarySyntax = make(map[string]bool, len(syntaxList))
+	supportedSyntax = strfun.NewSet(syntaxList...)
+	primarySyntax = make(map[string]struct{}, len(syntaxList))
 	for _, syntax := range syntaxList {
-		supportedSyntax[syntax] = true
-		isPrimarySyntax[syntax] = parser.Get(syntax).Name == syntax
+		if parser.Get(syntax).Name == syntax {
+			primarySyntax.Set(syntax)
+		}
 	}
 }
 func newExtIsBetter(oldExt, newExt string) bool {
-	oldSyntax := supportedSyntax[oldExt]
-	if oldSyntax != supportedSyntax[newExt] {
+	oldSyntax := supportedSyntax.Has(oldExt)
+	if oldSyntax != supportedSyntax.Has(newExt) {
 		return !oldSyntax
 	}
 	if oldSyntax {
@@ -532,7 +554,7 @@ func newExtIsBetter(oldExt, newExt string) bool {
 		if oldImageFormat := oldInfo.IsImageFormat; oldImageFormat != newInfo.IsImageFormat {
 			return oldImageFormat
 		}
-		if oldPrimary := isPrimarySyntax[oldExt]; oldPrimary != isPrimarySyntax[newExt] {
+		if oldPrimary := primarySyntax.Has(oldExt); oldPrimary != primarySyntax.Has(newExt) {
 			return !oldPrimary
 		}
 	}

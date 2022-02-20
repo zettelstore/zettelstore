@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -32,18 +33,18 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) *ast.BlockListNode {
+func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 	parser := &zmkP{inp: inp}
-	bns := parser.parseBlockList()
-	postProcessBlocks(bns)
-	return bns
+	bs := parser.parseBlockSlice()
+	postProcessBlocks(&bs)
+	return bs
 }
 
-func parseInlines(inp *input.Input, _ string) *ast.InlineListNode {
+func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
 	parser := &zmkP{inp: inp}
-	iln := parser.parseInlineList()
-	postProcessInlines(iln)
-	return iln
+	is := parser.parseInlineSlice()
+	postProcessInlines(&is)
+	return is
 }
 
 type zmkP struct {
@@ -161,7 +162,7 @@ func updateAttrs(attrs map[string]string, key, val string) {
 // continued on next line.
 // If sameLine is False, it is called from inline nodes. In this case, the next
 // rune must be '{'. A continuation on next lines is allowed.
-func (cp *zmkP) parseAttributes(sameLine bool) *ast.Attributes {
+func (cp *zmkP) parseAttributes(sameLine bool) zjson.Attributes {
 	inp := cp.inp
 	if sameLine {
 		pos := inp.Pos
@@ -169,7 +170,7 @@ func (cp *zmkP) parseAttributes(sameLine bool) *ast.Attributes {
 			inp.Next()
 		}
 		if pos < inp.Pos {
-			return &ast.Attributes{Attrs: map[string]string{"": string(inp.Src[pos:inp.Pos])}}
+			return zjson.Attributes{"": string(inp.Src[pos:inp.Pos])}
 		}
 
 		// No immediate name: skip spaces
@@ -185,21 +186,21 @@ func (cp *zmkP) parseAttributes(sameLine bool) *ast.Attributes {
 	return nil
 }
 
-func (cp *zmkP) doParseAttributes(sameLine bool) (res *ast.Attributes, success bool) {
+func (cp *zmkP) doParseAttributes(sameLine bool) (res zjson.Attributes, success bool) {
 	inp := cp.inp
 	if inp.Ch != '{' {
 		return nil, false
 	}
 	inp.Next()
-	attrs := map[string]string{}
+	attrs := zjson.Attributes{}
 	if !cp.parseAttributeValues(sameLine, attrs) {
 		return nil, false
 	}
 	inp.Next()
-	return &ast.Attributes{Attrs: attrs}, true
+	return attrs, true
 }
 
-func (cp *zmkP) parseAttributeValues(sameLine bool, attrs map[string]string) bool {
+func (cp *zmkP) parseAttributeValues(sameLine bool, attrs zjson.Attributes) bool {
 	inp := cp.inp
 	for {
 		cp.skipSpaceLine(sameLine)

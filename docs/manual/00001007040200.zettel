@@ -3,7 +3,7 @@ title: Zettelmarkup: Literal-like formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124170441
+modified: 20220218131420
 
 There are some reasons to mark text that should be rendered as uninterpreted:
 * Mark text as literal, sometimes as part of a program.
@@ -12,11 +12,11 @@ There are some reasons to mark text that should be rendered as uninterpreted:
 
 === Literal text
 Literal text somehow relates to [[verbatim blocks|00001007030500]]: their content should not be interpreted further, but may be rendered special.
-It is specified by two grave accent characters (""''`''"", ''U+0060''), followed by the text, followed by again two grave accent characters, optionally followed by an [[attribute|00001007050000]] specification.
-Similar to the verbatim block, the literal element allows also a modifier letter grave accent (""''ˋ''"", ''U+02CB'') as an alternative to the grave accent character[^On some devices, such as an iPhone / iPad, a grave accent character is harder to enter and is often confused with a modifier letter grave accent.].
+It is specified by two grave accent characters (""''`''"", U+0060), followed by the text, followed by again two grave accent characters, optionally followed by an [[attribute|00001007050000]] specification.
+Similar to the verbatim block, the literal element allows also a modifier letter grave accent (""''ˋ''"", U+02CB) as an alternative to the grave accent character[^On some devices, such as an iPhone / iPad, a grave accent character is harder to enter and is often confused with a modifier letter grave accent.].
 However, all four characters must be the same.
 
-The literal element supports the default attribute: when given, all spaces in the text are rendered in HTML as open box characters (""''&#x2423;''"", ''U+2423'').
+The literal element supports the default attribute: when given, all spaces in the text are rendered in HTML as open box characters (U+2423).
 The use of a generic attribute allows to specify a ([[programming|00001007050200]]) language that controls syntax coloring when rendered in HTML.
 
 If you want to specify a grave accent character in the text, either use modifier grave accent characters as delimiters for the element, or put a backslash character before the grave accent character you want to use inside the element.
@@ -28,20 +28,34 @@ Examples:
 * ``\`\`abc\\\`def\`\``` is rendered in HTML as ::``abc\`def``::{=example}.
 * ``\`\`abc\\\\def\`\``` is rendered in HTML as ::``abc\\def``::{=example}.
 
-=== Keyboard input
-To mark text as input into a computer program, delimit your text with two plus sign characters (""''+''"", ''U+002B'') on each side.
+=== Computer input
+To mark text as input into a computer program, delimit your text with two apostrophe characters (""''\'''"", U+0027) on each side.
 
 Example:
-* ``++STRG-C++`` renders in HTML as ::++STRG-C++::{=example}.
-* ``++STRG C++{-}`` renders in HTML as ::++STRG C++{-}::{=example}.
+* ``''STRG-C''`` renders in HTML as ::''STRG-C''::{=example}.
+* ``''STRG C''{-}`` renders in HTML as ::''STRG C''{-}::{=example}.
 
 Attributes can be specified, the default attribute has the same semantic as for literal text.
 
 === Computer output
-To mark text as output from a computer program, delimit your text with two equal sign characters (""''=''"", ''U+003D'') on each side.
+To mark text as output from a computer program, delimit your text with two equal sign characters (""''=''"", U+003D) on each side.
 
 Examples:
 * ``==The result is: 42==`` renders in HTML as ::==The result is: 42==::{=example}.
 * ``==The result is: 42=={-}`` renders in HTML as ::==The result is: 42=={-}::{=example}.
 
 Attributes can be specified, the default attribute has the same semantic as for literal text.
+
+=== Inline-zettel snippet
+To specify an inline snippet in a different [[syntax|00001008000000]], delimit your text with two at-sign characters (""''@''"", U+0040) on each side.
+
+You can add some [[attributes|00001007050000]] immediate after the two closing at-sign characters to specify the syntax to use.
+Either use the attribute key ""syntax"" or use the generic attribute to specify the syntax value.
+If no value is provided, ""draw"" is assumed.
+
+Examples:
+* ``A @@-->@@ B`` renders in HTML as ::A @@-->@@ B::{=example}.
+* ``@@<small>@@{=html}Small@@</small>@@{=html}`` renders in HTML as ::@@<small>@@{=html}Small@@</small>@@{=html}::{=example}.
+
+To some degree, an inline-zettel snippet is the @@<small>@@{=html}smaller@@</small>@@{=html} sibling of the [[inline-zettel block|00001007031200]].
+For HTML syntax, the same rules apply.

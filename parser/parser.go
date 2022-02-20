@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -33,8 +33,8 @@ type Info struct {
 	AltNames      []string
 	IsTextParser  bool
 	IsImageFormat bool
-	ParseBlocks   func(*input.Input, *meta.Meta, string) *ast.BlockListNode
-	ParseInlines  func(*input.Input, string) *ast.InlineListNode
+	ParseBlocks   func(*input.Input, *meta.Meta, string) ast.BlockSlice
+	ParseInlines  func(*input.Input, string) ast.InlineSlice
 }
 
 var registry = map[string]*Info{}
@@ -92,20 +92,21 @@ func IsImageFormat(syntax string) bool {
 }
 
 // ParseBlocks parses some input and returns a slice of block nodes.
-func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) *ast.BlockListNode {
-	bln := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanBlockList(bln)
-	return bln
+func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+	bs := Get(syntax).ParseBlocks(inp, m, syntax)
+	cleaner.CleanBlockSlice(&bs)
+	return bs
 }
 
 // ParseInlines parses some input and returns a slice of inline nodes.
-func ParseInlines(inp *input.Input, syntax string) *ast.InlineListNode {
+func ParseInlines(inp *input.Input, syntax string) ast.InlineSlice {
+	// Do not clean, because we don't know the context where this function will be called.
 	return Get(syntax).ParseInlines(inp, syntax)
 }
 
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
-func ParseMetadata(value string) *ast.InlineListNode {
+func ParseMetadata(value string) ast.InlineSlice {
 	return ParseInlines(input.NewInput([]byte(value)), api.ValueSyntaxZmk)
 }
 

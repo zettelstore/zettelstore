@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -39,7 +39,7 @@ var pngTestCases = []blobTestCase{
 			0x42, 0x60, 0x82,
 		},
 		expect: expectMap{
-			encoderDJSON:  `[{"t":"Blob","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
+			encoderZJSON:  `[{"":"BLOB","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
 			encoderHTML:   `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==" title="PNG">`,
 			encoderNative: `[BLOB "PNG" "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="]`,
 			encoderText:   "",
@@ -53,7 +53,7 @@ func TestBlob(t *testing.T) {
 	m.Set(api.KeyTitle, "PNG")
 	for testNum, tc := range pngTestCases {
 		inp := input.NewInput(tc.blob)
-		pe := &peBlocks{bln: parser.ParseBlocks(inp, m, "png")}
+		pe := &peBlocks{bs: parser.ParseBlocks(inp, m, "png")}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, "???")
 	}
 }

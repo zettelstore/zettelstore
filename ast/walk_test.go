@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -13,64 +13,56 @@ package ast_test
 import (
 	"testing"
 
+	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 )
 
 func BenchmarkWalk(b *testing.B) {
-	root := &ast.BlockListNode{
-		List: []ast.BlockNode{
-			&ast.HeadingNode{
-				Inlines: ast.CreateInlineListNodeFromWords("A", "Simple", "Heading"),
-			},
-			&ast.ParaNode{
-				Inlines: ast.CreateInlineListNodeFromWords("This", "is", "the", "introduction."),
-			},
-			&ast.NestedListNode{
-				Kind: ast.NestedListUnordered,
-				Items: []ast.ItemSlice{
-					[]ast.ItemNode{
-						&ast.ParaNode{
-							Inlines: ast.CreateInlineListNodeFromWords("Item", "1"),
-						},
+	root := ast.BlockSlice{
+		&ast.HeadingNode{
+			Inlines: ast.CreateInlineSliceFromWords("A", "Simple", "Heading"),
+		},
+		&ast.ParaNode{
+			Inlines: ast.CreateInlineSliceFromWords("This", "is", "the", "introduction."),
+		},
+		&ast.NestedListNode{
+			Kind: ast.NestedListUnordered,
+			Items: []ast.ItemSlice{
+				[]ast.ItemNode{
+					&ast.ParaNode{
+						Inlines: ast.CreateInlineSliceFromWords("Item", "1"),
 					},
-					[]ast.ItemNode{
-						&ast.ParaNode{
-							Inlines: ast.CreateInlineListNodeFromWords("Item", "2"),
-						},
+				},
+				[]ast.ItemNode{
+					&ast.ParaNode{
+						Inlines: ast.CreateInlineSliceFromWords("Item", "2"),
 					},
 				},
 			},
-			&ast.ParaNode{
-				Inlines: ast.CreateInlineListNodeFromWords("This", "is", "some", "intermediate", "text."),
-			},
-			&ast.ParaNode{
-				Inlines: ast.CreateInlineListNode(
-					&ast.FormatNode{
-						Kind: ast.FormatEmph,
-						Attrs: &ast.Attributes{
-							Attrs: map[string]string{
-								"":      "class",
-								"color": "green",
-							},
-						},
-						Inlines: ast.CreateInlineListNodeFromWords("This", "is", "some", "emphasized", "text."),
-					},
-					&ast.SpaceNode{Lexeme: " "},
-					&ast.LinkNode{
-						Ref: &ast.Reference{
-							Value: "http://zettelstore.de",
-						},
-						Inlines: ast.CreateInlineListNodeFromWords("URL", "text."),
-						OnlyRef: false,
-					},
-				),
-			},
 		},
+		&ast.ParaNode{
+			Inlines: ast.CreateInlineSliceFromWords("This", "is", "some", "intermediate", "text."),
+		},
+		ast.CreateParaNode(
+			&ast.FormatNode{
+				Kind: ast.FormatEmph,
+				Attrs: zjson.Attributes(map[string]string{
+					"":      "class",
+					"color": "green",
+				}),
+				Inlines: ast.CreateInlineSliceFromWords("This", "is", "some", "emphasized", "text."),
+			},
+			&ast.SpaceNode{Lexeme: " "},
+			&ast.LinkNode{
+				Ref:     &ast.Reference{Value: "http://zettelstore.de"},
+				Inlines: ast.CreateInlineSliceFromWords("URL", "text."),
+			},
+		),
 	}
 	v := benchVisitor{}
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		ast.Walk(&v, root)
+		ast.Walk(&v, &root)
 	}
 }
 

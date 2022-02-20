@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -11,7 +11,10 @@
 // Package collect provides functions to collect items from a syntax tree.
 package collect
 
-import "zettelstore.de/z/ast"
+import (
+	"zettelstore.de/z/ast"
+	"zettelstore.de/z/strfun"
+)
 
 // DivideReferences divides the given list of rederences into zettel, local, and external References.
 func DivideReferences(all []*ast.Reference) (zettel, local, external []*ast.Reference) {
@@ -19,9 +22,9 @@ func DivideReferences(all []*ast.Reference) (zettel, local, external []*ast.Refe
 		return nil, nil, nil
 	}
 
-	mapZettel := make(map[string]bool)
-	mapLocal := make(map[string]bool)
-	mapExternal := make(map[string]bool)
+	mapZettel := make(strfun.Set)
+	mapLocal := make(strfun.Set)
+	mapExternal := make(strfun.Set)
 	for _, ref := range all {
 		if ref.State == ast.RefStateSelf {
 			continue
@@ -37,11 +40,11 @@ func DivideReferences(all []*ast.Reference) (zettel, local, external []*ast.Refe
 	return zettel, local, external
 }
 
-func appendRefToList(reflist []*ast.Reference, refSet map[string]bool, ref *ast.Reference) []*ast.Reference {
+func appendRefToList(reflist []*ast.Reference, refSet strfun.Set, ref *ast.Reference) []*ast.Reference {
 	s := ref.String()
-	if _, ok := refSet[s]; !ok {
+	if !refSet.Has(s) {
 		reflist = append(reflist, ref)
-		refSet[s] = true
+		refSet.Set(s)
 	}
 	return reflist
 }

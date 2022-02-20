@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -16,8 +16,10 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/strfun"
 
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
+	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.
@@ -25,19 +27,16 @@ import (
 )
 
 func TestParserType(t *testing.T) {
-	syntaxes := parser.GetSyntaxes()
-	syntaxSet := make(map[string]bool, len(syntaxes))
-	for _, syntax := range syntaxes {
-		syntaxSet[syntax] = true
-	}
+	syntaxSet := strfun.NewSet(parser.GetSyntaxes()...)
 	testCases := []struct {
 		syntax string
 		text   bool
 		image  bool
 	}{
-		{"html", false, false},
+		{api.ValueSyntaxHTML, false, false},
 		{"css", false, false},
-		{"gif", false, true},
+		{api.ValueSyntaxDraw, true, false},
+		{api.ValueSyntaxGif, false, true},
 		{"jpeg", false, true},
 		{"jpg", false, true},
 		{"markdown", true, false},
@@ -46,8 +45,8 @@ func TestParserType(t *testing.T) {
 		{api.ValueSyntaxNone, false, false},
 		{"plain", false, false},
 		{"png", false, true},
-		{"svg", false, true},
-		{"text", false, false},
+		{api.ValueSyntaxSVG, false, true},
+		{api.ValueSyntaxText, false, false},
 		{"txt", false, false},
 		{api.ValueSyntaxZmk, true, false},
 	}

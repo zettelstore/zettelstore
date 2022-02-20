@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -38,8 +38,8 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		part := getPart(q, partContent)
 		var env evaluator.Environment
 		if enc == api.EncoderHTML {
-			env.GetImageMaterial = func(zettel domain.Zettel, syntax string) ast.MaterialNode {
-				return &ast.BLOBMaterialNode{
+			env.GetImageMaterial = func(zettel domain.Zettel, syntax string) ast.InlineEmbedNode {
+				return &ast.EmbedBLOBNode{
 					Blob:   zettel.Content.AsBytes(),
 					Syntax: syntax,
 				}
@@ -50,7 +50,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 			a.reportUsecaseError(w, err)
 			return
 		}
-		evalMeta := func(value string) *ast.InlineListNode {
+		evalMeta := func(value string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		a.writeEncodedZettelPart(w, zn, evalMeta, enc, encStr, part)

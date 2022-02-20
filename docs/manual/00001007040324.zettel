@@ -1,17 +1,18 @@
 id: 00001007040324
-title: Zettelmarkup: Inline Transclusion of Text
+title: Zettelmarkup: Inline-mode Transclusion
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20211124175757
+modified: 20220131155955
 
-Inline transclusion applies to all zettel that are parsed in an non-trivial way.
-For example, textual content is assumed if the [[syntax|00001006020000#syntax]] of a zettel is ''zmk'' ([[Zettelmarkup|00001007000000]]), or ''markdown'' / ''md'' ([[Markdown|00001008010000]]).
+Inline-mode transclusion applies to all zettel that are parsed in a non-trivial way, e.g. as structured textual content.
+For example, textual content is assumed if the [[syntax|00001006020000#syntax]] of a zettel is ""zmk"" ([[Zettelmarkup|00001007000000]]), or ""markdown"" / ""md"" ([[Markdown|00001008010000]]).
+If the syntax is ""[[draw|00001008050000]]"", it is also a non-trivial way.
 
-Since the transclusion is at the level of [[inline-structured elements|00001007040000]], the transclude specification must be replaced with some inline-structured elements.
+Since this type of transclusion is at the level of [[inline-structured elements|00001007040000]], the transclude specification must be replaced with some inline-structured elements.
 
 First, the referenced zettel is read.
-If it contains inline transclusions, these will be expanded, recursively.
+If it contains other transclusions, these will be expanded, recursively.
 When an endless recursion is detected, expansion does not take place.
 Instead an error message replaces the transclude specification.
 
@@ -39,3 +40,6 @@ If no inline-structured elements are found, the transclude specification is repl
 
 To avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]] (also known as ""XML bomb""), the total number of transclusions / expansions is limited.
 The limit can be controlled by setting the value [[''max-transclusions''|00001004020000#max-transclusions]] of the runtime configuration zettel.
+
+=== See also
+[[Full transclusion|00001007031100]] does not work inside some text, but is used for [[block-structured elements|00001007030000]].

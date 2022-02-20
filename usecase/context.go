@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -185,7 +185,7 @@ func (zc *contextQueue) next() (*meta.Meta, int, bool) {
 		if found {
 			continue
 		}
-		zc.seen[zid] = true
+		zc.seen.Zid(zid)
 		return m, task.depth, true
 	}
 	return nil, -1, false

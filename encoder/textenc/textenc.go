@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -32,14 +32,14 @@ type textEncoder struct{}
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta, evalMeta)
-	v.visitBlockList(zn.Ast)
+	v.visitBlockSlice(&zn.Ast)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteMeta encodes metadata as text.
 func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	buf := encoder.NewBufWriter(w)
+	buf := encoder.NewEncWriter(w)
 	for _, pair := range m.ComputedPairs() {
 		switch meta.Type(pair.Key) {
 		case meta.TypeBool:
@@ -47,7 +47,8 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
-			te.WriteInlines(&buf, evalMeta(pair.Value))
+			is := evalMeta(pair.Value)
+			te.WriteInlines(&buf, &is)
 		default:
 			buf.WriteString(pair.Value)
 		}
@@ -57,7 +58,7 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	return length, err
 }
 
-func writeBool(buf *encoder.BufWriter, val string) {
+func writeBool(buf *encoder.EncWriter, val string) {
 	if meta.BoolValue(val) {
 		buf.WriteString("true")
 	} else {
@@ -65,7 +66,7 @@ func writeBool(buf *encoder.BufWriter, val string) {
 	}
 }
 
-func writeTagSet(buf *encoder.BufWriter, tags []string) {
+func writeTagSet(buf *encoder.EncWriter, tags []string) {
 	for i, tag := range tags {
 		if i > 0 {
 			buf.WriteByte(' ')
@@ -76,41 +77,41 @@ func writeTagSet(buf *encoder.BufWriter, tags []string) {
 }
 
 func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return te.WriteBlocks(w, zn.Ast)
+	return te.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*textEncoder) WriteBlocks(w io.Writer, bln *ast.BlockListNode) (int, error) {
+func (*textEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
-	v.visitBlockList(bln)
+	v.visitBlockSlice(bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*textEncoder) WriteInlines(w io.Writer, iln *ast.InlineListNode) (int, error) {
+func (*textEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
-	ast.Walk(v, iln)
+	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	b         encoder.BufWriter
+	b         encoder.EncWriter
 	inlinePos int
 }
 
 func newVisitor(w io.Writer) *visitor {
-	return &visitor{b: encoder.NewBufWriter(w)}
+	return &visitor{b: encoder.NewEncWriter(w)}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
-	case *ast.BlockListNode:
-		v.visitBlockList(n)
-	case *ast.InlineListNode:
-		for i, in := range n.List {
+	case *ast.BlockSlice:
+		v.visitBlockSlice(n)
+	case *ast.InlineSlice:
+		for i, in := range *n {
 			v.inlinePos = i
 			ast.Walk(v, in)
 		}
@@ -120,10 +121,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitVerbatim(n)
 		return nil
 	case *ast.RegionNode:
-		v.visitBlockList(n.Blocks)
-		if n.Inlines != nil {
+		v.visitBlockSlice(&n.Blocks)
+		if len(n.Inlines) > 0 {
 			v.b.WriteByte('\n')
-			ast.Walk(v, n.Inlines)
+			ast.Walk(v, &n.Inlines)
 		}
 		return nil
 	case *ast.NestedListNode:
@@ -134,6 +135,8 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	case *ast.TableNode:
 		v.visitTable(n)
+		return nil
+	case *ast.TranscludeNode, *ast.BLOBNode:
 		return nil
 	case *ast.TextNode:
 		v.b.WriteString(n.Text)
@@ -152,8 +155,13 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		return nil
 	case *ast.LinkNode:
-		if !n.OnlyRef {
-			ast.Walk(v, n.Inlines)
+		if len(n.Inlines) > 0 {
+			ast.Walk(v, &n.Inlines)
+		}
+		return nil
+	case *ast.MarkNode:
+		if len(n.Inlines) > 0 {
+			ast.Walk(v, &n.Inlines)
 		}
 		return nil
 	case *ast.FootnoteNode:
@@ -163,7 +171,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		// No 'return nil' to write text
 	case *ast.LiteralNode:
 		if n.Kind != ast.LiteralComment {
-			v.b.WriteString(n.Text)
+			v.b.Write(n.Content)
 		}
 	}
 	return v
@@ -173,10 +181,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	if vn.Kind == ast.VerbatimComment {
 		return
 	}
-	for i, line := range vn.Lines {
-		v.writePosChar(i, '\n')
-		v.b.WriteString(line)
-	}
+	v.b.Write(vn.Content)
 }
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
@@ -192,7 +197,7 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 func (v *visitor) visitDescriptionList(dl *ast.DescriptionListNode) {
 	for i, descr := range dl.Descriptions {
 		v.writePosChar(i, '\n')
-		ast.Walk(v, descr.Term)
+		ast.Walk(v, &descr.Term)
 		for _, b := range descr.Descriptions {
 			v.b.WriteByte('\n')
 			for k, d := range b {
@@ -217,12 +222,12 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 func (v *visitor) writeRow(row ast.TableRow) {
 	for i, cell := range row {
 		v.writePosChar(i, ' ')
-		ast.Walk(v, cell.Inlines)
+		ast.Walk(v, &cell.Inlines)
 	}
 }
 
-func (v *visitor) visitBlockList(bns *ast.BlockListNode) {
-	for i, bn := range bns.List {
+func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
+	for i, bn := range *bs {
 		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)
 	}

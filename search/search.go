@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -69,6 +69,26 @@ type Search struct {
 
 type expTagValues map[string][]expValue
 
+// Clone the search value.
+func (s *Search) Clone() *Search {
+	if s == nil {
+		return nil
+	}
+	c := new(Search)
+	c.preMatch = s.preMatch
+	c.tags = make(expTagValues, len(s.tags))
+	for k, v := range s.tags {
+		c.tags[k] = v
+	}
+	c.search = append([]expValue{}, s.search...)
+	c.negate = s.negate
+	c.order = s.order
+	c.descending = s.descending
+	c.offset = s.offset
+	c.limit = s.limit
+	return c
+}
+
 // RandomOrder is a pseudo metadata key that selects a random order.
 const RandomOrder = "_random"
 
@@ -113,55 +133,72 @@ type expValue struct {
 }
 
 // AddExpr adds a match expression to the search.
-func (s *Search) AddExpr(key, val string) *Search {
-	val, negate, op := parseOp(strings.TrimSpace(val))
+func (s *Search) AddExpr(key, value string) *Search {
+	val := parseOp(strings.TrimSpace(value))
 	if s == nil {
 		s = new(Search)
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if key == "" {
-		s.search = append(s.search, expValue{value: val, op: op, negate: negate})
+		s.addSearch(val)
+	} else if s.tags == nil {
+		s.tags = expTagValues{key: {val}}
 	} else {
-		if s.tags == nil {
-			s.tags = expTagValues{key: {{value: val, op: op, negate: negate}}}
-		} else {
-			s.tags[key] = append(s.tags[key], expValue{value: val, op: op, negate: negate})
-		}
+		s.tags[key] = append(s.tags[key], val)
 	}
 	return s
 }
 
-func parseOp(s string) (r string, negate bool, op compareOp) {
+func (s *Search) addSearch(val expValue) {
+	if val.negate {
+		val.op = val.op.negate()
+		val.negate = false
+	}
+	switch val.op {
+	case cmpDefault:
+		val.op = cmpContains
+	case cmpNotDefault:
+		val.op = cmpContains
+		val.negate = true
+	case cmpNotEqual, cmpNoPrefix, cmpNoSuffix, cmpNotContains:
+		val.op = val.op.negate()
+		val.negate = true
+	}
+	s.search = append(s.search, val)
+}
+
+func parseOp(s string) expValue {
 	if s == "" {
-		return s, false, cmpDefault
+		return expValue{value: s, op: cmpDefault, negate: false}
 	}
 	if s[0] == '\\' {
-		return s[1:], false, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: false}
 	}
+	negate := false
 	if s[0] == '!' {
 		negate = true
 		s = s[1:]
 	}
 	if s == "" {
-		return s, negate, cmpDefault
+		return expValue{value: s, op: cmpDefault, negate: negate}
 	}
 	if s[0] == '\\' {
-		return s[1:], negate, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: negate}
 	}
 	switch s[0] {
 	case ':':
-		return s[1:], negate, cmpDefault
+		return expValue{value: s[1:], op: cmpDefault, negate: negate}
 	case '=':
-		return s[1:], negate, cmpEqual
+		return expValue{value: s[1:], op: cmpEqual, negate: negate}
 	case '>':
-		return s[1:], negate, cmpPrefix
+		return expValue{value: s[1:], op: cmpPrefix, negate: negate}
 	case '<':
-		return s[1:], negate, cmpSuffix
+		return expValue{value: s[1:], op: cmpSuffix, negate: negate}
 	case '~':
-		return s[1:], negate, cmpContains
+		return expValue{value: s[1:], op: cmpContains, negate: negate}
 	}
-	return s, negate, cmpDefault
+	return expValue{value: s, op: cmpDefault, negate: negate}
 }
 
 // SetNegate changes the search to reverse its selection.
@@ -277,10 +314,12 @@ func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, 
 	if s == nil {
 		return alwaysIncluded, matchAlways
 	}
-	s.mx.Lock()
-	pred := s.retrieveIndex(searcher)
-	match := s.compileMatch()
-	s.mx.Unlock()
+	s = s.Clone()
+	match := s.compileMatch() // Match might add some searches
+	var pred RetrievePredicate
+	if searcher != nil {
+		pred = s.retrieveIndex(searcher)
+	}
 
 	if pred == nil {
 		if match == nil {
@@ -299,7 +338,6 @@ func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, 
 
 // retrieveIndex and return a predicate to ask for results.
 func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
-	negate := s.negate
 	if len(s.search) == 0 {
 		return nil
 	}
@@ -308,6 +346,7 @@ func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
 		return s.neverWithNegate()
 	}
 
+	negate := s.negate
 	positives := retrievePositives(normCalls, plainCalls)
 	if positives == nil {
 		// No positive search for words, must contain only words for a negative search.
@@ -338,7 +377,7 @@ func (s *Search) neverWithNegate() RetrievePredicate {
 
 // compileMatch returns a function to match metadata based on select specification.
 func (s *Search) compileMatch() MetaMatchFunc {
-	compMeta := compileMeta(s.tags)
+	compMeta := s.compileMeta()
 	preMatch := s.preMatch
 	if compMeta == nil {
 		if preMatch == nil {

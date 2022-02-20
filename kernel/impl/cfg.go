@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -276,8 +276,8 @@ func (cfg *myConfig) GetMaxTransclusions() int {
 	cfg.mx.RLock()
 	val := cfg.data.GetNumber(keyMaxTransclusions, defaultValue)
 	cfg.mx.RUnlock()
-	if val > 0 {
-		return val
+	if 0 < val && val < 100000000 {
+		return int(val)
 	}
 	return defaultValue
 }

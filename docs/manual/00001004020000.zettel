@@ -3,71 +3,71 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220111103757
+modified: 20220218134207
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
 The following metadata keys change the appearance / behavior of Zettelstore:
 
-; [!default-copyright]''default-copyright''
+; [!default-copyright|''default-copyright'']
 : Copyright value to be used when rendering content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''copyright''.
 
   Default: (the empty string).
-; [!default-lang]''default-lang''
+; [!default-lang|''default-lang'']
 : Default language to be used when displaying content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''lang''. Default: ""en"".
 
   This value is also used to specify the language for all non-zettel content, e.g. lists or search results.
 
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
-; [!default-license]''default-license''
+; [!default-license|''default-license'']
 : License value to be used when rendering content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''license''.
   Default: (the empty string).
-; [!default-role]''default-role''
+; [!default-role|''default-role'']
 : Role to be used, if a zettel specifies no ''role'' [[meta key|00001006020000]].
   Default: ""zettel"".
-; [!default-syntax]''default-syntax''
+; [!default-syntax|''default-syntax'']
 : Syntax to be used, if a zettel specifies no ''syntax'' [[meta key|00001006020000]].
   Default: ""zmk"" (""[[Zettelmarkup|00001007000000]]"").
-; [!default-title]''default-title''
+; [!default-title|''default-title'']
 : Title to be used, if a zettel specifies no ''title'' [[meta key|00001006020000]].
   Default: ""Untitled"".
 
   You can use all [[inline-structured elements|00001007040000]] of Zettelmarkup.
-; [!default-visibility]''default-visibility''
+; [!default-visibility|''default-visibility'']
 : Visibility to be used, if zettel does not specify a value for the [[''visibility''|00001006020000#visibility]] metadata key.
   Default: ""login"".
-; [!expert-mode]''expert-mode''
+; [!expert-mode|''expert-mode'']
 : If set to a boolean true value, all zettel with [[visibility ""expert""|00001010070200]] will be shown (to the owner, if [[authentication is enabled|00001010040100]]; to all, otherwise).
   This affects most computed zettel.
   Default: ""False"".
-; [!footer-html]''footer-html''
+; [!footer-html|''footer-html'']
 : Contains some HTML code that will be included into the footer of each Zettelstore web page.
   It only affects the [[web user interface|00001014000000]].
   Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
   Default: (the empty string).
-; [!home-zettel]''home-zettel''
+; [!home-zettel|''home-zettel'']
 : Specifies the identifier of the zettel, that should be presented for the default view / home view.
   If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
-; [!marker-external]''marker-external''
+; [!marker-external|''marker-external'']
 : Some HTML code that is displayed after a [[reference to external material|00001007040310]].
   Default: ""&\#10138;"", to display a ""&#10138;"" sign.
-; [!max-transclusions]''max-transclusions''
+; [!max-transclusions|''max-transclusions'']
 : Maximum number of indirect transclusion.
   This is used to avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]].
   Default: ""1024"".
-; [!site-name]''site-name''
+; [!site-name|''site-name'']
 : Name of the Zettelstore instance.
   Will be used when displaying some lists.
   Default: ""Zettelstore"".
-; [!yaml-header]''yaml-header''
-: If true, metadata and content will be separated by ''-\--\\n'' instead of an empty line (''\\n\\n'').
+; [!yaml-header|''yaml-header'']
+: If true, metadata and content will be separated by ''---\\n'' instead of an empty line (''\\n\\n'').
   Default: ""False"".
 
   You will probably use this key, if you are working with another software processing [[Markdown|https://daringfireball.net/projects/markdown/]] that uses a subset of [[YAML|https://yaml.org/]] to specify metadata.
-; [!zettel-file-syntax]''zettel-file-syntax''
+; [!zettel-file-syntax|''zettel-file-syntax'']
 : If you create a new zettel with a syntax different to ""zmk"", Zettelstore will store the zettel as two files:
   one for the metadata (file without a filename extension) and another for the content (file extension based on the syntax value).
   If you want to specify alternative syntax values, for which you want new zettel to be stored in one file (file extension ''.zettel''), you can use this key.

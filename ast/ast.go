@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -26,7 +26,7 @@ type ZettelNode struct {
 	Content domain.Content // Original content
 	Zid     id.Zid         // Zettel identification.
 	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
-	Ast     *BlockListNode // Zettel abstract syntax tree is a sequence of block nodes.
+	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.
 	Syntax  string         // Syntax / parser that produced the Ast
 }
 
@@ -50,18 +50,6 @@ type ItemNode interface {
 // ItemSlice is a slice of ItemNodes.
 type ItemSlice []ItemNode
 
-// ItemListNode is a list of BlockNodes.
-type ItemListNode struct {
-	List []ItemNode
-}
-
-// WalkChildren walks down to the descriptions.
-func (iln *ItemListNode) WalkChildren(v Visitor) {
-	for _, bn := range iln.List {
-		Walk(v, bn)
-	}
-}
-
 // DescriptionNode is a node that contains just textual description.
 type DescriptionNode interface {
 	ItemNode
@@ -75,6 +63,13 @@ type DescriptionSlice []DescriptionNode
 type InlineNode interface {
 	Node
 	inlineNode()
+}
+
+// InlineEmbedNode is a node that specifies some embeddings in inline mode.
+// It is abstract, b/c there are different concrete type implementations.
+type InlineEmbedNode interface {
+	InlineNode
+	inlineEmbedNode()
 }
 
 // Reference is a reference to external or internal material.
@@ -92,7 +87,7 @@ const (
 	RefStateInvalid  RefState = iota // Invalid Reference
 	RefStateZettel                   // Reference to an internal zettel
 	RefStateSelf                     // Reference to same zettel with a fragment
-	RefStateFound                    // Reference to an existing internal zettel
+	RefStateFound                    // Reference to an existing internal zettel, URL is ajusted
 	RefStateBroken                   // Reference to a non-existing internal zettel
 	RefStateHosted                   // Reference to local hosted non-Zettel, without URL change
 	RefStateBased                    // Reference to local non-Zettel, to be prefixed

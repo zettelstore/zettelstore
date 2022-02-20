@@ -1,0 +1,23 @@
+id: 00001012920582
+title: ZJSON Encoding: List of Valid Zettelmarkup Element Objects Names
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+modified: 20220215113239
+
+Every [[Zettelmarkup|00001007000000]] element is mapped to a JSON object will some well defined names / keys.
+
+|=Name | JSON Value | Meaning
+| ''"\"'' | string | The type of the Zettelmarkup element.
+| ''"a"'' | object | Additional attributes of the element.
+| ''"b"'' | array  | A sequence of [[block-structured|00001007030000]] elements.
+| ''"c"'' | array  | A sequence of a sequence of (sub-) list elements or [[inline-structured|00001007040000]] elements. Used for nested lists.
+| ''"g"'' | array  | A sequence of description list elements. Each description list element is itself a JSON array: first the definition term and then the descriptions.
+| ''"i"'' | array  | A sequence of [[inline-structured|00001007040000]] elements.
+| ''"j"'' | object | An objects describing a BLOB element.
+| ''"n"'' | number | A numeric value, e.g. for specifying the [[heading|00001007030300]] level.
+| ''"o"'' | string | A base64 encoded binary value. Used in some BLOB elements.
+| ''"p"'' | array  | A sequence of two elements: a sequence of [[table|00001007031000]] header value, followed by a sequence of sequence of table row values.
+| ''"q"'' | string | A second string value, if ''""s""'' is already used.
+| ''"s"'' | string | The first / major string value of an element.
+| ''"v"'' | string | A third string value, if ''""q""'' is already used.
