@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -27,14 +27,28 @@ func NewCopyZettel() CopyZettel {
 func (CopyZettel) Run(origZettel domain.Zettel) domain.Zettel {
 	m := origZettel.Meta.Clone()
 	if title, ok := m.Get(api.KeyTitle); ok {
-		if len(title) > 0 {
-			title = "Copy of " + title
-		} else {
-			title = "Copy"
-		}
-		m.Set(api.KeyTitle, title)
+		m.Set(api.KeyTitle, copyTitle(title))
+	}
+	if readonly, ok := m.Get(api.KeyReadOnly); ok {
+		m.Set(api.KeyReadOnly, copyReadonly(readonly))
 	}
 	content := origZettel.Content
 	content.TrimSpace()
 	return domain.Zettel{Meta: m, Content: content}
+}
+
+func copyTitle(title string) string {
+	if len(title) > 0 {
+		return "Copy of " + title
+	}
+	return "Copy"
+}
+
+func copyReadonly(s string) string {
+	// Currently, "false" is a safe value.
+	//
+	// If the current user and its role is known, a mor elaborative calculation
+	// could be done: set it to a value, so that the current user will be able
+	// to modify it later.
+	return api.ValueFalse
 }
