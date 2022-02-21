@@ -23,21 +23,9 @@ import "unicode"
 
 type char rune
 
-func (c char) isObjectStartTag() bool {
-	return c == '['
-}
-
-func (c char) isObjectEndTag() bool {
-	return c == ']'
-}
-
-func (c char) isTagDefinitionSeparator() bool {
-	return c == ':'
-}
-
 func (c char) isTextStart() bool {
 	r := rune(c)
-	return c.isObjectStartTag() || unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSymbol(r)
+	return unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSymbol(r)
 }
 
 func (c char) isTextCont() bool {
