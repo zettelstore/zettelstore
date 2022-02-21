@@ -41,9 +41,7 @@ type point struct {
 }
 
 // String implements fmt.Stringer on Point.
-func (p point) String() string {
-	return fmt.Sprintf("(%d,%d)", p.x, p.y)
-}
+func (p point) String() string { return fmt.Sprintf("(%d,%d)", p.x, p.y) }
 
 // isHorizontal returns true if p1 and p2 are horizontally aligned.
 func isHorizontal(p1, p2 point) bool {
@@ -58,15 +56,7 @@ func isVertical(p1, p2 point) bool {
 }
 
 // The following functions return true when the diagonals are connected in various compass directions.
-func isDiagonalSE(p1, p2 point) bool {
-	return p1.x-p2.x == -1 && p1.y-p2.y == -1
-}
-func isDiagonalSW(p1, p2 point) bool {
-	return p1.x-p2.x == 1 && p1.y-p2.y == -1
-}
-func isDiagonalNW(p1, p2 point) bool {
-	return p1.x-p2.x == 1 && p1.y-p2.y == 1
-}
-func isDiagonalNE(p1, p2 point) bool {
-	return p1.x-p2.x == -1 && p1.y-p2.y == 1
-}
+func isDiagonalSE(p1, p2 point) bool { return p1.x-p2.x == -1 && p1.y-p2.y == -1 }
+func isDiagonalSW(p1, p2 point) bool { return p1.x-p2.x == 1 && p1.y-p2.y == -1 }
+func isDiagonalNW(p1, p2 point) bool { return p1.x-p2.x == 1 && p1.y-p2.y == 1 }
+func isDiagonalNE(p1, p2 point) bool { return p1.x-p2.x == -1 && p1.y-p2.y == 1 }

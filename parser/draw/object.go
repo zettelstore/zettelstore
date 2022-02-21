@@ -34,24 +34,16 @@ type object struct {
 
 // Points returns all the points occupied by this Object. Every object has at least one point,
 // and all points are both in-order and contiguous.
-func (o *object) Points() []point {
-	return o.points
-}
+func (o *object) Points() []point { return o.points }
 
 // Corners returns all the corners (change of direction) along the path.
-func (o *object) Corners() []point {
-	return o.corners
-}
+func (o *object) Corners() []point { return o.corners }
 
 // IsClosed is true if the object is composed of a closed path.
-func (o *object) IsClosed() bool {
-	return o.isClosed
-}
+func (o *object) IsClosed() bool { return o.isClosed }
 
 // IsDashed is true if this object is a path object, and lines should be drawn dashed.
-func (o *object) IsDashed() bool {
-	return o.isDashed
-}
+func (o *object) IsDashed() bool { return o.isDashed }
 
 // Text returns the text associated with this object if textual, and nil otherwise.
 func (o *object) Text() []rune {
