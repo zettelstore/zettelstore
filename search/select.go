@@ -301,21 +301,24 @@ func valuesToStringPredicates(values []opValue, defOp compareOp, addSearch addSe
 	for i, v := range values {
 		opVal := v.value // loop variable is used in closure --> save needed value
 		op := resolveDefaultOp(v.op, defOp)
-		addSearch(opVal, op)
 		switch op {
 		case cmpEqual:
+			addSearch(opVal, op) // addSearch only for positive selections
 			result[i] = func(metaVal string) bool { return metaVal == opVal }
 		case cmpNotEqual:
 			result[i] = func(metaVal string) bool { return metaVal != opVal }
 		case cmpPrefix:
+			addSearch(opVal, op)
 			result[i] = func(metaVal string) bool { return strings.HasPrefix(metaVal, opVal) }
 		case cmpNoPrefix:
 			result[i] = func(metaVal string) bool { return !strings.HasPrefix(metaVal, opVal) }
 		case cmpSuffix:
+			addSearch(opVal, op)
 			result[i] = func(metaVal string) bool { return strings.HasSuffix(metaVal, opVal) }
 		case cmpNoSuffix:
 			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
 		case cmpContains:
+			addSearch(opVal, op)
 			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
 		case cmpNotContains:
 			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
@@ -335,21 +338,24 @@ func valuesToStringSetPredicates(values [][]opValue, defOp compareOp, addSearch 
 		for j, v := range val {
 			opVal := v.value // loop variable is used in closure --> save needed value
 			op := resolveDefaultOp(v.op, defOp)
-			addSearch(opVal, op)
 			switch op {
 			case cmpEqual:
+				addSearch(opVal, op) // addSearch only for positive selections
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
 			case cmpNotEqual:
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
 			case cmpPrefix:
+				addSearch(opVal, op)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, true)
 			case cmpNoPrefix:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, false)
 			case cmpSuffix:
+				addSearch(opVal, op)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, true)
 			case cmpNoSuffix:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, false)
 			case cmpContains:
+				addSearch(opVal, op)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
 			case cmpNotContains:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
