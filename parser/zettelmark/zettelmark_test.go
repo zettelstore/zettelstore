@@ -174,7 +174,9 @@ func TestLink(t *testing.T) {
 		{"[[\\]|a]]", "(PARA (LINK a ]))"},
 		{"[[b\\]|a]]", "(PARA (LINK a b]))"},
 		{"[[\\]\\||a]]", "(PARA (LINK a ]|))"},
+		{"[[http://a]]", "(PARA (LINK http://a))"},
 		{"[[http://a|http://a]]", "(PARA (LINK http://a http://a))"},
+		{"[[[[a]]]]", "(PARA (LINK [[a) ]])"},
 	})
 }
 
@@ -247,7 +249,9 @@ func TestEmbed(t *testing.T) {
 		{"{{\\}|a}}", "(PARA (EMBED a }))"},
 		{"{{b\\}|a}}", "(PARA (EMBED a b}))"},
 		{"{{\\}\\||a}}", "(PARA (EMBED a }|))"},
+		{"{{http://a}}", "(PARA (EMBED http://a))"},
 		{"{{http://a|http://a}}", "(PARA (EMBED http://a http://a))"},
+		{"{{{{a}}}}", "(PARA (EMBED %7B%7Ba) }})"},
 	})
 }
 
