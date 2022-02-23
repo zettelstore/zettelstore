@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
 )
 
 // DescriptionType is a description of a specific key type.
@@ -42,19 +43,19 @@ func registerType(name string, isSet bool) *DescriptionType {
 
 // Supported key types.
 var (
-	TypeBool         = registerType("Boolean", false)
-	TypeCredential   = registerType("Credential", false)
-	TypeEmpty        = registerType("EString", false)
-	TypeID           = registerType("Identifier", false)
-	TypeIDSet        = registerType("IdentifierSet", true)
-	TypeNumber       = registerType("Number", false)
-	TypeString       = registerType("String", false)
-	TypeTagSet       = registerType("TagSet", true)
-	TypeTimestamp    = registerType("Timestamp", false)
-	TypeURL          = registerType("URL", false)
-	TypeWord         = registerType("Word", false)
-	TypeWordSet      = registerType("WordSet", true)
-	TypeZettelmarkup = registerType("Zettelmarkup", false)
+	TypeBool         = registerType(zjson.MetaBool, false)
+	TypeCredential   = registerType(zjson.MetaCredential, false)
+	TypeEmpty        = registerType(zjson.MetaEmpty, false)
+	TypeID           = registerType(zjson.MetaID, false)
+	TypeIDSet        = registerType(zjson.MetaIDSet, true)
+	TypeNumber       = registerType(zjson.MetaNumber, false)
+	TypeString       = registerType(zjson.MetaString, false)
+	TypeTagSet       = registerType(zjson.MetaTagSet, true)
+	TypeTimestamp    = registerType(zjson.MetaTimestamp, false)
+	TypeURL          = registerType(zjson.MetaURL, false)
+	TypeWord         = registerType(zjson.MetaWord, false)
+	TypeWordSet      = registerType(zjson.MetaWordSet, true)
+	TypeZettelmarkup = registerType(zjson.MetaZettelmarkup, false)
 )
 
 // Type returns a type hint for the given key. If no type hint is specified,

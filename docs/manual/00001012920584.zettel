@@ -1,0 +1,29 @@
+id: 00001012920584
+title: ZJSON Encoding: Mapping of Metadata Key Types to Object Names
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+modified: 20220223191222
+
+Every [[Metadata key|00001006030000]] is mapped to an [[object name|00001012920582]] where its value is encoded.
+
+|=Type | JSON Object Name | Remark
+| [[Boolean|00001006030500]] | ''"s"'' | One of the values ''"true"'' or ''"false"''.
+| [[Credential|00001006031000]] | ''"s"'' | A string with the decrypted credential.
+| [[EString|00001006031500]] | ''"s"'' | A possibly empty string.
+| [[Identifier|00001006032000]] | ''"s"'' | A string containing a [[zettel identifier|00001006050000]].
+| [[IdentifierSet|00001006032500]] | ''"y"'' | An array of strings containing [[zettel identifier|00001006050000]].
+| [[Number|00001006033000]] | ''"s"'' | A string containing a numeric value.
+| [[String|00001006033500]] | ''"s"'' | A non-empty string.
+| [[TagSet|00001006034000]] | ''"y"'' | An array of string containing zettel tags.
+| [[Timestamp|00001006034500]] | ''"s"''  | A string containing a timestamp in the format YYYYMMDDHHmmSS.
+| [[URL|00001006035000]] | ''"s"'' | A string containing an URL.
+| [[Word|00001006035500]] | ''"s"'' | A string containing a word (no space characters)
+| [[WordSet|00001006036000]] | ''"y"'' | An array of strings containing words.
+| [[Zettelmarkup|00001006036500]] | ''"i"'' | A sequence of [[inline-structured|00001007040000]] elements.
+
+Please note, that metadata is weakly typed.
+Every metadata key expects a certain type.
+But the user is free to enter something different.
+For example, even if the metadata type is ""number"", its value could still be ""abc"".
+However, the mapping itself is always valid.

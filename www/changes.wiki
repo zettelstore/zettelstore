@@ -14,6 +14,9 @@
      a visual element with no semantic association. Now, the syntax
      <kbd>++...++</kbd> is obsolete.
      (breaking: Zettelmarkup).
+  *  ZJSON will encode metadata value as pairs of a metadata type and metadata
+     value. This allows a client to decode the associated value more easily.
+     (minor: api)
   *  A sequence of inline-structured elements can be marked, not just a point
      in the Zettelmarkup text.
      (minor: zettelmarkup)

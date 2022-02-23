@@ -37,9 +37,8 @@ type jsonDetailEncoder struct {
 // WriteZettel writes the encoded zettel to the writer.
 func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteString(`{"meta":{`)
+	v.b.WriteString(`{"meta":`)
 	v.writeMeta(zn.InhMeta, evalMeta)
-	v.b.WriteByte('}')
 	v.b.WriteString(`,"content":`)
 	ast.Walk(v, &zn.Ast)
 	v.b.WriteByte('}')
@@ -50,9 +49,7 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMe
 // WriteMeta encodes meta data as JSON.
 func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w, je)
-	v.b.WriteByte('{')
 	v.writeMeta(m, evalMeta)
-	v.b.WriteByte('}')
 	length, err := v.b.Flush()
 	return length, err
 }
@@ -497,6 +494,7 @@ func (v *visitor) writeContentStart(jsonName string) {
 }
 
 func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
+	v.b.WriteByte('{')
 	for i, p := range m.ComputedPairs() {
 		if i > 0 {
 			v.b.WriteByte(',')
@@ -504,19 +502,22 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		v.b.WriteByte('"')
 		key := p.Key
 		strfun.JSONEscape(&v.b, key)
-		v.b.WriteString(`":`)
 		t := m.Type(key)
+		v.b.WriteStrings(`":{"`, zjson.NameType, `":"`, t.Name, `","`)
 		if t.IsSet {
+			v.b.WriteStrings(zjson.NameSet, `":`)
 			v.writeSetValue(p.Value)
-			continue
-		}
-		if t == meta.TypeZettelmarkup {
+		} else if t == meta.TypeZettelmarkup {
+			v.b.WriteStrings(zjson.NameInline, `":`)
 			is := evalMeta(p.Value)
 			ast.Walk(v, &is)
-			continue
+		} else {
+			v.b.WriteStrings(zjson.NameString, `":`)
+			writeEscaped(&v.b, p.Value)
 		}
-		writeEscaped(&v.b, p.Value)
+		v.b.WriteByte('}')
 	}
+	v.b.WriteByte('}')
 }
 
 func (v *visitor) writeSetValue(value string) {

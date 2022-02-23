@@ -3,7 +3,7 @@ title: ZJSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220214184330
+modified: 20220223185826
 
 A zettel representation that allows to process the syntactic structure of a zettel.
 It is a JSON-based encoding format, but different to the structures returned by [[endpoint|00001012920000]] ''/j/{ID}''.
@@ -19,14 +19,17 @@ If transferred via HTTP, the content type will be ''application/json''.
 A full zettel encoding results in a JSON object with two keys: ''"meta"'' and ''"content"''.
 Both values are the same as if you have requested just the appropriate [[part|00001012920800]].
 
-A metadata encoding results in a JSON object, where each metadata key is mapped to the same JSON object name.
-If the metadata value is of type [[Zettelmarkup|00001006036500]] it is encoded as a JSON array of objects, where each objects represents a [[Zettelmarkup|00001007000000]] element (see [[below|#zettelmarkup]] for details).
-If the metadata value is of some list type, e.g. [[IdentifierSet|00001006032500]] or [[TagSet|00001006034000]], it is encoded as an JSON array of JSON strings.
-Other types are encoded as a JSON string.
+=== Encoding of metadata
+Metadata encoding results in a JSON object, where each metadata key is mapped to the same JSON object name.
+The associated value is itself a JSON object with two names.
+The first name ``""`` references the [[metadata key type|00001006030000]].
+Depending on the key type, the other name denotes the value of the metadata element.
+The meaning of these names is [[well defined|00001012920582]], as well as the [[mapping of key types to used object names|00001012920584]].
 
+=== Encoding of zettel content
 The content encoding results in a JSON array of objects, where each objects represents a Zettelmarkup element.
 
 Every [!zettelmarkup|Zettelmarkup] element is encoded as a JSON object.
 These objects always contain the empty name ''""'' with a string value describing the type of Zettelmarkup element.
 Depending on the type, other one letter names denotes the details of the element.
-The meaning of these names is [[well defined|00001012920582]].
+The meaning of these names is [[well defined|00001012920588]].
