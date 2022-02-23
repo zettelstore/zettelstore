@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -13,6 +13,7 @@ package webui
 import (
 	"bytes"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"zettelstore.de/c/api"
@@ -46,7 +47,7 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 
 	var m *meta.Meta
 	if postMeta, ok := trimmedFormValue(r, "meta"); ok {
-		m = meta.NewFromInput(zid, input.NewInput([]byte(postMeta)))
+		m = meta.NewFromInput(zid, input.NewInput(removeEmptyLines([]byte(postMeta))))
 		m.Sanitize()
 	} else {
 		m = meta.New(zid)
@@ -85,4 +86,11 @@ func trimmedFormValue(r *http.Request, key string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+var reEmptyLines = regexp.MustCompile(`(\n|\r)+\s*(\n|\r)+`)
+
+func removeEmptyLines(s []byte) []byte {
+	b := bytes.TrimSpace(s)
+	return reEmptyLines.ReplaceAllLiteral(b, []byte{'\n'})
 }
