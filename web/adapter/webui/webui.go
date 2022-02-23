@@ -278,7 +278,8 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		}
 		result = append(result, simpleLink{
 			Text: menuTitle,
-			URL:  wui.NewURLBuilder('g').SetZid(api.ZettelID(m.Zid.String())).String(),
+			URL: wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
+				AppendQuery(queryKeyAction, valueActionNew).String(),
 		})
 	}
 	return result

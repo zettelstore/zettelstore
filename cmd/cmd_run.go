@@ -83,20 +83,17 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.AddZettelRoute('b', server.MethodGet, wui.MakeGetRenameZettelHandler(
 			ucGetMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('b', server.MethodPost, wui.MakePostRenameZettelHandler(&ucRename))
-		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCopyZettelHandler(
-			ucGetZettel, usecase.NewCopyZettel()))
+		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCreateZettelHandler(
+			ucGetZettel,
+			usecase.NewCopyZettel(),
+			usecase.NewFolgeZettel(rtConfig),
+			usecase.NewNewZettel()))
 		webSrv.AddZettelRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 		webSrv.AddZettelRoute('d', server.MethodGet, wui.MakeGetDeleteZettelHandler(
 			ucGetMeta, ucGetAllMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('d', server.MethodPost, wui.MakePostDeleteZettelHandler(&ucDelete))
 		webSrv.AddZettelRoute('e', server.MethodGet, wui.MakeEditGetZettelHandler(ucGetZettel))
 		webSrv.AddZettelRoute('e', server.MethodPost, wui.MakeEditSetZettelHandler(&ucUpdate))
-		webSrv.AddZettelRoute('f', server.MethodGet, wui.MakeGetFolgeZettelHandler(
-			ucGetZettel, usecase.NewFolgeZettel(rtConfig)))
-		webSrv.AddZettelRoute('f', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
-		webSrv.AddZettelRoute('g', server.MethodGet, wui.MakeGetNewZettelHandler(
-			ucGetZettel, usecase.NewNewZettel()))
-		webSrv.AddZettelRoute('g', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 	}
 	webSrv.AddListRoute('g', server.MethodGet, wui.MakeGetGoActionHandler(&ucRefresh))
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(

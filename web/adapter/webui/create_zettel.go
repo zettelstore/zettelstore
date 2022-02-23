@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -26,80 +25,62 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-// MakeGetCopyZettelHandler creates a new HTTP handler to display the
-// HTML edit view of a copied zettel.
-func (wui *WebUI) MakeGetCopyZettelHandler(getZettel usecase.GetZettel, copyZettel usecase.CopyZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, r, getZettel, "Copy")
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		wui.renderZettelForm(w, r, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
-	}
-}
-
-// MakeGetFolgeZettelHandler creates a new HTTP handler to display the
-// HTML edit view of a follow-up zettel.
-func (wui *WebUI) MakeGetFolgeZettelHandler(getZettel usecase.GetZettel, folgeZettel usecase.FolgeZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, r, getZettel, "Folge")
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		wui.renderZettelForm(w, r, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
-	}
-}
-
-// MakeGetNewZettelHandler creates a new HTTP handler to display the
-// HTML edit view of a zettel.
-func (wui *WebUI) MakeGetNewZettelHandler(getZettel usecase.GetZettel, newZettel usecase.NewZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		origZettel, err := getOrigZettel(ctx, r, getZettel, "New")
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		m := origZettel.Meta
-		title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
-		textTitle, err := encodeInlines(&title, api.EncoderText, nil)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		htmlTitle, err := encodeInlines(&title, api.EncoderHTML, &env)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		wui.renderZettelForm(w, r, newZettel.Run(origZettel), textTitle, htmlTitle)
-	}
-}
-
-func getOrigZettel(
-	ctx context.Context,
-	r *http.Request,
+// MakeGetCreateZettelHandler creates a new HTTP handler to display the
+// HTML edit view for the various zettel creation methods.
+func (wui *WebUI) MakeGetCreateZettelHandler(
 	getZettel usecase.GetZettel,
-	op string,
-) (domain.Zettel, error) {
-	if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderHTML); enc != api.EncoderHTML {
-		return domain.Zettel{}, adapter.NewErrBadRequest(
-			fmt.Sprintf("%v zettel not possible in encoding %q", op, encText))
+	copyZettel usecase.CopyZettel,
+	folgeZettel usecase.FolgeZettel,
+	newZettel usecase.NewZettel,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		q := r.URL.Query()
+		op := getCreateAction(q.Get(queryKeyAction))
+		if enc, encText := adapter.GetEncoding(r, q, api.EncoderHTML); enc != api.EncoderHTML {
+			wui.reportError(ctx, w, adapter.NewErrBadRequest(
+				fmt.Sprintf("%v zettel not possible in encoding %q", mapActionOp[op], encText)))
+			return
+		}
+		zid, err := id.Parse(r.URL.Path[1:])
+		if err != nil {
+			wui.reportError(ctx, w, box.ErrNotFound)
+			return
+		}
+		origZettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
+		if err != nil {
+			wui.reportError(ctx, w, box.ErrNotFound)
+			return
+		}
+
+		switch op {
+		case actionCopy:
+			wui.renderZettelForm(w, r, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
+		case actionFolge:
+			wui.renderZettelForm(w, r, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
+		case actionNew:
+			m := origZettel.Meta
+			title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
+			textTitle, err2 := encodeInlines(&title, api.EncoderText, nil)
+			if err2 != nil {
+				wui.reportError(ctx, w, err2)
+				return
+			}
+			env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
+			htmlTitle, err2 := encodeInlines(&title, api.EncoderHTML, &env)
+			if err2 != nil {
+				wui.reportError(ctx, w, err2)
+				return
+			}
+			wui.renderZettelForm(w, r, newZettel.Run(origZettel), textTitle, htmlTitle)
+		}
 	}
-	zid, err := id.Parse(r.URL.Path[1:])
-	if err != nil {
-		return domain.Zettel{}, box.ErrNotFound
-	}
-	origZettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
-	if err != nil {
-		return domain.Zettel{}, box.ErrNotFound
-	}
-	return origZettel, nil
+}
+
+var mapActionOp = map[createAction]string{
+	actionCopy:  "Copy",
+	actionFolge: "Folge",
+	actionNew:   "New",
 }
 
 func (wui *WebUI) renderZettelForm(
