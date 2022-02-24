@@ -27,12 +27,7 @@ import (
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
 // HTML edit view for the various zettel creation methods.
-func (wui *WebUI) MakeGetCreateZettelHandler(
-	getZettel usecase.GetZettel,
-	copyZettel usecase.CopyZettel,
-	folgeZettel usecase.FolgeZettel,
-	newZettel usecase.NewZettel,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
@@ -55,9 +50,9 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 
 		switch op {
 		case actionCopy:
-			wui.renderZettelForm(w, r, copyZettel.Run(origZettel), "Copy Zettel", "Copy Zettel")
+			wui.renderZettelForm(w, r, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel")
 		case actionFolge:
-			wui.renderZettelForm(w, r, folgeZettel.Run(origZettel), "Folge Zettel", "Folgezettel")
+			wui.renderZettelForm(w, r, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel")
 		case actionNew:
 			m := origZettel.Meta
 			title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
@@ -72,7 +67,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			wui.renderZettelForm(w, r, newZettel.Run(origZettel), textTitle, htmlTitle)
+			wui.renderZettelForm(w, r, createZettel.PrepareNew(origZettel), textTitle, htmlTitle)
 		}
 	}
 }

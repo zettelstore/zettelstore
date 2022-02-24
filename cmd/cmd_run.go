@@ -84,10 +84,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 			ucGetMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('b', server.MethodPost, wui.MakePostRenameZettelHandler(&ucRename))
 		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCreateZettelHandler(
-			ucGetZettel,
-			usecase.NewCopyZettel(),
-			usecase.NewFolgeZettel(rtConfig),
-			usecase.NewNewZettel()))
+			ucGetZettel, &ucCreateZettel))
 		webSrv.AddZettelRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 		webSrv.AddZettelRoute('d', server.MethodGet, wui.MakeGetDeleteZettelHandler(
 			ucGetMeta, ucGetAllMeta, &ucEvaluate))
