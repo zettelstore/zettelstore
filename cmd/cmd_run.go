@@ -118,7 +118,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('t', server.MethodGet, a.MakeListTagsHandler(ucListTags))
 	webSrv.AddZettelRoute('u', server.MethodGet, a.MakeListUnlinkedMetaHandler(
 		ucGetMeta, ucUnlinkedRefs, &ucEvaluate))
-	webSrv.AddListRoute('v', server.MethodPost, a.MakePostEncodeInlinesHandler(ucEvaluate))
 	webSrv.AddZettelRoute('v', server.MethodGet, a.MakeGetEvalZettelHandler(ucEvaluate))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
 	webSrv.AddZettelRoute('x', server.MethodGet, a.MakeZettelContextHandler(ucZettelContext))
