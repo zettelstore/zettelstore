@@ -20,6 +20,9 @@
   *  A sequence of inline-structured elements can be marked, not just a point
      in the Zettelmarkup text.
      (minor: zettelmarkup)
+  *  Metadata keys with suffix <kbd>-title</kbd> force their value to be
+     interpreted as Zettelmarkup.
+     (minor: api, webui)
   *  Change generated URLs for zettel-creation forms. If you have bookmarked
      them, e.g. to create a new zettel, you should update.
      (minor: webui)
