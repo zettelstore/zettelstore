@@ -44,7 +44,7 @@ func NewCreateZettel(log *logger.Logger, rtConfig config.Config, port CreateZett
 }
 
 // PrepareCopy the zettel for further modification.
-func (uc *CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 	m := origZettel.Meta.Clone()
 	if title, ok := m.Get(api.KeyTitle); ok {
 		m.Set(api.KeyTitle, prependTitle(title, "Copy", "Copy of "))
@@ -72,7 +72,7 @@ func (uc *CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 }
 
 // PrepareNew the zettel for further modification.
-func (uc *CreateZettel) PrepareNew(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareNew(origZettel domain.Zettel) domain.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.Set(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
@@ -98,7 +98,7 @@ func prependTitle(title, s0, s1 string) string {
 	return s0
 }
 
-func copyReadonly(s string) string {
+func copyReadonly(string) string {
 	// Currently, "false" is a safe value.
 	//
 	// If the current user and its role is known, a mor elaborative calculation
