@@ -271,24 +271,27 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 }
 
 func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
-	v.writeNodeStart(zjson.TypeDescription)
-	v.writeContentStart(zjson.NameDescription)
+	v.writeNodeStart(zjson.TypeDescrList)
+	v.writeContentStart(zjson.NameDescrList)
 	for i, def := range dn.Descriptions {
 		v.writeComma(i)
-		v.b.WriteByte('[')
+		v.b.WriteStrings(`{"`, zjson.NameInline, `":`)
 		ast.Walk(v, &def.Term)
 
 		if len(def.Descriptions) > 0 {
-			for _, b := range def.Descriptions {
-				v.b.WriteString(",[")
-				for j, dn := range b {
-					v.writeComma(j)
+			v.writeContentStart(zjson.NameDescription)
+			for j, b := range def.Descriptions {
+				v.writeComma(j)
+				v.b.WriteByte('[')
+				for k, dn := range b {
+					v.writeComma(k)
 					ast.Walk(v, dn)
 				}
 				v.b.WriteByte(']')
 			}
+			v.b.WriteByte(']')
 		}
-		v.b.WriteByte(']')
+		v.b.WriteByte('}')
 	}
 	v.b.WriteByte(']')
 }
@@ -320,16 +323,20 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 }
 
 var alignmentCode = map[ast.Alignment]string{
-	ast.AlignDefault: ``,
-	ast.AlignLeft:    `<`,
-	ast.AlignCenter:  `:`,
-	ast.AlignRight:   `>`,
+	ast.AlignDefault: "",
+	ast.AlignLeft:    "<",
+	ast.AlignCenter:  ":",
+	ast.AlignRight:   ">",
 }
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
-	v.b.WriteStrings(`["`, alignmentCode[cell.Align], `",`)
+	if aCode := alignmentCode[cell.Align]; aCode != "" {
+		v.b.WriteStrings(`{"`, zjson.NameString, `":"`, aCode, `","`, zjson.NameInline, `":`)
+	} else {
+		v.b.WriteStrings(`{"`, zjson.NameInline, `":`)
+	}
 	ast.Walk(v, &cell.Inlines)
-	v.b.WriteByte(']')
+	v.b.WriteByte('}')
 }
 
 func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
@@ -474,6 +481,7 @@ var valueStart = map[string]string{
 	zjson.NameBlock:       "",
 	zjson.NameAttribute:   `{"`,
 	zjson.NameList:        "[",
+	zjson.NameDescrList:   "[",
 	zjson.NameDescription: "[",
 	zjson.NameInline:      "",
 	zjson.NameBLOB:        "{",

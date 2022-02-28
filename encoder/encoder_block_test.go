@@ -242,7 +242,7 @@ and much more
 		descr: "Simple Description List",
 		zmk:   "; Zettel\n: Paper\n: Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{
-			encoderZJSON: `[{"":"Description","g":[[[{"":"Text","s":"Zettel"}],[{"":"Para","i":[{"":"Text","s":"Paper"}]}],[{"":"Para","i":[{"":"Text","s":"Note"}]}]],[[{"":"Text","s":"Zettelkasten"}],[{"":"Para","i":[{"":"Text","s":"Slip"},{"":"Space"},{"":"Text","s":"box"}]}]]]}]`,
+			encoderZJSON: `[{"":"Description","d":[{"i":[{"":"Text","s":"Zettel"}],"e":[[{"":"Para","i":[{"":"Text","s":"Paper"}]}],[{"":"Para","i":[{"":"Text","s":"Note"}]}]]},{"i":[{"":"Text","s":"Zettelkasten"}],"e":[[{"":"Para","i":[{"":"Text","s":"Slip"},{"":"Space"},{"":"Text","s":"box"}]}]]}]}]`,
 			encoderHTML:  "<dl>\n<dt>Zettel</dt>\n<dd>Paper</dd>\n<dd>Note</dd>\n<dt>Zettelkasten</dt>\n<dd>Slip box</dd>\n</dl>",
 			encoderNative: `[DescriptionList
  [Term [Text "Zettel"],
@@ -261,7 +261,7 @@ and much more
 		descr: "Simple Table",
 		zmk:   "|c1|c2|c3\n|d1||d3",
 		expect: expectMap{
-			encoderZJSON: `[{"":"Table","p":[[],[[["",[{"":"Text","s":"c1"}]],["",[{"":"Text","s":"c2"}]],["",[{"":"Text","s":"c3"}]]],[["",[{"":"Text","s":"d1"}]],["",[]],["",[{"":"Text","s":"d3"}]]]]]}]`,
+			encoderZJSON: `[{"":"Table","p":[[],[[{"i":[{"":"Text","s":"c1"}]},{"i":[{"":"Text","s":"c2"}]},{"i":[{"":"Text","s":"c3"}]}],[{"i":[{"":"Text","s":"d1"}]},{"i":[]},{"i":[{"":"Text","s":"d3"}]}]]]}]`,
 			encoderHTML: `<table>
 <tbody>
 <tr><td>c1</td><td>c2</td><td>c3</td></tr>
@@ -282,7 +282,7 @@ and much more
 |<c1|c2|:c3|
 |f1|f2|=f3`,
 		expect: expectMap{
-			encoderZJSON: `[{"":"Table","p":[[[">",[{"":"Text","s":"h1"}]],["",[{"":"Text","s":"h2"}]],[":",[{"":"Text","s":"h3"}]]],[[["<",[{"":"Text","s":"c1"}]],["",[{"":"Text","s":"c2"}]],[":",[{"":"Text","s":"c3"}]]],[[">",[{"":"Text","s":"f1"}]],["",[{"":"Text","s":"f2"}]],[":",[{"":"Text","s":"=f3"}]]]]]}]`,
+			encoderZJSON: `[{"":"Table","p":[[{"s":">","i":[{"":"Text","s":"h1"}]},{"i":[{"":"Text","s":"h2"}]},{"s":":","i":[{"":"Text","s":"h3"}]}],[[{"s":"<","i":[{"":"Text","s":"c1"}]},{"i":[{"":"Text","s":"c2"}]},{"s":":","i":[{"":"Text","s":"c3"}]}],[{"s":">","i":[{"":"Text","s":"f1"}]},{"i":[{"":"Text","s":"f2"}]},{"s":":","i":[{"":"Text","s":"=f3"}]}]]]}]`,
 			encoderHTML: `<table>
 <thead>
 <tr><th class="zs-ta-right">h1</th><th>h2</th><th class="zs-ta-center">h3</th></tr>
