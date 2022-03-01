@@ -3,7 +3,7 @@ title: API: Retrieve evaluated metadata and content of an existing zettel in var
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220218125134
+modified: 20220301174012
 
 The [[endpoint|00001012920000]] to work with evaluated metadata and content of a specific zettel is ''/v/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -55,6 +55,8 @@ In this case, its default value is ''content''.
 <meta name="zs-lang" content="en">
 <meta name="zs-published" content="00001012053500">
 ```
+
+The optional query parameter ''_embed'' will embed all images into the returned encoding.
 
 === HTTP Status codes
 ; ''200''

@@ -42,7 +42,7 @@ func TestZettelTransclusion(t *testing.T) {
 	}
 	baseContent := string(content)
 	for zid, siz := range contentMap {
-		content, err = c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
+		content, err = c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML, true)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -64,7 +64,7 @@ func TestZettelTransclusion(t *testing.T) {
 		}
 	}
 
-	content, err = c.GetEvaluatedZettel(context.Background(), abc10000Zid, api.EncoderHTML)
+	content, err = c.GetEvaluatedZettel(context.Background(), abc10000Zid, api.EncoderHTML, true)
 	if err != nil {
 		t.Error(err)
 		return
@@ -87,7 +87,7 @@ func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
 		t.Errorf("Zettel %q: encoding %q expected, but got %q", abcZid, expectedEnc, got)
 	}
 
-	content, err := c.GetEvaluatedZettel(context.Background(), abc10Zid, api.EncoderHTML)
+	content, err := c.GetEvaluatedZettel(context.Background(), abc10Zid, api.EncoderHTML, true)
 	if err != nil {
 		t.Error(err)
 		return
@@ -128,7 +128,7 @@ func TestRecursiveTransclusion(t *testing.T) {
 		indirectRecursive2Zid: indirectRecursive1Zid,
 	}
 	for zid, errZid := range recursiveZettel {
-		content, err := c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML)
+		content, err := c.GetEvaluatedZettel(context.Background(), zid, api.EncoderHTML, true)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -147,7 +147,7 @@ func TestNothingToTransclude(t *testing.T) {
 		transZid = api.ZettelID("20211020184342")
 		emptyZid = api.ZettelID("20211020184300")
 	)
-	content, err := c.GetEvaluatedZettel(context.Background(), transZid, api.EncoderHTML)
+	content, err := c.GetEvaluatedZettel(context.Background(), transZid, api.EncoderHTML, true)
 	if err != nil {
 		t.Error(err)
 		return
@@ -163,7 +163,7 @@ func TestSelfEmbedRef(t *testing.T) {
 	c.SetAuth("owner", "owner")
 
 	const selfEmbedZid = api.ZettelID("20211020185400")
-	content, err := c.GetEvaluatedZettel(context.Background(), selfEmbedZid, api.EncoderHTML)
+	content, err := c.GetEvaluatedZettel(context.Background(), selfEmbedZid, api.EncoderHTML, true)
 	if err != nil {
 		t.Error(err)
 		return

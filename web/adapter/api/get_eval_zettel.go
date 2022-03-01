@@ -37,7 +37,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
 		var env evaluator.Environment
-		if enc == api.EncoderHTML {
+		if q.Has(api.QueryKeyEmbed) {
 			env.GetImageMaterial = func(zettel domain.Zettel, syntax string) ast.InlineEmbedNode {
 				return &ast.EmbedBLOBNode{
 					Blob:   zettel.Content.AsBytes(),
