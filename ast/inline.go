@@ -121,6 +121,7 @@ type EmbedRefNode struct {
 	Ref     *Reference       // The reference to be embedded.
 	Inlines InlineSlice      // Optional text associated with the image.
 	Attrs   zjson.Attributes // Optional attributes
+	Syntax  string           // Syntax of referenced material, if known
 }
 
 func (*EmbedRefNode) inlineNode()      { /* Just a marker */ }

@@ -378,6 +378,10 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 		v.writeContentStart(zjson.NameInline)
 		ast.Walk(v, &en.Inlines)
 	}
+	if en.Syntax != "" {
+		v.writeContentStart(zjson.NameString2)
+		writeEscaped(&v.b, en.Syntax)
+	}
 }
 
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {

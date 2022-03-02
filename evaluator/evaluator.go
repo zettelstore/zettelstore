@@ -463,16 +463,8 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 				inlines = parser.ParseMetadata(title)
 			}
 		}
-		result := gim(zettel, e.getSyntax(zettel.Meta))
-		switch er := result.(type) {
-		case *ast.EmbedRefNode:
-			er.Inlines = inlines
-			er.Attrs = en.Attrs
-		case *ast.EmbedBLOBNode:
-			er.Inlines = inlines
-			er.Attrs = en.Attrs
-		}
-		return result
+		syntax := e.getSyntax(zettel.Meta)
+		return enrichImageNode(gim(zettel, syntax), inlines, en.Attrs, syntax)
 	}
 	en.Ref = ast.ParseReference(errorZid.String())
 	if len(en.Inlines) == 0 {
@@ -482,19 +474,25 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 }
 
 func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.InlineEmbedNode {
+	syntax := e.getSyntax(zettel.Meta)
 	if gim := e.env.GetImageMaterial; gim != nil {
-		result := gim(zettel, e.getSyntax(zettel.Meta))
-		switch er := result.(type) {
-		case *ast.EmbedRefNode:
-			er.Inlines = en.Inlines
-			er.Attrs = en.Attrs
-		case *ast.EmbedBLOBNode:
-			er.Inlines = en.Inlines
-			er.Attrs = en.Attrs
-		}
-		return result
+		return enrichImageNode(gim(zettel, syntax), en.Inlines, en.Attrs, syntax)
 	}
+	en.Syntax = syntax
 	return en
+}
+
+func enrichImageNode(result ast.InlineEmbedNode, in ast.InlineSlice, a zjson.Attributes, syntax string) ast.InlineEmbedNode {
+	switch er := result.(type) {
+	case *ast.EmbedRefNode:
+		er.Inlines = in
+		er.Attrs = a
+		er.Syntax = syntax
+	case *ast.EmbedBLOBNode:
+		er.Inlines = in
+		er.Attrs = a
+	}
+	return result
 }
 
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {
