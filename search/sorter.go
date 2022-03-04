@@ -28,32 +28,10 @@ func createSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
 		}
 		return func(i, j int) bool { return ml[i].Zid < ml[j].Zid }
 	}
-	if keyType == meta.TypeBool {
-		return createSortBoolFunc(ml, key, descending)
-	}
 	if keyType == meta.TypeNumber {
 		return createSortNumberFunc(ml, key, descending)
 	}
 	return createSortStringFunc(ml, key, descending)
-}
-
-func createSortBoolFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
-	if descending {
-		return func(i, j int) bool {
-			left := ml[i].GetBool(key)
-			if left == ml[j].GetBool(key) {
-				return i > j
-			}
-			return left
-		}
-	}
-	return func(i, j int) bool {
-		right := ml[j].GetBool(key)
-		if ml[i].GetBool(key) == right {
-			return i < j
-		}
-		return right
-	}
 }
 
 func createSortNumberFunc(ml []*meta.Meta, key string, descending bool) sortFunc {

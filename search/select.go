@@ -108,8 +108,6 @@ func createMatchFunc(key string, values []opValue, addSearch addSearchFunc) matc
 		return nil
 	}
 	switch meta.Type(key) {
-	case meta.TypeBool:
-		return createMatchBoolFunc(values)
 	case meta.TypeCredential:
 		return matchValueNever
 	case meta.TypeID, meta.TypeTimestamp: // ID and timestamp use the same layout
@@ -124,41 +122,6 @@ func createMatchFunc(key string, values []opValue, addSearch addSearchFunc) matc
 		return createMatchWordSetFunc(values, addSearch)
 	}
 	return createMatchStringFunc(values, addSearch)
-}
-
-type boolPredicate func(bool) bool
-
-func boolSame(value bool) bool   { return value }
-func boolNegate(value bool) bool { return !value }
-
-func createMatchBoolFunc(values []opValue) matchValueFunc {
-	preds := make([]boolPredicate, len(values))
-	for i, v := range values {
-		positiveTest := false
-		switch v.op {
-		case cmpDefault, cmpEqual, cmpPrefix, cmpSuffix, cmpContains:
-			positiveTest = true
-		case cmpNotDefault, cmpNotEqual, cmpNoPrefix, cmpNoSuffix, cmpNotContains:
-			// positiveTest = false
-		default:
-			panic(fmt.Sprintf("Unknown compare operation %d", v.op))
-		}
-		bValue := meta.BoolValue(v.value)
-		if positiveTest == bValue {
-			preds[i] = boolSame
-		} else {
-			preds[i] = boolNegate
-		}
-	}
-	return func(value string) bool {
-		bValue := meta.BoolValue(value)
-		for _, pred := range preds {
-			if !pred(bValue) {
-				return false
-			}
-		}
-		return true
-	}
 }
 
 func createMatchIDFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {

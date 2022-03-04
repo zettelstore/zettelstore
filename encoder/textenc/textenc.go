@@ -42,8 +42,6 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	buf := encoder.NewEncWriter(w)
 	for _, pair := range m.ComputedPairs() {
 		switch meta.Type(pair.Key) {
-		case meta.TypeBool:
-			writeBool(&buf, pair.Value)
 		case meta.TypeTagSet:
 			writeTagSet(&buf, meta.ListFromValue(pair.Value))
 		case meta.TypeZettelmarkup:
@@ -56,14 +54,6 @@ func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	}
 	length, err := buf.Flush()
 	return length, err
-}
-
-func writeBool(buf *encoder.EncWriter, val string) {
-	if meta.BoolValue(val) {
-		buf.WriteString("true")
-	} else {
-		buf.WriteString("false")
-	}
 }
 
 func writeTagSet(buf *encoder.EncWriter, tags []string) {

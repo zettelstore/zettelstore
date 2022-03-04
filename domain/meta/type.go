@@ -43,7 +43,6 @@ func registerType(name string, isSet bool) *DescriptionType {
 
 // Supported key types.
 var (
-	TypeBool         = registerType(zjson.MetaBool, false)
 	TypeCredential   = registerType(zjson.MetaCredential, false)
 	TypeEmpty        = registerType(zjson.MetaEmpty, false)
 	TypeID           = registerType(zjson.MetaID, false)
