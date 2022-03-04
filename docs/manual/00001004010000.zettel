@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220218130301
+modified: 20220304115353
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -18,83 +18,86 @@ The following keys are supported:
 
 ; [!admin-port|''admin-port'']
 : Specifies the TCP port through which you can reach the [[administrator console|00001004100000]].
-  A value of ''0'' (the default) disables the administrator console.
+  A value of ""0"" (the default) disables the administrator console.
   The administrator console will only be enabled if Zettelstore is started with the [[''run'' sub-command|00001004051000]].
 
-  On most operating systems, the value must be greater than ''1024'' unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
+  On most operating systems, the value must be greater than ""1024"" unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
 
-  Default: ''0''
-; [!box-uri-x|''box-uri-__X__''], where __X__ is a number greater or equal to one
+  Default: ""0""
+; [!box-uri-x|''box-uri-X''], where __X__ is a number greater or equal to one
 : Specifies a [[box|00001004011200]] where zettel are stored.
   During startup __X__ is counted up, starting with one, until no key is found.
   This allows to configure more than one box.
 
-  If no ''box-uri-1'' key is given, the overall effect will be the same as if only ''box-uri-1'' was specified with the value ''dir://.zettel''.
+  If no ''box-uri-1'' key is given, the overall effect will be the same as if only ''box-uri-1'' was specified with the value ""dir://.zettel"".
   In this case, even a key ''box-uri-2'' will be ignored.
 ; [!debug-mode|''debug-mode'']
-: Allows to debug the Zettelstore software (mostly used by the developers).
+: Allows to debug the Zettelstore software (mostly used by the developers) if set to [[true|00001006030500]]
   Disables any timeout values of the internal web server and does not send some security-related data.
   Sets [[''log-level''|#log-level]] to ""debug"".
 
   Do not enable it for a production server.
 
-  Default: ''false''
+  Default: ""false""
 ; [!default-dir-box-type|''default-dir-box-type'']
 : Specifies the default value for the (sub-) type of [[directory boxes|00001004011400#type]].
   Zettel are typically stored in such boxes.
 
-  Default: ''notify''
+  Default: ""notify""
 ; [!insecure-cookie|''insecure-cookie'']
-: Must be set to ''true'', if authentication is enabled and Zettelstore is not accessible not via HTTPS (but via HTTP).
+: Must be set to [[true|00001006030500]], if authentication is enabled and Zettelstore is not accessible not via HTTPS (but via HTTP).
   Otherwise web browser are free to ignore the authentication cookie.
 
-  Default: ''false''
+  Default: ""false""
 ; [!listen-addr|''listen-addr'']
 : Configures the network address, where the Zettelstore service is listening for requests.
-  Syntax is: ''[NETWORKIP]:PORT'', where ''NETWORKIP'' is the IP-address of the networking interface (or something like ''0.0.0.0'' if you want to listen on all network interfaces, and ''PORT'' is the TCP port.
+  Syntax is: ''[NETWORKIP]:PORT'', where ''NETWORKIP'' is the IP-address of the networking interface (or something like ""0.0.0.0"" if you want to listen on all network interfaces, and ''PORT'' is the TCP port.
 
-  Default value: ''"127.0.0.1:23123"''
+  Default value: ""127.0.0.1:23123""
 ; [!log-level|''log-level'']
 : Specify the global [[logging level|00001004059700]] for the whole application, overwriting the level ""debug"" set by configuration [[''debug-mode''|#debug-mode]].
   Can be changed at runtime, even for specific internal services, with the ''log-level'' command of the [[administrator console|00001004101000#log-level]].
   
-  Default: ''info''.
+  Default: ""info"".
 
-  When you are familiar to operate the Zettelstore, you might set the level to ''warn'' or ''error'' to receive less noisy messages from the Zettelstore.
+  When you are familiar to operate the Zettelstore, you might set the level to ""warn"" or ""error"" to receive less noisy messages from the Zettelstore.
 ; [!owner|''owner'']
 : [[Identifier|00001006050000]] of a zettel that contains data about the owner of the Zettelstore.
   The owner has full authorization for the Zettelstore.
   Only if owner is set to some value, user [[authentication|00001010000000]] is enabled.
 ; [!persistent-cookie|''persistent-cookie'']
-: A boolean value to make the access cookie persistent.
+: A [[boolean value|00001006030500]] to make the access cookie persistent.
   This is helpful if you access the Zettelstore via a mobile device.
   On these devices, the operating system is free to stop the web browser and to remove temporary cookies.
   Therefore, an authenticated user will be logged off.
 
-  If ''true'', a persistent cookie is used.
+  If ""true"", a persistent cookie is used.
   Its lifetime exceeds the lifetime of the authentication token (see option ''token-lifetime-html'') by 30 seconds.
 
-  Default: ''false''
+  Default: ""false""
 ; [!read-only-mode|''read-only-mode'']
-: Puts the Zettelstore service into a read-only mode.
+: Puts the Zettelstore service into a read-only mode, if set to a [[true value|00001006030500]].
   No changes are possible.
-  Default: false.
+
+  Default: ""false"".
 ; [!token-lifetime-api|''token-lifetime-api''], [!token-lifetime-html|''token-lifetime-html'']
 : Define lifetime of access tokens in minutes.
   Values are only valid if authentication is enabled, i.e. key ''owner'' is set.
 
   ''token-lifetime-api'' is for accessing Zettelstore via its [[API|00001012000000]].
-  Default: 10.
+  Default: ""10"".
 
   ''token-lifetime-html'' specifies the lifetime for the HTML views.
-  Default: 60.
   It is automatically extended, when a new HTML view is rendered.
+  Default: ""60"".
 ; [!url-prefix|''url-prefix'']
 : Add the given string as a prefix to the local part of a Zettelstore local URL/URI when rendering zettel representations.
   Must begin and end with a slash character (""''/''"", U+002F).
-  Default: ''"/"''.
+
+  Default: ""/"".
 
   This allows to use a forwarding proxy [[server|00001010090100]] in front of the Zettelstore.
 ; [!verbose-mode|''verbose-mode'']
-: Be more verbose when logging data.
-  Default: false
+: Be more verbose when logging data, if set to a [[true value|00001006030500]].
+
+  Default: ""false""

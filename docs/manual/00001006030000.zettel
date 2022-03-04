@@ -3,7 +3,7 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220303114430
+modified: 20220304114106
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
@@ -26,7 +26,6 @@ Every key type has an associated validation rule to check values of the given ty
 There is also a rule how values are matched, e.g. against a search term when selecting some zettel.
 And there is a rule how values compare for sorting.
 
-* [[Boolean|00001006030500]]
 * [[Credential|00001006031000]]
 * [[EString|00001006031500]]
 * [[Identifier|00001006032000]]
