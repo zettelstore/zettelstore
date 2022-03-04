@@ -70,10 +70,12 @@ var (
 	suffixTypes     = map[string]*DescriptionType{
 		"-number": TypeNumber,
 		"-role":   TypeWord,
+		"-set":    TypeWordSet,
 		"-title":  TypeZettelmarkup,
 		"-url":    TypeURL,
 		"-zettel": TypeID,
 		"-zid":    TypeID,
+		"-zids":   TypeIDSet,
 	}
 )
 
