@@ -20,6 +20,9 @@
      ZJSON representation and encode it using the function in the Zettelstore
      client software.
      (breaking: api)
+  *  Remove API call to retrieve all links of an zettel. This can be done more
+     easily on the client side by traversing the ZJSON encoding of a zettel.
+     (breaking: api)
   *  ZJSON will encode metadata value as pairs of a metadata type and metadata
      value. This allows a client to decode the associated value more easily.
      (minor: api)

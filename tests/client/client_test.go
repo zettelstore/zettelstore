@@ -273,29 +273,6 @@ func TestGetZettelContext(t *testing.T) {
 	checkListZid(t, l, 0, allUserZid)
 }
 
-func TestGetZettelLinks(t *testing.T) {
-	t.Parallel()
-	c := getClient()
-	c.SetAuth("owner", "owner")
-	zl, err := c.GetZettelLinks(context.Background(), api.ZidDefaultHome)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if !checkZid(t, api.ZidDefaultHome, zl.ID) {
-		return
-	}
-	if got := len(zl.Linked.Outgoing); got != 4 {
-		t.Errorf("Expected 4 outgoing links, got %d", got)
-	}
-	if got := len(zl.Linked.Local); got != 1 {
-		t.Errorf("Expected 1 local link, got %d", got)
-	}
-	if got := len(zl.Linked.External); got != 4 {
-		t.Errorf("Expected 4 external link, got %d", got)
-	}
-}
-
 func TestGetUnlinkedReferences(t *testing.T) {
 	t.Parallel()
 	c := getClient()
