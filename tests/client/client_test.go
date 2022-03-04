@@ -22,6 +22,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/client"
+	"zettelstore.de/z/kernel"
 )
 
 func nextZid(zid api.ZettelID) api.ZettelID {
@@ -379,6 +380,19 @@ func TestListRoles(t *testing.T) {
 		if id != rl[i] {
 			t.Errorf("Role list pos %d: expected %q, got %q", i, id, rl[i])
 		}
+	}
+}
+
+func TestVersion(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	ver, err := c.GetVersionJSON(context.Background())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if ver.Major != -1 || ver.Minor != -1 || ver.Patch != -1 || ver.Info != kernel.CoreDefaultVersion || ver.Hash != "" {
+		t.Error(ver)
 	}
 }
 

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -107,7 +107,7 @@ func readFossilVersion() (string, error) {
 			}
 		}
 	}
-	return hash, nil
+	return hash + suffix, nil
 }
 
 func getVersionData() (string, string) {
@@ -115,11 +115,10 @@ func getVersionData() (string, string) {
 	if err != nil {
 		base = "dev"
 	}
-	fossil, err := readFossilVersion()
-	if err != nil {
-		return base, ""
+	if fossil, err2 := readFossilVersion(); err2 == nil {
+		return base, fossil
 	}
-	return base, fossil
+	return base, ""
 }
 
 func calcVersion(base, vcs string) string { return base + "+" + vcs }
@@ -407,7 +406,6 @@ func getReleaseVersionData() (string, string) {
 	}
 	if strings.HasSuffix(fossil, dirtySuffix) {
 		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", fossil)
-		base = base + dirtySuffix
 	}
 	return base, fossil
 }

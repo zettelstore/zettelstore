@@ -43,6 +43,8 @@
      a (in-memory-based) full-text search first. Now only those zettel are
      loaded from file that contain the metdata value.
      (minor: api, webui)
+  *  Add an API call to retrieve the version of the Zettelstore.
+     (minor: api)
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>

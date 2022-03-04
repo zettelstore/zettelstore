@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -64,7 +64,7 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 			"Version",
 			cs.noFrozen(func(val string) interface{} {
 				if val == "" {
-					return "unknown"
+					return kernel.CoreDefaultVersion
 				}
 				return val
 			}),

@@ -1,0 +1,27 @@
+id: 00001012070500
+title: Retrieve administrative data
+role: zettel
+tags: #api #manual #zettelstore
+syntax: zmk
+modified: 20220304174027
+
+The [[endpoint|00001012920000]] ''/x'' allows you to retrieve some (administrative) data.
+
+Currently, you can only request Zettelstore version data.
+
+````
+# curl 'http://127.0.0.1:23123/x'
+{"major":0,"minor":4,"patch":0,"info":"dev","hash":"cb121cc980-dirty"}
+````
+
+Zettelstore conforms somehow to the Standard [[Semantic Versioning|https://semver.org/]].
+
+The names ""major"", ""minor"", and ""patch"" are described in this standard.
+
+The name ""info"" contains sometimes some additional information, e.g. ""dev"" for a development version, or ""preview"" for a preview version.
+
+The name ""hash"" contains some data to identify the version from a developers perspective.
+
+=== HTTP Status codes
+; ''200''
+: Retrieval was successful, the body contains an appropriate JSON object.

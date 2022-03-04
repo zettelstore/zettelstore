@@ -75,6 +75,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucRename := usecase.NewRenameZettel(ucLog, protectedBoxManager)
 	ucUnlinkedRefs := usecase.NewUnlinkedReferences(protectedBoxManager, rtConfig)
 	ucRefresh := usecase.NewRefresh(ucLog, protectedBoxManager)
+	ucVersion := usecase.NewVersion(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 
@@ -118,6 +119,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddZettelRoute('u', server.MethodGet, a.MakeListUnlinkedMetaHandler(
 		ucGetMeta, ucUnlinkedRefs, &ucEvaluate))
 	webSrv.AddZettelRoute('v', server.MethodGet, a.MakeGetEvalZettelHandler(ucEvaluate))
+	webSrv.AddListRoute('x', server.MethodGet, a.MakeGetDataHandler(ucVersion))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
 	webSrv.AddZettelRoute('x', server.MethodGet, a.MakeZettelContextHandler(ucZettelContext))
 	webSrv.AddListRoute('z', server.MethodGet, a.MakeListPlainHandler(ucListMeta))
