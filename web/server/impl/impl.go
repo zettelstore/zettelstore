@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -77,13 +77,17 @@ func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Durati
 		Path:     srv.GetURLPrefix(),
 		Secure:   srv.secureCookie,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 	if srv.persistentCookie && d > 0 {
 		cookie.Expires = time.Now().Add(d).Add(30 * time.Second).UTC()
 	}
 	srv.log.Debug().Bytes("token", token).Msg("SetToken")
-	http.SetCookie(w, &cookie)
+	if v := cookie.String(); v != "" {
+		w.Header().Add("Set-Cookie", v)
+		w.Header().Add("Cache-Control", `no-cache="Set-Cookie"`)
+		w.Header().Add("Vary", "Cookie")
+	}
 }
 
 // ClearToken invalidates the session cookie by sending an empty one.
