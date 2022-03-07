@@ -174,6 +174,18 @@ func NewWithData(zid id.Zid, data map[string]string) *Meta {
 	return &Meta{Zid: zid, pairs: pairs}
 }
 
+// Length returns the number of bytes stored for the metadata.
+func (m *Meta) Length() int {
+	if m == nil {
+		return 0
+	}
+	result := 6 // storage needed for Zid
+	for k, v := range m.pairs {
+		result += len(k) + len(v) + 1 // 1 because separator
+	}
+	return result
+}
+
 // Clone returns a new copy of the metadata.
 func (m *Meta) Clone() *Meta {
 	return &Meta{

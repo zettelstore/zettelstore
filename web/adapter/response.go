@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -65,6 +65,9 @@ func CodeMessageFromError(err error) (int, string) {
 	}
 	if errors.Is(err, box.ErrConflict) {
 		return http.StatusConflict, "Zettelstore operations conflicted"
+	}
+	if errors.Is(err, box.ErrCapacity) {
+		return http.StatusInsufficientStorage, "Zettelstore reached one of its storage limits"
 	}
 	return http.StatusInternalServerError, err.Error()
 }

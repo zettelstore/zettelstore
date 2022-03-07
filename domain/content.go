@@ -33,6 +33,9 @@ func NewContent(data []byte) Content {
 	return Content{data: data, isBinary: calcIsBinary(data)}
 }
 
+// Length returns the number of bytes stored.
+func (zc *Content) Length() int { return len(zc.data) }
+
 // Equal compares two content values.
 func (zc *Content) Equal(o *Content) bool {
 	if zc == nil {

@@ -3,7 +3,7 @@ title: Zettelstore boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220218134031
+modified: 20220307121547
 
 A Zettelstore must store its zettel somehow and somewhere.
 In most cases you want to store your zettel as files in a directory.
@@ -35,6 +35,7 @@ The following box URIs are supported:
 ; [!mem|''mem:'']
 : Stores all its zettel in volatile memory.
   If you stop the Zettelstore, all changes are lost.
+  To limit usage of volatile memory, you should [[configure|00001004011600]] this type of box, although the default values might be valid for your use case.
 
 All boxes that you configure via the ''box-uri-X'' keys form a chain of boxes.
 If a zettel should be retrieved, a search starts in the box specified with the ''box-uri-2'' key, then ''box-uri-3'' and so on.

@@ -45,6 +45,9 @@
      (minor: api, webui)
   *  Add an API call to retrieve the version of the Zettelstore.
      (minor: api)
+  *  Limit the amount of zettel and bytes to be stored in a memory box. Allows
+     to use it with public access.
+     (minor: box)
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>

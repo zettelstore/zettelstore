@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -16,6 +16,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
+	"strconv"
 	"time"
 
 	"zettelstore.de/c/api"
@@ -287,7 +289,35 @@ var ErrNotFound = errors.New("zettel not found")
 // One example: if calculating a new zettel identifier takes too long.
 var ErrConflict = errors.New("conflict")
 
+// ErrCapacity is returned if a box has reached its capacity.
+var ErrCapacity = errors.New("capacity exceeded")
+
 // ErrInvalidID is returned if the zettel id is not appropriate for the box operation.
 type ErrInvalidID struct{ Zid id.Zid }
 
 func (err *ErrInvalidID) Error() string { return "invalid Zettel id: " + err.Zid.String() }
+
+// GetQueryBool is a helper function to extract bool values from a box URI.
+func GetQueryBool(u *url.URL, key string) bool {
+	_, ok := u.Query()[key]
+	return ok
+}
+
+// GetQueryInt is a helper function to extract int values of a specified range from a box URI.
+func GetQueryInt(u *url.URL, key string, min, def, max int) int {
+	sVal := u.Query().Get(key)
+	if sVal == "" {
+		return def
+	}
+	iVal, err := strconv.Atoi(sVal)
+	if err != nil {
+		return def
+	}
+	if iVal < min {
+		return min
+	}
+	if iVal > max {
+		return max
+	}
+	return iVal
+}

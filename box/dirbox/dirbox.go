@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -17,7 +17,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"sync"
 
 	"zettelstore.de/c/api"
@@ -46,11 +45,11 @@ func init() {
 			log:        log,
 			number:     cdata.Number,
 			location:   u.String(),
-			readonly:   getQueryBool(u, "readonly"),
+			readonly:   box.GetQueryBool(u, "readonly"),
 			cdata:      *cdata,
 			dir:        path,
 			notifySpec: getDirSrvInfo(log, u.Query().Get("type")),
-			fSrvs:      makePrime(uint32(getQueryInt(u, "worker", 1, 7, 1499))),
+			fSrvs:      makePrime(uint32(box.GetQueryInt(u, "worker", 1, 7, 1499))),
 		}
 		return &dp, nil
 	})
@@ -110,29 +109,6 @@ func getDirPath(u *url.URL) string {
 		return filepath.Clean(u.Opaque)
 	}
 	return filepath.Clean(u.Path)
-}
-
-func getQueryBool(u *url.URL, key string) bool {
-	_, ok := u.Query()[key]
-	return ok
-}
-
-func getQueryInt(u *url.URL, key string, min, def, max int) int {
-	sVal := u.Query().Get(key)
-	if sVal == "" {
-		return def
-	}
-	iVal, err := strconv.Atoi(sVal)
-	if err != nil {
-		return def
-	}
-	if iVal < min {
-		return min
-	}
-	if iVal > max {
-		return max
-	}
-	return iVal
 }
 
 // dirBox uses a directory to store zettel as files.
