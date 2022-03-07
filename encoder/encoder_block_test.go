@@ -285,11 +285,11 @@ and much more
 			encoderZJSON: `[{"":"Table","p":[[{"s":">","i":[{"":"Text","s":"h1"}]},{"i":[{"":"Text","s":"h2"}]},{"s":":","i":[{"":"Text","s":"h3"}]}],[[{"s":"<","i":[{"":"Text","s":"c1"}]},{"i":[{"":"Text","s":"c2"}]},{"s":":","i":[{"":"Text","s":"c3"}]}],[{"s":">","i":[{"":"Text","s":"f1"}]},{"i":[{"":"Text","s":"f2"}]},{"s":":","i":[{"":"Text","s":"=f3"}]}]]]}]`,
 			encoderHTML: `<table>
 <thead>
-<tr><th class="zs-ta-right">h1</th><th>h2</th><th class="zs-ta-center">h3</th></tr>
+<tr><th class="right">h1</th><th>h2</th><th class="center">h3</th></tr>
 </thead>
 <tbody>
-<tr><td class="zs-ta-left">c1</td><td>c2</td><td class="zs-ta-center">c3</td></tr>
-<tr><td class="zs-ta-right">f1</td><td>f2</td><td class="zs-ta-center">=f3</td></tr>
+<tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr>
+<tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr>
 </tbody>
 </table>`,
 			encoderNative: `[Table

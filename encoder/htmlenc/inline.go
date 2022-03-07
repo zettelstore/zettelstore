@@ -39,12 +39,12 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.writeAHref(ln.Ref, ln.Attrs, &ln.Inlines)
 	case ast.RefStateBroken:
 		attrs := ln.Attrs.Clone()
-		attrs = attrs.Set("class", "zs-broken")
+		attrs = attrs.Set("class", "broken")
 		attrs = attrs.Set("title", "Zettel not found") // l10n
 		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
 	case ast.RefStateExternal:
 		attrs := ln.Attrs.Clone()
-		attrs = attrs.Set("class", "zs-external")
+		attrs = attrs.Set("class", "external")
 		if v.env.HasNewWindow() {
 			attrs = attrs.Set("target", "_blank").Set("rel", "noopener noreferrer")
 		}
@@ -140,7 +140,7 @@ func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
 	}
 
 	n := strconv.Itoa(v.env.AddFootnote(fn))
-	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a href=\"#fn:", n, "\" class=\"zs-footnote-ref\" role=\"doc-noteref\">", n, "</a></sup>")
+	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a href=\"#fn:", n, "\" class=\"footnote-ref\" role=\"doc-noteref\">", n, "</a></sup>")
 	// TODO: what to do with Attrs?
 }
 

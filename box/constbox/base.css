@@ -29,12 +29,8 @@
     text-decoration: none;
     color:black;
   }
-  nav.zs-menu > a:hover, .zs-dropdown:hover button {
-    background-color: hsl(210, 28%, 80%);
-  }
-  nav.zs-menu form {
-    float: right;
-  }
+  nav.zs-menu > a:hover, .zs-dropdown:hover button { background-color: hsl(210, 28%, 80%) }
+  nav.zs-menu form { float: right }
   nav.zs-menu form input[type=text] {
     padding: .12rem;
     border: none;
@@ -71,18 +67,10 @@
     display: block;
     text-align: left;
   }
-  .zs-dropdown-content > a:hover {
-    background-color: hsl(210, 28%, 75%);
-  }
-  .zs-dropdown:hover > .zs-dropdown-content {
-    display: block;
-  }
-  main {
-    padding: 0 1rem;
-  }
-  article > * + * {
-    margin-top: .5rem;
-  }
+  .zs-dropdown-content > a:hover { background-color: hsl(210, 28%, 75%) }
+  .zs-dropdown:hover > .zs-dropdown-content { display: block }
+  main { padding: 0 1rem }
+  article > * + * { margin-top: .5rem }
   article header {
     padding: 0;
     margin: 0;
@@ -94,27 +82,13 @@
   h4 { font-size:1.05rem; margin:.8rem 0; font-weight: bold }
   h5 { font-size:1.05rem; margin:.8rem 0 }
   h6 { font-size:1.05rem; margin:.8rem 0; font-weight: lighter }
-  p {
-    margin: .5rem 0 0 0;
-  }
-  ol,ul {
-    padding-left: 1.1rem;
-  }
-  li,figure,figcaption,dl {
-    margin: 0;
-  }
-  dt {
-    margin: .5rem 0 0 0;
-  }
-  dt+dd {
-    margin-top: 0;
-  }
-  dd {
-    margin: .5rem 0 0 2rem;
-  }
-  dd > p:first-child {
-    margin: 0 0 0 0;
-  }
+  p { margin: .5rem 0 0 0 }
+  ol,ul { padding-left: 1.1rem }
+  li,figure,figcaption,dl { margin: 0 }
+  dt { margin: .5rem 0 0 0 }
+  dt+dd { margin-top: 0 }
+  dd { margin: .5rem 0 0 2rem }
+  dd > p:first-child { margin: 0 0 0 0 }
   blockquote {
     border-left: 0.5rem solid lightgray;
     padding-left: 1rem;
@@ -122,12 +96,8 @@
     margin-right: 2rem;
     font-style: italic;
   }
-  blockquote p {
-    margin-bottom: .5rem;
-  }
-  blockquote cite {
-    font-style: normal;
-  }
+  blockquote p { margin-bottom: .5rem }
+  blockquote cite { font-style: normal }
   table {
     border-collapse: collapse;
     border-spacing: 0;
@@ -137,9 +107,9 @@
     text-align: left;
     padding: .25rem .5rem;
   }
-  td { border-bottom: 1px solid hsl(0, 0%, 85%); }
-  thead th { border-bottom: 2px solid hsl(0, 0%, 70%); }
-  tfoot th { border-top: 2px solid hsl(0, 0%, 70%); }
+  td { border-bottom: 1px solid hsl(0, 0%, 85%) }
+  thead th { border-bottom: 2px solid hsl(0, 0%, 70%) }
+  tfoot th { border-top: 2px solid hsl(0, 0%, 70%) }
   main form {
     padding: 0 .5em;
     margin: .5em 0 0 0;
@@ -151,15 +121,9 @@
     clear: both;
     visibility: hidden;
   }
-  main form div {
-    margin: .5em 0 0 0
-  }
-  input {
-    font-family: monospace;
-  }
-  input[type="submit"],button,select {
-    font: inherit;
-  }
+  main form div { margin: .5em 0 0 0 }
+  input { font-family: monospace }
+  input[type="submit"],button,select { font: inherit }
   label { font-family: sans-serif; font-size:.9rem }
   label::after { content:":" }
   textarea {
@@ -178,16 +142,11 @@
     float:right;
     margin: .5em 0 .5em 1em;
   }
-  a:not([class]) {
-    text-decoration-skip-ink: auto;
-  }
-  .zs-broken {
-    text-decoration: line-through;
-  }
-  img {
-    max-width: 100%;
-  }
-  .zs-endnotes {
+  a:not([class]) { text-decoration-skip-ink: auto }
+  a.broken { text-decoration: line-through }
+  img { max-width: 100% }
+  img.right { float: right }
+  ol.endnotes {
     padding-top: .5rem;
     border-top: 1px solid;
   }
@@ -222,9 +181,7 @@
     border-radius: .5rem;
     border: 1px solid black;
   }
-  div.zs-indication p:first-child {
-    margin-top: 0;
-  }
+  div.zs-indication p:first-child { margin-top: 0 }
   span.zs-indication {
     border: 1px solid black;
     border-radius: .25rem;
@@ -245,9 +202,9 @@
     border-style: none !important;
     font-weight: bold;
   }
-  .zs-ta-left { text-align:left }
-  .zs-ta-center { text-align:center }
-  .zs-ta-right { text-align:right }
+  td.left,th.left { text-align:left }
+  td.center,th.center { text-align:center }
+  td.right,th.right { text-align:right }
   .zs-font-size-0 { font-size:75% }
   .zs-font-size-1 { font-size:83% }
   .zs-font-size-2 { font-size:100% }
@@ -260,15 +217,9 @@
     color:#444;
     margin-bottom:1rem;
   }
-  .zs-meta a {
-    color:#444;
-  }
-  h1+.zs-meta {
-    margin-top:-1rem;
-  }
-  nav > details {
-    margin-top:1rem;
-  }
+  .zs-meta a { color:#444 }
+  h1+.zs-meta { margin-top:-1rem }
+  nav > details { margin-top:1rem }
   details > summary {
     width: 100%;
     background-color: #eee;
@@ -279,9 +230,7 @@
     padding-left:2rem;
     background-color: #eee;
   }
-  footer {
-    padding: 0 1rem;
-  }
+  footer { padding: 0 1rem }
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;

@@ -236,7 +236,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[^footnote]`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Footnote","i":[{"":"Text","s":"footnote"}]}]`,
-			encoderHTML:   `<sup id="fnref:0"><a href="#fn:0" class="zs-footnote-ref" role="doc-noteref">0</a></sup>`,
+			encoderHTML:   `<sup id="fnref:0"><a href="#fn:0" class="footnote-ref" role="doc-noteref">0</a></sup>`,
 			encoderNative: `Footnote [Text "footnote"]`,
 			encoderText:   `footnote`,
 			encoderZmk:    useZmk,
@@ -269,7 +269,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[[abc]]`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"external","s":"abc"}]`,
-			encoderHTML:   `<a href="abc" class="zs-external">abc</a>`,
+			encoderHTML:   `<a href="abc" class="external">abc</a>`,
 			encoderNative: `Link EXTERNAL "abc"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
@@ -280,7 +280,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[[https://zettelstore.de]]`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"external","s":"https://zettelstore.de"}]`,
-			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">https://zettelstore.de</a>`,
+			encoderHTML:   `<a href="https://zettelstore.de" class="external">https://zettelstore.de</a>`,
 			encoderNative: `Link EXTERNAL "https://zettelstore.de"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,
@@ -291,7 +291,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[[Home|https://zettelstore.de]]`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Link","q":"external","s":"https://zettelstore.de","i":[{"":"Text","s":"Home"}]}]`,
-			encoderHTML:   `<a href="https://zettelstore.de" class="zs-external">Home</a>`,
+			encoderHTML:   `<a href="https://zettelstore.de" class="external">Home</a>`,
 			encoderNative: `Link EXTERNAL "https://zettelstore.de" [Text "Home"]`,
 			encoderText:   `Home`,
 			encoderZmk:    useZmk,

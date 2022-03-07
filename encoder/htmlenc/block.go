@@ -271,9 +271,9 @@ func (v *visitor) visitTable(tn *ast.TableNode) {
 
 var alignStyle = map[ast.Alignment]string{
 	ast.AlignDefault: ">",
-	ast.AlignLeft:    " class=\"zs-ta-left\">",
-	ast.AlignCenter:  " class=\"zs-ta-center\">",
-	ast.AlignRight:   " class=\"zs-ta-right\">",
+	ast.AlignLeft:    " class=\"left\">",
+	ast.AlignCenter:  " class=\"center\">",
+	ast.AlignRight:   " class=\"right\">",
 }
 
 func (v *visitor) writeRow(row ast.TableRow, cellStart, cellEnd string) {

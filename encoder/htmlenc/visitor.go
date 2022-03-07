@@ -202,7 +202,7 @@ func (v *visitor) writeEndnotes() {
 	if fn == nil {
 		return
 	}
-	v.b.WriteString("\n<ol class=\"zs-endnotes\">\n")
+	v.b.WriteString("\n<ol class=\"endnotes\">\n")
 	for fn != nil {
 		n := strconv.Itoa(fnNum)
 		v.b.WriteStrings("<li value=\"", n, "\" id=\"fn:", n, "\" role=\"doc-endnote\">")
@@ -210,7 +210,7 @@ func (v *visitor) writeEndnotes() {
 		v.b.WriteStrings(
 			" <a href=\"#fnref:",
 			n,
-			"\" class=\"zs-footnote-backref\" role=\"doc-backlink\">&#x21a9;&#xfe0e;</a></li>\n")
+			"\" class=\"footnote-backref\" role=\"doc-backlink\">&#x21a9;&#xfe0e;</a></li>\n")
 		fn, fnNum = v.env.PopFootnote()
 	}
 	v.b.WriteString("</ol>\n")
