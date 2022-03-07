@@ -3,11 +3,12 @@ title: Enable Zettelstore to start automatically on Linux
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
-modified: 20220131162209
+modified: 20220307104944
 
 Since there is no such thing as the one Linux, there are too many different ways to automatically start Zettelstore.
 
 * One way is to interpret your Linux desktop system as a server and use the [[recipe to install Zettelstore on a server|00001003600000]].
+** See below for a lighter alternative.
 * If you are using the [[Gnome Desktop|https://www.gnome.org/]], you could use the tool [[Tweak|https://wiki.gnome.org/action/show/Apps/Tweaks]] (formerly known as ""GNOME Tweak Tool"" or just ""Tweak Tool"").
   It allows to specify application that should run on startup / login.
 * [[KDE|https://kde.org/]] provides a system setting to [[autostart|https://docs.kde.org/stable5/en/plasma-workspace/kcontrol/autostart/]] applications.
@@ -15,3 +16,27 @@ Since there is no such thing as the one Linux, there are too many different ways
 * [[LXDE|https://www.lxde.org/]] uses [[LXSession Edit|https://wiki.lxde.org/en/LXSession_Edit]] to allow users to specify autostart applications.
 
 If you use a different desktop environment, it often helps to to provide its name and the string ""autostart"" to google for it with the search engine of your choice.
+
+Yet another way is to make use of the middleware that is provided.
+Many Linux distributions make use of [[systemd|https://systemd.io/]], which allows to start processes on behalf of an user.
+On the command line, adapt the following script to your own needs and execute it:
+```
+# mkdir -p "$HOME/.config/systemd/user"
+# cd "$HOME/.config/systemd/user"
+# cat <<__EOF__ > zettelstore.service
+[Unit]
+Description=Zettelstore
+After=network.target home.mount
+
+[Service]
+ExecStart=/usr/local/bin/zettelstore run -d zettel
+
+[Install]
+WantedBy=default.target
+__EOF__
+# systemctl --user daemon-reload
+# systemctl --user enable zettelstore.service
+# systemctl --user start zettelstore.service
+# systemctl --user status zettelstore.service
+```
+The last command should output some lines to indicate success.
