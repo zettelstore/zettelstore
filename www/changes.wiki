@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_5"></a>
+<h2>Changes for Version 0.5 (pending)</h2>
+
 <a name="0_4"></a>
-<h2>Changes for Version 0.4 (pending)</h2>
+<h2>Changes for Version 0.4 (2022-03-08)</h2>
   *  Encoding &ldquo;djson&rdquo; renamed to &ldquo;zjson&rdquo; (<em>zettel
      json</em>).
      (breaking: api; minor: webui)
@@ -30,7 +33,9 @@
      in the Zettelmarkup text.
      (minor: zettelmarkup)
   *  Metadata keys with suffix <kbd>-title</kbd> force their value to be
-     interpreted as Zettelmarkup.
+     interpreted as Zettelmarkup. Similar, the suffix <kbd>-set</kbd> denotes
+     a set/list of words and the suffix <kbd>-zids</kbd> a set/list of zettel
+     identifier.
      (minor: api, webui)
   *  Change generated URLs for zettel-creation forms. If you have bookmarked
      them, e.g. to create a new zettel, you should update.
@@ -48,6 +53,11 @@
   *  Limit the amount of zettel and bytes to be stored in a memory box. Allows
      to use it with public access.
      (minor: box)
+  *  Disallow to cache the authentication cookie. Will remove most unexpected
+     log-outs when using a mobile device.
+     (minor: webui)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>
