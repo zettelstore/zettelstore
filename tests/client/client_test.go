@@ -402,7 +402,13 @@ func init() {
 	flag.StringVar(&baseURL, "base-url", "", "Base URL")
 }
 
-func getClient() *client.Client { return client.NewClient(baseURL) }
+func getClient() *client.Client {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		panic(err)
+	}
+	return client.NewClient(u)
+}
 
 // TestMain controls whether client API tests should run or not.
 func TestMain(m *testing.M) {
