@@ -434,6 +434,18 @@ func TestVerbatimCode(t *testing.T) {
 	})
 }
 
+func TestVerbatimEval(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"~~~\n~~~", "(EVAL)"},
+		{"~~~\nabc\n~~~", "(EVAL\nabc)"},
+		{"~~~\nabc\n~~~~", "(EVAL\nabc)"},
+		{"~~~~\nabc\n~~~~", "(EVAL\nabc)"},
+		{"~~~~\nabc\n~~~\n~~~~", "(EVAL\nabc\n~~~)"},
+		{"~~~~go\nabc\n~~~~", "(EVAL\nabc)[ATTR =go]"},
+	})
+}
+
 func TestVerbatimComment(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
@@ -914,6 +926,7 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimZettel:  "(ZETTEL",
 	ast.VerbatimProg:    "(PROG",
+	ast.VerbatimEval:    "(EVAL",
 	ast.VerbatimComment: "(COMMENT",
 }
 

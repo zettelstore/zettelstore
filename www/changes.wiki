@@ -2,6 +2,9 @@
 
 <a name="0_5"></a>
 <h2>Changes for Version 0.5 (pending)</h2>
+  *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
+     to allow interpretation of content by external software.
+     (minor: zettelmarkup)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

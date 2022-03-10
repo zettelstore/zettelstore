@@ -228,12 +228,23 @@ and much more
 		},
 	},
 	{
-		descr: "Simple Verbatim",
+		descr: "Simple Verbatim Code",
 		zmk:   "```\nHello\nWorld\n```",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"CodeBlock","s":"Hello\nWorld"}]`,
 			encoderHTML:   "<pre><code>Hello\nWorld</code></pre>",
 			encoderNative: `[CodeBlock "Hello\nWorld"]`,
+			encoderText:   "Hello\nWorld",
+			encoderZmk:    useZmk,
+		},
+	},
+	{
+		descr: "Simple Verbatim Eval",
+		zmk:   "~~~\nHello\nWorld\n~~~",
+		expect: expectMap{
+			encoderZJSON:  `[{"":"EvalBlock","s":"Hello\nWorld"}]`,
+			encoderHTML:   "<pre><code class=\"zs-eval\">Hello\nWorld</code></pre>",
+			encoderNative: `[EvalBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
 			encoderZmk:    useZmk,
 		},

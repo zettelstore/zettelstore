@@ -186,6 +186,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimComment: "%%%",
 	ast.VerbatimHTML:    "@@@", // Attribute is set to {="html"}
 	ast.VerbatimProg:    "```",
+	ast.VerbatimEval:    "~~~",
 }
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {

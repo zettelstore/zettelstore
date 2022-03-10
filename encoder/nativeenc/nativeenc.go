@@ -246,6 +246,7 @@ func (v *visitor) writeMetaList(m *meta.Meta, key, native string) {
 var mapVerbatimKind = map[ast.VerbatimKind][]byte{
 	ast.VerbatimZettel:  []byte("[ZettelBlock"),
 	ast.VerbatimProg:    []byte("[CodeBlock"),
+	ast.VerbatimEval:    []byte("[EvalBlock"),
 	ast.VerbatimComment: []byte("[CommentBlock"),
 	ast.VerbatimHTML:    []byte("[HTMLBlock"),
 }

@@ -24,26 +24,32 @@ import (
 )
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
+	a := vn.Attrs
 	switch vn.Kind {
 	case ast.VerbatimZettel:
 		v.b.WriteString("<!--\n")
-		v.visitAttributes(vn.Attrs)
+		v.visitAttributes(a)
 		v.writeHTMLEscaped(string(vn.Content))
 		v.b.WriteString("\n-->")
+
+	case ast.VerbatimEval:
+		a = a.Clone().AddClass("zs-eval")
+		fallthrough
+
 	case ast.VerbatimProg:
 		oldVisible := v.visibleSpace
-		if vn.Attrs != nil {
-			v.visibleSpace = vn.Attrs.HasDefault()
+		if a != nil {
+			v.visibleSpace = a.HasDefault()
 		}
 		v.b.WriteString("<pre><code")
-		v.visitAttributes(vn.Attrs)
+		v.visitAttributes(a)
 		v.b.WriteByte('>')
 		v.writeHTMLEscaped(string(vn.Content))
 		v.b.WriteString("</code></pre>")
 		v.visibleSpace = oldVisible
 
 	case ast.VerbatimComment:
-		if vn.Attrs.HasDefault() {
+		if a.HasDefault() {
 			v.b.WriteString("<!--\n")
 			v.writeHTMLEscaped(string(vn.Content))
 			v.b.WriteString("\n-->")
