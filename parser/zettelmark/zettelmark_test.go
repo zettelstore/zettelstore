@@ -418,7 +418,7 @@ func TestVerbatimZettel(t *testing.T) {
 	checkTcs(t, TestCases{
 		{"@@@\n@@@", "(ZETTEL)"},
 		{"@@@\nabc\n@@@", "(ZETTEL\nabc)"},
-		{"@@@@draw\nabc\n@@@@", "(ZETTEL\nabc)[ATTR =draw]"},
+		{"@@@@def\nabc\n@@@@", "(ZETTEL\nabc)[ATTR =def]"},
 	})
 }
 

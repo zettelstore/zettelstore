@@ -37,7 +37,6 @@ func encoding2ContentType(enc api.EncodingEnum) string {
 
 var mapSyntax2CT = map[string]string{
 	"css":               "text/css; charset=utf-8",
-	api.ValueSyntaxDraw: ctSVG,
 	api.ValueSyntaxGif:  "image/gif",
 	api.ValueSyntaxHTML: "text/html; charset=utf-8",
 	"jpeg":              "image/jpeg",

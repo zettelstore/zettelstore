@@ -76,24 +76,8 @@ func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) ast.B
 		&ast.VerbatimNode{
 			Kind:    kind,
 			Attrs:   zjson.Attributes{"": syntax},
-			Content: readContent(inp),
+			Content: inp.ScanLineContent(),
 		},
-	}
-}
-
-func readContent(inp *input.Input) []byte {
-	result := make([]byte, 0, len(inp.Src)-inp.Pos+1)
-	for {
-		inp.EatEOL()
-		posL := inp.Pos
-		if inp.Ch == input.EOS {
-			return result
-		}
-		inp.SkipToEOL()
-		if len(result) > 0 {
-			result = append(result, '\n')
-		}
-		result = append(result, inp.Src[posL:inp.Pos]...)
 	}
 }
 

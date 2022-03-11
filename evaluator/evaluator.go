@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
+	"zettelstore.de/z/parser/draw"
 )
 
 // Environment contains values to control the evaluation.
@@ -154,11 +155,20 @@ func replaceWithBlockNodes(bns []ast.BlockNode, i int, replaceBns []ast.BlockNod
 }
 
 func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
-	if vn.Kind != ast.VerbatimZettel {
-		return vn
+	switch vn.Kind {
+	case ast.VerbatimZettel:
+		return e.evalVerbatimZettel(vn)
+	case ast.VerbatimEval:
+		if syntax, found := vn.Attrs.Get(""); found && syntax == ast.VerbatimEvalSyntaxDraw {
+			return draw.ParseDrawBlock(vn)
+		}
 	}
+	return vn
+}
+
+func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
 	m := meta.New(id.Invalid)
-	m.Set(api.KeySyntax, getSyntax(vn.Attrs, api.ValueSyntaxDraw))
+	m.Set(api.KeySyntax, getSyntax(vn.Attrs, api.ValueSyntaxText))
 	zettel := domain.Zettel{
 		Meta:    m,
 		Content: domain.NewContent(vn.Content),
@@ -426,7 +436,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 		return ln
 	}
 	e.transcludeCount++
-	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, api.ValueSyntaxDraw))
+	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, api.ValueSyntaxText))
 	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,

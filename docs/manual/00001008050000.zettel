@@ -3,23 +3,25 @@ title: The ""draw"" language
 role: manual
 tags: #graphic #manual #zettelstore
 syntax: zmk
-modified: 20220217180713
+modified: 20220311120439
 
 Sometimes, ""a picture is worth a thousand words"".
-To create some graphical representations, Zettelstore provides a simple mechanism.
+To create some graphical representations, Zettelmarkup provides a simple mechanism.
 Characters like ""''|''"" or ""''-''"" already provide some visual feedback.
 For example, to create a picture containing two boxes that are connected via an arrow, the following representation is possible:
 ```
-+-------+       +-------+
+~~~draw
++-------+       .-------.
 | Box 1 | ----> | Box 2 |
-+-------+       +-------+
++-------+       '-------'
+~~~
 ```
 Zettelstore translates this to:
-@@@draw
-+-------+       +-------+
+~~~draw
++-------+       .-------.
 | Box 1 | ----> | Box 2 |
-+-------+       +-------+
-@@@
++-------+       '-------'
+~~~
 
 Technically spoken, the drawing is translated to a [[SVG|00001008000000#svg]] element.
 

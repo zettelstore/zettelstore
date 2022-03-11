@@ -3,12 +3,11 @@ title: Zettelmarkup: Inline-Zettel Block
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218172121
+modified: 20220311112247
 
 An inline-zettel block allows to specify some content with another syntax without creating a new zettel.
-This is useful, for example, if you want to specify a [[simple drawing|00001008050000]] within your zettel and you are sure that you do not need the drawing in another context.
-Another example is to embed some [[Markdown|00001008010500]] content, because you are too lazy to translate Markdown into Zettelmarkup.[^However, translating into Zettelmarkup is quite easy with the [[zmk encoder|00001012920522]].]
-A last example is to specify HTML code to use it for some kind of web frontend framework.
+This is useful, for example, if you want to embed some [[Markdown|00001008010500]] content, because you are too lazy to translate Markdown into Zettelmarkup.
+Another example is to specify HTML code to use it for some kind of web frontend framework.
 
 As all other [[line-range blocks|00001007030000#line-range-blocks]], an inline-zettel block begins with at least three identical characters, starting at the first position of a line.
 For inline-zettel blocks, the at-sign character (""''@''"", U+0040) is used.
@@ -16,7 +15,7 @@ For inline-zettel blocks, the at-sign character (""''@''"", U+0040) is used.
 You can add some [[attributes|00001007050000]] on the beginning line of a verbatim block, following the initiating characters.
 The inline-zettel block uses the attribute key ""syntax"" to specify the [[syntax|00001008000000]] of the inline-zettel.
 Alternatively, you can use the generic attribute to specify the syntax value.
-If no value is provided, ""draw"" is assumed.
+If no value is provided, ""[[text|00001008000000#text]]"" is assumed.
 
 Any other character in this first line will be ignored.
 
@@ -24,23 +23,6 @@ Text following the beginning line will not be interpreted, until a line begins w
 This allows to enter some at-sign characters in the text that should not be interpreted at this level.
 
 Some examples:
-```zmk
-@@@draw
-+-------+      +-------+
-| Box 1 | ---> | Box 2 |
-+-------+      +-------+
-@@@
-```
-This will be rendered as:
-:::example
-@@@draw
-+-------+      +-------+
-| Box 1 | ---> | Box 2 |
-+-------+      +-------+
-@@@
-:::
-
-Using Markdown syntax:
 ```zmk
 @@@markdown
 A link to [this](00001007031200) zettel.

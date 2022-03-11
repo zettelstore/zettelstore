@@ -3,7 +3,7 @@ title: Zettelmarkup: Summary of Formatting Characters
 role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218124943
+modified: 20220311120759
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
@@ -29,7 +29,7 @@ The following table gives an overview about the use of all characters that begin
 | ''=''  | [[Headings|00001007030300]] | [[Computer output|00001007040200]]
 | ''>''  | [[Quotation lists|00001007030200]] | [[Inserted text|00001007040100]]
 | ''?''  | (free) | (free)
-| ''@''  | [[Inline-Zettel blocks|00001007031200]] | [[Inline-zettel snippets|00001007040200#inline-zettel-snippet]]
+| ''@''  | [[Inline-Zettel block|00001007031200]] | [[Inline-zettel snippet|00001007040200#inline-zettel-snippet]]
 | ''[''  | (reserved)  | [[Linked material|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
 | ''\\'' | (blocked by inline meaning) | [[Escape character|00001007040000]]
 | '']''  | (reserved) | End of [[link|00001007040300]], [[citation key|00001007040300]], [[footnote|00001007040300]], [[mark|00001007040300]]
@@ -39,4 +39,4 @@ The following table gives an overview about the use of all characters that begin
 | ''{''  | [[Transclusion|00001007031100]] | [[Embedded material|00001007040300]], [[Attribute|00001007050000]]
 | ''|''  | [[Table row / table cell|00001007031000]] | Separator within link and [[embed|00001007040320]] formatting
 | ''}''  | End of [[Transclusion|00001007031100]] | End of embedded material, End of Attribute
-| ''~''  | (free) | [[Deleted text|00001007040100]]
+| ''~''  | [[Evaluation block|00001007031300]] | [[Deleted text|00001007040100]]

@@ -25,7 +25,6 @@ import (
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
 	_ "zettelstore.de/z/kernel/impl"       // Allow kernel implementation to create itself
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
-	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.

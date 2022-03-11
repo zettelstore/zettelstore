@@ -19,7 +19,6 @@ import (
 	"zettelstore.de/z/strfun"
 
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
-	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/plain"      // Allow to use plain parser.
@@ -35,7 +34,6 @@ func TestParserType(t *testing.T) {
 	}{
 		{api.ValueSyntaxHTML, false, false},
 		{"css", false, false},
-		{api.ValueSyntaxDraw, true, false},
 		{api.ValueSyntaxGif, false, true},
 		{"jpeg", false, true},
 		{"jpg", false, true},

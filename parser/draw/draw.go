@@ -8,27 +8,19 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package draw provides a parser to create SVG from ASCII drawing
+// Package draw provides a parser to create SVG from ASCII drawing.
+//
+// It is not a parser registered by the general parser framework (directed by
+// metadata "syntax" of a zettel). It will be used when a zettel is evaluated.
 package draw
 
 import (
-	"zettelstore.de/c/api"
-	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/input"
-	"zettelstore.de/z/parser"
-)
+	"strconv"
 
-func init() {
-	parser.Register(&parser.Info{
-		Name:          api.ValueSyntaxDraw,
-		AltNames:      []string{},
-		IsTextParser:  true,
-		IsImageFormat: false,
-		ParseBlocks:   parseBlocks,
-		ParseInlines:  parseInlines,
-	})
-}
+	"zettelstore.de/c/api"
+	"zettelstore.de/c/zjson"
+	"zettelstore.de/z/ast"
+)
 
 const (
 	defaultTabSize = 8
@@ -37,13 +29,18 @@ const (
 	defaultScaleY  = 20
 )
 
-func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
-	font := m.GetDefault("font", defaultFont)
-	scaleX := m.GetNumber("x-scale", defaultScaleX)
-	scaleY := m.GetNumber("y-scale", defaultScaleY)
-	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
+// ParseDrawBlock parses the content of an eval verbatim node into an SVG image BLOB.
+func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
+	font := defaultFont
+	if val, found := vn.Attrs.Get("font"); found {
+		font = val
+	}
+	scaleX := getScale(vn.Attrs, "x-scale", defaultScaleX)
+	scaleY := getScale(vn.Attrs, "y-scale", defaultScaleY)
+
+	canvas, err := newCanvas(vn.Content, defaultTabSize)
 	if err != nil {
-		return ast.BlockSlice{ast.CreateParaNode(canvasErrMsg(err)...)}
+		return ast.CreateParaNode(canvasErrMsg(err)...)
 	}
 	if scaleX < 1 || 1000000 < scaleX {
 		scaleX = defaultScaleX
@@ -53,28 +50,22 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	}
 	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
 	if len(svg) == 0 {
-		return ast.BlockSlice{ast.CreateParaNode(noSVGErrMsg()...)}
+		return ast.CreateParaNode(noSVGErrMsg()...)
 	}
-	return ast.BlockSlice{&ast.BLOBNode{
+	return &ast.BLOBNode{
 		Title:  "",
 		Syntax: api.ValueSyntaxSVG,
 		Blob:   svg,
-	}}
+	}
 }
 
-func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
-	canvas, err := newCanvas(inp.Src[inp.Pos:], defaultTabSize)
-	if err != nil {
-		return canvasErrMsg(err)
+func getScale(attrs zjson.Attributes, key string, defVal int) int {
+	if val, found := attrs.Get(key); found {
+		if n, err := strconv.Atoi(val); err == nil && 0 < n && n < 100000 {
+			return n
+		}
 	}
-	svg := canvasToSVG(canvas, defaultFont, defaultScaleX, defaultScaleY)
-	if len(svg) == 0 {
-		return noSVGErrMsg()
-	}
-	return ast.InlineSlice{&ast.EmbedBLOBNode{
-		Blob:   svg,
-		Syntax: api.ValueSyntaxSVG,
-	}}
+	return defVal
 }
 
 func canvasErrMsg(err error) ast.InlineSlice {

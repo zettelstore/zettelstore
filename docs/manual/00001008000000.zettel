@@ -3,7 +3,7 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220214180202
+modified: 20220311111448
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -22,11 +22,9 @@ The following syntax values are supported:
 
 ; [!css|''css'']
 : A [[Cascading Style Sheet|https://www.w3.org/Style/CSS/]], to be used when rendering a zettel as HTML.
-; [!draw|''draw'']
-: A simple [[language|00001008050000]] to ""draw"" a graphic by using some simple Unicode characters.
 ; [!gif|''gif'']; [!jpeg|''jpeg'']; [!jpg|''jpg'']; [!png|''png'']
 : The formats for pixel graphics.
-  Typically the data is stored in a separate file and the syntax is given in the metafile, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2.0, the metafile had the file extension ''.meta'']
+  Typically the data is stored in a separate file and the syntax is given in the metafile, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2, the metafile had the file extension ''.meta'']
 ; [!html|''html'']
 : Hypertext Markup Language, will not be parsed further.
   Instead, it is treated as [[text|#text]], but will be encoded differently for [[HTML format|00001012920510]] (same for the [[web user interface|00001014000000]]).
@@ -54,3 +52,10 @@ The following syntax values are supported:
 The actual values are also listed in a zettel named [[Zettelstore Supported Parser|00000000000092]].
 
 If you specify something else, your content will be interpreted as plain text.
+
+=== Language for other elements of a zettel
+[[Zettelmarkup|00001007000000]] allows to specify [[evaluation blocks|00001007031300]], which also receive a syntax value.
+An evaluation blocks is typically interpreted by external software, for example [[Zettel Presenter|00001006055000#external-applications]].
+However, some values are interpreted by Zettelstore during evaluation of a zettel:
+; [!draw|''draw'']
+: A [[language|00001008050000]] to ""draw"" a graphic by using some simple Unicode characters.

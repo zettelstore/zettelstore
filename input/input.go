@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -203,5 +203,22 @@ func (inp *Input) scanEntityNamed(pos int) (string, bool) {
 			return ues, true
 		}
 		inp.Next()
+	}
+}
+
+// ScanLineContent reads the reaining input stream and interprets it as lines of text.
+func (inp *Input) ScanLineContent() []byte {
+	result := make([]byte, 0, len(inp.Src)-inp.Pos+1)
+	for {
+		inp.EatEOL()
+		posL := inp.Pos
+		if inp.Ch == EOS {
+			return result
+		}
+		inp.SkipToEOL()
+		if len(result) > 0 {
+			result = append(result, '\n')
+		}
+		result = append(result, inp.Src[posL:inp.Pos]...)
 	}
 }

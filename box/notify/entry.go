@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -99,7 +99,7 @@ func calcContentExt(syntax string, yamlSep bool, getZettelFileSyntax func() []st
 		return extZettel
 	}
 	switch syntax {
-	case api.ValueSyntaxDraw, api.ValueSyntaxNone, api.ValueSyntaxZmk:
+	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
 		return extZettel
 	}
 	for _, s := range getZettelFileSyntax() {
