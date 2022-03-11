@@ -3,7 +3,7 @@ title: Zettelmarkup: Literal-like formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220311180818
+modified: 20220311185110
 
 There are some reasons to mark text that should be rendered as uninterpreted:
 * Mark text as literal, sometimes as part of a program.
@@ -77,4 +77,4 @@ However, external software might support specific syntax value, like ""tex"", ""
 Even an empty syntax value might be supported.
 
 Example:
-* ``Happy $$\TeX$$!``is rendered as ::Happy $$\TeX$$!::{=example}
+* ``Happy $$\\TeX$$!``is rendered as ::Happy $$\TeX$$!::{=example}
