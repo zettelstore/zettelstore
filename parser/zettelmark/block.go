@@ -57,7 +57,7 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 			return nil, false
 		case ':':
 			bn, success = cp.parseColon()
-		case '@', '`', runeModGrave, '%', '~':
+		case '@', '`', runeModGrave, '%', '~', '$':
 			cp.clearStacked()
 			bn, success = cp.parseVerbatim()
 		case '"', '<':
@@ -141,7 +141,7 @@ func (cp *zmkP) parsePara() *ast.ParaNode {
 			ch := cp.inp.Ch
 			switch ch {
 			// Must contain all cases from above switch in parseBlock.
-			case input.EOS, '\n', '\r', '@', '`', runeModGrave, '%', '~', '"', '<', '=', '-', '*', '#', '>', ';', ':', ' ', '|', '{':
+			case input.EOS, '\n', '\r', '@', '`', runeModGrave, '%', '~', '$', '"', '<', '=', '-', '*', '#', '>', ';', ':', ' ', '|', '{':
 				return pn
 			}
 		}
@@ -181,6 +181,8 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 		kind = ast.VerbatimComment
 	case '~':
 		kind = ast.VerbatimEval
+	case '$':
+		kind = ast.VerbatimMath
 	default:
 		panic(fmt.Sprintf("%q is not a verbatim char", fch))
 	}

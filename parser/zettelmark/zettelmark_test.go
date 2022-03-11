@@ -374,6 +374,27 @@ func TestLiteral(t *testing.T) {
 	})
 }
 
+func TestLiteralMath(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"$", "(PARA $)"},
+		{"$$", "(PARA $$)"},
+		{"$$$", "(PARA $$$)"},
+		{"$$$$", "(PARA {$})"},
+		{"$$a$$", "(PARA {$ a})"},
+		{"$$a$$$", "(PARA {$ a} $)"},
+		{"$$$a$$", "(PARA {$ $a})"},
+		{"$$$a$$$", "(PARA {$ $a} $)"},
+		{`$\$`, "(PARA $$)"},
+		{`$\$$`, "(PARA $$$)"},
+		{`$$\$`, "(PARA $$$)"},
+		{`$$a\$$`, `(PARA {$ a\})`},
+		{`$$a$\$`, "(PARA $$a$$)"},
+		{`$$a\$$$`, `(PARA {$ a\} $)`},
+		{"$$a$${go}", "(PARA {$ a}[ATTR go])"},
+	})
+}
+
 func TestMixFormatCode(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
@@ -443,6 +464,18 @@ func TestVerbatimEval(t *testing.T) {
 		{"~~~~\nabc\n~~~~", "(EVAL\nabc)"},
 		{"~~~~\nabc\n~~~\n~~~~", "(EVAL\nabc\n~~~)"},
 		{"~~~~go\nabc\n~~~~", "(EVAL\nabc)[ATTR =go]"},
+	})
+}
+
+func TestVerbatimMath(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"$$$\n$$$", "(MATH)"},
+		{"$$$\nabc\n$$$", "(MATH\nabc)"},
+		{"$$$\nabc\n$$$$", "(MATH\nabc)"},
+		{"$$$$\nabc\n$$$$", "(MATH\nabc)"},
+		{"$$$$\nabc\n$$$\n$$$$", "(MATH\nabc\n$$$)"},
+		{"$$$$go\nabc\n$$$$", "(MATH\nabc)[ATTR =go]"},
 	})
 }
 
@@ -927,6 +960,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimZettel:  "(ZETTEL",
 	ast.VerbatimProg:    "(PROG",
 	ast.VerbatimEval:    "(EVAL",
+	ast.VerbatimMath:    "(MATH",
 	ast.VerbatimComment: "(COMMENT",
 }
 
@@ -966,6 +1000,7 @@ var mapLiteralKind = map[ast.LiteralKind]rune{
 	ast.LiteralInput:   '\'',
 	ast.LiteralOutput:  '=',
 	ast.LiteralComment: '%',
+	ast.LiteralMath:    '$',
 }
 
 func (tv *TestVisitor) visitInlineSlice(is *ast.InlineSlice) {

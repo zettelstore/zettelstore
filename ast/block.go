@@ -88,6 +88,7 @@ const (
 	VerbatimEval                 // Code to be externally interpreted. Syntax is stored in default attribute.
 	VerbatimComment              // Block comment
 	VerbatimHTML                 // Block HTML, e.g. for Markdown
+	VerbatimMath                 // Block math mode
 )
 
 func (*VerbatimNode) blockNode() { /* Just a marker */ }

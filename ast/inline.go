@@ -255,6 +255,7 @@ const (
 	LiteralOutput              // Computer output
 	LiteralComment             // Inline comment
 	LiteralHTML                // Inline HTML, e.g. for Markdown
+	LiteralMath                // Inline math mode
 )
 
 func (*LiteralNode) inlineNode() { /* Just a marker */ }

@@ -10,6 +10,10 @@
   *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
      to allow interpretation of content by external software.
      (minor: zettelmarkup)
+  *  Add initial support for a Tex-like math-mode to Zettelmarkup (both block-
+     and inline-structured elements). Currently, support only the syntax,
+     but WebUI does not render these elements in a special way.
+     (minor: zettelmarkup)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

@@ -1,0 +1,74 @@
+id: 00001007031400
+title: Zettelmarkup: Math-mode Blocks
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20220311182505
+
+Math-mode blocks are used to enter mathematical formulas / equations in a display style mode.
+Similar to a [[evaluation blocks|00001007031300]], the block content will be interpreted by either Zettelstore or an external software.
+They begin with at least three dollar sign characters (""''$''"", U+0024) at the first position of a line.
+
+You can add some [[attributes|00001007050000]] on the beginning line of a verbatim block, following the initiating characters.
+A math-mode block supports the default attribute[^Depending on the syntax value.]: when given, all spaces in the text are rendered in HTML as open box characters (U+2423).
+If you want to give only one attribute and this attribute is the generic attribute, you can omit the most of the attribute syntax and just specify the value.
+It will be interpreted as a [[syntax|00001008000000]] value to evaluate its content.
+Alternatively, you could provide an attribute with the key ""syntax"" and use the value to specify the syntax.
+Not all syntax values are supported by Zettelstore.[^Currently: none.]
+External software might support several values via the [[ZJSON encoding|00001012920503]].
+
+Any other character in this line will be ignored
+
+Text following the beginning line will not be interpreted, until a line begins with at least the same number of the same characters given at the beginning line.
+This allows to enter some dollar-sign characters in the text that should not be interpreted.
+
+For example:
+`````zmk
+$$$$
+$$$
+$$$$
+`````
+will be rendered in HTML as:
+:::example
+$$$$
+$$$
+$$$$
+:::
+
+`````zmk
+$$${-}
+This is  some
+text with no 
+  real sense.
+$$$$
+`````
+will be rendered as:
+:::example
+$$${-}
+This is  some
+text with no 
+  real sense.
+$$$$
+:::
+
+In the future, Zettelstore might somehow support mathematical formular with a $$\TeX$$-like syntax.
+Until then,
+`````zmk
+$$$
+\begin{align*}
+  f(x) &= x^2\\
+  g(x) &= \frac{1}{x}\\
+  F(x) &= \int^a_b \frac{1}{3}x^3
+\end{align*}
+$$$
+`````
+is rendered as:
+:::example
+$$$
+\begin{align*}
+  f(x) &= x^2\\
+  g(x) &= \frac{1}{x}\\
+  F(x) &= \int^a_b \frac{1}{3}x^3
+\end{align*}
+$$$
+:::

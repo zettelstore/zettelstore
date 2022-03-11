@@ -247,6 +247,7 @@ var mapVerbatimKind = map[ast.VerbatimKind][]byte{
 	ast.VerbatimZettel:  []byte("[ZettelBlock"),
 	ast.VerbatimProg:    []byte("[CodeBlock"),
 	ast.VerbatimEval:    []byte("[EvalBlock"),
+	ast.VerbatimMath:    []byte("[MathBlock"),
 	ast.VerbatimComment: []byte("[CommentBlock"),
 	ast.VerbatimHTML:    []byte("[HTMLBlock"),
 }
@@ -521,6 +522,7 @@ var mapLiteralKind = map[ast.LiteralKind][]byte{
 	ast.LiteralInput:   []byte("Input"),
 	ast.LiteralOutput:  []byte("Output"),
 	ast.LiteralComment: []byte("Comment"),
+	ast.LiteralMath:    []byte("Math"),
 	ast.LiteralHTML:    []byte("HTML"),
 }
 

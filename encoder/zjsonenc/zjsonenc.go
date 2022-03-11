@@ -196,6 +196,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimZettel:  zjson.TypeVerbatimZettel,
 	ast.VerbatimProg:    zjson.TypeVerbatimCode,
 	ast.VerbatimEval:    zjson.TypeVerbatimEval,
+	ast.VerbatimMath:    zjson.TypeVerbatimMath,
 	ast.VerbatimComment: zjson.TypeVerbatimComment,
 	ast.VerbatimHTML:    zjson.TypeVerbatimHTML,
 }
@@ -440,6 +441,7 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralOutput:  zjson.TypeLiteralOutput,
 	ast.LiteralComment: zjson.TypeLiteralComment,
 	ast.LiteralHTML:    zjson.TypeLiteralHTML,
+	ast.LiteralMath:    zjson.TypeLiteralMath,
 }
 
 func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {

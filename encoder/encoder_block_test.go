@@ -250,6 +250,17 @@ and much more
 		},
 	},
 	{
+		descr: "Simple Verbatim Math",
+		zmk:   "$$$\nHello\n\\LaTeX\n$$$",
+		expect: expectMap{
+			encoderZJSON:  `[{"":"MathBlock","s":"Hello\n\\LaTeX"}]`,
+			encoderHTML:   "<pre><code class=\"zs-math\">Hello\n\\LaTeX</code></pre>",
+			encoderNative: `[MathBlock "Hello\n\\LaTeX"]`,
+			encoderText:   "Hello\n\\LaTeX",
+			encoderZmk:    useZmk,
+		},
+	},
+	{
 		descr: "Simple Description List",
 		zmk:   "; Zettel\n: Paper\n: Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{

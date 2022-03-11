@@ -33,20 +33,13 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 		v.b.WriteString("\n-->")
 
 	case ast.VerbatimEval:
-		a = a.Clone().AddClass("zs-eval")
-		fallthrough
+		v.visitVerbatimCode(vn, a.Clone().AddClass("zs-eval"))
+
+	case ast.VerbatimMath:
+		v.visitVerbatimCode(vn, a.Clone().AddClass("zs-math"))
 
 	case ast.VerbatimProg:
-		oldVisible := v.visibleSpace
-		if a != nil {
-			v.visibleSpace = a.HasDefault()
-		}
-		v.b.WriteString("<pre><code")
-		v.visitAttributes(a)
-		v.b.WriteByte('>')
-		v.writeHTMLEscaped(string(vn.Content))
-		v.b.WriteString("</code></pre>")
-		v.visibleSpace = oldVisible
+		v.visitVerbatimCode(vn, a)
 
 	case ast.VerbatimComment:
 		if a.HasDefault() {
@@ -62,6 +55,19 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 	default:
 		panic(fmt.Sprintf("Unknown verbatim kind %v", vn.Kind))
 	}
+}
+
+func (v *visitor) visitVerbatimCode(vn *ast.VerbatimNode, a zjson.Attributes) {
+	oldVisible := v.visibleSpace
+	if a != nil {
+		v.visibleSpace = a.HasDefault()
+	}
+	v.b.WriteString("<pre><code")
+	v.visitAttributes(a)
+	v.b.WriteByte('>')
+	v.writeHTMLEscaped(string(vn.Content))
+	v.b.WriteString("</code></pre>")
+	v.visibleSpace = oldVisible
 }
 
 var specialSpanAttr = strfun.NewSet("example", "note", "tip", "important", "caution", "warning")

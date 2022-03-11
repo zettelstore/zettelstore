@@ -200,6 +200,8 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
 	case ast.LiteralProg:
 		v.writeLiteral("<code", "</code>", ln.Attrs, ln.Content)
+	case ast.LiteralMath:
+		v.writeLiteral("<code", "</code>", ln.Attrs.Clone().AddClass("zs-math"), ln.Content)
 	case ast.LiteralInput:
 		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Content)
 	case ast.LiteralOutput:

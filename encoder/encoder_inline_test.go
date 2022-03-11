@@ -177,6 +177,17 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Math formatting",
+		zmk:   `$$\TeX$$`,
+		expect: expectMap{
+			encoderZJSON:  `[{"":"Math","s":"\\TeX"}]`,
+			encoderHTML:   `<code class="zs-math">\TeX</code>`,
+			encoderNative: `Math "\\TeX"`,
+			encoderText:   `\TeX`,
+			encoderZmk:    useZmk,
+		},
+	},
+	{
 		descr: "Nested Span Quote formatting",
 		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{

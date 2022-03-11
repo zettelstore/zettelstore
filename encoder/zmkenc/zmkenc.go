@@ -187,6 +187,7 @@ var mapVerbatimKind = map[ast.VerbatimKind]string{
 	ast.VerbatimHTML:    "@@@", // Attribute is set to {="html"}
 	ast.VerbatimProg:    "```",
 	ast.VerbatimEval:    "~~~",
+	ast.VerbatimMath:    "$$$",
 }
 
 func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
@@ -463,6 +464,9 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeLiteral('@', ln.Attrs, ln.Content)
 	case ast.LiteralProg:
 		v.writeLiteral('`', ln.Attrs, ln.Content)
+	case ast.LiteralMath:
+		v.b.WriteStrings("$$", string(ln.Content), "$$")
+		v.visitAttributes(ln.Attrs)
 	case ast.LiteralInput:
 		v.writeLiteral('\'', ln.Attrs, ln.Content)
 	case ast.LiteralOutput:

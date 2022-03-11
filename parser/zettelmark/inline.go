@@ -74,6 +74,8 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			in, success = cp.parseFormat()
 		case '@', '\'', '`', '=', runeModGrave:
 			in, success = cp.parseLiteral()
+		case '$':
+			in, success = cp.parseLiteralMath()
 		case '\\':
 			return cp.parseBackslash()
 		case '-':
@@ -100,7 +102,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '$', '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -460,6 +462,7 @@ var mapRuneLiteral = map[rune]ast.LiteralKind{
 	runeModGrave: ast.LiteralProg,
 	'\'':         ast.LiteralInput,
 	'=':          ast.LiteralOutput,
+	// '$':          ast.LiteralMath,
 }
 
 func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
@@ -494,6 +497,33 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 			tn := cp.parseText()
 			buf.WriteString(tn.Text)
 		}
+	}
+}
+
+func (cp *zmkP) parseLiteralMath() (res ast.InlineNode, success bool) {
+	inp := cp.inp
+	inp.Next() // read 2nd formatting character
+	if inp.Ch != '$' {
+		return nil, false
+	}
+	inp.Next()
+	pos := inp.Pos
+	for {
+		if inp.Ch == input.EOS {
+			return nil, false
+		}
+		if inp.Ch == '$' && inp.Peek() == '$' {
+			content := append([]byte{}, inp.Src[pos:inp.Pos]...)
+			inp.Next()
+			inp.Next()
+			fn := &ast.LiteralNode{
+				Kind:    ast.LiteralMath,
+				Attrs:   cp.parseAttributes(false),
+				Content: content,
+			}
+			return fn, true
+		}
+		inp.Next()
 	}
 }
 
