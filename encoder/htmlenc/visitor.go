@@ -237,11 +237,12 @@ func (v *visitor) visitAttributes(a zjson.Attributes) {
 	}
 }
 
-func (v *visitor) writeHTMLEscaped(s string) {
+func (v *visitor) writeHTMLEscaped(s string) { html.Escape(&v.b, s) }
+func (v *visitor) writeHTMLLiteralEscaped(s string) {
 	if v.visibleSpace {
 		html.EscapeVisible(&v.b, s)
 	} else {
-		html.Escape(&v.b, s)
+		html.EscapeLiteral(&v.b, s)
 	}
 }
 

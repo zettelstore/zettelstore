@@ -230,7 +230,7 @@ func (v *visitor) writeLiteral(codeS, codeE string, attrs zjson.Attributes, cont
 	v.b.WriteString(codeS)
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.writeHTMLEscaped(string(content))
+	v.writeHTMLLiteralEscaped(string(content))
 	v.b.WriteString(codeE)
 	v.visibleSpace = oldVisible
 }

@@ -65,7 +65,7 @@ func (v *visitor) visitVerbatimCode(vn *ast.VerbatimNode, a zjson.Attributes) {
 	v.b.WriteString("<pre><code")
 	v.visitAttributes(a)
 	v.b.WriteByte('>')
-	v.writeHTMLEscaped(string(vn.Content))
+	v.writeHTMLLiteralEscaped(string(vn.Content))
 	v.b.WriteString("</code></pre>")
 	v.visibleSpace = oldVisible
 }
