@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -73,59 +72,40 @@ func readVersionFile() (string, error) {
 	}), nil
 }
 
-var fossilCheckout = regexp.MustCompile(`^checkout:\s+([0-9a-f]+)\s`)
+func getVersion() string {
+	base, err := readVersionFile()
+	if err != nil {
+		base = "dev"
+	}
+	return base
+}
+
 var dirtyPrefixes = []string{
 	"DELETED ", "ADDED ", "UPDATED ", "CONFLICT ", "EDITED ", "RENAMED ", "EXTRA "}
 
 const dirtySuffix = "-dirty"
 
-func readFossilVersion() (string, error) {
+func readFossilDirty() (string, error) {
 	s, err := executeCommand(nil, "fossil", "status", "--differ")
 	if err != nil {
 		return "", err
 	}
-	var hash, suffix string
 	for _, line := range strfun.SplitLines(s) {
-		if hash == "" {
-			if m := fossilCheckout.FindStringSubmatch(line); len(m) > 0 {
-				hash = m[1][:10]
-				if suffix != "" {
-					return hash + suffix, nil
-				}
-				continue
-			}
-		}
-		if suffix == "" {
-			for _, prefix := range dirtyPrefixes {
-				if strings.HasPrefix(line, prefix) {
-					suffix = dirtySuffix
-					if hash != "" {
-						return hash + suffix, nil
-					}
-					break
-				}
+		for _, prefix := range dirtyPrefixes {
+			if strings.HasPrefix(line, prefix) {
+				return dirtySuffix, nil
 			}
 		}
 	}
-	return hash + suffix, nil
+	return "", nil
 }
 
-func getVersionData() (string, string) {
-	base, err := readVersionFile()
+func getFossilDirty() string {
+	fossil, err := readFossilDirty()
 	if err != nil {
-		base = "dev"
+		return ""
 	}
-	if fossil, err2 := readFossilVersion(); err2 == nil {
-		return base, fossil
-	}
-	return base, ""
-}
-
-func calcVersion(base, vcs string) string { return base + "+" + vcs }
-
-func getVersion() string {
-	base, vcs := getVersionData()
-	return calcVersion(base, vcs)
+	return fossil
 }
 
 func findExec(cmd string) string {
@@ -348,7 +328,7 @@ func doBuild(env []string, version, target string) error {
 }
 
 func cmdManual() error {
-	base, _ := getReleaseVersionData()
+	base := getReleaseVersionData()
 	return createManualZip(".", base)
 }
 
@@ -399,22 +379,22 @@ func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer)
 	return err
 }
 
-func getReleaseVersionData() (string, string) {
-	base, fossil := getVersionData()
+func getReleaseVersionData() string {
+	if fossil := getFossilDirty(); fossil != "" {
+		fmt.Fprintln(os.Stderr, "Warning: releasing a dirty version")
+	}
+	base := getVersion()
 	if strings.HasSuffix(base, "dev") {
-		base = base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
+		return base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
 	}
-	if strings.HasSuffix(fossil, dirtySuffix) {
-		fmt.Fprintf(os.Stderr, "Warning: releasing a dirty version %v\n", fossil)
-	}
-	return base, fossil
+	return base
 }
 
 func cmdRelease() error {
 	if err := cmdCheck(true); err != nil {
 		return err
 	}
-	base, fossil := getReleaseVersionData()
+	base := getReleaseVersionData()
 	releases := []struct {
 		arch string
 		os   string
@@ -432,7 +412,7 @@ func cmdRelease() error {
 		env = append(env, "GOARCH="+rel.arch, "GOOS="+rel.os)
 		env = append(env, directProxy...)
 		zsName := filepath.Join("releases", rel.name)
-		if err := doBuild(env, calcVersion(base, fossil), zsName); err != nil {
+		if err := doBuild(env, base, zsName); err != nil {
 			return err
 		}
 		zipName := fmt.Sprintf("zettelstore-%v-%v-%v.zip", base, rel.os, rel.arch)

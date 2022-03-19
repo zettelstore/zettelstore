@@ -17,6 +17,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -302,8 +303,9 @@ var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) int {
+	fullVersion := retrieveFullVersion(buildVersion)
 	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreProgname, progName)
-	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreVersion, buildVersion)
+	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreVersion, fullVersion)
 	flag.Parse()
 	if *cpuprofile != "" || *memprofile != "" {
 		if *cpuprofile != "" {
@@ -318,4 +320,26 @@ func Main(progName, buildVersion string) int {
 		return runSimple()
 	}
 	return executeCommand(args[0], args[1:]...)
+}
+
+func retrieveFullVersion(version string) string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return version
+	}
+	var revision, dirty string
+	for _, kv := range info.Settings {
+		switch kv.Key {
+		case "vcs.revision":
+			revision = "+" + kv.Value
+			if len(revision) > 11 {
+				revision = revision[:11]
+			}
+		case "vcs.modified":
+			if kv.Value == "true" {
+				dirty = "-dirty"
+			}
+		}
+	}
+	return version + revision + dirty
 }
