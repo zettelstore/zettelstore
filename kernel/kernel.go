@@ -167,6 +167,7 @@ const (
 const (
 	WebListenAddress     = "listen"
 	WebPersistentCookie  = "persistent"
+	WebMaxRequestSize    = "max-request-size"
 	WebSecureCookie      = "secure"
 	WebTokenLifetimeAPI  = "api-lifetime"
 	WebTokenLifetimeHTML = "html-lifetime"

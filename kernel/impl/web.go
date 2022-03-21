@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -31,16 +31,6 @@ type webService struct {
 	setupServer kernel.SetupWebServerFunc
 }
 
-// Constants for web service keys.
-const (
-	WebSecureCookie      = "secure"
-	WebListenAddress     = "listen"
-	WebPersistentCookie  = "persistent"
-	WebTokenLifetimeAPI  = "api-lifetime"
-	WebTokenLifetimeHTML = "html-lifetime"
-	WebURLPrefix         = "prefix"
-)
-
 func (ws *webService) Initialize(logger *logger.Logger) {
 	ws.logger = logger
 	ws.descr = descriptionMap{
@@ -57,6 +47,7 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 				return net.JoinHostPort(host, port)
 			},
 			true},
+		kernel.WebMaxRequestSize:   {"Max Request Size", parseInt64, true},
 		kernel.WebPersistentCookie: {"Persistent cookie", parseBool, true},
 		kernel.WebSecureCookie:     {"Secure cookie", parseBool, true},
 		kernel.WebTokenLifetimeAPI: {
@@ -82,6 +73,7 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 	}
 	ws.next = interfaceMap{
 		kernel.WebListenAddress:     "127.0.0.1:23123",
+		kernel.WebMaxRequestSize:    int64(16 * 1024 * 1024),
 		kernel.WebPersistentCookie:  false,
 		kernel.WebSecureCookie:      true,
 		kernel.WebTokenLifetimeAPI:  1 * time.Hour,
@@ -113,8 +105,12 @@ func (ws *webService) Start(kern *myKernel) error {
 	urlPrefix := ws.GetNextConfig(kernel.WebURLPrefix).(string)
 	persistentCookie := ws.GetNextConfig(kernel.WebPersistentCookie).(bool)
 	secureCookie := ws.GetNextConfig(kernel.WebSecureCookie).(bool)
+	maxRequestSize := ws.GetNextConfig(kernel.WebMaxRequestSize).(int64)
+	if maxRequestSize < 1024 {
+		maxRequestSize = 1024
+	}
 
-	srvw := impl.New(ws.logger, listenAddr, urlPrefix, persistentCookie, secureCookie, kern.auth.manager)
+	srvw := impl.New(ws.logger, listenAddr, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
 	if err != nil {
 		ws.logger.Fatal().Err(err).Msg("Unable to create")

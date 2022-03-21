@@ -32,13 +32,13 @@ type myServer struct {
 }
 
 // New creates a new web server.
-func New(log *logger.Logger, listenAddr, urlPrefix string, persistentCookie, secureCookie bool, auth auth.TokenManager) server.Server {
+func New(log *logger.Logger, listenAddr, urlPrefix string, persistentCookie, secureCookie bool, maxRequestSize int64, auth auth.TokenManager) server.Server {
 	srv := myServer{
 		log:              log,
 		persistentCookie: persistentCookie,
 		secureCookie:     secureCookie,
 	}
-	srv.router.initializeRouter(log, urlPrefix, auth)
+	srv.router.initializeRouter(log, urlPrefix, maxRequestSize, auth)
 	srv.server.initializeHTTPServer(listenAddr, &srv.router)
 	return &srv
 }

@@ -50,10 +50,11 @@ type httpRouter struct {
 	zettelTable routingTable
 	ur          server.UserRetriever
 	mux         *http.ServeMux
+	maxReqSize  int64
 }
 
 // initializeRouter creates a new, empty router with the given root handler.
-func (rt *httpRouter) initializeRouter(log *logger.Logger, urlPrefix string, auth auth.TokenManager) {
+func (rt *httpRouter) initializeRouter(log *logger.Logger, urlPrefix string, maxRequestSize int64, auth auth.TokenManager) {
 	rt.log = log
 	rt.urlPrefix = urlPrefix
 	rt.auth = auth
@@ -61,6 +62,7 @@ func (rt *httpRouter) initializeRouter(log *logger.Logger, urlPrefix string, aut
 	rt.maxKey = 0
 	rt.reURL = regexp.MustCompile("^$")
 	rt.mux = http.NewServeMux()
+	rt.maxReqSize = maxRequestSize
 }
 
 func (rt *httpRouter) addRoute(key byte, method server.Method, handler http.Handler, table *routingTable) {
@@ -130,6 +132,7 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		r.URL.Path = r.URL.Path[prefixLen-1:]
 	}
+	r.Body = http.MaxBytesReader(w, r.Body, rt.maxReqSize)
 	match := rt.reURL.FindStringSubmatch(r.URL.Path)
 	if len(match) != 3 {
 		rt.mux.ServeHTTP(w, rt.addUserContext(r))

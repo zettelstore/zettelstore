@@ -74,7 +74,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyFooterHTML:       {"Footer HTML", parseString, true},
 		keyHomeZettel:       {"Home zettel", parseZid, true},
 		keyMarkerExternal:   {"Marker external URL", parseString, true},
-		keyMaxTransclusions: {"Maximum transclusions", parseInt, true},
+		keyMaxTransclusions: {"Maximum transclusions", parseInt64, true},
 		keySiteName:         {"Site name", parseString, true},
 		keyYAMLHeader:       {"YAML header", parseBool, true},
 		keyZettelFileSyntax: {
@@ -96,7 +96,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyFooterHTML:           "",
 		keyHomeZettel:           id.DefaultHomeZid,
 		keyMarkerExternal:       "&#10138;",
-		keyMaxTransclusions:     1024,
+		keyMaxTransclusions:     int64(1024),
 		keySiteName:             "Zettelstore",
 		keyYAMLHeader:           false,
 		keyZettelFileSyntax:     nil,

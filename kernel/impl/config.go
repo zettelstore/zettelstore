@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -227,12 +227,11 @@ func parseBool(val string) interface{} {
 	return true
 }
 
-func parseInt(val string) interface{} {
-	i, err := strconv.Atoi(val)
-	if err == nil {
-		return i
+func parseInt64(val string) any {
+	if u64, err := strconv.ParseInt(val, 10, 64); err == nil {
+		return u64
 	}
-	return 0
+	return nil
 }
 
 func parseZid(val string) interface{} {

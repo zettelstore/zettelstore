@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -161,6 +161,7 @@ const (
 	keyInsecureCookie    = "insecure-cookie"
 	keyListenAddr        = "listen-addr"
 	keyLogLevel          = "log-level"
+	keyMaxRequestSize    = "max-request-size"
 	keyOwner             = "owner"
 	keyPersistentCookie  = "persistent-cookie"
 	keyBoxOneURI         = kernel.BoxURIs + "1"
@@ -210,6 +211,9 @@ func setServiceConfig(cfg *meta.Meta) error {
 	ok = setConfigValue(ok, kernel.WebService, kernel.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
 	ok = setConfigValue(ok, kernel.WebService, kernel.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
 	ok = setConfigValue(ok, kernel.WebService, kernel.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
+	if val, found := cfg.Get(keyMaxRequestSize); found {
+		ok = setConfigValue(ok, kernel.WebService, kernel.WebMaxRequestSize, val)
+	}
 	ok = setConfigValue(
 		ok, kernel.WebService, kernel.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
 	ok = setConfigValue(
