@@ -17,6 +17,12 @@
   *  New startup configuration key <kbd>max-request-size</kbd> to limit a web
      request body to prevent client sending too large requests.
      (minor: api, webui)
+  *  Zettel 00000000029000 acts as a map of zettel roles to identifier of
+     zettel that are included as additional CSS. Allows to display zettel
+     differently depending on their role. Use case: slides that are processed
+     by Zettel Presenter will use the same CSS if they are rendered by
+     Zettelstore WebUI.
+     (minor: webui)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

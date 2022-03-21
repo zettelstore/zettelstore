@@ -88,7 +88,7 @@ func (wui *WebUI) renderZettelForm(
 	user := wui.getUser(ctx)
 	m := zettel.Meta
 	var base baseData
-	wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), title, user, &base)
+	wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), title, "", user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),

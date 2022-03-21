@@ -127,7 +127,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.makeBaseData(ctx, lang, textTitle, "", user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid            string
 			WebURL         string

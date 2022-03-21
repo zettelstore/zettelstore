@@ -295,9 +295,17 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		domain.NewContent([]byte("/* User-defined CSS */"))},
+	id.RoleCSSMapZid: {
+		constHeader{
+			api.KeyTitle:      "Zettelstore Role to CSS Map",
+			api.KeyRole:       api.ValueRoleConfiguration,
+			api.KeySyntax:     api.ValueSyntaxNone,
+			api.KeyVisibility: api.ValueVisibilityExpert,
+		},
+		domain.NewContent(nil)},
 	id.EmojiZid: {
 		constHeader{
-			api.KeyTitle:      "Generic Emoji",
+			api.KeyTitle:      "Zettelstore Generic Emoji",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     api.ValueSyntaxGif,
 			api.KeyReadOnly:   api.ValueTrue,

@@ -16,6 +16,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,8 +48,11 @@ type WebUI struct {
 	box      webuiBox
 	policy   auth.Policy
 
-	templateCache map[id.Zid]*template.Template
 	mxCache       sync.RWMutex
+	templateCache map[id.Zid]*template.Template
+
+	mxRoleCssMap sync.RWMutex
+	roleCssMap   map[string]id.Zid
 
 	tokenLifetime time.Duration
 	cssBaseURL    string
@@ -113,6 +117,11 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 		delete(wui.templateCache, ci.Zid)
 	}
 	wui.mxCache.Unlock()
+	wui.mxRoleCssMap.Lock()
+	if ci.Reason == box.OnReload || ci.Zid == id.RoleCSSMapZid {
+		wui.roleCssMap = nil
+	}
+	wui.mxRoleCssMap.Unlock()
 }
 
 func (wui *WebUI) cacheSetTemplate(zid id.Zid, t *template.Template) {
@@ -126,6 +135,47 @@ func (wui *WebUI) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
 	t, ok := wui.templateCache[zid]
 	wui.mxCache.RUnlock()
 	return t, ok
+}
+
+func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Zid, error) {
+	wui.mxRoleCssMap.RLock()
+	if wui.roleCssMap == nil {
+		wui.mxRoleCssMap.RUnlock()
+		wui.mxRoleCssMap.Lock()
+		mMap, err := wui.box.GetMeta(ctx, id.RoleCSSMapZid)
+		if err == nil {
+			wui.roleCssMap = make(map[string]id.Zid, len(wui.roleCssMap))
+			for _, p := range mMap.PairsRest() {
+				key := p.Key
+				if len(key) < 5 || !strings.HasPrefix(key, "css-") {
+					continue
+				}
+				zid, err2 := id.Parse(p.Value)
+				if err2 != nil {
+					continue
+				}
+				wui.roleCssMap[p.Key[4:]] = zid
+			}
+		}
+		wui.mxRoleCssMap.Unlock()
+		if err != nil {
+			return id.Invalid, err
+		}
+		wui.mxRoleCssMap.RLock()
+	}
+
+	defer wui.mxRoleCssMap.RUnlock()
+	if role, found := m.Get("css-role"); found {
+		if result, found := wui.roleCssMap[role]; found {
+			return result, nil
+		}
+	}
+	if role, found := m.Get(api.KeyRole); found {
+		if result, found := wui.roleCssMap[role]; found {
+			return result, nil
+		}
+	}
+	return id.Invalid, nil
 }
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
@@ -178,6 +228,7 @@ type baseData struct {
 	MetaHeader        string
 	CSSBaseURL        string
 	CSSUserURL        string
+	CSSRoleURL        string
 	Title             string
 	HomeURL           string
 	WithUser          bool
@@ -200,7 +251,7 @@ type baseData struct {
 	FooterHTML        string
 }
 
-func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *meta.Meta, data *baseData) {
+func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL string, user *meta.Meta, data *baseData) {
 	var userZettelURL string
 	var userIdent string
 
@@ -214,6 +265,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title string, user *me
 	data.Lang = lang
 	data.CSSBaseURL = wui.cssBaseURL
 	data.CSSUserURL = wui.cssUserURL
+	data.CSSRoleURL = roleCSSURL
 	data.Title = title
 	data.HomeURL = wui.homeURL
 	data.WithAuth = wui.withAuth
@@ -301,7 +353,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 	user := wui.getUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, api.ValueLangEN, "Error", user, &base)
+	wui.makeBaseData(ctx, api.ValueLangEN, "Error", "", user, &base)
 	wui.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
 		ErrorTitle string
 		ErrorText  string

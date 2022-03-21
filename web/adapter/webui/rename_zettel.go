@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -53,7 +53,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 
 		user := wui.getUser(ctx)
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Rename Zettel "+zid.String(), user, &base)
+		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Rename Zettel "+zid.String(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
 			Zid             string
 			MetaPairs       []meta.Pair

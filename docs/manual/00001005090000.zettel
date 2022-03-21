@@ -3,7 +3,7 @@ title: List of predefined zettel
 role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
-modified: 20211229000646
+modified: 20220321192401
 
 The following table lists all predefined zettel with their purpose.
 
@@ -32,6 +32,7 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000010600]] | Zettelstore List Tags HTML Template | Layout of tags lists
 | [[00000000020001]] | Zettelstore Base CSS | System-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000025001]] | Zettelstore User CSS | User-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
+| [[00000000029000]] | Zettelstore Role to CSS Map | Maps [[role|00001006020000#role]] to a zettel identifier that is included by the [[Base HTML Template|00000000010100]] as an CSS file 
 | [[00000000040001]] | Generic Emoji | Image that is shown if [[original image reference|00001007040322]] is invalid
 | [[00000000090000]] | New Menu | Contains items that should contain in the zettel template menu
 | [[00000000090001]] | New Zettel | Template for a new zettel with role ""[[zettel|00001006020100]]""

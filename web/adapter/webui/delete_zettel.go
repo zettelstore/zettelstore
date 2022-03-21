@@ -65,7 +65,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 
 		user := wui.getUser(ctx)
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), user, &base)
+		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
 			Zid             string
 			MetaPairs       []meta.Pair

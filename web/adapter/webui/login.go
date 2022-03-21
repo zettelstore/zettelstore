@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -36,7 +36,7 @@ func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), "Login", nil, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), "Login", "", nil, &base)
 	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
 		Title string
 		Retry bool

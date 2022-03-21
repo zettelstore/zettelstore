@@ -84,6 +84,15 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			wui.reportError(ctx, w, err)
 			return
 		}
+		var roleCSSURL string
+		cssZid, err := wui.retrieveCSSZidFromRole(ctx, *zn.InhMeta)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+		if cssZid != id.Invalid {
+			roleCSSURL = wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String()
+		}
 		user := wui.getUser(ctx)
 		roleText := zn.Meta.GetDefault(api.KeyRole, "*")
 		tags := wui.buildTagInfos(zn.Meta)
@@ -94,10 +103,11 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, lang, textTitle, user, &base)
+		wui.makeBaseData(ctx, lang, textTitle, roleCSSURL, user, &base)
 		base.MetaHeader = metaHeader
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
+			RoleCSS       string
 			CanWrite      bool
 			EditURL       string
 			Zid           string
@@ -121,6 +131,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			BackLinks     []simpleLink
 		}{
 			HTMLTitle:     htmlTitle,
+			RoleCSS:       roleCSSURL,
 			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:       wui.NewURLBuilder('e').SetZid(apiZid).String(),
 			Zid:           zid.String(),

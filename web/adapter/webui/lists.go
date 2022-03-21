@@ -69,7 +69,7 @@ func (wui *WebUI) renderZettelList(
 	user := wui.getUser(ctx)
 	metas := wui.buildHTMLMetaList(ctx, metaList, evaluate)
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title string
 		Metas []simpleLink
@@ -99,7 +99,7 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 
 	user := wui.getUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
@@ -163,7 +163,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	}
 
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
@@ -218,7 +218,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 		}
 		var base baseData
 		user := wui.getUser(ctx)
-		wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
