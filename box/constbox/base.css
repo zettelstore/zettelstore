@@ -125,7 +125,6 @@
   input { font-family: monospace }
   input[type="submit"],button,select { font: inherit }
   label { font-family: sans-serif; font-size:.9rem }
-  label::after { content:":" }
   textarea {
     font-family: monospace;
     resize: vertical;
