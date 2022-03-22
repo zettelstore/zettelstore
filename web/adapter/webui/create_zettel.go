@@ -106,7 +106,7 @@ func (wui *WebUI) renderZettelForm(
 func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zettel, hasContent, err := parseZettelForm(r, id.Invalid)
+		reEdit, zettel, hasContent, err := parseZettelForm(r, id.Invalid)
 		if err != nil {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
 			return
@@ -121,6 +121,10 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel
 			wui.reportError(ctx, w, err)
 			return
 		}
-		wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(newZid.String())))
+		if reEdit {
+			wui.redirectFound(w, r, wui.NewURLBuilder('e').SetZid(api.ZettelID(newZid.String())))
+		} else {
+			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(newZid.String())))
+		}
 	}
 }

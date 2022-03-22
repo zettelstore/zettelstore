@@ -23,6 +23,9 @@
      by Zettel Presenter will use the same CSS if they are rendered by
      Zettelstore WebUI.
      (minor: webui)
+  *  A zettel can be saved while crwating / editing it. There is no need to
+     manually re-edit it by using the 'e' endpoint.
+     (minor: webui)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

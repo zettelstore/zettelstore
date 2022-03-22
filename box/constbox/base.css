@@ -138,10 +138,8 @@
     border-bottom:1px solid #ccc;
     width:100%;
   }
-  .zs-button {
-    float:right;
-    margin: .5em 0 .5em 1em;
-  }
+  input.zs-primary { float:right }
+  input.zs-secondary { float:left }
   a:not([class]) { text-decoration-skip-ink: auto }
   a.broken { text-decoration: line-through }
   img { max-width: 100% }

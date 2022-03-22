@@ -73,7 +73,7 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) h
 			return
 		}
 
-		zettel, hasContent, err := parseZettelForm(r, zid)
+		reEdit, zettel, hasContent, err := parseZettelForm(r, zid)
 		if err != nil {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read zettel form"))
 			return
@@ -83,6 +83,11 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) h
 			wui.reportError(ctx, w, err)
 			return
 		}
-		wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())))
+
+		if reEdit {
+			wui.redirectFound(w, r, wui.NewURLBuilder('e').SetZid(api.ZettelID(zid.String())))
+		} else {
+			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())))
+		}
 	}
 }

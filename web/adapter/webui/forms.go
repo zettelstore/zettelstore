@@ -39,11 +39,12 @@ var (
 	bsLF   = []byte{'\n'}
 )
 
-func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
+func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, error) {
 	err := r.ParseForm()
 	if err != nil {
-		return domain.Zettel{}, false, err
+		return false, domain.Zettel{}, false, err
 	}
+	_, doSave := r.Form["save"]
 
 	var m *meta.Meta
 	if postMeta, ok := trimmedFormValue(r, "meta"); ok {
@@ -67,12 +68,12 @@ func parseZettelForm(r *http.Request, zid id.Zid) (domain.Zettel, bool, error) {
 		m.Set(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
 	}
 	if values, ok := r.PostForm["content"]; ok && len(values) > 0 {
-		return domain.Zettel{
+		return doSave, domain.Zettel{
 			Meta:    m,
 			Content: domain.NewContent(bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)),
 		}, true, nil
 	}
-	return domain.Zettel{
+	return doSave, domain.Zettel{
 		Meta:    m,
 		Content: domain.NewContent(nil),
 	}, false, nil
