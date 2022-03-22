@@ -51,8 +51,8 @@ type WebUI struct {
 	mxCache       sync.RWMutex
 	templateCache map[id.Zid]*template.Template
 
-	mxRoleCssMap sync.RWMutex
-	roleCssMap   map[string]id.Zid
+	mxRoleCSSMap sync.RWMutex
+	roleCSSMap   map[string]id.Zid
 
 	tokenLifetime time.Duration
 	cssBaseURL    string
@@ -117,11 +117,11 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 		delete(wui.templateCache, ci.Zid)
 	}
 	wui.mxCache.Unlock()
-	wui.mxRoleCssMap.Lock()
+	wui.mxRoleCSSMap.Lock()
 	if ci.Reason == box.OnReload || ci.Zid == id.RoleCSSMapZid {
-		wui.roleCssMap = nil
+		wui.roleCSSMap = nil
 	}
-	wui.mxRoleCssMap.Unlock()
+	wui.mxRoleCSSMap.Unlock()
 }
 
 func (wui *WebUI) cacheSetTemplate(zid id.Zid, t *template.Template) {
@@ -138,13 +138,13 @@ func (wui *WebUI) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
 }
 
 func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Zid, error) {
-	wui.mxRoleCssMap.RLock()
-	if wui.roleCssMap == nil {
-		wui.mxRoleCssMap.RUnlock()
-		wui.mxRoleCssMap.Lock()
+	wui.mxRoleCSSMap.RLock()
+	if wui.roleCSSMap == nil {
+		wui.mxRoleCSSMap.RUnlock()
+		wui.mxRoleCSSMap.Lock()
 		mMap, err := wui.box.GetMeta(ctx, id.RoleCSSMapZid)
 		if err == nil {
-			wui.roleCssMap = make(map[string]id.Zid, len(wui.roleCssMap))
+			wui.roleCSSMap = make(map[string]id.Zid, len(wui.roleCSSMap))
 			for _, p := range mMap.PairsRest() {
 				key := p.Key
 				if len(key) < 5 || !strings.HasPrefix(key, "css-") {
@@ -154,24 +154,24 @@ func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Z
 				if err2 != nil {
 					continue
 				}
-				wui.roleCssMap[p.Key[4:]] = zid
+				wui.roleCSSMap[p.Key[4:]] = zid
 			}
 		}
-		wui.mxRoleCssMap.Unlock()
+		wui.mxRoleCSSMap.Unlock()
 		if err != nil {
 			return id.Invalid, err
 		}
-		wui.mxRoleCssMap.RLock()
+		wui.mxRoleCSSMap.RLock()
 	}
 
-	defer wui.mxRoleCssMap.RUnlock()
+	defer wui.mxRoleCSSMap.RUnlock()
 	if role, found := m.Get("css-role"); found {
-		if result, found := wui.roleCssMap[role]; found {
+		if result, found2 := wui.roleCSSMap[role]; found2 {
 			return result, nil
 		}
 	}
 	if role, found := m.Get(api.KeyRole); found {
-		if result, found := wui.roleCssMap[role]; found {
+		if result, found2 := wui.roleCSSMap[role]; found2 {
 			return result, nil
 		}
 	}
