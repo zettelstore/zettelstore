@@ -76,8 +76,9 @@ func processSpanAttributes(attrs zjson.Attributes) zjson.Attributes {
 	if attrVal, ok := attrs.Get(""); ok {
 		attrVal = strings.ToLower(attrVal)
 		if specialSpanAttr.Has(attrVal) {
-			attrs = attrs.Clone().Remove("").AddClass("zs-indication").AddClass("zs-" + attrVal)
+			return attrs.Clone().Remove("").AddClass("zs-indication").AddClass("zs-" + attrVal)
 		}
+		return attrs.Clone().Remove("").AddClass(attrVal)
 	}
 	return attrs
 }

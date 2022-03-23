@@ -3,7 +3,7 @@ title: Zettelmarkup: Region Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218131131
+modified: 20220323190829
 
 Region blocks does not directly have a visual representation.
 They just group a range of lines.
@@ -14,6 +14,7 @@ This kind of line-range block begins with at least three colon characters (""'':
 You can add some [[attributes|00001007050000]] on the beginning line of a region block, following the initiating characters.
 The region block does not support the default attribute, but it supports the generic attribute.
 Some generic attributes, like ``=note``, ``=warning`` will be rendered special.
+All other generic attributes are used as a CSS class definition.
 Attributes are interpreted on HTML rendering.
 Any other character in this line will be ignored.
 
@@ -68,3 +69,16 @@ Generic attributes that are result in a special HTML rendering are:
 * important
 * caution
 * warning
+
+All other generic attribute values are rendered as a CSS class:
+```zmk
+:::abc
+def
+:::
+```
+is rendered as
+::::example
+:::abc
+def
+:::
+::::
