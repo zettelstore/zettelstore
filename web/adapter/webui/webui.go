@@ -147,14 +147,14 @@ func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Z
 			wui.roleCSSMap = make(map[string]id.Zid, len(wui.roleCSSMap))
 			for _, p := range mMap.PairsRest() {
 				key := p.Key
-				if len(key) < 5 || !strings.HasPrefix(key, "css-") {
+				if len(key) < 9 || !strings.HasPrefix(key, "css-") || !strings.HasSuffix(key, "-zid") {
 					continue
 				}
 				zid, err2 := id.Parse(p.Value)
 				if err2 != nil {
 					continue
 				}
-				wui.roleCSSMap[p.Key[4:]] = zid
+				wui.roleCSSMap[key[4:len(key)-4]] = zid
 			}
 		}
 		wui.mxRoleCSSMap.Unlock()
