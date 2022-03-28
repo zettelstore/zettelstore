@@ -23,10 +23,9 @@ import (
 )
 
 const (
-	defaultTabSize = 8
-	defaultFont    = ""
-	defaultScaleX  = 10
-	defaultScaleY  = 20
+	defaultFont   = ""
+	defaultScaleX = 10
+	defaultScaleY = 20
 )
 
 // ParseDrawBlock parses the content of an eval verbatim node into an SVG image BLOB.
@@ -38,7 +37,7 @@ func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
 	scaleX := getScale(vn.Attrs, "x-scale", defaultScaleX)
 	scaleY := getScale(vn.Attrs, "y-scale", defaultScaleY)
 
-	canvas, err := newCanvas(vn.Content, defaultTabSize)
+	canvas, err := newCanvas(vn.Content)
 	if err != nil {
 		return ast.CreateParaNode(canvasErrMsg(err)...)
 	}

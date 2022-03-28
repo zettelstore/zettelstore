@@ -30,7 +30,7 @@ import (
 // newCanvas returns a new Canvas, initialized from the provided data. If tabWidth is set to a non-negative
 // value, that value will be used to convert tabs to spaces within the grid. Creation of the Canvas
 // can fail if the diagram contains invalid UTF-8 sequences.
-func newCanvas(data []byte, tabWidth int) (*canvas, error) {
+func newCanvas(data []byte) (*canvas, error) {
 	c := &canvas{}
 
 	lines := bytes.Split(data, []byte("\n"))
@@ -42,15 +42,7 @@ func newCanvas(data []byte, tabWidth int) (*canvas, error) {
 		if ok := utf8.Valid(line); !ok {
 			return nil, fmt.Errorf("invalid UTF-8 encoding on line %d", i)
 		}
-
-		l, err := expandTabs(line, tabWidth)
-		if err != nil {
-			return nil, err
-		}
-
-		lines[i] = l
-
-		if i1 := utf8.RuneCount(lines[i]); i1 > c.siz.X {
+		if i1 := utf8.RuneCount(line); i1 > c.siz.X {
 			c.siz.X = i1
 		}
 	}
@@ -73,52 +65,6 @@ func newCanvas(data []byte, tabWidth int) (*canvas, error) {
 
 	c.findObjects()
 	return c, nil
-}
-
-// The expandTabs function pads tab characters to the specified width of spaces for the provided
-// line of input. We cannot simply pad based on byte-offset since our input is UTF-8 encoded.
-// Fortunately, we can assume that this function is called that the line contains only valid
-// UTF-8 sequences. We first decode the line rune-wise, and use individual runes to figure out
-// where we are within the line. When we encounter a tab character, we expand based on our rune
-// index.
-func expandTabs(line []byte, tabWidth int) ([]byte, error) {
-	// Initial sizing of our output slice assumes no UTF-8 bytes or tabs, since this is often
-	// the common case.
-	out := make([]byte, 0, len(line))
-
-	// pos tracks our position in the input byte slice, while index tracks our position in the
-	// resulting output slice.
-	pos := 0
-	index := 0
-	for _, c := range line {
-		if c == '\t' {
-			// Loop over the remaining space count for this particular tabstop until
-			// the next, replacing each position with a space.
-			for s := tabWidth - (pos % tabWidth); s > 0; s-- {
-				out = append(out, ' ')
-				index++
-			}
-			pos++
-		} else {
-			// We need to know the byte length of the rune at this position so that we
-			// can account for our tab expansion properly. So we first decode the rune
-			// at this position to get its length in bytes, plop that rune back into our
-			// output slice, and account accordingly.
-			r, l := utf8.DecodeRune(line[pos:])
-			if r == utf8.RuneError {
-				return nil, fmt.Errorf("invalid rune at byte offset %d; rune offset %d", pos, index)
-			}
-
-			enc := make([]byte, l)
-			utf8.EncodeRune(enc, r)
-			out = append(out, enc...)
-
-			pos += l
-			index++
-		}
-	}
-
-	return out, nil
 }
 
 // canvas is the parsed source data.

@@ -301,13 +301,13 @@ func TestNewCanvas(t *testing.T) {
 		{
 			[]string{
 				"",
-				"\t+-+",
-				"\t| |",
-				"\t+-+",
+				" +-+",
+				" | |",
+				" +-+",
 			},
-			[]string{"Path{[(9,1) (10,1) (11,1) (11,2) (11,3) (10,3) (9,3) (9,2)]}"},
+			[]string{"Path{[(1,1) (2,1) (3,1) (3,2) (3,3) (2,3) (1,3) (1,2)]}"},
 			[]string{""},
-			[][]point{{{x: 9, y: 1}, {x: 11, y: 1}, {x: 11, y: 3}, {x: 9, y: 3}}},
+			[][]point{{{x: 1, y: 1}, {x: 3, y: 1}, {x: 3, y: 3}, {x: 1, y: 3}}},
 			false,
 		},
 
@@ -448,7 +448,7 @@ func TestNewCanvas(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		c, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		c, err := newCanvas([]byte(strings.Join(line.input, "\n")))
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
@@ -535,7 +535,7 @@ func TestNewCanvasBroken(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		c, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		c, err := newCanvas([]byte(strings.Join(line.input, "\n")))
 		if err != nil {
 			t.Fatalf("Test %d: error creating canvas: %s", i, err)
 		}
@@ -638,7 +638,7 @@ func BenchmarkT(b *testing.B) {
 	}
 	expected := 30 * b.N
 	b.ResetTimer()
-	c, err := newCanvas(input, 8)
+	c, err := newCanvas(input)
 	if err != nil {
 		b.Fatalf("Error creating canvas: %s", err)
 	}

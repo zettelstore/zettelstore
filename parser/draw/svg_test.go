@@ -59,7 +59,7 @@ func TestCanvasToSVG(t *testing.T) {
 		},
 	}
 	for i, line := range data {
-		canvas, err := newCanvas([]byte(strings.Join(line.input, "\n")), 9)
+		canvas, err := newCanvas([]byte(strings.Join(line.input, "\n")))
 		if err != nil {
 			t.Fatalf("Error creating canvas: %s", err)
 		}
