@@ -183,7 +183,7 @@ func checkStaticcheck() error {
 			fmt.Fprintln(os.Stderr, out)
 		}
 	}
-	return nil // TODO: if staticcheck supports Go1.18, change it to "nil".
+	return err
 }
 
 func checkUnparam(forRelease bool) error {
