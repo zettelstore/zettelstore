@@ -49,7 +49,7 @@ func (v *visitor) visitVerbatim(vn *ast.VerbatimNode) {
 		}
 
 	case ast.VerbatimHTML:
-		if html.IsSave(string(vn.Content)) {
+		if html.IsSafe(string(vn.Content)) {
 			v.b.Write(vn.Content)
 		}
 	default:

@@ -214,7 +214,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeHTMLEscaped(string(ln.Content)) // writeCommentEscaped
 		v.b.WriteString(" -->")
 	case ast.LiteralHTML:
-		if html.IsSave(string(ln.Content)) {
+		if html.IsSafe(string(ln.Content)) {
 			v.b.Write(ln.Content)
 		}
 	default:
