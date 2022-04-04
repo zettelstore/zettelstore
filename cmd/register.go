@@ -18,6 +18,7 @@ import (
 	_ "zettelstore.de/z/box/dirbox"        // Allow to use directory box.
 	_ "zettelstore.de/z/box/filebox"       // Allow to use file box.
 	_ "zettelstore.de/z/box/membox"        // Allow to use in-memory box.
+	_ "zettelstore.de/z/encoder/chtmlenc"  // Allow to use zettelstore-client HTML encoder.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.

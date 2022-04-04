@@ -16,6 +16,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "",
 		expect: expectMap{
 			encoderZJSON:  `[]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "",
 			encoderNative: ``,
 			encoderText:   "",
@@ -27,6 +28,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "Hello, world",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Para","i":[{"":"Text","s":"Hello,"},{"":"Space"},{"":"Text","s":"world"}]}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<p>Hello, world</p>",
 			encoderNative: `[Para Text "Hello,",Space,Text "world"]`,
 			encoderText:   "Hello, world",
@@ -37,7 +39,8 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple block comment",
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
-			encoderZJSON:  `[{"":"CommentBlock","s":"No\nrender"}]`,
+			encoderZJSON: `[{"":"CommentBlock","s":"No\nrender"}]`,
+			// encoderCHTML:  useHTML,
 			encoderHTML:   ``,
 			encoderNative: `[CommentBlock "No\nrender"]`,
 			encoderText:   ``,
@@ -49,6 +52,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "%%%{-}\nRender\n%%%",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"CommentBlock","a":{"-":""},"s":"Render"}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<!--\nRender\n-->",
 			encoderNative: `[CommentBlock ("",[-]) "Render"]`,
 			encoderText:   ``,
@@ -59,7 +63,8 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple Heading",
 		zmk:   `=== Top`,
 		expect: expectMap{
-			encoderZJSON:  `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
+			encoderZJSON: `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
+			// encoderCHTML:  useHTML,
 			encoderHTML:   "<h2 id=\"top\">Top</h2>",
 			encoderNative: `[Heading 1 #top Text "Top"]`,
 			encoderText:   `Top`,
@@ -71,7 +76,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* A\n* B\n* C",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"A"}]}],[{"":"Para","i":[{"":"Text","s":"B"}]}],[{"":"Para","i":[{"":"Text","s":"C"}]}]]}]`,
-			encoderHTML:  "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
+			// encoderCHTML: useHTML,
+			encoderHTML: "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "A"]],
  [[Para Text "B"]],
@@ -85,6 +91,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* T1\n** T2\n* T3\n** T4\n* T5",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T1"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T2"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T3"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T4"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T5"}]}]]}]`,
+			// encoderCHTML: useHTML,
 			encoderHTML: `<ul>
 <li>
 <p>T1</p>
@@ -119,7 +126,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* Item1.1\n* Item1.2\n* Item1.3\n\n* Item2.1\n* Item2.2",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"Item1.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.2"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.3"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.2"}]}]]}]`,
-			encoderHTML:  "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
+			// encoderCHTML: useHTML,
+			encoderHTML: "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "Item1.1"]],
  [[Para Text "Item1.2"]],
@@ -135,6 +143,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   `---`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Thematic"}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<hr>",
 			encoderNative: `[Hrule]`,
 			encoderText:   ``,
@@ -146,6 +155,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "Text\n*abc",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Para","i":[{"":"Text","s":"Text"},{"":"Soft"},{"":"Text","s":"*abc"}]}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<p>Text\n*abc</p>",
 			encoderNative: `[Para Text "Text",Space,Text "*abc"]`,
 			encoderText:   `Text *abc`,
@@ -157,7 +167,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "Text\n# abc",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Para","i":[{"":"Text","s":"Text"}]},{"":"Ordered","c":[[{"":"Para","i":[{"":"Text","s":"abc"}]}]]}]`,
-			encoderHTML:  "<p>Text</p>\n<ol>\n<li>abc</li>\n</ol>",
+			// encoderCHTML: useHTML,
+			encoderHTML: "<p>Text</p>\n<ol>\n<li>abc</li>\n</ol>",
 			encoderNative: `[Para Text "Text"],
 [OrderedList
  [[Para Text "abc"]]]`,
@@ -170,6 +181,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "<<<\nToBeOrNotToBe\n<<< Romeo",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Excerpt","b":[{"":"Para","i":[{"":"Text","s":"ToBeOrNotToBe"}]}],"i":[{"":"Text","s":"Romeo"}]}]`,
+			encoderCHTML: useHTML,
 			encoderHTML:  "<blockquote>\n<p>ToBeOrNotToBe</p>\n<cite>Romeo</cite>\n</blockquote>",
 			encoderNative: `[QuoteBlock
  [[Para Text "ToBeOrNotToBe"]],
@@ -183,6 +195,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "<<<\nToBeOr\n\nNotToBe\n<<< Romeo",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Excerpt","b":[{"":"Para","i":[{"":"Text","s":"ToBeOr"}]},{"":"Para","i":[{"":"Text","s":"NotToBe"}]}],"i":[{"":"Text","s":"Romeo"}]}]`,
+			encoderCHTML: useHTML,
 			encoderHTML:  "<blockquote>\n<p>ToBeOr</p>\n<p>NotToBe</p>\n<cite>Romeo</cite>\n</blockquote>",
 			encoderNative: `[QuoteBlock
  [[Para Text "ToBeOr"],
@@ -204,7 +217,8 @@ Paragraph
     Spacy  Para
 """ Author`,
 		expect: expectMap{
-			encoderZJSON:  "[{\"\":\"Poem\",\"b\":[{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"A\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"another\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"Back\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"Paragraph\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Space\",\"s\":\"\u00a0\u00a0\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Spacy\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Para\"}]}],\"i\":[{\"\":\"Text\",\"s\":\"Author\"}]}]",
+			encoderZJSON: "[{\"\":\"Poem\",\"b\":[{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"A\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"another\"},{\"\":\"Space\",\"s\":\"\u00a0\"},{\"\":\"Text\",\"s\":\"line\"},{\"\":\"Hard\"},{\"\":\"Text\",\"s\":\"Back\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Text\",\"s\":\"Paragraph\"}]},{\"\":\"Para\",\"i\":[{\"\":\"Space\",\"s\":\"\u00a0\u00a0\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Spacy\"},{\"\":\"Space\",\"s\":\"\u00a0\u00a0\"},{\"\":\"Text\",\"s\":\"Para\"}]}],\"i\":[{\"\":\"Text\",\"s\":\"Author\"}]}]",
+			// encoderCHTML:  useHTML,
 			encoderHTML:   "<div>\n<p>A\u00a0line<br>\n\u00a0\u00a0another\u00a0line<br>\nBack</p>\n<p>Paragraph</p>\n<p>\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para</p>\n<cite>Author</cite>\n</div>",
 			encoderNative: "[VerseBlock\n [[Para Text \"A\",Space,Text \"line\",Break,Space 2,Text \"another\",Space,Text \"line\",Break,Text \"Back\"],\n  [Para Text \"Paragraph\"],\n  [Para Space 4,Text \"Spacy\",Space 2,Text \"Para\"]],\n [Cite Text \"Author\"]]",
 			encoderText:   "A line\n another line\nBack\nParagraph\n Spacy Para\nAuthor",
@@ -220,6 +234,7 @@ and much more
 :::`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Block","b":[{"":"Para","i":[{"":"Text","s":"A"},{"":"Space"},{"":"Text","s":"simple"},{"":"Soft"},{"":"Space"},{"":"Text","s":"span"},{"":"Soft"},{"":"Text","s":"and"},{"":"Space"},{"":"Text","s":"much"},{"":"Space"},{"":"Text","s":"more"}]}]}]`,
+			encoderCHTML: useHTML,
 			encoderHTML:  "<div>\n<p>A simple\n span\nand much more</p>\n</div>",
 			encoderNative: `[SpanBlock
  [[Para Text "A",Space,Text "simple",Space,Space 3,Text "span",Space,Text "and",Space,Text "much",Space,Text "more"]]]`,
@@ -232,6 +247,7 @@ and much more
 		zmk:   "```\nHello\nWorld\n```",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"CodeBlock","s":"Hello\nWorld"}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<pre><code>Hello\nWorld</code></pre>",
 			encoderNative: `[CodeBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
@@ -242,7 +258,8 @@ and much more
 		descr: "Simple Verbatim Eval",
 		zmk:   "~~~\nHello\nWorld\n~~~",
 		expect: expectMap{
-			encoderZJSON:  `[{"":"EvalBlock","s":"Hello\nWorld"}]`,
+			encoderZJSON: `[{"":"EvalBlock","s":"Hello\nWorld"}]`,
+			// encoderCHTML:  useHTML,
 			encoderHTML:   "<pre><code class=\"zs-eval\">Hello\nWorld</code></pre>",
 			encoderNative: `[EvalBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
@@ -253,7 +270,8 @@ and much more
 		descr: "Simple Verbatim Math",
 		zmk:   "$$$\nHello\n\\LaTeX\n$$$",
 		expect: expectMap{
-			encoderZJSON:  `[{"":"MathBlock","s":"Hello\n\\LaTeX"}]`,
+			encoderZJSON: `[{"":"MathBlock","s":"Hello\n\\LaTeX"}]`,
+			// encoderCHTML:  useHTML,
 			encoderHTML:   "<pre><code class=\"zs-math\">Hello\n\\LaTeX</code></pre>",
 			encoderNative: `[MathBlock "Hello\n\\LaTeX"]`,
 			encoderText:   "Hello\n\\LaTeX",
@@ -265,7 +283,8 @@ and much more
 		zmk:   "; Zettel\n: Paper\n: Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Description","d":[{"i":[{"":"Text","s":"Zettel"}],"e":[[{"":"Para","i":[{"":"Text","s":"Paper"}]}],[{"":"Para","i":[{"":"Text","s":"Note"}]}]]},{"i":[{"":"Text","s":"Zettelkasten"}],"e":[[{"":"Para","i":[{"":"Text","s":"Slip"},{"":"Space"},{"":"Text","s":"box"}]}]]}]}]`,
-			encoderHTML:  "<dl>\n<dt>Zettel</dt>\n<dd>Paper</dd>\n<dd>Note</dd>\n<dt>Zettelkasten</dt>\n<dd>Slip box</dd>\n</dl>",
+			// encoderCHTML: useHTML,
+			encoderHTML: "<dl>\n<dt>Zettel</dt>\n<dd>Paper</dd>\n<dd>Note</dd>\n<dt>Zettelkasten</dt>\n<dd>Slip box</dd>\n</dl>",
 			encoderNative: `[DescriptionList
  [Term [Text "Zettel"],
   [Description
@@ -284,6 +303,7 @@ and much more
 		zmk:   "|c1|c2|c3\n|d1||d3",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Table","p":[[],[[{"i":[{"":"Text","s":"c1"}]},{"i":[{"":"Text","s":"c2"}]},{"i":[{"":"Text","s":"c3"}]}],[{"i":[{"":"Text","s":"d1"}]},{"i":[]},{"i":[{"":"Text","s":"d3"}]}]]]}]`,
+			encoderCHTML: useHTML,
 			encoderHTML: `<table>
 <tbody>
 <tr><td>c1</td><td>c2</td><td>c3</td></tr>
@@ -305,6 +325,7 @@ and much more
 |f1|f2|=f3`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Table","p":[[{"s":">","i":[{"":"Text","s":"h1"}]},{"i":[{"":"Text","s":"h2"}]},{"s":":","i":[{"":"Text","s":"h3"}]}],[[{"s":"<","i":[{"":"Text","s":"c1"}]},{"i":[{"":"Text","s":"c2"}]},{"s":":","i":[{"":"Text","s":"c3"}]}],[{"s":">","i":[{"":"Text","s":"f1"}]},{"i":[{"":"Text","s":"f2"}]},{"s":":","i":[{"":"Text","s":"=f3"}]}]]]}]`,
+			encoderCHTML: useHTML,
 			encoderHTML: `<table>
 <thead>
 <tr><th class="right">h1</th><th>h2</th><th class="center">h3</th></tr>
@@ -329,6 +350,7 @@ and much more
 		zmk:   ``,
 		expect: expectMap{
 			encoderZJSON:  `[]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   ``,
 			encoderNative: ``,
 			encoderText:   "",
