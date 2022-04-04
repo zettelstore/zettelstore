@@ -89,59 +89,69 @@ func (c *canvas) size() image.Point { return c.siz }
 
 // findObjects finds all objects (lines, polygons, and text) within the underlying grid.
 func (c *canvas) findObjects() {
-	p := point{}
+	c.findPaths()
+	c.findTexts()
+	sort.Sort(c.objs)
+}
 
-	// Find any new paths by starting with a point that wasn't yet visited, beginning at the top
-	// left of the grid.
+// findPaths by starting with a point that wasn't yet visited, beginning at the top
+// left of the grid.
+func (c *canvas) findPaths() {
 	for y := 0; y < c.siz.Y; y++ {
-		p.y = y
+		p := point{y: y}
 		for x := 0; x < c.siz.X; x++ {
 			p.x = x
 			if c.isVisited(p) {
 				continue
 			}
-			if ch := c.at(p); ch.isPathStart() {
-				// Found the start of a one or multiple connected paths. Traverse all
-				// connecting points. This will generate multiple objects if multiple
-				// paths (either open or closed) are found.
-				c.visit(p)
-				objs := c.scanPath([]point{p})
-				for _, obj := range objs {
-					// For all points in all objects found, mark the points as visited.
-					for _, p := range obj.Points() {
-						c.visit(p)
-					}
-				}
-				c.objs = append(c.objs, objs...)
-			}
-		}
-	}
-
-	// A second pass through the grid attempts to identify any text within the grid.
-	for y := 0; y < c.siz.Y; y++ {
-		p.y = y
-		for x := 0; x < c.siz.X; x++ {
-			p.x = x
-			if c.isVisited(p) {
+			ch := c.at(p)
+			if !ch.isPathStart() {
 				continue
 			}
-			if ch := c.at(p); ch.isTextStart() {
-				obj := c.scanText(p)
 
-				// scanText will return nil if the text at this area is simply
-				// setting options on a container object.
-				if obj == nil {
-					continue
-				}
+			// Found the start of a one or multiple connected paths. Traverse all
+			// connecting points. This will generate multiple objects if multiple
+			// paths (either open or closed) are found.
+			c.visit(p)
+			objs := c.scanPath([]point{p})
+			for _, obj := range objs {
+				// For all points in all objects found, mark the points as visited.
 				for _, p := range obj.Points() {
 					c.visit(p)
 				}
-				c.objs = append(c.objs, obj)
 			}
+			c.objs = append(c.objs, objs...)
 		}
 	}
+}
 
-	sort.Sort(c.objs)
+// findTexts with a second pass through the grid attempts to identify any text within the grid.
+func (c *canvas) findTexts() {
+	for y := 0; y < c.siz.Y; y++ {
+		p := point{}
+		p.y = y
+		for x := 0; x < c.siz.X; x++ {
+			p.x = x
+			if c.isVisited(p) {
+				continue
+			}
+			ch := c.at(p)
+			if !ch.isTextStart() {
+				continue
+			}
+
+			// scanText will return nil if the text at this area is simply
+			// setting options on a container object.
+			obj := c.scanText(p)
+			if obj == nil {
+				continue
+			}
+			for _, p := range obj.Points() {
+				c.visit(p)
+			}
+			c.objs = append(c.objs, obj)
+		}
+	}
 }
 
 // scanPath tries to complete a total path (for lines or polygons) starting with some partial path.
@@ -204,13 +214,24 @@ func (c *canvas) next(pos point) []point {
 
 	var out []point
 
+	nextHorizontal := func(p point) {
+		if !c.isVisited(p) && c.at(p).canHorizontal() {
+			out = append(out, p)
+		}
+	}
+	nextVertical := func(p point) {
+		if !c.isVisited(p) && c.at(p).canVertical() {
+			out = append(out, p)
+		}
+	}
+	nextDiagonal := func(from, to point) {
+		if !c.isVisited(to) && c.at(to).canDiagonalFrom(c.at(from)) {
+			out = append(out, to)
+		}
+	}
+
 	ch := c.at(pos)
 	if ch.canHorizontal() {
-		nextHorizontal := func(p point) {
-			if !c.isVisited(p) && c.at(p).canHorizontal() {
-				out = append(out, p)
-			}
-		}
 		if c.canLeft(pos) {
 			n := pos
 			n.x--
@@ -223,11 +244,6 @@ func (c *canvas) next(pos point) []point {
 		}
 	}
 	if ch.canVertical() {
-		nextVertical := func(p point) {
-			if !c.isVisited(p) && c.at(p).canVertical() {
-				out = append(out, p)
-			}
-		}
 		if c.canUp(pos) {
 			n := pos
 			n.y--
@@ -240,11 +256,6 @@ func (c *canvas) next(pos point) []point {
 		}
 	}
 	if c.canDiagonal(pos) {
-		nextDiagonal := func(from, to point) {
-			if !c.isVisited(to) && c.at(to).canDiagonalFrom(c.at(from)) {
-				out = append(out, to)
-			}
-		}
 		if c.canUp(pos) {
 			if c.canLeft(pos) {
 				n := pos

@@ -61,25 +61,6 @@ func (o *object) String() string {
 	return fmt.Sprintf("Path{%v}", o.points)
 }
 
-// HasPoint determines whether the supplied point lives inside the object. Since we support complex
-// convex and concave polygons, we need to do a full point-in-polygon test. The algorithm implemented
-// comes from the more efficient, less-clever version at http://alienryderflex.com/polygon/.
-func (o *object) HasPoint(p point) bool {
-	hasPoint := false
-	ncorners := len(o.corners)
-	j := ncorners - 1
-	for i := 0; i < ncorners; i++ {
-		if (o.corners[i].y < p.y && o.corners[j].y >= p.y || o.corners[j].y < p.y && o.corners[i].y >= p.y) && (o.corners[i].x <= p.x || o.corners[j].x <= p.x) {
-			if o.corners[i].x+(p.y-o.corners[i].y)/(o.corners[j].y-o.corners[i].y)*(o.corners[j].x-o.corners[i].x) < p.x {
-				hasPoint = !hasPoint
-			}
-		}
-		j = i
-	}
-
-	return hasPoint
-}
-
 // seal finalizes the object, setting its text, its corners, and its various rendering hints.
 func (o *object) seal(c *canvas) {
 	if c.at(o.points[0]).isArrow() {
@@ -96,14 +77,14 @@ func (o *object) seal(c *canvas) {
 	o.text = make([]rune, len(o.points))
 
 	for i, p := range o.points {
+		ch := c.at(p)
 		if !o.isJustText() {
-			if c.at(p).isTick() {
+			if ch.isTick() {
 				o.points[i].hint = tick
-			} else if c.at(p).isDot() {
+			} else if ch.isDot() {
 				o.points[i].hint = dot
 			}
-
-			if c.at(p).isDashed() {
+			if ch.isDashed() {
 				o.isDashed = true
 			}
 
@@ -113,7 +94,7 @@ func (o *object) seal(c *canvas) {
 				}
 			}
 		}
-		o.text[i] = rune(c.at(p))
+		o.text[i] = rune(ch)
 	}
 }
 
@@ -180,15 +161,16 @@ func pointsToCorners(points []point) ([]point, bool) {
 		panic(fmt.Errorf("discontiguous points: %+v", points))
 	}
 
+	cornerFunc := func(idx, newDir int) {
+		if dir != newDir {
+			out = append(out, points[idx-1])
+			dir = newDir
+		}
+	}
+
 	// Starting from the third point, check to see if the directionality between points P and
 	// P-1 has changed.
 	for i := 2; i < l; i++ {
-		cornerFunc := func(idx, newDir int) {
-			if dir != newDir {
-				out = append(out, points[idx-1])
-				dir = newDir
-			}
-		}
 		if isHorizontal(points[i-1], points[i]) {
 			cornerFunc(i, dirH)
 		} else if isVertical(points[i-1], points[i]) {
