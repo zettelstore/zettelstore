@@ -36,7 +36,7 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 func (v *visitor) visitLink(ln *ast.LinkNode) {
 	switch ln.Ref.State {
 	case ast.RefStateSelf, ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased:
-		v.writeAHref(ln.Ref, ln.Attrs, &ln.Inlines)
+		v.writeAHref(ln.Ref, ln.Attrs.Clone().Set("href", ln.Ref.URL.String()), &ln.Inlines)
 	case ast.RefStateBroken:
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("class", "broken")
@@ -44,6 +44,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
 	case ast.RefStateExternal:
 		attrs := ln.Attrs.Clone()
+		attrs = attrs.Set("href", ln.Ref.URL.String())
 		attrs = attrs.Set("class", "external")
 		if v.env.HasNewWindow() {
 			attrs = attrs.Set("target", "_blank").Set("rel", "noopener noreferrer")
@@ -57,25 +58,13 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 			v.writeSpan(&ln.Inlines, ln.Attrs)
 			return
 		}
-		v.b.WriteString("<a href=\"")
-		v.writeQuotedEscaped(ln.Ref.Value)
-		v.b.WriteByte('"')
-		v.visitAttributes(ln.Attrs)
-		v.b.WriteByte('>')
-		v.writeLinkInlines(&ln.Inlines, ln.Ref)
+		v.writeAHref(ln.Ref, ln.Attrs.Clone().Set("href", ln.Ref.Value), &ln.Inlines)
 		v.inInteractive = false
-		v.b.WriteString("</a>")
 	}
 }
 
 func (v *visitor) writeAHref(ref *ast.Reference, attrs zjson.Attributes, is *ast.InlineSlice) {
-	if v.env.IsInteractive(v.inInteractive) {
-		v.writeSpan(is, attrs)
-		return
-	}
-	v.b.WriteString("<a href=\"")
-	v.writeReference(ref)
-	v.b.WriteByte('"')
+	v.b.WriteString("<a")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
 	v.writeLinkInlines(is, ref)

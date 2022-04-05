@@ -39,8 +39,8 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple block comment",
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
-			encoderZJSON: `[{"":"CommentBlock","s":"No\nrender"}]`,
-			// encoderCHTML:  useHTML,
+			encoderZJSON:  `[{"":"CommentBlock","s":"No\nrender"}]`,
+			encoderCHTML:  "<!--\nNo\nrender\n-->", // TODO
 			encoderHTML:   ``,
 			encoderNative: `[CommentBlock "No\nrender"]`,
 			encoderText:   ``,
@@ -63,8 +63,8 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple Heading",
 		zmk:   `=== Top`,
 		expect: expectMap{
-			encoderZJSON: `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
-			// encoderCHTML:  useHTML,
+			encoderZJSON:  `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
+			encoderCHTML:  "<h2>Top</h2>", // TODO
 			encoderHTML:   "<h2 id=\"top\">Top</h2>",
 			encoderNative: `[Heading 1 #top Text "Top"]`,
 			encoderText:   `Top`,
@@ -258,8 +258,8 @@ and much more
 		descr: "Simple Verbatim Eval",
 		zmk:   "~~~\nHello\nWorld\n~~~",
 		expect: expectMap{
-			encoderZJSON: `[{"":"EvalBlock","s":"Hello\nWorld"}]`,
-			// encoderCHTML:  useHTML,
+			encoderZJSON:  `[{"":"EvalBlock","s":"Hello\nWorld"}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<pre><code class=\"zs-eval\">Hello\nWorld</code></pre>",
 			encoderNative: `[EvalBlock "Hello\nWorld"]`,
 			encoderText:   "Hello\nWorld",
@@ -270,8 +270,8 @@ and much more
 		descr: "Simple Verbatim Math",
 		zmk:   "$$$\nHello\n\\LaTeX\n$$$",
 		expect: expectMap{
-			encoderZJSON: `[{"":"MathBlock","s":"Hello\n\\LaTeX"}]`,
-			// encoderCHTML:  useHTML,
+			encoderZJSON:  `[{"":"MathBlock","s":"Hello\n\\LaTeX"}]`,
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<pre><code class=\"zs-math\">Hello\n\\LaTeX</code></pre>",
 			encoderNative: `[MathBlock "Hello\n\\LaTeX"]`,
 			encoderText:   "Hello\n\\LaTeX",
