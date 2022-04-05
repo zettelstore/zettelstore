@@ -40,7 +40,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
 			encoderZJSON:  `[{"":"CommentBlock","s":"No\nrender"}]`,
-			encoderCHTML:  "<!--\nNo\nrender\n-->", // TODO
+			encoderCHTML:  useHTML,
 			encoderHTML:   ``,
 			encoderNative: `[CommentBlock "No\nrender"]`,
 			encoderText:   ``,
