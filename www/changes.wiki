@@ -26,6 +26,8 @@
   *  A zettel can be saved while crwating / editing it. There is no need to
      manually re-edit it by using the 'e' endpoint.
      (minor: webui)
+  *  Allow to use startup configuration, even if started in simple mode.
+     (minor)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

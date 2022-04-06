@@ -26,7 +26,7 @@ import (
 // ---------- Subcommand: run ------------------------------------------------
 
 func flgRun(fs *flag.FlagSet) {
-	fs.String("c", defConfigfile, "configuration file")
+	fs.String("c", "", "configuration file")
 	fs.Uint("a", 0, "port number kernel service (0=disable)")
 	fs.Uint("p", 23123, "port number web service")
 	fs.String("d", "", "zettel directory")

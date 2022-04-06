@@ -36,10 +36,6 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
-const (
-	defConfigfile = ".zscfg"
-)
-
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
@@ -89,22 +85,37 @@ func init() {
 	})
 }
 
-func readConfig(fs *flag.FlagSet) (cfg *meta.Meta) {
-	var configFile string
+func fetchStartupConfiguration(fs *flag.FlagSet) (cfg *meta.Meta) {
 	if configFlag := fs.Lookup("c"); configFlag != nil {
-		configFile = configFlag.Value.String()
-	} else {
-		configFile = defConfigfile
+		if filename := configFlag.Value.String(); filename != "" {
+			content, err := readConfiguration(filename)
+			return createConfiguration(content, err)
+		}
 	}
-	content, err := os.ReadFile(configFile)
+	content, err := searchAndReadConfiguration()
+	return createConfiguration(content, err)
+}
+
+func createConfiguration(content []byte, err error) *meta.Meta {
 	if err != nil {
 		return meta.New(id.Invalid)
 	}
 	return meta.NewFromInput(id.Invalid, input.NewInput(content))
 }
 
+func readConfiguration(filename string) ([]byte, error) { return os.ReadFile(filename) }
+
+func searchAndReadConfiguration() ([]byte, error) {
+	for _, filename := range []string{"zettelstore.cfg", "zsconfig.txt", "zscfg.txt", "_zscfg"} {
+		if content, err := readConfiguration(filename); err == nil {
+			return content, nil
+		}
+	}
+	return readConfiguration(".zscfg")
+}
+
 func getConfig(fs *flag.FlagSet) *meta.Meta {
-	cfg := readConfig(fs)
+	cfg := fetchStartupConfiguration(fs)
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
@@ -294,6 +305,9 @@ func executeCommand(name string, args ...string) int {
 // runSimple is called, when the user just starts the software via a double click
 // or via a simple call ``./zettelstore`` on the command line.
 func runSimple() int {
+	if _, err := searchAndReadConfiguration(); err == nil {
+		return executeCommand("run-simple")
+	}
 	dir := "./zettel"
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
