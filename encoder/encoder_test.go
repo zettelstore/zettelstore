@@ -79,7 +79,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, expected expectMap, zmkDefault string) {
 	t.Helper()
 	for enc, exp := range expected {
-		encdr := encoder.Create(enc, nil)
+		encdr := encoder.Create(enc, &encoder.Environment{})
 		got, err := pe.encode(encdr)
 		if err != nil {
 			t.Error(err)

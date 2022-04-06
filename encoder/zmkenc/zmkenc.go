@@ -475,7 +475,9 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')
 		}
-		v.b.WriteString("%% ")
+		v.b.WriteString("%%")
+		v.visitAttributes(ln.Attrs)
+		v.b.WriteByte(' ')
 		v.b.Write(ln.Content)
 	case ast.LiteralHTML:
 		v.writeLiteral('x', syntaxToHTML(ln.Attrs), ln.Content)

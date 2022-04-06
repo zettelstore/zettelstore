@@ -129,8 +129,7 @@ func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
 	}
 
 	n := strconv.Itoa(v.env.AddFootnote(fn))
-	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a href=\"#fn:", n, "\" class=\"footnote-ref\" role=\"doc-noteref\">", n, "</a></sup>")
-	// TODO: what to do with Attrs?
+	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a class=\"zs-noteref\" href=\"#fn:", n, "\" role=\"doc-noteref\">", n, "</a></sup>")
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
@@ -195,7 +194,12 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.writeLiteral("<kbd", "</kbd>", ln.Attrs, ln.Content)
 	case ast.LiteralOutput:
 		v.writeLiteral("<samp", "</samp>", ln.Attrs, ln.Content)
-	case ast.LiteralZettel, ast.LiteralComment:
+	case ast.LiteralComment:
+		if !ln.Attrs.HasDefault() {
+			return
+		}
+		fallthrough
+	case ast.LiteralZettel:
 		if v.inlinePos > 0 {
 			v.b.WriteByte(' ')
 		}

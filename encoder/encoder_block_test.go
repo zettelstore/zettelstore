@@ -64,7 +64,7 @@ var tcsBlock = []zmkTestCase{
 		zmk:   `=== Top`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Heading","n":1,"s":"top","i":[{"":"Text","s":"Top"}]}]`,
-			encoderCHTML:  "<h2>Top</h2>", // TODO
+			encoderCHTML:  useHTML,
 			encoderHTML:   "<h2 id=\"top\">Top</h2>",
 			encoderNative: `[Heading 1 #top Text "Top"]`,
 			encoderText:   `Top`,
@@ -343,6 +343,22 @@ and much more
 			encoderZmk: `|=h1>|=h2|=h3:
 |<c1|c2|c3
 |f1|f2|=f3`,
+		},
+	},
+	{
+		descr: "Simple Endnotes",
+		zmk:   `Text[^Footnote]`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Para","i":[{"":"Text","s":"Text"},{"":"Footnote","i":[{"":"Text","s":"Footnote"}]}]}]`,
+			encoderCHTML: useHTML,
+			encoderHTML: `<p>Text<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup></p>
+<ol class="zs-endnotes">
+<li class="zs-endnote" id="fn:1" role="doc-endnote" value="1">Footnote <a class="zs-endnote-backref" href="#fnref:1" role="doc-backlink">&#x21a9;&#xfe0e;</a></li>
+</ol>
+`,
+			encoderNative: `[Para Text "Text",Footnote [Text "Footnote"]]`,
+			encoderText:   "Text Footnote",
+			encoderZmk:    useZmk,
 		},
 	},
 	{

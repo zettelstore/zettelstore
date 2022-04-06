@@ -62,7 +62,7 @@ func (he *chtmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta en
 
 	he.acceptMeta(w, zn.InhMeta, evalMeta)
 	io.WriteString(w, "</head>\n<body>\n")
-	enc := html.NewEncoder(w, 1, true)
+	enc := html.NewEncoder(w, 1)
 	if hasTitle {
 		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
 			io.WriteString(w, "<h1>")
@@ -109,7 +109,7 @@ func (he *chtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error
 	if err != nil {
 		return 0, err
 	}
-	enc := html.NewEncoder(w, 1, true)
+	enc := html.NewEncoder(w, 1)
 	enc.TraverseBlock(zjson.MakeArray(val))
 	enc.WriteEndnotes()
 	return 0, nil
@@ -117,11 +117,10 @@ func (he *chtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error
 
 // WriteInlines writes an inline slice to the writer
 func (he *chtmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	enc := html.NewEncoder(w, 1, true)
+	enc := html.NewEncoder(w, 1)
 	if err := he.acceptInlines(enc, is); err != nil {
 		return 0, err
 	}
-	enc.WriteEndnotes()
 	return 0, nil
 }
 

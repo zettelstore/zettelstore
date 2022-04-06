@@ -143,7 +143,7 @@
   a.broken { text-decoration: line-through }
   img { max-width: 100% }
   img.right { float: right }
-  ol.endnotes {
+  ol.zs-endnotes {
     padding-top: .5rem;
     border-top: 1px solid;
   }

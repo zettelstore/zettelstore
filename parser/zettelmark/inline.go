@@ -398,12 +398,14 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	for inp.Ch == '%' {
 		inp.Next()
 	}
+	attrs := cp.parseAttributes(false)
 	cp.skipSpace()
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {
 			return &ast.LiteralNode{
 				Kind:    ast.LiteralComment,
+				Attrs:   attrs,
 				Content: append([]byte(nil), inp.Src[pos:inp.Pos]...),
 			}, true
 		}

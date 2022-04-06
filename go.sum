@@ -12,5 +12,5 @@ golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 h1:JGgROgKl9N8DuW20oFS5gxc+
 golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
-zettelstore.de/c v0.0.0-20220405180013-f355d057f929 h1:FX5UYk/aCj4u/UAm5mMOrTdF/YGETeXBo0NdOr0vjTs=
-zettelstore.de/c v0.0.0-20220405180013-f355d057f929/go.mod h1:qwOHFJY7r9Bz7nwdyYsR38rgQWGR20DEUbTvhUML7cw=
+zettelstore.de/c v0.0.0-20220406115933-d18cec79d00e h1:8SIGWRRFJN4v5aruXYcqsEtrNxiUn8vaNG42yckHuFg=
+zettelstore.de/c v0.0.0-20220406115933-d18cec79d00e/go.mod h1:qwOHFJY7r9Bz7nwdyYsR38rgQWGR20DEUbTvhUML7cw=
