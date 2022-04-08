@@ -32,7 +32,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 		ctx := r.Context()
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
-		if enc, encText := adapter.GetEncoding(r, q, api.EncoderHTML); enc != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, q, api.EncoderCHTML); enc != api.EncoderCHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("%v zettel not possible in encoding %q", mapActionOp[op], encText)))
 			return
@@ -62,7 +62,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 				return
 			}
 			env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-			htmlTitle, err2 := encodeInlines(&title, api.EncoderHTML, &env)
+			htmlTitle, err2 := encodeInlines(&title, api.EncoderCHTML, &env)
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return

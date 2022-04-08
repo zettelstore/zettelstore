@@ -40,7 +40,7 @@ var pngTestCases = []blobTestCase{
 		},
 		expect: expectMap{
 			encoderZJSON:  `[{"":"BLOB","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
-			encoderHTML:   `<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==" title="PNG">`,
+			encoderHTML:   `<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==" title="PNG"></p>`,
 			encoderNative: `[BLOB "PNG" "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="]`,
 			encoderText:   "",
 			encoderZmk:    `%% Unable to display BLOB with title 'PNG' and syntax 'png'.`,

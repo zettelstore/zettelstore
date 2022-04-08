@@ -67,7 +67,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeWordSet:
 		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, api.EncoderHTML, envEnc))
+		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, api.EncoderCHTML, envEnc))
 	default:
 		html.Escape(w, value)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -186,7 +186,7 @@ func (wui *WebUI) encodeTitleAsHTML(
 		func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, plainTitle, envEval)
 		},
-		api.EncoderHTML, envHTML)
+		api.EncoderCHTML, envHTML)
 }
 
 func (wui *WebUI) encodeTitleAsText(

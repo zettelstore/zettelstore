@@ -8,8 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package htmlenc encodes the abstract syntax tree into HTML5.
-package htmlenc
+package chtmlenc
 
 import (
 	"fmt"

@@ -76,8 +76,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* A\n* B\n* C",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"A"}]}],[{"":"Para","i":[{"":"Text","s":"B"}]}],[{"":"Para","i":[{"":"Text","s":"C"}]}]]}]`,
-			// encoderCHTML: useHTML,
-			encoderHTML: "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
+			encoderCHTML: useHTML,
+			encoderHTML:  "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "A"]],
  [[Para Text "B"]],
@@ -91,23 +91,30 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* T1\n** T2\n* T3\n** T4\n* T5",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T1"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T2"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T3"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T4"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T5"}]}]]}]`,
-			// encoderCHTML: useHTML,
-			encoderHTML: `<ul>
-<li>
-<p>T1</p>
+			encoderCHTML: `<ul>
+<li><p>T1</p>
 <ul>
 <li>T2</li>
 </ul>
 </li>
-<li>
-<p>T3</p>
+<li><p>T3</p>
 <ul>
 <li>T4</li>
 </ul>
 </li>
-<li>
-<p>T5</p>
+<li><p>T5</p>
 </li>
+</ul>`,
+			encoderHTML: `<ul>
+<li><p>T1</p>
+<ul>
+<li>T2</li>
+</ul></li>
+<li><p>T3</p>
+<ul>
+<li>T4</li>
+</ul></li>
+<li><p>T5</p></li>
 </ul>`,
 			encoderNative: `[BulletList
  [[Para Text "T1"],
@@ -126,8 +133,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "* Item1.1\n* Item1.2\n* Item1.3\n\n* Item2.1\n* Item2.2",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"Item1.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.2"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.3"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.2"}]}]]}]`,
-			// encoderCHTML: useHTML,
-			encoderHTML: "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
+			encoderCHTML: useHTML,
+			encoderHTML:  "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
 			encoderNative: `[BulletList
  [[Para Text "Item1.1"]],
  [[Para Text "Item1.2"]],
@@ -167,8 +174,8 @@ var tcsBlock = []zmkTestCase{
 		zmk:   "Text\n# abc",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Para","i":[{"":"Text","s":"Text"}]},{"":"Ordered","c":[[{"":"Para","i":[{"":"Text","s":"abc"}]}]]}]`,
-			// encoderCHTML: useHTML,
-			encoderHTML: "<p>Text</p>\n<ol>\n<li>abc</li>\n</ol>",
+			encoderCHTML: useHTML,
+			encoderHTML:  "<p>Text</p>\n<ol>\n<li>abc</li>\n</ol>",
 			encoderNative: `[Para Text "Text"],
 [OrderedList
  [[Para Text "abc"]]]`,

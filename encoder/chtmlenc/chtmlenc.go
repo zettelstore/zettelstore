@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -8,17 +8,13 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package chtmlenc encodes the abstract syntax tree into HTML5 via zettelstore-client.
+// Package chtmlenc encodes the abstract syntax tree into HTML5 (deprecated).
 package chtmlenc
 
 import (
-	"bytes"
 	"io"
-	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -26,127 +22,83 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderCHTML, encoder.Info{
-		Create: func(env *encoder.Environment) encoder.Encoder {
-			return &chtmlEncoder{
-				env:      env,
-				zjsonEnc: encoder.Create(api.EncoderZJSON, nil),
-				textEnc:  encoder.Create(api.EncoderText, nil),
-			}
-		},
+		Create: func(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} },
 	})
 }
 
-type chtmlEncoder struct {
-	env      *encoder.Environment
-	zjsonEnc encoder.Encoder
-	textEnc  encoder.Encoder
+type htmlEncoder struct {
+	env *encoder.Environment
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *chtmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	if env := he.env; env != nil && env.Lang == "" {
-		io.WriteString(w, "<html>")
-	} else {
-		io.WriteString(w, `<html lang="`)
-		io.WriteString(w, env.Lang)
-		io.WriteString(w, `">`)
+func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newVisitor(he, w)
+	if !he.env.IsXHTML() {
+		v.b.WriteString("<!DOCTYPE html>\n")
 	}
-	io.WriteString(w, "\n<head>\n<meta charset=\"utf-8\">\n")
+	if env := he.env; env != nil && env.Lang == "" {
+		v.b.WriteStrings("<html>\n<head>")
+	} else {
+		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
+	}
+	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
-		io.WriteString(w, "<title>")
-		is := evalMeta(plainTitle)
-		he.textEnc.WriteInlines(w, &is)
-		io.WriteString(w, "</title>\n")
+		v.b.WriteStrings("<title>", v.evalValue(plainTitle, evalMeta), "</title>")
 	}
-
-	he.acceptMeta(w, zn.InhMeta, evalMeta)
-	io.WriteString(w, "</head>\n<body>\n")
-	enc := html.NewEncoder(w, 1)
+	v.acceptMeta(zn.InhMeta, evalMeta)
+	v.b.WriteString("\n</head>\n<body>\n")
 	if hasTitle {
 		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
-			io.WriteString(w, "<h1>")
-			if err := he.acceptInlines(enc, &isTitle); err != nil {
-				return 0, err
-			}
-			io.WriteString(w, "</h1>\n")
+			v.b.WriteString("<h1>")
+			ast.Walk(v, &isTitle)
+			v.b.WriteString("</h1>\n")
 		}
 	}
-
-	var buf bytes.Buffer
-	_, err := he.zjsonEnc.WriteBlocks(&buf, &zn.Ast)
-	if err != nil {
-		return 0, err
-	}
-	val, err := zjson.Decode(&buf)
-	if err != nil {
-		return 0, err
-	}
-	enc.TraverseBlock(zjson.MakeArray(val))
-	enc.WriteEndnotes()
-	io.WriteString(w, "</body>\n</html>")
-	return 0, nil
+	ast.Walk(v, &zn.Ast)
+	v.writeEndnotes()
+	v.b.WriteString("</body>\n</html>")
+	length, err := v.b.Flush()
+	return length, err
 }
 
 // WriteMeta encodes meta data as HTML5.
-func (he *chtmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	he.acceptMeta(w, m, evalMeta)
-	return 0, nil
+func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newVisitor(he, w)
+
+	// Write title
+	if title, ok := m.Get(api.KeyTitle); ok {
+		v.b.WriteStrings("<meta name=\"zs-", api.KeyTitle, "\" content=\"")
+		v.writeQuotedEscaped(v.evalValue(title, evalMeta))
+		v.b.WriteString("\">")
+	}
+
+	// Write other metadata
+	v.acceptMeta(m, evalMeta)
+	length, err := v.b.Flush()
+	return length, err
 }
 
-func (he *chtmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return he.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.
-func (he *chtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	var buf bytes.Buffer
-	_, err := he.zjsonEnc.WriteBlocks(&buf, bs)
-	if err != nil {
-		return 0, err
-	}
-	val, err := zjson.Decode(&buf)
-	if err != nil {
-		return 0, err
-	}
-	enc := html.NewEncoder(w, 1)
-	enc.TraverseBlock(zjson.MakeArray(val))
-	enc.WriteEndnotes()
-	return 0, nil
+func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	v := newVisitor(he, w)
+	ast.Walk(v, bs)
+	v.writeEndnotes()
+	length, err := v.b.Flush()
+	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (he *chtmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	enc := html.NewEncoder(w, 1)
-	if err := he.acceptInlines(enc, is); err != nil {
-		return 0, err
+func (he *htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	v := newVisitor(he, w)
+	if env := he.env; env != nil {
+		v.inInteractive = env.Interactive
 	}
-	return 0, nil
-}
-
-func (he *chtmlEncoder) acceptMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	for _, p := range m.ComputedPairs() {
-		io.WriteString(w, `<meta name="zs-`)
-		io.WriteString(w, p.Key)
-		io.WriteString(w, `" content="`)
-		is := evalMeta(p.Value)
-		var sb strings.Builder
-		he.textEnc.WriteInlines(&sb, &is)
-		html.AttributeEscape(w, sb.String())
-		io.WriteString(w, "\">\n")
-	}
-}
-
-func (he *chtmlEncoder) acceptInlines(enc *html.Encoder, is *ast.InlineSlice) error {
-	var buf bytes.Buffer
-	_, err := he.zjsonEnc.WriteInlines(&buf, is)
-	if err != nil {
-		return err
-	}
-	val, err := zjson.Decode(&buf)
-	if err != nil {
-		return err
-	}
-	enc.TraverseInline(zjson.MakeArray(val))
-	return nil
+	ast.Walk(v, is)
+	length, err := v.b.Flush()
+	return length, err
 }

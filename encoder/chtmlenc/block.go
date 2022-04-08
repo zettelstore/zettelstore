@@ -8,8 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package htmlenc encodes the abstract syntax tree into HTML5.
-package htmlenc
+package chtmlenc
 
 import (
 	"fmt"
@@ -198,26 +197,17 @@ func getParaItem(its ast.ItemSlice) *ast.ParaNode {
 
 func isCompactList(insl []ast.ItemSlice) bool {
 	for _, ins := range insl {
-		if !isCompactSlice(ins) {
+		if len(ins) < 1 {
+			continue
+		}
+		if len(ins) > 1 {
+			return false
+		}
+		if _, ok := ins[0].(*ast.ParaNode); !ok {
 			return false
 		}
 	}
 	return true
-}
-
-func isCompactSlice(ins ast.ItemSlice) bool {
-	if len(ins) < 1 {
-		return true
-	}
-	if len(ins) == 1 {
-		switch ins[0].(type) {
-		case *ast.ParaNode, *ast.VerbatimNode, *ast.HRuleNode:
-			return true
-		case *ast.NestedListNode:
-			return false
-		}
-	}
-	return false
 }
 
 // writeItemSliceOrPara emits the content of a paragraph if the paragraph is
@@ -231,7 +221,7 @@ func (v *visitor) writeItemSliceOrPara(ins ast.ItemSlice, compact bool) {
 		}
 	}
 	for i, in := range ins {
-		if i >= 0 {
+		if i > 0 {
 			v.b.WriteByte('\n')
 		}
 		ast.Walk(v, in)

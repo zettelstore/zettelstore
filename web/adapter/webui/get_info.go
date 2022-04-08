@@ -52,7 +52,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		if enc, encText := adapter.GetEncoding(r, q, api.EncoderHTML); enc != api.EncoderHTML {
+		if enc, encText := adapter.GetEncoding(r, q, api.EncoderCHTML); enc != api.EncoderCHTML {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(
 				fmt.Sprintf("Zettel info not available in encoding %q", encText)))
 			return
@@ -118,7 +118,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(&ast.BlockSlice{}, api.EncoderHTML, &envHTML)
+		endnotes, err := encodeBlocks(&ast.BlockSlice{}, api.EncoderCHTML, &envHTML)
 		if err != nil {
 			endnotes = ""
 		}

@@ -460,8 +460,8 @@ var tcsInline = []zmkTestCase{
 		zmk:   `{{abc}}`,
 		expect: expectMap{
 			encoderZJSON:  `[{"":"Embed","s":"abc"}]`,
-			encoderCHTML:  `<img src="abc">`,
-			encoderHTML:   `<img src="abc" alt="">`,
+			encoderHTML:   `<img src="abc">`,
+			encoderCHTML:  `<img src="abc" alt="">`,
 			encoderNative: `Embed EXTERNAL "abc"`,
 			encoderText:   ``,
 			encoderZmk:    useZmk,

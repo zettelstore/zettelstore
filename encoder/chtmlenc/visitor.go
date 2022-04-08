@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package htmlenc
+package chtmlenc
 
 import (
 	"bytes"
