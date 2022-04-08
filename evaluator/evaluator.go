@@ -413,6 +413,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,
+			Attrs:   map[string]string{"-": ""},
 			Content: append([]byte("Nothing to transclude: "), ref.String()...),
 		}
 	}
@@ -440,6 +441,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,
+			Attrs:   map[string]string{"-": ""},
 			Content: []byte("Nothing to transclude"),
 		}
 	}

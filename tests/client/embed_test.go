@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore-client.
+// This file is part of Zettelstore.
 //
-// Zettelstore client is licensed under the latest version of the EUPL
-// (European Union Public License). Please see file LICENSE.txt for your rights
-// and obligations under this license.
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
 //-----------------------------------------------------------------------------
 
 package client_test
@@ -69,7 +69,7 @@ func TestZettelTransclusion(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, abc10000Zid, string(content), "Too many transclusions")
+	checkContentContains(t, abc10000Zid, string(content), "Too\u00a0many\u00a0transclusions")
 }
 
 func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
@@ -134,7 +134,7 @@ func TestRecursiveTransclusion(t *testing.T) {
 			continue
 		}
 		sContent := string(content)
-		checkContentContains(t, zid, sContent, "Recursive transclusion")
+		checkContentContains(t, zid, sContent, "Recursive\u00a0transclusion")
 		checkContentContains(t, zid, sContent, string(errZid))
 	}
 }
@@ -168,7 +168,7 @@ func TestSelfEmbedRef(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, selfEmbedZid, string(content), "Self embed reference")
+	checkContentContains(t, selfEmbedZid, string(content), "Self\u00a0embed\u00a0reference")
 }
 
 func checkContentContains(t *testing.T, zid api.ZettelID, content, expected string) {
