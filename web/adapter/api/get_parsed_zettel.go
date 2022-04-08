@@ -37,7 +37,7 @@ func (a *API) MakeGetParsedZettelHandler(parseZettel usecase.ParseZettel) http.H
 		}
 
 		q := r.URL.Query()
-		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
+		enc, encStr := getEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
 		zn, err := parseZettel.Run(r.Context(), zid, q.Get(api.KeySyntax))
 		if err != nil {

@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetEvalZettelHandler creates a new HTTP handler to return a evaluated zettel.
@@ -34,7 +33,7 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 
 		ctx := r.Context()
 		q := r.URL.Query()
-		enc, encStr := adapter.GetEncoding(r, q, encoder.GetDefaultEncoding())
+		enc, encStr := getEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
 		var env evaluator.Environment
 		if q.Has(api.QueryKeyEmbed) {

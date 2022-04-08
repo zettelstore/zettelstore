@@ -50,43 +50,6 @@ func GetInteger(q url.Values, key string) (int, bool) {
 	return 0, false
 }
 
-// GetEncoding returns the data encoding selected by the caller.
-func GetEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (api.EncodingEnum, string) {
-	encoding := q.Get(api.QueryKeyEncoding)
-	if len(encoding) > 0 {
-		return api.Encoder(encoding), encoding
-	}
-	if enc, ok := getOneEncoding(r, api.HeaderAccept); ok {
-		return api.Encoder(enc), enc
-	}
-	if enc, ok := getOneEncoding(r, api.HeaderContentType); ok {
-		return api.Encoder(enc), enc
-	}
-	return defEncoding, defEncoding.String()
-}
-
-func getOneEncoding(r *http.Request, key string) (string, bool) {
-	if values, ok := r.Header[key]; ok {
-		for _, value := range values {
-			if enc, ok2 := contentType2encoding(value); ok2 {
-				return enc, true
-			}
-		}
-	}
-	return "", false
-}
-
-var mapCT2encoding = map[string]string{
-	"application/json": "json",
-	"text/html":        api.EncodingHTML,
-}
-
-func contentType2encoding(contentType string) (string, bool) {
-	// TODO: only check before first ';'
-	enc, ok := mapCT2encoding[contentType]
-	return enc, ok
-}
-
 // GetSearch retrieves the specified search and sorting options from a query.
 func GetSearch(q url.Values) (s *search.Search) {
 	for key, values := range q {

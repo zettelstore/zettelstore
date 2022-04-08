@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"fmt"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -36,12 +35,6 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 		zettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
-			return
-		}
-
-		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderCHTML); enc != api.EncoderCHTML {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Edit zettel %q not possible in encoding %q", zid, encText)))
 			return
 		}
 

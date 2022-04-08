@@ -13,7 +13,6 @@ package webui
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"net/http"
 	"sort"
 	"strings"
@@ -52,11 +51,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		if enc, encText := adapter.GetEncoding(r, q, api.EncoderCHTML); enc != api.EncoderCHTML {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Zettel info not available in encoding %q", encText)))
-			return
-		}
 
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {

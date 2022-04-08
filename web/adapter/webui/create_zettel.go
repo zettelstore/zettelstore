@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"fmt"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -32,11 +31,6 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 		ctx := r.Context()
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
-		if enc, encText := adapter.GetEncoding(r, q, api.EncoderCHTML); enc != api.EncoderCHTML {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("%v zettel not possible in encoding %q", mapActionOp[op], encText)))
-			return
-		}
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrNotFound)
@@ -70,12 +64,6 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 			wui.renderZettelForm(w, r, createZettel.PrepareNew(origZettel), textTitle, htmlTitle)
 		}
 	}
-}
-
-var mapActionOp = map[createAction]string{
-	actionCopy:  "Copy",
-	actionFolge: "Folge",
-	actionNew:   "New",
 }
 
 func (wui *WebUI) renderZettelForm(

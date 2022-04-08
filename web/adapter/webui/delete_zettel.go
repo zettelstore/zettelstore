@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"fmt"
 	"net/http"
 	"sort"
 
@@ -22,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
@@ -34,12 +32,6 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		if enc, encText := adapter.GetEncoding(r, r.URL.Query(), api.EncoderCHTML); enc != api.EncoderCHTML {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(
-				fmt.Sprintf("Delete zettel not possible in encoding %q", encText)))
-			return
-		}
-
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrNotFound)
