@@ -26,7 +26,6 @@ import (
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -42,13 +41,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		q := r.URL.Query()
 		env := evaluator.Environment{
 			GetTagRef: func(s string) *ast.Reference {
-				return adapter.CreateTagReference(wui, 'h', api.EncodingHTML, s)
+				return wui.createTagReference('h', api.EncodingHTML, s)
 			},
 			GetHostedRef: func(s string) *ast.Reference {
-				return adapter.CreateHostedReference(wui, s)
+				return wui.createHostedReference(s)
 			},
 			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
-				return adapter.CreateFoundReference(wui, 'h', "", "", zid, fragment)
+				return wui.createFoundReference('h', "", "", zid, fragment)
 			},
 			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.InlineEmbedNode {
 				return wui.createImageMaterial(zettel.Meta.Zid)

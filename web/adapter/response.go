@@ -17,11 +17,8 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/server"
 )
 
 // PrepareHeader sets the HTTP header to defined values.
@@ -70,38 +67,4 @@ func CodeMessageFromError(err error) (int, string) {
 		return http.StatusInsufficientStorage, "Zettelstore reached one of its storage limits"
 	}
 	return http.StatusInternalServerError, err.Error()
-}
-
-// CreateTagReference builds a reference to list all tags.
-func CreateTagReference(b server.Builder, key byte, enc, s string) *ast.Reference {
-	u := b.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyAllTags, s)
-	ref := ast.ParseReference(u.String())
-	ref.State = ast.RefStateHosted
-	return ref
-}
-
-// CreateHostedReference builds a reference with state "hosted".
-func CreateHostedReference(b server.Builder, s string) *ast.Reference {
-	urlPrefix := b.GetURLPrefix()
-	ref := ast.ParseReference(urlPrefix + s)
-	ref.State = ast.RefStateHosted
-	return ref
-}
-
-// CreateFoundReference builds a reference for a found zettel.
-func CreateFoundReference(b server.Builder, key byte, part, enc string, zid id.Zid, fragment string) *ast.Reference {
-	ub := b.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
-	if part != "" {
-		ub.AppendQuery(api.QueryKeyPart, part)
-	}
-	if enc != "" {
-		ub.AppendQuery(api.QueryKeyEncoding, enc)
-	}
-	if fragment != "" {
-		ub.SetFragment(fragment)
-	}
-
-	ref := ast.ParseReference(ub.String())
-	ref.State = ast.RefStateFound
-	return ref
 }

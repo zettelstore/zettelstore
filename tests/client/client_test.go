@@ -179,7 +179,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 		if len(content) == 0 {
 			t.Errorf("Empty content for parsed encoding %v", enc)
 		}
-		content, err = c.GetEvaluatedZettel(context.Background(), api.ZidDefaultHome, enc, true)
+		content, err = c.GetEvaluatedZettel(context.Background(), api.ZidDefaultHome, enc)
 		if err != nil {
 			t.Error(err)
 			continue

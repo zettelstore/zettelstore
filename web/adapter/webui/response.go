@@ -30,3 +30,37 @@ func (wui *WebUI) createImageMaterial(zid id.Zid) ast.InlineEmbedNode {
 	ref.State = ast.RefStateFound
 	return &ast.EmbedRefNode{Ref: ref}
 }
+
+// createTagReference builds a reference to list all tags.
+func (wui *WebUI) createTagReference(key byte, enc, s string) *ast.Reference {
+	u := wui.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyAllTags, s)
+	ref := ast.ParseReference(u.String())
+	ref.State = ast.RefStateHosted
+	return ref
+}
+
+// createHostedReference builds a reference with state "hosted".
+func (wui *WebUI) createHostedReference(s string) *ast.Reference {
+	urlPrefix := wui.GetURLPrefix()
+	ref := ast.ParseReference(urlPrefix + s)
+	ref.State = ast.RefStateHosted
+	return ref
+}
+
+// createFoundReference builds a reference for a found zettel.
+func (wui *WebUI) createFoundReference(key byte, part, enc string, zid id.Zid, fragment string) *ast.Reference {
+	ub := wui.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
+	if part != "" {
+		ub.AppendQuery(api.QueryKeyPart, part)
+	}
+	if enc != "" {
+		ub.AppendQuery(api.QueryKeyEncoding, enc)
+	}
+	if fragment != "" {
+		ub.SetFragment(fragment)
+	}
+
+	ref := ast.ParseReference(ub.String())
+	ref.State = ast.RefStateFound
+	return ref
+}
