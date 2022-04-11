@@ -15,14 +15,12 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/strfun"
 )
 
 // visitor writes the abstract syntax tree to an io.Writer.
@@ -125,42 +123,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	return nil
 }
 
-var mapMetaKey = map[string]string{
-	api.KeyCopyright: "copyright",
-	api.KeyLicense:   "license",
-}
-
-func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	ignore := v.setupIgnoreSet()
-	ignore.Set(api.KeyTitle)
-	if tags, ok := m.Get(api.KeyAllTags); ok {
-		v.writeTags(tags)
-		ignore.Set(api.KeyAllTags)
-		ignore.Set(api.KeyTags)
-	} else if tags, ok = m.Get(api.KeyTags); ok {
-		v.writeTags(tags)
-		ignore.Set(api.KeyTags)
-	}
-
-	for _, p := range m.ComputedPairs() {
-		key := p.Key
-		if ignore.Has(key) {
-			continue
-		}
-		value := p.Value
-		if m.Type(key) == meta.TypeZettelmarkup {
-			if v := v.evalValue(value, evalMeta); v != "" {
-				value = v
-			}
-		}
-		if mKey, ok := mapMetaKey[key]; ok {
-			v.writeMeta("", mKey, value)
-		} else {
-			v.writeMeta("zs-", key, value)
-		}
-	}
-}
-
 func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string {
 	var buf bytes.Buffer
 	is := evalMeta(value)
@@ -169,17 +131,6 @@ func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string 
 		return buf.String()
 	}
 	return ""
-}
-
-func (v *visitor) setupIgnoreSet() strfun.Set {
-	if v.he.ignoreMeta == nil {
-		return make(strfun.Set)
-	}
-	result := make(strfun.Set, len(v.he.ignoreMeta))
-	for k := range v.he.ignoreMeta {
-		result.Set(k)
-	}
-	return result
 }
 
 func (v *visitor) writeTags(tags string) {

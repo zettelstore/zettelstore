@@ -34,7 +34,6 @@ import (
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/webui/htmlgen"
@@ -98,7 +97,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		box:      mgr,
 		policy:   pol,
 
-		genhtml: htmlgen.Create("", false, nil),
+		genhtml: htmlgen.Create("", false),
 		gentext: textenc.Create(),
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
@@ -305,7 +304,8 @@ type htmlEncoder interface {
 
 func (wui *WebUI) getSimpleHTMLEncoder() htmlEncoder { return wui.genhtml }
 func (wui *WebUI) createZettelEncoder() htmlEncoder {
-	return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true, strfun.NewSet(api.KeyTitle, api.KeyLang))
+	// return createGenerator(wui.rtConfig.GetMarkerExternal(), true)
+	return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true)
 }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.

@@ -24,15 +24,14 @@ import (
 )
 
 // Create a new encoder.
-func Create(extMarker string, newWindow bool, ignoreMeta strfun.Set) *Encoder {
-	return &Encoder{extMarker: extMarker, newWindow: newWindow, ignoreMeta: ignoreMeta}
+func Create(extMarker string, newWindow bool) *Encoder {
+	return &Encoder{extMarker: extMarker, newWindow: newWindow}
 }
 
 // Encoder encapsulates the encoder itself
 type Encoder struct {
 	extMarker   string
 	newWindow   bool
-	ignoreMeta  strfun.Set
 	footnotes   []footnoteInfo // Stores footnotes detected while encoding
 	footnoteNum int
 }
@@ -73,8 +72,39 @@ func (he *Encoder) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (stri
 	}
 
 	// Write other metadata
-	v.acceptMeta(m, evalMeta)
+	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
+	if tags, ok := m.Get(api.KeyAllTags); ok {
+		v.writeTags(tags)
+		ignore.Set(api.KeyAllTags)
+		ignore.Set(api.KeyTags)
+	} else if tags, ok = m.Get(api.KeyTags); ok {
+		v.writeTags(tags)
+		ignore.Set(api.KeyTags)
+	}
+
+	for _, p := range m.ComputedPairs() {
+		key := p.Key
+		if ignore.Has(key) {
+			continue
+		}
+		value := p.Value
+		if m.Type(key) == meta.TypeZettelmarkup {
+			if v := v.evalValue(value, evalMeta); v != "" {
+				value = v
+			}
+		}
+		if mKey, ok := mapMetaKey[key]; ok {
+			v.writeMeta("", mKey, value)
+		} else {
+			v.writeMeta("zs-", key, value)
+		}
+	}
 	return v.makeResult(&buf)
+}
+
+var mapMetaKey = map[string]string{
+	api.KeyCopyright: "copyright",
+	api.KeyLicense:   "license",
 }
 
 // BlocksString encodes a block slice.
