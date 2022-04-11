@@ -17,7 +17,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -46,7 +46,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		if phrase == "" {
 			zmkTitle := zm.GetDefault(api.KeyTitle, "")
 			isTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
-			encdr := encoder.Create(api.EncoderText, nil)
+			encdr := textenc.Create()
 			var b strings.Builder
 			_, err = encdr.WriteInlines(&b, &isTitle)
 			if err == nil {

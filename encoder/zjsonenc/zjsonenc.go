@@ -26,17 +26,17 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderZJSON, encoder.Info{
-		Create: func(env *encoder.Environment) encoder.Encoder { return &jsonDetailEncoder{env: env} },
+		Create: func() encoder.Encoder { return &myJE },
 	})
 }
 
-type jsonDetailEncoder struct {
-	env *encoder.Environment
-}
+type zjsonEncoder struct{}
+
+var myJE zjsonEncoder
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newDetailVisitor(w, je)
+func (je *zjsonEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newDetailVisitor(w)
 	v.b.WriteString(`{"meta":`)
 	v.writeMeta(zn.InhMeta, evalMeta)
 	v.b.WriteString(`,"content":`)
@@ -47,28 +47,28 @@ func (je *jsonDetailEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMe
 }
 
 // WriteMeta encodes meta data as JSON.
-func (je *jsonDetailEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newDetailVisitor(w, je)
+func (je *zjsonEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newDetailVisitor(w)
 	v.writeMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
 }
 
-func (je *jsonDetailEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (je *zjsonEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return je.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *jsonDetailEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	v := newDetailVisitor(w, je)
+func (je *zjsonEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	v := newDetailVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	v := newDetailVisitor(w, je)
+func (je *zjsonEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	v := newDetailVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
@@ -77,13 +77,10 @@ func (je *jsonDetailEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
 	b       encoder.EncWriter
-	env     *encoder.Environment
 	inVerse bool // Visiting a verse block: save spaces in ZJSON object
 }
 
-func newDetailVisitor(w io.Writer, je *jsonDetailEncoder) *visitor {
-	return &visitor{b: encoder.NewEncWriter(w), env: je.env}
-}
+func newDetailVisitor(w io.Writer) *visitor { return &visitor{b: encoder.NewEncWriter(w)} }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {

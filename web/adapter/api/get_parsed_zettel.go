@@ -18,11 +18,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -53,11 +51,7 @@ func (a *API) writeEncodedZettelPart(
 	evalMeta encoder.EvalMetaFunc,
 	enc api.EncodingEnum, encStr string, part partType,
 ) {
-	env := encoder.Environment{
-		Lang:       config.GetLang(zn.InhMeta, a.rtConfig),
-		IgnoreMeta: strfun.NewSet(api.KeyLang),
-	}
-	encdr := encoder.Create(enc, &env)
+	encdr := encoder.Create(enc)
 	if encdr == nil {
 		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid.String(), encStr))
 		return

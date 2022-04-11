@@ -45,7 +45,7 @@ func TestEncoderAvailability(t *testing.T) {
 	t.Parallel()
 	encoderMissing := false
 	for _, enc := range encodings {
-		enc := encoder.Create(enc, nil)
+		enc := encoder.Create(enc)
 		if enc == nil {
 			t.Errorf("No encoder for %q found", enc)
 			encoderMissing = true
@@ -79,14 +79,14 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc, nil).WriteBlocks(&buf, ast)
+			encoder.Create(enc).WriteBlocks(&buf, ast)
 			buf.Reset()
 		})
 	}
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
-	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
+	zmkEncoder := encoder.Create(api.EncoderZmk)
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {

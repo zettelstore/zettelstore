@@ -25,17 +25,17 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderNative, encoder.Info{
-		Create: func(env *encoder.Environment) encoder.Encoder { return &nativeEncoder{env: env} },
+		Create: func() encoder.Encoder { return &myNE },
 	})
 }
 
-type nativeEncoder struct {
-	env *encoder.Environment
-}
+type nativeEncoder struct{}
+
+var myNE nativeEncoder
 
 // WriteZettel encodes the zettel to the writer.
 func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(w, ne)
+	v := newVisitor(w)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('\n')
 	ast.Walk(v, &zn.Ast)
@@ -45,7 +45,7 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta e
 
 // WriteMeta encodes meta data in native format.
 func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(w, ne)
+	v := newVisitor(w)
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
@@ -57,7 +57,7 @@ func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, err
 
 // WriteBlocks writes a block slice to the writer
 func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	v := newVisitor(w, ne)
+	v := newVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
@@ -65,7 +65,7 @@ func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, erro
 
 // WriteInlines writes an inline slice to the writer
 func (ne *nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	v := newVisitor(w, ne)
+	v := newVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
@@ -75,11 +75,10 @@ func (ne *nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, er
 type visitor struct {
 	b     encoder.EncWriter
 	level int
-	env   *encoder.Environment
 }
 
-func newVisitor(w io.Writer, enc *nativeEncoder) *visitor {
-	return &visitor{b: encoder.NewEncWriter(w), env: enc.env}
+func newVisitor(w io.Writer) *visitor {
+	return &visitor{b: encoder.NewEncWriter(w)}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {

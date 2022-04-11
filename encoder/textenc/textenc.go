@@ -22,19 +22,19 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderText, encoder.Info{
-		Create: func(*encoder.Environment) encoder.Encoder { return Create() },
+		Create: func() encoder.Encoder { return Create() },
 	})
 }
 
 // Create an encoder.
-func Create() encoder.Encoder { return &myTE }
+func Create() *Encoder { return &myTE }
 
-type textEncoder struct{}
+type Encoder struct{}
 
-var myTE textEncoder // Only a singleton is required.
+var myTE Encoder // Only a singleton is required.
 
 // WriteZettel writes metadata and content.
-func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (te *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	te.WriteMeta(&v.b, zn.InhMeta, evalMeta)
 	v.visitBlockSlice(&zn.Ast)
@@ -43,7 +43,7 @@ func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 }
 
 // WriteMeta encodes metadata as text.
-func (te *textEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (te *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	buf := encoder.NewEncWriter(w)
 	for _, pair := range m.ComputedPairs() {
 		switch meta.Type(pair.Key) {
@@ -71,12 +71,12 @@ func writeTagSet(buf *encoder.EncWriter, tags []string) {
 
 }
 
-func (te *textEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (te *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return te.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*textEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
 	v.visitBlockSlice(bs)
 	length, err := v.b.Flush()
@@ -84,7 +84,7 @@ func (*textEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*textEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()

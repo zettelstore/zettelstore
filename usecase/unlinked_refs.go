@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
@@ -38,7 +38,7 @@ type UnlinkedReferencesPort interface {
 type UnlinkedReferences struct {
 	port     UnlinkedReferencesPort
 	rtConfig config.Config
-	encText  encoder.Encoder
+	encText  *textenc.Encoder
 }
 
 // NewUnlinkedReferences creates a new use case.
@@ -46,7 +46,7 @@ func NewUnlinkedReferences(port UnlinkedReferencesPort, rtConfig config.Config) 
 	return UnlinkedReferences{
 		port:     port,
 		rtConfig: rtConfig,
-		encText:  encoder.Create(api.EncoderText, nil),
+		encText:  textenc.Create(),
 	}
 }
 

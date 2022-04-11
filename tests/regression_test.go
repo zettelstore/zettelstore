@@ -121,7 +121,7 @@ func getBoxName(p box.ManagedBox, root string) string {
 func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.EncodingEnum) {
 	t.Helper()
 
-	if enc := encoder.Create(enc, nil); enc != nil {
+	if enc := encoder.Create(enc); enc != nil {
 		var buf bytes.Buffer
 		enc.WriteMeta(&buf, zn.Meta, parser.ParseMetadata)
 		checkFileContent(t, resultName, buf.String())

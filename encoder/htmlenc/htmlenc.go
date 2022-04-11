@@ -22,36 +22,28 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 )
 
 func init() {
 	encoder.Register(api.EncoderHTML, encoder.Info{
-		Create: func(env *encoder.Environment) encoder.Encoder {
+		Create: func() encoder.Encoder {
 			return &chtmlEncoder{
-				env:      env,
-				zjsonEnc: encoder.Create(api.EncoderZJSON, nil),
-				textEnc:  encoder.Create(api.EncoderText, nil),
+				zjsonEnc: encoder.Create(api.EncoderZJSON),
+				textEnc:  textenc.Create(),
 			}
 		},
 	})
 }
 
 type chtmlEncoder struct {
-	env      *encoder.Environment
 	zjsonEnc encoder.Encoder
-	textEnc  encoder.Encoder
+	textEnc  *textenc.Encoder
 }
 
 // WriteZettel encodes a full zettel as HTML5.
 func (he *chtmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	if env := he.env; env != nil && env.Lang == "" {
-		io.WriteString(w, "<html>")
-	} else {
-		io.WriteString(w, `<html lang="`)
-		io.WriteString(w, env.Lang)
-		io.WriteString(w, `">`)
-	}
-	io.WriteString(w, "\n<head>\n<meta charset=\"utf-8\">\n")
+	io.WriteString(w, "<html>\n<head>\n<meta charset=\"utf-8\">\n")
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		io.WriteString(w, "<title>")

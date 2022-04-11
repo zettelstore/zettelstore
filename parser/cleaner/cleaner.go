@@ -15,9 +15,8 @@ import (
 	"bytes"
 	"strconv"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/strfun"
 )
 
@@ -29,7 +28,7 @@ func CleanInlineSlice(is *ast.InlineSlice) { cleanNode(is) }
 
 func cleanNode(n ast.Node) {
 	cv := cleanVisitor{
-		textEnc: encoder.Create(api.EncoderText, nil),
+		textEnc: textenc.Create(),
 		hasMark: false,
 		doMark:  false,
 	}
@@ -41,7 +40,7 @@ func cleanNode(n ast.Node) {
 }
 
 type cleanVisitor struct {
-	textEnc encoder.Encoder
+	textEnc *textenc.Encoder
 	ids     map[string]ast.Node
 	hasMark bool
 	doMark  bool

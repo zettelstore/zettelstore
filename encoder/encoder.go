@@ -45,32 +45,24 @@ var (
 )
 
 // Create builds a new encoder with the given options.
-func Create(enc api.EncodingEnum, env *Environment) Encoder {
+func Create(enc api.EncodingEnum) Encoder {
 	if info, ok := registry[enc]; ok {
-		return info.Create(env)
+		return info.Create()
 	}
 	return nil
 }
 
 // Info stores some data about an encoder.
 type Info struct {
-	Create  func(*Environment) Encoder
-	Default bool
+	Create func() Encoder
 }
 
 var registry = map[api.EncodingEnum]Info{}
-var defEncoding api.EncodingEnum
 
 // Register the encoder for later retrieval.
 func Register(enc api.EncodingEnum, info Info) {
 	if _, ok := registry[enc]; ok {
 		panic(fmt.Sprintf("Encoder %q already registered", enc))
-	}
-	if info.Default {
-		if defEncoding != api.EncoderUnknown && defEncoding != enc {
-			panic(fmt.Sprintf("Default encoder already set: %q, new encoding: %q", defEncoding, enc))
-		}
-		defEncoding = enc
 	}
 	registry[enc] = info
 }
@@ -86,11 +78,8 @@ func GetEncodings() []api.EncodingEnum {
 
 // GetDefaultEncoding returns the encoding that should be used as default.
 func GetDefaultEncoding() api.EncodingEnum {
-	if defEncoding != api.EncoderUnknown {
-		return defEncoding
-	}
 	if _, ok := registry[api.EncoderZJSON]; ok {
 		return api.EncoderZJSON
 	}
-	panic("No default encoding given")
+	panic("No ZJSON encoding registered")
 }

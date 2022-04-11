@@ -41,9 +41,7 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 		m.GetDefault(api.KeySyntax, api.ValueSyntaxZmk),
 		nil,
 	)
-	encdr := encoder.Create(api.Encoder(enc), &encoder.Environment{
-		Lang: m.GetDefault(api.KeyLang, api.ValueLangEN),
-	})
+	encdr := encoder.Create(api.Encoder(enc))
 	if encdr == nil {
 		fmt.Fprintf(os.Stderr, "Unknown format %q\n", enc)
 		return 2, nil
