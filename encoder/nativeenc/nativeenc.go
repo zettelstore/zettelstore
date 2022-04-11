@@ -24,9 +24,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderNative, encoder.Info{
-		Create: func() encoder.Encoder { return &myNE },
-	})
+	encoder.Register(api.EncoderNative, func() encoder.Encoder { return &myNE })
 }
 
 type nativeEncoder struct{}

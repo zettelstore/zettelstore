@@ -46,25 +46,23 @@ var (
 
 // Create builds a new encoder with the given options.
 func Create(enc api.EncodingEnum) Encoder {
-	if info, ok := registry[enc]; ok {
-		return info.Create()
+	if create, ok := registry[enc]; ok {
+		return create()
 	}
 	return nil
 }
 
-// Info stores some data about an encoder.
-type Info struct {
-	Create func() Encoder
-}
+// CreateFunc produces a new encoder.
+type CreateFunc func() Encoder
 
-var registry = map[api.EncodingEnum]Info{}
+var registry = map[api.EncodingEnum]CreateFunc{}
 
 // Register the encoder for later retrieval.
-func Register(enc api.EncodingEnum, info Info) {
+func Register(enc api.EncodingEnum, create CreateFunc) {
 	if _, ok := registry[enc]; ok {
 		panic(fmt.Sprintf("Encoder %q already registered", enc))
 	}
-	registry[enc] = info
+	registry[enc] = create
 }
 
 // GetEncodings returns all registered encodings, ordered by encoding value.

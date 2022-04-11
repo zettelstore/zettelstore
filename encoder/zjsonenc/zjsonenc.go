@@ -25,17 +25,18 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderZJSON, encoder.Info{
-		Create: func() encoder.Encoder { return &myJE },
-	})
+	encoder.Register(api.EncoderZJSON, func() encoder.Encoder { return Create() })
 }
 
-type zjsonEncoder struct{}
+// Create a ZJSON encoder
+func Create() *Encoder { return &myJE }
 
-var myJE zjsonEncoder
+type Encoder struct{}
+
+var myJE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *zjsonEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (je *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w)
 	v.b.WriteString(`{"meta":`)
 	v.writeMeta(zn.InhMeta, evalMeta)
@@ -47,19 +48,19 @@ func (je *zjsonEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta en
 }
 
 // WriteMeta encodes meta data as JSON.
-func (je *zjsonEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (je *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w)
 	v.writeMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
 }
 
-func (je *zjsonEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (je *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return je.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *zjsonEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (je *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newDetailVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
@@ -67,7 +68,7 @@ func (je *zjsonEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error
 }
 
 // WriteInlines writes an inline slice to the writer
-func (je *zjsonEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (je *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newDetailVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()

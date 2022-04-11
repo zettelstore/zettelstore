@@ -24,9 +24,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderZmk, encoder.Info{
-		Create: func() encoder.Encoder { return &myZE },
-	})
+	encoder.Register(api.EncoderZmk, func() encoder.Encoder { return &myZE })
 }
 
 type zmkEncoder struct{}

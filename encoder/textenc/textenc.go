@@ -21,9 +21,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderText, encoder.Info{
-		Create: func() encoder.Encoder { return Create() },
-	})
+	encoder.Register(api.EncoderText, func() encoder.Encoder { return Create() })
 }
 
 // Create an encoder.
