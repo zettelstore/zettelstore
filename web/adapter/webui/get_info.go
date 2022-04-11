@@ -103,7 +103,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(&ast.BlockSlice{}, enc)
+		endnotes, err := enc.BlocksString(&ast.BlockSlice{})
 		if err != nil {
 			endnotes = ""
 		}

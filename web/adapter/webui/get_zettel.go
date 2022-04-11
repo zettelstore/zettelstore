@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
@@ -54,14 +53,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		enc := wui.createZettelEncoder()
-		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
+		metaHeader, err := enc.MetaString(zn.InhMeta, evalMeta)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, enc)
-		htmlContent, err := encodeBlocks(&zn.Ast, enc)
+		htmlContent, err := enc.BlocksString(&zn.Ast)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -139,20 +138,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 	}
 }
 
-// encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is *ast.InlineSlice, enc htmlEncoder) (string, error) {
-	if is == nil || len(*is) == 0 {
-		return "", nil
-	}
-
-	var buf bytes.Buffer
-	_, err := enc.WriteInlines(&buf, is)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
 func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error) {
 	if is == nil || len(*is) == 0 {
 		return "", nil
@@ -160,24 +145,6 @@ func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error
 
 	var buf bytes.Buffer
 	_, err := enc.WriteInlines(&buf, is)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
-func encodeBlocks(bs *ast.BlockSlice, enc htmlEncoder) (string, error) {
-	var buf bytes.Buffer
-	_, err := enc.WriteBlocks(&buf, bs)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
-}
-
-func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc htmlEncoder) (string, error) {
-	var buf bytes.Buffer
-	_, err := enc.WriteMeta(&buf, m, evalMeta)
 	if err != nil {
 		return "", err
 	}

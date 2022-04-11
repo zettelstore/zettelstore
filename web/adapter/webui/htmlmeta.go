@@ -198,7 +198,7 @@ func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate 
 
 func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, enc htmlEncoder) string {
 	is := evalMetadata(value)
-	result, err := encodeInlines(&is, enc)
+	result, err := enc.InlinesString(&is)
 	if err != nil {
 		return err.Error()
 	}

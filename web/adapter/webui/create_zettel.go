@@ -54,7 +54,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			htmlTitle, err2 := encodeInlines(&title, wui.getSimpleHTMLEncoder())
+			htmlTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&title)
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return

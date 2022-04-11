@@ -12,7 +12,6 @@ package htmlgen
 
 import (
 	"bytes"
-	"io"
 	"strconv"
 	"strings"
 
@@ -36,12 +35,19 @@ type visitor struct {
 	inlinePos    int // Element position in inline list node
 }
 
-func newVisitor(he *Encoder, w io.Writer) *visitor {
+func newVisitor(he *Encoder, buf *bytes.Buffer) *visitor {
 	return &visitor{
 		he:      he,
-		b:       encoder.NewEncWriter(w),
+		b:       encoder.NewEncWriter(buf),
 		textEnc: textenc.Create(),
 	}
+}
+
+func (v *visitor) makeResult(buf *bytes.Buffer) (string, error) {
+	if _, err := v.b.Flush(); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {

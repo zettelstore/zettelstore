@@ -14,7 +14,7 @@
 package htmlgen
 
 import (
-	"io"
+	"bytes"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -60,9 +60,10 @@ func (he *Encoder) popFootnote() (*ast.FootnoteNode, int) {
 	return fni.fn, fni.num
 }
 
-// WriteMeta encodes meta data as HTML5.
-func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(he, w)
+// MetaString encodes meta data as HTML5.
+func (he *Encoder) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (string, error) {
+	var buf bytes.Buffer
+	v := newVisitor(he, &buf)
 
 	// Write title
 	if title, ok := m.Get(api.KeyTitle); ok {
@@ -73,23 +74,25 @@ func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMet
 
 	// Write other metadata
 	v.acceptMeta(m, evalMeta)
-	length, err := v.b.Flush()
-	return length, err
+	return v.makeResult(&buf)
 }
 
-// WriteBlocks encodes a block slice.
-func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	v := newVisitor(he, w)
+// BlocksString encodes a block slice.
+func (he *Encoder) BlocksString(bs *ast.BlockSlice) (string, error) {
+	var buf bytes.Buffer
+	v := newVisitor(he, &buf)
 	ast.Walk(v, bs)
 	v.writeEndnotes()
-	length, err := v.b.Flush()
-	return length, err
+	return v.makeResult(&buf)
 }
 
-// WriteInlines writes an inline slice to the writer
-func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	v := newVisitor(he, w)
+// InlinesString writes an inline slice to the writer
+func (he *Encoder) InlinesString(is *ast.InlineSlice) (string, error) {
+	if is == nil || len(*is) == 0 {
+		return "", nil
+	}
+	var buf bytes.Buffer
+	v := newVisitor(he, &buf)
 	ast.Walk(v, is)
-	length, err := v.b.Flush()
-	return length, err
+	return v.makeResult(&buf)
 }
