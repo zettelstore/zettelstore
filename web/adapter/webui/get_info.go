@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -71,6 +72,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{Lang: lang}
+		enc := chtmlenc.Create(&envHTML)
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
@@ -82,7 +84,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 				func(val string) ast.InlineSlice {
 					return evaluate.RunMetadata(ctx, val, &envEval)
 				},
-				&envHTML)
+				enc)
 			metaData[i] = metaDataInfo{p.Key, buf.String()}
 		}
 		summary := collect.References(zn)
@@ -103,7 +105,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := encodeBlocks(&ast.BlockSlice{}, api.EncoderCHTML, &envHTML)
+		endnotes, err := encodeBlocks(&ast.BlockSlice{}, enc)
 		if err != nil {
 			endnotes = ""
 		}

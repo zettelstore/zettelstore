@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -266,8 +267,9 @@ func (wui *WebUI) buildHTMLMetaList(
 			lang = defaultLang
 		}
 		env := encoder.Environment{Lang: lang, Interactive: true}
+		encHTML := chtmlenc.Create(&env)
 		metas = append(metas, simpleLink{
-			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, &env),
+			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, encHTML),
 			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),
 		})
 	}

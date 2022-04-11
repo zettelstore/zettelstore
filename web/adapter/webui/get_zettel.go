@@ -12,7 +12,6 @@ package webui
 
 import (
 	"bytes"
-	"errors"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -22,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
@@ -62,14 +62,15 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			NewWindow:      true,
 			IgnoreMeta:     strfun.NewSet(api.KeyTitle, api.KeyLang),
 		}
-		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, api.EncoderCHTML, &envHTML)
+		enc := chtmlenc.Create(&envHTML)
+		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
-		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, &envHTML)
-		htmlContent, err := encodeBlocks(&zn.Ast, api.EncoderCHTML, &envHTML)
+		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, enc)
+		htmlContent, err := encodeBlocks(&zn.Ast, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -147,52 +148,32 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 	}
 }
 
-// errNoSuchEncoding signals an unsupported encoding encoding
-var errNoSuchEncoding = errors.New("no such encoding")
-
 // encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is *ast.InlineSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
+func encodeInlines(is *ast.InlineSlice, enc encoder.Encoder) (string, error) {
 	if is == nil {
 		return "", nil
 	}
-	encdr := encoder.Create(enc, env)
-	if encdr == nil {
-		return "", errNoSuchEncoding
-	}
 
 	var buf bytes.Buffer
-	_, err := encdr.WriteInlines(&buf, is)
+	_, err := enc.WriteInlines(&buf, is)
 	if err != nil {
 		return "", err
 	}
 	return buf.String(), nil
 }
 
-func encodeBlocks(bs *ast.BlockSlice, enc api.EncodingEnum, env *encoder.Environment) (string, error) {
-	encdr := encoder.Create(enc, env)
-	if encdr == nil {
-		return "", errNoSuchEncoding
-	}
-
+func encodeBlocks(bs *ast.BlockSlice, enc encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	_, err := encdr.WriteBlocks(&buf, bs)
+	_, err := enc.WriteBlocks(&buf, bs)
 	if err != nil {
 		return "", err
 	}
 	return buf.String(), nil
 }
 
-func encodeMeta(
-	m *meta.Meta, evalMeta encoder.EvalMetaFunc,
-	enc api.EncodingEnum, env *encoder.Environment,
-) (string, error) {
-	encdr := encoder.Create(enc, env)
-	if encdr == nil {
-		return "", errNoSuchEncoding
-	}
-
+func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc encoder.Encoder) (string, error) {
 	var buf bytes.Buffer
-	_, err := encdr.WriteMeta(&buf, m, evalMeta)
+	_, err := enc.WriteMeta(&buf, m, evalMeta)
 	if err != nil {
 		return "", err
 	}

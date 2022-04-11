@@ -22,11 +22,16 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderText, encoder.Info{
-		Create: func(*encoder.Environment) encoder.Encoder { return &textEncoder{} },
+		Create: func(*encoder.Environment) encoder.Encoder { return Create() },
 	})
 }
 
+// Create an encoder.
+func Create() encoder.Encoder { return &myTE }
+
 type textEncoder struct{}
+
+var myTE textEncoder // Only a singleton is required.
 
 // WriteZettel writes metadata and content.
 func (te *textEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {

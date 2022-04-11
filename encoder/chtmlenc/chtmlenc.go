@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------------
 
 // Package chtmlenc encodes the abstract syntax tree into HTML5 (deprecated).
+// It is only used for the WebUI and will be deprecated by a software that
+// uses the zettelstore-client HTML encoder.
 package chtmlenc
 
 import (
@@ -22,9 +24,12 @@ import (
 
 func init() {
 	encoder.Register(api.EncoderCHTML, encoder.Info{
-		Create: func(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} },
+		Create: Create,
 	})
 }
+
+// Create a new encoder.
+func Create(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} }
 
 type htmlEncoder struct {
 	env *encoder.Environment

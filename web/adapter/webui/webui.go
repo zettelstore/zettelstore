@@ -29,6 +29,8 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/chtmlenc"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
@@ -321,9 +323,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseMetadata(title)
 		env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-		menuTitle, err2 := encodeInlines(&astTitle, api.EncoderCHTML, &env)
+		menuTitle, err2 := encodeInlines(&astTitle, chtmlenc.Create(&env))
 		if err2 != nil {
-			menuTitle, err2 = encodeInlines(&astTitle, api.EncoderText, nil)
+			menuTitle, err2 = encodeInlines(&astTitle, textenc.Create())
 			if err2 != nil {
 				menuTitle = title
 			}

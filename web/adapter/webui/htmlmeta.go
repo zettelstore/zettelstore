@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 )
@@ -39,7 +40,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	key, value string,
 	getTextTitle getTextTitleFunc,
 	evalMetadata evalMetadataFunc,
-	envEnc *encoder.Environment,
+	enc encoder.Encoder,
 ) {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
@@ -67,7 +68,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeWordSet:
 		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, api.EncoderCHTML, envEnc))
+		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, enc))
 	default:
 		html.Escape(w, value)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -178,7 +179,7 @@ func (wui *WebUI) makeGetTextTitle(
 func (wui *WebUI) encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
 	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
-	envHTML *encoder.Environment,
+	encHTML encoder.Encoder,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
@@ -186,7 +187,7 @@ func (wui *WebUI) encodeTitleAsHTML(
 		func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, plainTitle, envEval)
 		},
-		api.EncoderCHTML, envHTML)
+		encHTML)
 }
 
 func (wui *WebUI) encodeTitleAsText(
@@ -198,18 +199,15 @@ func (wui *WebUI) encodeTitleAsText(
 		func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, plainTitle, nil)
 		},
-		api.EncoderText, nil)
+		textenc.Create())
 }
 
-func encodeZmkMetadata(
-	value string, evalMetadata evalMetadataFunc,
-	enc api.EncodingEnum, envHTML *encoder.Environment,
-) string {
+func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, enc encoder.Encoder) string {
 	is := evalMetadata(value)
 	if len(is) == 0 {
 		return ""
 	}
-	result, err := encodeInlines(&is, enc, envHTML)
+	result, err := encodeInlines(&is, enc)
 	if err != nil {
 		return err.Error()
 	}
