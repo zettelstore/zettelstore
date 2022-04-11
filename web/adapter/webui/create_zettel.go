@@ -18,7 +18,6 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
@@ -57,8 +56,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-			htmlTitle, err2 := encodeInlines(&title, htmlgen.Create(&env))
+			htmlTitle, err2 := encodeInlines(&title, htmlgen.Create(config.GetLang(m, wui.rtConfig), "", false, false, nil))
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return

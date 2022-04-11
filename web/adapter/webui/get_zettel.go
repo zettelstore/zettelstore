@@ -55,14 +55,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		envHTML := encoder.Environment{
-			Lang:           lang,
-			Xhtml:          false,
-			MarkerExternal: wui.rtConfig.GetMarkerExternal(),
-			NewWindow:      true,
-			IgnoreMeta:     strfun.NewSet(api.KeyTitle, api.KeyLang),
-		}
-		enc := htmlgen.Create(&envHTML)
+		enc := htmlgen.Create(lang, wui.rtConfig.GetMarkerExternal(), false, true, strfun.NewSet(api.KeyTitle, api.KeyLang))
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -138,7 +131,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
-			ExtNewWindow:  htmlAttrNewWindow(envHTML.NewWindow && hasExtURL),
+			ExtNewWindow:  htmlAttrNewWindow(hasExtURL),
 			Content:       htmlContent,
 			HasFolgeLinks: len(folgeLinks) > 0,
 			FolgeLinks:    folgeLinks,
@@ -162,7 +155,7 @@ func encodeInlines(is *ast.InlineSlice, enc encoder.Encoder) (string, error) {
 	return buf.String(), nil
 }
 
-func encodeBlocks(bs *ast.BlockSlice, enc encoder.Encoder) (string, error) {
+func encodeBlocks(bs *ast.BlockSlice, enc *htmlgen.Encoder) (string, error) {
 	var buf bytes.Buffer
 	_, err := enc.WriteBlocks(&buf, bs)
 	if err != nil {
@@ -171,7 +164,7 @@ func encodeBlocks(bs *ast.BlockSlice, enc encoder.Encoder) (string, error) {
 	return buf.String(), nil
 }
 
-func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc encoder.Encoder) (string, error) {
+func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc *htmlgen.Encoder) (string, error) {
 	var buf bytes.Buffer
 	_, err := enc.WriteMeta(&buf, m, evalMeta)
 	if err != nil {

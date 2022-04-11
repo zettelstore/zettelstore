@@ -22,11 +22,7 @@ import (
 
 func (v *visitor) visitBreak(bn *ast.BreakNode) {
 	if bn.Hard {
-		if v.env.IsXHTML() {
-			v.b.WriteString("<br />\n")
-		} else {
-			v.b.WriteString("<br>\n")
-		}
+		v.b.WriteString("<br>\n")
 	} else {
 		v.b.WriteByte('\n')
 	}
@@ -45,15 +41,13 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		attrs := ln.Attrs.Clone()
 		attrs = attrs.Set("href", ln.Ref.URL.String())
 		attrs = attrs.Set("class", "external")
-		if v.env.HasNewWindow() {
+		if v.he.newWindow {
 			attrs = attrs.Set("target", "_blank").Set("rel", "noopener noreferrer")
 		}
 		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
-		if v.env != nil {
-			v.b.WriteString(v.env.MarkerExternal)
-		}
+		v.b.WriteString(v.he.extMarker)
 	default:
-		if v.env.IsInteractive(v.inInteractive) {
+		if v.he.interactive && v.inInteractive {
 			v.writeSpan(&ln.Inlines, ln.Attrs)
 			return
 		}
@@ -87,11 +81,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	ast.Walk(v, &en.Inlines) // TODO: wrong, must use textenc
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
-	if v.env.IsXHTML() {
-		v.b.WriteString(" />")
-	} else {
-		v.b.WriteByte('>')
-	}
+	v.b.WriteByte('>')
 }
 
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
@@ -107,11 +97,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	ast.Walk(v, &en.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
-	if v.env.IsXHTML() {
-		v.b.WriteString(" />")
-	} else {
-		v.b.WriteByte('>')
-	}
+	v.b.WriteByte('>')
 }
 
 func (v *visitor) visitCite(cn *ast.CiteNode) {
@@ -123,16 +109,16 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
-	if v.env.IsInteractive(v.inInteractive) {
+	if v.he.interactive && v.inInteractive {
 		return
 	}
 
-	n := strconv.Itoa(v.env.AddFootnote(fn))
+	n := strconv.Itoa(v.he.addFootnote(fn))
 	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a class=\"zs-noteref\" href=\"#fn:", n, "\" role=\"doc-noteref\">", n, "</a></sup>")
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
-	if v.env.IsInteractive(v.inInteractive) {
+	if v.he.interactive && v.inInteractive {
 		return
 	}
 	if fragment := mn.Fragment; fragment != "" {

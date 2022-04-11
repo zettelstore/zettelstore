@@ -54,11 +54,8 @@ func (a *API) writeEncodedZettelPart(
 	enc api.EncodingEnum, encStr string, part partType,
 ) {
 	env := encoder.Environment{
-		Lang:           config.GetLang(zn.InhMeta, a.rtConfig),
-		Xhtml:          false,
-		MarkerExternal: "",
-		NewWindow:      false,
-		IgnoreMeta:     strfun.NewSet(api.KeyLang),
+		Lang:       config.GetLang(zn.InhMeta, a.rtConfig),
+		IgnoreMeta: strfun.NewSet(api.KeyLang),
 	}
 	encdr := encoder.Create(enc, &env)
 	if encdr == nil {

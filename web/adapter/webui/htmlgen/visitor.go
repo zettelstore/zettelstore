@@ -22,12 +22,13 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/strfun"
 )
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	env           *encoder.Environment
+	he            *Encoder
 	b             encoder.EncWriter
 	visibleSpace  bool // Show space character in plain text
 	inVerse       bool // In verse block
@@ -36,11 +37,11 @@ type visitor struct {
 	inlinePos     int // Element position in inline list node
 }
 
-func newVisitor(he *htmlEncoder, w io.Writer) *visitor {
+func newVisitor(he *Encoder, w io.Writer) *visitor {
 	return &visitor{
-		env:     he.env,
+		he:      he,
 		b:       encoder.NewEncWriter(w),
-		textEnc: encoder.Create(api.EncoderText, nil),
+		textEnc: textenc.Create(),
 	}
 }
 
@@ -72,11 +73,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.HRuleNode:
 		v.b.WriteString("<hr")
 		v.visitAttributes(n.Attrs)
-		if v.env.IsXHTML() {
-			v.b.WriteString(" />")
-		} else {
-			v.b.WriteBytes('>')
-		}
+		v.b.WriteBytes('>')
 	case *ast.NestedListNode:
 		v.visitNestedList(n)
 	case *ast.DescriptionListNode:
@@ -94,7 +91,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeHTMLEscaped(n.Tag)
 		v.b.WriteString("</span>")
 	case *ast.SpaceNode:
-		if v.inVerse || v.env.IsXHTML() {
+		if v.inVerse {
 			v.b.WriteString(n.Lexeme)
 		} else {
 			v.b.WriteByte(' ')
@@ -170,11 +167,11 @@ func (v *visitor) evalValue(value string, evalMeta encoder.EvalMetaFunc) string 
 }
 
 func (v *visitor) setupIgnoreSet() strfun.Set {
-	if v.env == nil || v.env.IgnoreMeta == nil {
+	if v.he.ignoreMeta == nil {
 		return make(strfun.Set)
 	}
-	result := make(strfun.Set, len(v.env.IgnoreMeta))
-	for k := range v.env.IgnoreMeta {
+	result := make(strfun.Set, len(v.he.ignoreMeta))
+	for k := range v.he.ignoreMeta {
 		result.Set(k)
 	}
 	return result
@@ -198,7 +195,7 @@ func (v *visitor) writeMeta(prefix, key, value string) {
 }
 
 func (v *visitor) writeEndnotes() {
-	fn, fnNum := v.env.PopFootnote()
+	fn, fnNum := v.he.popFootnote()
 	if fn == nil {
 		return
 	}
@@ -211,7 +208,7 @@ func (v *visitor) writeEndnotes() {
 			" <a class=\"zs-endnote-backref\" href=\"#fnref:",
 			n,
 			"\" role=\"doc-backlink\">&#x21a9;&#xfe0e;</a></li>\n")
-		fn, fnNum = v.env.PopFootnote()
+		fn, fnNum = v.he.popFootnote()
 	}
 	v.b.WriteString("</ol>\n")
 }

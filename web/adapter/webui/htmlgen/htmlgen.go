@@ -20,25 +20,56 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/strfun"
 )
 
 // Create a new encoder.
-func Create(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} }
+func Create(lang, extMarker string, interactive, newWindow bool, ignoreMeta strfun.Set) *Encoder {
+	return &Encoder{lang: lang, extMarker: extMarker, interactive: interactive, newWindow: newWindow, ignoreMeta: ignoreMeta}
+}
 
-type htmlEncoder struct {
-	env *encoder.Environment
+// Encoder encapsulates the encoder itself
+type Encoder struct {
+	lang        string
+	extMarker   string
+	interactive bool
+	newWindow   bool
+	ignoreMeta  strfun.Set
+	footnotes   []footnoteInfo // Stores footnotes detected while encoding
+	footnoteNum int
+}
+type footnoteInfo struct {
+	fn  *ast.FootnoteNode
+	num int
+}
+
+// addFootnote adds a footnote node to the environment and returns the number of that footnote.
+func (he *Encoder) addFootnote(fn *ast.FootnoteNode) int {
+	he.footnoteNum++
+	he.footnotes = append(he.footnotes, footnoteInfo{fn: fn, num: he.footnoteNum})
+	return he.footnoteNum
+}
+
+// popFootnote returns the next footnote and removes it from the list.
+func (he *Encoder) popFootnote() (*ast.FootnoteNode, int) {
+	if len(he.footnotes) == 0 {
+		he.footnotes = nil
+		he.footnoteNum = 0
+		return nil, -1
+	}
+	fni := he.footnotes[0]
+	he.footnotes = he.footnotes[1:]
+	return fni.fn, fni.num
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(he, w)
-	if !he.env.IsXHTML() {
-		v.b.WriteString("<!DOCTYPE html>\n")
-	}
-	if env := he.env; env != nil && env.Lang == "" {
+
+	if he.lang == "" {
 		v.b.WriteStrings("<html>\n<head>")
 	} else {
-		v.b.WriteStrings("<html lang=\"", env.Lang, "\">")
+		v.b.WriteStrings("<html lang=\"", he.lang, "\">")
 	}
 	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
@@ -62,7 +93,7 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 }
 
 // WriteMeta encodes meta data as HTML5.
-func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(he, w)
 
 	// Write title
@@ -78,12 +109,12 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 	return length, err
 }
 
-func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return he.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.
-func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(he, w)
 	ast.Walk(v, bs)
 	v.writeEndnotes()
@@ -92,11 +123,9 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error)
 }
 
 // WriteInlines writes an inline slice to the writer
-func (he *htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(he, w)
-	if env := he.env; env != nil {
-		v.inInteractive = env.Interactive
-	}
+	v.inInteractive = he.interactive
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
