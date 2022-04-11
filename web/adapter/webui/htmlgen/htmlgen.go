@@ -24,13 +24,12 @@ import (
 )
 
 // Create a new encoder.
-func Create(lang, extMarker string, newWindow bool, ignoreMeta strfun.Set) *Encoder {
-	return &Encoder{lang: lang, extMarker: extMarker, newWindow: newWindow, ignoreMeta: ignoreMeta}
+func Create(extMarker string, newWindow bool, ignoreMeta strfun.Set) *Encoder {
+	return &Encoder{extMarker: extMarker, newWindow: newWindow, ignoreMeta: ignoreMeta}
 }
 
 // Encoder encapsulates the encoder itself
 type Encoder struct {
-	lang        string
 	extMarker   string
 	newWindow   bool
 	ignoreMeta  strfun.Set
@@ -61,36 +60,6 @@ func (he *Encoder) popFootnote() (*ast.FootnoteNode, int) {
 	return fni.fn, fni.num
 }
 
-// WriteZettel encodes a full zettel as HTML5.
-func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(he, w)
-
-	if he.lang == "" {
-		v.b.WriteStrings("<html>\n<head>")
-	} else {
-		v.b.WriteStrings("<html lang=\"", he.lang, "\">")
-	}
-	v.b.WriteString("\n<head>\n<meta charset=\"utf-8\">\n")
-	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
-	if hasTitle {
-		v.b.WriteStrings("<title>", v.evalValue(plainTitle, evalMeta), "</title>")
-	}
-	v.acceptMeta(zn.InhMeta, evalMeta)
-	v.b.WriteString("\n</head>\n<body>\n")
-	if hasTitle {
-		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
-			v.b.WriteString("<h1>")
-			ast.Walk(v, &isTitle)
-			v.b.WriteString("</h1>\n")
-		}
-	}
-	ast.Walk(v, &zn.Ast)
-	v.writeEndnotes()
-	v.b.WriteString("</body>\n</html>")
-	length, err := v.b.Flush()
-	return length, err
-}
-
 // WriteMeta encodes meta data as HTML5.
 func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(he, w)
@@ -106,10 +75,6 @@ func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMet
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
-}
-
-func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return he.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.

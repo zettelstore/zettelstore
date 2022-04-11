@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
@@ -253,19 +252,10 @@ func (wui *WebUI) listTitleSearch(s *search.Search) string {
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func (wui *WebUI) buildHTMLMetaList(
-	ctx context.Context, metaList []*meta.Meta, evaluate *usecase.Evaluate,
-) []simpleLink {
-	defaultLang := wui.rtConfig.GetDefaultLang()
+func (wui *WebUI) buildHTMLMetaList(ctx context.Context, metaList []*meta.Meta, evaluate *usecase.Evaluate) []simpleLink {
 	metas := make([]simpleLink, 0, len(metaList))
+	encHTML := wui.getSimpleHTMLEncoder()
 	for _, m := range metaList {
-		var lang string
-		if val, ok := m.Get(api.KeyLang); ok {
-			lang = val
-		} else {
-			lang = defaultLang
-		}
-		encHTML := htmlgen.Create(lang, "", false, nil)
 		metas = append(metas, simpleLink{
 			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, encHTML),
 			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),

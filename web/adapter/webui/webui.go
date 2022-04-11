@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -28,10 +29,12 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/adapter/webui/htmlgen"
@@ -48,6 +51,9 @@ type WebUI struct {
 	token    auth.TokenManager
 	box      webuiBox
 	policy   auth.Policy
+
+	genhtml *htmlgen.Encoder
+	gentext *textenc.Encoder
 
 	mxCache       sync.RWMutex
 	templateCache map[id.Zid]*template.Template
@@ -91,6 +97,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		token:    token,
 		box:      mgr,
 		policy:   pol,
+
+		genhtml: htmlgen.Create("", false, nil),
+		gentext: textenc.Create(),
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
 		cssBaseURL:    ab.NewURLBuilder('z').SetZid(api.ZidBaseCSS).String(),
@@ -288,6 +297,17 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
 }
 
+type htmlEncoder interface {
+	WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error)
+	WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error)
+	WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error)
+}
+
+func (wui *WebUI) getSimpleHTMLEncoder() htmlEncoder { return wui.genhtml }
+func (wui *WebUI) createZettelEncoder() htmlEncoder {
+	return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true, strfun.NewSet(api.KeyTitle, api.KeyLang))
+}
+
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
 // If hasURL is false an empty string is returned.
 func htmlAttrNewWindow(hasURL bool) string {
@@ -321,9 +341,9 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		}
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseMetadata(title)
-		menuTitle, err2 := encodeInlines(&astTitle, htmlgen.Create(config.GetLang(m, wui.rtConfig), "", false, nil))
+		menuTitle, err2 := encodeInlines(&astTitle, wui.getSimpleHTMLEncoder())
 		if err2 != nil {
-			menuTitle, err2 = encodeInlines(&astTitle, textenc.Create())
+			menuTitle, err2 = encodeInlinesText(&astTitle, wui.gentext)
 			if err2 != nil {
 				menuTitle = title
 			}

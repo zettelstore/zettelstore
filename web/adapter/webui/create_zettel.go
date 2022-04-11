@@ -18,11 +18,9 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
@@ -51,12 +49,12 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 		case actionNew:
 			m := origZettel.Meta
 			title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
-			textTitle, err2 := encodeInlines(&title, textenc.Create())
+			textTitle, err2 := encodeInlinesText(&title, wui.gentext)
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			htmlTitle, err2 := encodeInlines(&title, htmlgen.Create(config.GetLang(m, wui.rtConfig), "", false, nil))
+			htmlTitle, err2 := encodeInlines(&title, wui.getSimpleHTMLEncoder())
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return

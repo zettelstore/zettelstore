@@ -21,10 +21,9 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
-	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -54,8 +53,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		evalMeta := func(value string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
-		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		enc := htmlgen.Create(lang, wui.rtConfig.GetMarkerExternal(), true, strfun.NewSet(api.KeyTitle, api.KeyLang))
+		enc := wui.createZettelEncoder()
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -87,7 +85,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, lang, textTitle, roleCSSURL, user, &base)
+		wui.makeBaseData(ctx, config.GetLang(zn.InhMeta, wui.rtConfig), textTitle, roleCSSURL, user, &base)
 		base.MetaHeader = metaHeader
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
@@ -142,8 +140,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 }
 
 // encodeInlines returns a string representation of the inline slice.
-func encodeInlines(is *ast.InlineSlice, enc encoder.Encoder) (string, error) {
-	if is == nil {
+func encodeInlines(is *ast.InlineSlice, enc htmlEncoder) (string, error) {
+	if is == nil || len(*is) == 0 {
 		return "", nil
 	}
 
@@ -155,7 +153,20 @@ func encodeInlines(is *ast.InlineSlice, enc encoder.Encoder) (string, error) {
 	return buf.String(), nil
 }
 
-func encodeBlocks(bs *ast.BlockSlice, enc *htmlgen.Encoder) (string, error) {
+func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error) {
+	if is == nil || len(*is) == 0 {
+		return "", nil
+	}
+
+	var buf bytes.Buffer
+	_, err := enc.WriteInlines(&buf, is)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func encodeBlocks(bs *ast.BlockSlice, enc htmlEncoder) (string, error) {
 	var buf bytes.Buffer
 	_, err := enc.WriteBlocks(&buf, bs)
 	if err != nil {
@@ -164,7 +175,7 @@ func encodeBlocks(bs *ast.BlockSlice, enc *htmlgen.Encoder) (string, error) {
 	return buf.String(), nil
 }
 
-func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc *htmlgen.Encoder) (string, error) {
+func encodeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc, enc htmlEncoder) (string, error) {
 	var buf bytes.Buffer
 	_, err := enc.WriteMeta(&buf, m, evalMeta)
 	if err != nil {

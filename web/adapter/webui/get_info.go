@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 type metaDataInfo struct {
@@ -70,8 +69,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			GetFoundRef:      wui.createFoundReference,
 			GetImageMaterial: wui.createImageMaterial,
 		}
-		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		enc := htmlgen.Create(lang, "", false, nil)
+		enc := wui.getSimpleHTMLEncoder()
+
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
@@ -113,7 +112,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, lang, textTitle, "", user, &base)
+		wui.makeBaseData(ctx, config.GetLang(zn.InhMeta, wui.rtConfig), textTitle, "", user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid            string
 			WebURL         string

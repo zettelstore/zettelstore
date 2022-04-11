@@ -25,8 +25,6 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 )
@@ -40,7 +38,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	key, value string,
 	getTextTitle getTextTitleFunc,
 	evalMetadata evalMetadataFunc,
-	enc encoder.Encoder,
+	enc htmlEncoder,
 ) {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
@@ -179,34 +177,27 @@ func (wui *WebUI) makeGetTextTitle(
 func (wui *WebUI) encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
 	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
-	encHTML encoder.Encoder,
+	encHTML htmlEncoder,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, plainTitle, envEval)
-		},
+		func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val, envEval) },
 		encHTML)
 }
 
-func (wui *WebUI) encodeTitleAsText(
-	ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate,
-) string {
+func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
-	return encodeZmkMetadata(
-		plainTitle,
-		func(val string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, plainTitle, nil)
-		},
-		textenc.Create())
+	is := evaluate.RunMetadata(ctx, plainTitle, nil)
+	result, err := encodeInlinesText(&is, wui.gentext)
+	if err != nil {
+		return err.Error()
+	}
+	return result
 }
 
-func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, enc encoder.Encoder) string {
+func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, enc htmlEncoder) string {
 	is := evalMetadata(value)
-	if len(is) == 0 {
-		return ""
-	}
 	result, err := encodeInlines(&is, enc)
 	if err != nil {
 		return err.Error()
