@@ -24,15 +24,14 @@ import (
 )
 
 // Create a new encoder.
-func Create(lang, extMarker string, interactive, newWindow bool, ignoreMeta strfun.Set) *Encoder {
-	return &Encoder{lang: lang, extMarker: extMarker, interactive: interactive, newWindow: newWindow, ignoreMeta: ignoreMeta}
+func Create(lang, extMarker string, newWindow bool, ignoreMeta strfun.Set) *Encoder {
+	return &Encoder{lang: lang, extMarker: extMarker, newWindow: newWindow, ignoreMeta: ignoreMeta}
 }
 
 // Encoder encapsulates the encoder itself
 type Encoder struct {
 	lang        string
 	extMarker   string
-	interactive bool
 	newWindow   bool
 	ignoreMeta  strfun.Set
 	footnotes   []footnoteInfo // Stores footnotes detected while encoding
@@ -125,7 +124,6 @@ func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 // WriteInlines writes an inline slice to the writer
 func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(he, w)
-	v.inInteractive = he.interactive
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err

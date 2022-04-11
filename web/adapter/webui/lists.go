@@ -265,7 +265,7 @@ func (wui *WebUI) buildHTMLMetaList(
 		} else {
 			lang = defaultLang
 		}
-		encHTML := htmlgen.Create(lang, "", true, false, nil)
+		encHTML := htmlgen.Create(lang, "", false, nil)
 		metas = append(metas, simpleLink{
 			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, nil, encHTML),
 			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),

@@ -71,7 +71,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			GetImageMaterial: wui.createImageMaterial,
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		enc := htmlgen.Create(lang, "", false, false, nil)
+		enc := htmlgen.Create(lang, "", false, nil)
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)

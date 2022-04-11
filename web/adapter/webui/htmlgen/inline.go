@@ -47,12 +47,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		v.writeAHref(ln.Ref, attrs, &ln.Inlines)
 		v.b.WriteString(v.he.extMarker)
 	default:
-		if v.he.interactive && v.inInteractive {
-			v.writeSpan(&ln.Inlines, ln.Attrs)
-			return
-		}
 		v.writeAHref(ln.Ref, ln.Attrs.Clone().Set("href", ln.Ref.Value), &ln.Inlines)
-		v.inInteractive = false
 	}
 }
 
@@ -60,25 +55,20 @@ func (v *visitor) writeAHref(ref *ast.Reference, attrs zjson.Attributes, is *ast
 	v.b.WriteString("<a")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
-	v.writeLinkInlines(is, ref)
-	v.b.WriteString("</a>")
-}
-func (v *visitor) writeLinkInlines(is *ast.InlineSlice, ref *ast.Reference) {
-	saveInteractive := v.inInteractive
-	v.inInteractive = true
+
 	if len(*is) == 0 {
 		v.writeHTMLEscaped(ref.Value)
 	} else {
 		ast.Walk(v, is)
 	}
-	v.inInteractive = saveInteractive
+	v.b.WriteString("</a>")
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 	v.b.WriteString("<img src=\"")
 	v.writeReference(en.Ref)
 	v.b.WriteString("\" alt=\"")
-	ast.Walk(v, &en.Inlines) // TODO: wrong, must use textenc
+	v.textEnc.WriteInlines(&v.b, &en.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	v.b.WriteByte('>')
@@ -94,7 +84,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.b.WriteStrings(en.Syntax, ";base64,")
 	v.b.WriteBase64(en.Blob)
 	v.b.WriteString("\" alt=\"")
-	ast.Walk(v, &en.Inlines)
+	v.textEnc.WriteInlines(&v.b, &en.Inlines)
 	v.b.WriteByte('"')
 	v.visitAttributes(en.Attrs)
 	v.b.WriteByte('>')
@@ -109,18 +99,11 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
-	if v.he.interactive && v.inInteractive {
-		return
-	}
-
 	n := strconv.Itoa(v.he.addFootnote(fn))
 	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a class=\"zs-noteref\" href=\"#fn:", n, "\" role=\"doc-noteref\">", n, "</a></sup>")
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
-	if v.he.interactive && v.inInteractive {
-		return
-	}
 	if fragment := mn.Fragment; fragment != "" {
 		v.b.WriteStrings(`<a id="`, fragment, `">`)
 		if len(mn.Inlines) > 0 {

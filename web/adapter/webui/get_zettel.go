@@ -55,7 +55,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return evaluate.RunMetadata(ctx, value, &env)
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
-		enc := htmlgen.Create(lang, wui.rtConfig.GetMarkerExternal(), false, true, strfun.NewSet(api.KeyTitle, api.KeyLang))
+		enc := htmlgen.Create(lang, wui.rtConfig.GetMarkerExternal(), true, strfun.NewSet(api.KeyTitle, api.KeyLang))
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)

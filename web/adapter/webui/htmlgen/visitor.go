@@ -28,13 +28,12 @@ import (
 
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
-	he            *Encoder
-	b             encoder.EncWriter
-	visibleSpace  bool // Show space character in plain text
-	inVerse       bool // In verse block
-	inInteractive bool // Rendered interactive HTML code
-	textEnc       encoder.Encoder
-	inlinePos     int // Element position in inline list node
+	he           *Encoder
+	b            encoder.EncWriter
+	visibleSpace bool // Show space character in plain text
+	inVerse      bool // In verse block
+	textEnc      encoder.Encoder
+	inlinePos    int // Element position in inline list node
 }
 
 func newVisitor(he *Encoder, w io.Writer) *visitor {
