@@ -37,7 +37,7 @@ type Environment struct {
 	GetTagRef        func(string) *ast.Reference
 	GetHostedRef     func(string) *ast.Reference
 	GetFoundRef      func(zid id.Zid, fragment string) *ast.Reference
-	GetImageMaterial func(zettel domain.Zettel, syntax string) ast.InlineEmbedNode
+	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
 }
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
@@ -462,7 +462,7 @@ func (e *evaluator) getTitle(m *meta.Meta) string {
 	return m.GetDefault(api.KeyTitle, "")
 }
 
-func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbedNode {
+func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
 	errorZid := id.EmojiZid
 	if gim := e.env.GetImageMaterial; gim != nil {
 		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), errorZid)
@@ -475,8 +475,11 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 				inlines = parser.ParseMetadata(title)
 			}
 		}
-		syntax := e.getSyntax(zettel.Meta)
-		return enrichImageNode(gim(zettel, syntax), inlines, en.Attrs, syntax)
+		result := gim(zettel.Meta.Zid)
+		result.Inlines = inlines
+		result.Attrs = en.Attrs
+		result.Syntax = e.getSyntax(zettel.Meta)
+		return result
 	}
 	en.Ref = ast.ParseReference(errorZid.String())
 	if len(en.Inlines) == 0 {
@@ -485,26 +488,17 @@ func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) ast.InlineEmbed
 	return en
 }
 
-func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) ast.InlineEmbedNode {
+func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) *ast.EmbedRefNode {
 	syntax := e.getSyntax(zettel.Meta)
 	if gim := e.env.GetImageMaterial; gim != nil {
-		return enrichImageNode(gim(zettel, syntax), en.Inlines, en.Attrs, syntax)
+		result := gim(zettel.Meta.Zid)
+		result.Inlines = en.Inlines
+		result.Attrs = en.Attrs
+		result.Syntax = syntax
+		return result
 	}
 	en.Syntax = syntax
 	return en
-}
-
-func enrichImageNode(result ast.InlineEmbedNode, in ast.InlineSlice, a zjson.Attributes, syntax string) ast.InlineEmbedNode {
-	switch er := result.(type) {
-	case *ast.EmbedRefNode:
-		er.Inlines = in
-		er.Attrs = a
-		er.Syntax = syntax
-	case *ast.EmbedBLOBNode:
-		er.Inlines = in
-		er.Attrs = a
-	}
-	return result
 }
 
 func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNode {

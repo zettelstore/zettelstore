@@ -124,8 +124,7 @@ type EmbedRefNode struct {
 	Syntax  string           // Syntax of referenced material, if known
 }
 
-func (*EmbedRefNode) inlineNode()      { /* Just a marker */ }
-func (*EmbedRefNode) inlineEmbedNode() { /* Just a marker */ }
+func (*EmbedRefNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
 func (en *EmbedRefNode) WalkChildren(v Visitor) {
@@ -142,8 +141,7 @@ type EmbedBLOBNode struct {
 	Attrs   zjson.Attributes // Optional attributes
 }
 
-func (*EmbedBLOBNode) inlineNode()      { /* Just a marker */ }
-func (*EmbedBLOBNode) inlineEmbedNode() { /* Just a marker */ }
+func (*EmbedBLOBNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
 func (en *EmbedBLOBNode) WalkChildren(v Visitor) {

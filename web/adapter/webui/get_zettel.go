@@ -19,7 +19,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -40,18 +39,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		q := r.URL.Query()
 		env := evaluator.Environment{
-			GetTagRef: func(s string) *ast.Reference {
-				return wui.createTagReference('h', api.EncodingHTML, s)
-			},
-			GetHostedRef: func(s string) *ast.Reference {
-				return wui.createHostedReference(s)
-			},
-			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
-				return wui.createFoundReference('h', "", "", zid, fragment)
-			},
-			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.InlineEmbedNode {
-				return wui.createImageMaterial(zettel.Meta.Zid)
-			},
+			GetTagRef:        wui.createTagReference,
+			GetHostedRef:     wui.createHostedReference,
+			GetFoundRef:      wui.createFoundReference,
+			GetImageMaterial: wui.createImageMaterial,
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
 

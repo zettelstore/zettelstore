@@ -65,13 +65,6 @@ type InlineNode interface {
 	inlineNode()
 }
 
-// InlineEmbedNode is a node that specifies some embeddings in inline mode.
-// It is abstract, b/c there are different concrete type implementations.
-type InlineEmbedNode interface {
-	InlineNode
-	inlineEmbedNode()
-}
-
 // Reference is a reference to external or internal material.
 type Reference struct {
 	URL   *url.URL

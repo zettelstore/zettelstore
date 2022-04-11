@@ -22,7 +22,6 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
@@ -65,18 +64,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		envEval := evaluator.Environment{
-			GetTagRef: func(s string) *ast.Reference {
-				return wui.createTagReference('h', api.EncodingHTML, s)
-			},
-			GetHostedRef: func(s string) *ast.Reference {
-				return wui.createHostedReference(s)
-			},
-			GetFoundRef: func(zid id.Zid, fragment string) *ast.Reference {
-				return wui.createFoundReference('h', "", "", zid, fragment)
-			},
-			GetImageMaterial: func(zettel domain.Zettel, _ string) ast.InlineEmbedNode {
-				return wui.createImageMaterial(zettel.Meta.Zid)
-			},
+			GetTagRef:        wui.createTagReference,
+			GetHostedRef:     wui.createHostedReference,
+			GetFoundRef:      wui.createFoundReference,
+			GetImageMaterial: wui.createImageMaterial,
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{Lang: lang}

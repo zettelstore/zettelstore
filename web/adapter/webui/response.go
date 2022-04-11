@@ -24,16 +24,9 @@ func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.
 	http.Redirect(w, r, us, http.StatusFound)
 }
 
-func (wui *WebUI) createImageMaterial(zid id.Zid) ast.InlineEmbedNode {
-	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
-	ref := ast.ParseReference(ub.String())
-	ref.State = ast.RefStateFound
-	return &ast.EmbedRefNode{Ref: ref}
-}
-
 // createTagReference builds a reference to list all tags.
-func (wui *WebUI) createTagReference(key byte, enc, s string) *ast.Reference {
-	u := wui.NewURLBuilder(key).AppendQuery(api.QueryKeyEncoding, enc).AppendQuery(api.KeyAllTags, s)
+func (wui *WebUI) createTagReference(s string) *ast.Reference {
+	u := wui.NewURLBuilder('h').AppendQuery(api.QueryKeyEncoding, api.EncodingHTML).AppendQuery(api.KeyAllTags, s)
 	ref := ast.ParseReference(u.String())
 	ref.State = ast.RefStateHosted
 	return ref
@@ -48,14 +41,8 @@ func (wui *WebUI) createHostedReference(s string) *ast.Reference {
 }
 
 // createFoundReference builds a reference for a found zettel.
-func (wui *WebUI) createFoundReference(key byte, part, enc string, zid id.Zid, fragment string) *ast.Reference {
-	ub := wui.NewURLBuilder(key).SetZid(api.ZettelID(zid.String()))
-	if part != "" {
-		ub.AppendQuery(api.QueryKeyPart, part)
-	}
-	if enc != "" {
-		ub.AppendQuery(api.QueryKeyEncoding, enc)
-	}
+func (wui *WebUI) createFoundReference(zid id.Zid, fragment string) *ast.Reference {
+	ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
 	if fragment != "" {
 		ub.SetFragment(fragment)
 	}
@@ -63,4 +50,11 @@ func (wui *WebUI) createFoundReference(key byte, part, enc string, zid id.Zid, f
 	ref := ast.ParseReference(ub.String())
 	ref.State = ast.RefStateFound
 	return ref
+}
+
+func (wui *WebUI) createImageMaterial(zid id.Zid) *ast.EmbedRefNode {
+	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+	ref := ast.ParseReference(ub.String())
+	ref.State = ast.RefStateFound
+	return &ast.EmbedRefNode{Ref: ref}
 }
