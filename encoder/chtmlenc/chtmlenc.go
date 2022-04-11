@@ -22,12 +22,6 @@ import (
 	"zettelstore.de/z/encoder"
 )
 
-func init() {
-	encoder.Register(api.EncoderCHTML, encoder.Info{
-		Create: Create,
-	})
-}
-
 // Create a new encoder.
 func Create(env *encoder.Environment) encoder.Encoder { return &htmlEncoder{env: env} }
 

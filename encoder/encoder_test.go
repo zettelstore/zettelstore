@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
-	_ "zettelstore.de/z/encoder/chtmlenc"  // Allow to use cHTML encoder.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
@@ -40,13 +39,9 @@ type zmkTestCase struct {
 
 type expectMap map[api.EncodingEnum]string
 
-const (
-	useHTML = "\001"
-	useZmk  = "\000"
-)
+const useZmk = "\000"
 const (
 	encoderZJSON  = api.EncoderZJSON
-	encoderCHTML  = api.EncoderCHTML
 	encoderHTML   = api.EncoderHTML
 	encoderNative = api.EncoderNative
 	encoderText   = api.EncoderText
@@ -87,8 +82,6 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 		}
 		if enc == api.EncoderZmk && exp == useZmk {
 			exp = zmkDefault
-		} else if enc == encoderCHTML && exp == useHTML {
-			exp = expected[encoderHTML]
 		}
 		if got != exp {
 			prefix := fmt.Sprintf("Test #%d", testNum)

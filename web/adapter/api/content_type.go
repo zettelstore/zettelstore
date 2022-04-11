@@ -21,7 +21,6 @@ const (
 )
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
-	api.EncoderCHTML:  ctHTML,
 	api.EncoderHTML:   ctHTML,
 	api.EncoderNative: ctPlainText,
 	api.EncoderZJSON:  ctJSON,
