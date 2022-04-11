@@ -24,10 +24,10 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 type metaDataInfo struct {
@@ -72,7 +72,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 		lang := config.GetLang(zn.InhMeta, wui.rtConfig)
 		envHTML := encoder.Environment{Lang: lang}
-		enc := chtmlenc.Create(&envHTML)
+		enc := htmlgen.Create(&envHTML)
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)

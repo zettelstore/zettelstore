@@ -8,10 +8,10 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package chtmlenc encodes the abstract syntax tree into HTML5 (deprecated).
+// Package htmlgen encodes the abstract syntax tree into HTML5 (deprecated).
 // It is only used for the WebUI and will be deprecated by a software that
 // uses the zettelstore-client HTML encoder.
-package chtmlenc
+package htmlgen
 
 import (
 	"io"

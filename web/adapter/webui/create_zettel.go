@@ -19,11 +19,11 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
@@ -58,7 +58,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 				return
 			}
 			env := encoder.Environment{Lang: config.GetLang(m, wui.rtConfig)}
-			htmlTitle, err2 := encodeInlines(&title, chtmlenc.Create(&env))
+			htmlTitle, err2 := encodeInlines(&title, htmlgen.Create(&env))
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)
 				return

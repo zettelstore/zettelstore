@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package chtmlenc
+package htmlgen
 
 import (
 	"fmt"

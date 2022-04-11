@@ -21,10 +21,10 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/chtmlenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/adapter/webui/htmlgen"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -62,7 +62,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			NewWindow:      true,
 			IgnoreMeta:     strfun.NewSet(api.KeyTitle, api.KeyLang),
 		}
-		enc := chtmlenc.Create(&envHTML)
+		enc := htmlgen.Create(&envHTML)
 		metaHeader, err := encodeMeta(zn.InhMeta, evalMeta, enc)
 		if err != nil {
 			wui.reportError(ctx, w, err)
