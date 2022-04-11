@@ -117,12 +117,13 @@ func (he *Encoder) BlocksString(bs *ast.BlockSlice) (string, error) {
 }
 
 // InlinesString writes an inline slice to the writer
-func (he *Encoder) InlinesString(is *ast.InlineSlice) (string, error) {
+func (he *Encoder) InlinesString(is *ast.InlineSlice, noLink bool) (string, error) {
 	if is == nil || len(*is) == 0 {
 		return "", nil
 	}
 	var buf bytes.Buffer
 	v := newVisitor(he, &buf)
+	v.noLink = noLink
 	ast.Walk(v, is)
 	return v.makeResult(&buf)
 }

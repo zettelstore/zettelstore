@@ -52,6 +52,10 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 }
 
 func (v *visitor) writeAHref(ref *ast.Reference, attrs zjson.Attributes, is *ast.InlineSlice) {
+	if v.noLink {
+		v.writeSpan(is, nil)
+		return
+	}
 	v.b.WriteString("<a")
 	v.visitAttributes(attrs)
 	v.b.WriteByte('>')
@@ -99,11 +103,17 @@ func (v *visitor) visitCite(cn *ast.CiteNode) {
 }
 
 func (v *visitor) visitFootnote(fn *ast.FootnoteNode) {
+	if v.noLink {
+		return
+	}
 	n := strconv.Itoa(v.he.addFootnote(fn))
 	v.b.WriteStrings("<sup id=\"fnref:", n, "\"><a class=\"zs-noteref\" href=\"#fn:", n, "\" role=\"doc-noteref\">", n, "</a></sup>")
 }
 
 func (v *visitor) visitMark(mn *ast.MarkNode) {
+	if v.noLink {
+		return
+	}
 	if fragment := mn.Fragment; fragment != "" {
 		v.b.WriteStrings(`<a id="`, fragment, `">`)
 		if len(mn.Inlines) > 0 {

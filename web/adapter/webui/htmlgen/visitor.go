@@ -27,6 +27,7 @@ import (
 type visitor struct {
 	he           *Encoder
 	b            encoder.EncWriter
+	noLink       bool
 	visibleSpace bool // Show space character in plain text
 	inVerse      bool // In verse block
 	textEnc      encoder.Encoder

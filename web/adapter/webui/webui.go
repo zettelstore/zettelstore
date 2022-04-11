@@ -299,7 +299,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 type htmlEncoder interface {
 	MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (string, error)
 	BlocksString(bs *ast.BlockSlice) (string, error)
-	InlinesString(is *ast.InlineSlice) (string, error)
+	InlinesString(is *ast.InlineSlice, noLink bool) (string, error)
 }
 
 func (wui *WebUI) getSimpleHTMLEncoder() htmlEncoder { return wui.genhtml }
@@ -341,7 +341,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		}
 		title := config.GetTitle(m, wui.rtConfig)
 		astTitle := parser.ParseMetadata(title)
-		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle)
+		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle, false)
 		if err2 != nil {
 			menuTitle, err2 = encodeInlinesText(&astTitle, wui.gentext)
 			if err2 != nil {
