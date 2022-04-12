@@ -304,8 +304,8 @@ type htmlEncoder interface {
 
 func (wui *WebUI) getSimpleHTMLEncoder() htmlEncoder { return wui.genhtml }
 func (wui *WebUI) createZettelEncoder() htmlEncoder {
-	// return createGenerator(wui.rtConfig.GetMarkerExternal(), true)
-	return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true)
+	return createGenerator(wui.rtConfig.GetMarkerExternal(), true)
+	// return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true)
 }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
