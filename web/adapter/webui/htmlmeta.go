@@ -38,7 +38,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	key, value string,
 	getTextTitle getTextTitleFunc,
 	evalMetadata evalMetadataFunc,
-	enc htmlEncoder,
+	gen *htmlGenerator,
 ) {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
@@ -66,7 +66,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeWordSet:
 		wui.writeWordSet(w, key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, enc, false))
+		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, gen, false))
 	default:
 		html.Escape(w, value)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
@@ -177,13 +177,13 @@ func (wui *WebUI) makeGetTextTitle(
 func (wui *WebUI) encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
 	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
-	encHTML htmlEncoder, noLink bool,
+	gen *htmlGenerator, noLink bool,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
 		func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val, envEval) },
-		encHTML, noLink)
+		gen, noLink)
 }
 
 func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate) string {
@@ -196,9 +196,9 @@ func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate 
 	return result
 }
 
-func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, enc htmlEncoder, noLink bool) string {
+func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator, noLink bool) string {
 	is := evalMetadata(value)
-	result, err := enc.InlinesString(&is, noLink)
+	result, err := gen.InlinesString(&is, noLink)
 	if err != nil {
 		return err.Error()
 	}
