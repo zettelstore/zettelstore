@@ -37,9 +37,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		q := r.URL.Query()
 		env := evaluator.Environment{
-			GetTagRef:    wui.createTagReference,
-			GetHostedRef: wui.createHostedReference,
-			// GetFoundRef:      wui.createFoundReference,
+			GetTagRef:        wui.createTagReference,
+			GetHostedRef:     wui.createHostedReference,
 			GetImageMaterial: wui.createImageMaterial,
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
@@ -49,11 +48,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		evalMeta := func(value string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, value, &env)
-		}
 		enc := wui.createZettelEncoder()
-		metaHeader, err := enc.MetaString(zn.InhMeta, evalMeta)
+		metaHeader, err := enc.MetaString(zn.InhMeta, func(value string) ast.InlineSlice {
+			return evaluate.RunMetadata(ctx, value, &env)
+		})
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return

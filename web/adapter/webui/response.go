@@ -40,18 +40,6 @@ func (wui *WebUI) createHostedReference(s string) *ast.Reference {
 	return ref
 }
 
-// createFoundReference builds a reference for a found zettel.
-func (wui *WebUI) createFoundReference(zid id.Zid, fragment string) *ast.Reference {
-	ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
-	if fragment != "" {
-		ub.SetFragment(fragment)
-	}
-
-	ref := ast.ParseReference(ub.String())
-	ref.State = ast.RefStateFound
-	return ref
-}
-
 func (wui *WebUI) createImageMaterial(zid id.Zid) *ast.EmbedRefNode {
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	ref := ast.ParseReference(ub.String())

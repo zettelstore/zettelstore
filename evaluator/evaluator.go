@@ -36,7 +36,6 @@ import (
 type Environment struct {
 	GetTagRef        func(string) *ast.Reference
 	GetHostedRef     func(string) *ast.Reference
-	GetFoundRef      func(zid id.Zid, fragment string) *ast.Reference
 	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
 }
 
@@ -310,6 +309,9 @@ func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
 }
 
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
+	if len(ln.Inlines) == 0 {
+		ln.Inlines = ast.InlineSlice{&ast.TextNode{Text: ln.Ref.Value}}
+	}
 	ref := ln.Ref
 	if ref == nil {
 		return ln
@@ -337,10 +339,7 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 		return ln
 	}
 
-	if gfr := e.env.GetFoundRef; gfr != nil {
-		ln.Inlines = getLinkInline(ln)
-		ln.Ref = gfr(zid, ref.URL.EscapedFragment())
-	}
+	ln.Ref.State = ast.RefStateZettel
 	return ln
 }
 
