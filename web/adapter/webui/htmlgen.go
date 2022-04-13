@@ -30,7 +30,7 @@ type htmlGenerator struct {
 	zjsonEnc  *zjsonenc.Encoder
 	extMarker string
 	newWindow bool
-	enc       html.Encoder
+	enc       *html.Encoder
 }
 
 func createGenerator(extMarker string, newWindow bool) *htmlGenerator {
@@ -39,7 +39,7 @@ func createGenerator(extMarker string, newWindow bool) *htmlGenerator {
 		zjsonEnc:  zjsonenc.Create(),
 		extMarker: extMarker,
 		newWindow: newWindow,
-		enc:       *html.NewEncoder(nil, 1),
+		enc:       html.NewEncoder(nil, 1),
 	}
 }
 
@@ -114,6 +114,7 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 	g.enc.ReplaceWriter(&buf)
 	g.enc.TraverseBlock(zjson.MakeArray(val))
 	g.enc.WriteEndnotes()
+	g.enc.ReplaceWriter(nil)
 	return buf.String(), nil
 }
 
@@ -131,8 +132,6 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	if err != nil {
 		return "", err
 	}
-	buf.Reset()
-	g.enc.ReplaceWriter(&buf)
-	g.enc.TraverseInline(zjson.MakeArray(val))
-	return buf.String(), nil
+	buf = bytes.Buffer{} // free all encoded zjaon data
+	return html.EncodeInline(g.enc, zjson.MakeArray(val), !noLink, noLink), nil
 }
