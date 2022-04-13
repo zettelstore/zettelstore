@@ -34,7 +34,6 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	GetTagRef        func(string) *ast.Reference
 	GetHostedRef     func(string) *ast.Reference
 	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
 }
@@ -258,8 +257,6 @@ func (e *evaluator) visitInlineSlice(is *ast.InlineSlice) {
 		in := (*is)[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {
-		case *ast.TagNode:
-			(*is)[i] = e.visitTag(n)
 		case *ast.LinkNode:
 			(*is)[i] = e.evalLinkNode(n)
 		case *ast.EmbedRefNode:
@@ -295,17 +292,6 @@ func replaceWithInlineNodes(ins ast.InlineSlice, i int, replaceIns ast.InlineSli
 		newIns = append(newIns, ins[i+1:]...)
 	}
 	return newIns
-}
-
-func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
-	if gtr := e.env.GetTagRef; gtr != nil {
-		fullTag := "#" + tn.Tag
-		return &ast.LinkNode{
-			Ref:     e.env.GetTagRef(fullTag),
-			Inlines: ast.CreateInlineSliceFromWords(fullTag),
-		}
-	}
-	return tn
 }
 
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {

@@ -24,14 +24,6 @@ func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.
 	http.Redirect(w, r, us, http.StatusFound)
 }
 
-// createTagReference builds a reference to list all tags.
-func (wui *WebUI) createTagReference(s string) *ast.Reference {
-	u := wui.NewURLBuilder('h').AppendQuery(api.QueryKeyEncoding, api.EncodingHTML).AppendQuery(api.KeyAllTags, s)
-	ref := ast.ParseReference(u.String())
-	ref.State = ast.RefStateHosted
-	return ref
-}
-
 // createHostedReference builds a reference with state "hosted".
 func (wui *WebUI) createHostedReference(s string) *ast.Reference {
 	urlPrefix := wui.GetURLPrefix()

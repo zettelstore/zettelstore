@@ -25,7 +25,14 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
+// Builder allows to build new URLs for the web service.
+type urlBuilder interface {
+	GetURLPrefix() string
+	NewURLBuilder(key byte) *api.URLBuilder
+}
+
 type htmlGenerator struct {
+	builder   urlBuilder
 	textEnc   *textenc.Encoder
 	zjsonEnc  *zjsonenc.Encoder
 	extMarker string
@@ -33,14 +40,18 @@ type htmlGenerator struct {
 	enc       *html.Encoder
 }
 
-func createGenerator(extMarker string, newWindow bool) *htmlGenerator {
-	return &htmlGenerator{
+func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *htmlGenerator {
+	enc := html.NewEncoder(nil, 1)
+	gen := &htmlGenerator{
+		builder:   builder,
 		textEnc:   textenc.Create(),
 		zjsonEnc:  zjsonenc.Create(),
 		extMarker: extMarker,
 		newWindow: newWindow,
-		enc:       html.NewEncoder(nil, 1),
+		enc:       enc,
 	}
+	enc.SetTypeFunc(zjson.TypeTag, gen.generateTag)
+	return gen
 }
 
 var mapMetaKey = map[string]string{
@@ -134,4 +145,17 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	}
 	buf = bytes.Buffer{} // free all encoded zjaon data
 	return html.EncodeInline(g.enc, zjson.MakeArray(val), !noLink, noLink), nil
+}
+
+func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
+	// TODO: noLink
+	if s := zjson.GetString(obj, zjson.NameString); s != "" {
+		u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags, "#"+strings.ToLower(s))
+		enc.WriteString(`<a href="`)
+		enc.WriteString(u.String())
+		enc.WriteString(`">#`)
+		enc.WriteString(s)
+		enc.WriteString("</a>")
+	}
+	return false, nil
 }
