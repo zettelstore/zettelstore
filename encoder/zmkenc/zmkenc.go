@@ -32,7 +32,7 @@ type zmkEncoder struct{}
 var myZE zmkEncoder
 
 // WriteZettel writes the encoded zettel to the writer.
-func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	if zn.InhMeta.YamlSep {
@@ -46,7 +46,7 @@ func (ze *zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enco
 }
 
 // WriteMeta encodes meta data as zmk.
-func (ze *zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
@@ -72,7 +72,7 @@ func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*zmkEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
@@ -80,7 +80,7 @@ func (ze *zmkEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) 
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ze *zmkEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*zmkEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()

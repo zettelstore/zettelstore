@@ -32,7 +32,7 @@ type nativeEncoder struct{}
 var myNE nativeEncoder
 
 // WriteZettel encodes the zettel to the writer.
-func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	v.b.WriteByte('\n')
@@ -42,7 +42,7 @@ func (ne *nativeEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta e
 }
 
 // WriteMeta encodes meta data in native format.
-func (ne *nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*nativeEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
@@ -54,7 +54,7 @@ func (ne *nativeEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, err
 }
 
 // WriteBlocks writes a block slice to the writer
-func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
@@ -62,7 +62,7 @@ func (ne *nativeEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, erro
 }
 
 // WriteInlines writes an inline slice to the writer
-func (ne *nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*nativeEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
