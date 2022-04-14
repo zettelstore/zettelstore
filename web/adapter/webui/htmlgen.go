@@ -62,11 +62,8 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (string, error) {
-	ignore := strfun.Set{
-		api.KeyTitle: struct{}{},
-		api.KeyLang:  struct{}{},
-	}
+func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
+	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
 	var buf bytes.Buffer
 
 	if tags, ok := m.Get(api.KeyAllTags); ok {
@@ -97,7 +94,7 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		html.AttributeEscape(&buf, sb.String())
 		buf.WriteString("\">\n")
 	}
-	return buf.String(), nil
+	return buf.String()
 }
 func (g *htmlGenerator) writeTags(buf *bytes.Buffer, tags string) {
 	buf.WriteString(`<meta name="keywords" content="`)

@@ -45,13 +45,9 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		enc := wui.createZettelEncoder()
-		metaHeader, err := enc.MetaString(zn.InhMeta, func(value string) ast.InlineSlice {
+		metaHeader := enc.MetaString(zn.InhMeta, func(value string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, value, &env)
 		})
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, enc, false)
 		htmlContent, err := enc.BlocksString(&zn.Ast)
