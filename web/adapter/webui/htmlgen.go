@@ -12,6 +12,7 @@ package webui
 
 import (
 	"bytes"
+	"log"
 	"strings"
 
 	"zettelstore.de/c/api"
@@ -51,6 +52,7 @@ func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *html
 		enc:       enc,
 	}
 	enc.SetTypeFunc(zjson.TypeTag, gen.generateTag)
+	enc.SetTypeFunc(zjson.TypeLink, gen.generateLink)
 	return gen
 }
 
@@ -158,4 +160,49 @@ func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, pos int
 		enc.WriteString("</a>")
 	}
 	return false, nil
+}
+
+func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, _ int) (bool, zjson.CloseFunc) {
+	ref := zjson.GetString(obj, zjson.NameString)
+	in := zjson.GetArray(obj, zjson.NameInline)
+	if ref == "" {
+		return len(in) > 0, nil
+	}
+	a := zjson.GetAttributes(obj)
+	suffix := ""
+	switch q := zjson.GetString(obj, zjson.NameString2); q {
+	case zjson.RefStateExternal:
+		a = a.Set("href", ref).
+			AddClass("external").
+			Set("target", "_blank").
+			Set("rel", "noopener noreferrer")
+		suffix = g.extMarker
+	case zjson.RefStateZettel:
+		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(ref))
+		a = a.Set("href", u.String())
+	case zjson.RefStateBased, zjson.RefStateHosted:
+		a = a.Set("href", ref)
+	case zjson.RefStateSelf:
+		a = a.Set("href", ref)
+	case zjson.RefStateBroken:
+		a = a.AddClass("broken")
+	default:
+		log.Println("LINK", q, ref)
+	}
+
+	if len(a) > 0 {
+		enc.WriteString("<a")
+		enc.WriteAttributes(a)
+		enc.WriteByte('>')
+	}
+
+	children := true
+	if len(in) == 0 {
+		enc.WriteString(ref)
+		children = false
+	}
+	return children, func() {
+		enc.WriteString("</a>")
+		enc.WriteString(suffix)
+	}
 }
