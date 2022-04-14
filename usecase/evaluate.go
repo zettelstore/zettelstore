@@ -39,7 +39,7 @@ func NewEvaluate(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta) E
 }
 
 // Run executes the use case.
-func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string, env *evaluator.Environment) (*ast.ZettelNode, error) {
+func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.ZettelNode, error) {
 	zettel, err := uc.getZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err
@@ -49,14 +49,14 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string, env *eva
 		return nil, err
 	}
 
-	evaluator.EvaluateZettel(ctx, uc, env, uc.rtConfig, zn)
+	evaluator.EvaluateZettel(ctx, uc, uc.rtConfig, zn)
 	return zn, nil
 }
 
 // RunMetadata executes the use case for a metadata value.
-func (uc *Evaluate) RunMetadata(ctx context.Context, value string, env *evaluator.Environment) ast.InlineSlice {
+func (uc *Evaluate) RunMetadata(ctx context.Context, value string) ast.InlineSlice {
 	is := parser.ParseMetadata(value)
-	evaluator.EvaluateInline(ctx, uc, env, uc.rtConfig, &is)
+	evaluator.EvaluateInline(ctx, uc, uc.rtConfig, &is)
 	return is
 }
 

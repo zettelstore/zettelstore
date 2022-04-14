@@ -17,7 +17,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 )
 
@@ -34,14 +33,13 @@ func (a *API) MakeGetEvalZettelHandler(evaluate usecase.Evaluate) http.HandlerFu
 		q := r.URL.Query()
 		enc, encStr := getEncoding(r, q, encoder.GetDefaultEncoding())
 		part := getPart(q, partContent)
-		var env evaluator.Environment
-		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
 		evalMeta := func(value string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, value, &env)
+			return evaluate.RunMetadata(ctx, value)
 		}
 		a.writeEncodedZettelPart(w, zn, evalMeta, enc, encStr, part)
 	}

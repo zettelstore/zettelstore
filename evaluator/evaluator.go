@@ -32,46 +32,35 @@ import (
 	"zettelstore.de/z/parser/draw"
 )
 
-// Environment contains values to control the evaluation.
-type Environment struct {
-	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
-}
-
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
 }
 
-var emptyEnv Environment
-
 // EvaluateZettel evaluates the given zettel in the given context, with the
 // given ports, and the given environment.
-func EvaluateZettel(ctx context.Context, port Port, env *Environment, rtConfig config.Config, zn *ast.ZettelNode) {
+func EvaluateZettel(ctx context.Context, port Port, rtConfig config.Config, zn *ast.ZettelNode) {
 	if zn.Syntax == api.ValueSyntaxNone {
 		// AST is empty, evaluate to a description list of metadata.
 		zn.Ast = evaluateMetadata(zn.Meta)
 		return
 	}
-	evaluateNode(ctx, port, env, rtConfig, &zn.Ast)
+	evaluateNode(ctx, port, rtConfig, &zn.Ast)
 	cleaner.CleanBlockSlice(&zn.Ast)
 }
 
 // EvaluateInline evaluates the given inline list in the given context, with
 // the given ports, and the given environment.
-func EvaluateInline(ctx context.Context, port Port, env *Environment, rtConfig config.Config, is *ast.InlineSlice) {
-	evaluateNode(ctx, port, env, rtConfig, is)
+func EvaluateInline(ctx context.Context, port Port, rtConfig config.Config, is *ast.InlineSlice) {
+	evaluateNode(ctx, port, rtConfig, is)
 	cleaner.CleanInlineSlice(is)
 }
 
-func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig config.Config, n ast.Node) {
-	if env == nil {
-		env = &emptyEnv
-	}
+func evaluateNode(ctx context.Context, port Port, rtConfig config.Config, n ast.Node) {
 	e := evaluator{
 		ctx:             ctx,
 		port:            port,
-		env:             env,
 		rtConfig:        rtConfig,
 		transcludeMax:   rtConfig.GetMaxTransclusions(),
 		transcludeCount: 0,
@@ -85,7 +74,6 @@ func evaluateNode(ctx context.Context, port Port, env *Environment, rtConfig con
 type evaluator struct {
 	ctx             context.Context
 	port            Port
-	env             *Environment
 	rtConfig        config.Config
 	transcludeMax   int
 	transcludeCount int
@@ -357,7 +345,8 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 
 	if syntax := e.getSyntax(zettel.Meta); parser.IsImageFormat(syntax) {
-		return e.embedImage(en, zettel)
+		en.Syntax = syntax
+		return en
 	} else if !parser.IsTextParser(syntax) {
 		// Not embeddable.
 		e.transcludeCount++
@@ -430,49 +419,12 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	return m.GetDefault(api.KeySyntax, "")
 }
 
-func (e *evaluator) getTitle(m *meta.Meta) string {
-	if cfg := e.rtConfig; cfg != nil {
-		return config.GetTitle(m, cfg)
-	}
-	return m.GetDefault(api.KeyTitle, "")
-}
-
 func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
 	errorZid := id.EmojiZid
-	if gim := e.env.GetImageMaterial; gim != nil {
-		zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), errorZid)
-		if err != nil {
-			panic(err)
-		}
-		inlines := en.Inlines
-		if len(inlines) == 0 {
-			if title := e.getTitle(zettel.Meta); title != "" {
-				inlines = parser.ParseMetadata(title)
-			}
-		}
-		result := gim(zettel.Meta.Zid)
-		result.Inlines = inlines
-		result.Attrs = en.Attrs
-		result.Syntax = e.getSyntax(zettel.Meta)
-		return result
-	}
 	en.Ref = ast.ParseReference(errorZid.String())
 	if len(en.Inlines) == 0 {
 		en.Inlines = parser.ParseMetadata("Error placeholder")
 	}
-	return en
-}
-
-func (e *evaluator) embedImage(en *ast.EmbedRefNode, zettel domain.Zettel) *ast.EmbedRefNode {
-	syntax := e.getSyntax(zettel.Meta)
-	if gim := e.env.GetImageMaterial; gim != nil {
-		result := gim(zettel.Meta.Zid)
-		result.Inlines = en.Inlines
-		result.Attrs = en.Attrs
-		result.Syntax = syntax
-		return result
-	}
-	en.Syntax = syntax
 	return en
 }
 

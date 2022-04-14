@@ -45,7 +45,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
 			zmkTitle := zm.GetDefault(api.KeyTitle, "")
-			isTitle := evaluate.RunMetadata(ctx, zmkTitle, nil)
+			isTitle := evaluate.RunMetadata(ctx, zmkTitle)
 			encdr := textenc.Create()
 			var b strings.Builder
 			_, err = encdr.WriteInlines(&b, &isTitle)
