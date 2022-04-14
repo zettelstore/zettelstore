@@ -53,6 +53,7 @@ func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *html
 	}
 	enc.SetTypeFunc(zjson.TypeTag, gen.generateTag)
 	enc.SetTypeFunc(zjson.TypeLink, gen.generateLink)
+	enc.ChangeTypeFunc(zjson.TypeEmbed, gen.makeGenerateEmbed)
 	return gen
 }
 
@@ -213,5 +214,18 @@ func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, pos in
 	return children, func() {
 		enc.WriteString("</a>")
 		enc.WriteString(suffix)
+	}
+}
+
+func (g *htmlGenerator) makeGenerateEmbed(oldF html.TypeFunc) html.TypeFunc {
+	return func(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
+		src := zjson.GetString(obj, zjson.NameString)
+		zid := api.ZettelID(src)
+		if !zid.IsValid() {
+			return oldF(enc, obj, pos)
+		}
+		u := g.builder.NewURLBuilder('z').SetZid(zid)
+		enc.WriteImage(obj, u.String())
+		return false, nil
 	}
 }

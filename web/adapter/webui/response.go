@@ -14,19 +14,10 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/id"
 )
 
 func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {
 	us := ub.String()
 	wui.log.Debug().Str("uri", us).Msg("redirect")
 	http.Redirect(w, r, us, http.StatusFound)
-}
-
-func (wui *WebUI) createImageMaterial(zid id.Zid) *ast.EmbedRefNode {
-	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
-	ref := ast.ParseReference(ub.String())
-	ref.State = ast.RefStateFound
-	return &ast.EmbedRefNode{Ref: ref}
 }
