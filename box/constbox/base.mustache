@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html{{#Lang}} lang="{{Lang}}"{{/Lang}}>
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Zettelstore">
@@ -57,8 +60,7 @@
 <main class="content">
 {{{Content}}}
 </main>
-{{#FooterHTML}}
-<footer>
-{{{FooterHTML}}}
-</footer>
-{{/FooterHTML}}
+{{#FooterHTML}}<footer>{{{FooterHTML}}}</footer>{{/FooterHTML}}
+{{#DebugMode}}<div><b>WARNING: Debug mode is enabled. DO NOT USE IN PRODUCTION!</b></div>{{/DebugMode}}
+</body>
+</html>

@@ -14,7 +14,6 @@ package webui
 import (
 	"bytes"
 	"context"
-	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -253,6 +252,7 @@ type baseData struct {
 	QueryKeySearch    string
 	Content           string
 	FooterHTML        string
+	DebugMode         bool
 }
 
 func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL string, user *meta.Meta, data *baseData) {
@@ -289,6 +289,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.SearchURL = wui.searchURL
 	data.QueryKeySearch = api.QueryKeySearch
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
+	data.DebugMode = wui.debug
 }
 
 func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator {
@@ -402,48 +403,12 @@ func (wui *WebUI) renderTemplateStatus(
 	err = t.Render(&content, data)
 	if err == nil {
 		wui.prepareAndWriteHeader(w, code)
-		err = writeHTMLStart(w, base.Lang)
-		if err == nil {
-			base.Content = content.String()
-			err = bt.Render(w, base)
-			if err == nil {
-				err = wui.writeHTMLEnd(w)
-			}
-		}
+		base.Content = content.String()
+		err = bt.Render(w, base)
 	}
 	if err != nil {
 		wui.log.IfErr(err).Msg("Unable to write HTML via template")
 	}
-}
-
-func writeHTMLStart(w http.ResponseWriter, lang string) error {
-	_, err := io.WriteString(w, "<!DOCTYPE html>\n<html")
-	if err != nil {
-		return err
-	}
-	if lang != "" {
-		_, err = io.WriteString(w, " lang=\"")
-		if err == nil {
-			_, err = io.WriteString(w, lang)
-		}
-		if err == nil {
-			_, err = io.WriteString(w, "\">\n<head>\n")
-		}
-	} else {
-		_, err = io.WriteString(w, ">\n<head>\n")
-	}
-	return err
-}
-
-func (wui *WebUI) writeHTMLEnd(w http.ResponseWriter) error {
-	if wui.debug {
-		_, err := io.WriteString(w, "<div><b>WARNING: Debug mode is enabled. DO NOT USE IN PRODUCTION!</b></div>\n")
-		if err != nil {
-			return err
-		}
-	}
-	_, err := io.WriteString(w, "</body>\n</html>")
-	return err
 }
 
 func (wui *WebUI) getUser(ctx context.Context) *meta.Meta { return wui.ab.GetUser(ctx) }
