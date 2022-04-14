@@ -34,9 +34,6 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	GetTagRef        func(string) *ast.Reference
-	GetHostedRef     func(string) *ast.Reference
-	GetFoundRef      func(zid id.Zid, fragment string) *ast.Reference
 	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
 }
 
@@ -259,8 +256,6 @@ func (e *evaluator) visitInlineSlice(is *ast.InlineSlice) {
 		in := (*is)[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {
-		case *ast.TagNode:
-			(*is)[i] = e.visitTag(n)
 		case *ast.LinkNode:
 			(*is)[i] = e.evalLinkNode(n)
 		case *ast.EmbedRefNode:
@@ -298,29 +293,12 @@ func replaceWithInlineNodes(ins ast.InlineSlice, i int, replaceIns ast.InlineSli
 	return newIns
 }
 
-func (e *evaluator) visitTag(tn *ast.TagNode) ast.InlineNode {
-	if gtr := e.env.GetTagRef; gtr != nil {
-		fullTag := "#" + tn.Tag
-		return &ast.LinkNode{
-			Ref:     e.env.GetTagRef(fullTag),
-			Inlines: ast.CreateInlineSliceFromWords(fullTag),
-		}
-	}
-	return tn
-}
-
 func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
+	if len(ln.Inlines) == 0 {
+		ln.Inlines = ast.InlineSlice{&ast.TextNode{Text: ln.Ref.Value}}
+	}
 	ref := ln.Ref
-	if ref == nil {
-		return ln
-	}
-	if ref.State == ast.RefStateBased {
-		if ghr := e.env.GetHostedRef; ghr != nil {
-			ln.Ref = ghr(ref.Value[1:])
-		}
-		return ln
-	}
-	if ref.State != ast.RefStateZettel {
+	if ref == nil || ref.State != ast.RefStateZettel {
 		return ln
 	}
 
@@ -337,10 +315,7 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 		return ln
 	}
 
-	if gfr := e.env.GetFoundRef; gfr != nil {
-		ln.Inlines = getLinkInline(ln)
-		ln.Ref = gfr(zid, ref.URL.EscapedFragment())
-	}
+	ln.Ref.State = ast.RefStateZettel
 	return ln
 }
 

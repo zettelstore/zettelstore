@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/ast"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
@@ -29,14 +28,12 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/template"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/adapter/webui/htmlgen"
 	"zettelstore.de/z/web/server"
 )
 
@@ -51,7 +48,6 @@ type WebUI struct {
 	box      webuiBox
 	policy   auth.Policy
 
-	genhtml *htmlgen.Encoder
 	gentext *textenc.Encoder
 
 	mxCache       sync.RWMutex
@@ -97,7 +93,6 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		box:      mgr,
 		policy:   pol,
 
-		genhtml: htmlgen.Create("", false),
 		gentext: textenc.Create(),
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
@@ -296,16 +291,11 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.FooterHTML = wui.rtConfig.GetFooterHTML()
 }
 
-type htmlEncoder interface {
-	MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (string, error)
-	BlocksString(bs *ast.BlockSlice) (string, error)
-	InlinesString(is *ast.InlineSlice, noLink bool) (string, error)
+func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator {
+	return createGenerator(wui, "", false)
 }
-
-func (wui *WebUI) getSimpleHTMLEncoder() htmlEncoder { return wui.genhtml }
-func (wui *WebUI) createZettelEncoder() htmlEncoder {
-	// return createGenerator(wui.rtConfig.GetMarkerExternal(), true)
-	return htmlgen.Create(wui.rtConfig.GetMarkerExternal(), true)
+func (wui *WebUI) createZettelEncoder() *htmlGenerator {
+	return createGenerator(wui, wui.rtConfig.GetMarkerExternal(), true)
 }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.

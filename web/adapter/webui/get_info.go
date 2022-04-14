@@ -63,12 +63,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		envEval := evaluator.Environment{
-			GetTagRef:        wui.createTagReference,
-			GetHostedRef:     wui.createHostedReference,
-			GetFoundRef:      wui.createFoundReference,
-			GetImageMaterial: wui.createImageMaterial,
-		}
+		envEval := evaluator.Environment{}
 		enc := wui.getSimpleHTMLEncoder()
 
 		pairs := zn.Meta.ComputedPairs()
