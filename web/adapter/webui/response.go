@@ -24,14 +24,6 @@ func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.
 	http.Redirect(w, r, us, http.StatusFound)
 }
 
-// createHostedReference builds a reference with state "hosted".
-func (wui *WebUI) createHostedReference(s string) *ast.Reference {
-	urlPrefix := wui.GetURLPrefix()
-	ref := ast.ParseReference(urlPrefix + s)
-	ref.State = ast.RefStateHosted
-	return ref
-}
-
 func (wui *WebUI) createImageMaterial(zid id.Zid) *ast.EmbedRefNode {
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	ref := ast.ParseReference(ub.String())

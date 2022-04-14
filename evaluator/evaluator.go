@@ -34,7 +34,6 @@ import (
 
 // Environment contains values to control the evaluation.
 type Environment struct {
-	GetHostedRef     func(string) *ast.Reference
 	GetImageMaterial func(zid id.Zid) *ast.EmbedRefNode
 }
 
@@ -299,16 +298,7 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 		ln.Inlines = ast.InlineSlice{&ast.TextNode{Text: ln.Ref.Value}}
 	}
 	ref := ln.Ref
-	if ref == nil {
-		return ln
-	}
-	if ref.State == ast.RefStateBased {
-		if ghr := e.env.GetHostedRef; ghr != nil {
-			ln.Ref = ghr(ref.Value[1:])
-		}
-		return ln
-	}
-	if ref.State != ast.RefStateZettel {
+	if ref == nil || ref.State != ast.RefStateZettel {
 		return ln
 	}
 

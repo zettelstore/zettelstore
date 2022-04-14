@@ -150,19 +150,25 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 }
 
 func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
-	// TODO: noLink
 	if s := zjson.GetString(obj, zjson.NameString); s != "" {
-		u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags, "#"+strings.ToLower(s))
-		enc.WriteString(`<a href="`)
-		enc.WriteString(u.String())
-		enc.WriteString(`">#`)
-		enc.WriteString(s)
-		enc.WriteString("</a>")
+		if enc.IgnoreLinks() {
+			enc.WriteString(s)
+		} else {
+			u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags, "#"+strings.ToLower(s))
+			enc.WriteString(`<a href="`)
+			enc.WriteString(u.String())
+			enc.WriteString(`">#`)
+			enc.WriteString(s)
+			enc.WriteString("</a>")
+		}
 	}
 	return false, nil
 }
 
-func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, _ int) (bool, zjson.CloseFunc) {
+func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
+	if enc.IgnoreLinks() {
+		return enc.MustGetTypeFunc(zjson.TypeFormatSpan)(enc, obj, pos)
+	}
 	ref := zjson.GetString(obj, zjson.NameString)
 	in := zjson.GetArray(obj, zjson.NameInline)
 	if ref == "" {
@@ -180,8 +186,11 @@ func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, _ int)
 	case zjson.RefStateZettel:
 		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(ref))
 		a = a.Set("href", u.String())
-	case zjson.RefStateBased, zjson.RefStateHosted:
+	case zjson.RefStateHosted:
 		a = a.Set("href", ref)
+	case zjson.RefStateBased:
+		u := g.builder.NewURLBuilder('/').SetRawLocal(ref)
+		a = a.Set("href", u.String())
 	case zjson.RefStateSelf:
 		a = a.Set("href", ref)
 	case zjson.RefStateBroken:

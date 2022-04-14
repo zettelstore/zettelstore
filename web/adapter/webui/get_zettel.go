@@ -37,7 +37,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		q := r.URL.Query()
 		env := evaluator.Environment{
-			GetHostedRef:     wui.createHostedReference,
 			GetImageMaterial: wui.createImageMaterial,
 		}
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)

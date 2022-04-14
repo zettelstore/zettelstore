@@ -64,7 +64,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		envEval := evaluator.Environment{
-			GetHostedRef:     wui.createHostedReference,
 			GetImageMaterial: wui.createImageMaterial,
 		}
 		enc := wui.getSimpleHTMLEncoder()
