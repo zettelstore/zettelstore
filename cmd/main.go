@@ -36,6 +36,8 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
+const strRunSimple = "run-simple"
+
 func init() {
 	RegisterCommand(Command{
 		Name: "help",
@@ -61,7 +63,7 @@ func init() {
 		SetFlags:   flgRun,
 	})
 	RegisterCommand(Command{
-		Name:   "run-simple",
+		Name:   strRunSimple,
 		Func:   runFunc,
 		Simple: true,
 		Boxes:  true,
@@ -306,14 +308,14 @@ func executeCommand(name string, args ...string) int {
 // or via a simple call ``./zettelstore`` on the command line.
 func runSimple() int {
 	if _, err := searchAndReadConfiguration(); err == nil {
-		return executeCommand("run-simple")
+		return executeCommand(strRunSimple)
 	}
 	dir := "./zettel"
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create zettel directory %q (%s)\n", dir, err)
 		return 1
 	}
-	return executeCommand("run-simple", "-d", dir)
+	return executeCommand(strRunSimple, "-d", dir)
 }
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")

@@ -67,11 +67,11 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	var buf bytes.Buffer
 
 	if tags, ok := m.Get(api.KeyAllTags); ok {
-		g.writeTags(&buf, tags)
+		writeMetaTags(&buf, tags)
 		ignore.Set(api.KeyAllTags)
 		ignore.Set(api.KeyTags)
 	} else if tags, ok = m.Get(api.KeyTags); ok {
-		g.writeTags(&buf, tags)
+		writeMetaTags(&buf, tags)
 		ignore.Set(api.KeyTags)
 	}
 
@@ -96,7 +96,7 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	}
 	return buf.String()
 }
-func (g *htmlGenerator) writeTags(buf *bytes.Buffer, tags string) {
+func writeMetaTags(buf *bytes.Buffer, tags string) {
 	buf.WriteString(`<meta name="keywords" content="`)
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -147,7 +147,7 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	return html.EncodeInline(g.enc, zjson.MakeArray(val), !noLink, noLink), nil
 }
 
-func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
+func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, _ int) (bool, zjson.CloseFunc) {
 	if s := zjson.GetString(obj, zjson.NameString); s != "" {
 		if enc.IgnoreLinks() {
 			enc.WriteString(s)

@@ -327,7 +327,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 		// Only zettel references will be evaluated.
 	case ast.RefStateInvalid, ast.RefStateBroken:
 		e.transcludeCount++
-		return e.createInlineErrorImage(en)
+		return createInlineErrorImage(en)
 	case ast.RefStateSelf:
 		e.transcludeCount++
 		return createInlineErrorText(ref, "Self", "embed", "reference:")
@@ -341,7 +341,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	zettel, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if err != nil {
 		e.transcludeCount++
-		return e.createInlineErrorImage(en)
+		return createInlineErrorImage(en)
 	}
 
 	if syntax := e.getSyntax(zettel.Meta); parser.IsImageFormat(syntax) {
@@ -419,7 +419,7 @@ func (e *evaluator) getSyntax(m *meta.Meta) string {
 	return m.GetDefault(api.KeySyntax, "")
 }
 
-func (e *evaluator) createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
+func createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
 	errorZid := id.EmojiZid
 	en.Ref = ast.ParseReference(errorZid.String())
 	if len(en.Inlines) == 0 {
@@ -498,32 +498,40 @@ func (fs *fragmentSearcher) Visit(node ast.Node) ast.Visitor {
 	}
 	switch n := node.(type) {
 	case *ast.BlockSlice:
-		for i, bn := range *n {
-			if hn, ok := bn.(*ast.HeadingNode); ok && hn.Fragment == fs.fragment {
-				fs.result = (*n)[i+1:].FirstParagraphInlines()
-				return nil
-			}
-			ast.Walk(fs, bn)
-		}
+		fs.visitBlockSlice(n)
 	case *ast.InlineSlice:
-		for i, in := range *n {
-			if mn, ok := in.(*ast.MarkNode); ok && mn.Fragment == fs.fragment {
-				ris := skipSpaceNodes((*n)[i+1:])
-				if len(mn.Inlines) > 0 {
-					fs.result = append(ast.InlineSlice{}, mn.Inlines...)
-					fs.result = append(fs.result, &ast.SpaceNode{Lexeme: " "})
-					fs.result = append(fs.result, ris...)
-				} else {
-					fs.result = ris
-				}
-				return nil
-			}
-			ast.Walk(fs, in)
-		}
+		fs.visitInlineSlice(n)
 	default:
 		return fs
 	}
 	return nil
+}
+
+func (fs *fragmentSearcher) visitBlockSlice(bs *ast.BlockSlice) {
+	for i, bn := range *bs {
+		if hn, ok := bn.(*ast.HeadingNode); ok && hn.Fragment == fs.fragment {
+			fs.result = (*bs)[i+1:].FirstParagraphInlines()
+			return
+		}
+		ast.Walk(fs, bn)
+	}
+}
+
+func (fs *fragmentSearcher) visitInlineSlice(is *ast.InlineSlice) {
+	for i, in := range *is {
+		if mn, ok := in.(*ast.MarkNode); ok && mn.Fragment == fs.fragment {
+			ris := skipSpaceNodes((*is)[i+1:])
+			if len(mn.Inlines) > 0 {
+				fs.result = append(ast.InlineSlice{}, mn.Inlines...)
+				fs.result = append(fs.result, &ast.SpaceNode{Lexeme: " "})
+				fs.result = append(fs.result, ris...)
+			} else {
+				fs.result = ris
+			}
+			return
+		}
+		ast.Walk(fs, in)
+	}
 }
 
 func skipSpaceNodes(ins ast.InlineSlice) ast.InlineSlice {

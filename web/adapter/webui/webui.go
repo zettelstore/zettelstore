@@ -147,18 +147,7 @@ func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Z
 		wui.mxRoleCSSMap.Lock()
 		mMap, err := wui.box.GetMeta(ctx, id.RoleCSSMapZid)
 		if err == nil {
-			wui.roleCSSMap = make(map[string]id.Zid, len(wui.roleCSSMap))
-			for _, p := range mMap.PairsRest() {
-				key := p.Key
-				if len(key) < 9 || !strings.HasPrefix(key, "css-") || !strings.HasSuffix(key, "-zid") {
-					continue
-				}
-				zid, err2 := id.Parse(p.Value)
-				if err2 != nil {
-					continue
-				}
-				wui.roleCSSMap[key[4:len(key)-4]] = zid
-			}
+			wui.roleCSSMap = createRoleCSSMap(mMap)
 		}
 		wui.mxRoleCSSMap.Unlock()
 		if err != nil {
@@ -179,6 +168,22 @@ func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Z
 		}
 	}
 	return id.Invalid, nil
+}
+
+func createRoleCSSMap(mMap *meta.Meta) map[string]id.Zid {
+	result := make(map[string]id.Zid)
+	for _, p := range mMap.PairsRest() {
+		key := p.Key
+		if len(key) < 9 || !strings.HasPrefix(key, "css-") || !strings.HasSuffix(key, "-zid") {
+			continue
+		}
+		zid, err2 := id.Parse(p.Value)
+		if err2 != nil {
+			continue
+		}
+		result[key[4:len(key)-4]] = zid
+	}
+	return result
 }
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
