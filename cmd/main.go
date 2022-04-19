@@ -281,9 +281,15 @@ func executeCommand(name string, args ...string) int {
 		createManager = func([]*url.URL, auth.Manager, config.Config) (box.Manager, error) { return nil, nil }
 	}
 
+	secret := cfg.GetDefault("secret", "")
+	if len(secret) < 16 && cfg.GetDefault(keyOwner, "") != "" {
+		fmt.Fprintf(os.Stderr, "secret must have at least length 16 when authentication is enabled, but is %q\n", secret)
+		return 2
+	}
+
 	kern.SetCreators(
 		func(readonly bool, owner id.Zid) (auth.Manager, error) {
-			return impl.New(readonly, owner, cfg.GetDefault("secret", "")), nil
+			return impl.New(readonly, owner, secret), nil
 		},
 		createManager,
 		func(srv server.Server, plMgr box.Manager, authMgr auth.Manager, rtConfig config.Config) error {
