@@ -182,7 +182,11 @@ func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, pos in
 			Set("rel", "noopener noreferrer")
 		suffix = g.extMarker
 	case zjson.RefStateZettel:
-		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(ref))
+		zid, fragment, hasFragment := strings.Cut(ref, "#")
+		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
+		if hasFragment {
+			u = u.SetFragment(fragment)
+		}
 		a = a.Set("href", u.String())
 	case zjson.RefStateHosted:
 		a = a.Set("href", ref)
