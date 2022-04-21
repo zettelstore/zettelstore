@@ -23,6 +23,7 @@ import (
 
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
+	_ "zettelstore.de/z/encoder/sexprenc"  // Allow to use sexpr encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.

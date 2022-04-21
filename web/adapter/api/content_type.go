@@ -23,8 +23,9 @@ const (
 var mapEncoding2CT = map[api.EncodingEnum]string{
 	api.EncoderHTML:   ctHTML,
 	api.EncoderNative: ctPlainText,
-	api.EncoderZJSON:  ctJSON,
+	api.EncoderSexpr:  ctPlainText,
 	api.EncoderText:   ctPlainText,
+	api.EncoderZJSON:  ctJSON,
 	api.EncoderZmk:    ctPlainText,
 }
 

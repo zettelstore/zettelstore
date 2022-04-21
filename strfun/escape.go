@@ -65,7 +65,8 @@ var (
 
 // JSONEscape returns the given string as a byte slice, where every non-printable
 // rune is made printable.
-func JSONEscape(w io.Writer, s string) {
+func JSONEscape(w io.Writer, s string) (int, error) {
+	length := 0
 	last := 0
 	for i, ch := range s {
 		var b []byte
@@ -91,9 +92,20 @@ func JSONEscape(w io.Writer, s string) {
 				continue
 			}
 		}
-		io.WriteString(w, s[last:i])
-		w.Write(b)
+		l1, err := io.WriteString(w, s[last:i])
+		if err != nil {
+			return 0, err
+		}
+		l2, err := w.Write(b)
+		if err != nil {
+			return 0, err
+		}
+		length += l1 + l2
 		last = i + 1
 	}
-	io.WriteString(w, s[last:])
+	l, err := io.WriteString(w, s[last:])
+	if err != nil {
+		return 0, err
+	}
+	return length + l, nil
 }
