@@ -94,7 +94,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.WriteSymbol("PARA")
 		v.writeOptInlineSlice(n.Inlines)
 	case *ast.VerbatimNode:
-		v.WriteSymbol(mapVerbatimKind[n.Kind])
+		v.WriteSymbol(mapGet(mapVerbatimKind, n.Kind))
 		v.writeAttributes(n.Attrs)
 		v.WriteSep()
 		v.WriteEscapedSymbol(string(n.Content))
@@ -178,11 +178,11 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.WriteStringSymbol(n.Fragment)
 		v.writeOptInlineSlice(n.Inlines)
 	case *ast.FormatNode:
-		v.WriteSymbol(mapFormatKind[n.Kind])
+		v.WriteSymbol(mapGet(mapFormatKind, n.Kind))
 		v.writeAttributes(n.Attrs)
 		v.writeOptInlineSlice(n.Inlines)
 	case *ast.LiteralNode:
-		v.WriteSymbol(mapLiteralKind[n.Kind])
+		v.WriteSymbol(mapGet(mapLiteralKind, n.Kind))
 		v.writeAttributes(n.Attrs)
 		v.WriteSep()
 		v.WriteEscapedSymbol(string(n.Content))
@@ -216,7 +216,7 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	if rn.Kind == ast.RegionVerse {
 		v.inVerse = true
 	}
-	v.WriteSymbol(mapRegionKind[rn.Kind])
+	v.WriteSymbol(mapGet(mapRegionKind, rn.Kind))
 	v.writeAttributes(rn.Attrs)
 	v.WriteSep()
 	ast.Walk(v, &rn.Blocks)
@@ -232,7 +232,7 @@ var mapNestedListKind = map[ast.NestedListKind]string{
 }
 
 func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
-	v.WriteSymbol(mapNestedListKind[ln.Kind])
+	v.WriteSymbol(mapGet(mapNestedListKind, ln.Kind))
 	for _, item := range ln.Items {
 		v.WriteSep()
 		v.WriteOpen()
@@ -300,7 +300,7 @@ var alignmentSymbol = map[ast.Alignment]string{
 
 func (v *visitor) writeCell(cell *ast.TableCell) {
 	v.WriteOpen()
-	v.WriteSymbol(alignmentSymbol[cell.Align])
+	v.WriteSymbol(mapGet(alignmentSymbol, cell.Align))
 	v.writeOptInlineSlice(cell.Inlines)
 	v.WriteClose()
 }
@@ -343,6 +343,7 @@ var mapFormatKind = map[ast.FormatKind]string{
 	ast.FormatQuote:  "FORMAT-QUOTE",
 	ast.FormatSpan:   "FORMAT-SPAN",
 }
+
 var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralZettel:  "LITERAL-ZETTEL",
 	ast.LiteralProg:    "LITERAL-CODE",
@@ -408,10 +409,25 @@ var mapRefState = map[ast.RefState]string{
 func (v *visitor) writeReference(ref *ast.Reference) {
 	v.WriteSep()
 	v.WriteOpen()
-	v.WriteSymbol(mapRefState[ref.State])
+	v.WriteSymbol(mapGet(mapRefState, ref.State))
 	v.WriteSep()
 	v.WriteStringSymbol(ref.Value)
 	v.WriteClose()
+}
+
+var mapMetaType = map[*meta.DescriptionType]string{
+	meta.TypeCredential:   "CREDENTIAL",
+	meta.TypeEmpty:        "EMPTY-STRING",
+	meta.TypeID:           "ZID",
+	meta.TypeIDSet:        "ZID-SET",
+	meta.TypeNumber:       "NUMBER",
+	meta.TypeString:       "STRING",
+	meta.TypeTagSet:       "TAG-SET",
+	meta.TypeTimestamp:    "TIMESTAMP",
+	meta.TypeURL:          "URL",
+	meta.TypeWord:         "WORD",
+	meta.TypeWordSet:      "WORD-SET",
+	meta.TypeZettelmarkup: "ZETTELMARKUP",
 }
 
 func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
@@ -423,7 +439,7 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		key := p.Key
 		t := m.Type(key)
 		v.WriteOpen()
-		v.WriteSymbol("META-" + t.Name)
+		v.WriteSymbol(mapGet(mapMetaType, t))
 		v.WriteSep()
 		v.WriteStringSymbol(key)
 		if t.IsSet {
@@ -442,6 +458,14 @@ func (v *visitor) writeMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 		v.WriteClose()
 	}
 	v.WriteClose()
+}
+
+func mapGet[T comparable](m map[T]string, k T) string {
+	if result, found := m[k]; found {
+		return result
+	}
+	log.Println("MISS", k, m)
+	return fmt.Sprintf("**%v:not-found**", k)
 }
 
 var (
