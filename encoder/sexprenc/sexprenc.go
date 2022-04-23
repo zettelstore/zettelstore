@@ -351,7 +351,7 @@ var mapLiteralKind = map[ast.LiteralKind]string{
 	ast.LiteralOutput:  "LITERAL-OUTPUT",
 	ast.LiteralComment: "LITERAL-COMMENT",
 	ast.LiteralHTML:    "LITERAL-HTML",
-	ast.LiteralMath:    "LITERAL-METH",
+	ast.LiteralMath:    "LITERAL-MATH",
 }
 
 func (v *visitor) writeBlockSlice(bs *ast.BlockSlice) {

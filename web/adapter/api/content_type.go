@@ -21,12 +21,11 @@ const (
 )
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
-	api.EncoderHTML:   ctHTML,
-	api.EncoderNative: ctPlainText,
-	api.EncoderSexpr:  ctPlainText,
-	api.EncoderText:   ctPlainText,
-	api.EncoderZJSON:  ctJSON,
-	api.EncoderZmk:    ctPlainText,
+	api.EncoderHTML:  ctHTML,
+	api.EncoderSexpr: ctPlainText,
+	api.EncoderText:  ctPlainText,
+	api.EncoderZJSON: ctJSON,
+	api.EncoderZmk:   ctPlainText,
 }
 
 func encoding2ContentType(enc api.EncodingEnum) string {

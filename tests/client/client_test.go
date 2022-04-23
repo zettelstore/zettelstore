@@ -167,7 +167,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	encodings := []api.EncodingEnum{
 		api.EncoderZJSON,
 		api.EncoderHTML,
-		api.EncoderNative,
+		api.EncoderSexpr,
 		api.EncoderText,
 	}
 	for _, enc := range encodings {

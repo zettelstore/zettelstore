@@ -21,12 +21,11 @@ import (
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
-	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
-	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
-	_ "zettelstore.de/z/encoder/sexprenc"  // Allow to use sexpr encoder.
-	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
-	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
-	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
+	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
+	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
+	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
+	_ "zettelstore.de/z/encoder/zjsonenc" // Allow to use ZJSON encoder.
+	_ "zettelstore.de/z/encoder/zmkenc"   // Allow to use zmk encoder.
 	"zettelstore.de/z/parser/cleaner"
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
@@ -42,11 +41,11 @@ type expectMap map[api.EncodingEnum]string
 
 const useZmk = "\000"
 const (
-	encoderZJSON  = api.EncoderZJSON
-	encoderHTML   = api.EncoderHTML
-	encoderNative = api.EncoderNative
-	encoderText   = api.EncoderText
-	encoderZmk    = api.EncoderZmk
+	encoderZJSON = api.EncoderZJSON
+	encoderHTML  = api.EncoderHTML
+	encoderSexpr = api.EncoderSexpr
+	encoderText  = api.EncoderText
+	encoderZmk   = api.EncoderZmk
 )
 
 func TestEncoder(t *testing.T) {

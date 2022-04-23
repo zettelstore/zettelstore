@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
-	_ "zettelstore.de/z/encoder/nativeenc"
+	_ "zettelstore.de/z/encoder/sexprenc"
 	_ "zettelstore.de/z/encoder/textenc"
 	_ "zettelstore.de/z/encoder/zjsonenc"
 	_ "zettelstore.de/z/encoder/zmkenc"
