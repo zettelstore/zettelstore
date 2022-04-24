@@ -16,9 +16,9 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.

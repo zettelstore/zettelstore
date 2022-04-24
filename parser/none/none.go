@@ -13,9 +13,9 @@ package none
 
 import (
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 )
 

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -17,12 +17,12 @@ import (
 	"path/filepath"
 	"time"
 
+	"zettelstore.de/c/input"
 	"zettelstore.de/z/box/filebox"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 )

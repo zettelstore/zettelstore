@@ -19,7 +19,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"zettelstore.de/z/input"
+	"zettelstore.de/c/input"
 )
 
 // Content is just the content of a zettel.

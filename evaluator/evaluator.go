@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/input"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
@@ -26,7 +27,6 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
 	"zettelstore.de/z/parser/draw"

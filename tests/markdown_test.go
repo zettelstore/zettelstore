@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
@@ -26,7 +27,6 @@ import (
 	_ "zettelstore.de/z/encoder/textenc"
 	_ "zettelstore.de/z/encoder/zjsonenc"
 	_ "zettelstore.de/z/encoder/zmkenc"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	_ "zettelstore.de/z/parser/markdown"
 	_ "zettelstore.de/z/parser/zettelmark"

@@ -19,11 +19,11 @@ import (
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
+	"zettelstore.de/c/input"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 )
 
