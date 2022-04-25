@@ -34,16 +34,14 @@ var mySE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := transformer{}
-	content := t.getSexpr(&zn.Ast)
-	meta := t.getMeta(zn.InhMeta, evalMeta)
+	content := GetSexpr(&zn.Ast)
+	meta := GetMeta(zn.InhMeta, evalMeta)
 	return sexpr.NewList(content, meta).Encode(w)
 }
 
 // WriteMeta encodes meta data as JSON.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := transformer{}
-	return t.getMeta(m, evalMeta).Encode(w)
+	return GetMeta(m, evalMeta).Encode(w)
 }
 
 func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -52,12 +50,10 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	t := transformer{}
-	return t.getSexpr(bs).Encode(w)
+	return GetSexpr(bs).Encode(w)
 }
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	t := transformer{}
-	return t.getSexpr(is).Encode(w)
+	return GetSexpr(is).Encode(w)
 }

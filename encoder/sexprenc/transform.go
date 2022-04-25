@@ -26,6 +26,12 @@ import (
 	"zettelstore.de/z/encoder"
 )
 
+// GetSexpr returns the given node as a s-expression.
+func GetSexpr(node ast.Node) *sexpr.List {
+	t := transformer{}
+	return t.getSexpr(node)
+}
+
 type transformer struct {
 	inVerse bool
 }
@@ -345,7 +351,7 @@ var mapMetaTypeS = map[*meta.DescriptionType]*sexpr.Symbol{
 	meta.TypeZettelmarkup: sexpr.SymTypeZettelmarkup,
 }
 
-func (t *transformer) getMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sexpr.List {
+func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sexpr.List {
 	pairs := m.ComputedPairs()
 	lstVals := make([]sexpr.Value, 0, len(pairs))
 	for _, p := range pairs {
@@ -363,6 +369,7 @@ func (t *transformer) getMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sexp
 			val = sexpr.NewList(setVals...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
+			t := transformer{}
 			val = t.getSexpr(&is)
 		} else {
 			val = sexpr.NewString(p.Value)

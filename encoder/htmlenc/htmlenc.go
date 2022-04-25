@@ -86,6 +86,10 @@ func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.Eva
 }
 
 func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+	// lst := sexprenc.GetSexpr(&zn.Ast)
+	// env := html.NewEncEnvironment(w, 1)
+	// env.Encode(lst)
+	// return 0, env.GetError()
 	return he.WriteBlocks(w, &zn.Ast)
 }
 
