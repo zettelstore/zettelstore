@@ -50,7 +50,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"CommentBlock","a":{"-":""},"s":"Render"}]`,
 			encoderHTML:  "<!--\nRender\n-->",
-			encoderSexpr: `((VERBATIM-COMMENT ("-" "") "Render"))`,
+			encoderSexpr: `((VERBATIM-COMMENT (("-" "")) "Render"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -237,7 +237,7 @@ and much more
 		expect: expectMap{
 			encoderZJSON: `[{"":"Description","d":[{"i":[{"":"Text","s":"Zettel"}],"e":[[{"":"Para","i":[{"":"Text","s":"Paper"}]}],[{"":"Para","i":[{"":"Text","s":"Note"}]}]]},{"i":[{"":"Text","s":"Zettelkasten"}],"e":[[{"":"Para","i":[{"":"Text","s":"Slip"},{"":"Space"},{"":"Text","s":"box"}]}]]}]}]`,
 			encoderHTML:  "<dl>\n<dt>Zettel</dt>\n<dd>Paper</dd>\n<dd>Note</dd>\n<dt>Zettelkasten</dt>\n<dd>Slip box</dd>\n</dl>",
-			encoderSexpr: `((DESCRIPTION ((TEXT "Zettel"))(((PARA (TEXT "Paper"))) ((PARA (TEXT "Note")))) ((TEXT "Zettelkasten"))(((PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
+			encoderSexpr: `((DESCRIPTION ((TEXT "Zettel")) (((PARA (TEXT "Paper"))) ((PARA (TEXT "Note")))) ((TEXT "Zettelkasten")) (((PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
 			encoderText:  "Zettel\nPaper\nNote\nZettelkasten\nSlip box",
 			encoderZmk:   useZmk,
 		},

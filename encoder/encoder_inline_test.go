@@ -127,7 +127,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Quote","a":{"lang":"de"},"i":[{"":"Text","s":"quotes"}]}]`,
 			encoderHTML:  `<q lang="de">quotes</q>`,
-			encoderSexpr: `((FORMAT-QUOTE ("lang" "de") (TEXT "quotes")))`,
+			encoderSexpr: `((FORMAT-QUOTE (("lang" "de")) (TEXT "quotes")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   `""quotes""{lang="de"}`,
 		},
@@ -193,7 +193,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Span","a":{"lang":"fr"},"i":[{"":"Quote","i":[{"":"Text","s":"abc"}]}]}]`,
 			encoderHTML:  `<span lang="fr"><q>abc</q></span>`,
-			encoderSexpr: `((FORMAT-SPAN ("lang" "fr") (FORMAT-QUOTE () (TEXT "abc"))))`,
+			encoderSexpr: `((FORMAT-SPAN (("lang" "fr")) (FORMAT-QUOTE () (TEXT "abc"))))`,
 			encoderText:  `abc`,
 			encoderZmk:   `::""abc""::{lang="fr"}`,
 		},
@@ -237,7 +237,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Comment","a":{"-":""},"s":"line comment"}]`,
 			encoderHTML:  `<!-- line comment -->`,
-			encoderSexpr: `((LITERAL-COMMENT ("-" "") "line comment"))`,
+			encoderSexpr: `((LITERAL-COMMENT (("-" "")) "line comment"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -248,7 +248,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment"}]`,
 			encoderHTML:  `Text <!-- comment -->`,
-			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT ("-" "") "comment"))`,
+			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
 		},
@@ -259,7 +259,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment --> end"}]`,
 			encoderHTML:  `Text <!-- comment --&gt; end -->`,
-			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT ("-" "") "comment --> end"))`,
+			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment --> end"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
 		},
