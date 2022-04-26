@@ -10,7 +10,7 @@
 
 package ast
 
-import "zettelstore.de/c/zjson"
+import "zettelstore.de/c/attrs"
 
 // Definition of Block nodes.
 
@@ -73,12 +73,12 @@ func (pn *ParaNode) WalkChildren(v Visitor) {
 // VerbatimNode contains uninterpreted text
 type VerbatimNode struct {
 	Kind    VerbatimKind
-	Attrs   zjson.Attributes
+	Attrs   attrs.Attributes
 	Content []byte
 }
 
 // VerbatimKind specifies the format that is applied to code inline nodes.
-type VerbatimKind uint8
+type VerbatimKind int
 
 // Constants for VerbatimCode
 const (
@@ -107,13 +107,13 @@ const (
 // RegionNode encapsulates a region of block nodes.
 type RegionNode struct {
 	Kind    RegionKind
-	Attrs   zjson.Attributes
+	Attrs   attrs.Attributes
 	Blocks  BlockSlice
 	Inlines InlineSlice // Optional text at the end of the region
 }
 
 // RegionKind specifies the actual region type.
-type RegionKind uint8
+type RegionKind int
 
 // Values for RegionCode
 const (
@@ -137,10 +137,10 @@ func (rn *RegionNode) WalkChildren(v Visitor) {
 // HeadingNode stores the heading text and level.
 type HeadingNode struct {
 	Level    int
-	Inlines  InlineSlice // Heading text, possibly formatted
+	Attrs    attrs.Attributes
 	Slug     string      // Heading text, normalized
 	Fragment string      // Heading text, suitable to be used as an unique URL fragment
-	Attrs    zjson.Attributes
+	Inlines  InlineSlice // Heading text, possibly formatted
 }
 
 func (*HeadingNode) blockNode() { /* Just a marker */ }
@@ -155,7 +155,7 @@ func (hn *HeadingNode) WalkChildren(v Visitor) {
 
 // HRuleNode specifies a horizontal rule.
 type HRuleNode struct {
-	Attrs zjson.Attributes
+	Attrs attrs.Attributes
 }
 
 func (*HRuleNode) blockNode() { /* Just a marker */ }
@@ -170,7 +170,7 @@ func (*HRuleNode) WalkChildren(Visitor) { /* No children*/ }
 type NestedListNode struct {
 	Kind  NestedListKind
 	Items []ItemSlice
-	Attrs zjson.Attributes
+	Attrs attrs.Attributes
 }
 
 // NestedListKind specifies the actual list type.

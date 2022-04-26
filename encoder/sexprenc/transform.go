@@ -19,8 +19,8 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/sexpr"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -309,7 +309,7 @@ func (t *transformer) getInlineSlice(is ast.InlineSlice) *sexpr.List {
 	return sexpr.NewList(lstVals...)
 }
 
-func getAttributes(a zjson.Attributes) *sexpr.List {
+func getAttributes(a attrs.Attributes) *sexpr.List {
 	if a.IsEmpty() {
 		return sexpr.NewList()
 	}

@@ -17,6 +17,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -461,7 +462,7 @@ func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
 }
 
 // visitAttributes write JSON attributes
-func (v *visitor) visitAttributes(a zjson.Attributes) {
+func (v *visitor) visitAttributes(a attrs.Attributes) {
 	if a.IsEmpty() {
 		return
 	}

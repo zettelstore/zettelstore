@@ -19,8 +19,8 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/input"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -163,7 +163,7 @@ func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
 	return &zn.Ast
 }
 
-func getSyntax(a zjson.Attributes, defSyntax string) string {
+func getSyntax(a attrs.Attributes, defSyntax string) string {
 	if a != nil {
 		if val, ok := a.Get(api.KeySyntax); ok {
 			return val

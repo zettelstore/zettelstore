@@ -15,8 +15,8 @@ import (
 	"unicode"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/input"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
@@ -162,7 +162,7 @@ func updateAttrs(attrs map[string]string, key, val string) {
 // continued on next line.
 // If sameLine is False, it is called from inline nodes. In this case, the next
 // rune must be '{'. A continuation on next lines is allowed.
-func (cp *zmkP) parseAttributes(sameLine bool) zjson.Attributes {
+func (cp *zmkP) parseAttributes(sameLine bool) attrs.Attributes {
 	inp := cp.inp
 	if sameLine {
 		pos := inp.Pos
@@ -170,7 +170,7 @@ func (cp *zmkP) parseAttributes(sameLine bool) zjson.Attributes {
 			inp.Next()
 		}
 		if pos < inp.Pos {
-			return zjson.Attributes{"": string(inp.Src[pos:inp.Pos])}
+			return attrs.Attributes{"": string(inp.Src[pos:inp.Pos])}
 		}
 
 		// No immediate name: skip spaces
@@ -186,21 +186,21 @@ func (cp *zmkP) parseAttributes(sameLine bool) zjson.Attributes {
 	return nil
 }
 
-func (cp *zmkP) doParseAttributes(sameLine bool) (res zjson.Attributes, success bool) {
+func (cp *zmkP) doParseAttributes(sameLine bool) (res attrs.Attributes, success bool) {
 	inp := cp.inp
 	if inp.Ch != '{' {
 		return nil, false
 	}
 	inp.Next()
-	attrs := zjson.Attributes{}
-	if !cp.parseAttributeValues(sameLine, attrs) {
+	a := attrs.Attributes{}
+	if !cp.parseAttributeValues(sameLine, a) {
 		return nil, false
 	}
 	inp.Next()
-	return attrs, true
+	return a, true
 }
 
-func (cp *zmkP) parseAttributeValues(sameLine bool, attrs zjson.Attributes) bool {
+func (cp *zmkP) parseAttributeValues(sameLine bool, a attrs.Attributes) bool {
 	inp := cp.inp
 	for {
 		cp.skipSpaceLine(sameLine)
@@ -218,14 +218,14 @@ func (cp *zmkP) parseAttributeValues(sameLine bool, attrs zjson.Attributes) bool
 			if posC == inp.Pos {
 				return false
 			}
-			updateAttrs(attrs, "class", string(inp.Src[posC:inp.Pos]))
+			updateAttrs(a, "class", string(inp.Src[posC:inp.Pos]))
 		case '=':
-			delete(attrs, "")
-			if !cp.parseAttributeValue("", attrs, sameLine) {
+			delete(a, "")
+			if !cp.parseAttributeValue("", a, sameLine) {
 				return false
 			}
 		default:
-			if !cp.parseNormalAttribute(attrs, sameLine) {
+			if !cp.parseNormalAttribute(a, sameLine) {
 				return false
 			}
 		}

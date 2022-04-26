@@ -15,8 +15,8 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/input"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
@@ -75,7 +75,7 @@ func doParseBlocks(inp *input.Input, syntax string, kind ast.VerbatimKind) ast.B
 	return ast.BlockSlice{
 		&ast.VerbatimNode{
 			Kind:    kind,
-			Attrs:   zjson.Attributes{"": syntax},
+			Attrs:   attrs.Attributes{"": syntax},
 			Content: inp.ScanLineContent(),
 		},
 	}
@@ -91,7 +91,7 @@ func doParseInlines(inp *input.Input, syntax string, kind ast.LiteralKind) ast.I
 	inp.SkipToEOL()
 	return ast.InlineSlice{&ast.LiteralNode{
 		Kind:    kind,
-		Attrs:   zjson.Attributes{"": syntax},
+		Attrs:   attrs.Attributes{"": syntax},
 		Content: append([]byte(nil), inp.Src[0:inp.Pos]...),
 	}}
 }

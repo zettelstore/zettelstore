@@ -13,7 +13,7 @@ package ast_test
 import (
 	"testing"
 
-	"zettelstore.de/c/zjson"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 )
 
@@ -46,7 +46,7 @@ func BenchmarkWalk(b *testing.B) {
 		ast.CreateParaNode(
 			&ast.FormatNode{
 				Kind: ast.FormatEmph,
-				Attrs: zjson.Attributes(map[string]string{
+				Attrs: attrs.Attributes(map[string]string{
 					"":      "class",
 					"color": "green",
 				}),

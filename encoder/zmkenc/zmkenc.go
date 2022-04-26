@@ -16,7 +16,7 @@ import (
 	"io"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/zjson"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -482,15 +482,15 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	}
 }
 
-func (v *visitor) writeLiteral(code byte, attrs zjson.Attributes, content []byte) {
+func (v *visitor) writeLiteral(code byte, a attrs.Attributes, content []byte) {
 	v.b.WriteBytes(code, code)
 	v.writeEscaped(string(content), code)
 	v.b.WriteBytes(code, code)
-	v.visitAttributes(attrs)
+	v.visitAttributes(a)
 }
 
 // visitAttributes write HTML attributes
-func (v *visitor) visitAttributes(a zjson.Attributes) {
+func (v *visitor) visitAttributes(a attrs.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
@@ -524,6 +524,6 @@ func (v *visitor) writeEscaped(s string, toEscape byte) {
 	v.b.WriteString(s[last:])
 }
 
-func syntaxToHTML(a zjson.Attributes) zjson.Attributes {
+func syntaxToHTML(a attrs.Attributes) attrs.Attributes {
 	return a.Clone().Set("", api.ValueSyntaxHTML).Remove(api.KeySyntax)
 }
