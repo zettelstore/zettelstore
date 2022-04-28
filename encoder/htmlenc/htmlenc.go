@@ -155,10 +155,10 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error)
 func (he *shtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
 	_, err := he.acceptBlocks(env, bs)
-	// if err != nil {
-	// 	// TODO
-	// 	// env.WriteEndnotes()
-	// }
+	if err == nil {
+		env.WriteEndnotes()
+		err = env.GetError()
+	}
 	return 0, err
 }
 

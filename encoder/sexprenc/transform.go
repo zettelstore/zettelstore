@@ -157,7 +157,7 @@ var mapVerbatimKindS = map[ast.VerbatimKind]*sexpr.Symbol{
 }
 
 var mapRegionKindS = map[ast.RegionKind]*sexpr.Symbol{
-	ast.RegionSpan:  sexpr.SymRegionSpan,
+	ast.RegionSpan:  sexpr.SymRegionBlock,
 	ast.RegionQuote: sexpr.SymRegionQuote,
 	ast.RegionVerse: sexpr.SymRegionVerse,
 }
@@ -193,7 +193,45 @@ func (t *transformer) getNestedList(ln *ast.NestedListNode) *sexpr.List {
 		}
 		nlistVals[i+1] = sexpr.NewList(itemVals...)
 	}
+	if ln.Kind == ast.NestedListQuote {
+		return cleanUpQuotation(nlistVals)
+	}
 	return sexpr.NewList(nlistVals...)
+}
+func cleanUpQuotation(items []sexpr.Value) *sexpr.List {
+	result := make([]sexpr.Value, 1, len(items))
+	result[0] = items[0]
+	collPara := []sexpr.Value{}
+	for i := 1; i < len(items); i++ {
+		item := items[i]
+		sections := item.(*sexpr.List).GetValue()
+		if len(sections) != 1 {
+			if len(collPara) > 0 {
+				collPara[0] = sexpr.SymPara
+				result = append(result, sexpr.NewList(collPara...))
+				collPara = collPara[0:]
+			}
+			result = append(result, item)
+			continue
+		}
+		qPara := sections[0].(*sexpr.List).GetValue()
+		if qPara[0] != sexpr.SymPara {
+			if len(collPara) > 0 {
+				collPara[0] = sexpr.SymPara
+				result = append(result, sexpr.NewList(collPara...))
+				collPara = collPara[0:]
+			}
+			result = append(result, item)
+			continue
+		}
+		qPara[0] = sexpr.NewList(sexpr.SymSoft)
+		collPara = append(collPara, qPara...)
+	}
+	if len(collPara) > 0 {
+		collPara[0] = sexpr.SymPara
+		result = append(result, sexpr.NewList(collPara...))
+	}
+	return sexpr.NewList(result...)
 }
 
 func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sexpr.List {
