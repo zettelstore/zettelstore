@@ -17,6 +17,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/input"
+	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
@@ -68,6 +69,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
+		checkSexpr(t, testNum, pe, tc.descr)
 	}
 }
 
@@ -91,6 +93,30 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 			prefix += "\nMode:     " + pe.mode()
 			t.Errorf("%s\nEncoder:  %s\nExpected: %q\nGot:      %q", prefix, enc, exp, got)
 		}
+	}
+}
+
+func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
+	t.Helper()
+	encdr := encoder.Create(encoderSexpr)
+	exp, err := pe.encode(encdr)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	val, err := sexpr.ReadString(exp)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	got := "?" + val.String()
+	if exp != got {
+		prefix := fmt.Sprintf("Test #%d", testNum)
+		if d := descr; d != "" {
+			prefix += "\nReason:   " + d
+		}
+		prefix += "\nMode:     " + pe.mode()
+		t.Errorf("%s\n\nExpected: %q\nGot:      %q", prefix, exp, got)
 	}
 }
 
