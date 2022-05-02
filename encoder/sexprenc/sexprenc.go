@@ -14,8 +14,8 @@ package sexprenc
 import (
 	"io"
 
+	"github.com/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -36,7 +36,7 @@ var mySE Encoder
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	content := GetSexpr(&zn.Ast)
 	meta := GetMeta(zn.InhMeta, evalMeta)
-	return sexpr.NewList(content, meta).Encode(w)
+	return sxpf.NewList(content, meta).Encode(w)
 }
 
 // WriteMeta encodes meta data as JSON.

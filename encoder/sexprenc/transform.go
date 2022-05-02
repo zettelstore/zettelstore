@@ -18,6 +18,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/sexpr"
@@ -27,7 +28,7 @@ import (
 )
 
 // GetSexpr returns the given node as a s-expression.
-func GetSexpr(node ast.Node) *sexpr.List {
+func GetSexpr(node ast.Node) *sxpf.List {
 	t := transformer{}
 	return t.getSexpr(node)
 }
@@ -36,36 +37,36 @@ type transformer struct {
 	inVerse bool
 }
 
-func (t *transformer) getSexpr(node ast.Node) *sexpr.List {
+func (t *transformer) getSexpr(node ast.Node) *sxpf.List {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		return t.getBlockSlice(n)
 	case *ast.InlineSlice:
 		return t.getInlineSlice(*n)
 	case *ast.ParaNode:
-		result := sexpr.NewList(sexpr.SymPara)
+		result := sxpf.NewList(sexpr.SymPara)
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.VerbatimNode:
-		return sexpr.NewList(
+		return sxpf.NewList(
 			mapGetS(mapVerbatimKindS, n.Kind),
 			getAttributes(n.Attrs),
-			sexpr.NewString(string(n.Content)),
+			sxpf.NewString(string(n.Content)),
 		)
 	case *ast.RegionNode:
 		return t.getRegion(n)
 	case *ast.HeadingNode:
-		result := sexpr.NewList(
+		result := sxpf.NewList(
 			sexpr.SymHeading,
-			sexpr.NewSymbol(strconv.Itoa(n.Level)),
+			sxpf.NewSymbol(strconv.Itoa(n.Level)),
 			getAttributes(n.Attrs),
-			sexpr.NewString(n.Slug),
-			sexpr.NewString(n.Fragment),
+			sxpf.NewString(n.Slug),
+			sxpf.NewString(n.Fragment),
 		)
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.HRuleNode:
-		return sexpr.NewList(sexpr.SymThematic, getAttributes(n.Attrs))
+		return sxpf.NewList(sexpr.SymThematic, getAttributes(n.Attrs))
 	case *ast.NestedListNode:
 		return t.getNestedList(n)
 	case *ast.DescriptionListNode:
@@ -73,27 +74,27 @@ func (t *transformer) getSexpr(node ast.Node) *sexpr.List {
 	case *ast.TableNode:
 		return t.getTable(n)
 	case *ast.TranscludeNode:
-		return sexpr.NewList(sexpr.SymTransclude, getReference(n.Ref))
+		return sxpf.NewList(sexpr.SymTransclude, getReference(n.Ref))
 	case *ast.BLOBNode:
 		return getBLOB(n)
 	case *ast.TextNode:
-		return sexpr.NewList(sexpr.SymText, sexpr.NewString(n.Text))
+		return sxpf.NewList(sexpr.SymText, sxpf.NewString(n.Text))
 	case *ast.TagNode:
-		return sexpr.NewList(sexpr.SymTag, sexpr.NewString(n.Tag))
+		return sxpf.NewList(sexpr.SymTag, sxpf.NewString(n.Tag))
 	case *ast.SpaceNode:
-		result := sexpr.NewList(sexpr.SymSpace)
+		result := sxpf.NewList(sexpr.SymSpace)
 		if t.inVerse {
-			result.Append(sexpr.NewString(n.Lexeme))
+			result.Append(sxpf.NewString(n.Lexeme))
 		}
 		return result
 	case *ast.BreakNode:
 		if n.Hard {
-			return sexpr.NewList(sexpr.SymHard)
+			return sxpf.NewList(sexpr.SymHard)
 		} else {
-			return sexpr.NewList(sexpr.SymSoft)
+			return sxpf.NewList(sexpr.SymSoft)
 		}
 	case *ast.LinkNode:
-		result := sexpr.NewList(
+		result := sxpf.NewList(
 			sexpr.SymLink,
 			getAttributes(n.Attrs),
 			getReference(n.Ref),
@@ -101,53 +102,53 @@ func (t *transformer) getSexpr(node ast.Node) *sexpr.List {
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.EmbedRefNode:
-		result := sexpr.NewList(
+		result := sxpf.NewList(
 			sexpr.SymEmbed,
 			getAttributes(n.Attrs),
 			getReference(n.Ref),
-			sexpr.NewString(n.Syntax),
+			sxpf.NewString(n.Syntax),
 		)
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.EmbedBLOBNode:
 		return t.getEmbedBLOB(n)
 	case *ast.CiteNode:
-		result := sexpr.NewList(
+		result := sxpf.NewList(
 			sexpr.SymCite,
 			getAttributes(n.Attrs),
-			sexpr.NewString(n.Key),
+			sxpf.NewString(n.Key),
 		)
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.FootnoteNode:
-		result := sexpr.NewList(sexpr.SymFootnote, getAttributes(n.Attrs))
+		result := sxpf.NewList(sexpr.SymFootnote, getAttributes(n.Attrs))
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.MarkNode:
-		result := sexpr.NewList(
+		result := sxpf.NewList(
 			sexpr.SymMark,
-			sexpr.NewString(n.Mark),
-			sexpr.NewString(n.Slug),
-			sexpr.NewString(n.Fragment),
+			sxpf.NewString(n.Mark),
+			sxpf.NewString(n.Slug),
+			sxpf.NewString(n.Fragment),
 		)
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.FormatNode:
-		result := sexpr.NewList(mapGetS(mapFormatKindS, n.Kind), getAttributes(n.Attrs))
+		result := sxpf.NewList(mapGetS(mapFormatKindS, n.Kind), getAttributes(n.Attrs))
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.LiteralNode:
-		return sexpr.NewList(
+		return sxpf.NewList(
 			mapGetS(mapLiteralKindS, n.Kind),
 			getAttributes(n.Attrs),
-			sexpr.NewString(string(n.Content)),
+			sxpf.NewString(string(n.Content)),
 		)
 	}
 	log.Printf("SEXPR %T %v\n", node, node)
-	return sexpr.NewList(sexpr.SymUnknown, sexpr.NewString(fmt.Sprintf("%T %v", node, node)))
+	return sxpf.NewList(sexpr.SymUnknown, sxpf.NewString(fmt.Sprintf("%T %v", node, node)))
 }
 
-var mapVerbatimKindS = map[ast.VerbatimKind]*sexpr.Symbol{
+var mapVerbatimKindS = map[ast.VerbatimKind]*sxpf.Symbol{
 	ast.VerbatimZettel:  sexpr.SymVerbatimZettel,
 	ast.VerbatimProg:    sexpr.SymVerbatimProg,
 	ast.VerbatimEval:    sexpr.SymVerbatimEval,
@@ -156,20 +157,20 @@ var mapVerbatimKindS = map[ast.VerbatimKind]*sexpr.Symbol{
 	ast.VerbatimHTML:    sexpr.SymVerbatimHTML,
 }
 
-var mapRegionKindS = map[ast.RegionKind]*sexpr.Symbol{
+var mapRegionKindS = map[ast.RegionKind]*sxpf.Symbol{
 	ast.RegionSpan:  sexpr.SymRegionBlock,
 	ast.RegionQuote: sexpr.SymRegionQuote,
 	ast.RegionVerse: sexpr.SymRegionVerse,
 }
 
-func (t *transformer) getRegion(rn *ast.RegionNode) *sexpr.List {
+func (t *transformer) getRegion(rn *ast.RegionNode) *sxpf.List {
 	saveInVerse := t.inVerse
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
 	symBlocks := t.getSexpr(&rn.Blocks)
 	t.inVerse = saveInVerse
-	return sexpr.NewList(
+	return sxpf.NewList(
 		mapGetS(mapRegionKindS, rn.Kind),
 		getAttributes(rn.Attrs),
 		symBlocks,
@@ -177,133 +178,133 @@ func (t *transformer) getRegion(rn *ast.RegionNode) *sexpr.List {
 	)
 }
 
-var mapNestedListKindS = map[ast.NestedListKind]*sexpr.Symbol{
+var mapNestedListKindS = map[ast.NestedListKind]*sxpf.Symbol{
 	ast.NestedListOrdered:   sexpr.SymListOrdered,
 	ast.NestedListUnordered: sexpr.SymListUnordered,
 	ast.NestedListQuote:     sexpr.SymListQuote,
 }
 
-func (t *transformer) getNestedList(ln *ast.NestedListNode) *sexpr.List {
-	nlistVals := make([]sexpr.Value, len(ln.Items)+1)
+func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
+	nlistVals := make([]sxpf.Value, len(ln.Items)+1)
 	nlistVals[0] = mapGetS(mapNestedListKindS, ln.Kind)
 	for i, item := range ln.Items {
-		itemVals := make([]sexpr.Value, len(item))
+		itemVals := make([]sxpf.Value, len(item))
 		for j, in := range item {
 			itemVals[j] = t.getSexpr(in)
 		}
-		nlistVals[i+1] = sexpr.NewList(itemVals...)
+		nlistVals[i+1] = sxpf.NewList(itemVals...)
 	}
 	if ln.Kind == ast.NestedListQuote {
 		return cleanUpQuotation(nlistVals)
 	}
-	return sexpr.NewList(nlistVals...)
+	return sxpf.NewList(nlistVals...)
 }
-func cleanUpQuotation(items []sexpr.Value) *sexpr.List {
-	result := make([]sexpr.Value, 1, len(items))
+func cleanUpQuotation(items []sxpf.Value) *sxpf.List {
+	result := make([]sxpf.Value, 1, len(items))
 	result[0] = items[0]
-	collPara := []sexpr.Value{}
+	collPara := []sxpf.Value{}
 	for i := 1; i < len(items); i++ {
 		item := items[i]
-		sections := item.(*sexpr.List).GetValue()
+		sections := item.(*sxpf.List).GetValue()
 		if len(sections) != 1 {
 			if len(collPara) > 0 {
 				collPara[0] = sexpr.SymPara
-				result = append(result, sexpr.NewList(collPara...))
+				result = append(result, sxpf.NewList(collPara...))
 				collPara = collPara[0:]
 			}
 			result = append(result, item)
 			continue
 		}
-		qPara := sections[0].(*sexpr.List).GetValue()
+		qPara := sections[0].(*sxpf.List).GetValue()
 		if qPara[0] != sexpr.SymPara {
 			if len(collPara) > 0 {
 				collPara[0] = sexpr.SymPara
-				result = append(result, sexpr.NewList(collPara...))
+				result = append(result, sxpf.NewList(collPara...))
 				collPara = collPara[0:]
 			}
 			result = append(result, item)
 			continue
 		}
-		qPara[0] = sexpr.NewList(sexpr.SymSoft)
+		qPara[0] = sxpf.NewList(sexpr.SymSoft)
 		collPara = append(collPara, qPara...)
 	}
 	if len(collPara) > 0 {
 		collPara[0] = sexpr.SymPara
-		result = append(result, sexpr.NewList(collPara...))
+		result = append(result, sxpf.NewList(collPara...))
 	}
-	return sexpr.NewList(result...)
+	return sxpf.NewList(result...)
 }
 
-func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sexpr.List {
-	dlVals := make([]sexpr.Value, 2*len(dn.Descriptions)+1)
+func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List {
+	dlVals := make([]sxpf.Value, 2*len(dn.Descriptions)+1)
 	dlVals[0] = sexpr.SymDescription
 	for i, def := range dn.Descriptions {
 		dlVals[2*i+1] = t.getInlineSlice(def.Term)
-		descVals := make([]sexpr.Value, len(def.Descriptions))
+		descVals := make([]sxpf.Value, len(def.Descriptions))
 		for j, b := range def.Descriptions {
-			dVal := make([]sexpr.Value, len(b))
+			dVal := make([]sxpf.Value, len(b))
 			for k, dn := range b {
 				dVal[k] = t.getSexpr(dn)
 			}
-			descVals[j] = sexpr.NewList(dVal...)
+			descVals[j] = sxpf.NewList(dVal...)
 		}
-		dlVals[2*i+2] = sexpr.NewList(descVals...)
+		dlVals[2*i+2] = sxpf.NewList(descVals...)
 	}
-	return sexpr.NewList(dlVals...)
+	return sxpf.NewList(dlVals...)
 }
 
-func (t *transformer) getTable(tn *ast.TableNode) *sexpr.List {
-	tVals := make([]sexpr.Value, len(tn.Rows)+2)
+func (t *transformer) getTable(tn *ast.TableNode) *sxpf.List {
+	tVals := make([]sxpf.Value, len(tn.Rows)+2)
 	tVals[0] = sexpr.SymTable
 	tVals[1] = t.getRow(tn.Header)
 	for i, row := range tn.Rows {
 		tVals[i+2] = t.getRow(row)
 	}
-	return sexpr.NewList(tVals...)
+	return sxpf.NewList(tVals...)
 }
-func (t *transformer) getRow(row ast.TableRow) *sexpr.List {
-	rVals := make([]sexpr.Value, len(row))
+func (t *transformer) getRow(row ast.TableRow) *sxpf.List {
+	rVals := make([]sxpf.Value, len(row))
 	for i, cell := range row {
 		rVals[i] = t.getCell(cell)
 	}
-	return sexpr.NewList(rVals...)
+	return sxpf.NewList(rVals...)
 }
 
-var alignmentSymbolS = map[ast.Alignment]*sexpr.Symbol{
+var alignmentSymbolS = map[ast.Alignment]*sxpf.Symbol{
 	ast.AlignDefault: sexpr.SymCell,
 	ast.AlignLeft:    sexpr.SymCellLeft,
 	ast.AlignCenter:  sexpr.SymCellCenter,
 	ast.AlignRight:   sexpr.SymCellRight,
 }
 
-func (t *transformer) getCell(cell *ast.TableCell) *sexpr.List {
-	result := sexpr.NewList(mapGetS(alignmentSymbolS, cell.Align))
+func (t *transformer) getCell(cell *ast.TableCell) *sxpf.List {
+	result := sxpf.NewList(mapGetS(alignmentSymbolS, cell.Align))
 	result.Extend(t.getInlineSlice(cell.Inlines))
 	return result
 }
 
-func getBLOB(bn *ast.BLOBNode) *sexpr.List {
-	result := sexpr.NewList(
+func getBLOB(bn *ast.BLOBNode) *sxpf.List {
+	result := sxpf.NewList(
 		sexpr.SymBLOB,
-		sexpr.NewString(bn.Title),
-		sexpr.NewString(bn.Syntax),
+		sxpf.NewString(bn.Title),
+		sxpf.NewString(bn.Syntax),
 	)
 	if bn.Syntax == api.ValueSyntaxSVG {
-		result.Append(sexpr.NewString(string(bn.Blob)))
+		result.Append(sxpf.NewString(string(bn.Blob)))
 	} else {
 		result.Append(getBase64String(bn.Blob))
 	}
 	return result
 }
 
-func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sexpr.List {
-	result := sexpr.NewList(
+func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.List {
+	result := sxpf.NewList(
 		sexpr.SymEmbedBLOB,
 		getAttributes(en.Attrs),
-		sexpr.NewString(en.Syntax),
+		sxpf.NewString(en.Syntax),
 	)
 	if en.Syntax == api.ValueSyntaxSVG {
-		result.Append(sexpr.NewString(string(en.Blob)))
+		result.Append(sxpf.NewString(string(en.Blob)))
 	} else {
 		result.Append(getBase64String(en.Blob))
 	}
@@ -311,7 +312,7 @@ func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sexpr.List {
 	return result
 }
 
-var mapFormatKindS = map[ast.FormatKind]*sexpr.Symbol{
+var mapFormatKindS = map[ast.FormatKind]*sxpf.Symbol{
 	ast.FormatEmph:   sexpr.SymFormatEmph,
 	ast.FormatStrong: sexpr.SymFormatStrong,
 	ast.FormatDelete: sexpr.SymFormatDelete,
@@ -322,7 +323,7 @@ var mapFormatKindS = map[ast.FormatKind]*sexpr.Symbol{
 	ast.FormatSpan:   sexpr.SymFormatSpan,
 }
 
-var mapLiteralKindS = map[ast.LiteralKind]*sexpr.Symbol{
+var mapLiteralKindS = map[ast.LiteralKind]*sxpf.Symbol{
 	ast.LiteralZettel:  sexpr.SymLiteralZettel,
 	ast.LiteralProg:    sexpr.SymLiteralProg,
 	ast.LiteralInput:   sexpr.SymLiteralInput,
@@ -332,34 +333,34 @@ var mapLiteralKindS = map[ast.LiteralKind]*sexpr.Symbol{
 	ast.LiteralMath:    sexpr.SymLiteralMath,
 }
 
-func (t *transformer) getBlockSlice(bs *ast.BlockSlice) *sexpr.List {
-	lstVals := make([]sexpr.Value, len(*bs))
+func (t *transformer) getBlockSlice(bs *ast.BlockSlice) *sxpf.List {
+	lstVals := make([]sxpf.Value, len(*bs))
 	for i, n := range *bs {
 		lstVals[i] = t.getSexpr(n)
 	}
-	return sexpr.NewList(lstVals...)
+	return sxpf.NewList(lstVals...)
 }
-func (t *transformer) getInlineSlice(is ast.InlineSlice) *sexpr.List {
-	lstVals := make([]sexpr.Value, len(is))
+func (t *transformer) getInlineSlice(is ast.InlineSlice) *sxpf.List {
+	lstVals := make([]sxpf.Value, len(is))
 	for i, n := range is {
 		lstVals[i] = t.getSexpr(n)
 	}
-	return sexpr.NewList(lstVals...)
+	return sxpf.NewList(lstVals...)
 }
 
-func getAttributes(a attrs.Attributes) *sexpr.List {
+func getAttributes(a attrs.Attributes) *sxpf.List {
 	if a.IsEmpty() {
-		return sexpr.NewList()
+		return sxpf.NewList()
 	}
 	keys := a.Keys()
-	lstVals := make([]sexpr.Value, 0, len(keys))
+	lstVals := make([]sxpf.Value, 0, len(keys))
 	for _, k := range keys {
-		lstVals = append(lstVals, sexpr.NewList(sexpr.NewString(k), sexpr.NewString(a[k])))
+		lstVals = append(lstVals, sxpf.NewList(sxpf.NewString(k), sxpf.NewString(a[k])))
 	}
-	return sexpr.NewList(lstVals...)
+	return sxpf.NewList(lstVals...)
 }
 
-var mapRefStateS = map[ast.RefState]*sexpr.Symbol{
+var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateInvalid:  sexpr.SymRefStateInvalid,
 	ast.RefStateZettel:   sexpr.SymRefStateZettel,
 	ast.RefStateSelf:     sexpr.SymRefStateSelf,
@@ -370,11 +371,11 @@ var mapRefStateS = map[ast.RefState]*sexpr.Symbol{
 	ast.RefStateExternal: sexpr.SymRefStateExternal,
 }
 
-func getReference(ref *ast.Reference) *sexpr.List {
-	return sexpr.NewList(mapGetS(mapRefStateS, ref.State), sexpr.NewString(ref.Value))
+func getReference(ref *ast.Reference) *sxpf.List {
+	return sxpf.NewList(mapGetS(mapRefStateS, ref.State), sxpf.NewString(ref.Value))
 }
 
-var mapMetaTypeS = map[*meta.DescriptionType]*sexpr.Symbol{
+var mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
 	meta.TypeCredential:   sexpr.SymTypeCredential,
 	meta.TypeEmpty:        sexpr.SymTypeEmpty,
 	meta.TypeID:           sexpr.SymTypeID,
@@ -389,43 +390,43 @@ var mapMetaTypeS = map[*meta.DescriptionType]*sexpr.Symbol{
 	meta.TypeZettelmarkup: sexpr.SymTypeZettelmarkup,
 }
 
-func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sexpr.List {
+func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
 	pairs := m.ComputedPairs()
-	lstVals := make([]sexpr.Value, 0, len(pairs))
+	lstVals := make([]sxpf.Value, 0, len(pairs))
 	for _, p := range pairs {
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(mapMetaTypeS, ty)
-		symKey := sexpr.NewSymbol(key)
-		var val sexpr.Value
+		symKey := sxpf.NewSymbol(key)
+		var val sxpf.Value
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
-			setVals := make([]sexpr.Value, len(setList))
+			setVals := make([]sxpf.Value, len(setList))
 			for i, val := range setList {
-				setVals[i] = sexpr.NewString(val)
+				setVals[i] = sxpf.NewString(val)
 			}
-			val = sexpr.NewList(setVals...)
+			val = sxpf.NewList(setVals...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			t := transformer{}
 			val = t.getSexpr(&is)
 		} else {
-			val = sexpr.NewString(p.Value)
+			val = sxpf.NewString(p.Value)
 		}
-		lstVals = append(lstVals, sexpr.NewList(symType, symKey, val))
+		lstVals = append(lstVals, sxpf.NewList(symType, symKey, val))
 	}
-	return sexpr.NewList(lstVals...)
+	return sxpf.NewList(lstVals...)
 }
 
-func mapGetS[T comparable](m map[T]*sexpr.Symbol, k T) *sexpr.Symbol {
+func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
 	if result, found := m[k]; found {
 		return result
 	}
 	log.Println("MISS", k, m)
-	return sexpr.NewSymbol(fmt.Sprintf("**%v:not-found**", k))
+	return sxpf.NewSymbol(fmt.Sprintf("**%v:not-found**", k))
 }
 
-func getBase64String(data []byte) *sexpr.String {
+func getBase64String(data []byte) *sxpf.String {
 	var buf bytes.Buffer
 	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
 	_, err := encoder.Write(data)
@@ -433,7 +434,7 @@ func getBase64String(data []byte) *sexpr.String {
 		err = encoder.Close()
 	}
 	if err == nil {
-		return sexpr.NewString(buf.String())
+		return sxpf.NewString(buf.String())
 	}
 	return nil
 }

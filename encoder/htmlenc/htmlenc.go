@@ -104,14 +104,14 @@ func (he *shtmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta en
 	if hasTitle {
 		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
 			io.WriteString(w, "<h1>")
-			if l, err := he.acceptInlines(env, &isTitle); err != nil {
+			if l, err := acceptInlines(env, &isTitle); err != nil {
 				return l, err
 			}
 			io.WriteString(w, "</h1>\n")
 		}
 	}
 
-	_, err := he.acceptBlocks(env, &zn.Ast)
+	_, err := acceptBlocks(env, &zn.Ast)
 	if err == nil {
 		// env.WriteEndnotes()
 		io.WriteString(w, "</body>\n</html>")
@@ -154,7 +154,7 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error)
 }
 func (he *shtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
-	_, err := he.acceptBlocks(env, bs)
+	_, err := acceptBlocks(env, bs)
 	if err == nil {
 		env.WriteEndnotes()
 		err = env.GetError()
@@ -172,7 +172,7 @@ func (he *htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, erro
 }
 func (he *shtmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
-	return he.acceptInlines(env, is)
+	return acceptInlines(env, is)
 }
 
 func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
@@ -201,12 +201,12 @@ func (he *htmlEncoder) acceptInlines(enc *html.Encoder, is *ast.InlineSlice) err
 	enc.TraverseInline(zjson.MakeArray(val))
 	return nil
 }
-func (he *shtmlEncoder) acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) (int, error) {
+func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) (int, error) {
 	lst := sexprenc.GetSexpr(bs)
 	env.Encode(lst)
 	return 0, env.GetError()
 }
-func (he *shtmlEncoder) acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) (int, error) {
+func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) (int, error) {
 	lst := sexprenc.GetSexpr(is)
 	env.Encode(lst)
 	return 0, env.GetError()

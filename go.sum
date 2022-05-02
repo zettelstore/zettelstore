@@ -2,6 +2,8 @@ github.com/fsnotify/fsnotify v1.5.2 h1:M+aHumjFDOySyAjWICQHrDfuizRTP7nzkRHxXfyRP
 github.com/fsnotify/fsnotify v1.5.2/go.mod h1:VKyWoa5earkjWzuYFJOy3s0DLrlWgSh5nf5hjFuJcAw=
 github.com/pascaldekloe/jwt v1.10.0 h1:ktcIUV4TPvh404R5dIBEnPCsSwj0sqi3/0+XafE5gJs=
 github.com/pascaldekloe/jwt v1.10.0/go.mod h1:TKhllgThT7TOP5rGr2zMLKEDZRAgJfBbtKyVeRsNB9A=
+github.com/t73fde/sxpf v0.0.0-20220502131009-d3afb4dafcdb h1:GIRLypPkXp7pfARcWy10sb2CL1mq5aTpxan5af7iRaQ=
+github.com/t73fde/sxpf v0.0.0-20220502131009-d3afb4dafcdb/go.mod h1:RzBZUokQ1KpncB/h939F8uwjzqhE1EQbJv7HUgKAcqc=
 github.com/yuin/goldmark v1.4.12 h1:6hffw6vALvEDqJ19dOJvJKOoAOKe4NDaTqvd2sktGN0=
 github.com/yuin/goldmark v1.4.12/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 h1:kUhD7nTDoI3fVd9G4ORWrbV5NY0liEs/Jg2pv5f+bBA=
@@ -12,5 +14,5 @@ golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 h1:EH1Deb8WZJ0xc0WK//leUHXc
 golang.org/x/term v0.0.0-20220411215600-e5f449aeb171/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
-zettelstore.de/c v0.0.0-20220430121414-e820088cb05a h1:I2YzubHFp+zjU6h9e/Rz2+suB251O5xiNxL18+CfBRo=
-zettelstore.de/c v0.0.0-20220430121414-e820088cb05a/go.mod h1:qwOHFJY7r9Bz7nwdyYsR38rgQWGR20DEUbTvhUML7cw=
+zettelstore.de/c v0.0.0-20220502132728-6de3b487a818 h1:Uo7pKy4XKxtZRCIIFRJiE6hVU42lM+7hPkTah1b9NHQ=
+zettelstore.de/c v0.0.0-20220502132728-6de3b487a818/go.mod h1:yn5aYZOTOQitj7kyHTwxzIqAS4Kyq12DMYULj7QGDho=
