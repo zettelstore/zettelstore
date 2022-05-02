@@ -152,7 +152,7 @@ func (he *htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error)
 	enc.WriteEndnotes()
 	return 0, nil
 }
-func (he *shtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*shtmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
 	_, err := acceptBlocks(env, bs)
 	if err == nil {
@@ -170,7 +170,7 @@ func (he *htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, erro
 	}
 	return 0, nil
 }
-func (he *shtmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*shtmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
 	return acceptInlines(env, is)
 }
