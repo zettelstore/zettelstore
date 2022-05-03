@@ -194,45 +194,7 @@ func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
 		}
 		nlistVals[i+1] = sxpf.NewList(itemVals...)
 	}
-	if ln.Kind == ast.NestedListQuote {
-		return cleanUpQuotation(nlistVals)
-	}
 	return sxpf.NewList(nlistVals...)
-}
-func cleanUpQuotation(items []sxpf.Value) *sxpf.List {
-	result := make([]sxpf.Value, 1, len(items))
-	result[0] = items[0]
-	collPara := []sxpf.Value{}
-	for i := 1; i < len(items); i++ {
-		item := items[i]
-		sections := item.(*sxpf.List).GetValue()
-		if len(sections) != 1 {
-			if len(collPara) > 0 {
-				collPara[0] = sexpr.SymPara
-				result = append(result, sxpf.NewList(collPara...))
-				collPara = collPara[0:]
-			}
-			result = append(result, item)
-			continue
-		}
-		qPara := sections[0].(*sxpf.List).GetValue()
-		if qPara[0] != sexpr.SymPara {
-			if len(collPara) > 0 {
-				collPara[0] = sexpr.SymPara
-				result = append(result, sxpf.NewList(collPara...))
-				collPara = collPara[0:]
-			}
-			result = append(result, item)
-			continue
-		}
-		qPara[0] = sxpf.NewList(sexpr.SymSoft)
-		collPara = append(collPara, qPara...)
-	}
-	if len(collPara) > 0 {
-		collPara[0] = sexpr.SymPara
-		result = append(result, sxpf.NewList(collPara...))
-	}
-	return sxpf.NewList(result...)
 }
 
 func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List {

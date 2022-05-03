@@ -83,6 +83,38 @@ func (pp *postProcessor) visitNestedList(ln *ast.NestedListNode) {
 	for i, item := range ln.Items {
 		ln.Items[i] = pp.processItemSlice(item)
 	}
+	if ln.Kind != ast.NestedListQuote {
+		return
+	}
+	items := []ast.ItemSlice{}
+	collectedInlines := ast.InlineSlice{}
+
+	addCollectedParagraph := func() {
+		if len(collectedInlines) > 1 {
+			items = append(items, []ast.ItemNode{&ast.ParaNode{Inlines: collectedInlines[1:]}})
+			collectedInlines = ast.InlineSlice{}
+		}
+	}
+
+	for _, item := range ln.Items {
+		if len(item) != 1 { // i.e. 0 or > 1
+			addCollectedParagraph()
+			items = append(items, item)
+			continue
+		}
+
+		// len(item) == 1
+		if pn, ok := item[0].(*ast.ParaNode); ok {
+			collectedInlines = append(collectedInlines, &ast.BreakNode{})
+			collectedInlines = append(collectedInlines, pn.Inlines...)
+			continue
+		}
+
+		addCollectedParagraph()
+		items = append(items, item)
+	}
+	addCollectedParagraph()
+	ln.Items = items
 }
 
 func (pp *postProcessor) visitDescriptionList(dn *ast.DescriptionListNode) {

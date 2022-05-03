@@ -23,10 +23,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-
-	// Ensure that the text encoder is available.
-	// Needed by parser/cleanup.go
-	_ "zettelstore.de/z/encoder/textenc"
 )
 
 type TestCase struct{ source, want string }
@@ -620,6 +616,15 @@ func TestList(t *testing.T) {
 
 		// Quotation lists may have empty items
 		{">", "(QL {})"},
+	})
+}
+
+func TestQuoteList(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"> w1 w2", "(QL {(PARA w1 SP w2)})"},
+		{"> w1\n> w2", "(QL {(PARA w1 SB w2)})"},
+		{"> w1\n>\n>w2", "(QL {(PARA w1)} {})(PARA >w2)"},
 	})
 }
 
