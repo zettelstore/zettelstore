@@ -14,9 +14,9 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/parser/blob" // Allow to use BLOB parser.

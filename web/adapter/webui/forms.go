@@ -17,10 +17,10 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 )
 
 type formZettelData struct {

@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
 	"zettelstore.de/z/box"
@@ -31,6 +30,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"

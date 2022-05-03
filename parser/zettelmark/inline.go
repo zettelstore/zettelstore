@@ -15,8 +15,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/input"
 )
 
 // parseInlineSlice parses a sequence of Inlines until EOS.

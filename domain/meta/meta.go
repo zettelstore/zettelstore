@@ -20,8 +20,8 @@ import (
 	"unicode/utf8"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
 )
 

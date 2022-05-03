@@ -17,12 +17,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/box/filebox"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 )

@@ -16,12 +16,12 @@ import (
 	"io"
 	"strings"
 
-	"zettelstore.de/c/input"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/search"
 )
