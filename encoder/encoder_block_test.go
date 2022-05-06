@@ -67,21 +67,21 @@ var tcsBlock = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Einfache Liste",
+		descr: "Simple List",
 		zmk:   "* A\n* B\n* C",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"A"}]}],[{"":"Para","i":[{"":"Text","s":"B"}]}],[{"":"Para","i":[{"":"Text","s":"C"}]}]]}]`,
 			encoderHTML:  "<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>",
-			encoderSexpr: `((UNORDERED ((PARA (TEXT "A"))) ((PARA (TEXT "B"))) ((PARA (TEXT "C")))))`,
+			encoderSexpr: `((UNORDERED ((TEXT "A")) ((TEXT "B")) ((TEXT "C"))))`,
 			encoderText:  "A\nB\nC",
 			encoderZmk:   useZmk,
 		},
 	},
 	{
-		descr: "Schachtelliste",
-		zmk:   "* T1\n** T2\n* T3\n** T4\n* T5",
+		descr: "Nested List",
+		zmk:   "* T1\n** T2\n* T3\n** T4\n** T5\n* T6",
 		expect: expectMap{
-			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T1"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T2"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T3"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T4"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T5"}]}]]}]`,
+			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T1"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T2"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T3"}]},{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"T4"}]}],[{"":"Para","i":[{"":"Text","s":"T5"}]}]]}],[{"":"Para","i":[{"":"Text","s":"T6"}]}]]}]`,
 			encoderHTML: `<ul>
 <li><p>T1</p>
 <ul>
@@ -90,21 +90,22 @@ var tcsBlock = []zmkTestCase{
 <li><p>T3</p>
 <ul>
 <li>T4</li>
+<li>T5</li>
 </ul></li>
-<li><p>T5</p></li>
+<li><p>T6</p></li>
 </ul>`,
-			encoderSexpr: `((UNORDERED ((PARA (TEXT "T1")) (UNORDERED ((PARA (TEXT "T2"))))) ((PARA (TEXT "T3")) (UNORDERED ((PARA (TEXT "T4"))))) ((PARA (TEXT "T5")))))`,
-			encoderText:  "T1\nT2\nT3\nT4\nT5",
+			encoderSexpr: `((UNORDERED ((PARA (TEXT "T1")) (UNORDERED ((TEXT "T2")))) ((PARA (TEXT "T3")) (UNORDERED ((TEXT "T4")) ((TEXT "T5")))) ((PARA (TEXT "T6")))))`,
+			encoderText:  "T1\nT2\nT3\nT4\nT5\nT6",
 			encoderZmk:   useZmk,
 		},
 	},
 	{
-		descr: "Zwei Listen hintereinander",
+		descr: "Sequence of two lists",
 		zmk:   "* Item1.1\n* Item1.2\n* Item1.3\n\n* Item2.1\n* Item2.2",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Bullet","c":[[{"":"Para","i":[{"":"Text","s":"Item1.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.2"}]}],[{"":"Para","i":[{"":"Text","s":"Item1.3"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.1"}]}],[{"":"Para","i":[{"":"Text","s":"Item2.2"}]}]]}]`,
 			encoderHTML:  "<ul>\n<li>Item1.1</li>\n<li>Item1.2</li>\n<li>Item1.3</li>\n<li>Item2.1</li>\n<li>Item2.2</li>\n</ul>",
-			encoderSexpr: `((UNORDERED ((PARA (TEXT "Item1.1"))) ((PARA (TEXT "Item1.2"))) ((PARA (TEXT "Item1.3"))) ((PARA (TEXT "Item2.1"))) ((PARA (TEXT "Item2.2")))))`,
+			encoderSexpr: `((UNORDERED ((TEXT "Item1.1")) ((TEXT "Item1.2")) ((TEXT "Item1.3")) ((TEXT "Item2.1")) ((TEXT "Item2.2"))))`,
 			encoderText:  "Item1.1\nItem1.2\nItem1.3\nItem2.1\nItem2.2",
 			encoderZmk:   "* Item1.1\n* Item1.2\n* Item1.3\n* Item2.1\n* Item2.2",
 		},
@@ -137,7 +138,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Para","i":[{"":"Text","s":"Text"}]},{"":"Ordered","c":[[{"":"Para","i":[{"":"Text","s":"abc"}]}]]}]`,
 			encoderHTML:  "<p>Text</p>\n<ol>\n<li>abc</li>\n</ol>",
-			encoderSexpr: `((PARA (TEXT "Text")) (ORDERED ((PARA (TEXT "abc")))))`,
+			encoderSexpr: `((PARA (TEXT "Text")) (ORDERED ((TEXT "abc"))))`,
 			encoderText:  "Text\nabc",
 			encoderZmk:   useZmk,
 		},

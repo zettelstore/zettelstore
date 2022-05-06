@@ -187,7 +187,13 @@ var mapNestedListKindS = map[ast.NestedListKind]*sxpf.Symbol{
 func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
 	nlistVals := make([]sxpf.Value, len(ln.Items)+1)
 	nlistVals[0] = mapGetS(mapNestedListKindS, ln.Kind)
+	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
+		if isCompact && len(item) > 0 {
+			paragraph := t.getSexpr(item[0])
+			nlistVals[i+1] = sxpf.NewList(paragraph.GetValue()[1:]...)
+			continue
+		}
 		itemVals := make([]sxpf.Value, len(item))
 		for j, in := range item {
 			itemVals[j] = t.getSexpr(in)
@@ -195,6 +201,19 @@ func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
 		nlistVals[i+1] = sxpf.NewList(itemVals...)
 	}
 	return sxpf.NewList(nlistVals...)
+}
+func isCompactList(itemSlice []ast.ItemSlice) bool {
+	for _, items := range itemSlice {
+		if len(items) > 1 {
+			return false
+		}
+		if len(items) == 1 {
+			if _, ok := items[0].(*ast.ParaNode); !ok {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List {
