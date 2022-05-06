@@ -16,6 +16,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/c/zjson"
@@ -203,11 +204,11 @@ func (he *htmlEncoder) acceptInlines(enc *html.Encoder, is *ast.InlineSlice) err
 }
 func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) (int, error) {
 	lst := sexprenc.GetSexpr(bs)
-	env.Encode(lst)
+	sxpf.Evaluate(env, lst)
 	return 0, env.GetError()
 }
 func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) (int, error) {
 	lst := sexprenc.GetSexpr(is)
-	env.Encode(lst)
+	sxpf.Evaluate(env, lst)
 	return 0, env.GetError()
 }
