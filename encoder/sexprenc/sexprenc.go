@@ -36,12 +36,12 @@ var mySE Encoder
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	content := GetSexpr(&zn.Ast)
 	meta := GetMeta(zn.InhMeta, evalMeta)
-	return sxpf.NewList(content, meta).Encode(w)
+	return io.WriteString(w, sxpf.NewList(content, meta).String())
 }
 
 // WriteMeta encodes meta data as JSON.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	return GetMeta(m, evalMeta).Encode(w)
+	return io.WriteString(w, GetMeta(m, evalMeta).String())
 }
 
 func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -50,10 +50,10 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	return GetSexpr(bs).Encode(w)
+	return io.WriteString(w, GetSexpr(bs).String())
 }
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	return GetSexpr(is).Encode(w)
+	return io.WriteString(w, GetSexpr(is).String())
 }
