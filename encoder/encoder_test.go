@@ -17,6 +17,7 @@ import (
 
 	"github.com/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
@@ -104,7 +105,7 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := sxpf.ReadString(exp)
+	val, err := sxpf.ReadString(sexpr.Env, exp)
 	if err != nil {
 		t.Error(err)
 		return
