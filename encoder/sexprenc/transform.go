@@ -58,7 +58,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.List {
 	case *ast.HeadingNode:
 		result := sxpf.NewList(
 			sexpr.SymHeading,
-			sexpr.Env.MakeSymbol(strconv.Itoa(n.Level)),
+			sexpr.Smk.MakeSymbol(strconv.Itoa(n.Level)),
 			getAttributes(n.Attrs),
 			sxpf.NewString(n.Slug),
 			sxpf.NewString(n.Fragment),
@@ -378,7 +378,7 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(mapMetaTypeS, ty)
-		symKey := sexpr.Env.MakeSymbol(key)
+		symKey := sexpr.Smk.MakeSymbol(key)
 		var val sxpf.Value
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
@@ -404,7 +404,7 @@ func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
 		return result
 	}
 	log.Println("MISS", k, m)
-	return sexpr.Env.MakeSymbol(fmt.Sprintf("**%v:not-found**", k))
+	return sexpr.Smk.MakeSymbol(fmt.Sprintf("**%v:not-found**", k))
 }
 
 func getBase64String(data []byte) *sxpf.String {

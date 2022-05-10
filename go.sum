@@ -2,8 +2,8 @@ github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwV
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 github.com/pascaldekloe/jwt v1.10.0 h1:ktcIUV4TPvh404R5dIBEnPCsSwj0sqi3/0+XafE5gJs=
 github.com/pascaldekloe/jwt v1.10.0/go.mod h1:TKhllgThT7TOP5rGr2zMLKEDZRAgJfBbtKyVeRsNB9A=
-github.com/t73fde/sxpf v0.0.0-20220509165826-85068718ea9c h1:9E20dvJ/3uhbyj1hdT0GeNUuL4GXT7NW0iZOuPXU9QE=
-github.com/t73fde/sxpf v0.0.0-20220509165826-85068718ea9c/go.mod h1:RzBZUokQ1KpncB/h939F8uwjzqhE1EQbJv7HUgKAcqc=
+github.com/t73fde/sxpf v0.0.0-20220510171212-acdd8c332225 h1:Y6Fy5LinOLmVRmER2iGvswVGdPy0XlSS+XV3jx4vsyc=
+github.com/t73fde/sxpf v0.0.0-20220510171212-acdd8c332225/go.mod h1:RzBZUokQ1KpncB/h939F8uwjzqhE1EQbJv7HUgKAcqc=
 github.com/yuin/goldmark v1.4.12 h1:6hffw6vALvEDqJ19dOJvJKOoAOKe4NDaTqvd2sktGN0=
 github.com/yuin/goldmark v1.4.12/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 h1:kUhD7nTDoI3fVd9G4ORWrbV5NY0liEs/Jg2pv5f+bBA=
@@ -14,5 +14,5 @@ golang.org/x/term v0.0.0-20220411215600-e5f449aeb171 h1:EH1Deb8WZJ0xc0WK//leUHXc
 golang.org/x/term v0.0.0-20220411215600-e5f449aeb171/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
-zettelstore.de/c v0.0.0-20220509170027-22f0aeb52062 h1:WAS35hgEeobtRnCjFT5im/QUuPCAcShv3HayPsvUEuI=
-zettelstore.de/c v0.0.0-20220509170027-22f0aeb52062/go.mod h1:sFE7LnVTOS6Lo4EXoFb25ypKYvxexUHL7MM4HXkrysY=
+zettelstore.de/c v0.0.0-20220510171354-236f8d87ff3c h1:IbfO983ZqD3EjaUo9SJrwj47yd5Uv3S2o0qKDopTk9A=
+zettelstore.de/c v0.0.0-20220510171354-236f8d87ff3c/go.mod h1:LPhDu9ckgNS5XGLSJTmIPSoRS7g7+IibCnByonXfjgA=
