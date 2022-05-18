@@ -62,19 +62,16 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) (string, error) {
-	ignore := strfun.Set{
-		api.KeyTitle: struct{}{},
-		api.KeyLang:  struct{}{},
-	}
+func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
+	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
 	var buf bytes.Buffer
 
 	if tags, ok := m.Get(api.KeyAllTags); ok {
-		g.writeTags(&buf, tags)
+		writeMetaTags(&buf, tags)
 		ignore.Set(api.KeyAllTags)
 		ignore.Set(api.KeyTags)
 	} else if tags, ok = m.Get(api.KeyTags); ok {
-		g.writeTags(&buf, tags)
+		writeMetaTags(&buf, tags)
 		ignore.Set(api.KeyTags)
 	}
 
@@ -97,9 +94,9 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		html.AttributeEscape(&buf, sb.String())
 		buf.WriteString("\">\n")
 	}
-	return buf.String(), nil
+	return buf.String()
 }
-func (g *htmlGenerator) writeTags(buf *bytes.Buffer, tags string) {
+func writeMetaTags(buf *bytes.Buffer, tags string) {
 	buf.WriteString(`<meta name="keywords" content="`)
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -150,7 +147,7 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	return html.EncodeInline(g.enc, zjson.MakeArray(val), !noLink, noLink), nil
 }
 
-func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
+func (g *htmlGenerator) generateTag(enc *html.Encoder, obj zjson.Object, _ int) (bool, zjson.CloseFunc) {
 	if s := zjson.GetString(obj, zjson.NameString); s != "" {
 		if enc.IgnoreLinks() {
 			enc.WriteString(s)
@@ -185,7 +182,11 @@ func (g *htmlGenerator) generateLink(enc *html.Encoder, obj zjson.Object, pos in
 			Set("rel", "noopener noreferrer")
 		suffix = g.extMarker
 	case zjson.RefStateZettel:
-		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(ref))
+		zid, fragment, hasFragment := strings.Cut(ref, "#")
+		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
+		if hasFragment {
+			u = u.SetFragment(fragment)
+		}
 		a = a.Set("href", u.String())
 	case zjson.RefStateHosted:
 		a = a.Set("href", ref)

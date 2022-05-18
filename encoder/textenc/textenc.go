@@ -103,12 +103,9 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		v.visitBlockSlice(n)
+		return nil
 	case *ast.InlineSlice:
-		for i, in := range *n {
-			v.inlinePos = i
-			ast.Walk(v, in)
-		}
-		v.inlinePos = 0
+		v.visitInlineSlice(n)
 		return nil
 	case *ast.VerbatimNode:
 		v.visitVerbatim(n)
@@ -224,6 +221,14 @@ func (v *visitor) visitBlockSlice(bs *ast.BlockSlice) {
 		v.writePosChar(i, '\n')
 		ast.Walk(v, bn)
 	}
+}
+
+func (v *visitor) visitInlineSlice(is *ast.InlineSlice) {
+	for i, in := range *is {
+		v.inlinePos = i
+		ast.Walk(v, in)
+	}
+	v.inlinePos = 0
 }
 
 func (v *visitor) writePosChar(pos int, ch byte) {

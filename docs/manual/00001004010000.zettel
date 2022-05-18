@@ -3,7 +3,7 @@ title: Zettelstore startup configuration
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220321165546
+modified: 20220419193611
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -70,6 +70,9 @@ The following keys are supported:
 : [[Identifier|00001006050000]] of a zettel that contains data about the owner of the Zettelstore.
   The owner has full authorization for the Zettelstore.
   Only if owner is set to some value, user [[authentication|00001010000000]] is enabled.
+
+  Ensure that key [[''secret''|#secret]] is set to a value of at least 16 bytes.
+  Otherwise the Zettelstore will not start for security reasons.
 ; [!persistent-cookie|''persistent-cookie'']
 : A [[boolean value|00001006030500]] to make the access cookie persistent.
   This is helpful if you access the Zettelstore via a mobile device.
@@ -85,6 +88,11 @@ The following keys are supported:
   No changes are possible.
 
   Default: ""false"".
+; [!secret|''secret'']
+: A string value to make the communication with external clients strong enough so that sessions of the [[web user interface|00001014000000]] or [[API access token|00001010040700]] cannot be modifed by some external unfriendly party.
+  The string must have a length of at least 16 bytes.
+
+  It is only needed to set this value, if [[authentication is enabled|00001010040100]] by setting key [[''owner''|#owner]] to some user identification.
 ; [!token-lifetime-api|''token-lifetime-api''], [!token-lifetime-html|''token-lifetime-html'']
 : Define lifetime of access tokens in minutes.
   Values are only valid if authentication is enabled, i.e. key ''owner'' is set.

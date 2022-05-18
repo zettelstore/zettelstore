@@ -19,14 +19,10 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/zjson"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
-
-	// Ensure that the text encoder is available.
-	// Needed by parser/cleanup.go
-	_ "zettelstore.de/z/encoder/textenc"
 )
 
 type TestCase struct{ source, want string }
@@ -623,6 +619,15 @@ func TestList(t *testing.T) {
 	})
 }
 
+func TestQuoteList(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"> w1 w2", "(QL {(PARA w1 SP w2)})"},
+		{"> w1\n> w2", "(QL {(PARA w1 SB w2)})"},
+		{"> w1\n>\n>w2", "(QL {(PARA w1)} {})(PARA >w2)"},
+	})
+}
+
 func TestEnumAfterPara(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
@@ -1010,7 +1015,7 @@ func (tv *TestVisitor) visitInlineSlice(is *ast.InlineSlice) {
 	}
 }
 
-func (tv *TestVisitor) visitAttributes(a zjson.Attributes) {
+func (tv *TestVisitor) visitAttributes(a attrs.Attributes) {
 	if a.IsEmpty() {
 		return
 	}

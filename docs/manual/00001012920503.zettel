@@ -3,12 +3,12 @@ title: ZJSON Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220223185826
+modified: 20220422191748
 
 A zettel representation that allows to process the syntactic structure of a zettel.
 It is a JSON-based encoding format, but different to the structures returned by [[endpoint|00001012920000]] ''/j/{ID}''.
 
-For an example, take a look at the JSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
+For an example, take a look at the ZJSON encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 
 * [[//v/00001012920503?_enc=zjson&_part=zettel]],
 * [[//v/00001012920503?_enc=zjson&_part=meta]],

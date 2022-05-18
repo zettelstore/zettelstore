@@ -24,7 +24,6 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -63,9 +62,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		envEval := evaluator.Environment{}
 		enc := wui.getSimpleHTMLEncoder()
-
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
@@ -75,7 +72,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 				&buf, p.Key, p.Value,
 				getTextTitle,
 				func(val string) ast.InlineSlice {
-					return evaluate.RunMetadata(ctx, val, &envEval)
+					return evaluate.RunMetadata(ctx, val)
 				},
 				enc)
 			metaData[i] = metaDataInfo{p.Key, buf.String()}

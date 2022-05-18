@@ -18,7 +18,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/zjson"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 )
 
@@ -58,8 +58,8 @@ func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
 	}
 }
 
-func getScale(attrs zjson.Attributes, key string, defVal int) int {
-	if val, found := attrs.Get(key); found {
+func getScale(a attrs.Attributes, key string, defVal int) int {
+	if val, found := a.Get(key); found {
 		if n, err := strconv.Atoi(val); err == nil && 0 < n && n < 100000 {
 			return n
 		}

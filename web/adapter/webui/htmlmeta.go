@@ -25,7 +25,6 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 )
 
@@ -176,19 +175,19 @@ func (wui *WebUI) makeGetTextTitle(
 
 func (wui *WebUI) encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
-	evaluate *usecase.Evaluate, envEval *evaluator.Environment,
+	evaluate *usecase.Evaluate,
 	gen *htmlGenerator, noLink bool,
 ) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
 	return encodeZmkMetadata(
 		plainTitle,
-		func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val, envEval) },
+		func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val) },
 		gen, noLink)
 }
 
 func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate) string {
 	plainTitle := config.GetTitle(m, wui.rtConfig)
-	is := evaluate.RunMetadata(ctx, plainTitle, nil)
+	is := evaluate.RunMetadata(ctx, plainTitle)
 	result, err := encodeInlinesText(&is, wui.gentext)
 	if err != nil {
 		return err.Error()

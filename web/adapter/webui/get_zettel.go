@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 )
 
@@ -36,8 +35,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		q := r.URL.Query()
-		env := evaluator.Environment{}
-		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax), &env)
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
 
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -45,15 +43,11 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		enc := wui.createZettelEncoder()
-		metaHeader, err := enc.MetaString(zn.InhMeta, func(value string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, value, &env)
+		metaHeader := enc.MetaString(zn.InhMeta, func(value string) ast.InlineSlice {
+			return evaluate.RunMetadata(ctx, value)
 		})
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
-		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, &env, enc, false)
+		htmlTitle := wui.encodeTitleAsHTML(ctx, zn.InhMeta, evaluate, enc, false)
 		htmlContent, err := enc.BlocksString(&zn.Ast)
 		if err != nil {
 			wui.reportError(ctx, w, err)

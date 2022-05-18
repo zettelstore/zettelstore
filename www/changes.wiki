@@ -7,6 +7,13 @@
      using the &ldquo;evaluation block&rdquo; syntax (see below) by setting
      the generic attribute to &ldquo;draw&rdquo;.
      (breaking: zettelmarkup, api, webui)
+  *  If authentication is enabled, a secret of at least 16 bytes must be set in
+     the startup configuration.
+     (breaking)
+  *  &ldquo;Sexpr&rdquo; encoding replaces &ldquo;Native&rdquo; encoding. Sexpr
+     encoding is much easier to parse, compared with native and ZJSON encoding.
+     In most cases it is smaller than ZJSON.
+     (breaking: api)
   *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
      to allow interpretation of content by external software.
      (minor: zettelmarkup)

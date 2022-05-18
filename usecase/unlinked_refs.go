@@ -97,7 +97,7 @@ candLoop:
 				continue
 			}
 			is := parser.ParseMetadata(pair.Value)
-			evaluator.EvaluateInline(ctx, uc.port, nil, uc.rtConfig, &is)
+			evaluator.EvaluateInline(ctx, uc.port, uc.rtConfig, &is)
 			ast.Walk(&v, &is)
 			if v.found {
 				result = append(result, cand)
@@ -113,7 +113,7 @@ candLoop:
 		if err != nil {
 			continue
 		}
-		evaluator.EvaluateZettel(ctx, uc.port, nil, uc.rtConfig, zn)
+		evaluator.EvaluateZettel(ctx, uc.port, uc.rtConfig, zn)
 		ast.Walk(&v, &zn.Ast)
 		if v.found {
 			result = append(result, cand)

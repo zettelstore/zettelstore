@@ -15,17 +15,19 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 
-	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
-	_ "zettelstore.de/z/encoder/nativeenc" // Allow to use native encoder.
-	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
-	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.
-	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
+	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
+	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
+	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
+	_ "zettelstore.de/z/encoder/zjsonenc" // Allow to use ZJSON encoder.
+	_ "zettelstore.de/z/encoder/zmkenc"   // Allow to use zmk encoder.
 	"zettelstore.de/z/parser/cleaner"
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
 )
@@ -41,11 +43,11 @@ type expectMap map[api.EncodingEnum]string
 
 const useZmk = "\000"
 const (
-	encoderZJSON  = api.EncoderZJSON
-	encoderHTML   = api.EncoderHTML
-	encoderNative = api.EncoderNative
-	encoderText   = api.EncoderText
-	encoderZmk    = api.EncoderZmk
+	encoderZJSON = api.EncoderZJSON
+	encoderHTML  = api.EncoderHTML
+	encoderSexpr = api.EncoderSexpr
+	encoderText  = api.EncoderText
+	encoderZmk   = api.EncoderZmk
 )
 
 func TestEncoder(t *testing.T) {
@@ -68,6 +70,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
+		checkSexpr(t, testNum, pe, tc.descr)
 	}
 }
 
@@ -91,6 +94,30 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 			prefix += "\nMode:     " + pe.mode()
 			t.Errorf("%s\nEncoder:  %s\nExpected: %q\nGot:      %q", prefix, enc, exp, got)
 		}
+	}
+}
+
+func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
+	t.Helper()
+	encdr := encoder.Create(encoderSexpr)
+	exp, err := pe.encode(encdr)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	val, err := sxpf.ReadString(sexpr.Smk, exp)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	got := val.String()
+	if exp != got {
+		prefix := fmt.Sprintf("Test #%d", testNum)
+		if d := descr; d != "" {
+			prefix += "\nReason:   " + d
+		}
+		prefix += "\nMode:     " + pe.mode()
+		t.Errorf("%s\n\nExpected: %q\nGot:      %q", prefix, exp, got)
 	}
 }
 

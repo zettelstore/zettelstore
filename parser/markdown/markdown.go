@@ -19,7 +19,7 @@ import (
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
-	"zettelstore.de/c/zjson"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
@@ -132,13 +132,13 @@ func (p *mdP) acceptCodeBlock(node *gmAst.CodeBlock) *ast.VerbatimNode {
 }
 
 func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNode {
-	var attrs zjson.Attributes
+	var a attrs.Attributes
 	if language := node.Language(p.source); len(language) > 0 {
-		attrs = attrs.Set("class", "language-"+cleanText(language, true))
+		a = a.Set("class", "language-"+cleanText(language, true))
 	}
 	return &ast.VerbatimNode{
 		Kind:    ast.VerbatimProg,
-		Attrs:   attrs,
+		Attrs:   a,
 		Content: p.acceptRawText(node),
 	}
 }
@@ -175,11 +175,11 @@ func (p *mdP) acceptBlockquote(node *gmAst.Blockquote) *ast.NestedListNode {
 
 func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	kind := ast.NestedListUnordered
-	var attrs zjson.Attributes
+	var a attrs.Attributes
 	if node.IsOrdered() {
 		kind = ast.NestedListOrdered
 		if node.Start != 1 {
-			attrs = attrs.Set("start", fmt.Sprintf("%d", node.Start))
+			a = a.Set("start", fmt.Sprintf("%d", node.Start))
 		}
 	}
 	items := make([]ast.ItemSlice, 0, node.ChildCount())
@@ -193,7 +193,7 @@ func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	return &ast.NestedListNode{
 		Kind:  kind,
 		Items: items,
-		Attrs: attrs,
+		Attrs: a,
 	}
 }
 
@@ -404,30 +404,30 @@ func (p *mdP) acceptEmphasis(node *gmAst.Emphasis) ast.InlineSlice {
 
 func (p *mdP) acceptLink(node *gmAst.Link) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs zjson.Attributes
+	var a attrs.Attributes
 	if title := node.Title; len(title) > 0 {
-		attrs = attrs.Set("title", cleanText(title, true))
+		a = a.Set("title", cleanText(title, true))
 	}
 	return ast.InlineSlice{
 		&ast.LinkNode{
 			Ref:     ref,
 			Inlines: p.acceptInlineChildren(node),
-			Attrs:   attrs,
+			Attrs:   a,
 		},
 	}
 }
 
 func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 	ref := ast.ParseReference(cleanText(node.Destination, true))
-	var attrs zjson.Attributes
+	var a attrs.Attributes
 	if title := node.Title; len(title) > 0 {
-		attrs = attrs.Set("title", cleanText(title, true))
+		a = a.Set("title", cleanText(title, true))
 	}
 	return ast.InlineSlice{
 		&ast.EmbedRefNode{
 			Ref:     ref,
 			Inlines: p.flattenInlineSlice(node),
-			Attrs:   attrs,
+			Attrs:   a,
 		},
 	}
 }

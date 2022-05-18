@@ -17,6 +17,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -36,7 +37,7 @@ type Encoder struct{}
 var myJE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
-func (je *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w)
 	v.b.WriteString(`{"meta":`)
 	v.writeMeta(zn.InhMeta, evalMeta)
@@ -48,7 +49,7 @@ func (je *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 }
 
 // WriteMeta encodes meta data as JSON.
-func (je *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newDetailVisitor(w)
 	v.writeMeta(m, evalMeta)
 	length, err := v.b.Flush()
@@ -60,7 +61,7 @@ func (je *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 }
 
 // WriteBlocks writes a block slice to the writer
-func (je *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newDetailVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
@@ -68,7 +69,7 @@ func (je *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (je *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newDetailVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
@@ -461,7 +462,7 @@ func (v *visitor) walkInlineSlice(is *ast.InlineSlice) {
 }
 
 // visitAttributes write JSON attributes
-func (v *visitor) visitAttributes(a zjson.Attributes) {
+func (v *visitor) visitAttributes(a attrs.Attributes) {
 	if a.IsEmpty() {
 		return
 	}
