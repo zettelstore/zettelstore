@@ -19,13 +19,11 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/c/sexpr"
-	"zettelstore.de/c/zjson"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/encoder/zjsonenc"
 	"zettelstore.de/z/strfun"
 )
 
@@ -38,31 +36,29 @@ type urlBuilder interface {
 type htmlGenerator struct {
 	builder   urlBuilder
 	textEnc   *textenc.Encoder
-	zjsonEnc  *zjsonenc.Encoder
 	extMarker string
 	newWindow bool
-	enc       *html.Encoder
 	env       *html.EncEnvironment
 }
 
 func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *htmlGenerator {
-	enc := html.NewEncoder(nil, 1)
 	env := html.NewEncEnvironment(nil, 1)
 	gen := &htmlGenerator{
 		builder:   builder,
 		textEnc:   textenc.Create(),
-		zjsonEnc:  zjsonenc.Create(),
 		extMarker: extMarker,
 		newWindow: newWindow,
-		enc:       enc,
 		env:       env,
 	}
-	enc.SetTypeFunc(zjson.TypeTag, gen.zgenerateTag)
-	enc.SetTypeFunc(zjson.TypeLink, gen.zgenerateLink)
-	enc.ChangeTypeFunc(zjson.TypeEmbed, gen.zmakeGenerateEmbed)
 
 	env.Builtins.Set(sexpr.SymTag, sxpf.NewBuiltin("tag", true, 0, -1, gen.generateTag))
 	env.Builtins.Set(sexpr.SymLink, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLink))
+	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
+	if err != nil {
+		panic(err)
+	}
+	b := f.(*sxpf.Builtin)
+	env.Builtins.Set(sexpr.SymEmbed, sxpf.NewBuiltin(b.Name(), true, 3, -1, gen.makeGenerateEmbed(b.GetValue())))
 	return gen
 }
 
@@ -137,33 +133,7 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	if is == nil || len(*is) == 0 {
 		return "", nil
 	}
-	var buf bytes.Buffer
-	if _, err := g.zjsonEnc.WriteInlines(&buf, is); err != nil {
-		return "", err
-	}
-
-	val, err := zjson.Decode(&buf)
-	if err != nil {
-		return "", err
-	}
-	buf = bytes.Buffer{} // free all encoded zjaon data
-	return html.EncodeInline(g.enc, zjson.MakeArray(val), !noLink, noLink), nil
-}
-
-func (g *htmlGenerator) zgenerateTag(enc *html.Encoder, obj zjson.Object, _ int) (bool, zjson.CloseFunc) {
-	if s := zjson.GetString(obj, zjson.NameString); s != "" {
-		if enc.IgnoreLinks() {
-			enc.WriteString(s)
-		} else {
-			u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags, "#"+strings.ToLower(s))
-			enc.WriteString(`<a href="`)
-			enc.WriteString(u.String())
-			enc.WriteString(`">#`)
-			enc.WriteString(s)
-			enc.WriteString("</a>")
-		}
-	}
-	return false, nil
+	return html.EnvaluateInline(g.env, sexprenc.GetSexpr(is), !noLink, noLink), nil
 }
 
 func (g *htmlGenerator) generateTag(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
@@ -182,67 +152,15 @@ func (g *htmlGenerator) generateTag(senv sxpf.Environment, args []sxpf.Value) (s
 	return nil, nil
 }
 
-func (g *htmlGenerator) zgenerateLink(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
-	if enc.IgnoreLinks() {
-		return enc.MustGetTypeFunc(zjson.TypeFormatSpan)(enc, obj, pos)
-	}
-	ref := zjson.GetString(obj, zjson.NameString)
-	in := zjson.GetArray(obj, zjson.NameInline)
-	if ref == "" {
-		return len(in) > 0, nil
-	}
-	a := zjson.GetAttributes(obj)
-	suffix := ""
-	switch q := zjson.GetString(obj, zjson.NameString2); q {
-	case zjson.RefStateExternal:
-		a = a.Set("href", ref).
-			AddClass("external").
-			Set("target", "_blank").
-			Set("rel", "noopener noreferrer")
-		suffix = g.extMarker
-	case zjson.RefStateZettel:
-		zid, fragment, hasFragment := strings.Cut(ref, "#")
-		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
-		if hasFragment {
-			u = u.SetFragment(fragment)
-		}
-		a = a.Set("href", u.String())
-	case zjson.RefStateHosted:
-		a = a.Set("href", ref)
-	case zjson.RefStateBased:
-		u := g.builder.NewURLBuilder('/').SetRawLocal(ref)
-		a = a.Set("href", u.String())
-	case zjson.RefStateSelf:
-		a = a.Set("href", ref)
-	case zjson.RefStateBroken:
-		a = a.AddClass("broken")
-	default:
-		log.Println("LINK", q, ref)
-	}
-
-	if len(a) > 0 {
-		enc.WriteString("<a")
-		enc.WriteAttributes(a)
-		enc.WriteByte('>')
-	}
-
-	children := true
-	if len(in) == 0 {
-		enc.WriteString(ref)
-		children = false
-	}
-	return children, func() {
-		enc.WriteString("</a>")
-		enc.WriteString(suffix)
-	}
-}
-
 func (g *htmlGenerator) generateLink(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
 	env := senv.(*html.EncEnvironment)
 	if env.IgnoreLinks() {
-		spanList := sxpf.NewArray(sexpr.SymFormatSpan)
-		spanList.Append(args...)
-		sxpf.Evaluate(env, spanList)
+		if in := args[2:]; len(in) > 0 {
+			spanList := sxpf.NewArray(sexpr.SymFormatSpan)
+			spanList.Append(args[0])
+			spanList.Append(in...)
+			sxpf.Evaluate(env, spanList)
+		}
 		return nil, nil
 	}
 	a := env.GetAttributes(args, 0)
@@ -294,19 +212,6 @@ func (g *htmlGenerator) generateLink(senv sxpf.Environment, args []sxpf.Value) (
 	return nil, nil
 }
 
-func (g *htmlGenerator) zmakeGenerateEmbed(oldF html.TypeFunc) html.TypeFunc {
-	return func(enc *html.Encoder, obj zjson.Object, pos int) (bool, zjson.CloseFunc) {
-		src := zjson.GetString(obj, zjson.NameString)
-		zid := api.ZettelID(src)
-		if !zid.IsValid() {
-			return oldF(enc, obj, pos)
-		}
-		u := g.builder.NewURLBuilder('z').SetZid(zid)
-		enc.WriteImage(obj, u.String())
-		return false, nil
-	}
-}
-
 func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
 	return func(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
 		env := senv.(*html.EncEnvironment)
@@ -317,8 +222,8 @@ func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
 		if !zid.IsValid() {
 			return oldFn(senv, args)
 		}
-		// u := g.builder.NewURLBuilder('z').SetZid(zid)
-		// env.WriteImage(obj, u.String())
+		u := g.builder.NewURLBuilder('z').SetZid(zid)
+		env.WriteImageWithSource(args, u.String())
 		return nil, nil
 	}
 }
