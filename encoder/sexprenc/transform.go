@@ -28,7 +28,7 @@ import (
 )
 
 // GetSexpr returns the given node as a s-expression.
-func GetSexpr(node ast.Node) *sxpf.Array {
+func GetSexpr(node ast.Node) sxpf.Sequence {
 	t := transformer{}
 	return t.getSexpr(node)
 }
@@ -37,7 +37,7 @@ type transformer struct {
 	inVerse bool
 }
 
-func (t *transformer) getSexpr(node ast.Node) *sxpf.Array {
+func (t *transformer) getSexpr(node ast.Node) sxpf.Sequence {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		return t.getBlockSlice(n)
@@ -48,7 +48,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Array {
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.VerbatimNode:
-		return sxpf.NewArray(
+		return sxpf.NewSequence(
 			mapGetS(mapVerbatimKindS, n.Kind),
 			getAttributes(n.Attrs),
 			sxpf.NewString(string(n.Content)),
@@ -66,7 +66,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Array {
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.HRuleNode:
-		return sxpf.NewArray(sexpr.SymThematic, getAttributes(n.Attrs))
+		return sxpf.NewSequence(sexpr.SymThematic, getAttributes(n.Attrs))
 	case *ast.NestedListNode:
 		return t.getNestedList(n)
 	case *ast.DescriptionListNode:
@@ -74,24 +74,23 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Array {
 	case *ast.TableNode:
 		return t.getTable(n)
 	case *ast.TranscludeNode:
-		return sxpf.NewArray(sexpr.SymTransclude, getReference(n.Ref))
+		return sxpf.NewSequence(sexpr.SymTransclude, getReference(n.Ref))
 	case *ast.BLOBNode:
 		return getBLOB(n)
 	case *ast.TextNode:
-		return sxpf.NewArray(sexpr.SymText, sxpf.NewString(n.Text))
+		return sxpf.NewSequence(sexpr.SymText, sxpf.NewString(n.Text))
 	case *ast.TagNode:
-		return sxpf.NewArray(sexpr.SymTag, sxpf.NewString(n.Tag))
+		return sxpf.NewSequence(sexpr.SymTag, sxpf.NewString(n.Tag))
 	case *ast.SpaceNode:
-		result := sxpf.NewArray(sexpr.SymSpace)
 		if t.inVerse {
-			result.Append(sxpf.NewString(n.Lexeme))
+			return sxpf.NewSequence(sexpr.SymSpace, sxpf.NewString(n.Lexeme))
 		}
-		return result
+		return sxpf.NewSequence(sexpr.SymSpace)
 	case *ast.BreakNode:
 		if n.Hard {
-			return sxpf.NewArray(sexpr.SymHard)
+			return sxpf.NewSequence(sexpr.SymHard)
 		} else {
-			return sxpf.NewArray(sexpr.SymSoft)
+			return sxpf.NewSequence(sexpr.SymSoft)
 		}
 	case *ast.LinkNode:
 		result := sxpf.NewArray(
@@ -138,14 +137,14 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Array {
 		result.Extend(t.getInlineSlice(n.Inlines))
 		return result
 	case *ast.LiteralNode:
-		return sxpf.NewArray(
+		return sxpf.NewSequence(
 			mapGetS(mapLiteralKindS, n.Kind),
 			getAttributes(n.Attrs),
 			sxpf.NewString(string(n.Content)),
 		)
 	}
 	log.Printf("SEXPR %T %v\n", node, node)
-	return sxpf.NewArray(sexpr.SymUnknown, sxpf.NewString(fmt.Sprintf("%T %v", node, node)))
+	return sxpf.NewSequence(sexpr.SymUnknown, sxpf.NewString(fmt.Sprintf("%T %v", node, node)))
 }
 
 var mapVerbatimKindS = map[ast.VerbatimKind]*sxpf.Symbol{
@@ -163,14 +162,14 @@ var mapRegionKindS = map[ast.RegionKind]*sxpf.Symbol{
 	ast.RegionVerse: sexpr.SymRegionVerse,
 }
 
-func (t *transformer) getRegion(rn *ast.RegionNode) *sxpf.Array {
+func (t *transformer) getRegion(rn *ast.RegionNode) sxpf.Sequence {
 	saveInVerse := t.inVerse
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
 	symBlocks := t.getSexpr(&rn.Blocks)
 	t.inVerse = saveInVerse
-	return sxpf.NewArray(
+	return sxpf.NewSequence(
 		mapGetS(mapRegionKindS, rn.Kind),
 		getAttributes(rn.Attrs),
 		symBlocks,
@@ -184,23 +183,23 @@ var mapNestedListKindS = map[ast.NestedListKind]*sxpf.Symbol{
 	ast.NestedListQuote:     sexpr.SymListQuote,
 }
 
-func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.Array {
+func (t *transformer) getNestedList(ln *ast.NestedListNode) sxpf.Sequence {
 	nlistVals := make([]sxpf.Value, len(ln.Items)+1)
 	nlistVals[0] = mapGetS(mapNestedListKindS, ln.Kind)
 	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
 		if isCompact && len(item) > 0 {
 			paragraph := t.getSexpr(item[0])
-			nlistVals[i+1] = sxpf.NewArray(paragraph.GetValue()[1:]...)
+			nlistVals[i+1] = sxpf.NewSequence(paragraph.GetSlice()[1:]...)
 			continue
 		}
 		itemVals := make([]sxpf.Value, len(item))
 		for j, in := range item {
 			itemVals[j] = t.getSexpr(in)
 		}
-		nlistVals[i+1] = sxpf.NewArray(itemVals...)
+		nlistVals[i+1] = sxpf.NewSequence(itemVals...)
 	}
-	return sxpf.NewArray(nlistVals...)
+	return sxpf.NewSequence(nlistVals...)
 }
 func isCompactList(itemSlice []ast.ItemSlice) bool {
 	for _, items := range itemSlice {
@@ -216,7 +215,7 @@ func isCompactList(itemSlice []ast.ItemSlice) bool {
 	return true
 }
 
-func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.Array {
+func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) sxpf.Sequence {
 	dlVals := make([]sxpf.Value, 2*len(dn.Descriptions)+1)
 	dlVals[0] = sexpr.SymDescription
 	for i, def := range dn.Descriptions {
@@ -227,28 +226,28 @@ func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.Arra
 			for k, dn := range b {
 				dVal[k] = t.getSexpr(dn)
 			}
-			descVals[j] = sxpf.NewArray(dVal...)
+			descVals[j] = sxpf.NewSequence(dVal...)
 		}
-		dlVals[2*i+2] = sxpf.NewArray(descVals...)
+		dlVals[2*i+2] = sxpf.NewSequence(descVals...)
 	}
-	return sxpf.NewArray(dlVals...)
+	return sxpf.NewSequence(dlVals...)
 }
 
-func (t *transformer) getTable(tn *ast.TableNode) *sxpf.Array {
+func (t *transformer) getTable(tn *ast.TableNode) sxpf.Sequence {
 	tVals := make([]sxpf.Value, len(tn.Rows)+2)
 	tVals[0] = sexpr.SymTable
 	tVals[1] = t.getRow(tn.Header)
 	for i, row := range tn.Rows {
 		tVals[i+2] = t.getRow(row)
 	}
-	return sxpf.NewArray(tVals...)
+	return sxpf.NewSequence(tVals...)
 }
-func (t *transformer) getRow(row ast.TableRow) *sxpf.Array {
+func (t *transformer) getRow(row ast.TableRow) sxpf.Sequence {
 	rVals := make([]sxpf.Value, len(row))
 	for i, cell := range row {
 		rVals[i] = t.getCell(cell)
 	}
-	return sxpf.NewArray(rVals...)
+	return sxpf.NewSequence(rVals...)
 }
 
 var alignmentSymbolS = map[ast.Alignment]*sxpf.Symbol{
@@ -258,13 +257,13 @@ var alignmentSymbolS = map[ast.Alignment]*sxpf.Symbol{
 	ast.AlignRight:   sexpr.SymCellRight,
 }
 
-func (t *transformer) getCell(cell *ast.TableCell) *sxpf.Array {
+func (t *transformer) getCell(cell *ast.TableCell) sxpf.Sequence {
 	result := sxpf.NewArray(mapGetS(alignmentSymbolS, cell.Align))
 	result.Extend(t.getInlineSlice(cell.Inlines))
 	return result
 }
 
-func getBLOB(bn *ast.BLOBNode) *sxpf.Array {
+func getBLOB(bn *ast.BLOBNode) sxpf.Sequence {
 	result := sxpf.NewArray(
 		sexpr.SymBLOB,
 		sxpf.NewString(bn.Title),
@@ -278,7 +277,7 @@ func getBLOB(bn *ast.BLOBNode) *sxpf.Array {
 	return result
 }
 
-func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.Array {
+func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) sxpf.Sequence {
 	result := sxpf.NewArray(
 		sexpr.SymEmbedBLOB,
 		getAttributes(en.Attrs),
@@ -314,12 +313,12 @@ var mapLiteralKindS = map[ast.LiteralKind]*sxpf.Symbol{
 	ast.LiteralMath:    sexpr.SymLiteralMath,
 }
 
-func (t *transformer) getBlockSlice(bs *ast.BlockSlice) *sxpf.Array {
+func (t *transformer) getBlockSlice(bs *ast.BlockSlice) sxpf.Sequence {
 	lstVals := make([]sxpf.Value, len(*bs))
 	for i, n := range *bs {
 		lstVals[i] = t.getSexpr(n)
 	}
-	return sxpf.NewArray(lstVals...)
+	return sxpf.NewSequence(lstVals...)
 }
 func (t *transformer) getInlineSlice(is ast.InlineSlice) *sxpf.Array {
 	lstVals := make([]sxpf.Value, len(is))
@@ -329,16 +328,16 @@ func (t *transformer) getInlineSlice(is ast.InlineSlice) *sxpf.Array {
 	return sxpf.NewArray(lstVals...)
 }
 
-func getAttributes(a attrs.Attributes) *sxpf.Array {
+func getAttributes(a attrs.Attributes) sxpf.Value {
 	if a.IsEmpty() {
-		return sxpf.NewArray()
+		return sxpf.Nil()
 	}
 	keys := a.Keys()
 	lstVals := make([]sxpf.Value, 0, len(keys))
 	for _, k := range keys {
-		lstVals = append(lstVals, sxpf.NewArray(sxpf.NewString(k), sxpf.NewString(a[k])))
+		lstVals = append(lstVals, sxpf.NewSequence(sxpf.NewString(k), sxpf.NewString(a[k])))
 	}
-	return sxpf.NewArray(lstVals...)
+	return sxpf.NewSequence(lstVals...)
 }
 
 var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
@@ -352,8 +351,8 @@ var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateExternal: sexpr.SymRefStateExternal,
 }
 
-func getReference(ref *ast.Reference) *sxpf.Array {
-	return sxpf.NewArray(mapGetS(mapRefStateS, ref.State), sxpf.NewString(ref.Value))
+func getReference(ref *ast.Reference) sxpf.Value {
+	return sxpf.NewSequence(mapGetS(mapRefStateS, ref.State), sxpf.NewString(ref.Value))
 }
 
 var mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
@@ -371,7 +370,7 @@ var mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
 	meta.TypeZettelmarkup: sexpr.SymTypeZettelmarkup,
 }
 
-func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Array {
+func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) sxpf.Sequence {
 	pairs := m.ComputedPairs()
 	lstVals := make([]sxpf.Value, 0, len(pairs))
 	for _, p := range pairs {
@@ -386,7 +385,7 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Array {
 			for i, val := range setList {
 				setVals[i] = sxpf.NewString(val)
 			}
-			val = sxpf.NewArray(setVals...)
+			val = sxpf.NewSequence(setVals...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			t := transformer{}
@@ -394,9 +393,9 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Array {
 		} else {
 			val = sxpf.NewString(p.Value)
 		}
-		lstVals = append(lstVals, sxpf.NewArray(symType, symKey, val))
+		lstVals = append(lstVals, sxpf.NewSequence(symType, symKey, val))
 	}
-	return sxpf.NewArray(lstVals...)
+	return sxpf.NewSequence(lstVals...)
 }
 
 func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
