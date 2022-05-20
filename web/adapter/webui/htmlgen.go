@@ -164,11 +164,11 @@ func (g *htmlGenerator) generateLink(senv sxpf.Environment, args []sxpf.Value) (
 		return nil, nil
 	}
 	a := env.GetAttributes(args, 0)
-	ref := env.GetList(args, 1)
+	ref := env.GetSequence(args, 1)
 	if ref == nil {
 		return nil, nil
 	}
-	refPair := ref.GetValue()
+	refPair := ref.GetSlice()
 	refKind := env.GetSymbol(refPair, 0)
 	if refKind == nil {
 		return nil, nil
@@ -215,8 +215,8 @@ func (g *htmlGenerator) generateLink(senv sxpf.Environment, args []sxpf.Value) (
 func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
 	return func(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
 		env := senv.(*html.EncEnvironment)
-		ref := env.GetList(args, 1)
-		refPair := ref.GetValue()
+		ref := env.GetSequence(args, 1)
+		refPair := ref.GetSlice()
 		refValue := env.GetString(refPair, 1)
 		zid := api.ZettelID(refValue)
 		if !zid.IsValid() {
