@@ -203,7 +203,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[@Stern18]`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Cite","s":"Stern18"}]`,
-			encoderHTML:  `Stern18`, // TODO
+			encoderHTML:  `<span>Stern18</span>`, // TODO
 			encoderSexpr: `[[CITE () "Stern18"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -247,7 +247,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `Text %%{-} comment`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment"}]`,
-			encoderHTML:  `Text <!-- comment -->`,
+			encoderHTML:  `Text<!-- comment -->`,
 			encoderSexpr: `[(TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment")]`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
@@ -258,7 +258,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `Text %%{-} comment --> end`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment --> end"}]`,
-			encoderHTML:  `Text <!-- comment --&gt; end -->`,
+			encoderHTML:  `Text<!-- comment --&gt; end -->`,
 			encoderSexpr: `[(TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment --> end")]`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,

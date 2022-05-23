@@ -216,6 +216,10 @@ func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) sxpf.Seque
 		dlVals[2*i+1] = t.getInlineSlice(def.Term)
 		descVals := make([]sxpf.Value, len(def.Descriptions))
 		for j, b := range def.Descriptions {
+			if len(b) == 1 {
+				descVals[j] = sxpf.NewSequence(t.getSexpr(b[0]).GetSlice()[1:]...)
+				continue
+			}
 			dVal := make([]sxpf.Value, len(b))
 			for k, dn := range b {
 				dVal[k] = t.getSexpr(dn)
@@ -368,7 +372,11 @@ var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 }
 
 func getReference(ref *ast.Reference) sxpf.Sequence {
-	return sxpf.NewPair(mapGetS(mapRefStateS, ref.State), sxpf.NewPair(sxpf.NewString(ref.Value), sxpf.Nil()))
+	return sxpf.NewPair(
+		mapGetS(mapRefStateS, ref.State),
+		sxpf.NewPair(
+			sxpf.NewString(ref.Value),
+			sxpf.Nil()))
 }
 
 var mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
