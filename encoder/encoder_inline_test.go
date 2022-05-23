@@ -303,7 +303,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"abc"}]`,
 			encoderHTML:  `<a class="external" href="abc">abc</a>`,
-			encoderSexpr: `[[LINK () (EXTERNAL "abc")]]`,
+			encoderSexpr: `[[LINK-EXTERNAL () "abc"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -314,7 +314,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"https://zettelstore.de"}]`,
 			encoderHTML:  `<a class="external" href="https://zettelstore.de">https://zettelstore.de</a>`,
-			encoderSexpr: `[[LINK () (EXTERNAL "https://zettelstore.de")]]`,
+			encoderSexpr: `[[LINK-EXTERNAL () "https://zettelstore.de"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -325,7 +325,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"https://zettelstore.de","i":[{"":"Text","s":"Home"}]}]`,
 			encoderHTML:  `<a class="external" href="https://zettelstore.de">Home</a>`,
-			encoderSexpr: `[[LINK () (EXTERNAL "https://zettelstore.de") (TEXT "Home")]]`,
+			encoderSexpr: `[[LINK-EXTERNAL () "https://zettelstore.de" (TEXT "Home")]]`,
 			encoderText:  `Home`,
 			encoderZmk:   useZmk,
 		},
@@ -336,7 +336,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100"}]`,
 			encoderHTML:  `<a href="00000000000100">00000000000100</a>`,
-			encoderSexpr: `[[LINK () (ZETTEL "00000000000100")]]`,
+			encoderSexpr: `[[LINK-ZETTEL () "00000000000100"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -347,7 +347,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100","i":[{"":"Text","s":"Config"}]}]`,
 			encoderHTML:  `<a href="00000000000100">Config</a>`,
-			encoderSexpr: `[[LINK () (ZETTEL "00000000000100") (TEXT "Config")]]`,
+			encoderSexpr: `[[LINK-ZETTEL () "00000000000100" (TEXT "Config")]]`,
 			encoderText:  `Config`,
 			encoderZmk:   useZmk,
 		},
@@ -358,7 +358,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100#frag"}]`,
 			encoderHTML:  `<a href="00000000000100#frag">00000000000100#frag</a>`,
-			encoderSexpr: `[[LINK () (ZETTEL "00000000000100#frag")]]`,
+			encoderSexpr: `[[LINK-ZETTEL () "00000000000100#frag"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -369,7 +369,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100#frag","i":[{"":"Text","s":"Config"}]}]`,
 			encoderHTML:  `<a href="00000000000100#frag">Config</a>`,
-			encoderSexpr: `[[LINK () (ZETTEL "00000000000100#frag") (TEXT "Config")]]`,
+			encoderSexpr: `[[LINK-ZETTEL () "00000000000100#frag" (TEXT "Config")]]`,
 			encoderText:  `Config`,
 			encoderZmk:   useZmk,
 		},
@@ -380,7 +380,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"self","s":"#frag"}]`,
 			encoderHTML:  `<a href="#frag">#frag</a>`,
-			encoderSexpr: `[[LINK () (SELF "#frag")]]`,
+			encoderSexpr: `[[LINK-SELF () "#frag"]]`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -391,7 +391,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"/hosted","i":[{"":"Text","s":"H"}]}]`,
 			encoderHTML:  `<a href="/hosted">H</a>`,
-			encoderSexpr: `[[LINK () (HOSTED "/hosted") (TEXT "H")]]`,
+			encoderSexpr: `[[LINK-HOSTED () "/hosted" (TEXT "H")]]`,
 			encoderText:  `H`,
 			encoderZmk:   useZmk,
 		},
@@ -402,7 +402,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"/based","i":[{"":"Text","s":"B"}]}]`,
 			encoderHTML:  `<a href="/based">B</a>`,
-			encoderSexpr: `[[LINK () (HOSTED "/based") (TEXT "B")]]`,
+			encoderSexpr: `[[LINK-HOSTED () "/based" (TEXT "B")]]`,
 			encoderText:  `B`,
 			encoderZmk:   useZmk,
 		},
@@ -413,7 +413,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"../relative","i":[{"":"Text","s":"R"}]}]`,
 			encoderHTML:  `<a href="../relative">R</a>`,
-			encoderSexpr: `[[LINK () (HOSTED "../relative") (TEXT "R")]]`,
+			encoderSexpr: `[[LINK-HOSTED () "../relative" (TEXT "R")]]`,
 			encoderText:  `R`,
 			encoderZmk:   useZmk,
 		},

@@ -12,7 +12,6 @@ package webui
 
 import (
 	"bytes"
-	"log"
 	"strings"
 
 	"github.com/t73fde/sxpf"
@@ -52,7 +51,11 @@ func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *html
 	}
 
 	env.Builtins.Set(sexpr.SymTag, sxpf.NewBuiltin("tag", true, 0, -1, gen.generateTag))
-	env.Builtins.Set(sexpr.SymLink, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLink))
+	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkZettel))
+	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkZettel))
+	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkBased))       // TODO
+	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkExternal)) // TODO
+
 	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
 	if err != nil {
 		panic(err)
@@ -152,63 +155,37 @@ func (g *htmlGenerator) generateTag(senv sxpf.Environment, args []sxpf.Value) (s
 	return nil, nil
 }
 
-func (g *htmlGenerator) generateLink(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
+func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
 	env := senv.(*html.EncEnvironment)
-	if env.IgnoreLinks() {
-		if in := args[2:]; len(in) > 0 {
-			spanList := sxpf.NewArray(sexpr.SymFormatSpan)
-			spanList.Append(args[0])
-			spanList.Append(in...)
-			sxpf.Evaluate(env, spanList)
-		}
-		return nil, nil
-	}
-	a := env.GetAttributes(args, 0)
-	ref := env.GetSequence(args, 1)
-	if ref == nil {
-		return nil, nil
-	}
-	refPair := ref.GetSlice()
-	refKind := env.GetSymbol(refPair, 0)
-	if refKind == nil {
-		return nil, nil
-	}
-	refValue := env.GetString(refPair, 1)
-	suffix := ""
-	switch {
-	case sexpr.SymRefStateExternal.Equal(refKind):
-		a = a.Set("href", refValue).
-			AddClass("external").
-			Set("target", "_blank").
-			Set("rel", "noopener noreferrer")
-		suffix = g.extMarker
-	case sexpr.SymRefStateZettel.Equal(refKind):
+	if a, refValue, ok := html.PrepareLink(env, args); ok {
 		zid, fragment, hasFragment := strings.Cut(refValue, "#")
 		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
 		if hasFragment {
 			u = u.SetFragment(fragment)
 		}
-		a = a.Set("href", u.String())
-	case sexpr.SymRefStateBased.Equal(refKind):
-		u := g.builder.NewURLBuilder('/').SetRawLocal(refValue)
-		a = a.Set("href", u.String())
-	case sexpr.SymRefStateHosted.Equal(refKind), sexpr.SymRefStateSelf.Equal(refKind):
-		a = a.Set("href", refValue)
-	case sexpr.SymRefStateBroken.Equal(refKind):
-		a = a.AddClass("broken")
-	default:
-		log.Println("LINK", sxpf.NewArray(args...))
+		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
-	env.WriteString("<a")
-	env.WriteAttributes(a)
-	env.WriteString(">")
+	return nil, nil
+}
 
-	if in := args[2:]; len(in) == 0 {
-		env.WriteEscaped(refValue)
-	} else {
-		sxpf.EvaluateSlice(env, in)
+func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
+	env := senv.(*html.EncEnvironment)
+	if a, refValue, ok := html.PrepareLink(env, args); ok {
+		u := g.builder.NewURLBuilder('/').SetRawLocal(refValue)
+		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
-	env.WriteStrings("</a>", suffix)
+	return nil, nil
+}
+
+func (g *htmlGenerator) generateLinkExternal(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
+	env := senv.(*html.EncEnvironment)
+	if a, refValue, ok := html.PrepareLink(env, args); ok {
+		a = a.Set("href", refValue).
+			AddClass("external").
+			Set("target", "_blank").
+			Set("rel", "noopener noreferrer")
+		html.WriteLink(env, args, a, refValue, g.extMarker)
+	}
 	return nil, nil
 }
 

@@ -93,13 +93,7 @@ func (t *transformer) getSexpr(node ast.Node) sxpf.Sequence {
 			return sxpf.NewSequence(sexpr.SymSoft)
 		}
 	case *ast.LinkNode:
-		result := sxpf.NewArray(
-			sexpr.SymLink,
-			getAttributes(n.Attrs),
-			getReference(n.Ref),
-		)
-		result.Extend(t.getInlineSlice(n.Inlines))
-		return result
+		return t.getLink(n)
 	case *ast.EmbedRefNode:
 		result := sxpf.NewArray(
 			sexpr.SymEmbed,
@@ -277,6 +271,28 @@ func getBLOB(bn *ast.BLOBNode) sxpf.Sequence {
 	return result
 }
 
+var mapRefStateLink = map[ast.RefState]*sxpf.Symbol{
+	ast.RefStateInvalid:  sexpr.SymLinkInvalid,
+	ast.RefStateZettel:   sexpr.SymLinkZettel,
+	ast.RefStateSelf:     sexpr.SymLinkSelf,
+	ast.RefStateFound:    sexpr.SymLinkFound,
+	ast.RefStateBroken:   sexpr.SymLinkBroken,
+	ast.RefStateHosted:   sexpr.SymLinkHosted,
+	ast.RefStateBased:    sexpr.SymLinkBased,
+	ast.RefStateExternal: sexpr.SymLinkExternal,
+}
+
+func (t *transformer) getLink(ln *ast.LinkNode) sxpf.Sequence {
+	sym := mapRefStateLink[ln.Ref.State]
+	result := sxpf.NewArray(
+		sym,
+		getAttributes(ln.Attrs),
+		sxpf.NewString(ln.Ref.Value),
+	)
+	result.Extend(t.getInlineSlice(ln.Inlines))
+	return result
+}
+
 func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) sxpf.Sequence {
 	result := sxpf.NewArray(
 		sexpr.SymEmbedBLOB,
@@ -351,8 +367,8 @@ var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateExternal: sexpr.SymRefStateExternal,
 }
 
-func getReference(ref *ast.Reference) sxpf.Value {
-	return sxpf.NewSequence(mapGetS(mapRefStateS, ref.State), sxpf.NewString(ref.Value))
+func getReference(ref *ast.Reference) sxpf.Sequence {
+	return sxpf.NewPair(mapGetS(mapRefStateS, ref.State), sxpf.NewPair(sxpf.NewString(ref.Value), sxpf.Nil()))
 }
 
 var mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
