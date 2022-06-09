@@ -36,7 +36,7 @@ var mySE Encoder
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	content := GetSexpr(&zn.Ast)
 	meta := GetMeta(zn.InhMeta, evalMeta)
-	return io.WriteString(w, sxpf.NewArray(content, meta).String())
+	return io.WriteString(w, sxpf.NewVector(content, meta).String())
 }
 
 // WriteMeta encodes meta data as JSON.

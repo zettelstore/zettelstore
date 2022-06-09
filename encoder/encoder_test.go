@@ -105,7 +105,7 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := sxpf.ReadString(sexpr.Smk, exp)
+	val, err := sxpf.ParseString(sexpr.Smk, exp)
 	if err != nil {
 		t.Error(err)
 		return
