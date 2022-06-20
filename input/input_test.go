@@ -67,3 +67,16 @@ func TestScanEntity(t *testing.T) {
 		}
 	}
 }
+
+func TestScanIllegalEntity(t *testing.T) {
+	t.Parallel()
+	testcases := []string{"", "a", "& Input &rarr;"}
+	for i, tc := range testcases {
+		inp := input.NewInput([]byte(tc))
+		got, ok := inp.ScanEntity()
+		if ok {
+			t.Errorf("%d: scanning %q was unexpected successful, got %q", i, tc, got)
+			continue
+		}
+	}
+}

@@ -191,7 +191,7 @@ func (inp *Input) scanEntityBase10() (string, bool) {
 func (inp *Input) scanEntityNamed(pos int) (string, bool) {
 	for {
 		switch inp.Ch {
-		case EOS, '\n', '\r':
+		case EOS, '\n', '\r', '&':
 			return "", false
 		case ';':
 			inp.Next()
@@ -201,8 +201,9 @@ func (inp *Input) scanEntityNamed(pos int) (string, bool) {
 				return "", false
 			}
 			return ues, true
+		default:
+			inp.Next()
 		}
-		inp.Next()
 	}
 }
 
