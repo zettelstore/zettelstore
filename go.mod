@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4
-	github.com/pascaldekloe/jwt v1.10.0
+	github.com/pascaldekloe/jwt v1.12.0
 	github.com/t73fde/sxpf v0.0.0-20220613175020-262b5dc60e28
 	github.com/yuin/goldmark v1.4.12
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
