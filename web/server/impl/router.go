@@ -171,24 +171,29 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
 	if rt.ur == nil {
+		// No auth needed
 		return r
 	}
 	k := auth.KindJSON
 	t := getHeaderToken(r)
 	if len(t) == 0 {
+		rt.log.Debug().Msg("no jwt token found")
 		k = auth.KindHTML
 		t = getSessionToken(r)
 	}
 	if len(t) == 0 {
+		rt.log.Sense().Msg("no auth token found in request")
 		return r
 	}
 	tokenData, err := rt.auth.CheckToken(t, k)
 	if err != nil {
+		rt.log.Sense().Err(err).Msg("invalid auth token")
 		return r
 	}
 	ctx := r.Context()
 	user, err := rt.ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
 	if err != nil {
+		rt.log.Sense().Zid(tokenData.Zid).Str("ident", tokenData.Ident).Err(err).Msg("auth user not found")
 		return r
 	}
 	return r.WithContext(updateContext(ctx, user, &tokenData))
