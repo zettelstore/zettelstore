@@ -12,10 +12,10 @@
 package meta
 
 import (
-	"sort"
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
@@ -129,13 +129,7 @@ func addSet(m *Meta, key, val string, useElem predValidElem) {
 		return
 	}
 	addToSet(set, oldElems, useElem)
-
-	resultList := make([]string, 0, len(set))
-	for tag := range set {
-		resultList = append(resultList, tag)
-	}
-	sort.Strings(resultList)
-	m.SetList(key, resultList)
+	m.SetList(key, maps.Keys(set))
 }
 
 func addData(m *Meta, k, v string) {

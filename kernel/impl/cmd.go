@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
@@ -198,14 +199,7 @@ var commands = map[string]command{
 }
 
 func cmdHelp(sess *cmdSession, _ string, _ []string) bool {
-	cmds := make([]string, 0, len(commands))
-	for key := range commands {
-		if key == "" {
-			continue
-		}
-		cmds = append(cmds, key)
-	}
-	sort.Strings(cmds)
+	cmds := maps.Keys(commands)
 	table := [][]string{{"Command", "Description"}}
 	for _, cmd := range cmds {
 		table = append(table, []string{cmd, commands[cmd].Text})
@@ -564,14 +558,7 @@ func cmdEnvironment(sess *cmdSession, _ string, _ []string) bool {
 	return true
 }
 
-func sortedServiceNames(sess *cmdSession) []string {
-	names := make([]string, 0, len(sess.kern.srvNames))
-	for name := range sess.kern.srvNames {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return names
-}
+func sortedServiceNames(sess *cmdSession) []string { return maps.Keys(sess.kern.srvNames) }
 
 func getService(sess *cmdSession, name string) (serviceData, bool) {
 	srvD, found := sess.kern.srvNames[name]

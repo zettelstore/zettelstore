@@ -15,10 +15,10 @@ import (
 	"context"
 	"io"
 	"net/url"
-	"sort"
 	"sync"
 	"time"
 
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/memstore"
@@ -80,14 +80,7 @@ func Register(scheme string, create createFunc) {
 }
 
 // GetSchemes returns all registered scheme, ordered by scheme string.
-func GetSchemes() []string {
-	result := make([]string, 0, len(registry))
-	for scheme := range registry {
-		result = append(result, scheme)
-	}
-	sort.Strings(result)
-	return result
-}
+func GetSchemes() []string { return maps.Keys(registry) }
 
 // Manager is a coordinating box.
 type Manager struct {

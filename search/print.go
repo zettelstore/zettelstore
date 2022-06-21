@@ -13,11 +13,11 @@ package search
 
 import (
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 )
 
 func (s *Search) String() string {
@@ -40,12 +40,7 @@ func (s *Search) Print(w io.Writer) {
 		printSelectExprValues(w, s.search)
 		space = true
 	}
-	names := make([]string, 0, len(s.tags))
-	for name := range s.tags {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	for _, name := range names {
+	for _, name := range maps.Keys(s.tags) {
 		if space {
 			io.WriteString(w, " AND ")
 		}

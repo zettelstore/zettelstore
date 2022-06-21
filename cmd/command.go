@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -12,8 +12,8 @@ package cmd
 
 import (
 	"flag"
-	"sort"
 
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/logger"
 )
 
@@ -63,11 +63,4 @@ func Get(name string) (Command, bool) {
 }
 
 // List returns a sorted list of all registered command names.
-func List() []string {
-	result := make([]string, 0, len(commands))
-	for name := range commands {
-		result = append(result, name)
-	}
-	sort.Strings(result)
-	return result
-}
+func List() []string { return maps.Keys(commands) }

@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
@@ -54,11 +55,7 @@ type srvConfig struct {
 func (cfg *srvConfig) ConfigDescriptions() []serviceConfigDescription {
 	cfg.mxConfig.RLock()
 	defer cfg.mxConfig.RUnlock()
-	keys := make([]string, 0, len(cfg.descr))
-	for k := range cfg.descr {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
+	keys := maps.Keys(cfg.descr)
 	result := make([]serviceConfigDescription, 0, len(keys))
 	for _, k := range keys {
 		text := cfg.descr[k].text

@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -590,12 +591,7 @@ func dumpStringRefs(w io.Writer, title, preString, postString string, srefs stri
 		return
 	}
 	fmt.Fprintln(w, "====", title)
-	slice := make([]string, 0, len(srefs))
-	for s := range srefs {
-		slice = append(slice, s)
-	}
-	sort.Strings(slice)
-	for _, s := range slice {
+	for _, s := range maps.Keys(srefs) {
 		fmt.Fprintf(w, "; %s%s%s\n", preString, s, postString)
 		fmt.Fprintln(w, ":", srefs[s])
 	}

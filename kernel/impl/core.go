@@ -15,10 +15,10 @@ import (
 	"net"
 	"os"
 	"runtime"
-	"sort"
 	"sync"
 	"time"
 
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
@@ -99,11 +99,7 @@ func (cs *coreService) Stop(*myKernel) {
 func (cs *coreService) GetStatistics() []kernel.KeyValue {
 	cs.mxRecover.RLock()
 	defer cs.mxRecover.RUnlock()
-	names := make([]string, 0, len(cs.mapRecover))
-	for n := range cs.mapRecover {
-		names = append(names, n)
-	}
-	sort.Strings(names)
+	names := maps.Keys(cs.mapRecover)
 	result := make([]kernel.KeyValue, 0, 3*len(names))
 	for _, n := range names {
 		ri := cs.mapRecover[n]

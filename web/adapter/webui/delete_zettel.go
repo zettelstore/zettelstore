@@ -12,9 +12,9 @@ package webui
 
 import (
 	"net/http"
-	"sort"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
@@ -123,12 +123,7 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 			addListValues(zidMap, m, inverseKey)
 		}
 	}
-	values := make([]string, 0, len(zidMap))
-	for val := range zidMap {
-		values = append(values, val)
-	}
-	sort.Strings(values)
-	return wui.encodeZidLinks(values, getTextTitle)
+	return wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle)
 }
 
 func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {

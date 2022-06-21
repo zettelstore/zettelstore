@@ -20,6 +20,7 @@ import (
 	"unicode/utf8"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
@@ -106,13 +107,9 @@ func GetDescription(name string) DescriptionKey {
 
 // GetSortedKeyDescriptions delivers all metadata key descriptions as a slice, sorted by name.
 func GetSortedKeyDescriptions() []*DescriptionKey {
-	names := make([]string, 0, len(registeredKeys))
-	for n := range registeredKeys {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-	result := make([]*DescriptionKey, 0, len(names))
-	for _, n := range names {
+	keys := maps.Keys(registeredKeys)
+	result := make([]*DescriptionKey, 0, len(keys))
+	for _, n := range keys {
 		result = append(result, registeredKeys[n])
 	}
 	return result

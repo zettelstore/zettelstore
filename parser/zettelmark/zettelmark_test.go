@@ -14,7 +14,6 @@ package zettelmark_test
 import (
 	"bytes"
 	"fmt"
-	"sort"
 	"strings"
 	"testing"
 
@@ -1021,13 +1020,7 @@ func (tv *TestVisitor) visitAttributes(a attrs.Attributes) {
 	}
 	tv.buf.WriteString("[ATTR")
 
-	keys := make([]string, 0, len(a))
-	for k := range a {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	for _, k := range keys {
+	for _, k := range a.Keys() {
 		tv.buf.WriteByte(' ')
 		tv.buf.WriteString(k)
 		v := a[k]

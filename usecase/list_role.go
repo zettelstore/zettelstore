@@ -12,9 +12,9 @@ package usecase
 
 import (
 	"context"
-	"sort"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
@@ -49,10 +49,5 @@ func (uc ListRole) Run(ctx context.Context) ([]string, error) {
 			roles.Set(role)
 		}
 	}
-	result := make([]string, 0, len(roles))
-	for role := range roles {
-		result = append(result, role)
-	}
-	sort.Strings(result)
-	return result, nil
+	return maps.Keys(roles), nil
 }
