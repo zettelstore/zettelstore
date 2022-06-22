@@ -40,12 +40,12 @@ func (s *Search) Print(w io.Writer) {
 		printSelectExprValues(w, s.search)
 		space = true
 	}
-	for _, name := range maps.Keys(s.tags) {
+	for _, name := range maps.Keys(s.mvals) {
 		if space {
 			io.WriteString(w, " AND ")
 		}
 		io.WriteString(w, name)
-		printSelectExprValues(w, s.tags[name])
+		printSelectExprValues(w, s.mvals[name])
 		space = true
 	}
 	if s.negate {

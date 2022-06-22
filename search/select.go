@@ -37,9 +37,9 @@ func (s *Search) compileMeta() MetaMatchFunc {
 }
 
 func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []string) {
-	posSpecs = make([]matchSpec, 0, len(s.tags))
-	negSpecs = make([]matchSpec, 0, len(s.tags))
-	for key, values := range s.tags {
+	posSpecs = make([]matchSpec, 0, len(s.mvals))
+	negSpecs = make([]matchSpec, 0, len(s.mvals))
+	for key, values := range s.mvals {
 		if !meta.KeyIsValid(key) {
 			continue
 		}

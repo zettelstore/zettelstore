@@ -56,7 +56,7 @@ type Search struct {
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
-	tags     expTagValues  // Expected values for a tag
+	mvals    expMetaValues // Expected values for a meta datum
 	search   []expValue    // Search string
 	negate   bool          // Negate the result of the whole selecting process
 
@@ -67,7 +67,7 @@ type Search struct {
 	limit      int    // <= 0: no limit
 }
 
-type expTagValues map[string][]expValue
+type expMetaValues map[string][]expValue
 
 // Clone the search value.
 func (s *Search) Clone() *Search {
@@ -76,9 +76,9 @@ func (s *Search) Clone() *Search {
 	}
 	c := new(Search)
 	c.preMatch = s.preMatch
-	c.tags = make(expTagValues, len(s.tags))
-	for k, v := range s.tags {
-		c.tags[k] = v
+	c.mvals = make(expMetaValues, len(s.mvals))
+	for k, v := range s.mvals {
+		c.mvals[k] = v
 	}
 	c.search = append([]expValue{}, s.search...)
 	c.negate = s.negate
@@ -142,10 +142,10 @@ func (s *Search) AddExpr(key, value string) *Search {
 	defer s.mx.Unlock()
 	if key == "" {
 		s.addSearch(val)
-	} else if s.tags == nil {
-		s.tags = expTagValues{key: {val}}
+	} else if s.mvals == nil {
+		s.mvals = expMetaValues{key: {val}}
 	} else {
-		s.tags[key] = append(s.tags[key], val)
+		s.mvals[key] = append(s.mvals[key], val)
 	}
 	return s
 }
@@ -300,7 +300,7 @@ func (s *Search) EnrichNeeded() bool {
 	}
 	s.mx.RLock()
 	defer s.mx.RUnlock()
-	for key := range s.tags {
+	for key := range s.mvals {
 		if meta.IsComputed(key) {
 			return true
 		}
