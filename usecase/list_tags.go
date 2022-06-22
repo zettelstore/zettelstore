@@ -34,16 +34,13 @@ func NewListTags(port ListTagsPort) ListTags {
 	return ListTags{port: port}
 }
 
-// TagData associates tags with a list of all zettel meta that use this tag
-type TagData map[string][]*meta.Meta
-
 // Run executes the use case.
-func (uc ListTags) Run(ctx context.Context, minCount int) (TagData, error) {
+func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
 	metas, err := uc.port.SelectMeta(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	result := make(TagData)
+	result := make(meta.Arrangement)
 	for _, m := range metas {
 		if tl, ok := m.GetList(api.KeyAllTags); ok && len(tl) > 0 {
 			for _, t := range tl {
