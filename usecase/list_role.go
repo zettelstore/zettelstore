@@ -39,15 +39,22 @@ func NewListRole(port ListRolePort) ListRole {
 
 // Run executes the use case.
 func (uc ListRole) Run(ctx context.Context) ([]string, error) {
-	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), nil)
+	var s *search.Search
+	s = s.AddExpr(api.KeyRole, "") // We look for all metadata with a role key
+	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
 	}
 	roles := make(strfun.Set, 256)
 	for _, m := range metas {
-		if role, ok := m.Get(api.KeyRole); ok && role != "" {
-			roles.Set(role)
+		role, ok := m.Get(api.KeyRole)
+		if !ok {
+			panic(m)
 		}
+		if role == "" {
+			panic(m)
+		}
+		roles.Set(role)
 	}
 	return maps.Keys(roles), nil
 }

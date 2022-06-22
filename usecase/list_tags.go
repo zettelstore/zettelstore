@@ -36,16 +36,23 @@ func NewListTags(port ListTagsPort) ListTags {
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	metas, err := uc.port.SelectMeta(ctx, nil)
+	var s *search.Search
+	s = s.AddExpr(api.KeyTags, "") // We look for all metadata with a tag
+	metas, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err
 	}
 	result := make(meta.Arrangement)
 	for _, m := range metas {
-		if tl, ok := m.GetList(api.KeyAllTags); ok && len(tl) > 0 {
-			for _, t := range tl {
-				result[t] = append(result[t], m)
-			}
+		tl, ok := m.GetList(api.KeyAllTags)
+		if !ok {
+			panic(tl)
+		}
+		if len(tl) == 0 {
+			panic(tl)
+		}
+		for _, t := range tl {
+			result[t] = append(result[t], m)
 		}
 	}
 	if minCount > 1 {
