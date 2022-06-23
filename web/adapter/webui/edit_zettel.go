@@ -15,7 +15,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -23,7 +22,7 @@ import (
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
-func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
+func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRole usecase.ListRole) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -38,20 +37,8 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel) http.Han
 			return
 		}
 
-		user := wui.getUser(ctx)
-		m := zettel.Meta
-		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Edit Zettel", "", user, &base)
-		wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
-			Heading:       base.Title,
-			MetaTitle:     m.GetDefault(api.KeyTitle, ""),
-			MetaRole:      m.GetDefault(api.KeyRole, ""),
-			MetaTags:      m.GetDefault(api.KeyTags, ""),
-			MetaSyntax:    m.GetDefault(api.KeySyntax, ""),
-			MetaPairsRest: m.PairsRest(),
-			IsTextContent: !zettel.Content.IsBinary(),
-			Content:       zettel.Content.AsString(),
-		})
+		roleData := retrieveDataLists(ctx, ucListRole)
+		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "Edit Zettel", roleData)
 	}
 }
 

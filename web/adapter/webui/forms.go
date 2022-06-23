@@ -27,6 +27,8 @@ type formZettelData struct {
 	Heading       string
 	MetaTitle     string
 	MetaRole      string
+	HasRoleData   bool
+	RoleData      []string
 	MetaTags      string
 	MetaSyntax    string
 	MetaPairsRest []meta.Pair

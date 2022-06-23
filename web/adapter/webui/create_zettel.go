@@ -11,6 +11,7 @@
 package webui
 
 import (
+	"context"
 	"net/http"
 
 	"zettelstore.de/c/api"
@@ -25,7 +26,7 @@ import (
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
 // HTML edit view for the various zettel creation methods.
-func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, createZettel *usecase.CreateZettel) http.HandlerFunc {
+func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, createZettel *usecase.CreateZettel, ucListRole usecase.ListRole) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
@@ -41,11 +42,12 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 			return
 		}
 
+		roleData := retrieveDataLists(ctx, ucListRole)
 		switch op {
 		case actionCopy:
-			wui.renderZettelForm(w, r, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel")
+			wui.renderZettelForm(ctx, w, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel", roleData)
 		case actionFolge:
-			wui.renderZettelForm(w, r, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel")
+			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel", roleData)
 		case actionNew:
 			m := origZettel.Meta
 			title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
@@ -59,18 +61,29 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			wui.renderZettelForm(w, r, createZettel.PrepareNew(origZettel), textTitle, htmlTitle)
+			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel), textTitle, htmlTitle, roleData)
 		}
 	}
 }
 
+func retrieveDataLists(ctx context.Context, ucListRole usecase.ListRole) []string {
+	roleList, err := ucListRole.Run(ctx)
+	if err != nil {
+		roleList = nil
+	} else {
+		roleList.SortByCount()
+	}
+	roleData := roleList.Categories()
+	return roleData
+}
+
 func (wui *WebUI) renderZettelForm(
+	ctx context.Context,
 	w http.ResponseWriter,
-	r *http.Request,
 	zettel domain.Zettel,
 	title, heading string,
+	roleData []string,
 ) {
-	ctx := r.Context()
 	user := wui.getUser(ctx)
 	m := zettel.Meta
 	var base baseData
@@ -80,6 +93,8 @@ func (wui *WebUI) renderZettelForm(
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),
 		MetaTags:      m.GetDefault(api.KeyTags, ""),
 		MetaRole:      config.GetRole(m, wui.rtConfig),
+		HasRoleData:   len(roleData) > 0,
+		RoleData:      roleData,
 		MetaSyntax:    config.GetSyntax(m, wui.rtConfig),
 		MetaPairsRest: m.PairsRest(),
 		IsTextContent: !zettel.Content.IsBinary(),

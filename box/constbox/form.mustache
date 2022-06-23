@@ -10,7 +10,14 @@
 <div>
 <div>
 <label for="zs-role">Role <a title="One word, without spaces, to set the main role of this zettel.">&#9432;</a></label>
-<input class="zs-input" type="text" id="zs-role" name="role" placeholder="role.." value="{{MetaRole}}">
+<input class="zs-input" type="text" id="zs-role" {{#HasRoleData}}list="zs-role-data"{{/HasRoleData}} name="role" placeholder="role.." value="{{MetaRole}}">
+{{#HasRoleData}}
+<datalist id="zs-role-data">
+{{#RoleData}}
+<option value="{{.}}">
+{{/RoleData}}
+</datalist>
+{{/HasRoleData}}
 </div>
 <label for="zs-tags">Tags <a title="Tags must begin with an '#' sign. They are separated by spaces.">&#9432;</a></label>
 <input class="zs-input" type="text" id="zs-tags" name="tags" placeholder="#tag" value="{{MetaTags}}">
