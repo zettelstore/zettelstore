@@ -4,33 +4,33 @@
 </header>
 <form method="POST">
 <div>
-<label for="title">Title <a title="Main heading of this zettel. You can use inline zettelmarkup.">&#9432;</a></label>
-<input class="zs-input" type="text" id="title" name="title" placeholder="Title.." value="{{MetaTitle}}" autofocus>
+<label for="zs-title">Title <a title="Main heading of this zettel. You can use inline zettelmarkup.">&#9432;</a></label>
+<input class="zs-input" type="text" id="zs-title" name="title" placeholder="Title.." value="{{MetaTitle}}" autofocus>
 </div>
 <div>
 <div>
-<label for="role">Role <a title="One word, without spaces, to set the main role of this zettel.">&#9432;</a></label>
-<input class="zs-input" type="text" id="role" name="role" placeholder="role.." value="{{MetaRole}}">
+<label for="zs-role">Role <a title="One word, without spaces, to set the main role of this zettel.">&#9432;</a></label>
+<input class="zs-input" type="text" id="zs-role" name="role" placeholder="role.." value="{{MetaRole}}">
 </div>
-<label for="tags">Tags <a title="Tags must begin with an '#' sign. They are separated by spaces.">&#9432;</a></label>
-<input class="zs-input" type="text" id="tags" name="tags" placeholder="#tag" value="{{MetaTags}}">
+<label for="zs-tags">Tags <a title="Tags must begin with an '#' sign. They are separated by spaces.">&#9432;</a></label>
+<input class="zs-input" type="text" id="zs-tags" name="tags" placeholder="#tag" value="{{MetaTags}}">
 </div>
 <div>
-<label for="meta">Metadata <a title="Other metadata for this zettel. Each line contains a key/value pair, separated by a colon ':'.">&#9432;</a></label>
-<textarea class="zs-input" id="meta" name="meta" rows="4" placeholder="metakey: metavalue">
+<label for="zs-meta">Metadata <a title="Other metadata for this zettel. Each line contains a key/value pair, separated by a colon ':'.">&#9432;</a></label>
+<textarea class="zs-input" id="zs-meta" name="meta" rows="4" placeholder="metakey: metavalue">
 {{#MetaPairsRest}}
 {{Key}}: {{Value}}
 {{/MetaPairsRest}}
 </textarea>
 </div>
 <div>
-<label for="syntax">Syntax <a title="Syntax of zettel content below, one word. Typically 'zmk' (for zettelmarkup).">&#9432;</a></label>
-<input class="zs-input" type="text" id="syntax" name="syntax" placeholder="syntax.." value="{{MetaSyntax}}">
+<label for="zs-syntax">Syntax <a title="Syntax of zettel content below, one word. Typically 'zmk' (for zettelmarkup).">&#9432;</a></label>
+<input class="zs-input" type="text" id="zs-syntax" name="syntax" placeholder="syntax.." value="{{MetaSyntax}}">
 </div>
 <div>
 {{#IsTextContent}}
-<label for="content">Content <a title="Content for this zettel, according to above syntax.">&#9432;</a></label>
-<textarea class="zs-input zs-content" id="meta" name="content" rows="20" placeholder="Your content..">{{Content}}</textarea>
+<label for="zs-content">Content <a title="Content for this zettel, according to above syntax.">&#9432;</a></label>
+<textarea class="zs-input zs-content" id="zs-content" name="content" rows="20" placeholder="Your content..">{{Content}}</textarea>
 {{/IsTextContent}}
 </div>
 <div>
