@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -42,19 +42,7 @@ func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, err
 	if err != nil {
 		return nil, err
 	}
-	result := make(meta.Arrangement)
-	for _, m := range metas {
-		tl, ok := m.GetList(api.KeyAllTags)
-		if !ok {
-			panic(tl)
-		}
-		if len(tl) == 0 {
-			panic(tl)
-		}
-		for _, t := range tl {
-			result[t] = append(result[t], m)
-		}
-	}
+	result := meta.CreateArrangement(metas, api.KeyAllTags)
 	if minCount > 1 {
 		for t, ms := range result {
 			if len(ms) < minCount {

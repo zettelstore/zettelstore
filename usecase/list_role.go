@@ -43,16 +43,5 @@ func (uc ListRole) Run(ctx context.Context) (meta.CountedCategories, error) {
 	if err != nil {
 		return nil, err
 	}
-	roleArrangement := make(meta.Arrangement, 256)
-	for _, m := range metas {
-		role, ok := m.Get(api.KeyRole)
-		if !ok {
-			panic(m)
-		}
-		if role == "" {
-			panic(m)
-		}
-		roleArrangement[role] = append(roleArrangement[role], m)
-	}
-	return roleArrangement.Counted(), nil
+	return meta.CreateArrangement(metas, api.KeyRole).Counted(), nil
 }

@@ -16,6 +16,35 @@ import "sort"
 // Typecally a category might be a tag name, a role name, a syntax value.
 type Arrangement map[string][]*Meta
 
+// CreateArrangement by inspecting a given key and use the found
+// value as a category.
+func CreateArrangement(metaList []*Meta, key string) Arrangement {
+	if len(metaList) == 0 {
+		return nil
+	}
+	descr := Type(key)
+	if descr == nil {
+		return nil
+	}
+	a := make(Arrangement)
+	if descr.IsSet {
+		for _, m := range metaList {
+			if vals, ok := m.GetList(key); ok {
+				for _, val := range vals {
+					a[val] = append(a[val], m)
+				}
+			}
+		}
+	} else {
+		for _, m := range metaList {
+			if val, ok := m.Get(key); ok {
+				a[val] = append(a[val], m)
+			}
+		}
+	}
+	return a
+}
+
 // Counted returns the list of categories, together with the number of
 // metadata for each category.
 func (a Arrangement) Counted() CountedCategories {
