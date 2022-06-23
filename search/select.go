@@ -393,7 +393,7 @@ func matchMetaPosSpecs(m *meta.Meta, posSpecs []matchSpec) bool {
 func matchMetaNegSpecs(m *meta.Meta, negSpecs []matchSpec) bool {
 	for _, s := range negSpecs {
 		if s.match == nil {
-			if _, ok := m.Get(s.key); ok {
+			if value, ok := m.Get(s.key); ok && matchValueExists(value) {
 				return false
 			}
 		} else if value, ok := m.Get(s.key); !ok || !s.match(value) {
