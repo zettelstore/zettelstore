@@ -19,8 +19,8 @@ import (
 
 type matchValueFunc func(value string) bool
 
-func matchValueNever(string) bool  { return false }
-func matchValueAlways(string) bool { return true }
+func matchValueNever(string) bool      { return false }
+func matchValueExists(val string) bool { return val != "" }
 
 type matchSpec struct {
 	key   string
@@ -45,7 +45,7 @@ func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []
 		}
 		if always, never := countEmptyValues(values); always+never > 0 {
 			if never == 0 {
-				posSpecs = append(posSpecs, matchSpec{key, matchValueAlways})
+				posSpecs = append(posSpecs, matchSpec{key, matchValueExists})
 				continue
 			}
 			if always == 0 {
