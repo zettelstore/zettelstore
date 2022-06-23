@@ -27,9 +27,10 @@ func (a *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
 			a.reportUsecaseError(w, err)
 			return
 		}
+		roleList.SortByName()
 
 		var buf bytes.Buffer
-		err = encodeJSONData(&buf, api.RoleListJSON{Roles: roleList})
+		err = encodeJSONData(&buf, api.RoleListJSON{Roles: roleList.Categories()})
 		if err != nil {
 			a.log.Fatal().Err(err).Msg("Unable to store role list in buffer")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

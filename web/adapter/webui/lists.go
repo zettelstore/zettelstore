@@ -90,10 +90,11 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 		wui.reportError(ctx, w, err)
 		return
 	}
+	roleList.SortByName()
 
 	roleInfos := make([]roleInfo, len(roleList))
 	for i, role := range roleList {
-		roleInfos[i] = roleInfo{role, wui.NewURLBuilder('h').AppendQuery("role", role).String()}
+		roleInfos[i] = roleInfo{role.Name, wui.NewURLBuilder('h').AppendQuery("role", role.Name).String()}
 	}
 
 	user := wui.getUser(ctx)

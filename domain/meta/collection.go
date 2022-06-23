@@ -47,12 +47,12 @@ func (ccs CountedCategories) SortByName() {
 	sort.Slice(ccs, func(i, j int) bool { return ccs[i].Name < ccs[j].Name })
 }
 
-// SortByCount sorts the list by the count attribute.
+// SortByCount sorts the list by the count attribute, descending.
 // If two counts are equal, elements are sorted by name.
 func (ccs CountedCategories) SortByCount() {
 	sort.Slice(ccs, func(i, j int) bool {
 		iCount, jCount := ccs[i].Count, ccs[j].Count
-		if iCount < jCount {
+		if iCount > jCount {
 			return true
 		}
 		if iCount == jCount {
@@ -60,4 +60,13 @@ func (ccs CountedCategories) SortByCount() {
 		}
 		return false
 	})
+}
+
+// Categories returns just the category names.
+func (ccs CountedCategories) Categories() []string {
+	result := make([]string, len(ccs))
+	for i, cc := range ccs {
+		result[i] = cc.Name
+	}
+	return result
 }

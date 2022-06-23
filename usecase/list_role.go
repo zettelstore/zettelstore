@@ -14,11 +14,9 @@ import (
 	"context"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/search"
-	"zettelstore.de/z/strfun"
 )
 
 // ListRolePort is the interface used by this use case.
@@ -38,14 +36,14 @@ func NewListRole(port ListRolePort) ListRole {
 }
 
 // Run executes the use case.
-func (uc ListRole) Run(ctx context.Context) ([]string, error) {
+func (uc ListRole) Run(ctx context.Context) (meta.CountedCategories, error) {
 	var s *search.Search
 	s = s.AddExpr(api.KeyRole, "") // We look for all metadata with a role key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
 	}
-	roles := make(strfun.Set, 256)
+	roleArrangement := make(meta.Arrangement, 256)
 	for _, m := range metas {
 		role, ok := m.Get(api.KeyRole)
 		if !ok {
@@ -54,7 +52,7 @@ func (uc ListRole) Run(ctx context.Context) ([]string, error) {
 		if role == "" {
 			panic(m)
 		}
-		roles.Set(role)
+		roleArrangement[role] = append(roleArrangement[role], m)
 	}
-	return maps.Keys(roles), nil
+	return roleArrangement.Counted(), nil
 }
