@@ -228,6 +228,16 @@ func (m *Meta) Set(key, value string) {
 	}
 }
 
+// SetNonEmpty stores the given value under the given key, if the value is non-empty.
+// An empty value will delete the previous association.
+func (m *Meta) SetNonEmpty(key, value string) {
+	if value == "" {
+		delete(m.pairs, key)
+	} else if key != api.KeyID {
+		m.pairs[key] = trimValue(value)
+	}
+}
+
 func trimValue(value string) string {
 	return strings.TrimFunc(value, input.IsSpace)
 }

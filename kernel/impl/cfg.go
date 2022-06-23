@@ -36,7 +36,6 @@ const (
 	keyDefaultCopyright  = "default-copyright"
 	keyDefaultLang       = "default-lang"
 	keyDefaultLicense    = "default-license"
-	keyDefaultRole       = "default-role"
 	keyDefaultSyntax     = "default-syntax"
 	keyDefaultTitle      = "default-title"
 	keyDefaultVisibility = "default-visibility"
@@ -56,7 +55,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultCopyright: {"Default copyright", parseString, true},
 		keyDefaultLang:      {"Default language", parseString, true},
 		keyDefaultLicense:   {"Default license", parseString, true},
-		keyDefaultRole:      {"Default role", parseString, true},
 		keyDefaultSyntax:    {"Default syntax", parseString, true},
 		keyDefaultTitle:     {"Default title", parseString, true},
 		keyDefaultVisibility: {
@@ -88,7 +86,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultCopyright:     "",
 		keyDefaultLang:          api.ValueLangEN,
 		keyDefaultLicense:       "",
-		keyDefaultRole:          api.ValueRoleZettel,
 		keyDefaultSyntax:        api.ValueSyntaxZmk,
 		keyDefaultTitle:         "Untitled",
 		keyDefaultVisibility:    meta.VisibilityLogin,
@@ -189,7 +186,6 @@ var defaultKeys = map[string]string{
 	api.KeyCopyright:  keyDefaultCopyright,
 	api.KeyLang:       keyDefaultLang,
 	api.KeyLicense:    keyDefaultLicense,
-	api.KeyRole:       keyDefaultRole,
 	api.KeySyntax:     keyDefaultSyntax,
 	api.KeyTitle:      keyDefaultTitle,
 	api.KeyVisibility: keyDefaultVisibility,
@@ -231,9 +227,6 @@ func (cfg *myConfig) getBool(key string) bool {
 
 // GetDefaultTitle returns the current value of the "default-title" key.
 func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(keyDefaultTitle) }
-
-// GetDefaultRole returns the current value of the "default-role" key.
-func (cfg *myConfig) GetDefaultRole() string { return cfg.getString(keyDefaultRole) }
 
 // GetDefaultSyntax returns the current value of the "default-syntax" key.
 func (cfg *myConfig) GetDefaultSyntax() string { return cfg.getString(keyDefaultSyntax) }

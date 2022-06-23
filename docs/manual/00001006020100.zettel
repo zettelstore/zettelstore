@@ -3,12 +3,11 @@ title: Supported Zettel Roles
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220214174553
+modified: 20220623183234
 
 The [[''role'' key|00001006020000#role]] defines what kind of zettel you are writing.
 You are free to define your own roles.
-
-The role ''zettel'' is predefined as the default role, but you can [[change this|00001004020000#default-role]].
+It is allowed to set an empty value or to omit the role.
 
 Some roles are defined for technical reasons:
 

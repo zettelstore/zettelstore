@@ -403,10 +403,7 @@ func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 }
 
 func (dp *dirBox) cleanupMeta(m *meta.Meta) {
-	if role, ok := m.Get(api.KeyRole); !ok || role == "" {
-		m.Set(api.KeyRole, dp.cdata.Config.GetDefaultRole())
-	}
 	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
-		m.Set(api.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
+		m.SetNonEmpty(api.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
 	}
 }

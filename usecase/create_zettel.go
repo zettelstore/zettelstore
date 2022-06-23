@@ -64,9 +64,9 @@ func (uc *CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 	if title, ok := origMeta.Get(api.KeyTitle); ok {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
-	m.Set(api.KeyRole, config.GetRole(origMeta, uc.rtConfig))
-	m.Set(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
-	m.Set(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
+	m.SetNonEmpty(api.KeyRole, config.GetRole(origMeta, uc.rtConfig))
+	m.SetNonEmpty(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
+	m.SetNonEmpty(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	m.Set(api.KeyPrecursor, origMeta.Zid.String())
 	return domain.Zettel{Meta: m, Content: domain.NewContent(nil)}
 }
@@ -75,10 +75,10 @@ func (uc *CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 func (*CreateZettel) PrepareNew(origZettel domain.Zettel) domain.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
-	m.Set(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
-	m.Set(api.KeyRole, om.GetDefault(api.KeyRole, ""))
-	m.Set(api.KeyTags, om.GetDefault(api.KeyTags, ""))
-	m.Set(api.KeySyntax, om.GetDefault(api.KeySyntax, ""))
+	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
+	m.SetNonEmpty(api.KeyRole, om.GetDefault(api.KeyRole, ""))
+	m.SetNonEmpty(api.KeyTags, om.GetDefault(api.KeyTags, ""))
+	m.SetNonEmpty(api.KeySyntax, om.GetDefault(api.KeySyntax, ""))
 
 	const prefixLen = len(meta.NewPrefix)
 	for _, pair := range om.PairsRest() {
@@ -114,14 +114,12 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, 
 		return m.Zid, nil // TODO: new error: already exists
 	}
 	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
-		m.Set(api.KeyTitle, uc.rtConfig.GetDefaultTitle())
-	}
-	if role, ok := m.Get(api.KeyRole); !ok || role == "" {
-		m.Set(api.KeyRole, uc.rtConfig.GetDefaultRole())
+		m.SetNonEmpty(api.KeyTitle, uc.rtConfig.GetDefaultTitle())
 	}
 	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
-		m.Set(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
+		m.SetNonEmpty(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	}
+
 	m.Delete(api.KeyModified)
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 

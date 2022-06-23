@@ -160,7 +160,6 @@ type myConfig struct{}
 
 func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
 func (*myConfig) GetDefaultTitle() string                  { return "" }
-func (*myConfig) GetDefaultRole() string                   { return api.ValueRoleZettel }
 func (*myConfig) GetDefaultSyntax() string                 { return api.ValueSyntaxZmk }
 func (*myConfig) GetDefaultLang() string                   { return "" }
 func (*myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }

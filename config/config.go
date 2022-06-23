@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -26,9 +26,6 @@ type Config interface {
 
 	// GetDefaultTitle returns the current value of the "default-title" key.
 	GetDefaultTitle() string
-
-	// GetDefaultRole returns the current value of the "default-role" key.
-	GetDefaultRole() string
 
 	// GetDefaultSyntax returns the current value of the "default-syntax" key.
 	GetDefaultSyntax() string
@@ -87,12 +84,12 @@ func GetTitle(m *meta.Meta, cfg Config) string {
 }
 
 // GetRole returns the value of the "role" key of the given meta. If there
-// is no such value, GetDefaultRole is returned.
+// is no such value, an empty string is returned.
 func GetRole(m *meta.Meta, cfg Config) string {
 	if val, ok := m.Get(api.KeyRole); ok {
 		return val
 	}
-	return cfg.GetDefaultRole()
+	return ""
 }
 
 // GetSyntax returns the value of the "syntax" key of the given meta. If there

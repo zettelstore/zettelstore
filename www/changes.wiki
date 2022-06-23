@@ -35,6 +35,8 @@
      (minor: webui)
   *  Allow to use startup configuration, even if started in simple mode.
      (minor)
+  *  Remove support for a default value for metadata key role.
+     (minor)
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>

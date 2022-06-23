@@ -3,7 +3,7 @@ title: Configure the running Zettelstore
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220304114412
+modified: 20220623182743
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -25,9 +25,6 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : License value to be used when rendering content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''license''.
   Default: (the empty string).
-; [!default-role|''default-role'']
-: Role to be used, if a zettel specifies no ''role'' [[meta key|00001006020000]].
-  Default: ""zettel"".
 ; [!default-syntax|''default-syntax'']
 : Syntax to be used, if a zettel specifies no ''syntax'' [[meta key|00001006020000]].
   Default: ""zmk"" (""[[Zettelmarkup|00001007000000]]"").
