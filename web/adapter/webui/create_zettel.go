@@ -67,12 +67,12 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 }
 
 func retrieveDataLists(ctx context.Context, ucListRoles usecase.ListRoles) []string {
-	roleList, err := ucListRoles.Run(ctx)
+	roleArrangement, err := ucListRoles.Run(ctx)
 	if err != nil {
-		roleList = nil
-	} else {
-		roleList.SortByCount()
+		return nil
 	}
+	roleList := roleArrangement.Counted()
+	roleList.SortByCount()
 	roleData := roleList.Categories()
 	return roleData
 }

@@ -59,14 +59,14 @@ func NewListRoles(port ListRolesPort) ListRoles {
 }
 
 // Run executes the use case.
-func (uc ListRoles) Run(ctx context.Context) (meta.CountedCategories, error) {
+func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
 	var s *search.Search
 	s = s.AddExpr(api.KeyRole, "") // We look for all metadata with a role key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
 	}
-	return meta.CreateArrangement(metas, api.KeyRole).Counted(), nil
+	return meta.CreateArrangement(metas, api.KeyRole), nil
 }
 
 // -------- List tags --------------------------------------------------------

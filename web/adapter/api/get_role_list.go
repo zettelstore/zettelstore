@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -22,11 +22,12 @@ import (
 // MakeListRoleHandler creates a new HTTP handler for the use case "list roles".
 func (a *API) MakeListRoleHandler(listRole usecase.ListRoles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roleList, err := listRole.Run(r.Context())
+		roleArrangement, err := listRole.Run(r.Context())
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
+		roleList := roleArrangement.Counted()
 		roleList.SortByName()
 
 		var buf bytes.Buffer

@@ -85,11 +85,12 @@ type roleInfo struct {
 
 func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRole usecase.ListRoles) {
 	ctx := r.Context()
-	roleList, err := listRole.Run(ctx)
+	roleArrangement, err := listRole.Run(ctx)
 	if err != nil {
 		wui.reportError(ctx, w, err)
 		return
 	}
+	roleList := roleArrangement.Counted()
 	roleList.SortByName()
 
 	roleInfos := make([]roleInfo, len(roleList))
