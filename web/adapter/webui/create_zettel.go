@@ -26,7 +26,7 @@ import (
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
 // HTML edit view for the various zettel creation methods.
-func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, createZettel *usecase.CreateZettel, ucListRole usecase.ListRole) http.HandlerFunc {
+func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, createZettel *usecase.CreateZettel, ucListRoles usecase.ListRoles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
@@ -42,7 +42,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 			return
 		}
 
-		roleData := retrieveDataLists(ctx, ucListRole)
+		roleData := retrieveDataLists(ctx, ucListRoles)
 		switch op {
 		case actionCopy:
 			wui.renderZettelForm(ctx, w, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel", roleData)
@@ -66,8 +66,8 @@ func (wui *WebUI) MakeGetCreateZettelHandler(getZettel usecase.GetZettel, create
 	}
 }
 
-func retrieveDataLists(ctx context.Context, ucListRole usecase.ListRole) []string {
-	roleList, err := ucListRole.Run(ctx)
+func retrieveDataLists(ctx context.Context, ucListRoles usecase.ListRoles) []string {
+	roleList, err := ucListRoles.Run(ctx)
 	if err != nil {
 		roleList = nil
 	} else {

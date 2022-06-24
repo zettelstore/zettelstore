@@ -67,7 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
 	ucEvaluate := usecase.NewEvaluate(rtConfig, ucGetZettel, ucGetMeta)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
-	ucListRoles := usecase.NewListRole(protectedBoxManager)
+	ucListRoles := usecase.NewListRoles(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
 	ucZettelContext := usecase.NewZettelContext(protectedBoxManager, rtConfig)
 	ucDelete := usecase.NewDeleteZettel(ucLog, protectedBoxManager)

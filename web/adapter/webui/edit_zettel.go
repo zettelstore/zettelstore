@@ -22,7 +22,7 @@ import (
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
-func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRole usecase.ListRole) http.HandlerFunc {
+func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRoles usecase.ListRoles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -37,7 +37,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRo
 			return
 		}
 
-		roleData := retrieveDataLists(ctx, ucListRole)
+		roleData := retrieveDataLists(ctx, ucListRoles)
 		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "Edit Zettel", roleData)
 	}
 }

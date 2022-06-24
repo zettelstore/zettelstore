@@ -31,7 +31,7 @@ import (
 // zettel as HTML.
 func (wui *WebUI) MakeListHTMLMetaHandler(
 	listMeta usecase.ListMeta,
-	listRole usecase.ListRole,
+	listRole usecase.ListRoles,
 	listTags usecase.ListTags,
 	evaluate *usecase.Evaluate,
 ) http.HandlerFunc {
@@ -83,7 +83,7 @@ type roleInfo struct {
 	URL  string
 }
 
-func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRole usecase.ListRole) {
+func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRole usecase.ListRoles) {
 	ctx := r.Context()
 	roleList, err := listRole.Run(ctx)
 	if err != nil {

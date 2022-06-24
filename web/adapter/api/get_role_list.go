@@ -20,7 +20,7 @@ import (
 )
 
 // MakeListRoleHandler creates a new HTTP handler for the use case "list roles".
-func (a *API) MakeListRoleHandler(listRole usecase.ListRole) http.HandlerFunc {
+func (a *API) MakeListRoleHandler(listRole usecase.ListRoles) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		roleList, err := listRole.Run(r.Context())
 		if err != nil {
