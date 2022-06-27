@@ -17,6 +17,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 )
 
@@ -28,19 +29,9 @@ func (a *API) MakeListRoleHandler(listRole usecase.ListRoles) http.HandlerFunc {
 			a.reportUsecaseError(w, err)
 			return
 		}
-		roleList := roleArrangement.Counted()
-		roleList.SortByName()
-
-		var buf bytes.Buffer
-		err = encodeJSONData(&buf, api.RoleListJSON{Roles: roleList.Categories()})
-		if err != nil {
-			a.log.Fatal().Err(err).Msg("Unable to store role list in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
+		if err2, wrote := a.writeArrangement(w, roleArrangement); wrote {
+			a.log.IfErr(err2).Msg("Write Roles")
 		}
-
-		err = writeBuffer(w, &buf, ctJSON)
-		a.log.IfErr(err).Msg("Write Roles")
 	}
 }
 
@@ -57,24 +48,30 @@ func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 			return
 		}
 
-		tagMap := make(map[string][]api.ZettelID, len(tagData))
-		for tag, metaList := range tagData {
-			zidList := make([]api.ZettelID, 0, len(metaList))
-			for _, m := range metaList {
-				zidList = append(zidList, api.ZettelID(m.Zid.String()))
-			}
-			tagMap[tag] = zidList
+		if err2, wrote := a.writeArrangement(w, tagData); wrote {
+			a.log.IfErr(err2).Msg("Write Tags")
 		}
-
-		var buf bytes.Buffer
-		err = encodeJSONData(&buf, api.TagListJSON{Tags: tagMap})
-		if err != nil {
-			a.log.Fatal().Err(err).Msg("Unable to store tag list in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		err = writeBuffer(w, &buf, ctJSON)
-		a.log.IfErr(err).Msg("Write Tags")
 	}
+}
+
+func (a *API) writeArrangement(w http.ResponseWriter, ar meta.Arrangement) (error, bool) {
+	mm := make(api.MapMeta, len(ar))
+	for tag, metaList := range ar {
+		zidList := make([]api.ZettelID, 0, len(metaList))
+		for _, m := range metaList {
+			zidList = append(zidList, api.ZettelID(m.Zid.String()))
+		}
+		mm[tag] = zidList
+	}
+
+	var buf bytes.Buffer
+	err := encodeJSONData(&buf, api.MapListJSON{Map: mm})
+	if err != nil {
+		a.log.Fatal().Err(err).Msg("Unable to store map list in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return nil, false
+	}
+
+	err = writeBuffer(w, &buf, ctJSON)
+	return err, true
 }

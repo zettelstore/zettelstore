@@ -376,9 +376,9 @@ func TestListRoles(t *testing.T) {
 	if len(rl) != len(exp) {
 		t.Errorf("Expected %d different tags, but got only %d (%v)", len(exp), len(rl), rl)
 	}
-	for i, id := range exp {
-		if id != rl[i] {
-			t.Errorf("Role list pos %d: expected %q, got %q", i, id, rl[i])
+	for _, id := range exp {
+		if _, found := rl[id]; !found {
+			t.Errorf("Role map expected key %q", id)
 		}
 	}
 }
