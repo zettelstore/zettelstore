@@ -18,7 +18,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
@@ -77,7 +76,7 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 			contentType = ctPlainText
 			_, err = z.Meta.Write(&buf)
 		case partContent:
-			if ct, ok := syntax2contentType(config.GetSyntax(z.Meta, a.rtConfig)); ok {
+			if ct, ok := syntax2contentType(z.Meta.GetDefault(api.KeySyntax, "")); ok {
 				contentType = ct
 			}
 			_, err = z.Content.Write(&buf)

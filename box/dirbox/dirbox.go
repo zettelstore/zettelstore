@@ -19,7 +19,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/box/notify"
@@ -237,7 +236,6 @@ func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	if err != nil {
 		return domain.Zettel{}, err
 	}
-	dp.cleanupMeta(m)
 	zettel := domain.Zettel{Meta: m, Content: domain.NewContent(c)}
 	dp.log.Trace().Zid(zid).Msg("GetZettel")
 	return zettel, nil
@@ -257,7 +255,6 @@ func (dp *dirBox) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	if err != nil {
 		return nil, err
 	}
-	dp.cleanupMeta(m)
 	return m, nil
 }
 
@@ -281,7 +278,6 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 			dp.log.Trace().Err(err).Msg("ApplyMeta/getMeta")
 			return err
 		}
-		dp.cleanupMeta(m)
 		dp.cdata.Enricher.Enrich(ctx, m, dp.number)
 		handle(m)
 	}
@@ -400,10 +396,4 @@ func (dp *dirBox) ReadStats(st *box.ManagedBoxStats) {
 	st.ReadOnly = dp.readonly
 	st.Zettel = dp.dirSrv.NumDirEntries()
 	dp.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
-}
-
-func (dp *dirBox) cleanupMeta(m *meta.Meta) {
-	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
-		m.SetNonEmpty(api.KeySyntax, dp.cdata.Config.GetDefaultSyntax())
-	}
 }

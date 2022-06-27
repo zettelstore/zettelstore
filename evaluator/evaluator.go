@@ -344,7 +344,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 		return createInlineErrorImage(en)
 	}
 
-	if syntax := e.getSyntax(zettel.Meta); parser.IsImageFormat(syntax) {
+	if syntax := zettel.Meta.GetDefault(api.KeySyntax, ""); parser.IsImageFormat(syntax) {
 		en.Syntax = syntax
 		return en
 	} else if !parser.IsTextParser(syntax) {
@@ -412,13 +412,6 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 	return &result
 }
 
-func (e *evaluator) getSyntax(m *meta.Meta) string {
-	if cfg := e.rtConfig; cfg != nil {
-		return config.GetSyntax(m, cfg)
-	}
-	return m.GetDefault(api.KeySyntax, "")
-}
-
 func createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
 	errorZid := id.EmojiZid
 	en.Ref = ast.ParseReference(errorZid.String())
@@ -452,7 +445,7 @@ func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.In
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
-	zn := parser.ParseZettel(zettel, e.getSyntax(zettel.Meta), e.rtConfig)
+	zn := parser.ParseZettel(zettel, zettel.Meta.GetDefault(api.KeySyntax, ""), e.rtConfig)
 	ast.Walk(e, &zn.Ast)
 	return zn
 }

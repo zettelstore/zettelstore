@@ -64,9 +64,9 @@ func (uc *CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 	if title, ok := origMeta.Get(api.KeyTitle); ok {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
-	m.SetNonEmpty(api.KeyRole, config.GetRole(origMeta, uc.rtConfig))
+	m.SetNonEmpty(api.KeyRole, origMeta.GetDefault(api.KeyRole, ""))
 	m.SetNonEmpty(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
-	m.SetNonEmpty(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
+	m.SetNonEmpty(api.KeySyntax, origMeta.GetDefault(api.KeySyntax, ""))
 	m.Set(api.KeyPrecursor, origMeta.Zid.String())
 	return domain.Zettel{Meta: m, Content: domain.NewContent(nil)}
 }
@@ -115,9 +115,6 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, 
 	}
 	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
 		m.SetNonEmpty(api.KeyTitle, uc.rtConfig.GetDefaultTitle())
-	}
-	if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
-		m.SetNonEmpty(api.KeySyntax, uc.rtConfig.GetDefaultSyntax())
 	}
 
 	m.Delete(api.KeyModified)

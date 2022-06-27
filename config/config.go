@@ -27,9 +27,6 @@ type Config interface {
 	// GetDefaultTitle returns the current value of the "default-title" key.
 	GetDefaultTitle() string
 
-	// GetDefaultSyntax returns the current value of the "default-syntax" key.
-	GetDefaultSyntax() string
-
 	// GetDefaultLang returns the current value of the "default-lang" key.
 	GetDefaultLang() string
 
@@ -81,24 +78,6 @@ func GetTitle(m *meta.Meta, cfg Config) string {
 		return cfg.GetDefaultTitle()
 	}
 	return "Untitled"
-}
-
-// GetRole returns the value of the "role" key of the given meta. If there
-// is no such value, an empty string is returned.
-func GetRole(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(api.KeyRole); ok {
-		return val
-	}
-	return ""
-}
-
-// GetSyntax returns the value of the "syntax" key of the given meta. If there
-// is no such value, GetDefaultSyntax is returned.
-func GetSyntax(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(api.KeySyntax); ok {
-		return val
-	}
-	return cfg.GetDefaultSyntax()
 }
 
 // GetLang returns the value of the "lang" key of the given meta. If there is

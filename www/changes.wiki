@@ -19,10 +19,14 @@
      <tt>/t</tt> is changed to <tt>/m?_key=tags</tt>. It already returned
      mapping described before.
      (breaking: api)
+  *  Remove support for a default value for metadata key role and syntax. Role
+     is now allowed to be empty, an empty syntax value defaults to
+     &ldquo;plain&rdquo;.
+     (breaking)
   *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
      to allow interpretation of content by external software.
      (minor: zettelmarkup)
-  *  Add initial support for a Tex-like math-mode to Zettelmarkup (both block-
+  *  Add initial support for a TeX-like math-mode to Zettelmarkup (both block-
      and inline-structured elements). Currently, support only the syntax,
      but WebUI does not render these elements in a special way.
      (minor: zettelmarkup)
@@ -35,12 +39,10 @@
      by Zettel Presenter will use the same CSS if they are rendered by
      Zettelstore WebUI.
      (minor: webui)
-  *  A zettel can be saved while crwating / editing it. There is no need to
+  *  A zettel can be saved while creating / editing it. There is no need to
      manually re-edit it by using the 'e' endpoint.
      (minor: webui)
   *  Allow to use startup configuration, even if started in simple mode.
-     (minor)
-  *  Remove support for a default value for metadata key role.
      (minor)
 
 <a name="0_4"></a>

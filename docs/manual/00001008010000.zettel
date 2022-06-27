@@ -3,14 +3,14 @@ title: Use Markdown within Zettelstore
 role: manual
 tags: #manual #markdown #zettelstore
 syntax: zmk
-modified: 20220113185400
+modified: 20220627192014
 
 If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
 Zettelstore supports the [[CommonMark|00001008010500]] dialect of Markdown.
 
 === Use Markdown as the default markup language of Zettelstore
 
-Add the key ''default-syntax'' with a value of ''md'' or ''markdown'' to the [[configuration zettel|00000000000100]].
+Update the [[New Zettel|00000000090001]] template (and other relevant template zettel) by setting the syntax value to ''md'' or ''markdown''.
 Whether to use ''md'' or ''markdown'' is not just a matter to taste.
 It also depends on the value of [[''zettel-file-syntax''|00001004020000#zettel-file-syntax]] and, to some degree, on the value of [[''yaml-header''|00001004020000#yaml-header]].
 

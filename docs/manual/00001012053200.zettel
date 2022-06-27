@@ -3,7 +3,7 @@ title: API: Create a new zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220623182929
+modified: 20220627192455
 
 A zettel is created by adding it to the [[list of zettel|00001012000000#zettel-lists]].
 Therefore, the [[endpoint|00001012920000]] to create a new zettel is also ''/j'', but you must send the data of the new zettel via a HTTP POST request.
@@ -27,7 +27,7 @@ Even these three keys are just optional.
 The body of the HTTP POST request must not be empty and it must contain a JSON object.
 
 Therefore, a body containing just ''{}'' is perfectly valid.
-The new zettel will have no content, its title will be set to the value of [[''default-title''|00001004020000#default-title]] (default: ""Untitled""), and its syntax is set to the value of [[''default-syntax''|00001004020000#default-syntax]] (default: ""zmk""), if the default values are not the empty string.
+The new zettel will have no content, its title will be set to the value of [[''default-title''|00001004020000#default-title]] (default: ""Untitled""), if the default value are not the empty string.
 
 ```
 # curl -X POST --data '{}' http://127.0.0.1:23123/j

@@ -3,7 +3,7 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220311111448
+modified: 20220627192329
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -17,7 +17,7 @@ However, with the exception of zettel titles, you can use any (markup) language 
 * Plain text, not further interpreted
 
 The [[metadata key|00001006020000#syntax]] ""''syntax''"" specifies which language should be used.
-If it is not given, the key ""''default-syntax''"" will be used (specified in the [[configuration zettel|00001004020000#default-syntax]]).
+If it is not given, it defaults to ''plain''.
 The following syntax values are supported:
 
 ; [!css|''css'']
@@ -29,7 +29,8 @@ The following syntax values are supported:
 : Hypertext Markup Language, will not be parsed further.
   Instead, it is treated as [[text|#text]], but will be encoded differently for [[HTML format|00001012920510]] (same for the [[web user interface|00001014000000]]).
 
-  For security reasons, equivocal elements will not be encoded in the HTML format / web user interface, e.g. the ``<script ...`` tag.
+  For security reasons, equivocal elements will not be encoded in the HTML format / web user interface.
+  The ``< script ...>`` tag is an example.
   See [[security aspects of Markdown|00001008010000#security-aspects]] for some details.
 ; [!markdown|''markdown''], [!md|''md'']
 : For those who desperately need [[Markdown|https://daringfireball.net/projects/markdown/]].
