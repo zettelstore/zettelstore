@@ -21,57 +21,52 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
-// MakeListRoleHandler creates a new HTTP handler for the use case "list roles".
-func (a *API) MakeListRoleHandler(listRole usecase.ListRoles) http.HandlerFunc {
+// MakeListMapMetaHandler creates a new HTTP handler to retrieve mappings of
+// metadata values of a specific key to the list of zettel IDs, which contain
+// this value.
+func (a *API) MakeListMapMetaHandler(listRole usecase.ListRoles, listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		roleArrangement, err := listRole.Run(r.Context())
-		if err != nil {
-			a.reportUsecaseError(w, err)
-			return
-		}
-		if err2, wrote := a.writeArrangement(w, roleArrangement); wrote {
-			a.log.IfErr(err2).Msg("Write Roles")
-		}
-	}
-}
-
-// MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
-func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		iMinCount, err := strconv.Atoi(r.URL.Query().Get("min"))
+		var ar meta.Arrangement
+		query := r.URL.Query()
+		iMinCount, err := strconv.Atoi(query.Get(api.QueryKeyMin))
 		if err != nil || iMinCount < 0 {
 			iMinCount = 0
 		}
-		tagData, err := listTags.Run(r.Context(), iMinCount)
+		ctx := r.Context()
+		key := query.Get(api.QueryKeyKey)
+		switch key {
+		case api.KeyRole:
+			ar, err = listRole.Run(ctx)
+		case api.KeyTags:
+			ar, err = listTags.Run(ctx, iMinCount)
+		default:
+			a.log.Info().Str("key", key).Msg("illegal key for retrieving meta map")
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
 
-		if err2, wrote := a.writeArrangement(w, tagData); wrote {
-			a.log.IfErr(err2).Msg("Write Tags")
+		mm := make(api.MapMeta, len(ar))
+		for tag, metaList := range ar {
+			zidList := make([]api.ZettelID, 0, len(metaList))
+			for _, m := range metaList {
+				zidList = append(zidList, api.ZettelID(m.Zid.String()))
+			}
+			mm[tag] = zidList
 		}
-	}
-}
 
-func (a *API) writeArrangement(w http.ResponseWriter, ar meta.Arrangement) (error, bool) {
-	mm := make(api.MapMeta, len(ar))
-	for tag, metaList := range ar {
-		zidList := make([]api.ZettelID, 0, len(metaList))
-		for _, m := range metaList {
-			zidList = append(zidList, api.ZettelID(m.Zid.String()))
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.MapListJSON{Map: mm})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store map list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
-		mm[tag] = zidList
-	}
 
-	var buf bytes.Buffer
-	err := encodeJSONData(&buf, api.MapListJSON{Map: mm})
-	if err != nil {
-		a.log.Fatal().Err(err).Msg("Unable to store map list in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return nil, false
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Str("key", key).Msg("write meta map")
 	}
-
-	err = writeBuffer(w, &buf, ctJSON)
-	return err, true
 }

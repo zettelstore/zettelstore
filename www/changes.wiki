@@ -14,8 +14,10 @@
      encoding is much easier to parse, compared with native and ZJSON encoding.
      In most cases it is smaller than ZJSON.
      (breaking: api)
-  *  End point <tt>/r</tt> now returns a map of role names to the list of
-     zettel having this role.
+  *  Endpoint <tt>/r</tt> is changed to <tt>/m?_key=role</tt> and returns now
+     a map of role names to the list of zettel having this role. Endpoint
+     <tt>/t</tt> is changed to <tt>/m?_key=tags</tt>. It already returned
+     mapping described before.
      (breaking: api)
   *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
      to allow interpretation of content by external software.

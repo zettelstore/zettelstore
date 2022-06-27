@@ -1,15 +1,32 @@
 id: 00001012052400
-title: API: List all tags
+title: API: Map metadata values to list of zettel identifier
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220627173721
+modified: 20220627183323
 
-To list all [[tags|00001006020000#tags]] used in the Zettelstore just send a HTTP GET request to the [[endpoint|00001012920000]] ''/t''.
+The [[endpoint|00001012920000]] ''/m'' allows to retrieve a map of metadata values (of a specific key) to the list of zettel identifier, which reference zettel containing this value under the given metadata key.
+
+Currently, two keys are supported:
+* [[''role''|00001006020100]]
+* [[''tags''|00001006020000#tags]]
+
+To list all roles used in the Zettelstore, send a HTTP GET request to the endpoint ''/m?_key=role''.
 If successful, the output is a JSON object:
 
 ```sh
-# curl http://127.0.0.1:23123/t
+# curl http://127.0.0.1:23123/m?_key=role
+{"map":{"configuration":["00000000090002","00000000090000", ... ,"00000000000001"],"manual":["00001014000000", ... ,"00001000000000"],"zettel":["00010000000000", ... ,"00001012070500","00000000090001"]}}
+```
+
+The JSON object only contains the key ''"map"'' with the value of another object.
+This second object contains all role names as keys and the list of identifier of those zettel with this specific role as a value.
+
+Similar, to list all tags used in the Zettelstore, send a HTTP GET request to the endpoint ''/m?_key=tags''.
+If successful, the output is a JSON object:
+
+```sh
+# curl http://127.0.0.1:23123/m?_key=tags
 {"map":{"#api":[:["00001012921000","00001012920800","00001012920522",...],"#authorization":["00001010040700","00001010040400",...],...,"#zettelstore":["00010000000000","00001014000000",...,"00001001000000"]}}
 ```
 
