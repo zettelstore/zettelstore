@@ -44,7 +44,6 @@ Example content.`
 		return
 	}
 	exp := `title: A Test
-role: zettel
 syntax: zmk
 
 Example content.`
