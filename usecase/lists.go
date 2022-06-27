@@ -16,6 +16,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/search"
 )
 
@@ -38,6 +39,41 @@ func NewListMeta(port ListMetaPort) ListMeta {
 // Run executes the use case.
 func (uc ListMeta) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
 	return uc.port.SelectMeta(ctx, s)
+}
+
+// -------- List roles -------------------------------------------------------
+
+// ListSyntaxPort is the interface used by this use case.
+type ListSyntaxPort interface {
+	// SelectMeta returns all zettel metadata that match the selection criteria.
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+}
+
+// ListSyntax is the data for this use case.
+type ListSyntax struct {
+	port ListSyntaxPort
+}
+
+// NewListSyntax creates a new use case.
+func NewListSyntax(port ListSyntaxPort) ListSyntax {
+	return ListSyntax{port: port}
+}
+
+// Run executes the use case.
+func (uc ListSyntax) Run(ctx context.Context) (meta.Arrangement, error) {
+	var s *search.Search
+	s = s.AddExpr(api.KeySyntax, "") // We look for all metadata with a syntax key
+	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
+	if err != nil {
+		return nil, err
+	}
+	result := meta.CreateArrangement(metas, api.KeySyntax)
+	for _, syn := range parser.GetSyntaxes() {
+		if _, found := result[syn]; !found {
+			result[syn] = nil
+		}
+	}
+	return result, nil
 }
 
 // -------- List roles -------------------------------------------------------

@@ -67,6 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
 	ucEvaluate := usecase.NewEvaluate(rtConfig, ucGetZettel, ucGetMeta)
 	ucListMeta := usecase.NewListMeta(protectedBoxManager)
+	ucListSyntax := usecase.NewListSyntax(protectedBoxManager)
 	ucListRoles := usecase.NewListRoles(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
 	ucZettelContext := usecase.NewZettelContext(protectedBoxManager, rtConfig)
@@ -85,12 +86,12 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 			ucGetMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('b', server.MethodPost, wui.MakePostRenameZettelHandler(&ucRename))
 		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCreateZettelHandler(
-			ucGetZettel, &ucCreateZettel, ucListRoles))
+			ucGetZettel, &ucCreateZettel, ucListRoles, ucListSyntax))
 		webSrv.AddZettelRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 		webSrv.AddZettelRoute('d', server.MethodGet, wui.MakeGetDeleteZettelHandler(
 			ucGetMeta, ucGetAllMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('d', server.MethodPost, wui.MakePostDeleteZettelHandler(&ucDelete))
-		webSrv.AddZettelRoute('e', server.MethodGet, wui.MakeEditGetZettelHandler(ucGetZettel, ucListRoles))
+		webSrv.AddZettelRoute('e', server.MethodGet, wui.MakeEditGetZettelHandler(ucGetZettel, ucListRoles, ucListSyntax))
 		webSrv.AddZettelRoute('e', server.MethodPost, wui.MakeEditSetZettelHandler(&ucUpdate))
 	}
 	webSrv.AddListRoute('g', server.MethodGet, wui.MakeGetGoActionHandler(&ucRefresh))

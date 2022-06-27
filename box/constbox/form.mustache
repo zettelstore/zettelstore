@@ -32,8 +32,14 @@
 </div>
 <div>
 <label for="zs-syntax">Syntax <a title="Syntax of zettel content below, one word. Typically 'zmk' (for zettelmarkup).">&#9432;</a></label>
-<input class="zs-input" type="text" id="zs-syntax" name="syntax" placeholder="syntax.." value="{{MetaSyntax}}">
-</div>
+<input class="zs-input" type="text" id="zs-syntax" {{#HasSyntaxData}}list="zs-syntax-data"{{/HasSyntaxData}} name="syntax" placeholder="syntax.." value="{{MetaSyntax}}">
+{{#HasSyntaxData}}
+<datalist id="zs-syntax-data">
+{{#SyntaxData}}
+<option value="{{.}}">
+{{/SyntaxData}}
+</datalist>
+{{/HasSyntaxData}}</div>
 <div>
 {{#IsTextContent}}
 <label for="zs-content">Content <a title="Content for this zettel, according to above syntax.">&#9432;</a></label>
