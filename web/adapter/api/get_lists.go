@@ -20,6 +20,30 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
+// MakeListRoleHandler creates a new HTTP handler for the use case "list roles".
+func (a *API) MakeListRoleHandler(listRole usecase.ListRoles) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		roleArrangement, err := listRole.Run(r.Context())
+		if err != nil {
+			a.reportUsecaseError(w, err)
+			return
+		}
+		roleList := roleArrangement.Counted()
+		roleList.SortByName()
+
+		var buf bytes.Buffer
+		err = encodeJSONData(&buf, api.RoleListJSON{Roles: roleList.Categories()})
+		if err != nil {
+			a.log.Fatal().Err(err).Msg("Unable to store role list in buffer")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		err = writeBuffer(w, &buf, ctJSON)
+		a.log.IfErr(err).Msg("Write Roles")
+	}
+}
+
 // MakeListTagsHandler creates a new HTTP handler for the use case "list some zettel".
 func (a *API) MakeListTagsHandler(listTags usecase.ListTags) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
