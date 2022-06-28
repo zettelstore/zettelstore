@@ -37,7 +37,7 @@ func CreateArrangement(metaList []*Meta, key string) Arrangement {
 		}
 	} else {
 		for _, m := range metaList {
-			if val, ok := m.Get(key); ok {
+			if val, ok := m.Get(key); ok && val != "" {
 				a[val] = append(a[val], m)
 			}
 		}
