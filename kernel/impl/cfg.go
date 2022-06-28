@@ -236,19 +236,6 @@ func (cfg *myConfig) GetHomeZettel() id.Zid {
 	return homeZid
 }
 
-// GetDefaultVisibility returns the default value for zettel visibility.
-func (cfg *myConfig) GetDefaultVisibility() meta.Visibility {
-	val := cfg.getString(keyDefaultVisibility)
-	if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
-		return vis
-	}
-	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(keyDefaultVisibility)
-	vis := meta.GetVisibility(val)
-	cfg.mx.RUnlock()
-	return vis
-}
-
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cfg *myConfig) GetMaxTransclusions() int {
 	const defaultValue = 1024
@@ -295,5 +282,14 @@ func (cfg *myConfig) GetVisibility(m *meta.Meta) meta.Visibility {
 			return vis
 		}
 	}
-	return cfg.GetDefaultVisibility()
+
+	val := cfg.getString(keyDefaultVisibility)
+	if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
+		return vis
+	}
+	cfg.mx.RLock()
+	val, _ = cfg.orig.Get(keyDefaultVisibility)
+	vis := meta.GetVisibility(val)
+	cfg.mx.RUnlock()
+	return vis
 }

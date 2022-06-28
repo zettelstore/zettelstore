@@ -160,7 +160,6 @@ type myConfig struct{}
 
 func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
 func (*myConfig) GetDefaultLang() string                   { return "" }
-func (*myConfig) GetDefaultVisibility() meta.Visibility    { return meta.VisibilityPublic }
 func (*myConfig) GetFooterHTML() string                    { return "" }
 func (*myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
 func (*myConfig) GetListPageSize() int                     { return 0 }
@@ -169,10 +168,10 @@ func (*myConfig) GetSiteName() string                      { return "" }
 func (*myConfig) GetYAMLHeader() bool                      { return false }
 func (*myConfig) GetZettelFileSyntax() []string            { return nil }
 
-func (*myConfig) GetSimpleMode() bool                          { return false }
-func (*myConfig) GetExpertMode() bool                          { return false }
-func (cfg *myConfig) GetVisibility(*meta.Meta) meta.Visibility { return cfg.GetDefaultVisibility() }
-func (*myConfig) GetMaxTransclusions() int                     { return 1024 }
+func (*myConfig) GetSimpleMode() bool                      { return false }
+func (*myConfig) GetExpertMode() bool                      { return false }
+func (*myConfig) GetVisibility(*meta.Meta) meta.Visibility { return meta.VisibilityPublic }
+func (*myConfig) GetMaxTransclusions() int                 { return 1024 }
 
 var testConfig = &myConfig{}
 

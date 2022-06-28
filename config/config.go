@@ -33,9 +33,6 @@ type Config interface {
 	// GetHomeZettel returns the value of the "home-zettel" key.
 	GetHomeZettel() id.Zid
 
-	// GetDefaultVisibility returns the default value for zettel visibility.
-	GetDefaultVisibility() meta.Visibility
-
 	// GetMaxTransclusions return the maximum number of indirect transclusions.
 	GetMaxTransclusions() int
 
