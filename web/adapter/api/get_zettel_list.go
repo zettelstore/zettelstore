@@ -17,7 +17,6 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -73,7 +72,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		var buf bytes.Buffer
 		for _, m := range metaList {
-			_, err = fmt.Fprintln(&buf, m.Zid.String(), config.GetTitle(m, a.rtConfig))
+			_, err = fmt.Fprintln(&buf, m.Zid.String(), m.GetTitle())
 			if err != nil {
 				a.log.Fatal().Err(err).Msg("Unable to store plain list in buffer")
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

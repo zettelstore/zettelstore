@@ -24,9 +24,6 @@ type Config interface {
 	// AddDefaultValues enriches the given meta data with its default values.
 	AddDefaultValues(m *meta.Meta) *meta.Meta
 
-	// GetDefaultTitle returns the current value of the "default-title" key.
-	GetDefaultTitle() string
-
 	// GetDefaultLang returns the current value of the "default-lang" key.
 	GetDefaultLang() string
 
@@ -66,18 +63,6 @@ type AuthConfig interface {
 
 	// GetVisibility returns the visibility value of the metadata.
 	GetVisibility(m *meta.Meta) meta.Visibility
-}
-
-// GetTitle returns the value of the "title" key of the given meta. If there
-// is no such value, GetDefaultTitle is returned.
-func GetTitle(m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(api.KeyTitle); ok {
-		return val
-	}
-	if cfg != nil {
-		return cfg.GetDefaultTitle()
-	}
-	return "Untitled"
 }
 
 // GetLang returns the value of the "lang" key of the given meta. If there is

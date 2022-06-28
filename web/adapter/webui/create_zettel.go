@@ -53,7 +53,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel", roleData, syntaxData)
 		case actionNew:
 			m := origZettel.Meta
-			title := parser.ParseMetadata(config.GetTitle(m, wui.rtConfig))
+			title := parser.ParseMetadata(m.GetTitle())
 			textTitle, err2 := encodeInlinesText(&title, wui.gentext)
 			if err2 != nil {
 				wui.reportError(ctx, w, err2)

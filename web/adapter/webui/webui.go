@@ -335,7 +335,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		if !wui.policy.CanRead(user, m) {
 			continue
 		}
-		title := config.GetTitle(m, wui.rtConfig)
+		title := m.GetTitle()
 		astTitle := parser.ParseMetadata(title)
 		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle, false)
 		if err2 != nil {

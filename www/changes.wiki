@@ -19,9 +19,9 @@
      <tt>/t</tt> is changed to <tt>/m?_key=tags</tt>. It already returned
      mapping described before.
      (breaking: api)
-  *  Remove support for a default value for metadata key role and syntax. Role
-     is now allowed to be empty, an empty syntax value defaults to
-     &ldquo;plain&rdquo;.
+  *  Remove support for a default value for metadata key title, role, and
+     syntax. Title and role are now allowed to be empty, an empty syntax value
+     defaults to &ldquo;plain&rdquo;.
      (breaking)
   *  Add support for an &ldquo;evaluation block&rdquo; syntax in Zettelmarkup
      to allow interpretation of content by external software.

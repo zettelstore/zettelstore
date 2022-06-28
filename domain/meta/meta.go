@@ -261,6 +261,15 @@ func (m *Meta) GetDefault(key, def string) string {
 	return def
 }
 
+// GetTitle returns the title of the metadata. It is the only key that has a
+// defined default value: the string representation of the zettel identifier.
+func (m *Meta) GetTitle() string {
+	if title, found := m.Get(api.KeyTitle); found {
+		return title
+	}
+	return m.Zid.String()
+}
+
 // Pairs returns not computed key/values pairs stored, in a specific order.
 // First come the pairs with predefined keys: MetaTitleKey, MetaTagsKey, MetaSyntaxKey,
 // MetaContextKey. Then all other pairs are append to the list, ordered by key.

@@ -44,13 +44,14 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		q := r.URL.Query()
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
-			zmkTitle := zm.GetDefault(api.KeyTitle, "")
-			isTitle := evaluate.RunMetadata(ctx, zmkTitle)
-			encdr := textenc.Create()
-			var b strings.Builder
-			_, err = encdr.WriteInlines(&b, &isTitle)
-			if err == nil {
-				phrase = b.String()
+			if zmkTitle, found := zm.Get(api.KeyTitle); found {
+				isTitle := evaluate.RunMetadata(ctx, zmkTitle)
+				encdr := textenc.Create()
+				var b strings.Builder
+				_, err = encdr.WriteInlines(&b, &isTitle)
+				if err == nil {
+					phrase = b.String()
+				}
 			}
 		}
 

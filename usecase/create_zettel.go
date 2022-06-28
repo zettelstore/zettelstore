@@ -46,10 +46,10 @@ func NewCreateZettel(log *logger.Logger, rtConfig config.Config, port CreateZett
 // PrepareCopy the zettel for further modification.
 func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 	m := origZettel.Meta.Clone()
-	if title, ok := m.Get(api.KeyTitle); ok {
+	if title, found := m.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Copy", "Copy of "))
 	}
-	if readonly, ok := m.Get(api.KeyReadOnly); ok {
+	if readonly, found := m.Get(api.KeyReadOnly); found {
 		m.Set(api.KeyReadOnly, copyReadonly(readonly))
 	}
 	content := origZettel.Content
@@ -58,10 +58,10 @@ func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 }
 
 // PrepareFolge the zettel for further modification.
-func (uc *CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 	origMeta := origZettel.Meta
 	m := meta.New(id.Invalid)
-	if title, ok := origMeta.Get(api.KeyTitle); ok {
+	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
 	m.SetNonEmpty(api.KeyRole, origMeta.GetDefault(api.KeyRole, ""))
@@ -112,9 +112,6 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, 
 	m := zettel.Meta
 	if m.Zid.IsValid() {
 		return m.Zid, nil // TODO: new error: already exists
-	}
-	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
-		m.SetNonEmpty(api.KeyTitle, uc.rtConfig.GetDefaultTitle())
 	}
 
 	m.Delete(api.KeyModified)

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -71,17 +71,12 @@ func calculateSyntax(ext string) string {
 // CalcDefaultMeta returns metadata with default values for the given entry.
 func CalcDefaultMeta(zid id.Zid, ext string) *meta.Meta {
 	m := meta.New(zid)
-	m.Set(api.KeyTitle, zid.String())
 	m.Set(api.KeySyntax, calculateSyntax(ext))
 	return m
 }
 
 // CleanupMeta enhances the given metadata.
 func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, uselessFiles []string) {
-	if title, ok := m.Get(api.KeyTitle); !ok || title == "" {
-		m.Set(api.KeyTitle, zid.String())
-	}
-
 	if inMeta {
 		if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
 			dm := CalcDefaultMeta(zid, ext)

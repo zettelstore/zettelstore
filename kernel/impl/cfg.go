@@ -36,7 +36,6 @@ const (
 	keyDefaultCopyright  = "default-copyright"
 	keyDefaultLang       = "default-lang"
 	keyDefaultLicense    = "default-license"
-	keyDefaultTitle      = "default-title"
 	keyDefaultVisibility = "default-visibility"
 	keyExpertMode        = "expert-mode"
 	keyFooterHTML        = "footer-html"
@@ -54,7 +53,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultCopyright: {"Default copyright", parseString, true},
 		keyDefaultLang:      {"Default language", parseString, true},
 		keyDefaultLicense:   {"Default license", parseString, true},
-		keyDefaultTitle:     {"Default title", parseString, true},
 		keyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
@@ -84,7 +82,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultCopyright:     "",
 		keyDefaultLang:          api.ValueLangEN,
 		keyDefaultLicense:       "",
-		keyDefaultTitle:         "Untitled",
 		keyDefaultVisibility:    meta.VisibilityLogin,
 		keyExpertMode:           false,
 		keyFooterHTML:           "",
@@ -183,7 +180,6 @@ var defaultKeys = map[string]string{
 	api.KeyCopyright:  keyDefaultCopyright,
 	api.KeyLang:       keyDefaultLang,
 	api.KeyLicense:    keyDefaultLicense,
-	api.KeyTitle:      keyDefaultTitle,
 	api.KeyVisibility: keyDefaultVisibility,
 }
 
@@ -220,9 +216,6 @@ func (cfg *myConfig) getBool(key string) bool {
 	cfg.mx.RUnlock()
 	return val
 }
-
-// GetDefaultTitle returns the current value of the "default-title" key.
-func (cfg *myConfig) GetDefaultTitle() string { return cfg.getString(keyDefaultTitle) }
 
 // GetDefaultLang returns the current value of the "default-lang" key.
 func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(keyDefaultLang) }
