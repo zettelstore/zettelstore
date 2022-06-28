@@ -259,7 +259,7 @@ func (wui *WebUI) buildHTMLMetaList(ctx context.Context, metaList []*meta.Meta, 
 	encHTML := wui.getSimpleHTMLEncoder()
 	for _, m := range metaList {
 		metas = append(metas, simpleLink{
-			Text: wui.encodeTitleAsHTML(ctx, m, evaluate, encHTML, true),
+			Text: encodeTitleAsHTML(ctx, m, evaluate, encHTML, true),
 			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),
 		})
 	}

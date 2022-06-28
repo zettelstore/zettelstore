@@ -76,9 +76,12 @@ func retrieveDataLists(ctx context.Context, ucListRoles usecase.ListRoles, ucLis
 }
 
 func dataListFromArrangement(ar meta.Arrangement, err error) []string {
-	l := ar.Counted()
-	l.SortByCount()
-	return l.Categories()
+	if err == nil {
+		l := ar.Counted()
+		l.SortByCount()
+		return l.Categories()
+	}
+	return nil
 }
 
 func (wui *WebUI) renderZettelForm(

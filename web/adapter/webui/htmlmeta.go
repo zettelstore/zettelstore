@@ -172,7 +172,7 @@ func (wui *WebUI) makeGetTextTitle(
 	}
 }
 
-func (wui *WebUI) encodeTitleAsHTML(
+func encodeTitleAsHTML(
 	ctx context.Context, m *meta.Meta,
 	evaluate *usecase.Evaluate,
 	gen *htmlGenerator, noLink bool,
