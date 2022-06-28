@@ -159,7 +159,7 @@ func (cp *zmkP) parseSoftBreak() *ast.BreakNode {
 
 func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	if ref, is, ok := cp.parseReference(']'); ok {
-		attrs := cp.parseAttributes(false)
+		attrs := cp.parseInlineAttributes()
 		if len(ref) > 0 {
 			return &ast.LinkNode{
 				Ref:     ast.ParseReference(ref),
@@ -299,7 +299,7 @@ loop:
 	if !ok {
 		return nil, false
 	}
-	attrs := cp.parseAttributes(false)
+	attrs := cp.parseInlineAttributes()
 	return &ast.CiteNode{Key: string(inp.Src[pos:posL]), Inlines: ins, Attrs: attrs}, true
 }
 
@@ -309,7 +309,7 @@ func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 	if !ok {
 		return nil, false
 	}
-	attrs := cp.parseAttributes(false)
+	attrs := cp.parseInlineAttributes()
 	return &ast.FootnoteNode{Inlines: is, Attrs: attrs}, true
 }
 
@@ -336,7 +336,7 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
 	if ref, is, ok := cp.parseReference('}'); ok {
-		attrs := cp.parseAttributes(false)
+		attrs := cp.parseInlineAttributes()
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
 			return &ast.EmbedRefNode{
@@ -398,7 +398,7 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 	for inp.Ch == '%' {
 		inp.Next()
 	}
-	attrs := cp.parseAttributes(false)
+	attrs := cp.parseInlineAttributes()
 	cp.skipSpace()
 	pos := inp.Pos
 	for {
@@ -445,7 +445,7 @@ func (cp *zmkP) parseFormat() (res ast.InlineNode, success bool) {
 			inp.Next()
 			if inp.Ch == fch {
 				inp.Next()
-				fn.Attrs = cp.parseAttributes(false)
+				fn.Attrs = cp.parseInlineAttributes()
 				return fn, true
 			}
 			fn.Inlines = append(fn.Inlines, &ast.TextNode{Text: string(fch)})
@@ -489,7 +489,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 			if inp.Peek() == fch {
 				inp.Next()
 				inp.Next()
-				fn.Attrs = cp.parseAttributes(false)
+				fn.Attrs = cp.parseInlineAttributes()
 				fn.Content = buf.Bytes()
 				return fn, true
 			}
@@ -520,7 +520,7 @@ func (cp *zmkP) parseLiteralMath() (res ast.InlineNode, success bool) {
 			inp.Next()
 			fn := &ast.LiteralNode{
 				Kind:    ast.LiteralMath,
-				Attrs:   cp.parseAttributes(false),
+				Attrs:   cp.parseInlineAttributes(),
 				Content: content,
 			}
 			return fn, true

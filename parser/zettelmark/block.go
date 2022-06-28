@@ -166,7 +166,7 @@ func (cp *zmkP) parseVerbatim() (rn *ast.VerbatimNode, success bool) {
 	if cnt < 3 {
 		return nil, false
 	}
-	attrs := cp.parseAttributes(true)
+	attrs := cp.parseBlockAttributes()
 	inp.SkipToEOL()
 	if inp.Ch == input.EOS {
 		return nil, false
@@ -226,7 +226,7 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 	if cnt < 3 {
 		return nil, false
 	}
-	attrs := cp.parseAttributes(true)
+	attrs := cp.parseBlockAttributes()
 	inp.SkipToEOL()
 	if inp.Ch == input.EOS {
 		return nil, false
@@ -303,7 +303,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		}
 		hn.Inlines = append(hn.Inlines, in)
 		if inp.Ch == '{' && inp.Peek() != '{' {
-			attrs := cp.parseAttributes(true)
+			attrs := cp.parseBlockAttributes()
 			hn.Attrs = attrs
 			inp.SkipToEOL()
 			return hn, true
@@ -317,7 +317,7 @@ func (cp *zmkP) parseHRule() (hn *ast.HRuleNode, success bool) {
 	if cp.countDelim(inp.Ch) < 3 {
 		return nil, false
 	}
-	attrs := cp.parseAttributes(true)
+	attrs := cp.parseBlockAttributes()
 	inp.SkipToEOL()
 	return &ast.HRuleNode{Attrs: attrs}, true
 }

@@ -156,36 +156,38 @@ func updateAttrs(attrs map[string]string, key, val string) {
 	}
 }
 
-// parseAttributes reads optional attributes.
-// If sameLine is True, it is called from block nodes. In this case, a single
-// name is allowed. It will parse as {name}. Attributes are not allowed to be
-// continued on next line.
-// If sameLine is False, it is called from inline nodes. In this case, the next
-// rune must be '{'. A continuation on next lines is allowed.
-func (cp *zmkP) parseAttributes(sameLine bool) attrs.Attributes {
+func (cp *zmkP) parseBlockAttributes() attrs.Attributes {
 	inp := cp.inp
-	if sameLine {
-		pos := inp.Pos
-		for isNameRune(inp.Ch) {
-			inp.Next()
-		}
-		if pos < inp.Pos {
-			return attrs.Attributes{"": string(inp.Src[pos:inp.Pos])}
-		}
-
-		// No immediate name: skip spaces
-		cp.skipSpace()
+	pos := inp.Pos
+	for isNameRune(inp.Ch) {
+		inp.Next()
+	}
+	if pos < inp.Pos {
+		return attrs.Attributes{"": string(inp.Src[pos:inp.Pos])}
 	}
 
+	// No immediate name: skip spaces
+	cp.skipSpace()
+	attrs, _ := cp.doParseAttributes(true)
+	return attrs
+}
+
+func (cp *zmkP) parseInlineAttributes() attrs.Attributes {
+	inp := cp.inp
 	pos := inp.Pos
-	attrs, success := cp.doParseAttributes(sameLine)
-	if sameLine || success {
+	if attrs, success := cp.doParseAttributes(false); success {
 		return attrs
 	}
 	inp.SetPos(pos)
 	return nil
 }
 
+// doParseAttributes reads attributes.
+// If sameLine is True, it is called from block nodes. In this case, a single
+// name is allowed. It will parse as {name}. Attributes are not allowed to be
+// continued on next line.
+// If sameLine is False, it is called from inline nodes. In this case, the next
+// rune must be '{'. A continuation on next lines is allowed.
 func (cp *zmkP) doParseAttributes(sameLine bool) (res attrs.Attributes, success bool) {
 	inp := cp.inp
 	if inp.Ch != '{' {
