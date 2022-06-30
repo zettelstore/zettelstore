@@ -12,6 +12,7 @@
 package zettelmark
 
 import (
+	"strings"
 	"unicode"
 
 	"zettelstore.de/c/api"
@@ -70,7 +71,7 @@ func (cp *zmkP) clearStacked() {
 	cp.descrl = nil
 }
 
-func (cp *zmkP) parseNormalAttribute(attrs map[string]string, sameLine bool) bool {
+func (cp *zmkP) parseNormalAttribute(attrs map[string]string) bool {
 	inp := cp.inp
 	posK := inp.Pos
 	for isNameRune(inp.Ch) {
@@ -84,30 +85,21 @@ func (cp *zmkP) parseNormalAttribute(attrs map[string]string, sameLine bool) boo
 		attrs[key] = ""
 		return true
 	}
-	if sameLine && input.IsEOLEOS(inp.Ch) {
-		return false
-	}
-	return cp.parseAttributeValue(key, attrs, sameLine)
+	return cp.parseAttributeValue(key, attrs)
 }
 
-func (cp *zmkP) parseAttributeValue(
-	key string, attrs map[string]string, sameLine bool) bool {
+func (cp *zmkP) parseAttributeValue(key string, attrs map[string]string) bool {
 	inp := cp.inp
 	inp.Next()
 	if inp.Ch == '"' {
-		return cp.parseQuotedAttributeValue(key, attrs, sameLine)
+		return cp.parseQuotedAttributeValue(key, attrs)
 	}
 	posV := inp.Pos
 	for {
 		switch inp.Ch {
 		case input.EOS:
 			return false
-		case '\n', '\r':
-			if sameLine {
-				return false
-			}
-			fallthrough
-		case ' ', '}':
+		case '\n', '\r', ' ', '}':
 			updateAttrs(attrs, key, string(inp.Src[posV:inp.Pos]))
 			return true
 		}
@@ -115,24 +107,18 @@ func (cp *zmkP) parseAttributeValue(
 	}
 }
 
-func (cp *zmkP) parseQuotedAttributeValue(key string, attrs map[string]string, sameLine bool) bool {
+func (cp *zmkP) parseQuotedAttributeValue(key string, attrs map[string]string) bool {
 	inp := cp.inp
 	inp.Next()
-	var val string
+	var sb strings.Builder
 	for {
 		switch inp.Ch {
 		case input.EOS:
 			return false
 		case '"':
-			updateAttrs(attrs, key, val)
+			updateAttrs(attrs, key, sb.String())
 			inp.Next()
 			return true
-		case '\n', '\r':
-			if sameLine {
-				return false
-			}
-			inp.EatEOL()
-			val += " "
 		case '\\':
 			inp.Next()
 			switch inp.Ch {
@@ -141,7 +127,7 @@ func (cp *zmkP) parseQuotedAttributeValue(key string, attrs map[string]string, s
 			}
 			fallthrough
 		default:
-			val += string(inp.Ch)
+			sb.WriteRune(inp.Ch)
 			inp.Next()
 		}
 	}
@@ -168,14 +154,13 @@ func (cp *zmkP) parseBlockAttributes() attrs.Attributes {
 
 	// No immediate name: skip spaces
 	cp.skipSpace()
-	attrs, _ := cp.doParseAttributes(true)
-	return attrs
+	return cp.parseInlineAttributes()
 }
 
 func (cp *zmkP) parseInlineAttributes() attrs.Attributes {
 	inp := cp.inp
 	pos := inp.Pos
-	if attrs, success := cp.doParseAttributes(false); success {
+	if attrs, success := cp.doParseAttributes(); success {
 		return attrs
 	}
 	inp.SetPos(pos)
@@ -183,29 +168,24 @@ func (cp *zmkP) parseInlineAttributes() attrs.Attributes {
 }
 
 // doParseAttributes reads attributes.
-// If sameLine is True, it is called from block nodes. In this case, a single
-// name is allowed. It will parse as {name}. Attributes are not allowed to be
-// continued on next line.
-// If sameLine is False, it is called from inline nodes. In this case, the next
-// rune must be '{'. A continuation on next lines is allowed.
-func (cp *zmkP) doParseAttributes(sameLine bool) (res attrs.Attributes, success bool) {
+func (cp *zmkP) doParseAttributes() (res attrs.Attributes, success bool) {
 	inp := cp.inp
 	if inp.Ch != '{' {
 		return nil, false
 	}
 	inp.Next()
 	a := attrs.Attributes{}
-	if !cp.parseAttributeValues(sameLine, a) {
+	if !cp.parseAttributeValues(a) {
 		return nil, false
 	}
 	inp.Next()
 	return a, true
 }
 
-func (cp *zmkP) parseAttributeValues(sameLine bool, a attrs.Attributes) bool {
+func (cp *zmkP) parseAttributeValues(a attrs.Attributes) bool {
 	inp := cp.inp
 	for {
-		cp.skipSpaceLine(sameLine)
+		cp.skipSpaceLine()
 		switch inp.Ch {
 		case input.EOS:
 			return false
@@ -223,11 +203,11 @@ func (cp *zmkP) parseAttributeValues(sameLine bool, a attrs.Attributes) bool {
 			updateAttrs(a, "class", string(inp.Src[posC:inp.Pos]))
 		case '=':
 			delete(a, "")
-			if !cp.parseAttributeValue("", a, sameLine) {
+			if !cp.parseAttributeValue("", a) {
 				return false
 			}
 		default:
-			if !cp.parseNormalAttribute(a, sameLine) {
+			if !cp.parseNormalAttribute(a) {
 				return false
 			}
 		}
@@ -236,9 +216,6 @@ func (cp *zmkP) parseAttributeValues(sameLine bool, a attrs.Attributes) bool {
 		case '}':
 			return true
 		case '\n', '\r':
-			if sameLine {
-				return false
-			}
 		case ' ', ',':
 			inp.Next()
 		default:
@@ -247,11 +224,7 @@ func (cp *zmkP) parseAttributeValues(sameLine bool, a attrs.Attributes) bool {
 	}
 }
 
-func (cp *zmkP) skipSpaceLine(sameLine bool) {
-	if sameLine {
-		cp.skipSpace()
-		return
-	}
+func (cp *zmkP) skipSpaceLine() {
 	for inp := cp.inp; ; {
 		switch inp.Ch {
 		case ' ':

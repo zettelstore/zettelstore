@@ -702,7 +702,7 @@ func TestBlockAttr(t *testing.T) {
 		{":::{go=}\n:::", "(SPAN)[ATTR go]"},
 		{":::{.go=}\n:::", "(SPAN)"},
 		{":::{go py}\n:::", "(SPAN)[ATTR go py]"},
-		{":::{go\npy}\n:::", "(SPAN (PARA py}))"},
+		{":::{go\npy}\n:::", "(SPAN)[ATTR go py]"},
 		{":::{.go py}\n:::", "(SPAN)[ATTR class=go py]"},
 		{":::{go .py}\n:::", "(SPAN)[ATTR class=py go]"},
 		{":::{.go py=3}\n:::", "(SPAN)[ATTR class=go py=3]"},
@@ -714,7 +714,7 @@ func TestBlockAttr(t *testing.T) {
 		{":::{py=$2 3$}\n:::", "(SPAN)[ATTR py=$2 3$]"},
 		{":::{py=$2\\$3$}\n:::", "(SPAN)[ATTR py=2$3]"},
 		{":::{py=2$3}\n:::", "(SPAN)[ATTR py=2$3]"},
-		{":::{py=$2\n3$}\n:::", "(SPAN (PARA 3$}))"},
+		{":::{py=$2\n3$}\n:::", "(SPAN)[ATTR py=$2\n3$]"},
 		{":::{py=$2 3}\n:::", "(SPAN)"},
 		{":::{py=2 py=3}\n:::", "(SPAN)[ATTR py=$2 3$]"},
 		{":::{.go .py}\n:::", "(SPAN)[ATTR class=$go py$]"},
@@ -748,7 +748,7 @@ func TestInlineAttr(t *testing.T) {
 		{"::a::{py=$2 3$}", "(PARA {: a}[ATTR py=$2 3$])"},
 		{"::a::{py=$2\\$3$}", "(PARA {: a}[ATTR py=2$3])"},
 		{"::a::{py=2$3}", "(PARA {: a}[ATTR py=2$3])"},
-		{"::a::{py=$2\n3$}", "(PARA {: a}[ATTR py=$2 3$])"},
+		{"::a::{py=$2\n3$}", "(PARA {: a}[ATTR py=$2\n3$])"},
 		{"::a::{py=$2 3}", "(PARA {: a} {py=$2 SP 3})"},
 
 		{"::a::{py=2 py=3}", "(PARA {: a}[ATTR py=$2 3$])"},
@@ -1026,7 +1026,7 @@ func (tv *TestVisitor) visitAttributes(a attrs.Attributes) {
 		v := a[k]
 		if len(v) > 0 {
 			tv.buf.WriteByte('=')
-			if strings.ContainsRune(v, ' ') {
+			if quoteString(v) {
 				tv.buf.WriteByte('"')
 				tv.buf.WriteString(v)
 				tv.buf.WriteByte('"')
@@ -1037,4 +1037,13 @@ func (tv *TestVisitor) visitAttributes(a attrs.Attributes) {
 	}
 
 	tv.buf.WriteByte(']')
+}
+
+func quoteString(s string) bool {
+	for _, ch := range s {
+		if ch <= ' ' {
+			return true
+		}
+	}
+	return false
 }

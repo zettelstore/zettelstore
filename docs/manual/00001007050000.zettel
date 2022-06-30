@@ -3,7 +3,7 @@ title: Zettelmarkup: Attributes
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218132935
+modified: 20220630194106
 
 Attributes allows to modify the way how material is presented.
 Alternatively, they provide additional information to markup elements.
@@ -54,45 +54,15 @@ For example, when used for plain text, it replaces the non-visible space with a 
 * ''``Hello, world``{-}'' produces ==Hello, world=={-}.
 * ''``Hello, world``'' produces ==Hello, world==.
 
-For some [[block-structured elements|00001007030000]], there is a syntax variant if you only want to specify a generic attribute.
-For all line-range blocks you can specify the generic attributes directly in the first line, after the three (or more) block characters.
+Attributes may be continued on the next line when a space or line ending character is possible.
+In case of a quoted attribute value, the line ending character will be part of the attribute value.
+For example:
+```
+{key="quoted
+value"}
+```
+will produce a value ''quoted\\nvalue'' (where \\n denotes a line ending character).
 
-```
-:::attr
-...
-:::
-```
-is equivalent to
-```
-:::{=attr}
-...
-:::
-```.
-
-For other blocks, the closing curly bracket must be on the same line where the block element begins.
-However, spaces are allowed between the blocks characters and the attributes.
-```
-=== Heading {example}
-```
-is allowed and equivalent to
-```
-=== Heading{example}
-```.
-But
-```
-=== Heading {class=example
-background=grey}
-```
-is not allowed. Same for
-```
-=== Heading {background=color:"
-green"}
-```.
-
-For [[inline-structued elements|00001007040000]], the attributes must immediately follow the inline markup.
-However, the attributes may be continued on the next line when a space or line ending character is possible.
-
-``::GREEN::{example}`` is allowed, but not ``::GREEN:: {example}``.
 
 ```
 ::GREEN::{class=example
@@ -110,6 +80,35 @@ However,
 green"}
 ```
 is allowed, because line endings are allowed within quotes.
+
+For [[block-structured elements|00001007030000]], there is a syntax variant if you only want to specify a generic attribute.
+For all line-range blocks you can specify the generic attributes directly in the first line, after the three (or more) characters starting the block.
+
+```
+:::attr
+...
+:::
+```
+is equivalent to
+```
+:::{=attr}
+...
+:::
+```.
+
+For block-structured elements, spaces are allowed between the blocks characters and the attributes.
+```
+=== Heading {example}
+```
+is allowed and equivalent to
+```
+=== Heading{example}
+```.
+
+For [[inline-structued elements|00001007040000]], the attributes must immediately follow the inline markup.
+
+``::GREEN::{example}`` is allowed, but not ``::GREEN:: {example}``.
+
 
 === Reference material
 * [[Supported attribute values for natural languages|00001007050100]]

@@ -30,6 +30,10 @@
      and inline-structured elements). Currently, support only the syntax,
      but WebUI does not render these elements in a special way.
      (minor: zettelmarkup)
+  *  For block-structured elements, attributes may now span more than one line.
+     If a line ending occurs within a quoted attribute value, the line ending
+     characters are part of the attributes value.
+     (minor: zettelmarkup)
   *  New startup configuration key <kbd>max-request-size</kbd> to limit a web
      request body to prevent client sending too large requests.
      (minor: api, webui)
