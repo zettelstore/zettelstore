@@ -15,7 +15,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"

@@ -14,7 +14,7 @@ package sexprenc
 import (
 	"io"
 
-	"github.com/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"

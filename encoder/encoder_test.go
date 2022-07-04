@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
