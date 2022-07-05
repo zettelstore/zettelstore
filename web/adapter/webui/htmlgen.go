@@ -136,7 +136,7 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string,
 	if is == nil || len(*is) == 0 {
 		return "", nil
 	}
-	return html.EnvaluateInline(g.env, sexprenc.GetSexpr(is), !noLink, noLink), nil
+	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), !noLink, noLink), nil
 }
 
 func (g *htmlGenerator) generateTag(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {

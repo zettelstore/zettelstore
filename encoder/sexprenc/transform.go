@@ -338,7 +338,7 @@ func (t *transformer) getBlockSlice(bs *ast.BlockSlice) sxpf.Sequence {
 	for i, n := range *bs {
 		lstVals[i] = t.getSexpr(n)
 	}
-	return sxpf.NewSequence(lstVals...)
+	return sxpf.NewPairFromSlice(lstVals)
 }
 func (t *transformer) getInlineSlice(is ast.InlineSlice) *sxpf.Vector {
 	lstVals := make([]sxpf.Value, len(is))
@@ -355,9 +355,9 @@ func getAttributes(a attrs.Attributes) sxpf.Value {
 	keys := a.Keys()
 	lstVals := make([]sxpf.Value, 0, len(keys))
 	for _, k := range keys {
-		lstVals = append(lstVals, sxpf.NewSequence(sxpf.NewString(k), sxpf.NewString(a[k])))
+		lstVals = append(lstVals, sxpf.NewPair(sxpf.NewString(k), sxpf.NewPair(sxpf.NewString(a[k]), nil)))
 	}
-	return sxpf.NewSequence(lstVals...)
+	return sxpf.NewPairFromSlice(lstVals)
 }
 
 var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
@@ -409,7 +409,7 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) sxpf.Sequence {
 			for i, val := range setList {
 				setVals[i] = sxpf.NewString(val)
 			}
-			val = sxpf.NewSequence(setVals...)
+			val = sxpf.NewPairFromSlice(setVals)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			t := transformer{}
@@ -417,9 +417,9 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) sxpf.Sequence {
 		} else {
 			val = sxpf.NewString(p.Value)
 		}
-		lstVals = append(lstVals, sxpf.NewSequence(symType, symKey, val))
+		lstVals = append(lstVals, sxpf.NewPair(symType, sxpf.NewPair(symKey, sxpf.NewPair(val, nil))))
 	}
-	return sxpf.NewSequence(lstVals...)
+	return sxpf.NewPairFromSlice(lstVals)
 }
 
 func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
