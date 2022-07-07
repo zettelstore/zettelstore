@@ -401,7 +401,7 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) sxpf.Sequence {
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(mapMetaTypeS, ty)
-		symKey := sexpr.Smk.MakeSymbol(key)
+		strKey := sxpf.NewString(key)
 		var val sxpf.Value
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
@@ -417,7 +417,7 @@ func GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) sxpf.Sequence {
 		} else {
 			val = sxpf.NewString(p.Value)
 		}
-		lstVals = append(lstVals, sxpf.NewPair(symType, sxpf.NewPair(symKey, sxpf.NewPair(val, nil))))
+		lstVals = append(lstVals, sxpf.NewPair(symType, sxpf.NewPair(strKey, sxpf.NewPair(val, nil))))
 	}
 	return sxpf.NewPairFromSlice(lstVals)
 }
