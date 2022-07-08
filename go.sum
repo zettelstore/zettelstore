@@ -1,5 +1,5 @@
-codeberg.org/t73fde/sxpf v0.0.0-20220708140321-5dcc106a7bb8 h1:51mnk/JhFSVcBZSbPuuN3KALCoqEYLtiOJFk7TjOF5k=
-codeberg.org/t73fde/sxpf v0.0.0-20220708140321-5dcc106a7bb8/go.mod h1:4fAHEF3VH+ofbZkF6NzqiItTNy2X11tVCnZX99jXouA=
+codeberg.org/t73fde/sxpf v0.0.0-20220708165103-1085a1bac7ee h1:0gyZ+tO5jUEMK9nS9UW0ltxjZLe4sgY3F4RV+bBx0Ug=
+codeberg.org/t73fde/sxpf v0.0.0-20220708165103-1085a1bac7ee/go.mod h1:4fAHEF3VH+ofbZkF6NzqiItTNy2X11tVCnZX99jXouA=
 github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwVZI=
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 github.com/pascaldekloe/jwt v1.12.0 h1:imQSkPOtAIBAXoKKjL9ZVJuF/rVqJ+ntiLGpLyeqMUQ=
@@ -15,5 +15,5 @@ golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 h1:CBpWXWQpIRjzmkkA+M7q9Fqn
 golang.org/x/term v0.0.0-20220526004731-065cf7ba2467/go.mod h1:jbD1KX2456YbFQfuXm/mYQcufACuNUgVhRMnK/tPxf8=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
-zettelstore.de/c v0.0.0-20220708140930-66e4e68baa14 h1:TjoJmp3ZIll1GIJcLdJ3w57ZEy8cxQg2PxbL7fi6bKo=
-zettelstore.de/c v0.0.0-20220708140930-66e4e68baa14/go.mod h1:YU7FoqB2B7/DwcCZ/mtxSdctRS/7fT9bwnWcqAZl4iA=
+zettelstore.de/c v0.0.0-20220708165336-2e8350ddfb55 h1:IrHK++K2HKEH3m56Xfbb0ahqHpSYV1RybkcOZdqoEnY=
+zettelstore.de/c v0.0.0-20220708165336-2e8350ddfb55/go.mod h1:3sWDipJBjqUIu+o+Jqt5+1nRlFT7VrKUnlIqV8fRkIE=
