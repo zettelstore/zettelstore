@@ -192,7 +192,7 @@ func (g *htmlGenerator) generateLinkExternal(senv sxpf.Environment, args []sxpf.
 func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
 	return func(senv sxpf.Environment, args []sxpf.Value) (sxpf.Value, error) {
 		env := senv.(*html.EncEnvironment)
-		ref := env.GetSequence(args, 1)
+		ref := env.GetPair(args, 1)
 		refPair := ref.GetSlice()
 		refValue := env.GetString(refPair, 1)
 		zid := api.ZettelID(refValue)
