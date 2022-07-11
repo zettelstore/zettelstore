@@ -108,7 +108,11 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	got := val.String()
+	got, err := sxpf.Repr(val)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 	if exp != got {
 		prefix := fmt.Sprintf("Test #%d", testNum)
 		if d := descr; d != "" {
