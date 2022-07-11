@@ -6,7 +6,7 @@ require (
 	codeberg.org/t73fde/sxpf v0.0.0-20220708165103-1085a1bac7ee
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/pascaldekloe/jwt v1.12.0
-	github.com/yuin/goldmark v1.4.12
+	github.com/yuin/goldmark v1.4.13
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	golang.org/x/text v0.3.7
