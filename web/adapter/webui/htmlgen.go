@@ -51,10 +51,10 @@ func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *html
 	}
 
 	env.Builtins.Set(sexpr.SymTag, sxpf.NewBuiltin("tag", true, 0, -1, gen.generateTag))
-	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkZettel))
-	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkZettel))
-	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkBased))
-	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("link", true, 2, -1, gen.generateLinkExternal))
+	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
+	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
+	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
+	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("linkE", true, 2, -1, gen.generateLinkExternal))
 
 	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
 	if err != nil {

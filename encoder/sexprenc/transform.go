@@ -16,7 +16,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	"strconv"
 
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
@@ -57,7 +56,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Pair {
 		return sxpf.NewPair(
 			sexpr.SymHeading,
 			sxpf.NewPair(
-				sexpr.Smk.MakeSymbol(strconv.Itoa(n.Level)),
+				sxpf.NewInteger(int64(n.Level)),
 				sxpf.NewPair(
 					getAttributes(n.Attrs),
 					sxpf.NewPair(

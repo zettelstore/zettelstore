@@ -58,7 +58,6 @@ func TestEncoder(t *testing.T) {
 }
 
 func executeTestCases(t *testing.T, testCases []zmkTestCase) {
-	t.Helper()
 	for testNum, tc := range testCases {
 		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
@@ -75,12 +74,11 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 }
 
 func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, expected expectMap, zmkDefault string) {
-	t.Helper()
 	for enc, exp := range expected {
 		encdr := encoder.Create(enc)
 		got, err := pe.encode(encdr)
 		if err != nil {
-			t.Error(err)
+			t.Error("pe.encode:", err)
 			continue
 		}
 		if enc == api.EncoderZmk && exp == useZmk {
