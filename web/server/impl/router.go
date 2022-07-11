@@ -110,7 +110,7 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Something may panic. Ensure a kernel log.
 	defer func() {
 		if reco := recover(); reco != nil {
-			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).Msg("Recover context")
+			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).Str("ip", getCallerIP(r)).Msg("Recover context")
 			kernel.Main.LogRecover("Web", reco)
 		}
 	}()
@@ -119,7 +119,7 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if msg := rt.log.Debug(); msg.Enabled() {
 		withDebug = true
 		w = &traceResponseWriter{original: w}
-		msg.Str("method", r.Method).Str("uri", r.RequestURI).Msg("ServeHTTP")
+		msg.Str("method", r.Method).Str("uri", r.RequestURI).Str("ip", getCallerIP(r)).Msg("ServeHTTP")
 	}
 
 	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
