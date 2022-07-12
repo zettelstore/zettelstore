@@ -111,11 +111,11 @@ func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta enc
 
 func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) (int, error) {
 	lst := sexprenc.GetSexpr(bs)
-	sxpf.Evaluate(env, lst)
+	sxpf.Eval(env, lst)
 	return 0, env.GetError()
 }
 func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) (int, error) {
 	lst := sexprenc.GetSexpr(is)
-	sxpf.Evaluate(env, lst)
+	sxpf.Eval(env, lst)
 	return 0, env.GetError()
 }

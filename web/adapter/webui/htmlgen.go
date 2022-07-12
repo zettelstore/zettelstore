@@ -123,7 +123,7 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 	lst := sexprenc.GetSexpr(bs)
 	var buf bytes.Buffer
 	g.env.ReplaceWriter(&buf)
-	sxpf.Evaluate(g.env, lst)
+	sxpf.Eval(g.env, lst)
 	if g.env.GetError() == nil {
 		g.env.WriteEndnotes()
 	}
