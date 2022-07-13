@@ -209,7 +209,7 @@ func (t *transformer) getNestedList(ln *ast.NestedListNode) *sxpf.Pair {
 	for i, item := range ln.Items {
 		if isCompact && len(item) > 0 {
 			paragraph := t.getSexpr(item[0])
-			nlistVals[i+1] = sxpf.NewPairFromValues(paragraph.GetSlice()[1:]...)
+			nlistVals[i+1] = paragraph.GetTail()
 			continue
 		}
 		itemVals := make([]sxpf.Value, len(item))
@@ -242,7 +242,7 @@ func (t *transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.Pair
 		descVals := make([]sxpf.Value, len(def.Descriptions))
 		for j, b := range def.Descriptions {
 			if len(b) == 1 {
-				descVals[j] = sxpf.NewPairFromValues(t.getSexpr(b[0]).GetSlice()[1:]...)
+				descVals[j] = t.getSexpr(b[0]).GetTail()
 				continue
 			}
 			dVal := make([]sxpf.Value, len(b))
