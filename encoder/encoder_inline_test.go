@@ -155,6 +155,17 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Code formatting with visible space",
+		zmk:   "``x y``{-}",
+		expect: expectMap{
+			encoderZJSON: `[{"":"Code","a":{"-":""},"s":"x y"}]`,
+			encoderHTML:  "<code>x\u2423y</code>",
+			encoderSexpr: `((LITERAL-CODE (("-" "")) "x y"))`,
+			encoderText:  `x y`,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "HTML in Code formatting",
 		zmk:   "``<script `` abc",
 		expect: expectMap{

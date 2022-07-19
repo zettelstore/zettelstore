@@ -200,6 +200,17 @@ and much more
 		},
 	},
 	{
+		descr: "Simple Verbatim Code with visible spaces",
+		zmk:   "```{-}\nHello World\n```",
+		expect: expectMap{
+			encoderZJSON: `[{"":"CodeBlock","a":{"-":""},"s":"Hello World"}]`,
+			encoderHTML:  "<pre><code>Hello\u2423World</code></pre>",
+			encoderSexpr: `((VERBATIM-CODE (("-" "")) "Hello World"))`,
+			encoderText:  "Hello World",
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Simple Verbatim Eval",
 		zmk:   "~~~\nHello\nWorld\n~~~",
 		expect: expectMap{
