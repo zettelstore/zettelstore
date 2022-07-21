@@ -127,9 +127,7 @@ type EmbedRefNode struct {
 func (*EmbedRefNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
-func (en *EmbedRefNode) WalkChildren(v Visitor) {
-	Walk(v, &en.Inlines)
-}
+func (en *EmbedRefNode) WalkChildren(v Visitor) { Walk(v, &en.Inlines) }
 
 // --------------------------------------------------------------------------
 
@@ -144,9 +142,7 @@ type EmbedBLOBNode struct {
 func (*EmbedBLOBNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the text that describes the embedded material.
-func (en *EmbedBLOBNode) WalkChildren(v Visitor) {
-	Walk(v, &en.Inlines)
-}
+func (en *EmbedBLOBNode) WalkChildren(v Visitor) { Walk(v, &en.Inlines) }
 
 // --------------------------------------------------------------------------
 
@@ -160,9 +156,7 @@ type CiteNode struct {
 func (*CiteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the cite text.
-func (cn *CiteNode) WalkChildren(v Visitor) {
-	Walk(v, &cn.Inlines)
-}
+func (cn *CiteNode) WalkChildren(v Visitor) { Walk(v, &cn.Inlines) }
 
 // --------------------------------------------------------------------------
 
@@ -196,9 +190,7 @@ type FootnoteNode struct {
 func (*FootnoteNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the footnote text.
-func (fn *FootnoteNode) WalkChildren(v Visitor) {
-	Walk(v, &fn.Inlines)
-}
+func (fn *FootnoteNode) WalkChildren(v Visitor) { Walk(v, &fn.Inlines) }
 
 // --------------------------------------------------------------------------
 
@@ -228,9 +220,7 @@ const (
 func (*FormatNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren walks to the formatted text.
-func (fn *FormatNode) WalkChildren(v Visitor) {
-	Walk(v, &fn.Inlines)
-}
+func (fn *FormatNode) WalkChildren(v Visitor) { Walk(v, &fn.Inlines) }
 
 // --------------------------------------------------------------------------
 

@@ -21,7 +21,8 @@ import (
 func (cp *zmkP) parseBlockSlice() ast.BlockSlice {
 	inp := cp.inp
 	var lastPara *ast.ParaNode
-	bs := make(ast.BlockSlice, 0, 2)
+	bs := ast.BlockSlice{}
+
 	for inp.Ch != input.EOS {
 		bn, cont := cp.parseBlock(lastPara)
 		if bn != nil {
@@ -142,19 +143,19 @@ func (cp *zmkP) parseColon() (ast.BlockNode, bool) {
 
 // parsePara parses paragraphed inline material.
 func (cp *zmkP) parsePara() *ast.ParaNode {
-	pn := ast.NewParaNode()
+	ins := ast.InlineSlice{}
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			return pn
+			return &ast.ParaNode{Inlines: ins}
 		}
-		pn.Inlines = append(pn.Inlines, in)
+		ins = append(ins, in)
 		if _, ok := in.(*ast.BreakNode); ok {
 			ch := cp.inp.Ch
 			switch ch {
 			// Must contain all cases from above switch in parseBlock.
 			case input.EOS, '\n', '\r', '@', '`', runeModGrave, '%', '~', '$', '"', '<', '=', '-', '*', '#', '>', ';', ':', ' ', '|', '{':
-				return pn
+				return &ast.ParaNode{Inlines: ins}
 			}
 		}
 	}
@@ -358,7 +359,7 @@ func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 	ln, newLnCount := cp.buildNestedList(kinds)
 	pn := cp.parseLinePara()
 	if pn == nil {
-		pn = ast.NewParaNode()
+		pn = &ast.ParaNode{}
 	}
 	ln.Items = append(ln.Items, ast.ItemSlice{pn})
 	return cp.cleanupParsedNestedList(newLnCount)
@@ -516,7 +517,7 @@ func (cp *zmkP) parseIndentForList(cnt int) bool {
 	ln := cp.lists[cnt-1]
 	pn := cp.parseLinePara()
 	if pn == nil {
-		pn = ast.NewParaNode()
+		pn = &ast.ParaNode{}
 	}
 	lbn := ln.Items[len(ln.Items)-1]
 	if lpn, ok := lbn[len(lbn)-1].(*ast.ParaNode); ok {
@@ -564,18 +565,18 @@ func (cp *zmkP) parseIndentForDescription(cnt int) bool {
 
 // parseLinePara parses one line of inline material.
 func (cp *zmkP) parseLinePara() *ast.ParaNode {
-	pn := ast.NewParaNode()
+	ins := ast.InlineSlice{}
 	for {
 		in := cp.parseInline()
 		if in == nil {
-			if len(pn.Inlines) == 0 {
+			if len(ins) == 0 {
 				return nil
 			}
-			return pn
+			return &ast.ParaNode{Inlines: ins}
 		}
-		pn.Inlines = append(pn.Inlines, in)
+		ins = append(ins, in)
 		if _, ok := in.(*ast.BreakNode); ok {
-			return pn
+			return &ast.ParaNode{Inlines: ins}
 		}
 	}
 }

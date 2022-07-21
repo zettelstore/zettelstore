@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package zettelmark provides a parser for zettelmarkup.
 package zettelmark
 
 import (
@@ -20,17 +19,16 @@ import (
 )
 
 // parseInlineSlice parses a sequence of Inlines until EOS.
-func (cp *zmkP) parseInlineSlice() ast.InlineSlice {
+func (cp *zmkP) parseInlineSlice() (ins ast.InlineSlice) {
 	inp := cp.inp
-	var is ast.InlineSlice
 	for inp.Ch != input.EOS {
 		in := cp.parseInline()
 		if in == nil {
 			break
 		}
-		is = append(is, in)
+		ins = append(ins, in)
 	}
-	return is
+	return ins
 }
 
 func (cp *zmkP) parseInline() ast.InlineNode {
@@ -95,7 +93,8 @@ func (cp *zmkP) parseText() *ast.TextNode {
 	inp := cp.inp
 	pos := inp.Pos
 	if inp.Ch == '\\' {
-		return cp.parseTextBackslash()
+		cp.inp.Next()
+		return cp.parseBackslashRest()
 	}
 	for {
 		inp.Next()
@@ -106,11 +105,6 @@ func (cp *zmkP) parseText() *ast.TextNode {
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
-}
-
-func (cp *zmkP) parseTextBackslash() *ast.TextNode {
-	cp.inp.Next()
-	return cp.parseBackslashRest()
 }
 
 func (cp *zmkP) parseBackslash() ast.InlineNode {
@@ -305,43 +299,43 @@ loop:
 
 func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 	cp.inp.Next()
-	is, ok := cp.parseLinkLikeRest()
+	ins, ok := cp.parseLinkLikeRest()
 	if !ok {
 		return nil, false
 	}
 	attrs := cp.parseInlineAttributes()
-	return &ast.FootnoteNode{Inlines: is, Attrs: attrs}, true
+	return &ast.FootnoteNode{Inlines: ins, Attrs: attrs}, true
 }
 
 func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 	cp.skipSpace()
-	var is ast.InlineSlice
+	ins := ast.InlineSlice{}
 	inp := cp.inp
 	for inp.Ch != ']' {
 		in := cp.parseInline()
 		if in == nil {
 			return nil, false
 		}
-		is = append(is, in)
+		ins = append(ins, in)
 		if _, ok := in.(*ast.BreakNode); ok && input.IsEOLEOS(inp.Ch) {
 			return nil, false
 		}
 	}
 	inp.Next()
-	if len(is) == 0 {
+	if len(ins) == 0 {
 		return nil, true
 	}
-	return is, true
+	return ins, true
 }
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
-	if ref, is, ok := cp.parseReference('}'); ok {
+	if ref, ins, ok := cp.parseReference('}'); ok {
 		attrs := cp.parseInlineAttributes()
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)
 			return &ast.EmbedRefNode{
 				Ref:     r,
-				Inlines: is,
+				Inlines: ins,
 				Attrs:   attrs,
 			}, true
 		}
@@ -360,18 +354,18 @@ func (cp *zmkP) parseMark() (*ast.MarkNode, bool) {
 		inp.Next()
 	}
 	mark := inp.Src[pos:inp.Pos]
-	var is ast.InlineSlice
+	ins := ast.InlineSlice{}
 	if inp.Ch == '|' {
 		inp.Next()
 		var ok bool
-		is, ok = cp.parseLinkLikeRest()
+		ins, ok = cp.parseLinkLikeRest()
 		if !ok {
 			return nil, false
 		}
 	} else {
 		inp.Next()
 	}
-	mn := &ast.MarkNode{Mark: string(mark), Inlines: is}
+	mn := &ast.MarkNode{Mark: string(mark), Inlines: ins}
 	return mn, true
 }
 
@@ -464,7 +458,7 @@ var mapRuneLiteral = map[rune]ast.LiteralKind{
 	runeModGrave: ast.LiteralProg,
 	'\'':         ast.LiteralInput,
 	'=':          ast.LiteralOutput,
-	// '$':          ast.LiteralMath,
+	// No '$': ast.LiteralMath, because paring literal math is a little different
 }
 
 func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
@@ -478,7 +472,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 	if inp.Ch != fch {
 		return nil, false
 	}
-	fn := &ast.LiteralNode{Kind: kind}
+	litn := &ast.LiteralNode{Kind: kind}
 	inp.Next()
 	var buf bytes.Buffer
 	for {
@@ -489,9 +483,9 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 			if inp.Peek() == fch {
 				inp.Next()
 				inp.Next()
-				fn.Attrs = cp.parseInlineAttributes()
-				fn.Content = buf.Bytes()
-				return fn, true
+				litn.Attrs = cp.parseInlineAttributes()
+				litn.Content = buf.Bytes()
+				return litn, true
 			}
 			buf.WriteRune(fch)
 			inp.Next()

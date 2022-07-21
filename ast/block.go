@@ -55,18 +55,11 @@ func (*ParaNode) blockNode()       { /* Just a marker */ }
 func (*ParaNode) itemNode()        { /* Just a marker */ }
 func (*ParaNode) descriptionNode() { /* Just a marker */ }
 
-// NewParaNode creates an empty ParaNode.
-func NewParaNode() *ParaNode { return &ParaNode{} }
-
 // CreateParaNode creates a parameter block from inline nodes.
-func CreateParaNode(nodes ...InlineNode) *ParaNode {
-	return &ParaNode{Inlines: nodes}
-}
+func CreateParaNode(nodes ...InlineNode) *ParaNode { return &ParaNode{Inlines: nodes} }
 
 // WalkChildren walks down the inline elements.
-func (pn *ParaNode) WalkChildren(v Visitor) {
-	Walk(v, &pn.Inlines)
-}
+func (pn *ParaNode) WalkChildren(v Visitor) { Walk(v, &pn.Inlines) }
 
 //--------------------------------------------------------------------------
 
@@ -147,9 +140,7 @@ func (*HeadingNode) blockNode() { /* Just a marker */ }
 func (*HeadingNode) itemNode()  { /* Just a marker */ }
 
 // WalkChildren walks the heading text.
-func (hn *HeadingNode) WalkChildren(v Visitor) {
-	Walk(v, &hn.Inlines)
-}
+func (hn *HeadingNode) WalkChildren(v Visitor) { Walk(v, &hn.Inlines) }
 
 //--------------------------------------------------------------------------
 
