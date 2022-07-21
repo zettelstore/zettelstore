@@ -96,11 +96,23 @@ func (cp *zmkP) parseBlock(lastPara *ast.ParaNode) (res ast.BlockNode, cont bool
 	inp.SetPos(pos)
 	cp.clearStacked()
 	pn := cp.parsePara()
-	if lastPara != nil {
+	if startsWithSpaceSoftBreak(pn) {
+		pn.Inlines = pn.Inlines[2:]
+	} else if lastPara != nil {
 		lastPara.Inlines = append(lastPara.Inlines, pn.Inlines...)
 		return nil, true
 	}
 	return pn, false
+}
+
+func startsWithSpaceSoftBreak(pn *ast.ParaNode) bool {
+	ins := pn.Inlines
+	if len(ins) < 2 {
+		return false
+	}
+	_, isSpace := ins[0].(*ast.SpaceNode)
+	_, isBreak := ins[1].(*ast.BreakNode)
+	return isSpace && isBreak
 }
 
 func (cp *zmkP) cleanupListsAfterEOL() {

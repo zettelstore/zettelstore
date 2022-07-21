@@ -483,6 +483,14 @@ func TestVerbatimComment(t *testing.T) {
 	})
 }
 
+func TestPara(t *testing.T) {
+	t.Parallel()
+	checkTcs(t, TestCases{
+		{"a\n\nb", "(PARA a)(PARA b)"},
+		{"a\n \nb", "(PARA a)(PARA b)"},
+	})
+}
+
 func TestSpanRegion(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
