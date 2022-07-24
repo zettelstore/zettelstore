@@ -43,6 +43,9 @@
   *  A zettel can be saved while creating / editing it. There is no need to
      manually re-edit it by using the 'e' endpoint.
      (minor: webui)
+  *  Zettel role and zettel syntax are backed by a HTML5 data list element
+     which lists supported and used values to help to enter a valid value.
+     (mirnor: webui)
   *  Allow to use startup configuration, even if started in simple mode.
      (minor)
   *  Log authentication issues in level "sense"; add caller IP address to some
