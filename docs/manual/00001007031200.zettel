@@ -7,7 +7,7 @@ modified: 20220311112247
 
 An inline-zettel block allows to specify some content with another syntax without creating a new zettel.
 This is useful, for example, if you want to embed some [[Markdown|00001008010500]] content, because you are too lazy to translate Markdown into Zettelmarkup.
-Another example is to specify HTML code to use it for some kind of web frontend framework.
+Another example is to specify HTML code to use it for some kind of web front-end framework.
 
 As all other [[line-range blocks|00001007030000#line-range-blocks]], an inline-zettel block begins with at least three identical characters, starting at the first position of a line.
 For inline-zettel blocks, the at-sign character (""''@''"", U+0040) is used.

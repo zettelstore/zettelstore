@@ -3,7 +3,7 @@ title: Configure file directory boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220307121244
+modified: 20220724200512
 
 Under certain circumstances, it is preferable to further configure a file directory box.
 This is done by appending query parameters after the base box URI ''dir:\//DIR''.
@@ -18,7 +18,7 @@ The following parameters are supported:
 === Type
 On some operating systems, Zettelstore tries to detect changes to zettel files outside of Zettelstore's control[^This includes Linux, Windows, and macOS.].
 On other operating systems, this may be not possible, due to technical limitations.
-Automatic detection of external changes is also not possible, if zettel files are put on an external service, such as a file server accessed via SMD/CIFS or NFS.
+Automatic detection of external changes is also not possible, if zettel files are put on an external service, such as a file server accessed via SMB/CIFS or NFS.
 
 To cope with this uncertainty, Zettelstore provides various internal implementations of a directory box.
 The default values should match the needs of different users, as explained in the [[installation part|00001003000000]] of this manual.

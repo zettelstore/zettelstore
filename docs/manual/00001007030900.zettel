@@ -13,7 +13,7 @@ Comment blocks begin with at least three percent sign characters (""''%''"", U+0
 You can add some [[attributes|00001007050000]] on the beginning line of a comment block, following the initiating characters.
 The comment block supports the default attribute: when given, the text will be rendered, e.g. as an HTML comment.
 When rendered to JSON, the comment block will not be ignored but it will output some JSON text.
-Same for other renderers.
+Same for other renderer.
 
 Any other character in this line will be ignored
 

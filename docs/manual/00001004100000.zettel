@@ -18,7 +18,7 @@ Therefore, you can also use tools like [[netcat|https://nc110.sourceforge.io/]],
 After connecting to the administrator console, there is no further authentication.
 It is not needed because you must be logged in on the same computer where Zettelstore is running.
 You cannot connect to the administrator console if you are on a different computer.
-Of course, on multi-user systems with untrusted users, you should not enable the administrator console.
+Of course, on multi-user systems with encrusted users, you should not enable the administrator console.
 
 * Enable via [[command line|00001004051000#a]]
 * Enable via [[configuration file|00001004010000#admin-port]]

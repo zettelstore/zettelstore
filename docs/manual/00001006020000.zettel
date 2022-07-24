@@ -14,7 +14,7 @@ Most keys conform to a [[type|00001006030000]].
 : A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] together with all [[tags|00001007040000#tag]] that are specified within the content.
 ; [!back|''back'']
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata, that are not referenced by this zettel.
-  Basically, it is the value of [[''backward''|#bachward]], but without any zettel identifier that is contained in [[''forward''|#forward]].
+  Basically, it is the value of [[''backward''|#backward]], but without any zettel identifier that is contained in [[''forward''|#forward]].
 ; [!backward|''backward'']
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata.
   References within invertible values are not included here, e.g. [[''precursor''|#precursor]].

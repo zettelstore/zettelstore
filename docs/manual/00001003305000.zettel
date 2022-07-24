@@ -42,7 +42,7 @@ This can be mitigated by first using the command line prompt to start Zettelstor
 Once everything works, you can register Zettelstore to be automatically started by the task scheduler.
 There you should make sure that you have followed the first steps as described on the [[parent page|00001003300000]].
 
-To sart the Task scheduler management console, press the Windows logo key and the key ''R'', type ''taskschd.msc''.
+To start the Task scheduler management console, press the Windows logo key and the key ''R'', type ''taskschd.msc''.
 Select the OK button.
 
 {{00001003305102}}

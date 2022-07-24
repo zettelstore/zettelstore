@@ -19,8 +19,8 @@ Zettelstore supports the latest CommonMark [[specification version 0.30 (2021-06
 If possible, Zettelstore will adapt to newer versions when they are available.
 
 To provide CommonMark support, Zettelstore uses currently the [[Goldmark|https://github.com/yuin/goldmark]] implementation, which passes all validation tests of CommonMark.
-Internally, CommonMark is translated into some kind of superset of [[Zettelmarkup|00001007000000]], which additionally allows to use HTML code.[^Effectively, Markdown and CommonMark are itself supersets of HTML.]
-This Zettelmarkup superset is later [[encoded|00001012920500]], often into [[HTML|00001012920510]].
+Internally, CommonMark is translated into some kind of super-set of [[Zettelmarkup|00001007000000]], which additionally allows to use HTML code.[^Effectively, Markdown and CommonMark are itself super-sets of HTML.]
+This Zettelmarkup super-set is later [[encoded|00001012920500]], often into [[HTML|00001012920510]].
 Because Zettelstore HTML encoding philosophy differs a little bit to that of CommonMark, Zettelstore itself will not pass the CommonMark test suite fully.
 However, no CommonMark language element will fail to be encoded as HTML.
 In most cases, the differences are not visible for an user, but only by comparing the generated HTML code.

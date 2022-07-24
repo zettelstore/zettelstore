@@ -46,7 +46,7 @@ This allows to use other content within the Zettelstore, e.g. images or HTML tem
 
 For example, you want to store an important figure in the Zettelstore that is encoded as a ''.png'' file.
 Since each zettel contains some metadata, e.g. the title of the figure, the question arises where these data should be stores.
-The solution is a metafile with the same zettel identifier, but without a filename extension.
+The solution is a meta-file with the same zettel identifier, but without a filename extension.
 Zettelstore recognizes this situation and reads in both files for the one zettel containing the figure.
 It maintains this relationship as long as theses files exists.
 
@@ -65,7 +65,7 @@ One reason for this is to allow you to modify these zettel to adapt Zettelstore 
 
 Where are these zettel stored?
 They are stored within the Zettelstore software itself, because one [[design goal|00001002000000]] was to have just one executable file to use Zettelstore.
-But data stored within an executable programm cannot be changed later[^Well, it can, but it is a very bad idea to allow this. Mostly for security reasons.].
+But data stored within an executable program cannot be changed later[^Well, it can, but it is a very bad idea to allow this. Mostly for security reasons.].
 
 To allow changing predefined zettel, both the file store and the internal zettel store are internally chained together.
 If you change a zettel, it will be always stored as a file.

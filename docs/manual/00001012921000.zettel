@@ -4,7 +4,7 @@ tags: #api #manual #reference #zettelstore
 syntax: zmk
 role: manual
 
-If the [[authentiction process|00001012050200]] was successful, an access token with some additional data is returned.
+If the [[authentication process|00001012050200]] was successful, an access token with some additional data is returned.
 The same is true, if the access token was [[renewed|00001012050400]].
 The response is structured as an JSON object, with the following named values:
 

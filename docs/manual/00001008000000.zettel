@@ -24,7 +24,7 @@ The following syntax values are supported:
 : A [[Cascading Style Sheet|https://www.w3.org/Style/CSS/]], to be used when rendering a zettel as HTML.
 ; [!gif|''gif'']; [!jpeg|''jpeg'']; [!jpg|''jpg'']; [!png|''png'']
 : The formats for pixel graphics.
-  Typically the data is stored in a separate file and the syntax is given in the metafile, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2, the metafile had the file extension ''.meta'']
+  Typically the data is stored in a separate file and the syntax is given in the meta-file, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2, the meta-file had the file extension ''.meta'']
 ; [!html|''html'']
 : Hypertext Markup Language, will not be parsed further.
   Instead, it is treated as [[text|#text]], but will be encoded differently for [[HTML format|00001012920510]] (same for the [[web user interface|00001014000000]]).

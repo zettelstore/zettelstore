@@ -51,7 +51,7 @@ text with no
 $$$$
 :::
 
-In the future, Zettelstore might somehow support mathematical formular with a $$\TeX$$-like syntax.
+In the future, Zettelstore might somehow support mathematical formulae with a $$\TeX$$-like syntax.
 Until then,
 `````zmk
 $$$

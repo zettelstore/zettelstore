@@ -24,7 +24,7 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000010200]] | Zettelstore Login Form HTML Template | Layout of the login form, when authentication is [[enabled|00001010040100]]
 | [[00000000010300]] | Zettelstore List Meta HTML Template | Used when displaying a list of zettel
 | [[00000000010401]] | Zettelstore Detail HTML Template | Layout for the HTML detail view of one zettel
-| [[00000000010402]] | Zettelstore Info HTML Templöate | Layout for the information view of a specific zettel
+| [[00000000010402]] | Zettelstore Info HTML Template | Layout for the information view of a specific zettel
 | [[00000000010403]] | Zettelstore Form HTML Template | Form that is used to create a new or to change an existing zettel that contains text
 | [[00000000010404]] | Zettelstore Rename Form HTML Template | View that is displayed to change the [[zettel identifier|00001006050000]]
 | [[00000000010405]] | Zettelstore Delete HTML Template | View to confirm the deletion of a zettel

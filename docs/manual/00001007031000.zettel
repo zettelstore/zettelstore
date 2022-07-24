@@ -5,7 +5,7 @@ tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 modified: 20220218131107
 
-Tables are used to show some data in a two-dimenensional fashion.
+Tables are used to show some data in a two-dimensional fashion.
 In zettelmarkup, table are not specified explicitly, but by entering __table rows__.
 Therefore, a table can be seen as a sequence of table rows.
 A table row is nothing as a sequence of __table cells__.

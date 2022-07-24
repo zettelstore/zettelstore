@@ -89,7 +89,7 @@ The following keys are supported:
 
   Default: ""false"".
 ; [!secret|''secret'']
-: A string value to make the communication with external clients strong enough so that sessions of the [[web user interface|00001014000000]] or [[API access token|00001010040700]] cannot be modifed by some external unfriendly party.
+: A string value to make the communication with external clients strong enough so that sessions of the [[web user interface|00001014000000]] or [[API access token|00001010040700]] cannot be modified by some external unfriendly party.
   The string must have a length of at least 16 bytes.
 
   It is only needed to set this value, if [[authentication is enabled|00001010040100]] by setting key [[''owner''|#owner]] to some user identification.

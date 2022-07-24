@@ -105,7 +105,7 @@ is allowed and equivalent to
 === Heading{example}
 ```.
 
-For [[inline-structued elements|00001007040000]], the attributes must immediately follow the inline markup.
+For [[inline-structured elements|00001007040000]], the attributes must immediately follow the inline markup.
 
 ``::GREEN::{example}`` is allowed, but not ``::GREEN:: {example}``.
 

@@ -5,7 +5,7 @@ tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 modified: 20220218133447
 
-A citation key references some external material that is part of a bibliografical collection.
+A citation key references some external material that is part of a bibliographical collection.
 
 Currently, Zettelstore implements this only partially, it is ""work in progress"".
 

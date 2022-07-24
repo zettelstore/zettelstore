@@ -41,4 +41,4 @@ This list may change in the future.
 ==== External Applications
 |= From | To | Description
 | 00009000001000 | 00009000001999 | [[Zettel Presenter|https://zettelstore.de/contrib]], an application to display zettel as a HTML-based slideshow
-| 00009000002000 | 00009000002999 | [[Zettel Blog|https://zettelstore.de/contrib]], an application to collect and tranforms zettel into a blog
+| 00009000002000 | 00009000002999 | [[Zettel Blog|https://zettelstore.de/contrib]], an application to collect and transform zettel into a blog

@@ -22,9 +22,9 @@ The following characters begin a text formatting:
 ** Example: ``abc >>def>> ghi`` is rendered in HTML as: ::abc >>def>> ghi::{=example}.
 * Similar, the tilde character (""''~''"", U+007E) marks deleted text.
 ** Example: ``abc ~~def~~ ghi`` is rendered in HTML as: ::abc ~~def~~ ghi::{=example}.
-* The circumflex accent character (""''^''"", U+005E) allows to enter superscripted text.
+* The circumflex accent character (""''^''"", U+005E) allows to enter super-scripted text.
 ** Example: ``e=mc^^2^^`` is rendered in HTML as: ::e=mc^^2^^::{=example}.
-* The comma character (""'',''"", U+002C) produces subscripted text.
+* The comma character (""'',''"", U+002C) produces sub-scripted text.
 ** Example: ``H,,2,,O`` is rendered in HTML as: ::H,,2,,O::{=example}.
 * The quotation mark character (""''"''"", U+0022) marks an inline quotation, according to the [[specified language|00001007050100]].
 ** Example: ``""To be or not""`` is rendered in HTML as: ::""To be or not""::{=example}.

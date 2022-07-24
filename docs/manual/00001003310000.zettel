@@ -42,7 +42,7 @@ If you want to execute Zettelstore automatically and less visible, and if you kn
 
 First, you have to create a description for ""Launchd"".
 This is a text file named ''zettelstore.plist'' with the following content.
-It assumes that you have copied the Zettelstore executable in a local folder called ''~/bin'' and have created a file for [[startup configuration|00001004010000]] called ''zettelstore.cfg'', which is placed in the same folder[^If you are not using a confguration file, just remove the lines ``<string>-c</string>`` and ``<string>/Users/USERNAME/bin/zettelstore.cfg</string>``.]:
+It assumes that you have copied the Zettelstore executable in a local folder called ''~/bin'' and have created a file for [[startup configuration|00001004010000]] called ''zettelstore.cfg'', which is placed in the same folder[^If you are not using a configuration file, just remove the lines ``<string>-c</string>`` and ``<string>/Users/USERNAME/bin/zettelstore.cfg</string>``.]:
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>

@@ -8,6 +8,6 @@ modified: 20210726193119
 A zettel representation contains just all textual data of a zettel.
 Could be used for creating a search index.
 
-Every line may contain zero, one, or more words, spearated by space character.
+Every line may contain zero, one, or more words, separated by space character.
 
 If transferred via HTTP, the content type will be ''text/plain''.
