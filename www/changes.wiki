@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
-<a name="0_5"></a>
-<h2>Changes for Version 0.5 (pending)</h2>
+<a name="0_6_0"></a>
+<h2>Changes for Version 0.6.0 (pending)</h2>
+
+<a name="0_5_0"></a>
+<h2>Changes for Version 0.5.0 (2022-07-29)</h2>
   *  Removed zettel syntax &ldquo;draw&rdquo;. The new default syntax for
      inline zettel is now &ldquo;text&rdquo;. A drawing can now be made by
      using the &ldquo;evaluation block&rdquo; syntax (see below) by setting
@@ -54,6 +57,8 @@
   *  New startup configuration key <kbd>max-request-size</kbd> to limit a web
      request body to prevent client sending too large requests.
      (minor: web server)
+  *  Many smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_4"></a>
 <h2>Changes for Version 0.4 (2022-03-08)</h2>
