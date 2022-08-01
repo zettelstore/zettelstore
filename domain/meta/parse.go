@@ -153,10 +153,6 @@ func addToMeta(m *Meta, key, val string) {
 	}
 
 	switch Type(key) {
-	case TypeString, TypeZettelmarkup:
-		if v != "" {
-			addData(m, key, v)
-		}
 	case TypeTagSet:
 		addSet(m, key, strings.ToLower(v), func(s string) bool { return s[0] == '#' })
 	case TypeWord:

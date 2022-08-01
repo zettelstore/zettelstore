@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -40,11 +40,11 @@ func TestKeyIsValid(t *testing.T) {
 func TestTitleHeader(t *testing.T) {
 	t.Parallel()
 	m := New(testID)
-	if got, ok := m.Get(api.KeyTitle); ok || got != "" {
+	if got, ok := m.Get(api.KeyTitle); ok && got != "" {
 		t.Errorf("Title is not empty, but %q", got)
 	}
 	addToMeta(m, api.KeyTitle, " ")
-	if got, ok := m.Get(api.KeyTitle); ok || got != "" {
+	if got, ok := m.Get(api.KeyTitle); ok && got != "" {
 		t.Errorf("Title is not empty, but %q", got)
 	}
 	const st = "A simple text"
