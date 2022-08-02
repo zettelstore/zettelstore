@@ -110,7 +110,7 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Something may panic. Ensure a kernel log.
 	defer func() {
 		if reco := recover(); reco != nil {
-			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).Str("ip", getCallerIP(r)).Msg("Recover context")
+			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).HTTPIP(r).Msg("Recover context")
 			kernel.Main.LogRecover("Web", reco)
 		}
 	}()
@@ -119,7 +119,7 @@ func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if msg := rt.log.Debug(); msg.Enabled() {
 		withDebug = true
 		w = &traceResponseWriter{original: w}
-		msg.Str("method", r.Method).Str("uri", r.RequestURI).Str("ip", getCallerIP(r)).Msg("ServeHTTP")
+		msg.Str("method", r.Method).Str("uri", r.RequestURI).HTTPIP(r).Msg("ServeHTTP")
 	}
 
 	if prefixLen := len(rt.urlPrefix); prefixLen > 1 {
@@ -177,33 +177,26 @@ func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
 	k := auth.KindJSON
 	t := getHeaderToken(r)
 	if len(t) == 0 {
-		rt.log.Debug().Str("ip", getCallerIP(r)).Msg("no jwt token found")
+		rt.log.Debug().Msg("no jwt token found") // IP already logged: ServeHTTP
 		k = auth.KindHTML
 		t = getSessionToken(r)
 	}
 	if len(t) == 0 {
-		rt.log.Sense().Str("ip", getCallerIP(r)).Msg("no auth token found in request")
+		rt.log.Debug().Msg("no auth token found in request") // IP already logged: ServeHTTP
 		return r
 	}
 	tokenData, err := rt.auth.CheckToken(t, k)
 	if err != nil {
-		rt.log.Sense().Err(err).Str("ip", getCallerIP(r)).Msg("invalid auth token")
+		rt.log.Sense().Err(err).HTTPIP(r).Msg("invalid auth token")
 		return r
 	}
 	ctx := r.Context()
 	user, err := rt.ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
 	if err != nil {
-		rt.log.Sense().Zid(tokenData.Zid).Str("ident", tokenData.Ident).Err(err).Str("ip", getCallerIP(r)).Msg("auth user not found")
+		rt.log.Sense().Zid(tokenData.Zid).Str("ident", tokenData.Ident).Err(err).HTTPIP(r).Msg("auth user not found")
 		return r
 	}
 	return r.WithContext(updateContext(ctx, user, &tokenData))
-}
-
-func getCallerIP(r *http.Request) string {
-	if from := r.Header.Get("X-Forwarded-For"); from != "" {
-		return from
-	}
-	return r.RemoteAddr
 }
 
 func getSessionToken(r *http.Request) []byte {
