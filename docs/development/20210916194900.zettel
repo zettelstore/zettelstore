@@ -32,7 +32,8 @@ modified: 20220309105459
 #* download.wiki
 #* changes.wiki
 #* plan.wiki
-# Set file ''VERSION'' to the new release version
+# Set file ''VERSION'' to the new release version.
+  It _must_ consist of three digits: MAJOR.MINOR.PATCH, even if PATCH is zero
 # Disable Fossil autosync mode:
 #* ``fossil setting autosync off``
 # Commit the new release version:
