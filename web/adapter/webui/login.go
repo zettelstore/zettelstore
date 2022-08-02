@@ -59,7 +59,7 @@ func (wui *WebUI) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.Handle
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read login form"))
 			return
 		}
-		token, err := ucAuth.Run(ctx, ident, cred, wui.tokenLifetime, auth.KindHTML)
+		token, err := ucAuth.Run(ctx, r, ident, cred, wui.tokenLifetime, auth.KindHTML)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
