@@ -56,11 +56,6 @@ func TestTitle(t *testing.T) {
 			t.Errorf("TC=%d: expected %q, got %q", i, tc.e, got)
 		}
 	}
-
-	m := parseMetaStr(api.KeyTitle + ": ")
-	if title, ok := m.Get(api.KeyTitle); ok {
-		t.Errorf("Expected a missing title key, but got %q (meta=%v)", title, m)
-	}
 }
 
 func TestNewFromInput(t *testing.T) {
@@ -79,6 +74,7 @@ func TestNewFromInput(t *testing.T) {
 		{"---\r\na:b\r\n--\r\nc:d", []meta.Pair{{"a", "b"}, {"c", "d"}}},
 		{"---\r\na:b\r\n---\r\nc:d", []meta.Pair{{"a", "b"}}},
 		{"---\r\na:b\r\n----\r\nc:d", []meta.Pair{{"a", "b"}}},
+		{"new-title:\nnew-url:", []meta.Pair{{"new-title", ""}, {"new-url", ""}}},
 	}
 	for i, tc := range testcases {
 		meta := parseMetaStr(tc.input)
