@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -12,6 +12,7 @@ package logger
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -120,6 +121,17 @@ func (m *Message) User(ctx context.Context) *Message {
 		}
 	}
 	return m
+}
+
+// HTTPIP adds the IP address of a HTTP request to the message.
+func (m *Message) HTTPIP(r *http.Request) *Message {
+	if r == nil {
+		return m
+	}
+	if from := r.Header.Get("X-Forwarded-For"); from != "" {
+		return m.Str("ip", from)
+	}
+	return m.Str("IP", r.RemoteAddr)
 }
 
 // Zid adds a zettel identifier to the full message

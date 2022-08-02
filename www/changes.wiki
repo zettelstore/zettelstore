@@ -1,9 +1,17 @@
 <title>Change Log</title>
 
-<a name="0_6_0"></a>
+<a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (pending)</h2>
 
 <a name="0_5_0"></a>
+<h2>Changes for Version 0.5.1 (2022-08-02)</h2>
+  *  Log missing authentication tokens in debug level (was: sense level)
+     (major)
+  *  Allow to use empty metadata values of string and zmk types.
+     (minor)
+  *  Add IP address to some log messages, esp. when authentication fails.
+     (minor)
+
 <h2>Changes for Version 0.5.0 (2022-07-29)</h2>
   *  Removed zettel syntax &ldquo;draw&rdquo;. The new default syntax for
      inline zettel is now &ldquo;text&rdquo;. A drawing can now be made by

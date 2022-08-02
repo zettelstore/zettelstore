@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -33,7 +33,7 @@ func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFun
 		var token []byte
 		if ident, cred := retrieveIdentCred(r); ident != "" {
 			var err error
-			token, err = ucAuth.Run(r.Context(), ident, cred, a.tokenLifetime, auth.KindJSON)
+			token, err = ucAuth.Run(r.Context(), r, ident, cred, a.tokenLifetime, auth.KindJSON)
 			if err != nil {
 				a.reportUsecaseError(w, err)
 				return
