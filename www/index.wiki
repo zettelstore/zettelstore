@@ -24,11 +24,11 @@ packages may be experimental.
 
 [https://twitter.com/zettelstore|Stay tuned]&hellip;
 <hr>
-<h3>Latest Release: 0.5.0 (2022-07-29)</h3>
+<h3>Latest Release: 0.5.1 (2022-08-02)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_5_0|Change summary]
-  *  [/timeline?p=v0.5.0&bt=v0.4&y=ci|Check-ins for version 0.5.0],
-     [/vdiff?to=v0.5.0&from=v0.4|content diff]
+  *  [/timeline?p=v0.5.1&bt=v0.4&y=ci|Check-ins for version 0.5.1],
+     [/vdiff?to=v0.5.1&from=v0.4|content diff]
   *  [/timeline?df=v0.5.0&y=ci|Check-ins derived from the 0.5.0 release],
      [/vdiff?from=v0.5.0&to=trunk|content diff]
   *  [./plan.wiki|Limitations and planned improvements]
