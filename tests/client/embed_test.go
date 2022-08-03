@@ -92,7 +92,9 @@ func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	checkContentContains(t, abc10Zid, string(content), "Error placeholder")
+	if exp, got := "<p></p>", string(content); exp != got {
+		t.Errorf("Zettel %q must contain %q, but got %q", abc10Zid, exp, got)
+	}
 }
 
 func stringHead(s string) string {

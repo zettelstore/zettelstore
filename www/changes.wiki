@@ -2,6 +2,9 @@
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (pending)</h2>
+  *  When evaluating a zettel, ignore transclusions if current user is not
+     allowed to read transcluded zettel.
+     (minor)
 
 <a name="0_5_0"></a>
 <h2>Changes for Version 0.5.1 (2022-08-02)</h2>

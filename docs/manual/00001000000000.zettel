@@ -3,7 +3,7 @@ title: Zettelstore Manual
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20211027121716
+modified: 20220803183647
 
 * [[Introduction|00001001000000]]
 * [[Design goals|00001002000000]]
@@ -16,6 +16,7 @@ modified: 20211027121716
 * [[Security|00001010000000]]
 * [[API|00001012000000]]
 * [[Web user interface|00001014000000]]
+* [[Tips and Tricks|00001017000000]]
 * [[Troubleshooting|00001018000000]]
 * Frequently asked questions
 
