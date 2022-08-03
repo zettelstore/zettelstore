@@ -208,9 +208,8 @@ func setServiceConfig(cfg *meta.Meta) error {
 		ok, kernel.BoxService, kernel.BoxDefaultDirType,
 		cfg.GetDefault(keyDefaultDirBoxType, kernel.BoxDirTypeNotify))
 	ok = setConfigValue(ok, kernel.BoxService, kernel.BoxURIs+"1", "dir:./zettel")
-	format := kernel.BoxURIs + "%v"
 	for i := 1; ; i++ {
-		key := fmt.Sprintf(format, i)
+		key := kernel.BoxURIs + strconv.Itoa(i)
 		val, found := cfg.Get(key)
 		if !found {
 			break

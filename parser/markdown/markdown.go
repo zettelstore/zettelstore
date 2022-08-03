@@ -14,6 +14,7 @@ package markdown
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 
 	gm "github.com/yuin/goldmark"
 	gmAst "github.com/yuin/goldmark/ast"
@@ -179,7 +180,7 @@ func (p *mdP) acceptList(node *gmAst.List) ast.ItemNode {
 	if node.IsOrdered() {
 		kind = ast.NestedListOrdered
 		if node.Start != 1 {
-			a = a.Set("start", fmt.Sprintf("%d", node.Start))
+			a = a.Set("start", strconv.Itoa(node.Start))
 		}
 	}
 	items := make([]ast.ItemSlice, 0, node.ChildCount())

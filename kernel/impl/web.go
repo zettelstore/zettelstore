@@ -11,7 +11,6 @@
 package impl
 
 import (
-	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -133,7 +132,7 @@ func (ws *webService) Start(kern *myKernel) error {
 		if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 			ws.logger.Mandatory().Msg(strings.Repeat("--------------------", 3))
 			ws.logger.Mandatory().Msg("Open your browser and enter the following URL:")
-			ws.logger.Mandatory().Msg(fmt.Sprintf("    http://localhost%v", listenAddr[idx:]))
+			ws.logger.Mandatory().Msg("    http://localhost%v" + listenAddr[idx:])
 		}
 	}
 

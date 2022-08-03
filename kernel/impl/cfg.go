@@ -12,7 +12,6 @@ package impl
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"sync"
 
@@ -100,7 +99,7 @@ func (cs *configService) Start(*myKernel) error {
 	cs.logger.Info().Msg("Start Service")
 	data := meta.New(id.ConfigurationZid)
 	for _, kv := range cs.GetNextConfigList() {
-		data.Set(kv.Key, fmt.Sprintf("%v", kv.Value))
+		data.Set(kv.Key, kv.Value)
 	}
 	cs.mxService.Lock()
 	cs.rtConfig = newConfig(cs.logger, data)

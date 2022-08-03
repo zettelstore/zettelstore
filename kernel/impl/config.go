@@ -85,9 +85,8 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 		if num < 0 {
 			return false
 		}
-		format := baseKey + "%d"
 		for i := num + 1; ; i++ {
-			k := fmt.Sprintf(format, i)
+			k := baseKey + strconv.Itoa(i)
 			if _, ok = cfg.next[k]; !ok {
 				break
 			}
@@ -184,9 +183,8 @@ func (cfg *srvConfig) getSortedConfigKeys(all bool, getConfig func(string) inter
 				keys = append(keys, k)
 				continue
 			}
-			format := k + "%d"
 			for i := 1; ; i++ {
-				key := fmt.Sprintf(format, i)
+				key := k + strconv.Itoa(i)
 				val := getConfig(key)
 				if val == nil {
 					break

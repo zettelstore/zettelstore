@@ -250,24 +250,18 @@ func (err *ErrNotAllowed) Error() string {
 		if err.Zid.IsValid() {
 			return fmt.Sprintf(
 				"operation %q on zettel %v not allowed for not authorized user",
-				err.Op,
-				err.Zid.String())
+				err.Op, err.Zid)
 		}
 		return fmt.Sprintf("operation %q not allowed for not authorized user", err.Op)
 	}
 	if err.Zid.IsValid() {
 		return fmt.Sprintf(
 			"operation %q on zettel %v not allowed for user %v/%v",
-			err.Op,
-			err.Zid.String(),
-			err.User.GetDefault(api.KeyUserID, "?"),
-			err.User.Zid.String())
+			err.Op, err.Zid, err.User.GetDefault(api.KeyUserID, "?"), err.User.Zid)
 	}
 	return fmt.Sprintf(
 		"operation %q not allowed for user %v/%v",
-		err.Op,
-		err.User.GetDefault(api.KeyUserID, "?"),
-		err.User.Zid.String())
+		err.Op, err.User.GetDefault(api.KeyUserID, "?"), err.User.Zid)
 }
 
 // Is return true, if the error is of type ErrNotAllowed.

@@ -53,7 +53,7 @@ func (a *API) writeEncodedZettelPart(
 ) {
 	encdr := encoder.Create(enc)
 	if encdr == nil {
-		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid.String(), encStr))
+		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid, encStr))
 		return
 	}
 	var err error

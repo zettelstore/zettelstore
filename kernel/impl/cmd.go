@@ -488,7 +488,7 @@ func cmdMetrics(sess *cmdSession, _ string, _ []string) bool {
 		var sVal string
 		switch value.Kind() {
 		case metrics.KindUint64:
-			sVal = fmt.Sprintf("%v", value.Uint64())
+			sVal = strconv.FormatUint(value.Uint64(), 10)
 		case metrics.KindFloat64:
 			sVal = fmt.Sprintf("%v", value.Float64())
 		case metrics.KindFloat64Histogram:
