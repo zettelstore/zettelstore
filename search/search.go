@@ -140,6 +140,11 @@ func (s *Search) AddExpr(key, value string) *Search {
 	}
 	s.mx.Lock()
 	defer s.mx.Unlock()
+	s.addExpValue(key, val)
+	return s
+}
+
+func (s *Search) addExpValue(key string, val expValue) {
 	if key == "" {
 		s.addSearch(val)
 	} else if s.mvals == nil {
@@ -147,7 +152,6 @@ func (s *Search) AddExpr(key, value string) *Search {
 	} else {
 		s.mvals[key] = append(s.mvals[key], val)
 	}
-	return s
 }
 
 func (s *Search) addSearch(val expValue) {

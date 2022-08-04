@@ -10,11 +10,15 @@
 
 package input
 
+import "unicode"
+
 // IsSpace returns true if rune is a whitespace.
 func IsSpace(ch rune) bool {
 	switch ch {
 	case ' ', '\t':
 		return true
+	case '\n', '\r', EOS:
+		return false
 	}
-	return false
+	return unicode.IsSpace(ch)
 }
