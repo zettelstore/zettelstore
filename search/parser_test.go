@@ -36,6 +36,12 @@ func TestParser(t *testing.T) {
 		{`!~a`, `ANY NOT CONTAINS a`},
 		{`key:`, `key MATCH ANY`},
 		{`key:a`, `key MATCH a`},
+		{`key1:a key2:b`, `key1 MATCH a AND key2 MATCH b`},
+		{`key1: key2:b`, `key1 MATCH ANY AND key2 MATCH b`},
+		{`" a \""`, `ANY CONTAINS  a "`},
+		{`"a""b"`, `ANY CONTAINS ab`},
+		{`"a" "b"`, `ANY CONTAINS a AND CONTAINS b`},
+		{`"key":"a"`, `ANY CONTAINS key:a`},
 	}
 	for i, tc := range testcases {
 		s := search.Parse(tc.spec)

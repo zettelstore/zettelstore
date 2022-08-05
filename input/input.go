@@ -38,20 +38,21 @@ func NewInput(src []byte) *Input {
 // EOS = End of source
 const EOS = rune(-1)
 
-// Next reads the next rune into inp.Ch.
-func (inp *Input) Next() {
-	if inp.readPos < len(inp.Src) {
-		inp.Pos = inp.readPos
-		r, w := rune(inp.Src[inp.readPos]), 1
-		if r >= utf8.RuneSelf {
-			r, w = utf8.DecodeRune(inp.Src[inp.readPos:])
-		}
-		inp.readPos += w
-		inp.Ch = r
-	} else {
+// Next reads the next rune into inp.Ch and returns it too.
+func (inp *Input) Next() rune {
+	if inp.readPos >= len(inp.Src) {
 		inp.Pos = len(inp.Src)
 		inp.Ch = EOS
+		return EOS
 	}
+	inp.Pos = inp.readPos
+	r, w := rune(inp.Src[inp.readPos]), 1
+	if r >= utf8.RuneSelf {
+		r, w = utf8.DecodeRune(inp.Src[inp.readPos:])
+	}
+	inp.readPos += w
+	inp.Ch = r
+	return r
 }
 
 // Peek returns the rune following the most recently read rune without

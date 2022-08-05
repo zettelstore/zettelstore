@@ -11,6 +11,8 @@
 package search
 
 import (
+	"bytes"
+
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 )
@@ -57,44 +59,83 @@ func (ps *parserState) parse() *Search {
 
 func (ps *parserState) scanSearchTextOrKey(hasOp bool) (string, string) {
 	inp := ps.inp
-	startPos := inp.Pos
-	foundOp := hasOp
+	allowKey := !hasOp
 
-	for inp.Ch != input.EOS {
-		if ps.isSpace() {
-			break
-		}
-		if !foundOp {
+	var buf bytes.Buffer
+	for !ps.isSpace() && inp.Ch != input.EOS {
+		if allowKey {
 			switch inp.Ch {
 			case '!', ':', '=', '>', '<', '~':
-				foundOp = true
-				if key := string(inp.Src[startPos:inp.Pos]); meta.KeyIsValid(key) {
+				allowKey = false
+				if key := buf.String(); meta.KeyIsValid(key) {
 					return "", key
 				}
 			}
 		}
-		inp.Next()
+		if inp.Ch == '"' {
+			ps.scanString(&buf)
+			allowKey = false
+		} else {
+			buf.WriteRune(inp.Ch)
+			inp.Next()
+		}
 	}
-	return string(inp.Src[startPos:inp.Pos]), ""
+	return buf.String(), ""
 }
 
 func (ps *parserState) scanSearchText() string {
 	inp := ps.inp
-	startPos := inp.Pos
+	var buf bytes.Buffer
 	for !ps.isSpace() && inp.Ch != input.EOS {
-		inp.Next()
+		if inp.Ch == '"' {
+			ps.scanString(&buf)
+		} else {
+			buf.WriteRune(inp.Ch)
+			inp.Next()
+		}
 	}
-	return string(inp.Src[startPos:inp.Pos])
+	return buf.String()
+}
+
+func (ps *parserState) scanString(buf *bytes.Buffer) {
+	inp := ps.inp
+	// Assert inp.Ch == '"'
+	for {
+		switch ch := inp.Next(); ch {
+		case input.EOS:
+			return
+		case '"':
+			inp.Next()
+			return
+		case '\\':
+			switch ch2 := inp.Next(); ch2 {
+			case input.EOS:
+				buf.WriteByte('\\')
+				return
+			case 't':
+				buf.WriteByte('\t')
+			case 'r':
+				buf.WriteByte('\r')
+			case 'n':
+				buf.WriteByte('\n')
+			default:
+				buf.WriteRune(ch2)
+			}
+		default:
+			buf.WriteRune(ch)
+		}
+	}
 }
 
 func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
 	inp := ps.inp
+	ch := inp.Ch
 	negate := false
-	if inp.Ch == '!' {
-		inp.Next()
+	if ch == '!' {
+		ch = inp.Next()
 		negate = true
 	}
-	switch inp.Ch {
+	switch ch {
 	case ':':
 		inp.Next()
 		return true, cmpDefault, negate
@@ -118,13 +159,17 @@ func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
 }
 
 func (ps *parserState) isSpace() bool {
-	switch ps.inp.Ch {
+	return isSpace(ps.inp.Ch)
+}
+
+func isSpace(ch rune) bool {
+	switch ch {
 	case input.EOS:
 		return false
 	case ' ', '\t', '\n', '\r':
 		return true
 	}
-	return input.IsSpace(ps.inp.Ch)
+	return input.IsSpace(ch)
 }
 
 func (ps *parserState) skipSpace() {
