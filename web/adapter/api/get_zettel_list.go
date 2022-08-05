@@ -45,6 +45,7 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		var buf bytes.Buffer
 		err = encodeJSONData(&buf, api.ZettelListJSON{
 			Query: s.String(),
+			Human: s.Human(),
 			List:  result,
 		})
 		if err != nil {

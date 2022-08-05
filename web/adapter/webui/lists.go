@@ -249,7 +249,7 @@ func (wui *WebUI) listTitleSearch(s *search.Search) string {
 		return wui.rtConfig.GetSiteName()
 	}
 	var buf bytes.Buffer
-	s.Print(&buf)
+	s.PrintHuman(&buf)
 	return buf.String()
 }
 

@@ -22,32 +22,39 @@ func TestParser(t *testing.T) {
 		exp  string
 	}{
 		{"", ""},
-		{`a`, `ANY CONTAINS a`},
-		{`:a`, `ANY CONTAINS a`},
-		{`=a`, `ANY EQUAL a`},
-		{`>a`, `ANY PREFIX a`},
-		{`<a`, `ANY SUFFIX a`},
-		{`~a`, `ANY CONTAINS a`},
-		{`!a`, `ANY NOT CONTAINS a`},
-		{`!:a`, `ANY NOT CONTAINS a`},
-		{`!=a`, `ANY NOT EQUAL a`},
-		{`!>a`, `ANY NOT PREFIX a`},
-		{`!<a`, `ANY NOT SUFFIX a`},
-		{`!~a`, `ANY NOT CONTAINS a`},
-		{`key:`, `key MATCH ANY`},
-		{`key:a`, `key MATCH a`},
-		{`key1:a key2:b`, `key1 MATCH a AND key2 MATCH b`},
-		{`key1: key2:b`, `key1 MATCH ANY AND key2 MATCH b`},
-		{`" a \""`, `ANY CONTAINS  a "`},
-		{`"a""b"`, `ANY CONTAINS ab`},
-		{`"a" "b"`, `ANY CONTAINS a AND CONTAINS b`},
-		{`"key":"a"`, `ANY CONTAINS key:a`},
+		{`a`, `a`}, {`!a`, `!a`},
+		{`:a`, `a`}, {`!:a`, `!a`},
+		{`=a`, `=a`}, {`!=a`, `!=a`},
+		{`>a`, `>a`}, {`!>a`, `!>a`},
+		{`<a`, `<a`}, {`!<a`, `!<a`},
+		{`~a`, `a`}, {`!~a`, `!a`},
+		{`key:`, `key:`}, {`key!:`, `key!:`},
+		{`key=`, `key=`}, {`key!=`, `key!=`},
+		{`key>`, `key>`}, {`key!>`, `key!>`},
+		{`key<`, `key<`}, {`key!<`, `key!<`},
+		{`key~`, `key~`}, {`key!~`, `key!~`},
+		{`key:a`, `key:a`}, {`key!:a`, `key!:a`},
+		{`key=a`, `key=a`}, {`key!=a`, `key!=a`},
+		{`key>a`, `key>a`}, {`key!>a`, `key!>a`},
+		{`key<a`, `key<a`}, {`key!<a`, `key!<a`},
+		{`key~a`, `key~a`}, {`key!~a`, `key!~a`},
+		{`key1:a key2:b`, `key1:a key2:b`},
+		{`key1: key2:b`, `key1: key2:b`},
+		{`" a \""`, `" a \""`},
+		{`"a""b"`, `ab`},
+		{`"a" "b"`, `a b`},
+		{`"key":"a"`, `key:a`},
 	}
 	for i, tc := range testcases {
 		s := search.Parse(tc.spec)
 		got := s.String()
 		if tc.exp != got {
 			t.Errorf("%d: Parse(%q) does not yield %q, but got %q", i, tc.spec, tc.exp, got)
+			continue
+		}
+		got2 := search.Parse(got).String()
+		if got2 != got {
+			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got, got2)
 		}
 	}
 }

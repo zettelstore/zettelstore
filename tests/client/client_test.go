@@ -74,7 +74,7 @@ func TestListZettel(t *testing.T) {
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)
-			q, l, err := c.ListZettelJSON(context.Background(), query)
+			q, h, l, err := c.ListZettelJSON(context.Background(), query)
 			if err != nil {
 				tt.Error(err)
 				return
@@ -82,20 +82,27 @@ func TestListZettel(t *testing.T) {
 			if q != "" {
 				tt.Errorf("Query should be empty, but is %q", q)
 			}
+			if h != "" {
+				tt.Errorf("Human should be empty, but is %q", q)
+			}
 			got := len(l)
 			if got != tc.exp {
 				tt.Errorf("List of length %d expected, but got %d\n%v", tc.exp, got, l)
 			}
 		})
 	}
-	q, l, err := c.ListZettelJSON(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
+	q, h, l, err := c.ListZettelJSON(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	expQ := "role MATCH configuration"
+	expQ := "role:configuration"
 	if q != expQ {
 		t.Errorf("Query should be %q, but is %q", expQ, q)
+	}
+	expH := "role MATCH configuration"
+	if h != expH {
+		t.Errorf("Human should be %q, but is %q", expH, h)
 	}
 	got := len(l)
 	if got != configRoleZettel {

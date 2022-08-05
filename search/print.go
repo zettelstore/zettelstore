@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -12,6 +12,7 @@
 package search
 
 import (
+	"bytes"
 	"io"
 	"strconv"
 	"strings"
@@ -26,8 +27,114 @@ func (s *Search) String() string {
 	return sb.String()
 }
 
-// Print the search to a writer.
+// Print the search in a parseable form.
 func (s *Search) Print(w io.Writer) {
+	if s == nil {
+		return
+	}
+	env := printEnv{w: w}
+	if s.negate {
+		io.WriteString(w, "NEGATE")
+		env.space = true
+	}
+	if len(s.search) > 0 {
+		env.printExprValues("", s.search)
+	}
+	for _, name := range maps.Keys(s.mvals) {
+		env.printExprValues(name, s.mvals[name])
+	}
+}
+
+type printEnv struct {
+	w     io.Writer
+	space bool
+}
+
+func (pe *printEnv) printSpace() {
+	if pe.space {
+		pe.w.Write(bsSpace)
+		return
+	}
+	pe.space = true
+}
+func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
+func (pe *printEnv) writeQuoted(s string) {
+	var buf bytes.Buffer
+	buf.WriteByte('"')
+	for _, ch := range s {
+		switch ch {
+		case '\t':
+			buf.WriteString("\\t")
+		case '\r':
+			buf.WriteString("\\r")
+		case '\n':
+			buf.WriteString("\\n")
+		case '"':
+			buf.WriteString("\\\"")
+		case '\\':
+			buf.WriteString("\\\\")
+		default:
+			if ch < ' ' {
+				buf.WriteString("\\ ")
+			} else {
+				buf.WriteRune(ch)
+			}
+		}
+	}
+	buf.WriteByte('"')
+	pe.w.Write(buf.Bytes())
+}
+
+func (pe *printEnv) printExprValues(key string, values []expValue) {
+	for _, val := range values {
+		pe.printSpace()
+		pe.writeString(key)
+		if val.negate {
+			pe.writeString("!")
+		}
+		switch val.op {
+		case cmpDefault:
+			pe.writeString(":")
+		case cmpEqual:
+			pe.writeString("=")
+		case cmpPrefix:
+			pe.writeString(">")
+		case cmpSuffix:
+			pe.writeString("<")
+		case cmpContains:
+			// An empty key signals a full-text search. Since "~" is the default op in this case,
+			// it can be ignored. Therefore, print only "~" if there is a key.
+			if key != "" {
+				pe.writeString("~")
+			}
+		}
+		if s := val.value; s != "" {
+			if needsQuote(s) {
+				pe.writeQuoted(s)
+			} else {
+				pe.writeString(s)
+			}
+		}
+	}
+}
+
+func needsQuote(s string) bool {
+	for _, ch := range s {
+		if ch == '\\' || ch == '"' || isSpace(ch) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Search) Human() string {
+	var sb strings.Builder
+	s.PrintHuman(&sb)
+	return sb.String()
+}
+
+// PrintHuman the search to a writer in a human readable form.
+func (s *Search) PrintHuman(w io.Writer) {
 	if s == nil {
 		return
 	}
@@ -37,7 +144,7 @@ func (s *Search) Print(w io.Writer) {
 	space := false
 	if len(s.search) > 0 {
 		io.WriteString(w, "ANY")
-		printSelectExprValues(w, s.search)
+		printHumanSelectExprValues(w, s.search)
 		space = true
 	}
 	for _, name := range maps.Keys(s.mvals) {
@@ -45,7 +152,7 @@ func (s *Search) Print(w io.Writer) {
 			io.WriteString(w, " AND ")
 		}
 		io.WriteString(w, name)
-		printSelectExprValues(w, s.mvals[name])
+		printHumanSelectExprValues(w, s.mvals[name])
 		space = true
 	}
 	if s.negate {
@@ -58,7 +165,7 @@ func (s *Search) Print(w io.Writer) {
 	_ = printPosInt(w, "LIMIT", s.limit, space)
 }
 
-func printSelectExprValues(w io.Writer, values []expValue) {
+func printHumanSelectExprValues(w io.Writer, values []expValue) {
 	if len(values) == 0 {
 		io.WriteString(w, " MATCH ANY")
 		return
