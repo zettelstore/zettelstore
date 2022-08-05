@@ -55,8 +55,6 @@ func (wui *WebUI) renderZettelList(
 	query := r.URL.Query()
 	s := adapter.GetSearch(query)
 	ctx := r.Context()
-	title := wui.listTitleSearch(s)
-
 	if !s.EnrichNeeded() {
 		ctx = box.NoEnrichContext(ctx)
 	}
@@ -70,11 +68,17 @@ func (wui *WebUI) renderZettelList(
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
-		Title string
-		Metas []simpleLink
+		Title          string
+		SearchURL      string
+		SearchValue    string
+		QueryKeySearch string
+		Metas          []simpleLink
 	}{
-		Title: title,
-		Metas: metas,
+		Title:          wui.listTitleSearch(s),
+		SearchURL:      base.SearchURL,
+		SearchValue:    s.String(),
+		QueryKeySearch: base.QueryKeySearch,
+		Metas:          metas,
 	})
 }
 

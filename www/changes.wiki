@@ -6,6 +6,8 @@
      criterias by using a simple syntax. Can be specified in WebUI's search box
      and via the API by using query parameter "_s".
      (major: api, webui)
+  *  When presenting a zettel list, allow to change the search expression.
+     (minor: webui)
   *  When evaluating a zettel, ignore transclusions if current user is not
      allowed to read transcluded zettel.
      (minor)
