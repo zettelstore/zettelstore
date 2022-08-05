@@ -1,0 +1,33 @@
+id: 00001007702000
+title: Search term
+role: manual
+tags: #manual #search #zettelstore
+syntax: zmk
+modified: 20220805165522
+
+A search term allows you to specify one search restriction.
+The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
+
+A search term can be one of the following:
+* A metadata-based search, by specifying the name of a [[metadata key|00001006010000]], followed by a [[search operator|00001007705000]], followed by an optional [[search value|00001007706000]].
+
+  All zettel containing the given metadata key with a allowed value (depending on the search operator) are selected.
+
+  If no search value is given, then all zettel containing the given metadata key are selected (or ignored, for a negated search operator).
+* An optional [[search operator|00001007705000]], followed by a [[search value|00001007706000]].
+
+  This specifies a full-text search for the given search value.
+
+  **Note:** the search value will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
+  Therefore, the following search expression are essentially the same: ''"search syntax"'' and ''search syntax''.
+  The first is a search expression with one search vealue, which is normalized to two strings to be searched for.
+  The second is a search expression containing two search values, giving two string to be searched for.
+
+In the future, more search terms will be added.
+
+You may have noted that the specifications of first two items overlap somehow.
+This is resolved by the following rule:
+* A search term containing no [[search operator character|00001007705000]] is treated as a full-text search.
+* The first search operator character found in a search term divides the term into two pieces.
+  If the first piece, from the beginning of the search term to the search operator character, is syntactically a metadata key, the search term is treated as a metadata-based search.
+* Otherwise, the search term is treated as a full-text search.

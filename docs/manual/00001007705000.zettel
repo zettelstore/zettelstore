@@ -1,0 +1,34 @@
+id: 00001007705000
+title: Search operator
+role: manual
+tags: #manual #search #zettelstore
+syntax: zmk
+modified: 20220805165533
+
+A search operator specifies how the comparison of a search value and a zettel should be executed.
+Every comparison is done case-insensitive, treating all uppercase letters the same as lowercase letters.
+
+The following are allowed search operator characters:
+* The exclamation mark character (""!"", U+0021) negates the meaning
+* The colon character (""'':''"", U+003A) specifies the __default comparison__, i.e. one of the following comparisons.
+  This operator is called ""match operator"".
+* The tilde character (""''~''"", U+007E) compares on containment (""contains operator"")
+* The equal sign character (""''=''"", U+003D) compares on equality (""equal operator"")
+* The greater-than sign character (""''>''"", U+003E) matches if there is some prefix (""prefix operator"")
+* The less-than sign character (""''<''"", U+003C) compares a suffix relationship (""suffix operator"")
+
+Since the exclamation mark character can be combined with the other, there are 12 possible combinations:
+# ""'':''"": depending on the [[metdata key type|00001006030000]] one of the other operators is chosen.
+  For example, a [[numeric key type|00001006033000]] will execute the equals operator, while for a [[string type|00001006033500]] a contains operator will be executed.
+# ""''!:''"": similar to the ""match operator"" above, one of the negated will be chosen, depending on the metadata key type.
+# ""''~''"": is successful if the search value is contained in the value to be compared.
+# ""''!~''"": is successful if the search value is not contained in the value to be compared.
+# ""''=''"": is successful if the search value is equal to the value to be compared.
+# ""''!=''"": is successful if the search value is not equal to the value to be compared.
+# ""''>''"": is successful if the search value is a prefix of the value to be compared.
+# ""''!>''"": is successful if the search value is not a prefix of the value to be compared.
+# ""''<''"": is successful if the search value is a suffix of the value to be compared.
+# ""''!<''"": is successful if the search value is not a suffix of the value to be compared.
+# ""''''"": a missing search operator can only occur for a full-text search.
+  It is equal to the ""''~''"" operator.
+# ""''!''"": is an abbreviation of the ""''!:''"" operator.

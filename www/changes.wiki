@@ -2,6 +2,10 @@
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (pending)</h2>
+  *  Allow to specify search expressions, which allow to specify search
+     criterias by using a simple syntax. Can be specified in WebUI's search box
+     and via the API by using query parameter "_s".
+     (major: api, webui)
   *  When evaluating a zettel, ignore transclusions if current user is not
      allowed to read transcluded zettel.
      (minor)

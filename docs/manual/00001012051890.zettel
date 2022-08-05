@@ -1,9 +1,12 @@
 id: 00001012051890
-title: API: Search syntax (simple)
+title: API: Comparison syntax (simple)
 role: manual
-tags: #api #manual #zettelstore
+tags: #api #manual #search #zettelstore
 syntax: zmk
-modified: 20220218130900
+modified: 20220805165558
+
+By using a simple syntax for comparing metadata values, you can modify the default comparison.
+Note, this syntax is intend-fully similar to the syntax of the more general [[search operators|00001007705000]], which are part of [[search expressions|00001007700000]].
 
 If the search string starts with the exclamation mark character (""!"", U+0021), it will be removed and the query matches all values that **do not match** the search string.
 
@@ -15,9 +18,7 @@ For example, assume the search string is ""def"":
 
 ; The colon character (""'':''"", U+003A) (or none of these characters)
 : This is the __default__ comparison.
-  The comparison depends on the type of the underlying values.
-  For a content search, it is equal to the tilde character ""''~''"", which returns true if a word within the content just contains the search string.
-  For metadata, it depends on the key [[type|00001006030000]].
+  The comparison chosen depends on the [[metadata key type|00001006030000]].
 
   It you omit the the comparison character, the default comparison is also used.
 ; The tilde character (""''~''"", U+007E)

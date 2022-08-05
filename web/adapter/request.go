@@ -52,6 +52,9 @@ func GetInteger(q url.Values, key string) (int, bool) {
 
 // GetSearch retrieves the specified search and sorting options from a query.
 func GetSearch(q url.Values) (s *search.Search) {
+	if exprs, found := q[api.QueryKeySearch]; found {
+		s = search.Parse(strings.Join(exprs, " "))
+	}
 	for key, values := range q {
 		switch key {
 		case api.QueryKeySort, api.QueryKeyOrder:
@@ -62,8 +65,7 @@ func GetSearch(q url.Values) (s *search.Search) {
 			s = extractLimitFromQuery(values, s)
 		case api.QueryKeyNegate:
 			s = s.SetNegate()
-		case api.QueryKeySearch:
-			s = setCleanedQueryValues(s, "", values)
+		case api.QueryKeySearch: // Ignore, already processed to top of method.
 		default:
 			if meta.KeyIsValid(key) {
 				s = setCleanedQueryValues(s, key, values)

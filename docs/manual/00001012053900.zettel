@@ -3,7 +3,7 @@ title: API: Retrieve unlinked references to an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220202112528
+modified: 20220805144656
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -54,7 +54,8 @@ you can specify the title phase to be searched for as a query parameter ''_phras
 {"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...},"rights":62},{"id": "00001004020000","meta": {...},"rights":62}]}
 ````
 
-In addition, you are allowed to specify all query parameter to [[select zettel based on their metadata|00001012051810]], to [[limit the length of the returned list|00001012051830]], and to [[sort the returned list|00001012052000]]. You are allowed to limit the search only for those zettel with some [[specific content|00001012051840]].
+In addition, you are allowed to specify all query parameter to [[select zettel based on their metadata|00001012051810]], to [[limit the length of the returned list|00001012051830]], and to [[sort the returned list|00001012052000]].
+You are allowed to limit the search by a [[search expression|00001012051840]], which may search for zettel content.
 
 === Keys
 The following top-level JSON keys are returned:
