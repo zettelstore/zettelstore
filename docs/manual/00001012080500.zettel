@@ -1,9 +1,9 @@
 id: 00001012080500
 title: API: Refresh internal data
-role: zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211230234431
+modified: 20220805174246
 
 Zettelstore maintains some internal data to allow faster operations.
 

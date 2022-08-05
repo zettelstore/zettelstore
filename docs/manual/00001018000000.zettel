@@ -1,9 +1,9 @@
 id: 00001018000000
 title: Troubleshooting
-role: zettel
+role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220218125940
+modified: 20220805174305
 
 This page lists some problems and their solutions that may occur when using your Zettelstore.
 

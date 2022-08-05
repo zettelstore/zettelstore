@@ -1,9 +1,9 @@
 id: 00001017000000
 title: Tips and Tricks
-role: zettel
+role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220803183704
+modified: 20220805174255
 
 === Welcome Zettel
 * **Problem:** You want to put your Zettelstore into the public and need a starting zettel for your users.

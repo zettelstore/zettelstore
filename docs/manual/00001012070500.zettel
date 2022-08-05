@@ -1,9 +1,9 @@
 id: 00001012070500
 title: Retrieve administrative data
-role: zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220304174027
+modified: 20220805174216
 
 The [[endpoint|00001012920000]] ''/x'' allows you to retrieve some (administrative) data.
 

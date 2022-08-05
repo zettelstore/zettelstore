@@ -1,9 +1,9 @@
 id: 00001012080200
 title: API: Check for authentication
-role: zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220103235531
+modified: 20220805174236
 
 API clients typically wants to know, whether [[authentication is enabled|00001010040100]] or not.
 If authentication is enabled, they present some form of user interface to get user name and password for the actual authentication.

@@ -1,9 +1,9 @@
 id: 00001012080100
 title: API: Execute commands
-role: zettel
+role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220103225956
+modified: 20220805174227
 
 The [[endpoint|00001012920000]] ''/x'' allows you to execute some (administrative) commands.
 To differentiate between the possible commands, you have to set the query parameter ''_cmd'' to a specific value:
