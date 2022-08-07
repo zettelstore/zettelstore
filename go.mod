@@ -1,6 +1,6 @@
 module zettelstore.de/z
 
-go 1.18
+go 1.19
 
 require (
 	codeberg.org/t73fde/sxpf v0.0.0-20220719090054-749a39d0a7a0
@@ -13,4 +13,4 @@ require (
 	zettelstore.de/c v0.0.0-20220805123934-adf70192615b
 )
 
-require golang.org/x/sys v0.0.0-20220608164250-635b8c9b7f68 // indirect
+require golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
