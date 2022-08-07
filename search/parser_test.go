@@ -43,7 +43,7 @@ func TestParser(t *testing.T) {
 		{`NEGATE`, `NEGATE`},
 		{`NEGATE a`, `NEGATE a`},
 		{`a NEGATE`, `NEGATE a`},
-		{`NEGATE NEGATE a`, `NEGATE a`},
+		{`NEGATE NEGATE a`, `a`},
 		{`NEGATENEGATE a`, `NEGATENEGATE a`},
 	}
 	for i, tc := range testcases {
