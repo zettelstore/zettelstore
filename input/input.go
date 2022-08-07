@@ -78,6 +78,25 @@ func (inp *Input) PeekN(n int) rune {
 	return EOS
 }
 
+// Accept checks if the given string is a prefix of the text to be parsed.
+// If successful, advance position and current character.
+// String must only contain bytes < 128.
+// If not successful, everything remains as it is.
+func (inp *Input) Accept(s string) bool {
+	pos := inp.Pos
+	remaining := len(inp.Src) - pos
+	if s == "" || len(s) > remaining {
+		return false
+	}
+	// According to internal documentation of bytes.Equal, the string() will not allocate any memory.
+	if readPos := pos + len(s); s == string(inp.Src[pos:readPos]) {
+		inp.readPos = readPos
+		inp.Next()
+		return true
+	}
+	return false
+}
+
 // IsEOLEOS returns true if char is either EOS or EOL.
 func IsEOLEOS(ch rune) bool {
 	switch ch {
@@ -103,8 +122,10 @@ func (inp *Input) EatEOL() {
 
 // SetPos allows to reset the read position.
 func (inp *Input) SetPos(pos int) {
-	inp.readPos = pos
-	inp.Next()
+	if inp.Pos != pos {
+		inp.readPos = pos
+		inp.Next()
+	}
 }
 
 // SkipToEOL reads until the next end-of-line.

@@ -3,7 +3,7 @@ title: Search term
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220805165522
+modified: 20220807182418
 
 A search term allows you to specify one search restriction.
 The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
@@ -22,6 +22,8 @@ A search term can be one of the following:
   Therefore, the following search expression are essentially the same: ''"search syntax"'' and ''search syntax''.
   The first is a search expression with one search vealue, which is normalized to two strings to be searched for.
   The second is a search expression containing two search values, giving two string to be searched for.
+* The string ''NEGATE'' will negate (sic!) the behavior of the whole search expression.
+  If it occurs multiple times, the negation will be negated.
 
 In the future, more search terms will be added.
 

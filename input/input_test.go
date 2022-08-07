@@ -80,3 +80,29 @@ func TestScanIllegalEntity(t *testing.T) {
 		}
 	}
 }
+
+func TestAccep(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		accept string
+		src    string
+		acc    bool
+		exp    rune
+	}{
+		{"", "", false, input.EOS},
+		{"AB", "abc", false, 'a'},
+		{"AB", "ABC", true, 'C'},
+		{"AB", "AB", true, input.EOS},
+		{"AB", "A", false, 'A'},
+	}
+	for i, tc := range testcases {
+		inp := input.NewInput([]byte(tc.src))
+		acc := inp.Accept(tc.accept)
+		if acc != tc.acc {
+			t.Errorf("%d: %q.Accept(%q) == %v, but got %v", i, tc.src, tc.accept, tc.acc, acc)
+		}
+		if got := inp.Ch; tc.exp != got {
+			t.Errorf("%d: %q.Accept(%q) should result in run %v, but got %v", i, tc.src, tc.accept, tc.exp, got)
+		}
+	}
+}

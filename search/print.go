@@ -33,7 +33,7 @@ func (s *Search) Print(w io.Writer) {
 	}
 	env := printEnv{w: w}
 	if s.negate {
-		io.WriteString(w, "NEGATE")
+		io.WriteString(w, kwNegate)
 		env.space = true
 	}
 	if len(s.search) > 0 {

@@ -29,10 +29,22 @@ type parserState struct {
 	inp *input.Input
 }
 
+const (
+	kwNegate = "NEGATE"
+)
+
 func (ps *parserState) parse() *Search {
+	inp := ps.inp
 	var result *Search
-	for ps.inp.Ch != input.EOS {
+	exprNegate := false
+	for inp.Ch != input.EOS {
 		ps.skipSpace()
+		pos := inp.Pos
+		if inp.Accept(kwNegate) && (ps.isSpace() || inp.Ch == input.EOS) {
+			exprNegate = !exprNegate
+			continue
+		}
+		inp.SetPos(pos)
 		hasOp, cmpOp, cmpNegate := ps.scanSearchOp()
 		text, key := ps.scanSearchTextOrKey(hasOp)
 		if key != "" {
@@ -53,6 +65,9 @@ func (ps *parserState) parse() *Search {
 			// Assert key == ""
 			result.addExpValue(key, expValue{text, cmpDefault, false})
 		}
+	}
+	if exprNegate {
+		result = result.SetNegate()
 	}
 	return result
 }
