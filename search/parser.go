@@ -48,8 +48,8 @@ func (ps *parserState) parse() *Search {
 		}
 		if inp.Accept(kwRandom) && (ps.isSpace() || inp.Ch == input.EOS) {
 			result = createIfNeeded(result)
-			if result.order == "" {
-				result.order = RandomOrder
+			if len(result.order) == 0 {
+				result.order = []sortOrder{{"", false}}
 			}
 			continue
 		}

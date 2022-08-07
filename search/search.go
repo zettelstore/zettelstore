@@ -12,6 +12,7 @@
 package search
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 	"strings"
@@ -61,11 +62,17 @@ type Search struct {
 	negate   bool          // Negate the result of the whole selecting process
 
 	// Fields to be used for sorting
-	order      string // Name of meta key. None given: use "id"
-	descending bool   // Sort by order, but descending
-	offset     int    // <= 0: no offset
-	limit      int    // <= 0: no limit
+	order  []sortOrder
+	offset int // <= 0: no offset
+	limit  int // <= 0: no limit
 }
+
+type sortOrder struct {
+	key        string
+	descending bool
+}
+
+func (so *sortOrder) isRandom() bool { return so.key == "" }
 
 type expMetaValues map[string][]expValue
 
@@ -89,8 +96,7 @@ func (s *Search) Clone() *Search {
 	}
 	c.search = append([]expValue{}, s.search...)
 	c.negate = s.negate
-	c.order = s.order
-	c.descending = s.descending
+	c.order = append([]sortOrder{}, s.order...)
 	c.offset = s.offset
 	c.limit = s.limit
 	return c
@@ -241,11 +247,14 @@ func (s *Search) AddOrder(key string, descending bool) *Search {
 	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
-	if s.order != "" {
-		panic("order field already set: " + s.order)
+	if len(s.order) > 0 {
+		panic("order field already set: " + fmt.Sprintf("%v", s.order))
 	}
-	s.order = key
-	s.descending = descending
+	if key == RandomOrder {
+		s.order = []sortOrder{{"", false}}
+	} else {
+		s.order = []sortOrder{{key, descending}}
+	}
 	return s
 }
 
@@ -306,7 +315,12 @@ func (s *Search) EnrichNeeded() bool {
 			return true
 		}
 	}
-	return meta.IsComputed(s.order)
+	for _, o := range s.order {
+		if meta.IsComputed(o.key) {
+			return true
+		}
+	}
+	return false
 }
 
 // RetrieveAndCompileMatch queries the search index and returns a predicate
@@ -412,14 +426,14 @@ func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
 		return metaList
 	}
 
-	if s.order == "" {
+	if len(s.order) == 0 {
 		sort.Slice(metaList, createSortFunc(api.KeyID, true, metaList))
-	} else if s.order == RandomOrder {
+	} else if s.order[0].isRandom() {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]
 		})
 	} else {
-		sort.Slice(metaList, createSortFunc(s.order, s.descending, metaList))
+		sort.Slice(metaList, createSortFunc(s.order[0].key, s.order[0].descending, metaList))
 	}
 
 	if s.offset > 0 {

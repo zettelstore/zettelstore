@@ -42,7 +42,7 @@ func (s *Search) Print(w io.Writer) {
 	for _, name := range maps.Keys(s.mvals) {
 		env.printExprValues(name, s.mvals[name])
 	}
-	env.printOrder(s.order, s.descending)
+	env.printOrder(s.order)
 }
 
 type printEnv struct {
@@ -123,7 +123,7 @@ func (s *Search) PrintHuman(w io.Writer) {
 		env.space = true
 	}
 
-	env.printOrder(s.order, s.descending)
+	env.printOrder(s.order)
 	env.printPosInt("OFFSET", s.offset)
 	env.printPosInt("LIMIT", s.limit)
 }
@@ -163,22 +163,21 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 	}
 }
 
-func (pe *printEnv) printOrder(order string, descending bool) {
-	if len(order) > 0 {
-		switch order {
-		case api.KeyID:
-			// Ignore
-		case RandomOrder:
+func (pe *printEnv) printOrder(order []sortOrder) {
+	for _, o := range order {
+		if o.isRandom() {
 			pe.printSpace()
 			pe.writeString(kwRandom)
-		default:
-			pe.printSpace()
-			pe.writeString(kwOrder)
-			pe.printSpace()
-			pe.writeString(order)
-			if descending {
-				pe.writeString(" DESC")
-			}
+			continue
+		} else if o.key == api.KeyID && !o.descending {
+			continue
+		}
+		pe.printSpace()
+		pe.writeString(kwOrder)
+		pe.printSpace()
+		pe.writeString(o.key)
+		if o.descending {
+			pe.writeString(" DESC")
 		}
 	}
 }
