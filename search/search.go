@@ -69,6 +69,13 @@ type Search struct {
 
 type expMetaValues map[string][]expValue
 
+func createIfNeeded(s *Search) *Search {
+	if s == nil {
+		return new(Search)
+	}
+	return s
+}
+
 // Clone the search value.
 func (s *Search) Clone() *Search {
 	if s == nil {
@@ -207,9 +214,7 @@ func parseOp(s string) expValue {
 
 // SetNegate changes the search to reverse its selection.
 func (s *Search) SetNegate() *Search {
-	if s == nil {
-		s = new(Search)
-	}
+	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	s.negate = true
@@ -218,9 +223,7 @@ func (s *Search) SetNegate() *Search {
 
 // AddPreMatch adds the pre-selection predicate.
 func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
-	if s == nil {
-		s = new(Search)
-	}
+	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if pre := s.preMatch; pre == nil {
@@ -235,9 +238,7 @@ func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
 
 // AddOrder adds the given order to the search object.
 func (s *Search) AddOrder(key string, descending bool) *Search {
-	if s == nil {
-		s = new(Search)
-	}
+	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if s.order != "" {
@@ -250,9 +251,7 @@ func (s *Search) AddOrder(key string, descending bool) *Search {
 
 // SetOffset sets the given offset of the search object.
 func (s *Search) SetOffset(offset int) *Search {
-	if s == nil {
-		s = new(Search)
-	}
+	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if offset < 0 {
@@ -274,9 +273,7 @@ func (s *Search) GetOffset() int {
 
 // SetLimit sets the given limit of the search object.
 func (s *Search) SetLimit(limit int) *Search {
-	if s == nil {
-		s = new(Search)
-	}
+	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
 	if limit < 0 {

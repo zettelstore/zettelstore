@@ -31,17 +31,26 @@ type parserState struct {
 
 const (
 	kwNegate = "NEGATE"
+	kwOrder  = "ORDER"
+	kwRandom = "RANDOM"
 )
 
 func (ps *parserState) parse() *Search {
 	inp := ps.inp
 	var result *Search
-	exprNegate := false
 	for inp.Ch != input.EOS {
 		ps.skipSpace()
 		pos := inp.Pos
 		if inp.Accept(kwNegate) && (ps.isSpace() || inp.Ch == input.EOS) {
-			exprNegate = !exprNegate
+			result = createIfNeeded(result)
+			result.negate = !result.negate
+			continue
+		}
+		if inp.Accept(kwRandom) && (ps.isSpace() || inp.Ch == input.EOS) {
+			result = createIfNeeded(result)
+			if result.order == "" {
+				result.order = RandomOrder
+			}
 			continue
 		}
 		inp.SetPos(pos)
@@ -56,18 +65,13 @@ func (ps *parserState) parse() *Search {
 			// Only an empty search operation is found -> ignore it
 			continue
 		}
-		if result == nil {
-			result = new(Search)
-		}
+		result = createIfNeeded(result)
 		if hasOp {
 			result.addExpValue(key, expValue{text, cmpOp, cmpNegate})
 		} else {
 			// Assert key == ""
 			result.addExpValue(key, expValue{text, cmpDefault, false})
 		}
-	}
-	if exprNegate {
-		result = result.SetNegate()
 	}
 	return result
 }

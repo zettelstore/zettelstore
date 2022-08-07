@@ -42,6 +42,7 @@ func (s *Search) Print(w io.Writer) {
 	for _, name := range maps.Keys(s.mvals) {
 		env.printExprValues(name, s.mvals[name])
 	}
+	env.printOrder(s.order, s.descending)
 }
 
 type printEnv struct {
@@ -169,10 +170,11 @@ func (pe *printEnv) printOrder(order string, descending bool) {
 			// Ignore
 		case RandomOrder:
 			pe.printSpace()
-			pe.writeString("RANDOM")
+			pe.writeString(kwRandom)
 		default:
 			pe.printSpace()
-			pe.writeString("SORT ")
+			pe.writeString(kwOrder)
+			pe.printSpace()
 			pe.writeString(order)
 			if descending {
 				pe.writeString(" DESC")

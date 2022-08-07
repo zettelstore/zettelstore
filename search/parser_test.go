@@ -40,11 +40,12 @@ func TestParser(t *testing.T) {
 		{`key~a`, `key~a`}, {`key!~a`, `key!~a`},
 		{`key1:a key2:b`, `key1:a key2:b`},
 		{`key1: key2:b`, `key1: key2:b`},
-		{`NEGATE`, `NEGATE`},
-		{`NEGATE a`, `NEGATE a`},
-		{`a NEGATE`, `NEGATE a`},
+		{`NEGATE`, `NEGATE`}, {`NEGATE a`, `NEGATE a`}, {`a NEGATE`, `NEGATE a`},
 		{`NEGATE NEGATE a`, `a`},
 		{`NEGATENEGATE a`, `NEGATENEGATE a`},
+		{`RANDOM`, `RANDOM`}, {`RANDOM a`, `a RANDOM`}, {`a RANDOM`, `a RANDOM`},
+		{`RANDOM RANDOM a`, `a RANDOM`},
+		{`RANDOMRANDOM a`, `RANDOMRANDOM a`}, {`a RANDOMRANDOM`, `a RANDOMRANDOM`},
 	}
 	for i, tc := range testcases {
 		s := search.Parse(tc.spec)
