@@ -265,13 +265,6 @@ func executeCommand(name string, args ...string) int {
 	kern := kernel.Main
 	var createManager kernel.CreateBoxManagerFunc
 	if command.Boxes {
-		err := raiseFdLimit()
-		if err != nil {
-			logger := kern.GetKernelLogger()
-			logger.IfErr(err).Msg("Raising some limitions did not work")
-			logger.Error().Msg("Prepare to encounter errors. Most of them can be mitigated. See the manual for details")
-			kern.SetConfig(kernel.BoxService, kernel.BoxDefaultDirType, kernel.BoxDirTypeSimple)
-		}
 		createManager = func(boxURIs []*url.URL, authManager auth.Manager, rtConfig config.Config) (box.Manager, error) {
 			compbox.Setup(cfg)
 			return manager.New(boxURIs, authManager, rtConfig)
@@ -310,7 +303,7 @@ func executeCommand(name string, args ...string) int {
 }
 
 // runSimple is called, when the user just starts the software via a double click
-// or via a simple call ``./zettelstore`` on the command line.
+// or via a simple call “./zettelstore“ on the command line.
 func runSimple() int {
 	if _, err := searchAndReadConfiguration(); err == nil {
 		return executeCommand(strRunSimple)
