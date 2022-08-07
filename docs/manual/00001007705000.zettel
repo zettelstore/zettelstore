@@ -3,7 +3,7 @@ title: Search operator
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220805165533
+modified: 20220807162255
 
 A search operator specifies how the comparison of a search value and a zettel should be executed.
 Every comparison is done case-insensitive, treating all uppercase letters the same as lowercase letters.
@@ -20,7 +20,7 @@ The following are allowed search operator characters:
 Since the exclamation mark character can be combined with the other, there are 12 possible combinations:
 # ""'':''"": depending on the [[metdata key type|00001006030000]] one of the other operators is chosen.
   For example, a [[numeric key type|00001006033000]] will execute the equals operator, while for a [[string type|00001006033500]] a contains operator will be executed.
-# ""''!:''"": similar to the ""match operator"" above, one of the negated will be chosen, depending on the metadata key type.
+# ""''!:''"": similar to the ""match operator"" above, the appropriate negated search operator will be chosen, depending on the metadata key type
 # ""''~''"": is successful if the search value is contained in the value to be compared.
 # ""''!~''"": is successful if the search value is not contained in the value to be compared.
 # ""''=''"": is successful if the search value is equal to the value to be compared.

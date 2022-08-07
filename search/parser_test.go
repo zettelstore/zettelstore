@@ -40,10 +40,6 @@ func TestParser(t *testing.T) {
 		{`key~a`, `key~a`}, {`key!~a`, `key!~a`},
 		{`key1:a key2:b`, `key1:a key2:b`},
 		{`key1: key2:b`, `key1: key2:b`},
-		{`" a \""`, `" a \""`},
-		{`"a""b"`, `ab`},
-		{`"a" "b"`, `a b`},
-		{`"key":"a"`, `key:a`},
 	}
 	for i, tc := range testcases {
 		s := search.Parse(tc.spec)

@@ -72,13 +72,9 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) (string, string) {
 				}
 			}
 		}
-		if inp.Ch == '"' {
-			ps.scanString(&buf)
-			allowKey = false
-		} else {
-			buf.WriteRune(inp.Ch)
-			inp.Next()
-		}
+
+		buf.WriteRune(inp.Ch)
+		inp.Next()
 	}
 	return buf.String(), ""
 }
@@ -87,44 +83,10 @@ func (ps *parserState) scanSearchText() string {
 	inp := ps.inp
 	var buf bytes.Buffer
 	for !ps.isSpace() && inp.Ch != input.EOS {
-		if inp.Ch == '"' {
-			ps.scanString(&buf)
-		} else {
-			buf.WriteRune(inp.Ch)
-			inp.Next()
-		}
+		buf.WriteRune(inp.Ch)
+		inp.Next()
 	}
 	return buf.String()
-}
-
-func (ps *parserState) scanString(buf *bytes.Buffer) {
-	inp := ps.inp
-	// Assert inp.Ch == '"'
-	for {
-		switch ch := inp.Next(); ch {
-		case input.EOS:
-			return
-		case '"':
-			inp.Next()
-			return
-		case '\\':
-			switch ch2 := inp.Next(); ch2 {
-			case input.EOS:
-				buf.WriteByte('\\')
-				return
-			case 't':
-				buf.WriteByte('\t')
-			case 'r':
-				buf.WriteByte('\r')
-			case 'n':
-				buf.WriteByte('\n')
-			default:
-				buf.WriteRune(ch2)
-			}
-		default:
-			buf.WriteRune(ch)
-		}
-	}
 }
 
 func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {

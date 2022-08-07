@@ -3,33 +3,8 @@ title: Search value
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220805164642
+modified: 20220807162031
 
 A search value specifies a value to be searched for, depending on the [[search operator|00001007705000]].
-It can be specified in two ways:
-* A simple search value, which contains all characters except space characters and sometimes search operator characters.
-* A string search value, which allows to specify all printable characters.
 
-A string search value is delimited by two quotation marks (""''"''"", U+0022).
-Between these two quotation marks, all other characters are allowed.
-However, how to specify a quotation mark as a search value?
-
-The solution is the backslash character (""''\\''"", U+005C), which gives the following character a different meaning:
-|=Backslash sequence | Meaning
-| ''\\"''  | quotation mark
-| ''\\\\'' | backslash character
-| ''\\t''  | horizontal tab (U+0009)
-| ''\\n''  | line feed (U+0009)
-| ''\\r''  | carriage return (U+0009)
-
-Any other character following the backslash character will result in the same character, e.g. ""''\\y''"" results in ""''y''"".
-
-A backslash character as the last character in the search expression will result in the backslash character itself.
-Similar, if the second quotation mark is not given, it is assumed to be after the last character of the search expression.
-
-It is possible to use both the simple search value and the string search value in one search value.
-Basically, this results in a search value that could also be specified by one string search value.
-For example ''ab" c "de'' will be interpreted as ''"ab c de"''.
-
-However, if a string search value does not contain any of the interfering character, the quotations marks can be omitted.
-For example, ''"ab"c"de"'' is the same as ''""abcde""'', which is the same as ''abcde''.
+A search value should be lower case, because all comparisons are done in a case-insensitive way and there are some upper case keywords planned.
