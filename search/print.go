@@ -12,7 +12,6 @@
 package search
 
 import (
-	"bytes"
 	"io"
 	"strconv"
 	"strings"
@@ -50,6 +49,8 @@ type printEnv struct {
 	space bool
 }
 
+var bsSpace = []byte{' '}
+
 func (pe *printEnv) printSpace() {
 	if pe.space {
 		pe.w.Write(bsSpace)
@@ -58,32 +59,6 @@ func (pe *printEnv) printSpace() {
 	pe.space = true
 }
 func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
-func (pe *printEnv) writeQuoted(s string) {
-	var buf bytes.Buffer
-	buf.WriteByte('"')
-	for _, ch := range s {
-		switch ch {
-		case '\t':
-			buf.WriteString("\\t")
-		case '\r':
-			buf.WriteString("\\r")
-		case '\n':
-			buf.WriteString("\\n")
-		case '"':
-			buf.WriteString("\\\"")
-		case '\\':
-			buf.WriteString("\\\\")
-		default:
-			if ch < ' ' {
-				buf.WriteString("\\ ")
-			} else {
-				buf.WriteRune(ch)
-			}
-		}
-	}
-	buf.WriteByte('"')
-	pe.w.Write(buf.Bytes())
-}
 
 func (pe *printEnv) printExprValues(key string, values []expValue) {
 	for _, val := range values {
@@ -109,22 +84,9 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 			}
 		}
 		if s := val.value; s != "" {
-			if needsQuote(s) {
-				pe.writeQuoted(s)
-			} else {
-				pe.writeString(s)
-			}
+			pe.writeString(s)
 		}
 	}
-}
-
-func needsQuote(s string) bool {
-	for _, ch := range s {
-		if ch == '\\' || ch == '"' || isSpace(ch) {
-			return true
-		}
-	}
-	return false
 }
 
 func (s *Search) Human() string {
@@ -138,103 +100,92 @@ func (s *Search) PrintHuman(w io.Writer) {
 	if s == nil {
 		return
 	}
+	env := printEnv{w: w}
 	if s.negate {
-		io.WriteString(w, "NOT (")
+		env.writeString("NOT (")
 	}
-	space := false
 	if len(s.search) > 0 {
-		io.WriteString(w, "ANY")
-		printHumanSelectExprValues(w, s.search)
-		space = true
+		env.writeString("ANY")
+		env.printHumanSelectExprValues(s.search)
+		env.space = true
 	}
 	for _, name := range maps.Keys(s.mvals) {
-		if space {
-			io.WriteString(w, " AND ")
+		if env.space {
+			env.writeString(" AND ")
 		}
-		io.WriteString(w, name)
-		printHumanSelectExprValues(w, s.mvals[name])
-		space = true
+		env.writeString(name)
+		env.printHumanSelectExprValues(s.mvals[name])
+		env.space = true
 	}
 	if s.negate {
-		io.WriteString(w, ")")
-		space = true
+		env.writeString(")")
+		env.space = true
 	}
 
-	space = printOrder(w, s.order, s.descending, space)
-	space = printPosInt(w, "OFFSET", s.offset, space)
-	_ = printPosInt(w, "LIMIT", s.limit, space)
+	env.printOrder(s.order, s.descending)
+	env.printPosInt("OFFSET", s.offset)
+	env.printPosInt("LIMIT", s.limit)
 }
 
-func printHumanSelectExprValues(w io.Writer, values []expValue) {
+func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 	if len(values) == 0 {
-		io.WriteString(w, " MATCH ANY")
+		pe.writeString(" MATCH ANY")
 		return
 	}
 
 	for j, val := range values {
 		if j > 0 {
-			io.WriteString(w, " AND")
+			pe.writeString(" AND")
 		}
 		if val.negate {
-			io.WriteString(w, " NOT")
+			pe.writeString(" NOT")
 		}
 		switch val.op {
 		case cmpDefault:
-			io.WriteString(w, " MATCH ")
+			pe.writeString(" MATCH ")
 		case cmpEqual:
-			io.WriteString(w, " EQUAL ")
+			pe.writeString(" EQUAL ")
 		case cmpPrefix:
-			io.WriteString(w, " PREFIX ")
+			pe.writeString(" PREFIX ")
 		case cmpSuffix:
-			io.WriteString(w, " SUFFIX ")
+			pe.writeString(" SUFFIX ")
 		case cmpContains:
-			io.WriteString(w, " CONTAINS ")
+			pe.writeString(" CONTAINS ")
 		default:
-			io.WriteString(w, " MaTcH ")
+			pe.writeString(" MaTcH ")
 		}
 		if val.value == "" {
-			io.WriteString(w, "ANY")
+			pe.writeString("ANY")
 		} else {
-			io.WriteString(w, val.value)
+			pe.writeString(val.value)
 		}
 	}
 }
 
-func printOrder(w io.Writer, order string, descending, withSpace bool) bool {
+func (pe *printEnv) printOrder(order string, descending bool) {
 	if len(order) > 0 {
 		switch order {
 		case api.KeyID:
 			// Ignore
 		case RandomOrder:
-			withSpace = printSpace(w, withSpace)
-			io.WriteString(w, "RANDOM")
+			pe.printSpace()
+			pe.writeString("RANDOM")
 		default:
-			withSpace = printSpace(w, withSpace)
-			io.WriteString(w, "SORT ")
-			io.WriteString(w, order)
+			pe.printSpace()
+			pe.writeString("SORT ")
+			pe.writeString(order)
 			if descending {
-				io.WriteString(w, " DESC")
+				pe.writeString(" DESC")
 			}
 		}
 	}
-	return withSpace
 }
 
-func printPosInt(w io.Writer, key string, val int, space bool) bool {
+func (pe *printEnv) printPosInt(key string, val int) {
 	if val > 0 {
-		space = printSpace(w, space)
-		io.WriteString(w, key)
-		w.Write(bsSpace)
-		io.WriteString(w, strconv.Itoa(val))
+		pe.printSpace()
+		pe.writeString(key)
+		pe.writeString(" ")
+		pe.writeString(strconv.Itoa(val))
 	}
-	return space
-}
-
-var bsSpace = []byte{' '}
-
-func printSpace(w io.Writer, space bool) bool {
-	if space {
-		w.Write(bsSpace)
-	}
-	return true
 }
