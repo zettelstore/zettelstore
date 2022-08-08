@@ -81,7 +81,7 @@ func TestScanIllegalEntity(t *testing.T) {
 	}
 }
 
-func TestAccep(t *testing.T) {
+func TestAccept(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		accept string
