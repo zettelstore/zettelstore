@@ -43,6 +43,8 @@ func (s *Search) Print(w io.Writer) {
 		env.printExprValues(name, s.mvals[name])
 	}
 	env.printOrder(s.order)
+	env.printPosInt(kwOffset, s.offset)
+	env.printPosInt(kwLimit, s.limit)
 }
 
 type printEnv struct {
@@ -124,8 +126,8 @@ func (s *Search) PrintHuman(w io.Writer) {
 	}
 
 	env.printOrder(s.order)
-	env.printPosInt("OFFSET", s.offset)
-	env.printPosInt("LIMIT", s.limit)
+	env.printPosInt(kwOffset, s.offset)
+	env.printPosInt(kwLimit, s.limit)
 }
 
 func (pe *printEnv) printHumanSelectExprValues(values []expValue) {

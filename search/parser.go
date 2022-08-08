@@ -11,6 +11,8 @@
 package search
 
 import (
+	"strconv"
+
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 )
@@ -32,10 +34,12 @@ type parserState struct {
 }
 
 const (
+	kwLimit   = "LIMIT"
 	kwNegate  = "NEGATE"
+	kwOffset  = "OFFSET"
 	kwOrder   = "ORDER"
-	kwReverse = "REVERSE"
 	kwRandom  = "RANDOM"
+	kwReverse = "REVERSE"
 )
 
 func (ps *parserState) parse() *Search {
@@ -60,7 +64,22 @@ func (ps *parserState) parse() *Search {
 			continue
 		}
 		if inp.Accept(kwOrder) && ps.isSpace() {
+			ps.skipSpace()
 			if s, ok := ps.parseOrder(result); ok {
+				result = s
+				continue
+			}
+		}
+		if inp.Accept(kwOffset) && ps.isSpace() {
+			ps.skipSpace()
+			if s, ok := ps.parseOffset(result); ok {
+				result = s
+				continue
+			}
+		}
+		if inp.Accept(kwLimit) && ps.isSpace() {
+			ps.skipSpace()
+			if s, ok := ps.parseLimit(result); ok {
 				result = s
 				continue
 			}
@@ -71,7 +90,6 @@ func (ps *parserState) parse() *Search {
 	return result
 }
 func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
-	ps.skipSpace()
 	reverse := false
 	if ps.inp.Accept(kwReverse) && ps.isSpace() {
 		reverse = true
@@ -91,6 +109,31 @@ func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
 	}
 	return s, false
 }
+
+func (ps *parserState) parseOffset(s *Search) (*Search, bool) {
+	num, ok := ps.scanPosInt()
+	if !ok {
+		return s, false
+	}
+	s = createIfNeeded(s)
+	if s.offset <= num {
+		s.offset = num
+	}
+	return s, true
+}
+
+func (ps *parserState) parseLimit(s *Search) (*Search, bool) {
+	num, ok := ps.scanPosInt()
+	if !ok {
+		return s, false
+	}
+	s = createIfNeeded(s)
+	if s.limit == 0 || s.limit >= num {
+		s.limit = num
+	}
+	return s, true
+}
+
 func (ps *parserState) parseText(s *Search) *Search {
 	hasOp, cmpOp, cmpNegate := ps.scanSearchOp()
 	text, key := ps.scanSearchTextOrKey(hasOp)
@@ -140,6 +183,27 @@ func (ps *parserState) scanWord() []byte {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
+}
+
+func (ps *parserState) scanPosInt() (int, bool) {
+	inp := ps.inp
+	ch := inp.Ch
+	if ch == '0' {
+		ch = inp.Next()
+		if isSpace(ch) || ch == input.EOS {
+			return 0, true
+		}
+		return 0, false
+	}
+	word := ps.scanWord()
+	if len(word) == 0 {
+		return 0, false
+	}
+	uval, err := strconv.ParseUint(string(word), 10, 63)
+	if err != nil {
+		return 0, false
+	}
+	return int(uval), true
 }
 
 func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {

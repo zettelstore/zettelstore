@@ -50,6 +50,12 @@ func TestParser(t *testing.T) {
 		{"ORDER a ?", "? ORDER a"},
 		{"ORDER REVERSE", "ORDER REVERSE"}, {"ORDER REVERSE a b", "b ORDER REVERSE a"},
 		{"a RANDOM ORDER b", "a ORDER b"}, {"a ORDER b RANDOM", "a ORDER b"},
+		{"OFFSET", "OFFSET"}, {"OFFSET a", "OFFSET a"}, {"OFFSET 10 a", "a OFFSET 10"},
+		{"OFFSET 01 a", "OFFSET 01 a"}, {"OFFSET 0 a", "a"}, {"a OFFSET 0", "a"},
+		{"OFFSET 4 OFFSET 8", "OFFSET 8"}, {"OFFSET 8 OFFSET 4", "OFFSET 8"},
+		{"LIMIT", "LIMIT"}, {"LIMIT a", "LIMIT a"}, {"LIMIT 10 a", "a LIMIT 10"},
+		{"LIMIT 01 a", "LIMIT 01 a"}, {"LIMIT 0 a", "a"}, {"a LIMIT 0", "a"},
+		{"LIMIT 4 LIMIT 8", "LIMIT 4"}, {"LIMIT 8 LIMIT 4", "LIMIT 4"},
 	}
 	for i, tc := range testcases {
 		s := search.Parse(tc.spec, nil)
