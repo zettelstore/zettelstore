@@ -183,7 +183,7 @@ func (g *htmlGenerator) generateLinkSearch(senv sxpf.Environment, args *sxpf.Pai
 	env := senv.(*html.EncEnvironment)
 	if a, refValue, ok := html.PrepareLink(env, args); ok {
 		searchExpr := search.Parse(refValue, nil).String()
-		u := g.builder.NewURLBuilder('h').AppendQuery(api.QueryKeySearch, searchExpr)
+		u := g.builder.NewURLBuilder('h').AppendSearch(searchExpr)
 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
 	return nil, nil
