@@ -23,7 +23,8 @@ type StopParsePred func(*input.Input) bool
 // Parse the search specification and return a Search object.
 func Parse(spec string, stop StopParsePred) *Search {
 	state := parserState{
-		inp: input.NewInput([]byte(spec)),
+		inp:  input.NewInput([]byte(spec)),
+		stop: stop,
 	}
 	return state.parse()
 }
@@ -31,6 +32,11 @@ func Parse(spec string, stop StopParsePred) *Search {
 type parserState struct {
 	inp  *input.Input
 	stop StopParsePred
+}
+
+func (ps *parserState) mustStop() bool {
+	inp := ps.inp
+	return inp.Ch == input.EOS || (ps.stop != nil && ps.stop(inp))
 }
 
 const (
@@ -47,16 +53,16 @@ func (ps *parserState) parse() *Search {
 	var result *Search
 	for {
 		ps.skipSpace()
-		if inp.Ch == input.EOS || (ps.stop != nil && ps.stop(inp)) {
+		if ps.mustStop() {
 			break
 		}
 		pos := inp.Pos
-		if inp.Accept(kwNegate) && (ps.isSpace() || inp.Ch == input.EOS) {
+		if inp.Accept(kwNegate) && (ps.isSpace() || ps.mustStop()) {
 			result = createIfNeeded(result)
 			result.negate = !result.negate
 			continue
 		}
-		if inp.Accept(kwRandom) && (ps.isSpace() || inp.Ch == input.EOS) {
+		if inp.Accept(kwRandom) && (ps.isSpace() || ps.mustStop()) {
 			result = createIfNeeded(result)
 			if len(result.order) == 0 {
 				result.order = []sortOrder{{"", false}}
@@ -161,7 +167,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	pos := inp.Pos
 	allowKey := !hasOp
 
-	for !ps.isSpace() && inp.Ch != input.EOS {
+	for !ps.isSpace() && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
 			case '!', ':', '=', '>', '<', '~':
@@ -179,7 +185,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
 	pos := inp.Pos
-	for !ps.isSpace() && inp.Ch != input.EOS {
+	for !ps.isSpace() && !ps.mustStop() {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
@@ -190,7 +196,7 @@ func (ps *parserState) scanPosInt() (int, bool) {
 	ch := inp.Ch
 	if ch == '0' {
 		ch = inp.Next()
-		if isSpace(ch) || ch == input.EOS {
+		if isSpace(ch) || ps.mustStop() {
 			return 0, true
 		}
 		return 0, false
