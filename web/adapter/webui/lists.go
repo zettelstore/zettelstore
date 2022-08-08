@@ -12,13 +12,13 @@ package webui
 
 import (
 	"bytes"
-	"context"
 	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -64,7 +64,7 @@ func (wui *WebUI) renderZettelList(
 		return
 	}
 	user := wui.getUser(ctx)
-	metas := wui.buildHTMLMetaList(ctx, metaList, evaluate)
+	metas := wui.buildHTMLMetaList(metaList, func(val string) ast.InlineSlice { return evaluate.RunMetadataNoLink(ctx, val) })
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
@@ -205,7 +205,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			return
 		}
 		apiZid := api.ZettelID(zid.String())
-		metaLinks := wui.buildHTMLMetaList(ctx, metaList, evaluate)
+		metaLinks := wui.buildHTMLMetaList(metaList, func(val string) ast.InlineSlice { return evaluate.RunMetadataNoLink(ctx, val) })
 		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
 		depthLinks := make([]simpleLink, len(depths))
 		depthURL := wui.NewURLBuilder('k').SetZid(apiZid)
@@ -258,12 +258,12 @@ func (wui *WebUI) listTitleSearch(s *search.Search) string {
 }
 
 // buildHTMLMetaList builds a zettel list based on a meta list for HTML rendering.
-func (wui *WebUI) buildHTMLMetaList(ctx context.Context, metaList []*meta.Meta, evaluate *usecase.Evaluate) []simpleLink {
+func (wui *WebUI) buildHTMLMetaList(metaList []*meta.Meta, evalMetadata evalMetadataFunc) []simpleLink {
 	metas := make([]simpleLink, 0, len(metaList))
 	encHTML := wui.getSimpleHTMLEncoder()
 	for _, m := range metaList {
 		metas = append(metas, simpleLink{
-			Text: encodeTitleAsHTML(ctx, m, evaluate, encHTML, true),
+			Text: encodeZmkMetadata(m.GetTitle(), evalMetadata, encHTML),
 			URL:  wui.NewURLBuilder('h').SetZid(api.ZettelID(m.Zid.String())).String(),
 		})
 	}

@@ -63,6 +63,13 @@ func (uc *Evaluate) RunMetadata(ctx context.Context, value string) ast.InlineSli
 	return is
 }
 
+// RunMetadataNoLink executes the use case for a metadata value, but ignores link and footnote nodes.
+func (uc *Evaluate) RunMetadataNoLink(ctx context.Context, value string) ast.InlineSlice {
+	is := parser.ParseMetadataNoLink(value)
+	evaluator.EvaluateInline(ctx, uc, uc.rtConfig, &is)
+	return is
+}
+
 // GetMeta retrieves the metadata of a given zettel identifier.
 func (uc *Evaluate) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	return uc.getMeta.Run(ctx, zid)

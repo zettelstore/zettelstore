@@ -92,7 +92,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.reportError(ctx, w, err)
 			return
 		}
-		unLinks := wui.buildHTMLMetaList(ctx, unlinkedMeta, evaluate)
+		unLinks := wui.buildHTMLMetaList(unlinkedMeta, func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val) })
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := enc.BlocksString(&ast.BlockSlice{})

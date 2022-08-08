@@ -134,10 +134,11 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 }
 
 // InlinesString writes an inline slice to the writer
-func (g *htmlGenerator) InlinesString(is *ast.InlineSlice, noLink bool) (string, error) {
+func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) (string, error) {
 	if is == nil || len(*is) == 0 {
 		return "", nil
 	}
+	noLink := false
 	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), !noLink, noLink), nil
 }
 

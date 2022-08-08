@@ -336,8 +336,8 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 			continue
 		}
 		title := m.GetTitle()
-		astTitle := parser.ParseMetadata(title)
-		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle, false)
+		astTitle := parser.ParseMetadataNoLink(title)
+		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle)
 		if err2 != nil {
 			menuTitle, err2 = encodeInlinesText(&astTitle, wui.gentext)
 			if err2 != nil {
