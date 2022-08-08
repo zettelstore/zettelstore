@@ -46,15 +46,19 @@ func TestParser(t *testing.T) {
 		{`RANDOM`, `RANDOM`}, {`RANDOM a`, `a RANDOM`}, {`a RANDOM`, `a RANDOM`},
 		{`RANDOM RANDOM a`, `a RANDOM`},
 		{`RANDOMRANDOM a`, `RANDOMRANDOM a`}, {`a RANDOMRANDOM`, `a RANDOMRANDOM`},
+		{`ORDER`, `ORDER`}, {"ORDER a b", "b ORDER a"}, {"a ORDER", "a ORDER"}, {"ORDER ?", "ORDER ?"},
+		{"ORDER a ?", "? ORDER a"},
+		{"ORDER REVERSE", "ORDER REVERSE"}, {"ORDER REVERSE a b", "b ORDER REVERSE a"},
+		{"a RANDOM ORDER b", "a ORDER b"}, {"a ORDER b RANDOM", "a ORDER b"},
 	}
 	for i, tc := range testcases {
-		s := search.Parse(tc.spec)
+		s := search.Parse(tc.spec, nil)
 		got := s.String()
 		if tc.exp != got {
 			t.Errorf("%d: Parse(%q) does not yield %q, but got %q", i, tc.spec, tc.exp, got)
 			continue
 		}
-		got2 := search.Parse(got).String()
+		got2 := search.Parse(got, nil).String()
 		if got2 != got {
 			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got, got2)
 		}

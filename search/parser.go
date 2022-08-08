@@ -11,14 +11,15 @@
 package search
 
 import (
-	"bytes"
-
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 )
 
+// StopParsePred is a predicate that signals when parsing must end.
+type StopParsePred func(*input.Input) bool
+
 // Parse the search specification and return a Search object.
-func Parse(spec string) *Search {
+func Parse(spec string, stop StopParsePred) *Search {
 	state := parserState{
 		inp: input.NewInput([]byte(spec)),
 	}
@@ -26,20 +27,25 @@ func Parse(spec string) *Search {
 }
 
 type parserState struct {
-	inp *input.Input
+	inp  *input.Input
+	stop StopParsePred
 }
 
 const (
-	kwNegate = "NEGATE"
-	kwOrder  = "ORDER"
-	kwRandom = "RANDOM"
+	kwNegate  = "NEGATE"
+	kwOrder   = "ORDER"
+	kwReverse = "REVERSE"
+	kwRandom  = "RANDOM"
 )
 
 func (ps *parserState) parse() *Search {
 	inp := ps.inp
 	var result *Search
-	for inp.Ch != input.EOS {
+	for {
 		ps.skipSpace()
+		if inp.Ch == input.EOS || (ps.stop != nil && ps.stop(inp)) {
+			break
+		}
 		pos := inp.Pos
 		if inp.Accept(kwNegate) && (ps.isSpace() || inp.Ch == input.EOS) {
 			result = createIfNeeded(result)
@@ -53,59 +59,87 @@ func (ps *parserState) parse() *Search {
 			}
 			continue
 		}
+		if inp.Accept(kwOrder) && ps.isSpace() {
+			if s, ok := ps.parseOrder(result); ok {
+				result = s
+				continue
+			}
+		}
 		inp.SetPos(pos)
-		hasOp, cmpOp, cmpNegate := ps.scanSearchOp()
-		text, key := ps.scanSearchTextOrKey(hasOp)
-		if key != "" {
-			// Assert: hasOp == false
-			hasOp, cmpOp, cmpNegate = ps.scanSearchOp()
-			// Assert hasOp == true
-			text = ps.scanSearchText()
-		} else if text == "" {
-			// Only an empty search operation is found -> ignore it
-			continue
-		}
-		result = createIfNeeded(result)
-		if hasOp {
-			result.addExpValue(key, expValue{text, cmpOp, cmpNegate})
-		} else {
-			// Assert key == ""
-			result.addExpValue(key, expValue{text, cmpDefault, false})
-		}
+		result = ps.parseText(result)
 	}
 	return result
 }
+func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
+	ps.skipSpace()
+	reverse := false
+	if ps.inp.Accept(kwReverse) && ps.isSpace() {
+		reverse = true
+		ps.skipSpace()
+	}
+	word := ps.scanWord()
+	if len(word) == 0 {
+		return s, false
+	}
+	if sWord := string(word); meta.KeyIsValid(sWord) {
+		s = createIfNeeded(s)
+		if len(s.order) == 1 && s.order[0].isRandom() {
+			s.order = nil
+		}
+		s.order = append(s.order, sortOrder{sWord, reverse})
+		return s, true
+	}
+	return s, false
+}
+func (ps *parserState) parseText(s *Search) *Search {
+	hasOp, cmpOp, cmpNegate := ps.scanSearchOp()
+	text, key := ps.scanSearchTextOrKey(hasOp)
+	if key != nil {
+		// Assert: hasOp == false
+		hasOp, cmpOp, cmpNegate = ps.scanSearchOp()
+		// Assert hasOp == true
+		text = ps.scanWord()
+	} else if text == nil {
+		// Only an empty search operation is found -> ignore it
+		return s
+	}
+	s = createIfNeeded(s)
+	if hasOp {
+		s.addExpValue(string(key), expValue{string(text), cmpOp, cmpNegate})
+	} else {
+		// Assert key == nil
+		s.addExpValue("", expValue{string(text), cmpDefault, false})
+	}
+	return s
+}
 
-func (ps *parserState) scanSearchTextOrKey(hasOp bool) (string, string) {
+func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	inp := ps.inp
+	pos := inp.Pos
 	allowKey := !hasOp
 
-	var buf bytes.Buffer
 	for !ps.isSpace() && inp.Ch != input.EOS {
 		if allowKey {
 			switch inp.Ch {
 			case '!', ':', '=', '>', '<', '~':
 				allowKey = false
-				if key := buf.String(); meta.KeyIsValid(key) {
-					return "", key
+				if key := inp.Src[pos:inp.Pos]; meta.KeyIsValid(string(key)) {
+					return nil, key
 				}
 			}
 		}
-
-		buf.WriteRune(inp.Ch)
 		inp.Next()
 	}
-	return buf.String(), ""
+	return inp.Src[pos:inp.Pos], nil
 }
 
-func (ps *parserState) scanSearchText() string {
+func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
-	var buf bytes.Buffer
+	pos := inp.Pos
 	for !ps.isSpace() && inp.Ch != input.EOS {
-		buf.WriteRune(inp.Ch)
 		inp.Next()
 	}
-	return buf.String()
+	return inp.Src[pos:inp.Pos]
 }
 
 func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
