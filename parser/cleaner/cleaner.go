@@ -80,13 +80,6 @@ func (cv *cleanVisitor) visitMark(mn *ast.MarkNode) {
 		cv.hasMark = true
 		return
 	}
-	// if mn.Mark == "" && len(mn.Inlines) > 0 {
-	// 	var buf bytes.Buffer
-	// 	_, err := cv.textEnc.WriteInlines(&buf, &mn.Inlines)
-	// 	if err == nil {
-	// 		mn.Mark = buf.String()
-	// 	}
-	// }
 	if mn.Mark == "" {
 		mn.Slug = ""
 		mn.Fragment = cv.addIdentifier("*", mn)
@@ -115,4 +108,45 @@ func (cv *cleanVisitor) addIdentifier(id string, node ast.Node) string {
 	}
 	cv.ids[id] = node
 	return id
+}
+
+// CleanInlineLinks removes all links and footnote node from the given inline slice.
+func CleanInlineLinks(is *ast.InlineSlice) { ast.Walk(&cleanLinks{}, is) }
+
+type cleanLinks struct{}
+
+func (cl *cleanLinks) Visit(node ast.Node) ast.Visitor {
+	ins, ok := node.(*ast.InlineSlice)
+	if !ok {
+		return cl
+	}
+	for _, in := range *ins {
+		ast.Walk(cl, in)
+	}
+	if hasNoLinks(*ins) {
+		return nil
+	}
+
+	result := make(ast.InlineSlice, 0, len(*ins))
+	for _, in := range *ins {
+		switch n := in.(type) {
+		case *ast.LinkNode:
+			result = append(result, n.Inlines...)
+		case *ast.FootnoteNode: // Do nothing
+		default:
+			result = append(result, n)
+		}
+	}
+	*ins = result
+	return nil
+}
+
+func hasNoLinks(ins ast.InlineSlice) bool {
+	for _, in := range ins {
+		switch in.(type) {
+		case *ast.LinkNode, *ast.FootnoteNode:
+			return false
+		}
+	}
+	return true
 }

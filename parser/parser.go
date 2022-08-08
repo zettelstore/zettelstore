@@ -110,6 +110,14 @@ func ParseMetadata(value string) ast.InlineSlice {
 	return ParseInlines(input.NewInput([]byte(value)), api.ValueSyntaxZmk)
 }
 
+// ParseMetadataNoLink parses a string as Zettelmarkup, resulting in an inline slice.
+// All link and footnote nodes will be removed.
+func ParseMetadataNoLink(value string) ast.InlineSlice {
+	in := ParseMetadata(value)
+	cleaner.CleanInlineLinks(&in)
+	return in
+}
+
 // ParseZettel parses the zettel based on the syntax.
 func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *ast.ZettelNode {
 	m := zettel.Meta

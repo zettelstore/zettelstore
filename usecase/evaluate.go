@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/search"
 )
 
 // Evaluate is the data for this use case.
@@ -27,14 +28,16 @@ type Evaluate struct {
 	rtConfig  config.Config
 	getZettel GetZettel
 	getMeta   GetMeta
+	listMeta  ListMeta
 }
 
 // NewEvaluate creates a new use case.
-func NewEvaluate(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta) Evaluate {
+func NewEvaluate(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta, listMeta ListMeta) Evaluate {
 	return Evaluate{
 		rtConfig:  rtConfig,
 		getZettel: getZettel,
 		getMeta:   getMeta,
+		listMeta:  listMeta,
 	}
 }
 
@@ -68,4 +71,9 @@ func (uc *Evaluate) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 // GetZettel retrieves the full zettel of a given zettel identifier.
 func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
 	return uc.getZettel.Run(ctx, zid)
+}
+
+// SelectMeta returns a list of metadata that comply to the given selection criteria.
+func (uc *Evaluate) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+	return uc.listMeta.Run(ctx, s)
 }

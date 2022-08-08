@@ -30,12 +30,14 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
 	"zettelstore.de/z/parser/draw"
+	"zettelstore.de/z/search"
 )
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
+	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
 }
 
 // EvaluateZettel evaluates the given zettel in the given context, with the
@@ -197,6 +199,9 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		return makeBlockNode(createInlineErrorText(ref, "Self", "transclusion", "reference"))
 	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return tn
+	case ast.RefStateSearch:
+		e.transcludeCount++
+		return e.evalSearchTransclusion(tn.Ref.Value)
 	default:
 		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
 	}
@@ -232,6 +237,39 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		e.transcludeCount += cost.ec
 	}
 	return &zn.Ast
+}
+
+func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
+	ml, err := e.port.SelectMeta(e.ctx, search.Parse(expr, nil))
+	if err != nil {
+		if errors.Is(err, &box.ErrNotAllowed{}) {
+			return nil
+		}
+		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
+	}
+	if len(ml) == 0 {
+		return nil
+	}
+	items := make([]ast.ItemSlice, 0, len(ml))
+	for _, m := range ml {
+		zid := m.Zid.String()
+		title, found := m.Get(api.KeyTitle)
+		if !found {
+			title = zid
+		}
+		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
+			Attrs:   nil,
+			Ref:     ast.ParseReference(zid),
+			Inlines: parser.ParseMetadataNoLink(title),
+		})})
+	}
+	result := &ast.NestedListNode{
+		Kind:  ast.NestedListUnordered,
+		Items: items,
+		Attrs: nil,
+	}
+	ast.Walk(e, result)
+	return result
 }
 
 func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
