@@ -12,15 +12,21 @@ package ast
 
 import (
 	"net/url"
+	"strings"
 
 	"zettelstore.de/z/domain/id"
 )
 
+// SearchPrefix is the prefix that denotes a search expression.
+const SearchPrefix = "search:"
+
 // ParseReference parses a string and returns a reference.
 func ParseReference(s string) *Reference {
-	switch s {
-	case "", "00000000000000":
+	if s == "" || s == "00000000000000" {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
+	}
+	if strings.HasPrefix(s, SearchPrefix) {
+		return &Reference{URL: nil, Value: s[len(SearchPrefix):], State: RefStateSearch}
 	}
 	if state, ok := localState(s); ok {
 		if state == RefStateBased {
@@ -66,6 +72,9 @@ func localState(path string) (RefState, bool) {
 func (r Reference) String() string {
 	if r.URL != nil {
 		return r.URL.String()
+	}
+	if r.State == RefStateSearch {
+		return SearchPrefix + r.Value
 	}
 	return r.Value
 }

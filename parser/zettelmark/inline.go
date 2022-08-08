@@ -13,6 +13,7 @@ package zettelmark
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
@@ -165,6 +166,10 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	return nil, false
 }
 
+func hasSearchPrefix(src []byte) bool {
+	return len(src) > len(ast.SearchPrefix) && string(src[:len(ast.SearchPrefix)]) == ast.SearchPrefix
+}
+
 func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok bool) {
 	inp := cp.inp
 	inp.Next()
@@ -188,9 +193,10 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok
 		}
 		cp.inp = inp
 		inp.Next()
-	} else if hasSpace {
-		return "", nil, false
 	} else {
+		if hasSpace && !hasSearchPrefix(inp.Src[pos:]) {
+			return "", nil, false
+		}
 		inp.SetPos(pos)
 	}
 
@@ -199,7 +205,7 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok
 	if !cp.readReferenceToClose(closeCh) {
 		return "", nil, false
 	}
-	ref = string(inp.Src[pos:inp.Pos])
+	ref = strings.TrimSpace(string(inp.Src[pos:inp.Pos]))
 	inp.Next()
 	if inp.Ch != closeCh {
 		return "", nil, false
@@ -249,10 +255,15 @@ func (cp *zmkP) readReferenceToSep(closeCh rune) (bool, bool) {
 
 func (cp *zmkP) readReferenceToClose(closeCh rune) bool {
 	inp := cp.inp
+	pos := inp.Pos
 	for {
 		switch inp.Ch {
-		case input.EOS, '\n', '\r', ' ':
+		case input.EOS:
 			return false
+		case '\t', '\r', '\n', ' ':
+			if !hasSearchPrefix(inp.Src[pos:]) {
+				return false
+			}
 		case '\\':
 			inp.Next()
 			switch inp.Ch {

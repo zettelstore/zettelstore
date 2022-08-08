@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/search"
 	"zettelstore.de/z/strfun"
 )
 
@@ -54,6 +55,7 @@ func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *html
 	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
+	env.Builtins.Set(sexpr.SymLinkSearch, sxpf.NewBuiltin("linkS", true, 2, -1, gen.generateLinkSearch))
 	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("linkE", true, 2, -1, gen.generateLinkExternal))
 
 	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
@@ -172,6 +174,16 @@ func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args *sxpf.Pair
 	env := senv.(*html.EncEnvironment)
 	if a, refValue, ok := html.PrepareLink(env, args); ok {
 		u := g.builder.NewURLBuilder('/').SetRawLocal(refValue)
+		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
+	}
+	return nil, nil
+}
+
+func (g *htmlGenerator) generateLinkSearch(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+	env := senv.(*html.EncEnvironment)
+	if a, refValue, ok := html.PrepareLink(env, args); ok {
+		searchExpr := search.Parse(refValue, nil).String()
+		u := g.builder.NewURLBuilder('h').AppendQuery(api.QueryKeySearch, searchExpr)
 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
 	return nil, nil

@@ -441,6 +441,28 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Search link w/o text",
+		zmk:   `[[search:title:syntax]]`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Link","q":"search","s":"title:syntax"}]`,
+			encoderHTML:  `<a href="?_s=title%3Asyntax">title:syntax</a>`,
+			encoderSexpr: `((LINK-SEARCH () "title:syntax"))`,
+			encoderText:  ``,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
+		descr: "Search link with text",
+		zmk:   `[[S|search:title:syntax]]`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Link","q":"search","s":"title:syntax","i":[{"":"Text","s":"S"}]}]`,
+			encoderHTML:  `<a href="?_s=title%3Asyntax">S</a>`,
+			encoderSexpr: `((LINK-SEARCH () "title:syntax" (TEXT "S")))`,
+			encoderText:  `S`,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Dummy Embed",
 		zmk:   `{{abc}}`,
 		expect: expectMap{

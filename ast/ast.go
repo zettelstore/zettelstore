@@ -84,5 +84,6 @@ const (
 	RefStateBroken                   // Reference to a non-existing internal zettel
 	RefStateHosted                   // Reference to local hosted non-Zettel, without URL change
 	RefStateBased                    // Reference to local non-Zettel, to be prefixed
+	RefStateSearch                   // Reference to a zettel search
 	RefStateExternal                 // Reference to external material
 )

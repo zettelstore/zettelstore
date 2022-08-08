@@ -307,6 +307,7 @@ var mapRefStateLink = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateBroken:   sexpr.SymLinkBroken,
 	ast.RefStateHosted:   sexpr.SymLinkHosted,
 	ast.RefStateBased:    sexpr.SymLinkBased,
+	ast.RefStateSearch:   sexpr.SymLinkSearch,
 	ast.RefStateExternal: sexpr.SymLinkExternal,
 }
 
@@ -398,6 +399,7 @@ var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateBroken:   sexpr.SymRefStateBroken,
 	ast.RefStateHosted:   sexpr.SymRefStateHosted,
 	ast.RefStateBased:    sexpr.SymRefStateBased,
+	ast.RefStateSearch:   sexpr.SymRefStateSearch,
 	ast.RefStateExternal: sexpr.SymRefStateExternal,
 }
 
@@ -457,7 +459,7 @@ func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
 		return result
 	}
 	log.Println("MISS", k, m)
-	return sexpr.Smk.MakeSymbol(fmt.Sprintf("**%v:not-found**", k))
+	return sexpr.Smk.MakeSymbol(fmt.Sprintf("**%v:NOT-FOUND**", k))
 }
 
 func getBase64String(data []byte) *sxpf.String {

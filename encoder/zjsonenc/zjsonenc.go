@@ -140,16 +140,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 			v.writeNodeStart(zjson.TypeBreakSoft)
 		}
 	case *ast.LinkNode:
-		v.writeNodeStart(zjson.TypeLink)
-		v.visitAttributes(n.Attrs)
-		v.writeContentStart(zjson.NameString2)
-		writeEscaped(&v.b, mapRefState[n.Ref.State])
-		v.writeContentStart(zjson.NameString)
-		writeEscaped(&v.b, n.Ref.String())
-		if len(n.Inlines) > 0 {
-			v.writeContentStart(zjson.NameInline)
-			ast.Walk(v, &n.Inlines)
-		}
+		v.visitLink(n)
 	case *ast.EmbedRefNode:
 		v.visitEmbedRef(n)
 	case *ast.EmbedBLOBNode:
@@ -366,7 +357,25 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateBroken:   zjson.RefStateBroken,
 	ast.RefStateHosted:   zjson.RefStateHosted,
 	ast.RefStateBased:    zjson.RefStateBased,
+	ast.RefStateSearch:   zjson.RefStateSearch,
 	ast.RefStateExternal: zjson.RefStateExternal,
+}
+
+func (v *visitor) visitLink(ln *ast.LinkNode) {
+	v.writeNodeStart(zjson.TypeLink)
+	v.visitAttributes(ln.Attrs)
+	v.writeContentStart(zjson.NameString2)
+	writeEscaped(&v.b, mapRefState[ln.Ref.State])
+	v.writeContentStart(zjson.NameString)
+	if ln.Ref.State == ast.RefStateSearch {
+		writeEscaped(&v.b, ln.Ref.Value)
+	} else {
+		writeEscaped(&v.b, ln.Ref.String())
+	}
+	if len(ln.Inlines) > 0 {
+		v.writeContentStart(zjson.NameInline)
+		ast.Walk(v, &ln.Inlines)
+	}
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
