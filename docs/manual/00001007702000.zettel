@@ -3,7 +3,7 @@ title: Search term
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220807192038
+modified: 20220808130055
 
 A search term allows you to specify one search restriction.
 The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
@@ -20,16 +20,44 @@ A search term can be one of the following:
 
   **Note:** the search value will be normalized according to Unicode NKFD, ignoring everything except letters and numbers.
   Therefore, the following search expression are essentially the same: ''"search syntax"'' and ''search syntax''.
-  The first is a search expression with one search vealue, which is normalized to two strings to be searched for.
+  The first is a search expression with one search value, which is normalized to two strings to be searched for.
   The second is a search expression containing two search values, giving two string to be searched for.
 * The string ''NEGATE'' will negate (sic!) the behavior of the whole search expression.
   If it occurs multiple times, the negation will be negated.
+* The string ''ORDER'', followed by a non-empty sequence of spaces and the name of a metadata key, will specify an ordering of the result list.
+  If you include the string ''REVERSE'' after ''ORDER'' but before the metadata key, the ordering will be reversed.
+
+  Example: ''ORDER published'' will order the resulting list based on the publishing data, while ''ORDER REVERSED published'' will return a reversed result order.
+
+  Currently, only the first term specifying the order of the resulting list will be used.
+  Other ordering terms will be ignored.
+
+  An explicit order field will take precedence over the random order described below.
+
 * The string ''RANDOM'' will provide a random order of the resulting list.
 
   Currently, only the first term specifying the order of the resulting list will be used.
   Other ordering terms will be ignored.
 
-In the future, more search terms will be added.
+  A random order specification will be ignored, if there is an explicit ordering given.
+
+  Example: ''RANDOM ORDER published'' will be interpreted as ''ORDER published''.
+
+* The string ''OFFSET'', followed by a non-empty sequence of spaces and a number greater zero (called ""N"").
+
+  This will ignore the first N elements of the result list, based on the specified sort order.
+  A zero value of N will produce the same result as if nothing was specified.
+  If specified multiple times, the higher value takes precedence.
+
+  Example: ''OFFSET 4 OFFSET 8'' will be interpreted as ''OFFSET 8''.
+
+* The string ''LIMIT'', followed by a non-empty sequence of spaces and a number greater zero (called ""N"").
+
+  This will limit the result list to the first N elements, based on the specified sort order.
+  A zero value of N will produce the same result as if nothing was specified.
+  If specified multiple times, the lower value takes precedence.
+
+  Example: ''LIMIT 4 LIMIT 8'' will be interpreted as ''LIMIT 4''.
 
 You may have noted that the specifications of first two items overlap somehow.
 This is resolved by the following rule:
@@ -37,3 +65,5 @@ This is resolved by the following rule:
 * The first search operator character found in a search term divides the term into two pieces.
   If the first piece, from the beginning of the search term to the search operator character, is syntactically a metadata key, the search term is treated as a metadata-based search.
 * Otherwise, the search term is treated as a full-text search.
+
+If a term like ''ORDER'', ''ORDER REVERSE'', ''OFFSET'', or ''LIMIT'' is not followed by an appropriate value, it is interpreted as a search value for a full-text search. For example, ''ORDER 123'' will search for a zettel conatining the strings ""ORDER"" (case-insensitive) and ""123"".
