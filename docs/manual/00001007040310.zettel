@@ -3,24 +3,34 @@ title: Zettelmarkup: Links
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220803184320
+modified: 20220808161918
 
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
 Both kinds begin with two consecutive left square bracket characters (""''[''"", U+005B) and ends with two consecutive right square bracket characters (""'']''"", U+005D).
 
 The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", U+007C): ``[[text|linkspecification]]``.
+The text is a sequence of [[inline elements|00001007040000]].
+However, it should not contain links itself.
 
 The second form just provides a link specification between the square brackets.
 Its text is derived from the link specification, e.g. by interpreting the link specification as text: ``[[linkspecification]]``.
 
+=== Link specifications
 The link specification for another zettel within the same Zettelstore is just the [[zettel identifier|00001006050000]].
 To reference some content within a zettel, you can append a number sign character (""''#''"", U+0023) and the name of the mark to the zettel identifier.
 The resulting reference is called ""zettel reference"".
 
+If the link specification begins with the string ''search:'', the text following this string will be interpreted as a [[search expression|00001007700000]].
+The resulting reference is called ""search reference"".
+When this type of references is rendered, it will reference a list of all zettel that fulfills the search expression.
+
+A link specification starting with one slash character (""''/''"", U+002F), or one or two full stop characters (""''.''"", U+002E) followed by a slash character,
+will be interpreted as a local reference, called ""hosted reference"".
+Such references will be interpreted relative to the web server hosting the Zettelstore.
+
+If a link specification begins with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
+
 To specify some material outside the Zettelstore, just use an normal Uniform Resource Identifier (URI) as defined by [[RFC\ 3986|https://tools.ietf.org/html/rfc3986]].
-If the URL begins with the slash character (""/"", U+002F), or if it begins with ""./"" or with ""../"", i.e. without scheme, user info, and host name, the reference will be treated as a ""local reference"", otherwise as an ""external reference"".
-If the URL begins with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
 
-The text in the second form is just a sequence of [[inline elements|00001007040000]].
-
-If the link references another zettel, and this zettel is not readable for the current user, beause of a missing access rights, then only the associated text is presented.
+=== Other topics
+If the link references another zettel, and this zettel is not readable for the current user, because of a missing access rights, then only the associated text is presented.
