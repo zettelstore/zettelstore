@@ -203,7 +203,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		e.transcludeCount++
 		return e.evalSearchTransclusion(tn.Ref.Value)
 	default:
-		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
+		return makeBlockNode(createInlineErrorText(ref, "Illegal", "block", "state", strconv.Itoa(int(ref.State))))
 	}
 
 	zid, err := id.Parse(ref.URL.Path)
@@ -383,7 +383,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return en
 	default:
-		panic(fmt.Sprintf("Unknown state %v for reference %v", ref.State, ref))
+		return createInlineErrorText(ref, "Illegal", "inline", "state", strconv.Itoa(int(ref.State)))
 	}
 
 	zid := mustParseZid(ref)

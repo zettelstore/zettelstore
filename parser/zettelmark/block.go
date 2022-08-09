@@ -640,8 +640,12 @@ func (cp *zmkP) parseTransclusion() (ast.BlockNode, bool) {
 loop:
 	for {
 		switch inp.Ch {
-		case input.EOS, '\n', '\r', ' ':
+		case input.EOS:
 			return nil, false
+		case '\n', '\r', ' ', '\t':
+			if !hasSearchPrefix(inp.Src[posA:]) {
+				return nil, false
+			}
 		case '\\':
 			inp.Next()
 			switch inp.Ch {
