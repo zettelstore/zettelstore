@@ -78,7 +78,12 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, buf.String()}
 		}
 		summary := collect.References(zn)
-		locLinks, extLinks := splitLocExtLinks(append(summary.Links, summary.Embeds...))
+		locLinks, searchQuery, extLinks := splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))
+		searchLinks := make([]simpleLink, len(searchQuery))
+		for i, sq := range searchQuery {
+			searchLinks[i].Text = sq
+			searchLinks[i].URL = wui.NewURLBuilder('h').AppendSearch(sq).String()
+		}
 
 		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
 		phrase := q.Get(api.QueryKeyPhrase)
@@ -122,6 +127,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData       []metaDataInfo
 			HasLocLinks    bool
 			LocLinks       []localLink
+			HasSearchLinks bool
+			SearchLinks    []simpleLink
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
@@ -150,6 +157,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData:       metaData,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
+			HasSearchLinks: len(searchQuery) > 0,
+			SearchLinks:    searchLinks,
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
@@ -170,15 +179,16 @@ type localLink struct {
 	Zid   string
 }
 
-func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []string) {
+func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, searchQuery, extLinks []string) {
 	if len(links) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 	for _, ref := range links {
-		if ref.State == ast.RefStateSelf {
+		if ref.State == ast.RefStateSelf || ref.IsZettel() {
 			continue
 		}
-		if ref.IsZettel() {
+		if ref.State == ast.RefStateSearch {
+			searchQuery = append(searchQuery, ref.Value)
 			continue
 		}
 		if ref.IsExternal() {
@@ -187,7 +197,7 @@ func splitLocExtLinks(links []*ast.Reference) (locLinks []localLink, extLinks []
 		}
 		locLinks = append(locLinks, localLink{ref.IsValid(), ref.String()})
 	}
-	return locLinks, extLinks
+	return locLinks, searchQuery, extLinks
 }
 
 func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
