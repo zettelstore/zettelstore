@@ -13,7 +13,6 @@ package search_test
 import (
 	"testing"
 
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/search"
 )
 
@@ -58,25 +57,17 @@ func TestParser(t *testing.T) {
 		{"LIMIT", "LIMIT"}, {"LIMIT a", "LIMIT a"}, {"LIMIT 10 a", "a LIMIT 10"},
 		{"LIMIT 01 a", "LIMIT 01 a"}, {"LIMIT 0 a", "a"}, {"a LIMIT 0", "a"},
 		{"LIMIT 4 LIMIT 8", "LIMIT 4"}, {"LIMIT 8 LIMIT 4", "LIMIT 4"},
-		{"a|b", "a"}, {"LIM|IT", "LIM"},
 	}
 	for i, tc := range testcases {
-		got := search.Parse(tc.spec, stopPred).String()
+		got := search.Parse(tc.spec).String()
 		if tc.exp != got {
 			t.Errorf("%d: Parse(%q) does not yield %q, but got %q", i, tc.spec, tc.exp, got)
 			continue
 		}
 
-		gotStopped := search.Parse(tc.spec+"|extra", stopPred).String()
-		if tc.exp != gotStopped {
-			t.Errorf("%d: Parse(%q) (with added '|' does not yield %q, but got %q", i, tc.spec, tc.exp, gotStopped)
-			continue
-		}
-
-		gotReparse := search.Parse(got, stopPred).String()
+		gotReparse := search.Parse(got).String()
 		if gotReparse != got {
 			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got, gotReparse)
 		}
 	}
 }
-func stopPred(inp *input.Input) bool { return inp.Ch == '|' }

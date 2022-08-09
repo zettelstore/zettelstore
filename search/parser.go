@@ -17,26 +17,28 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// StopParsePred is a predicate that signals when parsing must end.
-type StopParsePred func(*input.Input) bool
-
 // Parse the search specification and return a Search object.
-func Parse(spec string, stop StopParsePred) *Search {
+func Parse(spec string) *Search {
 	state := parserState{
-		inp:  input.NewInput([]byte(spec)),
-		stop: stop,
+		inp: input.NewInput([]byte(spec)),
 	}
 	return state.parse()
 }
 
 type parserState struct {
-	inp  *input.Input
-	stop StopParsePred
+	inp *input.Input
 }
 
-func (ps *parserState) mustStop() bool {
-	inp := ps.inp
-	return inp.Ch == input.EOS || (ps.stop != nil && ps.stop(inp))
+func (ps *parserState) mustStop() bool { return ps.inp.Ch == input.EOS }
+func (ps *parserState) acceptSingleKw(s string) bool {
+	return ps.inp.Accept(s) && (ps.isSpace() || ps.mustStop())
+}
+func (ps *parserState) acceptKwArgs(s string) bool {
+	if ps.inp.Accept(s) && ps.isSpace() {
+		ps.skipSpace()
+		return true
+	}
+	return false
 }
 
 const (
@@ -57,34 +59,31 @@ func (ps *parserState) parse() *Search {
 			break
 		}
 		pos := inp.Pos
-		if inp.Accept(kwNegate) && (ps.isSpace() || ps.mustStop()) {
+		if ps.acceptSingleKw(kwNegate) {
 			result = createIfNeeded(result)
 			result.negate = !result.negate
 			continue
 		}
-		if inp.Accept(kwRandom) && (ps.isSpace() || ps.mustStop()) {
+		if ps.acceptSingleKw(kwRandom) {
 			result = createIfNeeded(result)
 			if len(result.order) == 0 {
 				result.order = []sortOrder{{"", false}}
 			}
 			continue
 		}
-		if inp.Accept(kwOrder) && ps.isSpace() {
-			ps.skipSpace()
+		if ps.acceptKwArgs(kwOrder) {
 			if s, ok := ps.parseOrder(result); ok {
 				result = s
 				continue
 			}
 		}
-		if inp.Accept(kwOffset) && ps.isSpace() {
-			ps.skipSpace()
+		if ps.acceptKwArgs(kwOffset) {
 			if s, ok := ps.parseOffset(result); ok {
 				result = s
 				continue
 			}
 		}
-		if inp.Accept(kwLimit) && ps.isSpace() {
-			ps.skipSpace()
+		if ps.acceptKwArgs(kwLimit) {
 			if s, ok := ps.parseLimit(result); ok {
 				result = s
 				continue
@@ -97,9 +96,8 @@ func (ps *parserState) parse() *Search {
 }
 func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
 	reverse := false
-	if ps.inp.Accept(kwReverse) && ps.isSpace() {
+	if ps.acceptKwArgs(kwReverse) {
 		reverse = true
-		ps.skipSpace()
 	}
 	word := ps.scanWord()
 	if len(word) == 0 {

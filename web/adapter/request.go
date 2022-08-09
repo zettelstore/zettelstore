@@ -53,7 +53,7 @@ func GetInteger(q url.Values, key string) (int, bool) {
 // GetSearch retrieves the specified search and sorting options from a query.
 func GetSearch(q url.Values) (s *search.Search) {
 	if exprs, found := q[api.QueryKeySearch]; found {
-		s = search.Parse(strings.Join(exprs, " "), nil)
+		s = search.Parse(strings.Join(exprs, " "))
 	}
 	for key, values := range q {
 		switch key {

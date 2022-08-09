@@ -240,7 +240,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 }
 
 func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
-	ml, err := e.port.SelectMeta(e.ctx, search.Parse(expr, nil))
+	ml, err := e.port.SelectMeta(e.ctx, search.Parse(expr))
 	if err != nil {
 		if errors.Is(err, &box.ErrNotAllowed{}) {
 			return nil
