@@ -1,0 +1,37 @@
+id: 00001007031110
+title: Zettelmarkup: Zettel Transclusion
+role: manual
+tags: #manual #zettelmarkup #zettelstore
+syntax: zmk
+
+A zettel transclusion is specified by the following sequence, starting at the first position in a line: ''{{{zettel-identifier}}}''.
+
+When evaluated, the referenced zettel is read.
+If it contains some transclusions itself, these will be expanded, recursively.
+When a recursion is detected, expansion does not take place.
+Instead an error message replaces the transclude specification.
+
+An error message is also given, if the zettel cannot be read or if too many transclusions are made.
+The maximum number of transclusion can be controlled by setting the value [[''max-transclusions''|00001004020000#max-transclusions]] of the runtime configuration zettel.
+
+If everything went well, the referenced, expanded zettel will replace the transclusion element.
+
+For example, to include the text of the Zettel titled ""Zettel identifier"", just specify its identifier [[''00001006050000''|00001006050000]] in the transclude element:
+```zmk
+{{{00001006050000}}}
+```
+This will result in:
+:::zs-example
+{{{00001006050000}}}
+:::
+
+Please note: if the referenced zettel is changed, all transclusions will also change.
+
+This allows, for example, to create a bigger document just by transcluding smaller zettel.
+
+In addition, if a zettel __z__ transcludes a zettel __t__, but the current user is not allowed to view zettel __t__ (but zettel __z__), then the transclusion will not take place.
+To the current user, it seems that there was no transclusion in zettel __z__.
+This allows to create a zettel with content that seems to be changed, depending on the authorization of the current user.
+
+=== See also
+[[Inline-mode transclusion|00001007040324]] does not work at the paragraph / block level, but is used for [[inline-structured elements|00001007040000]].

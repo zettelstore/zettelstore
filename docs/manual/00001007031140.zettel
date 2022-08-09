@@ -1,0 +1,30 @@
+id: 00001007031140
+title: Zettelmarkup: Search Transclusion
+role: manual
+tags: #manual #search #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20220809150832
+
+A search transclusion is specified by the following sequence, starting at the first position in a line: ''{{{search:search-expression}}}''.
+The line must literally start with the sequence ''{{{search:''.
+Everything after this prefix is interpreted as a [[search expression|00001007700000]].
+
+When evaluated, the search expression is evaluated, leading to a list of [[links|00001007040310]] to zettel, matching the search expression.
+Every link references the found zettel, with its title as link text.
+
+This list replaces the search transclusion element.
+
+For example, to include the list of all zettel with the [[all-tags|00001006020000#all-tags]] ""#search"", ordered by title specify the following search transclude element:
+```zmk
+{{{search:all-tags=#search ORDER title}}}
+```
+This will result in:
+:::zs-example
+{{{search:all-tags=#search ORDER title}}}
+:::
+
+Please note: if the referenced zettel is changed, all transclusions will also change.
+
+For example, this allows to create a dynamic list of zettel inside a zettel, maybe to provide some introductory text followed by a list of child zettel.
+
+The search will deliver only those zettel, which the current user is allowed to read.
