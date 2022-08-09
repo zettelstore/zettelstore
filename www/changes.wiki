@@ -9,11 +9,23 @@
      criterias by using a simple syntax. Can be specified in WebUI's search box
      and via the API by using query parameter "_s".
      (major: api, webui)
+  *  A link reference is allowed to be a search expression. The WebUI will
+     render this as a link to a list of zettel that satisfy the search
+     expression.
+     (major: zettelmarkup, webui)
+  *  A block transclusion is allowed to specify a search expression. When
+     evaluated, the transclusion is replaced by a list of zettel that satisfy
+     the search expression.
+     (major: zettelmarkup)
   *  When presenting a zettel list, allow to change the search expression.
      (minor: webui)
   *  When evaluating a zettel, ignore transclusions if current user is not
      allowed to read transcluded zettel.
      (minor)
+  *  Using URL query parameter to search for metdata values, specify an
+     ordering, an offset, and a limit for the resulting list, will be removed
+     in version 0.7. Replace these with the more useable search expressions.
+     (deprecated: api, webui)
 
 <a name="0_5_0"></a>
 <h2>Changes for Version 0.5.1 (2022-08-02)</h2>
