@@ -3,7 +3,7 @@ title: Zettelmarkup: Inline-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220218131736
+modified: 20220809171453
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -63,6 +63,3 @@ Since some Unicode character are used quite often, a special notation is introdu
   It is typically used in numeric ranges.
   ``pages 4--7`` will be rendered in HTML as: ::pages 4--7::{=example}.
   Alternative specifications are: ``&ndash;``, ``&x8211``, and ``&#x2013``.
-* Three consecutive full stop characters (""''.''"", U+002E) after a space result in an horizontal ellipsis character.
-  ``to be continued ... later`` will be rendered in HTML as: ::to be continued, ... later::{=example}.
-  Alternative specifications are: ``&hellip;``, ``&x8230``, and ``&#x2026``.

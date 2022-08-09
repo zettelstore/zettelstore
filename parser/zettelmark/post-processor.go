@@ -359,7 +359,6 @@ func (pp *postProcessor) visitInlineSlice(is *ast.InlineSlice) {
 	toPos := pp.processInlineSliceCopy(is)
 	toPos = pp.processInlineSliceTail(is, toPos)
 	*is = (*is)[:toPos:toPos]
-	pp.processInlineSliceInplace(is)
 }
 
 // processInlineSliceHead removes leading spaces and empty text.
@@ -474,16 +473,4 @@ func (*postProcessor) processInlineSliceTail(is *ast.InlineSlice, toPos int) int
 		ins[toPos] = nil // Kill node to enable garbage collection
 	}
 	return toPos
-}
-
-func (*postProcessor) processInlineSliceInplace(is *ast.InlineSlice) {
-	for _, in := range *is {
-		if n, ok := in.(*ast.TextNode); ok {
-			if n.Text == "..." {
-				n.Text = "\u2026"
-			} else if len(n.Text) == 4 && strings.IndexByte(",;:!?", n.Text[3]) >= 0 && n.Text[:3] == "..." {
-				n.Text = "\u2026" + n.Text[3:]
-			}
-		}
-	}
 }

@@ -2,6 +2,9 @@
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (pending)</h2>
+  *  Translating of "..." into horizontal ellipsis is no longer supported. Use
+     &amp;hellip; instead.
+     (breaking: zettelmarkup)
   *  Allow to specify search expressions, which allow to specify search
      criterias by using a simple syntax. Can be specified in WebUI's search box
      and via the API by using query parameter "_s".

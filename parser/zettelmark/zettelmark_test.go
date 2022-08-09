@@ -86,15 +86,7 @@ func TestText(t *testing.T) {
 		{"a\\a", "(PARA aa)"},
 		{"\\+", "(PARA +)"},
 		{"\\ ", "(PARA \u00a0)"},
-		{"...", "(PARA \u2026)"},
-		{"...,", "(PARA \u2026,)"},
-		{"...;", "(PARA \u2026;)"},
-		{"...:", "(PARA \u2026:)"},
-		{"...!", "(PARA \u2026!)"},
-		{"...?", "(PARA \u2026?)"},
-		{"...-", "(PARA ...-)"},
-		{"a...b", "(PARA a...b)"},
-		// {"http://a, http://b", "(PARA http://a, SP http://b)"},
+		{"http://a, http://b", "(PARA http://a, SP http://b)"},
 	})
 }
 

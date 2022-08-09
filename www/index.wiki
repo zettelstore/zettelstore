@@ -22,7 +22,7 @@ access Zettelstore via its API more easily,
 software, which often connects to Zettelstore via its API. Some of the software
 packages may be experimental.
 
-[https://twitter.com/zettelstore|Stay tuned]&hellip;
+[https://twitter.com/zettelstore|Stay tuned]&nbsp;&hellip;
 <hr>
 <h3>Latest Release: 0.5.1 (2022-08-02)</h3>
   *  [./download.wiki|Download]
