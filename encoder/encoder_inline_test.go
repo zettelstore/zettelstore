@@ -170,7 +170,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   "``<script `` abc",
 		expect: expectMap{
 			encoderZJSON: `[{"":"Code","s":"<script "},{"":"Space"},{"":"Text","s":"abc"}]`,
-			encoderHTML:  "<code>&lt;script\u00a0</code> abc",
+			encoderHTML:  "<code>&lt;script </code> abc",
 			encoderSexpr: `((LITERAL-CODE () "<script ") (SPACE) (TEXT "abc"))`,
 			encoderText:  `<script  abc`,
 			encoderZmk:   useZmk,
