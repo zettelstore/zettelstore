@@ -1,0 +1,22 @@
+id: 00001007780000
+title: Forma syntax of search expressions
+role: manual
+tags: #manual #reference #search #zettelstore
+syntax: zmk
+
+```
+SearchExpression := SearchTerm (SPACE+ SearchTerm)*.
+SearchTerm       := "NEGATE"
+                  | SearchOperator? SearchValue
+                  | SearchKey SearchOperator SearchValue?
+                  | "RANDOM"
+                  | "ORDER" SPACE+ ("REVERSE" SPACE+)? SearchKey
+                  | "OFFSET" SPACE+ PosInt
+                  | "LIMIT" SPACE+ PosInt.
+SearchValue      := NO-SPACE (NO-SPACE)*.
+SearchKey        := MetadataKey.
+SearchOperator   := '!'
+                 | ('!')? (':' | '=' | '<' | '>').
+PosInt           := '0'
+                  | ('1' .. '9') DIGIT*.
+```

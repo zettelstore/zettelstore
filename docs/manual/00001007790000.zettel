@@ -1,0 +1,17 @@
+id: 00001007790000
+title: Useful search expressions
+role: manual
+tags: #example #manual #search #zettelstore
+syntax: zmk
+modified: 20220810164157
+
+|= Search Expression |= Meaning
+| [[search:role=configuration]] | Zettel that contains some configuration data for the Zettelstore
+| [[search:ORDER REVERSE id LIMIT 40]] | 40 recently created zettel
+| [[search:ORDER REVERSE published LIMIT 40]] | 40 recently updated zettel
+| [[search:RANDOM LIMIT 40]] | 40 random zettel
+| [[search:dead=]] | Zettel with invalid / dead links
+| [[search:backward!= precursor!=]] | Zettel that are not referenced by other zettel
+| [[search:all-tags!=]] | Zettel without any tags
+| [[search:tags!=]] | Zettel without tags that are defined within metadata
+| [[search:content-tags=]] | Zettel with tags within content
