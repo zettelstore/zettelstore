@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220628111132
+modified: 20220810111207
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -11,7 +11,7 @@ See the [[computed list of supported metadata keys|00000000000090]] for details.
 Most keys conform to a [[type|00001006030000]].
 
 ; [!all-tags|''all-tags'']
-: A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] together with all [[tags|00001007040000#tag]] that are specified within the content.
+: A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] and the value of [[''content-tags''|#content-tags]].
 ; [!back|''back'']
 : Is a property that contains the identifier of all zettel that reference the zettel of this metadata, that are not referenced by this zettel.
   Basically, it is the value of [[''backward''|#backward]], but without any zettel identifier that is contained in [[''forward''|#forward]].
@@ -21,6 +21,8 @@ Most keys conform to a [[type|00001006030000]].
 ; [!box-number|''box-number'']
 : Is a computed value and contains the number of the box where the zettel was found.
   For all but the [[predefined zettel|00001005090000]], this number is equal to the number __X__ specified in startup configuration key [[''box-uri-__X__''|00001004010000#box-uri-x]].
+; [!content-tags|''content-tags'']
+: A property that contains all [[inline tags|00001007040000#tag]] defined within the content.
 ; [!copyright|''copyright'']
 : Defines a copyright string that will be encoded.
   If not given, the value ''default-copyright'' from the  [[configuration zettel|00001004020000#default-copyright]] will be used.

@@ -3,7 +3,7 @@ title: Zettelmarkup: Summary of Formatting Characters
 role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220311120759
+modified: 20220810095559
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
@@ -21,10 +21,10 @@ The following table gives an overview about the use of all characters that begin
 | ''+''  | (free) | (free)
 | '',''  | (free) | [[Sub-scripted text|00001007040100]]
 | ''-''  | [[Horizontal rule|00001007030400]] | ""[[en-dash|00001007040000]]""
-| ''.''  | (free) | [[Horizontal ellipsis|00001007040000]]
+| ''.''  | (free) | (free)
 | ''/''  | (free) | (free)
 | '':''  | [[Region block|00001007030800]] / [[description text|00001007030100]] | [[Inline region|00001007040100]]
-| '';''  | [[Description term|00001007030100]] | [[Small text|00001007040100]]
+| '';''  | [[Description term|00001007030100]] | (free)
 | ''<''  | [[Quotation block|00001007030600]] | (free)
 | ''=''  | [[Headings|00001007030300]] | [[Computer output|00001007040200]]
 | ''>''  | [[Quotation lists|00001007030200]] | [[Inserted text|00001007040100]]
