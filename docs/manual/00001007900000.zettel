@@ -1,0 +1,8 @@
+id: 00001007900000
+title: Zettelmarkup: Tutorial
+role: manual
+tags: #manual #tutorial #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20220810202342
+
+* [[First steps|00001007903000]]: learn something about paragraphs, emphasized text, and lists.
