@@ -6,6 +6,8 @@ modified: 20220309105459
 
 # Sync with the official repository
 #* ``fossil sync -u``
+# Make sure that there is no workspace defined.
+#* ``ls ..`` must not have a file ''go.work'', in no parent folder.
 # Make sure that all dependencies are up-to-date.
 #* ``cat go.mod``
 # Clean up your Go workspace:
