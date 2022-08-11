@@ -3,7 +3,7 @@ title: API: Comparison syntax (simple)
 role: manual
 tags: #api #manual #search #zettelstore
 syntax: zmk
-modified: 20220805165558
+modified: 20220811141804
 
 By using a simple syntax for comparing metadata values, you can modify the default comparison.
 Note, this syntax is intend-fully similar to the syntax of the more general [[search operators|00001007705000]], which are part of [[search expressions|00001007700000]].
@@ -38,3 +38,7 @@ If you want to include an initial ""''!''"" into the search string, you must pre
 For example ""\\!abc"" will search for the string ""!abc"".
 A similar rule applies to the characters that specify the way how the search will be done.
 For example, ""!\\=abc"" will search for content that does not contains the string ""=abc"".
+
+=== Deprecation
+Comparisons via URL query parameter are deprecated since version 0.6.0.
+They will be removed in version 0.7.0

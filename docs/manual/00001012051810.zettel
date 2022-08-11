@@ -3,7 +3,7 @@ title: API: Select zettel based on their metadata
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220218133305
+modified: 20220811141840
 
 Every query parameter that does __not__ begin with the low line character (""_"", U+005F) is treated as the name of a [[metadata|00001006010000]] key.
 According to the [[type|00001006030000]] of a metadata key, zettel are possibly selected.
@@ -53,3 +53,6 @@ The first example translates to:
 00001012920000 Endpoints used by the API
 ...
 ```
+=== Deprecation
+Comparisons via URL query parameter are deprecated since version 0.6.0.
+They will be removed in version 0.7.0

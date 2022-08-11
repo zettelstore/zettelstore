@@ -3,6 +3,7 @@ title: Forma syntax of search expressions
 role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
+modified: 20220811141423
 
 ```
 SearchExpression := SearchTerm (SPACE+ SearchTerm)*.
@@ -16,7 +17,8 @@ SearchTerm       := "NEGATE"
 SearchValue      := NO-SPACE (NO-SPACE)*.
 SearchKey        := MetadataKey.
 SearchOperator   := '!'
-                 | ('!')? (':' | '=' | '<' | '>').
+                 | ('!')? '='                ← removed in version 0.7.0
+                 | ('!')? (':' | '<' | '>').
 PosInt           := '0'
                   | ('1' .. '9') DIGIT*.
 ```

@@ -3,7 +3,7 @@ title: Zettelmarkup: Search Transclusion
 role: manual
 tags: #manual #search #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220809150832
+modified: 20220811141604
 
 A search transclusion is specified by the following sequence, starting at the first position in a line: ''{{{search:search-expression}}}''.
 The line must literally start with the sequence ''{{{search:''.
@@ -16,11 +16,11 @@ This list replaces the search transclusion element.
 
 For example, to include the list of all zettel with the [[all-tags|00001006020000#all-tags]] ""#search"", ordered by title specify the following search transclude element:
 ```zmk
-{{{search:all-tags=#search ORDER title}}}
+{{{search:all-tags:#search ORDER title}}}
 ```
 This will result in:
 :::zs-example
-{{{search:all-tags=#search ORDER title}}}
+{{{search:all-tags:#search ORDER title}}}
 :::
 
 Please note: if the referenced zettel is changed, all transclusions will also change.
