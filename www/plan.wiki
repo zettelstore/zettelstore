@@ -9,7 +9,6 @@ They are planned to be solved.
      put your file into the directory where your zettel are stored. Make sure
      that the file name starts with unique 14 digits that make up the zettel
      identifier.
-  *  Automatic lists are not supported in Zettelmarkup.
   *  &hellip;
 
 <h3>Smaller limitations</h3>

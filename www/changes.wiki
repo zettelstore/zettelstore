@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_7"></a>
+<h2>Changes for Version 0.7.0 (pending)</h2>
+
 <a name="0_6"></a>
-<h2>Changes for Version 0.6.0 (pending)</h2>
+<h2>Changes for Version 0.6.0 (2022-08-11)</h2>
   *  Translating of "..." into horizontal ellipsis is no longer supported. Use
      &amp;hellip; instead.
      (breaking: zettelmarkup)
@@ -22,10 +25,16 @@
   *  When evaluating a zettel, ignore transclusions if current user is not
      allowed to read transcluded zettel.
      (minor)
+  *  Added a small tutorial for Zettelmarkup.
+     (minor: manual)
   *  Using URL query parameter to search for metdata values, specify an
      ordering, an offset, and a limit for the resulting list, will be removed
      in version 0.7. Replace these with the more useable search expressions.
+     Please be aware that the = search operator is also deprecated. It was only
+     introduced to help the migration.
      (deprecated: api, webui)
+  *  Some smaller bug fixes and inprovements, to the software and to the
+     documentation.
 
 <a name="0_5_0"></a>
 <h2>Changes for Version 0.5.1 (2022-08-02)</h2>
