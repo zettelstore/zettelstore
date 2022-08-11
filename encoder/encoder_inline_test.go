@@ -126,7 +126,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""quotes""{lang=de}`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Quote","a":{"lang":"de"},"i":[{"":"Text","s":"quotes"}]}]`,
-			encoderHTML:  `<q lang="de">quotes</q>`,
+			encoderHTML:  `<span lang="de"><q>quotes</q></span>`,
 			encoderSexpr: `((FORMAT-QUOTE (("lang" "de")) (TEXT "quotes")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   `""quotes""{lang="de"}`,
