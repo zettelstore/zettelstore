@@ -3,7 +3,7 @@ title: Zettelmarkup: First Steps
 role: manual
 tags: #manual #tutorial #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220810202216
+modified: 20220811104628
 
 [[Zettelmarkup|00001007000000]] allows you to leave your text as it is, at least in many situations.
 Some characters have a special meaning, but you have to enter them is a defined way to see a visible change.
@@ -29,10 +29,9 @@ Some examples:
 
 You probably see a principle.
 
-%% Not yet: broken
-%% One nice thing about the quotation mark characters: they are rendered according to the current language.
-%% Example: ""english""{lang=en}, ""french""{lang=fr}, ""german""{lang=de}.
-%% You will later see, how to change the current language.
+One nice thing about the quotation mark characters: they are rendered according to the current language.
+Examples: ""english""{lang=en}, ""french""{lang=fr}, ""german""{lang=de}, ""finnish""{lang=fi}.
+You will see later, how to change the current language.
 
 === Lists
 Quite often, text consists of lists.
