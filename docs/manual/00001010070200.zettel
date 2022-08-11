@@ -42,8 +42,8 @@ If you want to show such a zettel, you must set ''expert-mode'' to true.
 === Examples
 Similar to the [[API|00001012051810]], you can easily create a zettel list based on the ''visibility'' metadata key:
 
-| public  | [[search:visibility=public]]
-| login   | [[search:visibility=login]]
-| creator | [[search:visibility=creator]]
-| owner   | [[search:visibility=owner]]
-| expert  | [[search:visibility=expert]][^Only if [[''expert-mode''|00001004020000#expert-mode]] is enabled, this list will show some zettel.]
+| public  | [[search:visibility:public]]
+| login   | [[search:visibility:login]]
+| creator | [[search:visibility:creator]]
+| owner   | [[search:visibility:owner]]
+| expert  | [[search:visibility:expert]][^Only if [[''expert-mode''|00001004020000#expert-mode]] is enabled, this list will show some zettel.]
