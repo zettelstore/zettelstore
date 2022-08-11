@@ -3,7 +3,7 @@ title: Zettelmarkup: First Steps
 role: manual
 tags: #manual #tutorial #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220811104628
+modified: 20220811122618
 
 [[Zettelmarkup|00001007000000]] allows you to leave your text as it is, at least in many situations.
 Some characters have a special meaning, but you have to enter them is a defined way to see a visible change.
@@ -25,7 +25,7 @@ Some examples:
 |= Zettelmarkup | Rendered output | Instruction
 | ''An __emphasized__ word'' | An __emphasized__ word | Put two underscore characters before and after the text you want to emphasize
 | ''Someone uses **bold** text'' | Someone uses **bold** text | Put two asterisks before and after the text you want to see bold
-| ''He says: ""I love you!"".'' | Her says: ""I love you!"" | Put two quotation mark characters before and after the text you want to quote.
+| ''He says: ""I love you!""'' | Her says: ""I love you!"" | Put two quotation mark characters before and after the text you want to quote.
 
 You probably see a principle.
 
@@ -72,3 +72,6 @@ This is rendered as:
 # Second item
 # Third item
 :::
+
+---
+After trying out these markup elements, you might want to continue with the [[second steps|00001007906000]].

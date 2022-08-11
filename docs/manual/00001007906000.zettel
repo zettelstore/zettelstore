@@ -1,0 +1,83 @@
+id: 00001007906000
+title: Zettelmarkup: Second Steps
+role: manual
+tags: #manual #tutorial #zettelmarkup #zettelstore
+syntax: zmk
+modified: 20220811135024
+
+After you have [[learned|00001007903000]] the basic concepts and markup of Zettelmarkup (paragraphs, emphasized text, and lists), this zettel introduces you into the concepts of links, thematic breaks, and headings.
+
+=== Links
+A Zettelstore is much more useful, if you connect related zettel.
+If you read a zettel later, this allows you to know about the context of a zettel.
+[[Zettelmarkup|00001007000000]] allows you to specify such a connection.
+A connection can be specified within a paragraph via [[Links|00001007040310]].
+
+* A link always starts with two left square bracket characters and ends with two right square bracket characters: ''[[...]]''.
+* Within these character sequences you specify the [[zettel identifier|00001006050000]] of the zettel you want to reference: ''[[00001007903000]]'' will connect to zettel containing the first steps into Zettelmarkup.
+* In addition, you should give the link a more readable description.
+  This is done by prepending the description before the reference and use the vertical bar character to separate both: ''[[First Steps|00001007903000]]''.
+
+You are not restricted to reference your zettel.
+Alternatively, you might specify an URL of an external website: ''[[Zettelstore|https://zettelstore.de]]''.
+Of course, if you just want to specify the URL, you are allowed to omit the description: ''[[https://zettelstore.de]]''
+
+|= Zettelmarkup | Rendered output | Remark
+| ''[[00001007903000]]'' | [[00001007903000]] | If no description is given, the zettel identifier acts as a description
+| ''[[First Steps|00001007903000]]'' | [[First Steps|00001007903000]] | The description should be chosen so that you are not confused later
+| ''[[https://zettelstore.de]]'' | [[https://zettelstore.de]] | A link to an external URL is rendered differently
+| ''[[Zettelstore|https://zettelstore.de]]'' | [[Zettelstore|https://zettelstore.de]] | You can use any URL your browser is able to support
+
+Again, you probably see a principle.
+
+=== Thematic Breaks
+[[And now for something completely different|https://en.wikipedia.org/wiki/And_Now_for_Something_Completely_Different]].
+
+Sometimes, you want to insert a thematic break into your text, because two paragraphs do not separate enough.
+In Zettelmarkup is is done by entering three or more hyphen-minus characters at the beginning of a new line.
+You must not include blank lines around this line, but it can be more readable if you want to look at the Zettelmarkup text.
+
+```zmk
+First paragraph.
+---
+Second paragraph.
+```
+
+```zmk
+First paragraph.
+
+---
+
+Second paragraph.
+```
+
+Both are rendered as:
+:::zs-example
+First paragraph.
+---
+Second paragraph.
+:::
+
+Try it!
+
+This might be the time to relax a rule about paragraphs.
+You must not specify a blank line to end a paragraph.
+Any Zettelmarkup that must start at the beginning of a new line will end a previous paragraph.
+Similar, a blank line must not precede a paragraph.
+
+This applies also to lists, as given in the first steps, as well as other [[similar markup|00001007030000]] you will probably later.
+
+=== Headings
+Headings explicitly structure a zettel, similar to thematic breaks, but gives the resulting part a name.
+
+To specify a heading in Zettelmarkup, you must enter at least three equal signs, followed by a space, followed by the text of the heading.
+Everything must be one the same line.
+
+The number of equal signs determines the importance of the heading: less equal signs means more important.
+Therefore, three equal signs treat a heading as most important.
+It is a level-1 heading.
+Zettelmarkup supports up to five levels.
+To specify such a heading, you must enter seven equal signs, plus the space and the text.
+If you enter more than seven equal signs, the resulting heading is still of level 5.
+
+See the [[description of headings|00001007030300]] for more details and examples.
