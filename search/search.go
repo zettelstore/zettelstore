@@ -14,7 +14,6 @@ package search
 import (
 	"math/rand"
 	"sort"
-	"strings"
 	"sync"
 
 	"zettelstore.de/c/api"
@@ -140,18 +139,6 @@ type expValue struct {
 	negate bool
 }
 
-// AddExpr adds a match expression to the search.
-func (s *Search) AddExpr(key, value string) *Search {
-	val := parseOp(strings.TrimSpace(value))
-	if s == nil {
-		s = new(Search)
-	}
-	s.mx.Lock()
-	defer s.mx.Unlock()
-	s.addExpValue(key, val)
-	return s
-}
-
 func (s *Search) addExpValue(key string, val expValue) {
 	if key == "" {
 		s.addSearch(val)
@@ -173,39 +160,6 @@ func (s *Search) addSearch(val expValue) {
 		val.negate = true
 	}
 	s.search = append(s.search, val)
-}
-
-func parseOp(s string) expValue {
-	if s == "" {
-		return expValue{value: s, op: cmpEqual, negate: false}
-	}
-	if s[0] == '\\' {
-		return expValue{value: s[1:], op: cmpEqual, negate: false}
-	}
-	negate := false
-	if s[0] == '!' {
-		negate = true
-		s = s[1:]
-	}
-	if s == "" {
-		return expValue{value: s, op: cmpEqual, negate: negate}
-	}
-	if s[0] == '\\' {
-		return expValue{value: s[1:], op: cmpEqual, negate: negate}
-	}
-	switch s[0] {
-	case ':':
-		return expValue{value: s[1:], op: cmpEqual, negate: negate}
-	case '=':
-		return expValue{value: s[1:], op: cmpEqual, negate: negate}
-	case '>':
-		return expValue{value: s[1:], op: cmpPrefix, negate: negate}
-	case '<':
-		return expValue{value: s[1:], op: cmpSuffix, negate: negate}
-	case '~':
-		return expValue{value: s[1:], op: cmpContains, negate: negate}
-	}
-	return expValue{value: s, op: cmpEqual, negate: negate}
 }
 
 // AddPreMatch adds the pre-selection predicate.

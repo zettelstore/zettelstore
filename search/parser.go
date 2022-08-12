@@ -18,11 +18,14 @@ import (
 )
 
 // Parse the search specification and return a Search object.
-func Parse(spec string) *Search {
+func Parse(spec string) (s *Search) { return s.Parse(spec) }
+
+// Parse the search string and update the search object.
+func (s *Search) Parse(spec string) *Search {
 	state := parserState{
 		inp: input.NewInput([]byte(spec)),
 	}
-	return state.parse()
+	return state.parse(s)
 }
 
 type parserState struct {
@@ -50,9 +53,8 @@ const (
 	kwReverse = "REVERSE"
 )
 
-func (ps *parserState) parse() *Search {
+func (ps *parserState) parse(sea *Search) *Search {
 	inp := ps.inp
-	var result *Search
 	for {
 		ps.skipSpace()
 		if ps.mustStop() {
@@ -60,39 +62,39 @@ func (ps *parserState) parse() *Search {
 		}
 		pos := inp.Pos
 		if ps.acceptSingleKw(kwNegate) {
-			result = createIfNeeded(result)
-			result.negate = !result.negate
+			sea = createIfNeeded(sea)
+			sea.negate = !sea.negate
 			continue
 		}
 		if ps.acceptSingleKw(kwRandom) {
-			result = createIfNeeded(result)
-			if len(result.order) == 0 {
-				result.order = []sortOrder{{"", false}}
+			sea = createIfNeeded(sea)
+			if len(sea.order) == 0 {
+				sea.order = []sortOrder{{"", false}}
 			}
 			continue
 		}
 		if ps.acceptKwArgs(kwOrder) {
-			if s, ok := ps.parseOrder(result); ok {
-				result = s
+			if s, ok := ps.parseOrder(sea); ok {
+				sea = s
 				continue
 			}
 		}
 		if ps.acceptKwArgs(kwOffset) {
-			if s, ok := ps.parseOffset(result); ok {
-				result = s
+			if s, ok := ps.parseOffset(sea); ok {
+				sea = s
 				continue
 			}
 		}
 		if ps.acceptKwArgs(kwLimit) {
-			if s, ok := ps.parseLimit(result); ok {
-				result = s
+			if s, ok := ps.parseLimit(sea); ok {
+				sea = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
-		result = ps.parseText(result)
+		sea = ps.parseText(sea)
 	}
-	return result
+	return sea
 }
 func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
 	reverse := false

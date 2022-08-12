@@ -51,14 +51,17 @@ func NewUnlinkedReferences(port UnlinkedReferencesPort, rtConfig config.Config) 
 }
 
 // Run executes the usecase with already evaluated title value.
-func (uc *UnlinkedReferences) Run(ctx context.Context, title string, s *search.Search) ([]*meta.Meta, error) {
-	words := makeWords(title)
+func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, s *search.Search) ([]*meta.Meta, error) {
+	words := makeWords(phrase)
 	if len(words) == 0 {
 		return nil, nil
 	}
+	var sb strings.Builder
 	for _, word := range words {
-		s = s.AddExpr("", "="+word)
+		sb.WriteString(" :")
+		sb.WriteString(word)
 	}
+	s = s.Parse(sb.String())
 
 	// Limit applies to the filtering process, not to SelectMeta
 	limit := s.GetLimit()

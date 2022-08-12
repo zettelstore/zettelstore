@@ -53,9 +53,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 		return identMeta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
-	var s *search.Search
-	s = s.AddExpr("", "="+ident)
-	s = s.AddExpr(api.KeyUserID, ident)
+	s := search.Parse(api.KeyUserID + ":" + ident + " :" + ident)
 	metaList, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err

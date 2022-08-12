@@ -72,16 +72,25 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 // AddUnlinkedRefsToSearch inspects metadata and enhances the given search to ignore
 // some zettel identifier.
 func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
-	s = s.AddExpr(api.KeyID, "!="+m.Zid.String())
+	var sb strings.Builder
+	sb.WriteString(api.KeyID)
+	sb.WriteString("!:")
+	sb.WriteString(m.Zid.String())
 	for _, pair := range m.ComputedPairsRest() {
 		switch meta.Type(pair.Key) {
 		case meta.TypeID:
-			s = s.AddExpr(api.KeyID, "!="+pair.Value)
+			sb.WriteByte(' ')
+			sb.WriteString(api.KeyID)
+			sb.WriteString("!:")
+			sb.WriteString(pair.Value)
 		case meta.TypeIDSet:
 			for _, value := range meta.ListFromValue(pair.Value) {
-				s = s.AddExpr(api.KeyID, "!="+value)
+				sb.WriteByte(' ')
+				sb.WriteString(api.KeyID)
+				sb.WriteString("!:")
+				sb.WriteString(value)
 			}
 		}
 	}
-	return s
+	return s.Parse(sb.String())
 }

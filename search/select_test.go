@@ -20,9 +20,7 @@ import (
 )
 
 func TestMatchZidNegate(t *testing.T) {
-	var s *search.Search
-	s = s.AddExpr(api.KeyID, "!="+string(api.ZidVersion))
-	s = s.AddExpr(api.KeyID, "!="+string(api.ZidLicense))
+	s := search.Parse(api.KeyID + "!:" + string(api.ZidVersion) + " " + api.KeyID + "!:" + string(api.ZidLicense))
 	_, matchFunc := s.RetrieveAndCompileMatch(nil)
 
 	testCases := []struct {

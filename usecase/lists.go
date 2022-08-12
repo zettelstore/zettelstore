@@ -61,8 +61,7 @@ func NewListSyntax(port ListSyntaxPort) ListSyntax {
 
 // Run executes the use case.
 func (uc ListSyntax) Run(ctx context.Context) (meta.Arrangement, error) {
-	var s *search.Search
-	s = s.AddExpr(api.KeySyntax, "") // We look for all metadata with a syntax key
+	s := search.Parse(api.KeySyntax + ":") // We look for all metadata with a syntax key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
@@ -96,8 +95,7 @@ func NewListRoles(port ListRolesPort) ListRoles {
 
 // Run executes the use case.
 func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
-	var s *search.Search
-	s = s.AddExpr(api.KeyRole, "") // We look for all metadata with a role key
+	s := search.Parse(api.KeyRole + ":") // We look for all metadata with a role key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
@@ -125,8 +123,7 @@ func NewListTags(port ListTagsPort) ListTags {
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	var s *search.Search
-	s = s.AddExpr(api.KeyTags, "") // We look for all metadata with a tag
+	s := search.Parse(api.KeyAllTags + ":") // We look for all metadata with a tag
 	metas, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err
