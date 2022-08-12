@@ -33,7 +33,7 @@
      Please be aware that the = search operator is also deprecated. It was only
      introduced to help the migration.
      (deprecated: api, webui)
-  *  Some smaller bug fixes and inprovements, to the software and to the
+  *  Some smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_5_0"></a>
@@ -98,7 +98,7 @@
   *  New startup configuration key <kbd>max-request-size</kbd> to limit a web
      request body to prevent client sending too large requests.
      (minor: web server)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_4"></a>
@@ -154,7 +154,7 @@
   *  Disallow to cache the authentication cookie. Will remove most unexpected
      log-outs when using a mobile device.
      (minor: webui)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_3"></a>
@@ -176,7 +176,7 @@
   *  A previously duplicate file that is now useful (because another file was
      deleted) is now logged as such.
      (minor: directory and file/zip box)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_2"></a>
@@ -242,7 +242,7 @@
      (minor)
   *  Document autostarting Zettelstore on Windows, macOS, and Linux.
      (minor)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_1"></a><a name="0_1_0"></a>
@@ -307,7 +307,7 @@
      software. First entry is a software for creating a presentation by using
      zettel.
      (info)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_0_15"></a>
@@ -362,7 +362,7 @@
      (minor: api)
   *  Fix: do not list a shadowed zettel that matches the select criteria.
      (minor)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_0_14"></a>
@@ -411,7 +411,7 @@
   *  The phase &ldquo;filtering a zettel list&rdquo; is more precise
      &ldquo;selecting zettel&rdquo;
      (documentation)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_0_13"></a>
@@ -455,7 +455,7 @@
      <tt>|%</tt>. This allows to paste output of the administrator console into
      a zettel.
      (minor: zmk)
-  *  Many smaller bug fixes and inprovements, to the software and to the
+  *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
 
 <a name="0_0_12"></a>
@@ -509,7 +509,7 @@
      with the exact tag will be returned. Otherwise a zettel will be returned
      if the search string just matches the prefix of only one of its tags.
      (minor: api, webui)
-  *  Many smaller bug fixes and inprovements, to the software and to the documentation.
+  *  Many smaller bug fixes and improvements, to the software and to the documentation.
 
 A note for users of macOS: in the current release and with macOS's default
 values, a zettel directory must not contain more than approx. 250 files. There
@@ -560,7 +560,7 @@ are three options to mitigate this limitation temporarily:
      (minor: webui)
   *  A pre-build binary for macOS ARM64 (also known as Apple silicon) is available.
      (minor: infrastructure)
-  *  Many smaller bug fixes and inprovements, to the software and to the documentation.
+  *  Many smaller bug fixes and improvements, to the software and to the documentation.
 
 <a name="0_0_9"></a>
 <h2>Changes for Version 0.0.9 (2021-01-29)</h2>
