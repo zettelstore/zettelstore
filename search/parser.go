@@ -155,7 +155,7 @@ func (ps *parserState) parseText(s *Search) *Search {
 		s.addExpValue(string(key), expValue{string(text), cmpOp, cmpNegate})
 	} else {
 		// Assert key == nil
-		s.addExpValue("", expValue{string(text), cmpDefault, false})
+		s.addExpValue("", expValue{string(text), cmpContains, false})
 	}
 	return s
 }
@@ -221,9 +221,6 @@ func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
 	switch ch {
 	case ':':
 		inp.Next()
-		return true, cmpDefault, negate
-	case '=':
-		inp.Next()
 		return true, cmpEqual, negate
 	case '<':
 		inp.Next()
@@ -236,7 +233,7 @@ func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
 		return true, cmpContains, negate
 	}
 	if negate {
-		return true, cmpDefault, true
+		return true, cmpContains, true
 	}
 	return false, cmpUnknown, false
 }

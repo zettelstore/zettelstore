@@ -71,10 +71,8 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 			pe.writeString("!")
 		}
 		switch val.op {
-		case cmpDefault:
-			pe.writeString(":")
 		case cmpEqual:
-			pe.writeString("=")
+			pe.writeString(":")
 		case cmpPrefix:
 			pe.writeString(">")
 		case cmpSuffix:
@@ -144,10 +142,8 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 			pe.writeString(" NOT")
 		}
 		switch val.op {
-		case cmpDefault:
-			pe.writeString(" MATCH ")
 		case cmpEqual:
-			pe.writeString(" EQUAL ")
+			pe.writeString(" MATCH ")
 		case cmpPrefix:
 			pe.writeString(" PREFIX ")
 		case cmpSuffix:

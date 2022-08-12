@@ -108,8 +108,6 @@ type compareOp uint8
 
 const (
 	cmpUnknown compareOp = iota
-	cmpDefault
-	cmpNotDefault
 	cmpEqual
 	cmpNotEqual
 	cmpPrefix
@@ -122,8 +120,6 @@ const (
 
 var negateMap = map[compareOp]compareOp{
 	cmpUnknown:     cmpUnknown,
-	cmpDefault:     cmpNotDefault,
-	cmpNotDefault:  cmpDefault,
 	cmpEqual:       cmpNotEqual,
 	cmpNotEqual:    cmpEqual,
 	cmpPrefix:      cmpNoPrefix,
@@ -172,11 +168,6 @@ func (s *Search) addSearch(val expValue) {
 		val.negate = false
 	}
 	switch val.op {
-	case cmpDefault:
-		val.op = cmpContains
-	case cmpNotDefault:
-		val.op = cmpContains
-		val.negate = true
 	case cmpNotEqual, cmpNoPrefix, cmpNoSuffix, cmpNotContains:
 		val.op = val.op.negate()
 		val.negate = true
@@ -186,10 +177,10 @@ func (s *Search) addSearch(val expValue) {
 
 func parseOp(s string) expValue {
 	if s == "" {
-		return expValue{value: s, op: cmpDefault, negate: false}
+		return expValue{value: s, op: cmpEqual, negate: false}
 	}
 	if s[0] == '\\' {
-		return expValue{value: s[1:], op: cmpDefault, negate: false}
+		return expValue{value: s[1:], op: cmpEqual, negate: false}
 	}
 	negate := false
 	if s[0] == '!' {
@@ -197,14 +188,14 @@ func parseOp(s string) expValue {
 		s = s[1:]
 	}
 	if s == "" {
-		return expValue{value: s, op: cmpDefault, negate: negate}
+		return expValue{value: s, op: cmpEqual, negate: negate}
 	}
 	if s[0] == '\\' {
-		return expValue{value: s[1:], op: cmpDefault, negate: negate}
+		return expValue{value: s[1:], op: cmpEqual, negate: negate}
 	}
 	switch s[0] {
 	case ':':
-		return expValue{value: s[1:], op: cmpDefault, negate: negate}
+		return expValue{value: s[1:], op: cmpEqual, negate: negate}
 	case '=':
 		return expValue{value: s[1:], op: cmpEqual, negate: negate}
 	case '>':
@@ -214,7 +205,7 @@ func parseOp(s string) expValue {
 	case '~':
 		return expValue{value: s[1:], op: cmpContains, negate: negate}
 	}
-	return expValue{value: s, op: cmpDefault, negate: negate}
+	return expValue{value: s, op: cmpEqual, negate: negate}
 }
 
 // AddPreMatch adds the pre-selection predicate.

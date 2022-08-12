@@ -177,9 +177,9 @@ func processTagSet(valueSet [][]opValue) [][]opValue {
 		for j, val := range values {
 			if tval := val.value; tval != "" && tval[0] == '#' {
 				tval = meta.CleanTag(tval)
-				tags[j] = opValue{value: tval, op: resolveDefaultOp(val.op, cmpEqual)}
+				tags[j] = opValue{value: tval, op: val.op}
 			} else {
-				tags[j] = opValue{value: tval, op: resolveDefaultOp(val.op, cmpPrefix)}
+				tags[j] = opValue{value: tval, op: val.op}
 			}
 		}
 		result[i] = tags
@@ -263,7 +263,7 @@ func valuesToStringPredicates(values []opValue, defOp compareOp, addSearch addSe
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
 		opVal := v.value // loop variable is used in closure --> save needed value
-		op := resolveDefaultOp(v.op, defOp)
+		op := v.op
 		switch op {
 		case cmpEqual:
 			addSearch(opVal, op) // addSearch only for positive selections
@@ -300,7 +300,7 @@ func valuesToStringSetPredicates(values [][]opValue, defOp compareOp, addSearch 
 		elemPreds := make([]stringSetPredicate, len(val))
 		for j, v := range val {
 			opVal := v.value // loop variable is used in closure --> save needed value
-			op := resolveDefaultOp(v.op, defOp)
+			op := v.op
 			switch op {
 			case cmpEqual:
 				addSearch(opVal, op) // addSearch only for positive selections
@@ -344,16 +344,6 @@ func makeStringSetPredicate(neededValue string, compare compareStringFunc, found
 		}
 		return !foundResult
 	}
-}
-
-func resolveDefaultOp(op, defOp compareOp) compareOp {
-	if op == cmpDefault {
-		return defOp
-	}
-	if op == cmpNotDefault {
-		return defOp.negate()
-	}
-	return op
 }
 
 func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {

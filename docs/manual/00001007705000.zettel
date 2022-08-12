@@ -3,7 +3,7 @@ title: Search operator
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220811141050
+modified: 20220812184530
 
 A search operator specifies how the comparison of a search value and a zettel should be executed.
 Every comparison is done case-insensitive, treating all uppercase letters the same as lowercase letters.
@@ -13,30 +13,14 @@ The following are allowed search operator characters:
 * The tilde character (""''~''"", U+007E) compares on containment (""contains operator"")
 * The greater-than sign character (""''>''"", U+003E) matches if there is some prefix (""prefix operator"")
 * The less-than sign character (""''<''"", U+003C) compares a suffix relationship (""suffix operator"")
-* The colon character (""'':''"", U+003A) specifies the __default comparison__, i.e. one of the previous comparisons.
+* The colon character (""'':''"", U+003A) compares on equal words (""equal operator"")
 
-  **Please note:** this operator will be changed in version 0.7.0.
-  It was included to allow the transition of the previous mechanism into search expressions.
-
-  With version 0.7.0, this operator will take the role of the ''=''-operator.
-* The equal sign character (""''=''"", U+003D) compares on equal words (""equal operator"")
-
-  **Please note:** this operator will be removed in version 0.7.0.
-  It was included to allow the transition of the previous mechanism into search expressions.
-
-Since the exclamation mark character can be combined with the other, there are 12 possible combinations:
-# ""''!''"": is an abbreviation of the ""''!:''"" operator.
-# ""'':''"": depending on the [[metadata key type|00001006030000]] one of the other operators is chosen.
-  For example, a [[numeric key type|00001006033000]] will execute the equals operator, while for a [[string type|00001006033500]] a contains operator will be executed.
-
-  With version 0.7.0 its meaning will be changed to that of the ''='' operator.
-# ""''!:''"": similar to the ""match operator"" above, the appropriate negated search operator will be chosen, depending on the metadata key type
-
-  With version 0.7.0 its meaning will be changed to that of the ''!='' operator.
+Since the exclamation mark character can be combined with the other, there are 10 possible combinations:
+# ""''!''"": is an abbreviation of the ""''!~''"" operator.
 # ""''~''"": is successful if the search value is contained in the value to be compared.
 # ""''!~''"": is successful if the search value is not contained in the value to be compared.
-# ""''=''"": is successful if the search value is equal to one word of the value to be compared.
-# ""''!=''"": is successful if the search value is not equal to any word of the value to be compared.
+# ""'':''"": is successful if the search value is equal to one word of the value to be compared.
+# ""''!:''"": is successful if the search value is not equal to any word of the value to be compared.
 # ""''>''"": is successful if the search value is a prefix of the value to be compared.
 # ""''!>''"": is successful if the search value is not a prefix of the value to be compared.
 # ""''<''"": is successful if the search value is a suffix of the value to be compared.
