@@ -3,7 +3,7 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220810111207
+modified: 20220812145821
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -63,7 +63,7 @@ Most keys conform to a [[type|00001006030000]].
   Otherwise, if the zettel identifier contains a valid timestamp, the identifier is used.
   In all other cases, this property is not set.
 
-  It can be used for [[sorting|00001012052000]] zettel based on their publication date.
+  It can be used for [[sorting|00001007700000]] zettel based on their publication date.
 
   It is a computed value.
   There is no need to set it via Zettelstore.

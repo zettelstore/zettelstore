@@ -2,6 +2,9 @@
 
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.0 (pending)</h2>
+  *  Removes support for URL query parameter to search for metadata values,
+     sorting, offset, and limit a zettel list. Deprecated in version 0.6.0
+     (breaking: api, webui)
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (2022-08-11)</h2>

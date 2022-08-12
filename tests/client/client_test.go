@@ -70,11 +70,10 @@ func TestListZettel(t *testing.T) {
 
 	t.Parallel()
 	c := getClient()
-	query := url.Values{api.QueryKeyEncoding: {api.EncodingHTML}} // Client must remove "html"
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)
-			q, h, l, err := c.ListZettelJSON(context.Background(), query)
+			q, h, l, err := c.ListZettelJSON(context.Background(), "")
 			if err != nil {
 				tt.Error(err)
 				return
@@ -91,7 +90,7 @@ func TestListZettel(t *testing.T) {
 			}
 		})
 	}
-	q, h, l, err := c.ListZettelJSON(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
+	q, h, l, err := c.ListZettelJSON(context.Background(), api.KeyRole+":"+api.ValueRoleConfiguration)
 	if err != nil {
 		t.Error(err)
 		return
@@ -109,7 +108,7 @@ func TestListZettel(t *testing.T) {
 		t.Errorf("List of length %d expected, but got %d\n%v", configRoleZettel, got, l)
 	}
 
-	pl, err := c.ListZettel(context.Background(), url.Values{api.KeyRole: {api.ValueRoleConfiguration}})
+	pl, err := c.ListZettel(context.Background(), api.KeyRole+":"+api.ValueRoleConfiguration)
 	if err != nil {
 		t.Error(err)
 		return

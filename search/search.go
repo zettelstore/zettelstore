@@ -12,7 +12,6 @@
 package search
 
 import (
-	"fmt"
 	"math/rand"
 	"sort"
 	"strings"
@@ -218,15 +217,6 @@ func parseOp(s string) expValue {
 	return expValue{value: s, op: cmpDefault, negate: negate}
 }
 
-// SetNegate changes the search to reverse its selection.
-func (s *Search) SetNegate() *Search {
-	s = createIfNeeded(s)
-	s.mx.Lock()
-	defer s.mx.Unlock()
-	s.negate = true
-	return s
-}
-
 // AddPreMatch adds the pre-selection predicate.
 func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
 	s = createIfNeeded(s)
@@ -240,44 +230,6 @@ func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
 		}
 	}
 	return s
-}
-
-// AddOrder adds the given order to the search object.
-func (s *Search) AddOrder(key string, descending bool) *Search {
-	s = createIfNeeded(s)
-	s.mx.Lock()
-	defer s.mx.Unlock()
-	if len(s.order) > 0 {
-		panic("order field already set: " + fmt.Sprintf("%v", s.order))
-	}
-	if key == RandomOrder {
-		s.order = []sortOrder{{"", false}}
-	} else {
-		s.order = []sortOrder{{key, descending}}
-	}
-	return s
-}
-
-// SetOffset sets the given offset of the search object.
-func (s *Search) SetOffset(offset int) *Search {
-	s = createIfNeeded(s)
-	s.mx.Lock()
-	defer s.mx.Unlock()
-	if offset < 0 {
-		offset = 0
-	}
-	s.offset = offset
-	return s
-}
-
-// GetOffset returns the current offset value.
-func (s *Search) GetOffset() int {
-	if s == nil {
-		return 0
-	}
-	s.mx.RLock()
-	defer s.mx.RUnlock()
-	return s.offset
 }
 
 // SetLimit sets the given limit of the search object.

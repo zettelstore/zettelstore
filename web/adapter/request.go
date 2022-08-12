@@ -51,68 +51,11 @@ func GetInteger(q url.Values, key string) (int, bool) {
 }
 
 // GetSearch retrieves the specified search and sorting options from a query.
-func GetSearch(q url.Values) (s *search.Search) {
+func GetSearch(q url.Values) *search.Search {
 	if exprs, found := q[api.QueryKeySearch]; found {
-		s = search.Parse(strings.Join(exprs, " "))
+		return search.Parse(strings.Join(exprs, " "))
 	}
-	for key, values := range q {
-		switch key {
-		case api.QueryKeySort, api.QueryKeyOrder:
-			s = extractOrderFromQuery(values, s)
-		case api.QueryKeyOffset:
-			s = extractOffsetFromQuery(values, s)
-		case api.QueryKeyLimit:
-			s = extractLimitFromQuery(values, s)
-		case api.QueryKeyNegate:
-			s = s.SetNegate()
-		case api.QueryKeySearch: // Ignore, already processed to top of method.
-		default:
-			if meta.KeyIsValid(key) {
-				s = setCleanedQueryValues(s, key, values)
-			}
-		}
-	}
-	return s
-}
-
-func extractOrderFromQuery(values []string, s *search.Search) *search.Search {
-	if len(values) > 0 {
-		descending := false
-		sortkey := values[0]
-		if strings.HasPrefix(sortkey, "-") {
-			descending = true
-			sortkey = sortkey[1:]
-		}
-		if meta.KeyIsValid(sortkey) || sortkey == search.RandomOrder {
-			s = s.AddOrder(sortkey, descending)
-		}
-	}
-	return s
-}
-
-func extractOffsetFromQuery(values []string, s *search.Search) *search.Search {
-	if len(values) > 0 {
-		if offset, err := strconv.Atoi(values[0]); err == nil && offset > 0 {
-			s = s.SetOffset(offset)
-		}
-	}
-	return s
-}
-
-func extractLimitFromQuery(values []string, s *search.Search) *search.Search {
-	if len(values) > 0 {
-		if limit, err := strconv.Atoi(values[0]); err == nil && limit > 0 {
-			s = s.SetLimit(limit)
-		}
-	}
-	return s
-}
-
-func setCleanedQueryValues(s *search.Search, key string, values []string) *search.Search {
-	for _, val := range values {
-		s = s.AddExpr(key, val)
-	}
-	return s
+	return nil
 }
 
 // GetZCDirection returns a direction value for a given string.

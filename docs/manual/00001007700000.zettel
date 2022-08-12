@@ -3,7 +3,7 @@ title: Search expression
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220810164112
+modified: 20220812144558
 
 A search expression allows you to search for specific zettel.
 You may select zettel based on a full-text search, based on specifc metadata values, or both.
@@ -18,6 +18,7 @@ The colon character (""'':''"") is a [[search operator|00001007705000]], in this
 
 A search expression may contain more than one search term, such as ''title:syntax''.
 Search terms must be separated by one or more space characters, for example ''title:syntax title:search''.
+All terms of a select expression must be true so that a zettel is selected.
 
 * [[Search terms|00001007702000]]
 * [[Search operator|00001007705000]]
