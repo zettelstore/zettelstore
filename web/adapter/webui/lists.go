@@ -99,7 +99,7 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 
 	roleInfos := make([]roleInfo, len(roleList))
 	for i, role := range roleList {
-		roleInfos[i] = roleInfo{role.Name, wui.NewURLBuilder('h').AppendQuery("role", role.Name).String()}
+		roleInfos[i] = roleInfo{role.Name, wui.NewURLBuilder('h').AppendSearch("role:" + role.Name).String()}
 	}
 
 	user := wui.getUser(ctx)
@@ -148,7 +148,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 		countMap[count]++
 		tagsList = append(
 			tagsList,
-			tagInfo{tag, baseTagListURL.AppendQuery(api.KeyAllTags, tag).String(), count, "", ""})
+			tagInfo{tag, baseTagListURL.AppendSearch(api.KeyAllTags + ":" + tag).String(), count, "", ""})
 		baseTagListURL.ClearQuery()
 	}
 	sort.Slice(tagsList, func(i, j int) bool { return tagsList[i].Name < tagsList[j].Name })

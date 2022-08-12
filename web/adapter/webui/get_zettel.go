@@ -107,7 +107,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Zid:           zid.String(),
 			InfoURL:       wui.NewURLBuilder('i').SetZid(apiZid).String(),
 			RoleText:      roleText,
-			RoleURL:       wui.NewURLBuilder('h').AppendQuery("role", roleText).String(),
+			RoleURL:       wui.NewURLBuilder('h').AppendSearch("role:" + roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCreate && !zn.Content.IsBinary(),
@@ -146,7 +146,7 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 		ub := wui.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
-			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery(api.KeyAllTags, tag).String()}
+			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendSearch(api.KeyAllTags + ":" + tag).String()}
 			ub.ClearQuery()
 		}
 	}

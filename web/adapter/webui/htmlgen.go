@@ -148,7 +148,7 @@ func (g *htmlGenerator) generateTag(senv sxpf.Environment, args *sxpf.Pair, _ in
 		if env.IgnoreLinks() {
 			env.WriteEscaped(s)
 		} else {
-			u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags, "#"+strings.ToLower(s))
+			u := g.builder.NewURLBuilder('h').AppendSearch(api.KeyAllTags + ":#" + strings.ToLower(s))
 			env.WriteStrings(`<a href="`, u.String(), `">#`)
 			env.WriteEscaped(s)
 			env.WriteString("</a>")
