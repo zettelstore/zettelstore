@@ -141,23 +141,30 @@ func (ps *parserState) parseLimit(s *Search) (*Search, bool) {
 }
 
 func (ps *parserState) parseText(s *Search) *Search {
-	hasOp, cmpOp, cmpNegate := ps.scanSearchOp()
+	op, hasOp := ps.scanSearchOp()
 	text, key := ps.scanSearchTextOrKey(hasOp)
-	if key != nil {
+	if len(key) > 0 {
 		// Assert: hasOp == false
-		hasOp, cmpOp, cmpNegate = ps.scanSearchOp()
+		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
 		text = ps.scanWord()
-	} else if text == nil {
+	} else if len(text) == 0 {
 		// Only an empty search operation is found -> ignore it
 		return s
 	}
 	s = createIfNeeded(s)
 	if hasOp {
-		s.addExpValue(string(key), expValue{string(text), cmpOp, cmpNegate})
+		if key == nil {
+			s.addSearch(expValue{string(text), op})
+		} else if s.mvals == nil {
+			s.mvals = expMetaValues{string(key): {expValue{string(text), op}}}
+		} else {
+			sKey := string(key)
+			s.mvals[sKey] = append(s.mvals[sKey], expValue{string(text), op})
+		}
 	} else {
 		// Assert key == nil
-		s.addExpValue("", expValue{string(text), cmpContains, false})
+		s.addSearch(expValue{string(text), cmpContains})
 	}
 	return s
 }
@@ -212,7 +219,7 @@ func (ps *parserState) scanPosInt() (int, bool) {
 	return int(uval), true
 }
 
-func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
+func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	inp := ps.inp
 	ch := inp.Ch
 	negate := false
@@ -220,24 +227,30 @@ func (ps *parserState) scanSearchOp() (bool, compareOp, bool) {
 		ch = inp.Next()
 		negate = true
 	}
+	op := cmpUnknown
 	switch ch {
 	case ':':
 		inp.Next()
-		return true, cmpEqual, negate
+		op = cmpEqual
 	case '<':
 		inp.Next()
-		return true, cmpSuffix, negate
+		op = cmpSuffix
 	case '>':
 		inp.Next()
-		return true, cmpPrefix, negate
+		op = cmpPrefix
 	case '~':
 		inp.Next()
-		return true, cmpContains, negate
+		op = cmpContains
+	default:
+		if negate {
+			return cmpNotContains, true
+		}
+		return cmpUnknown, false
 	}
 	if negate {
-		return true, cmpContains, true
+		return op.negate(), true
 	}
-	return false, cmpUnknown, false
+	return op, true
 }
 
 func (ps *parserState) isSpace() bool {

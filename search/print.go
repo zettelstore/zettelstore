@@ -67,21 +67,32 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 	for _, val := range values {
 		pe.printSpace()
 		pe.writeString(key)
-		if val.negate {
-			pe.writeString("!")
-		}
 		switch val.op {
 		case cmpEqual:
 			pe.writeString(":")
+		case cmpNotEqual:
+			pe.writeString("!:")
 		case cmpPrefix:
 			pe.writeString(">")
+		case cmpNoPrefix:
+			pe.writeString("!>")
 		case cmpSuffix:
 			pe.writeString("<")
+		case cmpNoSuffix:
+			pe.writeString("!<")
 		case cmpContains:
 			// An empty key signals a full-text search. Since "~" is the default op in this case,
 			// it can be ignored. Therefore, print only "~" if there is a key.
 			if key != "" {
 				pe.writeString("~")
+			}
+		case cmpNotContains:
+			// An empty key signals a full-text search. Since "!" is the shortcut for "!~",
+			// it can be ignored. Therefore, print only "!~" if there is a key.
+			if key == "" {
+				pe.writeString("!")
+			} else {
+				pe.writeString("!~")
 			}
 		}
 		if s := val.value; s != "" {
@@ -138,18 +149,23 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 		if j > 0 {
 			pe.writeString(" AND")
 		}
-		if val.negate {
-			pe.writeString(" NOT")
-		}
 		switch val.op {
 		case cmpEqual:
 			pe.writeString(" MATCH ")
+		case cmpNotEqual:
+			pe.writeString(" NOT MATCH ")
 		case cmpPrefix:
 			pe.writeString(" PREFIX ")
+		case cmpNoPrefix:
+			pe.writeString(" NOT PREFIX ")
 		case cmpSuffix:
 			pe.writeString(" SUFFIX ")
+		case cmpNoSuffix:
+			pe.writeString(" NOT SUFFIX ")
 		case cmpContains:
 			pe.writeString(" CONTAINS ")
+		case cmpNotContains:
+			pe.writeString(" NOT CONTAINS ")
 		default:
 			pe.writeString(" MaTcH ")
 		}

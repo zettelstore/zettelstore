@@ -68,7 +68,7 @@ func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plai
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
 			sf := getSearchFunc(searcher, val.op)
-			if val.negate {
+			if val.op.isNegated() {
 				negCalls.addSearch(word, val.op, sf)
 			} else {
 				normCalls.addSearch(word, val.op, sf)
@@ -80,7 +80,7 @@ func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plai
 	for _, val := range search {
 		word := strings.ToLower(strings.TrimSpace(val.value))
 		sf := getSearchFunc(searcher, val.op)
-		if val.negate {
+		if val.op.isNegated() {
 			negCalls.addSearch(word, val.op, sf)
 		} else {
 			plainCalls.addSearch(word, val.op, sf)

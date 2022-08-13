@@ -129,38 +129,23 @@ var negateMap = map[compareOp]compareOp{
 	cmpNotContains: cmpContains,
 }
 
-func (op compareOp) negate() compareOp {
-	return negateMap[op]
+func (op compareOp) negate() compareOp { return negateMap[op] }
+
+var negativeMap = map[compareOp]bool{
+	cmpNotEqual:    true,
+	cmpNoPrefix:    true,
+	cmpNoSuffix:    true,
+	cmpNotContains: true,
 }
+
+func (op compareOp) isNegated() bool { return negativeMap[op] }
 
 type expValue struct {
-	value  string
-	op     compareOp
-	negate bool
+	value string
+	op    compareOp
 }
 
-func (s *Search) addExpValue(key string, val expValue) {
-	if key == "" {
-		s.addSearch(val)
-	} else if s.mvals == nil {
-		s.mvals = expMetaValues{key: {val}}
-	} else {
-		s.mvals[key] = append(s.mvals[key], val)
-	}
-}
-
-func (s *Search) addSearch(val expValue) {
-	if val.negate {
-		val.op = val.op.negate()
-		val.negate = false
-	}
-	switch val.op {
-	case cmpNotEqual, cmpNoPrefix, cmpNoSuffix, cmpNotContains:
-		val.op = val.op.negate()
-		val.negate = true
-	}
-	s.search = append(s.search, val)
-}
+func (s *Search) addSearch(val expValue) { s.search = append(s.search, val) }
 
 // AddPreMatch adds the pre-selection predicate.
 func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {

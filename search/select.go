@@ -56,9 +56,7 @@ func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []
 			nomatch = append(nomatch, key)
 			continue
 		}
-		posMatch, negMatch := createPosNegMatchFunc(
-			key, values,
-			func(val string, op compareOp) { s.addSearch(expValue{value: val, op: op, negate: false}) })
+		posMatch, negMatch := createPosNegMatchFunc(key, values, s.addSearch)
 		if posMatch != nil {
 			posSpecs = append(posSpecs, matchSpec{key, posMatch})
 		}
@@ -72,7 +70,7 @@ func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []
 func countEmptyValues(values []expValue) (always, never int) {
 	for _, v := range values {
 		if v.value == "" {
-			if v.negate {
+			if v.op.isNegated() {
 				never++
 			} else {
 				always++
@@ -82,28 +80,22 @@ func countEmptyValues(values []expValue) (always, never int) {
 	return always, never
 }
 
-type addSearchFunc func(val string, op compareOp)
+type addSearchFunc func(val expValue)
 
 func createPosNegMatchFunc(key string, values []expValue, addSearch addSearchFunc) (posMatch, negMatch matchValueFunc) {
-	posValues := make([]opValue, 0, len(values))
-	negValues := make([]opValue, 0, len(values))
+	posValues := make([]expValue, 0, len(values))
+	negValues := make([]expValue, 0, len(values))
 	for _, val := range values {
-		if val.negate {
-			negValues = append(negValues, opValue{value: val.value, op: val.op.negate()})
+		if val.op.isNegated() {
+			negValues = append(negValues, val)
 		} else {
-			posValues = append(posValues, opValue{value: val.value, op: val.op})
+			posValues = append(posValues, val)
 		}
 	}
 	return createMatchFunc(key, posValues, addSearch), createMatchFunc(key, negValues, addSearch)
 }
 
-// opValue is an expValue, but w/o the field "negate"
-type opValue struct {
-	value string
-	op    compareOp
-}
-
-func createMatchFunc(key string, values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) matchValueFunc {
 	if len(values) == 0 {
 		return nil
 	}
@@ -124,7 +116,7 @@ func createMatchFunc(key string, values []opValue, addSearch addSearchFunc) matc
 	return createMatchStringFunc(values, addSearch)
 }
 
-func createMatchIDFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	preds := valuesToStringPredicates(values, cmpPrefix, addSearch)
 	return func(value string) bool {
 		for _, pred := range preds {
@@ -136,7 +128,7 @@ func createMatchIDFunc(values []opValue, addSearch addSearchFunc) matchValueFunc
 	}
 }
 
-func createMatchIDSetFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	predList := valuesToStringSetPredicates(preprocessSet(values), cmpPrefix, addSearch)
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
@@ -151,7 +143,7 @@ func createMatchIDSetFunc(values []opValue, addSearch addSearchFunc) matchValueF
 	}
 }
 
-func createMatchTagSetFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), cmpEqual, addSearch)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
@@ -170,16 +162,16 @@ func createMatchTagSetFunc(values []opValue, addSearch addSearchFunc) matchValue
 	}
 }
 
-func processTagSet(valueSet [][]opValue) [][]opValue {
-	result := make([][]opValue, len(valueSet))
+func processTagSet(valueSet [][]expValue) [][]expValue {
+	result := make([][]expValue, len(valueSet))
 	for i, values := range valueSet {
-		tags := make([]opValue, len(values))
+		tags := make([]expValue, len(values))
 		for j, val := range values {
 			if tval := val.value; tval != "" && tval[0] == '#' {
 				tval = meta.CleanTag(tval)
-				tags[j] = opValue{value: tval, op: val.op}
+				tags[j] = expValue{value: tval, op: val.op}
 			} else {
-				tags[j] = opValue{value: tval, op: val.op}
+				tags[j] = expValue{value: tval, op: val.op}
 			}
 		}
 		result[i] = tags
@@ -187,7 +179,7 @@ func processTagSet(valueSet [][]opValue) [][]opValue {
 	return result
 }
 
-func createMatchWordFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), cmpEqual, addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -200,7 +192,7 @@ func createMatchWordFunc(values []opValue, addSearch addSearchFunc) matchValueFu
 	}
 }
 
-func createMatchWordSetFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), cmpEqual, addSearch)
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
@@ -215,7 +207,7 @@ func createMatchWordSetFunc(values []opValue, addSearch addSearchFunc) matchValu
 	}
 }
 
-func createMatchStringFunc(values []opValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), cmpContains, addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -228,10 +220,10 @@ func createMatchStringFunc(values []opValue, addSearch addSearchFunc) matchValue
 	}
 }
 
-func sliceToLower(sl []opValue) []opValue {
-	result := make([]opValue, 0, len(sl))
+func sliceToLower(sl []expValue) []expValue {
+	result := make([]expValue, 0, len(sl))
 	for _, s := range sl {
-		result = append(result, opValue{
+		result = append(result, expValue{
 			value: strings.ToLower(s.value),
 			op:    s.op,
 		})
@@ -239,15 +231,15 @@ func sliceToLower(sl []opValue) []opValue {
 	return result
 }
 
-func preprocessSet(set []opValue) [][]opValue {
-	result := make([][]opValue, 0, len(set))
+func preprocessSet(set []expValue) [][]expValue {
+	result := make([][]expValue, 0, len(set))
 	for _, elem := range set {
 		splitElems := strings.Split(elem.value, ",")
-		valueElems := make([]opValue, 0, len(splitElems))
+		valueElems := make([]expValue, 0, len(splitElems))
 		for _, se := range splitElems {
 			e := strings.TrimSpace(se)
 			if len(e) > 0 {
-				valueElems = append(valueElems, opValue{value: e, op: elem.op})
+				valueElems = append(valueElems, expValue{value: e, op: elem.op})
 			}
 		}
 		if len(valueElems) > 0 {
@@ -259,29 +251,29 @@ func preprocessSet(set []opValue) [][]opValue {
 
 type stringPredicate func(string) bool
 
-func valuesToStringPredicates(values []opValue, defOp compareOp, addSearch addSearchFunc) []stringPredicate {
+func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addSearchFunc) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
 		opVal := v.value // loop variable is used in closure --> save needed value
 		op := v.op
 		switch op {
 		case cmpEqual:
-			addSearch(opVal, op) // addSearch only for positive selections
+			addSearch(v) // addSearch only for positive selections
 			result[i] = func(metaVal string) bool { return metaVal == opVal }
 		case cmpNotEqual:
 			result[i] = func(metaVal string) bool { return metaVal != opVal }
 		case cmpPrefix:
-			addSearch(opVal, op)
+			addSearch(v)
 			result[i] = func(metaVal string) bool { return strings.HasPrefix(metaVal, opVal) }
 		case cmpNoPrefix:
 			result[i] = func(metaVal string) bool { return !strings.HasPrefix(metaVal, opVal) }
 		case cmpSuffix:
-			addSearch(opVal, op)
+			addSearch(v)
 			result[i] = func(metaVal string) bool { return strings.HasSuffix(metaVal, opVal) }
 		case cmpNoSuffix:
 			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
 		case cmpContains:
-			addSearch(opVal, op)
+			addSearch(v)
 			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
 		case cmpNotContains:
 			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
@@ -294,7 +286,7 @@ func valuesToStringPredicates(values []opValue, defOp compareOp, addSearch addSe
 
 type stringSetPredicate func(value []string) bool
 
-func valuesToStringSetPredicates(values [][]opValue, defOp compareOp, addSearch addSearchFunc) [][]stringSetPredicate {
+func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch addSearchFunc) [][]stringSetPredicate {
 	result := make([][]stringSetPredicate, len(values))
 	for i, val := range values {
 		elemPreds := make([]stringSetPredicate, len(val))
@@ -303,22 +295,22 @@ func valuesToStringSetPredicates(values [][]opValue, defOp compareOp, addSearch 
 			op := v.op
 			switch op {
 			case cmpEqual:
-				addSearch(opVal, op) // addSearch only for positive selections
+				addSearch(v) // addSearch only for positive selections
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
 			case cmpNotEqual:
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
 			case cmpPrefix:
-				addSearch(opVal, op)
+				addSearch(v)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, true)
 			case cmpNoPrefix:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, false)
 			case cmpSuffix:
-				addSearch(opVal, op)
+				addSearch(v)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, true)
 			case cmpNoSuffix:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, false)
 			case cmpContains:
-				addSearch(opVal, op)
+				addSearch(v)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
 			case cmpNotContains:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
