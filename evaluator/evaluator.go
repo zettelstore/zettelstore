@@ -240,35 +240,18 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 }
 
 func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
-	ml, err := e.port.SelectMeta(e.ctx, search.Parse(expr))
+	sea := search.Parse(expr)
+	ml, err := e.port.SelectMeta(e.ctx, sea)
 	if err != nil {
 		if errors.Is(err, &box.ErrNotAllowed{}) {
 			return nil
 		}
 		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
 	}
-	if len(ml) == 0 {
-		return nil
+	result := CreateBlockSliceMeta(ml)
+	if result != nil {
+		ast.Walk(e, result)
 	}
-	items := make([]ast.ItemSlice, 0, len(ml))
-	for _, m := range ml {
-		zid := m.Zid.String()
-		title, found := m.Get(api.KeyTitle)
-		if !found {
-			title = zid
-		}
-		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
-			Attrs:   nil,
-			Ref:     ast.ParseReference(zid),
-			Inlines: parser.ParseMetadataNoLink(title),
-		})})
-	}
-	result := &ast.NestedListNode{
-		Kind:  ast.NestedListUnordered,
-		Items: items,
-		Attrs: nil,
-	}
-	ast.Walk(e, result)
 	return result
 }
 
