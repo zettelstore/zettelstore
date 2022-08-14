@@ -97,7 +97,12 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.reportError(ctx, w, err)
 			return
 		}
-		unLinks := wui.buildHTMLMetaList(unlinkedMeta, func(val string) ast.InlineSlice { return evaluate.RunMetadata(ctx, val) })
+		bns := evaluate.RunMetaList(ctx, unlinkedMeta)
+		unlinkedContent, err := enc.BlocksString(&bns)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 		endnotes, err := enc.BlocksString(&ast.BlockSlice{})
@@ -132,7 +137,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
-			UnLinks        []simpleLink
+			UnLinksContent string
 			UnLinksPhrase  string
 			QueryKeyPhrase string
 			EvalMatrix     []matrixLine
@@ -162,7 +167,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
-			UnLinks:        unLinks,
+			UnLinksContent: unlinkedContent,
 			UnLinksPhrase:  phrase,
 			QueryKeyPhrase: api.QueryKeyPhrase,
 			EvalMatrix:     wui.infoAPIMatrix('v', zid),

@@ -48,8 +48,14 @@ func EvaluateZettel(ctx context.Context, port Port, rtConfig config.Config, zn *
 		zn.Ast = evaluateMetadata(zn.Meta)
 		return
 	}
-	evaluateNode(ctx, port, rtConfig, &zn.Ast)
-	cleaner.CleanBlockSlice(&zn.Ast)
+	EvaluateBlock(ctx, port, rtConfig, &zn.Ast)
+}
+
+// EvaluateBlock evaluates the given block list in the given context, with
+// the given ports, and the given environment.
+func EvaluateBlock(ctx context.Context, port Port, rtConfig config.Config, bns *ast.BlockSlice) {
+	evaluateNode(ctx, port, rtConfig, bns)
+	cleaner.CleanBlockSlice(bns)
 }
 
 // EvaluateInline evaluates the given inline list in the given context, with
@@ -248,7 +254,7 @@ func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
 		}
 		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
 	}
-	result := CreateBlockSliceMeta(ml)
+	result := CreateBlockNodeMeta(ml)
 	if result != nil {
 		ast.Walk(e, result)
 	}

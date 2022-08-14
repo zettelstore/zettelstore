@@ -17,7 +17,7 @@ import (
 	"zettelstore.de/z/parser"
 )
 
-func CreateBlockSliceMeta(ml []*meta.Meta) ast.BlockNode {
+func CreateBlockNodeMeta(ml []*meta.Meta) ast.BlockNode {
 	if len(ml) == 0 {
 		return nil
 	}

@@ -38,11 +38,7 @@
 </ul>
 {{/HasExtLinks}}
 <h3>Unlinked</h3>
-<ul>
-{{#UnLinks}}
-<li><a href="{{{URL}}}">{{{Text}}}</a></li>
-{{/UnLinks}}
-</ul>
+{{{UnLinksContent}}}
 <form>
 <label for="phrase">Search Phrase</label>
 <input class="zs-input" type="text" id="phrase" name="{{QueryKeyPhrase}}" placeholder="Phrase.." value="{{UnLinksPhrase}}">
