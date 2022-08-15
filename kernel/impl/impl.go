@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -25,6 +25,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
@@ -114,6 +115,12 @@ func createKernel() kernel.Kernel {
 		}
 	}
 	return kern
+}
+
+func (kern *myKernel) Setup(progname, version string, versionTime time.Time) {
+	kern.SetConfig(kernel.CoreService, kernel.CoreProgname, progname)
+	kern.SetConfig(kernel.CoreService, kernel.CoreVersion, version)
+	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Format(time.RFC3339))
 }
 
 func (kern *myKernel) Start(headline, lineServer bool) {

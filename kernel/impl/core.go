@@ -70,6 +70,7 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 			}),
 			false,
 		},
+		kernel.CoreVTime: {"Version time", nil, false},
 	}
 	cs.next = interfaceMap{
 		kernel.CoreDebug:     false,

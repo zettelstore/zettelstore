@@ -26,6 +26,10 @@ import (
 
 // Kernel is the main internal service.
 type Kernel interface {
+	// Setup sets the most basic data of a software: its name, its version,
+	// and when it was builded.
+	Setup(progname, version string, build time.Time)
+
 	// Start the service.
 	Start(headline bool, lineServer bool)
 
@@ -133,6 +137,7 @@ const (
 	CoreProgname  = "progname"
 	CoreVerbose   = "verbose"
 	CoreVersion   = "version"
+	CoreVTime     = "vtime"
 )
 
 // Defined values for core service.

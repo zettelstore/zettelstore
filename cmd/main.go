@@ -20,6 +20,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
@@ -321,9 +322,12 @@ var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
 // Main is the real entrypoint of the zettelstore.
 func Main(progName, buildVersion string) int {
-	fullVersion := retrieveFullVersion(buildVersion)
-	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreProgname, progName)
-	kernel.Main.SetConfig(kernel.CoreService, kernel.CoreVersion, fullVersion)
+	info := retrieveVCSInfo(buildVersion)
+	fullVersion := info.revision
+	if info.dirty {
+		fullVersion += "-dirty"
+	}
+	kernel.Main.Setup(progName, fullVersion, info.time)
 	flag.Parse()
 	if *cpuprofile != "" || *memprofile != "" {
 		if *cpuprofile != "" {
@@ -340,24 +344,36 @@ func Main(progName, buildVersion string) int {
 	return executeCommand(args[0], args[1:]...)
 }
 
-func retrieveFullVersion(version string) string {
+type vcsInfo struct {
+	revision string
+	dirty    bool
+	time     time.Time
+}
+
+func retrieveVCSInfo(version string) vcsInfo {
+	buildTime := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return version
+		return vcsInfo{revision: version, dirty: false, time: buildTime}
 	}
-	var revision, dirty string
+	result := vcsInfo{time: buildTime}
 	for _, kv := range info.Settings {
 		switch kv.Key {
 		case "vcs.revision":
-			revision = "+" + kv.Value
+			revision := "+" + kv.Value
 			if len(revision) > 11 {
 				revision = revision[:11]
 			}
+			result.revision = version + revision
 		case "vcs.modified":
 			if kv.Value == "true" {
-				dirty = "-dirty"
+				result.dirty = true
+			}
+		case "vcs.time":
+			if t, err := time.Parse(time.RFC3339, kv.Value); err == nil {
+				result.time = t
 			}
 		}
 	}
-	return version + revision + dirty
+	return result
 }
