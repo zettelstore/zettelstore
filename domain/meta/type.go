@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/domain/id"
 )
 
 // DescriptionType is a description of a specific key type.
@@ -112,7 +113,7 @@ func (m *Meta) SetList(key string, values []string) {
 
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
-	m.Set(key, time.Now().Format("20060102150405"))
+	m.Set(key, time.Now().Format(id.ZidLayout))
 }
 
 // BoolValue returns the value interpreted as a bool.
@@ -136,7 +137,7 @@ func (m *Meta) GetBool(key string) bool {
 
 // TimeValue returns the time value of the given value.
 func TimeValue(value string) (time.Time, bool) {
-	if t, err := time.Parse("20060102150405", value); err == nil {
+	if t, err := time.Parse(id.ZidLayout, value); err == nil {
 		return t, true
 	}
 	return time.Time{}, false

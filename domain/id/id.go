@@ -144,12 +144,15 @@ func (zid Zid) toByteArray(result *[14]byte) {
 // IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
 func (zid Zid) IsValid() bool { return 0 < zid && zid <= maxZid }
 
+// ZidLayout to transform a date into a Zid and into other internal dates.
+const ZidLayout = "20060102150405"
+
 // New returns a new zettel id based on the current time.
 func New(withSeconds bool) Zid {
 	now := time.Now()
 	var s string
 	if withSeconds {
-		s = now.Format("20060102150405")
+		s = now.Format(ZidLayout)
 	} else {
 		s = now.Format("20060102150400")
 	}

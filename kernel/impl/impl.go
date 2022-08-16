@@ -27,6 +27,7 @@ import (
 	"syscall"
 	"time"
 
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 )
@@ -120,7 +121,7 @@ func createKernel() kernel.Kernel {
 func (kern *myKernel) Setup(progname, version string, versionTime time.Time) {
 	kern.SetConfig(kernel.CoreService, kernel.CoreProgname, progname)
 	kern.SetConfig(kernel.CoreService, kernel.CoreVersion, version)
-	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Format(time.RFC3339))
+	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Format(id.ZidLayout))
 }
 
 func (kern *myKernel) Start(headline, lineServer bool) {
