@@ -5,6 +5,11 @@
   *  Removes support for URL query parameter to search for metadata values,
      sorting, offset, and limit a zettel list. Deprecated in version 0.6.0
      (breaking: api, webui)
+  *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
+     zettel was created. Since key &ldquo;published&rdquo; is now either
+     &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
+     a valid date now.
+     (minor)
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.0 (2022-08-11)</h2>

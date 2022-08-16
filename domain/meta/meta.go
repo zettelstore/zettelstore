@@ -129,6 +129,7 @@ func init() {
 	registerKey(api.KeyBoxNumber, TypeNumber, usageProperty, "")
 	registerKey(api.KeyContentTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyCopyright, TypeString, usageUser, "")
+	registerKey(api.KeyCreated, TypeTimestamp, usageComputed, "")
 	registerKey(api.KeyCredential, TypeCredential, usageUser, "")
 	registerKey(api.KeyDead, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyFolge, TypeIDSet, usageProperty, "")

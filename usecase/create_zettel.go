@@ -12,6 +12,7 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
@@ -114,6 +115,7 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, 
 		return m.Zid, nil // TODO: new error: already exists
 	}
 
+	m.Set(api.KeyCreated, time.Now().Format(id.ZidLayout))
 	m.Delete(api.KeyModified)
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 
