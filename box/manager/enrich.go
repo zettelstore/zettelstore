@@ -17,7 +17,6 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/kernel"
 )
 
 // Enrich computes additional properties and updates the given metadata.
@@ -38,8 +37,8 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 func computeCreated(m *meta.Meta) string {
 	ts := m.Zid
 	if ts < 19700101000000 {
-		// As a fall-back use the version time of the executable.
-		return kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVTime).(string)
+		// As a fall-back use the oldest known commit time for a Zettestore software.
+		return "20191215155307"
 	}
 	seconds := ts % 100
 	if seconds > 59 {
