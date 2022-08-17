@@ -1,9 +1,9 @@
 id: 00001007780000
-title: Forma syntax of search expressions
+title: Formal syntax of search expressions
 role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
-modified: 20220811141423
+modified: 20220817185945
 
 ```
 SearchExpression := SearchTerm (SPACE+ SearchTerm)*.

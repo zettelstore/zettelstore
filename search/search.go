@@ -16,7 +16,6 @@ import (
 	"sort"
 	"sync"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -303,19 +302,17 @@ func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
 		return metaList
 	}
 
-	if s == nil {
+	if s == nil || len(s.order) == 0 {
 		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
-		return metaList
-	}
-
-	if len(s.order) == 0 {
-		sort.Slice(metaList, createSortFunc(api.KeyID, true, metaList))
+		if s == nil {
+			return metaList
+		}
 	} else if s.order[0].isRandom() {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]
 		})
 	} else {
-		sort.Slice(metaList, createSortFunc(s.order[0].key, s.order[0].descending, metaList))
+		sort.Slice(metaList, createSortFunc(s.order, metaList))
 	}
 
 	if s.offset > 0 {

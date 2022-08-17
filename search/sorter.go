@@ -20,7 +20,37 @@ import (
 
 type sortFunc func(i, j int) bool
 
-func createSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
+func createSortFunc(order []sortOrder, ml []*meta.Meta) sortFunc {
+	hasID := false
+	sortFuncs := make([]sortFunc, 0, len(order)+1)
+	for _, o := range order {
+		sortFuncs = append(sortFuncs, createOneSortFunc(o.key, o.descending, ml))
+		if o.key == api.KeyID {
+			hasID = true
+			break
+		}
+	}
+	if !hasID {
+		sortFuncs = append(sortFuncs, func(i, j int) bool { return ml[i].Zid > ml[j].Zid })
+	}
+	// return sortFuncs[0]
+	if len(sortFuncs) == 1 {
+		return sortFuncs[0]
+	}
+	return func(i, j int) bool {
+		for _, sf := range sortFuncs {
+			if sf(i, j) {
+				return true
+			}
+			if sf(j, i) {
+				return false
+			}
+		}
+		return false
+	}
+}
+
+func createOneSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
 	keyType := meta.Type(key)
 	if key == api.KeyID || keyType == meta.TypeCredential {
 		if descending {
