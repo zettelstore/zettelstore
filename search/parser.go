@@ -141,13 +141,28 @@ func (ps *parserState) parseLimit(s *Search) (*Search, bool) {
 }
 
 func (ps *parserState) parseText(s *Search) *Search {
+	pos := ps.inp.Pos
 	op, hasOp := ps.scanSearchOp()
+	if hasOp && (op == cmpExist || op == cmpNotExist) {
+		ps.inp.SetPos(pos)
+		hasOp = false
+	}
 	text, key := ps.scanSearchTextOrKey(hasOp)
 	if len(key) > 0 {
 		// Assert: hasOp == false
 		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
-		text = ps.scanWord()
+		if op == cmpExist || op == cmpNotExist {
+			if ps.isSpace() || ps.mustStop() {
+				return s.addKeyExist(string(key), op)
+			}
+			ps.inp.SetPos(pos)
+			hasOp = false
+			text = ps.scanWord()
+			key = nil
+		} else {
+			text = ps.scanWord()
+		}
 	} else if len(text) == 0 {
 		// Only an empty search operation is found -> ignore it
 		return s
@@ -177,7 +192,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	for !ps.isSpace() && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
-			case '!', ':', '=', '>', '<', '~':
+			case '!', '?', ':', '=', '>', '<', '~':
 				allowKey = false
 				if key := inp.Src[pos:inp.Pos]; meta.KeyIsValid(string(key)) {
 					return nil, key
@@ -229,6 +244,9 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	}
 	op := cmpUnknown
 	switch ch {
+	case '?':
+		inp.Next()
+		op = cmpExist
 	case ':':
 		inp.Next()
 		op = cmpHas

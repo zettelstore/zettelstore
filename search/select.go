@@ -19,8 +19,7 @@ import (
 
 type matchValueFunc func(value string) bool
 
-func matchValueNever(string) bool  { return false }
-func matchValueAlways(string) bool { return true }
+func matchValueNever(string) bool { return false }
 
 type matchSpec struct {
 	key   string
@@ -29,31 +28,27 @@ type matchSpec struct {
 
 // compileMeta calculates a selection func based on the given select criteria.
 func (s *Search) compileMeta() MetaMatchFunc {
-	posSpecs, negSpecs, nomatch := s.createSelectSpecs()
-	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(nomatch) > 0 {
-		return makeSearchMetaMatchFunc(posSpecs, negSpecs, nomatch)
+	for key := range s.mvals {
+		// All queried keys must exist
+		s.addKeyExist(key, cmpExist)
+	}
+	for _, op := range s.keyExist {
+		if op != cmpExist && op != cmpNotExist {
+			return matchNever
+		}
+	}
+	posSpecs, negSpecs := s.createSelectSpecs()
+	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(s.keyExist) > 0 {
+		return makeSearchMetaMatchFunc(posSpecs, negSpecs, s.keyExist)
 	}
 	return nil
 }
 
-func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []string) {
+func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
 	posSpecs = make([]matchSpec, 0, len(s.mvals))
 	negSpecs = make([]matchSpec, 0, len(s.mvals))
 	for key, values := range s.mvals {
 		if !meta.KeyIsValid(key) {
-			continue
-		}
-		if always, never := countEmptyValues(values); always+never > 0 {
-			if never == 0 {
-				posSpecs = append(posSpecs, matchSpec{key, matchValueAlways})
-				continue
-			}
-			if always == 0 {
-				negSpecs = append(negSpecs, matchSpec{key, nil})
-				continue
-			}
-			// value must match always AND never, at the same time. This results in a no-match.
-			nomatch = append(nomatch, key)
 			continue
 		}
 		posMatch, negMatch := createPosNegMatchFunc(key, values, s.addSearch)
@@ -64,20 +59,7 @@ func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec, nomatch []
 			negSpecs = append(negSpecs, matchSpec{key, negMatch})
 		}
 	}
-	return posSpecs, negSpecs, nomatch
-}
-
-func countEmptyValues(values []expValue) (always, never int) {
-	for _, v := range values {
-		if v.value == "" {
-			if v.op.isNegated() {
-				never++
-			} else {
-				always++
-			}
-		}
-	}
-	return always, never
+	return posSpecs, negSpecs
 }
 
 type addSearchFunc func(val expValue)
@@ -255,8 +237,7 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
 		opVal := v.value // loop variable is used in closure --> save needed value
-		op := v.op
-		switch op {
+		switch v.op {
 		case cmpHas:
 			addSearch(v) // addSearch only for positive selections
 			result[i] = func(metaVal string) bool { return metaVal == opVal }
@@ -278,7 +259,7 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 		case cmpNoMatch:
 			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
 		default:
-			panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))
+			panic(fmt.Sprintf("Unknown compare operation %d with value %q", v.op, opVal))
 		}
 	}
 	return result
@@ -292,8 +273,7 @@ func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch
 		elemPreds := make([]stringSetPredicate, len(val))
 		for j, v := range val {
 			opVal := v.value // loop variable is used in closure --> save needed value
-			op := v.op
-			switch op {
+			switch v.op {
 			case cmpHas:
 				addSearch(v) // addSearch only for positive selections
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
@@ -315,7 +295,7 @@ func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch
 			case cmpNoMatch:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
 			default:
-				panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))
+				panic(fmt.Sprintf("Unknown compare operation %d with value %q", v.op, opVal))
 			}
 		}
 		result[i] = elemPreds
@@ -338,47 +318,46 @@ func makeStringSetPredicate(neededValue string, compare compareStringFunc, found
 	}
 }
 
-func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, nomatch []string) MetaMatchFunc {
-	if len(nomatch) == 0 {
-		// Optimize for simple cases: only negative or only positive matching
-
-		if len(posSpecs) == 0 {
-			return func(m *meta.Meta) bool { return matchMetaNegSpecs(m, negSpecs) }
+func makeSearchMetaMatchFunc(posSpecs, negSpecs []matchSpec, kem keyExistMap) MetaMatchFunc {
+	// Optimize: no specs --> just check kwhether key exists
+	if len(posSpecs) == 0 && len(negSpecs) == 0 {
+		if len(kem) == 0 {
+			return nil
 		}
-		if len(negSpecs) == 0 {
-			return func(m *meta.Meta) bool { return matchMetaPosSpecs(m, posSpecs) }
+		return func(m *meta.Meta) bool { return matchMetaKeyExists(m, kem) }
+	}
+
+	// Optimize: only negative or only positive matching
+	if len(posSpecs) == 0 {
+		return func(m *meta.Meta) bool {
+			return matchMetaKeyExists(m, kem) && matchMetaSpecs(m, negSpecs)
 		}
 	}
+	if len(negSpecs) == 0 {
+		return func(m *meta.Meta) bool {
+			return matchMetaKeyExists(m, kem) && matchMetaSpecs(m, posSpecs)
+		}
+	}
+
 	return func(m *meta.Meta) bool {
-		return matchMetaNoMatch(m, nomatch) &&
-			matchMetaPosSpecs(m, posSpecs) &&
-			matchMetaNegSpecs(m, negSpecs)
+		return matchMetaKeyExists(m, kem) &&
+			matchMetaSpecs(m, posSpecs) &&
+			matchMetaSpecs(m, negSpecs)
 	}
 }
 
-func matchMetaNoMatch(m *meta.Meta, nomatch []string) bool {
-	for _, key := range nomatch {
-		if _, ok := m.Get(key); ok {
+func matchMetaKeyExists(m *meta.Meta, kem keyExistMap) bool {
+	for key, op := range kem {
+		_, found := m.Get(key)
+		if found != (op == cmpExist) {
 			return false
 		}
 	}
 	return true
 }
-func matchMetaPosSpecs(m *meta.Meta, posSpecs []matchSpec) bool {
-	for _, s := range posSpecs {
-		if value, ok := m.Get(s.key); !ok || !s.match(value) {
-			return false
-		}
-	}
-	return true
-}
-func matchMetaNegSpecs(m *meta.Meta, negSpecs []matchSpec) bool {
-	for _, s := range negSpecs {
-		if s.match == nil {
-			if value, ok := m.Get(s.key); ok && matchValueAlways(value) {
-				return false
-			}
-		} else if value, ok := m.Get(s.key); !ok || !s.match(value) {
+func matchMetaSpecs(m *meta.Meta, specs []matchSpec) bool {
+	for _, s := range specs {
+		if value := m.GetDefault(s.key, ""); !s.match(value) {
 			return false
 		}
 	}

@@ -90,7 +90,7 @@ func TestListZettel(t *testing.T) {
 			}
 		})
 	}
-	q, h, l, err := c.ListZettelJSON(context.Background(), api.KeyRole+":"+api.ValueRoleConfiguration)
+	q, h, l, err := c.ListZettelJSON(context.Background(), api.KeyRole+api.SearchOperatorHas+api.ValueRoleConfiguration)
 	if err != nil {
 		t.Error(err)
 		return
@@ -108,7 +108,7 @@ func TestListZettel(t *testing.T) {
 		t.Errorf("List of length %d expected, but got %d\n%v", configRoleZettel, got, l)
 	}
 
-	pl, err := c.ListZettel(context.Background(), api.KeyRole+":"+api.ValueRoleConfiguration)
+	pl, err := c.ListZettel(context.Background(), api.KeyRole+api.SearchOperatorHas+api.ValueRoleConfiguration)
 	if err != nil {
 		t.Error(err)
 		return

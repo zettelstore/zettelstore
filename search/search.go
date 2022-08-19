@@ -42,6 +42,9 @@ type Searcher interface {
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
 type MetaMatchFunc func(*meta.Meta) bool
 
+func matchAlways(*meta.Meta) bool { return true }
+func matchNever(*meta.Meta) bool  { return false }
+
 // RetrieveFunc retrieves the index based on a Search.
 type RetrieveFunc func() id.Set
 
@@ -54,6 +57,7 @@ type Search struct {
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
+	keyExist keyExistMap
 	mvals    expMetaValues // Expected values for a meta datum
 	search   []expValue    // Search string
 	negate   bool          // Negate the result of the whole selecting process
@@ -64,14 +68,15 @@ type Search struct {
 	limit  int // <= 0: no limit
 }
 
+type keyExistMap map[string]compareOp
+type expMetaValues map[string][]expValue
+
 type sortOrder struct {
 	key        string
 	descending bool
 }
 
 func (so *sortOrder) isRandom() bool { return so.key == "" }
-
-type expMetaValues map[string][]expValue
 
 func createIfNeeded(s *Search) *Search {
 	if s == nil {
@@ -87,13 +92,25 @@ func (s *Search) Clone() *Search {
 	}
 	c := new(Search)
 	c.preMatch = s.preMatch
+	if len(s.keyExist) > 0 {
+		c.keyExist = make(keyExistMap, len(s.keyExist))
+		for k, v := range s.keyExist {
+			c.keyExist[k] = v
+		}
+	}
+	// if len(c.mvals) > 0 {
 	c.mvals = make(expMetaValues, len(s.mvals))
 	for k, v := range s.mvals {
 		c.mvals[k] = v
 	}
-	c.search = append([]expValue{}, s.search...)
+	// }
+	if len(s.search) > 0 {
+		c.search = append([]expValue{}, s.search...)
+	}
 	c.negate = s.negate
-	c.order = append([]sortOrder{}, s.order...)
+	if len(s.order) > 0 {
+		c.order = append([]sortOrder{}, s.order...)
+	}
 	c.offset = s.offset
 	c.limit = s.limit
 	return c
@@ -106,6 +123,8 @@ type compareOp uint8
 
 const (
 	cmpUnknown compareOp = iota
+	cmpExist
+	cmpNotExist
 	cmpHas
 	cmpHasNot
 	cmpPrefix
@@ -118,6 +137,7 @@ const (
 
 var negateMap = map[compareOp]compareOp{
 	cmpUnknown:  cmpUnknown,
+	cmpExist:    cmpNotExist,
 	cmpHas:      cmpHasNot,
 	cmpHasNot:   cmpHas,
 	cmpPrefix:   cmpNoPrefix,
@@ -131,6 +151,7 @@ var negateMap = map[compareOp]compareOp{
 func (op compareOp) negate() compareOp { return negateMap[op] }
 
 var negativeMap = map[compareOp]bool{
+	cmpNotExist: true,
 	cmpHasNot:   true,
 	cmpNoPrefix: true,
 	cmpNoSuffix: true,
@@ -145,6 +166,22 @@ type expValue struct {
 }
 
 func (s *Search) addSearch(val expValue) { s.search = append(s.search, val) }
+
+func (s *Search) addKeyExist(key string, op compareOp) *Search {
+	s = createIfNeeded(s)
+	if s.keyExist == nil {
+		s.keyExist = map[string]compareOp{key: op}
+		return s
+	}
+	if prevOp, found := s.keyExist[key]; found {
+		if prevOp != op {
+			s.keyExist[key] = cmpUnknown
+		}
+		return s
+	}
+	s.keyExist[key] = op
+	return s
+}
 
 // AddPreMatch adds the pre-selection predicate.
 func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
@@ -191,6 +228,11 @@ func (s *Search) EnrichNeeded() bool {
 	}
 	s.mx.RLock()
 	defer s.mx.RUnlock()
+	for key := range s.keyExist {
+		if meta.IsComputed(key) {
+			return true
+		}
+	}
 	for key := range s.mvals {
 		if meta.IsComputed(key) {
 			return true
@@ -292,9 +334,6 @@ func (s *Search) compileMatch() MetaMatchFunc {
 	}
 	return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
 }
-
-func matchAlways(*meta.Meta) bool { return true }
-func matchNever(*meta.Meta) bool  { return false }
 
 // Sort applies the sorter to the slice of meta data.
 func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {

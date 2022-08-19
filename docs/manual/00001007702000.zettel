@@ -3,7 +3,7 @@ title: Search term
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220817191736
+modified: 20220819194931
 
 A search term allows you to specify one search restriction.
 The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
@@ -22,7 +22,11 @@ A search term can be one of the following:
   Therefore, the following search expression are essentially the same: ''"search syntax"'' and ''search syntax''.
   The first is a search expression with one search value, which is normalized to two strings to be searched for.
   The second is a search expression containing two search values, giving two string to be searched for.
+* A metadata key followed by ""''?''"" or ""''!?''"".
+
+  Is true, if zettel metadata contains / does not contain the given key.
 * The string ''NEGATE'' will negate (sic!) the behavior of the whole search expression.
+
   If it occurs multiple times, the negation will be negated.
 * The string ''ORDER'', followed by a non-empty sequence of spaces and the name of a metadata key, will specify an ordering of the result list.
   If you include the string ''REVERSE'' after ''ORDER'' but before the metadata key, the ordering will be reversed.

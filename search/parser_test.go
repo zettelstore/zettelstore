@@ -22,6 +22,10 @@ func TestParser(t *testing.T) {
 		spec string
 		exp  string
 	}{
+		{"?", "?"}, {"!?", "!?"}, {"?a", "?a"}, {"!?a", "!?a"},
+		{"key?", "key?"}, {"key!?", "key!?"},
+		{"b key?", "key? b"}, {"b key!?", "key!? b"},
+		{"key?a", "key?a"}, {"key!?a", "key!?a"},
 		{"", ""}, {"!", ""}, {":", ""}, {"!:", ""}, {">", ""}, {"!>", ""}, {"<", ""}, {"!<", ""}, {"~", ""}, {"!~", ""},
 		{`a`, `a`}, {`!a`, `!a`},
 		{`:a`, `:a`}, {`!:a`, `!:a`},
@@ -38,14 +42,15 @@ func TestParser(t *testing.T) {
 		{`key~a`, `key~a`}, {`key!~a`, `key!~a`},
 		{`key1:a key2:b`, `key1:a key2:b`},
 		{`key1: key2:b`, `key1: key2:b`},
+		{"word key:a", "key:a word"},
 		{`NEGATE`, `NEGATE`}, {`NEGATE a`, `NEGATE a`}, {`a NEGATE`, `NEGATE a`},
 		{`NEGATE NEGATE a`, `a`},
 		{`NEGATENEGATE a`, `NEGATENEGATE a`},
 		{`RANDOM`, `RANDOM`}, {`RANDOM a`, `a RANDOM`}, {`a RANDOM`, `a RANDOM`},
 		{`RANDOM RANDOM a`, `a RANDOM`},
 		{`RANDOMRANDOM a`, `RANDOMRANDOM a`}, {`a RANDOMRANDOM`, `a RANDOMRANDOM`},
-		{`ORDER`, `ORDER`}, {"ORDER a b", "b ORDER a"}, {"a ORDER", "a ORDER"}, {"ORDER ?", "ORDER ?"},
-		{"ORDER a ?", "? ORDER a"},
+		{`ORDER`, `ORDER`}, {"ORDER a b", "b ORDER a"}, {"a ORDER", "a ORDER"}, {"ORDER %", "ORDER %"},
+		{"ORDER a %", "% ORDER a"},
 		{"ORDER REVERSE", "ORDER REVERSE"}, {"ORDER REVERSE a b", "b ORDER REVERSE a"},
 		{"a RANDOM ORDER b", "a ORDER b"}, {"a ORDER b RANDOM", "a ORDER b"},
 		{"OFFSET", "OFFSET"}, {"OFFSET a", "OFFSET a"}, {"OFFSET 10 a", "a OFFSET 10"},

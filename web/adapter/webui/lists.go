@@ -151,7 +151,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 		countMap[count]++
 		tagsList = append(
 			tagsList,
-			tagInfo{tag, baseTagListURL.AppendSearch(api.KeyAllTags + ":" + tag).String(), count, "", ""})
+			tagInfo{tag, baseTagListURL.AppendSearch(api.KeyAllTags + api.SearchOperatorHas + tag).String(), count, "", ""})
 		baseTagListURL.ClearQuery()
 	}
 	sort.Slice(tagsList, func(i, j int) bool { return tagsList[i].Name < tagsList[j].Name })

@@ -3,13 +3,14 @@ title: Formal syntax of search expressions
 role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
-modified: 20220817185945
+modified: 20220819195157
 
 ```
 SearchExpression := SearchTerm (SPACE+ SearchTerm)*.
 SearchTerm       := "NEGATE"
                   | SearchOperator? SearchValue
                   | SearchKey SearchOperator SearchValue?
+                  | SearchKey ExistOperator
                   | "RANDOM"
                   | "ORDER" SPACE+ ("REVERSE" SPACE+)? SearchKey
                   | "OFFSET" SPACE+ PosInt
@@ -17,8 +18,9 @@ SearchTerm       := "NEGATE"
 SearchValue      := NO-SPACE (NO-SPACE)*.
 SearchKey        := MetadataKey.
 SearchOperator   := '!'
-                 | ('!')? '='                ← removed in version 0.7.0
-                 | ('!')? (':' | '<' | '>').
+                  | ('!')? ('~' | ':' | '<' | '>').
+ExistOperator    := '?'
+                  | '!' '?'.
 PosInt           := '0'
                   | ('1' .. '9') DIGIT*.
 ```

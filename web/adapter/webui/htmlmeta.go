@@ -149,7 +149,7 @@ func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
 }
 
 func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
-	fmt.Fprintf(w, `<a href="%v">`, wui.NewURLBuilder('h').AppendSearch(key+":"+value))
+	fmt.Fprintf(w, `<a href="%v">`, wui.NewURLBuilder('h').AppendSearch(key+api.SearchOperatorHas+value))
 	html.Escape(w, text)
 	io.WriteString(w, "</a>")
 }

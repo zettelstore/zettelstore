@@ -5,6 +5,13 @@
   *  Removes support for URL query parameter to search for metadata values,
      sorting, offset, and limit a zettel list. Deprecated in version 0.6.0
      (breaking: api, webui)
+  *  Allow to search for the existence / non-existence of a metadata key with
+     the "?" operator: <tt>key?</tt> and <tt>key!?</tt>. Previously, the ":"
+     operator was used for this by specifying an empty search value. Now you
+     can use the ":" operator to find empty / non-empty metadata values. If you
+     specify a search operator for metadata, the specified key is assumed to
+     exist.
+     (breaking: api, webui)
   *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
      zettel was created. Since key &ldquo;published&rdquo; is now either
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
