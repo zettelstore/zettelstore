@@ -79,6 +79,9 @@ type Kernel interface {
 	// RetrieveLogEntries returns all buffered log entries.
 	RetrieveLogEntries() []LogEntry
 
+	// GetLastLogTime returns the time when the last logging with level > DEBUG happened.
+	GetLastLogTime() time.Time
+
 	// StartService start the given service.
 	StartService(Service) error
 

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -22,8 +22,9 @@ import (
 func genLogM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Log")
-	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	m.Set(api.KeySyntax, api.ValueSyntaxText)
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
+	m.Set(api.KeyModified, kernel.Main.GetLastLogTime().Local().Format(id.ZidLayout))
 	return m
 }
 

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -22,6 +22,7 @@ import (
 // kernelLogWriter adapts an io.Writer to a LogWriter
 type kernelLogWriter struct {
 	mx       sync.RWMutex // protects buf, serializes w.Write and retrieveLogEntries
+	lastLog  time.Time
 	buf      []byte
 	writePos int
 	data     []logEntry
@@ -34,8 +35,9 @@ func newKernelLogWriter(capacity int) *kernelLogWriter {
 		capacity = 1
 	}
 	return &kernelLogWriter{
-		buf:  make([]byte, 0, 500),
-		data: make([]logEntry, capacity),
+		lastLog: time.Now(),
+		buf:     make([]byte, 0, 500),
+		data:    make([]logEntry, capacity),
 	}
 }
 
@@ -43,6 +45,7 @@ func (klw *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefi
 	klw.mx.Lock()
 
 	if level > logger.DebugLevel {
+		klw.lastLog = ts
 		klw.data[klw.writePos] = logEntry{
 			level:   level,
 			ts:      ts,
@@ -140,6 +143,8 @@ func (klw *kernelLogWriter) retrieveLogEntries() []kernel.LogEntry {
 	}
 	return result
 }
+
+func (klw *kernelLogWriter) getLastLogTime() time.Time { return klw.lastLog }
 
 func copyE2E(result *kernel.LogEntry, origin *logEntry) {
 	result.Level = origin.level

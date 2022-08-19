@@ -220,6 +220,10 @@ func (kern *myKernel) RetrieveLogEntries() []kernel.LogEntry {
 	return kern.logWriter.retrieveLogEntries()
 }
 
+func (kern *myKernel) GetLastLogTime() time.Time {
+	return kern.logWriter.getLastLogTime()
+}
+
 // LogRecover outputs some information about the previous panic.
 func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 	return kern.doLogRecover(name, recoverInfo)
