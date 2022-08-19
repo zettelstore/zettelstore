@@ -61,7 +61,7 @@ func NewListSyntax(port ListSyntaxPort) ListSyntax {
 
 // Run executes the use case.
 func (uc ListSyntax) Run(ctx context.Context) (meta.Arrangement, error) {
-	s := search.Parse(api.KeySyntax + api.SearchOperatorExist) // We look for all metadata with a syntax key
+	s := search.Parse(api.KeySyntax + api.ExistOperator) // We look for all metadata with a syntax key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func NewListRoles(port ListRolesPort) ListRoles {
 
 // Run executes the use case.
 func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
-	s := search.Parse(api.KeyRole + api.SearchOperatorExist) // We look for all metadata with an existing role key
+	s := search.Parse(api.KeyRole + api.ExistOperator) // We look for all metadata with an existing role key
 	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func NewListTags(port ListTagsPort) ListTags {
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	s := search.Parse(api.KeyAllTags + api.SearchOperatorExist) // We look for all metadata with a tag
+	s := search.Parse(api.KeyAllTags + api.ExistOperator) // We look for all metadata with a tag
 	metas, err := uc.port.SelectMeta(ctx, s)
 	if err != nil {
 		return nil, err

@@ -21,8 +21,8 @@ import (
 )
 
 var op2string = map[compareOp]string{
-	cmpExist:    api.SearchOperatorExist,
-	cmpNotExist: api.SearchOperatorNotExist,
+	cmpExist:    api.ExistOperator,
+	cmpNotExist: api.ExistNotOperator,
 	cmpHas:      api.SearchOperatorHas,
 	cmpHasNot:   api.SearchOperatorHasNot,
 	cmpPrefix:   api.SearchOperatorPrefix,
@@ -55,10 +55,10 @@ func (s *Search) Print(w io.Writer) {
 		if op := s.keyExist[name]; op == cmpExist || op == cmpNotExist {
 			env.writeString(op2string[op])
 		} else {
-			env.writeString(api.SearchOperatorExist)
+			env.writeString(api.ExistOperator)
 			env.printSpace()
 			env.writeString(name)
-			env.writeString(api.SearchOperatorNotExist)
+			env.writeString(api.ExistNotOperator)
 		}
 	}
 	for _, name := range maps.Keys(s.mvals) {
