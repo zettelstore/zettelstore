@@ -99,7 +99,7 @@ func TestListZettel(t *testing.T) {
 	if q != expQ {
 		t.Errorf("Query should be %q, but is %q", expQ, q)
 	}
-	expH := "role MATCH configuration"
+	expH := "role HAS configuration"
 	if h != expH {
 		t.Errorf("Human should be %q, but is %q", expH, h)
 	}

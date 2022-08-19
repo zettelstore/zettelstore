@@ -28,7 +28,7 @@ type searchFunc func(string) id.Set
 type searchCallMap map[searchOp]searchFunc
 
 var cmpPred = map[compareOp]func(string, string) bool{
-	cmpEqual:    func(s, t string) bool { return s == t },
+	cmpHas:      func(s, t string) bool { return s == t },
 	cmpPrefix:   strings.HasPrefix,
 	cmpSuffix:   strings.HasSuffix,
 	cmpContains: strings.Contains,
@@ -155,7 +155,7 @@ func retrieveNegatives(negCalls searchCallMap) id.Set {
 
 func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 	switch op {
-	case cmpEqual:
+	case cmpHas:
 		return searcher.SearchEqual
 	case cmpPrefix:
 		return searcher.SearchPrefix

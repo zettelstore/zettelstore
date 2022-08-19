@@ -144,7 +144,7 @@ func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValue
 }
 
 func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), cmpEqual, addSearch)
+	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), cmpHas, addSearch)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
 		// Remove leading '#' from each tag
@@ -180,7 +180,7 @@ func processTagSet(valueSet [][]expValue) [][]expValue {
 }
 
 func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), cmpEqual, addSearch)
+	preds := valuesToStringPredicates(sliceToLower(values), cmpHas, addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, pred := range preds {
@@ -193,7 +193,7 @@ func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueF
 }
 
 func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), cmpEqual, addSearch)
+	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), cmpHas, addSearch)
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
 		for _, preds := range predsList {
@@ -257,10 +257,10 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 		opVal := v.value // loop variable is used in closure --> save needed value
 		op := v.op
 		switch op {
-		case cmpEqual:
+		case cmpHas:
 			addSearch(v) // addSearch only for positive selections
 			result[i] = func(metaVal string) bool { return metaVal == opVal }
-		case cmpNotEqual:
+		case cmpHasNot:
 			result[i] = func(metaVal string) bool { return metaVal != opVal }
 		case cmpPrefix:
 			addSearch(v)
@@ -294,10 +294,10 @@ func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch
 			opVal := v.value // loop variable is used in closure --> save needed value
 			op := v.op
 			switch op {
-			case cmpEqual:
+			case cmpHas:
 				addSearch(v) // addSearch only for positive selections
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
-			case cmpNotEqual:
+			case cmpHasNot:
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
 			case cmpPrefix:
 				addSearch(v)

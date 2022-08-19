@@ -231,7 +231,7 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	switch ch {
 	case ':':
 		inp.Next()
-		op = cmpEqual
+		op = cmpHas
 	case '<':
 		inp.Next()
 		op = cmpSuffix
