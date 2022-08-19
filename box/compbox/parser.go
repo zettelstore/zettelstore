@@ -19,12 +19,14 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 )
 
 func genParserM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Supported Parser")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVTime).(string))
 	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }

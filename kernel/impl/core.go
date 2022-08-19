@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/maps"
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
@@ -59,6 +60,7 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 			true,
 		},
 		kernel.CoreProgname: {"Program name", nil, false},
+		kernel.CoreStarted:  {"Start time", nil, false},
 		kernel.CoreVerbose:  {"Verbose output", parseBool, true},
 		kernel.CoreVersion: {
 			"Version",
@@ -79,6 +81,7 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 		kernel.CoreGoVersion: runtime.Version(),
 		kernel.CoreHostname:  "*unknown host*",
 		kernel.CorePort:      0,
+		kernel.CoreStarted:   time.Now().Local().Format(id.ZidLayout),
 		kernel.CoreVerbose:   false,
 	}
 	if hn, err := os.Hostname(); err == nil {

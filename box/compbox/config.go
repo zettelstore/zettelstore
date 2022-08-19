@@ -16,6 +16,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/kernel"
 )
 
 func genConfigZettelM(zid id.Zid) *meta.Meta {
@@ -24,6 +25,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	}
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Startup Configuration")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }

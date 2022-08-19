@@ -26,6 +26,7 @@ func getVersionMeta(zid id.Zid, title string) *meta.Meta {
 
 func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m := getVersionMeta(zid, "Zettelstore Version")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVTime).(string))
 	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
@@ -34,14 +35,18 @@ func genVersionBuildC(*meta.Meta) []byte {
 }
 
 func genVersionHostM(zid id.Zid) *meta.Meta {
-	return getVersionMeta(zid, "Zettelstore Host")
+	m := getVersionMeta(zid, "Zettelstore Host")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
+	return m
 }
 func genVersionHostC(*meta.Meta) []byte {
 	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string))
 }
 
 func genVersionOSM(zid id.Zid) *meta.Meta {
-	return getVersionMeta(zid, "Zettelstore Operating System")
+	m := getVersionMeta(zid, "Zettelstore Operating System")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
+	return m
 }
 func genVersionOSC(*meta.Meta) []byte {
 	goOS := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string)

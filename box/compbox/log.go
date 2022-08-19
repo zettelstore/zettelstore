@@ -22,6 +22,7 @@ import (
 func genLogM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Log")
+	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	m.Set(api.KeySyntax, api.ValueSyntaxText)
 	return m
 }
