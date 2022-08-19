@@ -113,7 +113,7 @@ func (m *Meta) SetList(key string, values []string) {
 
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
-	m.Set(key, time.Now().Format(id.ZidLayout))
+	m.Set(key, time.Now().Local().Format(id.ZidLayout))
 }
 
 // BoolValue returns the value interpreted as a bool.

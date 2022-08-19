@@ -31,9 +31,10 @@ const (
 )
 
 // ZettelIDs that are used as Zid more than once.
+//
 // Note: if you change some values, ensure that you also change them in the
-//       constant box. They are mentioned there literally, because these
-//       constants are not available there.
+// Constant box. They are mentioned there literally, because these
+// constants are not available there.
 var (
 	ConfigurationZid   = MustParse(api.ZidConfiguration)
 	BaseTemplateZid    = MustParse(api.ZidBaseTemplate)
@@ -149,7 +150,7 @@ const ZidLayout = "20060102150405"
 
 // New returns a new zettel id based on the current time.
 func New(withSeconds bool) Zid {
-	now := time.Now()
+	now := time.Now().Local()
 	var s string
 	if withSeconds {
 		s = now.Format(ZidLayout)

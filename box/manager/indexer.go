@@ -109,7 +109,7 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 					roomNum = rno
 				}
 				mgr.idxMx.Lock()
-				mgr.idxLastReload = time.Now()
+				mgr.idxLastReload = time.Now().Local()
 				mgr.idxSinceReload = 0
 				mgr.idxMx.Unlock()
 			}

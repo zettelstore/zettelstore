@@ -147,7 +147,7 @@ func (cs *coreService) updateRecoverInfo(name string, recoverInfo interface{}, s
 	cs.mxRecover.Lock()
 	ri := cs.mapRecover[name]
 	ri.count++
-	ri.ts = time.Now()
+	ri.ts = time.Now().Local()
 	ri.info = recoverInfo
 	ri.stack = stack
 	cs.mapRecover[name] = ri

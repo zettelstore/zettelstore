@@ -385,7 +385,7 @@ func getReleaseVersionData() string {
 	}
 	base := getVersion()
 	if strings.HasSuffix(base, "dev") {
-		return base[:len(base)-3] + "preview-" + time.Now().Format("20060102")
+		return base[:len(base)-3] + "preview-" + time.Now().Local().Format("20060102")
 	}
 	return base
 }

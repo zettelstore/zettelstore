@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -228,5 +228,5 @@ func (l *Logger) WithUser(up UserProvider) *Logger {
 }
 
 func (l *Logger) writeMessage(level Level, msg string, details []byte) error {
-	return l.topParent.lw.WriteMessage(level, time.Now(), l.prefix, msg, details)
+	return l.topParent.lw.WriteMessage(level, time.Now().Local(), l.prefix, msg, details)
 }
