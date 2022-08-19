@@ -144,7 +144,11 @@ func (klw *kernelLogWriter) retrieveLogEntries() []kernel.LogEntry {
 	return result
 }
 
-func (klw *kernelLogWriter) getLastLogTime() time.Time { return klw.lastLog }
+func (klw *kernelLogWriter) getLastLogTime() time.Time {
+	klw.mx.RLock()
+	defer klw.mx.RUnlock()
+	return klw.lastLog
+}
 
 func copyE2E(result *kernel.LogEntry, origin *logEntry) {
 	result.Level = origin.level
