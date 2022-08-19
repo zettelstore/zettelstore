@@ -28,16 +28,16 @@ type searchFunc func(string) id.Set
 type searchCallMap map[searchOp]searchFunc
 
 var cmpPred = map[compareOp]func(string, string) bool{
-	cmpHas:      func(s, t string) bool { return s == t },
-	cmpPrefix:   strings.HasPrefix,
-	cmpSuffix:   strings.HasSuffix,
-	cmpContains: strings.Contains,
+	cmpHas:    func(s, t string) bool { return s == t },
+	cmpPrefix: strings.HasPrefix,
+	cmpSuffix: strings.HasSuffix,
+	cmpMatch:  strings.Contains,
 }
 
 func (scm searchCallMap) addSearch(s string, op compareOp, sf searchFunc) {
 	pred := cmpPred[op]
 	for k := range scm {
-		if op == cmpContains {
+		if op == cmpMatch {
 			if strings.Contains(k.s, s) {
 				return
 			}
@@ -161,7 +161,7 @@ func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 		return searcher.SearchPrefix
 	case cmpSuffix:
 		return searcher.SearchSuffix
-	case cmpContains:
+	case cmpMatch:
 		return searcher.SearchContains
 	default:
 		panic(fmt.Sprintf("Unexpected value of comparison operation: %v", op))

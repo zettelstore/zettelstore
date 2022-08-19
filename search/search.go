@@ -112,29 +112,29 @@ const (
 	cmpNoPrefix
 	cmpSuffix
 	cmpNoSuffix
-	cmpContains
-	cmpNotContains
+	cmpMatch
+	cmpNoMatch
 )
 
 var negateMap = map[compareOp]compareOp{
-	cmpUnknown:     cmpUnknown,
-	cmpHas:         cmpHasNot,
-	cmpHasNot:      cmpHas,
-	cmpPrefix:      cmpNoPrefix,
-	cmpNoPrefix:    cmpPrefix,
-	cmpSuffix:      cmpNoSuffix,
-	cmpNoSuffix:    cmpSuffix,
-	cmpContains:    cmpNotContains,
-	cmpNotContains: cmpContains,
+	cmpUnknown:  cmpUnknown,
+	cmpHas:      cmpHasNot,
+	cmpHasNot:   cmpHas,
+	cmpPrefix:   cmpNoPrefix,
+	cmpNoPrefix: cmpPrefix,
+	cmpSuffix:   cmpNoSuffix,
+	cmpNoSuffix: cmpSuffix,
+	cmpMatch:    cmpNoMatch,
+	cmpNoMatch:  cmpMatch,
 }
 
 func (op compareOp) negate() compareOp { return negateMap[op] }
 
 var negativeMap = map[compareOp]bool{
-	cmpHasNot:      true,
-	cmpNoPrefix:    true,
-	cmpNoSuffix:    true,
-	cmpNotContains: true,
+	cmpHasNot:   true,
+	cmpNoPrefix: true,
+	cmpNoSuffix: true,
+	cmpNoMatch:  true,
 }
 
 func (op compareOp) isNegated() bool { return negativeMap[op] }

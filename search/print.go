@@ -80,13 +80,13 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 			pe.writeString("<")
 		case cmpNoSuffix:
 			pe.writeString("!<")
-		case cmpContains:
+		case cmpMatch:
 			// An empty key signals a full-text search. Since "~" is the default op in this case,
 			// it can be ignored. Therefore, print only "~" if there is a key.
 			if key != "" {
 				pe.writeString("~")
 			}
-		case cmpNotContains:
+		case cmpNoMatch:
 			// An empty key signals a full-text search. Since "!" is the shortcut for "!~",
 			// it can be ignored. Therefore, print only "!~" if there is a key.
 			if key == "" {
@@ -162,10 +162,10 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 			pe.writeString(" SUFFIX ")
 		case cmpNoSuffix:
 			pe.writeString(" NOT SUFFIX ")
-		case cmpContains:
-			pe.writeString(" CONTAINS ")
-		case cmpNotContains:
-			pe.writeString(" NOT CONTAINS ")
+		case cmpMatch:
+			pe.writeString(" MATCH ")
+		case cmpNoMatch:
+			pe.writeString(" NOT MATCH ")
 		default:
 			pe.writeString(" MaTcH ")
 		}

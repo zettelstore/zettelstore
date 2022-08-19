@@ -3,22 +3,22 @@ title: Search operator
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220819155641
+modified: 20220819160209
 
 A search operator specifies how the comparison of a search value and a zettel should be executed.
 Every comparison is done case-insensitive, treating all uppercase letters the same as lowercase letters.
 
 The following are allowed search operator characters:
 * The exclamation mark character (""!"", U+0021) negates the meaning
-* The tilde character (""''~''"", U+007E) compares on containment (""contains operator"")
+* The tilde character (""''~''"", U+007E) compares on matching (""match operator"")
 * The greater-than sign character (""''>''"", U+003E) matches if there is some prefix (""prefix operator"")
 * The less-than sign character (""''<''"", U+003C) compares a suffix relationship (""suffix operator"")
 * The colon character (""'':''"", U+003A) compares on equal words (""has operator"")
 
 Since the exclamation mark character can be combined with the other, there are 10 possible combinations:
 # ""''!''"": is an abbreviation of the ""''!~''"" operator.
-# ""''~''"": is successful if the search value is contained in the value to be compared.
-# ""''!~''"": is successful if the search value is not contained in the value to be compared.
+# ""''~''"": is successful if the search value matched the value to be compared.
+# ""''!~''"": is successful if the search value does not match the value to be compared.
 # ""'':''"": is successful if the search value is equal to one word of the value to be compared.
 # ""''!:''"": is successful if the search value is not equal to any word of the value to be compared.
 # ""''>''"": is successful if the search value is a prefix of the value to be compared.

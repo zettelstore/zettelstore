@@ -208,7 +208,7 @@ func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchVal
 }
 
 func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), cmpContains, addSearch)
+	preds := valuesToStringPredicates(sliceToLower(values), cmpMatch, addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, pred := range preds {
@@ -272,10 +272,10 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 			result[i] = func(metaVal string) bool { return strings.HasSuffix(metaVal, opVal) }
 		case cmpNoSuffix:
 			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
-		case cmpContains:
+		case cmpMatch:
 			addSearch(v)
 			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
-		case cmpNotContains:
+		case cmpNoMatch:
 			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
 		default:
 			panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))
@@ -309,10 +309,10 @@ func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, true)
 			case cmpNoSuffix:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, false)
-			case cmpContains:
+			case cmpMatch:
 				addSearch(v)
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
-			case cmpNotContains:
+			case cmpNoMatch:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
 			default:
 				panic(fmt.Sprintf("Unknown compare operation %d/%d with value %q", op, v.op, opVal))

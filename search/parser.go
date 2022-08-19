@@ -164,7 +164,7 @@ func (ps *parserState) parseText(s *Search) *Search {
 		}
 	} else {
 		// Assert key == nil
-		s.addSearch(expValue{string(text), cmpContains})
+		s.addSearch(expValue{string(text), cmpMatch})
 	}
 	return s
 }
@@ -240,10 +240,10 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 		op = cmpPrefix
 	case '~':
 		inp.Next()
-		op = cmpContains
+		op = cmpMatch
 	default:
 		if negate {
-			return cmpNotContains, true
+			return cmpNoMatch, true
 		}
 		return cmpUnknown, false
 	}
