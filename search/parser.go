@@ -154,7 +154,7 @@ func (ps *parserState) parseText(s *Search) *Search {
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
 			if ps.isSpace() || ps.mustStop() {
-				return s.addKeyExist(string(key), op)
+				return s.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
 			hasOp = false
@@ -171,11 +171,11 @@ func (ps *parserState) parseText(s *Search) *Search {
 	if hasOp {
 		if key == nil {
 			s.addSearch(expValue{string(text), op})
-		} else if s.mvals == nil {
-			s.mvals = expMetaValues{string(key): {expValue{string(text), op}}}
+		} else if s.terms.mvals == nil {
+			s.terms.mvals = expMetaValues{string(key): {expValue{string(text), op}}}
 		} else {
 			sKey := string(key)
-			s.mvals[sKey] = append(s.mvals[sKey], expValue{string(text), op})
+			s.terms.mvals[sKey] = append(s.terms.mvals[sKey], expValue{string(text), op})
 		}
 	} else {
 		// Assert key == nil

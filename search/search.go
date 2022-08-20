@@ -45,10 +45,8 @@ type Search struct {
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
-	keyExist keyExistMap
-	mvals    expMetaValues // Expected values for a meta datum
-	search   []expValue    // Search string
-	negate   bool          // Negate the result of the whole selecting process
+	terms    conjTerms
+	negate   bool // Negate the result of the whole selecting process
 
 	// Fields to be used for sorting
 	order  []sortOrder
@@ -80,6 +78,27 @@ type RetrievePredicate func(id.Zid) bool
 type keyExistMap map[string]compareOp
 type expMetaValues map[string][]expValue
 
+type conjTerms struct {
+	keys   keyExistMap
+	mvals  expMetaValues // Expected values for a meta datum
+	search []expValue    // Search string
+}
+
+func (ct *conjTerms) addKey(key string, op compareOp) {
+	if ct.keys == nil {
+		ct.keys = map[string]compareOp{key: op}
+		return
+	}
+	if prevOp, found := ct.keys[key]; found {
+		if prevOp != op {
+			ct.keys[key] = cmpUnknown
+		}
+		return
+	}
+	ct.keys[key] = op
+}
+func (ct *conjTerms) addSearch(val expValue) { ct.search = append(ct.search, val) }
+
 type sortOrder struct {
 	key        string
 	descending bool
@@ -101,20 +120,20 @@ func (s *Search) Clone() *Search {
 	}
 	c := new(Search)
 	c.preMatch = s.preMatch
-	if len(s.keyExist) > 0 {
-		c.keyExist = make(keyExistMap, len(s.keyExist))
-		for k, v := range s.keyExist {
-			c.keyExist[k] = v
+	if len(s.terms.keys) > 0 {
+		c.terms.keys = make(keyExistMap, len(s.terms.keys))
+		for k, v := range s.terms.keys {
+			c.terms.keys[k] = v
 		}
 	}
 	// if len(c.mvals) > 0 {
-	c.mvals = make(expMetaValues, len(s.mvals))
-	for k, v := range s.mvals {
-		c.mvals[k] = v
+	c.terms.mvals = make(expMetaValues, len(s.terms.mvals))
+	for k, v := range s.terms.mvals {
+		c.terms.mvals[k] = v
 	}
 	// }
-	if len(s.search) > 0 {
-		c.search = append([]expValue{}, s.search...)
+	if len(s.terms.search) > 0 {
+		c.terms.search = append([]expValue{}, s.terms.search...)
 	}
 	c.negate = s.negate
 	if len(s.order) > 0 {
@@ -174,21 +193,11 @@ type expValue struct {
 	op    compareOp
 }
 
-func (s *Search) addSearch(val expValue) { s.search = append(s.search, val) }
+func (s *Search) addSearch(val expValue) { s.terms.search = append(s.terms.search, val) }
 
-func (s *Search) addKeyExist(key string, op compareOp) *Search {
+func (s *Search) addKey(key string, op compareOp) *Search {
 	s = createIfNeeded(s)
-	if s.keyExist == nil {
-		s.keyExist = map[string]compareOp{key: op}
-		return s
-	}
-	if prevOp, found := s.keyExist[key]; found {
-		if prevOp != op {
-			s.keyExist[key] = cmpUnknown
-		}
-		return s
-	}
-	s.keyExist[key] = op
+	s.terms.addKey(key, op)
 	return s
 }
 
@@ -234,12 +243,12 @@ func (s *Search) EnrichNeeded() bool {
 	}
 	s.mx.RLock()
 	defer s.mx.RUnlock()
-	for key := range s.keyExist {
+	for key := range s.terms.keys {
 		if meta.IsComputed(key) {
 			return true
 		}
 	}
-	for key := range s.mvals {
+	for key := range s.terms.mvals {
 		if meta.IsComputed(key) {
 			return true
 		}
@@ -271,7 +280,7 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	}
 	result := Compiled{PreMatch: preMatch}
 
-	term := s.retrievAndCompileTerm(searcher)
+	term := s.terms.retrievAndCompileTerm(searcher, s.negate)
 	if term.Retrieve == nil {
 		if term.Match == nil {
 			if !s.negate {
@@ -293,16 +302,16 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	return result
 }
 
-func (s *Search) retrievAndCompileTerm(searcher Searcher) CompiledTerm {
-	match := s.compileMeta() // Match might add some searches
-	if match != nil && s.negate {
+func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher, negate bool) CompiledTerm {
+	match := ct.compileMeta() // Match might add some searches
+	if match != nil && negate {
 		matchO := match
 		match = func(m *meta.Meta) bool { return !matchO(m) }
 	}
 	var pred RetrievePredicate
 	if searcher != nil {
-		pred = s.retrieveIndex(searcher)
-		if pred != nil && s.negate {
+		pred = ct.retrieveIndex(searcher)
+		if pred != nil && negate {
 			pred0 := pred
 			pred = func(zid id.Zid) bool { return !pred0(zid) }
 		}
@@ -311,11 +320,11 @@ func (s *Search) retrievAndCompileTerm(searcher Searcher) CompiledTerm {
 }
 
 // retrieveIndex and return a predicate to ask for results.
-func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
-	if len(s.search) == 0 {
+func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
+	if len(ct.search) == 0 {
 		return nil
 	}
-	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, s.search)
+	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, ct.search)
 	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
 		return neverIncluded
 	}

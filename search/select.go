@@ -27,31 +27,31 @@ type matchSpec struct {
 }
 
 // compileMeta calculates a selection func based on the given select criteria.
-func (s *Search) compileMeta() MetaMatchFunc {
-	for key := range s.mvals {
+func (ct *conjTerms) compileMeta() MetaMatchFunc {
+	for key := range ct.mvals {
 		// All queried keys must exist
-		s.addKeyExist(key, cmpExist)
+		ct.addKey(key, cmpExist)
 	}
-	for _, op := range s.keyExist {
+	for _, op := range ct.keys {
 		if op != cmpExist && op != cmpNotExist {
 			return matchNever
 		}
 	}
-	posSpecs, negSpecs := s.createSelectSpecs()
-	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(s.keyExist) > 0 {
-		return makeSearchMetaMatchFunc(posSpecs, negSpecs, s.keyExist)
+	posSpecs, negSpecs := ct.createSelectSpecs()
+	if len(posSpecs) > 0 || len(negSpecs) > 0 || len(ct.keys) > 0 {
+		return makeSearchMetaMatchFunc(posSpecs, negSpecs, ct.keys)
 	}
 	return nil
 }
 
-func (s *Search) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
-	posSpecs = make([]matchSpec, 0, len(s.mvals))
-	negSpecs = make([]matchSpec, 0, len(s.mvals))
-	for key, values := range s.mvals {
+func (ct *conjTerms) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
+	posSpecs = make([]matchSpec, 0, len(ct.mvals))
+	negSpecs = make([]matchSpec, 0, len(ct.mvals))
+	for key, values := range ct.mvals {
 		if !meta.KeyIsValid(key) {
 			continue
 		}
-		posMatch, negMatch := createPosNegMatchFunc(key, values, s.addSearch)
+		posMatch, negMatch := createPosNegMatchFunc(key, values, ct.addSearch)
 		if posMatch != nil {
 			posSpecs = append(posSpecs, matchSpec{key, posMatch})
 		}

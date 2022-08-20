@@ -49,10 +49,10 @@ func (s *Search) Print(w io.Writer) {
 		io.WriteString(w, kwNegate)
 		env.space = true
 	}
-	for _, name := range maps.Keys(s.keyExist) {
+	for _, name := range maps.Keys(s.terms.keys) {
 		env.printSpace()
 		env.writeString(name)
-		if op := s.keyExist[name]; op == cmpExist || op == cmpNotExist {
+		if op := s.terms.keys[name]; op == cmpExist || op == cmpNotExist {
 			env.writeString(op2string[op])
 		} else {
 			env.writeString(api.ExistOperator)
@@ -61,11 +61,11 @@ func (s *Search) Print(w io.Writer) {
 			env.writeString(api.ExistNotOperator)
 		}
 	}
-	for _, name := range maps.Keys(s.mvals) {
-		env.printExprValues(name, s.mvals[name])
+	for _, name := range maps.Keys(s.terms.mvals) {
+		env.printExprValues(name, s.terms.mvals[name])
 	}
-	if len(s.search) > 0 {
-		env.printExprValues("", s.search)
+	if len(s.terms.search) > 0 {
+		env.printExprValues("", s.terms.search)
 	}
 	env.printOrder(s.order)
 	env.printPosInt(kwOffset, s.offset)
@@ -135,12 +135,12 @@ func (s *Search) PrintHuman(w io.Writer) {
 	if s.negate {
 		env.writeString("NOT (")
 	}
-	for _, name := range maps.Keys(s.keyExist) {
+	for _, name := range maps.Keys(s.terms.keys) {
 		if env.space {
 			env.writeString(" AND ")
 		}
 		env.writeString(name)
-		switch s.keyExist[name] {
+		switch s.terms.keys[name] {
 		case cmpExist:
 			env.writeString(" EXIST")
 		case cmpNotExist:
@@ -150,20 +150,20 @@ func (s *Search) PrintHuman(w io.Writer) {
 		}
 		env.space = true
 	}
-	for _, name := range maps.Keys(s.mvals) {
+	for _, name := range maps.Keys(s.terms.mvals) {
 		if env.space {
 			env.writeString(" AND ")
 		}
 		env.writeString(name)
-		env.printHumanSelectExprValues(s.mvals[name])
+		env.printHumanSelectExprValues(s.terms.mvals[name])
 		env.space = true
 	}
-	if len(s.search) > 0 {
+	if len(s.terms.search) > 0 {
 		if env.space {
 			env.writeString(" ")
 		}
 		env.writeString("ANY")
-		env.printHumanSelectExprValues(s.search)
+		env.printHumanSelectExprValues(s.terms.search)
 		env.space = true
 	}
 	if s.negate {
