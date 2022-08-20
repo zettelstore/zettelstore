@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,7 +21,7 @@ import (
 
 func TestMatchZidNegate(t *testing.T) {
 	s := search.Parse(api.KeyID + api.SearchOperatorHasNot + string(api.ZidVersion) + " " + api.KeyID + api.SearchOperatorHasNot + string(api.ZidLicense))
-	_, matchFunc := s.RetrieveAndCompileMatch(nil)
+	compiled := s.RetrieveAndCompile(nil)
 
 	testCases := []struct {
 		zid api.ZettelID
@@ -33,7 +33,7 @@ func TestMatchZidNegate(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		m := meta.New(id.MustParse(tc.zid))
-		if matchFunc(m) != tc.exp {
+		if compiled.Match(m) != tc.exp {
 			if tc.exp {
 				t.Errorf("%d: meta %v must match %q", i, m.Zid, s)
 			} else {

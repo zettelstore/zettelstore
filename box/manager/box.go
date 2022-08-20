@@ -167,7 +167,8 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	searchPred, match := s.RetrieveAndCompileMatch(mgr)
+	// searchPred, match := s.RetrieveAndCompile(mgr)
+	compSearch := s.RetrieveAndCompile(mgr)
 	selected, rejected := metaMap{}, id.Set{}
 	handleMeta := func(m *meta.Meta) {
 		zid := m.Zid
@@ -179,7 +180,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
 			return
 		}
-		if match(m) {
+		if compSearch.PreMatch(m) && compSearch.Match(m) {
 			selected[zid] = m
 			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 		} else {
@@ -188,7 +189,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		}
 	}
 	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta, searchPred); err != nil {
+		if err := p.ApplyMeta(ctx, handleMeta, compSearch.Retrieve); err != nil {
 			return nil, err
 		}
 	}

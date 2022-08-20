@@ -39,18 +39,6 @@ type Searcher interface {
 	SearchContains(s string) id.Set
 }
 
-// MetaMatchFunc is a function determine whethe some metadata should be selected or not.
-type MetaMatchFunc func(*meta.Meta) bool
-
-func matchAlways(*meta.Meta) bool { return true }
-func matchNever(*meta.Meta) bool  { return false }
-
-// RetrieveFunc retrieves the index based on a Search.
-type RetrieveFunc func() id.Set
-
-// RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
-type RetrievePredicate func(id.Zid) bool
-
 // Search specifies a mechanism for selecting zettel.
 type Search struct {
 	mx sync.RWMutex // Protects other attributes
@@ -67,6 +55,22 @@ type Search struct {
 	offset int // <= 0: no offset
 	limit  int // <= 0: no limit
 }
+
+// Compiled is a compiled search, to be used in a Box
+type Compiled struct {
+	PreMatch MetaMatchFunc     // Precondition for Match and Retrieve
+	Match    MetaMatchFunc     // Match on metadata
+	Retrieve RetrievePredicate // Retrieve from full-text search
+}
+
+// MetaMatchFunc is a function determine whethe some metadata should be selected or not.
+type MetaMatchFunc func(*meta.Meta) bool
+
+func matchAlways(*meta.Meta) bool { return true }
+func matchNever(*meta.Meta) bool  { return false }
+
+// RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
+type RetrievePredicate func(id.Zid) bool
 
 type keyExistMap map[string]compareOp
 type expMetaValues map[string][]expValue
@@ -183,18 +187,15 @@ func (s *Search) addKeyExist(key string, op compareOp) *Search {
 	return s
 }
 
-// AddPreMatch adds the pre-selection predicate.
-func (s *Search) AddPreMatch(preMatch MetaMatchFunc) *Search {
+// SetPreMatch sets the pre-selection predicate.
+func (s *Search) SetPreMatch(preMatch MetaMatchFunc) *Search {
 	s = createIfNeeded(s)
 	s.mx.Lock()
 	defer s.mx.Unlock()
-	if pre := s.preMatch; pre == nil {
-		s.preMatch = preMatch
-	} else {
-		s.preMatch = func(m *meta.Meta) bool {
-			return preMatch(m) && pre(m)
-		}
+	if s.preMatch != nil {
+		panic("search PreMatch already set")
 	}
+	s.preMatch = preMatch
 	return s
 }
 
@@ -246,32 +247,69 @@ func (s *Search) EnrichNeeded() bool {
 	return false
 }
 
-// RetrieveAndCompileMatch queries the search index and returns a predicate
+// RetrieveAndCompile queries the search index and returns a predicate
 // for its results and returns a matching predicate.
-func (s *Search) RetrieveAndCompileMatch(searcher Searcher) (RetrievePredicate, MetaMatchFunc) {
+func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	if s == nil {
-		return alwaysIncluded, matchAlways
+		return Compiled{
+			PreMatch: matchAlways,
+			Match:    matchAlways,
+			Retrieve: alwaysIncluded,
+		}
 	}
 	s = s.Clone()
-	match := s.compileMatch() // Match might add some searches
+
+	preMatch := s.preMatch
+	if preMatch == nil {
+		preMatch = matchAlways
+	}
+	match := s.compileMeta() // Match might add some searches
+	if match != nil && s.negate {
+		matchO := match
+		match = func(m *meta.Meta) bool { return !matchO(m) }
+	}
 	var pred RetrievePredicate
 	if searcher != nil {
 		pred = s.retrieveIndex(searcher)
+		if pred != nil && s.negate {
+			pred0 := pred
+			pred = func(zid id.Zid) bool { return !pred0(zid) }
+		}
 	}
 
 	if pred == nil {
 		if match == nil {
 			if s.negate {
-				return neverIncluded, matchNever
+				return Compiled{
+					PreMatch: matchNever,
+					Match:    matchNever,
+					Retrieve: neverIncluded,
+				}
 			}
-			return alwaysIncluded, matchAlways
+			return Compiled{
+				PreMatch: preMatch,
+				Match:    matchAlways,
+				Retrieve: alwaysIncluded,
+			}
 		}
-		return alwaysIncluded, match
+		return Compiled{
+			PreMatch: preMatch,
+			Match:    match,
+			Retrieve: alwaysIncluded,
+		}
 	}
 	if match == nil {
-		return pred, matchAlways
+		return Compiled{
+			PreMatch: preMatch,
+			Match:    matchAlways,
+			Retrieve: pred,
+		}
 	}
-	return pred, match
+	return Compiled{
+		PreMatch: preMatch,
+		Match:    match,
+		Retrieve: pred,
+	}
 }
 
 // retrieveIndex and return a predicate to ask for results.
@@ -281,58 +319,28 @@ func (s *Search) retrieveIndex(searcher Searcher) RetrievePredicate {
 	}
 	normCalls, plainCalls, negCalls := prepareRetrieveCalls(searcher, s.search)
 	if hasConflictingCalls(normCalls, plainCalls, negCalls) {
-		return s.neverWithNegate()
+		return neverIncluded
 	}
 
-	negate := s.negate
 	positives := retrievePositives(normCalls, plainCalls)
 	if positives == nil {
 		// No positive search for words, must contain only words for a negative search.
 		// Otherwise len(search) == 0 (see above)
 		negatives := retrieveNegatives(negCalls)
-		return func(zid id.Zid) bool { return negatives.Contains(zid) == negate }
+		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
 	}
 	if len(positives) == 0 {
 		// Positive search didn't found anything. We can omit the negative search.
-		return s.neverWithNegate()
+		return neverIncluded
 	}
 	if len(negCalls) == 0 {
 		// Positive search found something, but there is no negative search.
-		return func(zid id.Zid) bool { return positives.Contains(zid) != negate }
+		return positives.Contains
 	}
 	negatives := retrieveNegatives(negCalls)
 	return func(zid id.Zid) bool {
-		return (positives.Contains(zid) && !negatives.Contains(zid)) != negate
+		return positives.Contains(zid) && !negatives.Contains(zid)
 	}
-}
-
-func (s *Search) neverWithNegate() RetrievePredicate {
-	if s.negate {
-		return alwaysIncluded
-	}
-	return neverIncluded
-}
-
-// compileMatch returns a function to match metadata based on select specification.
-func (s *Search) compileMatch() MetaMatchFunc {
-	compMeta := s.compileMeta()
-	preMatch := s.preMatch
-	if compMeta == nil {
-		if preMatch == nil {
-			return nil
-		}
-		return preMatch
-	}
-	if s.negate {
-		if preMatch == nil {
-			return func(m *meta.Meta) bool { return !compMeta(m) }
-		}
-		return func(m *meta.Meta) bool { return preMatch(m) && !compMeta(m) }
-	}
-	if preMatch == nil {
-		return compMeta
-	}
-	return func(m *meta.Meta) bool { return preMatch(m) && compMeta(m) }
 }
 
 // Sort applies the sorter to the slice of meta data.
