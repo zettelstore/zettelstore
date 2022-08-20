@@ -33,7 +33,7 @@ func TestMatchZidNegate(t *testing.T) {
 	}
 	for i, tc := range testCases {
 		m := meta.New(id.MustParse(tc.zid))
-		if compiled.Match(m) != tc.exp {
+		if compiled.Terms[0].Match(m) != tc.exp {
 			if tc.exp {
 				t.Errorf("%d: meta %v must match %q", i, m.Zid, s)
 			} else {

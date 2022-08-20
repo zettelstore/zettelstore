@@ -58,9 +58,8 @@ type Search struct {
 
 // Compiled is a compiled search, to be used in a Box
 type Compiled struct {
-	PreMatch MetaMatchFunc     // Precondition for Match and Retrieve
-	Match    MetaMatchFunc     // Match on metadata
-	Retrieve RetrievePredicate // Retrieve from full-text search
+	PreMatch MetaMatchFunc // Precondition for Match and Retrieve
+	Terms    []CompiledTerm
 }
 
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
@@ -68,6 +67,12 @@ type MetaMatchFunc func(*meta.Meta) bool
 
 func matchAlways(*meta.Meta) bool { return true }
 func matchNever(*meta.Meta) bool  { return false }
+
+// CompiledTerm is the preprocessed sequence of conjugated search terms.
+type CompiledTerm struct {
+	Match    MetaMatchFunc     // Match on metadata
+	Retrieve RetrievePredicate // Retrieve from full-text search
+}
 
 // RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
 type RetrievePredicate func(id.Zid) bool
@@ -253,9 +258,10 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	if s == nil {
 		return Compiled{
 			PreMatch: matchAlways,
-			Match:    matchAlways,
-			Retrieve: alwaysIncluded,
-		}
+			Terms: []CompiledTerm{{
+				Match:    matchAlways,
+				Retrieve: alwaysIncluded,
+			}}}
 	}
 	s = s.Clone()
 
@@ -263,6 +269,31 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	if preMatch == nil {
 		preMatch = matchAlways
 	}
+	result := Compiled{PreMatch: preMatch}
+
+	term := s.retrievAndCompileTerm(searcher)
+	if term.Retrieve == nil {
+		if term.Match == nil {
+			if !s.negate {
+				return Compiled{
+					PreMatch: preMatch,
+					Terms: []CompiledTerm{{
+						Match:    matchAlways,
+						Retrieve: alwaysIncluded,
+					}}}
+			}
+			return result
+		}
+		term.Retrieve = alwaysIncluded
+	}
+	if term.Match == nil {
+		term.Match = matchAlways
+	}
+	result.Terms = append(result.Terms, term)
+	return result
+}
+
+func (s *Search) retrievAndCompileTerm(searcher Searcher) CompiledTerm {
 	match := s.compileMeta() // Match might add some searches
 	if match != nil && s.negate {
 		matchO := match
@@ -276,40 +307,7 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 			pred = func(zid id.Zid) bool { return !pred0(zid) }
 		}
 	}
-
-	if pred == nil {
-		if match == nil {
-			if s.negate {
-				return Compiled{
-					PreMatch: matchNever,
-					Match:    matchNever,
-					Retrieve: neverIncluded,
-				}
-			}
-			return Compiled{
-				PreMatch: preMatch,
-				Match:    matchAlways,
-				Retrieve: alwaysIncluded,
-			}
-		}
-		return Compiled{
-			PreMatch: preMatch,
-			Match:    match,
-			Retrieve: alwaysIncluded,
-		}
-	}
-	if match == nil {
-		return Compiled{
-			PreMatch: preMatch,
-			Match:    matchAlways,
-			Retrieve: pred,
-		}
-	}
-	return Compiled{
-		PreMatch: preMatch,
-		Match:    match,
-		Retrieve: pred,
-	}
+	return CompiledTerm{Match: match, Retrieve: pred}
 }
 
 // retrieveIndex and return a predicate to ask for results.

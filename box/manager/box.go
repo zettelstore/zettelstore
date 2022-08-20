@@ -167,30 +167,32 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	// searchPred, match := s.RetrieveAndCompile(mgr)
 	compSearch := s.RetrieveAndCompile(mgr)
-	selected, rejected := metaMap{}, id.Set{}
-	handleMeta := func(m *meta.Meta) {
-		zid := m.Zid
-		if rejected.Contains(zid) {
-			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
-			return
+	selected := metaMap{}
+	for _, term := range compSearch.Terms {
+		rejected := id.Set{}
+		handleMeta := func(m *meta.Meta) {
+			zid := m.Zid
+			if rejected.Contains(zid) {
+				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
+				return
+			}
+			if _, ok := selected[zid]; ok {
+				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
+				return
+			}
+			if compSearch.PreMatch(m) && term.Match(m) {
+				selected[zid] = m
+				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
+			} else {
+				rejected.Zid(zid)
+				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/reject")
+			}
 		}
-		if _, ok := selected[zid]; ok {
-			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadySelected")
-			return
-		}
-		if compSearch.PreMatch(m) && compSearch.Match(m) {
-			selected[zid] = m
-			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
-		} else {
-			rejected.Zid(zid)
-			mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/reject")
-		}
-	}
-	for _, p := range mgr.boxes {
-		if err := p.ApplyMeta(ctx, handleMeta, compSearch.Retrieve); err != nil {
-			return nil, err
+		for _, p := range mgr.boxes {
+			if err := p.ApplyMeta(ctx, handleMeta, term.Retrieve); err != nil {
+				return nil, err
+			}
 		}
 	}
 	result := make([]*meta.Meta, 0, len(selected))
