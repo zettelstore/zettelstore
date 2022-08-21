@@ -12,6 +12,10 @@
      specify a search operator for metadata, the specified key is assumed to
      exist.
      (breaking: api, webui)
+  *  Allow search terms to be OR-ed. This allows to specify any search
+     expression in disjunctive normal form. Therefore, the NEGATE term is not
+     needed any more.
+     (breaking: api, webui)
   *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
      zettel was created. Since key &ldquo;published&rdquo; is now either
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
