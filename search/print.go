@@ -49,23 +49,28 @@ func (s *Search) Print(w io.Writer) {
 		io.WriteString(w, kwNegate)
 		env.space = true
 	}
-	for _, name := range maps.Keys(s.terms.keys) {
-		env.printSpace()
-		env.writeString(name)
-		if op := s.terms.keys[name]; op == cmpExist || op == cmpNotExist {
-			env.writeString(op2string[op])
-		} else {
-			env.writeString(api.ExistOperator)
+	for i, term := range s.terms {
+		if i > 0 {
+			env.writeString(" OR")
+		}
+		for _, name := range maps.Keys(term.keys) {
 			env.printSpace()
 			env.writeString(name)
-			env.writeString(api.ExistNotOperator)
+			if op := term.keys[name]; op == cmpExist || op == cmpNotExist {
+				env.writeString(op2string[op])
+			} else {
+				env.writeString(api.ExistOperator)
+				env.printSpace()
+				env.writeString(name)
+				env.writeString(api.ExistNotOperator)
+			}
 		}
-	}
-	for _, name := range maps.Keys(s.terms.mvals) {
-		env.printExprValues(name, s.terms.mvals[name])
-	}
-	if len(s.terms.search) > 0 {
-		env.printExprValues("", s.terms.search)
+		for _, name := range maps.Keys(term.mvals) {
+			env.printExprValues(name, term.mvals[name])
+		}
+		if len(term.search) > 0 {
+			env.printExprValues("", term.search)
+		}
 	}
 	env.printOrder(s.order)
 	env.printPosInt(kwOffset, s.offset)
@@ -135,36 +140,42 @@ func (s *Search) PrintHuman(w io.Writer) {
 	if s.negate {
 		env.writeString("NOT (")
 	}
-	for _, name := range maps.Keys(s.terms.keys) {
-		if env.space {
-			env.writeString(" AND ")
+	for i, term := range s.terms {
+		if i > 0 {
+			env.writeString(" OR ")
+			env.space = false
 		}
-		env.writeString(name)
-		switch s.terms.keys[name] {
-		case cmpExist:
-			env.writeString(" EXIST")
-		case cmpNotExist:
-			env.writeString(" NOT EXIST")
-		default:
-			env.writeString(" IS SCHRÖDINGER'S CAT")
+		for _, name := range maps.Keys(term.keys) {
+			if env.space {
+				env.writeString(" AND ")
+			}
+			env.writeString(name)
+			switch term.keys[name] {
+			case cmpExist:
+				env.writeString(" EXIST")
+			case cmpNotExist:
+				env.writeString(" NOT EXIST")
+			default:
+				env.writeString(" IS SCHRÖDINGER'S CAT")
+			}
+			env.space = true
 		}
-		env.space = true
-	}
-	for _, name := range maps.Keys(s.terms.mvals) {
-		if env.space {
-			env.writeString(" AND ")
+		for _, name := range maps.Keys(term.mvals) {
+			if env.space {
+				env.writeString(" AND ")
+			}
+			env.writeString(name)
+			env.printHumanSelectExprValues(term.mvals[name])
+			env.space = true
 		}
-		env.writeString(name)
-		env.printHumanSelectExprValues(s.terms.mvals[name])
-		env.space = true
-	}
-	if len(s.terms.search) > 0 {
-		if env.space {
-			env.writeString(" ")
+		if len(term.search) > 0 {
+			if env.space {
+				env.writeString(" ")
+			}
+			env.writeString("ANY")
+			env.printHumanSelectExprValues(term.search)
+			env.space = true
 		}
-		env.writeString("ANY")
-		env.printHumanSelectExprValues(s.terms.search)
-		env.space = true
 	}
 	if s.negate {
 		env.writeString(")")
@@ -207,7 +218,7 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 			pe.writeString(" MaTcH ")
 		}
 		if val.value == "" {
-			pe.writeString("ANY")
+			pe.writeString("NOTHING")
 		} else {
 			pe.writeString(val.value)
 		}

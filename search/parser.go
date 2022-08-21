@@ -25,7 +25,13 @@ func (s *Search) Parse(spec string) *Search {
 	state := parserState{
 		inp: input.NewInput([]byte(spec)),
 	}
-	return state.parse(s)
+	s = state.parse(s)
+	if s != nil {
+		for len(s.terms) > 1 && s.terms[len(s.terms)-1].isEmpty() {
+			s.terms = s.terms[:len(s.terms)-1]
+		}
+	}
+	return s
 }
 
 type parserState struct {
@@ -34,13 +40,22 @@ type parserState struct {
 
 func (ps *parserState) mustStop() bool { return ps.inp.Ch == input.EOS }
 func (ps *parserState) acceptSingleKw(s string) bool {
-	return ps.inp.Accept(s) && (ps.isSpace() || ps.mustStop())
+	inp := ps.inp
+	pos := inp.Pos
+	if inp.Accept(s) && (ps.isSpace() || ps.mustStop()) {
+		return true
+	}
+	inp.SetPos(pos)
+	return false
 }
 func (ps *parserState) acceptKwArgs(s string) bool {
-	if ps.inp.Accept(s) && ps.isSpace() {
+	inp := ps.inp
+	pos := inp.Pos
+	if inp.Accept(s) && ps.isSpace() {
 		ps.skipSpace()
 		return true
 	}
+	inp.SetPos(pos)
 	return false
 }
 
@@ -48,6 +63,7 @@ const (
 	kwLimit   = "LIMIT"
 	kwNegate  = "NEGATE"
 	kwOffset  = "OFFSET"
+	kwOr      = "OR"
 	kwOrder   = "ORDER"
 	kwRandom  = "RANDOM"
 	kwReverse = "REVERSE"
@@ -64,6 +80,13 @@ func (ps *parserState) parse(sea *Search) *Search {
 		if ps.acceptSingleKw(kwNegate) {
 			sea = createIfNeeded(sea)
 			sea.negate = !sea.negate
+			continue
+		}
+		if ps.acceptSingleKw(kwOr) {
+			sea = createIfNeeded(sea)
+			if !sea.terms[len(sea.terms)-1].isEmpty() {
+				sea.terms = append(sea.terms, conjTerms{})
+			}
 			continue
 		}
 		if ps.acceptSingleKw(kwRandom) {
@@ -171,11 +194,14 @@ func (ps *parserState) parseText(s *Search) *Search {
 	if hasOp {
 		if key == nil {
 			s.addSearch(expValue{string(text), op})
-		} else if s.terms.mvals == nil {
-			s.terms.mvals = expMetaValues{string(key): {expValue{string(text), op}}}
 		} else {
-			sKey := string(key)
-			s.terms.mvals[sKey] = append(s.terms.mvals[sKey], expValue{string(text), op})
+			last := len(s.terms) - 1
+			if s.terms[last].mvals == nil {
+				s.terms[last].mvals = expMetaValues{string(key): {expValue{string(text), op}}}
+			} else {
+				sKey := string(key)
+				s.terms[last].mvals[sKey] = append(s.terms[last].mvals[sKey], expValue{string(text), op})
+			}
 		}
 	} else {
 		// Assert key == nil

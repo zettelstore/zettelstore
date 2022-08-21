@@ -59,6 +59,8 @@ func TestParser(t *testing.T) {
 		{"LIMIT", "LIMIT"}, {"LIMIT a", "LIMIT a"}, {"LIMIT 10 a", "a LIMIT 10"},
 		{"LIMIT 01 a", "LIMIT 01 a"}, {"LIMIT 0 a", "a"}, {"a LIMIT 0", "a"},
 		{"LIMIT 4 LIMIT 8", "LIMIT 4"}, {"LIMIT 8 LIMIT 4", "LIMIT 4"},
+		{"OR", ""}, {"OR OR", ""}, {"a OR", "a"}, {"OR b", "b"}, {"OR a OR", "a"},
+		{"a OR b", "a OR b"},
 	}
 	for i, tc := range testcases {
 		got := search.Parse(tc.spec).String()

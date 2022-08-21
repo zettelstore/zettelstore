@@ -45,7 +45,7 @@ type Search struct {
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
-	terms    conjTerms
+	terms    []conjTerms
 	negate   bool // Negate the result of the whole selecting process
 
 	// Fields to be used for sorting
@@ -84,6 +84,9 @@ type conjTerms struct {
 	search []expValue    // Search string
 }
 
+func (ct *conjTerms) isEmpty() bool {
+	return len(ct.keys) == 0 && len(ct.mvals) == 0 && len(ct.search) == 0
+}
 func (ct *conjTerms) addKey(key string, op compareOp) {
 	if ct.keys == nil {
 		ct.keys = map[string]compareOp{key: op}
@@ -108,7 +111,9 @@ func (so *sortOrder) isRandom() bool { return so.key == "" }
 
 func createIfNeeded(s *Search) *Search {
 	if s == nil {
-		return new(Search)
+		return &Search{
+			terms: []conjTerms{{}},
+		}
 	}
 	return s
 }
@@ -120,20 +125,23 @@ func (s *Search) Clone() *Search {
 	}
 	c := new(Search)
 	c.preMatch = s.preMatch
-	if len(s.terms.keys) > 0 {
-		c.terms.keys = make(keyExistMap, len(s.terms.keys))
-		for k, v := range s.terms.keys {
-			c.terms.keys[k] = v
+	c.terms = make([]conjTerms, len(s.terms))
+	for i, term := range s.terms {
+		if len(term.keys) > 0 {
+			c.terms[i].keys = make(keyExistMap, len(term.keys))
+			for k, v := range term.keys {
+				c.terms[i].keys[k] = v
+			}
 		}
-	}
-	// if len(c.mvals) > 0 {
-	c.terms.mvals = make(expMetaValues, len(s.terms.mvals))
-	for k, v := range s.terms.mvals {
-		c.terms.mvals[k] = v
-	}
-	// }
-	if len(s.terms.search) > 0 {
-		c.terms.search = append([]expValue{}, s.terms.search...)
+		// if len(c.mvals) > 0 {
+		c.terms[i].mvals = make(expMetaValues, len(term.mvals))
+		for k, v := range term.mvals {
+			c.terms[i].mvals[k] = v
+		}
+		// }
+		if len(term.search) > 0 {
+			c.terms[i].search = append([]expValue{}, term.search...)
+		}
 	}
 	c.negate = s.negate
 	if len(s.order) > 0 {
@@ -193,11 +201,11 @@ type expValue struct {
 	op    compareOp
 }
 
-func (s *Search) addSearch(val expValue) { s.terms.search = append(s.terms.search, val) }
+func (s *Search) addSearch(val expValue) { s.terms[len(s.terms)-1].addSearch(val) }
 
 func (s *Search) addKey(key string, op compareOp) *Search {
 	s = createIfNeeded(s)
-	s.terms.addKey(key, op)
+	s.terms[len(s.terms)-1].addKey(key, op)
 	return s
 }
 
@@ -243,14 +251,16 @@ func (s *Search) EnrichNeeded() bool {
 	}
 	s.mx.RLock()
 	defer s.mx.RUnlock()
-	for key := range s.terms.keys {
-		if meta.IsComputed(key) {
-			return true
+	for _, term := range s.terms {
+		for key := range term.keys {
+			if meta.IsComputed(key) {
+				return true
+			}
 		}
-	}
-	for key := range s.terms.mvals {
-		if meta.IsComputed(key) {
-			return true
+		for key := range term.mvals {
+			if meta.IsComputed(key) {
+				return true
+			}
 		}
 	}
 	for _, o := range s.order {
@@ -280,25 +290,29 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	}
 	result := Compiled{PreMatch: preMatch}
 
-	term := s.terms.retrievAndCompileTerm(searcher, s.negate)
-	if term.Retrieve == nil {
-		if term.Match == nil {
-			if !s.negate {
-				return Compiled{
-					PreMatch: preMatch,
-					Terms: []CompiledTerm{{
-						Match:    matchAlways,
-						Retrieve: alwaysIncluded,
-					}}}
+	for _, term := range s.terms {
+		cTerm := term.retrievAndCompileTerm(searcher, s.negate)
+		if cTerm.Retrieve == nil {
+			if cTerm.Match == nil {
+				if !s.negate {
+					// no restriction on match/retrieve -> all will match
+					return Compiled{
+						PreMatch: preMatch,
+						Terms: []CompiledTerm{{
+							Match:    matchAlways,
+							Retrieve: alwaysIncluded,
+						}}}
+				}
+				// None will match -> ignore this clause
+				continue
 			}
-			return result
+			cTerm.Retrieve = alwaysIncluded
 		}
-		term.Retrieve = alwaysIncluded
+		if cTerm.Match == nil {
+			cTerm.Match = matchAlways
+		}
+		result.Terms = append(result.Terms, cTerm)
 	}
-	if term.Match == nil {
-		term.Match = matchAlways
-	}
-	result.Terms = append(result.Terms, term)
 	return result
 }
 
