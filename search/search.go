@@ -46,7 +46,6 @@ type Search struct {
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	terms    []conjTerms
-	negate   bool // Negate the result of the whole selecting process
 
 	// Fields to be used for sorting
 	order  []sortOrder
@@ -143,7 +142,6 @@ func (s *Search) Clone() *Search {
 			c.terms[i].search = append([]expValue{}, term.search...)
 		}
 	}
-	c.negate = s.negate
 	if len(s.order) > 0 {
 		c.order = append([]sortOrder{}, s.order...)
 	}
@@ -291,20 +289,16 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	result := Compiled{PreMatch: preMatch}
 
 	for _, term := range s.terms {
-		cTerm := term.retrievAndCompileTerm(searcher, s.negate)
+		cTerm := term.retrievAndCompileTerm(searcher)
 		if cTerm.Retrieve == nil {
 			if cTerm.Match == nil {
-				if !s.negate {
-					// no restriction on match/retrieve -> all will match
-					return Compiled{
-						PreMatch: preMatch,
-						Terms: []CompiledTerm{{
-							Match:    matchAlways,
-							Retrieve: alwaysIncluded,
-						}}}
-				}
-				// None will match -> ignore this clause
-				continue
+				// no restriction on match/retrieve -> all will match
+				return Compiled{
+					PreMatch: preMatch,
+					Terms: []CompiledTerm{{
+						Match:    matchAlways,
+						Retrieve: alwaysIncluded,
+					}}}
 			}
 			cTerm.Retrieve = alwaysIncluded
 		}
@@ -316,19 +310,11 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 	return result
 }
 
-func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher, negate bool) CompiledTerm {
+func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
-	if match != nil && negate {
-		matchO := match
-		match = func(m *meta.Meta) bool { return !matchO(m) }
-	}
 	var pred RetrievePredicate
 	if searcher != nil {
 		pred = ct.retrieveIndex(searcher)
-		if pred != nil && negate {
-			pred0 := pred
-			pred = func(zid id.Zid) bool { return !pred0(zid) }
-		}
 	}
 	return CompiledTerm{Match: match, Retrieve: pred}
 }

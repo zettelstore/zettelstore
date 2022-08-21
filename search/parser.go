@@ -61,7 +61,6 @@ func (ps *parserState) acceptKwArgs(s string) bool {
 
 const (
 	kwLimit   = "LIMIT"
-	kwNegate  = "NEGATE"
 	kwOffset  = "OFFSET"
 	kwOr      = "OR"
 	kwOrder   = "ORDER"
@@ -77,11 +76,6 @@ func (ps *parserState) parse(sea *Search) *Search {
 			break
 		}
 		pos := inp.Pos
-		if ps.acceptSingleKw(kwNegate) {
-			sea = createIfNeeded(sea)
-			sea.negate = !sea.negate
-			continue
-		}
 		if ps.acceptSingleKw(kwOr) {
 			sea = createIfNeeded(sea)
 			if !sea.terms[len(sea.terms)-1].isEmpty() {

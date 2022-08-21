@@ -45,10 +45,6 @@ func (s *Search) Print(w io.Writer) {
 		return
 	}
 	env := printEnv{w: w}
-	if s.negate {
-		io.WriteString(w, kwNegate)
-		env.space = true
-	}
 	for i, term := range s.terms {
 		if i > 0 {
 			env.writeString(" OR")
@@ -137,9 +133,6 @@ func (s *Search) PrintHuman(w io.Writer) {
 		return
 	}
 	env := printEnv{w: w}
-	if s.negate {
-		env.writeString("NOT (")
-	}
 	for i, term := range s.terms {
 		if i > 0 {
 			env.writeString(" OR ")
@@ -176,10 +169,6 @@ func (s *Search) PrintHuman(w io.Writer) {
 			env.printHumanSelectExprValues(term.search)
 			env.space = true
 		}
-	}
-	if s.negate {
-		env.writeString(")")
-		env.space = true
 	}
 
 	env.printOrder(s.order)
