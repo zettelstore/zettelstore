@@ -23,6 +23,10 @@
      (minor)
 
 <a name="0_6"></a>
+<h2>Changes for Version 0.6.1 (2022-08-22)</h2>
+  *  Ignore empty tags when reading metadata.
+     (bug)
+
 <h2>Changes for Version 0.6.0 (2022-08-11)</h2>
   *  Translating of "..." into horizontal ellipsis is no longer supported. Use
      &amp;hellip; instead.
