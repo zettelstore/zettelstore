@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -140,7 +140,7 @@ func (fsdn *fsdirNotifier) processEvent(ev *fsnotify.Event) bool {
 }
 
 const deleteFsOps = fsnotify.Remove | fsnotify.Rename
-const updateFsOps = fsnotify.Create | fsnotify.Write
+const updateFsOps = fsnotify.Create | fsnotify.Write | fsnotify.Rename
 
 func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 	if ev.Op&deleteFsOps != 0 {
@@ -177,7 +177,6 @@ func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
 		case <-fsdn.done:
 			return false
 		}
-		return true
 	}
 	if ev.Op&updateFsOps != 0 {
 		if fi, err := os.Lstat(ev.Name); err != nil || !fi.Mode().IsRegular() {
