@@ -23,6 +23,10 @@
      (minor)
 
 <a name="0_6"></a>
+<h2>Changes for Version 0.6.2 (2022-08-22)</h2>
+  *  Recognize renaming of zettel file external to Zettelstore.
+     (bug)
+
 <h2>Changes for Version 0.6.1 (2022-08-22)</h2>
   *  Ignore empty tags when reading metadata.
      (bug)
