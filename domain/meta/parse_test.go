@@ -12,6 +12,7 @@
 package meta_test
 
 import (
+	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -54,6 +55,42 @@ func TestTitle(t *testing.T) {
 		if got, ok := m.Get(api.KeyTitle); !ok || got != tc.e {
 			t.Log(m)
 			t.Errorf("TC=%d: expected %q, got %q", i, tc.e, got)
+		}
+	}
+}
+
+func TestTags(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		src string
+		exp string
+	}{
+		{"", ""},
+		{api.KeyTags + ":", ""},
+		{api.KeyTags + ": c", ""},
+		{api.KeyTags + ": #", ""},
+		{api.KeyTags + ": #c", "c"},
+		{api.KeyTags + ": #c #", "c"},
+		{api.KeyTags + ": #c #b", "b c"},
+		{api.KeyTags + ": #c # #", "c"},
+		{api.KeyTags + ": #c # #b", "b c"},
+	}
+	for i, tc := range testcases {
+		m := parseMetaStr(tc.src)
+		tags, found := m.GetTags(api.KeyTags)
+		if !found {
+			if tc.exp != "" {
+				t.Errorf("%d / %q: no %s found", i, tc.src, api.KeyTags)
+			}
+			continue
+		}
+		if tc.exp == "" && len(tags) > 0 {
+			t.Errorf("%d / %q: expected no %s, but got %v", i, tc.src, api.KeyTags, tags)
+			continue
+		}
+		got := strings.Join(tags, " ")
+		if tc.exp != got {
+			t.Errorf("%d / %q: expected %q, got: %q", i, tc.src, tc.exp, got)
 		}
 	}
 }
