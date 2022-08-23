@@ -3,8 +3,7 @@ title: Troubleshooting
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-created: 20211027105921
-modified: 20220823133610
+modified: 20220823195041
 
 This page lists some problems and their solutions that may occur when using your Zettelstore.
 
@@ -32,4 +31,6 @@ This page lists some problems and their solutions that may occur when using your
 ** **Explanation:** Sometimes, the operating system does not tell Zettelstore about the removed zettel.
    This occurs mostly under MacOS.
 ** **Solution 1:** If you are running Zettelstore in [[""simple-mode""|00001004051100]] or if you have enabled [[''expert-mode''|00001004020000#expert-mode]], you are allowed to refresh the internal data by selecting ""Refresh"" in the Web User Interface (you find it in the menu ""Lists"").
-** **Solution 2:** You configure the zettel box as [[""simple""|00001004011400]].
+** **Solution 2:** There is an [[API|00001012080500]] call to make Zettelstore aware of this change.
+** **Solution 3:** If you have an enabled [[Administrator Console|00001004100000]] you can use the command [[''refresh''|00001004101000#refresh]] to make your changes visible.
+** **Solution 4:** You configure the zettel box as [[""simple""|00001004011400]].

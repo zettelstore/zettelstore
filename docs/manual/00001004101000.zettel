@@ -3,7 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220218133526
+modified: 20220823194553
 
 ; [!bye|''bye'']
 : Closes the connection to the administrator console.
@@ -73,6 +73,8 @@ modified: 20220218133526
   This feature is dependent on the internal implementation language of Zettelstore, Go.
   It may be removed without any further notice at any time.
   In most cases, it is a tool for software developers to optimize Zettelstore's internal workings.
+; [!refresh|''refresh'']
+: Refresh all internal data about zettel.
 ; [!restart|''restart SERVICE'']
 : Restart the given service and all other that depend on this.
 ; [!services|''services'']
