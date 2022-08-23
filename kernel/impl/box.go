@@ -77,7 +77,7 @@ func (ps *boxService) Start(kern *myKernel) error {
 	}
 	ps.mxService.Lock()
 	defer ps.mxService.Unlock()
-	mgr, err := ps.createManager(boxURIs, kern.auth.manager, kern.cfg.rtConfig)
+	mgr, err := ps.createManager(boxURIs, kern.auth.manager, &kern.cfg)
 	if err != nil {
 		ps.logger.Fatal().Err(err).Msg("Unable to create manager")
 		return err

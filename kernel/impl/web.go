@@ -110,7 +110,7 @@ func (ws *webService) Start(kern *myKernel) error {
 	}
 
 	srvw := impl.New(ws.logger, listenAddr, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)
-	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, kern.cfg.rtConfig)
+	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, &kern.cfg)
 	if err != nil {
 		ws.logger.Fatal().Err(err).Msg("Unable to create")
 		return err

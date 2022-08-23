@@ -26,7 +26,7 @@ import (
 type configService struct {
 	srvConfig
 	mxService sync.RWMutex
-	rtConfig  *myConfig
+	orig      *meta.Meta
 }
 
 // Predefined Metadata keys for runtime configuration
@@ -102,7 +102,7 @@ func (cs *configService) Start(*myKernel) error {
 		data.Set(kv.Key, kv.Value)
 	}
 	cs.mxService.Lock()
-	cs.rtConfig = newConfig(cs.logger, data)
+	cs.orig = data
 	cs.mxService.Unlock()
 	return nil
 }
@@ -110,13 +110,13 @@ func (cs *configService) Start(*myKernel) error {
 func (cs *configService) IsStarted() bool {
 	cs.mxService.RLock()
 	defer cs.mxService.RUnlock()
-	return cs.rtConfig != nil
+	return cs.orig != nil
 }
 
 func (cs *configService) Stop(*myKernel) {
 	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
-	cs.rtConfig = nil
+	cs.orig = nil
 	cs.mxService.Unlock()
 }
 
@@ -125,170 +125,130 @@ func (*configService) GetStatistics() []kernel.KeyValue {
 }
 
 func (cs *configService) setBox(mgr box.Manager) {
-	cs.rtConfig.setBox(mgr)
+	mgr.RegisterObserver(cs.observe)
+	cs.doUpdate(mgr)
 }
 
-// myConfig contains all runtime configuration data relevant for the software.
-type myConfig struct {
-	log  *logger.Logger
-	mx   sync.RWMutex
-	orig *meta.Meta
-	data *meta.Meta
-}
-
-// New creates a new Config value.
-func newConfig(logger *logger.Logger, orig *meta.Meta) *myConfig {
-	cfg := myConfig{
-		log:  logger,
-		orig: orig,
-		data: orig.Clone(),
-	}
-	return &cfg
-}
-func (cfg *myConfig) setBox(mgr box.Manager) {
-	mgr.RegisterObserver(cfg.observe)
-	cfg.doUpdate(mgr)
-}
-
-func (cfg *myConfig) doUpdate(p box.Box) error {
-	m, err := p.GetMeta(context.Background(), cfg.data.Zid)
+func (cs *configService) doUpdate(p box.Box) error {
+	m, err := p.GetMeta(context.Background(), cs.orig.Zid)
 	if err != nil {
 		return err
 	}
-	cfg.mx.Lock()
-	for _, pair := range cfg.data.Pairs() {
+	cs.mxService.Lock()
+	for _, pair := range cs.orig.Pairs() {
 		key := pair.Key
 		if val, ok := m.Get(key); ok {
-			cfg.data.Set(key, val)
-		} else if defVal, defFound := cfg.orig.Get(key); defFound {
-			cfg.data.Set(key, defVal)
+			cs.SetConfig(key, val)
+		} else if defVal, defFound := cs.orig.Get(key); defFound {
+			cs.SetConfig(key, defVal)
 		}
 	}
-	cfg.mx.Unlock()
+	cs.mxService.Unlock()
+	cs.SwitchNextToCur() // Poor man's restart
 	return nil
 }
 
-func (cfg *myConfig) observe(ci box.UpdateInfo) {
+func (cs *configService) observe(ci box.UpdateInfo) {
 	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
-		cfg.log.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
-		go func() { cfg.doUpdate(ci.Box) }()
+		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
+		go func() { cs.doUpdate(ci.Box) }()
 	}
 }
 
-var defaultKeys = map[string]string{
-	api.KeyCopyright:  keyDefaultCopyright,
-	api.KeyLang:       keyDefaultLang,
-	api.KeyLicense:    keyDefaultLicense,
-	api.KeyVisibility: keyDefaultVisibility,
-}
+// --- config.Config
 
 // AddDefaultValues enriches the given meta data with its default values.
-func (cfg *myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta {
-	if cfg == nil {
+func (cs *configService) AddDefaultValues(m *meta.Meta) *meta.Meta {
+	if cs == nil {
 		return m
 	}
 	result := m
-	cfg.mx.RLock()
-	for k, d := range defaultKeys {
-		if _, ok := result.Get(k); !ok {
-			if val, ok2 := cfg.data.Get(d); ok2 && val != "" {
-				if result == m {
-					result = m.Clone()
-				}
-				result.Set(k, val)
-			}
-		}
+	cs.mxService.RLock()
+	if _, found := m.Get(api.KeyCopyright); !found {
+		result = updateMeta(m, result, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
 	}
-	cfg.mx.RUnlock()
+	if _, found := m.Get(api.KeyLang); !found {
+		result = updateMeta(m, result, api.KeyLang, cs.GetConfig(keyDefaultLang).(string))
+	}
+	if _, found := m.Get(api.KeyLicense); !found {
+		result = updateMeta(m, result, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))
+	}
+	if _, found := m.Get(api.KeyVisibility); !found {
+		result = updateMeta(m, result, api.KeyVisibility, cs.GetConfig(keyDefaultVisibility).(meta.Visibility).String())
+	}
+	cs.mxService.RUnlock()
+	return result
+}
+func updateMeta(result, m *meta.Meta, key, val string) *meta.Meta {
+	if result == nil {
+		result = m.Clone()
+	}
+	result.Set(key, val)
 	return result
 }
 
-func (cfg *myConfig) getString(key string) string {
-	cfg.mx.RLock()
-	val, _ := cfg.data.Get(key)
-	cfg.mx.RUnlock()
-	return val
-}
-func (cfg *myConfig) getBool(key string) bool {
-	cfg.mx.RLock()
-	val := cfg.data.GetBool(key)
-	cfg.mx.RUnlock()
-	return val
-}
-
 // GetDefaultLang returns the current value of the "default-lang" key.
-func (cfg *myConfig) GetDefaultLang() string { return cfg.getString(keyDefaultLang) }
+func (cs *configService) GetDefaultLang() string { return cs.GetConfig(keyDefaultLang).(string) }
 
 // GetSiteName returns the current value of the "site-name" key.
-func (cfg *myConfig) GetSiteName() string { return cfg.getString(keySiteName) }
+func (cs *configService) GetSiteName() string { return cs.GetConfig(keySiteName).(string) }
 
 // GetHomeZettel returns the value of the "home-zettel" key.
-func (cfg *myConfig) GetHomeZettel() id.Zid {
-	val := cfg.getString(keyHomeZettel)
-	if homeZid, err := id.Parse(val); err == nil {
+func (cs *configService) GetHomeZettel() id.Zid {
+	homeZid := cs.GetConfig(keyHomeZettel).(id.Zid)
+	if homeZid != id.Invalid {
 		return homeZid
 	}
-	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(keyHomeZettel)
-	homeZid, _ := id.Parse(val)
-	cfg.mx.RUnlock()
+	cs.mxService.RLock()
+	val, _ := cs.orig.Get(keyHomeZettel)
+	homeZid, _ = id.Parse(val)
+	cs.mxService.RUnlock()
 	return homeZid
 }
 
 // GetMaxTransclusions return the maximum number of indirect transclusions.
-func (cfg *myConfig) GetMaxTransclusions() int {
-	const defaultValue = 1024
-	cfg.mx.RLock()
-	val := cfg.data.GetNumber(keyMaxTransclusions, defaultValue)
-	cfg.mx.RUnlock()
-	if 0 < val && val < 100000000 {
-		return int(val)
-	}
-	return defaultValue
+func (cs *configService) GetMaxTransclusions() int {
+	return int(cs.GetConfig(keyMaxTransclusions).(int64))
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
-func (cfg *myConfig) GetYAMLHeader() bool { return cfg.getBool(keyYAMLHeader) }
+func (cs *configService) GetYAMLHeader() bool { return cs.GetConfig(keyYAMLHeader).(bool) }
 
 // GetMarkerExternal returns the current value of the "marker-external" key.
-func (cfg *myConfig) GetMarkerExternal() string {
-	return cfg.getString(keyMarkerExternal)
-}
+func (cs *configService) GetMarkerExternal() string { return cs.GetConfig(keyMarkerExternal).(string) }
 
 // GetFooterHTML returns HTML code that should be embedded into the footer
 // of each WebUI page.
-func (cfg *myConfig) GetFooterHTML() string { return cfg.getString(keyFooterHTML) }
+func (cs *configService) GetFooterHTML() string { return cs.GetConfig(keyFooterHTML).(string) }
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
-func (cfg *myConfig) GetZettelFileSyntax() []string {
-	cfg.mx.RLock()
-	defer cfg.mx.RUnlock()
-	return cfg.data.GetListOrNil(keyZettelFileSyntax)
+func (cs *configService) GetZettelFileSyntax() []string {
+	return cs.GetConfig(keyZettelFileSyntax).([]string)
 }
 
-// --- AuthConfig
+// --- config.AuthConfig
 
 // GetSimpleMode returns true if system tuns in simple-mode.
-func (cfg *myConfig) GetSimpleMode() bool { return cfg.getBool(kernel.ConfigSimpleMode) }
+func (cs *configService) GetSimpleMode() bool { return cs.GetConfig(kernel.ConfigSimpleMode).(bool) }
 
 // GetExpertMode returns the current value of the "expert-mode" key.
-func (cfg *myConfig) GetExpertMode() bool { return cfg.getBool(keyExpertMode) }
+func (cs *configService) GetExpertMode() bool { return cs.GetConfig(keyExpertMode).(bool) }
 
 // GetVisibility returns the visibility value, or "login" if none is given.
-func (cfg *myConfig) GetVisibility(m *meta.Meta) meta.Visibility {
+func (cs *configService) GetVisibility(m *meta.Meta) meta.Visibility {
 	if val, ok := m.Get(api.KeyVisibility); ok {
 		if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
 			return vis
 		}
 	}
 
-	val := cfg.getString(keyDefaultVisibility)
-	if vis := meta.GetVisibility(val); vis != meta.VisibilityUnknown {
+	vis := cs.GetConfig(keyDefaultVisibility).(meta.Visibility)
+	if vis != meta.VisibilityUnknown {
 		return vis
 	}
-	cfg.mx.RLock()
-	val, _ = cfg.orig.Get(keyDefaultVisibility)
-	vis := meta.GetVisibility(val)
-	cfg.mx.RUnlock()
+	cs.mxService.RLock()
+	val, _ := cs.orig.Get(keyDefaultVisibility)
+	vis = meta.GetVisibility(val)
+	cs.mxService.RUnlock()
 	return vis
 }
