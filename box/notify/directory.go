@@ -349,6 +349,7 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 		if dupName2 != "" {
 			ds.log.Warn().Str("name", dupName2).Msg("Duplicate content (is ignored)")
 		}
+		return id.Invalid
 	}
 	return zid
 }

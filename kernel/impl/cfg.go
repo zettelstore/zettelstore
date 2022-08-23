@@ -131,6 +131,7 @@ func (cs *configService) setBox(mgr box.Manager) {
 
 func (cs *configService) doUpdate(p box.Box) error {
 	m, err := p.GetMeta(context.Background(), cs.orig.Zid)
+	cs.logger.Trace().Err(err).Msg("got config meta")
 	if err != nil {
 		return err
 	}
@@ -149,7 +150,10 @@ func (cs *configService) doUpdate(p box.Box) error {
 }
 
 func (cs *configService) observe(ci box.UpdateInfo) {
-	if ci.Reason == box.OnReload || ci.Zid == id.ConfigurationZid {
+	if ci.Reason == box.OnReload {
+		cs.logger.Debug().Msg("reload")
+		go func() { cs.doUpdate(ci.Box) }()
+	} else if ci.Zid == id.ConfigurationZid {
 		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 		go func() { cs.doUpdate(ci.Box) }()
 	}
