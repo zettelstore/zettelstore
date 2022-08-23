@@ -139,11 +139,10 @@ func (fsdn *fsdirNotifier) processEvent(ev *fsnotify.Event) bool {
 	return true
 }
 
-const deleteFsOps = fsnotify.Remove | fsnotify.Rename
-const updateFsOps = fsnotify.Create | fsnotify.Write | fsnotify.Rename
-
 func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
-	if ev.Op&deleteFsOps != 0 {
+	const deleteFsDirOps = fsnotify.Remove | fsnotify.Rename
+
+	if ev.Op&deleteFsDirOps != 0 {
 		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory removed")
 		fsdn.base.Remove(fsdn.path)
 		select {
@@ -151,9 +150,7 @@ func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 		case <-fsdn.done:
 			return false
 		}
-		return true
-	}
-	if ev.Op&fsnotify.Create != 0 {
+	} else if ev.Op&fsnotify.Create != 0 {
 		err := fsdn.base.Add(fsdn.path)
 		if err != nil {
 			fsdn.log.IfErr(err).Str("name", fsdn.path).Msg("Unable to add directory")
@@ -165,29 +162,35 @@ func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 		}
 		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory added")
 		return listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done)
+	} else {
+		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("Directory processed")
 	}
 	return true
 }
 
 func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
-	if ev.Op&deleteFsOps != 0 {
-		fsdn.log.Trace().Str("name", ev.Name).Uint("op", uint64(ev.Op)).Msg("File deleted")
-		select {
-		case fsdn.events <- Event{Op: Delete, Name: filepath.Base(ev.Name)}:
-		case <-fsdn.done:
-			return false
-		}
-	}
-	if ev.Op&updateFsOps != 0 {
+	const deleteFsFileOps = fsnotify.Remove
+	const updateFsFileOps = fsnotify.Create | fsnotify.Write | fsnotify.Rename
+
+	if ev.Op&updateFsFileOps != 0 {
 		if fi, err := os.Lstat(ev.Name); err != nil || !fi.Mode().IsRegular() {
 			return true
 		}
-		fsdn.log.Trace().Str("name", ev.Name).Uint("op", uint64(ev.Op)).Msg("File updated")
+		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File updated")
 		select {
 		case fsdn.events <- Event{Op: Update, Name: filepath.Base(ev.Name)}:
 		case <-fsdn.done:
 			return false
 		}
+	} else if ev.Op&deleteFsFileOps != 0 {
+		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File deleted")
+		select {
+		case fsdn.events <- Event{Op: Delete, Name: filepath.Base(ev.Name)}:
+		case <-fsdn.done:
+			return false
+		}
+	} else {
+		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File processed")
 	}
 	return true
 }

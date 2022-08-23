@@ -260,12 +260,15 @@ func (ds *DirService) updateEvents() {
 			zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
 			if zid != id.Invalid {
-				ds.notifyChange(box.OnUpdate, zid)
+				ds.notifyChange(box.OnZettel, zid)
 			}
 		case Delete:
 			ds.mx.Lock()
-			ds.onDeleteFileEvent(ds.entries, ev.Name)
+			zid := ds.onDeleteFileEvent(ds.entries, ev.Name)
 			ds.mx.Unlock()
+			if zid != id.Invalid {
+				ds.notifyChange(box.OnZettel, zid)
+			}
 		default:
 			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
 		}
@@ -282,14 +285,14 @@ func getNewZids(entries entrySet) id.Slice {
 
 func (ds *DirService) onCreateDirectory(zids id.Slice, prevEntries entrySet) {
 	for _, zid := range zids {
-		ds.notifyChange(box.OnUpdate, zid)
+		ds.notifyChange(box.OnZettel, zid)
 		delete(prevEntries, zid)
 	}
 
 	// These were previously stored, by are not found now.
 	// Notify system that these were deleted, e.g. for updating the index.
 	for zid := range prevEntries {
-		ds.notifyChange(box.OnDelete, zid)
+		ds.notifyChange(box.OnZettel, zid)
 	}
 }
 
@@ -300,7 +303,7 @@ func (ds *DirService) onDestroyDirectory() {
 	ds.state = dsMissing
 	ds.mx.Unlock()
 	for zid := range entries {
-		ds.notifyChange(box.OnDelete, zid)
+		ds.notifyChange(box.OnZettel, zid)
 	}
 }
 
@@ -350,22 +353,22 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	return zid
 }
 
-func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
+func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) id.Zid {
 	if entries == nil {
-		return
+		return id.Invalid
 	}
 	zid := seekZid(name)
 	if zid == id.Invalid {
-		return
+		return id.Invalid
 	}
 	entry, found := entries[zid]
 	if !found {
-		return
+		return zid
 	}
 	for i, dupName := range entry.UselessFiles {
 		if dupName == name {
 			removeDuplicate(entry, i)
-			return
+			return zid
 		}
 	}
 	if name == entry.ContentName {
@@ -378,8 +381,8 @@ func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) {
 	}
 	if entry.ContentName == "" && entry.MetaName == "" {
 		delete(entries, zid)
-		ds.notifyChange(box.OnDelete, zid)
 	}
+	return zid
 }
 
 func removeDuplicate(entry *DirEntry, i int) {

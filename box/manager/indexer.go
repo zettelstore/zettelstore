@@ -113,13 +113,19 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 				mgr.idxSinceReload = 0
 				mgr.idxMx.Unlock()
 			}
-		case arUpdate:
-			mgr.idxLog.Debug().Zid(zid).Msg("update")
+		case arZettel:
+			mgr.idxLog.Debug().Zid(zid).Msg("zettel")
 			zettel, err := mgr.GetZettel(ctx, zid)
 			if err != nil {
-				// TODO: on some errors put the zid into a "try later" set
+				// Zettel was deleted or is not accessible b/c of other reasons
+				mgr.idxLog.Trace().Zid(zid).Msg("delete")
+				mgr.idxMx.Lock()
+				mgr.idxSinceReload++
+				mgr.idxMx.Unlock()
+				mgr.idxDeleteZettel(zid)
 				continue
 			}
+			mgr.idxLog.Trace().Zid(zid).Msg("update")
 			mgr.idxMx.Lock()
 			if arRoomNum == roomNum {
 				mgr.idxDurReload = time.Since(start)
@@ -127,20 +133,6 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 			mgr.idxSinceReload++
 			mgr.idxMx.Unlock()
 			mgr.idxUpdateZettel(ctx, zettel)
-		case arDelete:
-			mgr.idxLog.Debug().Zid(zid).Msg("delete")
-			if _, err := mgr.GetMeta(ctx, zid); err == nil {
-				// Zettel was not deleted. This might occur, if zettel was
-				// deleted in secondary dirbox, but is still present in
-				// first dirbox (or vice versa). Re-index zettel in case
-				// a hidden zettel was recovered
-				mgr.idxLog.Debug().Zid(zid).Msg("not deleted")
-				mgr.idxAr.Enqueue(zid, arUpdate)
-			}
-			mgr.idxMx.Lock()
-			mgr.idxSinceReload++
-			mgr.idxMx.Unlock()
-			mgr.idxDeleteZettel(zid)
 		}
 	}
 }
@@ -242,6 +234,6 @@ func (mgr *Manager) idxDeleteZettel(zid id.Zid) {
 
 func (mgr *Manager) idxCheckZettel(s id.Set) {
 	for zid := range s {
-		mgr.idxAr.Enqueue(zid, arUpdate)
+		mgr.idxAr.EnqueueZettel(zid)
 	}
 }

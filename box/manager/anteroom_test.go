@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -19,21 +19,21 @@ import (
 func TestSimple(t *testing.T) {
 	t.Parallel()
 	ar := newAnterooms(2)
-	ar.Enqueue(id.Zid(1), arUpdate)
+	ar.EnqueueZettel(id.Zid(1))
 	action, zid, rno := ar.Dequeue()
-	if zid != id.Zid(1) || action != arUpdate || rno != 1 {
-		t.Errorf("Expected arUpdate/1/1, but got %v/%v/%v", action, zid, rno)
+	if zid != id.Zid(1) || action != arZettel || rno != 1 {
+		t.Errorf("Expected arZettel/1/1, but got %v/%v/%v", action, zid, rno)
 	}
-	action, zid, _ = ar.Dequeue()
-	if zid != id.Invalid && action != arDelete {
+	_, zid, _ = ar.Dequeue()
+	if zid != id.Invalid {
 		t.Errorf("Expected invalid Zid, but got %v", zid)
 	}
-	ar.Enqueue(id.Zid(1), arUpdate)
-	ar.Enqueue(id.Zid(2), arUpdate)
+	ar.EnqueueZettel(id.Zid(1))
+	ar.EnqueueZettel(id.Zid(2))
 	if ar.first != ar.last {
 		t.Errorf("Expected one room, but got more")
 	}
-	ar.Enqueue(id.Zid(3), arUpdate)
+	ar.EnqueueZettel(id.Zid(3))
 	if ar.first == ar.last {
 		t.Errorf("Expected more than one room, but got only one")
 	}
@@ -53,34 +53,32 @@ func TestSimple(t *testing.T) {
 func TestReset(t *testing.T) {
 	t.Parallel()
 	ar := newAnterooms(1)
-	ar.Enqueue(id.Zid(1), arUpdate)
+	ar.EnqueueZettel(id.Zid(1))
 	ar.Reset()
 	action, zid, _ := ar.Dequeue()
 	if action != arReload || zid != id.Invalid {
 		t.Errorf("Expected reload & invalid Zid, but got %v/%v", action, zid)
 	}
 	ar.Reload(id.NewSet(3, 4))
-	ar.Enqueue(id.Zid(5), arUpdate)
-	ar.Enqueue(id.Zid(5), arDelete)
-	ar.Enqueue(id.Zid(5), arDelete)
-	ar.Enqueue(id.Zid(5), arUpdate)
+	ar.EnqueueZettel(id.Zid(5))
+	ar.EnqueueZettel(id.Zid(5))
 	if ar.first == ar.last || ar.first.next != ar.last /*|| ar.first.next.next != ar.last*/ {
 		t.Errorf("Expected 2 rooms")
 	}
 	action, zid1, _ := ar.Dequeue()
-	if action != arUpdate {
-		t.Errorf("Expected arUpdate, but got %v", action)
+	if action != arZettel {
+		t.Errorf("Expected arZettel, but got %v", action)
 	}
 	action, zid2, _ := ar.Dequeue()
-	if action != arUpdate {
-		t.Errorf("Expected arUpdate, but got %v", action)
+	if action != arZettel {
+		t.Errorf("Expected arZettel, but got %v", action)
 	}
 	if !(zid1 == id.Zid(3) && zid2 == id.Zid(4) || zid1 == id.Zid(4) && zid2 == id.Zid(3)) {
 		t.Errorf("Zids must be 3 or 4, but got %v/%v", zid1, zid2)
 	}
 	action, zid, _ = ar.Dequeue()
-	if zid != id.Zid(5) || action != arUpdate {
-		t.Errorf("Expected 5/arUpdate, but got %v/%v", zid, action)
+	if zid != id.Zid(5) || action != arZettel {
+		t.Errorf("Expected 5/arZettel, but got %v/%v", zid, action)
 	}
 	action, zid, _ = ar.Dequeue()
 	if action != arNothing || zid != id.Invalid {
@@ -90,8 +88,8 @@ func TestReset(t *testing.T) {
 	ar = newAnterooms(1)
 	ar.Reload(id.NewSet(id.Zid(6)))
 	action, zid, _ = ar.Dequeue()
-	if zid != id.Zid(6) || action != arUpdate {
-		t.Errorf("Expected 6/arUpdate, but got %v/%v", zid, action)
+	if zid != id.Zid(6) || action != arZettel {
+		t.Errorf("Expected 6/arZettel, but got %v/%v", zid, action)
 	}
 	action, zid, _ = ar.Dequeue()
 	if action != arNothing || zid != id.Invalid {
@@ -99,7 +97,7 @@ func TestReset(t *testing.T) {
 	}
 
 	ar = newAnterooms(1)
-	ar.Enqueue(id.Zid(8), arUpdate)
+	ar.EnqueueZettel(id.Zid(8))
 	ar.Reload(nil)
 	action, zid, _ = ar.Dequeue()
 	if action != arNothing || zid != id.Invalid {

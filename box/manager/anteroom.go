@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -21,8 +21,7 @@ type arAction int
 const (
 	arNothing arAction = iota
 	arReload
-	arUpdate
-	arDelete
+	arZettel
 )
 
 type anteroom struct {
@@ -45,14 +44,14 @@ func newAnterooms(maxLoad int) *anterooms {
 	return &anterooms{maxLoad: maxLoad}
 }
 
-func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
-	if !zid.IsValid() || action == arNothing || action == arReload {
+func (ar *anterooms) EnqueueZettel(zid id.Zid) {
+	if !zid.IsValid() {
 		return
 	}
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	if ar.first == nil {
-		ar.first = ar.makeAnteroom(zid, action)
+		ar.first = ar.makeAnteroom(zid, arZettel)
 		ar.last = ar.first
 		return
 	}
@@ -60,26 +59,17 @@ func (ar *anterooms) Enqueue(zid id.Zid, action arAction) {
 		if room.reload {
 			continue // Do not put zettel in reload room
 		}
-		a, ok := room.waiting[zid]
-		if !ok {
-			continue
-		}
-		switch action {
-		case a:
+		if _, ok := room.waiting[zid]; ok {
+			// Zettel is already waiting.
 			return
-		case arUpdate:
-			room.waiting[zid] = action
-		case arDelete:
-			room.waiting[zid] = action
 		}
-		return
 	}
 	if room := ar.last; !room.reload && (ar.maxLoad == 0 || room.curLoad < ar.maxLoad) {
-		room.waiting[zid] = action
+		room.waiting[zid] = arZettel
 		room.curLoad++
 		return
 	}
-	room := ar.makeAnteroom(zid, action)
+	room := ar.makeAnteroom(zid, arZettel)
 	ar.last.next = room
 	ar.last = room
 }
@@ -105,7 +95,7 @@ func (ar *anterooms) Reset() {
 func (ar *anterooms) Reload(newZids id.Set) uint64 {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	newWaiting := createWaitingSet(newZids, arUpdate)
+	newWaiting := createWaitingSet(newZids)
 	ar.deleteReloadedRooms()
 
 	if ns := len(newWaiting); ns > 0 {
@@ -122,11 +112,11 @@ func (ar *anterooms) Reload(newZids id.Set) uint64 {
 	return 0
 }
 
-func createWaitingSet(zids id.Set, action arAction) map[id.Zid]arAction {
+func createWaitingSet(zids id.Set) map[id.Zid]arAction {
 	waitingSet := make(map[id.Zid]arAction, len(zids))
 	for zid := range zids {
 		if zid.IsValid() {
-			waitingSet[zid] = action
+			waitingSet[zid] = arZettel
 		}
 	}
 	return waitingSet

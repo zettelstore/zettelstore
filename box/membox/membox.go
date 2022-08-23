@@ -104,7 +104,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	mb.zettel[zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnUpdate, zid)
+	mb.notifyChanged(box.OnZettel, zid)
 	mb.log.Trace().Zid(zid).Msg("CreateZettel")
 	return zid, nil
 }
@@ -193,7 +193,7 @@ func (mb *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	mb.zettel[m.Zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnUpdate, m.Zid)
+	mb.notifyChanged(box.OnZettel, m.Zid)
 	mb.log.Trace().Msg("UpdateZettel")
 	return nil
 }
@@ -220,8 +220,8 @@ func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	mb.zettel[newZid] = zettel
 	delete(mb.zettel, curZid)
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnDelete, curZid)
-	mb.notifyChanged(box.OnUpdate, newZid)
+	mb.notifyChanged(box.OnZettel, curZid)
+	mb.notifyChanged(box.OnZettel, newZid)
 	mb.log.Trace().Msg("RenameZettel")
 	return nil
 }
@@ -243,7 +243,7 @@ func (mb *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	delete(mb.zettel, zid)
 	mb.curBytes -= oldZettel.Length()
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnDelete, zid)
+	mb.notifyChanged(box.OnZettel, zid)
 	mb.log.Trace().Msg("DeleteZettel")
 	return nil
 }

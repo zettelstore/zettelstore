@@ -184,8 +184,7 @@ type UpdateReason uint8
 const (
 	_        UpdateReason = iota
 	OnReload              // Box was reloaded
-	OnUpdate              // A zettel was created or changed
-	OnDelete              // A zettel was removed
+	OnZettel              // Something with a zettel happened
 )
 
 // UpdateInfo contains all the data about a changed zettel.

@@ -230,10 +230,8 @@ func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 	switch reason {
 	case box.OnReload:
 		mgr.idxAr.Reset()
-	case box.OnUpdate:
-		mgr.idxAr.Enqueue(zid, arUpdate)
-	case box.OnDelete:
-		mgr.idxAr.Enqueue(zid, arDelete)
+	case box.OnZettel:
+		mgr.idxAr.EnqueueZettel(zid)
 	default:
 		return
 	}
