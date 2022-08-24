@@ -227,7 +227,10 @@ func (cs *configService) GetFooterHTML() string { return cs.GetConfig(keyFooterH
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cs *configService) GetZettelFileSyntax() []string {
-	return cs.GetConfig(keyZettelFileSyntax).([]string)
+	if zfs := cs.GetConfig(keyZettelFileSyntax); zfs != nil {
+		return zfs.([]string)
+	}
+	return nil
 }
 
 // --- config.AuthConfig
