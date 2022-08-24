@@ -2080,7 +2080,6 @@ func pik_txt_vertical_layout(pObj *PObj) {
   } else {
     allSlots := int16(0)
     var aFree [5]int16
-    var iSlot int
     /* If there is more than one TP_ABOVE, change the first to TP_ABOVE2. */
     for j, mJust, i := 0, int16(0), n-1; i>=0; i-- {
       if aTxt[i].eCode&TP_ABOVE != 0 {
@@ -2115,13 +2114,12 @@ func pik_txt_vertical_layout(pObj *PObj) {
     if n==2 && ((aTxt[0].eCode|aTxt[1].eCode)&TP_JMASK)==(TP_LJUST|TP_RJUST) {
       /* Special case of two texts that have opposite justification:
       ** Allow them both to float to center. */
-      iSlot = 2
       aFree[0] = TP_CENTER
 			aFree[1] = TP_CENTER
     } else {
       /* Set up the arrow so that available slots are filled from top to
       ** bottom */
-      iSlot = 0
+      iSlot := 0
       if n>=4 && (allSlots & TP_ABOVE2)==0 { aFree[iSlot] = TP_ABOVE2; iSlot++ }
       if (allSlots & TP_ABOVE)==0 { aFree[iSlot] = TP_ABOVE; iSlot++ }
       if (n&1)!=0 { aFree[iSlot] = TP_CENTER; iSlot++ }
