@@ -2,6 +2,8 @@ codeberg.org/t73fde/sxpf v0.0.0-20220719090054-749a39d0a7a0 h1:viya/OgeF16+i8caB
 codeberg.org/t73fde/sxpf v0.0.0-20220719090054-749a39d0a7a0/go.mod h1:4fAHEF3VH+ofbZkF6NzqiItTNy2X11tVCnZX99jXouA=
 github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwVZI=
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
+github.com/gopikchr/gopikchr v0.0.0-20220124224834-11b522ef4453 h1:QMKv5eX06XUAXxxsBWltpye73fyYsBTeSg521cQbeHc=
+github.com/gopikchr/gopikchr v0.0.0-20220124224834-11b522ef4453/go.mod h1:+41qUsJjoUOvysVJxMeX4dGhnTlvjJl6HYQAC2KHsV4=
 github.com/pascaldekloe/jwt v1.12.0 h1:imQSkPOtAIBAXoKKjL9ZVJuF/rVqJ+ntiLGpLyeqMUQ=
 github.com/pascaldekloe/jwt v1.12.0/go.mod h1:LiIl7EwaglmH1hWThd/AmydNCnHf/mmfluBlNqHbk8U=
 github.com/yuin/goldmark v1.4.13 h1:fVcFKWvrslecOb/tg+Cc05dkeYx540o0FuFt3nUVDoE=

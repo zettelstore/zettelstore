@@ -3,7 +3,8 @@ title: Other Markup Languages
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220627192329
+created: 20210126175300
+modified: 20220824114649
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -43,10 +44,12 @@ The following syntax values are supported:
   Useful for displaying the full metadata.
   The [[runtime configuration zettel|00000000000100]] uses this syntax.
   The zettel content is ignored.
+; [!pikchr]''pikchr''
+: A [[PIC|https://en.wikipedia.org/wiki/Pic_language]]-like [[markup language for diagrams|https://pikchr.org/]].
 ; [!svg|''svg'']
-: A [[Scalable Vector Graphics|https://www.w3.org/TR/SVG2/]].
+: [[Scalable Vector Graphics|https://www.w3.org/TR/SVG2/]].
 ; [!text|''text''], [!plain|''plain''], [!txt|''txt'']
-: Just plain text that must not be interpreted further.
+: Plain text that must not be interpreted further.
 ; [!zmk|''zmk'']
 : [[Zettelmarkup|00001007000000]].
 

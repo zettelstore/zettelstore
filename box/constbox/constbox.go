@@ -161,6 +161,8 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityPublic,
+			api.KeyCreated:    "20210504135842",
+			api.KeyModified:   "20220131153422",
 		},
 		domain.NewContent(contentLicense)},
 	id.MustParse(api.ZidAuthors): {
@@ -171,6 +173,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityLogin,
+			api.KeyCreated:    "20210504135842",
 		},
 		domain.NewContent(contentContributors)},
 	id.MustParse(api.ZidDependencies): {
@@ -181,6 +184,8 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityLogin,
+			api.KeyCreated:    "20210504135842",
+			api.KeyModified:   "20220824113900",
 		},
 		domain.NewContent(contentDependencies)},
 	id.BaseTemplateZid: {
