@@ -111,6 +111,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 : MIT License
 ; Remarks
 : Author is [[Zellyn Hunter|https://github.com/zellyn]], he wrote a blog post [[gopikchr: a yakshave|https://zellyn.com/2022/01/gopikchr-a-yakshave/]] about his work.
+: Gopikchr was incorporated into the source code of Zettelstore, moving it into package ''zettelstore.de/z/parser/pikchr''.
+  Later, the source code was changed to adapt it to the needs of Zettelstore.
+  For details, read README.txt in the appropriate source code folder.
 ```
 MIT License
 

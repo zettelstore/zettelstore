@@ -12,8 +12,6 @@
 package pikchr
 
 import (
-	"github.com/gopikchr/gopikchr"
-
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -33,16 +31,23 @@ func init() {
 }
 
 func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
-	sSVG, _, _, err := gopikchr.Convert(string(inp.Src[inp.Pos:]))
-	if err != nil {
-		return ast.BlockSlice{&ast.ParaNode{
-			Inlines: ast.CreateInlineSliceFromWords("Error:", err.Error()),
-		}}
+	var w, h int
+	bsSVG := Pikchr(inp.Src[inp.Pos:], "", 0, &w, &h)
+	if w == -1 {
+		return ast.BlockSlice{
+			&ast.ParaNode{
+				Inlines: ast.CreateInlineSliceFromWords("Pikchr", "error:"),
+			},
+			&ast.VerbatimNode{
+				Kind:    ast.VerbatimHTML,
+				Content: bsSVG,
+			},
+		}
 	}
 	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  "",
 		Syntax: api.ValueSyntaxSVG,
-		Blob:   []byte(sSVG),
+		Blob:   bsSVG,
 	}}
 }
 
