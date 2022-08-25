@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/parser/pikchr/internal"
 )
 
 func init() {
@@ -32,7 +33,7 @@ func init() {
 
 func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 	var w, h int
-	bsSVG := Pikchr(inp.Src[inp.Pos:], "", 0, &w, &h)
+	bsSVG := internal.Pikchr(inp.Src[inp.Pos:], "", 0, &w, &h)
 	if w == -1 {
 		return ast.BlockSlice{
 			&ast.ParaNode{

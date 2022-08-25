@@ -117,7 +117,7 @@
 ** name when referenced by subsequent objects.
 */
 
-package pikchr
+package internal
 
 import (
 	"bytes"
