@@ -12,6 +12,8 @@
 package pikchr
 
 import (
+	"strconv"
+
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -31,9 +33,12 @@ func init() {
 	})
 }
 
-func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
+func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	var w, h int
-	bsSVG := internal.Pikchr(inp.Src[inp.Pos:], "", 0, &w, &h)
+	bsSVG := internal.Pikchr(
+		inp.Src[inp.Pos:], "", 0,
+		m.GetDefault("width", ""), m.GetDefault("height", ""), getScale(m, "font-scale"),
+		&w, &h)
 	if w == -1 {
 		return ast.BlockSlice{
 			&ast.ParaNode{
@@ -54,4 +59,12 @@ func parseBlocks(inp *input.Input, _ *meta.Meta, _ string) ast.BlockSlice {
 
 func parseInlines(_ *input.Input, syntax string) ast.InlineSlice {
 	return ast.CreateInlineSliceFromWords("No", "inline", "code", "allowed", "for", "syntax:", syntax)
+}
+func getScale(m *meta.Meta, key string) internal.PNum {
+	if val, found := m.Get(key); found {
+		if scale, err := strconv.ParseFloat(val, 64); err == nil && scale > 0.001 && scale < 1000.0 {
+			return internal.PNum(scale)
+		}
+	}
+	return 1.0
 }

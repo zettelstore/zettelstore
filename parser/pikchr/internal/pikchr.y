@@ -375,6 +375,7 @@ type Pik struct {
 	pMacros   *PMacro      /* List of all defined macros */
 	pVar      *PVar        /* Application-defined variables */
 	bbox      PBox         /* Bounding box around all statements */
+
 	/* Cache of layout values.  <=0.0 for unknown... */
 	rScale      PNum   /* Multiply to convert inches to pixels */
 	fontScale   PNum   /* Scale fonts by this percent */
@@ -390,14 +391,19 @@ type Pik struct {
 	hSVG        int
 	fgcolor     int /* foreground color value, or -1 for none */
 	bgcolor     int /* background color value, or -1 for none */
+
 	/* Paths for lines are constructed here first, then transferred into
 	 ** the PObj object at the end: */
 	nTPath int          /* Number of entries on aTPath[] */
 	mTPath int          /* For last entry, 1: x set,  2: y set */
 	aTPath [1000]PPoint /* Path under construction */
+
 	/* Error contexts */
 	nCtx int        /* Number of error contexts */
 	aCtx [10]PToken /* Nested error contexts */
+
+	svgWidth, svgHeight string // Explicit width/height, if not given by scale.
+	svgFontScale        PNum
 }
 
 /* Include PIKCHR_PLAINTEXT_ERRORS among the bits of mFlags on the 3rd
@@ -2306,8 +2312,8 @@ func pik_txt_vertical_layout(pObj *PObj) {
 
 /* Return the font scaling factor associated with the input text attribute.
  */
-func pik_font_scale(t PToken) PNum {
-	var scale PNum = 1.0
+func (p* Pik) pik_font_scale(t PToken) PNum {
+	scale := p.svgFontScale
 	if t.eCode&TP_BIG != 0 {
 		scale *= 1.25
 	}
@@ -2362,7 +2368,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 	if allMask&TP_CENTER != 0 {
 		for i := 0; i < n; i++ {
 			if pObj.aTxt[i].eCode&TP_CENTER != 0 {
-				s := pik_font_scale(pObj.aTxt[i])
+				s := p.pik_font_scale(pObj.aTxt[i])
 				if hc < s*p.charHeight {
 					hc = s * p.charHeight
 				}
@@ -2372,7 +2378,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 	if allMask&TP_ABOVE != 0 {
 		for i := 0; i < n; i++ {
 			if pObj.aTxt[i].eCode&TP_ABOVE != 0 {
-				s := pik_font_scale(pObj.aTxt[i]) * p.charHeight
+				s := p.pik_font_scale(pObj.aTxt[i]) * p.charHeight
 				if ha1 < s {
 					ha1 = s
 				}
@@ -2381,7 +2387,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 		if allMask&TP_ABOVE2 != 0 {
 			for i := 0; i < n; i++ {
 				if pObj.aTxt[i].eCode&TP_ABOVE2 != 0 {
-					s := pik_font_scale(pObj.aTxt[i]) * p.charHeight
+					s := p.pik_font_scale(pObj.aTxt[i]) * p.charHeight
 					if ha2 < s {
 						ha2 = s
 					}
@@ -2392,7 +2398,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 	if allMask&TP_BELOW != 0 {
 		for i := 0; i < n; i++ {
 			if pObj.aTxt[i].eCode&TP_BELOW != 0 {
-				s := pik_font_scale(pObj.aTxt[i]) * p.charHeight
+				s := p.pik_font_scale(pObj.aTxt[i]) * p.charHeight
 				if hb1 < s {
 					hb1 = s
 				}
@@ -2401,7 +2407,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 		if allMask&TP_BELOW2 != 0 {
 			for i := 0; i < n; i++ {
 				if pObj.aTxt[i].eCode&TP_BELOW2 != 0 {
-					s := pik_font_scale(pObj.aTxt[i]) * p.charHeight
+					s := p.pik_font_scale(pObj.aTxt[i]) * p.charHeight
 					if hb2 < s {
 						hb2 = s
 					}
@@ -2416,7 +2422,7 @@ func (p *Pik) pik_append_txt(pObj *PObj, pBox *PBox) {
 	}
 	for i := 0; i < n; i++ {
 		t := aTxt[i]
-		xtraFontScale := pik_font_scale(t)
+		xtraFontScale := p.pik_font_scale(t)
 		var nx PNum = 0
 		orig_y := pObj.ptAt.y
 		y := yBase
@@ -4761,6 +4767,17 @@ func (p *Pik) pik_render(pList PList) {
 			p.pik_append_num(" width=\"", PNum(p.wSVG))
 			p.pik_append_num("\" height=\"", PNum(p.hSVG))
 			p.pik_append("\"")
+		} else {
+			if p.svgWidth != "" {
+				p.pik_append(` width="`)
+				p.pik_append(p.svgWidth)
+				p.pik_append(`"`)
+			}
+			if p.svgHeight != "" {
+				p.pik_append(` height="`)
+				p.pik_append(p.svgHeight)
+				p.pik_append(`"`)
+			}
 		}
 		p.pik_append_dis(" viewBox=\"0 0 ", w, "")
 		p.pik_append_dis(" ", h, "\">\n")
@@ -5511,6 +5528,8 @@ func Pikchr(
 	zText []byte, /* Input PIKCHR source text.  zero-terminated */
 	zClass string, /* Add class="%s" to <svg> markup */
 	mFlags uint, /* Flags used to influence rendering behavior */
+	svgWidth, svgHeight string,
+	svgFontScale PNum,
 	pnWidth *int, /* Write width of <svg> here, if not NULL */
 	pnHeight *int, /* Write height here, if not NULL */
 ) []byte {
@@ -5522,6 +5541,9 @@ func Pikchr(
 	s.eDir = DIR_RIGHT
 	s.zClass = zClass
 	s.mFlags = mFlags
+	s.svgWidth = svgWidth
+	s.svgHeight = svgHeight
+	s.svgFontScale = svgFontScale
 	sParse.pik_parserInit(&s)
 	if false { // #if 0
 		pik_parserTrace(os.Stdout, "parser: ")
