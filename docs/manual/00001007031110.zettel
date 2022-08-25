@@ -3,6 +3,8 @@ title: Zettelmarkup: Zettel Transclusion
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20220809132350
+modified: 20220825190116
 
 A zettel transclusion is specified by the following sequence, starting at the first position in a line: ''{{{zettel-identifier}}}''.
 
@@ -32,6 +34,11 @@ This allows, for example, to create a bigger document just by transcluding small
 In addition, if a zettel __z__ transcludes a zettel __t__, but the current user is not allowed to view zettel __t__ (but zettel __z__), then the transclusion will not take place.
 To the current user, it seems that there was no transclusion in zettel __z__.
 This allows to create a zettel with content that seems to be changed, depending on the authorization of the current user.
+
+---
+Any [[attributes|00001007050000]] added to the transclusion will set/overwrite the appropriate metadata of the included zettel.
+Of course, this applies only to thoes attribtues, which have a valid name for a metadata key.
+This allows to control the evaluation of the included zettel, especially for zettel containing a diagram description.
 
 === See also
 [[Inline-mode transclusion|00001007040324]] does not work at the paragraph / block level, but is used for [[inline-structured elements|00001007040000]].

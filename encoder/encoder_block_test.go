@@ -282,6 +282,17 @@ and much more
 		},
 	},
 	{
+		descr: "Transclusion",
+		zmk:   `{{{http://example.com/image}}}{width="100px"}`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Transclude","a":{"width":"100px"},"q":"external","s":"http://example.com/image"}]`,
+			encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
+			encoderSexpr: `((TRANSCLUDE (("width" "100px")) (EXTERNAL "http://example.com/image")))`,
+			encoderText:  "",
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "",
 		zmk:   ``,
 		expect: expectMap{

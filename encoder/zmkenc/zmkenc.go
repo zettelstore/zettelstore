@@ -126,6 +126,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitTable(n)
 	case *ast.TranscludeNode:
 		v.b.WriteStrings("{{{", n.Ref.String(), "}}}")
+		v.visitAttributes(n.Attrs)
 	case *ast.BLOBNode:
 		v.visitBLOB(n)
 	case *ast.TextNode:

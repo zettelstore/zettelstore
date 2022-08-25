@@ -232,6 +232,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 			e.transcludeCount++
 			return makeBlockNode(createInlineErrorText(ref, "Unable", "to", "get", "zettel"))
 		}
+		setMetadataFromAttributes(zettel.Meta, tn.Attrs)
 		ec := e.transcludeCount
 		e.costMap[zid] = transcludeCost{zn: e.marker, ec: ec}
 		zn = e.evaluateEmbeddedZettel(zettel)
@@ -272,6 +273,14 @@ func (e *evaluator) checkMaxTransclusions(ref *ast.Reference) ast.InlineNode {
 }
 
 func makeBlockNode(in ast.InlineNode) ast.BlockNode { return ast.CreateParaNode(in) }
+
+func setMetadataFromAttributes(m *meta.Meta, a attrs.Attributes) {
+	for aKey, aVal := range a {
+		if meta.KeyIsValid(aKey) {
+			m.Set(aKey, aVal)
+		}
+	}
+}
 
 func (e *evaluator) visitInlineSlice(is *ast.InlineSlice) {
 	for i := 0; i < len(*is); i++ {

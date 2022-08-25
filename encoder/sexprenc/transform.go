@@ -78,7 +78,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Pair {
 	case *ast.TableNode:
 		return t.getTable(n)
 	case *ast.TranscludeNode:
-		return sxpf.NewPairFromValues(sexpr.SymTransclude, getReference(n.Ref))
+		return sxpf.NewPairFromValues(sexpr.SymTransclude, getAttributes(n.Attrs), getReference(n.Ref))
 	case *ast.BLOBNode:
 		return getBLOB(n)
 	case *ast.TextNode:

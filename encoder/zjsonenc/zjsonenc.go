@@ -113,6 +113,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitTable(n)
 	case *ast.TranscludeNode:
 		v.writeNodeStart(zjson.TypeTransclude)
+		v.visitAttributes(n.Attrs)
 		v.writeContentStart(zjson.NameString2)
 		writeEscaped(&v.b, mapRefState[n.Ref.State])
 		v.writeContentStart(zjson.NameString)

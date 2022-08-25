@@ -272,7 +272,8 @@ func (tn *TableNode) WalkChildren(v Visitor) {
 // TranscludeNode specifies block content from other zettel to embedded in
 // current zettel
 type TranscludeNode struct {
-	Ref *Reference
+	Attrs attrs.Attributes
+	Ref   *Reference
 }
 
 func (*TranscludeNode) blockNode() { /* Just a marker */ }

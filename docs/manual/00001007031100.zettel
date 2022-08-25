@@ -3,12 +3,15 @@ title: Zettelmarkup: Transclusion
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220809144920
+created: 20220131151022
+modified: 20220825185649
 
 A transclusion allows to include the content of other zettel into the current zettel.
 
 The transclusion specification begins with three consecutive left curly bracket characters (""''{''"", U+007B) at the first position of a line and ends with three consecutive right curly bracket characters (""''}''"", U+007D).
 The curly brackets delimit either a [[zettel identifier|00001006050000]] or a searched zettel list.
+You can add some [[attributes|00001007050000]], although a transclusion does not support the default attribute.
+Any other characters in this line will be ignored.
 
 This leads to two variants of transclusion:
 # Transclusion of the content of another zettel into the current zettel.

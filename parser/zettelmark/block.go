@@ -669,8 +669,10 @@ loop:
 		}
 		inp.Next()
 	}
+	inp.Next() // consume last '}'
+	a := cp.parseBlockAttributes()
 	inp.SkipToEOL()
 	refText := string(inp.Src[posA:posE])
 	ref := ast.ParseReference(refText)
-	return &ast.TranscludeNode{Ref: ref}, true
+	return &ast.TranscludeNode{Attrs: a, Ref: ref}, true
 }
