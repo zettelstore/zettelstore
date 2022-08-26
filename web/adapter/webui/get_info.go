@@ -62,10 +62,11 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
+		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
 		enc := wui.getSimpleHTMLEncoder()
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
 		for i, p := range pairs {
 			var buf bytes.Buffer
 			wui.writeHTMLMetaValue(
@@ -85,7 +86,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			searchLinks[i].URL = wui.NewURLBuilder('h').AppendSearch(sq).String()
 		}
 
-		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
+		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
 			phrase = textTitle

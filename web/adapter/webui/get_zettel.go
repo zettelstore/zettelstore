@@ -43,12 +43,9 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		enc := wui.createZettelEncoder()
-		evalMetadata := func(value string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, value)
-		}
-		metaHeader := enc.MetaString(zn.InhMeta, evalMetadata)
-		textTitle := wui.encodeTitleAsText(ctx, zn.InhMeta, evaluate)
-		htmlTitle := encodeZmkMetadata(zn.InhMeta.GetTitle(), evalMetadata, enc)
+		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
+		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
+		htmlTitle := encodeEvaluatedTitleHTML(zn.InhMeta, evalMetadata, enc)
 		htmlContent, err := enc.BlocksString(&zn.Ast)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -67,14 +64,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		roleText := zn.Meta.GetDefault(api.KeyRole, "*")
 		tags := wui.buildTagInfos(zn.Meta)
 		canCreate := wui.canCreate(ctx, user)
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
 		extURL, hasExtURL := zn.Meta.Get(api.KeyURL)
 		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle)
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
 		wui.makeBaseData(ctx, config.GetLang(zn.InhMeta, wui.rtConfig), textTitle, roleCSSURL, user, &base)
-		base.MetaHeader = metaHeader
+		base.MetaHeader = enc.MetaString(zn.InhMeta, evalMetadata)
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string
 			RoleCSS       string

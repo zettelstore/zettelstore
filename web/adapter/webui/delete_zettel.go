@@ -50,7 +50,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 		if len(ms) > 1 {
 			shadowedBox = ms[1].GetDefault(api.KeyBoxNumber, "???")
 		} else {
-			getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+			getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), createEvalMetadataFunc(ctx, evaluate))
 			incomingLinks = wui.encodeIncoming(m, getTextTitle)
 		}
 		uselessFiles := retrieveUselessFiles(m)

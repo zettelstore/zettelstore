@@ -37,17 +37,15 @@ type htmlGenerator struct {
 	builder   urlBuilder
 	textEnc   *textenc.Encoder
 	extMarker string
-	newWindow bool
 	env       *html.EncEnvironment
 }
 
-func createGenerator(builder urlBuilder, extMarker string, newWindow bool) *htmlGenerator {
+func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 	env := html.NewEncEnvironment(nil, 1)
 	gen := &htmlGenerator{
 		builder:   builder,
 		textEnc:   textenc.Create(),
 		extMarker: extMarker,
-		newWindow: newWindow,
 		env:       env,
 	}
 

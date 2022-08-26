@@ -41,7 +41,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 			return
 		}
 
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta, evaluate)
+		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), createEvalMetadataFunc(ctx, evaluate))
 		incomingLinks := wui.encodeIncoming(m, getTextTitle)
 		uselessFiles := retrieveUselessFiles(m)
 

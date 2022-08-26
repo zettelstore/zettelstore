@@ -29,8 +29,6 @@ import (
 
 var space = []byte{' '}
 
-type evalMetadataFunc = func(string) ast.InlineSlice
-
 func (wui *WebUI) writeHTMLMetaValue(
 	w io.Writer,
 	key, value string,
@@ -154,31 +152,31 @@ func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
 	io.WriteString(w, "</a>")
 }
 
+type getMetadataFunc func(id.Zid) (*meta.Meta, error)
+
+func createGetMetadataFunc(ctx context.Context, getMeta usecase.GetMeta) getMetadataFunc {
+	return func(zid id.Zid) (*meta.Meta, error) { return getMeta.Run(box.NoEnrichContext(ctx), zid) }
+}
+
+type evalMetadataFunc = func(string) ast.InlineSlice
+
+func createEvalMetadataFunc(ctx context.Context, evaluate *usecase.Evaluate) evalMetadataFunc {
+	return func(value string) ast.InlineSlice { return evaluate.RunMetadata(ctx, value) }
+}
+
 type getTextTitleFunc func(id.Zid) (string, int)
 
-func (wui *WebUI) makeGetTextTitle(
-	ctx context.Context,
-	getMeta usecase.GetMeta, evaluate *usecase.Evaluate,
-) getTextTitleFunc {
+func (wui *WebUI) makeGetTextTitle(getMetadata getMetadataFunc, evalMetadata evalMetadataFunc) getTextTitleFunc {
 	return func(zid id.Zid) (string, int) {
-		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
+		m, err := getMetadata(zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {
 				return "", -1
 			}
 			return "", 0
 		}
-		return wui.encodeTitleAsText(ctx, m, evaluate), 1
+		return encodeEvaluatedTitleText(m, evalMetadata, wui.gentext), 1
 	}
-}
-
-func (wui *WebUI) encodeTitleAsText(ctx context.Context, m *meta.Meta, evaluate *usecase.Evaluate) string {
-	is := evaluate.RunMetadata(ctx, m.GetTitle())
-	result, err := encodeInlinesText(&is, wui.gentext)
-	if err != nil {
-		return err.Error()
-	}
-	return result
 }
 
 func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) string {
