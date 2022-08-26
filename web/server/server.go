@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -56,14 +56,11 @@ type Builder interface {
 
 // Auth is the authencation interface.
 type Auth interface {
-	GetUser(context.Context) *meta.Meta
+	// SetToken sends the token to the client.
 	SetToken(w http.ResponseWriter, token []byte, d time.Duration)
 
 	// ClearToken invalidates the session cookie by sending an empty one.
 	ClearToken(ctx context.Context, w http.ResponseWriter) context.Context
-
-	// GetAuthData returns the full authentication data from the context.
-	GetAuthData(ctx context.Context) *AuthData
 }
 
 // AuthData stores all relevant authentication data for a context.
@@ -74,6 +71,29 @@ type AuthData struct {
 	Issued  time.Time
 	Expires time.Time
 }
+
+// GetAuthData returns the full authentication data from the context.
+func /*(*myServer)*/ GetAuthData(ctx context.Context) *AuthData {
+	data, ok := ctx.Value(CtxKeySession).(*AuthData)
+	if ok {
+		return data
+	}
+	return nil
+}
+
+// GetUser returns the metadata of the current user, or nil if there is no one.
+func GetUser(ctx context.Context) *meta.Meta {
+	if data := GetAuthData(ctx); data != nil {
+		return data.User
+	}
+	return nil
+}
+
+// CtxKeyTypeSession is just an additional type to make context value retrieval unambiguous.
+type CtxKeyTypeSession struct{}
+
+// CtxKeySession is the key value to retrieve Authdata
+var CtxKeySession CtxKeyTypeSession
 
 // AuthBuilder is a Builder that also allows to execute authentication functions.
 type AuthBuilder interface {

@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
@@ -55,9 +56,9 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 		}
 		uselessFiles := retrieveUselessFiles(m)
 
-		user := wui.getUser(ctx)
+		user := server.GetUser(ctx)
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), "", user, &base)
+		wui.makeBaseData(ctx, config.GetLang(ctx, m, wui.rtConfig), "Delete Zettel "+m.Zid.String(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
 			Zid             string
 			MetaPairs       []meta.Pair

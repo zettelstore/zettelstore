@@ -27,7 +27,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/web/server"
 )
 
 type myAuth struct {
@@ -174,6 +173,6 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 	return meta.UserRoleReader
 }
 
-func (a *myAuth) BoxWithPolicy(auth server.Auth, unprotectedBox box.Box, rtConfig config.Config) (box.Box, auth.Policy) {
-	return policy.BoxWithPolicy(auth, a, unprotectedBox, rtConfig)
+func (a *myAuth) BoxWithPolicy(unprotectedBox box.Box, rtConfig config.Config) (box.Box, auth.Policy) {
+	return policy.BoxWithPolicy(a, unprotectedBox, rtConfig)
 }

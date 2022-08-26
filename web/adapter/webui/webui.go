@@ -293,13 +293,13 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
 	data.QueryKeySearch = api.QueryKeySearch
-	data.FooterHTML = wui.rtConfig.GetFooterHTML()
+	data.FooterHTML = wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)
 	data.DebugMode = wui.debug
 }
 
 func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return createGenerator(wui, "") }
-func (wui *WebUI) createZettelEncoder() *htmlGenerator {
-	return createGenerator(wui, wui.rtConfig.GetMarkerExternal())
+func (wui *WebUI) createZettelEncoder(ctx context.Context, m *meta.Meta) *htmlGenerator {
+	return createGenerator(wui, wui.rtConfig.Get(ctx, m, config.KeyMarkerExternal))
 }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
@@ -365,7 +365,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	if code == http.StatusInternalServerError {
 		wui.log.Error().Msg(err.Error())
 	}
-	user := wui.getUser(ctx)
+	user := server.GetUser(ctx)
 	var base baseData
 	wui.makeBaseData(ctx, api.ValueLangEN, "Error", "", user, &base)
 	wui.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
@@ -397,7 +397,7 @@ func (wui *WebUI) renderTemplateStatus(
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if user := wui.getUser(ctx); user != nil {
+	if user := server.GetUser(ctx); user != nil {
 		if tok, err1 := wui.token.GetToken(user, wui.tokenLifetime, auth.KindHTML); err1 == nil {
 			wui.setToken(w, tok)
 		}
@@ -413,8 +413,6 @@ func (wui *WebUI) renderTemplateStatus(
 		wui.log.IfErr(err).Msg("Unable to write HTML via template")
 	}
 }
-
-func (wui *WebUI) getUser(ctx context.Context) *meta.Meta { return wui.ab.GetUser(ctx) }
 
 // GetURLPrefix returns the configured URL prefix of the web server.
 func (wui *WebUI) GetURLPrefix() string { return wui.ab.GetURLPrefix() }

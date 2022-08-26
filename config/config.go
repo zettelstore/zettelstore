@@ -12,20 +12,30 @@
 package config
 
 import (
+	"context"
+
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+)
+
+// Key values that are supported by Config.Get
+const (
+	KeyDefaultLang    = "default-lang"
+	KeyFooterHTML     = "footer-html"
+	KeyMarkerExternal = "marker-external"
 )
 
 // Config allows to retrieve all defined configuration values that can be changed during runtime.
 type Config interface {
 	AuthConfig
 
+	// Get returns the value of the given key. It searches first in the given metadata,
+	// then in the data of the current user, and at last in the system-wide data.
+	Get(ctx context.Context, m *meta.Meta, key string) string
+
 	// AddDefaultValues enriches the given meta data with its default values.
 	AddDefaultValues(m *meta.Meta) *meta.Meta
-
-	// GetDefaultLang returns the current value of the "default-lang" key.
-	GetDefaultLang() string
 
 	// GetSiteName returns the current value of the "site-name" key.
 	GetSiteName() string
@@ -41,13 +51,6 @@ type Config interface {
 
 	// GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 	GetZettelFileSyntax() []string
-
-	// GetMarkerExternal returns the current value of the "marker-external" key.
-	GetMarkerExternal() string
-
-	// GetFooterHTML returns HTML code that should be embedded into the footer
-	// of each WebUI page.
-	GetFooterHTML() string
 }
 
 // AuthConfig are relevant configuration values for authentication.
@@ -63,10 +66,13 @@ type AuthConfig interface {
 }
 
 // GetLang returns the value of the "lang" key of the given meta. If there is
-// no such value, GetDefaultLang is returned.
-func GetLang(m *meta.Meta, cfg Config) string {
+// no such value, GetDefaultLang() is returned.
+func GetLang(ctx context.Context, m *meta.Meta, cfg Config) string {
 	if val, ok := m.Get(api.KeyLang); ok {
 		return val
 	}
-	return cfg.GetDefaultLang()
+	return GetDefaultLang(ctx, cfg)
 }
+
+// GetDefaultLang returns the configured value for a default language.
+func GetDefaultLang(ctx context.Context, cfg Config) string { return cfg.Get(ctx, nil, KeyDefaultLang) }

@@ -26,6 +26,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 )
 
 type metaDataInfo struct {
@@ -111,11 +112,11 @@ func (wui *WebUI) MakeGetInfoHandler(
 			endnotes = ""
 		}
 
-		user := wui.getUser(ctx)
+		user := server.GetUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(zn.InhMeta, wui.rtConfig), textTitle, "", user, &base)
+		wui.makeBaseData(ctx, config.GetLang(ctx, zn.InhMeta, wui.rtConfig), textTitle, "", user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid            string
 			WebURL         string

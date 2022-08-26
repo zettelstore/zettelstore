@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
@@ -42,7 +43,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		enc := wui.createZettelEncoder()
+		enc := wui.createZettelEncoder(ctx, zn.InhMeta)
 		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
 		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
 		htmlTitle := encodeEvaluatedTitleHTML(zn.InhMeta, evalMetadata, enc)
@@ -60,7 +61,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		if cssZid != id.Invalid {
 			roleCSSURL = wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String()
 		}
-		user := wui.getUser(ctx)
+		user := server.GetUser(ctx)
 		roleText := zn.Meta.GetDefault(api.KeyRole, "*")
 		tags := wui.buildTagInfos(zn.Meta)
 		canCreate := wui.canCreate(ctx, user)
@@ -70,7 +71,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(zn.InhMeta, wui.rtConfig), textTitle, roleCSSURL, user, &base)
+		wui.makeBaseData(ctx, config.GetLang(ctx, zn.InhMeta, wui.rtConfig), textTitle, roleCSSURL, user, &base)
 		base.MetaHeader = enc.MetaString(zn.InhMeta, evalMetadata)
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string

@@ -12,15 +12,19 @@ package impl
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/web/server"
 )
 
 type configService struct {
@@ -33,13 +37,10 @@ type configService struct {
 // See: https://zettelstore.de/manual/h/00001004020000
 const (
 	keyDefaultCopyright  = "default-copyright"
-	keyDefaultLang       = "default-lang"
 	keyDefaultLicense    = "default-license"
 	keyDefaultVisibility = "default-visibility"
 	keyExpertMode        = "expert-mode"
-	keyFooterHTML        = "footer-html"
 	keyHomeZettel        = "home-zettel"
-	keyMarkerExternal    = "marker-external"
 	keyMaxTransclusions  = "max-transclusions"
 	keySiteName          = "site-name"
 	keyYAMLHeader        = "yaml-header"
@@ -49,9 +50,9 @@ const (
 func (cs *configService) Initialize(logger *logger.Logger) {
 	cs.logger = logger
 	cs.descr = descriptionMap{
-		keyDefaultCopyright: {"Default copyright", parseString, true},
-		keyDefaultLang:      {"Default language", parseString, true},
-		keyDefaultLicense:   {"Default license", parseString, true},
+		keyDefaultCopyright:   {"Default copyright", parseString, true},
+		config.KeyDefaultLang: {"Default language", parseString, true},
+		keyDefaultLicense:     {"Default license", parseString, true},
 		keyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
@@ -63,13 +64,13 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			},
 			true,
 		},
-		keyExpertMode:       {"Expert mode", parseBool, true},
-		keyFooterHTML:       {"Footer HTML", parseString, true},
-		keyHomeZettel:       {"Home zettel", parseZid, true},
-		keyMarkerExternal:   {"Marker external URL", parseString, true},
-		keyMaxTransclusions: {"Maximum transclusions", parseInt64, true},
-		keySiteName:         {"Site name", parseString, true},
-		keyYAMLHeader:       {"YAML header", parseBool, true},
+		keyExpertMode:            {"Expert mode", parseBool, true},
+		config.KeyFooterHTML:     {"Footer HTML", parseString, true},
+		keyHomeZettel:            {"Home zettel", parseZid, true},
+		config.KeyMarkerExternal: {"Marker external URL", parseString, true},
+		keyMaxTransclusions:      {"Maximum transclusions", parseInt64, true},
+		keySiteName:              {"Site name", parseString, true},
+		keyYAMLHeader:            {"YAML header", parseBool, true},
 		keyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) interface{} { return strings.Fields(val) },
@@ -78,19 +79,19 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		kernel.ConfigSimpleMode: {"Simple mode", cs.noFrozen(parseBool), true},
 	}
 	cs.next = interfaceMap{
-		keyDefaultCopyright:     "",
-		keyDefaultLang:          api.ValueLangEN,
-		keyDefaultLicense:       "",
-		keyDefaultVisibility:    meta.VisibilityLogin,
-		keyExpertMode:           false,
-		keyFooterHTML:           "",
-		keyHomeZettel:           id.DefaultHomeZid,
-		keyMarkerExternal:       "&#10138;",
-		keyMaxTransclusions:     int64(1024),
-		keySiteName:             "Zettelstore",
-		keyYAMLHeader:           false,
-		keyZettelFileSyntax:     nil,
-		kernel.ConfigSimpleMode: false,
+		keyDefaultCopyright:      "",
+		config.KeyDefaultLang:    api.ValueLangEN,
+		keyDefaultLicense:        "",
+		keyDefaultVisibility:     meta.VisibilityLogin,
+		keyExpertMode:            false,
+		config.KeyFooterHTML:     "",
+		keyHomeZettel:            id.DefaultHomeZid,
+		config.KeyMarkerExternal: "&#10138;",
+		keyMaxTransclusions:      int64(1024),
+		keySiteName:              "Zettelstore",
+		keyYAMLHeader:            false,
+		keyZettelFileSyntax:      nil,
+		kernel.ConfigSimpleMode:  false,
 	}
 }
 func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
@@ -161,6 +162,45 @@ func (cs *configService) observe(ci box.UpdateInfo) {
 
 // --- config.Config
 
+func (cs *configService) Get(ctx context.Context, m *meta.Meta, key string) string {
+	if m != nil {
+		if val, found := m.Get(key); found {
+			return val
+		}
+	}
+	if user := server.GetUser(ctx); user != nil {
+		if val, found := user.Get(key); found {
+			return val
+		}
+	}
+	result := cs.GetConfig(key)
+	if result == nil {
+		return ""
+	}
+	switch val := result.(type) {
+	case string:
+		return val
+	case bool:
+		if val {
+			return api.ValueTrue
+		}
+		return api.ValueFalse
+	case id.Zid:
+		return val.String()
+	case int:
+		return strconv.Itoa(val)
+	case []string:
+		return strings.Join(val, " ")
+	case meta.Visibility:
+		return val.String()
+	case fmt.Stringer:
+		return val.String()
+	case fmt.GoStringer:
+		return val.GoString()
+	}
+	return fmt.Sprintf("%v", result)
+}
+
 // AddDefaultValues enriches the given meta data with its default values.
 func (cs *configService) AddDefaultValues(m *meta.Meta) *meta.Meta {
 	if cs == nil {
@@ -172,7 +212,7 @@ func (cs *configService) AddDefaultValues(m *meta.Meta) *meta.Meta {
 		result = updateMeta(m, result, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
 	}
 	if _, found := m.Get(api.KeyLang); !found {
-		result = updateMeta(m, result, api.KeyLang, cs.GetConfig(keyDefaultLang).(string))
+		result = updateMeta(m, result, api.KeyLang, cs.GetConfig(config.KeyDefaultLang).(string))
 	}
 	if _, found := m.Get(api.KeyLicense); !found {
 		result = updateMeta(m, result, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))
@@ -190,9 +230,6 @@ func updateMeta(result, m *meta.Meta, key, val string) *meta.Meta {
 	result.Set(key, val)
 	return result
 }
-
-// GetDefaultLang returns the current value of the "default-lang" key.
-func (cs *configService) GetDefaultLang() string { return cs.GetConfig(keyDefaultLang).(string) }
 
 // GetSiteName returns the current value of the "site-name" key.
 func (cs *configService) GetSiteName() string { return cs.GetConfig(keySiteName).(string) }
@@ -217,13 +254,6 @@ func (cs *configService) GetMaxTransclusions() int {
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
 func (cs *configService) GetYAMLHeader() bool { return cs.GetConfig(keyYAMLHeader).(bool) }
-
-// GetMarkerExternal returns the current value of the "marker-external" key.
-func (cs *configService) GetMarkerExternal() string { return cs.GetConfig(keyMarkerExternal).(string) }
-
-// GetFooterHTML returns HTML code that should be embedded into the footer
-// of each WebUI page.
-func (cs *configService) GetFooterHTML() string { return cs.GetConfig(keyFooterHTML).(string) }
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cs *configService) GetZettelFileSyntax() []string {

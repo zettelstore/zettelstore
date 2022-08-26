@@ -25,26 +25,23 @@ import (
 
 // BoxWithPolicy wraps the given box inside a policy box.
 func BoxWithPolicy(
-	auth server.Auth,
 	manager auth.AuthzManager,
 	box box.Box,
 	authConfig config.AuthConfig,
 ) (box.Box, auth.Policy) {
 	pol := newPolicy(manager, authConfig)
-	return newBox(auth, box, pol), pol
+	return newBox(box, pol), pol
 }
 
 // polBox implements a policy box.
 type polBox struct {
-	auth   server.Auth
 	box    box.Box
 	policy auth.Policy
 }
 
 // newBox creates a new policy box.
-func newBox(auth server.Auth, box box.Box, policy auth.Policy) box.Box {
+func newBox(box box.Box, policy auth.Policy) box.Box {
 	return &polBox{
-		auth:   auth,
 		box:    box,
 		policy: policy,
 	}
@@ -59,7 +56,7 @@ func (pp *polBox) CanCreateZettel(ctx context.Context) bool {
 }
 
 func (pp *polBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.box.CreateZettel(ctx, zettel)
 	}
@@ -71,7 +68,7 @@ func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, err
 	if err != nil {
 		return domain.Zettel{}, err
 	}
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanRead(user, zettel.Meta) {
 		return zettel, nil
 	}
@@ -87,7 +84,7 @@ func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	if err != nil {
 		return nil, err
 	}
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanRead(user, m) {
 		return m, nil
 	}
@@ -99,11 +96,11 @@ func (pp *polBox) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, err
 }
 
 func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {
-	return nil, box.NewErrNotAllowed("fetch-zids", pp.auth.GetUser(ctx), id.Invalid)
+	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
 }
 
 func (pp *polBox) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	canRead := pp.policy.CanRead
 	s = s.SetPreMatch(func(m *meta.Meta) bool { return canRead(user, m) })
 	return pp.box.SelectMeta(ctx, s)
@@ -115,7 +112,7 @@ func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) boo
 
 func (pp *polBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
 	zid := zettel.Meta.Zid
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if !zid.IsValid() {
 		return &box.ErrInvalidID{Zid: zid}
 	}
@@ -139,7 +136,7 @@ func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	if err != nil {
 		return err
 	}
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanRename(user, meta) {
 		return pp.box.RenameZettel(ctx, curZid, newZid)
 	}
@@ -155,7 +152,7 @@ func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if err != nil {
 		return err
 	}
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanDelete(user, meta) {
 		return pp.box.DeleteZettel(ctx, zid)
 	}
@@ -163,7 +160,7 @@ func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 }
 
 func (pp *polBox) Refresh(ctx context.Context) error {
-	user := pp.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pp.policy.CanRefresh(user) {
 		return pp.box.Refresh(ctx)
 	}

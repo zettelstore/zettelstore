@@ -158,15 +158,13 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 
 type myConfig struct{}
 
-func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta { return m }
-func (*myConfig) GetDefaultLang() string                   { return "" }
-func (*myConfig) GetFooterHTML() string                    { return "" }
-func (*myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
-func (*myConfig) GetListPageSize() int                     { return 0 }
-func (*myConfig) GetMarkerExternal() string                { return "" }
-func (*myConfig) GetSiteName() string                      { return "" }
-func (*myConfig) GetYAMLHeader() bool                      { return false }
-func (*myConfig) GetZettelFileSyntax() []string            { return nil }
+func (*myConfig) Get(context.Context, *meta.Meta, string) string { return "" }
+func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta       { return m }
+func (*myConfig) GetHomeZettel() id.Zid                          { return id.Invalid }
+func (*myConfig) GetListPageSize() int                           { return 0 }
+func (*myConfig) GetSiteName() string                            { return "" }
+func (*myConfig) GetYAMLHeader() bool                            { return false }
+func (*myConfig) GetZettelFileSyntax() []string                  { return nil }
 
 func (*myConfig) GetSimpleMode() bool                      { return false }
 func (*myConfig) GetExpertMode() bool                      { return false }

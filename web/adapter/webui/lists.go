@@ -19,10 +19,12 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
@@ -67,9 +69,9 @@ func (wui *WebUI) renderZettelList(
 		wui.reportError(ctx, w, err)
 		return
 	}
-	user := wui.getUser(ctx)
+	user := server.GetUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title          string
 		SearchURL      string
@@ -105,9 +107,9 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 		roleInfos[i] = roleInfo{role.Name, wui.NewURLBuilder('h').AppendSearch("role:" + role.Name).String()}
 	}
 
-	user := wui.getUser(ctx)
+	user := server.GetUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
@@ -142,7 +144,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 		return
 	}
 
-	user := wui.getUser(ctx)
+	user := server.GetUser(ctx)
 	tagsList := make([]tagInfo, 0, len(tagData))
 	countMap := make(map[int]int)
 	baseTagListURL := wui.NewURLBuilder('h')
@@ -171,7 +173,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	}
 
 	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
@@ -231,8 +233,8 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			depthLinks[i].URL = depthURL.String()
 		}
 		var base baseData
-		user := wui.getUser(ctx)
-		wui.makeBaseData(ctx, wui.rtConfig.GetDefaultLang(), wui.rtConfig.GetSiteName(), "", user, &base)
+		user := server.GetUser(ctx)
+		wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string

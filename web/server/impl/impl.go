@@ -55,12 +55,7 @@ func (srv *myServer) AddZettelRoute(key byte, method server.Method, handler http
 func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
 	srv.router.ur = ur
 }
-func (srv *myServer) GetUser(ctx context.Context) *meta.Meta {
-	if data := srv.GetAuthData(ctx); data != nil {
-		return data.User
-	}
-	return nil
-}
+
 func (srv *myServer) NewURLBuilder(key byte) *api.URLBuilder {
 	return api.NewURLBuilder(srv.GetURLPrefix(), key)
 }
@@ -92,7 +87,7 @@ func (srv *myServer) SetToken(w http.ResponseWriter, token []byte, d time.Durati
 
 // ClearToken invalidates the session cookie by sending an empty one.
 func (srv *myServer) ClearToken(ctx context.Context, w http.ResponseWriter) context.Context {
-	if authData := srv.GetAuthData(ctx); authData == nil {
+	if authData := server.GetAuthData(ctx); authData == nil {
 		// No authentication data stored in session, nothing to do.
 		return ctx
 	}
@@ -102,26 +97,13 @@ func (srv *myServer) ClearToken(ctx context.Context, w http.ResponseWriter) cont
 	return updateContext(ctx, nil, nil)
 }
 
-// GetAuthData returns the full authentication data from the context.
-func (*myServer) GetAuthData(ctx context.Context) *server.AuthData {
-	data, ok := ctx.Value(ctxKeySession).(*server.AuthData)
-	if ok {
-		return data
-	}
-	return nil
-}
-
-type ctxKeyTypeSession struct{}
-
-var ctxKeySession ctxKeyTypeSession
-
 func updateContext(ctx context.Context, user *meta.Meta, data *auth.TokenData) context.Context {
 	if data == nil {
-		return context.WithValue(ctx, ctxKeySession, &server.AuthData{User: user})
+		return context.WithValue(ctx, server.CtxKeySession, &server.AuthData{User: user})
 	}
 	return context.WithValue(
 		ctx,
-		ctxKeySession,
+		server.CtxKeySession,
 		&server.AuthData{
 			User:    user,
 			Token:   data.Token,

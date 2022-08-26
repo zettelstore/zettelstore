@@ -11,11 +11,13 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter/api"
@@ -46,21 +48,22 @@ func runFunc(*flag.FlagSet) (int, error) {
 }
 
 func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth.Manager, rtConfig config.Config) {
-	protectedBoxManager, authPolicy := authManager.BoxWithPolicy(webSrv, boxManager, rtConfig)
+	protectedBoxManager, authPolicy := authManager.BoxWithPolicy(boxManager, rtConfig)
 	kern := kernel.Main
 	webLog := kern.GetLogger(kernel.WebService)
 	a := api.New(
 		webLog.Clone().Str("adapter", "api").Child(),
-		webSrv, authManager, authManager, webSrv, rtConfig, authPolicy)
+		webSrv, authManager, authManager, rtConfig, authPolicy)
 	wui := webui.New(
 		webLog.Clone().Str("adapter", "wui").Child(),
 		webSrv, authManager, rtConfig, authManager, boxManager, authPolicy)
 
-	authLog := kern.GetLogger(kernel.AuthService)
-	ucLog := kern.GetLogger(kernel.CoreService).WithUser(webSrv)
-	ucAuthenticate := usecase.NewAuthenticate(authLog, authManager, authManager, boxManager)
-	ucIsAuth := usecase.NewIsAuthenticated(ucLog, webSrv, authManager)
-	ucCreateZettel := usecase.NewCreateZettel(ucLog, rtConfig, protectedBoxManager)
+	var getUser getUserImpl
+	logAuth := kern.GetLogger(kernel.AuthService)
+	logUc := kern.GetLogger(kernel.CoreService).WithUser(&getUser)
+	ucAuthenticate := usecase.NewAuthenticate(logAuth, authManager, authManager, boxManager)
+	ucIsAuth := usecase.NewIsAuthenticated(logUc, &getUser, authManager)
+	ucCreateZettel := usecase.NewCreateZettel(logUc, rtConfig, protectedBoxManager)
 	ucGetMeta := usecase.NewGetMeta(protectedBoxManager)
 	ucGetAllMeta := usecase.NewGetAllMeta(protectedBoxManager)
 	ucGetZettel := usecase.NewGetZettel(protectedBoxManager)
@@ -71,11 +74,11 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucListRoles := usecase.NewListRoles(protectedBoxManager)
 	ucListTags := usecase.NewListTags(protectedBoxManager)
 	ucZettelContext := usecase.NewZettelContext(protectedBoxManager, rtConfig)
-	ucDelete := usecase.NewDeleteZettel(ucLog, protectedBoxManager)
-	ucUpdate := usecase.NewUpdateZettel(ucLog, protectedBoxManager)
-	ucRename := usecase.NewRenameZettel(ucLog, protectedBoxManager)
+	ucDelete := usecase.NewDeleteZettel(logUc, protectedBoxManager)
+	ucUpdate := usecase.NewUpdateZettel(logUc, protectedBoxManager)
+	ucRename := usecase.NewRenameZettel(logUc, protectedBoxManager)
 	ucUnlinkedRefs := usecase.NewUnlinkedReferences(protectedBoxManager, rtConfig)
-	ucRefresh := usecase.NewRefresh(ucLog, protectedBoxManager)
+	ucRefresh := usecase.NewRefresh(logUc, protectedBoxManager)
 	ucVersion := usecase.NewVersion(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
@@ -139,3 +142,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.SetUserRetriever(usecase.NewGetUserByZid(boxManager))
 	}
 }
+
+type getUserImpl struct{}
+
+func (*getUserImpl) GetUser(ctx context.Context) *meta.Meta { return server.GetUser(ctx) }

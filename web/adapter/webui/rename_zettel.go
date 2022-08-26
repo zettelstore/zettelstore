@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
@@ -45,9 +46,9 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 		incomingLinks := wui.encodeIncoming(m, getTextTitle)
 		uselessFiles := retrieveUselessFiles(m)
 
-		user := wui.getUser(ctx)
+		user := server.GetUser(ctx)
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), "Rename Zettel "+zid.String(), "", user, &base)
+		wui.makeBaseData(ctx, config.GetLang(ctx, m, wui.rtConfig), "Rename Zettel "+zid.String(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
 			Zid             string
 			MetaPairs       []meta.Pair

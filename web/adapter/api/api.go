@@ -33,7 +33,6 @@ type API struct {
 	b        server.Builder
 	authz    auth.AuthzManager
 	token    auth.TokenManager
-	auth     server.Auth
 	rtConfig config.Config
 	policy   auth.Policy
 
@@ -42,13 +41,12 @@ type API struct {
 
 // New creates a new API object.
 func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token auth.TokenManager,
-	auth server.Auth, rtConfig config.Config, pol auth.Policy) *API {
+	rtConfig config.Config, pol auth.Policy) *API {
 	a := &API{
 		log:      log,
 		b:        b,
 		authz:    authz,
 		token:    token,
-		auth:     auth,
 		rtConfig: rtConfig,
 		policy:   pol,
 
@@ -64,7 +62,7 @@ func (a *API) GetURLPrefix() string { return a.b.GetURLPrefix() }
 func (a *API) NewURLBuilder(key byte) *api.URLBuilder { return a.b.NewURLBuilder(key) }
 
 func (a *API) getAuthData(ctx context.Context) *server.AuthData {
-	return a.auth.GetAuthData(ctx)
+	return server.GetAuthData(ctx)
 }
 func (a *API) withAuth() bool { return a.authz.WithAuth() }
 func (a *API) getToken(ident *meta.Meta) ([]byte, error) {
@@ -95,7 +93,7 @@ func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) e
 
 func (a *API) getRights(ctx context.Context, m *meta.Meta) (result api.ZettelRights) {
 	pol := a.policy
-	user := a.auth.GetUser(ctx)
+	user := server.GetUser(ctx)
 	if pol.CanCreate(user, m) {
 		result |= api.ZettelCanCreate
 	}

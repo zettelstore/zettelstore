@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 )
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
@@ -92,10 +93,10 @@ func (wui *WebUI) renderZettelForm(
 	roleData []string,
 	syntaxData []string,
 ) {
-	user := wui.getUser(ctx)
+	user := server.GetUser(ctx)
 	m := zettel.Meta
 	var base baseData
-	wui.makeBaseData(ctx, config.GetLang(m, wui.rtConfig), title, "", user, &base)
+	wui.makeBaseData(ctx, config.GetLang(ctx, m, wui.rtConfig), title, "", user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),
