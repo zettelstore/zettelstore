@@ -3,7 +3,7 @@ title: Tips and Tricks
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220805174255
+modified: 20220826134833
 
 === Welcome Zettel
 * **Problem:** You want to put your Zettelstore into the public and need a starting zettel for your users.
@@ -18,3 +18,27 @@ modified: 20220805174255
 *# At the beginning of the start zettel, add the following [[Zettelmarkup|00001007000000]] text in a separate paragraph: ``{{{20220803182600}}}`` (you have to adapt to the actual value of the zettel identifier for your non-public home zettel).
 * **Discussion:** As stated in the description for a [[transclusion|00001007031100]], a transclusion will be ignored, if the transcluded zettel is not visible to the current user.
   In effect, the transclusion statement (above paragraph that contained ''{{{...}}}'') is ignored when rendering the zettel.
+
+=== Role-specific Layout of Zettel in Web User Interface (WebUI)
+[!role-css]
+* **Problem:** You want to add some CSS when displaying zettel of a specific [[role|00001006020000#role]].
+  For example, you might want to add a yellow background color for all [[configuration|00001006020100#configuration]] zettel.
+  Or you want a multi-column layout.
+* **Solution:** If you enable [[''expert-mode''|00001004020000#expert-mode]], you will have access to a zettel called ""[[Zettelstore Role to CSS Map|00000000029000]]"" (its identifier is ''00000000029000'').
+  This zettel maps a role name to a zettel that must contain the role-specific CSS code.
+
+  First, create a zettel containing the needed CSS: give it any title, its role is preferably ""configuration"" (but this is not a must).
+  Set its [[''syntax''|00001006020000#syntax]] must be set to ""[[css|00001008000000#css]]"".
+  The content must contain the role-specific CSS code, for example ``body {background-color: #FFFFD0}``for a background in a light yellow color.
+
+  Let's assume, the newly created CSS zettel got the identifier ''20220825200100''.
+
+  Now, you have to connect this zettel to the zettel called ""Zettelstore Role CSS Map"".
+  Since you have enabled ''expert-mode'', you are allowed to modify it.
+  Add the following metadata ''css-configuration-zid: 20220825200100'' to assign the role-specific CSS code for the role ""configuration"" to the CSS zettel containing that CSS.
+
+  In general, its role-assigning metadata must be like this pattern: ''css-ROLE-zid: ID'', where ''ROLE'' is the placeholder for the role, and ''ID'' for the zettel identifier containing CSS code.
+  It is allowed to assign more than one role to a specific CSS zettel.
+* **Discussion:** you have to ensure that the CSS zettel is allowed to be read by the intended audience of the zettel with that given role.
+  For example, if you made zettel with a specific role public visible, the CSS zettel must also have a [[''visibility: public''|00001010070200]] metadata.
+* **Extension:** if you have already established a role-specific layout for zettel, but you additionally want just one another zettel with another role to be rendered with the same CSS, you have to add metadata to the one zettel: ''css-role: ROLE'', where ''ROLE'' is the placeholder for the role that already is assigned to a specific CSS-based layout.
