@@ -37,5 +37,5 @@ func (uc ParseZettel) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.
 		return nil, err
 	}
 
-	return parser.ParseZettel(zettel, syntax, uc.rtConfig), nil
+	return parser.ParseZettel(ctx, zettel, syntax, uc.rtConfig), nil
 }

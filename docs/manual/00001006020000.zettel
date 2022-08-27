@@ -3,7 +3,8 @@ title: Supported Metadata Keys
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220817004044
+created: 20210126175322
+modified: 20220827181639
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -54,7 +55,9 @@ Most keys conform to a [[type|00001006030000]].
 ; [!lang|''lang'']
 : Language for the zettel.
   Mostly used for HTML rendering of the zettel.
-  If not given, the value ''default-lang'' from the  [[configuration zettel|00001004020000#default-lang]] will be used.
+
+  If not given, the value ''lang'' from the zettel of the [[current user|00001010040200]] will be used.
+  If that value is also not available, it is read from the [[configuration zettel|00001004020000#lang]] will be used.
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
 ; [!license|''license'']
 : Defines a license string that will be rendered.

@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/usecase"
@@ -116,7 +115,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(ctx, zn.InhMeta, wui.rtConfig), textTitle, "", user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), textTitle, "", user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid            string
 			WebURL         string

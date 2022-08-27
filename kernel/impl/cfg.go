@@ -50,9 +50,8 @@ const (
 func (cs *configService) Initialize(logger *logger.Logger) {
 	cs.logger = logger
 	cs.descr = descriptionMap{
-		keyDefaultCopyright:   {"Default copyright", parseString, true},
-		config.KeyDefaultLang: {"Default language", parseString, true},
-		keyDefaultLicense:     {"Default license", parseString, true},
+		keyDefaultCopyright: {"Default copyright", parseString, true},
+		keyDefaultLicense:   {"Default license", parseString, true},
 		keyDefaultVisibility: {
 			"Default zettel visibility",
 			func(val string) interface{} {
@@ -67,6 +66,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyExpertMode:            {"Expert mode", parseBool, true},
 		config.KeyFooterHTML:     {"Footer HTML", parseString, true},
 		keyHomeZettel:            {"Home zettel", parseZid, true},
+		api.KeyLang:              {"Language", parseString, true},
 		config.KeyMarkerExternal: {"Marker external URL", parseString, true},
 		keyMaxTransclusions:      {"Maximum transclusions", parseInt64, true},
 		keySiteName:              {"Site name", parseString, true},
@@ -80,12 +80,12 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 	}
 	cs.next = interfaceMap{
 		keyDefaultCopyright:      "",
-		config.KeyDefaultLang:    api.ValueLangEN,
 		keyDefaultLicense:        "",
 		keyDefaultVisibility:     meta.VisibilityLogin,
 		keyExpertMode:            false,
 		config.KeyFooterHTML:     "",
 		keyHomeZettel:            id.DefaultHomeZid,
+		api.KeyLang:              api.ValueLangEN,
 		config.KeyMarkerExternal: "&#10138;",
 		keyMaxTransclusions:      int64(1024),
 		keySiteName:              "Zettelstore",
@@ -202,7 +202,7 @@ func (cs *configService) Get(ctx context.Context, m *meta.Meta, key string) stri
 }
 
 // AddDefaultValues enriches the given meta data with its default values.
-func (cs *configService) AddDefaultValues(m *meta.Meta) *meta.Meta {
+func (cs *configService) AddDefaultValues(ctx context.Context, m *meta.Meta) *meta.Meta {
 	if cs == nil {
 		return m
 	}
@@ -212,7 +212,7 @@ func (cs *configService) AddDefaultValues(m *meta.Meta) *meta.Meta {
 		result = updateMeta(m, result, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
 	}
 	if _, found := m.Get(api.KeyLang); !found {
-		result = updateMeta(m, result, api.KeyLang, cs.GetConfig(config.KeyDefaultLang).(string))
+		result = updateMeta(m, result, api.KeyLang, cs.Get(ctx, nil, api.KeyLang))
 	}
 	if _, found := m.Get(api.KeyLicense); !found {
 		result = updateMeta(m, result, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))

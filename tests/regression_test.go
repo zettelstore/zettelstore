@@ -145,7 +145,7 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		if err2 != nil {
 			panic(err2)
 		}
-		z := parser.ParseZettel(zettel, "", testConfig)
+		z := parser.ParseZettel(context.Background(), zettel, "", testConfig)
 		for _, enc := range encodings {
 			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, enc), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+enc.String())
@@ -159,12 +159,14 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 type myConfig struct{}
 
 func (*myConfig) Get(context.Context, *meta.Meta, string) string { return "" }
-func (*myConfig) AddDefaultValues(m *meta.Meta) *meta.Meta       { return m }
-func (*myConfig) GetHomeZettel() id.Zid                          { return id.Invalid }
-func (*myConfig) GetListPageSize() int                           { return 0 }
-func (*myConfig) GetSiteName() string                            { return "" }
-func (*myConfig) GetYAMLHeader() bool                            { return false }
-func (*myConfig) GetZettelFileSyntax() []string                  { return nil }
+func (*myConfig) AddDefaultValues(_ context.Context, m *meta.Meta) *meta.Meta {
+	return m
+}
+func (*myConfig) GetHomeZettel() id.Zid         { return id.Invalid }
+func (*myConfig) GetListPageSize() int          { return 0 }
+func (*myConfig) GetSiteName() string           { return "" }
+func (*myConfig) GetYAMLHeader() bool           { return false }
+func (*myConfig) GetZettelFileSyntax() []string { return nil }
 
 func (*myConfig) GetSimpleMode() bool                      { return false }
 func (*myConfig) GetExpertMode() bool                      { return false }

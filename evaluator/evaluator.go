@@ -495,7 +495,7 @@ func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.In
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
-	zn := parser.ParseZettel(zettel, zettel.Meta.GetDefault(api.KeySyntax, ""), e.rtConfig)
+	zn := parser.ParseZettel(e.ctx, zettel, zettel.Meta.GetDefault(api.KeySyntax, ""), e.rtConfig)
 	ast.Walk(e, &zn.Ast)
 	return zn
 }

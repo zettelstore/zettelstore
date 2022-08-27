@@ -160,7 +160,7 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
 	var cData collectData
 	cData.initialize()
-	collectZettelIndexData(parser.ParseZettel(zettel, "", mgr.rtConfig), &cData)
+	collectZettelIndexData(parser.ParseZettel(ctx, zettel, "", mgr.rtConfig), &cData)
 
 	m := zettel.Meta
 	zi := store.NewZettelIndex(m.Zid)

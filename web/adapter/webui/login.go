@@ -14,8 +14,8 @@ import (
 	"context"
 	"net/http"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -37,7 +37,7 @@ func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
 	var base baseData
-	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), "Login", "", nil, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), "Login", "", nil, &base)
 	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
 		Title string
 		Retry bool

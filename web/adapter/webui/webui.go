@@ -320,7 +320,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 	if err != nil {
 		return nil
 	}
-	refs := collect.Order(parser.ParseZettel(menu, "", wui.rtConfig))
+	refs := collect.Order(parser.ParseZettel(ctx, menu, "", wui.rtConfig))
 	for _, ref := range refs {
 		zid, err2 := id.Parse(ref.URL.Path)
 		if err2 != nil {

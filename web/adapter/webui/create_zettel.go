@@ -16,7 +16,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -96,7 +95,7 @@ func (wui *WebUI) renderZettelForm(
 	user := server.GetUser(ctx)
 	m := zettel.Meta
 	var base baseData
-	wui.makeBaseData(ctx, config.GetLang(ctx, m, wui.rtConfig), title, "", user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), title, "", user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),

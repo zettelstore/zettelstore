@@ -112,7 +112,7 @@ candLoop:
 		if !parser.IsTextParser(syntax) {
 			continue
 		}
-		zn, err := parser.ParseZettel(zettel, syntax, nil), nil
+		zn, err := parser.ParseZettel(ctx, zettel, syntax, nil), nil
 		if err != nil {
 			continue
 		}

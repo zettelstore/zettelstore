@@ -17,7 +17,6 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
@@ -71,7 +70,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, config.GetLang(ctx, zn.InhMeta, wui.rtConfig), textTitle, roleCSSURL, user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), textTitle, roleCSSURL, user, &base)
 		base.MetaHeader = enc.MetaString(zn.InhMeta, evalMetadata)
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
 			HTMLTitle     string

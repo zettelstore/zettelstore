@@ -47,7 +47,7 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.Ze
 	if err != nil {
 		return nil, err
 	}
-	zn, err := parser.ParseZettel(zettel, syntax, uc.rtConfig), nil
+	zn, err := parser.ParseZettel(ctx, zettel, syntax, uc.rtConfig), nil
 	if err != nil {
 		return nil, err
 	}

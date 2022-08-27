@@ -11,6 +11,7 @@
 package cmd
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -34,6 +35,7 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 		return 2, err
 	}
 	z := parser.ParseZettel(
+		context.Background(),
 		domain.Zettel{
 			Meta:    m,
 			Content: domain.NewContent(inp.Src[inp.Pos:]),

@@ -73,10 +73,12 @@ type AuthData struct {
 }
 
 // GetAuthData returns the full authentication data from the context.
-func /*(*myServer)*/ GetAuthData(ctx context.Context) *AuthData {
-	data, ok := ctx.Value(CtxKeySession).(*AuthData)
-	if ok {
-		return data
+func GetAuthData(ctx context.Context) *AuthData {
+	if ctx != nil {
+		data, ok := ctx.Value(CtxKeySession).(*AuthData)
+		if ok {
+			return data
+		}
 	}
 	return nil
 }

@@ -12,6 +12,7 @@
 package parser
 
 import (
+	"context"
 	"fmt"
 
 	"zettelstore.de/c/api"
@@ -119,11 +120,11 @@ func ParseMetadataNoLink(value string) ast.InlineSlice {
 }
 
 // ParseZettel parses the zettel based on the syntax.
-func ParseZettel(zettel domain.Zettel, syntax string, rtConfig config.Config) *ast.ZettelNode {
+func ParseZettel(ctx context.Context, zettel domain.Zettel, syntax string, rtConfig config.Config) *ast.ZettelNode {
 	m := zettel.Meta
 	inhMeta := m
 	if rtConfig != nil {
-		inhMeta = rtConfig.AddDefaultValues(inhMeta)
+		inhMeta = rtConfig.AddDefaultValues(ctx, inhMeta)
 	}
 	if syntax == "" {
 		syntax, _ = inhMeta.Get(api.KeySyntax)

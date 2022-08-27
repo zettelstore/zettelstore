@@ -14,15 +14,14 @@ package config
 import (
 	"context"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
 
 // Key values that are supported by Config.Get
 const (
-	KeyDefaultLang    = "default-lang"
-	KeyFooterHTML     = "footer-html"
+	KeyFooterHTML = "footer-html"
+	// api.KeyLang
 	KeyMarkerExternal = "marker-external"
 )
 
@@ -35,7 +34,7 @@ type Config interface {
 	Get(ctx context.Context, m *meta.Meta, key string) string
 
 	// AddDefaultValues enriches the given meta data with its default values.
-	AddDefaultValues(m *meta.Meta) *meta.Meta
+	AddDefaultValues(context.Context, *meta.Meta) *meta.Meta
 
 	// GetSiteName returns the current value of the "site-name" key.
 	GetSiteName() string
@@ -64,15 +63,3 @@ type AuthConfig interface {
 	// GetVisibility returns the visibility value of the metadata.
 	GetVisibility(m *meta.Meta) meta.Visibility
 }
-
-// GetLang returns the value of the "lang" key of the given meta. If there is
-// no such value, GetDefaultLang() is returned.
-func GetLang(ctx context.Context, m *meta.Meta, cfg Config) string {
-	if val, ok := m.Get(api.KeyLang); ok {
-		return val
-	}
-	return GetDefaultLang(ctx, cfg)
-}
-
-// GetDefaultLang returns the configured value for a default language.
-func GetDefaultLang(ctx context.Context, cfg Config) string { return cfg.Get(ctx, nil, KeyDefaultLang) }

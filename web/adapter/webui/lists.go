@@ -19,7 +19,6 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
@@ -71,7 +70,7 @@ func (wui *WebUI) renderZettelList(
 	}
 	user := server.GetUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
 		Title          string
 		SearchURL      string
@@ -109,7 +108,7 @@ func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRo
 
 	user := server.GetUser(ctx)
 	var base baseData
-	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
 	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
 		Roles []roleInfo
 	}{
@@ -173,7 +172,7 @@ func (wui *WebUI) renderTagsList(w http.ResponseWriter, r *http.Request, listTag
 	}
 
 	var base baseData
-	wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
+	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
 	minCounts := make([]countInfo, 0, len(countList))
 	for _, c := range countList {
 		sCount := strconv.Itoa(c)
@@ -234,7 +233,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 		}
 		var base baseData
 		user := server.GetUser(ctx)
-		wui.makeBaseData(ctx, config.GetDefaultLang(ctx, wui.rtConfig), wui.rtConfig.GetSiteName(), "", user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
