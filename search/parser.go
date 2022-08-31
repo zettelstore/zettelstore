@@ -40,22 +40,16 @@ type parserState struct {
 
 func (ps *parserState) mustStop() bool { return ps.inp.Ch == input.EOS }
 func (ps *parserState) acceptSingleKw(s string) bool {
-	inp := ps.inp
-	pos := inp.Pos
-	if inp.Accept(s) && (ps.isSpace() || ps.mustStop()) {
+	if ps.inp.Accept(s) && (ps.isSpace() || ps.mustStop()) {
 		return true
 	}
-	inp.SetPos(pos)
 	return false
 }
 func (ps *parserState) acceptKwArgs(s string) bool {
-	inp := ps.inp
-	pos := inp.Pos
-	if inp.Accept(s) && ps.isSpace() {
+	if ps.inp.Accept(s) && ps.isSpace() {
 		ps.skipSpace()
 		return true
 	}
-	inp.SetPos(pos)
 	return false
 }
 
@@ -83,6 +77,7 @@ func (ps *parserState) parse(sea *Search) *Search {
 			}
 			continue
 		}
+		inp.SetPos(pos)
 		if ps.acceptSingleKw(kwRandom) {
 			sea = createIfNeeded(sea)
 			if len(sea.order) == 0 {
@@ -90,18 +85,21 @@ func (ps *parserState) parse(sea *Search) *Search {
 			}
 			continue
 		}
+		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwOrder) {
 			if s, ok := ps.parseOrder(sea); ok {
 				sea = s
 				continue
 			}
 		}
+		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwOffset) {
 			if s, ok := ps.parseOffset(sea); ok {
 				sea = s
 				continue
 			}
 		}
+		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwLimit) {
 			if s, ok := ps.parseLimit(sea); ok {
 				sea = s
@@ -109,10 +107,15 @@ func (ps *parserState) parse(sea *Search) *Search {
 			}
 		}
 		inp.SetPos(pos)
+		if inp.Ch == '|' {
+			sea = ps.parseExecute(sea)
+			break
+		}
 		sea = ps.parseText(sea)
 	}
 	return sea
 }
+
 func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
 	reverse := false
 	if ps.acceptKwArgs(kwReverse) {
@@ -157,11 +160,30 @@ func (ps *parserState) parseLimit(s *Search) (*Search, bool) {
 	return s, true
 }
 
+func (ps *parserState) parseExecute(s *Search) *Search {
+	ps.inp.Next()
+	var words []string
+	for {
+		ps.skipSpace()
+		word := ps.scanWord()
+		if len(word) == 0 {
+			break
+		}
+		words = append(words, string(word))
+	}
+	if len(words) > 0 {
+		s = createIfNeeded(s)
+		s.execute = words
+	}
+	return s
+}
+
 func (ps *parserState) parseText(s *Search) *Search {
-	pos := ps.inp.Pos
+	inp := ps.inp
+	pos := inp.Pos
 	op, hasOp := ps.scanSearchOp()
 	if hasOp && (op == cmpExist || op == cmpNotExist) {
-		ps.inp.SetPos(pos)
+		inp.SetPos(pos)
 		hasOp = false
 	}
 	text, key := ps.scanSearchTextOrKey(hasOp)
@@ -170,7 +192,7 @@ func (ps *parserState) parseText(s *Search) *Search {
 		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
-			if ps.isSpace() || ps.mustStop() {
+			if ps.isSpace() || inp.Ch == '|' || ps.mustStop() {
 				return s.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
@@ -209,7 +231,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	pos := inp.Pos
 	allowKey := !hasOp
 
-	for !ps.isSpace() && !ps.mustStop() {
+	for !ps.isSpace() && inp.Ch != '|' && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
 			case '!', '?', ':', '=', '>', '<', '~':
@@ -227,7 +249,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
 	pos := inp.Pos
-	for !ps.isSpace() && !ps.mustStop() {
+	for !ps.isSpace() && inp.Ch != '|' && !ps.mustStop() {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
@@ -238,7 +260,7 @@ func (ps *parserState) scanPosInt() (int, bool) {
 	ch := inp.Ch
 	if ch == '0' {
 		ch = inp.Next()
-		if isSpace(ch) || ps.mustStop() {
+		if isSpace(ch) || inp.Ch == '|' || ps.mustStop() {
 			return 0, true
 		}
 		return 0, false

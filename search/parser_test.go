@@ -22,6 +22,7 @@ func TestParser(t *testing.T) {
 		spec string
 		exp  string
 	}{
+
 		{"?", "?"}, {"!?", "!?"}, {"?a", "?a"}, {"!?a", "!?a"},
 		{"key?", "key?"}, {"key!?", "key!?"},
 		{"b key?", "key? b"}, {"b key!?", "key!? b"},
@@ -58,6 +59,7 @@ func TestParser(t *testing.T) {
 		{"LIMIT 4 LIMIT 8", "LIMIT 4"}, {"LIMIT 8 LIMIT 4", "LIMIT 4"},
 		{"OR", ""}, {"OR OR", ""}, {"a OR", "a"}, {"OR b", "b"}, {"OR a OR", "a"},
 		{"a OR b", "a OR b"},
+		{"|", ""}, {" | RANDOM", "| RANDOM"}, {"| RANDOM", "| RANDOM"}, {"a|a b ", "a | a b"},
 	}
 	for i, tc := range testcases {
 		got := search.Parse(tc.spec).String()
@@ -69,6 +71,11 @@ func TestParser(t *testing.T) {
 		gotReparse := search.Parse(got).String()
 		if gotReparse != got {
 			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got, gotReparse)
+		}
+
+		gotPipe := search.Parse(got + "|").String()
+		if gotPipe != got {
+			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got+"|", gotReparse)
 		}
 	}
 }

@@ -51,6 +51,9 @@ type Search struct {
 	order  []sortOrder
 	offset int // <= 0: no offset
 	limit  int // <= 0: no limit
+
+	// Execute specification
+	execute []string
 }
 
 // Compiled is a compiled search, to be used in a Box
@@ -147,11 +150,9 @@ func (s *Search) Clone() *Search {
 	}
 	c.offset = s.offset
 	c.limit = s.limit
+	c.execute = s.execute
 	return c
 }
-
-// RandomOrder is a pseudo metadata key that selects a random order.
-const RandomOrder = "_random"
 
 type compareOp uint8
 
@@ -239,6 +240,14 @@ func (s *Search) GetLimit() int {
 	s.mx.RLock()
 	defer s.mx.RUnlock()
 	return s.limit
+}
+
+// GetExecute returns the slice of execute specifications
+func (s *Search) GetExecute() []string {
+	if s == nil {
+		return nil
+	}
+	return s.execute
 }
 
 // EnrichNeeded returns true, if the search references a metadata key that
