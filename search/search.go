@@ -14,7 +14,6 @@ package search
 import (
 	"math/rand"
 	"sort"
-	"sync"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -41,8 +40,6 @@ type Searcher interface {
 
 // Search specifies a mechanism for selecting zettel.
 type Search struct {
-	mx sync.RWMutex // Protects other attributes
-
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	terms    []conjTerms
@@ -211,8 +208,6 @@ func (s *Search) addKey(key string, op compareOp) *Search {
 // SetPreMatch sets the pre-selection predicate.
 func (s *Search) SetPreMatch(preMatch MetaMatchFunc) *Search {
 	s = createIfNeeded(s)
-	s.mx.Lock()
-	defer s.mx.Unlock()
 	if s.preMatch != nil {
 		panic("search PreMatch already set")
 	}
@@ -223,8 +218,6 @@ func (s *Search) SetPreMatch(preMatch MetaMatchFunc) *Search {
 // SetLimit sets the given limit of the search object.
 func (s *Search) SetLimit(limit int) *Search {
 	s = createIfNeeded(s)
-	s.mx.Lock()
-	defer s.mx.Unlock()
 	if limit < 0 {
 		limit = 0
 	}
@@ -237,8 +230,6 @@ func (s *Search) GetLimit() int {
 	if s == nil {
 		return 0
 	}
-	s.mx.RLock()
-	defer s.mx.RUnlock()
 	return s.limit
 }
 
@@ -256,8 +247,6 @@ func (s *Search) EnrichNeeded() bool {
 	if s == nil {
 		return false
 	}
-	s.mx.RLock()
-	defer s.mx.RUnlock()
 	for _, term := range s.terms {
 		for key := range term.keys {
 			if meta.IsComputed(key) {
