@@ -3,7 +3,8 @@ title: API: Retrieve parsed metadata and content of an existing zettel in variou
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124180746
+created: 20210126175322
+modified: 20220908163514
 
 The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/p/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -26,7 +27,7 @@ The same default values applies to this endpoint.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.
-  Maybe the zettel identifier did not consist of exactly 14 digits or ''_enc'' / ''_part'' contained illegal values.
+  Maybe the zettel identifier did not consist of exactly 14 digits or ''enc'' / ''part'' contained illegal values.
 ; ''403''
 : You are not allowed to retrieve data of the given zettel.
 ; ''404''

@@ -26,7 +26,10 @@ import (
 // getEncoding returns the data encoding selected by the caller.
 func getEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (api.EncodingEnum, string) {
 	encoding := q.Get(api.QueryKeyEncoding)
-	if len(encoding) > 0 {
+	if encoding == "" {
+		encoding = q.Get("_enc")
+	}
+	if encoding != "" {
 		return api.Encoder(encoding), encoding
 	}
 	if enc, ok := getOneEncoding(r, api.HeaderAccept); ok {
@@ -77,6 +80,9 @@ var partMap = map[string]partType{
 
 func getPart(q url.Values, defPart partType) partType {
 	if part, ok := partMap[q.Get(api.QueryKeyPart)]; ok {
+		return part
+	}
+	if part, ok := partMap[q.Get("_part")]; ok {
 		return part
 	}
 	return defPart

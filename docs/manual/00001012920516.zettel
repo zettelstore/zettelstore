@@ -3,7 +3,8 @@ title: Sexpr Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220724170637
+created: 20220422181104
+modified: 20220908163427
 
 A zettel representation that is a [[s-expression|https://en.wikipedia.org/wiki/S-expression]] (also known as symbolic expression).
 
@@ -12,9 +13,9 @@ Both encodings are (relatively) easy to parse and contain all relevant informati
 
 For example, take a look at the Sexpr encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 
-* [[//v/00001012920516?_enc=sexpr&_part=zettel]],
-* [[//v/00001012920516?_enc=sexpr&_part=meta]],
-* [[//v/00001012920516?_enc=sexpr&_part=content]].
+* [[//v/00001012920516?enc=sexpr&part=zettel]],
+* [[//v/00001012920516?enc=sexpr&part=meta]],
+* [[//v/00001012920516?enc=sexpr&part=content]].
 
 If transferred via HTTP, the content type will be ''text/plain''.
 

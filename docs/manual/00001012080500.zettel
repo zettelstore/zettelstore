@@ -3,7 +3,8 @@ title: API: Refresh internal data
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220805174246
+created: 20211230230441
+modified: 20220908163223
 
 Zettelstore maintains some internal data to allow faster operations.
 
@@ -17,10 +18,10 @@ All these internal data may become stale.
 This should not happen, but when it comes e.g. to file handling, every operating systems behaves differently in very subtle ways.
 
 To avoid stopping and re-starting Zettelstore, you can use the API to force Zettelstore to refresh its internal data if you think it is needed.
-To do this, you must send a HTTP POST request to the [[endpoint|00001012920000]] ''/x'' and you must specify the query parameter ''_cmd=refresh''.
+To do this, you must send a HTTP POST request to the [[endpoint|00001012920000]] ''/x'' and you must specify the query parameter ''cmd=refresh''.
 
 ```sh
-# curl -X POST 'http://127.0.0.1:23123/x?_cmd=refresh'
+# curl -X POST 'http://127.0.0.1:23123/x?cmd=refresh'
 ```
 
 If successful, you will get a HTTP status code 204 (No Content) with an empty HTTP body.
@@ -35,6 +36,6 @@ The request will be successful if either:
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.
-  Most likely, no query parameter ''_cmd'' was given, or it did not contain the value ""refresh"".
+  Most likely, no query parameter ''cmd'' was given, or it did not contain the value ""refresh"".
 ; ''403''
 : You are not allowed to perform this operation.

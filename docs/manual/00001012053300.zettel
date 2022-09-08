@@ -3,7 +3,8 @@ title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220724163741
+created: 20211004093206
+modified: 20220908162927
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -57,8 +58,8 @@ The following keys of the JSON object are used:
 [!plain]Additionally, you can retrieve the plain zettel, without using JSON.
 Just change the [[endpoint|00001012920000]] to ''/z/{ID}''
 Optionally, you may provide which parts of the zettel you are requesting.
-In this case, add an additional query parameter ''_part=[[PART|00001012920800]]''.
-Valid values are ""zettel"", ""[[meta|00001012053400]]"", and ""content"" (the default value).
+In this case, add an additional query parameter ''part=PART''.
+Valid values for [[''PART''|00001012920800]] are ""zettel"", ""[[meta|00001012053400]]"", and ""content"" (the default value).
 
 ````sh
 # curl 'http://127.0.0.1:23123/z/00001012053300'
@@ -71,7 +72,7 @@ If successful, the output is a JSON object:
 ````
 
 ````sh
-# curl 'http://127.0.0.1:23123/z/00001012053300?_part=zettel'
+# curl 'http://127.0.0.1:23123/z/00001012053300?part=zettel'
 title: API: Retrieve metadata and content of an existing zettel
 role: manual
 tags: #api #manual #zettelstore
@@ -88,7 +89,7 @@ For example, to retrieve some data about this zettel you are currently viewing, 
 : Retrieval was successful, the body contains an appropriate JSON object / plain zettel data.
 ; ''204''
 : Request was valid, but there is no data to be returned.
-  Most likely, you specified the query parameter ''_part=content'', but the zettel does not contain any content.
+  Most likely, you specified the query parameter ''part=content'', but the zettel does not contain any content.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.

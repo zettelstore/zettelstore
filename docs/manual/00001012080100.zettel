@@ -3,10 +3,11 @@ title: API: Execute commands
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220805174227
+created: 20211230230441
+modified: 20220908163125
 
 The [[endpoint|00001012920000]] ''/x'' allows you to execute some (administrative) commands.
-To differentiate between the possible commands, you have to set the query parameter ''_cmd'' to a specific value:
+To differentiate between the possible commands, you have to set the query parameter ''cmd'' to a specific value:
 
 ; ''authenticated''
 : [[Check for authentication|00001012080200]]

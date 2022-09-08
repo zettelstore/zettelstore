@@ -44,6 +44,9 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		q := r.URL.Query()
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
+			phrase = q.Get("_phrase")
+		}
+		if phrase == "" {
 			if zmkTitle, found := zm.Get(api.KeyTitle); found {
 				isTitle := evaluate.RunMetadata(ctx, zmkTitle)
 				encdr := textenc.Create()

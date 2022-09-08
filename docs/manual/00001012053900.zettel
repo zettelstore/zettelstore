@@ -3,7 +3,8 @@ title: API: Retrieve unlinked references to an existing zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220812145045
+created: 20211119133357
+modified: 20220908163037
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -47,10 +48,10 @@ The title must not occur within a link (e.g. to another zettel), in a [[heading|
 The match must be exact, but is case-insensitive.
 
 If the title of the specified zettel contains some extra character that probably reduce the number of found unlinked references,
-you can specify the title phase to be searched for as a query parameter ''_phrase'':
+you can specify the title phase to be searched for as a query parameter ''phrase'':
 
 ````
-# curl 'http://127.0.0.1:23123/u/00001007000000?_phrase=markdown'
+# curl 'http://127.0.0.1:23123/u/00001007000000?phrase=markdown'
 {"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...},"rights":62},{"id": "00001004020000","meta": {...},"rights":62}]}
 ````
 

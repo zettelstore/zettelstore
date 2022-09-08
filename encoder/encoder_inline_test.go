@@ -445,7 +445,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[[search:title:syntax]]`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"search","s":"title:syntax"}]`,
-			encoderHTML:  `<a href="?_s=title%3Asyntax">title:syntax</a>`,
+			encoderHTML:  `<a href="?s=title%3Asyntax">title:syntax</a>`,
 			encoderSexpr: `((LINK-SEARCH () "title:syntax"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -456,7 +456,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `[[S|search:title:syntax]]`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"search","s":"title:syntax","i":[{"":"Text","s":"S"}]}]`,
-			encoderHTML:  `<a href="?_s=title%3Asyntax">S</a>`,
+			encoderHTML:  `<a href="?s=title%3Asyntax">S</a>`,
 			encoderSexpr: `((LINK-SEARCH () "title:syntax" (TEXT "S")))`,
 			encoderText:  `S`,
 			encoderZmk:   useZmk,

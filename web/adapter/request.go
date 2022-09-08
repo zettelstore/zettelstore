@@ -55,6 +55,9 @@ func GetSearch(q url.Values) *search.Search {
 	if exprs, found := q[api.QueryKeySearch]; found {
 		return search.Parse(strings.Join(exprs, " "))
 	}
+	if exprs, found := q["_s"]; found {
+		return search.Parse(strings.Join(exprs, " "))
+	}
 	return nil
 }
 

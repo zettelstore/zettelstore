@@ -28,12 +28,19 @@ func (a *API) MakeListMapMetaHandler(listRole usecase.ListRoles, listTags usecas
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ar meta.Arrangement
 		query := r.URL.Query()
-		iMinCount, err := strconv.Atoi(query.Get(api.QueryKeyMin))
+		minVal := query.Get(api.QueryKeyMin)
+		if minVal == "" {
+			minVal = query.Get("_min")
+		}
+		iMinCount, err := strconv.Atoi(minVal)
 		if err != nil || iMinCount < 0 {
 			iMinCount = 0
 		}
 		ctx := r.Context()
 		key := query.Get(api.QueryKeyKey)
+		if key == "" {
+			key = query.Get("_key")
+		}
 		switch key {
 		case api.KeyRole:
 			ar, err = listRole.Run(ctx)

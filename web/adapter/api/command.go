@@ -27,6 +27,9 @@ func (a *API) MakePostCommandHandler(
 		ctx := r.Context()
 		q := r.URL.Query()
 		cmd := q.Get(api.QueryKeyCommand)
+		if cmd == "" {
+			cmd = q.Get("_cmd")
+		}
 		switch api.Command(cmd) {
 		case api.CommandAuthenticated:
 			handleIsAuthenticated(ctx, w, ucIsAuth)

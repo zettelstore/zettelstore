@@ -12,6 +12,9 @@
      specify a search operator for metadata, the specified key is assumed to
      exist.
      (breaking: api, webui)
+  *  Cleanup names for HTTP query parameters in WebUI. Update your bookmarks
+     if you used them. (For API: see below)
+     (breaking: webui)
   *  Allow search terms to be OR-ed. This allows to specify any search
      expression in disjunctive normal form. Therefore, the NEGATE term is not
      needed any more.
@@ -21,6 +24,10 @@
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
      a valid date now.
      (minor)
+  *  Cleanup names for HTTP query parameter for API calls. Essentially,
+     underscore characters in front are removed. Please use new names, old
+     nanmes will be deprecated in version 0.8.
+     (deprecated: api)
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.2 (2022-08-22)</h2>
