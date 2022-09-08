@@ -27,8 +27,34 @@ func ExecuteSearch(ml []*meta.Meta, cmds []string) ast.BlockNode {
 			kind = ast.NestedListOrdered
 			continue
 		}
+		key := strings.ToLower(cmd)
+		mtype := meta.Type(key)
+		if mtype == meta.TypeWord {
+			return createBlockNodeWord(ml, cmd, kind)
+		}
 	}
 	return createBlockNodeMeta(ml, kind)
+}
+
+func createBlockNodeWord(ml []*meta.Meta, key string, kind ast.NestedListKind) ast.BlockNode {
+	if len(ml) == 0 {
+		return nil
+	}
+	ccs := meta.CreateArrangement(ml, key).Counted()
+	ccs.SortByName()
+	items := make([]ast.ItemSlice, 0, len(ccs))
+	for _, cat := range ccs {
+		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
+			Attrs:   nil,
+			Ref:     ast.ParseReference(ast.SearchPrefix + key + ":" + cat.Name),
+			Inlines: ast.InlineSlice{&ast.TextNode{Text: cat.Name}},
+		})})
+	}
+	return &ast.NestedListNode{
+		Kind:  kind,
+		Items: items,
+		Attrs: nil,
+	}
 }
 
 func createBlockNodeMeta(ml []*meta.Meta, kind ast.NestedListKind) ast.BlockNode {

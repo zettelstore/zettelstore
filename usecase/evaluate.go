@@ -58,6 +58,9 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.Ze
 
 // RunBlockNode executes the use case for a metadata list.
 func (uc *Evaluate) RunBlockNode(ctx context.Context, bn ast.BlockNode) ast.BlockSlice {
+	if bn == nil {
+		return nil
+	}
 	bns := ast.BlockSlice{bn}
 	evaluator.EvaluateBlock(ctx, uc, uc.rtConfig, &bns)
 	return bns

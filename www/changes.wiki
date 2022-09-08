@@ -24,6 +24,9 @@
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
      a valid date now.
      (minor)
+  *  Removed template for rendering roles list. This is now done by search
+     commands.
+     (minor: webui)
   *  Cleanup names for HTTP query parameter for API calls. Essentially,
      underscore characters in front are removed. Please use new names, old
      nanmes will be deprecated in version 0.8.

@@ -38,8 +38,6 @@ func (wui *WebUI) MakeListHTMLMetaHandler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		switch query.Get("_l") {
-		case "r":
-			wui.renderRolesList(w, r, listRole)
 		case "t":
 			wui.renderTagsList(w, r, listTags)
 		default:
@@ -84,36 +82,6 @@ func (wui *WebUI) renderZettelList(
 		SearchValue:    s.String(),
 		QueryKeySearch: base.QueryKeySearch,
 		Content:        htmlContent,
-	})
-}
-
-type roleInfo struct {
-	Text string
-	URL  string
-}
-
-func (wui *WebUI) renderRolesList(w http.ResponseWriter, r *http.Request, listRole usecase.ListRoles) {
-	ctx := r.Context()
-	roleArrangement, err := listRole.Run(ctx)
-	if err != nil {
-		wui.reportError(ctx, w, err)
-		return
-	}
-	roleList := roleArrangement.Counted()
-	roleList.SortByName()
-
-	roleInfos := make([]roleInfo, len(roleList))
-	for i, role := range roleList {
-		roleInfos[i] = roleInfo{role.Name, wui.NewURLBuilder('h').AppendSearch("role:" + role.Name).String()}
-	}
-
-	user := server.GetUser(ctx)
-	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
-	wui.renderTemplate(ctx, w, id.RolesTemplateZid, &base, struct {
-		Roles []roleInfo
-	}{
-		Roles: roleInfos,
 	})
 }
 

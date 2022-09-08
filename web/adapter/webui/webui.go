@@ -99,7 +99,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		cssUserURL:    ab.NewURLBuilder('z').SetZid(api.ZidUserCSS).String(),
 		homeURL:       ab.NewURLBuilder('/').String(),
 		listZettelURL: ab.NewURLBuilder('h').String(),
-		listRolesURL:  ab.NewURLBuilder('h').AppendQuery("_l", "r").String(),
+		listRolesURL:  ab.NewURLBuilder('h').AppendSearch("|role").String(),
 		listTagsURL:   ab.NewURLBuilder('h').AppendQuery("_l", "t").String(),
 		refreshURL:    ab.NewURLBuilder('g').AppendQuery("_c", "r").String(),
 		withAuth:      authz.WithAuth(),
