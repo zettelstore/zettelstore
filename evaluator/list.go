@@ -11,13 +11,27 @@
 package evaluator
 
 import (
+	"strings"
+
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
 )
 
-func CreateBlockNodeMeta(ml []*meta.Meta) ast.BlockNode {
+// ExecuteSearch transforms a list of metadata according to search commands into a AST nested list.
+func ExecuteSearch(ml []*meta.Meta, cmds []string) ast.BlockNode {
+	kind := ast.NestedListUnordered
+	for _, cmd := range cmds {
+		if strings.HasPrefix(cmd, "N") {
+			kind = ast.NestedListOrdered
+			continue
+		}
+	}
+	return createBlockNodeMeta(ml, kind)
+}
+
+func createBlockNodeMeta(ml []*meta.Meta, kind ast.NestedListKind) ast.BlockNode {
 	if len(ml) == 0 {
 		return nil
 	}
@@ -35,7 +49,7 @@ func CreateBlockNodeMeta(ml []*meta.Meta) ast.BlockNode {
 		})})
 	}
 	return &ast.NestedListNode{
-		Kind:  ast.NestedListUnordered,
+		Kind:  kind,
 		Items: items,
 		Attrs: nil,
 	}

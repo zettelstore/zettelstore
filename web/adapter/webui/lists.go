@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/search"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -61,7 +62,7 @@ func (wui *WebUI) renderZettelList(
 		wui.reportError(ctx, w, err)
 		return
 	}
-	bns := evaluate.RunMetaList(ctx, metaList)
+	bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(metaList, s.GetExecute()))
 	enc := wui.getSimpleHTMLEncoder()
 	htmlContent, err := enc.BlocksString(&bns)
 	if err != nil {
@@ -208,7 +209,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunMetaList(ctx, metaList)
+		bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(metaList, nil))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {

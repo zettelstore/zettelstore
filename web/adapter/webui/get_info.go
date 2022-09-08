@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -98,7 +99,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunMetaList(ctx, unlinkedMeta)
+		bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(unlinkedMeta, nil))
 		unlinkedContent, err := enc.BlocksString(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)
