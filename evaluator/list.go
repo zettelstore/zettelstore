@@ -11,58 +11,94 @@
 package evaluator
 
 import (
+	"bytes"
 	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/search"
 )
 
-// ExecuteSearch transforms a list of metadata according to search commands into a AST nested list.
-func ExecuteSearch(ml []*meta.Meta, cmds []string) ast.BlockNode {
-	kind := ast.NestedListUnordered
-	for _, cmd := range cmds {
-		if strings.HasPrefix(cmd, "N") {
-			kind = ast.NestedListOrdered
-			continue
+// ActionSearch transforms a list of metadata according to search commands into a AST nested list.
+func ActionSearch(sea *search.Search, ml []*meta.Meta) ast.BlockNode {
+	ap := actionPara{
+		sea:  sea,
+		ml:   ml,
+		kind: ast.NestedListUnordered,
+	}
+	if actions := sea.Actions(); len(actions) > 0 {
+		acts := make([]string, 0, len(actions))
+		for _, act := range actions {
+			if strings.HasPrefix(act, "N") {
+				ap.kind = ast.NestedListOrdered
+				continue
+			}
+			acts = append(acts, act)
 		}
-		key := strings.ToLower(cmd)
-		mtype := meta.Type(key)
-		if mtype == meta.TypeWord {
-			return createBlockNodeWord(ml, cmd, kind)
+		for _, act := range acts {
+			key := strings.ToLower(act)
+			mtype := meta.Type(key)
+			if mtype == meta.TypeWord {
+				return ap.createBlockNodeWord(act)
+			}
 		}
 	}
-	return createBlockNodeMeta(ml, kind)
+	return ap.createBlockNodeMeta()
 }
 
-func createBlockNodeWord(ml []*meta.Meta, key string, kind ast.NestedListKind) ast.BlockNode {
-	if len(ml) == 0 {
+type actionPara struct {
+	sea  *search.Search
+	ml   []*meta.Meta
+	kind ast.NestedListKind
+}
+
+func (ap *actionPara) createBlockNodeWord(key string) ast.BlockNode {
+	if len(ap.ml) == 0 {
 		return nil
 	}
-	ccs := meta.CreateArrangement(ml, key).Counted()
+	ccs := meta.CreateArrangement(ap.ml, key).Counted()
+	if len(ccs) == 0 {
+		return nil
+	}
+
+	sea := ap.sea.Clone()
+	sea.RemoveActions()
+	var buf bytes.Buffer
+	buf.WriteString(ast.SearchPrefix)
+	sea.Print(&buf)
+	if buf.Len() > len(ast.SearchPrefix) {
+		buf.WriteByte(' ')
+	}
+	buf.WriteString(key)
+	buf.WriteByte(':')
+	bufLen := buf.Len()
+
 	ccs.SortByName()
 	items := make([]ast.ItemSlice, 0, len(ccs))
 	for _, cat := range ccs {
+		buf.WriteString(cat.Name)
 		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
 			Attrs:   nil,
-			Ref:     ast.ParseReference(ast.SearchPrefix + key + ":" + cat.Name),
+			Ref:     ast.ParseReference(buf.String()),
 			Inlines: ast.InlineSlice{&ast.TextNode{Text: cat.Name}},
 		})})
+		buf.Truncate(bufLen)
 	}
 	return &ast.NestedListNode{
-		Kind:  kind,
+		Kind:  ap.kind,
 		Items: items,
 		Attrs: nil,
 	}
 }
 
-func createBlockNodeMeta(ml []*meta.Meta, kind ast.NestedListKind) ast.BlockNode {
-	if len(ml) == 0 {
+func (ap *actionPara) createBlockNodeMeta() ast.BlockNode {
+	if len(ap.ml) == 0 {
 		return nil
 	}
-	items := make([]ast.ItemSlice, 0, len(ml))
-	for _, m := range ml {
+	items := make([]ast.ItemSlice, 0, len(ap.ml))
+	for _, m := range ap.ml {
 		zid := m.Zid.String()
 		title, found := m.Get(api.KeyTitle)
 		if !found {
@@ -75,7 +111,7 @@ func createBlockNodeMeta(ml []*meta.Meta, kind ast.NestedListKind) ast.BlockNode
 		})})
 	}
 	return &ast.NestedListNode{
-		Kind:  kind,
+		Kind:  ap.kind,
 		Items: items,
 		Attrs: nil,
 	}

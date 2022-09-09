@@ -71,7 +71,7 @@ func (s *Search) Print(w io.Writer) {
 	env.printOrder(s.order)
 	env.printPosInt(kwOffset, s.offset)
 	env.printPosInt(kwLimit, s.limit)
-	env.printExecute(s.execute)
+	env.printActions(s.actions)
 }
 
 type printEnv struct {
@@ -175,7 +175,7 @@ func (s *Search) PrintHuman(w io.Writer) {
 	env.printOrder(s.order)
 	env.printPosInt(kwOffset, s.offset)
 	env.printPosInt(kwLimit, s.limit)
-	env.printExecute(s.execute)
+	env.printActions(s.actions)
 }
 
 func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
@@ -245,7 +245,7 @@ func (pe *printEnv) printPosInt(key string, val int) {
 	}
 }
 
-func (pe *printEnv) printExecute(words []string) {
+func (pe *printEnv) printActions(words []string) {
 	if len(words) > 0 {
 		pe.printSpace()
 		pe.writeString("|")

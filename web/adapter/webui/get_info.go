@@ -99,7 +99,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(unlinkedMeta, nil))
+		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(nil, unlinkedMeta))
 		unlinkedContent, err := enc.BlocksString(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)

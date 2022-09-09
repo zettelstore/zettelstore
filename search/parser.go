@@ -173,7 +173,7 @@ func (ps *parserState) parseExecute(s *Search) *Search {
 	}
 	if len(words) > 0 {
 		s = createIfNeeded(s)
-		s.execute = words
+		s.actions = words
 	}
 	return s
 }

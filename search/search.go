@@ -50,7 +50,7 @@ type Search struct {
 	limit  int // <= 0: no limit
 
 	// Execute specification
-	execute []string
+	actions []string
 }
 
 // Compiled is a compiled search, to be used in a Box
@@ -147,7 +147,7 @@ func (s *Search) Clone() *Search {
 	}
 	c.offset = s.offset
 	c.limit = s.limit
-	c.execute = s.execute
+	c.actions = s.actions
 	return c
 }
 
@@ -233,12 +233,19 @@ func (s *Search) GetLimit() int {
 	return s.limit
 }
 
-// GetExecute returns the slice of execute specifications
-func (s *Search) GetExecute() []string {
+// Actions returns the slice of action specifications
+func (s *Search) Actions() []string {
 	if s == nil {
 		return nil
 	}
-	return s.execute
+	return s.actions
+}
+
+// RemoveActions will remove the action part of a search.
+func (s *Search) RemoveActions() {
+	if s != nil {
+		s.actions = nil
+	}
 }
 
 // EnrichNeeded returns true, if the search references a metadata key that

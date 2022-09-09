@@ -50,17 +50,17 @@ func (wui *WebUI) renderZettelList(
 	w http.ResponseWriter, r *http.Request,
 	listMeta usecase.ListMeta, evaluate *usecase.Evaluate,
 ) {
-	s := adapter.GetSearch(r.URL.Query())
+	sea := adapter.GetSearch(r.URL.Query())
 	ctx := r.Context()
-	if !s.EnrichNeeded() {
+	if !sea.EnrichNeeded() {
 		ctx = box.NoEnrichContext(ctx)
 	}
-	metaList, err := listMeta.Run(ctx, s)
+	metaList, err := listMeta.Run(ctx, sea)
 	if err != nil {
 		wui.reportError(ctx, w, err)
 		return
 	}
-	bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(metaList, s.GetExecute()))
+	bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(sea, metaList))
 	enc := wui.getSimpleHTMLEncoder()
 	htmlContent, err := enc.BlocksString(&bns)
 	if err != nil {
@@ -77,9 +77,9 @@ func (wui *WebUI) renderZettelList(
 		QueryKeySearch string
 		Content        string
 	}{
-		Title:          wui.listTitleSearch(s),
+		Title:          wui.listTitleSearch(sea),
 		SearchURL:      base.SearchURL,
-		SearchValue:    s.String(),
+		SearchValue:    sea.String(),
 		QueryKeySearch: base.QueryKeySearch,
 		Content:        htmlContent,
 	})
@@ -177,7 +177,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ExecuteSearch(metaList, nil))
+		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(nil, metaList))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {
