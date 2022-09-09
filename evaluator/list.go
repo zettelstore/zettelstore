@@ -30,6 +30,8 @@ func ActionSearch(sea *search.Search, ml []*meta.Meta) ast.BlockNode {
 		sea:  sea,
 		ml:   ml,
 		kind: ast.NestedListUnordered,
+		min:  -1,
+		max:  -1,
 	}
 	if actions := sea.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
@@ -37,6 +39,18 @@ func ActionSearch(sea *search.Search, ml []*meta.Meta) ast.BlockNode {
 			if strings.HasPrefix(act, "N") {
 				ap.kind = ast.NestedListOrdered
 				continue
+			}
+			if strings.HasPrefix(act, "MIN") {
+				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
+					ap.min = num
+					continue
+				}
+			}
+			if strings.HasPrefix(act, "MAX") {
+				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
+					ap.max = num
+					continue
+				}
 			}
 			acts = append(acts, act)
 		}
@@ -57,6 +71,8 @@ type actionPara struct {
 	sea  *search.Search
 	ml   []*meta.Meta
 	kind ast.NestedListKind
+	min  int
+	max  int
 }
 
 func (ap *actionPara) createBlockNodeWord(key string) ast.BlockNode {
@@ -90,6 +106,23 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 		return nil
 	}
 	ccs.SortByCount()
+	if min, max := ap.min, ap.max; min > 0 || max > 0 {
+		if min < 0 {
+			min = ccs[len(ccs)-1].Count
+		}
+		if max < 0 {
+			max = ccs[0].Count
+		}
+		if ccs[len(ccs)-1].Count < min || max < ccs[0].Count {
+			temp := make(meta.CountedCategories, 0, len(ccs))
+			for _, cat := range ccs {
+				if min <= cat.Count && cat.Count <= max {
+					temp = append(temp, cat)
+				}
+			}
+			ccs = temp
+		}
+	}
 	countMap := ap.calcFontSizes(ccs)
 
 	para := make(ast.InlineSlice, 0, len(ccs))
@@ -190,8 +223,30 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 	sort.Ints(countList)
 
 	result := make(map[int]attrs.Attributes, len(countList))
-	for pos, count := range countList {
-		result[count] = fsAttrs[(pos*fontSizes)/len(countList)]
+	if len(countList) <= fontSizes {
+		// If we have less different counts, center them inside the fsAttrs vector.
+		curSize := (fontSizes - len(countList)) / 2
+		for _, count := range countList {
+			result[count] = fsAttrs[curSize]
+			curSize++
+		}
+		return result
+	}
+
+	// Idea: the number of occurences for a specific count is substracted from a budget.
+	budget := len(ccs) / (fontSizes - 1)
+	curBudget := budget
+	curSize := 0
+	for _, count := range countList {
+		result[count] = fsAttrs[curSize]
+		curBudget -= countMap[count]
+		for curBudget <= 0 {
+			curBudget += budget
+			curSize++
+			if curSize >= fontSizes {
+				curSize = fontSizes - 1
+			}
+		}
 	}
 	return result
 }
