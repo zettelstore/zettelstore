@@ -46,7 +46,6 @@ var (
 	RenameTemplateZid  = MustParse(api.ZidRenameTemplate)
 	DeleteTemplateZid  = MustParse(api.ZidDeleteTemplate)
 	ContextTemplateZid = MustParse(api.ZidContextTemplate)
-	TagsTemplateZid    = MustParse(api.ZidTagsTemplate)
 	ErrorTemplateZid   = MustParse(api.ZidErrorTemplate)
 	RoleCSSMapZid      = MustParse(api.ZidRoleCSSMap)
 	EmojiZid           = MustParse(api.ZidEmoji)

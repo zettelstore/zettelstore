@@ -260,14 +260,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		domain.NewContent(contentListZettelMustache)},
-	id.TagsTemplateZid: {
-		constHeader{
-			api.KeyTitle:      "Zettelstore List Tags HTML Template",
-			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
-			api.KeyVisibility: api.ValueVisibilityExpert,
-		},
-		domain.NewContent(contentListTagsMustache)},
 	id.ErrorTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
@@ -382,9 +374,6 @@ var contentDeleteMustache []byte
 
 //go:embed listzettel.mustache
 var contentListZettelMustache []byte
-
-//go:embed listtags.mustache
-var contentListTagsMustache []byte
 
 //go:embed error.mustache
 var contentErrorMustache []byte

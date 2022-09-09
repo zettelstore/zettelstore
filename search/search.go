@@ -14,6 +14,7 @@ package search
 import (
 	"math/rand"
 	"sort"
+	"strings"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -268,6 +269,11 @@ func (s *Search) EnrichNeeded() bool {
 	}
 	for _, o := range s.order {
 		if meta.IsComputed(o.key) {
+			return true
+		}
+	}
+	for _, a := range s.actions {
+		if meta.IsComputed(strings.ToLower(a)) {
 			return true
 		}
 	}

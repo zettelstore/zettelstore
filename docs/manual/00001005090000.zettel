@@ -3,7 +3,8 @@ title: List of predefined zettel
 role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
-modified: 20220826134845
+created: 20210126175322
+modified: 20220909180240
 
 The following table lists all predefined zettel with their purpose.
 
@@ -22,14 +23,12 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000000100]] | Zettelstore Runtime Configuration | Allows to [[configure Zettelstore at runtime|00001004020000]]
 | [[00000000010100]] | Zettelstore Base HTML Template | Contains the general layout of the HTML view
 | [[00000000010200]] | Zettelstore Login Form HTML Template | Layout of the login form, when authentication is [[enabled|00001010040100]]
-| [[00000000010300]] | Zettelstore List Meta HTML Template | Used when displaying a list of zettel
+| [[00000000010300]] | Zettelstore List Zettel HTML Template | Used when displaying a list of zettel
 | [[00000000010401]] | Zettelstore Detail HTML Template | Layout for the HTML detail view of one zettel
 | [[00000000010402]] | Zettelstore Info HTML Template | Layout for the information view of a specific zettel
 | [[00000000010403]] | Zettelstore Form HTML Template | Form that is used to create a new or to change an existing zettel that contains text
 | [[00000000010404]] | Zettelstore Rename Form HTML Template | View that is displayed to change the [[zettel identifier|00001006050000]]
 | [[00000000010405]] | Zettelstore Delete HTML Template | View to confirm the deletion of a zettel
-| [[00000000010500]] | Zettelstore List Roles HTML Template | Layout for listing all roles
-| [[00000000010600]] | Zettelstore List Tags HTML Template | Layout of tags lists
 | [[00000000020001]] | Zettelstore Base CSS | System-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000025001]] | Zettelstore User CSS | User-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000029000]] | Zettelstore Role to CSS Map | [[Maps|00001017000000#role-css]] [[role|00001006020000#role]] to a zettel identifier that is included by the [[Base HTML Template|00000000010100]] as an CSS file 

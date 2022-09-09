@@ -24,12 +24,21 @@
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
      a valid date now.
      (minor)
-  *  Removed template for rendering roles list. This is now done by search
-     commands.
+  *  Removed templates for rendering roles and tags lists. This is now done by
+     search commands.
      (minor: webui)
+  *  Tags within zettel content are deprecated in version 0.8. This affects the
+     computed metadata keys <tt>content-tags</tt> and <tt>all-tags</tt>. They
+     will be removed. The number sign of a content tag introduces unintended
+     tags, esp. in the english language; content tags may occur within links
+     &rarr; links within links, when rendered as HTML; content tags may occur
+     in the title of a zettel; naming of content tags, zettel tags, and their
+     union is confusing for many. Migration: use zettel tags or replace content
+     tag with a search.
+     (deprecated: zettelmarkup)
   *  Cleanup names for HTTP query parameter for API calls. Essentially,
      underscore characters in front are removed. Please use new names, old
-     nanmes will be deprecated in version 0.8.
+     names will be deprecated in version 0.8.
      (deprecated: api)
 
 <a name="0_6"></a>
