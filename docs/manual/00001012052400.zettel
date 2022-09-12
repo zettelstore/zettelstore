@@ -4,8 +4,12 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210216172944
-modified: 20220908162110
 
+modified: 20220912112253
+
+**Note**: this endpoint is deprecated since v0.7 and will be removed in v0.8.
+Please use a [[query|00001012051400]] instead.
+---
 The [[endpoint|00001012920000]] ''/m'' allows to retrieve a map of metadata values (of a specific key) to the list of zettel identifier, which reference zettel containing this value under the given metadata key.
 
 Currently, two keys are supported:

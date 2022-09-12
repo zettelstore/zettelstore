@@ -19,6 +19,9 @@
      expression in disjunctive normal form. Therefore, the NEGATE term is not
      needed any more.
      (breaking: api, webui)
+  *  Add endpoint <tt>/q</tt> to query the zettelstore and aggregate resulting
+     values. This is done by extending the search syntax.
+     (major: api)
   *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
      zettel was created. Since key &ldquo;published&rdquo; is now either
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
