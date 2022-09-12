@@ -25,6 +25,7 @@ import (
 
 type myServer struct {
 	log              *logger.Logger
+	baseURL          string
 	server           httpServer
 	router           httpRouter
 	persistentCookie bool
@@ -32,9 +33,10 @@ type myServer struct {
 }
 
 // New creates a new web server.
-func New(log *logger.Logger, listenAddr, urlPrefix string, persistentCookie, secureCookie bool, maxRequestSize int64, auth auth.TokenManager) server.Server {
+func New(log *logger.Logger, listenAddr, baseURL, urlPrefix string, persistentCookie, secureCookie bool, maxRequestSize int64, auth auth.TokenManager) server.Server {
 	srv := myServer{
 		log:              log,
+		baseURL:          baseURL,
 		persistentCookie: persistentCookie,
 		secureCookie:     secureCookie,
 	}
@@ -56,11 +58,14 @@ func (srv *myServer) SetUserRetriever(ur server.UserRetriever) {
 	srv.router.ur = ur
 }
 
+func (srv *myServer) GetURLPrefix() string {
+	return srv.router.urlPrefix
+}
 func (srv *myServer) NewURLBuilder(key byte) *api.URLBuilder {
 	return api.NewURLBuilder(srv.GetURLPrefix(), key)
 }
-func (srv *myServer) GetURLPrefix() string {
-	return srv.router.urlPrefix
+func (srv *myServer) NewURLBuilderAbs(key byte) *api.URLBuilder {
+	return api.NewURLBuilder(srv.baseURL, key)
 }
 
 const sessionName = "zsession"

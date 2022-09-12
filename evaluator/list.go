@@ -12,6 +12,7 @@ package evaluator
 
 import (
 	"bytes"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,23 +20,26 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
 )
 
 // ActionSearch transforms a list of metadata according to search commands into a AST nested list.
-func ActionSearch(q *query.Query, ml []*meta.Meta) ast.BlockNode {
+func ActionSearch(q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
 	ap := actionPara{
-		q:    q,
-		ml:   ml,
-		kind: ast.NestedListUnordered,
-		min:  -1,
-		max:  -1,
+		q:     q,
+		ml:    ml,
+		kind:  ast.NestedListUnordered,
+		min:   -1,
+		max:   -1,
+		title: rtConfig.GetSiteName(),
 	}
 	if actions := q.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
-		for _, act := range actions {
+		for i, act := range actions {
 			if strings.HasPrefix(act, "N") {
 				ap.kind = ast.NestedListOrdered
 				continue
@@ -52,9 +56,16 @@ func ActionSearch(q *query.Query, ml []*meta.Meta) ast.BlockNode {
 					continue
 				}
 			}
+			if act == "TITLE" && i+1 < len(actions) {
+				ap.title = strings.Join(actions[i+1:], " ")
+				break
+			}
 			acts = append(acts, act)
 		}
 		for _, act := range acts {
+			if act == "RSS" {
+				return ap.createBlockNodeRSS()
+			}
 			key := strings.ToLower(act)
 			switch meta.Type(key) {
 			case meta.TypeWord:
@@ -68,11 +79,12 @@ func ActionSearch(q *query.Query, ml []*meta.Meta) ast.BlockNode {
 }
 
 type actionPara struct {
-	q    *query.Query
-	ml   []*meta.Meta
-	kind ast.NestedListKind
-	min  int
-	max  int
+	q     *query.Query
+	ml    []*meta.Meta
+	kind  ast.NestedListKind
+	min   int
+	max   int
+	title string
 }
 
 func (ap *actionPara) createBlockNodeWord(key string) ast.BlockNode {
@@ -249,4 +261,26 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 		}
 	}
 	return result
+}
+
+func (ap *actionPara) createBlockNodeRSS() ast.BlockNode {
+	config := rss.Configuration{
+		Title: ap.title,
+		NewURLBuilderAbs: func(key byte) *api.URLBuilder {
+			return api.NewURLBuilder("http://127.0.0.1:23123/", key)
+		},
+		// GetBaseURL:   ap.config.GetBaseURL,
+		// GetZettelURL: func(zid id.Zid) string { return ap.config.GetBaseURL() + zid.String() },
+		// Encrypt:      ap.config.Encrypt,
+	}
+	data, err := config.Marshal(ap.ml)
+	if err != nil {
+		log.Println("ERRR", err)
+		return nil
+	}
+	return &ast.VerbatimNode{
+		Kind:    ast.VerbatimProg,
+		Attrs:   attrs.Attributes{"lang": "xml"},
+		Content: data,
+	}
 }

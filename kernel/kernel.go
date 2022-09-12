@@ -174,6 +174,7 @@ const (
 
 // Constants for web service keys.
 const (
+	WebBaseURL           = "base-url"
 	WebListenAddress     = "listen"
 	WebPersistentCookie  = "persistent"
 	WebMaxRequestSize    = "max-request-size"

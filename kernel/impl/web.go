@@ -11,7 +11,9 @@
 package impl
 
 import (
+	"errors"
 	"net"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,6 +35,16 @@ type webService struct {
 func (ws *webService) Initialize(logger *logger.Logger) {
 	ws.logger = logger
 	ws.descr = descriptionMap{
+		kernel.WebBaseURL: {
+			text: "Base URL",
+			parse: func(val string) any {
+				if _, err := url.Parse(val); err != nil {
+					return nil
+				}
+				return val
+			},
+			canList: true,
+		},
 		kernel.WebListenAddress: {
 			"Listen address",
 			func(val string) interface{} {
@@ -71,6 +83,7 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 		},
 	}
 	ws.next = interfaceMap{
+		kernel.WebBaseURL:           "http://127.0.0.1:23123/",
 		kernel.WebListenAddress:     "127.0.0.1:23123",
 		kernel.WebMaxRequestSize:    int64(16 * 1024 * 1024),
 		kernel.WebPersistentCookie:  false,
@@ -97,9 +110,12 @@ func makeDurationParser(defDur, minDur, maxDur time.Duration) parseFunc {
 	}
 }
 
+var errWrongBasePrefix = errors.New(kernel.WebURLPrefix + " does not match " + kernel.WebBaseURL)
+
 func (ws *webService) GetLogger() *logger.Logger { return ws.logger }
 
 func (ws *webService) Start(kern *myKernel) error {
+	baseURL := ws.GetNextConfig(kernel.WebBaseURL).(string)
 	listenAddr := ws.GetNextConfig(kernel.WebListenAddress).(string)
 	urlPrefix := ws.GetNextConfig(kernel.WebURLPrefix).(string)
 	persistentCookie := ws.GetNextConfig(kernel.WebPersistentCookie).(bool)
@@ -109,7 +125,13 @@ func (ws *webService) Start(kern *myKernel) error {
 		maxRequestSize = 1024
 	}
 
-	srvw := impl.New(ws.logger, listenAddr, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)
+	if !strings.HasSuffix(baseURL, urlPrefix) {
+		ws.logger.Fatal().Str("base-url", baseURL).Str("url-prefix", urlPrefix).Msg(
+			"url-prefix is not a suffix of base-url")
+		return errWrongBasePrefix
+	}
+
+	srvw := impl.New(ws.logger, listenAddr, baseURL, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, &kern.cfg)
 	if err != nil {
 		ws.logger.Fatal().Err(err).Msg("Unable to create")
@@ -122,7 +144,7 @@ func (ws *webService) Start(kern *myKernel) error {
 		ws.logger.Fatal().Err(err).Msg("Unable to start")
 		return err
 	}
-	ws.logger.Info().Str("listen", listenAddr).Msg("Start Service")
+	ws.logger.Info().Str("listen", listenAddr).Str("base-url", baseURL).Msg("Start Service")
 	ws.mxService.Lock()
 	ws.srvw = srvw
 	ws.mxService.Unlock()

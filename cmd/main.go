@@ -170,6 +170,7 @@ func deleteConfiguredBoxes(cfg *meta.Meta) {
 
 const (
 	keyAdminPort         = "admin-port"
+	keyBaseURL           = "base-url"
 	keyDebug             = "debug-mode"
 	keyDefaultDirBoxType = "default-dir-box-type"
 	keyInsecureCookie    = "insecure-cookie"
@@ -221,7 +222,12 @@ func setServiceConfig(cfg *meta.Meta) error {
 	ok = setConfigValue(
 		ok, kernel.WebService, kernel.WebListenAddress,
 		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
-	ok = setConfigValue(ok, kernel.WebService, kernel.WebURLPrefix, cfg.GetDefault(keyURLPrefix, "/"))
+	if val, found := cfg.Get(keyBaseURL); found {
+		ok = setConfigValue(ok, kernel.WebService, kernel.WebBaseURL, val)
+	}
+	if val, found := cfg.Get(keyURLPrefix); found {
+		ok = setConfigValue(ok, kernel.WebService, kernel.WebURLPrefix, val)
+	}
 	ok = setConfigValue(ok, kernel.WebService, kernel.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
 	ok = setConfigValue(ok, kernel.WebService, kernel.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
 	if val, found := cfg.Get(keyMaxRequestSize); found {

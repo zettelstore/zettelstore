@@ -52,6 +52,7 @@ type Router interface {
 type Builder interface {
 	GetURLPrefix() string
 	NewURLBuilder(key byte) *api.URLBuilder
+	NewURLBuilderAbs(key byte) *api.URLBuilder
 }
 
 // Auth is the authencation interface.
