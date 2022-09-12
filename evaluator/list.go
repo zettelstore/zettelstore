@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding/rss"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
 )
@@ -264,10 +265,11 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 }
 
 func (ap *actionPara) createBlockNodeRSS() ast.BlockNode {
+	baseURL := kernel.Main.GetConfig(kernel.WebService, kernel.WebBaseURL).(string)
 	config := rss.Configuration{
 		Title: ap.title,
 		NewURLBuilderAbs: func(key byte) *api.URLBuilder {
-			return api.NewURLBuilder("http://127.0.0.1:23123/", key)
+			return api.NewURLBuilder(baseURL, key)
 		},
 		// GetBaseURL:   ap.config.GetBaseURL,
 		// GetZettelURL: func(zid id.Zid) string { return ap.config.GetBaseURL() + zid.String() },
