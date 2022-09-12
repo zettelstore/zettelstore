@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/logger"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 type zipBox struct {
@@ -139,7 +139,7 @@ func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return m, err
 }
 
-func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {
 	entries := zb.dirSrv.GetDirEntries(constraint)
 	zb.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyZid")
 	for _, entry := range entries {
@@ -148,7 +148,7 @@ func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint sea
 	return nil
 }
 
-func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint query.RetrievePredicate) error {
 	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
 		return err

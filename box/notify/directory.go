@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/strfun"
 )
 
@@ -109,7 +109,7 @@ func (ds *DirService) NumDirEntries() int {
 }
 
 // GetDirEntries returns a list of directory entries, which satisfy the given constraint.
-func (ds *DirService) GetDirEntries(constraint search.RetrievePredicate) []*DirEntry {
+func (ds *DirService) GetDirEntries(constraint query.RetrievePredicate) []*DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {

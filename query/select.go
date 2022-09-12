@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package search
+package query
 
 import (
 	"fmt"

@@ -24,7 +24,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // BaseBox is implemented by all Zettel boxes.
@@ -76,10 +76,10 @@ type ManagedBox interface {
 	BaseBox
 
 	// Apply identifier of every zettel to the given function, if predicate returns true.
-	ApplyZid(context.Context, ZidFunc, search.RetrievePredicate) error
+	ApplyZid(context.Context, ZidFunc, query.RetrievePredicate) error
 
 	// Apply metadata of every zettel to the given function, if predicate returns true.
-	ApplyMeta(context.Context, MetaFunc, search.RetrievePredicate) error
+	ApplyMeta(context.Context, MetaFunc, query.RetrievePredicate) error
 
 	// ReadStats populates st with box statistics
 	ReadStats(st *ManagedBoxStats)
@@ -118,7 +118,7 @@ type Box interface {
 	FetchZids(ctx context.Context) (id.Set, error)
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 
 	// GetAllZettel retrieves a specific zettel from all managed boxes.
 	GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error)

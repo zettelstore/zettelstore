@@ -8,8 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package search provides a zettel search.
-package search
+package query
 
 import (
 	"strconv"

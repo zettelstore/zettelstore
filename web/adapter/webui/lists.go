@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/evaluator"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -29,17 +29,17 @@ import (
 // zettel as HTML.
 func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sea := adapter.GetSearch(r.URL.Query())
+		q := adapter.GetQuery(r.URL.Query())
 		ctx := r.Context()
-		if !sea.EnrichNeeded() {
+		if !q.EnrichNeeded() {
 			ctx = box.NoEnrichContext(ctx)
 		}
-		metaList, err := listMeta.Run(ctx, sea)
+		metaList, err := listMeta.Run(ctx, q)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(sea, metaList))
+		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(q, metaList))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {
@@ -56,9 +56,9 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			QueryKeySearch string
 			Content        string
 		}{
-			Title:          wui.listTitleSearch(sea),
+			Title:          wui.listTitleSearch(q),
 			SearchURL:      base.SearchURL,
-			SearchValue:    sea.String(),
+			SearchValue:    q.String(),
 			QueryKeySearch: base.QueryKeySearch,
 			Content:        htmlContent,
 		})
@@ -131,11 +131,11 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 	return val
 }
 
-func (wui *WebUI) listTitleSearch(s *search.Search) string {
-	if s == nil {
+func (wui *WebUI) listTitleSearch(q *query.Query) string {
+	if q == nil {
 		return wui.rtConfig.GetSiteName()
 	}
 	var buf bytes.Buffer
-	s.PrintHuman(&buf)
+	q.PrintHuman(&buf)
 	return buf.String()
 }

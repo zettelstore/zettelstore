@@ -30,14 +30,14 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
 	"zettelstore.de/z/parser/draw"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // EvaluateZettel evaluates the given zettel in the given context, with the
@@ -247,15 +247,15 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 }
 
 func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
-	sea := search.Parse(expr)
-	ml, err := e.port.SelectMeta(e.ctx, sea)
+	q := query.Parse(expr)
+	ml, err := e.port.SelectMeta(e.ctx, q)
 	if err != nil {
 		if errors.Is(err, &box.ErrNotAllowed{}) {
 			return nil
 		}
 		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
 	}
-	result := ActionSearch(sea, ml)
+	result := ActionSearch(q, ml)
 	if result != nil {
 		ast.Walk(e, result)
 	}

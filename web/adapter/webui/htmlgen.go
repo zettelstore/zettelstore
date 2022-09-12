@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/strfun"
 )
 
@@ -180,8 +180,8 @@ func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args *sxpf.Pair
 func (g *htmlGenerator) generateLinkSearch(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
 	env := senv.(*html.EncEnvironment)
 	if a, refValue, ok := html.PrepareLink(env, args); ok {
-		searchExpr := search.Parse(refValue).String()
-		u := g.builder.NewURLBuilder('h').AppendSearch(searchExpr)
+		queryExpr := query.Parse(refValue).String()
+		u := g.builder.NewURLBuilder('h').AppendSearch(queryExpr)
 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
 	return nil, nil

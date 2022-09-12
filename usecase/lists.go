@@ -17,13 +17,13 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // ListMetaPort is the interface used by this use case.
 type ListMetaPort interface {
 	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // ListMeta is the data for this use case.
@@ -37,8 +37,8 @@ func NewListMeta(port ListMetaPort) ListMeta {
 }
 
 // Run executes the use case.
-func (uc ListMeta) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
-	return uc.port.SelectMeta(ctx, s)
+func (uc ListMeta) Run(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+	return uc.port.SelectMeta(ctx, q)
 }
 
 // -------- List roles -------------------------------------------------------
@@ -46,7 +46,7 @@ func (uc ListMeta) Run(ctx context.Context, s *search.Search) ([]*meta.Meta, err
 // ListSyntaxPort is the interface used by this use case.
 type ListSyntaxPort interface {
 	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // ListSyntax is the data for this use case.
@@ -61,8 +61,8 @@ func NewListSyntax(port ListSyntaxPort) ListSyntax {
 
 // Run executes the use case.
 func (uc ListSyntax) Run(ctx context.Context) (meta.Arrangement, error) {
-	s := search.Parse(api.KeySyntax + api.ExistOperator) // We look for all metadata with a syntax key
-	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
+	q := query.Parse(api.KeySyntax + api.ExistOperator) // We look for all metadata with a syntax key
+	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), q)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (uc ListSyntax) Run(ctx context.Context) (meta.Arrangement, error) {
 // ListRolesPort is the interface used by this use case.
 type ListRolesPort interface {
 	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // ListRoles is the data for this use case.
@@ -95,8 +95,8 @@ func NewListRoles(port ListRolesPort) ListRoles {
 
 // Run executes the use case.
 func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
-	s := search.Parse(api.KeyRole + api.ExistOperator) // We look for all metadata with an existing role key
-	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), s)
+	q := query.Parse(api.KeyRole + api.ExistOperator) // We look for all metadata with an existing role key
+	metas, err := uc.port.SelectMeta(box.NoEnrichContext(ctx), q)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
 // ListTagsPort is the interface used by this use case.
 type ListTagsPort interface {
 	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // ListTags is the data for this use case.
@@ -123,8 +123,8 @@ func NewListTags(port ListTagsPort) ListTags {
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	s := search.Parse(api.KeyAllTags + api.ExistOperator) // We look for all metadata with a tag
-	metas, err := uc.port.SelectMeta(ctx, s)
+	q := query.Parse(api.KeyAllTags + api.ExistOperator) // We look for all metadata with a tag
+	metas, err := uc.port.SelectMeta(ctx, q)
 	if err != nil {
 		return nil, err
 	}

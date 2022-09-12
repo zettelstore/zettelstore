@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -18,7 +18,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // Use case: return user identified by meta key ident.
@@ -27,7 +27,7 @@ import (
 // GetUserPort is the interface used by this use case.
 type GetUserPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // GetUser is the data for this use case.
@@ -53,8 +53,8 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 		return identMeta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
-	s := search.Parse(api.KeyUserID + api.SearchOperatorHas + ident + " " + api.SearchOperatorHas + ident)
-	metaList, err := uc.port.SelectMeta(ctx, s)
+	q := query.Parse(api.KeyUserID + api.SearchOperatorHas + ident + " " + api.SearchOperatorHas + ident)
+	metaList, err := uc.port.SelectMeta(ctx, q)
 	if err != nil {
 		return nil, err
 	}

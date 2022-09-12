@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/web/server"
 )
 
@@ -99,11 +99,11 @@ func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
 }
 
-func (pp *polBox) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+func (pp *polBox) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
 	user := server.GetUser(ctx)
 	canRead := pp.policy.CanRead
-	s = s.SetPreMatch(func(m *meta.Meta) bool { return canRead(user, m) })
-	return pp.box.SelectMeta(ctx, s)
+	q = q.SetPreMatch(func(m *meta.Meta) bool { return canRead(user, m) })
+	return pp.box.SelectMeta(ctx, q)
 }
 
 func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {

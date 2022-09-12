@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -29,23 +29,23 @@ import (
 func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		sea := adapter.GetSearch(r.URL.Query())
-		if sea == nil {
+		q := adapter.GetQuery(r.URL.Query())
+		if q == nil {
 			a.log.Sense().Msg("no search query parameter")
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
-		if !sea.EnrichNeeded() {
+		if !q.EnrichNeeded() {
 			ctx = box.NoEnrichContext(ctx)
 		}
-		metaList, err := listMeta.Run(ctx, sea)
+		metaList, err := listMeta.Run(ctx, q)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
 
 		var buf bytes.Buffer
-		contentType, err := actionSearch(&buf, sea, metaList)
+		contentType, err := actionSearch(&buf, q, metaList)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -55,15 +55,15 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	}
 }
 
-func actionSearch(w io.Writer, sea *search.Search, ml []*meta.Meta) (string, error) {
+func actionSearch(w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
 	ap := actionPara{
 		w:   w,
-		sea: sea,
+		q:   q,
 		ml:  ml,
 		min: -1,
 		max: -1,
 	}
-	if actions := sea.Actions(); len(actions) > 0 {
+	if actions := q.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
 		for _, act := range actions {
 			if strings.HasPrefix(act, "MIN") {
@@ -93,7 +93,7 @@ func actionSearch(w io.Writer, sea *search.Search, ml []*meta.Meta) (string, err
 
 type actionPara struct {
 	w   io.Writer
-	sea *search.Search
+	q   *query.Query
 	ml  []*meta.Meta
 	min int
 	max int

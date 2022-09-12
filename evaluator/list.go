@@ -21,19 +21,19 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // ActionSearch transforms a list of metadata according to search commands into a AST nested list.
-func ActionSearch(sea *search.Search, ml []*meta.Meta) ast.BlockNode {
+func ActionSearch(q *query.Query, ml []*meta.Meta) ast.BlockNode {
 	ap := actionPara{
-		sea:  sea,
+		q:    q,
 		ml:   ml,
 		kind: ast.NestedListUnordered,
 		min:  -1,
 		max:  -1,
 	}
-	if actions := sea.Actions(); len(actions) > 0 {
+	if actions := q.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
 		for _, act := range actions {
 			if strings.HasPrefix(act, "N") {
@@ -68,7 +68,7 @@ func ActionSearch(sea *search.Search, ml []*meta.Meta) ast.BlockNode {
 }
 
 type actionPara struct {
-	sea  *search.Search
+	q    *query.Query
 	ml   []*meta.Meta
 	kind ast.NestedListKind
 	min  int
@@ -188,7 +188,7 @@ func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.Coun
 		return nil, 0
 	}
 
-	sea := ap.sea.Clone()
+	sea := ap.q.Clone()
 	sea.RemoveActions()
 	buf.WriteString(ast.SearchPrefix)
 	sea.Print(buf)

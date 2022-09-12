@@ -17,7 +17,7 @@ import (
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // Stats records statistics about the store.
@@ -38,7 +38,7 @@ type Stats struct {
 // Store all relevant zettel data. There may be multiple implementations, i.e.
 // memory-based, file-based, based on SQLite, ...
 type Store interface {
-	search.Searcher
+	query.Searcher
 
 	// Entrich metadata with data from store.
 	Enrich(ctx context.Context, m *meta.Meta)

@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 )
 
@@ -50,13 +50,13 @@ func GetInteger(q url.Values, key string) (int, bool) {
 	return 0, false
 }
 
-// GetSearch retrieves the specified search and sorting options from a query.
-func GetSearch(q url.Values) *search.Search {
-	if exprs, found := q[api.QueryKeySearch]; found {
-		return search.Parse(strings.Join(exprs, " "))
+// GetQuery retrieves the specified options from a query.
+func GetQuery(vals url.Values) *query.Query {
+	if exprs, found := vals[api.QueryKeySearch]; found {
+		return query.Parse(strings.Join(exprs, " "))
 	}
-	if exprs, found := q["_s"]; found {
-		return search.Parse(strings.Join(exprs, " "))
+	if exprs, found := vals["_s"]; found {
+		return query.Parse(strings.Join(exprs, " "))
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 
 // AddUnlinkedRefsToSearch inspects metadata and enhances the given search to ignore
 // some zettel identifier.
-func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
+func AddUnlinkedRefsToSearch(q *query.Query, m *meta.Meta) *query.Query {
 	var sb strings.Builder
 	sb.WriteString(api.KeyID)
 	sb.WriteString("!:")
@@ -95,5 +95,5 @@ func AddUnlinkedRefsToSearch(s *search.Search, m *meta.Meta) *search.Search {
 			}
 		}
 	}
-	return s.Parse(sb.String())
+	return q.Parse(sb.String())
 }

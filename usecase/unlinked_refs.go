@@ -24,14 +24,14 @@ import (
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // UnlinkedReferencesPort is the interface used by this use case.
 type UnlinkedReferencesPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
-	SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // UnlinkedReferences is the data for this use case.
@@ -51,7 +51,7 @@ func NewUnlinkedReferences(port UnlinkedReferencesPort, rtConfig config.Config) 
 }
 
 // Run executes the usecase with already evaluated title value.
-func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, s *search.Search) ([]*meta.Meta, error) {
+func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, q *query.Query) ([]*meta.Meta, error) {
 	words := makeWords(phrase)
 	if len(words) == 0 {
 		return nil, nil
@@ -61,18 +61,18 @@ func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, s *search.
 		sb.WriteString(" :")
 		sb.WriteString(word)
 	}
-	s = s.Parse(sb.String())
+	q = q.Parse(sb.String())
 
 	// Limit applies to the filtering process, not to SelectMeta
-	limit := s.GetLimit()
-	s = s.SetLimit(0)
+	limit := q.GetLimit()
+	q = q.SetLimit(0)
 
-	candidates, err := uc.port.SelectMeta(ctx, s)
+	candidates, err := uc.port.SelectMeta(ctx, q)
 	if err != nil {
 		return nil, err
 	}
-	s = s.SetLimit(limit) // Restore limit
-	return s.Limit(uc.filterCandidates(ctx, candidates, words)), nil
+	q = q.SetLimit(limit) // Restore limit
+	return q.Limit(uc.filterCandidates(ctx, candidates, words)), nil
 }
 
 func makeWords(text string) []string {

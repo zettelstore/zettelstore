@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // Conatains all box.Box related functions
@@ -157,9 +157,9 @@ type metaMap map[id.Zid]*meta.Meta
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
-func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
+func (mgr *Manager) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
 	if msg := mgr.mgrLog.Debug(); msg.Enabled() {
-		msg.Str("query", s.String()).Msg("SelectMeta")
+		msg.Str("query", q.String()).Msg("SelectMeta")
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
@@ -167,7 +167,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 		return nil, box.ErrStopped
 	}
 
-	compSearch := s.RetrieveAndCompile(mgr)
+	compSearch := q.RetrieveAndCompile(mgr)
 	selected := metaMap{}
 	for _, term := range compSearch.Terms {
 		rejected := id.Set{}
@@ -199,7 +199,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.M
 	for _, m := range selected {
 		result = append(result, m)
 	}
-	return s.Sort(result), nil
+	return q.Sort(result), nil
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.

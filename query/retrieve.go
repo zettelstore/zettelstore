@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package search
+package query
 
 // This file contains helper functions to search within the index.
 

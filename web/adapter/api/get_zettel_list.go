@@ -25,9 +25,8 @@ import (
 func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		q := r.URL.Query()
-		s := adapter.GetSearch(q)
-		metaList, err := listMeta.Run(ctx, s)
+		q := adapter.GetQuery(r.URL.Query())
+		metaList, err := listMeta.Run(ctx, q)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -44,8 +43,8 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		var buf bytes.Buffer
 		err = encodeJSONData(&buf, api.ZettelListJSON{
-			Query: s.String(),
-			Human: s.Human(),
+			Query: q.String(),
+			Human: q.Human(),
 			List:  result,
 		})
 		if err != nil {
@@ -63,9 +62,7 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		q := r.URL.Query()
-		s := adapter.GetSearch(q)
-		metaList, err := listMeta.Run(ctx, s)
+		metaList, err := listMeta.Run(ctx, adapter.GetQuery(r.URL.Query()))
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return

@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 func init() {
@@ -132,7 +132,7 @@ func (mb *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	return zettel.Meta.Clone(), nil
 }
 
-func (mb *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+func (mb *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {
 	mb.mx.RLock()
 	defer mb.mx.RUnlock()
 	mb.log.Trace().Int("entries", int64(len(mb.zettel))).Msg("ApplyZid")
@@ -144,7 +144,7 @@ func (mb *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint sea
 	return nil
 }
 
-func (mb *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+func (mb *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint query.RetrievePredicate) error {
 	mb.mx.RLock()
 	defer mb.mx.RUnlock()
 	mb.log.Trace().Int("entries", int64(len(mb.zettel))).Msg("ApplyMeta")

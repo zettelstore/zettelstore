@@ -8,12 +8,12 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package search_test
+package query_test
 
 import (
 	"testing"
 
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 func TestParser(t *testing.T) {
@@ -62,18 +62,18 @@ func TestParser(t *testing.T) {
 		{"|", ""}, {" | RANDOM", "| RANDOM"}, {"| RANDOM", "| RANDOM"}, {"a|a b ", "a | a b"},
 	}
 	for i, tc := range testcases {
-		got := search.Parse(tc.spec).String()
+		got := query.Parse(tc.spec).String()
 		if tc.exp != got {
 			t.Errorf("%d: Parse(%q) does not yield %q, but got %q", i, tc.spec, tc.exp, got)
 			continue
 		}
 
-		gotReparse := search.Parse(got).String()
+		gotReparse := query.Parse(got).String()
 		if gotReparse != got {
 			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got, gotReparse)
 		}
 
-		gotPipe := search.Parse(got + "|").String()
+		gotPipe := query.Parse(got + "|").String()
 		if gotPipe != got {
 			t.Errorf("%d: Parse(%q) does not yield itself, but %q", i, got+"|", gotReparse)
 		}

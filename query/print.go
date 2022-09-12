@@ -8,8 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package search provides a zettel search.
-package search
+package query
 
 import (
 	"io"
@@ -33,19 +32,19 @@ var op2string = map[compareOp]string{
 	cmpNoMatch:  api.SearchOperatorNoMatch,
 }
 
-func (s *Search) String() string {
+func (q *Query) String() string {
 	var sb strings.Builder
-	s.Print(&sb)
+	q.Print(&sb)
 	return sb.String()
 }
 
-// Print the search in a parseable form.
-func (s *Search) Print(w io.Writer) {
-	if s == nil {
+// Print the query in a parseable form.
+func (q *Query) Print(w io.Writer) {
+	if q == nil {
 		return
 	}
 	env := printEnv{w: w}
-	for i, term := range s.terms {
+	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR")
 		}
@@ -68,10 +67,10 @@ func (s *Search) Print(w io.Writer) {
 			env.printExprValues("", term.search)
 		}
 	}
-	env.printOrder(s.order)
-	env.printPosInt(kwOffset, s.offset)
-	env.printPosInt(kwLimit, s.limit)
-	env.printActions(s.actions)
+	env.printOrder(q.order)
+	env.printPosInt(kwOffset, q.offset)
+	env.printPosInt(kwLimit, q.limit)
+	env.printActions(q.actions)
 }
 
 type printEnv struct {
@@ -122,19 +121,19 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 	}
 }
 
-func (s *Search) Human() string {
+func (q *Query) Human() string {
 	var sb strings.Builder
-	s.PrintHuman(&sb)
+	q.PrintHuman(&sb)
 	return sb.String()
 }
 
-// PrintHuman the search to a writer in a human readable form.
-func (s *Search) PrintHuman(w io.Writer) {
-	if s == nil {
+// PrintHuman the query to a writer in a human readable form.
+func (q *Query) PrintHuman(w io.Writer) {
+	if q == nil {
 		return
 	}
 	env := printEnv{w: w}
-	for i, term := range s.terms {
+	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR ")
 			env.space = false
@@ -172,10 +171,10 @@ func (s *Search) PrintHuman(w io.Writer) {
 		}
 	}
 
-	env.printOrder(s.order)
-	env.printPosInt(kwOffset, s.offset)
-	env.printPosInt(kwLimit, s.limit)
-	env.printActions(s.actions)
+	env.printOrder(q.order)
+	env.printPosInt(kwOffset, q.offset)
+	env.printPosInt(kwLimit, q.limit)
+	env.printActions(q.actions)
 }
 
 func (pe *printEnv) printHumanSelectExprValues(values []expValue) {

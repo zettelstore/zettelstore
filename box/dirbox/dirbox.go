@@ -27,7 +27,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 func init() {
@@ -258,7 +258,7 @@ func (dp *dirBox) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	return m, nil
 }
 
-func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint search.RetrievePredicate) error {
+func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {
 	entries := dp.dirSrv.GetDirEntries(constraint)
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyZid")
 	for _, entry := range entries {
@@ -267,7 +267,7 @@ func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint sea
 	return nil
 }
 
-func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint search.RetrievePredicate) error {
+func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint query.RetrievePredicate) error {
 	entries := dp.dirSrv.GetDirEntries(constraint)
 	dp.log.Trace().Int("entries", int64(len(entries))).Msg("ApplyMeta")
 

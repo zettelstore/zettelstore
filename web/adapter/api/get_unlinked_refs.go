@@ -41,10 +41,10 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			return
 		}
 
-		q := r.URL.Query()
-		phrase := q.Get(api.QueryKeyPhrase)
+		que := r.URL.Query()
+		phrase := que.Get(api.QueryKeyPhrase)
 		if phrase == "" {
-			phrase = q.Get("_phrase")
+			phrase = que.Get("_phrase")
 		}
 		if phrase == "" {
 			if zmkTitle, found := zm.Get(api.KeyTitle); found {
@@ -59,7 +59,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		}
 
 		metaList, err := unlinkedRefs.Run(
-			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetSearch(q), zm))
+			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetQuery(que), zm))
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return

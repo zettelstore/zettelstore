@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package search_test
+package query_test
 
 import (
 	"testing"
@@ -16,12 +16,12 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 func TestMatchZidNegate(t *testing.T) {
-	s := search.Parse(api.KeyID + api.SearchOperatorHasNot + string(api.ZidVersion) + " " + api.KeyID + api.SearchOperatorHasNot + string(api.ZidLicense))
-	compiled := s.RetrieveAndCompile(nil)
+	q := query.Parse(api.KeyID + api.SearchOperatorHasNot + string(api.ZidVersion) + " " + api.KeyID + api.SearchOperatorHasNot + string(api.ZidLicense))
+	compiled := q.RetrieveAndCompile(nil)
 
 	testCases := []struct {
 		zid api.ZettelID
@@ -35,9 +35,9 @@ func TestMatchZidNegate(t *testing.T) {
 		m := meta.New(id.MustParse(tc.zid))
 		if compiled.Terms[0].Match(m) != tc.exp {
 			if tc.exp {
-				t.Errorf("%d: meta %v must match %q", i, m.Zid, s)
+				t.Errorf("%d: meta %v must match %q", i, m.Zid, q)
 			} else {
-				t.Errorf("%d: meta %v must not match %q", i, m.Zid, s)
+				t.Errorf("%d: meta %v must not match %q", i, m.Zid, q)
 			}
 		}
 	}

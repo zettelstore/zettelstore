@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package search provides a zettel search.
-package search
+// Package query provides a query for zettel.
+package query
 
 import (
 	"math/rand"
@@ -39,8 +39,8 @@ type Searcher interface {
 	SearchContains(s string) id.Set
 }
 
-// Search specifies a mechanism for selecting zettel.
-type Search struct {
+// Query specifies a mechanism for querying zettel.
+type Query struct {
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	terms    []conjTerms
@@ -54,7 +54,7 @@ type Search struct {
 	actions []string
 }
 
-// Compiled is a compiled search, to be used in a Box
+// Compiled is a compiled query, to be used in a Box
 type Compiled struct {
 	PreMatch MetaMatchFunc // Precondition for Match and Retrieve
 	Terms    []CompiledTerm
@@ -109,24 +109,24 @@ type sortOrder struct {
 
 func (so *sortOrder) isRandom() bool { return so.key == "" }
 
-func createIfNeeded(s *Search) *Search {
-	if s == nil {
-		return &Search{
+func createIfNeeded(q *Query) *Query {
+	if q == nil {
+		return &Query{
 			terms: []conjTerms{{}},
 		}
 	}
-	return s
+	return q
 }
 
-// Clone the search value.
-func (s *Search) Clone() *Search {
-	if s == nil {
+// Clone the query value.
+func (q *Query) Clone() *Query {
+	if q == nil {
 		return nil
 	}
-	c := new(Search)
-	c.preMatch = s.preMatch
-	c.terms = make([]conjTerms, len(s.terms))
-	for i, term := range s.terms {
+	c := new(Query)
+	c.preMatch = q.preMatch
+	c.terms = make([]conjTerms, len(q.terms))
+	for i, term := range q.terms {
 		if len(term.keys) > 0 {
 			c.terms[i].keys = make(keyExistMap, len(term.keys))
 			for k, v := range term.keys {
@@ -143,12 +143,12 @@ func (s *Search) Clone() *Search {
 			c.terms[i].search = append([]expValue{}, term.search...)
 		}
 	}
-	if len(s.order) > 0 {
-		c.order = append([]sortOrder{}, s.order...)
+	if len(q.order) > 0 {
+		c.order = append([]sortOrder{}, q.order...)
 	}
-	c.offset = s.offset
-	c.limit = s.limit
-	c.actions = s.actions
+	c.offset = q.offset
+	c.limit = q.limit
+	c.actions = q.actions
 	return c
 }
 
@@ -198,82 +198,82 @@ type expValue struct {
 	op    compareOp
 }
 
-func (s *Search) addSearch(val expValue) { s.terms[len(s.terms)-1].addSearch(val) }
+func (q *Query) addSearch(val expValue) { q.terms[len(q.terms)-1].addSearch(val) }
 
-func (s *Search) addKey(key string, op compareOp) *Search {
-	s = createIfNeeded(s)
-	s.terms[len(s.terms)-1].addKey(key, op)
-	return s
+func (q *Query) addKey(key string, op compareOp) *Query {
+	q = createIfNeeded(q)
+	q.terms[len(q.terms)-1].addKey(key, op)
+	return q
 }
 
 // SetPreMatch sets the pre-selection predicate.
-func (s *Search) SetPreMatch(preMatch MetaMatchFunc) *Search {
-	s = createIfNeeded(s)
-	if s.preMatch != nil {
+func (q *Query) SetPreMatch(preMatch MetaMatchFunc) *Query {
+	q = createIfNeeded(q)
+	if q.preMatch != nil {
 		panic("search PreMatch already set")
 	}
-	s.preMatch = preMatch
-	return s
+	q.preMatch = preMatch
+	return q
 }
 
-// SetLimit sets the given limit of the search object.
-func (s *Search) SetLimit(limit int) *Search {
-	s = createIfNeeded(s)
+// SetLimit sets the given limit of the query object.
+func (q *Query) SetLimit(limit int) *Query {
+	q = createIfNeeded(q)
 	if limit < 0 {
 		limit = 0
 	}
-	s.limit = limit
-	return s
+	q.limit = limit
+	return q
 }
 
 // GetLimit returns the current offset value.
-func (s *Search) GetLimit() int {
-	if s == nil {
+func (q *Query) GetLimit() int {
+	if q == nil {
 		return 0
 	}
-	return s.limit
+	return q.limit
 }
 
 // Actions returns the slice of action specifications
-func (s *Search) Actions() []string {
-	if s == nil {
+func (q *Query) Actions() []string {
+	if q == nil {
 		return nil
 	}
-	return s.actions
+	return q.actions
 }
 
-// RemoveActions will remove the action part of a search.
-func (s *Search) RemoveActions() {
-	if s != nil {
-		s.actions = nil
+// RemoveActions will remove the action part of a query.
+func (q *Query) RemoveActions() {
+	if q != nil {
+		q.actions = nil
 	}
 }
 
-// EnrichNeeded returns true, if the search references a metadata key that
+// EnrichNeeded returns true, if the query references a metadata key that
 // is calculated via metadata enrichments.
-func (s *Search) EnrichNeeded() bool {
-	if s == nil {
+func (q *Query) EnrichNeeded() bool {
+	if q == nil {
 		return false
 	}
-	for _, term := range s.terms {
+	for _, term := range q.terms {
 		for key := range term.keys {
-			if meta.IsComputed(key) {
+			if meta.IsProperty(key) {
 				return true
 			}
 		}
 		for key := range term.mvals {
-			if meta.IsComputed(key) {
+			if meta.IsProperty(key) {
 				return true
 			}
 		}
 	}
-	for _, o := range s.order {
-		if meta.IsComputed(o.key) {
+	for _, o := range q.order {
+		if meta.IsProperty(o.key) {
 			return true
 		}
 	}
-	for _, a := range s.actions {
-		if meta.IsComputed(strings.ToLower(a)) {
+	for _, a := range q.actions {
+		if meta.IsProperty(strings.ToLower(a)) {
 			return true
 		}
 	}
@@ -282,8 +282,8 @@ func (s *Search) EnrichNeeded() bool {
 
 // RetrieveAndCompile queries the search index and returns a predicate
 // for its results and returns a matching predicate.
-func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
-	if s == nil {
+func (q *Query) RetrieveAndCompile(searcher Searcher) Compiled {
+	if q == nil {
 		return Compiled{
 			PreMatch: matchAlways,
 			Terms: []CompiledTerm{{
@@ -291,15 +291,15 @@ func (s *Search) RetrieveAndCompile(searcher Searcher) Compiled {
 				Retrieve: alwaysIncluded,
 			}}}
 	}
-	s = s.Clone()
+	q = q.Clone()
 
-	preMatch := s.preMatch
+	preMatch := q.preMatch
 	if preMatch == nil {
 		preMatch = matchAlways
 	}
 	result := Compiled{PreMatch: preMatch}
 
-	for _, term := range s.terms {
+	for _, term := range q.terms {
 		cTerm := term.retrievAndCompileTerm(searcher)
 		if cTerm.Retrieve == nil {
 			if cTerm.Match == nil {
@@ -362,40 +362,40 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 }
 
 // Sort applies the sorter to the slice of meta data.
-func (s *Search) Sort(metaList []*meta.Meta) []*meta.Meta {
+func (q *Query) Sort(metaList []*meta.Meta) []*meta.Meta {
 	if len(metaList) == 0 {
 		return metaList
 	}
 
-	if s == nil || len(s.order) == 0 {
+	if q == nil || len(q.order) == 0 {
 		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
-		if s == nil {
+		if q == nil {
 			return metaList
 		}
-	} else if s.order[0].isRandom() {
+	} else if q.order[0].isRandom() {
 		rand.Shuffle(len(metaList), func(i, j int) {
 			metaList[i], metaList[j] = metaList[j], metaList[i]
 		})
 	} else {
-		sort.Slice(metaList, createSortFunc(s.order, metaList))
+		sort.Slice(metaList, createSortFunc(q.order, metaList))
 	}
 
-	if s.offset > 0 {
-		if s.offset > len(metaList) {
+	if q.offset > 0 {
+		if q.offset > len(metaList) {
 			return nil
 		}
-		metaList = metaList[s.offset:]
+		metaList = metaList[q.offset:]
 	}
-	return s.Limit(metaList)
+	return q.Limit(metaList)
 }
 
 // Limit returns only s.GetLimit() elements of the given list.
-func (s *Search) Limit(metaList []*meta.Meta) []*meta.Meta {
-	if s == nil {
+func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
+	if q == nil {
 		return metaList
 	}
-	if s.limit > 0 && s.limit < len(metaList) {
-		return metaList[:s.limit]
+	if q.limit > 0 && q.limit < len(metaList) {
+		return metaList[:q.limit]
 	}
 	return metaList
 }

@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
-	"zettelstore.de/z/search"
+	"zettelstore.de/z/query"
 )
 
 // Evaluate is the data for this use case.
@@ -91,6 +91,6 @@ func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 }
 
 // SelectMeta returns a list of metadata that comply to the given selection criteria.
-func (uc *Evaluate) SelectMeta(ctx context.Context, s *search.Search) ([]*meta.Meta, error) {
-	return uc.listMeta.Run(ctx, s)
+func (uc *Evaluate) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+	return uc.listMeta.Run(ctx, q)
 }

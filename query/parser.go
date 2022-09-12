@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package search
+package query
 
 import (
 	"strconv"
@@ -17,21 +17,21 @@ import (
 	"zettelstore.de/z/input"
 )
 
-// Parse the search specification and return a Search object.
-func Parse(spec string) (s *Search) { return s.Parse(spec) }
+// Parse the query specification and return a Query object.
+func Parse(spec string) (q *Query) { return q.Parse(spec) }
 
-// Parse the search string and update the search object.
-func (s *Search) Parse(spec string) *Search {
+// Parse the query string and update the Query object.
+func (q *Query) Parse(spec string) *Query {
 	state := parserState{
 		inp: input.NewInput([]byte(spec)),
 	}
-	s = state.parse(s)
-	if s != nil {
-		for len(s.terms) > 1 && s.terms[len(s.terms)-1].isEmpty() {
-			s.terms = s.terms[:len(s.terms)-1]
+	q = state.parse(q)
+	if q != nil {
+		for len(q.terms) > 1 && q.terms[len(q.terms)-1].isEmpty() {
+			q.terms = q.terms[:len(q.terms)-1]
 		}
 	}
-	return s
+	return q
 }
 
 type parserState struct {
@@ -62,7 +62,7 @@ const (
 	kwReverse = "REVERSE"
 )
 
-func (ps *parserState) parse(sea *Search) *Search {
+func (ps *parserState) parse(q *Query) *Query {
 	inp := ps.inp
 	for {
 		ps.skipSpace()
@@ -71,96 +71,96 @@ func (ps *parserState) parse(sea *Search) *Search {
 		}
 		pos := inp.Pos
 		if ps.acceptSingleKw(kwOr) {
-			sea = createIfNeeded(sea)
-			if !sea.terms[len(sea.terms)-1].isEmpty() {
-				sea.terms = append(sea.terms, conjTerms{})
+			q = createIfNeeded(q)
+			if !q.terms[len(q.terms)-1].isEmpty() {
+				q.terms = append(q.terms, conjTerms{})
 			}
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(kwRandom) {
-			sea = createIfNeeded(sea)
-			if len(sea.order) == 0 {
-				sea.order = []sortOrder{{"", false}}
+			q = createIfNeeded(q)
+			if len(q.order) == 0 {
+				q.order = []sortOrder{{"", false}}
 			}
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwOrder) {
-			if s, ok := ps.parseOrder(sea); ok {
-				sea = s
+			if s, ok := ps.parseOrder(q); ok {
+				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwOffset) {
-			if s, ok := ps.parseOffset(sea); ok {
-				sea = s
+			if s, ok := ps.parseOffset(q); ok {
+				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwLimit) {
-			if s, ok := ps.parseLimit(sea); ok {
-				sea = s
+			if s, ok := ps.parseLimit(q); ok {
+				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
 		if inp.Ch == '|' {
-			sea = ps.parseExecute(sea)
+			q = ps.parseExecute(q)
 			break
 		}
-		sea = ps.parseText(sea)
+		q = ps.parseText(q)
 	}
-	return sea
+	return q
 }
 
-func (ps *parserState) parseOrder(s *Search) (*Search, bool) {
+func (ps *parserState) parseOrder(q *Query) (*Query, bool) {
 	reverse := false
 	if ps.acceptKwArgs(kwReverse) {
 		reverse = true
 	}
 	word := ps.scanWord()
 	if len(word) == 0 {
-		return s, false
+		return q, false
 	}
 	if sWord := string(word); meta.KeyIsValid(sWord) {
-		s = createIfNeeded(s)
-		if len(s.order) == 1 && s.order[0].isRandom() {
-			s.order = nil
+		q = createIfNeeded(q)
+		if len(q.order) == 1 && q.order[0].isRandom() {
+			q.order = nil
 		}
-		s.order = append(s.order, sortOrder{sWord, reverse})
-		return s, true
+		q.order = append(q.order, sortOrder{sWord, reverse})
+		return q, true
 	}
-	return s, false
+	return q, false
 }
 
-func (ps *parserState) parseOffset(s *Search) (*Search, bool) {
+func (ps *parserState) parseOffset(q *Query) (*Query, bool) {
 	num, ok := ps.scanPosInt()
 	if !ok {
-		return s, false
+		return q, false
 	}
-	s = createIfNeeded(s)
-	if s.offset <= num {
-		s.offset = num
+	q = createIfNeeded(q)
+	if q.offset <= num {
+		q.offset = num
 	}
-	return s, true
+	return q, true
 }
 
-func (ps *parserState) parseLimit(s *Search) (*Search, bool) {
+func (ps *parserState) parseLimit(q *Query) (*Query, bool) {
 	num, ok := ps.scanPosInt()
 	if !ok {
-		return s, false
+		return q, false
 	}
-	s = createIfNeeded(s)
-	if s.limit == 0 || s.limit >= num {
-		s.limit = num
+	q = createIfNeeded(q)
+	if q.limit == 0 || q.limit >= num {
+		q.limit = num
 	}
-	return s, true
+	return q, true
 }
 
-func (ps *parserState) parseExecute(s *Search) *Search {
+func (ps *parserState) parseExecute(q *Query) *Query {
 	ps.inp.Next()
 	var words []string
 	for {
@@ -172,13 +172,13 @@ func (ps *parserState) parseExecute(s *Search) *Search {
 		words = append(words, string(word))
 	}
 	if len(words) > 0 {
-		s = createIfNeeded(s)
-		s.actions = words
+		q = createIfNeeded(q)
+		q.actions = words
 	}
-	return s
+	return q
 }
 
-func (ps *parserState) parseText(s *Search) *Search {
+func (ps *parserState) parseText(q *Query) *Query {
 	inp := ps.inp
 	pos := inp.Pos
 	op, hasOp := ps.scanSearchOp()
@@ -193,7 +193,7 @@ func (ps *parserState) parseText(s *Search) *Search {
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
 			if ps.isSpace() || inp.Ch == '|' || ps.mustStop() {
-				return s.addKey(string(key), op)
+				return q.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
 			hasOp = false
@@ -204,26 +204,26 @@ func (ps *parserState) parseText(s *Search) *Search {
 		}
 	} else if len(text) == 0 {
 		// Only an empty search operation is found -> ignore it
-		return s
+		return q
 	}
-	s = createIfNeeded(s)
+	q = createIfNeeded(q)
 	if hasOp {
 		if key == nil {
-			s.addSearch(expValue{string(text), op})
+			q.addSearch(expValue{string(text), op})
 		} else {
-			last := len(s.terms) - 1
-			if s.terms[last].mvals == nil {
-				s.terms[last].mvals = expMetaValues{string(key): {expValue{string(text), op}}}
+			last := len(q.terms) - 1
+			if q.terms[last].mvals == nil {
+				q.terms[last].mvals = expMetaValues{string(key): {expValue{string(text), op}}}
 			} else {
 				sKey := string(key)
-				s.terms[last].mvals[sKey] = append(s.terms[last].mvals[sKey], expValue{string(text), op})
+				q.terms[last].mvals[sKey] = append(q.terms[last].mvals[sKey], expValue{string(text), op})
 			}
 		}
 	} else {
 		// Assert key == nil
-		s.addSearch(expValue{string(text), cmpMatch})
+		q.addSearch(expValue{string(text), cmpMatch})
 	}
-	return s
+	return q
 }
 
 func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
