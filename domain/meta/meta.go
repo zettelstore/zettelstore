@@ -49,6 +49,9 @@ func (kd *DescriptionKey) IsComputed() bool { return kd.usage >= usageComputed }
 // IsProperty returns true, if metadata is a computed property.
 func (kd *DescriptionKey) IsProperty() bool { return kd.usage >= usageProperty }
 
+// IsStoredComputed retruns true, if metadata is computed, but also stored.
+func (kd *DescriptionKey) IsStoredComputed() bool { return kd.usage == usageComputed }
+
 var registeredKeys = make(map[string]*DescriptionKey)
 
 func registerKey(name string, t *DescriptionType, usage keyUsage, inverse string) {
@@ -85,6 +88,14 @@ func IsComputed(name string) bool {
 func IsProperty(name string) bool {
 	if kd, ok := registeredKeys[name]; ok {
 		return kd.IsProperty()
+	}
+	return false
+}
+
+// IsStoredComputed returns true, if key denotes a computed metadata key that is stored.
+func IsStoredComputed(name string) bool {
+	if kd, ok := registeredKeys[name]; ok {
+		return kd.IsStoredComputed()
 	}
 	return false
 }

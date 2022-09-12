@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -50,11 +50,20 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasConten
 	if zettel.Equal(oldZettel, false) {
 		return nil
 	}
+
+	// Update relevant computed, but stored values.
+	if _, found := m.Get(api.KeyCreated); !found {
+		if val, crFound := oldZettel.Meta.Get(api.KeyCreated); crFound {
+			m.Set(api.KeyCreated, val)
+		}
+	}
 	m.SetNow(api.KeyModified)
+
 	m.YamlSep = oldZettel.Meta.YamlSep
 	if m.Zid == id.ConfigurationZid {
 		m.Set(api.KeySyntax, api.ValueSyntaxNone)
 	}
+
 	if !hasContent {
 		zettel.Content = oldZettel.Content
 	}
