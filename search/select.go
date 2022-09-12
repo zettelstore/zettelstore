@@ -64,6 +64,8 @@ func (ct *conjTerms) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
 
 type addSearchFunc func(val expValue)
 
+func noAddSearch(expValue) {}
+
 func createPosNegMatchFunc(key string, values []expValue, addSearch addSearchFunc) (posMatch, negMatch matchValueFunc) {
 	posValues := make([]expValue, 0, len(values))
 	negValues := make([]expValue, 0, len(values))
@@ -73,6 +75,10 @@ func createPosNegMatchFunc(key string, values []expValue, addSearch addSearchFun
 		} else {
 			posValues = append(posValues, val)
 		}
+	}
+	if meta.IsProperty(key) {
+		// Properties are not stored in the Zettelstore and in the search index.
+		addSearch = noAddSearch
 	}
 	return createMatchFunc(key, posValues, addSearch), createMatchFunc(key, negValues, addSearch)
 }
