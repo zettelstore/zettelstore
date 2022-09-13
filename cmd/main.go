@@ -286,7 +286,7 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "secret must have at least length 16 when authentication is enabled, but is %q\n", secret)
 		return 2
 	}
-	cfg = nil
+	cfg.Delete("secret")
 	secret = fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
 
 	kern.SetCreators(

@@ -12,12 +12,18 @@ package webui
 
 import (
 	"bytes"
+	"context"
+	"encoding/xml"
+	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
@@ -39,7 +45,11 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(q, metaList, wui.rtConfig))
+		if actions := q.Actions(); len(actions) > 0 && actions[0] == "RSS" {
+			wui.renderRSS(ctx, w, metaList, actions[0:])
+			return
+		}
+		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(ctx, q, metaList, wui.rtConfig))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {
@@ -65,6 +75,27 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 	}
 }
 
+func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, ml []*meta.Meta, actions []string) {
+	var rssConfig rss.Configuration
+	rssConfig.Setup(ctx, wui.rtConfig)
+	if len(actions) > 1 && actions[0] == "TITLE" {
+		rssConfig.Title = strings.Join(actions[0:], " ")
+	}
+	data, err := rssConfig.Marshal(ml)
+	if err != nil {
+		wui.reportError(ctx, w, err)
+		return
+	}
+	adapter.PrepareHeader(w, "application/rss+xml")
+	w.WriteHeader(http.StatusOK)
+	if _, err = io.WriteString(w, xml.Header); err == nil {
+		_, err = w.Write(data)
+	}
+	if err != nil {
+		wui.log.IfErr(err).Msg("unable to write RSS data")
+	}
+}
+
 // MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
 func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +114,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(nil, metaList, wui.rtConfig))
+		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(ctx, nil, metaList, wui.rtConfig))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {

@@ -12,6 +12,7 @@ package evaluator
 
 import (
 	"bytes"
+	"context"
 	"log"
 	"sort"
 	"strconv"
@@ -23,14 +24,14 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding/rss"
-	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
 )
 
 // ActionSearch transforms a list of metadata according to search commands into a AST nested list.
-func ActionSearch(q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
+func ActionSearch(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
 	ap := actionPara{
+		ctx:   ctx,
 		q:     q,
 		ml:    ml,
 		kind:  ast.NestedListUnordered,
@@ -65,7 +66,7 @@ func ActionSearch(q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.B
 		}
 		for _, act := range acts {
 			if act == "RSS" {
-				return ap.createBlockNodeRSS()
+				return ap.createBlockNodeRSS(rtConfig)
 			}
 			key := strings.ToLower(act)
 			switch meta.Type(key) {
@@ -80,6 +81,7 @@ func ActionSearch(q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.B
 }
 
 type actionPara struct {
+	ctx   context.Context
 	q     *query.Query
 	ml    []*meta.Meta
 	kind  ast.NestedListKind
@@ -264,18 +266,11 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 	return result
 }
 
-func (ap *actionPara) createBlockNodeRSS() ast.BlockNode {
-	baseURL := kernel.Main.GetConfig(kernel.WebService, kernel.WebBaseURL).(string)
-	config := rss.Configuration{
-		Title: ap.title,
-		NewURLBuilderAbs: func(key byte) *api.URLBuilder {
-			return api.NewURLBuilder(baseURL, key)
-		},
-		// GetBaseURL:   ap.config.GetBaseURL,
-		// GetZettelURL: func(zid id.Zid) string { return ap.config.GetBaseURL() + zid.String() },
-		// Encrypt:      ap.config.Encrypt,
-	}
-	data, err := config.Marshal(ap.ml)
+func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
+	var rssConfig rss.Configuration
+	rssConfig.Setup(ap.ctx, cfg)
+	rssConfig.Title = ap.title
+	data, err := rssConfig.Marshal(ap.ml)
 	if err != nil {
 		log.Println("ERRR", err)
 		return nil

@@ -13,19 +13,38 @@ package rss
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"time"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 )
 
 type Configuration struct {
 	Title            string
-	NewURLBuilderAbs func(key byte) *api.URLBuilder
+	Language         string
+	Copyright        string
+	Generator        string
+	NewURLBuilderAbs func() *api.URLBuilder
+}
+
+func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
+	baseURL := kernel.Main.GetConfig(kernel.WebService, kernel.WebBaseURL).(string)
+	defVals := cfg.AddDefaultValues(ctx, &meta.Meta{})
+
+	c.Title = cfg.GetSiteName()
+	c.Language = defVals.GetDefault(api.KeyLang, "")
+	c.Copyright = defVals.GetDefault(api.KeyCopyright, "")
+	c.Generator = (kernel.Main.GetConfig(kernel.CoreService, kernel.CoreProgname).(string) +
+		" " +
+		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
+	c.NewURLBuilderAbs = func() *api.URLBuilder { return api.NewURLBuilder(baseURL, 'h') }
 }
 
 func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
@@ -51,15 +70,11 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 		}
 		rssItems = append(rssItems, &RssItem{
 			Title:       title.String(),
-			Link:        c.NewURLBuilderAbs('h').SetZid(api.ZettelID(m.Zid.String())).String(),
+			Link:        c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String(),
 			Description: "",
 			Author:      "",
-			Category:    "",
-			Comments:    "",
-			Enclosure:   nil,
 			GUID:        "https://zettelstore.de/guid/" + m.Zid.String(),
 			PubDate:     itemPublished,
-			Source:      "",
 		})
 	}
 
@@ -71,24 +86,16 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 		Version: "2.0",
 		Channel: &RssChannel{
 			Title:          c.Title,
-			Link:           c.NewURLBuilderAbs('h').String(),
+			Link:           c.NewURLBuilderAbs().String(),
 			Description:    "",
-			Language:       "",
-			Copyright:      "",
+			Language:       c.Language,
+			Copyright:      c.Copyright,
 			ManagingEditor: "",
 			WebMaster:      "",
 			PubDate:        rssPublished,
-			LastBuildDate:  "",
-			Category:       "",
-			Generator:      "Zettelstore",
+			LastBuildDate:  rssPublished,
+			Generator:      c.Generator,
 			Docs:           "https://www.rssboard.org/rss-specification",
-			Cloud:          "",
-			TTL:            0,
-			Image:          nil,
-			Rating:         "",
-			TextInput:      nil,
-			SkipHours:      "",
-			SkipDays:       "",
 			Items:          rssItems,
 		},
 	}
@@ -102,42 +109,19 @@ type (
 		Channel *RssChannel
 	}
 	RssChannel struct {
-		XMLName        xml.Name `xml:"channel"`
-		Title          string   `xml:"title"`
-		Link           string   `xml:"link"`
-		Description    string   `xml:"description"`
-		Language       string   `xml:"language,omitempty"`
-		Copyright      string   `xml:"copyright,omitempty"`
-		ManagingEditor string   `xml:"managingEditor,omitempty"`
-		WebMaster      string   `xml:"webMaster,omitempty"`
-		PubDate        string   `xml:"pubDate,omitempty"`       // RFC822
-		LastBuildDate  string   `xml:"lastBuildDate,omitempty"` // RFC822
-		Category       string   `xml:"category,omitempty"`
-		Generator      string   `xml:"generator,omitempty"`
-		Docs           string   `xml:"docs,omitempty"`
-		Cloud          string   `xml:"cloud,omitempty"`
-		TTL            int      `xml:"ttl,omitempty"`
-		Image          *RssImage
-		Rating         string `xml:"rating,omitempty"`
-		TextInput      *RssTextInput
-		SkipHours      string     `xml:"skipHours,omitempty"`
-		SkipDays       string     `xml:"skipDays,omitempty"`
+		XMLName        xml.Name   `xml:"channel"`
+		Title          string     `xml:"title"`
+		Link           string     `xml:"link"`
+		Description    string     `xml:"description"`
+		Language       string     `xml:"language,omitempty"`
+		Copyright      string     `xml:"copyright,omitempty"`
+		ManagingEditor string     `xml:"managingEditor,omitempty"`
+		WebMaster      string     `xml:"webMaster,omitempty"`
+		PubDate        string     `xml:"pubDate,omitempty"`       // RFC822
+		LastBuildDate  string     `xml:"lastBuildDate,omitempty"` // RFC822
+		Generator      string     `xml:"generator,omitempty"`
+		Docs           string     `xml:"docs,omitempty"`
 		Items          []*RssItem `xml:"item"`
-	}
-	RssImage struct {
-		XMLName xml.Name `xml:"image"`
-		URL     string   `xml:"url"`
-		Title   string   `xml:"title"`
-		Link    string   `xml:"link"`
-		Width   int      `xml:"width,omitempty"`
-		Height  int      `xml:"height,omitempty"`
-	}
-	RssTextInput struct {
-		XMLName     xml.Name `xml:"textInput"`
-		Title       string   `xml:"title"`
-		Description string   `xml:"description"`
-		Name        string   `xml:"name"`
-		Link        string   `xml:"link"`
 	}
 	RssItem struct {
 		XMLName     xml.Name `xml:"item"`
@@ -145,17 +129,7 @@ type (
 		Link        string   `xml:"link"`
 		Description string   `xml:"description"`
 		Author      string   `xml:"author,omitempty"`
-		Category    string   `xml:"category,omitempty"`
-		Comments    string   `xml:"comments,omitempty"`
-		Enclosure   *RssEnclosure
-		GUID        string `xml:"guid,omitempty"`
-		PubDate     string `xml:"pubDate,omitempty"` // RFC822
-		Source      string `xml:"source,omitempty"`
-	}
-	RssEnclosure struct {
-		XMLName xml.Name `xml:"enclosure"`
-		URL     string   `xml:"url,attr"`
-		Length  string   `xml:"length,attr"`
-		Type    string   `xml:"type,attr"`
+		GUID        string   `xml:"guid,omitempty"`
+		PubDate     string   `xml:"pubDate,omitempty"` // RFC822
 	}
 )

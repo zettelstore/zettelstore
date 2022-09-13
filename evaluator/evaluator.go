@@ -255,7 +255,7 @@ func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
 		}
 		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
 	}
-	result := ActionSearch(q, ml, e.rtConfig)
+	result := ActionSearch(e.ctx, q, ml, e.rtConfig)
 	if result != nil {
 		ast.Walk(e, result)
 	}
