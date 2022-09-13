@@ -3,7 +3,8 @@ title: Zettelmarkup: Inline-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220823200750
+created: 20210126175322
+modified: 20220913141405
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -46,7 +47,7 @@ They are be considered equivalent to tags in metadata.
 **This element is deprecated in version 0.7 and will be removed in version 0.8!**
 
 The use of inline tags is problematic, because:
-* The number sign is often used as, well, a number sign, esp. in the english language.
+* The number sign is often used as, well, a number sign, esp. in the English language.
   This introduces unintended tags.
 * An inline tag is rendered in HTML as a link.
   However, an inline tag may be the contained in the text part of a [[link element|00001007040310]].
@@ -54,10 +55,10 @@ The use of inline tags is problematic, because:
 * Similar, an inline tag may be part of the title of a zettel.
   When a zettel list is rendered in HTML, this also produces a HTML link for each zettel, which contains the inline tag HTML link.
 * The naming of metadata, [[''tags''|00001006020000#tags]] (names the tags within the metadata section of a zettel), [[''content-tags''|00001006020000#content-tags]] (all inline tags), and [[''all-tags''|00001006020000#all-tags]], is confusing for some users.
-  For example, if you follow the link of a tag, it is converted into a [[search|00001007700000]] for the key ''all-tags''.
+  For example, if you follow the link of a tag, it is converted into a [[query|00001007700000]] for the key ''all-tags''.
   A search for ''tags'' will most likely produce different results.
 
-To find all zettel with inline tags, please use the search [[search:content-tags?|search:content-tags?]].
+To find all zettel with inline tags, please use the query [[::search:content-tags?::|search:content-tags?]].
 There are two, non-exclusive options for migration:
 # Move inline tags into the metadata section of a zettel, under the key ''tags''.
   This will allow you to find the zettel via a search for tags in the future.

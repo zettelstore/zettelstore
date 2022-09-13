@@ -166,8 +166,10 @@ func TestLink(t *testing.T) {
 		{"[[[[a]]]]", "(PARA (LINK [[a) ]])"},
 		{"[[search:title]]", "(PARA (LINK search:title))"},
 		{"[[search:title syntax]]", "(PARA (LINK search:title syntax))"},
+		{"[[search:title | action]]", "(PARA (LINK search:title | action))"},
 		{"[[Text|search:title]]", "(PARA (LINK search:title Text))"},
 		{"[[Text|search:title syntax]]", "(PARA (LINK search:title syntax Text))"},
+		{"[[Text|search:title | action]]", "(PARA (LINK search:title | action Text))"},
 	})
 }
 

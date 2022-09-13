@@ -1,12 +1,12 @@
 id: 00001012051840
-title: API: Shape the list of zettel metadata by specifying a search expression
+title: API: Shape the list of zettel metadata by specifying a query expression
 role: manual
 tags: #api #manual #search #zettelstore
 syntax: zmk
 created: 20210709143714
-modified: 20220908162010
+modified: 20220913141617
 
-The query parameter ""''s''"" allows you to specify [[search expressions|00001007700000]] for a full-text search of all zettel content and/or restricting the search according to specific metadata.
+The query parameter ""''s''"" allows you to specify [[query expressions|00001007700000]] for a full-text search of all zettel content and/or restricting the search according to specific metadata.
 
 You are allowed to specify this query parameter more than once, as well as the other query parameters.
 All results will be intersected, i.e. a zettel will be included into the list if all of the provided values match.

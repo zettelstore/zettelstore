@@ -1,11 +1,13 @@
 id: 00001007780000
-title: Formal syntax of search expressions
+title: Formal syntax of query expressions
 role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
-modified: 20220821163059
+created: 20220810144539
+modified: 20220913134024
 
 ```
+QueryExpression  := SearchExpression ActionExpression?
 SearchExpression := SearchTerm (SPACE+ SearchTerm)*.
 SearchTerm       := SearchOperator? SearchValue
                   | SearchKey SearchOperator SearchValue?
@@ -15,7 +17,7 @@ SearchTerm       := SearchOperator? SearchValue
                   | "ORDER" SPACE+ ("REVERSE" SPACE+)? SearchKey
                   | "OFFSET" SPACE+ PosInt
                   | "LIMIT" SPACE+ PosInt.
-SearchValue      := NO-SPACE (NO-SPACE)*.
+SearchValue      := Word.
 SearchKey        := MetadataKey.
 SearchOperator   := '!'
                   | ('!')? ('~' | ':' | '<' | '>').
@@ -23,4 +25,6 @@ ExistOperator    := '?'
                   | '!' '?'.
 PosInt           := '0'
                   | ('1' .. '9') DIGIT*.
+ActionExpression := '|' (Word (SPACE+ Word)*)?
+Word             := NO-SPACE NO-SPACE*
 ```

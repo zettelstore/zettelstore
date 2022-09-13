@@ -175,29 +175,31 @@ func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok
 	inp.Next()
 	cp.skipSpace()
 	pos := inp.Pos
-	hasSpace, ok := cp.readReferenceToSep(closeCh)
-	if !ok {
-		return "", nil, false
-	}
-	if inp.Ch == '|' { // First part must be inline text
-		if pos == inp.Pos { // [[| or {{|
+	if !hasSearchPrefix(inp.Src[pos:]) {
+		hasSpace, ok := cp.readReferenceToSep(closeCh)
+		if !ok {
 			return "", nil, false
 		}
-		cp.inp = input.NewInput(inp.Src[pos:inp.Pos])
-		for {
-			in := cp.parseInline()
-			if in == nil {
-				break
+		if inp.Ch == '|' { // First part must be inline text
+			if pos == inp.Pos { // [[| or {{|
+				return "", nil, false
 			}
-			is = append(is, in)
+			cp.inp = input.NewInput(inp.Src[pos:inp.Pos])
+			for {
+				in := cp.parseInline()
+				if in == nil {
+					break
+				}
+				is = append(is, in)
+			}
+			cp.inp = inp
+			inp.Next()
+		} else {
+			if hasSpace {
+				return "", nil, false
+			}
+			inp.SetPos(pos)
 		}
-		cp.inp = inp
-		inp.Next()
-	} else {
-		if hasSpace && !hasSearchPrefix(inp.Src[pos:]) {
-			return "", nil, false
-		}
-		inp.SetPos(pos)
 	}
 
 	cp.skipSpace()

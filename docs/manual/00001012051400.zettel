@@ -4,11 +4,11 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20220912115115
+modified: 20220913135042
 
 The [[endpoint|00001012920000]] ''/q'' allows to query the list of all zettel.
 
-A query is an optional [[search expression|00001007700000]], together with an optional list of aggregate actions (described below).
+A [[query|00001007700000]] is an optional [[search expression|00001007700000#search-expression]], together with an optional [[list of actions|00001007700000#action-list]] (described below).
 An empty search expression will select all zettel.
 An empty list of action will return nothing.
 It is an error, if both are empty.

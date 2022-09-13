@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220131151022
-modified: 20220825185649
+modified: 20220913135545
 
 A transclusion allows to include the content of other zettel into the current zettel.
 
@@ -16,9 +16,9 @@ Any other characters in this line will be ignored.
 This leads to two variants of transclusion:
 # Transclusion of the content of another zettel into the current zettel.
   This is done if you specify a zettel identifier, and is called ""zettel transclusion"".
-# Transclusion of the list of zettel references that satisfy a [[search expression|00001007700000]].
-  This is called ""search transclusion"".
+# Transclusion of the list of zettel references that satisfy a [[query expression|00001007700000]].
+  This is called ""query transclusion"".
 
 The variants are described on separate zettel:
 * [[Zettel transclusion|00001007031110]]
-* [[Search transclusion|00001007031140]]
+* [[Query transclusion|00001007031140]]

@@ -1,12 +1,20 @@
 id: 00001007700000
-title: Search expression
+title: Query expression
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-modified: 20220812144558
+created: 20220805150154
+modified: 20220913135434
 
-A search expression allows you to search for specific zettel.
-You may select zettel based on a full-text search, based on specifc metadata values, or both.
+A query expression allows you to search for specific zettel and to perform some actions on them.
+You may select zettel based on a full-text search, based on specific metadata values, or both.
+
+A query expression consists of a __search expression__ and of an optional __action list__.
+Both are separated by a vertical bar character (""''|''"", U+007C).
+
+A query expression follows a [[formal syntax|00001007780000]].
+
+=== Search expression
 
 In its simplest form, a search expression just contains a string to be search for with the help of a full-text search.
 For example, the string ''syntax'' will search for all zettel containing the word ""syntax"".
@@ -24,7 +32,18 @@ All terms of a select expression must be true so that a zettel is selected.
 * [[Search operator|00001007705000]]
 * [[Search value|00001007706000]]
 
-A search expression follows a [[formal syntax|00001007780000]].
-
-Here are some examples of search expressions, which can be used to manage a Zettelstore:
+Here are [[some examples|00001007790000]] of search expressions, which can be used to manage a Zettelstore:
 {{{00001007790000}}}
+
+=== Action List
+
+With a search expression, a list of zettel is selected.
+Actions allow to modify this list to a certain degree.
+
+Which actions are allowed depends on the context.
+However, actions are further separated into __parameter action__ and __aggregate actions__.
+A parameter action just sets a parameter for an aggregate action.
+An aggregate action transforms the list of selected zettel into a different, aggregate form.
+Only the first aggregate form is executed, following aggregate actions are ignored.
+
+In most contexts, valid actions include the name of metadata keys, at least of type [[Word|00001006035500]], [[WordSet|00001006036000]], or [[TagSet|00001006034000]].
