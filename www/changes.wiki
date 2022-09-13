@@ -12,6 +12,13 @@
      specify a search operator for metadata, the specified key is assumed to
      exist.
      (breaking: api, webui)
+  *  Rename &ldquo;search expression&rdquo; into &ldquo;query
+     expressions&rdquo;. Similar, the reference prefix <tt>search:</tt> to
+     specify a query link or a query transclusion is renamed to <tt>query:</tt>
+     (breaking: zettelmarkup)
+  *  Rename query parameter for query expression from <tt>_s</tt> to
+     <tt>q</tt>.
+     (breaking: api, webui)
   *  Cleanup names for HTTP query parameters in WebUI. Update your bookmarks
      if you used them. (For API: see below)
      (breaking: webui)
