@@ -11,10 +11,14 @@
 package query
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/parser"
 )
 
 type matchValueFunc func(value string) bool
@@ -100,6 +104,8 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 		return createMatchWordFunc(values, addSearch)
 	case meta.TypeWordSet:
 		return createMatchWordSetFunc(values, addSearch)
+	case meta.TypeZettelmarkup:
+		return createMatchZmkFunc(values, addSearch)
 	}
 	return createMatchStringFunc(values, addSearch)
 }
@@ -206,6 +212,46 @@ func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValu
 		}
 		return true
 	}
+}
+
+func createMatchZmkFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+	preds := valuesToStringPredicates(sliceToLower(values), cmpMatch, addSearch)
+	return func(value string) bool {
+		value = zmk2text(value)
+		for _, pred := range preds {
+			if !pred(value) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func zmk2text(zmk string) string {
+	isASCII, hasUpper, needParse := true, false, false
+	for i := 0; i < len(zmk); i++ {
+		ch := zmk[i]
+		if ch >= utf8.RuneSelf {
+			isASCII = false
+			break
+		}
+		hasUpper = hasUpper || ('A' <= ch && ch <= 'Z')
+		needParse = needParse || !(('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || ('0' <= ch && ch <= '9') || ch == ' ')
+	}
+	if isASCII {
+		if !needParse {
+			if !hasUpper {
+				return zmk
+			}
+			return strings.ToLower(zmk)
+		}
+	}
+	is := parser.ParseMetadata(zmk)
+	var buf bytes.Buffer
+	if _, err := textenc.Create().WriteInlines(&buf, &is); err != nil {
+		return strings.ToLower(zmk)
+	}
+	return strings.ToLower(buf.String())
 }
 
 func sliceToLower(sl []expValue) []expValue {
