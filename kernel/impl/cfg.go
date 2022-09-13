@@ -209,22 +209,22 @@ func (cs *configService) AddDefaultValues(ctx context.Context, m *meta.Meta) *me
 	result := m
 	cs.mxService.RLock()
 	if _, found := m.Get(api.KeyCopyright); !found {
-		result = updateMeta(m, result, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
+		result = updateMeta(result, m, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
 	}
 	if _, found := m.Get(api.KeyLang); !found {
-		result = updateMeta(m, result, api.KeyLang, cs.Get(ctx, nil, api.KeyLang))
+		result = updateMeta(result, m, api.KeyLang, cs.Get(ctx, nil, api.KeyLang))
 	}
 	if _, found := m.Get(api.KeyLicense); !found {
-		result = updateMeta(m, result, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))
+		result = updateMeta(result, m, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))
 	}
 	if _, found := m.Get(api.KeyVisibility); !found {
-		result = updateMeta(m, result, api.KeyVisibility, cs.GetConfig(keyDefaultVisibility).(meta.Visibility).String())
+		result = updateMeta(result, m, api.KeyVisibility, cs.GetConfig(keyDefaultVisibility).(meta.Visibility).String())
 	}
 	cs.mxService.RUnlock()
 	return result
 }
 func updateMeta(result, m *meta.Meta, key, val string) *meta.Meta {
-	if result == nil {
+	if result == m {
 		result = m.Clone()
 	}
 	result.Set(key, val)
