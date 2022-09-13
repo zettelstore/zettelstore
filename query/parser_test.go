@@ -22,7 +22,6 @@ func TestParser(t *testing.T) {
 		spec string
 		exp  string
 	}{
-
 		{"?", "?"}, {"!?", "!?"}, {"?a", "?a"}, {"!?a", "!?a"},
 		{"key?", "key?"}, {"key!?", "key!?"},
 		{"b key?", "key? b"}, {"b key!?", "key!? b"},

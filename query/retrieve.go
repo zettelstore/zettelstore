@@ -156,13 +156,13 @@ func retrieveNegatives(negCalls searchCallMap) id.Set {
 func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 	switch op {
 	case cmpHas:
-		return searcher.SearchEqual
+		return searcher.SearchContains
 	case cmpPrefix:
 		return searcher.SearchPrefix
 	case cmpSuffix:
 		return searcher.SearchSuffix
 	case cmpMatch:
-		return searcher.SearchContains
+		return searcher.SearchEqual
 	default:
 		panic(fmt.Sprintf("Unexpected value of comparison operation: %v", op))
 	}

@@ -246,9 +246,9 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 		switch v.op {
 		case cmpHas:
 			addSearch(v) // addSearch only for positive selections
-			result[i] = func(metaVal string) bool { return metaVal == opVal }
+			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
 		case cmpHasNot:
-			result[i] = func(metaVal string) bool { return metaVal != opVal }
+			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
 		case cmpPrefix:
 			addSearch(v)
 			result[i] = func(metaVal string) bool { return strings.HasPrefix(metaVal, opVal) }
@@ -261,9 +261,9 @@ func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addS
 			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
 		case cmpMatch:
 			addSearch(v)
-			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
+			result[i] = func(metaVal string) bool { return metaVal == opVal }
 		case cmpNoMatch:
-			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
+			result[i] = func(metaVal string) bool { return metaVal != opVal }
 		default:
 			panic(fmt.Sprintf("Unknown compare operation %d with value %q", v.op, opVal))
 		}
