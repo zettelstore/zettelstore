@@ -11,6 +11,7 @@
 package cmd
 
 import (
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -285,6 +286,8 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "secret must have at least length 16 when authentication is enabled, but is %q\n", secret)
 		return 2
 	}
+	cfg = nil
+	secret = fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
 
 	kern.SetCreators(
 		func(readonly bool, owner id.Zid) (auth.Manager, error) {
