@@ -54,6 +54,14 @@ func (ps *parserState) acceptKwArgs(s string) bool {
 }
 
 const (
+	actionSeparatorChar      = '|'
+	existOperatorChar        = '?'
+	searchOperatorNotChar    = '!'
+	searchOperatorHasChar    = ':'
+	searchOperatorPrefixChar = '>'
+	searchOperatorSuffixChar = '<'
+	searchOperatorMatchChar  = '~'
+
 	kwLimit   = "LIMIT"
 	kwOffset  = "OFFSET"
 	kwOr      = "OR"
@@ -107,8 +115,8 @@ func (ps *parserState) parse(q *Query) *Query {
 			}
 		}
 		inp.SetPos(pos)
-		if inp.Ch == '|' {
-			q = ps.parseExecute(q)
+		if isActionSep(inp.Ch) {
+			q = ps.parseActions(q)
 			break
 		}
 		q = ps.parseText(q)
@@ -160,7 +168,7 @@ func (ps *parserState) parseLimit(q *Query) (*Query, bool) {
 	return q, true
 }
 
-func (ps *parserState) parseExecute(q *Query) *Query {
+func (ps *parserState) parseActions(q *Query) *Query {
 	ps.inp.Next()
 	var words []string
 	for {
@@ -192,7 +200,7 @@ func (ps *parserState) parseText(q *Query) *Query {
 		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
-			if ps.isSpace() || inp.Ch == '|' || ps.mustStop() {
+			if ps.isSpace() || isActionSep(inp.Ch) || ps.mustStop() {
 				return q.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
@@ -231,10 +239,11 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	pos := inp.Pos
 	allowKey := !hasOp
 
-	for !ps.isSpace() && inp.Ch != '|' && !ps.mustStop() {
+	for !ps.isSpace() && !isActionSep(inp.Ch) && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
-			case '!', '?', ':', '=', '>', '<', '~':
+			case searchOperatorNotChar, existOperatorChar, searchOperatorHasChar,
+				searchOperatorPrefixChar, searchOperatorSuffixChar, searchOperatorMatchChar:
 				allowKey = false
 				if key := inp.Src[pos:inp.Pos]; meta.KeyIsValid(string(key)) {
 					return nil, key
@@ -249,7 +258,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
 	pos := inp.Pos
-	for !ps.isSpace() && inp.Ch != '|' && !ps.mustStop() {
+	for !ps.isSpace() && !isActionSep(inp.Ch) && !ps.mustStop() {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
@@ -260,7 +269,7 @@ func (ps *parserState) scanPosInt() (int, bool) {
 	ch := inp.Ch
 	if ch == '0' {
 		ch = inp.Next()
-		if isSpace(ch) || inp.Ch == '|' || ps.mustStop() {
+		if isSpace(ch) || isActionSep(inp.Ch) || ps.mustStop() {
 			return 0, true
 		}
 		return 0, false
@@ -280,25 +289,25 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	inp := ps.inp
 	ch := inp.Ch
 	negate := false
-	if ch == '!' {
+	if ch == searchOperatorNotChar {
 		ch = inp.Next()
 		negate = true
 	}
 	op := cmpUnknown
 	switch ch {
-	case '?':
+	case existOperatorChar:
 		inp.Next()
 		op = cmpExist
-	case ':':
+	case searchOperatorHasChar:
 		inp.Next()
 		op = cmpHas
-	case '<':
+	case searchOperatorSuffixChar:
 		inp.Next()
 		op = cmpSuffix
-	case '>':
+	case searchOperatorPrefixChar:
 		inp.Next()
 		op = cmpPrefix
-	case '~':
+	case searchOperatorMatchChar:
 		inp.Next()
 		op = cmpMatch
 	default:
@@ -332,3 +341,5 @@ func (ps *parserState) skipSpace() {
 		ps.inp.Next()
 	}
 }
+
+func isActionSep(ch rune) bool { return ch == actionSeparatorChar }

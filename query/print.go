@@ -87,6 +87,7 @@ func (pe *printEnv) printSpace() {
 	}
 	pe.space = true
 }
+func (pe *printEnv) write(ch byte)        { pe.w.Write([]byte{ch}) }
 func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
 
 func (pe *printEnv) printExprValues(key string, values []expValue) {
@@ -112,7 +113,7 @@ func (pe *printEnv) printExprValues(key string, values []expValue) {
 			if s, found := op2string[op]; found {
 				pe.writeString(s)
 			} else {
-				pe.writeString("|" + strconv.Itoa(int(op)))
+				pe.writeString("%" + strconv.Itoa(int(op)))
 			}
 		}
 		if s := val.value; s != "" {
@@ -247,7 +248,7 @@ func (pe *printEnv) printPosInt(key string, val int) {
 func (pe *printEnv) printActions(words []string) {
 	if len(words) > 0 {
 		pe.printSpace()
-		pe.writeString("|")
+		pe.write(actionSeparatorChar)
 		for _, word := range words {
 			pe.printSpace()
 			pe.writeString(word)

@@ -339,7 +339,7 @@ func TestListTags(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	tm, err := c.ListMapMeta(context.Background(), api.KeyTags)
+	tm, err := c.QueryMapMeta(context.Background(), api.ActionSeparator+api.KeyTags)
 	if err != nil {
 		t.Error(err)
 		return
@@ -373,7 +373,7 @@ func TestListRoles(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	rl, err := c.ListMapMeta(context.Background(), api.KeyRole)
+	rl, err := c.QueryMapMeta(context.Background(), api.ActionSeparator+api.KeyRole)
 	if err != nil {
 		t.Error(err)
 		return
