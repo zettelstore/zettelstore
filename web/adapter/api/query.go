@@ -31,7 +31,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		ctx := r.Context()
 		q := adapter.GetQuery(r.URL.Query())
 		if q == nil {
-			a.log.Sense().Msg("no search query parameter")
+			a.log.Sense().Msg("no parameter for query")
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
@@ -45,7 +45,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		}
 
 		var buf bytes.Buffer
-		contentType, err := actionSearch(&buf, q, metaList)
+		contentType, err := queryAction(&buf, q, metaList)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -55,7 +55,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	}
 }
 
-func actionSearch(w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
+func queryAction(w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
 	ap := actionPara{
 		w:   w,
 		q:   q,

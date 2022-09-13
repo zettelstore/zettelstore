@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20220913135042
+modified: 20220913150204
 
 The [[endpoint|00001012920000]] ''/q'' allows to query the list of all zettel.
 
@@ -13,31 +13,31 @@ An empty search expression will select all zettel.
 An empty list of action will return nothing.
 It is an error, if both are empty.
 
-Search expression and action list are separated by a vertical bar character (""''|''"", U+007C), and must be given with the query parameter ''s''.
+Search expression and action list are separated by a vertical bar character (""''|''"", U+007C), and must be given with the query parameter ''q''.
 
-For example, to list all roles used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?s=|role''.
+For example, to list all roles used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?q=|role''.
 If successful, the output is a JSON object:
 
 ```sh
-# curl http://127.0.0.1:23123/q?s=|role
+# curl http://127.0.0.1:23123/q?q=|role
 {"map":{"configuration":["00000000090002","00000000090000", ... ,"00000000000001"],"manual":["00001014000000", ... ,"00001000000000"],"zettel":["00010000000000", ... ,"00001012070500","00000000090001"]}}
 ```
 
 The JSON object only contains the key ''"map"'' with the value of another object.
 This second object contains all role names as keys and the list of identifier of those zettel with this specific role as a value.
 
-Similar, to list all tags used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?s=|tags''.
+Similar, to list all tags used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?q=|tags''.
 If successful, the output is a JSON object:
 
 ```sh
-# curl http://127.0.0.1:23123/q?s=|tags
+# curl http://127.0.0.1:23123/q?q=|tags
 {"map":{"#api":[:["00001012921000","00001012920800","00001012920522",...],"#authorization":["00001010040700","00001010040400",...],...,"#zettelstore":["00010000000000","00001014000000",...,"00001001000000"]}}
 ```
 
 The JSON object only contains the key ''"map"'' with the value of another object.
 This second object contains all tags as keys and the list of identifier of those zettel with this tag as a value.
 
-If you want only those tags that occur at least 100 times, use the endpoint ''/q?s=|MIN100+tags''.
+If you want only those tags that occur at least 100 times, use the endpoint ''/q?q=|MIN100+tags''.
 You see from this that actions are separated by space characters.
 
 There are two types of actions: parameters and aggregates.

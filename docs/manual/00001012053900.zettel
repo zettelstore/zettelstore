@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20211119133357
-modified: 20220908163037
+modified: 20220913152019
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.
@@ -55,7 +55,7 @@ you can specify the title phase to be searched for as a query parameter ''phrase
 {"id": "00001007000000","meta": {...},"list": [{"id": "00001008010000","meta": {...},"rights":62},{"id": "00001004020000","meta": {...},"rights":62}]}
 ````
 
-%%TODO: In addition, you are allowed to limit the search by a [[search expression|00001012051840]], which may search for zettel content.
+%%TODO: In addition, you are allowed to limit the search by a [[query expression|00001012051840]], which may search for zettel content.
 
 === Keys
 The following top-level JSON keys are returned:

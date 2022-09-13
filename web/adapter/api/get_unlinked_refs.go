@@ -59,7 +59,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		}
 
 		metaList, err := unlinkedRefs.Run(
-			ctx, phrase, adapter.AddUnlinkedRefsToSearch(adapter.GetQuery(que), zm))
+			ctx, phrase, adapter.AddUnlinkedRefsToQuery(adapter.GetQuery(que), zm))
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return

@@ -358,7 +358,7 @@ var mapRefState = map[ast.RefState]string{
 	ast.RefStateBroken:   zjson.RefStateBroken,
 	ast.RefStateHosted:   zjson.RefStateHosted,
 	ast.RefStateBased:    zjson.RefStateBased,
-	ast.RefStateSearch:   zjson.RefStateSearch,
+	ast.RefStateQuery:    zjson.RefStateQuery,
 	ast.RefStateExternal: zjson.RefStateExternal,
 }
 
@@ -368,7 +368,7 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 	v.writeContentStart(zjson.NameString2)
 	writeEscaped(&v.b, mapRefState[ln.Ref.State])
 	v.writeContentStart(zjson.NameString)
-	if ln.Ref.State == ast.RefStateSearch {
+	if ln.Ref.State == ast.RefStateQuery {
 		writeEscaped(&v.b, ln.Ref.Value)
 	} else {
 		writeEscaped(&v.b, ln.Ref.String())

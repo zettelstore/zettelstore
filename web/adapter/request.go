@@ -52,7 +52,7 @@ func GetInteger(q url.Values, key string) (int, bool) {
 
 // GetQuery retrieves the specified options from a query.
 func GetQuery(vals url.Values) *query.Query {
-	if exprs, found := vals[api.QueryKeySearch]; found {
+	if exprs, found := vals[api.QueryKeyQuery]; found {
 		return query.Parse(strings.Join(exprs, " "))
 	}
 	if exprs, found := vals["_s"]; found {
@@ -72,9 +72,9 @@ func GetZCDirection(s string) usecase.ZettelContextDirection {
 	return usecase.ZettelContextBoth
 }
 
-// AddUnlinkedRefsToSearch inspects metadata and enhances the given search to ignore
+// AddUnlinkedRefsToQuery inspects metadata and enhances the given query to ignore
 // some zettel identifier.
-func AddUnlinkedRefsToSearch(q *query.Query, m *meta.Meta) *query.Query {
+func AddUnlinkedRefsToQuery(q *query.Query, m *meta.Meta) *query.Query {
 	var sb strings.Builder
 	sb.WriteString(api.KeyID)
 	sb.WriteString("!:")

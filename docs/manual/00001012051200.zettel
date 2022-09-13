@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220913141720
+modified: 20220913151852
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/j''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:
@@ -21,7 +21,7 @@ The value of key ''"meta"'' effectively contains all metadata of the identified 
 Additionally, the JSON object contains the keys ''"query"'' and ''"human"'' with a string value.
 Both will contain a textual description of the underlying query if you select only some zettel with a [[query expression|00001012051840]].
 Without a selection, the values are the empty string.
-''"query"'' returns the normalized search expression itself, while ''"human"'' is the normalized search expression to be read by humans.
+''"query"'' returns the normalized query expression itself, while ''"human"'' is the normalized query expression to be read by humans.
 
 If you reformat the JSON output from the ''GET /j'' call, you'll see its structure better:
 

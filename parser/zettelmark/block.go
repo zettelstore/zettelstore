@@ -643,7 +643,7 @@ loop:
 		case input.EOS:
 			return nil, false
 		case '\n', '\r', ' ', '\t':
-			if !hasSearchPrefix(inp.Src[posA:]) {
+			if !hasQueryPrefix(inp.Src[posA:]) {
 				return nil, false
 			}
 		case '\\':

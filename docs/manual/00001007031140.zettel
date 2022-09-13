@@ -4,10 +4,10 @@ role: manual
 tags: #manual #search #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220809132350
-modified: 20220913141110
+modified: 20220913145104
 
-A query transclusion is specified by the following sequence, starting at the first position in a line: ''{{{search:query-expression}}}''.
-The line must literally start with the sequence ''{{{search:''.
+A query transclusion is specified by the following sequence, starting at the first position in a line: ''{{{query:query-expression}}}''.
+The line must literally start with the sequence ''{{{query:''.
 Everything after this prefix is interpreted as a [[query expression|00001007700000]].
 
 When evaluated, the query expression is evaluated, often resulting in a list of [[links|00001007040310]] to zettel, matching the query expression.
@@ -15,11 +15,11 @@ The result replaces the query transclusion element.
 
 For example, to include the list of all zettel with the [[all-tags|00001006020000#all-tags]] ""#search"", ordered by title specify the following query transclude element:
 ```zmk
-{{{search:all-tags:#search ORDER title}}}
+{{{query:all-tags:#search ORDER title}}}
 ```
 This will result in:
 :::zs-example
-{{{search:all-tags:#search ORDER title}}}
+{{{query:all-tags:#search ORDER title}}}
 :::
 
 For example, this allows to create a dynamic list of zettel inside a zettel, maybe to provide some introductory text followed by a list of child zettel.
@@ -49,9 +49,9 @@ The following actions are supported, parameter and aggregate actions:
   The key can be given in any letter case.
 
 ```zmk
-{{{search:all-tags:#search | all-tags}}}
+{{{query:all-tags:#search | all-tags}}}
 ```
 This in a tag cloud of all tags that are used together with the tag #search:
 :::zs-example
-{{{search:all-tags:#search | all-tags}}}
+{{{query:all-tags:#search | all-tags}}}
 :::

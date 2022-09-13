@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210810155955
-modified: 20220913141514
+modified: 20220913144754
 
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
 Both kinds begin with two consecutive left square bracket characters (""''[''"", U+005B) and ends with two consecutive right square bracket characters (""'']''"", U+005D).
@@ -21,7 +21,7 @@ The link specification for another zettel within the same Zettelstore is just th
 To reference some content within a zettel, you can append a number sign character (""''#''"", U+0023) and the name of the mark to the zettel identifier.
 The resulting reference is called ""zettel reference"".
 
-If the link specification begins with the string ''search:'', the text following this string will be interpreted as a [[query expression|00001007700000]].
+If the link specification begins with the string ''query:'', the text following this string will be interpreted as a [[query expression|00001007700000]].
 The resulting reference is called ""query reference"".
 When this type of references is rendered, it will typically reference a list of all zettel that fulfills the query expression.
 

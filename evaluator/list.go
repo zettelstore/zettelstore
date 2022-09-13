@@ -28,8 +28,8 @@ import (
 	"zettelstore.de/z/query"
 )
 
-// ActionSearch transforms a list of metadata according to search commands into a AST nested list.
-func ActionSearch(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
+// QueryAction transforms a list of metadata according to query actions into a AST nested list.
+func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
 	ap := actionPara{
 		ctx:   ctx,
 		q:     q,
@@ -205,9 +205,9 @@ func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.Coun
 
 	sea := ap.q.Clone()
 	sea.RemoveActions()
-	buf.WriteString(ast.SearchPrefix)
+	buf.WriteString(ast.QueryPrefix)
 	sea.Print(buf)
-	if buf.Len() > len(ast.SearchPrefix) {
+	if buf.Len() > len(ast.QueryPrefix) {
 		buf.WriteByte(' ')
 	}
 	buf.WriteString(key)

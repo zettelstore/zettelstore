@@ -53,7 +53,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
-	env.Builtins.Set(sexpr.SymLinkSearch, sxpf.NewBuiltin("linkS", true, 2, -1, gen.generateLinkSearch))
+	env.Builtins.Set(sexpr.SymLinkQuery, sxpf.NewBuiltin("linkQ", true, 2, -1, gen.generateLinkQuery))
 	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("linkE", true, 2, -1, gen.generateLinkExternal))
 
 	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
@@ -146,7 +146,7 @@ func (g *htmlGenerator) generateTag(senv sxpf.Environment, args *sxpf.Pair, _ in
 		if env.IgnoreLinks() {
 			env.WriteEscaped(s)
 		} else {
-			u := g.builder.NewURLBuilder('h').AppendSearch(api.KeyAllTags + ":#" + strings.ToLower(s))
+			u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags + ":#" + strings.ToLower(s))
 			env.WriteStrings(`<a href="`, u.String(), `">#`)
 			env.WriteEscaped(s)
 			env.WriteString("</a>")
@@ -177,11 +177,11 @@ func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args *sxpf.Pair
 	return nil, nil
 }
 
-func (g *htmlGenerator) generateLinkSearch(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+func (g *htmlGenerator) generateLinkQuery(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
 	env := senv.(*html.EncEnvironment)
 	if a, refValue, ok := html.PrepareLink(env, args); ok {
 		queryExpr := query.Parse(refValue).String()
-		u := g.builder.NewURLBuilder('h').AppendSearch(queryExpr)
+		u := g.builder.NewURLBuilder('h').AppendQuery(queryExpr)
 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
 	}
 	return nil, nil

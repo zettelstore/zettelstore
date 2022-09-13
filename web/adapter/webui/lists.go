@@ -49,7 +49,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			wui.renderRSS(ctx, w, metaList, actions[0:])
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(ctx, q, metaList, wui.rtConfig))
+		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {
@@ -60,17 +60,17 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 		var base baseData
 		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
 		wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
-			Title          string
-			SearchURL      string
-			SearchValue    string
-			QueryKeySearch string
-			Content        string
+			Title         string
+			SearchURL     string
+			QueryValue    string
+			QueryKeyQuery string
+			Content       string
 		}{
-			Title:          wui.listTitleSearch(q),
-			SearchURL:      base.SearchURL,
-			SearchValue:    q.String(),
-			QueryKeySearch: base.QueryKeySearch,
-			Content:        htmlContent,
+			Title:         wui.listTitleQuery(q),
+			SearchURL:     base.SearchURL,
+			QueryValue:    q.String(),
+			QueryKeyQuery: base.QueryKeyQuery,
+			Content:       htmlContent,
 		})
 	}
 }
@@ -114,7 +114,7 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(ctx, nil, metaList, wui.rtConfig))
+		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, metaList, wui.rtConfig))
 		enc := wui.getSimpleHTMLEncoder()
 		htmlContent, err := enc.BlocksString(&bns)
 		if err != nil {
@@ -129,11 +129,11 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			depthURL.ClearQuery()
 			switch dir {
 			case usecase.ZettelContextBackward:
-				depthURL.AppendQuery(api.QueryKeyDir, api.DirBackward)
+				depthURL.AppendKVQuery(api.QueryKeyDir, api.DirBackward)
 			case usecase.ZettelContextForward:
-				depthURL.AppendQuery(api.QueryKeyDir, api.DirForward)
+				depthURL.AppendKVQuery(api.QueryKeyDir, api.DirForward)
 			}
-			depthURL.AppendQuery(api.QueryKeyDepth, depth)
+			depthURL.AppendKVQuery(api.QueryKeyDepth, depth)
 			depthLinks[i].Text = depth
 			depthLinks[i].URL = depthURL.String()
 		}
@@ -162,7 +162,7 @@ func getIntParameter(q url.Values, key string, minValue int) int {
 	return val
 }
 
-func (wui *WebUI) listTitleSearch(q *query.Query) string {
+func (wui *WebUI) listTitleQuery(q *query.Query) string {
 	if q == nil {
 		return wui.rtConfig.GetSiteName()
 	}

@@ -4,9 +4,9 @@ role: manual
 tags: #api #manual #search #zettelstore
 syntax: zmk
 created: 20210709143714
-modified: 20220913141617
+modified: 20220913150355
 
-The query parameter ""''s''"" allows you to specify [[query expressions|00001007700000]] for a full-text search of all zettel content and/or restricting the search according to specific metadata.
+The query parameter ""''q''"" allows you to specify [[query expressions|00001007700000]] for a full-text search of all zettel content and/or restricting the search according to specific metadata.
 
 You are allowed to specify this query parameter more than once, as well as the other query parameters.
 All results will be intersected, i.e. a zettel will be included into the list if all of the provided values match.
@@ -15,14 +15,14 @@ This parameter loosely resembles the search form of the [[web user interface|000
 
 For example, if you want to retrieve all zettel that contain the string ""API"" in its title, your request will be:
 ```sh
-# curl 'http://127.0.0.1:23123/j?s=title%3AAPI'
+# curl 'http://127.0.0.1:23123/j?q=title%3AAPI'
 {"query":"title MATCH API","list":[{"id":"00001012921000","meta":{"title":"API: JSON structure of an access token","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920500","meta":{"title":"Formats available by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}},{"id":"00001012920000","meta":{"title":"Endpoints used by the API","tags":"#api #manual #reference #zettelstore","syntax":"zmk","role":"manual"}}, ...
 ```
 
 However, if you want all zettel that does not match a given value, you must prefix the value with the exclamation mark character (""!"", U+0021).
 For example, if you want to retrieve all zettel that do not contain the string ""API"" in their title, your request will be:
 ```sh
-# curl 'http://127.0.0.1:23123/j?s=title!%3AAPI'
+# curl 'http://127.0.0.1:23123/j?q=title!%3AAPI'
 {"query":"title NOT MATCH API","list":[{"id":"00010000000000","meta":{"back":"00001003000000 00001005090000","backward":"00001003000000 00001005090000","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00000000000001 00000000000003 00000000000096 00000000000100","lang":"en","license":"EUPL-1.2-or-later","role":"zettel","syntax":"zmk","title":"Home"}},{"id":"00001014000000","meta":{"back":"00001000000000 00001004020000 00001012920510","backward":"00001000000000 00001004020000 00001012000000 00001012920510","copyright":"(c) 2020-2021 by Detlef Stern <ds@zettelstore.de>","forward":"00001012000000","lang":"en","license":"EUPL-1.2-or-later","published":"00001014000000","role":"manual","syntax":"zmk","tags":"#manual #webui #zettelstore","title":"Web user interface"}},
 ...
 ```
@@ -30,12 +30,12 @@ For example, if you want to retrieve all zettel that do not contain the string "
 In both cases, an implicit precondition is that the zettel must contain the given metadata key.
 For a metadata key like [[''title''|00001006020000#title]], which has a default value, this precondition should always be true.
 But the situation is different for a key like [[''url''|00001006020000#url]].
-Both ``curl 'http://localhost:23123/j?s=url%3A'`` and ``curl 'http://localhost:23123/j?s=url%3A!'`` may result in an empty list.
+Both ``curl 'http://localhost:23123/j?q=url%3A'`` and ``curl 'http://localhost:23123/j?q=url%3A!'`` may result in an empty list.
 
 Alternatively, you also can use the [[endpoint|00001012920000]] ''/z'' for a simpler result format.
 The first example translates to:
 ```sh
-# curl 'http://127.0.0.1:23123/z?s=title%3AAPI'
+# curl 'http://127.0.0.1:23123/z?q=title%3AAPI'
 00001012921000 API: JSON structure of an access token
 00001012920500 Formats available by the API
 00001012920000 Endpoints used by the API

@@ -99,12 +99,12 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		cssUserURL:    ab.NewURLBuilder('z').SetZid(api.ZidUserCSS).String(),
 		homeURL:       ab.NewURLBuilder('/').String(),
 		listZettelURL: ab.NewURLBuilder('h').String(),
-		listRolesURL:  ab.NewURLBuilder('h').AppendSearch(api.ActionSeparator + api.KeyRole).String(),
-		listTagsURL:   ab.NewURLBuilder('h').AppendSearch(api.ActionSeparator + api.KeyAllTags).String(),
-		refreshURL:    ab.NewURLBuilder('g').AppendQuery("_c", "r").String(),
+		listRolesURL:  ab.NewURLBuilder('h').AppendQuery(api.ActionSeparator + api.KeyRole).String(),
+		listTagsURL:   ab.NewURLBuilder('h').AppendQuery(api.ActionSeparator + api.KeyAllTags).String(),
+		refreshURL:    ab.NewURLBuilder('g').AppendKVQuery("_c", "r").String(),
 		withAuth:      authz.WithAuth(),
 		loginURL:      loginoutBase.String(),
-		logoutURL:     loginoutBase.AppendQuery("logout", "").String(),
+		logoutURL:     loginoutBase.AppendKVQuery("logout", "").String(),
 		searchURL:     ab.NewURLBuilder('h').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
@@ -254,7 +254,7 @@ type baseData struct {
 	HasNewZettelLinks bool
 	NewZettelLinks    []simpleLink
 	SearchURL         string
-	QueryKeySearch    string
+	QueryKeyQuery     string
 	Content           string
 	FooterHTML        string
 	DebugMode         bool
@@ -292,7 +292,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.HasNewZettelLinks = len(newZettelLinks) > 0
 	data.NewZettelLinks = newZettelLinks
 	data.SearchURL = wui.searchURL
-	data.QueryKeySearch = api.QueryKeySearch
+	data.QueryKeyQuery = api.QueryKeyQuery
 	data.FooterHTML = wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)
 	data.DebugMode = wui.debug
 }
@@ -345,7 +345,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		result = append(result, simpleLink{
 			Text: menuTitle,
 			URL: wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
-				AppendQuery(queryKeyAction, valueActionNew).String(),
+				AppendKVQuery(queryKeyAction, valueActionNew).String(),
 		})
 	}
 	return result

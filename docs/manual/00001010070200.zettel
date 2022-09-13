@@ -3,7 +3,8 @@ title: Visibility rules for zettel
 role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20220812145701
+created: 20210126175322
+modified: 20220913144845
 
 For every zettel you can specify under which condition the zettel is visible to others.
 This is controlled with the metadata key [[''visibility''|00001006020000#visibility]].
@@ -27,7 +28,7 @@ The following values are supported:
   This is for zettel with sensitive content that might irritate the owner.
   Computed zettel with internal runtime information are examples for such a zettel.
 
-When you install a Zettelstore, only [[some zettel|search:visibility:public]] have visibility ""public"".
+When you install a Zettelstore, only [[some zettel|query:visibility:public]] have visibility ""public"".
 One is the zettel that contains [[CSS|00000000020001]] for displaying the [[web user interface|00001014000000]].
 This is to ensure that the web interface looks nice even for not authenticated users.
 Another is the zettel containing the Zettelstore [[license|00000000000004]].
@@ -42,8 +43,8 @@ If you want to show such a zettel, you must set ''expert-mode'' to true.
 === Examples
 Similar to the [[API|00001012051840]], you can easily create a zettel list based on the ''visibility'' metadata key:
 
-| public  | [[search:visibility:public]]
-| login   | [[search:visibility:login]]
-| creator | [[search:visibility:creator]]
-| owner   | [[search:visibility:owner]]
-| expert  | [[search:visibility:expert]][^Only if [[''expert-mode''|00001004020000#expert-mode]] is enabled, this list will show some zettel.]
+| public  | [[query:visibility:public]]
+| login   | [[query:visibility:login]]
+| creator | [[query:visibility:creator]]
+| owner   | [[query:visibility:owner]]
+| expert  | [[query:visibility:expert]][^Only if [[''expert-mode''|00001004020000#expert-mode]] is enabled, this list will show some zettel.]

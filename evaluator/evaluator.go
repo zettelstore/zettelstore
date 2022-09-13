@@ -205,9 +205,9 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		return makeBlockNode(createInlineErrorText(ref, "Self", "transclusion", "reference"))
 	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
 		return tn
-	case ast.RefStateSearch:
+	case ast.RefStateQuery:
 		e.transcludeCount++
-		return e.evalSearchTransclusion(tn.Ref.Value)
+		return e.evalQueryTransclusion(tn.Ref.Value)
 	default:
 		return makeBlockNode(createInlineErrorText(ref, "Illegal", "block", "state", strconv.Itoa(int(ref.State))))
 	}
@@ -246,7 +246,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 	return &zn.Ast
 }
 
-func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
+func (e *evaluator) evalQueryTransclusion(expr string) ast.BlockNode {
 	q := query.Parse(expr)
 	ml, err := e.port.SelectMeta(e.ctx, q)
 	if err != nil {
@@ -255,7 +255,7 @@ func (e *evaluator) evalSearchTransclusion(expr string) ast.BlockNode {
 		}
 		return makeBlockNode(createInlineErrorText(nil, "Unable", "to", "search", "zettel"))
 	}
-	result := ActionSearch(e.ctx, q, ml, e.rtConfig)
+	result := QueryAction(e.ctx, q, ml, e.rtConfig)
 	if result != nil {
 		ast.Walk(e, result)
 	}

@@ -104,13 +104,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Zid:           zid.String(),
 			InfoURL:       wui.NewURLBuilder('i').SetZid(apiZid).String(),
 			RoleText:      roleText,
-			RoleURL:       wui.NewURLBuilder('h').AppendSearch("role:" + roleText).String(),
+			RoleURL:       wui.NewURLBuilder('h').AppendQuery(api.KeyRole + api.SearchOperatorHas + roleText).String(),
 			HasTags:       len(tags) > 0,
 			Tags:          tags,
 			CanCopy:       canCreate && !zn.Content.IsBinary(),
-			CopyURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendQuery(queryKeyAction, valueActionCopy).String(),
+			CopyURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
 			CanFolge:      canCreate,
-			FolgeURL:      wui.NewURLBuilder('c').SetZid(apiZid).AppendQuery(queryKeyAction, valueActionFolge).String(),
+			FolgeURL:      wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
@@ -143,7 +143,7 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 		ub := wui.NewURLBuilder('h')
 		tagInfos = make([]simpleLink, len(tags))
 		for i, tag := range tags {
-			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendSearch(api.KeyAllTags + api.SearchOperatorHas + tag).String()}
+			tagInfos[i] = simpleLink{Text: tag, URL: ub.AppendQuery(api.KeyAllTags + api.SearchOperatorHas + tag).String()}
 			ub.ClearQuery()
 		}
 	}

@@ -307,7 +307,7 @@ var mapRefStateLink = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateBroken:   sexpr.SymLinkBroken,
 	ast.RefStateHosted:   sexpr.SymLinkHosted,
 	ast.RefStateBased:    sexpr.SymLinkBased,
-	ast.RefStateSearch:   sexpr.SymLinkSearch,
+	ast.RefStateQuery:    sexpr.SymLinkQuery,
 	ast.RefStateExternal: sexpr.SymLinkExternal,
 }
 
@@ -399,7 +399,7 @@ var mapRefStateS = map[ast.RefState]*sxpf.Symbol{
 	ast.RefStateBroken:   sexpr.SymRefStateBroken,
 	ast.RefStateHosted:   sexpr.SymRefStateHosted,
 	ast.RefStateBased:    sexpr.SymRefStateBased,
-	ast.RefStateSearch:   sexpr.SymRefStateSearch,
+	ast.RefStateQuery:    sexpr.SymRefStateQuery,
 	ast.RefStateExternal: sexpr.SymRefStateExternal,
 }
 

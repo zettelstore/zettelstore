@@ -80,11 +80,11 @@ func (wui *WebUI) MakeGetInfoHandler(
 			metaData[i] = metaDataInfo{p.Key, buf.String()}
 		}
 		summary := collect.References(zn)
-		locLinks, searchQuery, extLinks := splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))
-		searchLinks := make([]simpleLink, len(searchQuery))
-		for i, sq := range searchQuery {
-			searchLinks[i].Text = sq
-			searchLinks[i].URL = wui.NewURLBuilder('h').AppendSearch(sq).String()
+		locLinks, qLinks, extLinks := splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))
+		queryLinks := make([]simpleLink, len(qLinks))
+		for i, sq := range qLinks {
+			queryLinks[i].Text = sq
+			queryLinks[i].URL = wui.NewURLBuilder('h').AppendQuery(sq).String()
 		}
 
 		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
@@ -94,12 +94,12 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 		phrase = strings.TrimSpace(phrase)
 		unlinkedMeta, err := unlinkedRefs.Run(
-			ctx, phrase, adapter.AddUnlinkedRefsToSearch(nil, zn.InhMeta))
+			ctx, phrase, adapter.AddUnlinkedRefsToQuery(nil, zn.InhMeta))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.ActionSearch(ctx, nil, unlinkedMeta, wui.rtConfig))
+		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig))
 		unlinkedContent, err := enc.BlocksString(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -134,8 +134,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData       []metaDataInfo
 			HasLocLinks    bool
 			LocLinks       []localLink
-			HasSearchLinks bool
-			SearchLinks    []simpleLink
+			HasQueryLinks  bool
+			QueryLinks     []simpleLink
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
@@ -154,9 +154,9 @@ func (wui *WebUI) MakeGetInfoHandler(
 			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:        wui.NewURLBuilder('e').SetZid(apiZid).String(),
 			CanFolge:       canCreate,
-			FolgeURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendQuery(queryKeyAction, valueActionFolge).String(),
+			FolgeURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			CanCopy:        canCreate && !zn.Content.IsBinary(),
-			CopyURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendQuery(queryKeyAction, valueActionCopy).String(),
+			CopyURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
 			CanRename:      wui.canRename(ctx, user, zn.Meta),
 			RenameURL:      wui.NewURLBuilder('b').SetZid(apiZid).String(),
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
@@ -164,8 +164,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData:       metaData,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
-			HasSearchLinks: len(searchQuery) > 0,
-			SearchLinks:    searchLinks,
+			HasQueryLinks:  len(queryLinks) > 0,
+			QueryLinks:     queryLinks,
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
@@ -186,7 +186,7 @@ type localLink struct {
 	Zid   string
 }
 
-func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, searchQuery, extLinks []string) {
+func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, queries, extLinks []string) {
 	if len(links) == 0 {
 		return nil, nil, nil
 	}
@@ -194,8 +194,8 @@ func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, searchQu
 		if ref.State == ast.RefStateSelf || ref.IsZettel() {
 			continue
 		}
-		if ref.State == ast.RefStateSearch {
-			searchQuery = append(searchQuery, ref.Value)
+		if ref.State == ast.RefStateQuery {
+			queries = append(queries, ref.Value)
 			continue
 		}
 		if ref.IsExternal() {
@@ -204,7 +204,7 @@ func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, searchQu
 		}
 		locLinks = append(locLinks, localLink{ref.IsValid(), ref.String()})
 	}
-	return locLinks, searchQuery, extLinks
+	return locLinks, queries, extLinks
 }
 
 func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
@@ -221,9 +221,9 @@ func (wui *WebUI) infoAPIMatrix(key byte, zid id.Zid) []matrixLine {
 	for _, part := range parts {
 		row := make([]simpleLink, len(encTexts))
 		for j, enc := range encTexts {
-			u.AppendQuery(api.QueryKeyPart, part)
+			u.AppendKVQuery(api.QueryKeyPart, part)
 			if enc != defEncoding {
-				u.AppendQuery(api.QueryKeyEncoding, enc)
+				u.AppendKVQuery(api.QueryKeyEncoding, enc)
 			}
 			row[j] = simpleLink{enc, u.String()}
 			u.ClearQuery()
@@ -240,7 +240,7 @@ func (wui *WebUI) infoAPIMatrixPlain(key byte, zid id.Zid) []matrixLine {
 	// Append plain and JSON format
 	u := wui.NewURLBuilder('z').SetZid(apiZid)
 	for i, part := range getParts() {
-		u.AppendQuery(api.QueryKeyPart, part)
+		u.AppendKVQuery(api.QueryKeyPart, part)
 		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
 		u.ClearQuery()
 	}

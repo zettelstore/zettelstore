@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220913141405
+modified: 20220913144717
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -58,11 +58,11 @@ The use of inline tags is problematic, because:
   For example, if you follow the link of a tag, it is converted into a [[query|00001007700000]] for the key ''all-tags''.
   A search for ''tags'' will most likely produce different results.
 
-To find all zettel with inline tags, please use the query [[::search:content-tags?::|search:content-tags?]].
+To find all zettel with inline tags, please use the query [[::query:content-tags?::|query:content-tags?]].
 There are two, non-exclusive options for migration:
 # Move inline tags into the metadata section of a zettel, under the key ''tags''.
   This will allow you to find the zettel via a search for tags in the future.
-# Replace the inline tag with a link to a search for that tag: ``#TAG`` could be replace with ``[[#TAG|search:tags:TAG]]``, where ''TAG'' is the placeholder for the actual tag.
+# Replace the inline tag with a link to a search for that tag: ``#TAG`` could be replace with ``[[#TAG|query:tags:TAG]]``, where ''TAG'' is the placeholder for the actual tag.
 
 ==== Entities & more
 Sometimes it is not easy to enter special characters.

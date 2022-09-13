@@ -17,16 +17,16 @@ import (
 	"zettelstore.de/z/domain/id"
 )
 
-// SearchPrefix is the prefix that denotes a search expression.
-const SearchPrefix = "search:"
+// QueryPrefix is the prefix that denotes a query expression.
+const QueryPrefix = "query:"
 
 // ParseReference parses a string and returns a reference.
 func ParseReference(s string) *Reference {
 	if s == "" || s == "00000000000000" {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
-	if strings.HasPrefix(s, SearchPrefix) {
-		return &Reference{URL: nil, Value: s[len(SearchPrefix):], State: RefStateSearch}
+	if strings.HasPrefix(s, QueryPrefix) {
+		return &Reference{URL: nil, Value: s[len(QueryPrefix):], State: RefStateQuery}
 	}
 	if state, ok := localState(s); ok {
 		if state == RefStateBased {
@@ -73,8 +73,8 @@ func (r Reference) String() string {
 	if r.URL != nil {
 		return r.URL.String()
 	}
-	if r.State == RefStateSearch {
-		return SearchPrefix + r.Value
+	if r.State == RefStateQuery {
+		return QueryPrefix + r.Value
 	}
 	return r.Value
 }

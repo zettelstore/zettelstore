@@ -166,16 +166,16 @@ func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
 	return nil, false
 }
 
-func hasSearchPrefix(src []byte) bool {
-	return len(src) > len(ast.SearchPrefix) && string(src[:len(ast.SearchPrefix)]) == ast.SearchPrefix
+func hasQueryPrefix(src []byte) bool {
+	return len(src) > len(ast.QueryPrefix) && string(src[:len(ast.QueryPrefix)]) == ast.QueryPrefix
 }
 
-func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, ok bool) {
+func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, _ bool) {
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
 	pos := inp.Pos
-	if !hasSearchPrefix(inp.Src[pos:]) {
+	if !hasQueryPrefix(inp.Src[pos:]) {
 		hasSpace, ok := cp.readReferenceToSep(closeCh)
 		if !ok {
 			return "", nil, false
@@ -263,7 +263,7 @@ func (cp *zmkP) readReferenceToClose(closeCh rune) bool {
 		case input.EOS:
 			return false
 		case '\t', '\r', '\n', ' ':
-			if !hasSearchPrefix(inp.Src[pos:]) {
+			if !hasQueryPrefix(inp.Src[pos:]) {
 				return false
 			}
 		case '\\':
