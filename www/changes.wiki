@@ -27,15 +27,18 @@
      needed any more.
      (breaking: api, webui)
   *  Add endpoint <tt>/q</tt> to query the zettelstore and aggregate resulting
-     values. This is done by extending the search syntax.
+     values. This is done by extending the query syntax.
      (major: api)
+  *  Add support for query actions. Actions may aggregate w.r.t. some metadata
+     keys, or produce an RSS feed.
+     (major: api, webui)
   *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
      zettel was created. Since key &ldquo;published&rdquo; is now either
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
      a valid date now.
      (minor)
   *  Removed templates for rendering roles and tags lists. This is now done by
-     search commands.
+     query actions.
      (minor: webui)
   *  Tags within zettel content are deprecated in version 0.8. This affects the
      computed metadata keys <tt>content-tags</tt> and <tt>all-tags</tt>. They

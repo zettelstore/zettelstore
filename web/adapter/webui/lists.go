@@ -46,7 +46,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			return
 		}
 		if actions := q.Actions(); len(actions) > 0 && actions[0] == "RSS" {
-			wui.renderRSS(ctx, w, metaList, actions[0:])
+			wui.renderRSS(ctx, w, q, metaList)
 			return
 		}
 		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
@@ -75,18 +75,18 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 	}
 }
 
-func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, ml []*meta.Meta, actions []string) {
+func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
 	var rssConfig rss.Configuration
 	rssConfig.Setup(ctx, wui.rtConfig)
-	if len(actions) > 1 && actions[0] == "TITLE" {
-		rssConfig.Title = strings.Join(actions[0:], " ")
+	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
+		rssConfig.Title = strings.Join(actions[2:], " ")
 	}
-	data, err := rssConfig.Marshal(ml)
+	data, err := rssConfig.Marshal(q, ml)
 	if err != nil {
 		wui.reportError(ctx, w, err)
 		return
 	}
-	adapter.PrepareHeader(w, "application/rss+xml")
+	adapter.PrepareHeader(w, rss.ContentType)
 	w.WriteHeader(http.StatusOK)
 	if _, err = io.WriteString(w, xml.Header); err == nil {
 		_, err = w.Write(data)

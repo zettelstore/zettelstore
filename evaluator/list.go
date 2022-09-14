@@ -270,7 +270,7 @@ func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
 	var rssConfig rss.Configuration
 	rssConfig.Setup(ap.ctx, cfg)
 	rssConfig.Title = ap.title
-	data, err := rssConfig.Marshal(ap.ml)
+	data, err := rssConfig.Marshal(ap.q, ap.ml)
 	if err != nil {
 		log.Println("ERRR", err)
 		return nil

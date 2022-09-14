@@ -24,7 +24,10 @@ import (
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/query"
 )
+
+const ContentType = "application/rss+xml"
 
 type Configuration struct {
 	Title            string
@@ -47,7 +50,7 @@ func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
 	c.NewURLBuilderAbs = func() *api.URLBuilder { return api.NewURLBuilder(baseURL, 'h') }
 }
 
-func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
+func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error) {
 	textEnc := textenc.Create()
 	rssItems := make([]*RssItem, 0, len(ml))
 	maxPublished := time.Date(1, time.January, 1, 0, 0, 0, 0, time.Local)
@@ -68,12 +71,13 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 				}
 			}
 		}
+		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
 		rssItems = append(rssItems, &RssItem{
 			Title:       title.String(),
-			Link:        c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String(),
+			Link:        link,
 			Description: "",
 			Author:      "",
-			GUID:        "https://zettelstore.de/guid/" + m.Zid.String(),
+			GUID:        link,
 			PubDate:     itemPublished,
 		})
 	}
@@ -82,8 +86,17 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 	if maxPublished.Year() > 1 {
 		rssPublished = maxPublished.UTC().Format(time.RFC1123Z)
 	}
+	var atomLink *AtomLink
+	if s := q.String(); s != "" {
+		atomLink = &AtomLink{
+			Href: c.NewURLBuilderAbs().AppendQuery(s).String(),
+			Rel:  "self",
+			Type: ContentType,
+		}
+	}
 	rssFeed := RssFeed{
-		Version: "2.0",
+		Version:       "2.0",
+		AtomNamespace: "http://www.w3.org/2005/Atom",
 		Channel: &RssChannel{
 			Title:          c.Title,
 			Link:           c.NewURLBuilderAbs().String(),
@@ -96,6 +109,7 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 			LastBuildDate:  rssPublished,
 			Generator:      c.Generator,
 			Docs:           "https://www.rssboard.org/rss-specification",
+			AtomLink:       atomLink,
 			Items:          rssItems,
 		},
 	}
@@ -104,24 +118,32 @@ func (c *Configuration) Marshal(ml []*meta.Meta) ([]byte, error) {
 
 type (
 	RssFeed struct {
-		XMLName xml.Name `xml:"rss"`
-		Version string   `xml:"version,attr"`
-		Channel *RssChannel
+		XMLName       xml.Name `xml:"rss"`
+		Version       string   `xml:"version,attr"`
+		AtomNamespace string   `xml:"xmlns:atom,attr"`
+		Channel       *RssChannel
 	}
 	RssChannel struct {
-		XMLName        xml.Name   `xml:"channel"`
-		Title          string     `xml:"title"`
-		Link           string     `xml:"link"`
-		Description    string     `xml:"description"`
-		Language       string     `xml:"language,omitempty"`
-		Copyright      string     `xml:"copyright,omitempty"`
-		ManagingEditor string     `xml:"managingEditor,omitempty"`
-		WebMaster      string     `xml:"webMaster,omitempty"`
-		PubDate        string     `xml:"pubDate,omitempty"`       // RFC822
-		LastBuildDate  string     `xml:"lastBuildDate,omitempty"` // RFC822
-		Generator      string     `xml:"generator,omitempty"`
-		Docs           string     `xml:"docs,omitempty"`
+		XMLName        xml.Name `xml:"channel"`
+		Title          string   `xml:"title"`
+		Link           string   `xml:"link"`
+		Description    string   `xml:"description"`
+		Language       string   `xml:"language,omitempty"`
+		Copyright      string   `xml:"copyright,omitempty"`
+		ManagingEditor string   `xml:"managingEditor,omitempty"`
+		WebMaster      string   `xml:"webMaster,omitempty"`
+		PubDate        string   `xml:"pubDate,omitempty"`       // RFC822
+		LastBuildDate  string   `xml:"lastBuildDate,omitempty"` // RFC822
+		Generator      string   `xml:"generator,omitempty"`
+		Docs           string   `xml:"docs,omitempty"`
+		AtomLink       *AtomLink
 		Items          []*RssItem `xml:"item"`
+	}
+	AtomLink struct {
+		XMLName xml.Name `xml:"atom:link"`
+		Href    string   `xml:"href,attr"`
+		Rel     string   `xml:"rel,attr"`
+		Type    string   `xml:"type,attr"`
 	}
 	RssItem struct {
 		XMLName     xml.Name `xml:"item"`
