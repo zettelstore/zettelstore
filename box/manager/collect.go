@@ -56,6 +56,8 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 		data.addRef(n.Ref)
 	case *ast.EmbedRefNode:
 		data.addRef(n.Ref)
+	case *ast.CiteNode:
+		data.addText(n.Key)
 	case *ast.LiteralNode:
 		data.addText(string(n.Content))
 	}
