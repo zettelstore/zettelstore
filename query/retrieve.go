@@ -67,11 +67,11 @@ func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plai
 	negCalls = make(searchCallMap, len(search))
 	for _, val := range search {
 		for _, word := range strfun.NormalizeWords(val.value) {
-			sf := getSearchFunc(searcher, val.op)
-			if val.op.isNegated() {
-				negCalls.addSearch(word, val.op, sf)
+			if cmpOp := val.op; cmpOp.isNegated() {
+				cmpOp = cmpOp.negate()
+				negCalls.addSearch(word, cmpOp, getSearchFunc(searcher, cmpOp))
 			} else {
-				normCalls.addSearch(word, val.op, sf)
+				normCalls.addSearch(word, cmpOp, getSearchFunc(searcher, cmpOp))
 			}
 		}
 	}
@@ -79,11 +79,11 @@ func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plai
 	plainCalls = make(searchCallMap, len(search))
 	for _, val := range search {
 		word := strings.ToLower(strings.TrimSpace(val.value))
-		sf := getSearchFunc(searcher, val.op)
-		if val.op.isNegated() {
-			negCalls.addSearch(word, val.op, sf)
+		if cmpOp := val.op; cmpOp.isNegated() {
+			cmpOp = cmpOp.negate()
+			negCalls.addSearch(word, cmpOp, getSearchFunc(searcher, cmpOp))
 		} else {
-			plainCalls.addSearch(word, val.op, sf)
+			plainCalls.addSearch(word, cmpOp, getSearchFunc(searcher, cmpOp))
 		}
 	}
 	return normCalls, plainCalls, negCalls
@@ -156,13 +156,13 @@ func retrieveNegatives(negCalls searchCallMap) id.Set {
 func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 	switch op {
 	case cmpHas:
-		return searcher.SearchContains
+		return searcher.SearchEqual
 	case cmpPrefix:
 		return searcher.SearchPrefix
 	case cmpSuffix:
 		return searcher.SearchSuffix
 	case cmpMatch:
-		return searcher.SearchEqual
+		return searcher.SearchContains
 	default:
 		panic(fmt.Sprintf("Unexpected value of comparison operation: %v", op))
 	}
