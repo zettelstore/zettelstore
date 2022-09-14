@@ -3,6 +3,8 @@ title: String Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+created: 20210212135017
+modified: 20220914130505
 
 Values of this type are just a sequence of character, but not an empty sequence.
 
@@ -10,11 +12,8 @@ Values of this type are just a sequence of character, but not an empty sequence.
 All printable characters are allowed.
 There must be at least one such character.
 
-=== Match operator
-A value matches a String value, if the first value is part of the String value.
-This check is done case-insensitive.
-
-For example, ""hell"" matches ""Hello"".
+=== Query operator
+All comparisons are done case-insensitive, i.e. ""hell"" will be the prefix of ""Hello"".
 
 === Sorting
 To sort two values, the underlying encoding is used to determine which value is less than the other.

@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/strfun"
 )
 
 type matchValueFunc func(value string) bool
@@ -111,7 +112,7 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 }
 
 func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(values, cmpPrefix, addSearch)
+	preds := valuesToStringPredicates(values, addSearch)
 	return func(value string) bool {
 		for _, pred := range preds {
 			if !pred(value) {
@@ -123,7 +124,7 @@ func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFun
 }
 
 func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToStringSetPredicates(preprocessSet(values), cmpPrefix, addSearch)
+	predList := valuesToStringSetPredicates(preprocessSet(values), addSearch)
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
 		for _, preds := range predList {
@@ -138,7 +139,7 @@ func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValue
 }
 
 func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), cmpHas, addSearch)
+	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
 		// Remove leading '#' from each tag
@@ -174,7 +175,7 @@ func processTagSet(valueSet [][]expValue) [][]expValue {
 }
 
 func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), cmpHas, addSearch)
+	preds := valuesToStringPredicates(sliceToLower(values), addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, pred := range preds {
@@ -187,7 +188,7 @@ func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueF
 }
 
 func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), cmpHas, addSearch)
+	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), addSearch)
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
 		for _, preds := range predsList {
@@ -202,7 +203,7 @@ func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchVal
 }
 
 func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), cmpMatch, addSearch)
+	preds := valuesToStringPredicates(sliceToLower(values), addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
 		for _, pred := range preds {
@@ -214,17 +215,60 @@ func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValu
 	}
 }
 
+func sliceToLower(sl []expValue) []expValue {
+	result := make([]expValue, 0, len(sl))
+	for _, s := range sl {
+		result = append(result, expValue{
+			value: strings.ToLower(s.value),
+			op:    s.op,
+		})
+	}
+	return result
+}
+
 func createMatchZmkFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), cmpMatch, addSearch)
-	return func(value string) bool {
-		value = zmk2text(value)
-		for _, pred := range preds {
-			if !pred(value) {
+	normPreds := make([]stringPredicate, 0, len(values))
+	negPreds := make([]stringPredicate, 0, len(values))
+	for _, v := range values {
+		for _, word := range strfun.NormalizeWords(v.value) {
+			if cmpOp := v.op; cmpOp.isNegated() {
+				cmpOp = cmpOp.negate()
+				negPreds = append(negPreds, createStringCompareFunc(word, cmpOp))
+			} else {
+				normPreds = append(normPreds, createStringCompareFunc(word, cmpOp))
+				addSearch(expValue{word, cmpOp}) // addSearch only for positive selections
+			}
+		}
+	}
+	return func(metaValue string) bool {
+		temp := strings.Fields(zmk2text(metaValue))
+		values := make([]string, 0, len(temp))
+		for _, s := range temp {
+			values = append(values, strfun.NormalizeWords(s)...)
+		}
+		for _, pred := range normPreds {
+			if noneOf(pred, values) {
 				return false
+			}
+		}
+		for _, pred := range negPreds {
+			for _, val := range values {
+				if pred(val) {
+					return false
+				}
 			}
 		}
 		return true
 	}
+}
+
+func noneOf(pred stringPredicate, values []string) bool {
+	for _, value := range values {
+		if pred(value) {
+			return false
+		}
+	}
+	return true
 }
 
 func zmk2text(zmk string) string {
@@ -254,17 +298,6 @@ func zmk2text(zmk string) string {
 	return strings.ToLower(buf.String())
 }
 
-func sliceToLower(sl []expValue) []expValue {
-	result := make([]expValue, 0, len(sl))
-	for _, s := range sl {
-		result = append(result, expValue{
-			value: strings.ToLower(s.value),
-			op:    s.op,
-		})
-	}
-	return result
-}
-
 func preprocessSet(set []expValue) [][]expValue {
 	result := make([][]expValue, 0, len(set))
 	for _, elem := range set {
@@ -285,41 +318,43 @@ func preprocessSet(set []expValue) [][]expValue {
 
 type stringPredicate func(string) bool
 
-func valuesToStringPredicates(values []expValue, defOp compareOp, addSearch addSearchFunc) []stringPredicate {
+func valuesToStringPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
-		opVal := v.value // loop variable is used in closure --> save needed value
-		switch v.op {
-		case cmpHas:
+		if !v.op.isNegated() {
 			addSearch(v) // addSearch only for positive selections
-			result[i] = func(metaVal string) bool { return strings.Contains(metaVal, opVal) }
-		case cmpHasNot:
-			result[i] = func(metaVal string) bool { return !strings.Contains(metaVal, opVal) }
-		case cmpPrefix:
-			addSearch(v)
-			result[i] = func(metaVal string) bool { return strings.HasPrefix(metaVal, opVal) }
-		case cmpNoPrefix:
-			result[i] = func(metaVal string) bool { return !strings.HasPrefix(metaVal, opVal) }
-		case cmpSuffix:
-			addSearch(v)
-			result[i] = func(metaVal string) bool { return strings.HasSuffix(metaVal, opVal) }
-		case cmpNoSuffix:
-			result[i] = func(metaVal string) bool { return !strings.HasSuffix(metaVal, opVal) }
-		case cmpMatch:
-			addSearch(v)
-			result[i] = func(metaVal string) bool { return metaVal == opVal }
-		case cmpNoMatch:
-			result[i] = func(metaVal string) bool { return metaVal != opVal }
-		default:
-			panic(fmt.Sprintf("Unknown compare operation %d with value %q", v.op, opVal))
 		}
+		result[i] = createStringCompareFunc(v.value, v.op)
 	}
 	return result
 }
 
+func createStringCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	switch cmpOp {
+	case cmpHas:
+		return func(metaVal string) bool { return metaVal == cmpVal }
+	case cmpHasNot:
+		return func(metaVal string) bool { return metaVal != cmpVal }
+	case cmpPrefix:
+		return func(metaVal string) bool { return strings.HasPrefix(metaVal, cmpVal) }
+	case cmpNoPrefix:
+		return func(metaVal string) bool { return !strings.HasPrefix(metaVal, cmpVal) }
+	case cmpSuffix:
+		return func(metaVal string) bool { return strings.HasSuffix(metaVal, cmpVal) }
+	case cmpNoSuffix:
+		return func(metaVal string) bool { return !strings.HasSuffix(metaVal, cmpVal) }
+	case cmpMatch:
+		return func(metaVal string) bool { return strings.Contains(metaVal, cmpVal) }
+	case cmpNoMatch:
+		return func(metaVal string) bool { return !strings.Contains(metaVal, cmpVal) }
+	default:
+		panic(fmt.Sprintf("Unknown compare operation %d with value %q", cmpOp, cmpVal))
+	}
+}
+
 type stringSetPredicate func(value []string) bool
 
-func valuesToStringSetPredicates(values [][]expValue, defOp compareOp, addSearch addSearchFunc) [][]stringSetPredicate {
+func valuesToStringSetPredicates(values [][]expValue, addSearch addSearchFunc) [][]stringSetPredicate {
 	result := make([][]stringSetPredicate, len(values))
 	for i, val := range values {
 		elemPreds := make([]stringSetPredicate, len(val))

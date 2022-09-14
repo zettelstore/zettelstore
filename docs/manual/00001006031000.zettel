@@ -3,6 +3,8 @@ title: Credential Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+created: 20210212135017
+modified: 20220914130324
 
 Values of this type denote a credential value, e.g. an encrypted password.
 
@@ -10,8 +12,9 @@ Values of this type denote a credential value, e.g. an encrypted password.
 All printable characters are allowed.
 Since a credential contains some kind of secret, the sequence of characters might have some hidden syntax to be interpreted by other parts of Zettelstore.
 
-=== Match operator
-A credential never matches to any other value.
+=== Query operators
+A credential never compares to any other value.
+A comparison will never match in any way.
 
 === Sorting
 If a list of zettel should be sorted based on a credential value, the identifier of the respective zettel is used instead.

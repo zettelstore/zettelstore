@@ -3,17 +3,17 @@ title: URL Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+created: 20210212135017
+modified: 20220914130809
 
 Values of this type denote an URL.
 
 === Allowed values
 All characters of an URL / URI are allowed.
 
-=== Match operator
-A value matches a URL value, if the first value is part of the URL value.
-This check is done case-insensitive.
-
-For example, ""hell"" matches ""http://example.com/Hello"".
+=== Query operator
+All comparisons are done case-insensitive.
+For example, ""hello"" is the suffix of ""http://example.com/Hello"".
 
 === Sorting
 Sorting is done by comparing the [[String|00001006033500]] values.

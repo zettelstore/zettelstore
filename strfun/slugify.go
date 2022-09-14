@@ -1,14 +1,13 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2021 Detlef Stern
+// Copyright (c) 2020-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package strfun provides some string functions.
 package strfun
 
 import (
@@ -19,8 +18,7 @@ import (
 )
 
 // NormalizeWords produces a word list that is normalized for better searching.
-func NormalizeWords(s string) []string {
-	result := make([]string, 0, 1)
+func NormalizeWords(s string) (result []string) {
 	word := make([]rune, 0, len(s))
 	for _, r := range norm.NFKD.String(s) {
 		if unicode.Is(unicode.Diacritic, r) {

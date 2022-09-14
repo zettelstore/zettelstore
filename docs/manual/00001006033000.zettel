@@ -3,16 +3,16 @@ title: Number Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+created: 20210212135017
+modified: 20220914131211
 
 Values of this type denote a numeric integer value.
 
 === Allowed values
 Must be a sequence of digits (""0""--""9""), optionally prefixed with a ""-"" or a ""+"" character.
 
-=== Match operator
-The match operator is the equals operator, i.e. two values must be numeric equal to match.
-
-This includes that ""+12"" is equal to ""12"", therefore both values match.
+=== Query operator
+All comparisons are done on the given string representation of the number, ""+12"" will be treated as a different number of ""12"".
 
 === Sorting
 Sorting is done by comparing the numeric values.

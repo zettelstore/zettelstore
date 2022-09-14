@@ -3,7 +3,8 @@ title: WordSet Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220724201056
+created: 20210212135017
+modified: 20220914130725
 
 Values of this type denote a (sorted) set of [[words|00001006035500]].
 
@@ -12,8 +13,8 @@ A set is different to a list, as no duplicate values are allowed.
 === Allowed values
 Must be a sequence of at least one word, separated by space characters.
 
-=== Match operator
-A value matches a WordSet value, if the first value is equal to one of the word values in the word set.
+=== Query operator
+All comparisons are done case-insensitive, i.e. ""hell"" will be the prefix of ""World, Hello"".
 
 === Sorting
 Sorting is done by comparing the [[String|00001006033500]] values.

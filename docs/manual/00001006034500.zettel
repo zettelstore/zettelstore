@@ -3,7 +3,8 @@ title: Timestamp Key Type
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20210511131903
+created: 20210212135017
+modified: 20220914130919
 
 Values of this type denote a point in time.
 
@@ -17,10 +18,8 @@ Must be a sequence of 14 digits (""0""--""9"") (same as an [[Identifier|00001006
 * mm is the minute,
 * ss is the second.
 
-=== Match operator
-A value matches a timestamp value, if the first value is the prefix of the timestamp value.
-
-For example, ""202102"" matches ""20210212143200"".
+=== Query operator
+All comparisons assume that up to 14 digits are given.
 
 === Sorting
 Sorting is done by comparing the [[String|00001006033500]] values.
