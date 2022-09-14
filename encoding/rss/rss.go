@@ -71,14 +71,11 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error)
 				}
 			}
 		}
-		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
+
 		rssItems = append(rssItems, &RssItem{
-			Title:       title.String(),
-			Link:        link,
-			Description: "",
-			Author:      "",
-			GUID:        link,
-			PubDate:     itemPublished,
+			Title:   title.String(),
+			GUID:    c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String(),
+			PubDate: itemPublished,
 		})
 	}
 
@@ -98,19 +95,16 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error)
 		Version:       "2.0",
 		AtomNamespace: "http://www.w3.org/2005/Atom",
 		Channel: &RssChannel{
-			Title:          c.Title,
-			Link:           c.NewURLBuilderAbs().String(),
-			Description:    "",
-			Language:       c.Language,
-			Copyright:      c.Copyright,
-			ManagingEditor: "",
-			WebMaster:      "",
-			PubDate:        rssPublished,
-			LastBuildDate:  rssPublished,
-			Generator:      c.Generator,
-			Docs:           "https://www.rssboard.org/rss-specification",
-			AtomLink:       atomLink,
-			Items:          rssItems,
+			Title:         c.Title,
+			Link:          c.NewURLBuilderAbs().String(),
+			Language:      c.Language,
+			Copyright:     c.Copyright,
+			PubDate:       rssPublished,
+			LastBuildDate: rssPublished,
+			Generator:     c.Generator,
+			Docs:          "https://www.rssboard.org/rss-specification",
+			AtomLink:      atomLink,
+			Items:         rssItems,
 		},
 	}
 	return xml.MarshalIndent(&rssFeed, "", "  ")
@@ -124,20 +118,18 @@ type (
 		Channel       *RssChannel
 	}
 	RssChannel struct {
-		XMLName        xml.Name `xml:"channel"`
-		Title          string   `xml:"title"`
-		Link           string   `xml:"link"`
-		Description    string   `xml:"description"`
-		Language       string   `xml:"language,omitempty"`
-		Copyright      string   `xml:"copyright,omitempty"`
-		ManagingEditor string   `xml:"managingEditor,omitempty"`
-		WebMaster      string   `xml:"webMaster,omitempty"`
-		PubDate        string   `xml:"pubDate,omitempty"`       // RFC822
-		LastBuildDate  string   `xml:"lastBuildDate,omitempty"` // RFC822
-		Generator      string   `xml:"generator,omitempty"`
-		Docs           string   `xml:"docs,omitempty"`
-		AtomLink       *AtomLink
-		Items          []*RssItem `xml:"item"`
+		XMLName       xml.Name `xml:"channel"`
+		Title         string   `xml:"title"`
+		Link          string   `xml:"link"`
+		Description   string   `xml:"description"`
+		Language      string   `xml:"language,omitempty"`
+		Copyright     string   `xml:"copyright,omitempty"`
+		PubDate       string   `xml:"pubDate,omitempty"`       // RFC822
+		LastBuildDate string   `xml:"lastBuildDate,omitempty"` // RFC822
+		Generator     string   `xml:"generator,omitempty"`
+		Docs          string   `xml:"docs,omitempty"`
+		AtomLink      *AtomLink
+		Items         []*RssItem `xml:"item"`
 	}
 	AtomLink struct {
 		XMLName xml.Name `xml:"atom:link"`
@@ -146,12 +138,9 @@ type (
 		Type    string   `xml:"type,attr"`
 	}
 	RssItem struct {
-		XMLName     xml.Name `xml:"item"`
-		Title       string   `xml:"title"`
-		Link        string   `xml:"link"`
-		Description string   `xml:"description"`
-		Author      string   `xml:"author,omitempty"`
-		GUID        string   `xml:"guid,omitempty"`
-		PubDate     string   `xml:"pubDate,omitempty"` // RFC822
+		XMLName xml.Name `xml:"item"`
+		Title   string   `xml:"title"`
+		GUID    string   `xml:"guid"`
+		PubDate string   `xml:"pubDate,omitempty"` // RFC822
 	}
 )
