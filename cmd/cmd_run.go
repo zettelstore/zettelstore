@@ -13,6 +13,7 @@ package cmd
 import (
 	"context"
 	"flag"
+	"net/http"
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
@@ -82,6 +83,10 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucVersion := usecase.NewVersion(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
+	if assetDir := kern.GetConfig(kernel.WebService, kernel.WebAssetDir).(string); assetDir != "" {
+		const assetPrefix = "/assets/"
+		webSrv.Handle(assetPrefix, http.StripPrefix(assetPrefix, http.FileServer(http.Dir(assetDir))))
+	}
 
 	// Web user interface
 	if !authManager.IsReadonly() {

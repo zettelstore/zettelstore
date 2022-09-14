@@ -32,6 +32,9 @@
   *  Add support for query actions. Actions may aggregate w.r.t. some metadata
      keys, or produce an RSS feed.
      (major: api, webui)
+  *  Add support for an asset directory, accessible via URL prefix
+     <tt>/assests/</tt>.
+     (minor: server)
   *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
      zettel was created. Since key &ldquo;published&rdquo; is now either
      &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains

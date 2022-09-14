@@ -174,6 +174,7 @@ const (
 
 // Constants for web service keys.
 const (
+	WebAssetDir          = "asset-dir"
 	WebBaseURL           = "base-url"
 	WebListenAddress     = "listen"
 	WebPersistentCookie  = "persistent"

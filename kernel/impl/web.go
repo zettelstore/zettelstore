@@ -14,6 +14,8 @@ import (
 	"errors"
 	"net"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -35,15 +37,26 @@ type webService struct {
 func (ws *webService) Initialize(logger *logger.Logger) {
 	ws.logger = logger
 	ws.descr = descriptionMap{
+		kernel.WebAssetDir: {
+			"Asset file  directory",
+			func(val string) any {
+				val = filepath.Clean(val)
+				if finfo, err := os.Stat(val); err == nil && finfo.IsDir() {
+					return val
+				}
+				return nil
+			},
+			true,
+		},
 		kernel.WebBaseURL: {
-			text: "Base URL",
-			parse: func(val string) any {
+			"Base URL",
+			func(val string) any {
 				if _, err := url.Parse(val); err != nil {
 					return nil
 				}
 				return val
 			},
-			canList: true,
+			true,
 		},
 		kernel.WebListenAddress: {
 			"Listen address",
@@ -83,6 +96,7 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 		},
 	}
 	ws.next = interfaceMap{
+		kernel.WebAssetDir:          "",
 		kernel.WebBaseURL:           "http://127.0.0.1:23123/",
 		kernel.WebListenAddress:     "127.0.0.1:23123",
 		kernel.WebMaxRequestSize:    int64(16 * 1024 * 1024),

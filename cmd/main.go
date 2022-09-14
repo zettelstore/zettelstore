@@ -171,6 +171,7 @@ func deleteConfiguredBoxes(cfg *meta.Meta) {
 
 const (
 	keyAdminPort         = "admin-port"
+	keyAssetDir          = "asset-dir"
 	keyBaseURL           = "base-url"
 	keyDebug             = "debug-mode"
 	keyDefaultDirBoxType = "default-dir-box-type"
@@ -238,6 +239,9 @@ func setServiceConfig(cfg *meta.Meta) error {
 		ok, kernel.WebService, kernel.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
 	ok = setConfigValue(
 		ok, kernel.WebService, kernel.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
+	if val, found := cfg.Get(keyAssetDir); found {
+		ok = setConfigValue(ok, kernel.WebService, kernel.WebAssetDir, val)
+	}
 
 	if !ok {
 		return errors.New("unable to set configuration")

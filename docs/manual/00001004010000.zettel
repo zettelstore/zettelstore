@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220912190112
+modified: 20220914183434
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -25,7 +25,19 @@ The following keys are supported:
   On most operating systems, the value must be greater than ""1024"" unless you start Zettelstore with the full privileges of a system administrator (which is not recommended).
 
   Default: ""0""
-; [!base-url|''base-url'']]
+; [!asset-dir|''asset-dir'']
+: Allows to specify a directory whose files are allowed be transferred directly with the help of the web server.
+  The URL prefix for these files is ''/assets/''.
+  You can use this if you want to transfer files that are too large for a note to users.
+  Examples would be presentation files, PDF files, music files or video files.
+
+  Files within the given directory will not be managed by Zettelstore.[^They will be managed by Zettelstore just in the case that the directory is one of the configured [[boxes|#box-uri-x]].]
+
+  If you specify only the URL prefix, then the contents of the directory are listed to the user.
+  To avoid this, create an empty file in the directory named ""index.html"".
+
+  Default: """", no asset directory is set, the URL prefix ''/assets/'' is invalid.
+; [!base-url|''base-url'']
 : Sets the absolute base URL for the service.
 
   Note: [[''url-prefix''|#url-prefix]] must be the suffix of ''base-url'', otherwise the web service will not start.
