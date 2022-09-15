@@ -135,6 +135,7 @@ func init() {
 	registerKey(api.KeySyntax, TypeWord, usageUser, "")
 
 	registerKey(api.KeyAllTags, TypeTagSet, usageProperty, "")
+	registerKey(api.KeyAuthor, TypeString, usageUser, "")
 	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBoxNumber, TypeNumber, usageProperty, "")

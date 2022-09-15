@@ -91,6 +91,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			HasExtURL     bool
 			ExtURL        string
 			ExtNewWindow  string
+			Author        string
 			Content       string
 			HasFolgeLinks bool
 			FolgeLinks    []simpleLink
@@ -115,6 +116,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			ExtURL:        extURL,
 			HasExtURL:     hasExtURL,
 			ExtNewWindow:  htmlAttrNewWindow(hasExtURL),
+			Author:        zn.Meta.GetDefault(api.KeyAuthor, ""),
 			Content:       htmlContent,
 			HasFolgeLinks: len(folgeLinks) > 0,
 			FolgeLinks:    folgeLinks,
