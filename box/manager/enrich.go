@@ -27,13 +27,13 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 	if _, ok := m.Get(api.KeyCreated); !ok {
 		m.Set(api.KeyCreated, computeCreated(m.Zid))
 	}
-	computePublished(m)
 
 	if box.DoNotEnrich(ctx) {
 		// Enrich is called indirectly via indexer or enrichment is not requested
 		// because of other reasons -> ignore this call, do not update metadata
 		return
 	}
+	computePublished(m)
 	m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
 	mgr.idxStore.Enrich(ctx, m)
 }

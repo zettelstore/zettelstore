@@ -171,9 +171,9 @@ func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
 }
 
 func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData) {
-	for _, pair := range m.Pairs() {
+	for _, pair := range m.ComputedPairs() {
 		descr := meta.GetDescription(pair.Key)
-		if descr.IsComputed() {
+		if descr.IsProperty() {
 			continue
 		}
 		switch descr.Type {
