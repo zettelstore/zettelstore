@@ -61,7 +61,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			roleCSSURL = wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String()
 		}
 		user := server.GetUser(ctx)
-		roleText := zn.Meta.GetDefault(api.KeyRole, "*")
+		roleText := zn.Meta.GetDefault(api.KeyRole, "")
 		tags := wui.buildTagInfos(zn.Meta)
 		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
