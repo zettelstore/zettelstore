@@ -131,9 +131,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TextNode:
 		v.b.WriteString(n.Text)
 		return nil
-	case *ast.TagNode:
-		v.b.WriteString(n.Tag)
-		return nil
 	case *ast.SpaceNode:
 		v.b.WriteByte(' ')
 		return nil

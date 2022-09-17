@@ -38,7 +38,6 @@ type zettelIndex struct {
 	meta     map[string]metaRefs
 	words    []string
 	urls     []string
-	itags    string // Inline tags
 }
 
 func (zi *zettelIndex) isEmpty() bool {
@@ -110,18 +109,6 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 	}
 	if len(back) > 0 {
 		m.Set(api.KeyBack, back.String())
-		updated = true
-	}
-	if itags := zi.itags; itags != "" {
-		m.Set(api.KeyContentTags, itags)
-		if tags, ok2 := m.Get(api.KeyTags); ok2 {
-			m.Set(api.KeyAllTags, tags+" "+itags)
-		} else {
-			m.Set(api.KeyAllTags, itags)
-		}
-		updated = true
-	} else if tags, ok2 := m.Get(api.KeyTags); ok2 {
-		m.Set(api.KeyAllTags, tags)
 		updated = true
 	}
 	return updated
@@ -291,7 +278,6 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	ms.updateMetadataReferences(zidx, zi)
 	zi.words = updateWordSet(zidx.Zid, ms.words, zi.words, zidx.GetWords())
 	zi.urls = updateWordSet(zidx.Zid, ms.urls, zi.urls, zidx.GetUrls())
-	zi.itags = setITags(zidx.GetITags())
 
 	// Check if zi must be inserted into ms.idx
 	if !ziExist && !zi.isEmpty() {
@@ -383,15 +369,6 @@ func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordS
 		srefs[word] = refs2
 	}
 	return next.Words()
-}
-
-func setITags(next store.WordSet) string {
-	itags := next.Words()
-	if len(itags) == 0 {
-		return ""
-	}
-	sort.Strings(itags)
-	return strings.Join(itags, " ")
 }
 
 func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {

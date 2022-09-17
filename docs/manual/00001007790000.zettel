@@ -4,7 +4,7 @@ role: manual
 tags: #example #manual #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20220913144959
+modified: 20220917174956
 
 |= Query Expression |= Meaning
 | [[query:role:configuration]] | Zettel that contains some configuration data for the Zettelstore
@@ -13,6 +13,4 @@ modified: 20220913144959
 | [[query:RANDOM LIMIT 40]] | 40 random zettel
 | [[query:dead?]] | Zettel with invalid / dead links
 | [[query:backward!? precursor!?]] | Zettel that are not referenced by other zettel
-| [[query:all-tags!?]] | Zettel without any tags
-| [[query:tags!?]] | Zettel without tags that are defined within metadata
-| [[query:content-tags?]] | Zettel with tags within content
+| [[query:tags!?]] | Zettel without tags

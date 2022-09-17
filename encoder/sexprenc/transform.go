@@ -83,8 +83,6 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Pair {
 		return getBLOB(n)
 	case *ast.TextNode:
 		return sxpf.NewPairFromValues(sexpr.SymText, sxpf.NewString(n.Text))
-	case *ast.TagNode:
-		return sxpf.NewPairFromValues(sexpr.SymTag, sxpf.NewString(n.Tag))
 	case *ast.SpaceNode:
 		if t.inVerse {
 			return sxpf.NewPairFromValues(sexpr.SymSpace, sxpf.NewString(n.Lexeme))

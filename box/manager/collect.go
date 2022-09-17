@@ -23,14 +23,12 @@ type collectData struct {
 	refs  id.Set
 	words store.WordSet
 	urls  store.WordSet
-	itags store.WordSet
 }
 
 func (data *collectData) initialize() {
 	data.refs = id.NewSet()
 	data.words = store.NewWordSet()
 	data.urls = store.NewWordSet()
-	data.itags = store.NewWordSet()
 }
 
 func collectZettelIndexData(zn *ast.ZettelNode, data *collectData) {
@@ -49,9 +47,6 @@ func (data *collectData) Visit(node ast.Node) ast.Visitor {
 		data.addRef(n.Ref)
 	case *ast.TextNode:
 		data.addText(n.Text)
-	case *ast.TagNode:
-		data.addText(n.Tag)
-		data.itags.Add("#" + strings.ToLower(n.Tag))
 	case *ast.LinkNode:
 		data.addRef(n.Ref)
 	case *ast.EmbedRefNode:

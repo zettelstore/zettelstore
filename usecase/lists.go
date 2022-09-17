@@ -123,12 +123,12 @@ func NewListTags(port ListTagsPort) ListTags {
 
 // Run executes the use case.
 func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	q := query.Parse(api.KeyAllTags + api.ExistOperator) // We look for all metadata with a tag
+	q := query.Parse(api.KeyTags + api.ExistOperator) // We look for all metadata with a tag
 	metas, err := uc.port.SelectMeta(ctx, q)
 	if err != nil {
 		return nil, err
 	}
-	result := meta.CreateArrangement(metas, api.KeyAllTags)
+	result := meta.CreateArrangement(metas, api.KeyTags)
 	if minCount > 1 {
 		for t, ms := range result {
 			if len(ms) < minCount {

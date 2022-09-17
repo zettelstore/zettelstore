@@ -4,15 +4,13 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220915181826
+modified: 20220917174634
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
 
 Most keys conform to a [[type|00001006030000]].
 
-; [!all-tags|''all-tags'']
-: A property (a computed values that is not stored) that contains both the value of [[''tags''|#tags]] and the value of [[''content-tags''|#content-tags]].
 ; [!author|''author'']
 : A string value describing the author of a zettel.
   If given, it will be shown in the [[web user interface|00001014000000]] for the zettel.
@@ -25,8 +23,6 @@ Most keys conform to a [[type|00001006030000]].
 ; [!box-number|''box-number'']
 : Is a computed value and contains the number of the box where the zettel was found.
   For all but the [[predefined zettel|00001005090000]], this number is equal to the number __X__ specified in startup configuration key [[''box-uri-__X__''|00001004010000#box-uri-x]].
-; [!content-tags|''content-tags'']
-: A property that contains all [[inline tags|00001007040000#tag]] defined within the content.
 ; [!copyright|''copyright'']
 : Defines a copyright string that will be encoded.
   If not given, the value ''default-copyright'' from the  [[configuration zettel|00001004020000#default-copyright]] will be used.

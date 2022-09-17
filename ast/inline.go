@@ -57,18 +57,6 @@ func (*TextNode) WalkChildren(Visitor) { /* No children*/ }
 
 // --------------------------------------------------------------------------
 
-// TagNode contains a tag.
-type TagNode struct {
-	Tag string // The text itself.
-}
-
-func (*TagNode) inlineNode() { /* Just a marker */ }
-
-// WalkChildren does nothing.
-func (*TagNode) WalkChildren(Visitor) { /* No children*/ }
-
-// --------------------------------------------------------------------------
-
 // SpaceNode tracks inter-word space characters.
 type SpaceNode struct {
 	Lexeme string

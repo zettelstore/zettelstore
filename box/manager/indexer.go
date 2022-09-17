@@ -208,7 +208,6 @@ func (mgr *Manager) idxProcessData(ctx context.Context, zi *store.ZettelIndex, c
 	}
 	zi.SetWords(cData.words)
 	zi.SetUrls(cData.urls)
-	zi.SetITags(cData.itags)
 }
 
 func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string, zi *store.ZettelIndex) {

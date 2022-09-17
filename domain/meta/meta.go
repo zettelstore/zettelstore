@@ -134,12 +134,10 @@ func init() {
 	registerKey(api.KeyTags, TypeTagSet, usageUser, "")
 	registerKey(api.KeySyntax, TypeWord, usageUser, "")
 
-	registerKey(api.KeyAllTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyAuthor, TypeString, usageUser, "")
 	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBoxNumber, TypeNumber, usageProperty, "")
-	registerKey(api.KeyContentTags, TypeTagSet, usageProperty, "")
 	registerKey(api.KeyCopyright, TypeString, usageUser, "")
 	registerKey(api.KeyCreated, TypeTimestamp, usageComputed, "")
 	registerKey(api.KeyCredential, TypeCredential, usageUser, "")

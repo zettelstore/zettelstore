@@ -124,10 +124,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.writeNodeStart(zjson.TypeText)
 		v.writeContentStart(zjson.NameString)
 		writeEscaped(&v.b, n.Text)
-	case *ast.TagNode:
-		v.writeNodeStart(zjson.TypeTag)
-		v.writeContentStart(zjson.NameString)
-		writeEscaped(&v.b, n.Tag)
 	case *ast.SpaceNode:
 		v.writeNodeStart(zjson.TypeSpace)
 		if v.inVerse {

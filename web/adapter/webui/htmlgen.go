@@ -49,7 +49,6 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 		env:       env,
 	}
 
-	env.Builtins.Set(sexpr.SymTag, sxpf.NewBuiltin("tag", true, 0, -1, gen.generateTag))
 	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
 	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
@@ -74,11 +73,7 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
 	var buf bytes.Buffer
 
-	if tags, ok := m.Get(api.KeyAllTags); ok {
-		writeMetaTags(&buf, tags)
-		ignore.Set(api.KeyAllTags)
-		ignore.Set(api.KeyTags)
-	} else if tags, ok = m.Get(api.KeyTags); ok {
+	if tags, ok := m.Get(api.KeyTags); ok {
 		writeMetaTags(&buf, tags)
 		ignore.Set(api.KeyTags)
 	}
@@ -137,22 +132,6 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) (string, error) {
 		return "", nil
 	}
 	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false), nil
-}
-
-func (g *htmlGenerator) generateTag(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
-	if !sxpf.IsNil(args) {
-		env := senv.(*html.EncEnvironment)
-		s := env.GetString(args)
-		if env.IgnoreLinks() {
-			env.WriteEscaped(s)
-		} else {
-			u := g.builder.NewURLBuilder('h').AppendQuery(api.KeyAllTags + ":#" + strings.ToLower(s))
-			env.WriteStrings(`<a href="`, u.String(), `">#`)
-			env.WriteEscaped(s)
-			env.WriteString("</a>")
-		}
-	}
-	return nil, nil
 }
 
 func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {

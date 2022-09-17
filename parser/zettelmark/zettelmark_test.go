@@ -248,19 +248,6 @@ func TestEmbed(t *testing.T) {
 	})
 }
 
-func TestTag(t *testing.T) {
-	t.Parallel()
-	checkTcs(t, TestCases{
-		{"#", "(PARA #)"},
-		{"##", "(PARA ##)"},
-		{"###", "(PARA ###)"},
-		{"#tag", "(PARA #tag#)"},
-		{"#tag,", "(PARA #tag# ,)"},
-		{"#t-g ", "(PARA #t-g#)"},
-		{"#t_g", "(PARA #t_g#)"},
-	})
-}
-
 func TestMark(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
@@ -413,9 +400,9 @@ func TestEntity(t *testing.T) {
 		{"&", "(PARA &)"},
 		{"&;", "(PARA &;)"},
 		{"&#;", "(PARA &#;)"},
-		{"&#1a;", "(PARA & #1a# ;)"},
-		{"&#x;", "(PARA & #x# ;)"},
-		{"&#x0z;", "(PARA & #x0z# ;)"},
+		{"&#1a;", "(PARA &#1a;)"},
+		{"&#x;", "(PARA &#x;)"},
+		{"&#x0z;", "(PARA &#x0z;)"},
 		{"&1;", "(PARA &1;)"},
 		// Good cases
 		{"&lt;", "(PARA <)"},
@@ -887,10 +874,6 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.buf.WriteString(")")
 	case *ast.TextNode:
 		tv.buf.WriteString(n.Text)
-	case *ast.TagNode:
-		tv.buf.WriteByte('#')
-		tv.buf.WriteString(n.Tag)
-		tv.buf.WriteByte('#')
 	case *ast.SpaceNode:
 		if l := n.Count(); l == 1 {
 			tv.buf.WriteString("SP")

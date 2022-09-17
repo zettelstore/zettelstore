@@ -131,8 +131,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.visitText(n)
-	case *ast.TagNode:
-		v.b.WriteStrings("#", n.Tag)
 	case *ast.SpaceNode:
 		v.b.WriteString(n.Lexeme)
 	case *ast.BreakNode:

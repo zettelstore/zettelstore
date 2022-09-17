@@ -67,8 +67,6 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			if inp.Ch == '{' {
 				in, success = cp.parseEmbed()
 			}
-		case '#':
-			return cp.parseTag()
 		case '%':
 			in, success = cp.parseComment()
 		case '_', '*', '>', '~', '^', ',', '"', ':':
@@ -104,7 +102,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '#', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '$', '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '%', '_', '*', '>', '~', '^', ',', '"', ':', '\'', '@', '`', runeModGrave, '$', '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -382,20 +380,6 @@ func (cp *zmkP) parseMark() (*ast.MarkNode, bool) {
 	}
 	mn := &ast.MarkNode{Mark: string(mark), Inlines: ins}
 	return mn, true
-}
-
-func (cp *zmkP) parseTag() ast.InlineNode {
-	inp := cp.inp
-	posH := inp.Pos
-	inp.Next()
-	pos := inp.Pos
-	for isNameRune(inp.Ch) {
-		inp.Next()
-	}
-	if pos == inp.Pos || inp.Ch == '#' {
-		return &ast.TextNode{Text: string(inp.Src[posH:inp.Pos])}
-	}
-	return &ast.TagNode{Tag: string(inp.Src[pos:inp.Pos])}
 }
 
 func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
