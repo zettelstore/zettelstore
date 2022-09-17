@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package tests provides some higher-level tests.
 package tests
 
 import (
@@ -68,10 +67,14 @@ func TestMarkdownSpec(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		ast := parser.ParseBlocks(input.NewInput([]byte(tc.Markdown)), nil, "markdown")
+		ast := createMDBlockSlice(tc.Markdown)
 		testAllEncodings(t, tc, &ast)
 		testZmkEncoding(t, tc, &ast)
 	}
+}
+
+func createMDBlockSlice(markdown string) ast.BlockSlice {
+	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, "markdown")
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
@@ -114,4 +117,24 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 			st.Errorf("\n1st: %q\n2nd: %q", gotSecond, gotThird)
 		}
 	})
+}
+
+func TestAdditionalMarkdown(t *testing.T) {
+	testcases := []struct {
+		md  string
+		exp string
+	}{
+		{`abc<br>def`, `abc@@<br>@@{="html"}def`},
+	}
+	zmkEncoder := encoder.Create(api.EncoderZmk)
+	var buf bytes.Buffer
+	for i, tc := range testcases {
+		ast := createMDBlockSlice(tc.md)
+		buf.Reset()
+		zmkEncoder.WriteBlocks(&buf, &ast)
+		got := buf.String()
+		if got != tc.exp {
+			t.Errorf("%d: %q -> %q, but got %q", i, tc.md, tc.exp, got)
+		}
+	}
 }

@@ -477,7 +477,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 		v.b.WriteByte(' ')
 		v.b.Write(ln.Content)
 	case ast.LiteralHTML:
-		v.writeLiteral('x', syntaxToHTML(ln.Attrs), ln.Content)
+		v.writeLiteral('@', syntaxToHTML(ln.Attrs), ln.Content)
 	default:
 		panic(fmt.Sprintf("Unknown literal kind %v", ln.Kind))
 	}

@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"strings"
 
+	"zettelstore.de/c/api"
+	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 )
@@ -485,7 +487,6 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 	if inp.Ch != fch {
 		return nil, false
 	}
-	litn := &ast.LiteralNode{Kind: kind}
 	inp.Next()
 	var buf bytes.Buffer
 	for {
@@ -496,9 +497,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 			if inp.Peek() == fch {
 				inp.Next()
 				inp.Next()
-				litn.Attrs = cp.parseInlineAttributes()
-				litn.Content = buf.Bytes()
-				return litn, true
+				return createLiteralNode(kind, cp.parseInlineAttributes(), buf.Bytes()), true
 			}
 			buf.WriteRune(fch)
 			inp.Next()
@@ -506,6 +505,20 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 			tn := cp.parseText()
 			buf.WriteString(tn.Text)
 		}
+	}
+}
+
+func createLiteralNode(kind ast.LiteralKind, a attrs.Attributes, content []byte) *ast.LiteralNode {
+	if kind == ast.LiteralZettel {
+		if val, found := a.Get(""); found && val == api.ValueSyntaxHTML {
+			kind = ast.LiteralHTML
+			a = a.Remove("")
+		}
+	}
+	return &ast.LiteralNode{
+		Kind:    kind,
+		Attrs:   a,
+		Content: content,
 	}
 }
 
