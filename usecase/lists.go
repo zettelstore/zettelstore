@@ -102,39 +102,3 @@ func (uc ListRoles) Run(ctx context.Context) (meta.Arrangement, error) {
 	}
 	return meta.CreateArrangement(metas, api.KeyRole), nil
 }
-
-// -------- List tags --------------------------------------------------------
-
-// ListTagsPort is the interface used by this use case.
-type ListTagsPort interface {
-	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
-}
-
-// ListTags is the data for this use case.
-type ListTags struct {
-	port ListTagsPort
-}
-
-// NewListTags creates a new use case.
-func NewListTags(port ListTagsPort) ListTags {
-	return ListTags{port: port}
-}
-
-// Run executes the use case.
-func (uc ListTags) Run(ctx context.Context, minCount int) (meta.Arrangement, error) {
-	q := query.Parse(api.KeyTags + api.ExistOperator) // We look for all metadata with a tag
-	metas, err := uc.port.SelectMeta(ctx, q)
-	if err != nil {
-		return nil, err
-	}
-	result := meta.CreateArrangement(metas, api.KeyTags)
-	if minCount > 1 {
-		for t, ms := range result {
-			if len(ms) < minCount {
-				delete(result, t)
-			}
-		}
-	}
-	return result, nil
-}

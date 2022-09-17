@@ -6,6 +6,12 @@
      metadata keys <tt>all-tags</tt> and <tt>computed-tags</tt>. Deprecated in
      version 0.7.0.
      (breaking: zettelmarkup, api, webui)
+  *  Remove API endpoint <tt>/m</tt>, which retrieve aggregated (tags, roles)
+     zettel identifier. Deprecated in version 0.7.0.
+     (breaking: api)
+  *  Remove support for URL query parameter starting with an underscore.
+     Deprecated in version 0.7.0.
+     (breaking: api, webui)
 
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.0 (pending)</h2>
