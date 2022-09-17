@@ -44,9 +44,6 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		que := r.URL.Query()
 		phrase := que.Get(api.QueryKeyPhrase)
 		if phrase == "" {
-			phrase = que.Get("_phrase")
-		}
-		if phrase == "" {
 			if zmkTitle, found := zm.Get(api.KeyTitle); found {
 				isTitle := evaluate.RunMetadata(ctx, zmkTitle)
 				encdr := textenc.Create()
@@ -58,8 +55,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			}
 		}
 
-		metaList, err := unlinkedRefs.Run(
-			ctx, phrase, adapter.AddUnlinkedRefsToQuery(adapter.GetQuery(que), zm))
+		metaList, err := unlinkedRefs.Run(ctx, phrase, adapter.AddUnlinkedRefsToQuery(adapter.GetQuery(que), zm))
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return

@@ -29,22 +29,12 @@ func (a *API) MakeZettelContextHandler(getContext usecase.ZettelContext) http.Ha
 			return
 		}
 		q := r.URL.Query()
-		dirVal := q.Get(api.QueryKeyDir)
-		if dirVal == "" {
-			dirVal = q.Get("_dir")
-		}
-		dir := adapter.GetZCDirection(dirVal)
+		dir := adapter.GetZCDirection(q.Get(api.QueryKeyDir))
 		depth, ok := adapter.GetInteger(q, api.QueryKeyDepth)
-		if !ok {
-			depth, ok = adapter.GetInteger(q, "_depth")
-		}
 		if !ok || depth < 0 {
 			depth = 5
 		}
 		limit, ok := adapter.GetInteger(q, api.QueryKeyLimit)
-		if !ok {
-			limit, ok = adapter.GetInteger(q, "_limit")
-		}
 		if !ok || limit < 0 {
 			limit = 200
 		}

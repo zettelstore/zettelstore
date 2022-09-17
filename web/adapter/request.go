@@ -55,9 +55,6 @@ func GetQuery(vals url.Values) *query.Query {
 	if exprs, found := vals[api.QueryKeyQuery]; found {
 		return query.Parse(strings.Join(exprs, " "))
 	}
-	if exprs, found := vals["_s"]; found {
-		return query.Parse(strings.Join(exprs, " "))
-	}
 	return nil
 }
 

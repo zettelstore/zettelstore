@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -26,9 +25,6 @@ import (
 // getEncoding returns the data encoding selected by the caller.
 func getEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (api.EncodingEnum, string) {
 	encoding := q.Get(api.QueryKeyEncoding)
-	if encoding == "" {
-		encoding = q.Get("_enc")
-	}
 	if encoding != "" {
 		return api.Encoder(encoding), encoding
 	}
@@ -80,9 +76,6 @@ var partMap = map[string]partType{
 
 func getPart(q url.Values, defPart partType) partType {
 	if part, ok := partMap[q.Get(api.QueryKeyPart)]; ok {
-		return part
-	}
-	if part, ok := partMap[q.Get("_part")]; ok {
 		return part
 	}
 	return defPart
