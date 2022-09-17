@@ -1,5 +1,8 @@
 <title>Change Log</title>
 
+<a name="0_8"></a>
+<h2>Changes for Version 0.8.0 (2022-09-17)</h2>
+
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.0 (pending)</h2>
   *  Removes support for URL query parameter to search for metadata values,
@@ -26,20 +29,37 @@
      expression in disjunctive normal form. Therefore, the NEGATE term is not
      needed any more.
      (breaking: api, webui)
+  *  Replace runtime configuration <tt>default-lang</tt> with <tt>lang</tt>.
+     Additionally, <tt>lang</tt> set at the zettel of the current user, will
+     provide a default value for the current user, overwriting the global
+     default value.
+     (breaking)
+  *  Add new syntax <tt>pikchr</tt>, a markup language for diagrams in
+     technical documentation.
+     (major)
   *  Add endpoint <tt>/q</tt> to query the zettelstore and aggregate resulting
      values. This is done by extending the query syntax.
      (major: api)
   *  Add support for query actions. Actions may aggregate w.r.t. some metadata
      keys, or produce an RSS feed.
      (major: api, webui)
+  *  Query results can be ordered for more than one metadata key. Ordering by
+     zettel identifier is an implicit last order expression to produce stable
+     results.
+     (minor: api, webui)
   *  Add support for an asset directory, accessible via URL prefix
      <tt>/assests/</tt>.
      (minor: server)
-  *  Add support for metadata key &ldquo;created&rdquo;, a timestamp when the
-     zettel was created. Since key &ldquo;published&rdquo; is now either
-     &ldquo;created&rdquo; or &ldquo;modified&rdquo;, it always contains
-     a valid date now.
+  *  Add support for metadata key <tt>created</tt>, a timestamp when the zettel
+     was created. Since key <tt>published</tt> is now either <tt>created</tt>
+     or <tt>modified</tt>, it will now always contains a valid time stamp.
      (minor)
+  *  Add support for metadata key <tt>author</tt>. It will be displayed on a
+     zettel, if set.
+     (minor: webui)
+  *  Remove CSS for lists. The browsers default value for <tt>padding-left</tt>
+     will be used.
+     (minor: webui)
   *  Removed templates for rendering roles and tags lists. This is now done by
      query actions.
      (minor: webui)
@@ -56,6 +76,8 @@
      underscore characters in front are removed. Please use new names, old
      names will be deprecated in version 0.8.
      (deprecated: api)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a name="0_6"></a>
 <h2>Changes for Version 0.6.2 (2022-08-22)</h2>
