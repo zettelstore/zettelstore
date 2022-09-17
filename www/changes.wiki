@@ -1,7 +1,7 @@
 <title>Change Log</title>
 
 <a name="0_8"></a>
-<h2>Changes for Version 0.8.0 (2022-09-17)</h2>
+<h2>Changes for Version 0.8.0 (pending)</h2>
   *  Remove support for tags within zettel content. Removes also property
      metadata keys <tt>all-tags</tt> and <tt>computed-tags</tt>. Deprecated in
      version 0.7.0.
@@ -14,7 +14,7 @@
      (breaking: api, webui)
 
 <a name="0_7"></a>
-<h2>Changes for Version 0.7.0 (pending)</h2>
+<h2>Changes for Version 0.7.0 (2022-09-17)</h2>
   *  Removes support for URL query parameter to search for metadata values,
      sorting, offset, and limit a zettel list. Deprecated in version 0.6.0
      (breaking: api, webui)
