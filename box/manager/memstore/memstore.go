@@ -162,13 +162,18 @@ func (ms *memStore) SearchPrefix(prefix string) id.Set {
 	if l > 14 {
 		return result
 	}
-	minZid, err := id.Parse(prefix + "00000000000000"[:13-l] + "1")
-	if err != nil {
-		return result
-	}
 	maxZid, err := id.Parse(prefix + "99999999999999"[:14-l])
 	if err != nil {
 		return result
+	}
+	var minZid id.Zid
+	if l < 14 && prefix == "0000000000000"[:l] {
+		minZid = id.Zid(1)
+	} else {
+		minZid, err = id.Parse(prefix + "00000000000000"[:14-l])
+		if err != nil {
+			return result
+		}
 	}
 	for zid, zi := range ms.idx {
 		if minZid <= zid && zid <= maxZid {
