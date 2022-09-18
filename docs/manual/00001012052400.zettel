@@ -4,7 +4,6 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210216172944
-
 modified: 20220912112253
 
 **Note**: this endpoint is deprecated since v0.7 and will be removed in v0.8.
