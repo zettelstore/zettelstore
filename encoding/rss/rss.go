@@ -72,9 +72,11 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error)
 			}
 		}
 
+		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
 		rssItems = append(rssItems, &RssItem{
 			Title:   title.String(),
-			GUID:    c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String(),
+			Link:    link,
+			GUID:    link,
 			PubDate: itemPublished,
 		})
 	}
@@ -140,6 +142,7 @@ type (
 	RssItem struct {
 		XMLName xml.Name `xml:"item"`
 		Title   string   `xml:"title"`
+		Link    string   `xml:"link"` // Needed, b/c Miniflux does not use GUID for URL
 		GUID    string   `xml:"guid"`
 		PubDate string   `xml:"pubDate,omitempty"` // RFC822
 	}
