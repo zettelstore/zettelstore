@@ -14,6 +14,17 @@
      (breaking: api, webui)
 
 <a name="0_7"></a>
+<h2>Changes for Version 0.7.1 (2022-09-18)</h2>
+  *  Produce a RSS feed compatible to Miniflux.
+     (minor)
+  *  Make sure to always produce a pubdata in RSS feed.
+     (bug)
+  *  Prefix search for data that looks like a zettel identifier may end with a
+     <tt>0</tt>.
+     (bug)
+  *  Fix glitch on manual zettel.
+     (bug)
+
 <h2>Changes for Version 0.7.0 (2022-09-17)</h2>
   *  Removes support for URL query parameter to search for metadata values,
      sorting, offset, and limit a zettel list. Deprecated in version 0.6.0

@@ -14,7 +14,6 @@ package query
 import (
 	"math/rand"
 	"sort"
-	"strings"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -255,6 +254,10 @@ func (q *Query) EnrichNeeded() bool {
 	if q == nil {
 		return false
 	}
+	if len(q.actions) > 0 {
+		// Unknown, what an action will use. Example: RSS needs api.KeyPublished.
+		return true
+	}
 	for _, term := range q.terms {
 		for key := range term.keys {
 			if meta.IsProperty(key) {
@@ -269,11 +272,6 @@ func (q *Query) EnrichNeeded() bool {
 	}
 	for _, o := range q.order {
 		if meta.IsProperty(o.key) {
-			return true
-		}
-	}
-	for _, a := range q.actions {
-		if meta.IsProperty(strings.ToLower(a)) {
 			return true
 		}
 	}
