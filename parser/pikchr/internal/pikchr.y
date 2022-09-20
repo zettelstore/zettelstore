@@ -131,6 +131,10 @@ import (
 	"strings"
 )
 
+// Limit the number of tokens in a single script to avoid run-away macro expansion attacks.
+// See forum post https://pikchr.org/home/forumpost/ef8684c6955a411a
+const PIKCHR_TOKEN_LIMIT = 100000
+
 // Numeric value
 type PNum = float64
 
@@ -363,6 +367,7 @@ type PMacro struct {
  */
 type Pik struct {
 	nErr      int          /* Number of errors seen */
+	nToken    int          // Number of tokens parsed
 	sIn       PToken       /* Input Pikchr-language text */
 	zOut      bytes.Buffer /* Result accumulates here */
 	nOut      uint         /* Bytes written to zOut[] so far */
@@ -1188,7 +1193,7 @@ func circleNumProp(p *Pik, pObj *PObj, pId *PToken) {
 	/* For a circle, the width must equal the height and both must
 	 ** be twice the radius.  Enforce those constraints. */
 	switch pId.eType {
-	case T_RADIUS:
+	case T_DIAMETER, T_RADIUS:
 		pObj.w = 2.0 * pObj.rad
 		pObj.h = 2.0 * pObj.rad
 	case T_WIDTH:
@@ -2004,7 +2009,7 @@ func (p *Pik) pik_append(zText string) {
 	p.zOut.WriteString(zText)
 }
 
-var html_re_with_space = regexp.MustCompile(`[<>& ]`)
+var re_entity = regexp.MustCompile(`&(#([0-9]{2,});)|([a-zA-Z][a-zA-Z0-9]+;)`)
 
 /*
 ** Append text to zOut with HTML characters escaped.
@@ -2023,21 +2028,36 @@ func (p *Pik) pik_append_text(zText string, mFlags int) {
 	bQSpace := mFlags&1 > 0
 	bQAmp := mFlags&2 > 0
 
-	text := html_re_with_space.ReplaceAllStringFunc(zText, func(s string) string {
-		switch {
-		case s == "<":
-			return "&lt;"
-		case s == ">":
-			return "&gt;"
-		case s == "&" && bQAmp:
-			return "&amp;"
-		case s == " " && bQSpace:
-			return "\302\240"
+	last := 0
+	var html string
+	for i := 0; i < len(zText); i++ {
+		switch zText[i] {
+		case '<':
+			html = "&lt;"
+		case '>':
+			html = "&gt;"
+		case '&':
+			if !bQAmp {
+				continue
+			}
+			match := re_entity.FindStringSubmatch(zText[i:])
+			if len(match) > 0 {
+				continue
+			}
+			html = "&amp;"
+		case ' ':
+			if !bQSpace {
+				continue
+			}
+			html = "\u00a0"
 		default:
-			return s
+			continue
 		}
-	})
-	p.pik_append(text)
+		p.pik_append(zText[last:i])
+		p.pik_append(html)
+		last = i + 1
+	}
+	p.pik_append(zText[last:])
 }
 
 /*
@@ -3354,10 +3374,7 @@ func (p *Pik) pik_move_hdg(
 		n = p.pik_next_rpath(pErr)
 	}
 	if pHeading != nil {
-		if rHdg < 0.0 || rHdg > 360.0 {
-			p.pik_error(pHeading, "headings should be between 0 and 360")
-			return
-		}
+		rHdg = math.Mod(rHdg, 360.0)
 	} else if pEdgept.eEdge == CP_C {
 		p.pik_error(pEdgept, "syntax error")
 		return
@@ -4285,9 +4302,10 @@ func (p *Pik) pik_func(pFunc *PToken, x PNum, y PNum) PNum {
 	var v PNum
 	switch pFunc.eCode {
 	case FN_ABS:
-		v = x
-		if v < 0 {
-			v = -v
+		if x < 0 {
+			v = -x
+		} else {
+			v = x
 		}
 	case FN_COS:
 		v = math.Cos(x)
@@ -5504,6 +5522,11 @@ func (p *Pik) pik_tokenize(pIn *PToken, pParser *yyParser, aParam []PToken) {
 				yyTokenName[token.eType], token.eType, string(token.z[:n]))
 		} // #endif
 		token.n = sz
+		p.nToken++
+		if p.nToken > PIKCHR_TOKEN_LIMIT {
+        	p.pik_error(&token, "script is too complex");
+        	break;
+    	}
 		pParser.pik_parser(token.eType, token)
 	}
 }
