@@ -12,6 +12,8 @@
   *  Remove support for URL query parameter starting with an underscore.
      Deprecated in version 0.7.0.
      (breaking: api, webui)
+  *  Ignore entities with code point that is not allowed in HTML.
+     (minor: zettelmarkup)
 
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.1 (2022-09-18)</h2>

@@ -12,8 +12,6 @@
 package input
 
 import (
-	"html"
-	"unicode"
 	"unicode/utf8"
 )
 
@@ -136,96 +134,6 @@ func (inp *Input) SkipToEOL() {
 			return
 		}
 		inp.Next()
-	}
-}
-
-// ScanEntity scans either a named or a numbered entity and returns it as a string.
-//
-// For numbered entities (like &#123; or &#x123;) html.UnescapeString returns
-// sometimes other values as expected, if the number is not well-formed. This
-// may happen because of some strange HTML parsing rules. But these do not
-// apply to Zettelmarkup. Therefore, I parse the number here in the code.
-func (inp *Input) ScanEntity() (res string, success bool) {
-	if inp.Ch != '&' {
-		return "", false
-	}
-	pos := inp.Pos
-	inp.Next()
-	if inp.Ch == '#' {
-		inp.Next()
-		if inp.Ch == 'x' || inp.Ch == 'X' {
-			return inp.scanEntityBase16()
-		}
-		return inp.scanEntityBase10()
-	}
-	return inp.scanEntityNamed(pos)
-}
-
-func (inp *Input) scanEntityBase16() (string, bool) {
-	inp.Next()
-	if inp.Ch == ';' {
-		return "", false
-	}
-	code := 0
-	for {
-		switch ch := inp.Ch; ch {
-		case ';':
-			inp.Next()
-			return string(rune(code)), true
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			code = 16*code + int(ch-'0')
-		case 'a', 'b', 'c', 'd', 'e', 'f':
-			code = 16*code + int(ch-'a'+10)
-		case 'A', 'B', 'C', 'D', 'E', 'F':
-			code = 16*code + int(ch-'A'+10)
-		default:
-			return "", false
-		}
-		if code > unicode.MaxRune {
-			return "", false
-		}
-		inp.Next()
-	}
-}
-
-func (inp *Input) scanEntityBase10() (string, bool) {
-	// Base 10 code
-	if inp.Ch == ';' {
-		return "", false
-	}
-	code := 0
-	for {
-		switch ch := inp.Ch; ch {
-		case ';':
-			inp.Next()
-			return string(rune(code)), true
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			code = 10*code + int(ch-'0')
-		default:
-			return "", false
-		}
-		if code > unicode.MaxRune {
-			return "", false
-		}
-		inp.Next()
-	}
-}
-func (inp *Input) scanEntityNamed(pos int) (string, bool) {
-	for {
-		switch inp.Ch {
-		case EOS, '\n', '\r', '&':
-			return "", false
-		case ';':
-			inp.Next()
-			es := string(inp.Src[pos:inp.Pos])
-			ues := html.UnescapeString(es)
-			if es == ues {
-				return "", false
-			}
-			return ues, true
-		default:
-			inp.Next()
-		}
 	}
 }
 

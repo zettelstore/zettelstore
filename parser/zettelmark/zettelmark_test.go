@@ -404,13 +404,17 @@ func TestEntity(t *testing.T) {
 		{"&#x;", "(PARA &#x;)"},
 		{"&#x0z;", "(PARA &#x0z;)"},
 		{"&1;", "(PARA &1;)"},
+		{"&#9;", "(PARA &#9;)"}, // No numeric entities below space are not allowed.
+		{"&#x1f;", "(PARA &#x1f;)"},
+
 		// Good cases
 		{"&lt;", "(PARA <)"},
 		{"&#48;", "(PARA 0)"},
 		{"&#x4A;", "(PARA J)"},
 		{"&#X4a;", "(PARA J)"},
 		{"&hellip;", "(PARA \u2026)"},
-		{"E: &amp;,&#13;;&#xa;.", "(PARA E: SP &,\r;\n.)"},
+		{"&nbsp;", "(PARA \u00a0)"},
+		{"E: &amp;,&#63;;&#x63;.", "(PARA E: SP &,?;c.)"},
 	})
 }
 

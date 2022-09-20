@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220917174707
+modified: 20220920143243
 
 Most characters you type is concerned with inline-structured elements.
 The content of a zettel contains is many cases just ordinary text, lightly formatted.
@@ -53,6 +53,9 @@ Example: ``&#38;`` is rendered in HTML as ::&#38;::{=example}.
 
 You also can enter its numeric code point as a hex number, if you put the letter ""x"" after the numeric sign character.
 Example: ``&#x26;`` is rendered in HTML as ::&#x26;::{=example}.
+
+According to the [[HTML Standard|https://html.spec.whatwg.org/multipage/syntax.html#character-references]], some numeric code points are not allowed.
+These are all code point below the numeric value 32 (decimal) or 0x20 (hex) and all code points for [[noncharacter|https://infra.spec.whatwg.org/#noncharacter]] values.
 
 Since some Unicode character are used quite often, a special notation is introduced for them:
 

@@ -38,49 +38,6 @@ func TestEatEOL(t *testing.T) {
 	}
 }
 
-func TestScanEntity(t *testing.T) {
-	t.Parallel()
-	var testcases = []struct {
-		text string
-		exp  string
-	}{
-		{"", ""},
-		{"a", ""},
-		{"&amp;", "&"},
-		{"&#9;", "\t"},
-		{"&quot;", "\""},
-	}
-	for id, tc := range testcases {
-		inp := input.NewInput([]byte(tc.text))
-		got, ok := inp.ScanEntity()
-		if !ok {
-			if tc.exp != "" {
-				t.Errorf("ID=%d, text=%q: expected error, but got %q", id, tc.text, got)
-			}
-			if inp.Pos != 0 {
-				t.Errorf("ID=%d, text=%q: input position advances to %d", id, tc.text, inp.Pos)
-			}
-			continue
-		}
-		if tc.exp != got {
-			t.Errorf("ID=%d, text=%q: expected %q, but got %q", id, tc.text, tc.exp, got)
-		}
-	}
-}
-
-func TestScanIllegalEntity(t *testing.T) {
-	t.Parallel()
-	testcases := []string{"", "a", "& Input &rarr;"}
-	for i, tc := range testcases {
-		inp := input.NewInput([]byte(tc))
-		got, ok := inp.ScanEntity()
-		if ok {
-			t.Errorf("%d: scanning %q was unexpected successful, got %q", i, tc, got)
-			continue
-		}
-	}
-}
-
 func TestAccept(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
