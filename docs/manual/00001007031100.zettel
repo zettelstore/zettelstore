@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220131151022
-modified: 20220913135545
+modified: 20220922155031
 
 A transclusion allows to include the content of other zettel into the current zettel.
 
@@ -13,12 +13,13 @@ The curly brackets delimit either a [[zettel identifier|00001006050000]] or a se
 You can add some [[attributes|00001007050000]], although a transclusion does not support the default attribute.
 Any other characters in this line will be ignored.
 
-This leads to two variants of transclusion:
+This leads to three variants of transclusions:
 # Transclusion of the content of another zettel into the current zettel.
-  This is done if you specify a zettel identifier, and is called ""zettel transclusion"".
+  This is done if you specify a zettel identifier, and is called __zettel transclusion__.
 # Transclusion of the list of zettel references that satisfy a [[query expression|00001007700000]].
-  This is called ""query transclusion"".
+  This is called __query transclusion__.
+# Transclusion of the content of an image, referenced by a [[hosted or based|00001007040310#link-specifications]] link / URL.
 
-The variants are described on separate zettel:
+The first two variants are described on separate zettel:
 * [[Zettel transclusion|00001007031110]]
 * [[Query transclusion|00001007031140]]

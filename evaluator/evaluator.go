@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"strconv"
 	"strings"
 
@@ -203,7 +204,13 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 	case ast.RefStateSelf:
 		e.transcludeCount++
 		return makeBlockNode(createInlineErrorText(ref, "Self", "transclusion", "reference"))
-	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+	case ast.RefStateFound, ast.RefStateExternal:
+		return tn
+	case ast.RefStateHosted, ast.RefStateBased:
+		if n := createEmbeddedNodeLocal(ref); n != nil {
+			n.Attrs = tn.Attrs
+			return makeBlockNode(n)
+		}
 		return tn
 	case ast.RefStateQuery:
 		e.transcludeCount++
@@ -378,7 +385,14 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	case ast.RefStateSelf:
 		e.transcludeCount++
 		return createInlineErrorText(ref, "Self", "embed", "reference")
-	case ast.RefStateFound, ast.RefStateHosted, ast.RefStateBased, ast.RefStateExternal:
+	case ast.RefStateFound, ast.RefStateExternal:
+		return en
+	case ast.RefStateHosted, ast.RefStateBased:
+		if n := createEmbeddedNodeLocal(ref); n != nil {
+			n.Attrs = en.Attrs
+			n.Inlines = en.Inlines
+			return n
+		}
 		return en
 	default:
 		return createInlineErrorText(ref, "Illegal", "inline", "state", strconv.Itoa(int(ref.State)))
@@ -486,6 +500,21 @@ func createInlineErrorText(ref *ast.Reference, msgWords ...string) ast.InlineNod
 	}
 	fn.Attrs = fn.Attrs.AddClass("error")
 	return fn
+}
+
+func createEmbeddedNodeLocal(ref *ast.Reference) *ast.EmbedRefNode {
+	ext := path.Ext(ref.Value)
+	if ext != "" && ext[0] == '.' {
+		ext = ext[1:]
+	}
+	pinfo := parser.Get(ext)
+	if pinfo == nil || !pinfo.IsImageFormat {
+		return nil
+	}
+	return &ast.EmbedRefNode{
+		Ref:    ref,
+		Syntax: ext,
+	}
 }
 
 func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.InlineSlice {

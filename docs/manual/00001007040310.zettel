@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210810155955
-modified: 20220913144754
+modified: 20220922154843
 
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
 Both kinds begin with two consecutive left square bracket characters (""''[''"", U+005B) and ends with two consecutive right square bracket characters (""'']''"", U+005D).
@@ -26,10 +26,10 @@ The resulting reference is called ""query reference"".
 When this type of references is rendered, it will typically reference a list of all zettel that fulfills the query expression.
 
 A link specification starting with one slash character (""''/''"", U+002F), or one or two full stop characters (""''.''"", U+002E) followed by a slash character,
-will be interpreted as a local reference, called ""hosted reference"".
+will be interpreted as a local reference, called __hosted reference__.
 Such references will be interpreted relative to the web server hosting the Zettelstore.
 
-If a link specification begins with two slash characters, it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
+If a link specification begins with two slash characters (called __based reference__), it will be interpreted relative to the value of [[''url-prefix''|00001004010000#url-prefix]].
 
 To specify some material outside the Zettelstore, just use an normal Uniform Resource Identifier (URI) as defined by [[RFC\ 3986|https://tools.ietf.org/html/rfc3986]].
 
