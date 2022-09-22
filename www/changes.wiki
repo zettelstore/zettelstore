@@ -12,10 +12,16 @@
   *  Remove support for URL query parameter starting with an underscore.
      Deprecated in version 0.7.0.
      (breaking: api, webui)
+  *  Endpoint <tt>/q</tt> returns list of full metadata, if no query action is
+     specified.
+     (major: api)
   *  Allow transclusion to reference local image via URL.
      (minor: zettelmarkup)
   *  Ignore entities with code point that is not allowed in HTML.
      (minor: zettelmarkup)
+  *  Endpoint <tt>/j</tt> is to be replaced by endpoint <tt>/q</tt>.
+     It will be removed in version 0.9.0.
+     (deprecated: api)
 
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.1 (2022-09-18)</h2>

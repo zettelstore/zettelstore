@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package api provides api handlers for web requests.
 package api
 
 import (
@@ -16,7 +15,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
@@ -32,22 +30,8 @@ func (a *API) MakeListMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			return
 		}
 
-		result := make([]api.ZidMetaJSON, 0, len(metaList))
-		for _, m := range metaList {
-			result = append(result, api.ZidMetaJSON{
-				ID:     api.ZettelID(m.Zid.String()),
-				Meta:   m.Map(),
-				Rights: a.getRights(ctx, m),
-			})
-		}
-
 		var buf bytes.Buffer
-		err = encodeJSONData(&buf, api.ZettelListJSON{
-			Query: q.String(),
-			Human: q.Human(),
-			List:  result,
-		})
-		if err != nil {
+		if err = a.writeQueryMetaList(ctx, &buf, q, metaList); err != nil {
 			a.log.Fatal().Err(err).Msg("Unable to store meta list in buffer")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

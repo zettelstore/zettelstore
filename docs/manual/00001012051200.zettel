@@ -4,7 +4,10 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220913151852
+modified: 20220922190017
+
+**Note:** Starting with version 0.8.0, the endpoint ''/j'' is deprecated.
+It will be removed in version 0.9.0.
 
 To list the metadata of all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/j''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 If successful, the output is a JSON object:

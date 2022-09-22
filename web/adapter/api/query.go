@@ -12,13 +12,13 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
@@ -30,14 +30,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := adapter.GetQuery(r.URL.Query())
-		if q == nil {
-			a.log.Sense().Msg("no parameter for query")
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		if !q.EnrichNeeded() {
-			ctx = box.NoEnrichContext(ctx)
-		}
+
 		metaList, err := listMeta.Run(ctx, q)
 		if err != nil {
 			a.reportUsecaseError(w, err)
@@ -45,7 +38,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		}
 
 		var buf bytes.Buffer
-		contentType, err := queryAction(&buf, q, metaList)
+		contentType, err := a.queryAction(ctx, &buf, q, metaList)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -55,7 +48,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	}
 }
 
-func queryAction(w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
+func (a *API) queryAction(ctx context.Context, w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
 	ap := actionPara{
 		w:   w,
 		q:   q,
@@ -88,7 +81,8 @@ func queryAction(w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
 			}
 		}
 	}
-	return "", nil
+	err := a.writeQueryMetaList(ctx, w, q, ml)
+	return ctJSON, err
 }
 
 type actionPara struct {
@@ -122,4 +116,22 @@ func (ap *actionPara) createMapMeta(key string) (string, error) {
 
 	err := encodeJSONData(ap.w, api.MapListJSON{Map: mm})
 	return ctJSON, err
+}
+
+func (a *API) writeQueryMetaList(ctx context.Context, w io.Writer, q *query.Query, ml []*meta.Meta) error {
+	result := make([]api.ZidMetaJSON, 0, len(ml))
+	for _, m := range ml {
+		result = append(result, api.ZidMetaJSON{
+			ID:     api.ZettelID(m.Zid.String()),
+			Meta:   m.Map(),
+			Rights: a.getRights(ctx, m),
+		})
+	}
+
+	err := encodeJSONData(w, api.ZettelListJSON{
+		Query: q.String(),
+		Human: q.Human(),
+		List:  result,
+	})
+	return err
 }
