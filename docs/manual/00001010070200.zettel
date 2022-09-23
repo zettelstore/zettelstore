@@ -4,7 +4,7 @@ role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220913144845
+modified: 20220923104643
 
 For every zettel you can specify under which condition the zettel is visible to others.
 This is controlled with the metadata key [[''visibility''|00001006020000#visibility]].
@@ -41,7 +41,7 @@ The [[startup configuration|00001004010000]] is not shown, because the associate
 If you want to show such a zettel, you must set ''expert-mode'' to true.
 
 === Examples
-Similar to the [[API|00001012051840]], you can easily create a zettel list based on the ''visibility'' metadata key:
+By using a [[query expression|00001007700000]], you can easily create a zettel list based on the ''visibility'' metadata key:
 
 | public  | [[query:visibility:public]]
 | login   | [[query:visibility:login]]

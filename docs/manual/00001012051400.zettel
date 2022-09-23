@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20220922185801
+modified: 20220923105405
 
 The [[endpoint|00001012920000]] ''/q'' allows to query the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 
@@ -53,7 +53,7 @@ The following actions are supported:
 
 Only the first aggregate action will be executed.
 
-If no valid aggregate action is given, the metadata of all selected zettel are returned.
+If no valid aggregate action is given, the metadata of all selected zettel are returned.[^For this reason, a HTTP GET to the endpoint ''/j'' is an alias for the endpoint ''/q''.]
 
 ```sh
 # curl http://127.0.0.1:23123/q
@@ -65,7 +65,7 @@ These zettel JSON objects themselves contains the keys ''"id"'' (value is a stri
 The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
 
 Additionally, the JSON object contains the keys ''"query"'' and ''"human"'' with a string value.
-Both will contain a textual description of the underlying query if you select only some zettel with a [[query expression|00001012051840]].
+Both will contain a textual description of the underlying query if you select only some zettel with a [[query expression|00001007700000]].
 Without a selection, the values are the empty string.
 ''"query"'' returns the normalized query expression itself, while ''"human"'' is the normalized query expression to be read by humans.
 
@@ -130,6 +130,13 @@ If you reformat the JSON output from the ''GET /q'' call, you'll see its structu
 }
 ```
 In this special case, the metadata of each zettel just contains the four default keys ''title'', ''tags'', ''syntax'', and ''role''.
+
+=== Note
+This request (and similar others) will always return a list of metadata, provided the request was syntactically correct.
+There will never be a HTTP status code 403 (Forbidden), even if [[authentication was enabled|00001010040100]] and you did not provide a valid access token.
+In this case, the resulting list might be quite short (some zettel will have [[public visibility|00001010070200]]) or the list might be empty.
+
+With this call, you cannot differentiate between an empty result list (e.g because your search did not found a zettel with the specified term) and an empty list because of missing authorization (e.g. an invalid access token).
 
 === HTTP Status codes
 ; ''200''
