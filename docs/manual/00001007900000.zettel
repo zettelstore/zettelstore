@@ -3,6 +3,7 @@ title: Zettelmarkup: Tutorial
 role: manual
 tags: #manual #tutorial #zettelmarkup #zettelstore
 syntax: zmk
+created: 20220810182917
 modified: 20220811135314
 
 * [[First steps|00001007903000]]: learn something about paragraphs, emphasized text, and lists.

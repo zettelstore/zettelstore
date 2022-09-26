@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220809132350
-modified: 20220917174902
+modified: 20220926183539
 
 A query transclusion is specified by the following sequence, starting at the first position in a line: ''{{{query:query-expression}}}''.
 The line must literally start with the sequence ''{{{query:''.
@@ -18,7 +18,7 @@ For example, to include the list of all zettel with the [[tags|00001006020000#ta
 {{{query:tags:#search ORDER title}}}
 ```
 This will result in:
-:::zs-example
+:::example
 {{{query:tags:#search ORDER title}}}
 :::
 
@@ -52,6 +52,6 @@ The following actions are supported, parameter and aggregate actions:
 {{{query:tags:#search | tags}}}
 ```
 This is a tag cloud of all tags that are used together with the tag #search:
-:::zs-example
+:::example
 {{{query:tags:#search | tags}}}
 :::

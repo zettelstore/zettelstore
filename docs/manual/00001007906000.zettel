@@ -3,7 +3,8 @@ title: Zettelmarkup: Second Steps
 role: manual
 tags: #manual #tutorial #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220811135024
+created: 20220811115501
+modified: 20220926183427
 
 After you have [[learned|00001007903000]] the basic concepts and markup of Zettelmarkup (paragraphs, emphasized text, and lists), this zettel introduces you into the concepts of links, thematic breaks, and headings.
 
@@ -52,7 +53,7 @@ Second paragraph.
 ```
 
 Both are rendered as:
-:::zs-example
+:::example
 First paragraph.
 ---
 Second paragraph.

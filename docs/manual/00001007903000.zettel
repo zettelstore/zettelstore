@@ -3,7 +3,8 @@ title: Zettelmarkup: First Steps
 role: manual
 tags: #manual #tutorial #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220811122618
+created: 20220810182917
+modified: 20220926183359
 
 [[Zettelmarkup|00001007000000]] allows you to leave your text as it is, at least in many situations.
 Some characters have a special meaning, but you have to enter them is a defined way to see a visible change.
@@ -51,7 +52,7 @@ Since a list typically consists of more than one element, the following elements
 
 This is rendered as:
 
-:::zs-example
+:::example
 * First item
 * Second item
 * Third item
@@ -67,7 +68,7 @@ Similar, an numbered list element begins a line with the number sign (sic!) foll
 
 This is rendered as:
 
-:::zs-example
+:::example
 # First item
 # Second item
 # Third item

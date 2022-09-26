@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220809132350
-modified: 20220825190116
+modified: 20220926183331
 
 A zettel transclusion is specified by the following sequence, starting at the first position in a line: ''{{{zettel-identifier}}}''.
 
@@ -23,7 +23,7 @@ For example, to include the text of the Zettel titled ""Zettel identifier"", jus
 {{{00001006050000}}}
 ```
 This will result in:
-:::zs-example
+:::example
 {{{00001006050000}}}
 :::
 
