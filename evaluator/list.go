@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -218,6 +219,7 @@ func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.Coun
 }
 
 const fontSizes = 6 // Must be the number of CSS classes zs-font-size-* in base.css
+const fontSizes64 = float64(fontSizes)
 
 func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attributes {
 	var fsAttrs [fontSizes]attrs.Attributes
@@ -249,22 +251,28 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 	}
 
 	// Idea: the number of occurences for a specific count is substracted from a budget.
-	budget := len(ccs) / (fontSizes - 1)
-	curBudget := budget
+	total := float64(len(ccs))
 	curSize := 0
+	budget := calcBudget(total, 0.0)
 	for _, count := range countList {
 		result[count] = fsAttrs[curSize]
-		curBudget -= countMap[count]
-		for curBudget <= 0 {
-			curBudget += budget
+		cc := float64(countMap[count])
+		total -= cc
+		budget -= cc
+		if budget < 1 {
 			curSize++
 			if curSize >= fontSizes {
-				curSize = fontSizes - 1
+				curSize = fontSizes
+				budget = 0.0
+			} else {
+				budget = calcBudget(total, float64(curSize))
 			}
 		}
 	}
 	return result
 }
+
+func calcBudget(total, curSize float64) float64 { return math.Round(total / (fontSizes64 - curSize)) }
 
 func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
 	var rssConfig rss.Configuration
