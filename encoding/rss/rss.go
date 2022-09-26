@@ -74,10 +74,11 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error)
 
 		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
 		rssItems = append(rssItems, &RssItem{
-			Title:   title.String(),
-			Link:    link,
-			GUID:    link,
-			PubDate: itemPublished,
+			Title:    title.String(),
+			Link:     link,
+			GUID:     link,
+			PubDate:  itemPublished,
+			Category: getCategories(m),
 		})
 	}
 
@@ -140,10 +141,30 @@ type (
 		Type    string   `xml:"type,attr"`
 	}
 	RssItem struct {
-		XMLName xml.Name `xml:"item"`
-		Title   string   `xml:"title"`
-		Link    string   `xml:"link"` // Needed, b/c Miniflux does not use GUID for URL
-		GUID    string   `xml:"guid"`
-		PubDate string   `xml:"pubDate,omitempty"` // RFC822
+		XMLName  xml.Name `xml:"item"`
+		Title    string   `xml:"title"`
+		Link     string   `xml:"link"` // Needed, b/c Miniflux does not use GUID for URL
+		GUID     string   `xml:"guid"`
+		PubDate  string   `xml:"pubDate,omitempty"` // RFC822
+		Category []string `xml:"category,omitempty"`
 	}
 )
+
+func getCategories(m *meta.Meta) []string {
+	if m == nil {
+		return nil
+	}
+	if tags, found := m.GetList(api.KeyTags); found && len(tags) > 0 {
+		result := make([]string, 0, len(tags))
+		for _, tag := range tags {
+			for len(tag) > 0 && tag[0] == '#' {
+				tag = tag[1:]
+			}
+			if tag != "" {
+				result = append(result, tag)
+			}
+		}
+		return result
+	}
+	return nil
+}
