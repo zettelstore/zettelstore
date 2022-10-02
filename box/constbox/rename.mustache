@@ -3,17 +3,17 @@
 <h1>Rename Zettel {{Zid}}</h1>
 </header>
 <p>Do you really want to rename this zettel?</p>
-{{#HasIncoming}}
+{{#Incoming.Has}}
 <div class="zs-warning">
 <h2>Warning!</h2>
 <p>If you rename this zettel, incoming references from the following zettel will become invalid.</p>
 <ul>
-{{#Incoming}}
+{{#Incoming.Links}}
 <li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/Incoming}}
+{{/Incoming.Links}}
 </ul>
 </div>
-{{/HasIncoming}}
+{{/Incoming.Has}}
 {{#HasUselessFiles}}
 <div class="zs-warning">
 <h2>Warning!</h2>

@@ -6,7 +6,7 @@
 {{Zid}} &#183;
 <a href="{{{InfoURL}}}">Info</a> &#183;
 (<a href="{{{RoleURL}}}">{{RoleText}}</a>)
-{{#HasTags}}&#183; {{#Tags}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags}}{{/HasTags}}
+{{#Tags.Has}}&#183; {{#Tags.Links}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags.Links}}{{/Tags.Has}}
 {{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
 {{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
 {{#PredecessorRefs}}<br>Predecessor: {{{PredecessorRefs}}}{{/PredecessorRefs}}
@@ -18,34 +18,34 @@
 {{{Content}}}
 </article>
 {{#NeedBottomNav}}<nav>{{/NeedBottomNav}}
-{{#HasFolgeLinks}}
+{{#FolgeLinks.Has}}
 <details open>
 <summary>Folgezettel</summary>
 <ul>
-{{#FolgeLinks}}
+{{#FolgeLinks.Links}}
 <li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/FolgeLinks}}
+{{/FolgeLinks.Links}}
 </ul>
 </details>
-{{/HasFolgeLinks}}
-{{#HasBackLinks}}
+{{/FolgeLinks.Has}}
+{{#BackLinks.Has}}
 <details open>
 <summary>Incoming</summary>
 <ul>
-{{#BackLinks}}
+{{#BackLinks.Links}}
 <li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/BackLinks}}
+{{/BackLinks.Links}}
 </ul>
 </details>
-{{/HasBackLinks}}
-{{#HasSuccessorLinks}}
+{{/BackLinks.Has}}
+{{#SuccessorLinks.Has}}
 <details open>
 <summary>Successors</summary>
 <ul>
-{{#SuccessorLinks}}
+{{#SuccessorLinks.Links}}
 <li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/SuccessorLinks}}
+{{/SuccessorLinks.Links}}
 </ul>
 </details>
-{{/HasSuccessorLinks}}
+{{/SuccessorLinks.Has}}
 {{#NeedBottomNav}}</nav>{{/NeedBottomNav}}

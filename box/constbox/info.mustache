@@ -21,14 +21,14 @@
 {{/LocLinks}}
 </ul>
 {{/HasLocLinks}}
-{{#HasQueryLinks}}
+{{#QueryLinks.Has}}
 <h3>Queries</h3>
 <ul>
-{{#QueryLinks}}
+{{#QueryLinks.Links}}
 <li><a href="{{{URL}}}">{{Text}}</a></li>
-{{/QueryLinks}}
+{{/QueryLinks.Links}}
 </ul>
-{{/HasQueryLinks}}
+{{/QueryLinks.Has}}
 {{#HasExtLinks}}
 <h3>External</h3>
 <ul>

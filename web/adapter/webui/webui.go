@@ -231,33 +231,44 @@ type simpleLink struct {
 	URL  string
 }
 
+type simpleLinks struct {
+	Has   bool
+	Links []simpleLink
+}
+
+func createSimpleLinks(ls []simpleLink) simpleLinks {
+	return simpleLinks{
+		Has:   len(ls) > 0,
+		Links: ls,
+	}
+}
+
 type baseData struct {
-	Lang              string
-	MetaHeader        string
-	CSSBaseURL        string
-	CSSUserURL        string
-	CSSRoleURL        string
-	Title             string
-	HomeURL           string
-	WithUser          bool
-	WithAuth          bool
-	UserIsValid       bool
-	UserZettelURL     string
-	UserIdent         string
-	LoginURL          string
-	LogoutURL         string
-	ListZettelURL     string
-	ListRolesURL      string
-	ListTagsURL       string
-	CanRefresh        bool
-	RefreshURL        string
-	HasNewZettelLinks bool
-	NewZettelLinks    []simpleLink
-	SearchURL         string
-	QueryKeyQuery     string
-	Content           string
-	FooterHTML        string
-	DebugMode         bool
+	Lang           string
+	MetaHeader     string
+	CSSBaseURL     string
+	CSSUserURL     string
+	CSSRoleURL     string
+	Title          string
+	HomeURL        string
+	WithUser       bool
+	WithAuth       bool
+	UserIsValid    bool
+	UserZettelURL  string
+	UserIdent      string
+	LoginURL       string
+	LogoutURL      string
+	ListZettelURL  string
+	ListRolesURL   string
+	ListTagsURL    string
+	CanRefresh     bool
+	RefreshURL     string
+	NewZettelLinks simpleLinks
+	SearchURL      string
+	QueryKeyQuery  string
+	Content        string
+	FooterHTML     string
+	DebugMode      bool
 }
 
 func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL string, user *meta.Meta, data *baseData) {
@@ -269,7 +280,6 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 		userZettelURL = wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String()
 		userIdent = user.GetDefault(api.KeyUserID, "")
 	}
-	newZettelLinks := wui.fetchNewTemplates(ctx, user)
 
 	data.Lang = lang
 	data.CSSBaseURL = wui.cssBaseURL
@@ -289,8 +299,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.ListTagsURL = wui.listTagsURL
 	data.CanRefresh = wui.canRefresh(user)
 	data.RefreshURL = wui.refreshURL
-	data.HasNewZettelLinks = len(newZettelLinks) > 0
-	data.NewZettelLinks = newZettelLinks
+	data.NewZettelLinks = createSimpleLinks(wui.fetchNewTemplates(ctx, user))
 	data.SearchURL = wui.searchURL
 	data.QueryKeyQuery = api.QueryKeyQuery
 	data.FooterHTML = wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)

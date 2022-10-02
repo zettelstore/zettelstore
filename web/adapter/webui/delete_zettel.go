@@ -46,7 +46,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 		m := ms[0]
 
 		var shadowedBox string
-		var incomingLinks []simpleLink
+		var incomingLinks simpleLinks
 		if len(ms) > 1 {
 			shadowedBox = ms[1].GetDefault(api.KeyBoxNumber, "???")
 		} else {
@@ -63,8 +63,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 			MetaPairs       []meta.Pair
 			HasShadows      bool
 			ShadowedBox     string
-			HasIncoming     bool
-			Incoming        []simpleLink
+			Incoming        simpleLinks
 			HasUselessFiles bool
 			UselessFiles    []string
 		}{
@@ -72,7 +71,6 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 			MetaPairs:       m.ComputedPairs(),
 			HasShadows:      shadowedBox != "",
 			ShadowedBox:     shadowedBox,
-			HasIncoming:     len(incomingLinks) > 0,
 			Incoming:        incomingLinks,
 			HasUselessFiles: len(uselessFiles) > 0,
 			UselessFiles:    uselessFiles,
@@ -105,7 +103,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel
 	}
 }
 
-func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []simpleLink {
+func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) simpleLinks {
 	zidMap := make(strfun.Set)
 	addListValues(zidMap, m, api.KeyBackward)
 	for _, kd := range meta.GetSortedKeyDescriptions() {
@@ -123,7 +121,7 @@ func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) []
 			addListValues(zidMap, m, inverseKey)
 		}
 	}
-	return wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle)
+	return createSimpleLinks(wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle))
 }
 
 func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {

@@ -134,8 +134,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData       []metaDataInfo
 			HasLocLinks    bool
 			LocLinks       []localLink
-			HasQueryLinks  bool
-			QueryLinks     []simpleLink
+			QueryLinks     simpleLinks
 			HasExtLinks    bool
 			ExtLinks       []string
 			ExtNewWindow   string
@@ -164,8 +163,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			MetaData:       metaData,
 			HasLocLinks:    len(locLinks) > 0,
 			LocLinks:       locLinks,
-			HasQueryLinks:  len(queryLinks) > 0,
-			QueryLinks:     queryLinks,
+			QueryLinks:     createSimpleLinks(queryLinks),
 			HasExtLinks:    len(extLinks) > 0,
 			ExtLinks:       extLinks,
 			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),

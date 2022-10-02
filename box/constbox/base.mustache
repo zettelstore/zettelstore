@@ -43,16 +43,16 @@
 {{/CanRefresh}}
 </nav>
 </div>
-{{#HasNewZettelLinks}}
+{{#NewZettelLinks.Has}}
 <div class="zs-dropdown">
 <button>New</button>
 <nav class="zs-dropdown-content">
-{{#NewZettelLinks}}
+{{#NewZettelLinks.Links}}
 <a href="{{{URL}}}">{{Text}}</a>
-{{/NewZettelLinks}}
+{{/NewZettelLinks.Links}}
 </nav>
 </div>
-{{/HasNewZettelLinks}}
+{{/NewZettelLinks.Has}}
 <form action="{{{SearchURL}}}">
 <input type="text" placeholder="Search.." name="{{QueryKeyQuery}}">
 </form>
