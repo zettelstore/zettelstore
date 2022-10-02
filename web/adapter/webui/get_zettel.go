@@ -68,60 +68,69 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		extURL, hasExtURL := zn.Meta.Get(api.KeyURL)
 		folgeLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle)
 		backLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle)
+		successorLinks := wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
 		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), textTitle, roleCSSURL, user, &base)
 		base.MetaHeader = enc.MetaString(zn.InhMeta, evalMetadata)
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
-			HTMLTitle     string
-			RoleCSS       string
-			CanWrite      bool
-			EditURL       string
-			Zid           string
-			InfoURL       string
-			RoleText      string
-			RoleURL       string
-			HasTags       bool
-			Tags          []simpleLink
-			CanCopy       bool
-			CopyURL       string
-			CanFolge      bool
-			FolgeURL      string
-			PrecursorRefs string
-			HasExtURL     bool
-			ExtURL        string
-			ExtNewWindow  string
-			Author        string
-			Content       string
-			HasFolgeLinks bool
-			FolgeLinks    []simpleLink
-			HasBackLinks  bool
-			BackLinks     []simpleLink
+			HTMLTitle         string
+			RoleCSS           string
+			CanWrite          bool
+			EditURL           string
+			Zid               string
+			InfoURL           string
+			RoleText          string
+			RoleURL           string
+			HasTags           bool
+			Tags              []simpleLink
+			CanCopy           bool
+			CopyURL           string
+			CanFolge          bool
+			FolgeURL          string
+			PredecessorRefs   string
+			PrecursorRefs     string
+			HasExtURL         bool
+			ExtURL            string
+			ExtNewWindow      string
+			Author            string
+			Content           string
+			NeedBottomNav     bool
+			HasFolgeLinks     bool
+			FolgeLinks        []simpleLink
+			HasBackLinks      bool
+			BackLinks         []simpleLink
+			HasSuccessorLinks bool
+			SuccessorLinks    []simpleLink
 		}{
-			HTMLTitle:     htmlTitle,
-			RoleCSS:       roleCSSURL,
-			CanWrite:      wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:       wui.NewURLBuilder('e').SetZid(apiZid).String(),
-			Zid:           zid.String(),
-			InfoURL:       wui.NewURLBuilder('i').SetZid(apiZid).String(),
-			RoleText:      roleText,
-			RoleURL:       wui.NewURLBuilder('h').AppendQuery(api.KeyRole + api.SearchOperatorHas + roleText).String(),
-			HasTags:       len(tags) > 0,
-			Tags:          tags,
-			CanCopy:       canCreate && !zn.Content.IsBinary(),
-			CopyURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
-			CanFolge:      canCreate,
-			FolgeURL:      wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
-			PrecursorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
-			ExtURL:        extURL,
-			HasExtURL:     hasExtURL,
-			ExtNewWindow:  htmlAttrNewWindow(hasExtURL),
-			Author:        zn.Meta.GetDefault(api.KeyAuthor, ""),
-			Content:       htmlContent,
-			HasFolgeLinks: len(folgeLinks) > 0,
-			FolgeLinks:    folgeLinks,
-			HasBackLinks:  len(backLinks) > 0,
-			BackLinks:     backLinks,
+			HTMLTitle:         htmlTitle,
+			RoleCSS:           roleCSSURL,
+			CanWrite:          wui.canWrite(ctx, user, zn.Meta, zn.Content),
+			EditURL:           wui.NewURLBuilder('e').SetZid(apiZid).String(),
+			Zid:               zid.String(),
+			InfoURL:           wui.NewURLBuilder('i').SetZid(apiZid).String(),
+			RoleText:          roleText,
+			RoleURL:           wui.NewURLBuilder('h').AppendQuery(api.KeyRole + api.SearchOperatorHas + roleText).String(),
+			HasTags:           len(tags) > 0,
+			Tags:              tags,
+			CanCopy:           canCreate && !zn.Content.IsBinary(),
+			CopyURL:           wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
+			CanFolge:          canCreate,
+			FolgeURL:          wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
+			PredecessorRefs:   wui.encodeIdentifierSet(zn.InhMeta, api.KeyPredecessor, getTextTitle),
+			PrecursorRefs:     wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
+			ExtURL:            extURL,
+			HasExtURL:         hasExtURL,
+			ExtNewWindow:      htmlAttrNewWindow(hasExtURL),
+			Author:            zn.Meta.GetDefault(api.KeyAuthor, ""),
+			Content:           htmlContent,
+			NeedBottomNav:     len(folgeLinks) > 0 || len(backLinks) > 0 || len(successorLinks) > 0,
+			HasFolgeLinks:     len(folgeLinks) > 0,
+			FolgeLinks:        folgeLinks,
+			HasBackLinks:      len(backLinks) > 0,
+			BackLinks:         backLinks,
+			HasSuccessorLinks: len(successorLinks) > 0,
+			SuccessorLinks:    successorLinks,
 		})
 	}
 }

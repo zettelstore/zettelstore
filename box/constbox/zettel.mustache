@@ -9,6 +9,7 @@
 {{#HasTags}}&#183; {{#Tags}} <a href="{{{URL}}}">{{Text}}</a>{{/Tags}}{{/HasTags}}
 {{#CanCopy}}&#183; <a href="{{{CopyURL}}}">Copy</a>{{/CanCopy}}
 {{#CanFolge}}&#183; <a href="{{{FolgeURL}}}">Folge</a>{{/CanFolge}}
+{{#PredecessorRefs}}<br>Predecessor: {{{PredecessorRefs}}}{{/PredecessorRefs}}
 {{#PrecursorRefs}}<br>Precursor: {{{PrecursorRefs}}}{{/PrecursorRefs}}
 {{#HasExtURL}}<br>URL: <a href="{{{ExtURL}}}"{{{ExtNewWindow}}}>{{ExtURL}}</a>{{/HasExtURL}}
 {{#Author}}<br>By {{Author}}{{/Author}}
@@ -16,8 +17,8 @@
 </header>
 {{{Content}}}
 </article>
+{{#NeedBottomNav}}<nav>{{/NeedBottomNav}}
 {{#HasFolgeLinks}}
-<nav>
 <details open>
 <summary>Folgezettel</summary>
 <ul>
@@ -26,10 +27,8 @@
 {{/FolgeLinks}}
 </ul>
 </details>
-</nav>
 {{/HasFolgeLinks}}
 {{#HasBackLinks}}
-<nav>
 <details open>
 <summary>Incoming</summary>
 <ul>
@@ -38,5 +37,15 @@
 {{/BackLinks}}
 </ul>
 </details>
-</nav>
 {{/HasBackLinks}}
+{{#HasSuccessorLinks}}
+<details open>
+<summary>Successors</summary>
+<ul>
+{{#SuccessorLinks}}
+<li><a href="{{{URL}}}">{{Text}}</a></li>
+{{/SuccessorLinks}}
+</ul>
+</details>
+{{/HasSuccessorLinks}}
+{{#NeedBottomNav}}</nav>{{/NeedBottomNav}}
