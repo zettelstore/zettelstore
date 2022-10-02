@@ -16,9 +16,10 @@ const queryKeyAction = "action"
 
 // Values for queryKeyAction
 const (
-	valueActionCopy  = "copy"
-	valueActionFolge = "folge"
-	valueActionNew   = "new"
+	valueActionCopy    = "copy"
+	valueActionFolge   = "folge"
+	valueActionNew     = "new"
+	valueActionVersion = "version"
 )
 
 // Enumeration for queryKeyAction
@@ -28,6 +29,7 @@ const (
 	actionCopy createAction = iota
 	actionFolge
 	actionNew
+	actionVersion
 )
 
 func getCreateAction(s string) createAction {
@@ -38,6 +40,8 @@ func getCreateAction(s string) createAction {
 		return actionFolge
 	case valueActionNew:
 		return actionNew
+	case valueActionVersion:
+		return actionVersion
 	default:
 		return actionCopy
 	}

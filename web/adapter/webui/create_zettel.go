@@ -49,6 +49,8 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		switch op {
 		case actionCopy:
 			wui.renderZettelForm(ctx, w, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel", roleData, syntaxData)
+		case actionVersion:
+			wui.renderZettelForm(ctx, w, createZettel.PrepareVersion(origZettel), "Version Zettel", "Versionzettel", roleData, syntaxData)
 		case actionFolge:
 			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel", roleData, syntaxData)
 		case actionNew:

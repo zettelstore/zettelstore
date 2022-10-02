@@ -123,10 +123,12 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ContextURL     string
 			CanWrite       bool
 			EditURL        string
-			CanFolge       bool
-			FolgeURL       string
 			CanCopy        bool
 			CopyURL        string
+			CanVersion     bool
+			VersionURL     string
+			CanFolge       bool
+			FolgeURL       string
 			CanRename      bool
 			RenameURL      string
 			CanDelete      bool
@@ -152,10 +154,12 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ContextURL:     wui.NewURLBuilder('k').SetZid(apiZid).String(),
 			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:        wui.NewURLBuilder('e').SetZid(apiZid).String(),
-			CanFolge:       canCreate,
-			FolgeURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			CanCopy:        canCreate && !zn.Content.IsBinary(),
 			CopyURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
+			CanVersion:     canCreate,
+			VersionURL:     wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String(),
+			CanFolge:       canCreate,
+			FolgeURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			CanRename:      wui.canRename(ctx, user, zn.Meta),
 			RenameURL:      wui.NewURLBuilder('b').SetZid(apiZid).String(),
 			CanDelete:      wui.canDelete(ctx, user, zn.Meta),

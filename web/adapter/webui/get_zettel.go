@@ -84,6 +84,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Tags            simpleLinks
 			CanCopy         bool
 			CopyURL         string
+			CanVersion      bool
+			VersionURL      string
 			CanFolge        bool
 			FolgeURL        string
 			PredecessorRefs string
@@ -109,6 +111,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			Tags:            createSimpleLinks(wui.buildTagInfos(zn.Meta)),
 			CanCopy:         canCreate && !zn.Content.IsBinary(),
 			CopyURL:         wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
+			CanVersion:      canCreate,
+			VersionURL:      wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String(),
 			CanFolge:        canCreate,
 			FolgeURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			PredecessorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPredecessor, getTextTitle),

@@ -53,6 +53,18 @@ func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 	if readonly, found := m.Get(api.KeyReadOnly); found {
 		m.Set(api.KeyReadOnly, copyReadonly(readonly))
 	}
+	m.Delete(api.KeyPrecursor)
+	m.Delete(api.KeyPredecessor)
+	content := origZettel.Content
+	content.TrimSpace()
+	return domain.Zettel{Meta: m, Content: content}
+}
+
+// PrepareVersion the zettel for further modification.
+func (*CreateZettel) PrepareVersion(origZettel domain.Zettel) domain.Zettel {
+	origMeta := origZettel.Meta
+	m := origMeta.Clone()
+	m.Set(api.KeyPredecessor, origMeta.Zid.String())
 	content := origZettel.Content
 	content.TrimSpace()
 	return domain.Zettel{Meta: m, Content: content}
