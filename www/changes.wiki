@@ -16,6 +16,9 @@
      specified. A HTTP call <tt>GET /z</tt> (retrieving metadata of all or some
      zettel) is now an alias for <tt>GET /q</tt>.
      (major: api)
+  *  Allow to create a zettel that acts as the new version of an exisitng
+     zettel. Useful if you want to have access to older, outdated content.
+     (minor: webui)
   *  Allow transclusion to reference local image via URL.
      (minor: zettelmarkup)
   *  Ignore entities with code point that is not allowed in HTML.
