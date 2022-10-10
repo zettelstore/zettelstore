@@ -168,7 +168,10 @@ func (ws *webService) Start(kern *myKernel) error {
 		if idx := strings.LastIndexByte(listenAddr, ':'); idx >= 0 {
 			ws.logger.Mandatory().Msg(strings.Repeat("--------------------", 3))
 			ws.logger.Mandatory().Msg("Open your browser and enter the following URL:")
-			ws.logger.Mandatory().Msg("    http://localhost%v" + listenAddr[idx:])
+			ws.logger.Mandatory().Msg("    http://localhost" + listenAddr[idx:])
+			ws.logger.Mandatory().Msg("")
+			ws.logger.Mandatory().Msg("If this does not work, try:")
+			ws.logger.Mandatory().Msg("    http://127.0.0.1" + listenAddr[idx:])
 		}
 	}
 
