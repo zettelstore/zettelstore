@@ -12,6 +12,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -30,31 +31,33 @@ type boxService struct {
 	createManager kernel.CreateBoxManagerFunc
 }
 
+var errInvalidDirType = errors.New("invalid directory type")
+
 func (ps *boxService) Initialize(logger *logger.Logger) {
 	ps.logger = logger
 	ps.descr = descriptionMap{
 		kernel.BoxDefaultDirType: {
 			"Default directory box type",
-			ps.noFrozen(func(val string) interface{} {
+			ps.noFrozen(func(val string) (any, error) {
 				switch val {
 				case kernel.BoxDirTypeNotify, kernel.BoxDirTypeSimple:
-					return val
+					return val, nil
 				}
-				return nil
+				return nil, errInvalidDirType
 			}),
 			true,
 		},
 		kernel.BoxURIs: {
 			"Box URI",
-			func(val string) interface{} {
+			func(val string) (any, error) {
 				uVal, err := url.Parse(val)
 				if err != nil {
-					return nil
+					return nil, err
 				}
 				if uVal.Scheme == "" {
 					uVal.Scheme = "dir"
 				}
-				return uVal
+				return uVal, nil
 			},
 			true,
 		},

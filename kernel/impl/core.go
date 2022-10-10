@@ -50,12 +50,12 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 		kernel.CoreHostname:  {"Host name", nil, false},
 		kernel.CorePort: {
 			"Port of command line server",
-			cs.noFrozen(func(val string) interface{} {
+			cs.noFrozen(func(val string) (any, error) {
 				port, err := net.LookupPort("tcp", val)
 				if err != nil {
-					return nil
+					return nil, err
 				}
-				return port
+				return port, nil
 			}),
 			true,
 		},
@@ -64,11 +64,11 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 		kernel.CoreVerbose:  {"Verbose output", parseBool, true},
 		kernel.CoreVersion: {
 			"Version",
-			cs.noFrozen(func(val string) interface{} {
+			cs.noFrozen(func(val string) (any, error) {
 				if val == "" {
-					return kernel.CoreDefaultVersion
+					return kernel.CoreDefaultVersion, nil
 				}
-				return val
+				return val, nil
 			}),
 			false,
 		},

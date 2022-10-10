@@ -34,41 +34,44 @@ type webService struct {
 	setupServer kernel.SetupWebServerFunc
 }
 
+var errURLPrefixSyntax = errors.New("must not be empty and must start with '//'")
+
 func (ws *webService) Initialize(logger *logger.Logger) {
 	ws.logger = logger
 	ws.descr = descriptionMap{
 		kernel.WebAssetDir: {
 			"Asset file  directory",
-			func(val string) any {
+			func(val string) (any, error) {
 				val = filepath.Clean(val)
 				if finfo, err := os.Stat(val); err == nil && finfo.IsDir() {
-					return val
+					return val, nil
+				} else {
+					return nil, err
 				}
-				return nil
 			},
 			true,
 		},
 		kernel.WebBaseURL: {
 			"Base URL",
-			func(val string) any {
+			func(val string) (any, error) {
 				if _, err := url.Parse(val); err != nil {
-					return nil
+					return nil, err
 				}
-				return val
+				return val, nil
 			},
 			true,
 		},
 		kernel.WebListenAddress: {
 			"Listen address",
-			func(val string) interface{} {
+			func(val string) (any, error) {
 				host, port, err := net.SplitHostPort(val)
 				if err != nil {
-					return nil
+					return nil, err
 				}
 				if _, err = net.LookupPort("tcp", port); err != nil {
-					return nil
+					return nil, err
 				}
-				return net.JoinHostPort(host, port)
+				return net.JoinHostPort(host, port), nil
 			},
 			true},
 		kernel.WebMaxRequestSize:   {"Max Request Size", parseInt64, true},
@@ -86,11 +89,11 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 		},
 		kernel.WebURLPrefix: {
 			"URL prefix under which the web server runs",
-			func(val string) interface{} {
+			func(val string) (any, error) {
 				if val != "" && val[0] == '/' && val[len(val)-1] == '/' {
-					return val
+					return val, nil
 				}
-				return nil
+				return nil, errURLPrefixSyntax
 			},
 			true,
 		},
@@ -109,18 +112,18 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 }
 
 func makeDurationParser(defDur, minDur, maxDur time.Duration) parseFunc {
-	return func(val string) interface{} {
+	return func(val string) (any, error) {
 		if d, err := strconv.ParseUint(val, 10, 64); err == nil {
 			secs := time.Duration(d) * time.Minute
 			if secs < minDur {
-				return minDur
+				return minDur, nil
 			}
 			if secs > maxDur {
-				return maxDur
+				return maxDur, nil
 			}
-			return secs
+			return secs, nil
 		}
-		return defDur
+		return defDur, nil
 	}
 }
 

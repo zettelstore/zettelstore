@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -11,6 +11,7 @@
 package impl
 
 import (
+	"errors"
 	"sync"
 
 	"zettelstore.de/z/auth"
@@ -26,24 +27,27 @@ type authService struct {
 	createManager kernel.CreateAuthManagerFunc
 }
 
+var errAlreadySetOwner = errors.New("changing an existing owner not allowed")
+var errAlreadyROMode = errors.New("system in readonly mode cannot change this mode")
+
 func (as *authService) Initialize(logger *logger.Logger) {
 	as.logger = logger
 	as.descr = descriptionMap{
 		kernel.AuthOwner: {
 			"Owner's zettel id",
-			func(val string) interface{} {
+			func(val string) (any, error) {
 				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.Invalid {
-					return nil
+					return nil, errAlreadySetOwner
 				}
 				return parseZid(val)
 			},
 			false,
 		},
 		kernel.AuthReadonly: {
-			"Read-only mode",
-			func(val string) interface{} {
+			"Readonly mode",
+			func(val string) (any, error) {
 				if ro := as.cur[kernel.AuthReadonly]; ro == true {
-					return nil
+					return nil, errAlreadyROMode
 				}
 				return parseBool(val)
 			},

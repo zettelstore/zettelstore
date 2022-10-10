@@ -12,6 +12,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -47,6 +48,8 @@ const (
 	keyZettelFileSyntax  = "zettel-file-syntax"
 )
 
+var errUnknownVisibility = errors.New("unknown visibility")
+
 func (cs *configService) Initialize(logger *logger.Logger) {
 	cs.logger = logger
 	cs.descr = descriptionMap{
@@ -54,12 +57,12 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultLicense:   {"Default license", parseString, true},
 		keyDefaultVisibility: {
 			"Default zettel visibility",
-			func(val string) interface{} {
+			func(val string) (any, error) {
 				vis := meta.GetVisibility(val)
 				if vis == meta.VisibilityUnknown {
-					return nil
+					return nil, errUnknownVisibility
 				}
-				return vis
+				return vis, nil
 			},
 			true,
 		},
@@ -73,7 +76,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyYAMLHeader:            {"YAML header", parseBool, true},
 		keyZettelFileSyntax: {
 			"Zettel file syntax",
-			func(val string) interface{} { return strings.Fields(val) },
+			func(val string) (any, error) { return strings.Fields(val), nil },
 			true,
 		},
 		kernel.ConfigSimpleMode: {"Simple mode", cs.noFrozen(parseBool), true},

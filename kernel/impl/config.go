@@ -11,6 +11,7 @@
 package impl
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -23,7 +24,7 @@ import (
 	"zettelstore.de/z/logger"
 )
 
-type parseFunc func(string) interface{}
+type parseFunc func(string) (any, error)
 type configDescription struct {
 	text    string
 	parse   parseFunc
@@ -67,10 +68,12 @@ func (cfg *srvConfig) ConfigDescriptions() []serviceConfigDescription {
 	return result
 }
 
+var errAlreadyFrozen = errors.New("value not allowed to be set")
+
 func (cfg *srvConfig) noFrozen(parse parseFunc) parseFunc {
-	return func(val string) interface{} {
+	return func(val string) (any, error) {
 		if cfg.frozen {
-			return nil
+			return nil, errAlreadyFrozen
 		}
 		return parse(val)
 	}
@@ -105,7 +108,7 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 		cfg.next[key] = value
 		return true
 	}
-	iVal := parse(value)
+	iVal, _ := parse(value) // TODO
 	if iVal == nil {
 		return false
 	}
@@ -209,29 +212,33 @@ func (cfg *srvConfig) SwitchNextToCur() {
 	cfg.cur = cfg.next.Clone()
 }
 
-func parseString(val string) interface{} { return val }
+func parseString(val string) (any, error) { return val, nil }
 
-func parseBool(val string) interface{} {
+var errNoBoolean = errors.New("no boolean value")
+
+func parseBool(val string) (any, error) {
 	if val == "" {
-		return false
+		return false, errNoBoolean
 	}
 	switch val[0] {
 	case '0', 'f', 'F', 'n', 'N':
-		return false
+		return false, nil
 	}
-	return true
+	return true, nil
 }
 
-func parseInt64(val string) any {
+func parseInt64(val string) (any, error) {
 	if u64, err := strconv.ParseInt(val, 10, 64); err == nil {
-		return u64
+		return u64, nil
+	} else {
+		return nil, err
 	}
-	return nil
 }
 
-func parseZid(val string) interface{} {
+func parseZid(val string) (any, error) {
 	if zid, err := id.Parse(val); err == nil {
-		return zid
+		return zid, nil
+	} else {
+		return id.Invalid, err
 	}
-	return id.Invalid
 }
