@@ -123,13 +123,9 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
-			if portStr, err := parsePort(flg.Value.String()); err == nil {
-				cfg.Set(keyListenAddr, net.JoinHostPort("127.0.0.1", portStr))
-			}
+			cfg.Set(keyListenAddr, net.JoinHostPort("127.0.0.1", flg.Value.String()))
 		case "a":
-			if portStr, err := parsePort(flg.Value.String()); err == nil {
-				cfg.Set(keyAdminPort, portStr)
-			}
+			cfg.Set(keyAdminPort, flg.Value.String())
 		case "d":
 			val := flg.Value.String()
 			if strings.HasPrefix(val, "/") {
@@ -150,15 +146,6 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 		}
 	})
 	return cfg
-}
-
-func parsePort(s string) (string, error) {
-	port, err := net.LookupPort("tcp", s)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Wrong port specification: %q", s)
-		return "", err
-	}
-	return strconv.Itoa(port), nil
 }
 
 func deleteConfiguredBoxes(cfg *meta.Meta) {
