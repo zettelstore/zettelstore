@@ -13,6 +13,7 @@ package impl
 import (
 	"errors"
 	"net"
+	"net/netip"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -64,14 +65,16 @@ func (ws *webService) Initialize(logger *logger.Logger) {
 		kernel.WebListenAddress: {
 			"Listen address",
 			func(val string) (any, error) {
-				host, port, err := net.SplitHostPort(val)
+				// If there is no host, prepend 127.0.0.1 as host.
+				host, _, err := net.SplitHostPort(val)
+				if err == nil && host == "" {
+					val = "127.0.0.1" + val
+				}
+				ap, err := netip.ParseAddrPort(val)
 				if err != nil {
-					return nil, err
+					return "", err
 				}
-				if _, err = net.LookupPort("tcp", port); err != nil {
-					return nil, err
-				}
-				return net.JoinHostPort(host, port), nil
+				return ap.String(), nil
 			},
 			true},
 		kernel.WebMaxRequestSize:   {"Max Request Size", parseInt64, true},
@@ -146,6 +149,10 @@ func (ws *webService) Start(kern *myKernel) error {
 		ws.logger.Fatal().Str("base-url", baseURL).Str("url-prefix", urlPrefix).Msg(
 			"url-prefix is not a suffix of base-url")
 		return errWrongBasePrefix
+	}
+
+	if lap := netip.MustParseAddrPort(listenAddr); !kern.auth.manager.WithAuth() && !lap.Addr().IsLoopback() {
+		ws.logger.Warn().Str("listen", listenAddr).Msg("service may be reached from outside, but authentication is not enabled")
 	}
 
 	srvw := impl.New(ws.logger, listenAddr, baseURL, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)

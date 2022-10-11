@@ -207,9 +207,7 @@ func setServiceConfig(cfg *meta.Meta) bool {
 		err = setConfigValue(err, kernel.BoxService, key, val)
 	}
 
-	err = setConfigValue(
-		err, kernel.WebService, kernel.WebListenAddress,
-		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
+	err = setConfigValue(err, kernel.WebService, kernel.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	if val, found := cfg.Get(keyBaseURL); found {
 		err = setConfigValue(err, kernel.WebService, kernel.WebBaseURL, val)
 	}
