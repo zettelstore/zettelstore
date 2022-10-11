@@ -79,14 +79,16 @@ func (cfg *srvConfig) noFrozen(parse parseFunc) parseFunc {
 	}
 }
 
-func (cfg *srvConfig) SetConfig(key, value string) bool {
+var errListKeyNotFound = errors.New("no list key found")
+
+func (cfg *srvConfig) SetConfig(key, value string) error {
 	cfg.mxConfig.Lock()
 	defer cfg.mxConfig.Unlock()
 	descr, ok := cfg.descr[key]
 	if !ok {
 		d, baseKey, num := cfg.getListDescription(key)
 		if num < 0 {
-			return false
+			return errListKeyNotFound
 		}
 		for i := num + 1; ; i++ {
 			k := baseKey + strconv.Itoa(i)
@@ -96,24 +98,24 @@ func (cfg *srvConfig) SetConfig(key, value string) bool {
 			delete(cfg.next, k)
 		}
 		if num == 0 {
-			return true
+			return nil
 		}
 		descr = d
 	}
 	parse := descr.parse
 	if parse == nil {
 		if cfg.frozen {
-			return false
+			return errAlreadyFrozen
 		}
 		cfg.next[key] = value
-		return true
+		return nil
 	}
-	iVal, _ := parse(value) // TODO
-	if iVal == nil {
-		return false
+	iVal, err := parse(value) // TODO
+	if err != nil {
+		return err
 	}
 	cfg.next[key] = iVal
-	return true
+	return nil
 }
 
 func (cfg *srvConfig) getListDescription(key string) (configDescription, string, int) {

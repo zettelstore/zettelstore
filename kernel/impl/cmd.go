@@ -292,10 +292,10 @@ func cmdSetConfig(sess *cmdSession, cmd string, args []string) bool {
 	}
 	key := args[1]
 	newValue := strings.Join(args[2:], " ")
-	if srvD.srv.SetConfig(key, newValue) {
+	if err := srvD.srv.SetConfig(key, newValue); err == nil {
 		sess.kern.logger.Mandatory().Str("key", key).Str("value", newValue).Msg("Update system configuration")
 	} else {
-		sess.println("Unable to set key", args[1], "to value", newValue)
+		sess.println("Unable to set key", args[1], "to value", newValue, "because:", err.Error())
 	}
 	return true
 }

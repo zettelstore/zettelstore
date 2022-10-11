@@ -303,13 +303,15 @@ func (kern *myKernel) doStopProfiling() error {
 
 // --- Service handling --------------------------------------------------
 
-func (kern *myKernel) SetConfig(srvnum kernel.Service, key, value string) bool {
+var errUnknownService = errors.New("unknown service")
+
+func (kern *myKernel) SetConfig(srvnum kernel.Service, key, value string) error {
 	kern.mx.Lock()
 	defer kern.mx.Unlock()
 	if srvD, ok := kern.srvs[srvnum]; ok {
 		return srvD.srv.SetConfig(key, value)
 	}
-	return false
+	return errUnknownService
 }
 
 func (kern *myKernel) GetConfig(srvnum kernel.Service, key string) interface{} {
@@ -448,7 +450,7 @@ type service interface {
 	ConfigDescriptions() []serviceConfigDescription
 
 	// SetConfig stores a configuration value.
-	SetConfig(key, value string) bool
+	SetConfig(key, value string) error
 
 	// GetConfig returns the current configuration value.
 	GetConfig(key string) interface{}

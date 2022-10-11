@@ -12,7 +12,6 @@ package cmd
 
 import (
 	"crypto/sha256"
-	"errors"
 	"flag"
 	"fmt"
 	"net"
@@ -176,7 +175,7 @@ const (
 	keyVerbose           = "verbose-mode"
 )
 
-func setServiceConfig(cfg *meta.Meta) error {
+func setServiceConfig(cfg *meta.Meta) bool {
 	debugMode := cfg.GetBool(keyDebug)
 	if debugMode && kernel.Main.GetKernelLogger().Level() > logger.DebugLevel {
 		kernel.Main.SetGlobalLogLevel(logger.DebugLevel)
@@ -186,62 +185,60 @@ func setServiceConfig(cfg *meta.Meta) error {
 			kernel.Main.SetGlobalLogLevel(level)
 		}
 	}
-	ok := setConfigValue(true, kernel.CoreService, kernel.CoreDebug, debugMode)
-	ok = setConfigValue(ok, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
+	err := setConfigValue(nil, kernel.CoreService, kernel.CoreDebug, debugMode)
+	err = setConfigValue(err, kernel.CoreService, kernel.CoreVerbose, cfg.GetBool(keyVerbose))
 	if val, found := cfg.Get(keyAdminPort); found {
-		ok = setConfigValue(ok, kernel.CoreService, kernel.CorePort, val)
+		err = setConfigValue(err, kernel.CoreService, kernel.CorePort, val)
 	}
 
-	ok = setConfigValue(ok, kernel.AuthService, kernel.AuthOwner, cfg.GetDefault(keyOwner, ""))
-	ok = setConfigValue(ok, kernel.AuthService, kernel.AuthReadonly, cfg.GetBool(keyReadOnly))
+	err = setConfigValue(err, kernel.AuthService, kernel.AuthOwner, cfg.GetDefault(keyOwner, ""))
+	err = setConfigValue(err, kernel.AuthService, kernel.AuthReadonly, cfg.GetBool(keyReadOnly))
 
-	ok = setConfigValue(
-		ok, kernel.BoxService, kernel.BoxDefaultDirType,
+	err = setConfigValue(
+		err, kernel.BoxService, kernel.BoxDefaultDirType,
 		cfg.GetDefault(keyDefaultDirBoxType, kernel.BoxDirTypeNotify))
-	ok = setConfigValue(ok, kernel.BoxService, kernel.BoxURIs+"1", "dir:./zettel")
+	err = setConfigValue(err, kernel.BoxService, kernel.BoxURIs+"1", "dir:./zettel")
 	for i := 1; ; i++ {
 		key := kernel.BoxURIs + strconv.Itoa(i)
 		val, found := cfg.Get(key)
 		if !found {
 			break
 		}
-		ok = setConfigValue(ok, kernel.BoxService, key, val)
+		err = setConfigValue(err, kernel.BoxService, key, val)
 	}
 
-	ok = setConfigValue(
-		ok, kernel.WebService, kernel.WebListenAddress,
+	err = setConfigValue(
+		err, kernel.WebService, kernel.WebListenAddress,
 		cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	if val, found := cfg.Get(keyBaseURL); found {
-		ok = setConfigValue(ok, kernel.WebService, kernel.WebBaseURL, val)
+		err = setConfigValue(err, kernel.WebService, kernel.WebBaseURL, val)
 	}
 	if val, found := cfg.Get(keyURLPrefix); found {
-		ok = setConfigValue(ok, kernel.WebService, kernel.WebURLPrefix, val)
+		err = setConfigValue(err, kernel.WebService, kernel.WebURLPrefix, val)
 	}
-	ok = setConfigValue(ok, kernel.WebService, kernel.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
-	ok = setConfigValue(ok, kernel.WebService, kernel.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
+	err = setConfigValue(err, kernel.WebService, kernel.WebSecureCookie, !cfg.GetBool(keyInsecureCookie))
+	err = setConfigValue(err, kernel.WebService, kernel.WebPersistentCookie, cfg.GetBool(keyPersistentCookie))
 	if val, found := cfg.Get(keyMaxRequestSize); found {
-		ok = setConfigValue(ok, kernel.WebService, kernel.WebMaxRequestSize, val)
+		err = setConfigValue(err, kernel.WebService, kernel.WebMaxRequestSize, val)
 	}
-	ok = setConfigValue(
-		ok, kernel.WebService, kernel.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
-	ok = setConfigValue(
-		ok, kernel.WebService, kernel.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
+	err = setConfigValue(
+		err, kernel.WebService, kernel.WebTokenLifetimeAPI, cfg.GetDefault(keyTokenLifetimeAPI, ""))
+	err = setConfigValue(
+		err, kernel.WebService, kernel.WebTokenLifetimeHTML, cfg.GetDefault(keyTokenLifetimeHTML, ""))
 	if val, found := cfg.Get(keyAssetDir); found {
-		ok = setConfigValue(ok, kernel.WebService, kernel.WebAssetDir, val)
+		err = setConfigValue(err, kernel.WebService, kernel.WebAssetDir, val)
 	}
-
-	if !ok {
-		return errors.New("unable to set configuration")
-	}
-	return nil
+	return err == nil
 }
 
-func setConfigValue(ok bool, subsys kernel.Service, key string, val interface{}) bool {
-	done := kernel.Main.SetConfig(subsys, key, fmt.Sprintf("%v", val))
-	if !done {
-		kernel.Main.GetKernelLogger().Error().Str(key, fmt.Sprint(val)).Msg("Unable to set configuration")
+func setConfigValue(err error, subsys kernel.Service, key string, val any) error {
+	if err == nil {
+		err = kernel.Main.SetConfig(subsys, key, fmt.Sprint(val))
+		if err != nil {
+			kernel.Main.GetKernelLogger().Fatal().Str("key", key).Str("value", fmt.Sprint(val)).Err(err).Msg("Unable to set configuration")
+		}
 	}
-	return ok && done
+	return err
 }
 
 func executeCommand(name string, args ...string) int {
@@ -256,8 +253,8 @@ func executeCommand(name string, args ...string) int {
 		return 1
 	}
 	cfg := getConfig(fs)
-	if err := setServiceConfig(cfg); err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
+	if !setServiceConfig(cfg) {
+		fs.Usage()
 		return 2
 	}
 

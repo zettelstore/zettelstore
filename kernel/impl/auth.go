@@ -39,6 +39,9 @@ func (as *authService) Initialize(logger *logger.Logger) {
 				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.Invalid {
 					return nil, errAlreadySetOwner
 				}
+				if val == "" {
+					return id.Invalid, nil
+				}
 				return parseZid(val)
 			},
 			false,

@@ -62,7 +62,7 @@ type Kernel interface {
 	StopProfiling() error
 
 	// SetConfig stores a configuration value.
-	SetConfig(srv Service, key, value string) bool
+	SetConfig(srv Service, key, value string) error
 
 	// GetConfig returns a configuration value.
 	GetConfig(srv Service, key string) interface{}
