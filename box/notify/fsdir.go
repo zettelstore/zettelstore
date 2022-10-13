@@ -101,24 +101,30 @@ func (fsdn *fsdirNotifier) eventLoop() {
 func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 	select {
 	case <-fsdn.done:
+		fsdn.log.Trace().Int("i", 1).Msg("done with read and process events")
 		return false
 	default:
 	}
 	select {
 	case <-fsdn.done:
+		fsdn.log.Trace().Int("i", 2).Msg("done with read and process events")
 		return false
 	case <-fsdn.refresh:
+		fsdn.log.Trace().Msg("refresh")
 		listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done)
 	case err, ok := <-fsdn.base.Errors:
+		fsdn.log.Trace().Err(err).Bool("ok", ok).Msg("got errors")
 		if !ok {
 			return false
 		}
 		select {
 		case fsdn.events <- Event{Op: Error, Err: err}:
 		case <-fsdn.done:
+			fsdn.log.Trace().Int("i", 3).Msg("done with read and process events")
 			return false
 		}
 	case ev, ok := <-fsdn.base.Events:
+		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Bool("ok", ok).Msg("file event")
 		if !ok {
 			return false
 		}
@@ -136,62 +142,71 @@ func (fsdn *fsdirNotifier) processEvent(ev *fsnotify.Event) bool {
 		}
 		return fsdn.processFileEvent(ev)
 	}
+	fsdn.log.Trace().Str("path", fsdn.path).Str("name", ev.Name).Str("op", ev.Op.String()).Msg("event does not match")
 	return true
 }
 
 func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
-	const deleteFsDirOps = fsnotify.Remove | fsnotify.Rename
-
-	if ev.Op&deleteFsDirOps != 0 {
+	if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
 		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory removed")
 		fsdn.base.Remove(fsdn.path)
 		select {
 		case fsdn.events <- Event{Op: Destroy}:
 		case <-fsdn.done:
+			fsdn.log.Trace().Int("i", 1).Msg("done dir event processing")
 			return false
 		}
-	} else if ev.Op&fsnotify.Create != 0 {
+		return true
+	}
+
+	if ev.Has(fsnotify.Create) {
 		err := fsdn.base.Add(fsdn.path)
 		if err != nil {
 			fsdn.log.IfErr(err).Str("name", fsdn.path).Msg("Unable to add directory")
 			select {
 			case fsdn.events <- Event{Op: Error, Err: err}:
 			case <-fsdn.done:
+				fsdn.log.Trace().Int("i", 2).Msg("done dir event processing")
 				return false
 			}
 		}
 		fsdn.log.Debug().Str("name", fsdn.path).Msg("Directory added")
 		return listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done)
-	} else {
-		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("Directory processed")
 	}
+
+	fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("Directory processed")
 	return true
 }
 
 func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
-	const deleteFsFileOps = fsnotify.Remove
-	const updateFsFileOps = fsnotify.Create | fsnotify.Write | fsnotify.Rename
-
-	if ev.Op&updateFsFileOps != 0 {
+	if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Write) {
 		if fi, err := os.Lstat(ev.Name); err != nil || !fi.Mode().IsRegular() {
+			regular := err == nil && fi.Mode().IsRegular()
+			fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Err(err).Bool("regular", regular).Msg("error with file")
 			return true
 		}
 		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File updated")
 		select {
 		case fsdn.events <- Event{Op: Update, Name: filepath.Base(ev.Name)}:
 		case <-fsdn.done:
+			fsdn.log.Trace().Int("i", 1).Msg("done file event processing")
 			return false
 		}
-	} else if ev.Op&deleteFsFileOps != 0 {
+		return true
+	}
+
+	if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
 		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File deleted")
 		select {
 		case fsdn.events <- Event{Op: Delete, Name: filepath.Base(ev.Name)}:
 		case <-fsdn.done:
+			fsdn.log.Trace().Int("i", 2).Msg("done file event processing")
 			return false
 		}
-	} else {
-		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File processed")
+		return true
 	}
+
+	fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File processed")
 	return true
 }
 

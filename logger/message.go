@@ -69,12 +69,13 @@ func (m *Message) Str(text, val string) *Message {
 }
 
 // Bool adds a boolean value to the full message
-func (m *Message) Bool(text string, val bool) {
+func (m *Message) Bool(text string, val bool) *Message {
 	if val {
 		m.Str(text, "true")
 	} else {
 		m.Str(text, "false")
 	}
+	return m
 }
 
 // Bytes adds a byte slice value to the full message
