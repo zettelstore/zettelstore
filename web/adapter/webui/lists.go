@@ -22,7 +22,9 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
+	"zettelstore.de/z/encoding/xml"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
@@ -30,8 +32,7 @@ import (
 	"zettelstore.de/z/web/server"
 )
 
-// MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of
-// zettel as HTML.
+// MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
 func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
@@ -44,9 +45,15 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			wui.reportError(ctx, w, err)
 			return
 		}
-		if actions := q.Actions(); len(actions) > 0 && actions[0] == "RSS" {
-			wui.renderRSS(ctx, w, q, metaList)
-			return
+		if actions := q.Actions(); len(actions) > 0 {
+			switch actions[0] {
+			case "ATOM":
+				wui.renderAtom(ctx, w, q, metaList)
+				return
+			case "RSS":
+				wui.renderRSS(ctx, w, q, metaList)
+				return
+			}
 		}
 		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
 		enc := wui.getSimpleHTMLEncoder()
@@ -85,11 +92,30 @@ func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query
 	adapter.PrepareHeader(w, rss.ContentType)
 	w.WriteHeader(http.StatusOK)
 	var err error
-	if _, err = io.WriteString(w, adapter.XMLHeader); err == nil {
+	if _, err = io.WriteString(w, xml.Header); err == nil {
 		_, err = w.Write(data)
 	}
 	if err != nil {
 		wui.log.IfErr(err).Msg("unable to write RSS data")
+	}
+}
+
+func (wui *WebUI) renderAtom(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
+	var atomConfig atom.Configuration
+	atomConfig.Setup(ctx, wui.rtConfig)
+	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
+		atomConfig.Title = strings.Join(actions[2:], " ")
+	}
+	data := atomConfig.Marshal(q, ml)
+
+	adapter.PrepareHeader(w, atom.ContentType)
+	w.WriteHeader(http.StatusOK)
+	var err error
+	if _, err = io.WriteString(w, xml.Header); err == nil {
+		_, err = w.Write(data)
+	}
+	if err != nil {
+		wui.log.IfErr(err).Msg("unable to write Atom data")
 	}
 }
 

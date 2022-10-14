@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package rss provides a RSS encoding.
-package rss
+// Package atom provides an Atom encoding.
+package atom
 
 import (
 	"bytes"
@@ -27,23 +27,18 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-const ContentType = "application/rss+xml"
+const ContentType = "application/atom+xml"
 
 type Configuration struct {
 	Title            string
-	Language         string
-	Copyright        string
 	Generator        string
 	NewURLBuilderAbs func() *api.URLBuilder
 }
 
 func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
 	baseURL := kernel.Main.GetConfig(kernel.WebService, kernel.WebBaseURL).(string)
-	defVals := cfg.AddDefaultValues(ctx, &meta.Meta{})
 
 	c.Title = cfg.GetSiteName()
-	c.Language = defVals.GetDefault(api.KeyLang, "")
-	c.Copyright = defVals.GetDefault(api.KeyCopyright, "")
 	c.Generator = (kernel.Main.GetConfig(kernel.CoreService, kernel.CoreProgname).(string) +
 		" " +
 		kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
@@ -51,46 +46,48 @@ func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
 }
 
 func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) []byte {
-	rssPublished := encoding.LastUpdated(ml, time.RFC1123Z)
+	atomUpdated := encoding.LastUpdated(ml, time.RFC3339)
+	feedLink := c.NewURLBuilderAbs().String()
 
-	atomLink := ""
-	if s := q.String(); s != "" {
-		atomLink = c.NewURLBuilderAbs().AppendQuery(s).String()
-	}
 	var buf bytes.Buffer
-	buf.WriteString(`<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">` + "\n<channel>\n")
+	buf.WriteString(`<feed xmlns="http://www.w3.org/2005/Atom">` + "\n")
 	xml.WriteTag(&buf, "  ", "title", c.Title)
-	xml.WriteTag(&buf, "  ", "link", c.NewURLBuilderAbs().String())
-	xml.WriteTag(&buf, "  ", "description", "")
-	xml.WriteTag(&buf, "  ", "language", c.Language)
-	xml.WriteTag(&buf, "  ", "copyright", c.Copyright)
-	if rssPublished != "" {
-		xml.WriteTag(&buf, "  ", "pubDate", rssPublished)
-		xml.WriteTag(&buf, "  ", "lastBuildDate", rssPublished)
+	xml.WriteTag(&buf, "  ", "id", feedLink)
+	buf.WriteString(`  <link rel="self" href="`)
+	if s := q.String(); s != "" {
+		strfun.XMLEscape(&buf, c.NewURLBuilderAbs().AppendQuery(s).String())
+	} else {
+		strfun.XMLEscape(&buf, feedLink)
+	}
+	buf.WriteString(`"/>` + "\n")
+	if atomUpdated != "" {
+		xml.WriteTag(&buf, "  ", "updated", atomUpdated)
 	}
 	xml.WriteTag(&buf, "  ", "generator", c.Generator)
-	buf.WriteString("  <docs>https://www.rssboard.org/rss-specification</docs>\n")
-	if atomLink != "" {
-		buf.WriteString(`  <atom:link href="`)
-		strfun.XMLEscape(&buf, atomLink)
-		buf.WriteString(`" rel="self" type="application/rss+xml"></atom:link>` + "\n")
-	}
+	buf.WriteString("  <author><name>Unknown</name></author>\n")
+
 	for _, m := range ml {
-		itemPublished := ""
+		entryUpdated := ""
 		if val, found := m.Get(api.KeyPublished); found {
 			if published, err := time.ParseInLocation(id.ZidLayout, val, time.Local); err == nil {
-				itemPublished = published.UTC().Format(time.RFC1123Z)
+				entryUpdated = published.UTC().Format(time.RFC3339)
 			}
 		}
 
 		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
 
-		buf.WriteString("  <item>\n")
+		buf.WriteString("  <entry>\n")
 		xml.WriteTag(&buf, "    ", "title", encoding.TitleAsText(m))
-		xml.WriteTag(&buf, "    ", "link", link)
-		xml.WriteTag(&buf, "    ", "guid", link)
-		if itemPublished != "" {
-			xml.WriteTag(&buf, "    ", "pubDate", itemPublished)
+		xml.WriteTag(&buf, "    ", "id", link)
+		buf.WriteString(`    <link rel="self" href="`)
+		strfun.XMLEscape(&buf, link)
+		buf.WriteString(`"/>` + "\n")
+		buf.WriteString(`    <link rel="alternate" type="text/html" href="`)
+		strfun.XMLEscape(&buf, link)
+		buf.WriteString(`"/>` + "\n")
+
+		if entryUpdated != "" {
+			xml.WriteTag(&buf, "    ", "updated", entryUpdated)
 		}
 		if tags, found := m.GetList(api.KeyTags); found && len(tags) > 0 {
 			for _, tag := range tags {
@@ -98,13 +95,15 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) []byte {
 					tag = tag[1:]
 				}
 				if tag != "" {
-					xml.WriteTag(&buf, "    ", "category", tag)
+					buf.WriteString(`    <category term="`)
+					strfun.XMLEscape(&buf, tag)
+					buf.WriteString("\"/>\n")
 				}
 			}
 		}
-		buf.WriteString("  </item>\n")
+		buf.WriteString("  </entry>\n")
 	}
 
-	buf.WriteString("</channel>\n</rss>")
+	buf.WriteString("</feed>")
 	return buf.Bytes()
 }

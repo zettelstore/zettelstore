@@ -21,6 +21,8 @@
      (minor: webui)
   *  Allow transclusion to reference local image via URL.
      (minor: zettelmarkup)
+  *  Add support creating an Atom 1.0 feed using a query action.
+     (minor: api, webui)
   *  Ignore entities with code point that is not allowed in HTML.
      (minor: zettelmarkup)
 

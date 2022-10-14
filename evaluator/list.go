@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
@@ -65,7 +66,10 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 			acts = append(acts, act)
 		}
 		for _, act := range acts {
-			if act == "RSS" {
+			switch act {
+			case "ATOM":
+				return ap.createBlockNodeAtom(rtConfig)
+			case "RSS":
 				return ap.createBlockNodeRSS(rtConfig)
 			}
 			key := strings.ToLower(act)
@@ -278,6 +282,19 @@ func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
 	rssConfig.Setup(ap.ctx, cfg)
 	rssConfig.Title = ap.title
 	data := rssConfig.Marshal(ap.q, ap.ml)
+
+	return &ast.VerbatimNode{
+		Kind:    ast.VerbatimProg,
+		Attrs:   attrs.Attributes{"lang": "xml"},
+		Content: data,
+	}
+}
+
+func (ap *actionPara) createBlockNodeAtom(cfg config.Config) ast.BlockNode {
+	var atomConfig atom.Configuration
+	atomConfig.Setup(ap.ctx, cfg)
+	atomConfig.Title = ap.title
+	data := atomConfig.Marshal(ap.q, ap.ml)
 
 	return &ast.VerbatimNode{
 		Kind:    ast.VerbatimProg,
