@@ -20,6 +20,9 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
+// XMLHeader contains the string that should start all XML documents.
+const XMLHeader = `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
+
 // PrepareHeader sets the HTTP header to defined values.
 func PrepareHeader(w http.ResponseWriter, contentType string) http.Header {
 	h := w.Header()

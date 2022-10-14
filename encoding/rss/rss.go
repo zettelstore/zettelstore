@@ -14,7 +14,6 @@ package rss
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"time"
 
 	"zettelstore.de/c/api"
@@ -25,6 +24,7 @@ import (
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/strfun"
 )
 
 const ContentType = "application/rss+xml"
@@ -50,10 +50,35 @@ func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
 	c.NewURLBuilderAbs = func() *api.URLBuilder { return api.NewURLBuilder(baseURL, 'h') }
 }
 
-func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error) {
+func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) []byte {
 	textEnc := textenc.Create()
-	rssItems := make([]*RssItem, 0, len(ml))
 	maxPublished := time.Date(1, time.January, 1, 0, 0, 0, 0, time.Local)
+	rssPublished := ""
+	if maxPublished.Year() > 1 {
+		rssPublished = maxPublished.UTC().Format(time.RFC1123Z)
+	}
+	atomLink := ""
+	if s := q.String(); s != "" {
+		atomLink = c.NewURLBuilderAbs().AppendQuery(s).String()
+	}
+	var buf bytes.Buffer
+	buf.WriteString(`<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">` + "\n<channel>\n")
+	writeXMLTag(&buf, "  ", "title", c.Title)
+	writeXMLTag(&buf, "  ", "link", c.NewURLBuilderAbs().String())
+	writeXMLTag(&buf, "  ", "description", "")
+	writeXMLTag(&buf, "  ", "language", c.Language)
+	writeXMLTag(&buf, "  ", "copyright", c.Copyright)
+	if rssPublished != "" {
+		writeXMLTag(&buf, "  ", "pubDate", rssPublished)
+		writeXMLTag(&buf, "  ", "lastBuildDate", rssPublished)
+	}
+	writeXMLTag(&buf, "  ", "generator", c.Generator)
+	buf.WriteString("  <docs>https://www.rssboard.org/rss-specification</docs>\n")
+	if atomLink != "" {
+		buf.WriteString(`  <atom:link href="`)
+		strfun.XMLEscape(&buf, atomLink)
+		buf.WriteString(`" rel="self" type="application/rss+xml"></atom:link>` + "\n")
+	}
 	for _, m := range ml {
 		var title bytes.Buffer
 		titleIns := parser.ParseMetadata(m.GetTitle())
@@ -73,82 +98,34 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) ([]byte, error)
 		}
 
 		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
-		rssItems = append(rssItems, &RssItem{
-			Title:    title.String(),
-			Link:     link,
-			GUID:     link,
-			PubDate:  itemPublished,
-			Category: getCategories(m),
-		})
+
+		buf.WriteString("  <item>\n")
+		writeXMLTag(&buf, "    ", "title", title.String())
+		writeXMLTag(&buf, "    ", "link", link)
+		writeXMLTag(&buf, "    ", "guid", link)
+		if itemPublished != "" {
+			writeXMLTag(&buf, "    ", "pubDate", itemPublished)
+		}
+		for _, cat := range getCategories(m) {
+			writeXMLTag(&buf, "    ", "category", cat)
+		}
+		buf.WriteString("  </item>\n")
 	}
 
-	rssPublished := ""
-	if maxPublished.Year() > 1 {
-		rssPublished = maxPublished.UTC().Format(time.RFC1123Z)
-	}
-	var atomLink *AtomLink
-	if s := q.String(); s != "" {
-		atomLink = &AtomLink{
-			Href: c.NewURLBuilderAbs().AppendQuery(s).String(),
-			Rel:  "self",
-			Type: ContentType,
-		}
-	}
-	rssFeed := RssFeed{
-		Version:       "2.0",
-		AtomNamespace: "http://www.w3.org/2005/Atom",
-		Channel: &RssChannel{
-			Title:         c.Title,
-			Link:          c.NewURLBuilderAbs().String(),
-			Language:      c.Language,
-			Copyright:     c.Copyright,
-			PubDate:       rssPublished,
-			LastBuildDate: rssPublished,
-			Generator:     c.Generator,
-			Docs:          "https://www.rssboard.org/rss-specification",
-			AtomLink:      atomLink,
-			Items:         rssItems,
-		},
-	}
-	return xml.MarshalIndent(&rssFeed, "", "  ")
+	buf.WriteString("</channel>\n</rss>")
+	return buf.Bytes()
 }
 
-type (
-	RssFeed struct {
-		XMLName       xml.Name `xml:"rss"`
-		Version       string   `xml:"version,attr"`
-		AtomNamespace string   `xml:"xmlns:atom,attr"`
-		Channel       *RssChannel
-	}
-	RssChannel struct {
-		XMLName       xml.Name `xml:"channel"`
-		Title         string   `xml:"title"`
-		Link          string   `xml:"link"`
-		Description   string   `xml:"description"`
-		Language      string   `xml:"language,omitempty"`
-		Copyright     string   `xml:"copyright,omitempty"`
-		PubDate       string   `xml:"pubDate,omitempty"`       // RFC822
-		LastBuildDate string   `xml:"lastBuildDate,omitempty"` // RFC822
-		Generator     string   `xml:"generator,omitempty"`
-		Docs          string   `xml:"docs,omitempty"`
-		AtomLink      *AtomLink
-		Items         []*RssItem `xml:"item"`
-	}
-	AtomLink struct {
-		XMLName xml.Name `xml:"atom:link"`
-		Href    string   `xml:"href,attr"`
-		Rel     string   `xml:"rel,attr"`
-		Type    string   `xml:"type,attr"`
-	}
-	RssItem struct {
-		XMLName  xml.Name `xml:"item"`
-		Title    string   `xml:"title"`
-		Link     string   `xml:"link"` // Needed, b/c Miniflux does not use GUID for URL
-		GUID     string   `xml:"guid"`
-		PubDate  string   `xml:"pubDate,omitempty"` // RFC822
-		Category []string `xml:"category,omitempty"`
-	}
-)
+func writeXMLTag(buf *bytes.Buffer, prefix, tag, value string) {
+	buf.WriteString(prefix)
+	buf.WriteByte('<')
+	buf.WriteString(tag)
+	buf.WriteByte('>')
+	strfun.XMLEscape(buf, value)
+	buf.WriteString("</")
+	buf.WriteString(tag)
+	buf.WriteString(">\n")
+}
 
 func getCategories(m *meta.Meta) []string {
 	if m == nil {

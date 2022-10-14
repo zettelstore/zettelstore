@@ -13,7 +13,6 @@ package webui
 import (
 	"bytes"
 	"context"
-	"encoding/xml"
 	"io"
 	"net/http"
 	"net/url"
@@ -81,14 +80,12 @@ func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query
 	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
 		rssConfig.Title = strings.Join(actions[2:], " ")
 	}
-	data, err := rssConfig.Marshal(q, ml)
-	if err != nil {
-		wui.reportError(ctx, w, err)
-		return
-	}
+	data := rssConfig.Marshal(q, ml)
+
 	adapter.PrepareHeader(w, rss.ContentType)
 	w.WriteHeader(http.StatusOK)
-	if _, err = io.WriteString(w, xml.Header); err == nil {
+	var err error
+	if _, err = io.WriteString(w, adapter.XMLHeader); err == nil {
 		_, err = w.Write(data)
 	}
 	if err != nil {
