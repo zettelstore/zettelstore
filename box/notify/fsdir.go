@@ -186,27 +186,39 @@ func (fsdn *fsdirNotifier) processFileEvent(ev *fsnotify.Event) bool {
 			return true
 		}
 		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File updated")
-		select {
-		case fsdn.events <- Event{Op: Update, Name: filepath.Base(ev.Name)}:
-		case <-fsdn.done:
-			fsdn.log.Trace().Int("i", 1).Msg("done file event processing")
-			return false
+		return fsdn.sendEvent(Update, filepath.Base(ev.Name))
+	}
+
+	if ev.Has(fsnotify.Rename) {
+		fi, err := os.Lstat(ev.Name)
+		if err != nil {
+			fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File deleted")
+			return fsdn.sendEvent(Delete, filepath.Base(ev.Name))
 		}
+		if fi.Mode().IsRegular() {
+			fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File updated")
+			return fsdn.sendEvent(Update, filepath.Base(ev.Name))
+		}
+		fsdn.log.Trace().Str("name", ev.Name).Msg("File not regular")
 		return true
 	}
 
-	if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+	if ev.Has(fsnotify.Remove) {
 		fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File deleted")
-		select {
-		case fsdn.events <- Event{Op: Delete, Name: filepath.Base(ev.Name)}:
-		case <-fsdn.done:
-			fsdn.log.Trace().Int("i", 2).Msg("done file event processing")
-			return false
-		}
-		return true
+		return fsdn.sendEvent(Delete, filepath.Base(ev.Name))
 	}
 
 	fsdn.log.Trace().Str("name", ev.Name).Str("op", ev.Op.String()).Msg("File processed")
+	return true
+}
+
+func (fsdn *fsdirNotifier) sendEvent(op EventOp, filename string) bool {
+	select {
+	case fsdn.events <- Event{Op: op, Name: filename}:
+	case <-fsdn.done:
+		fsdn.log.Trace().Msg("done file event processing")
+		return false
+	}
 	return true
 }
 
