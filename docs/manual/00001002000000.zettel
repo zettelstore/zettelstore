@@ -3,7 +3,8 @@ title: Design goals for the Zettelstore
 role: manual
 tags: #design #goal #manual #zettelstore
 syntax: zmk
-modified: 20211124131628
+created: 20210126175322
+modified: 20221018105415
 
 Zettelstore supports the following design goals:
 
@@ -13,7 +14,7 @@ Zettelstore supports the following design goals:
 ; Single user
 : All zettel belong to you, only to you.
   Zettelstore provides its services only to one person: you.
-  If your device is securely configured, there should be no risk that others are able to read or update your zettel.
+  If the computer running Zettelstore is securely configured, there should be no risk that others are able to read or update your zettel.
 : If you want, you can customize Zettelstore in a way that some specific or all persons are able to read some of your zettel.
 ; Ease of installation
 : If you want to use the Zettelstore software, all you need is to copy the executable to an appropriate file directory and start working.
@@ -30,3 +31,7 @@ Zettelstore supports the following design goals:
 ; Simple service
 : The purpose of Zettelstore is to safely store your zettel and to provide some initial relations between them.
 : External software can be written to deeply analyze your zettel and the structures they form.
+; Security by default
+: Without any customization, Zettelstore provides its services in a safe and secure manner and does not expose you (or other users) to security risks.
+: If you know what use are doing, Zettelstore allows you to relax some security-related preferences.
+  However, even in this case, the more secure way is chosen.

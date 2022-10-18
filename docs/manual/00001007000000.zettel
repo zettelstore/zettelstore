@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220913135505
+modified: 20221018104725
 
 Zettelmarkup is a rich plain-text based markup language for writing zettel content.
 Besides the zettel content, Zettelmarkup is also used for specifying the title of a zettel, regardless of the syntax of a zettel.
@@ -16,7 +16,7 @@ Writing a parser for [[Markdown|https://daringfireball.net/projects/markdown/syn
 Zettelmarkup follows some simple principles that anybody who knows to ho write software should be able understand to create an implementation.
 
 Zettelmarkup is a markup language on its own.
-This is in contrast to Markdown, which is basically a super-set of HTML.
+This is in contrast to Markdown, which is basically a super-set of HTML: every HTML document is a valid Markdown document.[^To be precise: the content of the ``<body>`` of each HTML document is a valid Markdown document.]
 While HTML is a markup language that will probably last for a long time, it cannot be easily translated to other formats, such as PDF, JSON, or LaTeX.
 Additionally, it is allowed to embed other languages into HTML, such as CSS or even JavaScript.
 This could create problems with longevity as well as security problems.
@@ -25,6 +25,7 @@ Zettelmarkup is a rich markup language, but it focuses on relatively short zette
 It allows embedding other content, simple tables, quotations, description lists, and images.
 It provides a broad range of inline formatting, including __emphasized__, **strong**, ~~deleted~~{-} and >>inserted>> text.
 Footnotes[^like this] are supported, links to other zettel and to external material, as well as citation keys.
+Zettelmarkup allows to include content from other zettel and to embed the result of a search query.
 
 Zettelmarkup might be seen as a proprietary markup language.
 But if you want to use [[Markdown/CommonMark|00001008010000]] and you need support for footnotes or tables, you'll end up with proprietary extensions.
