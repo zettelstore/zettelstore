@@ -3,7 +3,8 @@ title: Zettelmarkup: Inline-Zettel Block
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220311112247
+created: 20220201142439
+modified: 20221018121251
 
 An inline-zettel block allows to specify some content with another syntax without creating a new zettel.
 This is useful, for example, if you want to embed some [[Markdown|00001008010500]] content, because you are too lazy to translate Markdown into Zettelmarkup.
@@ -35,14 +36,15 @@ A link to [this](00001007031200) zettel.
 @@@
 :::
 
-Using HTML:
+If you have set [[''insecure-html''|00001004010000#insecure-html]] to the value ""zettelmarkup"", the following markup is not ignored:
+
 ```zmk
 @@@html
 <h1>H1 Heading</h1>
 Alea iacta est
 @@@
 ```
-will a section heading of level 1, which is not allowed within Zettelmarkup:
+will render a section heading of level 1, which is not allowed within Zettelmarkup:
 :::example
 @@@html
 <h1>H1 Heading</h1>

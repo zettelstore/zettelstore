@@ -162,6 +162,7 @@ const (
 	keyDebug             = "debug-mode"
 	keyDefaultDirBoxType = "default-dir-box-type"
 	keyInsecureCookie    = "insecure-cookie"
+	keyInsecureHTML      = "insecure-html"
 	keyListenAddr        = "listen-addr"
 	keyLogLevel          = "log-level"
 	keyMaxRequestSize    = "max-request-size"
@@ -206,6 +207,8 @@ func setServiceConfig(cfg *meta.Meta) bool {
 		}
 		err = setConfigValue(err, kernel.BoxService, key, val)
 	}
+
+	err = setConfigValue(err, kernel.ConfigService, kernel.ConfigInsecureHTML, cfg.GetDefault(keyInsecureHTML, kernel.ConfigSecureHTML))
 
 	err = setConfigValue(err, kernel.WebService, kernel.WebListenAddress, cfg.GetDefault(keyListenAddr, "127.0.0.1:23123"))
 	if val, found := cfg.Get(keyBaseURL); found {

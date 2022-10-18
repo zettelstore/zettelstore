@@ -19,6 +19,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/sexprenc"
@@ -67,14 +68,14 @@ func TestMarkdownSpec(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		ast := createMDBlockSlice(tc.Markdown)
+		ast := createMDBlockSlice(tc.Markdown, config.NoHTML)
 		testAllEncodings(t, tc, &ast)
 		testZmkEncoding(t, tc, &ast)
 	}
 }
 
-func createMDBlockSlice(markdown string) ast.BlockSlice {
-	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, "markdown")
+func createMDBlockSlice(markdown string, hi config.HTMLInsecurity) ast.BlockSlice {
+	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, "markdown", hi)
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
@@ -98,7 +99,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 		// gotFirst := buf.String()
 
 		testID = tc.Example*100 + 2
-		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
+		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk, config.NoHTML)
 		buf.Reset()
 		zmkEncoder.WriteBlocks(&buf, &secondAst)
 		gotSecond := buf.String()
@@ -108,7 +109,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 		// }
 
 		testID = tc.Example*100 + 3
-		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk)
+		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk, config.NoHTML)
 		buf.Reset()
 		zmkEncoder.WriteBlocks(&buf, &thirdAst)
 		gotThird := buf.String()
@@ -129,7 +130,7 @@ func TestAdditionalMarkdown(t *testing.T) {
 	zmkEncoder := encoder.Create(api.EncoderZmk)
 	var buf bytes.Buffer
 	for i, tc := range testcases {
-		ast := createMDBlockSlice(tc.md)
+		ast := createMDBlockSlice(tc.md, config.MarkdownHTML)
 		buf.Reset()
 		zmkEncoder.WriteBlocks(&buf, &ast)
 		got := buf.String()

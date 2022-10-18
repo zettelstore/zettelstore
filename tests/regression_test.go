@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -162,11 +163,12 @@ func (*myConfig) Get(context.Context, *meta.Meta, string) string { return "" }
 func (*myConfig) AddDefaultValues(_ context.Context, m *meta.Meta) *meta.Meta {
 	return m
 }
-func (*myConfig) GetHomeZettel() id.Zid         { return id.Invalid }
-func (*myConfig) GetListPageSize() int          { return 0 }
-func (*myConfig) GetSiteName() string           { return "" }
-func (*myConfig) GetYAMLHeader() bool           { return false }
-func (*myConfig) GetZettelFileSyntax() []string { return nil }
+func (*myConfig) GetHTMLInsecurity() config.HTMLInsecurity { return config.NoHTML }
+func (*myConfig) GetHomeZettel() id.Zid                    { return id.Invalid }
+func (*myConfig) GetListPageSize() int                     { return 0 }
+func (*myConfig) GetSiteName() string                      { return "" }
+func (*myConfig) GetYAMLHeader() bool                      { return false }
+func (*myConfig) GetZettelFileSyntax() []string            { return nil }
 
 func (*myConfig) GetSimpleMode() bool                      { return false }
 func (*myConfig) GetExpertMode() bool                      { return false }

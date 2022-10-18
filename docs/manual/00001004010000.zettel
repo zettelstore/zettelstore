@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220914183434
+modified: 20221018184208
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -68,6 +68,16 @@ The following keys are supported:
   Otherwise web browser are free to ignore the authentication cookie.
 
   Default: ""false""
+; [!insecure-html|''insecure-html'']
+: Allows to use HTML, e.g. within supported markup languages, even if this might introduce security-related problems.
+  However, HTML containing the ``<script>`` or the ``<iframe>`` tag is always ignored.
+  But due to ""clever"" ways of combining HTML, CSS, JavaScript, there might be some negative security consequences.
+  Please be aware of this!
+
+  Allowed values: ""html"" (allow zettel with [[syntax ""html""|00001008000000#html]]), ""markdown"" (""html"", plus allow inline HTML for Markdown markup only), ""zettelmarkup"" (""markdown"", plus allow inline HTML for Zettelmarkup).
+  Any other value is interpreted as ""secure"".
+
+  Default: ""secure"".
 ; [!listen-addr|''listen-addr'']
 : Configures the network address, where the Zettelstore service is listening for requests.
   Syntax is: ''[NETWORKIP]:PORT'', where ''NETWORKIP'' is the IP-address of the networking interface (or something like ""0.0.0.0"" if you want to listen on all network interfaces, and ''PORT'' is the TCP port.

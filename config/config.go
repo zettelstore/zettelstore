@@ -14,6 +14,7 @@ package config
 import (
 	"context"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -42,7 +43,10 @@ type Config interface {
 	// GetHomeZettel returns the value of the "home-zettel" key.
 	GetHomeZettel() id.Zid
 
-	// GetMaxTransclusions return the maximum number of indirect transclusions.
+	// GetHTMLInsecurity returns the current
+	GetHTMLInsecurity() HTMLInsecurity
+
+	// GetMaxTransclusions returns the maximum number of indirect transclusions.
 	GetMaxTransclusions() int
 
 	// GetYAMLHeader returns the current value of the "yaml-header" key.
@@ -62,4 +66,41 @@ type AuthConfig interface {
 
 	// GetVisibility returns the visibility value of the metadata.
 	GetVisibility(m *meta.Meta) meta.Visibility
+}
+
+// HTMLInsecurity states what kind of insecure HTML is allowed.
+// The lowest value is the most secure one (disallowing any HTML)
+type HTMLInsecurity uint8
+
+// Constant values for HTMLInsecurity:
+const (
+	NoHTML HTMLInsecurity = iota
+	SyntaxHTML
+	MarkdownHTML
+	ZettelmarkupHTML
+)
+
+func (hi HTMLInsecurity) String() string {
+	switch hi {
+	case SyntaxHTML:
+		return "html"
+	case MarkdownHTML:
+		return "markdown"
+	case ZettelmarkupHTML:
+		return "zettelmarkup"
+	}
+	return "secure"
+}
+
+// AllowHTML returns true, if the given HTML insecurity level matches the given syntax value.
+func (hi HTMLInsecurity) AllowHTML(syntax string) bool {
+	switch hi {
+	case SyntaxHTML:
+		return syntax == api.ValueSyntaxHTML
+	case MarkdownHTML:
+		return syntax == api.ValueSyntaxHTML || syntax == "markdown" || syntax == "md"
+	case ZettelmarkupHTML:
+		return syntax == api.ValueSyntaxZmk || syntax == api.ValueSyntaxHTML || syntax == "markdown" || syntax == "md"
+	}
+	return false
 }

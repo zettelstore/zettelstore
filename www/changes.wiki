@@ -12,6 +12,9 @@
   *  Remove support for URL query parameter starting with an underscore.
      Deprecated in version 0.7.0.
      (breaking: api, webui)
+  *  Ignore HTML content by default, and allow HTML gradually by setting
+     startup value <tt>insecure-html</tt>.
+     (breaking: markup)
   *  Endpoint <tt>/q</tt> returns list of full metadata, if no query action is
      specified. A HTTP call <tt>GET /z</tt> (retrieving metadata of all or some
      zettel) is now an alias for <tt>GET /q</tt>.

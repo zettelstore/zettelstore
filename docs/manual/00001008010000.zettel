@@ -3,7 +3,8 @@ title: Use Markdown within Zettelstore
 role: manual
 tags: #manual #markdown #zettelstore
 syntax: zmk
-modified: 20220627192014
+created: 20210126175322
+modified: 20221018115601
 
 If you are customized to use Markdown as your markup language, you can configure Zettelstore to support your decision.
 Zettelstore supports the [[CommonMark|00001008010500]] dialect of Markdown.
@@ -31,7 +32,7 @@ BTW, metadata is stored in a file without a file extension, if neither ''yaml-he
 === Security aspects
 
 You should be aware that Markdown is a super-set of HTML.
-Any HTML code is valid Markdown code.
+The body of any HTML document is also a valid Markdown document.
 If you write your own zettel, this is probably not a problem.
 
 However, if you receive zettel from others, you should be careful.
@@ -39,7 +40,10 @@ An attacker might include malicious HTML code in your zettel.
 For example, HTML allows to embed JavaScript, a full-sized programming language that drives many web sites.
 When a zettel is displayed, JavaScript code might be executed, sometimes with harmful results.
 
-Zettelstore mitigates this problem by ignoring suspicious text when it encodes a zettel as HTML.
+By default, Zettelstore prohibits any HTML content.
+If you want to relax this rule, you should take a look at the startup configuration key [[''insecure-html''|00001004010000#insecure-html]].
+
+Even if you have allowed HTML content, Zettelstore mitigates some of the security problems by ignoring suspicious text when it encodes a zettel as HTML.
 Any HTML text that might contain the ``<script>`` tag or the ``<iframe>`` tag is ignored.
 This may lead to unexpected results if you depend on these.
 Other [[encodings|00001012920500]] may still contain the full HTML text.

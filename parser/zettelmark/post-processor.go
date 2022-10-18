@@ -281,7 +281,6 @@ func (pp *postProcessor) visitBlockSlice(bs *ast.BlockSlice) {
 		(*bs)[pos] = nil // Allow excess nodes to be garbage collected.
 	}
 	*bs = (*bs)[:toPos:toPos]
-
 }
 
 // processItemSlice post-processes a slice of items.

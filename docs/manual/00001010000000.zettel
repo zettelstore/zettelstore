@@ -3,7 +3,8 @@ title: Security
 role: manual
 tags: #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20211124140614
+created: 20210126175322
+modified: 20221018123622
 
 Your zettel could contain sensitive content.
 You probably want to ensure that only authorized person can read and/or modify them.
@@ -14,7 +15,7 @@ The Zettelstore is designed to run on your local computer.
 If you do not configure it in other ways, no person from another computer can connect to your Zettelstore.
 You must explicitly configure it to allow access from other computers.
 
-In the case that your own multiple computers, you do not have to access the Zettelstore remotely.
+In the case that you own multiple computers, you do not have to access the Zettelstore remotely.
 You could install Zettelstore on each computer and set-up some software to synchronize your zettel.
 Since zettel are stored as ordinary files, this task could be done in various ways.
 
@@ -60,7 +61,7 @@ The Zettelstore itself does not encrypt messages.
 But you can put a server in front of it, which is able to handle encryption.
 Most generic web server software do allow this.
 
-To enforce encryption, [[authentication sessions|00001010040700]] are marked as secure by default.
+To enforce encryption, [[authenticated sessions|00001010040700]] are marked as secure by default.
 If you still want to access the Zettelstore remotely without encryption, you must change the startup configuration.
 Otherwise, authentication will not work.
 

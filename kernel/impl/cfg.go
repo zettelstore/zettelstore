@@ -66,9 +66,24 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			},
 			true,
 		},
-		keyExpertMode:            {"Expert mode", parseBool, true},
-		config.KeyFooterHTML:     {"Footer HTML", parseString, true},
-		keyHomeZettel:            {"Home zettel", parseZid, true},
+		keyExpertMode:        {"Expert mode", parseBool, true},
+		config.KeyFooterHTML: {"Footer HTML", parseString, true},
+		keyHomeZettel:        {"Home zettel", parseZid, true},
+		kernel.ConfigInsecureHTML: {
+			"Insecure HTML",
+			cs.noFrozen(func(val string) (any, error) {
+				switch val {
+				case kernel.ConfigSyntaxHTML:
+					return config.SyntaxHTML, nil
+				case kernel.ConfigMarkdownHTML:
+					return config.MarkdownHTML, nil
+				case kernel.ConfigZmkHTML:
+					return config.ZettelmarkupHTML, nil
+				}
+				return config.NoHTML, nil
+			}),
+			true,
+		},
 		api.KeyLang:              {"Language", parseString, true},
 		config.KeyMarkerExternal: {"Marker external URL", parseString, true},
 		keyMaxTransclusions:      {"Maximum transclusions", parseInt64, true},
@@ -82,19 +97,20 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		kernel.ConfigSimpleMode: {"Simple mode", cs.noFrozen(parseBool), true},
 	}
 	cs.next = interfaceMap{
-		keyDefaultCopyright:      "",
-		keyDefaultLicense:        "",
-		keyDefaultVisibility:     meta.VisibilityLogin,
-		keyExpertMode:            false,
-		config.KeyFooterHTML:     "",
-		keyHomeZettel:            id.DefaultHomeZid,
-		api.KeyLang:              api.ValueLangEN,
-		config.KeyMarkerExternal: "&#10138;",
-		keyMaxTransclusions:      int64(1024),
-		keySiteName:              "Zettelstore",
-		keyYAMLHeader:            false,
-		keyZettelFileSyntax:      nil,
-		kernel.ConfigSimpleMode:  false,
+		keyDefaultCopyright:       "",
+		keyDefaultLicense:         "",
+		keyDefaultVisibility:      meta.VisibilityLogin,
+		keyExpertMode:             false,
+		config.KeyFooterHTML:      "",
+		keyHomeZettel:             id.DefaultHomeZid,
+		kernel.ConfigInsecureHTML: config.NoHTML,
+		api.KeyLang:               api.ValueLangEN,
+		config.KeyMarkerExternal:  "&#10138;",
+		keyMaxTransclusions:       int64(1024),
+		keySiteName:               "Zettelstore",
+		keyYAMLHeader:             false,
+		keyZettelFileSyntax:       nil,
+		kernel.ConfigSimpleMode:   false,
 	}
 }
 func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
@@ -232,6 +248,10 @@ func updateMeta(result, m *meta.Meta, key, val string) *meta.Meta {
 	}
 	result.Set(key, val)
 	return result
+}
+
+func (cs *configService) GetHTMLInsecurity() config.HTMLInsecurity {
+	return cs.GetConfig(kernel.ConfigInsecureHTML).(config.HTMLInsecurity)
 }
 
 // GetSiteName returns the current value of the "site-name" key.

@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -53,7 +54,7 @@ func TestBlob(t *testing.T) {
 	m.Set(api.KeyTitle, "PNG")
 	for testNum, tc := range pngTestCases {
 		inp := input.NewInput(tc.blob)
-		pe := &peBlocks{bs: parser.ParseBlocks(inp, m, "png")}
+		pe := &peBlocks{bs: parser.ParseBlocks(inp, m, "png", config.NoHTML)}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, "???")
 	}
 }

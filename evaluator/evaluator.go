@@ -56,7 +56,7 @@ func EvaluateZettel(ctx context.Context, port Port, rtConfig config.Config, zn *
 // the given ports, and the given environment.
 func EvaluateBlock(ctx context.Context, port Port, rtConfig config.Config, bns *ast.BlockSlice) {
 	evaluateNode(ctx, port, rtConfig, bns)
-	cleaner.CleanBlockSlice(bns)
+	cleaner.CleanBlockSlice(bns, true)
 }
 
 // EvaluateInline evaluates the given inline list in the given context, with

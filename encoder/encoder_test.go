@@ -19,6 +19,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -66,7 +67,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 			cleaner.CleanInlineSlice(&is)
 			pe = &peInlines{is: is}
 		} else {
-			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk)}
+			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk, config.NoHTML)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
 		checkSexpr(t, testNum, pe, tc.descr)

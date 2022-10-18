@@ -477,9 +477,20 @@ var tcsInline = []zmkTestCase{
 		descr: "Inline HTML Zettel",
 		zmk:   `@@<hr>@@{="html"}`,
 		expect: expectMap{
-			encoderZJSON: `[{"":"HTML","s":"<hr>"}]`,
-			encoderHTML:  `<hr>`,
-			encoderSexpr: `((LITERAL-HTML () "<hr>"))`,
+			encoderZJSON: `[]`,
+			encoderHTML:  ``,
+			encoderSexpr: `()`,
+			encoderText:  ``,
+			encoderZmk:   ``,
+		},
+	},
+	{
+		descr: "Inline Text Zettel",
+		zmk:   `@@<hr>@@{="text"}`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Zettel","a":{"":"text"},"s":"<hr>"}]`,
+			encoderHTML:  ``,
+			encoderSexpr: `((LITERAL-ZETTEL (("" "text")) "<hr>"))`,
 			encoderText:  `<hr>`,
 			encoderZmk:   useZmk,
 		},

@@ -151,7 +151,8 @@ const (
 
 // Constants for config service keys.
 const (
-	ConfigSimpleMode = "simple-mode"
+	ConfigSimpleMode   = "simple-mode"
+	ConfigInsecureHTML = "insecure-html"
 )
 
 // Constants for authentication service keys.
@@ -170,6 +171,14 @@ const (
 const (
 	BoxDirTypeNotify = "notify"
 	BoxDirTypeSimple = "simple"
+)
+
+// Constants for config service keys.
+const (
+	ConfigSecureHTML   = "secure"
+	ConfigSyntaxHTML   = "html"
+	ConfigMarkdownHTML = "markdown"
+	ConfigZmkHTML      = "zettelmarkup"
 )
 
 // Constants for web service keys.

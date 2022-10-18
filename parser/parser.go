@@ -93,9 +93,12 @@ func IsImageFormat(syntax string) bool {
 }
 
 // ParseBlocks parses some input and returns a slice of block nodes.
-func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {
+func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string, hi config.HTMLInsecurity) ast.BlockSlice {
+	return parseBlocksAndClean(inp, m, syntax, hi)
+}
+func parseBlocksAndClean(inp *input.Input, m *meta.Meta, syntax string, hi config.HTMLInsecurity) ast.BlockSlice {
 	bs := Get(syntax).ParseBlocks(inp, m, syntax)
-	cleaner.CleanBlockSlice(&bs)
+	cleaner.CleanBlockSlice(&bs, hi.AllowHTML(syntax))
 	return bs
 }
 
@@ -133,12 +136,17 @@ func ParseZettel(ctx context.Context, zettel domain.Zettel, syntax string, rtCon
 	if syntax == api.ValueSyntaxNone {
 		parseMeta = m
 	}
+
+	hi := config.NoHTML
+	if rtConfig != nil {
+		hi = rtConfig.GetHTMLInsecurity()
+	}
 	return &ast.ZettelNode{
 		Meta:    m,
 		Content: zettel.Content,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax),
+		Ast:     parseBlocksAndClean(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax, hi),
 		Syntax:  syntax,
 	}
 }

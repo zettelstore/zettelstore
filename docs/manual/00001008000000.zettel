@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelstore
 syntax: zmk
 created: 20210126175300
-modified: 20220824114649
+modified: 20221018115054
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -29,6 +29,8 @@ The following syntax values are supported:
 ; [!html|''html'']
 : Hypertext Markup Language, will not be parsed further.
   Instead, it is treated as [[text|#text]], but will be encoded differently for [[HTML format|00001012920510]] (same for the [[web user interface|00001014000000]]).
+
+  Since HTML from unknown sources may contain security-related problems, zettel with this syntax are treated as an empty zettel, unless the startup configuration value for [[''insecure-html''|00001004010000#insecure-html]] is set to at least the value ""html"".
 
   For security reasons, equivocal elements will not be encoded in the HTML format / web user interface.
   The ``< script ...>`` tag is an example.

@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package cleaner provides funxtions to clean up the parsed AST.
+// Package cleaner provides functions to clean up the parsed AST.
 package cleaner
 
 import (
@@ -21,16 +21,17 @@ import (
 )
 
 // CleanBlockSlice cleans the given block list.
-func CleanBlockSlice(bs *ast.BlockSlice) { cleanNode(bs) }
+func CleanBlockSlice(bs *ast.BlockSlice, allowHTML bool) { cleanNode(bs, allowHTML) }
 
 // CleanInlineSlice cleans the given inline list.
-func CleanInlineSlice(is *ast.InlineSlice) { cleanNode(is) }
+func CleanInlineSlice(is *ast.InlineSlice) { cleanNode(is, false) }
 
-func cleanNode(n ast.Node) {
+func cleanNode(n ast.Node, allowHTML bool) {
 	cv := cleanVisitor{
-		textEnc: textenc.Create(),
-		hasMark: false,
-		doMark:  false,
+		textEnc:   textenc.Create(),
+		allowHTML: allowHTML,
+		hasMark:   false,
+		doMark:    false,
 	}
 	ast.Walk(&cv, n)
 	if cv.hasMark {
@@ -40,14 +41,25 @@ func cleanNode(n ast.Node) {
 }
 
 type cleanVisitor struct {
-	textEnc *textenc.Encoder
-	ids     map[string]ast.Node
-	hasMark bool
-	doMark  bool
+	textEnc   *textenc.Encoder
+	ids       map[string]ast.Node
+	allowHTML bool
+	hasMark   bool
+	doMark    bool
 }
 
 func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
+	case *ast.BlockSlice:
+		if !cv.allowHTML {
+			cv.visitBlockSlice(n)
+			return nil
+		}
+	case *ast.InlineSlice:
+		if !cv.allowHTML {
+			cv.visitInlineSlice(n)
+			return nil
+		}
 	case *ast.HeadingNode:
 		cv.visitHeading(n)
 		return nil
@@ -56,6 +68,68 @@ func (cv *cleanVisitor) Visit(node ast.Node) ast.Visitor {
 		return nil
 	}
 	return cv
+}
+
+func (cv *cleanVisitor) visitBlockSlice(bs *ast.BlockSlice) {
+	if bs == nil {
+		return
+	}
+	if len(*bs) == 0 {
+		*bs = nil
+		return
+	}
+	for _, bn := range *bs {
+		ast.Walk(cv, bn)
+	}
+
+	fromPos, toPos := 0, 0
+	for fromPos < len(*bs) {
+		(*bs)[toPos] = (*bs)[fromPos]
+		fromPos++
+		switch bn := (*bs)[toPos].(type) {
+		case *ast.VerbatimNode:
+			if bn.Kind != ast.VerbatimHTML {
+				toPos++
+			}
+		default:
+			toPos++
+		}
+	}
+	for pos := toPos; pos < len(*bs); pos++ {
+		(*bs)[pos] = nil // Allow excess nodes to be garbage collected.
+	}
+	*bs = (*bs)[:toPos:toPos]
+}
+
+func (cv *cleanVisitor) visitInlineSlice(is *ast.InlineSlice) {
+	if is == nil {
+		return
+	}
+	if len(*is) == 0 {
+		*is = nil
+		return
+	}
+	for _, bn := range *is {
+		ast.Walk(cv, bn)
+	}
+
+	fromPos, toPos := 0, 0
+	for fromPos < len(*is) {
+		(*is)[toPos] = (*is)[fromPos]
+		fromPos++
+		switch in := (*is)[toPos].(type) {
+		case *ast.LiteralNode:
+			if in.Kind != ast.LiteralHTML {
+				toPos++
+			}
+		default:
+			toPos++
+		}
+	}
+	for pos := toPos; pos < len(*is); pos++ {
+		(*is)[pos] = nil // Allow excess nodes to be garbage collected.
+	}
+	*is = (*is)[:toPos:toPos]
 }
 
 func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
