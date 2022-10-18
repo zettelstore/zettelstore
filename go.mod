@@ -8,9 +8,9 @@ require (
 	github.com/pascaldekloe/jwt v1.12.0
 	github.com/yuin/goldmark v1.5.2
 	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
-	golang.org/x/term v0.0.0-20220919170432-7a66f970e087
-	golang.org/x/text v0.3.8
+	golang.org/x/term v0.0.0-20221017184919-83659145692c
+	golang.org/x/text v0.4.0
 	zettelstore.de/c v0.7.1-0.20220927073310-998ac1ba24c3
 )
 
-require golang.org/x/sys v0.0.0-20220915200043-7b5979e65e41 // indirect
+require golang.org/x/sys v0.1.0 // indirect
