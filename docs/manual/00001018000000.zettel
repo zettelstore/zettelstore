@@ -3,7 +3,8 @@ title: Troubleshooting
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220823195041
+created: 00010101000000
+modified: 20221020132617
 
 This page lists some problems and their solutions that may occur when using your Zettelstore.
 
@@ -34,3 +35,22 @@ This page lists some problems and their solutions that may occur when using your
 ** **Solution 2:** There is an [[API|00001012080500]] call to make Zettelstore aware of this change.
 ** **Solution 3:** If you have an enabled [[Administrator Console|00001004100000]] you can use the command [[''refresh''|00001004101000#refresh]] to make your changes visible.
 ** **Solution 4:** You configure the zettel box as [[""simple""|00001004011400]].
+
+=== HTML content is not shown
+* **Problem:** You have entered some HTML code as content for your Zettelstore, but this content is not shown on the Web User Interface.
+
+  You may have entered a Zettel with syntax [[""html""|00001008000000#html]], or you have used an [[inline-zettel block|00001007031200]] with syntax ""html"", or you entered a Zettel with syntax [[""markdown""|00001008000000#markdown]] (or ""md"") and used some HTML code fragments.
+** **Explanation:** Working with HTML code from unknown sources may lead so severe security problems.
+   The HTML code may force web browsers to load more content from external server, it may contain malicious JavaScript code, it may reference to CSS artifacts that itself load from external servers and may contains malicious software.
+   Zettelstore tries to do its best to ignore problematic HTML code, but it may fail.
+   Either because of unknown bugs or because of yet unknown changes in the future.
+
+   Zettelstore sets a restrictive [[Content Security Policy|https://www.w3.org/TR/CSP/]], but this depends on web browsers to implement them correctly and on users to not disable it.
+   Zettelstore will not display any HTML code, which contains a ``<script>>`` or an ``<iframe>`` tag.
+   But attackers may find other ways to deploy their malicious code.
+
+   Therefore, Zettelstore disallows any HTML content as a default.
+   If you know what you are doing, e.g. because you will never copy HTML code you do not understand, you can relax this default.
+** **Solution 1:** If you want zettel with syntax ""html"" not to be ignored, you set the startup configuration key [[''insecure-html''|00001004010000#insecure-html]] to the value ""html"".
+** **Solution 2:** If you want zettel with syntax ""html"" not to be ignored, **and** want to allow HTML in Markdown, you set the startup configuration key [[''insecure-html''|00001004010000#insecure-html]] to the value ""markdown"".
+** **Solution 3:** If you want zettel with syntax ""html"" not to be ignored, **and** want to allow HTML in Markdown, **and** want to use HTML code within Zettelmarkup, you set the startup configuration key [[''insecure-html''|00001004010000#insecure-html]] to the value ""zettelmarkup"".
