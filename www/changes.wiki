@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_9"></a>
+<h2>Changes for Version 0.9.0 (pending)</h2>
+
 <a name="0_8"></a>
-<h2>Changes for Version 0.8.0 (pending)</h2>
+<h2>Changes for Version 0.8.0 (2022-10-20)</h2>
   *  Remove support for tags within zettel content. Removes also property
      metadata keys <tt>all-tags</tt> and <tt>computed-tags</tt>. Deprecated in
      version 0.7.0.
@@ -19,15 +22,26 @@
      specified. A HTTP call <tt>GET /z</tt> (retrieving metadata of all or some
      zettel) is now an alias for <tt>GET /q</tt>.
      (major: api)
-  *  Allow to create a zettel that acts as the new version of an exisitng
+  *  Allow to create a zettel that acts as the new version of an existing
      zettel. Useful if you want to have access to older, outdated content.
      (minor: webui)
   *  Allow transclusion to reference local image via URL.
-     (minor: zettelmarkup)
-  *  Add support creating an Atom 1.0 feed using a query action.
+     (minor: zettelmarkup, webui)
+  *  Add categories in RSS feed, based on zettel tags.
+     (minor: api, webui)
+  *  Add support for creating an Atom 1.0 feed using a query action.
      (minor: api, webui)
   *  Ignore entities with code point that is not allowed in HTML.
      (minor: zettelmarkup)
+  *  Enhance distribution of tag sizes when show a tag cloud.
+     (minor: webui)
+  *  Warn user if zettelstore listens non-locally, but no authentication is
+     enabled.
+     (minor: server)
+  *  Fix error that a manual zettel deletion was not always detected.
+     (bug: dirbox)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a name="0_7"></a>
 <h2>Changes for Version 0.7.1 (2022-09-18)</h2>
