@@ -149,9 +149,9 @@ func TestLink(t *testing.T) {
 		{"[[b c|a#n]]", "(PARA (LINK a#n b SP c))"},
 		{"[[a]]go", "(PARA (LINK a) go)"},
 		{"[[b|a]]{go}", "(PARA (LINK a b)[ATTR go])"},
-		{"[[[[a]]|b]]", "(PARA (LINK [[a) |b]])"},
+		{"[[[[a]]|b]]", "(PARA [[ (LINK a) |b]])"},
 		{"[[a[b]c|d]]", "(PARA (LINK d a[b]c))"},
-		{"[[[b]c|d]]", "(PARA (LINK d [b]c))"},
+		{"[[[b]c|d]]", "(PARA [ (LINK d b]c))"},
 		{"[[a[]c|d]]", "(PARA (LINK d a[]c))"},
 		{"[[a[b]|d]]", "(PARA (LINK d a[b]))"},
 		{"[[\\|]]", "(PARA (LINK %5C%7C))"},
@@ -164,7 +164,7 @@ func TestLink(t *testing.T) {
 		{"[[\\]\\||a]]", "(PARA (LINK a ]|))"},
 		{"[[http://a]]", "(PARA (LINK http://a))"},
 		{"[[http://a|http://a]]", "(PARA (LINK http://a http://a))"},
-		{"[[[[a]]]]", "(PARA (LINK [[a) ]])"},
+		{"[[[[a]]]]", "(PARA [[ (LINK a) ]])"},
 		{"[[query:title]]", "(PARA (LINK query:title))"},
 		{"[[query:title syntax]]", "(PARA (LINK query:title syntax))"},
 		{"[[query:title | action]]", "(PARA (LINK query:title | action))"},
@@ -234,7 +234,7 @@ func TestEmbed(t *testing.T) {
 		{"{{b\nc|a}}", "(PARA (EMBED a b SB c))"},
 		{"{{b c|a#n}}", "(PARA (EMBED a#n b SP c))"},
 		{"{{a}}{go}", "(PARA (EMBED a)[ATTR go])"},
-		{"{{{{a}}|b}}", "(PARA (EMBED %7B%7Ba) |b}})"},
+		{"{{{{a}}|b}}", "(PARA {{ (EMBED a) |b}})"},
 		{"{{\\|}}", "(PARA (EMBED %5C%7C))"},
 		{"{{\\||a}}", "(PARA (EMBED a |))"},
 		{"{{b\\||a}}", "(PARA (EMBED a b|))"},
@@ -245,7 +245,7 @@ func TestEmbed(t *testing.T) {
 		{"{{\\}\\||a}}", "(PARA (EMBED a }|))"},
 		{"{{http://a}}", "(PARA (EMBED http://a))"},
 		{"{{http://a|http://a}}", "(PARA (EMBED http://a http://a))"},
-		{"{{{{a}}}}", "(PARA (EMBED %7B%7Ba) }})"},
+		{"{{{{a}}}}", "(PARA {{ (EMBED a) }})"},
 	})
 }
 
@@ -681,7 +681,7 @@ func TestTransclude(t *testing.T) {
 		{"{{{a}}}}", "(TRANSCLUDE a)"},
 		{"{{{a\\}}}}", "(TRANSCLUDE a%5C%7D)"},
 		{"{{{a\\}}}}b", "(TRANSCLUDE a%5C%7D)[ATTR =b]"},
-		{"{{{a}}", "(PARA (EMBED %7Ba))"},
+		{"{{{a}}", "(PARA { (EMBED a))"},
 		{"{{{a}}}{go=b}", "(TRANSCLUDE a)[ATTR go=b]"},
 	})
 }

@@ -1,0 +1,28 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2022 Detlef Stern
+//
+// This file is part of Zettelstore.
+//
+// Zettelstore is licensed under the latest version of the EUPL (European Union
+// Public License). Please see file LICENSE.txt for your rights and obligations
+// under this license.
+//-----------------------------------------------------------------------------
+
+package zettelmark_test
+
+import (
+	"testing"
+
+	"zettelstore.de/c/api"
+	"zettelstore.de/z/config"
+	"zettelstore.de/z/input"
+	"zettelstore.de/z/parser"
+)
+
+func FuzzParseBlocks(f *testing.F) {
+	f.Fuzz(func(t *testing.T, src []byte) {
+		t.Parallel()
+		inp := input.NewInput(src)
+		parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk, config.NoHTML)
+	})
+}

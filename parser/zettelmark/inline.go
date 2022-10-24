@@ -153,7 +153,7 @@ func (cp *zmkP) parseSoftBreak() *ast.BreakNode {
 }
 
 func (cp *zmkP) parseLink() (*ast.LinkNode, bool) {
-	if ref, is, ok := cp.parseReference(']'); ok {
+	if ref, is, ok := cp.parseReference('[', ']'); ok {
 		attrs := cp.parseInlineAttributes()
 		if len(ref) > 0 {
 			return &ast.LinkNode{
@@ -170,10 +170,14 @@ func hasQueryPrefix(src []byte) bool {
 	return len(src) > len(ast.QueryPrefix) && string(src[:len(ast.QueryPrefix)]) == ast.QueryPrefix
 }
 
-func (cp *zmkP) parseReference(closeCh rune) (ref string, is ast.InlineSlice, _ bool) {
+func (cp *zmkP) parseReference(openCh, closeCh rune) (ref string, is ast.InlineSlice, _ bool) {
 	inp := cp.inp
 	inp.Next()
 	cp.skipSpace()
+	if inp.Ch == openCh {
+		// Additional opening chars result in a fail
+		return "", nil, false
+	}
 	pos := inp.Pos
 	if !hasQueryPrefix(inp.Src[pos:]) {
 		hasSpace, ok := cp.readReferenceToSep(closeCh)
@@ -342,7 +346,7 @@ func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
 }
 
 func (cp *zmkP) parseEmbed() (ast.InlineNode, bool) {
-	if ref, ins, ok := cp.parseReference('}'); ok {
+	if ref, ins, ok := cp.parseReference('{', '}'); ok {
 		attrs := cp.parseInlineAttributes()
 		if len(ref) > 0 {
 			r := ast.ParseReference(ref)

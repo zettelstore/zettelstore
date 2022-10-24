@@ -4,10 +4,11 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210810155955
-modified: 20220922154843
+modified: 20221024173849
 
 There are two kinds of links, regardless of links to (internal) other zettel or to (external) material.
 Both kinds begin with two consecutive left square bracket characters (""''[''"", U+005B) and ends with two consecutive right square bracket characters (""'']''"", U+005D).
+If the content starts with more than two left square bracket characters, all but the last two will be treated as text.
 
 The first form provides some text plus the link specification, delimited by a vertical bar character (""''|''"", U+007C): ``[[text|linkspecification]]``.
 The text is a sequence of [[inline elements|00001007040000]].
