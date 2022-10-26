@@ -3037,7 +3037,7 @@ func (p *Pik) pik_elem_new(pId *PToken, pStr *PToken, pSublist PList) *PObj {
  */
 func (p *Pik) pik_find_macro(pId *PToken) *PMacro {
 	for pMac := p.pMacros; pMac != nil; pMac = pMac.pNext {
-		if pMac.macroName.n == pId.n && bytesEq(pMac.macroName.z[:pMac.macroName.n], pId.z[:pId.n]) {
+		if pMac.macroName.n == pId.n && bytes.Equal(pMac.macroName.z[:pMac.macroName.n], pId.z[:pId.n]) {
 			return pMac
 		}
 	}
@@ -4117,7 +4117,7 @@ func (p *Pik) pik_find_byname(pBasis *PObj, pName *PToken) *PObj {
 		pObj := pList[i]
 		for j := 0; j < int(pObj.nTxt); j++ {
 			t := pObj.aTxt[j].n
-			if t == pName.n+2 && bytesEq(pObj.aTxt[j].z[1:t-1], pName.z[:pName.n]) {
+			if t == pName.n+2 && bytes.Equal(pObj.aTxt[j].z[1:t-1], pName.z[:pName.n]) {
 				p.lastRef = pObj
 				return pObj
 			}
@@ -5175,10 +5175,10 @@ func pik_token_length(pToken *PToken, bAllowCodeBlock bool) int {
 		return i
 
 	case '&':
-		for i, ent := range aEntity {
-			if bytencmp(z, aEntity[i].zEntity, len(aEntity[i].zEntity)) == 0 {
+		for _, ent := range aEntity {
+			if bytencmp(z, ent.zEntity, len(ent.zEntity)) == 0 {
 				pToken.eType = uint8(ent.eCode)
-				return len(aEntity[i].zEntity)
+				return len(ent.zEntity)
 			}
 		}
 		pToken.eType = T_ERROR
@@ -5646,19 +5646,13 @@ func islower(b byte) bool {
 }
 
 func bytencmp(a []byte, s string, n int) int {
-	return strings.Compare(string(a[:n]), s)
-}
-
-func bytesEq(a, b []byte) bool {
-	if len(a) != len(b) {
-		return false
+	if len(a) >= n {
+		return strings.Compare(string(a[:n]), s)
 	}
-	for i, bb := range a {
-		if b[i] != bb {
-			return false
-		}
+	if strings.Compare(string(a), s) <= 0 {
+		return -1
 	}
-	return true
+	return 1
 }
 
 } // end %code
