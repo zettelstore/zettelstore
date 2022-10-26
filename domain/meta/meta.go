@@ -260,6 +260,9 @@ func trimValue(value string) string {
 // Get retrieves the string value of a given key. The bool value signals,
 // whether there was a value stored or not.
 func (m *Meta) Get(key string) (string, bool) {
+	if m == nil {
+		return "", false
+	}
 	if key == api.KeyID {
 		return m.Zid.String(), true
 	}
@@ -270,7 +273,7 @@ func (m *Meta) Get(key string) (string, bool) {
 // GetDefault retrieves the string value of the given key. If no value was
 // stored, the given default value is returned.
 func (m *Meta) GetDefault(key, def string) string {
-	if value, ok := m.Get(key); ok {
+	if value, found := m.Get(key); found {
 		return value
 	}
 	return def
@@ -377,7 +380,7 @@ func (m *Meta) Equal(o *Meta, allowComputed bool) bool {
 
 func equalValue(key, val string, other *Meta, allowComputed bool) bool {
 	if allowComputed || !IsComputed(key) {
-		if valO, ok := other.pairs[key]; !ok || val != valO {
+		if valO, found := other.pairs[key]; !found || val != valO {
 			return false
 		}
 	}
