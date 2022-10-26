@@ -1640,8 +1640,8 @@ func (yypParser *yyParser) yy_destructor(
  */
 func (pParser *yyParser) yy_pop_parser_stack() {
 	assert(pParser.yytos > 0, "pParser.yytos>0")
-	yytos := pParser.yystack[pParser.yytos]
 	pParser.yytos--
+	yytos := pParser.yystack[pParser.yytos]
 	if !NDEBUG {
 		if yyTraceFILE != nil {
 			fmt.Fprintf(yyTraceFILE, "%sPopping %s\n",
