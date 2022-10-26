@@ -49,9 +49,10 @@ func TestSeekZid(t *testing.T) {
 func TestNewExtIsBetter(t *testing.T) {
 	extVals := []string{
 		// Main Formats
-		api.ValueSyntaxZmk, "pikchr", "markdown", "md",
+		api.ValueSyntaxZmk, api.ValueSyntaxPikchr, api.ValueSyntaxMarkdown, api.ValueSyntaxMD,
 		// Other supported text formats
-		"css", "txt", api.ValueSyntaxHTML, api.ValueSyntaxNone, "mustache", api.ValueSyntaxText, "plain",
+		api.ValueSyntaxCSS, "txt", api.ValueSyntaxHTML, api.ValueSyntaxNone,
+		api.ValueSyntaxMustache, api.ValueSyntaxText, "plain",
 		// Supported graphics formats
 		api.ValueSyntaxGif, "png", api.ValueSyntaxSVG, "jpeg", "jpg",
 		// Unsupported syntax values

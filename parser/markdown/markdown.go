@@ -20,6 +20,7 @@ import (
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -30,8 +31,8 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "markdown",
-		AltNames:      []string{"md"},
+		Name:          api.ValueSyntaxMarkdown,
+		AltNames:      []string{api.ValueSyntaxMD},
 		IsTextParser:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,

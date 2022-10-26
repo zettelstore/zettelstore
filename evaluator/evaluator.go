@@ -157,7 +157,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 	case ast.VerbatimZettel:
 		return e.evalVerbatimZettel(vn)
 	case ast.VerbatimEval:
-		if syntax, found := vn.Attrs.Get(""); found && syntax == ast.VerbatimEvalSyntaxDraw {
+		if syntax, found := vn.Attrs.Get(""); found && syntax == api.ValueSyntaxDraw {
 			return draw.ParseDrawBlock(vn)
 		}
 	}

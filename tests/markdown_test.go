@@ -75,7 +75,7 @@ func TestMarkdownSpec(t *testing.T) {
 }
 
 func createMDBlockSlice(markdown string, hi config.HTMLInsecurity) ast.BlockSlice {
-	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, "markdown", hi)
+	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, api.ValueSyntaxMarkdown, hi)
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {

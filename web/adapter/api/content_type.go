@@ -36,22 +36,22 @@ func encoding2ContentType(enc api.EncodingEnum) string {
 }
 
 var mapSyntax2CT = map[string]string{
-	"css":               "text/css; charset=utf-8",
-	api.ValueSyntaxGif:  "image/gif",
-	api.ValueSyntaxHTML: "text/html; charset=utf-8",
-	"jpeg":              "image/jpeg",
-	"jpg":               "image/jpeg",
-	"js":                "text/javascript; charset=utf-8",
-	"pdf":               "application/pdf",
-	"png":               "image/png",
-	api.ValueSyntaxSVG:  ctSVG,
-	"xml":               "text/xml; charset=utf-8",
-	api.ValueSyntaxZmk:  "text/x-zmk; charset=utf-8",
-	"plain":             ctPlainText,
-	api.ValueSyntaxText: ctPlainText,
-	"markdown":          "text/markdown; charset=utf-8",
-	"md":                "text/markdown; charset=utf-8",
-	"mustache":          ctPlainText,
+	api.ValueSyntaxCSS:      "text/css; charset=utf-8",
+	api.ValueSyntaxGif:      "image/gif",
+	api.ValueSyntaxHTML:     "text/html; charset=utf-8",
+	"jpeg":                  "image/jpeg",
+	"jpg":                   "image/jpeg",
+	"js":                    "text/javascript; charset=utf-8",
+	"pdf":                   "application/pdf",
+	"png":                   "image/png",
+	api.ValueSyntaxSVG:      ctSVG,
+	"xml":                   "text/xml; charset=utf-8",
+	api.ValueSyntaxZmk:      "text/x-zmk; charset=utf-8",
+	"plain":                 ctPlainText,
+	api.ValueSyntaxText:     ctPlainText,
+	api.ValueSyntaxMarkdown: "text/markdown; charset=utf-8",
+	api.ValueSyntaxMD:       "text/markdown; charset=utf-8",
+	api.ValueSyntaxMustache: ctPlainText,
 }
 
 func syntax2contentType(syntax string) (string, bool) {

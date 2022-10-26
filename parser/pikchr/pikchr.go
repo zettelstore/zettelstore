@@ -24,7 +24,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "pikchr",
+		Name:          api.ValueSyntaxPikchr,
 		AltNames:      nil,
 		IsTextParser:  true,
 		IsImageFormat: false,

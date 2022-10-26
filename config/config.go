@@ -98,9 +98,10 @@ func (hi HTMLInsecurity) AllowHTML(syntax string) bool {
 	case SyntaxHTML:
 		return syntax == api.ValueSyntaxHTML
 	case MarkdownHTML:
-		return syntax == api.ValueSyntaxHTML || syntax == "markdown" || syntax == "md"
+		return syntax == api.ValueSyntaxHTML || syntax == api.ValueSyntaxMarkdown || syntax == api.ValueSyntaxMD
 	case ZettelmarkupHTML:
-		return syntax == api.ValueSyntaxZmk || syntax == api.ValueSyntaxHTML || syntax == "markdown" || syntax == "md"
+		return syntax == api.ValueSyntaxZmk || syntax == api.ValueSyntaxHTML ||
+			syntax == api.ValueSyntaxMarkdown || syntax == api.ValueSyntaxMD
 	}
 	return false
 }

@@ -90,11 +90,6 @@ func (*VerbatimNode) itemNode()  { /* Just a marker */ }
 // WalkChildren does nothing.
 func (*VerbatimNode) WalkChildren(Visitor) { /* No children*/ }
 
-// Supported syntax values for VerbatimEval.
-const (
-	VerbatimEvalSyntaxDraw = "draw"
-)
-
 //--------------------------------------------------------------------------
 
 // RegionNode encapsulates a region of block nodes.
