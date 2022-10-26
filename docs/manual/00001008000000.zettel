@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelstore
 syntax: zmk
 created: 20210126175300
-modified: 20221018115054
+modified: 20221026133826
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -23,6 +23,8 @@ The following syntax values are supported:
 
 ; [!css|''css'']
 : A [[Cascading Style Sheet|https://www.w3.org/Style/CSS/]], to be used when rendering a zettel as HTML.
+; [!draw|''draw'']
+: A [[language|00001008050000]] to ""draw"" a graphic by using some simple Unicode characters.
 ; [!gif|''gif'']; [!jpeg|''jpeg'']; [!jpg|''jpg'']; [!png|''png'']
 : The formats for pixel graphics.
   Typically the data is stored in a separate file and the syntax is given in the meta-file, which has the same name as the zettel identifier and has no file extension.[^Before version 0.2, the meta-file had the file extension ''.meta'']
@@ -58,10 +60,3 @@ The following syntax values are supported:
 The actual values are also listed in a zettel named [[Zettelstore Supported Parser|00000000000092]].
 
 If you specify something else, your content will be interpreted as plain text.
-
-=== Language for other elements of a zettel
-[[Zettelmarkup|00001007000000]] allows to specify [[evaluation blocks|00001007031300]], which also receive a syntax value.
-An evaluation blocks is typically interpreted by external software, for example [[Zettel Presenter|00001006055000#external-applications]].
-However, some values are interpreted by Zettelstore during evaluation of a zettel:
-; [!draw|''draw'']
-: A [[language|00001008050000]] to ""draw"" a graphic by using some simple Unicode characters.

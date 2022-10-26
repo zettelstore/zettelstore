@@ -20,13 +20,70 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/input"
+	"zettelstore.de/z/parser"
 )
+
+func init() {
+	parser.Register(&parser.Info{
+		Name:          "draw",
+		AltNames:      []string{},
+		IsTextParser:  true,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
+	})
+}
 
 const (
 	defaultFont   = ""
 	defaultScaleX = 10
 	defaultScaleY = 20
 )
+
+func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
+	font := m.GetDefault("font", defaultFont)
+	scaleX := m.GetNumber("x-scale", defaultScaleX)
+	scaleY := m.GetNumber("y-scale", defaultScaleY)
+	if scaleX < 1 || 1000000 < scaleX {
+		scaleX = defaultScaleX
+	}
+	if scaleY < 1 || 1000000 < scaleY {
+		scaleY = defaultScaleY
+	}
+
+	canvas, err := newCanvas(inp.Src[inp.Pos:])
+	if err != nil {
+		return ast.BlockSlice{ast.CreateParaNode(canvasErrMsg(err)...)}
+	}
+	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
+	if len(svg) == 0 {
+		return ast.BlockSlice{ast.CreateParaNode(noSVGErrMsg()...)}
+	}
+	return ast.BlockSlice{&ast.BLOBNode{
+		Title:  "",
+		Syntax: api.ValueSyntaxSVG,
+		Blob:   svg,
+	}}
+}
+
+func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
+	canvas, err := newCanvas(inp.Src[inp.Pos:])
+	if err != nil {
+		return canvasErrMsg(err)
+	}
+	svg := canvasToSVG(canvas, defaultFont, defaultScaleX, defaultScaleY)
+	if len(svg) == 0 {
+		return noSVGErrMsg()
+	}
+	return ast.InlineSlice{&ast.EmbedBLOBNode{
+		Attrs:   nil,
+		Syntax:  api.ValueSyntaxSVG,
+		Blob:    svg,
+		Inlines: nil,
+	}}
+}
 
 // ParseDrawBlock parses the content of an eval verbatim node into an SVG image BLOB.
 func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
@@ -47,7 +104,7 @@ func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
 	if scaleY < 1 || 1000000 < scaleY {
 		scaleY = defaultScaleY
 	}
-	svg := canvasToSVG(canvas, font, int(scaleX), int(scaleY))
+	svg := canvasToSVG(canvas, font, scaleX, scaleY)
 	if len(svg) == 0 {
 		return ast.CreateParaNode(noSVGErrMsg()...)
 	}

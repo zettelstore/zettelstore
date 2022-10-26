@@ -16,6 +16,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
+	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
 	_ "zettelstore.de/z/parser/none"       // Allow to use none parser.
 	_ "zettelstore.de/z/parser/pikchr"     // Allow to use pikchr parser.
@@ -49,7 +50,7 @@ func TestSeekZid(t *testing.T) {
 func TestNewExtIsBetter(t *testing.T) {
 	extVals := []string{
 		// Main Formats
-		api.ValueSyntaxZmk, api.ValueSyntaxPikchr, api.ValueSyntaxMarkdown, api.ValueSyntaxMD,
+		api.ValueSyntaxZmk, api.ValueSyntaxDraw, api.ValueSyntaxPikchr, api.ValueSyntaxMarkdown, api.ValueSyntaxMD,
 		// Other supported text formats
 		api.ValueSyntaxCSS, "txt", api.ValueSyntaxHTML, api.ValueSyntaxNone,
 		api.ValueSyntaxMustache, api.ValueSyntaxText, "plain",
