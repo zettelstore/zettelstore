@@ -2,6 +2,11 @@
 
 <a name="0_9"></a>
 <h2>Changes for Version 0.9.0 (pending)</h2>
+  *  Remove support syntax <tt>pikchr</tt>. Although it was a nice idea to
+     include it into Zettelstore, the implementation is too brittle (w.r.t. the
+     expected long lifetime of Zettelstore). There should be other ways to
+     support SVG front-ends.
+     (breaking)
   *  Add syntax &ldquo;draw&rdquo; (again)
      (minor: zettelmarkup)
 

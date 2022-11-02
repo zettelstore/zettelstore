@@ -43,7 +43,6 @@ func TestParserType(t *testing.T) {
 		{api.ValueSyntaxMD, true, false},
 		{api.ValueSyntaxMustache, false, false},
 		{api.ValueSyntaxNone, false, false},
-		{api.ValueSyntaxPikchr, false, false},
 		{"plain", false, false},
 		{"png", false, true},
 		{api.ValueSyntaxSVG, false, true},

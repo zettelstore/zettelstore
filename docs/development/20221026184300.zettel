@@ -3,7 +3,7 @@ title: Fuzzing Tests
 role: zettel
 syntax: zmk
 created: 20221026184320
-modified: 20221026184839
+modified: 20221102140156
 
 The source code contains some simple [[fuzzing tests|https://go.dev/security/fuzz/]].
 You should call them regularly to make sure that the software will cope with unusual input.
@@ -11,10 +11,4 @@ You should call them regularly to make sure that the software will cope with unu
 ```sh
 go test -fuzz=FuzzParseBlocks zettelstore.de/z/parser/draw
 go test -fuzz=FuzzParseBlocks zettelstore.de/z/parser/zettelmark
-```
-
-In addition, the dependency [[gopikchr|https://github.com/t73fde/gopikchr]] also contains a fuzzing test:[^This is not a imported dependency, but two source files are copied into the Zettelstore source (''parser/pikchr/internal/pikchr.[cy]'').]
-
-```sh
-go test -fuzz=FuzzConvert
 ```
