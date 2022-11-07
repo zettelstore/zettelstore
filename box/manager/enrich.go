@@ -61,22 +61,29 @@ func computeCreated(zid id.Zid) string {
 	}
 	zid /= 100
 	day := zid % 100
+	zid /= 100
+	month := zid % 100
+	year := zid / 100
+	month, day = sanitizeMonthDay(year, month, day)
+	created := ((((year*100+month)*100+day)*100+hours)*100+minutes)*100 + seconds
+	return created.String()
+}
+
+func sanitizeMonthDay(year, month, day id.Zid) (id.Zid, id.Zid) {
 	if day < 1 {
 		day = 1
 	}
-	zid /= 100
-	month := zid % 100
 	if month < 1 {
 		month = 1
 	}
 	if month > 12 {
 		month = 12
 	}
-	year := zid / 100
+
 	switch month {
 	case 1, 3, 5, 7, 8, 10, 12:
 		if day > 31 {
-			day = 32
+			day = 31
 		}
 	case 4, 6, 9, 11:
 		if day > 30 {
@@ -93,8 +100,7 @@ func computeCreated(zid id.Zid) string {
 			}
 		}
 	}
-	created := ((((year*100+month)*100+day)*100+hours)*100+minutes)*100 + seconds
-	return created.String()
+	return month, day
 }
 
 func computePublished(m *meta.Meta) {

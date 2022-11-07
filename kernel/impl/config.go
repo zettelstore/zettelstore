@@ -110,7 +110,7 @@ func (cfg *srvConfig) SetConfig(key, value string) error {
 		cfg.next[key] = value
 		return nil
 	}
-	iVal, err := parse(value) // TODO
+	iVal, err := parse(value)
 	if err != nil {
 		return err
 	}

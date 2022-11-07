@@ -22,7 +22,7 @@ const QueryPrefix = "query:"
 
 // ParseReference parses a string and returns a reference.
 func ParseReference(s string) *Reference {
-	if s == "" || s == "00000000000000" {
+	if invalidReference(s) {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
 	if strings.HasPrefix(s, QueryPrefix) {
@@ -41,7 +41,7 @@ func ParseReference(s string) *Reference {
 	if err != nil {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
-	if len(u.Scheme)+len(u.Opaque)+len(u.Host) == 0 && u.User == nil {
+	if !externalURL(u) {
 		if _, err = id.Parse(u.Path); err == nil {
 			return &Reference{URL: u, Value: s, State: RefStateZettel}
 		}
@@ -50,6 +50,11 @@ func ParseReference(s string) *Reference {
 		}
 	}
 	return &Reference{URL: u, Value: s, State: RefStateExternal}
+}
+
+func invalidReference(s string) bool { return s == "" || s == "00000000000000" }
+func externalURL(u *url.URL) bool {
+	return u.Scheme != "" || u.Opaque != "" || u.Host != "" || u.User != nil
 }
 
 func localState(path string) (RefState, bool) {

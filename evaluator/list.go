@@ -40,45 +40,48 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 		max:   -1,
 		title: rtConfig.GetSiteName(),
 	}
-	if actions := q.Actions(); len(actions) > 0 {
-		acts := make([]string, 0, len(actions))
-		for i, act := range actions {
-			if strings.HasPrefix(act, "N") {
-				ap.kind = ast.NestedListOrdered
+	actions := q.Actions()
+	if len(actions) == 0 {
+		return ap.createBlockNodeMeta()
+	}
+
+	acts := make([]string, 0, len(actions))
+	for i, act := range actions {
+		if strings.HasPrefix(act, "N") {
+			ap.kind = ast.NestedListOrdered
+			continue
+		}
+		if strings.HasPrefix(act, "MIN") {
+			if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
+				ap.min = num
 				continue
 			}
-			if strings.HasPrefix(act, "MIN") {
-				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
-					ap.min = num
-					continue
-				}
-			}
-			if strings.HasPrefix(act, "MAX") {
-				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
-					ap.max = num
-					continue
-				}
-			}
-			if act == "TITLE" && i+1 < len(actions) {
-				ap.title = strings.Join(actions[i+1:], " ")
-				break
-			}
-			acts = append(acts, act)
 		}
-		for _, act := range acts {
-			switch act {
-			case "ATOM":
-				return ap.createBlockNodeAtom(rtConfig)
-			case "RSS":
-				return ap.createBlockNodeRSS(rtConfig)
+		if strings.HasPrefix(act, "MAX") {
+			if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
+				ap.max = num
+				continue
 			}
-			key := strings.ToLower(act)
-			switch meta.Type(key) {
-			case meta.TypeWord:
-				return ap.createBlockNodeWord(key)
-			case meta.TypeTagSet:
-				return ap.createBlockNodeTagSet(key)
-			}
+		}
+		if act == "TITLE" && i+1 < len(actions) {
+			ap.title = strings.Join(actions[i+1:], " ")
+			break
+		}
+		acts = append(acts, act)
+	}
+	for _, act := range acts {
+		switch act {
+		case "ATOM":
+			return ap.createBlockNodeAtom(rtConfig)
+		case "RSS":
+			return ap.createBlockNodeRSS(rtConfig)
+		}
+		key := strings.ToLower(act)
+		switch meta.Type(key) {
+		case meta.TypeWord:
+			return ap.createBlockNodeWord(key)
+		case meta.TypeTagSet:
+			return ap.createBlockNodeTagSet(key)
 		}
 	}
 	return ap.createBlockNodeMeta()
@@ -125,23 +128,7 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 		return nil
 	}
 	ccs.SortByCount()
-	if min, max := ap.min, ap.max; min > 0 || max > 0 {
-		if min < 0 {
-			min = ccs[len(ccs)-1].Count
-		}
-		if max < 0 {
-			max = ccs[0].Count
-		}
-		if ccs[len(ccs)-1].Count < min || max < ccs[0].Count {
-			temp := make(meta.CountedCategories, 0, len(ccs))
-			for _, cat := range ccs {
-				if min <= cat.Count && cat.Count <= max {
-					temp = append(temp, cat)
-				}
-			}
-			ccs = temp
-		}
-	}
+	ccs = ap.limitTags(ccs)
 	countMap := ap.calcFontSizes(ccs)
 
 	para := make(ast.InlineSlice, 0, len(ccs))
@@ -172,6 +159,27 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 	return &ast.ParaNode{
 		Inlines: para,
 	}
+}
+
+func (ap *actionPara) limitTags(ccs meta.CountedCategories) meta.CountedCategories {
+	if min, max := ap.min, ap.max; min > 0 || max > 0 {
+		if min < 0 {
+			min = ccs[len(ccs)-1].Count
+		}
+		if max < 0 {
+			max = ccs[0].Count
+		}
+		if ccs[len(ccs)-1].Count < min || max < ccs[0].Count {
+			temp := make(meta.CountedCategories, 0, len(ccs))
+			for _, cat := range ccs {
+				if min <= cat.Count && cat.Count <= max {
+					temp = append(temp, cat)
+				}
+			}
+			return temp
+		}
+	}
+	return ccs
 }
 
 func (ap *actionPara) createBlockNodeMeta() ast.BlockNode {

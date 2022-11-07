@@ -50,9 +50,7 @@ func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 	if title, found := m.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Copy", "Copy of "))
 	}
-	if readonly, found := m.Get(api.KeyReadOnly); found {
-		m.Set(api.KeyReadOnly, copyReadonly(readonly))
-	}
+	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
 	return domain.Zettel{Meta: m, Content: content}
@@ -63,9 +61,7 @@ func (*CreateZettel) PrepareVersion(origZettel domain.Zettel) domain.Zettel {
 	origMeta := origZettel.Meta
 	m := origMeta.Clone()
 	m.Set(api.KeyPredecessor, origMeta.Zid.String())
-	if readonly, found := m.Get(api.KeyReadOnly); found {
-		m.Set(api.KeyReadOnly, copyReadonly(readonly))
-	}
+	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
 	return domain.Zettel{Meta: m, Content: content}
@@ -112,13 +108,15 @@ func prependTitle(title, s0, s1 string) string {
 	return s0
 }
 
-func copyReadonly(string) string {
-	// TODO: Currently, "false" is a safe value.
-	//
-	// If the current user and its role is known, a more elaborative calculation
-	// could be done: set it to a value, so that the current user will be able
-	// to modify it later.
-	return api.ValueFalse
+func setReadonly(m *meta.Meta) {
+	if _, found := m.Get(api.KeyReadOnly); found {
+		// Currently, "false" is a safe value.
+		//
+		// If the current user and its role is known, a more elaborative calculation
+		// could be done: set it to a value, so that the current user will be able
+		// to modify it later.
+		m.Set(api.KeyReadOnly, api.ValueFalse)
+	}
 }
 
 // Run executes the use case.

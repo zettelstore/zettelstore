@@ -26,20 +26,29 @@ func CreateArrangement(metaList []*Meta, key string) Arrangement {
 	if descr == nil {
 		return nil
 	}
-	a := make(Arrangement)
 	if descr.IsSet {
-		for _, m := range metaList {
-			if vals, ok := m.GetList(key); ok {
-				for _, val := range vals {
-					a[val] = append(a[val], m)
-				}
-			}
-		}
-	} else {
-		for _, m := range metaList {
-			if val, ok := m.Get(key); ok && val != "" {
+		return createSetArrangement(metaList, key)
+	}
+	return createSimplearrangement(metaList, key)
+}
+
+func createSetArrangement(metaList []*Meta, key string) Arrangement {
+	a := make(Arrangement)
+	for _, m := range metaList {
+		if vals, ok := m.GetList(key); ok {
+			for _, val := range vals {
 				a[val] = append(a[val], m)
 			}
+		}
+	}
+	return a
+}
+
+func createSimplearrangement(metaList []*Meta, key string) Arrangement {
+	a := make(Arrangement)
+	for _, m := range metaList {
+		if val, ok := m.Get(key); ok && val != "" {
+			a[val] = append(a[val], m)
 		}
 	}
 	return a

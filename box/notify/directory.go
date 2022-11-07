@@ -20,6 +20,7 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
@@ -76,7 +77,8 @@ func (ds *DirService) Start() {
 	ds.mx.Lock()
 	ds.state = dsStarting
 	ds.mx.Unlock()
-	go ds.updateEvents()
+	var newEntries entrySet
+	go ds.updateEvents(newEntries)
 }
 
 // Refresh the directory entries.
@@ -212,67 +214,83 @@ func (ds *DirService) DeleteDirEntry(zid id.Zid) error {
 	return nil
 }
 
-func (ds *DirService) updateEvents() {
-	var newEntries entrySet
-	for ev := range ds.notifier.Events() {
-		ds.mx.RLock()
-		state := ds.state
-		ds.mx.RUnlock()
-
-		if msg := ds.log.Trace(); msg.Enabled() {
-			msg.Uint("state", uint64(state)).Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
+func (ds *DirService) updateEvents(newEntries entrySet) {
+	// Something may panic. Ensure a running service.
+	defer func() {
+		if r := recover(); r != nil {
+			kernel.Main.LogRecover("DirectoryService", r)
+			go ds.updateEvents(newEntries)
 		}
-		if state == dsStopping {
+	}()
+
+	for ev := range ds.notifier.Events() {
+		e, ok := ds.handleEvent(ev, newEntries)
+		if !ok {
 			break
 		}
-
-		switch ev.Op {
-		case Error:
-			newEntries = nil
-			if state != dsMissing {
-				ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
-			}
-		case Make:
-			newEntries = make(entrySet)
-		case List:
-			if ev.Name == "" {
-				zids := getNewZids(newEntries)
-				ds.mx.Lock()
-				fromMissing := ds.state == dsMissing
-				prevEntries := ds.entries
-				ds.entries = newEntries
-				ds.state = dsWorking
-				ds.mx.Unlock()
-				newEntries = nil
-				ds.onCreateDirectory(zids, prevEntries)
-				if fromMissing {
-					ds.log.Info().Str("path", ds.dirPath).Msg("Zettel directory found")
-				}
-			} else if newEntries != nil {
-				ds.onUpdateFileEvent(newEntries, ev.Name)
-			}
-		case Destroy:
-			newEntries = nil
-			ds.onDestroyDirectory()
-			ds.log.Error().Str("path", ds.dirPath).Msg("Zettel directory missing")
-		case Update:
-			ds.mx.Lock()
-			zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
-			ds.mx.Unlock()
-			if zid != id.Invalid {
-				ds.notifyChange(box.OnZettel, zid)
-			}
-		case Delete:
-			ds.mx.Lock()
-			zid := ds.onDeleteFileEvent(ds.entries, ev.Name)
-			ds.mx.Unlock()
-			if zid != id.Invalid {
-				ds.notifyChange(box.OnZettel, zid)
-			}
-		default:
-			ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
-		}
+		newEntries = e
 	}
+}
+func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool) {
+	ds.mx.RLock()
+	state := ds.state
+	ds.mx.RUnlock()
+
+	if msg := ds.log.Trace(); msg.Enabled() {
+		msg.Uint("state", uint64(state)).Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
+	}
+	if state == dsStopping {
+		return nil, false
+	}
+
+	switch ev.Op {
+	case Error:
+		newEntries = nil
+		if state != dsMissing {
+			ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
+		}
+	case Make:
+		newEntries = make(entrySet)
+	case List:
+		if ev.Name == "" {
+			zids := getNewZids(newEntries)
+			ds.mx.Lock()
+			fromMissing := ds.state == dsMissing
+			prevEntries := ds.entries
+			ds.entries = newEntries
+			ds.state = dsWorking
+			ds.mx.Unlock()
+			ds.onCreateDirectory(zids, prevEntries)
+			if fromMissing {
+				ds.log.Info().Str("path", ds.dirPath).Msg("Zettel directory found")
+			}
+			return nil, true
+		}
+		if newEntries != nil {
+			ds.onUpdateFileEvent(newEntries, ev.Name)
+		}
+	case Destroy:
+		ds.onDestroyDirectory()
+		ds.log.Error().Str("path", ds.dirPath).Msg("Zettel directory missing")
+		return nil, true
+	case Update:
+		ds.mx.Lock()
+		zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
+		ds.mx.Unlock()
+		if zid != id.Invalid {
+			ds.notifyChange(box.OnZettel, zid)
+		}
+	case Delete:
+		ds.mx.Lock()
+		zid := ds.onDeleteFileEvent(ds.entries, ev.Name)
+		ds.mx.Unlock()
+		if zid != id.Invalid {
+			ds.notifyChange(box.OnZettel, zid)
+		}
+	default:
+		ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
+	}
+	return newEntries, true
 }
 
 func getNewZids(entries entrySet) id.Slice {

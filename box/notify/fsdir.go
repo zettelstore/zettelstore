@@ -101,13 +101,13 @@ func (fsdn *fsdirNotifier) eventLoop() {
 func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 	select {
 	case <-fsdn.done:
-		fsdn.log.Trace().Int("i", 1).Msg("done with read and process events")
+		fsdn.traceDone(1)
 		return false
 	default:
 	}
 	select {
 	case <-fsdn.done:
-		fsdn.log.Trace().Int("i", 2).Msg("done with read and process events")
+		fsdn.traceDone(2)
 		return false
 	case <-fsdn.refresh:
 		fsdn.log.Trace().Msg("refresh")
@@ -120,7 +120,7 @@ func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 		select {
 		case fsdn.events <- Event{Op: Error, Err: err}:
 		case <-fsdn.done:
-			fsdn.log.Trace().Int("i", 3).Msg("done with read and process events")
+			fsdn.traceDone(3)
 			return false
 		}
 	case ev, ok := <-fsdn.base.Events:
@@ -133,6 +133,10 @@ func (fsdn *fsdirNotifier) readAndProcessEvent() bool {
 		}
 	}
 	return true
+}
+
+func (fsdn *fsdirNotifier) traceDone(pos int64) {
+	fsdn.log.Trace().Int("i", pos).Msg("done with read and process events")
 }
 
 func (fsdn *fsdirNotifier) processEvent(ev *fsnotify.Event) bool {

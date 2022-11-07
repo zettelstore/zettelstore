@@ -69,7 +69,7 @@ func (ct *conjTerms) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
 
 type addSearchFunc func(val expValue)
 
-func noAddSearch(expValue) {}
+func noAddSearch(expValue) { /* Just does nothing, for negated queries */ }
 
 func createPosNegMatchFunc(key string, values []expValue, addSearch addSearchFunc) (posMatch, negMatch matchValueFunc) {
 	posValues := make([]expValue, 0, len(values))
@@ -102,13 +102,13 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 	case meta.TypeTagSet:
 		return createMatchTagSetFunc(values, addSearch)
 	case meta.TypeWord:
-		return createMatchWordFunc(values, addSearch)
+		return createMatchWordOrStringFunc(values, addSearch)
 	case meta.TypeWordSet:
 		return createMatchWordSetFunc(values, addSearch)
 	case meta.TypeZettelmarkup:
 		return createMatchZmkFunc(values, addSearch)
 	}
-	return createMatchStringFunc(values, addSearch)
+	return createMatchWordOrStringFunc(values, addSearch)
 }
 
 func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
@@ -174,7 +174,7 @@ func processTagSet(valueSet [][]expValue) [][]expValue {
 	return result
 }
 
-func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchWordOrStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -196,19 +196,6 @@ func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchVal
 				if !pred(words) {
 					return false
 				}
-			}
-		}
-		return true
-	}
-}
-
-func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(sliceToLower(values), addSearch)
-	return func(value string) bool {
-		value = strings.ToLower(value)
-		for _, pred := range preds {
-			if !pred(value) {
-				return false
 			}
 		}
 		return true

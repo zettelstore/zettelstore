@@ -76,35 +76,43 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) []byte {
 		buf.WriteString(`" rel="self" type="application/rss+xml"></atom:link>` + "\n")
 	}
 	for _, m := range ml {
-		itemPublished := ""
-		if val, found := m.Get(api.KeyPublished); found {
-			if published, err := time.ParseInLocation(id.ZidLayout, val, time.Local); err == nil {
-				itemPublished = published.UTC().Format(time.RFC1123Z)
-			}
-		}
-
-		link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
-
-		buf.WriteString("  <item>\n")
-		xml.WriteTag(&buf, "    ", "title", encoding.TitleAsText(m))
-		xml.WriteTag(&buf, "    ", "link", link)
-		xml.WriteTag(&buf, "    ", "guid", link)
-		if itemPublished != "" {
-			xml.WriteTag(&buf, "    ", "pubDate", itemPublished)
-		}
-		if tags, found := m.GetList(api.KeyTags); found && len(tags) > 0 {
-			for _, tag := range tags {
-				for len(tag) > 0 && tag[0] == '#' {
-					tag = tag[1:]
-				}
-				if tag != "" {
-					xml.WriteTag(&buf, "    ", "category", tag)
-				}
-			}
-		}
-		buf.WriteString("  </item>\n")
+		c.marshalMeta(&buf, m)
 	}
 
 	buf.WriteString("</channel>\n</rss>")
 	return buf.Bytes()
+}
+
+func (c *Configuration) marshalMeta(buf *bytes.Buffer, m *meta.Meta) {
+	itemPublished := ""
+	if val, found := m.Get(api.KeyPublished); found {
+		if published, err := time.ParseInLocation(id.ZidLayout, val, time.Local); err == nil {
+			itemPublished = published.UTC().Format(time.RFC1123Z)
+		}
+	}
+
+	link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
+
+	buf.WriteString("  <item>\n")
+	xml.WriteTag(buf, "    ", "title", encoding.TitleAsText(m))
+	xml.WriteTag(buf, "    ", "link", link)
+	xml.WriteTag(buf, "    ", "guid", link)
+	if itemPublished != "" {
+		xml.WriteTag(buf, "    ", "pubDate", itemPublished)
+	}
+	marshalTags(buf, m)
+	buf.WriteString("  </item>\n")
+}
+
+func marshalTags(buf *bytes.Buffer, m *meta.Meta) {
+	if tags, found := m.GetList(api.KeyTags); found && len(tags) > 0 {
+		for _, tag := range tags {
+			for len(tag) > 0 && tag[0] == '#' {
+				tag = tag[1:]
+			}
+			if tag != "" {
+				xml.WriteTag(buf, "    ", "category", tag)
+			}
+		}
+	}
 }
