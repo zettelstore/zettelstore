@@ -266,8 +266,10 @@ func (v *visitor) visitNestedList(ln *ast.NestedListNode) {
 }
 
 func (v *visitor) writePrefixSpaces() {
-	for i := 0; i <= len(v.prefix); i++ {
-		v.b.WriteByte(' ')
+	if prefixLen := len(v.prefix); prefixLen > 0 {
+		for i := 0; i <= prefixLen; i++ {
+			v.b.WriteByte(' ')
+		}
 	}
 }
 
@@ -376,11 +378,7 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 	} else {
 		v.b.WriteByte('\n')
 	}
-	if prefixLen := len(v.prefix); prefixLen > 0 {
-		for i := 0; i <= prefixLen; i++ {
-			v.b.WriteByte(' ')
-		}
-	}
+	v.writePrefixSpaces()
 }
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
