@@ -26,19 +26,22 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderHTML, func() encoder.Encoder { return &mySHE })
+	encoder.Register(api.EncoderHTML, func() encoder.Encoder { return Create() })
 }
 
-type htmlEncoder struct {
+// Create an encoder.
+func Create() *Encoder { return &mySHE }
+
+type Encoder struct {
 	textEnc *textenc.Encoder
 }
 
-var mySHE = htmlEncoder{
+var mySHE = Encoder{
 	textEnc: textenc.Create(),
 }
 
 // WriteZettel encodes a full zettel as HTML5.
-func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	io.WriteString(w, "<html>\n<head>\n<meta charset=\"utf-8\">\n")
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
@@ -70,17 +73,17 @@ func (he *htmlEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta enc
 }
 
 // WriteMeta encodes meta data as HTML5.
-func (he *htmlEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	acceptMeta(w, he.textEnc, m, evalMeta)
 	return 0, nil
 }
 
-func (he *htmlEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return he.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks encodes a block slice.
-func (*htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
 	_, err := acceptBlocks(env, bs)
 	if err == nil {
@@ -91,7 +94,7 @@ func (*htmlEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*htmlEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
 	return acceptInlines(env, is)
 }
