@@ -16,14 +16,16 @@ import "zettelstore.de/c/api"
 const (
 	ctHTML      = "text/html; charset=utf-8"
 	ctJSON      = "application/json"
+	ctMarkdown  = "text/markdown; charset=utf-8"
 	ctPlainText = "text/plain; charset=utf-8"
 	ctSVG       = "image/svg+xml"
 )
 
 var mapEncoding2CT = map[api.EncodingEnum]string{
 	api.EncoderHTML:  ctHTML,
+	api.EncoderMD:    ctPlainText,
 	api.EncoderSexpr: ctPlainText,
-	api.EncoderText:  ctPlainText,
+	api.EncoderText:  ctMarkdown,
 	api.EncoderZJSON: ctJSON,
 	api.EncoderZmk:   ctPlainText,
 }
@@ -49,8 +51,8 @@ var mapSyntax2CT = map[string]string{
 	api.ValueSyntaxZmk:      "text/x-zmk; charset=utf-8",
 	"plain":                 ctPlainText,
 	api.ValueSyntaxText:     ctPlainText,
-	api.ValueSyntaxMarkdown: "text/markdown; charset=utf-8",
-	api.ValueSyntaxMD:       "text/markdown; charset=utf-8",
+	api.ValueSyntaxMarkdown: ctMarkdown,
+	api.ValueSyntaxMD:       ctMarkdown,
 	api.ValueSyntaxMustache: ctPlainText,
 }
 

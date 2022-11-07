@@ -22,6 +22,7 @@ import (
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
+	_ "zettelstore.de/z/encoder/mdenc"
 	_ "zettelstore.de/z/encoder/sexprenc"
 	_ "zettelstore.de/z/encoder/textenc"
 	_ "zettelstore.de/z/encoder/zjsonenc"

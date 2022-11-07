@@ -3,7 +3,8 @@ title: The ''file'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220423131738
+created: 20210126175322
+modified: 20221107183235
 
 Reads zettel data from a file (or from standard input / stdin) and renders it to standard output / stdout.
 This allows Zettelstore to render files manually.
@@ -15,6 +16,7 @@ zettelstore file [-t FORMAT] [file-1 [file-2]]
 : Specifies the output format.
   Supported values are:
   [[''html''|00001012920510]] (default),
+  [[''md''|00001012920513]],
   [[''sexpr''|00001012920516]],
   [[''text''|00001012920519]],
   [[''zjson''|00001012920503]],

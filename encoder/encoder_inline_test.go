@@ -17,6 +17,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[]`,
 			encoderHTML:  "",
+			encoderMD:    "",
 			encoderSexpr: `()`,
 			encoderText:  "",
 			encoderZmk:   useZmk,
@@ -28,6 +29,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Hello,"},{"":"Space"},{"":"Text","s":"world"}]`,
 			encoderHTML:  "Hello, world",
+			encoderMD:    "Hello, world",
 			encoderSexpr: `((TEXT "Hello,") (SPACE) (TEXT "world"))`,
 			encoderText:  "Hello, world",
 			encoderZmk:   useZmk,
@@ -39,6 +41,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Emph","i":[{"":"Text","s":"emph"}]}]`,
 			encoderHTML:  "<em>emph</em>",
+			encoderMD:    "*emph*",
 			encoderSexpr: `((FORMAT-EMPH () (TEXT "emph")))`,
 			encoderText:  "emph",
 			encoderZmk:   useZmk,
@@ -50,6 +53,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Strong","i":[{"":"Text","s":"strong"}]}]`,
 			encoderHTML:  "<strong>strong</strong>",
+			encoderMD:    "__strong__",
 			encoderSexpr: `((FORMAT-STRONG () (TEXT "strong")))`,
 			encoderText:  "strong",
 			encoderZmk:   useZmk,
@@ -61,6 +65,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Insert","i":[{"":"Text","s":"insert"}]}]`,
 			encoderHTML:  "<ins>insert</ins>",
+			encoderMD:    "insert",
 			encoderSexpr: `((FORMAT-INSERT () (TEXT "insert")))`,
 			encoderText:  "insert",
 			encoderZmk:   useZmk,
@@ -72,6 +77,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Delete","i":[{"":"Text","s":"delete"}]}]`,
 			encoderHTML:  "<del>delete</del>",
+			encoderMD:    "delete",
 			encoderSexpr: `((FORMAT-DELETE () (TEXT "delete")))`,
 			encoderText:  "delete",
 			encoderZmk:   useZmk,
@@ -83,6 +89,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Delete","i":[{"":"Text","s":"old"}]},{"":"Insert","i":[{"":"Text","s":"new"}]}]`,
 			encoderHTML:  "<del>old</del><ins>new</ins>",
+			encoderMD:    "oldnew",
 			encoderSexpr: `((FORMAT-DELETE () (TEXT "old")) (FORMAT-INSERT () (TEXT "new")))`,
 			encoderText:  "oldnew",
 			encoderZmk:   useZmk,
@@ -94,6 +101,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Super","i":[{"":"Text","s":"superscript"}]}]`,
 			encoderHTML:  `<sup>superscript</sup>`,
+			encoderMD:    "superscript",
 			encoderSexpr: `((FORMAT-SUPER () (TEXT "superscript")))`,
 			encoderText:  `superscript`,
 			encoderZmk:   useZmk,
@@ -105,6 +113,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Sub","i":[{"":"Text","s":"subscript"}]}]`,
 			encoderHTML:  `<sub>subscript</sub>`,
+			encoderMD:    "subscript",
 			encoderSexpr: `((FORMAT-SUB () (TEXT "subscript")))`,
 			encoderText:  `subscript`,
 			encoderZmk:   useZmk,
@@ -116,6 +125,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Quote","i":[{"":"Text","s":"quotes"}]}]`,
 			encoderHTML:  "<q>quotes</q>",
+			encoderMD:    "<q>quotes</q>",
 			encoderSexpr: `((FORMAT-QUOTE () (TEXT "quotes")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   useZmk,
@@ -127,6 +137,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Quote","a":{"lang":"de"},"i":[{"":"Text","s":"quotes"}]}]`,
 			encoderHTML:  `<span lang="de"><q>quotes</q></span>`,
+			encoderMD:    "<q>quotes</q>",
 			encoderSexpr: `((FORMAT-QUOTE (("lang" "de")) (TEXT "quotes")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   `""quotes""{lang="de"}`,
@@ -138,6 +149,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Span","i":[{"":"Text","s":"span"}]}]`,
 			encoderHTML:  `<span>span</span>`,
+			encoderMD:    "span",
 			encoderSexpr: `((FORMAT-SPAN () (TEXT "span")))`,
 			encoderText:  `span`,
 			encoderZmk:   useZmk,
@@ -149,6 +161,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Code","s":"code"}]`,
 			encoderHTML:  `<code>code</code>`,
+			encoderMD:    "`code`",
 			encoderSexpr: `((LITERAL-CODE () "code"))`,
 			encoderText:  `code`,
 			encoderZmk:   useZmk,
@@ -160,6 +173,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Code","a":{"-":""},"s":"x y"}]`,
 			encoderHTML:  "<code>x\u2423y</code>",
+			encoderMD:    "`x y`",
 			encoderSexpr: `((LITERAL-CODE (("-" "")) "x y"))`,
 			encoderText:  `x y`,
 			encoderZmk:   useZmk,
@@ -171,6 +185,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Code","s":"<script "},{"":"Space"},{"":"Text","s":"abc"}]`,
 			encoderHTML:  "<code>&lt;script </code> abc",
+			encoderMD:    "`<script ` abc",
 			encoderSexpr: `((LITERAL-CODE () "<script ") (SPACE) (TEXT "abc"))`,
 			encoderText:  `<script  abc`,
 			encoderZmk:   useZmk,
@@ -182,6 +197,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Input","s":"input"}]`,
 			encoderHTML:  `<kbd>input</kbd>`,
+			encoderMD:    "input",
 			encoderSexpr: `((LITERAL-INPUT () "input"))`,
 			encoderText:  `input`,
 			encoderZmk:   useZmk,
@@ -193,6 +209,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Output","s":"output"}]`,
 			encoderHTML:  `<samp>output</samp>`,
+			encoderMD:    "output",
 			encoderSexpr: `((LITERAL-OUTPUT () "output"))`,
 			encoderText:  `output`,
 			encoderZmk:   useZmk,
@@ -204,6 +221,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Math","s":"\\TeX"}]`,
 			encoderHTML:  `<code class="zs-math">\TeX</code>`,
+			encoderMD:    "\\TeX",
 			encoderSexpr: `((LITERAL-MATH () "\\TeX"))`,
 			encoderText:  `\TeX`,
 			encoderZmk:   useZmk,
@@ -215,6 +233,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Span","a":{"lang":"fr"},"i":[{"":"Quote","i":[{"":"Text","s":"abc"}]}]}]`,
 			encoderHTML:  `<span lang="fr"><q>abc</q></span>`,
+			encoderMD:    "<q>abc</q>",
 			encoderSexpr: `((FORMAT-SPAN (("lang" "fr")) (FORMAT-QUOTE () (TEXT "abc"))))`,
 			encoderText:  `abc`,
 			encoderZmk:   `::""abc""::{lang="fr"}`,
@@ -226,6 +245,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Cite","s":"Stern18"}]`,
 			encoderHTML:  `<span>Stern18</span>`, // TODO
+			encoderMD:    "",
 			encoderSexpr: `((CITE () "Stern18"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -237,6 +257,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"%"},{"":"Space"},{"":"Text","s":"comment"}]`,
 			encoderHTML:  `% comment`,
+			encoderMD:    "% comment",
 			encoderSexpr: `((TEXT "%") (SPACE) (TEXT "comment"))`,
 			encoderText:  `% comment`,
 			encoderZmk:   useZmk,
@@ -248,6 +269,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Comment","s":"line comment"}]`,
 			encoderHTML:  ``,
+			encoderMD:    "",
 			encoderSexpr: `((LITERAL-COMMENT () "line comment"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -259,6 +281,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Comment","a":{"-":""},"s":"line comment"}]`,
 			encoderHTML:  `<!-- line comment -->`,
+			encoderMD:    "",
 			encoderSexpr: `((LITERAL-COMMENT (("-" "")) "line comment"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -270,6 +293,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment"}]`,
 			encoderHTML:  `Text<!-- comment -->`,
+			encoderMD:    "Text",
 			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
@@ -281,6 +305,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Text","s":"Text"},{"":"Comment","a":{"-":""},"s":"comment --> end"}]`,
 			encoderHTML:  `Text<!-- comment --&gt; end -->`,
+			encoderMD:    "Text",
 			encoderSexpr: `((TEXT "Text") (LITERAL-COMMENT (("-" "")) "comment --> end"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
@@ -292,6 +317,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Footnote","i":[{"":"Text","s":"footnote"}]}]`,
 			encoderHTML:  `<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup>`,
+			encoderMD:    "",
 			encoderSexpr: `((FOOTNOTE () (TEXT "footnote")))`,
 			encoderText:  `footnote`,
 			encoderZmk:   useZmk,
@@ -303,6 +329,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Mark","s":"mark","q":"mark"}]`,
 			encoderHTML:  `<a id="mark"></a>`,
+			encoderMD:    "",
 			encoderSexpr: `((MARK "mark" "mark" "mark"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -314,6 +341,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Mark","s":"mark","q":"mark","i":[{"":"Text","s":"with"},{"":"Space"},{"":"Text","s":"text"}]}]`,
 			encoderHTML:  `<a id="mark">with text</a>`,
+			encoderMD:    "with text",
 			encoderSexpr: `((MARK "mark" "mark" "mark" (TEXT "with") (SPACE) (TEXT "text")))`,
 			encoderText:  `with text`,
 			encoderZmk:   useZmk,
@@ -325,6 +353,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"abc"}]`,
 			encoderHTML:  `<a class="external" href="abc">abc</a>`,
+			encoderMD:    "[abc](abc)",
 			encoderSexpr: `((LINK-EXTERNAL () "abc"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -336,6 +365,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"https://zettelstore.de"}]`,
 			encoderHTML:  `<a class="external" href="https://zettelstore.de">https://zettelstore.de</a>`,
+			encoderMD:    "<https://zettelstore.de>",
 			encoderSexpr: `((LINK-EXTERNAL () "https://zettelstore.de"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -347,6 +377,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"external","s":"https://zettelstore.de","i":[{"":"Text","s":"Home"}]}]`,
 			encoderHTML:  `<a class="external" href="https://zettelstore.de">Home</a>`,
+			encoderMD:    "[Home](https://zettelstore.de)",
 			encoderSexpr: `((LINK-EXTERNAL () "https://zettelstore.de" (TEXT "Home")))`,
 			encoderText:  `Home`,
 			encoderZmk:   useZmk,
@@ -358,6 +389,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100"}]`,
 			encoderHTML:  `<a href="00000000000100">00000000000100</a>`,
+			encoderMD:    "[00000000000100](00000000000100)",
 			encoderSexpr: `((LINK-ZETTEL () "00000000000100"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -369,6 +401,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100","i":[{"":"Text","s":"Config"}]}]`,
 			encoderHTML:  `<a href="00000000000100">Config</a>`,
+			encoderMD:    "[Config](00000000000100)",
 			encoderSexpr: `((LINK-ZETTEL () "00000000000100" (TEXT "Config")))`,
 			encoderText:  `Config`,
 			encoderZmk:   useZmk,
@@ -380,6 +413,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100#frag"}]`,
 			encoderHTML:  `<a href="00000000000100#frag">00000000000100#frag</a>`,
+			encoderMD:    "[00000000000100#frag](00000000000100#frag)",
 			encoderSexpr: `((LINK-ZETTEL () "00000000000100#frag"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -391,6 +425,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"zettel","s":"00000000000100#frag","i":[{"":"Text","s":"Config"}]}]`,
 			encoderHTML:  `<a href="00000000000100#frag">Config</a>`,
+			encoderMD:    "[Config](00000000000100#frag)",
 			encoderSexpr: `((LINK-ZETTEL () "00000000000100#frag" (TEXT "Config")))`,
 			encoderText:  `Config`,
 			encoderZmk:   useZmk,
@@ -402,6 +437,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"self","s":"#frag"}]`,
 			encoderHTML:  `<a href="#frag">#frag</a>`,
+			encoderMD:    "[#frag](#frag)",
 			encoderSexpr: `((LINK-SELF () "#frag"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -413,6 +449,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"/hosted","i":[{"":"Text","s":"H"}]}]`,
 			encoderHTML:  `<a href="/hosted">H</a>`,
+			encoderMD:    "[H](/hosted)",
 			encoderSexpr: `((LINK-HOSTED () "/hosted" (TEXT "H")))`,
 			encoderText:  `H`,
 			encoderZmk:   useZmk,
@@ -424,6 +461,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"/based","i":[{"":"Text","s":"B"}]}]`,
 			encoderHTML:  `<a href="/based">B</a>`,
+			encoderMD:    "[B](/based)",
 			encoderSexpr: `((LINK-HOSTED () "/based" (TEXT "B")))`,
 			encoderText:  `B`,
 			encoderZmk:   useZmk,
@@ -435,6 +473,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"local","s":"../relative","i":[{"":"Text","s":"R"}]}]`,
 			encoderHTML:  `<a href="../relative">R</a>`,
+			encoderMD:    "[R](../relative)",
 			encoderSexpr: `((LINK-HOSTED () "../relative" (TEXT "R")))`,
 			encoderText:  `R`,
 			encoderZmk:   useZmk,
@@ -446,6 +485,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"query","s":"title:syntax"}]`,
 			encoderHTML:  `<a href="?q=title%3Asyntax">title:syntax</a>`,
+			encoderMD:    "",
 			encoderSexpr: `((LINK-QUERY () "title:syntax"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -457,6 +497,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Link","q":"query","s":"title:syntax","i":[{"":"Text","s":"Q"}]}]`,
 			encoderHTML:  `<a href="?q=title%3Asyntax">Q</a>`,
+			encoderMD:    "Q",
 			encoderSexpr: `((LINK-QUERY () "title:syntax" (TEXT "Q")))`,
 			encoderText:  `Q`,
 			encoderZmk:   useZmk,
@@ -468,6 +509,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Embed","s":"abc"}]`,
 			encoderHTML:  `<img src="abc">`,
+			encoderMD:    "![abc](abc)",
 			encoderSexpr: `((EMBED () (EXTERNAL "abc") ""))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -479,6 +521,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[]`,
 			encoderHTML:  ``,
+			encoderMD:    "",
 			encoderSexpr: `()`,
 			encoderText:  ``,
 			encoderZmk:   ``,
@@ -490,6 +533,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[{"":"Zettel","a":{"":"text"},"s":"<hr>"}]`,
 			encoderHTML:  ``,
+			encoderMD:    "<hr>",
 			encoderSexpr: `((LITERAL-ZETTEL (("" "text")) "<hr>"))`,
 			encoderText:  `<hr>`,
 			encoderZmk:   useZmk,
@@ -501,6 +545,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderZJSON: `[]`,
 			encoderHTML:  ``,
+			encoderMD:    "",
 			encoderSexpr: `()`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,

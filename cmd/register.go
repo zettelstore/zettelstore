@@ -19,6 +19,7 @@ import (
 	_ "zettelstore.de/z/box/filebox"       // Allow to use file box.
 	_ "zettelstore.de/z/box/membox"        // Allow to use in-memory box.
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
+	_ "zettelstore.de/z/encoder/mdenc"     // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/sexprenc"  // Allow to use sexpr encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zjsonenc"  // Allow to use ZJSON encoder.

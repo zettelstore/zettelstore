@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/parser"
 
 	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
+	_ "zettelstore.de/z/encoder/mdenc"    // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
 	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zjsonenc" // Allow to use ZJSON encoder.
@@ -46,6 +47,7 @@ const useZmk = "\000"
 const (
 	encoderZJSON = api.EncoderZJSON
 	encoderHTML  = api.EncoderHTML
+	encoderMD    = api.EncoderMD
 	encoderSexpr = api.EncoderSexpr
 	encoderText  = api.EncoderText
 	encoderZmk   = api.EncoderZmk

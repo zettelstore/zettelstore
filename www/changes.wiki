@@ -9,6 +9,9 @@
      (breaking)
   *  Add syntax &ldquo;draw&rdquo; (again)
      (minor: zettelmarkup)
+  *  Allow to encode zettel in Markdown. Please note: not every aspect of
+     a zettel can be encoded in Markdown. Those aspects will be ignored.
+     (minor: api)
 
 <a name="0_8"></a>
 <h2>Changes for Version 0.8.0 (2022-10-20)</h2>
