@@ -3,7 +3,8 @@ title: Zettelmarkup: Image Embedding
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220214180955
+created: 20210811154251
+modified: 20221112111054
 
 Image content is assumed, if an URL is used or if the referenced zettel contains an image.
 
@@ -13,6 +14,7 @@ Supported formats are:
 * Graphics Interchange Format (""GIF"), as defined by [[https://www.w3.org/Graphics/GIF/spec-gif89a.txt]].
 * JPEG / JPG, defined by the __Joint Photographic Experts Group__.
 * Scalable Vector Graphics (SVG), defined by [[https://www.w3.org/Graphics/SVG/]]
+* WebP, defined by [[Google|https://developers.google.com/speed/webp]]
 
 If the text is given, it will be interpreted as an alternative textual representation, to help persons with some visual disabilities.
 

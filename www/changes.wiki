@@ -12,6 +12,8 @@
   *  Allow to encode zettel in Markdown. Please note: not every aspect of
      a zettel can be encoded in Markdown. Those aspects will be ignored.
      (minor: api)
+  *  Interpret zettel files with extension <tt>.webp</tt> as an binary image
+     file format.
 
 <a name="0_8"></a>
 <h2>Changes for Version 0.8.0 (2022-10-20)</h2>

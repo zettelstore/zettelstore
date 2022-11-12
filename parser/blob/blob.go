@@ -44,6 +44,14 @@ func init() {
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
 	})
+	parser.Register(&parser.Info{
+		Name:          "webp",
+		AltNames:      nil,
+		IsTextParser:  false,
+		IsImageFormat: true,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
+	})
 }
 
 func parseBlocks(inp *input.Input, m *meta.Meta, syntax string) ast.BlockSlice {

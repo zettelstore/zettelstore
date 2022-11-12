@@ -48,6 +48,7 @@ func TestParserType(t *testing.T) {
 		{api.ValueSyntaxSVG, false, true},
 		{api.ValueSyntaxText, false, false},
 		{"txt", false, false},
+		{"webp", false, true},
 		{api.ValueSyntaxZmk, true, false},
 	}
 	for _, tc := range testCases {
