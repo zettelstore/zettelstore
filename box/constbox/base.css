@@ -138,6 +138,10 @@
   }
   input.zs-primary { float:right }
   input.zs-secondary { float:left }
+  input.zs-upload {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
   a:not([class]) { text-decoration-skip-ink: auto }
   a.broken { text-decoration: line-through }
   img { max-width: 100% }
