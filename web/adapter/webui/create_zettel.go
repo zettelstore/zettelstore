@@ -121,7 +121,9 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel
 		ctx := r.Context()
 		reEdit, zettel, hasContent, err := parseZettelForm(r, id.Invalid)
 		if err != nil {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read form data"))
+			const msg = "Unable to read form data"
+			wui.log.Info().Err(err).Msg(msg)
+			wui.reportError(ctx, w, adapter.NewErrBadRequest(msg))
 			return
 		}
 		if !hasContent {

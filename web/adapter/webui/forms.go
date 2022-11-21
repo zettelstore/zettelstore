@@ -12,6 +12,7 @@ package webui
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -21,6 +22,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/kernel"
 )
 
 type formZettelData struct {
@@ -44,7 +46,8 @@ var (
 )
 
 func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, error) {
-	err := r.ParseForm()
+	maxRequestSize := kernel.Main.GetConfig(kernel.WebService, kernel.WebMaxRequestSize).(int64)
+	err := r.ParseMultipartForm(maxRequestSize)
 	if err != nil {
 		return false, domain.Zettel{}, false, err
 	}
@@ -71,11 +74,25 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, er
 	if postSyntax, ok := trimmedFormValue(r, "syntax"); ok {
 		m.Set(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
 	}
-	if values, ok := r.PostForm["content"]; ok && len(values) > 0 {
+
+	if content, hasContent := useContent(r); hasContent {
 		return doSave, domain.Zettel{
 			Meta:    m,
-			Content: domain.NewContent(bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)),
+			Content: domain.NewContent(bytes.ReplaceAll([]byte(content), bsCRLF, bsLF)),
 		}, true, nil
+	}
+	file, _, err := r.FormFile("file")
+	if file != nil {
+		defer file.Close()
+		if err == nil {
+			data, err := io.ReadAll(file)
+			if err == nil {
+				return doSave, domain.Zettel{
+					Meta:    m,
+					Content: domain.NewContent(data),
+				}, true, nil
+			}
+		}
 	}
 	return doSave, domain.Zettel{
 		Meta:    m,
@@ -89,6 +106,13 @@ func trimmedFormValue(r *http.Request, key string) (string, bool) {
 		if len(value) > 0 {
 			return value, true
 		}
+	}
+	return "", false
+}
+
+func useContent(r *http.Request) (string, bool) {
+	if values, found := r.PostForm["content"]; found && len(values) > 0 {
+		return values[0], true
 	}
 	return "", false
 }
