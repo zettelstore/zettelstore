@@ -29,7 +29,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "draw",
 		AltNames:      []string{},
-		IsTextParser:  true,
+		IsASTParser:   true,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

@@ -26,9 +26,17 @@ import (
 
 func TestSupportedSyntax(t *testing.T) {
 	for _, syntax := range parser.GetSyntaxes() {
-		ct := content.MIMEFromSyntax(syntax)
-		if ct == content.UnknownMIME {
-			t.Errorf("No content type registered for syntax %q", syntax)
+		mt := content.MIMEFromSyntax(syntax)
+		if mt == content.UnknownMIME {
+			t.Errorf("No MIME type registered for syntax %q", syntax)
+			continue
+		}
+
+		newSyntax := content.SyntaxFromMIME(mt, nil)
+		pinfo := parser.Get(newSyntax)
+		if pinfo == nil {
+			t.Errorf("MIME type for syntax %q is %q, but this has no corresponding syntax", syntax, mt)
+			continue
 		}
 	}
 }

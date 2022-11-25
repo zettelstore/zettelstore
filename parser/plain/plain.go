@@ -26,7 +26,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "txt",
 		AltNames:      []string{"plain", api.ValueSyntaxText},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
@@ -34,7 +35,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxHTML,
 		AltNames:      []string{},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocksHTML,
 		ParseInlines:  parseInlinesHTML,
@@ -42,7 +44,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "css",
 		AltNames:      []string{},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
@@ -50,7 +53,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxSVG,
 		AltNames:      []string{},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  true,
 		IsImageFormat: true,
 		ParseBlocks:   parseSVGBlocks,
 		ParseInlines:  parseSVGInlines,
@@ -58,7 +62,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "mustache",
 		AltNames:      []string{},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

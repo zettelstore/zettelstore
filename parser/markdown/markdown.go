@@ -33,7 +33,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxMarkdown,
 		AltNames:      []string{api.ValueSyntaxMD},
-		IsTextParser:  true,
+		IsASTParser:   true,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

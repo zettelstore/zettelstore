@@ -23,7 +23,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxNone,
 		AltNames:      []string{},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  false,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

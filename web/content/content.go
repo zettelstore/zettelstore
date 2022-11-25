@@ -12,15 +12,24 @@
 // It translates syntax values into content types, and vice versa.
 package content
 
-import "zettelstore.de/c/api"
+import (
+	"mime"
+	"net/http"
+
+	"zettelstore.de/c/api"
+	"zettelstore.de/z/domain"
+)
 
 const (
 	UnknownMIME  = "application/octet-stream"
+	mimeGIF      = "image/gif"
 	mimeHTML     = "text/html; charset=utf-8"
 	mimeJPEG     = "image/jpeg"
 	mimeMarkdown = "text/markdown; charset=utf-8"
 	JSON         = "application/json"
 	PlainText    = "text/plain; charset=utf-8"
+	mimePNG      = "image/png"
+	mimeWEBP     = "image/webp"
 )
 
 var encoding2mime = map[api.EncodingEnum]string{
@@ -40,35 +49,70 @@ func MIMEFromEncoding(enc api.EncodingEnum) string {
 	return UnknownMIME
 }
 
-var syntax2mime = map[string][]string{
-	api.ValueSyntaxCSS:      {"text/css; charset=utf-8"},
-	"draw":                  {PlainText},
-	api.ValueSyntaxGif:      {"image/gif"},
-	api.ValueSyntaxHTML:     {mimeHTML},
-	"jpeg":                  {mimeJPEG},
-	"jpg":                   {mimeJPEG},
-	api.ValueSyntaxMarkdown: {mimeMarkdown},
-	api.ValueSyntaxMD:       {mimeMarkdown},
-	api.ValueSyntaxMustache: {PlainText},
-	"none":                  {""},
-	"plain":                 {PlainText},
-	"png":                   {"image/png"},
-	api.ValueSyntaxSVG:      {"image/svg+xml"},
-	"txt":                   {PlainText},
-	api.ValueSyntaxText:     {PlainText},
-	"webp":                  {"image/webp"},
-	api.ValueSyntaxZmk:      {"text/x-zmk; charset=utf-8"},
+var syntax2mime = map[string]string{
+	api.ValueSyntaxCSS:      "text/css; charset=utf-8",
+	"draw":                  PlainText,
+	api.ValueSyntaxGif:      mimeGIF,
+	api.ValueSyntaxHTML:     mimeHTML,
+	"jpeg":                  mimeJPEG,
+	"jpg":                   mimeJPEG,
+	api.ValueSyntaxMarkdown: mimeMarkdown,
+	api.ValueSyntaxMD:       mimeMarkdown,
+	api.ValueSyntaxMustache: PlainText,
+	"none":                  "",
+	"plain":                 PlainText,
+	"png":                   mimePNG,
+	api.ValueSyntaxSVG:      "image/svg+xml",
+	"txt":                   PlainText,
+	api.ValueSyntaxText:     PlainText,
+	"webp":                  mimeWEBP,
+	api.ValueSyntaxZmk:      "text/x-zmk; charset=utf-8",
 
 	// Additional syntaxes that are parsed as plain
-	"js":  {"text/javascript; charset=utf-8"},
-	"pdf": {"application/pdf"},
-	"xml": {"text/xml; charset=utf-8"},
+	"js":  "text/javascript; charset=utf-8",
+	"pdf": "application/pdf",
+	"xml": "text/xml; charset=utf-8",
 }
 
 // MIMEFromSyntax returns a MIME encoding for a given syntax value.
 func MIMEFromSyntax(syntax string) string {
-	if ms, found := syntax2mime[syntax]; found && len(ms) > 0 {
-		return ms[0]
+	if mt, found := syntax2mime[syntax]; found {
+		return mt
 	}
 	return UnknownMIME
+}
+
+var mime2syntax = map[string]string{
+	mimeGIF:         api.ValueSyntaxGif,
+	mimeJPEG:        "jpeg",
+	mimePNG:         "png",
+	mimeWEBP:        "webp",
+	"text/html":     api.ValueSyntaxHTML,
+	"text/markdown": api.ValueSyntaxMarkdown,
+	"text/plain":    api.ValueSyntaxText,
+
+	// Additional syntaxes
+	"application/pdf": "pdf",
+	"text/javascript": "js",
+}
+
+func SyntaxFromMIME(m string, data []byte) string {
+	mt, _, _ := mime.ParseMediaType(m)
+	if syntax, found := mime2syntax[mt]; found {
+		return syntax
+	}
+	if len(data) > 0 {
+		ct := http.DetectContentType(data)
+		mt, _, _ = mime.ParseMediaType(ct)
+		if syntax, found := mime2syntax[mt]; found {
+			return syntax
+		}
+		if ext, err := mime.ExtensionsByType(mt); err != nil && len(ext) > 0 {
+			return ext[0][1:]
+		}
+		if domain.IsBinary(data) {
+			return "binary"
+		}
+	}
+	return "plain"
 }

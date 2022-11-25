@@ -109,7 +109,7 @@ candLoop:
 		}
 
 		syntax := zettel.Meta.GetDefault(api.KeySyntax, "")
-		if !parser.IsTextParser(syntax) {
+		if !parser.IsASTParser(syntax) {
 			continue
 		}
 		zn, err := parser.ParseZettel(ctx, zettel, syntax, uc.rtConfig), nil

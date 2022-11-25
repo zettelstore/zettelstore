@@ -32,7 +32,8 @@ import (
 type Info struct {
 	Name          string
 	AltNames      []string
-	IsTextParser  bool
+	IsASTParser   bool
+	IsTextFormat  bool
 	IsImageFormat bool
 	ParseBlocks   func(*input.Input, *meta.Meta, string) ast.BlockSlice
 	ParseInlines  func(*input.Input, string) ast.InlineSlice
@@ -74,13 +75,22 @@ func Get(name string) *Info {
 	panic(fmt.Sprintf("No parser for %q found", name))
 }
 
-// IsTextParser returns whether the given syntax parses text into an AST or not.
-func IsTextParser(syntax string) bool {
+// IsASTParser returns whether the given syntax parses text into an AST or not.
+func IsASTParser(syntax string) bool {
 	pi, ok := registry[syntax]
 	if !ok {
 		return false
 	}
-	return pi.IsTextParser
+	return pi.IsASTParser
+}
+
+// IsTextFormat returns whether the given syntax is known to be a text format.
+func IsTextFormat(syntax string) bool {
+	pi, ok := registry[syntax]
+	if !ok {
+		return false
+	}
+	return pi.IsTextFormat
 }
 
 // IsImageFormat returns whether the given syntax is known to be an image format.

@@ -27,7 +27,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxZmk,
 		AltNames:      nil,
-		IsTextParser:  true,
+		IsASTParser:   true,
+		IsTextFormat:  true,
 		IsImageFormat: false,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

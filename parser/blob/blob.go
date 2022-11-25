@@ -23,7 +23,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          api.ValueSyntaxGif,
 		AltNames:      nil,
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  false,
 		IsImageFormat: true,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
@@ -31,7 +32,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "jpeg",
 		AltNames:      []string{"jpg"},
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  false,
 		IsImageFormat: true,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
@@ -39,7 +41,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "png",
 		AltNames:      nil,
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  false,
 		IsImageFormat: true,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,
@@ -47,7 +50,8 @@ func init() {
 	parser.Register(&parser.Info{
 		Name:          "webp",
 		AltNames:      nil,
-		IsTextParser:  false,
+		IsASTParser:   false,
+		IsTextFormat:  false,
 		IsImageFormat: true,
 		ParseBlocks:   parseBlocks,
 		ParseInlines:  parseInlines,

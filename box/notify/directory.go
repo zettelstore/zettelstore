@@ -570,8 +570,11 @@ func newExtIsBetter(oldExt, newExt string) bool {
 		}
 		oldInfo := parser.Get(oldExt)
 		newInfo := parser.Get(newExt)
-		if oldTextParser := oldInfo.IsTextParser; oldTextParser != newInfo.IsTextParser {
-			return !oldTextParser
+		if oldASTParser := oldInfo.IsASTParser; oldASTParser != newInfo.IsASTParser {
+			return !oldASTParser
+		}
+		if oldTextFormat := oldInfo.IsTextFormat; oldTextFormat != newInfo.IsTextFormat {
+			return !oldTextFormat
 		}
 		if oldImageFormat := oldInfo.IsImageFormat; oldImageFormat != newInfo.IsImageFormat {
 			return oldImageFormat

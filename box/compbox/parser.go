@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
 // This file is part of zettelstore.
 //
@@ -33,7 +33,7 @@ func genParserM(zid id.Zid) *meta.Meta {
 
 func genParserC(*meta.Meta) []byte {
 	var buf bytes.Buffer
-	buf.WriteString("|=Syntax<|=Alt. Value(s):|=Text Parser?:|=Image Format?:\n")
+	buf.WriteString("|=Syntax<|=Alt. Value(s):|=Text Parser?:|=Text Format?:|=Image Format?:\n")
 	syntaxes := parser.GetSyntaxes()
 	sort.Strings(syntaxes)
 	for _, syntax := range syntaxes {
@@ -44,8 +44,8 @@ func genParserC(*meta.Meta) []byte {
 		altNames := info.AltNames
 		sort.Strings(altNames)
 		fmt.Fprintf(
-			&buf, "|%v|%v|%v|%v\n",
-			syntax, strings.Join(altNames, ", "), info.IsTextParser, info.IsImageFormat)
+			&buf, "|%v|%v|%v|%v|%v\n",
+			syntax, strings.Join(altNames, ", "), info.IsASTParser, info.IsTextFormat, info.IsImageFormat)
 	}
 	return buf.Bytes()
 }

@@ -13,9 +13,11 @@ package webui
 import (
 	"bytes"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
@@ -23,6 +25,8 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/parser"
+	"zettelstore.de/z/web/content"
 )
 
 type formZettelData struct {
@@ -75,29 +79,21 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, er
 		m.Set(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
 	}
 
-	if content, hasContent := useContent(r); hasContent {
-		return doSave, domain.Zettel{
-			Meta:    m,
-			Content: domain.NewContent(bytes.ReplaceAll([]byte(content), bsCRLF, bsLF)),
-		}, true, nil
+	if b := bytesContent(r, m); b != nil {
+		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(b)}, true, nil
 	}
-	file, _, err := r.FormFile("file")
+	file, fh, err := r.FormFile("file")
 	if file != nil {
 		defer file.Close()
 		if err == nil {
-			data, err := io.ReadAll(file)
-			if err == nil {
-				return doSave, domain.Zettel{
-					Meta:    m,
-					Content: domain.NewContent(data),
-				}, true, nil
+			var data []byte
+			data, m = fileContent(file, fh, m)
+			if data != nil {
+				return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, true, nil
 			}
 		}
 	}
-	return doSave, domain.Zettel{
-		Meta:    m,
-		Content: domain.NewContent(nil),
-	}, false, nil
+	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, false, nil
 }
 
 func trimmedFormValue(r *http.Request, key string) (string, bool) {
@@ -110,11 +106,38 @@ func trimmedFormValue(r *http.Request, key string) (string, bool) {
 	return "", false
 }
 
-func useContent(r *http.Request) (string, bool) {
-	if values, found := r.PostForm["content"]; found && len(values) > 0 {
-		return values[0], true
+func bytesContent(r *http.Request, m *meta.Meta) []byte {
+	if syntax, found := m.Get(api.KeySyntax); found {
+		if pinfo := parser.Get(syntax); pinfo != nil {
+			if !pinfo.IsTextFormat {
+				return nil
+			}
+		}
 	}
-	return "", false
+	if values, found := r.PostForm["content"]; found && len(values) > 0 {
+		result := bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)
+		if bytes.IndexFunc(result, func(ch rune) bool { return !unicode.IsSpace(ch) }) < 0 {
+			return nil
+		}
+		return result
+	}
+	return nil
+}
+
+func fileContent(r io.Reader, fh *multipart.FileHeader, m *meta.Meta) ([]byte, *meta.Meta) {
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, m
+	}
+	if cts, found := fh.Header["Content-Type"]; found && len(cts) > 0 {
+		ct := cts[0]
+		if fileSyntax := content.SyntaxFromMIME(ct, data); fileSyntax != "" {
+			m = m.Clone()
+			m.Set(api.KeySyntax, fileSyntax)
+		}
+	}
+
+	return data, m
 }
 
 var reEmptyLines = regexp.MustCompile(`(\n|\r)+\s*(\n|\r)+`)

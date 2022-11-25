@@ -411,7 +411,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	if syntax := zettel.Meta.GetDefault(api.KeySyntax, ""); parser.IsImageFormat(syntax) {
 		en.Syntax = syntax
 		return en
-	} else if !parser.IsTextParser(syntax) {
+	} else if !parser.IsASTParser(syntax) {
 		// Not embeddable.
 		e.transcludeCount++
 		return createInlineErrorText(ref, "Not", "embeddable (syntax="+syntax+")")

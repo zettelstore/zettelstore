@@ -51,10 +51,14 @@ func TestNewExtIsBetter(t *testing.T) {
 		// Main Formats
 		api.ValueSyntaxZmk, api.ValueSyntaxDraw, api.ValueSyntaxMarkdown, api.ValueSyntaxMD,
 		// Other supported text formats
-		api.ValueSyntaxCSS, "txt", api.ValueSyntaxHTML, api.ValueSyntaxNone,
+		api.ValueSyntaxCSS, "txt", api.ValueSyntaxHTML,
 		api.ValueSyntaxMustache, api.ValueSyntaxText, "plain",
-		// Supported graphics formats
-		api.ValueSyntaxGif, "png", api.ValueSyntaxSVG, "jpeg", "jpg",
+		// Supported text graphics formats
+		api.ValueSyntaxSVG,
+		api.ValueSyntaxNone,
+		// Supported binary graphic formats
+		api.ValueSyntaxGif, "png", "jpeg", "jpg",
+
 		// Unsupported syntax values
 		"gz", "cpp", "tar", "cppc",
 	}

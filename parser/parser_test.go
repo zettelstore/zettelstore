@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package parser provides a generic interface to a range of different parsers.
 package parser_test
 
 import (
@@ -30,30 +29,34 @@ func TestParserType(t *testing.T) {
 	syntaxSet := strfun.NewSet(parser.GetSyntaxes()...)
 	testCases := []struct {
 		syntax string
+		ast    bool
 		text   bool
 		image  bool
 	}{
-		{api.ValueSyntaxHTML, false, false},
-		{api.ValueSyntaxCSS, false, false},
-		{api.ValueSyntaxDraw, true, false},
-		{api.ValueSyntaxGif, false, true},
-		{"jpeg", false, true},
-		{"jpg", false, true},
-		{api.ValueSyntaxMarkdown, true, false},
-		{api.ValueSyntaxMD, true, false},
-		{api.ValueSyntaxMustache, false, false},
-		{api.ValueSyntaxNone, false, false},
-		{"plain", false, false},
-		{"png", false, true},
-		{api.ValueSyntaxSVG, false, true},
-		{api.ValueSyntaxText, false, false},
-		{"txt", false, false},
-		{"webp", false, true},
-		{api.ValueSyntaxZmk, true, false},
+		{api.ValueSyntaxHTML, false, true, false},
+		{api.ValueSyntaxCSS, false, true, false},
+		{api.ValueSyntaxDraw, true, true, false},
+		{api.ValueSyntaxGif, false, false, true},
+		{"jpeg", false, false, true},
+		{"jpg", false, false, true},
+		{api.ValueSyntaxMarkdown, true, true, false},
+		{api.ValueSyntaxMD, true, true, false},
+		{api.ValueSyntaxMustache, false, true, false},
+		{api.ValueSyntaxNone, false, false, false},
+		{"plain", false, true, false},
+		{"png", false, false, true},
+		{api.ValueSyntaxSVG, false, true, true},
+		{api.ValueSyntaxText, false, true, false},
+		{"txt", false, true, false},
+		{"webp", false, false, true},
+		{api.ValueSyntaxZmk, true, true, false},
 	}
 	for _, tc := range testCases {
 		delete(syntaxSet, tc.syntax)
-		if got := parser.IsTextParser(tc.syntax); got != tc.text {
+		if got := parser.IsASTParser(tc.syntax); got != tc.ast {
+			t.Errorf("Syntax %q is AST: %v, but got %v", tc.syntax, tc.ast, got)
+		}
+		if got := parser.IsTextFormat(tc.syntax); got != tc.text {
 			t.Errorf("Syntax %q is text: %v, but got %v", tc.syntax, tc.text, got)
 		}
 		if got := parser.IsImageFormat(tc.syntax); got != tc.image {

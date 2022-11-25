@@ -30,7 +30,7 @@ type Content struct {
 
 // NewContent creates a new content from a string.
 func NewContent(data []byte) Content {
-	return Content{data: data, isBinary: calcIsBinary(data)}
+	return Content{data: data, isBinary: IsBinary(data)}
 }
 
 // Length returns the number of bytes stored.
@@ -50,7 +50,7 @@ func (zc *Content) Equal(o *Content) bool {
 // Set content to new string value.
 func (zc *Content) Set(data []byte) {
 	zc.data = data
-	zc.isBinary = calcIsBinary(data)
+	zc.isBinary = IsBinary(data)
 }
 
 // Write it to a Writer
@@ -111,11 +111,12 @@ func (zc *Content) SetDecoded(data, encoding string) error {
 	default:
 		return errors.New("unknown encoding " + encoding)
 	}
-	zc.isBinary = calcIsBinary(zc.data)
+	zc.isBinary = IsBinary(zc.data)
 	return nil
 }
 
-func calcIsBinary(data []byte) bool {
+// IsBinary returns true if the given data appears to be non-text data.
+func IsBinary(data []byte) bool {
 	if !utf8.Valid(data) {
 		return true
 	}
