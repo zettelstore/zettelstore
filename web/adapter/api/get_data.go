@@ -16,6 +16,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeGetDataHandler creates a new HTTP handler to return zettelstore data.
@@ -37,7 +38,7 @@ func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 			return
 		}
 
-		err = writeBuffer(w, &buf, ctJSON)
+		err = writeBuffer(w, &buf, content.JSON)
 		a.log.IfErr(err).Msg("Write Version Info")
 	}
 }

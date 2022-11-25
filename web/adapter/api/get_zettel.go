@@ -21,6 +21,7 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel.
@@ -34,12 +35,12 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc
 		m := z.Meta
 
 		var buf bytes.Buffer
-		content, encoding := z.Content.Encode()
+		zContent, encoding := z.Content.Encode()
 		err = encodeJSONData(&buf, api.ZettelJSON{
 			ID:       api.ZettelID(m.Zid.String()),
 			Meta:     m.Map(),
 			Encoding: encoding,
-			Content:  content,
+			Content:  zContent,
 			Rights:   a.getRights(ctx, m),
 		})
 		if err != nil {
@@ -48,7 +49,7 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc
 			return
 		}
 
-		err = writeBuffer(w, &buf, ctJSON)
+		err = writeBuffer(w, &buf, content.JSON)
 		a.log.IfErr(err).Zid(m.Zid).Msg("Write JSON Zettel")
 	}
 }
@@ -73,12 +74,10 @@ func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.Handle
 				_, err = z.Content.Write(&buf)
 			}
 		case partMeta:
-			contentType = ctPlainText
+			contentType = content.PlainText
 			_, err = z.Meta.Write(&buf)
 		case partContent:
-			if ct, ok := syntax2contentType(z.Meta.GetDefault(api.KeySyntax, "")); ok {
-				contentType = ct
-			}
+			contentType = content.MIMEFromSyntax(z.Meta.GetDefault(api.KeySyntax, ""))
 			_, err = z.Content.Write(&buf)
 		}
 		if err != nil {
@@ -133,7 +132,7 @@ func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 			return
 		}
 
-		err = writeBuffer(w, &buf, ctJSON)
+		err = writeBuffer(w, &buf, content.JSON)
 		a.log.IfErr(err).Zid(zid).Msg("Write JSON Meta")
 	}
 }

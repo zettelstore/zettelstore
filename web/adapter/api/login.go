@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user via API.
@@ -74,7 +75,7 @@ func (a *API) writeJSONToken(w http.ResponseWriter, token string, lifetime time.
 		return nil
 	}
 
-	return writeBuffer(w, &buf, ctJSON)
+	return writeBuffer(w, &buf, content.JSON)
 }
 
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.

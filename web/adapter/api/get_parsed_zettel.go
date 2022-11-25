@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeGetParsedZettelHandler creates a new HTTP handler to return a parsed zettel.
@@ -76,6 +77,6 @@ func (a *API) writeEncodedZettelPart(
 		return
 	}
 
-	err = writeBuffer(w, &buf, encoding2ContentType(enc))
+	err = writeBuffer(w, &buf, content.MIMEFromEncoding(enc))
 	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
 }

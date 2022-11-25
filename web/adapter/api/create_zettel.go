@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakePostCreatePlainZettelHandler creates a new HTTP handler to store content of
@@ -37,7 +38,7 @@ func (a *API) MakePostCreatePlainZettelHandler(createZettel *usecase.CreateZette
 			return
 		}
 		u := a.NewURLBuilder('z').SetZid(api.ZettelID(newZid.String())).String()
-		h := adapter.PrepareHeader(w, ctPlainText)
+		h := adapter.PrepareHeader(w, content.PlainText)
 		h.Set(api.HeaderLocation, u)
 		w.WriteHeader(http.StatusCreated)
 		_, err = w.Write(newZid.Bytes())
@@ -69,7 +70,7 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 			return
 		}
 
-		h := adapter.PrepareHeader(w, ctJSON)
+		h := adapter.PrepareHeader(w, content.JSON)
 		h.Set(api.HeaderLocation, a.NewURLBuilder('j').SetZid(api.ZettelID(newZid.String())).String())
 		w.WriteHeader(http.StatusCreated)
 		_, err = w.Write(buf.Bytes())

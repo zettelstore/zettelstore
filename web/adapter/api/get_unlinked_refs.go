@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".
@@ -83,7 +84,7 @@ func (a *API) MakeListUnlinkedMetaHandler(
 			return
 		}
 
-		err = writeBuffer(w, &buf, ctJSON)
+		err = writeBuffer(w, &buf, content.JSON)
 		a.log.IfErr(err).Zid(zid).Msg("Write Unlinked References")
 	}
 }

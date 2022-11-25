@@ -23,6 +23,7 @@ import (
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
@@ -82,7 +83,7 @@ func (a *API) queryAction(ctx context.Context, w io.Writer, q *query.Query, ml [
 		}
 	}
 	err := a.writeQueryMetaList(ctx, w, q, ml)
-	return ctJSON, err
+	return content.JSON, err
 }
 
 type actionPara struct {
@@ -115,7 +116,7 @@ func (ap *actionPara) createMapMeta(key string) (string, error) {
 	}
 
 	err := encodeJSONData(ap.w, api.MapListJSON{Map: mm})
-	return ctJSON, err
+	return content.JSON, err
 }
 
 func (a *API) writeQueryMetaList(ctx context.Context, w io.Writer, q *query.Query, ml []*meta.Meta) error {

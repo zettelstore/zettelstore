@@ -17,6 +17,7 @@ import (
 
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/content"
 )
 
 // MakeListPlainHandler creates a new HTTP handler for the use case "list some zettel".
@@ -39,7 +40,7 @@ func (a *API) MakeListPlainHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			}
 		}
 
-		err = writeBuffer(w, &buf, ctPlainText)
+		err = writeBuffer(w, &buf, content.PlainText)
 		a.log.IfErr(err).Msg("Write Plain List")
 	}
 }
