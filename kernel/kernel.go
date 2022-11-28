@@ -123,12 +123,13 @@ type Service uint8
 
 // Constants for type Service.
 const (
-	_ Service = iota
-	CoreService
-	ConfigService
-	AuthService
-	BoxService
-	WebService
+	_             Service = iota
+	KernelService         // The Kernel itself is also a sevice
+	CoreService           // Manages startup specific functionality
+	ConfigService         // Provides access to runtime configuration
+	AuthService           // Manages authentication
+	BoxService            // Boxes provide zettel
+	WebService            // Access to Zettelstore through Web-based API and WebUI
 )
 
 // Constants for core service system keys.

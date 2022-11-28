@@ -192,7 +192,7 @@ func (cs *configService) Get(ctx context.Context, m *meta.Meta, key string) stri
 			return val
 		}
 	}
-	result := cs.GetConfig(key)
+	result := cs.GetCurConfig(key)
 	if result == nil {
 		return ""
 	}
@@ -228,16 +228,16 @@ func (cs *configService) AddDefaultValues(ctx context.Context, m *meta.Meta) *me
 	result := m
 	cs.mxService.RLock()
 	if _, found := m.Get(api.KeyCopyright); !found {
-		result = updateMeta(result, m, api.KeyCopyright, cs.GetConfig(keyDefaultCopyright).(string))
+		result = updateMeta(result, m, api.KeyCopyright, cs.GetCurConfig(keyDefaultCopyright).(string))
 	}
 	if _, found := m.Get(api.KeyLang); !found {
 		result = updateMeta(result, m, api.KeyLang, cs.Get(ctx, nil, api.KeyLang))
 	}
 	if _, found := m.Get(api.KeyLicense); !found {
-		result = updateMeta(result, m, api.KeyLicense, cs.GetConfig(keyDefaultLicense).(string))
+		result = updateMeta(result, m, api.KeyLicense, cs.GetCurConfig(keyDefaultLicense).(string))
 	}
 	if _, found := m.Get(api.KeyVisibility); !found {
-		result = updateMeta(result, m, api.KeyVisibility, cs.GetConfig(keyDefaultVisibility).(meta.Visibility).String())
+		result = updateMeta(result, m, api.KeyVisibility, cs.GetCurConfig(keyDefaultVisibility).(meta.Visibility).String())
 	}
 	cs.mxService.RUnlock()
 	return result
@@ -251,15 +251,15 @@ func updateMeta(result, m *meta.Meta, key, val string) *meta.Meta {
 }
 
 func (cs *configService) GetHTMLInsecurity() config.HTMLInsecurity {
-	return cs.GetConfig(kernel.ConfigInsecureHTML).(config.HTMLInsecurity)
+	return cs.GetCurConfig(kernel.ConfigInsecureHTML).(config.HTMLInsecurity)
 }
 
 // GetSiteName returns the current value of the "site-name" key.
-func (cs *configService) GetSiteName() string { return cs.GetConfig(keySiteName).(string) }
+func (cs *configService) GetSiteName() string { return cs.GetCurConfig(keySiteName).(string) }
 
 // GetHomeZettel returns the value of the "home-zettel" key.
 func (cs *configService) GetHomeZettel() id.Zid {
-	homeZid := cs.GetConfig(keyHomeZettel).(id.Zid)
+	homeZid := cs.GetCurConfig(keyHomeZettel).(id.Zid)
 	if homeZid != id.Invalid {
 		return homeZid
 	}
@@ -272,15 +272,15 @@ func (cs *configService) GetHomeZettel() id.Zid {
 
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cs *configService) GetMaxTransclusions() int {
-	return int(cs.GetConfig(keyMaxTransclusions).(int64))
+	return int(cs.GetCurConfig(keyMaxTransclusions).(int64))
 }
 
 // GetYAMLHeader returns the current value of the "yaml-header" key.
-func (cs *configService) GetYAMLHeader() bool { return cs.GetConfig(keyYAMLHeader).(bool) }
+func (cs *configService) GetYAMLHeader() bool { return cs.GetCurConfig(keyYAMLHeader).(bool) }
 
 // GetZettelFileSyntax returns the current value of the "zettel-file-syntax" key.
 func (cs *configService) GetZettelFileSyntax() []string {
-	if zfs := cs.GetConfig(keyZettelFileSyntax); zfs != nil {
+	if zfs := cs.GetCurConfig(keyZettelFileSyntax); zfs != nil {
 		return zfs.([]string)
 	}
 	return nil
@@ -289,10 +289,10 @@ func (cs *configService) GetZettelFileSyntax() []string {
 // --- config.AuthConfig
 
 // GetSimpleMode returns true if system tuns in simple-mode.
-func (cs *configService) GetSimpleMode() bool { return cs.GetConfig(kernel.ConfigSimpleMode).(bool) }
+func (cs *configService) GetSimpleMode() bool { return cs.GetCurConfig(kernel.ConfigSimpleMode).(bool) }
 
 // GetExpertMode returns the current value of the "expert-mode" key.
-func (cs *configService) GetExpertMode() bool { return cs.GetConfig(keyExpertMode).(bool) }
+func (cs *configService) GetExpertMode() bool { return cs.GetCurConfig(keyExpertMode).(bool) }
 
 // GetVisibility returns the visibility value, or "login" if none is given.
 func (cs *configService) GetVisibility(m *meta.Meta) meta.Visibility {
@@ -302,7 +302,7 @@ func (cs *configService) GetVisibility(m *meta.Meta) meta.Visibility {
 		}
 	}
 
-	vis := cs.GetConfig(keyDefaultVisibility).(meta.Visibility)
+	vis := cs.GetCurConfig(keyDefaultVisibility).(meta.Visibility)
 	if vis != meta.VisibilityUnknown {
 		return vis
 	}

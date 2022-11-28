@@ -135,7 +135,7 @@ func (cfg *srvConfig) getListDescription(key string) (configDescription, string,
 	return configDescription{}, "", -1
 }
 
-func (cfg *srvConfig) GetConfig(key string) interface{} {
+func (cfg *srvConfig) GetCurConfig(key string) interface{} {
 	cfg.mxConfig.RLock()
 	defer cfg.mxConfig.RUnlock()
 	if cfg.cur == nil {
@@ -150,8 +150,8 @@ func (cfg *srvConfig) GetNextConfig(key string) interface{} {
 	return cfg.next[key]
 }
 
-func (cfg *srvConfig) GetConfigList(all bool) []kernel.KeyDescrValue {
-	return cfg.getOneConfigList(all, cfg.GetConfig)
+func (cfg *srvConfig) GetCurConfigList(all bool) []kernel.KeyDescrValue {
+	return cfg.getOneConfigList(all, cfg.GetCurConfig)
 }
 func (cfg *srvConfig) GetNextConfigList() []kernel.KeyDescrValue {
 	return cfg.getOneConfigList(true, cfg.GetNextConfig)

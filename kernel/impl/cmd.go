@@ -223,7 +223,7 @@ func cmdConfig(sess *cmdSession, cmd string, args []string) bool {
 }
 func cmdGetConfig(sess *cmdSession, _ string, args []string) bool {
 	showConfig(sess, args,
-		listCurConfig, func(srv service, key string) interface{} { return srv.GetConfig(key) })
+		listCurConfig, func(srv service, key string) interface{} { return srv.GetCurConfig(key) })
 	return true
 }
 func cmdNextConfig(sess *cmdSession, _ string, args []string) bool {
@@ -267,7 +267,7 @@ func showConfig(sess *cmdSession, args []string,
 	sess.println(fmt.Sprintf("%v", val))
 }
 func listCurConfig(sess *cmdSession, srv service) {
-	listConfig(sess, func() []kernel.KeyDescrValue { return srv.GetConfigList(true) })
+	listConfig(sess, func() []kernel.KeyDescrValue { return srv.GetCurConfigList(true) })
 }
 func listNextConfig(sess *cmdSession, srv service) {
 	listConfig(sess, srv.GetNextConfigList)
