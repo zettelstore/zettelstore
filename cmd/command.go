@@ -48,7 +48,7 @@ func RegisterCommand(cmd Command) {
 		panic("Command already registered: " + cmd.Name)
 	}
 	cmd.flags = flag.NewFlagSet(cmd.Name, flag.ExitOnError)
-	cmd.flags.String("l", logger.InfoLevel.String(), "global log level")
+	cmd.flags.String("l", logger.InfoLevel.String(), "log level specification")
 
 	if cmd.SetFlags != nil {
 		cmd.SetFlags(cmd.flags)

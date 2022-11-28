@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221018184208
+modified: 20221128155143
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -84,10 +84,15 @@ The following keys are supported:
 
   Default value: ""127.0.0.1:23123""
 ; [!log-level|''log-level'']
-: Specify the global [[logging level|00001004059700]] for the whole application, overwriting the level ""debug"" set by configuration [[''debug-mode''|#debug-mode]].
+: Specify the [[logging level|00001004059700]] for the whole application or for a given (internal) service, overwriting the level ""debug"" set by configuration [[''debug-mode''|#debug-mode]].
   Can be changed at runtime, even for specific internal services, with the ''log-level'' command of the [[administrator console|00001004101000#log-level]].
-  
+
+  Several specifications are separated by the semicolon character (""'';''"", U+003B).
+  Each specification consists of an optional service name, together with the colon character (""'':''"", U+003A), followed by the logging level.
+
   Default: ""info"".
+
+  Examples: ""sense"" will produce sensing messages (e.g. a little more than ""info""); ""sense;web:debug"" will emit debugging messages for the web component of Zettelstore while still producing sensing messages for all other components.
 
   When you are familiar to operate the Zettelstore, you might set the level to ""warn"" or ""error"" to receive less noisy messages from the Zettelstore.
 ; [!max-request-size|''max-request-size'']

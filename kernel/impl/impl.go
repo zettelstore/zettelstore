@@ -129,7 +129,7 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 		srvD.srv.Freeze()
 	}
 	if kern.cfg.GetConfig(kernel.ConfigSimpleMode).(bool) {
-		kern.SetGlobalLogLevel(defaultSimpleLogLevel)
+		kern.SetLogLevel(defaultSimpleLogLevel.String())
 	}
 	kern.wg.Add(1)
 	signal.Notify(kern.interrupt, os.Interrupt, syscall.SIGTERM)
@@ -205,15 +205,61 @@ func (kern *myKernel) GetKernelLogger() *logger.Logger {
 	return kern.logger
 }
 
-func (kern *myKernel) SetGlobalLogLevel(level logger.Level) {
-	if level.IsValid() {
-		kern.mx.RLock()
-		kern.logger.SetLevel(level)
-		for _, srvD := range kern.srvs {
-			srvD.srv.GetLogger().SetLevel(level)
-		}
-		kern.mx.RUnlock()
+func (kern *myKernel) SetLogLevel(logLevel string) {
+	defaultLevel, srvLevel, kernLevel := kern.parseLogLevel(logLevel)
+
+	kern.mx.RLock()
+	defer kern.mx.RUnlock()
+	if kernLevel != logger.NoLevel {
+		kern.logger.SetLevel(kernLevel)
+	} else if defaultLevel != logger.NoLevel {
+		kern.logger.SetLevel(defaultLevel)
 	}
+	for srvN, srvD := range kern.srvs {
+		if lvl, found := srvLevel[srvN]; found {
+			srvD.srv.GetLogger().SetLevel(lvl)
+		} else if defaultLevel != logger.NoLevel {
+			srvD.srv.GetLogger().SetLevel(defaultLevel)
+		}
+	}
+}
+
+func (kern *myKernel) parseLogLevel(logLevel string) (logger.Level, map[kernel.Service]logger.Level, logger.Level) {
+	defaultLevel, kernLevel := logger.NoLevel, logger.NoLevel
+	srvLevel := map[kernel.Service]logger.Level{}
+	for _, spec := range strings.Split(logLevel, ";") {
+		vals := cleanLogSpec(strings.Split(spec, ":"))
+		switch len(vals) {
+		case 0:
+		case 1:
+			if lvl := logger.ParseLevel(vals[0]); lvl.IsValid() {
+				defaultLevel = lvl
+			}
+		default:
+			serviceText, levelText := vals[0], vals[1]
+			if srv, found := kern.srvNames[serviceText]; found {
+				if lvl := logger.ParseLevel(levelText); lvl.IsValid() {
+					srvLevel[srv.srvnum] = lvl
+				}
+			} else if serviceText == "kernel" {
+				if lvl := logger.ParseLevel(levelText); lvl.IsValid() {
+					kernLevel = lvl
+				}
+			}
+		}
+	}
+	return defaultLevel, srvLevel, kernLevel
+}
+
+func cleanLogSpec(rawVals []string) []string {
+	vals := make([]string, 0, len(rawVals))
+	for _, rVal := range rawVals {
+		val := strings.TrimSpace(rVal)
+		if val != "" {
+			vals = append(vals, val)
+		}
+	}
+	return vals
 }
 
 func (kern *myKernel) RetrieveLogEntries() []kernel.LogEntry {

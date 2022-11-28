@@ -26,7 +26,7 @@ type Level uint8
 
 // Constants for Level
 const (
-	noLevel        Level = iota // the absent log level
+	NoLevel        Level = iota // the absent log level
 	TraceLevel                  // Log most internal activities
 	DebugLevel                  // Log most data updates
 	SenseLevel                  // Log activities of minor interest
@@ -92,7 +92,7 @@ func ParseLevel(text string) Level {
 			return lv
 		}
 	}
-	return noLevel
+	return NoLevel
 }
 
 // Logger represents an objects that emits logging messages.
@@ -205,7 +205,7 @@ func (l *Logger) Mandatory() *Message { return newMessage(l, MandatoryLevel) }
 func (l *Logger) Clone() *Message {
 	msg := newMessage(l, NeverLevel)
 	if msg != nil {
-		msg.level = noLevel
+		msg.level = NoLevel
 	}
 	return msg
 }

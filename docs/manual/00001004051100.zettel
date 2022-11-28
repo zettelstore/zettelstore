@@ -3,7 +3,8 @@ title: The ''run-simple'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
-modified: 20220724162843
+created: 20210126175322
+modified: 20221128161922
 
 === ``zettelstore run-simple``
 This sub-command is implicitly called, when an user starts Zettelstore by double-clicking on its GUI icon.

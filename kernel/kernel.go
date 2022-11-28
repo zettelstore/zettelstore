@@ -42,8 +42,10 @@ type Kernel interface {
 	// GetKernelLogger returns the kernel logger.
 	GetKernelLogger() *logger.Logger
 
-	// SetGlobalLogLevel sets the level for all logger maintained by the kernel.
-	SetGlobalLogLevel(logger.Level)
+	// SetLogLevel sets the logging level for logger maintained by the kernel.
+	//
+	// Its syntax is: (SERVICE ":")? LEVEL (";" (SERICE ":")? LEVEL)*.
+	SetLogLevel(string)
 
 	// LogRecover outputs some information about the previous panic.
 	LogRecover(name string, recoverInfo interface{}) bool
