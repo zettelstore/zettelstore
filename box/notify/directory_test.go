@@ -13,8 +13,8 @@ package notify
 import (
 	"testing"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
 	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.
 	_ "zettelstore.de/z/parser/markdown"   // Allow to use markdown parser.
@@ -49,15 +49,15 @@ func TestSeekZid(t *testing.T) {
 func TestNewExtIsBetter(t *testing.T) {
 	extVals := []string{
 		// Main Formats
-		api.ValueSyntaxZmk, api.ValueSyntaxDraw, api.ValueSyntaxMarkdown, api.ValueSyntaxMD,
+		meta.SyntaxZmk, meta.SyntaxDraw, meta.SyntaxMarkdown, meta.SyntaxMD,
 		// Other supported text formats
-		api.ValueSyntaxCSS, "txt", api.ValueSyntaxHTML,
-		api.ValueSyntaxMustache, api.ValueSyntaxText, "plain",
+		meta.SyntaxCSS, meta.SyntaxTxt, meta.SyntaxHTML,
+		meta.SyntaxMustache, meta.SyntaxText, meta.SyntaxPlain,
 		// Supported text graphics formats
-		api.ValueSyntaxSVG,
-		api.ValueSyntaxNone,
+		meta.SyntaxSVG,
+		meta.SyntaxNone,
 		// Supported binary graphic formats
-		api.ValueSyntaxGif, "png", "jpeg", "jpg",
+		meta.SyntaxGif, meta.SyntaxPNG, meta.SyntaxJPEG, meta.SyntaxWebp, meta.SyntaxJPG,
 
 		// Unsupported syntax values
 		"gz", "cpp", "tar", "cppc",

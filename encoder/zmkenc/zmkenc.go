@@ -333,7 +333,7 @@ func (v *visitor) writeTableRow(row ast.TableRow, align []ast.Alignment) {
 }
 
 func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
-	if bn.Syntax == api.ValueSyntaxSVG {
+	if bn.Syntax == meta.SyntaxSVG {
 		v.b.WriteStrings("@@@", bn.Syntax, "\n")
 		v.b.Write(bn.Blob)
 		v.b.WriteString("\n@@@\n")
@@ -400,7 +400,7 @@ func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
 }
 
 func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
-	if en.Syntax == api.ValueSyntaxSVG {
+	if en.Syntax == meta.SyntaxSVG {
 		v.b.WriteString("@@")
 		v.b.Write(en.Blob)
 		v.b.WriteStrings("@@{=", en.Syntax, "}")
@@ -522,5 +522,5 @@ func (v *visitor) writeEscaped(s string, toEscape byte) {
 }
 
 func syntaxToHTML(a attrs.Attributes) attrs.Attributes {
-	return a.Clone().Set("", api.ValueSyntaxHTML).Remove(api.KeySyntax)
+	return a.Clone().Set("", meta.SyntaxHTML).Remove(api.KeySyntax)
 }

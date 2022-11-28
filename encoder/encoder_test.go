@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -65,11 +66,11 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 		inp := input.NewInput([]byte(tc.zmk))
 		var pe parserEncoder
 		if tc.inline {
-			is := parser.ParseInlines(inp, api.ValueSyntaxZmk)
+			is := parser.ParseInlines(inp, meta.SyntaxZmk)
 			cleaner.CleanInlineSlice(&is)
 			pe = &peInlines{is: is}
 		} else {
-			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, api.ValueSyntaxZmk, config.NoHTML)}
+			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, meta.SyntaxZmk, config.NoHTML)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
 		checkSexpr(t, testNum, pe, tc.descr)

@@ -18,7 +18,6 @@ import (
 	"log"
 
 	"codeberg.org/t73fde/sxpf"
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
@@ -284,7 +283,7 @@ func (t *transformer) getCell(cell *ast.TableCell) *sxpf.Pair {
 
 func getBLOB(bn *ast.BLOBNode) *sxpf.Pair {
 	var lastValue sxpf.Value
-	if bn.Syntax == api.ValueSyntaxSVG {
+	if bn.Syntax == meta.SyntaxSVG {
 		lastValue = sxpf.NewString(string(bn.Blob))
 	} else {
 		lastValue = getBase64String(bn.Blob)
@@ -324,7 +323,7 @@ func (t *transformer) getLink(ln *ast.LinkNode) *sxpf.Pair {
 
 func (t *transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.Pair {
 	tail := t.getInlineSlice(en.Inlines)
-	if en.Syntax == api.ValueSyntaxSVG {
+	if en.Syntax == meta.SyntaxSVG {
 		tail = sxpf.NewPair(sxpf.NewString(string(en.Blob)), tail)
 	} else {
 		tail = sxpf.NewPair(getBase64String(en.Blob), tail)

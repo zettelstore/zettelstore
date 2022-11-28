@@ -15,9 +15,9 @@ import (
 	"fmt"
 	"strings"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 )
 
@@ -498,7 +498,7 @@ func (cp *zmkP) parseLiteral() (res ast.InlineNode, success bool) {
 
 func createLiteralNode(kind ast.LiteralKind, a attrs.Attributes, content []byte) *ast.LiteralNode {
 	if kind == ast.LiteralZettel {
-		if val, found := a.Get(""); found && val == api.ValueSyntaxHTML {
+		if val, found := a.Get(""); found && val == meta.SyntaxHTML {
 			kind = ast.LiteralHTML
 			a = a.Remove("")
 		}

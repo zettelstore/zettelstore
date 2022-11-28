@@ -142,14 +142,12 @@ func (cb *constBox) ReadStats(st *box.ManagedBoxStats) {
 	cb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
-const syntaxTemplate = "mustache"
-
 var constZettelMap = map[id.Zid]constZettel{
 	id.ConfigurationZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Runtime Configuration",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxNone,
+			api.KeySyntax:     meta.SyntaxNone,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityOwner,
 		},
@@ -158,7 +156,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore License",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxText,
+			api.KeySyntax:     meta.SyntaxText,
 			api.KeyCreated:    "20210504135842",
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyModified:   "20220131153422",
@@ -170,7 +168,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Contributors",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxZmk,
+			api.KeySyntax:     meta.SyntaxZmk,
 			api.KeyCreated:    "20210504135842",
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyReadOnly:   api.ValueTrue,
@@ -181,7 +179,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Dependencies",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxZmk,
+			api.KeySyntax:     meta.SyntaxZmk,
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityLogin,
@@ -193,7 +191,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20210504135842",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -202,7 +200,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Login Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -211,7 +209,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -220,7 +218,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Info HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -229,7 +227,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Context HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20210218181140",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -238,7 +236,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -247,7 +245,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -256,7 +254,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -265,7 +263,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -274,7 +272,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     syntaxTemplate,
+			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20210305133215",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -283,7 +281,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     "css",
+			api.KeySyntax:     meta.SyntaxCSS,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
@@ -292,7 +290,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore User CSS",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     "css",
+			api.KeySyntax:     meta.SyntaxCSS,
 			api.KeyCreated:    "20210622110143",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
@@ -301,7 +299,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Role to CSS Map",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxNone,
+			api.KeySyntax:     meta.SyntaxNone,
 			api.KeyCreated:    "20220321183214",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
@@ -310,7 +308,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Generic Emoji",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxGif,
+			api.KeySyntax:     meta.SyntaxGif,
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyCreated:    "20210504175807",
 			api.KeyVisibility: api.ValueVisibilityPublic,
@@ -320,7 +318,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "New Menu",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     api.ValueSyntaxZmk,
+			api.KeySyntax:     meta.SyntaxZmk,
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyCreated:    "20210217161829",
 			api.KeyVisibility: api.ValueVisibilityCreator,
@@ -330,7 +328,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "New Zettel",
 			api.KeyRole:       api.ValueRoleZettel,
-			api.KeySyntax:     api.ValueSyntaxZmk,
+			api.KeySyntax:     meta.SyntaxZmk,
 			api.KeyCreated:    "20201028185209",
 			api.KeyVisibility: api.ValueVisibilityCreator,
 		},
@@ -339,7 +337,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:                       "New User",
 			api.KeyRole:                        api.ValueRoleConfiguration,
-			api.KeySyntax:                      api.ValueSyntaxNone,
+			api.KeySyntax:                      meta.SyntaxNone,
 			api.KeyCreated:                     "20201028185209",
 			meta.NewPrefix + api.KeyCredential: "",
 			meta.NewPrefix + api.KeyUserID:     "",
@@ -351,7 +349,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:   "Home",
 			api.KeyRole:    api.ValueRoleZettel,
-			api.KeySyntax:  api.ValueSyntaxZmk,
+			api.KeySyntax:  meta.SyntaxZmk,
 			api.KeyLang:    api.ValueLangEN,
 			api.KeyCreated: "20210210190757",
 		},

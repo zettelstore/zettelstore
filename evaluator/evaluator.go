@@ -44,7 +44,7 @@ type Port interface {
 // EvaluateZettel evaluates the given zettel in the given context, with the
 // given ports, and the given environment.
 func EvaluateZettel(ctx context.Context, port Port, rtConfig config.Config, zn *ast.ZettelNode) {
-	if zn.Syntax == api.ValueSyntaxNone {
+	if zn.Syntax == meta.SyntaxNone {
 		// AST is empty, evaluate to a description list of metadata.
 		zn.Ast = evaluateMetadata(zn.Meta)
 		return
@@ -157,7 +157,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 	case ast.VerbatimZettel:
 		return e.evalVerbatimZettel(vn)
 	case ast.VerbatimEval:
-		if syntax, found := vn.Attrs.Get(""); found && syntax == api.ValueSyntaxDraw {
+		if syntax, found := vn.Attrs.Get(""); found && syntax == meta.SyntaxDraw {
 			return draw.ParseDrawBlock(vn)
 		}
 	}
@@ -166,7 +166,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 
 func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
 	m := meta.New(id.Invalid)
-	m.Set(api.KeySyntax, getSyntax(vn.Attrs, api.ValueSyntaxText))
+	m.Set(api.KeySyntax, getSyntax(vn.Attrs, meta.SyntaxText))
 	zettel := domain.Zettel{
 		Meta:    m,
 		Content: domain.NewContent(vn.Content),
@@ -465,7 +465,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 		return ln
 	}
 	e.transcludeCount++
-	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, api.ValueSyntaxText))
+	result := e.evaluateEmbeddedInline(ln.Content, getSyntax(ln.Attrs, meta.SyntaxText))
 	if len(result) == 0 {
 		return &ast.LiteralNode{
 			Kind:    ast.LiteralComment,

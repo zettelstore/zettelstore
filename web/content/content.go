@@ -18,6 +18,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain"
+	"zettelstore.de/z/domain/meta"
 )
 
 const (
@@ -50,25 +51,25 @@ func MIMEFromEncoding(enc api.EncodingEnum) string {
 }
 
 var syntax2mime = map[string]string{
-	api.ValueSyntaxCSS:      "text/css; charset=utf-8",
-	"draw":                  PlainText,
-	api.ValueSyntaxGif:      mimeGIF,
-	api.ValueSyntaxHTML:     mimeHTML,
-	"jpeg":                  mimeJPEG,
-	"jpg":                   mimeJPEG,
-	api.ValueSyntaxMarkdown: mimeMarkdown,
-	api.ValueSyntaxMD:       mimeMarkdown,
-	api.ValueSyntaxMustache: PlainText,
-	"none":                  "",
-	"plain":                 PlainText,
-	"png":                   mimePNG,
-	api.ValueSyntaxSVG:      "image/svg+xml",
-	"txt":                   PlainText,
-	api.ValueSyntaxText:     PlainText,
-	"webp":                  mimeWEBP,
-	api.ValueSyntaxZmk:      "text/x-zmk; charset=utf-8",
+	meta.SyntaxCSS:      "text/css; charset=utf-8",
+	meta.SyntaxDraw:     PlainText,
+	meta.SyntaxGif:      mimeGIF,
+	meta.SyntaxHTML:     mimeHTML,
+	meta.SyntaxJPEG:     mimeJPEG,
+	meta.SyntaxJPG:      mimeJPEG,
+	meta.SyntaxMarkdown: mimeMarkdown,
+	meta.SyntaxMD:       mimeMarkdown,
+	meta.SyntaxMustache: PlainText,
+	meta.SyntaxNone:     "",
+	meta.SyntaxPlain:    PlainText,
+	meta.SyntaxPNG:      mimePNG,
+	meta.SyntaxSVG:      "image/svg+xml",
+	meta.SyntaxTxt:      PlainText,
+	meta.SyntaxText:     PlainText,
+	meta.SyntaxWebp:     mimeWEBP,
+	meta.SyntaxZmk:      "text/x-zmk; charset=utf-8",
 
-	// Additional syntaxes that are parsed as plain
+	// Additional syntaxes that are parsed as plain text.
 	"js":  "text/javascript; charset=utf-8",
 	"pdf": "application/pdf",
 	"xml": "text/xml; charset=utf-8",
@@ -83,13 +84,13 @@ func MIMEFromSyntax(syntax string) string {
 }
 
 var mime2syntax = map[string]string{
-	mimeGIF:         api.ValueSyntaxGif,
-	mimeJPEG:        "jpeg",
-	mimePNG:         "png",
-	mimeWEBP:        "webp",
-	"text/html":     api.ValueSyntaxHTML,
-	"text/markdown": api.ValueSyntaxMarkdown,
-	"text/plain":    api.ValueSyntaxText,
+	mimeGIF:         meta.SyntaxGif,
+	mimeJPEG:        meta.SyntaxJPEG,
+	mimePNG:         meta.SyntaxPNG,
+	mimeWEBP:        meta.SyntaxWebp,
+	"text/html":     meta.SyntaxHTML,
+	"text/markdown": meta.SyntaxMarkdown,
+	"text/plain":    meta.SyntaxText,
 
 	// Additional syntaxes
 	"application/pdf": "pdf",

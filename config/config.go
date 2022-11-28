@@ -14,7 +14,6 @@ package config
 import (
 	"context"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -96,12 +95,12 @@ func (hi HTMLInsecurity) String() string {
 func (hi HTMLInsecurity) AllowHTML(syntax string) bool {
 	switch hi {
 	case SyntaxHTML:
-		return syntax == api.ValueSyntaxHTML
+		return syntax == meta.SyntaxHTML
 	case MarkdownHTML:
-		return syntax == api.ValueSyntaxHTML || syntax == api.ValueSyntaxMarkdown || syntax == api.ValueSyntaxMD
+		return syntax == meta.SyntaxHTML || syntax == meta.SyntaxMarkdown || syntax == meta.SyntaxMD
 	case ZettelmarkupHTML:
-		return syntax == api.ValueSyntaxZmk || syntax == api.ValueSyntaxHTML ||
-			syntax == api.ValueSyntaxMarkdown || syntax == api.ValueSyntaxMD
+		return syntax == meta.SyntaxZmk || syntax == meta.SyntaxHTML ||
+			syntax == meta.SyntaxMarkdown || syntax == meta.SyntaxMD
 	}
 	return false
 }

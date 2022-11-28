@@ -17,7 +17,6 @@ package draw
 import (
 	"strconv"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -27,7 +26,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "draw",
+		Name:          meta.SyntaxDraw,
 		AltNames:      []string{},
 		IsASTParser:   true,
 		IsTextFormat:  true,
@@ -64,7 +63,7 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 	}
 	return ast.BlockSlice{&ast.BLOBNode{
 		Title:  "",
-		Syntax: api.ValueSyntaxSVG,
+		Syntax: meta.SyntaxSVG,
 		Blob:   svg,
 	}}
 }
@@ -80,7 +79,7 @@ func parseInlines(inp *input.Input, _ string) ast.InlineSlice {
 	}
 	return ast.InlineSlice{&ast.EmbedBLOBNode{
 		Attrs:   nil,
-		Syntax:  api.ValueSyntaxSVG,
+		Syntax:  meta.SyntaxSVG,
 		Blob:    svg,
 		Inlines: nil,
 	}}
@@ -111,7 +110,7 @@ func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
 	}
 	return &ast.BLOBNode{
 		Title:  "",
-		Syntax: api.ValueSyntaxSVG,
+		Syntax: meta.SyntaxSVG,
 		Blob:   svg,
 	}
 }

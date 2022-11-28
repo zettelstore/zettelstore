@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/logger"
 )
 
@@ -61,7 +62,7 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasConten
 
 	m.YamlSep = oldZettel.Meta.YamlSep
 	if m.Zid == id.ConfigurationZid {
-		m.Set(api.KeySyntax, api.ValueSyntaxNone)
+		m.Set(api.KeySyntax, meta.SyntaxNone)
 	}
 
 	if !hasContent {

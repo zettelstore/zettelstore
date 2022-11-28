@@ -16,6 +16,27 @@ import (
 	"zettelstore.de/c/api"
 )
 
+// Supported syntax values.
+const (
+	SyntaxCSS      = api.ValueSyntaxCSS
+	SyntaxDraw     = api.ValueSyntaxDraw
+	SyntaxGif      = api.ValueSyntaxGif
+	SyntaxHTML     = api.ValueSyntaxHTML
+	SyntaxJPEG     = "jpeg"
+	SyntaxJPG      = "jpg"
+	SyntaxMarkdown = api.ValueSyntaxMarkdown
+	SyntaxMD       = api.ValueSyntaxMD
+	SyntaxMustache = api.ValueSyntaxMustache
+	SyntaxNone     = api.ValueSyntaxNone
+	SyntaxPlain    = "plain"
+	SyntaxPNG      = "png"
+	SyntaxSVG      = api.ValueSyntaxSVG
+	SyntaxText     = api.ValueSyntaxText
+	SyntaxTxt      = "txt"
+	SyntaxWebp     = "webp"
+	SyntaxZmk      = api.ValueSyntaxZmk
+)
+
 // Visibility enumerates the variations of the 'visibility' meta key.
 type Visibility int
 

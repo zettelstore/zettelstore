@@ -336,7 +336,7 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 	}
 	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, bn.Syntax)
-	if bn.Syntax == api.ValueSyntaxSVG {
+	if bn.Syntax == meta.SyntaxSVG {
 		v.writeContentStart(zjson.NameString3)
 		writeEscaped(&v.b, string(bn.Blob))
 	} else {
@@ -396,7 +396,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 	v.visitAttributes(en.Attrs)
 	v.writeContentStart(zjson.NameString)
 	writeEscaped(&v.b, en.Syntax)
-	if en.Syntax == api.ValueSyntaxSVG {
+	if en.Syntax == meta.SyntaxSVG {
 		v.writeContentStart(zjson.NameString3)
 		writeEscaped(&v.b, string(en.Blob))
 	} else {

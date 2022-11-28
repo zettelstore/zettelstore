@@ -13,8 +13,8 @@ package draw_test
 import (
 	"testing"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 )
@@ -23,6 +23,6 @@ func FuzzParseBlocks(f *testing.F) {
 	f.Fuzz(func(t *testing.T, src []byte) {
 		t.Parallel()
 		inp := input.NewInput(src)
-		parser.ParseBlocks(inp, nil, api.ValueSyntaxDraw, config.NoHTML)
+		parser.ParseBlocks(inp, nil, meta.SyntaxDraw, config.NoHTML)
 	})
 }

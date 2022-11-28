@@ -13,7 +13,7 @@ package parser_test
 import (
 	"testing"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
 
@@ -33,23 +33,23 @@ func TestParserType(t *testing.T) {
 		text   bool
 		image  bool
 	}{
-		{api.ValueSyntaxHTML, false, true, false},
-		{api.ValueSyntaxCSS, false, true, false},
-		{api.ValueSyntaxDraw, true, true, false},
-		{api.ValueSyntaxGif, false, false, true},
-		{"jpeg", false, false, true},
-		{"jpg", false, false, true},
-		{api.ValueSyntaxMarkdown, true, true, false},
-		{api.ValueSyntaxMD, true, true, false},
-		{api.ValueSyntaxMustache, false, true, false},
-		{api.ValueSyntaxNone, false, false, false},
-		{"plain", false, true, false},
-		{"png", false, false, true},
-		{api.ValueSyntaxSVG, false, true, true},
-		{api.ValueSyntaxText, false, true, false},
-		{"txt", false, true, false},
-		{"webp", false, false, true},
-		{api.ValueSyntaxZmk, true, true, false},
+		{meta.SyntaxHTML, false, true, false},
+		{meta.SyntaxCSS, false, true, false},
+		{meta.SyntaxDraw, true, true, false},
+		{meta.SyntaxGif, false, false, true},
+		{meta.SyntaxJPEG, false, false, true},
+		{meta.SyntaxJPG, false, false, true},
+		{meta.SyntaxMarkdown, true, true, false},
+		{meta.SyntaxMD, true, true, false},
+		{meta.SyntaxMustache, false, true, false},
+		{meta.SyntaxNone, false, false, false},
+		{meta.SyntaxPlain, false, true, false},
+		{meta.SyntaxPNG, false, false, true},
+		{meta.SyntaxSVG, false, true, true},
+		{meta.SyntaxText, false, true, false},
+		{meta.SyntaxTxt, false, true, false},
+		{meta.SyntaxWebp, false, false, true},
+		{meta.SyntaxZmk, true, true, false},
 	}
 	for _, tc := range testCases {
 		delete(syntaxSet, tc.syntax)

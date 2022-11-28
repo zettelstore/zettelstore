@@ -15,7 +15,6 @@ import (
 	"strings"
 	"unicode"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -25,7 +24,7 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          api.ValueSyntaxZmk,
+		Name:          meta.SyntaxZmk,
 		AltNames:      nil,
 		IsASTParser:   true,
 		IsTextFormat:  true,

@@ -20,6 +20,7 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/mdenc"
@@ -76,7 +77,7 @@ func TestMarkdownSpec(t *testing.T) {
 }
 
 func createMDBlockSlice(markdown string, hi config.HTMLInsecurity) ast.BlockSlice {
-	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, api.ValueSyntaxMarkdown, hi)
+	return parser.ParseBlocks(input.NewInput([]byte(markdown)), nil, meta.SyntaxMarkdown, hi)
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
@@ -100,7 +101,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 		// gotFirst := buf.String()
 
 		testID = tc.Example*100 + 2
-		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk, config.NoHTML)
+		secondAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, meta.SyntaxZmk, config.NoHTML)
 		buf.Reset()
 		zmkEncoder.WriteBlocks(&buf, &secondAst)
 		gotSecond := buf.String()
@@ -110,7 +111,7 @@ func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 		// }
 
 		testID = tc.Example*100 + 3
-		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, api.ValueSyntaxZmk, config.NoHTML)
+		thirdAst := parser.ParseBlocks(input.NewInput(buf.Bytes()), nil, meta.SyntaxZmk, config.NoHTML)
 		buf.Reset()
 		zmkEncoder.WriteBlocks(&buf, &thirdAst)
 		gotThird := buf.String()

@@ -121,7 +121,7 @@ func ParseInlines(inp *input.Input, syntax string) ast.InlineSlice {
 // ParseMetadata parses a string as Zettelmarkup, resulting in an inline slice.
 // Typically used to parse the title or other metadata of type Zettelmarkup.
 func ParseMetadata(value string) ast.InlineSlice {
-	return ParseInlines(input.NewInput([]byte(value)), api.ValueSyntaxZmk)
+	return ParseInlines(input.NewInput([]byte(value)), meta.SyntaxZmk)
 }
 
 // ParseMetadataNoLink parses a string as Zettelmarkup, resulting in an inline slice.
@@ -143,7 +143,7 @@ func ParseZettel(ctx context.Context, zettel domain.Zettel, syntax string, rtCon
 		syntax, _ = inhMeta.Get(api.KeySyntax)
 	}
 	parseMeta := inhMeta
-	if syntax == api.ValueSyntaxNone {
+	if syntax == meta.SyntaxNone {
 		parseMeta = m
 	}
 

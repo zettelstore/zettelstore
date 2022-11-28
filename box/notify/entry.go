@@ -99,7 +99,7 @@ func calcContentExt(syntax string, yamlSep bool, getZettelFileSyntax func() []st
 		return extZettel
 	}
 	switch syntax {
-	case api.ValueSyntaxNone, api.ValueSyntaxZmk:
+	case meta.SyntaxNone, meta.SyntaxZmk:
 		return extZettel
 	}
 	for _, s := range getZettelFileSyntax() {

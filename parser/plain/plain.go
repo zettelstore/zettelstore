@@ -14,7 +14,6 @@ package plain
 import (
 	"strings"
 
-	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -24,8 +23,8 @@ import (
 
 func init() {
 	parser.Register(&parser.Info{
-		Name:          "txt",
-		AltNames:      []string{"plain", api.ValueSyntaxText},
+		Name:          meta.SyntaxTxt,
+		AltNames:      []string{meta.SyntaxPlain, meta.SyntaxText},
 		IsASTParser:   false,
 		IsTextFormat:  true,
 		IsImageFormat: false,
@@ -33,7 +32,7 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          api.ValueSyntaxHTML,
+		Name:          meta.SyntaxHTML,
 		AltNames:      []string{},
 		IsASTParser:   false,
 		IsTextFormat:  true,
@@ -42,7 +41,7 @@ func init() {
 		ParseInlines:  parseInlinesHTML,
 	})
 	parser.Register(&parser.Info{
-		Name:          "css",
+		Name:          meta.SyntaxCSS,
 		AltNames:      []string{},
 		IsASTParser:   false,
 		IsTextFormat:  true,
@@ -51,7 +50,7 @@ func init() {
 		ParseInlines:  parseInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          api.ValueSyntaxSVG,
+		Name:          meta.SyntaxSVG,
 		AltNames:      []string{},
 		IsASTParser:   false,
 		IsTextFormat:  true,
@@ -60,7 +59,7 @@ func init() {
 		ParseInlines:  parseSVGInlines,
 	})
 	parser.Register(&parser.Info{
-		Name:          "mustache",
+		Name:          meta.SyntaxMustache,
 		AltNames:      []string{},
 		IsASTParser:   false,
 		IsTextFormat:  true,
