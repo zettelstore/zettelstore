@@ -81,14 +81,7 @@ func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {
 }
 
 func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) error {
-	if buf.Len() == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		return nil
-	}
-	adapter.PrepareHeader(w, contentType)
-	w.WriteHeader(http.StatusOK)
-	_, err := w.Write(buf.Bytes())
-	return err
+	return adapter.WriteBytes(w, buf.Bytes(), contentType)
 }
 
 func (a *API) getRights(ctx context.Context, m *meta.Meta) (result api.ZettelRights) {

@@ -85,6 +85,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	if assetDir := kern.GetConfig(kernel.WebService, kernel.WebAssetDir).(string); assetDir != "" {
 		const assetPrefix = "/assets/"
 		webSrv.Handle(assetPrefix, http.StripPrefix(assetPrefix, http.FileServer(http.Dir(assetDir))))
+		webSrv.Handle("/favicon.ico", wui.MakeFaviconHandler(assetDir))
 	}
 
 	// Web user interface

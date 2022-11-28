@@ -20,6 +20,18 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
+// WriteBytes emits the given data to the response writer.
+func WriteBytes(w http.ResponseWriter, data []byte, contentType string) error {
+	if len(data) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+	PrepareHeader(w, contentType)
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write(data)
+	return err
+}
+
 // PrepareHeader sets the HTTP header to defined values.
 func PrepareHeader(w http.ResponseWriter, contentType string) http.Header {
 	h := w.Header()
