@@ -60,8 +60,13 @@ func (ar *anterooms) EnqueueZettel(zid id.Zid) {
 			continue // Do not put zettel in reload room
 		}
 		if _, ok := room.waiting[zid]; ok {
-			// Zettel is already waiting.
-			return
+			// Zettel is already waiting. Move it to the last room.
+			if room == ar.last {
+				return // Nothing to do, is already there.
+			}
+			delete(room.waiting, zid)
+			room.curLoad--
+			break
 		}
 	}
 	if room := ar.last; !room.reload && (ar.maxLoad == 0 || room.curLoad < ar.maxLoad) {
