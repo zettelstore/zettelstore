@@ -7,6 +7,8 @@
      expected long lifetime of Zettelstore). There should be other ways to
      support SVG front-ends.
      (breaking)
+  *  Allow to upload content when creating / updating a zettel.
+     (major: webui)
   *  Add syntax &ldquo;draw&rdquo; (again)
      (minor: zettelmarkup)
   *  Allow to encode zettel in Markdown. Please note: not every aspect of
