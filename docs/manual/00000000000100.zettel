@@ -2,12 +2,13 @@ id: 00000000000100
 title: Zettelstore Runtime Configuration
 role: configuration
 syntax: none
+created: 00010101000000
 default-copyright: (c) 2020-2022 by Detlef Stern <ds@zettelstore.de>
 default-license: EUPL-1.2-or-later
 default-visibility: public
-footer-html: <hr><p><a href="/home/doc/trunk/www/impri.wiki">Imprint / Privacy</a></p>
+footer-zettel: 00001000000100
 home-zettel: 00001000000000
-modified: 20220215171041
+modified: 20221205173642
 site-name: Zettelstore Manual
 visibility: owner
 

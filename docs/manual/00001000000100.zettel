@@ -1,0 +1,8 @@
+id: 00001000000100
+title: Footer Zettel
+role: configuration
+syntax: zmk
+created: 20221205173520
+
+---
+[[Imprint / Privacy|/home/doc/trunk/www/impri.wiki]]
