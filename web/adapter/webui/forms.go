@@ -116,6 +116,9 @@ func bytesContent(r *http.Request, m *meta.Meta) []byte {
 	}
 	if values, found := r.PostForm["content"]; found && len(values) > 0 {
 		result := bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)
+		if len(result) == 0 {
+			return []byte("")
+		}
 		if bytes.IndexFunc(result, func(ch rune) bool { return !unicode.IsSpace(ch) }) < 0 {
 			return nil
 		}
