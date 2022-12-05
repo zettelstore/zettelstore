@@ -14,13 +14,13 @@ package config
 import (
 	"context"
 
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
 
 // Key values that are supported by Config.Get
 const (
 	KeyFooterHTML = "footer-html"
+	KeyHomeZettel = "home-zettel"
 	// api.KeyLang
 	KeyMarkerExternal = "marker-external"
 )
@@ -38,9 +38,6 @@ type Config interface {
 
 	// GetSiteName returns the current value of the "site-name" key.
 	GetSiteName() string
-
-	// GetHomeZettel returns the value of the "home-zettel" key.
-	GetHomeZettel() id.Zid
 
 	// GetHTMLInsecurity returns the current
 	GetHTMLInsecurity() HTMLInsecurity

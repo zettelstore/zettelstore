@@ -3,7 +3,8 @@ title: Creating an user zettel
 role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
-modified: 20211127174207
+created: 20210126175322
+modified: 20221205160251
 
 All data to be used for authenticating a user is store in a special zettel called ""user zettel"". 
 A user zettel must have set the following two metadata fields:
@@ -19,6 +20,8 @@ The following metadata elements are optional:
 
 ; ''user-role''
 : Associate the user with some basic privileges, e.g. a [[user role|00001010070300]]
+
+A user zettel may additionally contain metadata that [[overwrites corresponding values|00001004020200]] of the [[runtime configuration|00001004020000]].
 
 A user zettel can only be created by the owner of the Zettelstore.
 

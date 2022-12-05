@@ -41,7 +41,6 @@ const (
 	keyDefaultLicense    = "default-license"
 	keyDefaultVisibility = "default-visibility"
 	keyExpertMode        = "expert-mode"
-	keyHomeZettel        = "home-zettel"
 	keyMaxTransclusions  = "max-transclusions"
 	keySiteName          = "site-name"
 	keyYAMLHeader        = "yaml-header"
@@ -68,7 +67,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		},
 		keyExpertMode:        {"Expert mode", parseBool, true},
 		config.KeyFooterHTML: {"Footer HTML", parseString, true},
-		keyHomeZettel:        {"Home zettel", parseZid, true},
+		config.KeyHomeZettel: {"Home zettel", parseZid, true},
 		kernel.ConfigInsecureHTML: {
 			"Insecure HTML",
 			cs.noFrozen(func(val string) (any, error) {
@@ -102,7 +101,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultVisibility:      meta.VisibilityLogin,
 		keyExpertMode:             false,
 		config.KeyFooterHTML:      "",
-		keyHomeZettel:             id.DefaultHomeZid,
+		config.KeyHomeZettel:      id.DefaultHomeZid,
 		kernel.ConfigInsecureHTML: config.NoHTML,
 		api.KeyLang:               api.ValueLangEN,
 		config.KeyMarkerExternal:  "&#10138;",
@@ -256,19 +255,6 @@ func (cs *configService) GetHTMLInsecurity() config.HTMLInsecurity {
 
 // GetSiteName returns the current value of the "site-name" key.
 func (cs *configService) GetSiteName() string { return cs.GetCurConfig(keySiteName).(string) }
-
-// GetHomeZettel returns the value of the "home-zettel" key.
-func (cs *configService) GetHomeZettel() id.Zid {
-	homeZid := cs.GetCurConfig(keyHomeZettel).(id.Zid)
-	if homeZid != id.Invalid {
-		return homeZid
-	}
-	cs.mxService.RLock()
-	val, _ := cs.orig.Get(keyHomeZettel)
-	homeZid, _ = id.Parse(val)
-	cs.mxService.RUnlock()
-	return homeZid
-}
 
 // GetMaxTransclusions return the maximum number of indirect transclusions.
 func (cs *configService) GetMaxTransclusions() int {

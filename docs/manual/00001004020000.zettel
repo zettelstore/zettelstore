@@ -4,11 +4,13 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220827180953
+modified: 20221205160102
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
-The following metadata keys change the appearance / behavior of Zettelstore:
+The following metadata keys change the appearance / behavior of Zettelstore.
+Some of them can be overwritten in an [[user zettel|00001010040200]], a subset of those may be overwritten in zettel that is currently used.
+See the full list of [[metadata that may be overwritten|00001004020200]].
 
 ; [!default-copyright|''default-copyright'']
 : Copyright value to be used when rendering content.
@@ -30,13 +32,16 @@ The following metadata keys change the appearance / behavior of Zettelstore:
 : Contains some HTML code that will be included into the footer of each Zettelstore web page.
   It only affects the [[web user interface|00001014000000]].
   Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
+
+  May be overwritten in a user zettel.
+
   Default: (the empty string).
 ; [!home-zettel|''home-zettel'']
 : Specifies the identifier of the zettel, that should be presented for the default view / home view.
   If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
-; [!marker-external|''marker-external'']
-: Some HTML code that is displayed after a [[reference to external material|00001007040310]].
-  Default: ""&\#10138;"", to display a ""&#10138;"" sign.
+
+  May be overwritten in a user zettel.
+
 ; [!lang|''lang'']
 : Language to be used when displaying content.
 
@@ -46,6 +51,12 @@ The following metadata keys change the appearance / behavior of Zettelstore:
   It is also used to specify the language for all non-zettel content, e.g. lists or search results.
 
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
+; [!marker-external|''marker-external'']
+: Some HTML code that is displayed after a [[reference to external material|00001007040310]].
+
+  May be overwritten in a user zettel.
+
+  Default: ""&\#10138;"", to display a ""&#10138;"" sign.
 ; [!max-transclusions|''max-transclusions'']
 : Maximum number of indirect transclusion.
   This is used to avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]].

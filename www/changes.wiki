@@ -20,6 +20,9 @@
   *  Allow to specify service specific log level via statup configuration and
      via command line.
      (minor)
+  *  Allow to set runtime configuration <tt>home-zettel</tt> in the user zettel
+     to make it user-specific.
+     (minor: webui)
   *  Serve favicon.ico from the asset directory.
      (minor: webui)
 

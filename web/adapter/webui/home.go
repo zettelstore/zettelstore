@@ -17,6 +17,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/server"
@@ -35,7 +36,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			wui.reportError(ctx, w, box.ErrNotFound)
 			return
 		}
-		homeZid := wui.rtConfig.GetHomeZettel()
+		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
 		apiHomeZid := api.ZettelID(homeZid.String())
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetMeta(ctx, homeZid); err == nil {

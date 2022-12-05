@@ -14,6 +14,7 @@ import (
 	"context"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -26,8 +27,8 @@ type ZettelContextPort interface {
 
 // ZettelContextConfig is the interface to allow the usecase to read some config data.
 type ZettelContextConfig interface {
-	// GetHomeZettel returns the value of the "home-zettel" key.
-	GetHomeZettel() id.Zid
+	// Get returns a config value that might be user-specific.
+	Get(ctx context.Context, m *meta.Meta, key string) string
 }
 
 // ZettelContext is the data for this use case.
@@ -58,7 +59,8 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDi
 	if err != nil {
 		return nil, err
 	}
-	tasks := newQueue(start, depth, limit, uc.config.GetHomeZettel())
+	homeZettel, _ := id.Parse(uc.config.Get(ctx, nil, config.KeyHomeZettel))
+	tasks := newQueue(start, depth, limit, homeZettel)
 	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
 	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
 	for {
