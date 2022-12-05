@@ -52,12 +52,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	protectedBoxManager, authPolicy := authManager.BoxWithPolicy(boxManager, rtConfig)
 	kern := kernel.Main
 	webLog := kern.GetLogger(kernel.WebService)
-	a := api.New(
-		webLog.Clone().Str("adapter", "api").Child(),
-		webSrv, authManager, authManager, rtConfig, authPolicy)
-	wui := webui.New(
-		webLog.Clone().Str("adapter", "wui").Child(),
-		webSrv, authManager, rtConfig, authManager, boxManager, authPolicy)
 
 	var getUser getUserImpl
 	logAuth := kern.GetLogger(kernel.AuthService)
@@ -80,6 +74,13 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucUnlinkedRefs := usecase.NewUnlinkedReferences(protectedBoxManager, rtConfig)
 	ucRefresh := usecase.NewRefresh(logUc, protectedBoxManager)
 	ucVersion := usecase.NewVersion(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
+
+	a := api.New(
+		webLog.Clone().Str("adapter", "api").Child(),
+		webSrv, authManager, authManager, rtConfig, authPolicy)
+	wui := webui.New(
+		webLog.Clone().Str("adapter", "wui").Child(),
+		webSrv, authManager, rtConfig, authManager, boxManager, authPolicy, &ucEvaluate)
 
 	webSrv.Handle("/", wui.MakeGetRootHandler(protectedBoxManager))
 	if assetDir := kern.GetConfig(kernel.WebService, kernel.WebAssetDir).(string); assetDir != "" {

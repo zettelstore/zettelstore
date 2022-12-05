@@ -27,11 +27,13 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/template"
+	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
 )
@@ -46,6 +48,8 @@ type WebUI struct {
 	token    auth.TokenManager
 	box      webuiBox
 	policy   auth.Policy
+
+	evalZettel *usecase.Evaluate
 
 	gentext *textenc.Encoder
 
@@ -80,7 +84,7 @@ type webuiBox interface {
 
 // New creates a new WebUI struct.
 func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
-	mgr box.Manager, pol auth.Policy) *WebUI {
+	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
 	wui := &WebUI{
 		log:      log,
@@ -91,6 +95,8 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		token:    token,
 		box:      mgr,
 		policy:   pol,
+
+		evalZettel: evalZettel,
 
 		gentext: textenc.Create(),
 
@@ -302,7 +308,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.NewZettelLinks = createSimpleLinks(wui.fetchNewTemplates(ctx, user))
 	data.SearchURL = wui.searchURL
 	data.QueryKeyQuery = api.QueryKeyQuery
-	data.FooterHTML = wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)
+	data.FooterHTML = wui.calculateFooterHTML(ctx, user)
 	data.DebugMode = wui.debug
 }
 
@@ -358,6 +364,19 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		})
 	}
 	return result
+}
+
+func (wui *WebUI) calculateFooterHTML(ctx context.Context, user *meta.Meta) string {
+	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
+		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
+			htmlEnc := encoder.Create(api.EncoderHTML)
+			var buf bytes.Buffer
+			if _, err2 = htmlEnc.WriteBlocks(&buf, &zn.Ast); err2 == nil {
+				return buf.String()
+			}
+		}
+	}
+	return wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)
 }
 
 func (wui *WebUI) renderTemplate(

@@ -19,8 +19,9 @@ import (
 
 // Key values that are supported by Config.Get
 const (
-	KeyFooterHTML = "footer-html"
-	KeyHomeZettel = "home-zettel"
+	KeyFooterHTML   = "footer-html"
+	KeyFooterZettel = "footer-zettel"
+	KeyHomeZettel   = "home-zettel"
 	// api.KeyLang
 	KeyMarkerExternal = "marker-external"
 )

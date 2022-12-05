@@ -20,11 +20,17 @@
   *  Allow to specify service specific log level via statup configuration and
      via command line.
      (minor)
+  *  Allow to specify a zettel to serve footer content via runtime
+     comfiguration <tt>footer-zettel</tt>. Can be overwritten by user zettel.
+     (minor: webui)
   *  Allow to set runtime configuration <tt>home-zettel</tt> in the user zettel
      to make it user-specific.
      (minor: webui)
   *  Serve favicon.ico from the asset directory.
      (minor: webui)
+  *  Runtime configuration key <tt>footer-html</tt> will be removed in Version
+     0.10.0. Please use <tt>footer-zettel</tt> instead.
+     (deprecated: webui)
 
 <a name="0_8"></a>
 <h2>Changes for Version 0.8.0 (2022-10-20)</h2>

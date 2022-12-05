@@ -244,3 +244,8 @@ func parseZid(val string) (any, error) {
 		return id.Invalid, err
 	}
 }
+
+func parseInvalidZid(val string) (any, error) {
+	zid, _ := id.Parse(val)
+	return zid, nil
+}
