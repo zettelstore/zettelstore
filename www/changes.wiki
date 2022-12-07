@@ -23,6 +23,9 @@
   *  Allow to specify a zettel to serve footer content via runtime
      comfiguration <tt>footer-zettel</tt>. Can be overwritten by user zettel.
      (minor: webui)
+  *  Footer data is automatically separated by a thematic break / horizontal
+     rule. If you do not like it, you have to update the base template.
+     (minor: webui)
   *  Allow to set runtime configuration <tt>home-zettel</tt> in the user zettel
      to make it user-specific.
      (minor: webui)
