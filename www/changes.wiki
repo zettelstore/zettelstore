@@ -14,6 +14,9 @@
   *  Allow to encode zettel in Markdown. Please note: not every aspect of
      a zettel can be encoded in Markdown. Those aspects will be ignored.
      (minor: api)
+  *  Enhance zettel context by raising the importance of folge zettel (and
+     similar).
+     (minor: api, webui)
   *  Interpret zettel files with extension <tt>.webp</tt> as an binary image
      file format.
      (minor)

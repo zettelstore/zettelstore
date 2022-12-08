@@ -14,7 +14,6 @@ import (
 	"context"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 )
@@ -54,57 +53,56 @@ const (
 )
 
 // Run executes the use case.
-func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDirection, depth, limit int) (result []*meta.Meta, err error) {
+func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDirection, maxCost, limit int) (result []*meta.Meta, err error) {
 	start, err := uc.port.GetMeta(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
-	homeZettel, _ := id.Parse(uc.config.Get(ctx, nil, config.KeyHomeZettel))
-	tasks := newQueue(start, depth, limit, homeZettel)
+	tasks := newQueue(start, maxCost, limit)
 	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
 	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
 	for {
-		m, curDepth, found := tasks.next()
-		if !found {
+		m, cost := tasks.next()
+		if m == nil {
 			break
 		}
 		result = append(result, m)
 
 		for _, p := range m.ComputedPairsRest() {
-			tasks.addPair(ctx, uc.port, p.Key, p.Value, curDepth+1, isBackward, isForward)
+			tasks.addPair(ctx, uc.port, p.Key, p.Value, cost, isBackward, isForward)
 		}
 	}
 	return result, nil
 }
 
 type ztlCtxTask struct {
-	next  *ztlCtxTask
-	meta  *meta.Meta
-	depth int
+	next *ztlCtxTask
+	prev *ztlCtxTask
+	meta *meta.Meta
+	cost int
 }
 
 type contextQueue struct {
-	home     id.Zid
-	seen     id.Set
-	first    *ztlCtxTask
-	last     *ztlCtxTask
-	maxDepth int
-	limit    int
+	seen    id.Set
+	first   *ztlCtxTask
+	last    *ztlCtxTask
+	maxCost int
+	limit   int
 }
 
-func newQueue(m *meta.Meta, maxDepth, limit int, home id.Zid) *contextQueue {
+func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
 	task := &ztlCtxTask{
-		next:  nil,
-		meta:  m,
-		depth: 0,
+		next: nil,
+		prev: nil,
+		meta: m,
+		cost: 0,
 	}
 	result := &contextQueue{
-		home:     home,
-		seen:     id.NewSet(),
-		first:    task,
-		last:     task,
-		maxDepth: maxDepth,
-		limit:    limit,
+		seen:    id.NewSet(),
+		first:   task,
+		last:    task,
+		maxCost: maxCost,
+		limit:   limit,
 	}
 	return result
 }
@@ -112,21 +110,22 @@ func newQueue(m *meta.Meta, maxDepth, limit int, home id.Zid) *contextQueue {
 func (zc *contextQueue) addPair(
 	ctx context.Context, port ZettelContextPort,
 	key, value string,
-	curDepth int, isBackward, isForward bool,
+	curCost int, isBackward, isForward bool,
 ) {
+	if key == api.KeyBack {
+		return
+	}
+	newCost := curCost + contextCost(key)
 	if key == api.KeyBackward {
 		if isBackward {
-			zc.addIDSet(ctx, port, curDepth, value)
+			zc.addIDSet(ctx, port, newCost, value)
 		}
 		return
 	}
 	if key == api.KeyForward {
 		if isForward {
-			zc.addIDSet(ctx, port, curDepth, value)
+			zc.addIDSet(ctx, port, newCost, value)
 		}
-		return
-	}
-	if key == api.KeyBack {
 		return
 	}
 	hasInverse := meta.Inverse(key) != ""
@@ -134,19 +133,29 @@ func (zc *contextQueue) addPair(
 		return
 	}
 	if t := meta.Type(key); t == meta.TypeID {
-		zc.addID(ctx, port, curDepth, value)
+		zc.addID(ctx, port, newCost, value)
 	} else if t == meta.TypeIDSet {
-		zc.addIDSet(ctx, port, curDepth, value)
+		zc.addIDSet(ctx, port, newCost, value)
 	}
 }
 
-func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, depth int, value string) {
-	if (zc.maxDepth > 0 && depth > zc.maxDepth) || zc.hasLimit() {
+func contextCost(key string) int {
+	switch key {
+	case api.KeyFolge, api.KeyPrecursor:
+		return 1
+	case api.KeySuccessors, api.KeyPredecessor:
+		return 2
+	}
+	return 5
+}
+
+func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, newCost int, value string) {
+	if (zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit() {
 		return
 	}
 
 	zid, err := id.Parse(value)
-	if err != nil || zid == zc.home {
+	if err != nil {
 		return
 	}
 
@@ -155,31 +164,53 @@ func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, depth
 		return
 	}
 
-	task := &ztlCtxTask{next: nil, meta: m, depth: depth}
+	task := &ztlCtxTask{next: nil, prev: nil, meta: m, cost: newCost}
 	if zc.first == nil {
 		zc.first = task
 		zc.last = task
-	} else {
-		zc.last.next = task
-		zc.last = task
+		return
 	}
+
+	// Search backward for a task t with at most the same cost
+	for t := zc.last; t != nil; t = t.prev {
+		if t.cost <= task.cost {
+			// Found!
+			if t.next != nil {
+				t.next.prev = task
+			}
+			task.next = t.next
+			t.next = task
+			task.prev = t
+			if task.next == nil {
+				zc.last = task
+			}
+			return
+		}
+	}
+
+	// We have not found a task, therefore the new task is the first one
+	task.next = zc.first
+	zc.first.prev = task
+	zc.first = task
 }
 
-func (zc *contextQueue) addIDSet(ctx context.Context, port ZettelContextPort, curDepth int, value string) {
+func (zc *contextQueue) addIDSet(ctx context.Context, port ZettelContextPort, newCost int, value string) {
 	for _, val := range meta.ListFromValue(value) {
-		zc.addID(ctx, port, curDepth, val)
+		zc.addID(ctx, port, newCost, val)
 	}
 }
 
-func (zc *contextQueue) next() (*meta.Meta, int, bool) {
+func (zc *contextQueue) next() (*meta.Meta, int) {
 	if zc.hasLimit() {
-		return nil, -1, false
+		return nil, -1
 	}
 	for zc.first != nil {
 		task := zc.first
 		zc.first = task.next
 		if zc.first == nil {
 			zc.last = nil
+		} else {
+			zc.first.prev = nil
 		}
 		m := task.meta
 		zid := m.Zid
@@ -188,9 +219,9 @@ func (zc *contextQueue) next() (*meta.Meta, int, bool) {
 			continue
 		}
 		zc.seen.Zid(zid)
-		return m, task.depth, true
+		return m, task.cost
 	}
-	return nil, -1, false
+	return nil, -1
 }
 
 func (zc *contextQueue) hasLimit() bool {

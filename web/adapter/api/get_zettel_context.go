@@ -30,16 +30,16 @@ func (a *API) MakeZettelContextHandler(getContext usecase.ZettelContext) http.Ha
 		}
 		q := r.URL.Query()
 		dir := adapter.GetZCDirection(q.Get(api.QueryKeyDir))
-		depth, ok := adapter.GetInteger(q, api.QueryKeyDepth)
-		if !ok || depth < 0 {
-			depth = 5
+		cost, ok := adapter.GetInteger(q, api.QueryKeyCost)
+		if !ok || cost < 0 {
+			cost = 17
 		}
 		limit, ok := adapter.GetInteger(q, api.QueryKeyLimit)
 		if !ok || limit < 0 {
 			limit = 200
 		}
 		ctx := r.Context()
-		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
+		metaList, err := getContext.Run(ctx, zid, dir, cost, limit)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return

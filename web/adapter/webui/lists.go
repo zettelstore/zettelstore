@@ -130,9 +130,9 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 		}
 		q := r.URL.Query()
 		dir := adapter.GetZCDirection(q.Get(api.QueryKeyDir))
-		depth := getIntParameter(q, api.QueryKeyDepth, 5)
+		cost := getIntParameter(q, api.QueryKeyCost, 17)
 		limit := getIntParameter(q, api.QueryKeyLimit, 200)
-		metaList, err := getContext.Run(ctx, zid, dir, depth, limit)
+		metaList, err := getContext.Run(ctx, zid, dir, cost, limit)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -145,20 +145,20 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 			return
 		}
 		apiZid := api.ZettelID(zid.String())
-		depths := []string{"2", "3", "4", "5", "6", "7", "8", "9", "10"}
-		depthLinks := make([]simpleLink, len(depths))
-		depthURL := wui.NewURLBuilder('k').SetZid(apiZid)
-		for i, depth := range depths {
-			depthURL.ClearQuery()
+		costs := []string{"2", "3", "5", "8", "13", "21", "34", "55", "89"}
+		costLinks := make([]simpleLink, len(costs))
+		costURL := wui.NewURLBuilder('k').SetZid(apiZid)
+		for i, cost := range costs {
+			costURL.ClearQuery()
 			switch dir {
 			case usecase.ZettelContextBackward:
-				depthURL.AppendKVQuery(api.QueryKeyDir, api.DirBackward)
+				costURL.AppendKVQuery(api.QueryKeyDir, api.DirBackward)
 			case usecase.ZettelContextForward:
-				depthURL.AppendKVQuery(api.QueryKeyDir, api.DirForward)
+				costURL.AppendKVQuery(api.QueryKeyDir, api.DirForward)
 			}
-			depthURL.AppendKVQuery(api.QueryKeyDepth, depth)
-			depthLinks[i].Text = depth
-			depthLinks[i].URL = depthURL.String()
+			costURL.AppendKVQuery(api.QueryKeyCost, cost)
+			costLinks[i].Text = cost
+			costLinks[i].URL = costURL.String()
 		}
 		var base baseData
 		user := server.GetUser(ctx)
@@ -166,12 +166,12 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
 			Title   string
 			InfoURL string
-			Depths  []simpleLink
+			Costs   []simpleLink
 			Content string
 		}{
 			Title:   "Zettel Context",
 			InfoURL: wui.NewURLBuilder('i').SetZid(apiZid).String(),
-			Depths:  depthLinks,
+			Costs:   costLinks,
 			Content: htmlContent,
 		})
 	}
