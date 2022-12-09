@@ -13,7 +13,6 @@ package webui
 import (
 	"bytes"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strings"
@@ -79,21 +78,15 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, er
 		m.Set(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
 	}
 
-	if b := bytesContent(r, m); b != nil {
-		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(b)}, true, nil
+	if data := textContent(r); data != nil {
+		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, true, nil
 	}
-	file, fh, err := r.FormFile("file")
-	if file != nil {
-		defer file.Close()
-		if err == nil {
-			var data []byte
-			data, m = fileContent(file, fh, m)
-			if data != nil {
-				return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, true, nil
-			}
-		}
+	if data, m2 := uploadedContent(r, m); data != nil {
+		return doSave, domain.Zettel{Meta: m2, Content: domain.NewContent(data)}, true, nil
 	}
-	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, false, nil
+
+	hasContent := allowEmptyContent(m)
+	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, hasContent, nil
 }
 
 func trimmedFormValue(r *http.Request, key string) (string, bool) {
@@ -106,41 +99,48 @@ func trimmedFormValue(r *http.Request, key string) (string, bool) {
 	return "", false
 }
 
-func bytesContent(r *http.Request, m *meta.Meta) []byte {
-	if syntax, found := m.Get(api.KeySyntax); found {
-		if pinfo := parser.Get(syntax); pinfo != nil {
-			if !pinfo.IsTextFormat {
-				return nil
-			}
-		}
-	}
+func textContent(r *http.Request) []byte {
 	if values, found := r.PostForm["content"]; found && len(values) > 0 {
 		result := bytes.ReplaceAll([]byte(values[0]), bsCRLF, bsLF)
-		if len(result) == 0 {
-			return []byte("")
+		if bytes.IndexFunc(result, func(ch rune) bool { return !unicode.IsSpace(ch) }) >= 0 {
+			return result
 		}
-		if bytes.IndexFunc(result, func(ch rune) bool { return !unicode.IsSpace(ch) }) < 0 {
-			return nil
-		}
-		return result
 	}
 	return nil
 }
 
-func fileContent(r io.Reader, fh *multipart.FileHeader, m *meta.Meta) ([]byte, *meta.Meta) {
-	data, err := io.ReadAll(r)
-	if err != nil {
-		return nil, m
-	}
-	if cts, found := fh.Header["Content-Type"]; found && len(cts) > 0 {
-		ct := cts[0]
-		if fileSyntax := content.SyntaxFromMIME(ct, data); fileSyntax != "" {
-			m = m.Clone()
-			m.Set(api.KeySyntax, fileSyntax)
+func uploadedContent(r *http.Request, m *meta.Meta) ([]byte, *meta.Meta) {
+	file, fh, err := r.FormFile("file")
+	if file != nil {
+		defer file.Close()
+		if err == nil {
+			data, err2 := io.ReadAll(file)
+			if err2 != nil {
+				return nil, m
+			}
+			if cts, found := fh.Header["Content-Type"]; found && len(cts) > 0 {
+				ct := cts[0]
+				if fileSyntax := content.SyntaxFromMIME(ct, data); fileSyntax != "" {
+					m = m.Clone()
+					m.Set(api.KeySyntax, fileSyntax)
+				}
+			}
+			return data, m
 		}
 	}
+	return nil, m
+}
 
-	return data, m
+func allowEmptyContent(m *meta.Meta) bool {
+	if syntax, found := m.Get(api.KeySyntax); found {
+		if syntax == api.ValueSyntaxNone {
+			return true
+		}
+		if pinfo := parser.Get(syntax); pinfo != nil {
+			return pinfo.IsTextFormat
+		}
+	}
+	return true
 }
 
 var reEmptyLines = regexp.MustCompile(`(\n|\r)+\s*(\n|\r)+`)
