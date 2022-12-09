@@ -1,0 +1,57 @@
+id: 00001007990000
+title: Zettelmarkup: Cheat Sheet
+role: manual
+tags: #manual #reference #zettelmarkup
+syntax: zmk
+created: 20221209191905
+modified: 20221209193310
+
+=== Overview
+This Zettelmarkup cheat sheet provides a quick overview of many Zettelmarkup elements.
+It can not cover any special case.
+If you need more information about any of these elements, please refer to the detailed description.
+
+=== Basic Syntax
+|[[Text formatting|00001007040100]]|''__italic text__'' &rarr; __italic text__, ''**bold text**'' &rarr; **bold text**, ''""quoted text""'' &rarr; ""quoted text""
+|[[Text editing|00001007040100]]|''>>inserted text>>'' &rarr; >>inserted text>>, ''~~deleted text~~'' &rarr; ~~deleted text~~
+|[[Text literal formatting|00001007040200]]|''\'\'entered text\'\''' &rarr; ''entered text'', ''``source code``'' &rarr; ``source code``, ''==text output=='' &rarr; ==text output==
+|[[Superscript, subscript|00001007040100]]|''m^^2^^'' &rarr; m^^2^^, ''H,,2,,O'' &rarr; H,,2,,O
+|[[Links to other zettel|00001007040310]]|''[[Link text|00001007990000]]'' &rarr; [[Link text|00001007990000]]
+|[[Links to external resources|00001007040310]]|''[[Zettelstore|https://zettelstore.de]]'' &rarr; [[Zettelstore|https://zettelstore.de]]
+|[[Embed an image|00001007040322]]|''{{Image text|00000000040001}}'' &rarr; {{Image text|00000000040001}}
+|[[Embed content of first paragraph|00001007040324]]|''{{00001007990000}}'' &rarr; {{00001007990000}}
+|[[Footnote|00001007040330]]|''text[^footnote]'' &rarr; text[^footnote]
+|[[Special characters / entities|00001007040000]]|''&rarr;'' &rarr; &rarr;, ''&#x2115;'' &rarr; &#x2115;, ''&#8987;'' &rarr; &#8987;
+
+=== Structuring
+* [[Heading|00001007030300]]: ''=== Heading'', ''==== Sub-Heading''
+* [[Horizontal rule / thematic break|00001007030400]]: ''---''
+* [[Paragraphs|00001007030000]] are separated by an empty line
+---
+
+=== Lists
+[[Unnumbered list|00001007030200]]:
+```
+* First list item
+* Second list item
+* Third list item
+```
+[[Numbered list|00001007030200]]:
+```
+# Item number 1
+# Item number 2
+# Item number 3
+```
+[[Description List|00001007030100]]:
+```
+; Term
+: Definition
+; Other Term
+: Definition for other term
+```
+=== [[Tables|00001007031000]]
+```
+|=Header|Because|Equal Sign
+|Cell 1.1|Cell 1.2| Cell 1.3
+|Cell 2.1|Cell 2.2
+```

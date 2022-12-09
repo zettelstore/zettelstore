@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221018104725
+modified: 20221209192105
 
 Zettelmarkup is a rich plain-text based markup language for writing zettel content.
 Besides the zettel content, Zettelmarkup is also used for specifying the title of a zettel, regardless of the syntax of a zettel.
@@ -39,3 +39,4 @@ However, the Zettelstore supports CommonMark as a zettel syntax, so you can mix 
 * [[Query expressions|00001007700000]]
 * [[Summary of formatting characters|00001007800000]]
 * [[Tutorial|00001007900000]]
+* [[Cheat Sheet|00001007990000]]

@@ -34,6 +34,8 @@
      (minor: webui)
   *  Serve favicon.ico from the asset directory.
      (minor: webui)
+  *  Zettelmarkup cheat sheet
+     (minor: manual)
   *  Runtime configuration key <tt>footer-html</tt> will be removed in Version
      0.10.0. Please use <tt>footer-zettel</tt> instead.
      (deprecated: webui)
