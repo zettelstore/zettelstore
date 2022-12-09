@@ -53,14 +53,17 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) h
 			return
 		}
 
-		reEdit, zettel, hasContent, err := parseZettelForm(r, zid)
+		reEdit, zettel, err := parseZettelForm(r, zid)
+		hasContent := true
 		if err != nil {
-			const msg = "Unable to read zettel form"
-			wui.log.Info().Err(err).Msg(msg)
-			wui.reportError(ctx, w, adapter.NewErrBadRequest(msg))
-			return
+			if err != errMissingContent {
+				const msg = "Unable to read zettel form"
+				wui.log.Info().Err(err).Msg(msg)
+				wui.reportError(ctx, w, adapter.NewErrBadRequest(msg))
+				return
+			}
+			hasContent = false
 		}
-
 		if err = updateZettel.Run(r.Context(), zettel, hasContent); err != nil {
 			wui.reportError(ctx, w, err)
 			return

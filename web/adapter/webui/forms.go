@@ -12,6 +12,7 @@ package webui
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"regexp"
@@ -48,11 +49,13 @@ var (
 	bsLF   = []byte{'\n'}
 )
 
-func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, error) {
+var errMissingContent = errors.New("missing zettel content")
+
+func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, error) {
 	maxRequestSize := kernel.Main.GetConfig(kernel.WebService, kernel.WebMaxRequestSize).(int64)
 	err := r.ParseMultipartForm(maxRequestSize)
 	if err != nil {
-		return false, domain.Zettel{}, false, err
+		return false, domain.Zettel{}, err
 	}
 	_, doSave := r.Form["save"]
 
@@ -79,14 +82,16 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, bool, er
 	}
 
 	if data := textContent(r); data != nil {
-		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, true, nil
+		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, nil
 	}
 	if data, m2 := uploadedContent(r, m); data != nil {
-		return doSave, domain.Zettel{Meta: m2, Content: domain.NewContent(data)}, true, nil
+		return doSave, domain.Zettel{Meta: m2, Content: domain.NewContent(data)}, nil
 	}
 
-	hasContent := allowEmptyContent(m)
-	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, hasContent, nil
+	if allowEmptyContent(m) {
+		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, nil
+	}
+	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, errMissingContent
 }
 
 func trimmedFormValue(r *http.Request, key string) (string, bool) {

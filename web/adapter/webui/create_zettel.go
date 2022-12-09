@@ -119,15 +119,15 @@ func (wui *WebUI) renderZettelForm(
 func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		reEdit, zettel, hasContent, err := parseZettelForm(r, id.Invalid)
+		reEdit, zettel, err := parseZettelForm(r, id.Invalid)
+		if err == errMissingContent {
+			wui.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
+			return
+		}
 		if err != nil {
 			const msg = "Unable to read form data"
 			wui.log.Info().Err(err).Msg(msg)
 			wui.reportError(ctx, w, adapter.NewErrBadRequest(msg))
-			return
-		}
-		if !hasContent {
-			wui.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
 			return
 		}
 
