@@ -37,10 +37,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		ctx := r.Context()
-		if !q.EnrichNeeded() {
-			ctx = box.NoEnrichContext(ctx)
-		}
-		metaList, err := listMeta.Run(ctx, q)
+		metaList, err := listMetaEnrich(ctx, listMeta, q)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -79,6 +76,13 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			Content:       htmlContent,
 		})
 	}
+}
+
+func listMetaEnrich(ctx context.Context, listMeta usecase.ListMeta, q *query.Query) ([]*meta.Meta, error) {
+	if !q.EnrichNeeded() {
+		ctx = box.NoEnrichContext(ctx)
+	}
+	return listMeta.Run(ctx, q)
 }
 
 func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
