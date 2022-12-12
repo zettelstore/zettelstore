@@ -228,6 +228,14 @@ func DoNotEnrich(ctx context.Context) bool {
 	return ok
 }
 
+// NoEnrichQuery provides a context that signals not to enrich, if the query does not need this.
+func NoEnrichQuery(ctx context.Context, q *query.Query) context.Context {
+	if q.EnrichNeeded() {
+		return ctx
+	}
+	return NoEnrichContext(ctx)
+}
+
 // ErrNotAllowed is returned if the caller is not allowed to perform the operation.
 type ErrNotAllowed struct {
 	Op   string
