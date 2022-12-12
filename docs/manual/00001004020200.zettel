@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20221205155521
-modified: 20221205161720
+modified: 20221212195530
 
 Some metadata of the [[runtime configuration|00001004020000]] may be overwritten in an [[user zettel|00001010040200]].
 A subset of those may be overwritten in zettel that is currently used.
@@ -13,7 +13,6 @@ This allows to specify user specific or zettel specific behavior.
 The following metadata keys are supported to provide a more specific behavior:
 
 |=Key|User:|Zettel:|Remarks
-|[[''footer-html''|00001004020000#footer-html]]|Y|N|Will be removed in v0.10.0
 |[[''footer-zettel''|00001004020000#footer-zettel]]|Y|N|
 |[[''home-zettel''|00001004020000#home-zettel]]|Y|N|
 |[[''lang''|00001004020000#lang]]|Y|Y|Making it user-specific could make zettel for other user less useful

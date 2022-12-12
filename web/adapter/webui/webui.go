@@ -376,7 +376,7 @@ func (wui *WebUI) calculateFooterHTML(ctx context.Context, user *meta.Meta) stri
 			}
 		}
 	}
-	return wui.rtConfig.Get(ctx, nil, config.KeyFooterHTML)
+	return ""
 }
 
 func (wui *WebUI) renderTemplate(

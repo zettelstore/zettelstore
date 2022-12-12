@@ -66,7 +66,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			true,
 		},
 		keyExpertMode:          {"Expert mode", parseBool, true},
-		config.KeyFooterHTML:   {"Footer HTML", parseString, true},
 		config.KeyFooterZettel: {"Footer Zettel", parseInvalidZid, true},
 		config.KeyHomeZettel:   {"Home zettel", parseZid, true},
 		kernel.ConfigInsecureHTML: {
@@ -101,7 +100,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultLicense:         "",
 		keyDefaultVisibility:      meta.VisibilityLogin,
 		keyExpertMode:             false,
-		config.KeyFooterHTML:      "",
 		config.KeyFooterZettel:    id.Invalid,
 		config.KeyHomeZettel:      id.DefaultHomeZid,
 		kernel.ConfigInsecureHTML: config.NoHTML,

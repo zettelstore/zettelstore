@@ -2,6 +2,9 @@
 
 <a name="0_10"></a>
 <h2>Changes for Version 0.10.0 (pending)</h2>
+  *  Remove support for runtime configuration key <tt>footer-html</tt>. Use
+     <tt>footer-zettel</tt> instead. Deprecated in version 0.9.0.
+     (breaking: webui)
 
 <a name="0_9"></a>
 <h2>Changes for Version 0.9.0 (2022-12-12)</h2>
