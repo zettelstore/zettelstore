@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a name="0_10"></a>
+<h2>Changes for Version 0.10.0 (pending)</h2>
+
 <a name="0_9"></a>
-<h2>Changes for Version 0.9.0 (pending)</h2>
+<h2>Changes for Version 0.9.0 (2022-12-12)</h2>
   *  Remove support syntax <tt>pikchr</tt>. Although it was a nice idea to
      include it into Zettelstore, the implementation is too brittle (w.r.t. the
      expected long lifetime of Zettelstore). There should be other ways to
@@ -39,6 +42,16 @@
   *  Runtime configuration key <tt>footer-html</tt> will be removed in Version
      0.10.0. Please use <tt>footer-zettel</tt> instead.
      (deprecated: webui)
+  *  In the next version 0.10.0, the API endpoints for a zettel (<tt>/j</tt>,
+     <tt>/p</tt>, <tt>/v</tt>) will be merged with endpoint <tt>/z</tt>. Basically,
+     the previous endpoint will be refactored as query parameter of endpoint
+     <tt>/z</tt>. To reduce errors, there will be no version, where the previous
+     endpoint are still available and the new funnctionality is still there.
+     This is a warning to prepare for some breaking changes in v0.10.0. This
+     also affects the API client implementation.
+     (warning: api)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a name="0_8"></a>
 <h2>Changes for Version 0.8.0 (2022-10-20)</h2>
