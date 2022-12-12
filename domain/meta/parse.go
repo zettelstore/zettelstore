@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta provides the domain specific type 'meta'.
 package meta
 
 import (

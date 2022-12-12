@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package domain provides domain specific types, constants, and functions.
 package domain
 
 import (

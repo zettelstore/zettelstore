@@ -11,9 +11,7 @@
 // Package input provides an abstraction for data to be read.
 package input
 
-import (
-	"unicode/utf8"
-)
+import "unicode/utf8"
 
 // Input is an abstract input source
 type Input struct {

@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package sexprenc encodes the abstract syntax tree into a s-expr.
 package sexprenc
 
 import (

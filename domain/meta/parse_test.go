@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta_test provides tests for the domain specific type 'meta'.
 package meta_test
 
 import (

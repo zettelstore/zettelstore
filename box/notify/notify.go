@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021 Detlef Stern
+// Copyright (c) 2021-2022 Detlef Stern
 //
-// This file is part of zettelstore.
+// This file is part of Zettelstore.
 //
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
@@ -35,15 +35,15 @@ type EventOp uint8
 // Make signals that the container is detected. List events will follow.
 //
 // List signals a found file, if Event.Name is not empty. Otherwise it signals
-//      the end of files within the container.
+// the end of files within the container.
 //
 // Destroy signals that the container is not there any more. It might me Make later again.
 //
-// Update signals that file Event.Name was created/updated. File name is relative
-//        to the container.
+// Update signals that file Event.Name was created/updated.
+// File name is relative to the container.
 //
-// Delete signals that file Event.Name was removed. File name is relative to
-//        the container's name.
+// Delete signals that file Event.Name was removed.
+// File name is relative to the container's name.
 const (
 	_       EventOp = iota
 	Error           // Error while operating
