@@ -126,7 +126,7 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 
 		idxLog:   boxLog.Clone().Str("box", "index").Child(),
 		idxStore: memstore.New(),
-		idxAr:    newAnterooms(10),
+		idxAr:    newAnterooms(1000),
 		idxReady: make(chan struct{}, 1),
 	}
 	cdata := ConnectData{Number: 1, Config: rtConfig, Enricher: mgr, Notify: mgr.infos}
