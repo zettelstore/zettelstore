@@ -85,10 +85,11 @@ func (mgr *Manager) idxIndexer() {
 	timer := time.NewTimer(timerDuration)
 	ctx := box.NoEnrichContext(context.Background())
 	for {
-		mgr.idxWorkService(ctx)
+		// Sleep first, so the indexer will wait for boxes to initialize.
 		if !mgr.idxSleepService(timer, timerDuration) {
 			return
 		}
+		mgr.idxWorkService(ctx)
 	}
 }
 
