@@ -16,15 +16,109 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/content"
 )
 
-// MakeGetZettelHandler creates a new HTTP handler to return a zettel.
-func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
+// MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
+func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usecase.ParseZettel, evaluate usecase.Evaluate) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		zid, err := id.Parse(r.URL.Path[1:])
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		q := r.URL.Query()
+		part := getPart(q, partContent)
+		ctx := r.Context()
+		switch enc, encStr := getEncoding(r, q, api.EncoderPlain); enc {
+		case api.EncoderPlain:
+			z, err2 := getZettel.Run(box.NoEnrichContext(ctx), zid)
+			if err2 != nil {
+				a.reportUsecaseError(w, err2)
+				return
+			}
+			m := z.Meta
+			var buf bytes.Buffer
+			var contentType string
+			switch part {
+			case partZettel:
+				_, err2 = m.Write(&buf)
+				if err2 == nil {
+					err2 = buf.WriteByte('\n')
+				}
+				if err2 == nil {
+					_, err2 = z.Content.Write(&buf)
+				}
+			case partMeta:
+				contentType = content.PlainText
+				_, err2 = m.Write(&buf)
+			case partContent:
+				contentType = content.MIMEFromSyntax(m.GetDefault(api.KeySyntax, ""))
+				_, err2 = z.Content.Write(&buf)
+			}
+			if err2 != nil {
+				a.log.Fatal().Err(err2).Zid(m.Zid).Msg("Unable to store plain zettel/part in buffer")
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			err2 = writeBuffer(w, &buf, contentType)
+			a.log.IfErr(err2).Zid(m.Zid).Msg("Write Plain Zettel")
+
+		case api.EncoderJson:
+			z, err2 := getZettel.Run(ctx, zid)
+			if err2 != nil {
+				a.reportUsecaseError(w, err2)
+				return
+			}
+			m := z.Meta
+
+			var buf bytes.Buffer
+			zContent, encoding := z.Content.Encode()
+			err2 = encodeJSONData(&buf, api.ZettelJSON{
+				ID:       api.ZettelID(m.Zid.String()),
+				Meta:     m.Map(),
+				Encoding: encoding,
+				Content:  zContent,
+				Rights:   a.getRights(ctx, m),
+			})
+			if err2 != nil {
+				a.log.Fatal().Err(err2).Zid(m.Zid).Msg("Unable to store zettel in buffer")
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			err2 = writeBuffer(w, &buf, content.JSON)
+			a.log.IfErr(err2).Zid(m.Zid).Msg("Write JSON Zettel")
+
+		default:
+			var zn *ast.ZettelNode
+			var em func(value string) ast.InlineSlice
+			if q.Has(api.QueryKeyEval) {
+				zn, err = evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
+				em = func(value string) ast.InlineSlice {
+					return evaluate.RunMetadata(ctx, value)
+				}
+			} else {
+				zn, err = parseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
+				em = parser.ParseMetadata
+			}
+			if err != nil {
+				a.reportUsecaseError(w, err)
+				return
+			}
+			a.writeEncodedZettelPart(w, zn, em, enc, encStr, part)
+		}
+	}
+}
+
+// MakeGetJSONZettelHandler creates a new HTTP handler to return a zettel.
+func (a *API) MakeGetJSONZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		z, err := a.getZettelFromPath(ctx, w, r, getZettel)
@@ -50,42 +144,6 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc
 
 		err = writeBuffer(w, &buf, content.JSON)
 		a.log.IfErr(err).Zid(m.Zid).Msg("Write JSON Zettel")
-	}
-}
-
-// MakeGetPlainZettelHandler creates a new HTTP handler to return a zettel in plain formar
-func (a *API) MakeGetPlainZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		z, err := a.getZettelFromPath(box.NoEnrichContext(r.Context()), w, r, getZettel)
-		if err != nil {
-			return
-		}
-
-		var buf bytes.Buffer
-		var contentType string
-		switch getPart(r.URL.Query(), partContent) {
-		case partZettel:
-			_, err = z.Meta.Write(&buf)
-			if err == nil {
-				err = buf.WriteByte('\n')
-			}
-			if err == nil {
-				_, err = z.Content.Write(&buf)
-			}
-		case partMeta:
-			contentType = content.PlainText
-			_, err = z.Meta.Write(&buf)
-		case partContent:
-			contentType = content.MIMEFromSyntax(z.Meta.GetDefault(api.KeySyntax, ""))
-			_, err = z.Content.Write(&buf)
-		}
-		if err != nil {
-			a.log.Fatal().Err(err).Zid(z.Meta.Zid).Msg("Unable to store plain zettel/part in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-		err = writeBuffer(w, &buf, contentType)
-		a.log.IfErr(err).Zid(z.Meta.Zid).Msg("Write Plain Zettel")
 	}
 }
 
