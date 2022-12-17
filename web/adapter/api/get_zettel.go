@@ -13,15 +13,17 @@ package api
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
 )
 
@@ -157,79 +159,36 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 	a.log.IfErr(err).Zid(zid).Msg("Write JSON data")
 }
 
-// MakeGetJSONZettelHandler creates a new HTTP handler to return a zettel.
-func (a *API) MakeGetJSONZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		z, err := a.getZettelFromPath(ctx, w, r, getZettel)
-		if err != nil {
-			return
-		}
-		m := z.Meta
-
-		var buf bytes.Buffer
-		zContent, encoding := z.Content.Encode()
-		err = encodeJSONData(&buf, api.ZettelJSON{
-			ID:       api.ZettelID(m.Zid.String()),
-			Meta:     m.Map(),
-			Encoding: encoding,
-			Content:  zContent,
-			Rights:   a.getRights(ctx, m),
-		})
-		if err != nil {
-			a.log.Fatal().Err(err).Zid(m.Zid).Msg("Unable to store zettel in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		err = writeBuffer(w, &buf, content.JSON)
-		a.log.IfErr(err).Zid(m.Zid).Msg("Write JSON Zettel")
+func (a *API) writeEncodedZettelPart(
+	w http.ResponseWriter, zn *ast.ZettelNode,
+	evalMeta encoder.EvalMetaFunc,
+	enc api.EncodingEnum, encStr string, part partType,
+) {
+	encdr := encoder.Create(enc)
+	if encdr == nil {
+		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid, encStr))
+		return
 	}
-}
-
-func (a *API) getZettelFromPath(ctx context.Context, w http.ResponseWriter, r *http.Request, getZettel usecase.GetZettel) (domain.Zettel, error) {
-	zid, err := id.Parse(r.URL.Path[1:])
+	var err error
+	var buf bytes.Buffer
+	switch part {
+	case partZettel:
+		_, err = encdr.WriteZettel(&buf, zn, evalMeta)
+	case partMeta:
+		_, err = encdr.WriteMeta(&buf, zn.InhMeta, evalMeta)
+	case partContent:
+		_, err = encdr.WriteContent(&buf, zn)
+	}
 	if err != nil {
-		http.NotFound(w, r)
-		return domain.Zettel{}, err
+		a.log.Fatal().Err(err).Zid(zn.Zid).Msg("Unable to store data in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if buf.Len() == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 
-	z, err := getZettel.Run(ctx, zid)
-	if err != nil {
-		a.reportUsecaseError(w, err)
-		return domain.Zettel{}, err
-	}
-	return z, nil
-}
-
-// MakeGetMetaHandler creates a new HTTP handler to return metadata of a zettel.
-func (a *API) MakeGetMetaHandler(getMeta usecase.GetMeta) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-
-		ctx := r.Context()
-		m, err := getMeta.Run(ctx, zid)
-		if err != nil {
-			a.reportUsecaseError(w, err)
-			return
-		}
-
-		var buf bytes.Buffer
-		err = encodeJSONData(&buf, api.MetaJSON{
-			Meta:   m.Map(),
-			Rights: a.getRights(ctx, m),
-		})
-		if err != nil {
-			a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store metadata in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		err = writeBuffer(w, &buf, content.JSON)
-		a.log.IfErr(err).Zid(zid).Msg("Write JSON Meta")
-	}
+	err = writeBuffer(w, &buf, content.MIMEFromEncoding(enc))
+	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
 }
