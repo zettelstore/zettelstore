@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221212195549
+modified: 20221219174807
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -31,16 +31,16 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
 ; [!footer-zettel|''footer-zettel'']
 : Identifier of a zettel that is rendered as HTML and will be placed as the footer of every zettel in the [[web user interface|00001014000000]].
   Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
-  If the zettel identifier is invalid or references a zettel that could not be read, nothing is placed as the footer.
+  If the zettel identifier is invalid or references a zettel that could not be read (possibly because of a limited [[visibility setting|00001010070200]], nothing is written as the footer.
 
-  May be overwritten in a user zettel.
+  May be [[overwritten|00001004020200]] in a user zettel.
 
   Default: (an invalid zettel identifier)
 ; [!home-zettel|''home-zettel'']
 : Specifies the identifier of the zettel, that should be presented for the default view / home view.
   If not given or if the identifier does not identify a zettel, the zettel with the identifier ''00010000000000'' is shown.
 
-  May be overwritten in a user zettel.
+  May be [[overwritten|00001004020200]] in a user zettel.
 
 ; [!lang|''lang'']
 : Language to be used when displaying content.
@@ -54,7 +54,7 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
 ; [!marker-external|''marker-external'']
 : Some HTML code that is displayed after a [[reference to external material|00001007040310]].
 
-  May be overwritten in a user zettel.
+  May be [[overwritten|00001004020200]] in a user zettel.
 
   Default: ""&\#10138;"", to display a ""&#10138;"" sign.
 ; [!max-transclusions|''max-transclusions'']
