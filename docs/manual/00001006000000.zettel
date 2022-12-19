@@ -3,7 +3,8 @@ title: Layout of a Zettel
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
-modified: 20220724165931
+created: 20210126175322
+modified: 20221219162703
 
 A zettel consists of two parts: the metadata and the zettel content.
 Metadata gives some information mostly about the zettel content, how it should be interpreted, how it is sorted within Zettelstore.
@@ -29,16 +30,16 @@ There is support for a graphical format with a text representation: SVG.
 And there is support for some binary image formats, like GIF, PNG, and JPEG.
 
 === Plain, parsed, and evaluated zettel
-Zettelstore may present your zettel in various forms.
+Zettelstore may present your zettel in various forms, typically retrieved with the [[endpoint|00001012920000]] ''/z/{ID}''.
 One way is to present the zettel as it was read by Zettelstore.
-This is called ""[[plain zettel|00001003000000#plain]]"", typically retrieved with the [[endpoint|00001012920000]] ''/z/{ID}''.
+This is called ""[[plain zettel|00001003000000]]"".
 
 The second way is to present the zettel as it was recognized by Zettelstore.
-This is called ""[[parsed zettel|00001012053600]]"", typically retrieved with the [[endpoint|00001012920000]] ''/p/{ID}''.
+This is called ""[[parsed zettel|00001012053600]]"", also retrieved with the [[endpoint|00001012920000]] ''/z/{ID}'', but with additional query parameter.
 Such a zettel was read and analyzed.
 It can be presented in various [[encodings|00001012920500]].[^The [[zmk encoding|00001012920522]] allows you to compare the plain, the parsed, and the evaluated form of a zettel.]
 
-However, a zettel such as this one you are currently reading, is a ""[[evaluated zettel|00001012053500]]"", typically retrieved with the [[endpoint|00001012920000]] ''/v/{ID}''.
+However, a zettel such as this one you are currently reading, is a ""[[evaluated zettel|00001012053500]]"", also retrieved with the [[endpoint|00001012920000]] ''/z/{ID}'' and specifying an encoding.
 The biggest difference to a parsed zettel is the inclusion of [[block transclusions|00001007031100]] or [[inline transclusions|00001007040324]] for an evaluated zettel.
 It can also be presented in various encoding, including the ""zmk"" encoding.
 Evaluations also applies to metadata of a zettel, if appropriate.

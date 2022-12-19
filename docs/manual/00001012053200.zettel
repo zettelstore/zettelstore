@@ -3,12 +3,28 @@ title: API: Create a new zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220628111320
+created: 20210713150005
+modified: 20221219162225
 
-A zettel is created by adding it to the [[list of zettel|00001012000000#zettel-lists]].
-Therefore, the [[endpoint|00001012920000]] to create a new zettel is also ''/j'', but you must send the data of the new zettel via a HTTP POST request.
+A zettel is created by adding it to the [[list of zettel|00001012000000]].
+Therefore, the [[endpoint|00001012920000]] to create a new zettel is also ''/z'', but you must send the data of the new zettel via a HTTP POST request.
 
-The body of the POST request must contain a JSON object that specifies metadata and content of the zettel to be created.
+
+The zettel must be encoded in a [[plain|00001006000000]] format: first comes the [[metadata|00001006010000]] and the following content is separated by an empty line.
+This is the same format as used by storing zettel within a [[directory box|00001006010000]].
+
+```
+# curl -X POST --data $'title: Note\n\nImportant content.' http://127.0.0.1:23123/z
+20210903211500
+```
+
+The zettel identifier of the created zettel is returned.
+In addition, the HTTP response header contains a key ''Location'' with a relative URL for the new zettel.
+A client must prepend the HTTP protocol scheme, the host name, and (optional, but often needed) the post number to make it an absolute URL.
+
+
+Alternatively, the body of the POST request may contain a JSON object that specifies metadata and content of the zettel to be created.
+To do this, you must add the query parameter ''enc=json''.
 The following keys of the JSON object are used:
 ; ''"meta"''
 : References an embedded JSON object with only string values.
@@ -30,28 +46,17 @@ Therefore, a body containing just ''{}'' is perfectly valid.
 The new zettel will have no content, and only an identifier as [[metadata|00001006020000]]:
 
 ```
-# curl -X POST --data '{}' http://127.0.0.1:23123/j
+# curl -X POST --data '{}' 'http://127.0.0.1:23123/z?enc=json'
 {"id":"20210713161000"}
 ```
 If creating the zettel was successful, the HTTP response will contain a JSON object with one key:
 ; ''"id"''
 : Contains the [[zettel identifier|00001006050000]] of the created zettel for further usage.
 
-In addition, the HTTP response header contains a key ''Location'' with a relative URL for the new zettel.
-A client must prepend the HTTP protocol scheme, the host name, and (optional, but often needed) the post number to make it an absolute URL.
-
 As an example, a zettel with title ""Note"" and content ""Important content."" can be created by issuing:
 ```
-# curl -X POST --data '{"meta":{"title":"Note"},"content":"Important content."}' http://127.0.0.1:23123/j
+# curl -X POST --data '{"meta":{"title":"Note"},"content":"Important content."}' 'http://127.0.0.1:23123/z?enc=json'
 {"id":"20210713163100"}
-```
-
-[!plain]Alternatively, you can use the [[endpoint|00001012920000]] ''/z'' to create a new zettel.
-In this case, the zettel must be encoded in a [[plain|00001006000000]] format: first comes the [[metadata|00001006010000]] and the following content is separated by an empty line.
-This is the same format as used by storing zettel within a [[directory box|00001006010000]].
-```
-# curl -X POST --data $'title: Note\n\nImportant content.' http://127.0.0.1:23123/z
-20210903211500
 ```
 
 === HTTP Status codes

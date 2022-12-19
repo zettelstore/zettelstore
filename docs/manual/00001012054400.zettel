@@ -3,7 +3,8 @@ title: API: Rename a zettel
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20211124181324
+created: 20210713150005
+modified: 20221219154659
 
 Renaming a zettel is effectively just specifying a new identifier for the zettel.
 Since more than one [[box|00001004011200]] might contain a zettel with the old identifier, the rename operation must success in every relevant box to be overall successful.
@@ -12,19 +13,16 @@ If the rename operation fails in one box, Zettelstore tries to rollback previous
 As a consequence, you cannot rename a zettel when its identifier is used in a read-only box.
 This applies to all [[predefined zettel|00001005090000]], for example.
 
-The [[endpoint|00001012920000]] to rename a zettel is ''/j/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
+The [[endpoint|00001012920000]] to rename a zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 You must send a HTTP MOVE request to this endpoint, and you must specify the new zettel identifier as an URL, placed under the HTTP request header key ''Destination''.
 ```
-# curl -X MOVE -H "Destination: 10000000000001" http://127.0.0.1:23123/j/00001000000000
+# curl -X MOVE -H "Destination: 10000000000001" http://127.0.0.1:23123/z/00001000000000
 ```
 
 Only the last 14 characters of the value of ''Destination'' are taken into account and those must form an unused [[zettel identifier|00001006050000]].
 If the value contains less than 14 characters that do not form an unused zettel identifier, the response will contain a HTTP status code ''400''.
 All other characters, besides those 14 digits, are effectively ignored.
 However, the value should form a valid URL that could be used later to [[read the content|00001012053300]] of the freshly renamed zettel.
-
-[!plain]Alternatively, you can also use the [[endpoint|00001012920000]] ''/z/{ID}''.
-Both endpoints behave identical.
 
 === HTTP Status codes
 ; ''204''

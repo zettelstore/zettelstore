@@ -4,9 +4,9 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20220923105405
+modified: 20221219162927
 
-The [[endpoint|00001012920000]] ''/q'' allows to query the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
+The [[endpoint|00001012920000]] ''/z'' also allows you to filter the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header] and optionally to provide some actions.
 
 A [[query|00001007700000]] is an optional [[search expression|00001007700000#search-expression]], together with an optional [[list of actions|00001007700000#action-list]] (described below).
 An empty search expression will select all zettel.
@@ -14,29 +14,80 @@ An empty list of action, or no valid action, returns the list of all selected ze
 
 Search expression and action list are separated by a vertical bar character (""''|''"", U+007C), and must be given with the query parameter ''q''.
 
-For example, to list all roles used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?q=|role''.
-If successful, the output is a JSON object:
+The query parameter ""''q''"" allows you to specify [[query expressions|00001007700000]] for a full-text search of all zettel content and/or restricting the search according to specific metadata.
+
+It is allowed to specify this query parameter more than once.
+
+This parameter loosely resembles the search form of the [[web user interface|00001014000000]].
+
+For example, if you want to retrieve all zettel that contain the string ""API"" in its title, your request will be:
+```sh
+# curl 'http://127.0.0.1:23123/z?q=title%3AAPI'
+00001012921000 API: JSON structure of an access token
+00001012920500 Formats available by the API
+00001012920000 Endpoints used by the API
+...
+```
+
+If you want to retrieve a JSON document:
 
 ```sh
-# curl http://127.0.0.1:23123/q?q=|role
+# curl 'http://127.0.0.1:23123/z?q=title%3AAPI&enc=json'
+{"query":"title:API","human":"title HAS API","list":[{"id":"00001012921200","meta":{"back":"00001012051200 00001012051400 00001012053300 00001012053400 00001012053800 00001012053900 00001012054000","backward":"00001012051200 00001012051400 00001012053300 00001012053400 00001012053800 00001012053900 00001012054000","box-number":"1","created":"00010101000000","forward":"00001003000000 00001006020400 00001010000000 00001010040100 00001010040200 00001010070200 00001010070300","modified":"20220201171959","published":"20220201171959","role":"manual","syntax":"zmk","tags":"#api #manual #reference #zettelstore","title":"API: Encoding of Zettel Access Rights"},"rights":62},{"id":"00001012921000","meta":{"back":"00001012050600 00001012051200","backward":"00001012050200 00001012050400 00001012050600 00001012051200","box-number":"1","created":"00010101000000","forward":"00001012050200 00001012050400","published":"00010101000000","role":"manual","syntax":"zmk","tags":"#api #manual #reference #zettelstore","title":"API: JSON structure of an access token"},"rights":62}, ...]
+```
+
+The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
+These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the [[zettel identifier|00001006050000]]), ''"meta"'' (value as a JSON object), and ''"rights"'' (encodes the [[access rights|00001012921200]] for the given zettel).
+The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
+
+Additionally, the JSON object contains the keys ''"query"'' and ''"human"'' with a string value.
+Both will contain a textual description of the underlying query if you select only some zettel with a [[query expression|00001007700000]].
+Without a selection, the values are the empty string.
+''"query"'' returns the normalized query expression itself, while ''"human"'' is the normalized query expression to be read by humans.
+
+
+An implicit precondition is that the zettel must contain the given metadata key.
+For a metadata key like [[''title''|00001006020000#title]], which has a default value, this precondition should always be true.
+But the situation is different for a key like [[''url''|00001006020000#url]].
+Both ``curl 'http://localhost:23123/z?q=url%3A'`` and ``curl 'http://localhost:23123/z?q=url%3A!'`` may result in an empty list.
+
+
+As an example for a query action, to list all roles used in the Zettelstore, send a HTTP GET request to the endpoint ''/z?q=|role''.
+
+```sh
+# curl 'http://127.0.0.1:23123/z?q=|role'
+configuration	00001000000100 00000000090002 00000000090000 00000000040001 00000000025001 00000000020001 00000000000100 00000000000092 00000000000090 00000000000006 00000000000005 00000000000004 00000000000001
+manual	00001018000000 00001017000000 00001014000000 00001012921200 00001012921000 00001012920800 00001012920588 00001012920584 00001012920582 00001012920522 00001012920519 00001012920516 00001012920513 00001012920510 00001012920503 00001012920500 00001012920000 00001012080500 00001012080200 00001012080100 00001012070500 00001012054600 00001012054400 00001012054200 00001012054000 00001012053900 00001012053800 00001012053600 00001012053500 00001012053400 00001012053300 00001012053200 00001012051400 00001012051200 00001012050600 00001012050400 00001012050200 00001012000000 00001010090100 00001010070600 00001010070400 00001010070300 00001010070200 00001010040700 00001010040400 00001010040200 00001010040100 00001010000000 00001008050000 00001008010500 00001008010000 00001008000000 00001007990000 00001007906000 00001007903000 00001007900000 00001007800000 00001007790000 00001007780000 00001007706000 00001007705000 00001007702000 00001007700000 00001007050200 00001007050100 00001007050000 00001007040350 00001007040340 00001007040330 00001007040324 00001007040322 00001007040320 00001007040310 00001007040300 00001007040200 00001007040100 00001007040000 00001007031400 00001007031300 00001007031200 00001007031140 00001007031110 00001007031100 00001007031000 00001007030900 00001007030800 00001007030700 00001007030600 00001007030500 00001007030400 00001007030300 00001007030200 00001007030100 00001007030000 00001007020000 00001007010000 00001007000000 00001006055000 00001006050000 00001006036500 00001006036000 00001006035500 00001006035000 00001006034500 00001006034000 00001006033500 00001006033000 00001006032500 00001006032000 00001006031500 00001006031000 00001006030500 00001006030000 00001006020400 00001006020100 00001006020000 00001006010000 00001006000000 00001005090000 00001005000000 00001004101000 00001004100000 00001004059900 00001004059700 00001004051400 00001004051200 00001004051100 00001004051000 00001004050400 00001004050200 00001004050000 00001004020200 00001004020000 00001004011600 00001004011400 00001004011200 00001004010000 00001004000000 00001003600000 00001003315000 00001003310000 00001003305000 00001003300000 00001003000000 00001002000000 00001001000000 00001000000000
+zettel	00010000000000 00000000090001
+```
+
+The result is a text file.
+The first word, separated by a horizontal tab (U+0009) contains the role name.
+The rest of the line consists of zettel identifier, where the corresponding zettel have this role.
+Zettel identifier are separated by a space character (U+0020).
+
+Of course, this list can be returned as a JSON object:
+
+```sh
+# curl 'http://127.0.0.1:23123/z?q=|role?enc=json'
 {"map":{"configuration":["00000000090002","00000000090000", ... ,"00000000000001"],"manual":["00001014000000", ... ,"00001000000000"],"zettel":["00010000000000", ... ,"00001012070500","00000000090001"]}}
 ```
 
 The JSON object only contains the key ''"map"'' with the value of another object.
 This second object contains all role names as keys and the list of identifier of those zettel with this specific role as a value.
 
-Similar, to list all tags used in the Zettelstore, send a HTTP GET request to the endpoint ''/q?q=|tags''.
+Similar, to list all tags used in the Zettelstore, send a HTTP GET request to the endpoint ''/z?q=|tags''.
 If successful, the output is a JSON object:
 
 ```sh
-# curl http://127.0.0.1:23123/q?q=|tags
+# curl 'http://127.0.0.1:23123/z?q=|tags&enc=json'
 {"map":{"#api":[:["00001012921000","00001012920800","00001012920522",...],"#authorization":["00001010040700","00001010040400",...],...,"#zettelstore":["00010000000000","00001014000000",...,"00001001000000"]}}
 ```
 
 The JSON object only contains the key ''"map"'' with the value of another object.
 This second object contains all tags as keys and the list of identifier of those zettel with this tag as a value.
 
-If you want only those tags that occur at least 100 times, use the endpoint ''/q?q=|MIN100+tags''.
+If you want only those tags that occur at least 100 times, use the endpoint ''/z?q=|MIN100+tags''.
 You see from this that actions are separated by space characters.
 
 There are two types of actions: parameters and aggregates.
@@ -53,90 +104,6 @@ The following actions are supported:
 
 Only the first aggregate action will be executed.
 
-If no valid aggregate action is given, the metadata of all selected zettel are returned.[^For this reason, a HTTP GET to the endpoint ''/j'' is an alias for the endpoint ''/q''.]
-
-```sh
-# curl http://127.0.0.1:23123/q
-{"query":"","list":[{"id":"00001012051200","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"},"rights":62},{"id":"00001012050600","meta":{"title":"API: Provide an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"},"rights":62},{"id":"00001012050400","meta":{"title":"API: Renew an access token","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"},"rights":62},{"id":"00001012050200","meta":{"title":"API: Authenticate a client","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"},"rights":62},{"id":"00001012000000","meta":{"title":"API","tags":"#api #manual #zettelstore","syntax":"zmk","role":"manual"},"rights":62}]}
-```
-
-The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
-These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the [[zettel identifier|00001006050000]]), ''"meta"'' (value as a JSON object), and ''"rights"'' (encodes the [[access rights|00001012921200]] for the given zettel).
-The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
-
-Additionally, the JSON object contains the keys ''"query"'' and ''"human"'' with a string value.
-Both will contain a textual description of the underlying query if you select only some zettel with a [[query expression|00001007700000]].
-Without a selection, the values are the empty string.
-''"query"'' returns the normalized query expression itself, while ''"human"'' is the normalized query expression to be read by humans.
-
-If you reformat the JSON output from the ''GET /q'' call, you'll see its structure better:
-
-```json
-{
-  "query": "",
-  "human": "",
-  "list": [
-    {
-      "id": "00001012051200",
-      "meta": {
-        "title": "API: List for all zettel some data",
-        "tags": "#api #manual #zettelstore",
-        "syntax": "zmk",
-        "role": "manual"
-      },
-      "rights":62
-    },
-    {
-      "id": "00001012050600",
-      "meta": {
-        "title": "API: Provide an access token",
-        "tags": "#api #manual #zettelstore",
-        "syntax": "zmk",
-        "role": "manual"
-      },
-      "rights":62
-    },
-    {
-      "id": "00001012050400",
-      "meta": {
-        "title": "API: Renew an access token",
-        "tags": "#api #manual #zettelstore",
-        "syntax": "zmk",
-        "role": "manual"
-      },
-      "rights":62
-    },
-    {
-      "id": "00001012050200",
-      "meta": {
-        "title": "API: Authenticate a client",
-        "tags": "#api #manual #zettelstore",
-        "syntax": "zmk",
-        "role": "manual"
-      },
-      "rights":62
-    },
-    {
-      "id": "00001012000000",
-      "meta": {
-        "title": "API",
-        "tags": "#api #manual #zettelstore",
-        "syntax": "zmk",
-        "role": "manual"
-      },
-      "rights":62
-    }
-  ]
-}
-```
-In this special case, the metadata of each zettel just contains the four default keys ''title'', ''tags'', ''syntax'', and ''role''.
-
-=== Note
-This request (and similar others) will always return a list of metadata, provided the request was syntactically correct.
-There will never be a HTTP status code 403 (Forbidden), even if [[authentication was enabled|00001010040100]] and you did not provide a valid access token.
-In this case, the resulting list might be quite short (some zettel will have [[public visibility|00001010070200]]) or the list might be empty.
-
-With this call, you cannot differentiate between an empty result list (e.g because your search did not found a zettel with the specified term) and an empty list because of missing authorization (e.g. an invalid access token).
 
 === HTTP Status codes
 ; ''200''
