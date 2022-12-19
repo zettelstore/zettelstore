@@ -13,6 +13,7 @@ package api
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -30,22 +31,43 @@ import (
 func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		q := adapter.GetQuery(r.URL.Query())
+		q := r.URL.Query()
+		query := adapter.GetQuery(q)
 
-		metaList, err := listMeta.Run(ctx, q)
+		metaList, err := listMeta.Run(ctx, query)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
 
 		var buf bytes.Buffer
-		contentType, err := a.queryAction(ctx, &buf, q, metaList)
-		if err != nil {
-			a.reportUsecaseError(w, err)
+		var contentType string
+		switch enc, _ := getEncoding(r, q, api.EncoderPlain); enc {
+		case api.EncoderPlain:
+			for _, m := range metaList {
+				_, err = fmt.Fprintln(&buf, m.Zid.String(), m.GetTitle())
+				if err != nil {
+					a.log.Fatal().Err(err).Msg("Unable to store plain list in buffer")
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+			}
+			contentType = content.PlainText
+
+		case api.EncoderJson:
+			contentType, err = a.queryAction(ctx, &buf, query, metaList)
+			if err != nil {
+				a.reportUsecaseError(w, err)
+				return
+			}
+
+		default:
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
+
 		err = writeBuffer(w, &buf, contentType)
-		a.log.IfErr(err).Msg("write action")
+		a.log.IfErr(err).Msg("write result buffer")
 	}
 }
 

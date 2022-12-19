@@ -174,7 +174,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			UnLinksContent: unlinkedContent,
 			UnLinksPhrase:  phrase,
 			QueryKeyPhrase: api.QueryKeyPhrase,
-			EvalMatrix:     wui.infoAPIMatrix(zid, true),
+			EvalMatrix:     wui.infoAPIMatrix(zid, false),
 			ParseMatrix:    wui.infoAPIMatrixPlain(zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
@@ -209,7 +209,7 @@ func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, queries,
 	return locLinks, queries, extLinks
 }
 
-func (wui *WebUI) infoAPIMatrix(zid id.Zid, eval bool) []matrixLine {
+func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
 	encodings := encoder.GetEncodings()
 	encTexts := make([]string, 0, len(encodings))
 	for _, f := range encodings {
@@ -223,8 +223,8 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, eval bool) []matrixLine {
 	for _, part := range parts {
 		row := make([]simpleLink, len(encTexts))
 		for j, enc := range encTexts {
-			if eval {
-				u.AppendKVQuery(api.QueryKeyEval, "")
+			if parseOnly {
+				u.AppendKVQuery(api.QueryKeyParseOnly, "")
 			}
 			u.AppendKVQuery(api.QueryKeyPart, part)
 			if enc != defEncoding {
@@ -239,7 +239,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, eval bool) []matrixLine {
 }
 
 func (wui *WebUI) infoAPIMatrixPlain(zid id.Zid) []matrixLine {
-	matrix := wui.infoAPIMatrix(zid, false)
+	matrix := wui.infoAPIMatrix(zid, true)
 	apiZid := api.ZettelID(zid.String())
 
 	// Append plain and JSON format

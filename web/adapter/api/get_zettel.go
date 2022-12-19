@@ -49,14 +49,14 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 		default:
 			var zn *ast.ZettelNode
 			var em func(value string) ast.InlineSlice
-			if q.Has(api.QueryKeyEval) {
+			if q.Has(api.QueryKeyParseOnly) {
+				zn, err = parseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
+				em = parser.ParseMetadata
+			} else {
 				zn, err = evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
 				em = func(value string) ast.InlineSlice {
 					return evaluate.RunMetadata(ctx, value)
 				}
-			} else {
-				zn, err = parseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
-				em = parser.ParseMetadata
 			}
 			if err != nil {
 				a.reportUsecaseError(w, err)

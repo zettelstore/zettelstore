@@ -117,24 +117,19 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, a.MakePostLoginHandler(&ucAuthenticate))
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
-	webSrv.AddListRoute('j', server.MethodGet, a.MakeQueryHandler(ucListMeta))
 	webSrv.AddZettelRoute('o', server.MethodGet, a.MakeGetOrderHandler(
 		usecase.NewZettelOrder(protectedBoxManager, ucEvaluate)))
-	webSrv.AddListRoute('q', server.MethodGet, a.MakeQueryHandler(ucListMeta))
 	webSrv.AddZettelRoute('u', server.MethodGet, a.MakeListUnlinkedMetaHandler(
 		ucGetMeta, ucUnlinkedRefs, &ucEvaluate))
 	webSrv.AddListRoute('x', server.MethodGet, a.MakeGetDataHandler(ucVersion))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
 	webSrv.AddZettelRoute('x', server.MethodGet, a.MakeZettelContextHandler(ucZettelContext))
-	webSrv.AddListRoute('z', server.MethodGet, a.MakeListPlainHandler(ucListMeta))
+	webSrv.AddListRoute('z', server.MethodGet, a.MakeQueryHandler(ucListMeta))
 	webSrv.AddZettelRoute('z', server.MethodGet, a.MakeGetZettelHandler(ucGetMeta, ucGetZettel, ucParseZettel, ucEvaluate))
 	if !authManager.IsReadonly() {
-		webSrv.AddListRoute('j', server.MethodPost, a.MakePostCreateZettelHandler(&ucCreateZettel))
-		webSrv.AddZettelRoute('j', server.MethodPut, a.MakeUpdateZettelHandler(&ucUpdate))
-		webSrv.AddZettelRoute('j', server.MethodDelete, a.MakeDeleteZettelHandler(&ucDelete))
-		webSrv.AddZettelRoute('j', server.MethodMove, a.MakeRenameZettelHandler(&ucRename))
-		webSrv.AddListRoute('z', server.MethodPost, a.MakePostCreatePlainZettelHandler(&ucCreateZettel))
-		webSrv.AddZettelRoute('z', server.MethodPut, a.MakeUpdatePlainZettelHandler(&ucUpdate))
+		// webSrv.AddZettelRoute('j', server.MethodPut, a.MakeUpdateZettelHandler(&ucUpdate))
+		webSrv.AddListRoute('z', server.MethodPost, a.MakePostCreateZettelHandler(&ucCreateZettel))
+		webSrv.AddZettelRoute('z', server.MethodPut, a.MakeUpdateZettelHandler(&ucUpdate))
 		webSrv.AddZettelRoute('z', server.MethodDelete, a.MakeDeleteZettelHandler(&ucDelete))
 		webSrv.AddZettelRoute('z', server.MethodMove, a.MakeRenameZettelHandler(&ucRename))
 	}

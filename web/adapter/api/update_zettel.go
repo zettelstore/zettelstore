@@ -13,31 +13,12 @@ package api
 import (
 	"net/http"
 
+	"zettelstore.de/c/api"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 )
-
-// MakeUpdatePlainZettelHandler creates a new HTTP handler to update a zettel.
-func (a *API) MakeUpdatePlainZettelHandler(updateZettel *usecase.UpdateZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		zettel, err := buildZettelFromPlainData(r, zid)
-		if err != nil {
-			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
-			return
-		}
-		if err = updateZettel.Run(r.Context(), zettel, true); err != nil {
-			a.reportUsecaseError(w, err)
-			return
-		}
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
 
 // MakeUpdateZettelHandler creates a new HTTP handler to update a zettel.
 func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.HandlerFunc {
@@ -47,7 +28,19 @@ func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.H
 			http.NotFound(w, r)
 			return
 		}
-		zettel, err := buildZettelFromJSONData(r, zid)
+
+		q := r.URL.Query()
+		var zettel domain.Zettel
+		switch enc, _ := getEncoding(r, q, api.EncoderPlain); enc {
+		case api.EncoderPlain:
+			zettel, err = buildZettelFromPlainData(r, zid)
+		case api.EncoderJson:
+			zettel, err = buildZettelFromJSONData(r, zid)
+		default:
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+
 		if err != nil {
 			a.reportUsecaseError(w, adapter.NewErrBadRequest(err.Error()))
 			return
