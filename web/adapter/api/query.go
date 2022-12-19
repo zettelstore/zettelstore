@@ -12,7 +12,6 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,65 +31,58 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
-		query := adapter.GetQuery(q)
+		sq := adapter.GetQuery(q)
 
-		metaList, err := listMeta.Run(ctx, query)
+		metaList, err := listMeta.Run(ctx, sq)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
 
-		var buf bytes.Buffer
+		var encoder zettelEncoder
 		var contentType string
 		switch enc, _ := getEncoding(r, q, api.EncoderPlain); enc {
 		case api.EncoderPlain:
-			for _, m := range metaList {
-				_, err = fmt.Fprintln(&buf, m.Zid.String(), m.GetTitle())
-				if err != nil {
-					a.log.Fatal().Err(err).Msg("Unable to store plain list in buffer")
-					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-					return
-				}
-			}
+			encoder = &plainZettelEncoder{}
 			contentType = content.PlainText
 
 		case api.EncoderJson:
-			contentType, err = a.queryAction(ctx, &buf, query, metaList)
-			if err != nil {
-				a.reportUsecaseError(w, err)
-				return
+			encoder = &jsonZettelEncoder{
+				sq:        sq,
+				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
 			}
+			contentType = content.JSON
 
 		default:
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
+		var buf bytes.Buffer
+		err = queryAction(&buf, encoder, metaList, sq)
+		if err != nil {
+			a.log.Error().Err(err).Str("query", sq.String()).Msg("execute query action")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+
 		err = writeBuffer(w, &buf, contentType)
 		a.log.IfErr(err).Msg("write result buffer")
 	}
 }
-
-func (a *API) queryAction(ctx context.Context, w io.Writer, q *query.Query, ml []*meta.Meta) (string, error) {
-	ap := actionPara{
-		w:   w,
-		q:   q,
-		ml:  ml,
-		min: -1,
-		max: -1,
-	}
-	if actions := q.Actions(); len(actions) > 0 {
+func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Query) error {
+	min, max := -1, -1
+	if actions := sq.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
 		for _, act := range actions {
 			if strings.HasPrefix(act, "MIN") {
 				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
-					ap.min = num
+					min = num
 					continue
 				}
 			}
 			if strings.HasPrefix(act, "MAX") {
 				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
-					ap.max = num
+					max = num
 					continue
 				}
 			}
@@ -100,61 +92,99 @@ func (a *API) queryAction(ctx context.Context, w io.Writer, q *query.Query, ml [
 			key := strings.ToLower(act)
 			switch meta.Type(key) {
 			case meta.TypeWord, meta.TypeTagSet:
-				return ap.createMapMeta(key)
+				return encodeKeyArrangement(w, enc, ml, key, min, max)
 			}
 		}
 	}
-	err := a.writeQueryMetaList(ctx, w, q, ml)
-	return content.JSON, err
+	return enc.writeMetaList(w, ml)
 }
 
-type actionPara struct {
-	w   io.Writer
-	q   *query.Query
-	ml  []*meta.Meta
-	min int
-	max int
-}
-
-func (ap *actionPara) createMapMeta(key string) (string, error) {
-	if len(ap.ml) == 0 {
-		return "", nil
-	}
-	arr := meta.CreateArrangement(ap.ml, key)
-	if len(arr) == 0 {
-		return "", nil
-	}
-	min, max := ap.min, ap.max
-	mm := make(api.MapMeta, len(arr))
-	for tag, metaList := range arr {
-		if len(metaList) < min || (max > 0 && len(metaList) > max) {
+func encodeKeyArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, key string, min, max int) error {
+	arr0 := meta.CreateArrangement(ml, key)
+	arr := make(meta.Arrangement, len(arr0))
+	for k0, ml0 := range arr0 {
+		if len(ml0) < min || (max > 0 && len(ml0) > max) {
 			continue
 		}
-		zidList := make([]api.ZettelID, 0, len(metaList))
-		for _, m := range metaList {
-			zidList = append(zidList, api.ZettelID(m.Zid.String()))
-		}
-		mm[tag] = zidList
+		arr[k0] = ml0
 	}
-
-	err := encodeJSONData(ap.w, api.MapListJSON{Map: mm})
-	return content.JSON, err
+	return enc.writeArrangement(w, arr)
 }
 
-func (a *API) writeQueryMetaList(ctx context.Context, w io.Writer, q *query.Query, ml []*meta.Meta) error {
+type zettelEncoder interface {
+	writeMetaList(w io.Writer, ml []*meta.Meta) error
+	writeArrangement(w io.Writer, arr meta.Arrangement) error
+}
+
+type plainZettelEncoder struct{}
+
+func (*plainZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
+	for _, m := range ml {
+		_, err := fmt.Fprintln(w, m.Zid.String(), m.GetTitle())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (*plainZettelEncoder) writeArrangement(w io.Writer, arr meta.Arrangement) error {
+	for key, ml := range arr {
+		_, err := io.WriteString(w, key)
+		if err != nil {
+			return err
+		}
+		for i, m := range ml {
+			if i == 0 {
+				_, err = io.WriteString(w, "\t")
+			} else {
+				_, err = io.WriteString(w, " ")
+			}
+			if err != nil {
+				return err
+			}
+			_, err = io.WriteString(w, m.Zid.String())
+			if err != nil {
+				return err
+			}
+		}
+		_, err = io.WriteString(w, "\n")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type jsonZettelEncoder struct {
+	sq        *query.Query
+	getRights func(*meta.Meta) api.ZettelRights
+}
+
+func (jze *jsonZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
 	result := make([]api.ZidMetaJSON, 0, len(ml))
 	for _, m := range ml {
 		result = append(result, api.ZidMetaJSON{
 			ID:     api.ZettelID(m.Zid.String()),
 			Meta:   m.Map(),
-			Rights: a.getRights(ctx, m),
+			Rights: jze.getRights(m),
 		})
 	}
 
 	err := encodeJSONData(w, api.ZettelListJSON{
-		Query: q.String(),
-		Human: q.Human(),
+		Query: jze.sq.String(),
+		Human: jze.sq.Human(),
 		List:  result,
 	})
 	return err
+}
+func (*jsonZettelEncoder) writeArrangement(w io.Writer, arr meta.Arrangement) error {
+	mm := make(api.MapMeta, len(arr))
+	for key, metaList := range arr {
+		zidList := make([]api.ZettelID, 0, len(metaList))
+		for _, m := range metaList {
+			zidList = append(zidList, api.ZettelID(m.Zid.String()))
+		}
+		mm[key] = zidList
+	}
+	return encodeJSONData(w, api.MapListJSON{Map: mm})
 }
