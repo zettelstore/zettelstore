@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221219174807
+modified: 20221219175720
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -31,7 +31,7 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
 ; [!footer-zettel|''footer-zettel'']
 : Identifier of a zettel that is rendered as HTML and will be placed as the footer of every zettel in the [[web user interface|00001014000000]].
   Zettel content, delivered via the [[API|00001012000000]] as JSON, etc. is not affected.
-  If the zettel identifier is invalid or references a zettel that could not be read (possibly because of a limited [[visibility setting|00001010070200]], nothing is written as the footer.
+  If the zettel identifier is invalid or references a zettel that could not be read (possibly because of a limited [[visibility setting|00001010070200]]), nothing is written as the footer.
 
   May be [[overwritten|00001004020200]] in a user zettel.
 
