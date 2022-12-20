@@ -147,8 +147,16 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 		})
 
 	case partContent:
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
+		z, err2 := getZettel.Run(ctx, zid)
+		if err2 != nil {
+			a.reportUsecaseError(w, err2)
+			return
+		}
+		zContent, encoding := z.Content.Encode()
+		err = encodeJSONData(&buf, api.ZettelContentJSON{
+			Encoding: encoding,
+			Content:  zContent,
+		})
 	}
 	if err != nil {
 		a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store zettel in buffer")
