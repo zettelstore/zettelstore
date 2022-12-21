@@ -230,7 +230,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
 			if enc != defEncoding {
 				u.AppendKVQuery(api.QueryKeyEncoding, enc)
 			}
-			row[j] = simpleLink{enc, u.String()}
+			row[j] = simpleLink{enc, u.AttrString()}
 			u.ClearQuery()
 		}
 		matrix = append(matrix, matrixLine{part, row})
@@ -246,18 +246,18 @@ func (wui *WebUI) infoAPIMatrixPlain(zid id.Zid) []matrixLine {
 	u := wui.NewURLBuilder('z').SetZid(apiZid)
 	for i, part := range getParts() {
 		u.AppendKVQuery(api.QueryKeyPart, part)
-		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.String()})
+		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.AttrString()})
 		u.ClearQuery()
 	}
 
 	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
 	u.AppendKVQuery(api.QueryKeyPart, api.PartZettel)
-	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.String()})
+	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.AttrString()})
 
 	u.ClearQuery()
 	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
 	u.AppendKVQuery(api.QueryKeyPart, api.PartMeta)
-	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"json", u.String()})
+	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"json", u.AttrString()})
 	return matrix
 }
 
