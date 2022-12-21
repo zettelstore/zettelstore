@@ -11,7 +11,9 @@
 {{#CanDelete}}&#183; <a href="{{{DeleteURL}}}">Delete</a>{{/CanDelete}}
 </header>
 <h2>Interpreted Metadata</h2>
-<table>{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>{{/MetaData}}</table>
+<table>
+{{#MetaData}}<tr><td>{{Key}}</td><td>{{{Value}}}</td></tr>
+{{/MetaData}}</table>
 <h2>References</h2>
 {{#HasLocLinks}}
 <h3>Local</h3>

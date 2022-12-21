@@ -119,7 +119,11 @@ func (wui *WebUI) writeTagSet(w io.Writer, key string, tags []string) {
 }
 
 func writeTimestamp(w io.Writer, ts time.Time) {
+	io.WriteString(w, `<time datetime="`)
+	io.WriteString(w, ts.Format("2006-01-02T15:04:05"))
+	io.WriteString(w, `">`)
 	io.WriteString(w, ts.Format("2006-01-02&nbsp;15:04:05"))
+	io.WriteString(w, `</time>`)
 }
 
 func writeURL(w io.Writer, val string) {
