@@ -73,11 +73,3 @@ func GetEncodings() []api.EncodingEnum {
 	}
 	return result
 }
-
-// GetDefaultEncoding returns the encoding that should be used as default.
-func GetDefaultEncoding() api.EncodingEnum {
-	if _, ok := registry[api.EncoderZJSON]; ok {
-		return api.EncoderZJSON
-	}
-	panic("No ZJSON encoding registered")
-}

@@ -216,7 +216,6 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
 		encTexts = append(encTexts, f.String())
 	}
 	sort.Strings(encTexts)
-	defEncoding := encoder.GetDefaultEncoding().String()
 	parts := getParts()
 	matrix := make([]matrixLine, 0, len(parts))
 	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
@@ -227,9 +226,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
 				u.AppendKVQuery(api.QueryKeyParseOnly, "")
 			}
 			u.AppendKVQuery(api.QueryKeyPart, part)
-			if enc != defEncoding {
-				u.AppendKVQuery(api.QueryKeyEncoding, enc)
-			}
+			u.AppendKVQuery(api.QueryKeyEncoding, enc)
 			row[j] = simpleLink{enc, u.AttrString()}
 			u.ClearQuery()
 		}
