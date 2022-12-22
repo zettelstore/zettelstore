@@ -65,6 +65,9 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
 		extURL, hasExtURL := zn.Meta.Get(api.KeyURL)
+		if hasExtURL && extURL == "" {
+			hasExtURL = false
+		}
 		folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
 		backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
 		successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))

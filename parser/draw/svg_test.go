@@ -37,7 +37,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"|Hi:",
 				"+--+",
 			},
-			486,
+			482,
 		},
 
 		// 2 Ticks and dots in lines.
@@ -47,7 +47,7 @@ func TestCanvasToSVG(t *testing.T) {
 				"",
 				" <-----*------",
 			},
-			1088,
+			1084,
 		},
 
 		// 3 Just text
@@ -55,7 +55,7 @@ func TestCanvasToSVG(t *testing.T) {
 			[]string{
 				" foo",
 			},
-			265,
+			261,
 		},
 	}
 	for i, line := range data {

@@ -321,7 +321,7 @@ func (wui *WebUI) createZettelEncoder(ctx context.Context, m *meta.Meta) *htmlGe
 // If hasURL is false an empty string is returned.
 func htmlAttrNewWindow(hasURL bool) string {
 	if hasURL {
-		return " target=\"_blank\" ref=\"noopener noreferrer\""
+		return ` target="_blank" rel="noopener noreferrer"`
 	}
 	return ""
 }

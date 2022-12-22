@@ -132,9 +132,11 @@ func writeURL(w io.Writer, val string) {
 		html.Escape(w, val)
 		return
 	}
-	fmt.Fprintf(w, "<a href=\"%v\"%v>", u, htmlAttrNewWindow(true))
-	html.Escape(w, val)
-	io.WriteString(w, "</a>")
+	if us := u.String(); us != "" {
+		fmt.Fprintf(w, "<a href=\"%v\"%v>", us, htmlAttrNewWindow(true))
+		html.Escape(w, val)
+		io.WriteString(w, "</a>")
+	}
 }
 
 func (wui *WebUI) writeWord(w io.Writer, key, word string) {
