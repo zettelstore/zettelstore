@@ -1,4 +1,4 @@
-Copyright (c) 2020-2022 Detlef Stern
+Copyright (c) 2020-2023 Detlef Stern
 
                           Licensed under the EUPL
 
