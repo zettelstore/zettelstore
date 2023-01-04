@@ -309,6 +309,7 @@ func cmdBuild() error {
 }
 
 func doBuild(env []string, version, target string) error {
+	env = append(env, "CGO_ENABLED=0")
 	out, err := executeCommand(
 		env,
 		"go", "build",
