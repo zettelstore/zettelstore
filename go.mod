@@ -9,7 +9,7 @@ require (
 	github.com/yuin/goldmark v1.5.3
 	golang.org/x/crypto v0.4.0
 	golang.org/x/term v0.3.0
-	golang.org/x/text v0.5.0
+	golang.org/x/text v0.6.0
 	zettelstore.de/c v0.9.1-0.20221221191132-010aeee6b885
 )
 
