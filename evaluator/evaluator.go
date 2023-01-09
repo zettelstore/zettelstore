@@ -463,7 +463,7 @@ func mustParseZid(ref *ast.Reference) id.Zid {
 func (e *evaluator) updateImageRefNode(en *ast.EmbedRefNode, m *meta.Meta, syntax string) {
 	en.Syntax = syntax
 	if len(en.Inlines) == 0 {
-		is := getImageDescription(m)
+		is := parser.ParseDescription(m)
 		if len(is) > 0 {
 			ast.Walk(e, &is)
 			if len(is) > 0 {
@@ -471,20 +471,6 @@ func (e *evaluator) updateImageRefNode(en *ast.EmbedRefNode, m *meta.Meta, synta
 			}
 		}
 	}
-}
-
-func getImageDescription(m *meta.Meta) ast.InlineSlice {
-	if m == nil {
-		return nil
-	}
-	descr, found := m.Get(api.KeySummary)
-	if !found {
-		descr, found = m.Get(api.KeyTitle)
-	}
-	if !found {
-		return nil
-	}
-	return parser.ParseMetadataNoLink(descr)
 }
 
 func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
@@ -573,14 +559,10 @@ func firstInlinesToEmbed(bs ast.BlockSlice) ast.InlineSlice {
 		return nil
 	}
 	if bn, ok := bs[0].(*ast.BLOBNode); ok {
-		var ins ast.InlineSlice
-		if bn.Title != "" {
-			ins = ast.CreateInlineSliceFromWords(strings.Fields(bn.Title)...)
-		}
 		return ast.InlineSlice{&ast.EmbedBLOBNode{
 			Blob:    bn.Blob,
 			Syntax:  bn.Syntax,
-			Inlines: ins,
+			Inlines: bn.Description,
 		}}
 	}
 	return nil

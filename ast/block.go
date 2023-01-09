@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -281,9 +281,9 @@ func (*TranscludeNode) WalkChildren(Visitor) { /* No children*/ }
 // BLOBNode contains just binary data that must be interpreted according to
 // a syntax.
 type BLOBNode struct {
-	Title  string
-	Syntax string
-	Blob   []byte
+	Description InlineSlice
+	Syntax      string
+	Blob        []byte
 }
 
 func (*BLOBNode) blockNode() { /* Just a marker */ }

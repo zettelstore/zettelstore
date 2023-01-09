@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -130,6 +130,21 @@ func ParseMetadataNoLink(value string) ast.InlineSlice {
 	in := ParseMetadata(value)
 	cleaner.CleanInlineLinks(&in)
 	return in
+}
+
+// ParseDescription returns a suitable description stored in the metadata as an inline slice.
+func ParseDescription(m *meta.Meta) ast.InlineSlice {
+	if m == nil {
+		return nil
+	}
+	descr, found := m.Get(api.KeySummary)
+	if !found {
+		descr, found = m.Get(api.KeyTitle)
+	}
+	if !found {
+		return nil
+	}
+	return ParseMetadataNoLink(descr)
 }
 
 // ParseZettel parses the zettel based on the syntax.

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -339,8 +339,7 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 		v.b.WriteString("\n@@@\n")
 		return
 	}
-	v.b.WriteStrings(
-		"%% Unable to display BLOB with title '", bn.Title, "' and syntax '", bn.Syntax, "'.")
+	v.b.WriteStrings("%% Unable to display BLOB with syntax '", bn.Syntax, "'.")
 }
 
 var escapeSeqs = strfun.NewSet(

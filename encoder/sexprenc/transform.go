@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -78,7 +78,7 @@ func (t *transformer) getSexpr(node ast.Node) *sxpf.Pair {
 	case *ast.TranscludeNode:
 		return sxpf.NewPairFromValues(sexpr.SymTransclude, getAttributes(n.Attrs), getReference(n.Ref))
 	case *ast.BLOBNode:
-		return getBLOB(n)
+		return t.getBLOB(n)
 	case *ast.TextNode:
 		return sxpf.NewPairFromValues(sexpr.SymText, sxpf.NewString(n.Text))
 	case *ast.SpaceNode:
@@ -280,7 +280,7 @@ func (t *transformer) getCell(cell *ast.TableCell) *sxpf.Pair {
 	return sxpf.NewPair(mapGetS(alignmentSymbolS, cell.Align), t.getInlineSlice(cell.Inlines))
 }
 
-func getBLOB(bn *ast.BLOBNode) *sxpf.Pair {
+func (t *transformer) getBLOB(bn *ast.BLOBNode) *sxpf.Pair {
 	var lastValue sxpf.Value
 	if bn.Syntax == meta.SyntaxSVG {
 		lastValue = sxpf.NewString(string(bn.Blob))
@@ -289,7 +289,7 @@ func getBLOB(bn *ast.BLOBNode) *sxpf.Pair {
 	}
 	return sxpf.NewPairFromValues(
 		sexpr.SymBLOB,
-		sxpf.NewString(bn.Title),
+		t.getInlineSlice(bn.Description),
 		sxpf.NewString(bn.Syntax),
 		lastValue,
 	)

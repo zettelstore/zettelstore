@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -62,9 +62,9 @@ func parseBlocks(inp *input.Input, m *meta.Meta, _ string) ast.BlockSlice {
 		return ast.BlockSlice{ast.CreateParaNode(noSVGErrMsg()...)}
 	}
 	return ast.BlockSlice{&ast.BLOBNode{
-		Title:  "",
-		Syntax: meta.SyntaxSVG,
-		Blob:   svg,
+		Description: parser.ParseDescription(m),
+		Syntax:      meta.SyntaxSVG,
+		Blob:        svg,
 	}}
 }
 
@@ -109,9 +109,9 @@ func ParseDrawBlock(vn *ast.VerbatimNode) ast.BlockNode {
 		return ast.CreateParaNode(noSVGErrMsg()...)
 	}
 	return &ast.BLOBNode{
-		Title:  "",
-		Syntax: meta.SyntaxSVG,
-		Blob:   svg,
+		Description: nil, // TODO: look for attribute "summary" / "title"
+		Syntax:      meta.SyntaxSVG,
+		Blob:        svg,
 	}
 }
 
