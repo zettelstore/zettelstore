@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -409,7 +409,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	}
 
 	if syntax := zettel.Meta.GetDefault(api.KeySyntax, ""); parser.IsImageFormat(syntax) {
-		en.Syntax = syntax
+		e.updateImageRefNode(en, zettel.Meta, syntax)
 		return en
 	} else if !parser.IsASTParser(syntax) {
 		// Not embeddable.
@@ -458,6 +458,33 @@ func mustParseZid(ref *ast.Reference) id.Zid {
 		panic(fmt.Sprintf("%v: %q (state %v) -> %v", err, ref.URL.Path, ref.State, ref))
 	}
 	return zid
+}
+
+func (e *evaluator) updateImageRefNode(en *ast.EmbedRefNode, m *meta.Meta, syntax string) {
+	en.Syntax = syntax
+	if len(en.Inlines) == 0 {
+		is := getImageDescription(m)
+		if len(is) > 0 {
+			ast.Walk(e, &is)
+			if len(is) > 0 {
+				en.Inlines = is
+			}
+		}
+	}
+}
+
+func getImageDescription(m *meta.Meta) ast.InlineSlice {
+	if m == nil {
+		return nil
+	}
+	descr, found := m.Get(api.KeySummary)
+	if !found {
+		descr, found = m.Get(api.KeyTitle)
+	}
+	if !found {
+		return nil
+	}
+	return parser.ParseMetadataNoLink(descr)
 }
 
 func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
