@@ -3,8 +3,10 @@ title: ZJSON Encoding: Mapping of Metadata Key Types to Object Names
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220304114135
+modified: 20230109104703
 
+**Note**: ZJSON encoding will be deprecated in v0.11
+---
 Every [[Metadata key|00001006030000]] is mapped to an [[object name|00001012920582]] where its value is encoded.
 
 |=Type | JSON Object Name | Remark

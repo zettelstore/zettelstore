@@ -3,7 +3,8 @@ title: Zettelmarkup: Math-mode Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220311182505
+created: 20220311173226
+modified: 20230109105340
 
 Math-mode blocks are used to enter mathematical formulas / equations in a display style mode.
 Similar to a [[evaluation blocks|00001007031300]], the block content will be interpreted by either Zettelstore or an external software.
@@ -15,7 +16,7 @@ If you want to give only one attribute and this attribute is the generic attribu
 It will be interpreted as a [[syntax|00001008000000]] value to evaluate its content.
 Alternatively, you could provide an attribute with the key ""syntax"" and use the value to specify the syntax.
 Not all syntax values are supported by Zettelstore.[^Currently: none.]
-External software might support several values via the [[ZJSON encoding|00001012920503]].
+External software might support several values via the [[Sexpr encoding|00001012920516]].
 
 Any other character in this line will be ignored
 

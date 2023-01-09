@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -9,6 +9,8 @@
 //-----------------------------------------------------------------------------
 
 // Package zjsonenc encodes the abstract syntax tree into JSON.
+//
+// Deprecated in v0.11
 package zjsonenc
 
 import (

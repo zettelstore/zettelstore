@@ -4,11 +4,11 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20220422181104
-modified: 20221219163059
+modified: 20230109104812
 
 A zettel representation that is a [[s-expression|https://en.wikipedia.org/wiki/S-expression]] (also known as symbolic expression).
 
-It is an alternative to the [[ZJSON encoding|00001012920503]].
+It is an alternative to the [[ZJSON encoding|00001012920503]][^ZJSON will be deprecated in v0.11].
 Both encodings are (relatively) easy to parse and contain all relevant information of a zettel, metadata and content.
 
 For example, take a look at the Sexpr encoding of this page, which is available via the ""Info"" sub-page of this zettel: 

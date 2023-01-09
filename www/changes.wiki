@@ -9,6 +9,9 @@
   *  Remove support for runtime configuration key <tt>footer-html</tt>. Use
      <tt>footer-zettel</tt> instead. Deprecated in version 0.9.0.
      (breaking: webui)
+  *  Mark ZSON encoding as deprecated for v0.11.0. Please use Sexpr encoding
+     instead.
+     (deprecated)
 
 <a name="0_9"></a>
 <h2>Changes for Version 0.9.0 (2022-12-12)</h2>

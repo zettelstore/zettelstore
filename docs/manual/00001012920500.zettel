@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221107182839
+modified: 20230109104839
 
 A zettel representation can be encoded in various formats for further processing.
 
@@ -12,5 +12,5 @@ A zettel representation can be encoded in various formats for further processing
 * [[md|00001012920513]]
 * [[sexpr|00001012920516]]
 * [[text|00001012920519]]
-* [[zjson|00001012920503]] (default)
+* [[zjson|00001012920503]] (will be deprecated in v0.11)
 * [[zmk|00001012920522]]

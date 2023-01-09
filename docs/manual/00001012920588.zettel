@@ -3,7 +3,10 @@ title: ZJSON Encoding: List of Valid Zettelmarkup Element Objects Names
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220301102447
+modified: 20230109104648
+
+**Note**: ZJSON encoding will be deprecated in v0.11
+---
 
 Every [[Zettelmarkup|00001007000000]] element is mapped to a JSON object with some well defined names / keys.
 

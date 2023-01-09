@@ -4,8 +4,10 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221219163119
+modified: 20230109104722
 
+**Note**: ZJSON encoding will be deprecated in v0.11
+---
 A zettel representation that allows to process the syntactic structure of a zettel.
 It is a JSON-based encoding format, but different to the structures returned by using the plain [[endpoint|00001012920000]] ''/z/{ID}''.
 
