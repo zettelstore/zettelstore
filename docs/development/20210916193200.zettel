@@ -2,14 +2,17 @@ id: 20210916193200
 title: Required Software
 role: zettel
 syntax: zmk
-modified: 20211213190428
+created: 20210916193200
+modified: 20230109121417
 
 The following software must be installed:
 
-* A current, supported [[release of Go|https://golang.org/doc/devel/release.html]],
+* A current, supported [[release of Go|https://go.dev/doc/devel/release]],
 * [[shadow|https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/shadow]] via ``go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest``,
 * [[staticcheck|https://staticcheck.io/]] via ``go install honnef.co/go/tools/cmd/staticcheck@latest``,
-* [[unparam|https://mvdan.cc/unparam]][^[[GitHub|https://github.com/mvdan/unparam]]] via ``go install mvdan.cc/unparam@latest``
+* [[unparam|https://mvdan.cc/unparam]][^[[GitHub|https://github.com/mvdan/unparam]]] via ``go install mvdan.cc/unparam@latest``,
+* [[Fossil|https://fossil-scm.org/]],
+* [[Git|https://git-scm.org/]] (most dependencies are accessible via Git only).
 
 Make sure that the software is in your path, e.g. via:
 

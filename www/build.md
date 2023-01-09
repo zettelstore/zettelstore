@@ -2,10 +2,14 @@
 ## Prerequisites
 You must install the following software:
 
-* A current, supported [release of Go](https://golang.org/doc/devel/release.html),
+* A current, supported [release of Go](https://go.dev/doc/devel/release),
 * [staticcheck](https://staticcheck.io/),
+* [shadow](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/shadow),
+* [unparam](https://mvdan.cc/unparam),
 * [Fossil](https://fossil-scm.org/),
 * [Git](https://git-scm.org) (so that Go can download some dependencies).
+
+See folder <tt>docs/development</tt> (a zettel box) for details.
 
 ## Clone the repository
 Most of this is covered by the excellent Fossil [documentation](https://fossil-scm.org/home/doc/trunk/www/quickstart.wiki).
