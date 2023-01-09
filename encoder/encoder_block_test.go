@@ -329,6 +329,17 @@ and much more
 		},
 	},
 	{
+		descr: "A paragraph with a inline comment only should be empty in HTML",
+		zmk:   `%% Comment`,
+		expect: expectMap{
+			encoderZJSON: `[{"":"Para","i":[{"":"Comment","s":"Comment"}]}]`,
+			encoderHTML:  ``,
+			encoderSexpr: `((PARA (LITERAL-COMMENT () "Comment")))`,
+			encoderText:  "",
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "",
 		zmk:   ``,
 		expect: expectMap{
