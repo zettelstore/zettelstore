@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -64,10 +65,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		roleText := zn.Meta.GetDefault(api.KeyRole, "")
 		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
-		extURL, hasExtURL := zn.Meta.Get(api.KeyURL)
-		if hasExtURL && extURL == "" {
-			hasExtURL = false
-		}
+		extURL, hasExtURL := formatURLFromMeta(zn.Meta, api.KeyURL)
 		folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
 		backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
 		successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
@@ -131,6 +129,22 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			SuccessorLinks:  successorLinks,
 		})
 	}
+}
+
+func formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
+	val, found := m.Get(key)
+	if !found {
+		return "", false
+	}
+	if found && val == "" {
+		return "", false
+	}
+	var buf bytes.Buffer
+	_, err := html.AttributeEscape(&buf, val)
+	if err != nil {
+		return "", false
+	}
+	return buf.String(), true
 }
 
 func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error) {

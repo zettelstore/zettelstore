@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -133,7 +133,9 @@ func writeURL(w io.Writer, val string) {
 		return
 	}
 	if us := u.String(); us != "" {
-		fmt.Fprintf(w, "<a href=\"%v\"%v>", us, htmlAttrNewWindow(true))
+		io.WriteString(w, `<a href="`)
+		html.AttributeEscape(w, us)
+		io.WriteString(w, `" target="_blank" rel="noopener noreferrer">`)
 		html.Escape(w, val)
 		io.WriteString(w, "</a>")
 	}
