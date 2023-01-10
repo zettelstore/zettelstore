@@ -12,6 +12,7 @@
 package zmkenc
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -20,6 +21,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/strfun"
 )
 
@@ -90,13 +92,14 @@ func (*zmkEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 // visitor writes the abstract syntax tree to an io.Writer.
 type visitor struct {
 	b         encoder.EncWriter
+	textEnc   encoder.Encoder
 	prefix    []byte
 	inVerse   bool
 	inlinePos int
 }
 
 func newVisitor(w io.Writer) *visitor {
-	return &visitor{b: encoder.NewEncWriter(w)}
+	return &visitor{b: encoder.NewEncWriter(w), textEnc: textenc.Create()}
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
@@ -339,7 +342,9 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 		v.b.WriteString("\n@@@\n")
 		return
 	}
-	v.b.WriteStrings("%% Unable to display BLOB with syntax '", bn.Syntax, "'.")
+	var buf bytes.Buffer
+	v.textEnc.WriteInlines(&buf, &bn.Description)
+	v.b.WriteStrings("%% Unable to display BLOB with description '", buf.String(), "' and syntax '", bn.Syntax, "'.")
 }
 
 var escapeSeqs = strfun.NewSet(

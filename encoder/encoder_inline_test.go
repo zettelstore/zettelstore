@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -508,7 +508,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `{{abc}}`,
 		expect: expectMap{
 			encoderZJSON: `[{"":"Embed","s":"abc"}]`,
-			encoderHTML:  `<img src="abc">`,
+			encoderHTML:  `<img alt="alternate description missing" src="abc">`,
 			encoderMD:    "![abc](abc)",
 			encoderSexpr: `((EMBED () (EXTERNAL "abc") ""))`,
 			encoderText:  ``,

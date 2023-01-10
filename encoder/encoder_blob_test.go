@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -40,11 +40,11 @@ var pngTestCases = []blobTestCase{
 			0x42, 0x60, 0x82,
 		},
 		expect: expectMap{
-			encoderZJSON: `[{"":"BLOB","q":"PNG","s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
-			encoderHTML:  `<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==" title="PNG"></p>`,
-			encoderSexpr: `((BLOB "PNG" "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
+			encoderZJSON: `[{"":"BLOB","q":[{"":"Text","s":"PNG"}],"s":"png","o":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="}]`,
+			encoderHTML:  `<p><img alt="PNG" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="></p>`,
+			encoderSexpr: `((BLOB ((TEXT "PNG")) "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
 			encoderText:  "",
-			encoderZmk:   `%% Unable to display BLOB with title 'PNG' and syntax 'png'.`,
+			encoderZmk:   `%% Unable to display BLOB with description 'PNG' and syntax 'png'.`,
 		},
 	},
 }
