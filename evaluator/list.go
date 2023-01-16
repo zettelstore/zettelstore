@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -42,7 +42,7 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 	}
 	actions := q.Actions()
 	if len(actions) == 0 {
-		return ap.createBlockNodeMeta()
+		return ap.createBlockNodeMeta("")
 	}
 
 	acts := make([]string, 0, len(actions))
@@ -69,12 +69,15 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 		}
 		acts = append(acts, act)
 	}
+	var firstUnknownKey string
 	for _, act := range acts {
 		switch act {
 		case "ATOM":
 			return ap.createBlockNodeAtom(rtConfig)
 		case "RSS":
 			return ap.createBlockNodeRSS(rtConfig)
+		case "KEYS":
+			return ap.createBlockNodeMetaKeys()
 		}
 		key := strings.ToLower(act)
 		switch meta.Type(key) {
@@ -83,8 +86,11 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 		case meta.TypeTagSet:
 			return ap.createBlockNodeTagSet(key)
 		}
+		if firstUnknownKey == "" {
+			firstUnknownKey = key
+		}
 	}
-	return ap.createBlockNodeMeta()
+	return ap.createBlockNodeMeta(firstUnknownKey)
 }
 
 type actionPara struct {
@@ -135,9 +141,7 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 	ccs.SortByName()
 	for i, cat := range ccs {
 		if i > 0 {
-			para = append(para, &ast.SpaceNode{
-				Lexeme: " ",
-			})
+			para = append(para, &ast.SpaceNode{Lexeme: " "})
 		}
 		buf.WriteString(cat.Name)
 		para = append(para,
@@ -156,9 +160,7 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 		)
 		buf.Truncate(bufLen)
 	}
-	return &ast.ParaNode{
-		Inlines: para,
-	}
+	return &ast.ParaNode{Inlines: para}
 }
 
 func (ap *actionPara) limitTags(ccs meta.CountedCategories) meta.CountedCategories {
@@ -182,12 +184,66 @@ func (ap *actionPara) limitTags(ccs meta.CountedCategories) meta.CountedCategori
 	return ccs
 }
 
-func (ap *actionPara) createBlockNodeMeta() ast.BlockNode {
+func (ap *actionPara) createBlockNodeMetaKeys() ast.BlockNode {
+	arr := make(meta.Arrangement, 128)
+	for _, m := range ap.ml {
+		for k := range m.Map() {
+			arr[k] = append(arr[k], m)
+		}
+	}
+	if len(arr) == 0 {
+		return nil
+	}
+	ccs := arr.Counted()
+	ccs.SortByName()
+
+	var buf bytes.Buffer
+	bufLen := ap.prepareSimpleQuery(&buf)
+	items := make([]ast.ItemSlice, 0, len(ccs))
+	for _, cat := range ccs {
+		buf.WriteString(cat.Name)
+		buf.WriteString(api.ExistOperator)
+		q1 := buf.String()
+		buf.Truncate(bufLen)
+		buf.WriteString(api.ActionSeparator)
+		buf.WriteString(cat.Name)
+		q2 := buf.String()
+		buf.Truncate(bufLen)
+
+		items = append(items, ast.ItemSlice{ast.CreateParaNode(
+			&ast.LinkNode{
+				Attrs:   nil,
+				Ref:     ast.ParseReference(q1),
+				Inlines: ast.InlineSlice{&ast.TextNode{Text: cat.Name}},
+			},
+			&ast.SpaceNode{Lexeme: " "},
+			&ast.TextNode{Text: "(" + strconv.Itoa(cat.Count) + ", "},
+			&ast.LinkNode{
+				Attrs:   nil,
+				Ref:     ast.ParseReference(q2),
+				Inlines: ast.InlineSlice{&ast.TextNode{Text: "values"}},
+			},
+			&ast.TextNode{Text: ")"},
+		)})
+	}
+	return &ast.NestedListNode{
+		Kind:  ap.kind,
+		Items: items,
+		Attrs: nil,
+	}
+}
+
+func (ap *actionPara) createBlockNodeMeta(key string) ast.BlockNode {
 	if len(ap.ml) == 0 {
 		return nil
 	}
 	items := make([]ast.ItemSlice, 0, len(ap.ml))
 	for _, m := range ap.ml {
+		if key != "" {
+			if _, found := m.Get(key); !found {
+				continue
+			}
+		}
 		zid := m.Zid.String()
 		title, found := m.Get(api.KeyTitle)
 		if !found {
@@ -215,6 +271,15 @@ func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.Coun
 		return nil, 0
 	}
 
+	ap.prepareSimpleQuery(buf)
+	buf.WriteString(key)
+	buf.WriteString(api.SearchOperatorHas)
+	bufLen := buf.Len()
+
+	return ccs, bufLen
+}
+
+func (ap *actionPara) prepareSimpleQuery(buf *bytes.Buffer) int {
 	sea := ap.q.Clone()
 	sea.RemoveActions()
 	buf.WriteString(ast.QueryPrefix)
@@ -222,11 +287,7 @@ func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.Coun
 	if buf.Len() > len(ast.QueryPrefix) {
 		buf.WriteByte(' ')
 	}
-	buf.WriteString(key)
-	buf.WriteByte(':')
-	bufLen := buf.Len()
-
-	return ccs, bufLen
+	return buf.Len()
 }
 
 const fontSizes = 6 // Must be the number of CSS classes zs-font-size-* in base.css

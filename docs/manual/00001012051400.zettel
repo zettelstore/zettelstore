@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20221219162927
+modified: 20230116183844
 
 The [[endpoint|00001012920000]] ''/z'' also allows you to filter the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header] and optionally to provide some actions.
 
@@ -18,7 +18,7 @@ The query parameter ""''q''"" allows you to specify [[query expressions|00001007
 
 It is allowed to specify this query parameter more than once.
 
-This parameter loosely resembles the search form of the [[web user interface|00001014000000]].
+This parameter loosely resembles the search form of the [[web user interface|00001014000000]] or those of [[Zettelmarkup's Query Transclusion|00001007031140]].
 
 For example, if you want to retrieve all zettel that contain the string ""API"" in its title, your request will be:
 ```sh

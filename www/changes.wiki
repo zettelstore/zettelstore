@@ -9,6 +9,9 @@
   *  Remove support for runtime configuration key <tt>footer-html</tt>. Use
      <tt>footer-zettel</tt> instead. Deprecated in version 0.9.0.
      (breaking: webui)
+  *  Allow to show all used metadata keys, linked with their occurrences and
+     their values.
+     (minor: webui)
   *  Mark ZSON encoding as deprecated for v0.11.0. Please use Sexpr encoding
      instead.
      (deprecated)
