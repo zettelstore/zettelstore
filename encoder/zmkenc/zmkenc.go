@@ -26,15 +26,18 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderZmk, func() encoder.Encoder { return &myZE })
+	encoder.Register(api.EncoderZmk, func() encoder.Encoder { return Create() })
 }
 
-type zmkEncoder struct{}
+// Create an encoder.
+func Create() *Encoder { return &myZE }
 
-var myZE zmkEncoder
+type Encoder struct{}
+
+var myZE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
-func (*zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	if zn.InhMeta.YamlSep {
@@ -48,7 +51,7 @@ func (*zmkEncoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 }
 
 // WriteMeta encodes meta data as zmk.
-func (*zmkEncoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	v := newVisitor(w)
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
@@ -69,12 +72,12 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	}
 }
 
-func (ze *zmkEncoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+func (ze *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 	return ze.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*zmkEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
@@ -82,7 +85,7 @@ func (*zmkEncoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*zmkEncoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	v := newVisitor(w)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()

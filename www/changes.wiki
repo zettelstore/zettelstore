@@ -9,6 +9,8 @@
   *  Remove support for runtime configuration key <tt>footer-html</tt>. Use
      <tt>footer-zettel</tt> instead. Deprecated in version 0.9.0.
      (breaking: webui)
+  *  Save a query into a zettel to freeze it.
+     (major: webui)
   *  Allow to show all used metadata keys, linked with their occurrences and
      their values.
      (minor: webui)

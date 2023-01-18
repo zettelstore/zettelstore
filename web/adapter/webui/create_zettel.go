@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,6 +11,7 @@
 package webui
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 
@@ -19,6 +20,8 @@ import (
 	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/encoder/zmkenc"
+	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -100,6 +103,7 @@ func (wui *WebUI) renderZettelForm(
 	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), title, "", user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
 		Heading:       heading,
+		FormActionURL: base.FormActionURL,
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),
 		MetaTags:      m.GetDefault(api.KeyTags, ""),
 		MetaRole:      m.GetDefault(api.KeyRole, ""),
@@ -141,5 +145,40 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel
 		} else {
 			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(newZid.String())))
 		}
+	}
+}
+
+// MakeGetZettelFromListHandler creates a new HTTP handler to store content of
+// an existing zettel.
+func (wui *WebUI) MakeGetZettelFromListHandler(
+	listMeta usecase.ListMeta, evaluate *usecase.Evaluate,
+	ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := adapter.GetQuery(r.URL.Query())
+		ctx := r.Context()
+		metaList, err := listMeta.Run(box.NoEnrichQuery(ctx, q), q)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
+		enc := zmkenc.Create()
+		var zmkContent bytes.Buffer
+		_, err = enc.WriteBlocks(&zmkContent, &bns)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+
+		m := meta.New(id.Invalid)
+		m.Set(api.KeyTitle, q.Human())
+		m.Set(api.KeySyntax, api.ValueSyntaxZmk)
+		if qval := q.String(); qval != "" {
+			m.Set(api.KeyQuery, qval)
+		}
+		zettel := domain.Zettel{Meta: m, Content: domain.NewContent(zmkContent.Bytes())}
+		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
+		wui.renderZettelForm(ctx, w, zettel, "Zettel from list", "Zettel From List", roleData, syntaxData)
 	}
 }

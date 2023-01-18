@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -51,11 +51,19 @@ func GetInteger(q url.Values, key string) (int, bool) {
 }
 
 // GetQuery retrieves the specified options from a query.
-func GetQuery(vals url.Values) *query.Query {
+func GetQuery(vals url.Values) (result *query.Query) {
 	if exprs, found := vals[api.QueryKeyQuery]; found {
-		return query.Parse(strings.Join(exprs, " "))
+		result = query.Parse(strings.Join(exprs, " "))
 	}
-	return nil
+	if seeds, found := vals[api.QueryKeySeed]; found {
+		for _, seed := range seeds {
+			if si, err := strconv.ParseInt(seed, 10, 31); err == nil {
+				result = result.SetSeed(int(si))
+				break
+			}
+		}
+	}
+	return result
 }
 
 // GetZCDirection returns a direction value for a given string.

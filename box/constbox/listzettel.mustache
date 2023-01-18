@@ -5,3 +5,8 @@
 <input class="zs-input" type="text" placeholder="Search.." name="{{QueryKeyQuery}}" value="{{QueryValue}}">
 </form>
 {{{Content}}}
+<form action="{{{CreateURL}}}">
+<input type="hidden" name="{{QueryKeyQuery}}" value="{{QueryValue}}">
+<input type="hidden" name="{{QueryKeySeed}}" value="{{Seed}}">
+<input class="zs-primary" type="submit" value="Save As Zettel">
+</form>

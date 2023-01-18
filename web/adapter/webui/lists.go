@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -59,6 +59,10 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			wui.reportError(ctx, w, err)
 			return
 		}
+		seed, found := q.GetSeed()
+		if !found {
+			seed = 0
+		}
 		user := server.GetUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
@@ -68,12 +72,18 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			QueryValue    string
 			QueryKeyQuery string
 			Content       string
+			CreateURL     string
+			QueryKeySeed  string
+			Seed          int
 		}{
 			Title:         wui.listTitleQuery(q),
 			SearchURL:     base.SearchURL,
 			QueryValue:    q.String(),
 			QueryKeyQuery: base.QueryKeyQuery,
 			Content:       htmlContent,
+			CreateURL:     base.CreateURL,
+			QueryKeySeed:  base.QueryKeySeed,
+			Seed:          seed,
 		})
 	}
 }

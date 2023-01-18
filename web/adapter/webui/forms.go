@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -31,6 +31,7 @@ import (
 
 type formZettelData struct {
 	Heading       string
+	FormActionURL string
 	MetaTitle     string
 	MetaRole      string
 	HasRoleData   bool

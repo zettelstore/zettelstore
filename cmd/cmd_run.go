@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -94,6 +94,8 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 		webSrv.AddZettelRoute('b', server.MethodGet, wui.MakeGetRenameZettelHandler(
 			ucGetMeta, &ucEvaluate))
 		webSrv.AddZettelRoute('b', server.MethodPost, wui.MakePostRenameZettelHandler(&ucRename))
+		webSrv.AddListRoute('c', server.MethodGet, wui.MakeGetZettelFromListHandler(ucListMeta, &ucEvaluate, ucListRoles, ucListSyntax))
+		webSrv.AddListRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
 		webSrv.AddZettelRoute('c', server.MethodGet, wui.MakeGetCreateZettelHandler(
 			ucGetZettel, &ucCreateZettel, ucListRoles, ucListSyntax))
 		webSrv.AddZettelRoute('c', server.MethodPost, wui.MakePostCreateZettelHandler(&ucCreateZettel))
@@ -105,8 +107,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	}
 	webSrv.AddListRoute('g', server.MethodGet, wui.MakeGetGoActionHandler(&ucRefresh))
 	webSrv.AddListRoute('h', server.MethodGet, wui.MakeListHTMLMetaHandler(ucListMeta, &ucEvaluate))
-	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(
-		&ucEvaluate, ucGetMeta))
+	webSrv.AddZettelRoute('h', server.MethodGet, wui.MakeGetHTMLZettelHandler(&ucEvaluate, ucGetMeta))
 	webSrv.AddListRoute('i', server.MethodGet, wui.MakeGetLoginOutHandler())
 	webSrv.AddListRoute('i', server.MethodPost, wui.MakePostLoginHandler(&ucAuthenticate))
 	webSrv.AddZettelRoute('i', server.MethodGet, wui.MakeGetInfoHandler(

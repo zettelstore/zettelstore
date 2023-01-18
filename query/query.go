@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -43,6 +43,9 @@ type Query struct {
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	terms    []conjTerms
+
+	// Allow to create predictable randomness
+	seed int
 
 	// Fields to be used for sorting
 	order  []sortOrder
@@ -142,6 +145,7 @@ func (q *Query) Clone() *Query {
 			c.terms[i].search = append([]expValue{}, term.search...)
 		}
 	}
+	c.seed = q.seed
 	if len(q.order) > 0 {
 		c.order = append([]sortOrder{}, q.order...)
 	}
@@ -213,6 +217,21 @@ func (q *Query) SetPreMatch(preMatch MetaMatchFunc) *Query {
 	}
 	q.preMatch = preMatch
 	return q
+}
+
+// SetSeed sets a seed value.
+func (q *Query) SetSeed(seed int) *Query {
+	q = createIfNeeded(q)
+	q.seed = seed
+	return q
+}
+
+// GetSeed returns the seed value if one was set.
+func (q *Query) GetSeed() (int, bool) {
+	if q == nil {
+		return 0, false
+	}
+	return q.seed, q.seed > 0
 }
 
 // SetLimit sets the given limit of the query object.
@@ -371,9 +390,7 @@ func (q *Query) Sort(metaList []*meta.Meta) []*meta.Meta {
 			return metaList
 		}
 	} else if q.order[0].isRandom() {
-		rand.Shuffle(len(metaList), func(i, j int) {
-			metaList[i], metaList[j] = metaList[j], metaList[i]
-		})
+		metaList = q.sortRandomly(metaList)
 	} else {
 		sort.Slice(metaList, createSortFunc(q.order, metaList))
 	}
@@ -385,6 +402,23 @@ func (q *Query) Sort(metaList []*meta.Meta) []*meta.Meta {
 		metaList = metaList[q.offset:]
 	}
 	return q.Limit(metaList)
+}
+
+func (q *Query) setSeed() {
+	if q != nil && q.seed <= 0 {
+		q.seed = int(rand.Intn(10000) + 1)
+	}
+}
+
+func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
+	q.setSeed()
+	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
+	rnd := rand.New(rand.NewSource(int64(q.seed)))
+	rnd.Shuffle(
+		len(metaList),
+		func(i, j int) { metaList[i], metaList[j] = metaList[j], metaList[i] },
+	)
+	return metaList
 }
 
 // Limit returns only s.GetLimit() elements of the given list.
