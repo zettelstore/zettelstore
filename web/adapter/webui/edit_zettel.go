@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -38,7 +38,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRo
 		}
 
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
-		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "Edit Zettel", roleData, syntaxData)
+		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "Edit Zettel", "", roleData, syntaxData)
 	}
 }
 

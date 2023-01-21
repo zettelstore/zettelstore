@@ -81,7 +81,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 			QueryValue:    q.String(),
 			QueryKeyQuery: base.QueryKeyQuery,
 			Content:       htmlContent,
-			CreateURL:     base.CreateURL,
+			CreateURL:     base.CreateNewURL,
 			QueryKeySeed:  base.QueryKeySeed,
 			Seed:          seed,
 		})

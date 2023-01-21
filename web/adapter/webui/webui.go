@@ -71,8 +71,7 @@ type WebUI struct {
 	loginURL      string
 	logoutURL     string
 	searchURL     string
-	formActionURL string
-	createURL     string
+	createNewURL  string
 }
 
 type webuiBox interface {
@@ -114,8 +113,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		loginURL:      loginoutBase.String(),
 		logoutURL:     loginoutBase.AppendKVQuery("logout", "").String(),
 		searchURL:     ab.NewURLBuilder('h').String(),
-		formActionURL: ab.NewURLBuilder('c').String(),
-		createURL:     ab.NewURLBuilder('c').String(),
+		createNewURL:  ab.NewURLBuilder('c').String(),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
@@ -277,8 +275,7 @@ type baseData struct {
 	SearchURL      string
 	QueryKeyQuery  string
 	QueryKeySeed   string
-	FormActionURL  string
-	CreateURL      string
+	CreateNewURL   string
 	Content        string
 	FooterHTML     string
 	DebugMode      bool
@@ -316,8 +313,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.SearchURL = wui.searchURL
 	data.QueryKeyQuery = api.QueryKeyQuery
 	data.QueryKeySeed = api.QueryKeySeed
-	data.FormActionURL = wui.formActionURL
-	data.CreateURL = wui.createURL
+	data.CreateNewURL = wui.createNewURL
 	data.FooterHTML = wui.calculateFooterHTML(ctx, user)
 	data.DebugMode = wui.debug
 }
