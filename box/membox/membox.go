@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -52,9 +52,9 @@ type memBox struct {
 	curBytes  int
 }
 
-func (mb *memBox) notifyChanged(reason box.UpdateReason, zid id.Zid) {
+func (mb *memBox) notifyChanged(zid id.Zid) {
 	if chci := mb.cdata.Notify; chci != nil {
-		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
+		chci <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
 	}
 }
 
@@ -104,7 +104,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	mb.zettel[zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnZettel, zid)
+	mb.notifyChanged(zid)
 	mb.log.Trace().Zid(zid).Msg("CreateZettel")
 	return zid, nil
 }
@@ -193,7 +193,7 @@ func (mb *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
 	mb.zettel[m.Zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnZettel, m.Zid)
+	mb.notifyChanged(m.Zid)
 	mb.log.Trace().Msg("UpdateZettel")
 	return nil
 }
@@ -220,8 +220,8 @@ func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	mb.zettel[newZid] = zettel
 	delete(mb.zettel, curZid)
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnZettel, curZid)
-	mb.notifyChanged(box.OnZettel, newZid)
+	mb.notifyChanged(curZid)
+	mb.notifyChanged(newZid)
 	mb.log.Trace().Msg("RenameZettel")
 	return nil
 }
@@ -243,7 +243,7 @@ func (mb *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	delete(mb.zettel, zid)
 	mb.curBytes -= oldZettel.Length()
 	mb.mx.Unlock()
-	mb.notifyChanged(box.OnZettel, zid)
+	mb.notifyChanged(zid)
 	mb.log.Trace().Msg("DeleteZettel")
 	return nil
 }

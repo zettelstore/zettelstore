@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -23,7 +23,7 @@ import (
 )
 
 // getEncoding returns the data encoding selected by the caller.
-func getEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (api.EncodingEnum, string) {
+func getEncoding(r *http.Request, q url.Values) (api.EncodingEnum, string) {
 	encoding := q.Get(api.QueryKeyEncoding)
 	if encoding != "" {
 		return api.Encoder(encoding), encoding
@@ -34,7 +34,7 @@ func getEncoding(r *http.Request, q url.Values, defEncoding api.EncodingEnum) (a
 	if enc, ok := getOneEncoding(r, api.HeaderContentType); ok {
 		return api.Encoder(enc), enc
 	}
-	return defEncoding, defEncoding.String()
+	return api.EncoderPlain, api.EncoderPlain.String()
 }
 
 func getOneEncoding(r *http.Request, key string) (string, bool) {

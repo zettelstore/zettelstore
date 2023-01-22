@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -27,7 +27,7 @@ import (
 func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
-		enc, encStr := getEncoding(r, q, api.EncoderPlain)
+		enc, encStr := getEncoding(r, q)
 		var zettel domain.Zettel
 		var err error
 		switch enc {

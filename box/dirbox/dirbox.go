@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -181,10 +181,10 @@ func (dp *dirBox) stopFileServices() {
 	}
 }
 
-func (dp *dirBox) notifyChanged(reason box.UpdateReason, zid id.Zid) {
+func (dp *dirBox) notifyChanged(zid id.Zid) {
 	if chci := dp.cdata.Notify; chci != nil {
-		dp.log.Trace().Zid(zid).Uint("reason", uint64(reason)).Msg("notifyChanged")
-		chci <- box.UpdateInfo{Reason: reason, Zid: zid}
+		dp.log.Trace().Zid(zid).Msg("notifyChanged")
+		chci <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
 	}
 }
 
@@ -222,7 +222,7 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zi
 	if err == nil {
 		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
-	dp.notifyChanged(box.OnZettel, meta.Zid)
+	dp.notifyChanged(meta.Zid)
 	dp.log.Trace().Err(err).Zid(meta.Zid).Msg("CreateZettel")
 	return meta.Zid, err
 }
@@ -307,7 +307,7 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error 
 	dp.dirSrv.UpdateDirEntry(entry)
 	err := dp.srvSetZettel(ctx, entry, zettel)
 	if err == nil {
-		dp.notifyChanged(box.OnZettel, zid)
+		dp.notifyChanged(zid)
 	}
 	dp.log.Trace().Zid(zid).Err(err).Msg("UpdateZettel")
 	return err
@@ -356,8 +356,8 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	}
 	err = dp.srvDeleteZettel(ctx, curEntry, curZid)
 	if err == nil {
-		dp.notifyChanged(box.OnZettel, curZid)
-		dp.notifyChanged(box.OnZettel, newZid)
+		dp.notifyChanged(curZid)
+		dp.notifyChanged(newZid)
 	}
 	dp.log.Trace().Zid(curZid).Zid(newZid).Err(err).Msg("RenameZettel")
 	return err
@@ -386,7 +386,7 @@ func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	}
 	err = dp.srvDeleteZettel(ctx, entry, zid)
 	if err == nil {
-		dp.notifyChanged(box.OnZettel, zid)
+		dp.notifyChanged(zid)
 	}
 	dp.log.Trace().Zid(zid).Err(err).Msg("DeleteZettel")
 	return err

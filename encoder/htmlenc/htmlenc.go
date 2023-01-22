@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -57,14 +57,14 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	if hasTitle {
 		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
 			io.WriteString(w, "<h1>")
-			if l, err := acceptInlines(env, &isTitle); err != nil {
-				return l, err
+			if err := acceptInlines(env, &isTitle); err != nil {
+				return 0, err
 			}
 			io.WriteString(w, "</h1>\n")
 		}
 	}
 
-	_, err := acceptBlocks(env, &zn.Ast)
+	err := acceptBlocks(env, &zn.Ast)
 	if err == nil {
 		// env.WriteEndnotes()
 		io.WriteString(w, "</body>\n</html>")
@@ -85,7 +85,7 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 // WriteBlocks encodes a block slice.
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
-	_, err := acceptBlocks(env, bs)
+	err := acceptBlocks(env, bs)
 	if err == nil {
 		env.WriteEndnotes()
 		err = env.GetError()
@@ -96,7 +96,7 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	env := html.NewEncEnvironment(w, 1)
-	return acceptInlines(env, is)
+	return 0, acceptInlines(env, is)
 }
 
 func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
@@ -112,13 +112,13 @@ func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta enc
 	}
 }
 
-func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) (int, error) {
+func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) error {
 	lst := sexprenc.GetSexpr(bs)
 	sxpf.Eval(env, lst)
-	return 0, env.GetError()
+	return env.GetError()
 }
-func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) (int, error) {
+func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) error {
 	lst := sexprenc.GetSexpr(is)
 	sxpf.Eval(env, lst)
-	return 0, env.GetError()
+	return env.GetError()
 }

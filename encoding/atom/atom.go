@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -13,7 +13,6 @@ package atom
 
 import (
 	"bytes"
-	"context"
 	"time"
 
 	"zettelstore.de/c/api"
@@ -35,7 +34,7 @@ type Configuration struct {
 	NewURLBuilderAbs func() *api.URLBuilder
 }
 
-func (c *Configuration) Setup(ctx context.Context, cfg config.Config) {
+func (c *Configuration) Setup(cfg config.Config) {
 	baseURL := kernel.Main.GetConfig(kernel.WebService, kernel.WebBaseURL).(string)
 
 	c.Title = cfg.GetSiteName()

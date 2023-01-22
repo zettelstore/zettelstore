@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -48,10 +48,7 @@ func (zb *zipBox) Start(context.Context) error {
 		return err
 	}
 	reader.Close()
-	zipNotifier, err := notify.NewSimpleZipNotifier(zb.log, zb.name)
-	if err != nil {
-		return err
-	}
+	zipNotifier := notify.NewSimpleZipNotifier(zb.log, zb.name)
 	zb.dirSrv = notify.NewDirService(zb.log, zipNotifier, zb.notify)
 	zb.dirSrv.Start()
 	return nil

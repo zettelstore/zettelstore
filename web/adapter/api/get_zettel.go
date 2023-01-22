@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -39,7 +39,7 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 		q := r.URL.Query()
 		part := getPart(q, partContent)
 		ctx := r.Context()
-		switch enc, encStr := getEncoding(r, q, api.EncoderPlain); enc {
+		switch enc, encStr := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			a.writePlainData(w, ctx, zid, part, getMeta, getZettel)
 

@@ -64,11 +64,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 				wui.reportError(ctx, w, err2)
 				return
 			}
-			htmlTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&title)
-			if err2 != nil {
-				wui.reportError(ctx, w, err2)
-				return
-			}
+			htmlTitle := wui.getSimpleHTMLEncoder().InlinesString(&title)
 			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel), textTitle, htmlTitle, "", roleData, syntaxData)
 		}
 	}

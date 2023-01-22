@@ -189,9 +189,5 @@ func (wui *WebUI) makeGetTextTitle(getMetadata getMetadataFunc, evalMetadata eva
 
 func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) string {
 	is := evalMetadata(value)
-	result, err := gen.InlinesString(&is)
-	if err != nil {
-		return err.Error()
-	}
-	return result
+	return gen.InlinesString(&is)
 }

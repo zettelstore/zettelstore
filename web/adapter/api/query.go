@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -41,7 +41,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		var encoder zettelEncoder
 		var contentType string
-		switch enc, _ := getEncoding(r, q, api.EncoderPlain); enc {
+		switch enc, _ := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			encoder = &plainZettelEncoder{}
 			contentType = content.PlainText

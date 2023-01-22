@@ -45,7 +45,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 		if actions := q.Actions(); len(actions) > 0 {
 			switch actions[0] {
 			case "ATOM":
-				wui.renderAtom(ctx, w, q, metaList)
+				wui.renderAtom(w, q, metaList)
 				return
 			case "RSS":
 				wui.renderRSS(ctx, w, q, metaList)
@@ -107,9 +107,9 @@ func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query
 	}
 }
 
-func (wui *WebUI) renderAtom(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
+func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
 	var atomConfig atom.Configuration
-	atomConfig.Setup(ctx, wui.rtConfig)
+	atomConfig.Setup(wui.rtConfig)
 	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
 		atomConfig.Title = strings.Join(actions[2:], " ")
 	}

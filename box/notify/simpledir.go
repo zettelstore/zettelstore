@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -44,7 +44,7 @@ func NewSimpleDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 
 // NewSimpleZipNotifier creates a zip-file based notifier that will not receive
 // any notifications from the operating system.
-func NewSimpleZipNotifier(log *logger.Logger, zipPath string) (Notifier, error) {
+func NewSimpleZipNotifier(log *logger.Logger, zipPath string) Notifier {
 	sdn := &simpleDirNotifier{
 		log:     log,
 		events:  make(chan Event),
@@ -53,7 +53,7 @@ func NewSimpleZipNotifier(log *logger.Logger, zipPath string) (Notifier, error) 
 		fetcher: newZipPathFetcher(zipPath),
 	}
 	go sdn.eventLoop()
-	return sdn, nil
+	return sdn
 }
 
 func (sdn *simpleDirNotifier) Events() <-chan Event {

@@ -361,7 +361,7 @@ func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
 
 func (ap *actionPara) createBlockNodeAtom(cfg config.Config) ast.BlockNode {
 	var atomConfig atom.Configuration
-	atomConfig.Setup(ap.ctx, cfg)
+	atomConfig.Setup(cfg)
 	atomConfig.Title = ap.title
 	data := atomConfig.Marshal(ap.q, ap.ml)
 

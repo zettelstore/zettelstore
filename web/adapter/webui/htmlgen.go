@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -127,11 +127,11 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 }
 
 // InlinesString writes an inline slice to the writer
-func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) (string, error) {
+func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
 	if is == nil || len(*is) == 0 {
-		return "", nil
+		return ""
 	}
-	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false), nil
+	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false)
 }
 
 func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {

@@ -314,7 +314,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.QueryKeyQuery = api.QueryKeyQuery
 	data.QueryKeySeed = api.QueryKeySeed
 	data.CreateNewURL = wui.createNewURL
-	data.FooterHTML = wui.calculateFooterHTML(ctx, user)
+	data.FooterHTML = wui.calculateFooterHTML(ctx)
 	data.DebugMode = wui.debug
 }
 
@@ -356,13 +356,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		}
 		title := m.GetTitle()
 		astTitle := parser.ParseMetadataNoLink(title)
-		menuTitle, err2 := wui.getSimpleHTMLEncoder().InlinesString(&astTitle)
-		if err2 != nil {
-			menuTitle, err2 = encodeInlinesText(&astTitle, wui.gentext)
-			if err2 != nil {
-				menuTitle = title
-			}
-		}
+		menuTitle := wui.getSimpleHTMLEncoder().InlinesString(&astTitle)
 		result = append(result, simpleLink{
 			Text: menuTitle,
 			URL: wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
@@ -372,7 +366,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 	return result
 }
 
-func (wui *WebUI) calculateFooterHTML(ctx context.Context, user *meta.Meta) string {
+func (wui *WebUI) calculateFooterHTML(ctx context.Context) string {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
 			htmlEnc := encoder.Create(api.EncoderHTML)

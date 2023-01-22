@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -31,7 +31,7 @@ func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.H
 
 		q := r.URL.Query()
 		var zettel domain.Zettel
-		switch enc, _ := getEncoding(r, q, api.EncoderPlain); enc {
+		switch enc, _ := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			zettel, err = buildZettelFromPlainData(r, zid)
 		case api.EncoderJson:
