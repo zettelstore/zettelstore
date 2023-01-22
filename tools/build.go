@@ -191,21 +191,21 @@ func checkUnparam(forRelease bool) error {
 	if path == "" {
 		return err
 	}
-	// out, err := executeCommand(nil, path, "./...")
-	// if err != nil {
-	// 	fmt.Fprintln(os.Stderr, "Some unparam problems found")
-	// 	if len(out) > 0 {
-	// 		fmt.Fprintln(os.Stderr, out)
-	// 	}
-	// }
-	// if forRelease {
-	// 	if out2, err2 := executeCommand(nil, path, "-exported", "-tests", "./..."); err2 != nil {
-	// 		fmt.Fprintln(os.Stderr, "Some optional unparam problems found")
-	// 		if len(out2) > 0 {
-	// 			fmt.Fprintln(os.Stderr, out2)
-	// 		}
-	// 	}
-	// }
+	out, err := executeCommand(nil, path, "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some unparam problems found")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+	}
+	if forRelease {
+		if out2, err2 := executeCommand(nil, path, "-exported", "-tests", "./..."); err2 != nil {
+			fmt.Fprintln(os.Stderr, "Some optional unparam problems found")
+			if len(out2) > 0 {
+				fmt.Fprintln(os.Stderr, out2)
+			}
+		}
+	}
 	return err
 }
 
