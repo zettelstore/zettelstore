@@ -1,4 +1,4 @@
-# How to build the Zettelstore
+# How to build Zettelstore
 ## Prerequisites
 You must install the following software:
 
