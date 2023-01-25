@@ -2,6 +2,9 @@
 
 <a name="0_11"></a>
 <h2>Changes for Version 0.11.0 (pending)</h2>
+  *  Remove ZJSON encoding. It was announced in version 0.10.0. Use Sexpr
+     encoding instead.
+     (breaking)
 
 <a name="0_10"></a>
 <h2>Changes for Version 0.10.0 (2023-01-24)</h2>

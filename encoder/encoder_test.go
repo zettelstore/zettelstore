@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -29,7 +29,6 @@ import (
 	_ "zettelstore.de/z/encoder/mdenc"    // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
 	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
-	_ "zettelstore.de/z/encoder/zjsonenc" // Allow to use ZJSON encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"   // Allow to use zmk encoder.
 	"zettelstore.de/z/parser/cleaner"
 	_ "zettelstore.de/z/parser/zettelmark" // Allow to use zettelmark parser.
@@ -46,7 +45,6 @@ type expectMap map[api.EncodingEnum]string
 
 const useZmk = "\000"
 const (
-	encoderZJSON = api.EncoderZJSON
 	encoderHTML  = api.EncoderHTML
 	encoderMD    = api.EncoderMD
 	encoderSexpr = api.EncoderSexpr

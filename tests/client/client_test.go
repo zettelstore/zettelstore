@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -171,7 +171,6 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	encodings := []api.EncodingEnum{
-		api.EncoderZJSON,
 		api.EncoderHTML,
 		api.EncoderSexpr,
 		api.EncoderText,

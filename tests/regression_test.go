@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-2023 Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -38,7 +38,6 @@ var encodings = []api.EncodingEnum{
 	api.EncoderHTML,
 	api.EncoderSexpr,
 	api.EncoderText,
-	api.EncoderZJSON,
 }
 
 func getFileBoxes(wd, kind string) (root string, boxes []box.ManagedBox) {
