@@ -7,6 +7,11 @@
      (breaking)
 
 <a name="0_10"></a>
+<h2>Changes for Version 0.10.1 (2023-01-30)</h2>
+  *  Show button to save a query into a zettel only when the current user has
+     authorization to do it.
+     (fix: webui)
+
 <h2>Changes for Version 0.10.0 (2023-01-24)</h2>
   *  Remove support for endpoints <tt>/j, /m, /q, /p, /v</tt>. Their functions
      are merged into endpoint <tt>/z</tt>. This was announced in version 0.9.0.
