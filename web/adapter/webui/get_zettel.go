@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,8 +11,8 @@
 package webui
 
 import (
-	"bytes"
 	"net/http"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
@@ -139,12 +139,12 @@ func formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
 	if found && val == "" {
 		return "", false
 	}
-	var buf bytes.Buffer
-	_, err := html.AttributeEscape(&buf, val)
+	var sb strings.Builder
+	_, err := html.AttributeEscape(&sb, val)
 	if err != nil {
 		return "", false
 	}
-	return buf.String(), true
+	return sb.String(), true
 }
 
 func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error) {
@@ -152,12 +152,12 @@ func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error
 		return "", nil
 	}
 
-	var buf bytes.Buffer
-	_, err := enc.WriteInlines(&buf, is)
+	var sb strings.Builder
+	_, err := enc.WriteInlines(&sb, is)
 	if err != nil {
 		return "", err
 	}
-	return buf.String(), nil
+	return sb.String(), nil
 }
 
 func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
@@ -175,9 +175,9 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 
 func (wui *WebUI) encodeIdentifierSet(m *meta.Meta, key string, getTextTitle getTextTitleFunc) string {
 	if value, ok := m.Get(key); ok {
-		var buf bytes.Buffer
-		wui.writeIdentifierSet(&buf, meta.ListFromValue(value), getTextTitle)
-		return buf.String()
+		var sb strings.Builder
+		wui.writeIdentifierSet(&sb, meta.ListFromValue(value), getTextTitle)
+		return sb.String()
 	}
 	return ""
 }

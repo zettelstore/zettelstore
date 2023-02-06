@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2023 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,7 +12,6 @@
 package webui
 
 import (
-	"bytes"
 	"context"
 	"net/http"
 	"strings"
@@ -370,9 +369,9 @@ func (wui *WebUI) calculateFooterHTML(ctx context.Context) string {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
 			htmlEnc := encoder.Create(api.EncoderHTML)
-			var buf bytes.Buffer
-			if _, err2 = htmlEnc.WriteBlocks(&buf, &zn.Ast); err2 == nil {
-				return buf.String()
+			var sb strings.Builder
+			if _, err2 = htmlEnc.WriteBlocks(&sb, &zn.Ast); err2 == nil {
+				return sb.String()
 			}
 		}
 	}
@@ -430,7 +429,7 @@ func (wui *WebUI) renderTemplateStatus(
 			wui.setToken(w, tok)
 		}
 	}
-	var content bytes.Buffer
+	var content strings.Builder
 	err = t.Render(&content, data)
 	if err == nil {
 		wui.prepareAndWriteHeader(w, code)

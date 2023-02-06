@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,13 +12,13 @@
 package tests
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -121,9 +121,9 @@ func checkMetaFile(t *testing.T, resultName string, zn *ast.ZettelNode, enc api.
 	t.Helper()
 
 	if enc := encoder.Create(enc); enc != nil {
-		var buf bytes.Buffer
-		enc.WriteMeta(&buf, zn.Meta, parser.ParseMetadata)
-		checkFileContent(t, resultName, buf.String())
+		var sf strings.Builder
+		enc.WriteMeta(&sf, zn.Meta, parser.ParseMetadata)
+		checkFileContent(t, resultName, sf.String())
 		return
 	}
 	panic(fmt.Sprintf("Unknown writer encoding %q", enc))

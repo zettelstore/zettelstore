@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -163,9 +163,9 @@ func writeTexts(w io.Writer, c *canvas, font string, scaleX, scaleY int) {
 }
 
 func escape(s string) string {
-	b := bytes.Buffer{}
-	strfun.XMLEscape(&b, s)
-	return b.String()
+	var sb strings.Builder
+	strfun.XMLEscape(&sb, s)
+	return sb.String()
 }
 
 type scaledPoint struct {

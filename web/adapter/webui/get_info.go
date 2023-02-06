@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"bytes"
 	"context"
 	"net/http"
 	"sort"
@@ -69,15 +68,15 @@ func (wui *WebUI) MakeGetInfoHandler(
 		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
 		for i, p := range pairs {
-			var buf bytes.Buffer
+			var sb strings.Builder
 			wui.writeHTMLMetaValue(
-				&buf, p.Key, p.Value,
+				&sb, p.Key, p.Value,
 				getTextTitle,
 				func(val string) ast.InlineSlice {
 					return evaluate.RunMetadata(ctx, val)
 				},
 				enc)
-			metaData[i] = metaDataInfo{p.Key, buf.String()}
+			metaData[i] = metaDataInfo{p.Key, sb.String()}
 		}
 		summary := collect.References(zn)
 		locLinks, qLinks, extLinks := splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))

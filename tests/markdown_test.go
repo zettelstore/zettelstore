@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -80,12 +81,12 @@ func createMDBlockSlice(markdown string, hi config.HTMLInsecurity) ast.BlockSlic
 }
 
 func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
-	var buf bytes.Buffer
+	var sb strings.Builder
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc).WriteBlocks(&buf, ast)
-			buf.Reset()
+			encoder.Create(enc).WriteBlocks(&sb, ast)
+			sb.Reset()
 		})
 	}
 }
@@ -129,12 +130,12 @@ func TestAdditionalMarkdown(t *testing.T) {
 		{`abc<br>def`, `abc@@<br>@@{="html"}def`},
 	}
 	zmkEncoder := encoder.Create(api.EncoderZmk)
-	var buf bytes.Buffer
+	var sb strings.Builder
 	for i, tc := range testcases {
 		ast := createMDBlockSlice(tc.md, config.MarkdownHTML)
-		buf.Reset()
-		zmkEncoder.WriteBlocks(&buf, &ast)
-		got := buf.String()
+		sb.Reset()
+		zmkEncoder.WriteBlocks(&sb, &ast)
+		got := sb.String()
 		if got != tc.exp {
 			t.Errorf("%d: %q -> %q, but got %q", i, tc.md, tc.exp, got)
 		}

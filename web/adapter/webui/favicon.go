@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -37,7 +37,7 @@ func (wui *WebUI) MakeFaviconHandler(baseDir string) http.HandlerFunc {
 			return
 		}
 
-		err = adapter.WriteBytes(w, data, "")
+		err = adapter.WriteData(w, data, "")
 		wui.log.IfErr(err).Msg("Write favicon")
 	}
 }

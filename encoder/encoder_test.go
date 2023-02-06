@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2023 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,8 +11,8 @@
 package encoder_test
 
 import (
-	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"codeberg.org/t73fde/sxpf"
@@ -135,11 +135,11 @@ type peInlines struct {
 }
 
 func (in peInlines) encode(encdr encoder.Encoder) (string, error) {
-	var buf bytes.Buffer
-	if _, err := encdr.WriteInlines(&buf, &in.is); err != nil {
+	var sb strings.Builder
+	if _, err := encdr.WriteInlines(&sb, &in.is); err != nil {
 		return "", err
 	}
-	return buf.String(), nil
+	return sb.String(), nil
 }
 
 func (peInlines) mode() string { return "inline" }
@@ -149,11 +149,11 @@ type peBlocks struct {
 }
 
 func (bl peBlocks) encode(encdr encoder.Encoder) (string, error) {
-	var buf bytes.Buffer
-	if _, err := encdr.WriteBlocks(&buf, &bl.bs); err != nil {
+	var sb strings.Builder
+	if _, err := encdr.WriteBlocks(&sb, &bl.bs); err != nil {
 		return "", err
 	}
-	return buf.String(), nil
+	return sb.String(), nil
 
 }
 func (peBlocks) mode() string { return "block" }

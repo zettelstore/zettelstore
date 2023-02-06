@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,7 @@
 package markdown
 
 import (
-	"bytes"
+	"strings"
 	"testing"
 
 	"zettelstore.de/z/ast"
@@ -31,20 +31,20 @@ func TestSplitText(t *testing.T) {
 		{" abc def ", "S TabcS TdefS "},
 	}
 	for i, tc := range testcases {
-		var buf bytes.Buffer
+		var sb strings.Builder
 		for _, in := range splitText(tc.text) {
 			switch n := in.(type) {
 			case *ast.TextNode:
-				buf.WriteByte('T')
-				buf.WriteString(n.Text)
+				sb.WriteByte('T')
+				sb.WriteString(n.Text)
 			case *ast.SpaceNode:
-				buf.WriteByte('S')
-				buf.WriteString(n.Lexeme)
+				sb.WriteByte('S')
+				sb.WriteString(n.Lexeme)
 			default:
-				buf.WriteByte('Q')
+				sb.WriteByte('Q')
 			}
 		}
-		got := buf.String()
+		got := sb.String()
 		if tc.exp != got {
 			t.Errorf("TC=%d, text=%q, exp=%q, got=%q", i, tc.text, tc.exp, got)
 		}

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,7 +12,6 @@
 package strfun
 
 import (
-	"bytes"
 	"strings"
 	"unicode/utf8"
 )
@@ -36,14 +35,14 @@ func JustifyLeft(s string, maxLen int, pad rune) string {
 		runes[maxLen-1] = '\u2025'
 	}
 
-	var buf bytes.Buffer
+	var sb strings.Builder
 	for _, r := range runes {
-		buf.WriteRune(r)
+		sb.WriteRune(r)
 	}
 	for i := 0; i < maxLen-len(runes); i++ {
-		buf.WriteRune(pad)
+		sb.WriteRune(pad)
 	}
-	return buf.String()
+	return sb.String()
 }
 
 // SplitLines splits the given string into a list of lines.

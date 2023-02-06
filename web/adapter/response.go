@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -20,8 +20,8 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
-// WriteBytes emits the given data to the response writer.
-func WriteBytes(w http.ResponseWriter, data []byte, contentType string) error {
+// WriteData emits the given data to the response writer.
+func WriteData(w http.ResponseWriter, data []byte, contentType string) error {
 	if len(data) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return nil

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -21,7 +21,6 @@
 package template_test
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -212,9 +211,9 @@ func parseString(data string) (*template.Template, error) {
 }
 
 func render(tmpl *template.Template, data interface{}) (string, error) {
-	var buf bytes.Buffer
-	err := tmpl.Render(&buf, data)
-	return buf.String(), err
+	var sf strings.Builder
+	err := tmpl.Render(&sf, data)
+	return sf.String(), err
 }
 
 func renderString(data string, errMissing bool, value interface{}) (string, error) {

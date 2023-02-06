@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,8 +11,8 @@
 package id
 
 import (
-	"bytes"
 	"sort"
+	"strings"
 )
 
 // Slice is a sequence of zettel identifier. A special case is a sorted slice.
@@ -56,12 +56,12 @@ func (zs Slice) String() string {
 	if len(zs) == 0 {
 		return ""
 	}
-	var buf bytes.Buffer
+	var sb strings.Builder
 	for i, zid := range zs {
 		if i > 0 {
-			buf.WriteByte(' ')
+			sb.WriteByte(' ')
 		}
-		buf.WriteString(zid.String())
+		sb.WriteString(zid.String())
 	}
-	return buf.String()
+	return sb.String()
 }

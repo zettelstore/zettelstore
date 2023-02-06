@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 
 	gm "github.com/yuin/goldmark"
 	gmAst "github.com/yuin/goldmark/ast"
@@ -333,7 +334,7 @@ var ignoreAfterBS = map[byte]struct{}{
 // cleanText removes backslashes from TextNodes and expands entities
 func cleanText(text []byte, cleanBS bool) string {
 	lastPos := 0
-	var buf bytes.Buffer
+	var sb strings.Builder
 	for pos, ch := range text {
 		if pos < lastPos {
 			continue
@@ -341,24 +342,24 @@ func cleanText(text []byte, cleanBS bool) string {
 		if ch == '&' {
 			inp := input.NewInput([]byte(text[pos:]))
 			if s, ok := inp.ScanEntity(); ok {
-				buf.Write(text[lastPos:pos])
-				buf.WriteString(s)
+				sb.Write(text[lastPos:pos])
+				sb.WriteString(s)
 				lastPos = pos + inp.Pos
 			}
 			continue
 		}
 		if cleanBS && ch == '\\' && pos < len(text)-1 {
 			if _, found := ignoreAfterBS[text[pos+1]]; found {
-				buf.Write(text[lastPos:pos])
-				buf.WriteByte(text[pos+1])
+				sb.Write(text[lastPos:pos])
+				sb.WriteByte(text[pos+1])
 				lastPos = pos + 2
 			}
 		}
 	}
 	if lastPos < len(text) {
-		buf.Write(text[lastPos:])
+		sb.Write(text[lastPos:])
 	}
-	return buf.String()
+	return sb.String()
 }
 
 func (p *mdP) acceptCodeSpan(node *gmAst.CodeSpan) ast.InlineSlice {
@@ -436,15 +437,15 @@ func (p *mdP) acceptImage(node *gmAst.Image) ast.InlineSlice {
 
 func (p *mdP) flattenInlineSlice(node gmAst.Node) ast.InlineSlice {
 	is := p.acceptInlineChildren(node)
-	var buf bytes.Buffer
-	_, err := p.textEnc.WriteInlines(&buf, &is)
+	var sb strings.Builder
+	_, err := p.textEnc.WriteInlines(&sb, &is)
 	if err != nil {
 		panic(err)
 	}
-	if buf.Len() == 0 {
+	if sb.Len() == 0 {
 		return nil
 	}
-	return ast.InlineSlice{&ast.TextNode{Text: buf.String()}}
+	return ast.InlineSlice{&ast.TextNode{Text: sb.String()}}
 }
 
 func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {

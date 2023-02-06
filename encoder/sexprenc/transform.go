@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022-2023 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,10 +11,10 @@
 package sexprenc
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"log"
+	"strings"
 
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/attrs"
@@ -459,14 +459,14 @@ func mapGetS[T comparable](m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
 }
 
 func getBase64String(data []byte) *sxpf.String {
-	var buf bytes.Buffer
-	encoder := base64.NewEncoder(base64.StdEncoding, &buf)
+	var sb strings.Builder
+	encoder := base64.NewEncoder(base64.StdEncoding, &sb)
 	_, err := encoder.Write(data)
 	if err == nil {
 		err = encoder.Close()
 	}
 	if err == nil {
-		return sxpf.NewString(buf.String())
+		return sxpf.NewString(sb.String())
 	}
 	return nil
 }

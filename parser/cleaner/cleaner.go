@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,8 +12,8 @@
 package cleaner
 
 import (
-	"bytes"
 	"strconv"
+	"strings"
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder/textenc"
@@ -137,12 +137,12 @@ func (cv *cleanVisitor) visitHeading(hn *ast.HeadingNode) {
 		return
 	}
 	if hn.Slug == "" {
-		var buf bytes.Buffer
-		_, err := cv.textEnc.WriteInlines(&buf, &hn.Inlines)
+		var sb strings.Builder
+		_, err := cv.textEnc.WriteInlines(&sb, &hn.Inlines)
 		if err != nil {
 			return
 		}
-		hn.Slug = strfun.Slugify(buf.String())
+		hn.Slug = strfun.Slugify(sb.String())
 	}
 	if hn.Slug != "" {
 		hn.Fragment = cv.addIdentifier(hn.Slug, hn)

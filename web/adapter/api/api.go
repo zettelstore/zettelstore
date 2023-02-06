@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -81,7 +81,7 @@ func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {
 }
 
 func writeBuffer(w http.ResponseWriter, buf *bytes.Buffer, contentType string) error {
-	return adapter.WriteBytes(w, buf.Bytes(), contentType)
+	return adapter.WriteData(w, buf.Bytes(), contentType)
 }
 
 func (a *API) getRights(ctx context.Context, m *meta.Meta) (result api.ZettelRights) {

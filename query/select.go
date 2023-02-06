@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,6 @@
 package query
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"unicode/utf8"
@@ -278,11 +277,11 @@ func zmk2text(zmk string) string {
 		}
 	}
 	is := parser.ParseMetadata(zmk)
-	var buf bytes.Buffer
-	if _, err := textenc.Create().WriteInlines(&buf, &is); err != nil {
+	var sb strings.Builder
+	if _, err := textenc.Create().WriteInlines(&sb, &is); err != nil {
 		return strings.ToLower(zmk)
 	}
-	return strings.ToLower(buf.String())
+	return strings.ToLower(sb.String())
 }
 
 func preprocessSet(set []expValue) [][]expValue {

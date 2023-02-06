@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2023 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -13,7 +13,6 @@ package main
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -33,7 +32,7 @@ var directProxy = []string{"GOPROXY=direct"}
 
 func executeCommand(env []string, name string, arg ...string) (string, error) {
 	logCommand("EXEC", env, name, arg)
-	var out bytes.Buffer
+	var out strings.Builder
 	cmd := prepareCommand(env, name, arg, &out)
 	err := cmd.Run()
 	return out.String(), err
@@ -238,7 +237,7 @@ func checkFossilExtra() error {
 
 type zsInfo struct {
 	cmd          *exec.Cmd
-	out          bytes.Buffer
+	out          strings.Builder
 	adminAddress string
 }
 

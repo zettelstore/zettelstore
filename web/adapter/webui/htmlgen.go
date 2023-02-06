@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022-2023 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"bytes"
 	"strings"
 
 	"codeberg.org/t73fde/sxpf"
@@ -71,7 +70,7 @@ var mapMetaKey = map[string]string{
 
 func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
-	var buf bytes.Buffer
+	var buf strings.Builder
 
 	if tags, ok := m.Get(api.KeyTags); ok {
 		writeMetaTags(&buf, tags)
@@ -99,7 +98,7 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	}
 	return buf.String()
 }
-func writeMetaTags(buf *bytes.Buffer, tags string) {
+func writeMetaTags(buf *strings.Builder, tags string) {
 	buf.WriteString(`<meta name="keywords" content="`)
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -116,14 +115,14 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 		return "", nil
 	}
 	lst := sexprenc.GetSexpr(bs)
-	var buf bytes.Buffer
-	g.env.ReplaceWriter(&buf)
+	var sb strings.Builder
+	g.env.ReplaceWriter(&sb)
 	sxpf.Eval(g.env, lst)
 	if g.env.GetError() == nil {
 		g.env.WriteEndnotes()
 	}
 	g.env.ReplaceWriter(nil)
-	return buf.String(), g.env.GetError()
+	return sb.String(), g.env.GetError()
 }
 
 // InlinesString writes an inline slice to the writer

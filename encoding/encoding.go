@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,7 +12,7 @@
 package encoding
 
 import (
-	"bytes"
+	"strings"
 	"time"
 
 	"zettelstore.de/c/api"
@@ -44,7 +44,7 @@ var textEnc = textenc.Create()
 
 // TitleAsText returns the title of a zettel as plain text
 func TitleAsText(m *meta.Meta) string {
-	var title bytes.Buffer
+	var title strings.Builder
 	titleIns := parser.ParseMetadata(m.GetTitle())
 	if _, err := textEnc.WriteInlines(&title, &titleIns); err != nil {
 		return m.GetTitle()

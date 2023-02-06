@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,9 +12,9 @@
 package zmkenc
 
 import (
-	"bytes"
 	"fmt"
 	"io"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
@@ -345,9 +345,9 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 		v.b.WriteString("\n@@@\n")
 		return
 	}
-	var buf bytes.Buffer
-	v.textEnc.WriteInlines(&buf, &bn.Description)
-	v.b.WriteStrings("%% Unable to display BLOB with description '", buf.String(), "' and syntax '", bn.Syntax, "'.")
+	var sb strings.Builder
+	v.textEnc.WriteInlines(&sb, &bn.Description)
+	v.b.WriteStrings("%% Unable to display BLOB with description '", sb.String(), "' and syntax '", bn.Syntax, "'.")
 }
 
 var escapeSeqs = strfun.NewSet(

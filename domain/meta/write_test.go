@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,6 @@
 package meta_test
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
@@ -37,9 +36,9 @@ func newMeta(title string, tags []string, syntax string) *meta.Meta {
 }
 func assertWriteMeta(t *testing.T, m *meta.Meta, expected string) {
 	t.Helper()
-	var buf bytes.Buffer
-	m.Write(&buf)
-	if got := buf.String(); got != expected {
+	var sb strings.Builder
+	m.Write(&sb)
+	if got := sb.String(); got != expected {
 		t.Errorf("\nExp: %q\ngot: %q", expected, got)
 	}
 }

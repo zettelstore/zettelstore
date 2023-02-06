@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -12,7 +12,6 @@
 package meta
 
 import (
-	"bytes"
 	"regexp"
 	"sort"
 	"strings"
@@ -405,20 +404,20 @@ func RemoveNonGraphic(s string) string {
 		return ""
 	}
 	pos := 0
-	var buf bytes.Buffer
+	var sb strings.Builder
 	for pos < len(s) {
 		nextPos := strings.IndexFunc(s[pos:], func(r rune) bool { return !unicode.IsGraphic(r) })
 		if nextPos < 0 {
 			break
 		}
-		buf.WriteString(s[pos:nextPos])
-		buf.WriteByte(' ')
+		sb.WriteString(s[pos:nextPos])
+		sb.WriteByte(' ')
 		_, size := utf8.DecodeRuneInString(s[nextPos:])
 		pos = nextPos + size
 	}
 	if pos == 0 {
 		return strings.TrimSpace(s)
 	}
-	buf.WriteString(s[pos:])
-	return strings.TrimSpace(buf.String())
+	sb.WriteString(s[pos:])
+	return strings.TrimSpace(sb.String())
 }

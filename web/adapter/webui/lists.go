@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -198,7 +197,7 @@ func (wui *WebUI) listTitleQuery(q *query.Query) string {
 	if q == nil {
 		return wui.rtConfig.GetSiteName()
 	}
-	var buf bytes.Buffer
-	q.PrintHuman(&buf)
-	return buf.String()
+	var sb strings.Builder
+	q.PrintHuman(&sb)
+	return sb.String()
 }
