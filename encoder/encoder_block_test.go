@@ -18,6 +18,7 @@ var tcsBlock = []zmkTestCase{
 			encoderHTML:  "",
 			encoderMD:    "",
 			encoderSexpr: `()`,
+			encoderSHTML: `()`,
 			encoderText:  "",
 			encoderZmk:   useZmk,
 		},
@@ -319,6 +320,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  ``,
 			encoderSexpr: `()`,
+			encoderSHTML: `()`,
 			encoderText:  "",
 			encoderZmk:   useZmk,
 		},

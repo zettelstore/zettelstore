@@ -26,6 +26,7 @@ import (
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/mdenc"
 	_ "zettelstore.de/z/encoder/sexprenc"
+	_ "zettelstore.de/z/encoder/shtmlenc"
 	_ "zettelstore.de/z/encoder/textenc"
 	_ "zettelstore.de/z/encoder/zmkenc"
 	"zettelstore.de/z/input"

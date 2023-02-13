@@ -21,6 +21,7 @@ import (
 	_ "zettelstore.de/z/encoder/htmlenc"   // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/mdenc"     // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/sexprenc"  // Allow to use sexpr encoder.
+	_ "zettelstore.de/z/encoder/shtmlenc"  // Allow to use SHTML encoder.
 	_ "zettelstore.de/z/encoder/textenc"   // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"    // Allow to use zmk encoder.
 	_ "zettelstore.de/z/kernel/impl"       // Allow kernel implementation to create itself
