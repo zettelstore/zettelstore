@@ -14,10 +14,13 @@ package shtmlenc
 import (
 	"io"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/sexprenc"
 )
 
 func init() {
@@ -47,16 +50,25 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	if len(*bs) == 0 {
-		return io.WriteString(w, "()")
+	hval, err := transformNode(bs)
+	if err != nil {
+		return 0, err
 	}
-	return 0, nil
+	return hval.Print(w)
 }
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	if len(*is) == 0 {
-		return io.WriteString(w, "()")
+	hval, err := transformNode(is)
+	if err != nil {
+		return 0, err
 	}
-	return 0, nil
+	return hval.Print(w)
+}
+
+func transformNode(node ast.Node) (*sxpf.List, error) {
+	tx := sexprenc.NewTransformer()
+	xval := tx.GetSexpr(node)
+	th := shtml.NewTransformer()
+	return th.Transform(xval)
 }
