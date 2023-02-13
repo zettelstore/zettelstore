@@ -13,16 +13,12 @@ package webui
 import (
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
-	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
-	"zettelstore.de/z/query"
 	"zettelstore.de/z/strfun"
 )
 
@@ -48,18 +44,18 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 		env:       env,
 	}
 
-	env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
-	env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
-	env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
-	env.Builtins.Set(sexpr.SymLinkQuery, sxpf.NewBuiltin("linkQ", true, 2, -1, gen.generateLinkQuery))
-	env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("linkE", true, 2, -1, gen.generateLinkExternal))
+	// env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
+	// env.Builtins.Set(sexpr.SymLinkFound, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
+	// env.Builtins.Set(sexpr.SymLinkBased, sxpf.NewBuiltin("linkB", true, 2, -1, gen.generateLinkBased))
+	// env.Builtins.Set(sexpr.SymLinkQuery, sxpf.NewBuiltin("linkQ", true, 2, -1, gen.generateLinkQuery))
+	// env.Builtins.Set(sexpr.SymLinkExternal, sxpf.NewBuiltin("linkE", true, 2, -1, gen.generateLinkExternal))
 
-	f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
-	if err != nil {
-		panic(err)
-	}
-	b := f.(*sxpf.Builtin)
-	env.Builtins.Set(sexpr.SymEmbed, sxpf.NewBuiltin(b.Name(), true, 3, -1, gen.makeGenerateEmbed(b.GetValue())))
+	// f, err := env.Builtins.LookupForm(sexpr.SymEmbed)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// b := f.(*sxpf.Builtin)
+	// env.Builtins.Set(sexpr.SymEmbed, sxpf.NewBuiltin(b.Name(), true, 3, -1, gen.makeGenerateEmbed(b.GetValue())))
 	return gen
 }
 
@@ -111,83 +107,85 @@ func writeMetaTags(buf *strings.Builder, tags string) {
 
 // BlocksString encodes a block slice.
 func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
-	if bs == nil || len(*bs) == 0 {
-		return "", nil
-	}
-	lst := sexprenc.GetSexpr(bs)
-	var sb strings.Builder
-	g.env.ReplaceWriter(&sb)
-	sxpf.Eval(g.env, lst)
-	if g.env.GetError() == nil {
-		g.env.WriteEndnotes()
-	}
-	g.env.ReplaceWriter(nil)
-	return sb.String(), g.env.GetError()
+	return "<pre>No Block</pre>", nil
+	// if bs == nil || len(*bs) == 0 {
+	// 	return "", nil
+	// }
+	// lst := sexprenc.GetSexpr(bs)
+	// var sb strings.Builder
+	// g.env.ReplaceWriter(&sb)
+	// sxpf.Eval(g.env, lst)
+	// if g.env.GetError() == nil {
+	// 	g.env.WriteEndnotes()
+	// }
+	// g.env.ReplaceWriter(nil)
+	// return sb.String(), g.env.GetError()
 }
 
 // InlinesString writes an inline slice to the writer
 func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
-	if is == nil || len(*is) == 0 {
-		return ""
-	}
-	return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false)
+	return "<span>No Inline</span>"
+	// if is == nil || len(*is) == 0 {
+	// 	return ""
+	// }
+	// return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false)
 }
 
-func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
-	env := senv.(*html.EncEnvironment)
-	if a, refValue, ok := html.PrepareLink(env, args); ok {
-		zid, fragment, hasFragment := strings.Cut(refValue, "#")
-		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
-		if hasFragment {
-			u = u.SetFragment(fragment)
-		}
-		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
-	}
-	return nil, nil
-}
+// func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+// 	env := senv.(*html.EncEnvironment)
+// 	if a, refValue, ok := html.PrepareLink(env, args); ok {
+// 		zid, fragment, hasFragment := strings.Cut(refValue, "#")
+// 		u := g.builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
+// 		if hasFragment {
+// 			u = u.SetFragment(fragment)
+// 		}
+// 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
+// 	}
+// 	return nil, nil
+// }
 
-func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
-	env := senv.(*html.EncEnvironment)
-	if a, refValue, ok := html.PrepareLink(env, args); ok {
-		u := g.builder.NewURLBuilder('/').SetRawLocal(refValue)
-		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
-	}
-	return nil, nil
-}
+// func (g *htmlGenerator) generateLinkBased(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+// 	env := senv.(*html.EncEnvironment)
+// 	if a, refValue, ok := html.PrepareLink(env, args); ok {
+// 		u := g.builder.NewURLBuilder('/').SetRawLocal(refValue)
+// 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
+// 	}
+// 	return nil, nil
+// }
 
-func (g *htmlGenerator) generateLinkQuery(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
-	env := senv.(*html.EncEnvironment)
-	if a, refValue, ok := html.PrepareLink(env, args); ok {
-		queryExpr := query.Parse(refValue).String()
-		u := g.builder.NewURLBuilder('h').AppendQuery(queryExpr)
-		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
-	}
-	return nil, nil
-}
+// func (g *htmlGenerator) generateLinkQuery(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+// 	env := senv.(*html.EncEnvironment)
+// 	if a, refValue, ok := html.PrepareLink(env, args); ok {
+// 		queryExpr := query.Parse(refValue).String()
+// 		u := g.builder.NewURLBuilder('h').AppendQuery(queryExpr)
+// 		html.WriteLink(env, args, a.Set("href", u.String()), refValue, "")
+// 	}
+// 	return nil, nil
+// }
 
-func (g *htmlGenerator) generateLinkExternal(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
-	env := senv.(*html.EncEnvironment)
-	if a, refValue, ok := html.PrepareLink(env, args); ok {
-		a = a.Set("href", refValue).
-			AddClass("external").
-			Set("target", "_blank").
-			Set("rel", "noopener noreferrer")
-		html.WriteLink(env, args, a, refValue, g.extMarker)
-	}
-	return nil, nil
-}
+// func (g *htmlGenerator) generateLinkExternal(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
+// 	env := senv.(*html.EncEnvironment)
+// 	if a, refValue, ok := html.PrepareLink(env, args); ok {
+// 		a = a.Set("href", refValue).
+// 			AddClass("external").
+// 			Set("target", "_blank").
+// 			Set("rel", "noopener noreferrer")
+// 		html.WriteLink(env, args, a, refValue, g.extMarker)
+// 	}
+// 	return nil, nil
+// }
 
-func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
-	return func(senv sxpf.Environment, args *sxpf.Pair, arity int) (sxpf.Value, error) {
-		env := senv.(*html.EncEnvironment)
-		ref := env.GetPair(args.GetTail())
-		refValue := env.GetString(ref.GetTail())
-		zid := api.ZettelID(refValue)
-		if !zid.IsValid() {
-			return oldFn(senv, args, arity)
-		}
-		u := g.builder.NewURLBuilder('z').SetZid(zid)
-		env.WriteImageWithSource(args, u.String())
-		return nil, nil
-	}
-}
+// func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
+// 	return func(senv sxpf.Environment, args *sxpf.Pair, arity int) (sxpf.Value, error) {
+// 		env := senv.(*html.EncEnvironment)
+// 		ref := env.GetPair(args.GetTail())
+// 		refValue := env.GetString(ref.GetTail())
+// 		zid := api.ZettelID(refValue)
+// 		if !zid.IsValid() {
+// 			return oldFn(senv, args, arity)
+// 		}
+// 		u := g.builder.NewURLBuilder('z').SetZid(zid)
+// 		env.WriteImageWithSource(args, u.String())
+// 		return nil, nil
+// 	}
+// }

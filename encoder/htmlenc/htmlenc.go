@@ -15,13 +15,11 @@ import (
 	"io"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
 )
 
@@ -113,12 +111,12 @@ func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta enc
 }
 
 func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) error {
-	lst := sexprenc.GetSexpr(bs)
-	sxpf.Eval(env, lst)
+	// lst := sexprenc.GetSexpr(bs)
+	// sxpf.Eval(env, lst)
 	return env.GetError()
 }
 func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) error {
-	lst := sexprenc.GetSexpr(is)
-	sxpf.Eval(env, lst)
+	// lst := sexprenc.GetSexpr(is)
+	// sxpf.Eval(env, lst)
 	return env.GetError()
 }

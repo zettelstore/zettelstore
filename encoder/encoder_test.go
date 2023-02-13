@@ -16,8 +16,8 @@ import (
 	"testing"
 
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
@@ -105,16 +105,12 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := sxpf.ParseString(sexpr.Smk, exp)
+	val, err := reader.MakeReader(strings.NewReader(exp), sxpf.MakeMappedFactory()).Read()
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	got, err := sxpf.Repr(val)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	got := val.Repr()
 	if exp != got {
 		prefix := fmt.Sprintf("Test #%d", testNum)
 		if d := descr; d != "" {
