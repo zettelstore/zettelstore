@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2023 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -30,6 +30,7 @@ var tcsBlock = []zmkTestCase{
 			encoderHTML:  "<p>Hello, world</p>",
 			encoderMD:    "Hello, world",
 			encoderSexpr: `((PARA (TEXT "Hello,") (SPACE) (TEXT "world")))`,
+			encoderSHTML: `((p "Hello," " " "world"))`,
 			encoderText:  "Hello, world",
 			encoderZmk:   useZmk,
 		},
@@ -63,6 +64,7 @@ var tcsBlock = []zmkTestCase{
 			encoderHTML:  "<h2 id=\"top\">Top</h2>",
 			encoderMD:    "# Top",
 			encoderSexpr: `((HEADING 1 () "top" "top" (TEXT "Top")))`,
+			encoderSHTML: `((h2 (@ {id "top"}) "Top"))`,
 			encoderText:  `Top`,
 			encoderZmk:   useZmk,
 		},

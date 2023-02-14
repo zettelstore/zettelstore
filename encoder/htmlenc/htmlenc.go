@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022-2023 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -15,11 +15,14 @@ import (
 	"io"
 	"strings"
 
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/shtmlenc"
 	"zettelstore.de/z/encoder/textenc"
 )
 
@@ -82,11 +85,22 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks encodes a block slice.
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	env := html.NewEncEnvironment(w, 1)
-	err := acceptBlocks(env, bs)
+	hval, err := shtmlenc.TransformSlice(bs)
 	if err == nil {
-		env.WriteEndnotes()
-		err = env.GetError()
+		sf := sxpf.FindSymbolFactory(hval)
+		if sf == nil {
+			return 0, nil
+		}
+		gen := sxhtml.NewGenerator(sf)
+		length := 0
+		for elem := hval; elem != nil; elem = elem.Tail() {
+			length, err = gen.WriteHTML(w, elem.Head())
+			if err != nil {
+				return length, err
+			}
+		}
+		// WriteEndNotes
+		return length, nil
 	}
 	return 0, err
 }

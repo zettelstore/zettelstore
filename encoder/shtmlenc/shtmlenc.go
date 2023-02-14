@@ -36,12 +36,29 @@ var mySE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	return 0, nil
+	tx := sexprenc.NewTransformer()
+	th := shtml.NewTransformer(1)
+	metaSHTML, err := th.Transform(tx.GetMeta(zn.InhMeta, evalMeta))
+	if err != nil {
+		return 0, err
+	}
+	contentSHTML, err := th.Transform(tx.GetSexpr(&zn.Ast))
+	if err != nil {
+		return 0, err
+	}
+	result := sxpf.MakePair(metaSHTML, contentSHTML)
+	return result.Print(w)
 }
 
 // WriteMeta encodes meta data as s-expression.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	return 0, nil
+	tx := sexprenc.NewTransformer()
+	th := shtml.NewTransformer(1)
+	metaSHTML, err := th.Transform(tx.GetMeta(m, evalMeta))
+	if err != nil {
+		return 0, err
+	}
+	return metaSHTML.Print(w)
 }
 
 func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -50,7 +67,7 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hval, err := transformNode(bs)
+	hval, err := TransformSlice(bs)
 	if err != nil {
 		return 0, err
 	}
@@ -59,16 +76,17 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hval, err := transformNode(is)
+	hval, err := TransformSlice(is)
 	if err != nil {
 		return 0, err
 	}
 	return hval.Print(w)
 }
 
-func transformNode(node ast.Node) (*sxpf.List, error) {
+// TransformSlice transforms a AST slice into SHTML.
+func TransformSlice(node ast.Node) (*sxpf.List, error) {
 	tx := sexprenc.NewTransformer()
 	xval := tx.GetSexpr(node)
-	th := shtml.NewTransformer()
+	th := shtml.NewTransformer(1)
 	return th.Transform(xval)
 }
