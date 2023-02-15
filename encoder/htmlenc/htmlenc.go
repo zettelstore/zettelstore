@@ -87,11 +87,7 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	hval, err := shtmlenc.TransformSlice(bs)
 	if err == nil {
-		sf := sxpf.FindSymbolFactory(hval)
-		if sf == nil {
-			return 0, nil
-		}
-		gen := sxhtml.NewGenerator(sf)
+		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
 		length := 0
 		for elem := hval; elem != nil; elem = elem.Tail() {
 			length, err = gen.WriteHTML(w, elem.Head())
@@ -107,8 +103,19 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	env := html.NewEncEnvironment(w, 1)
-	return 0, acceptInlines(env, is)
+	hval, err := shtmlenc.TransformSlice(is)
+	if err == nil {
+		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
+		length := 0
+		for elem := hval; elem != nil; elem = elem.Tail() {
+			length, err = gen.WriteHTML(w, elem.Head())
+			if err != nil {
+				return length, err
+			}
+		}
+		return length, nil
+	}
+	return 0, err
 }
 
 func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta encoder.EvalMetaFunc) {

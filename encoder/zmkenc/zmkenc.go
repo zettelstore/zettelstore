@@ -394,6 +394,9 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		ast.Walk(v, &ln.Inlines)
 		v.b.WriteByte('|')
 	}
+	if ln.Ref.State == ast.RefStateBased {
+		v.b.WriteByte('/')
+	}
 	v.b.WriteStrings(ln.Ref.String(), "]]")
 }
 

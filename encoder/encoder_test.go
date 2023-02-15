@@ -79,9 +79,6 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 
 func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, expected expectMap, zmkDefault string) {
 	for enc, exp := range expected {
-		if enc == encoderHTML { // Temporary, until SHTML encoder works
-			continue
-		}
 		encdr := encoder.Create(enc)
 		got, err := pe.encode(encdr)
 		if err != nil {
