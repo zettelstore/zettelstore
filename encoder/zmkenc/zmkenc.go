@@ -422,7 +422,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.b.WriteStrings("[@", cn.Key)
 	if len(cn.Inlines) > 0 {
-		v.b.WriteString(", ")
+		v.b.WriteByte(' ')
 		ast.Walk(v, &cn.Inlines)
 	}
 	v.b.WriteByte(']')
