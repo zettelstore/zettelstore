@@ -289,7 +289,12 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 
 		for _, b := range descr.Descriptions {
 			v.b.WriteString("\n: ")
-			ast.WalkDescriptionSlice(v, b)
+			for jj, dn := range b {
+				if jj > 0 {
+					v.b.WriteString("\n\n  ")
+				}
+				ast.Walk(v, dn)
+			}
 		}
 	}
 }
