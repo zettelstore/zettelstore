@@ -400,7 +400,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf
 		}
 		lstVals = append(lstVals, sxpf.Nil().Cons(val).Cons(strKey).Cons(symType))
 	}
-	return sxpf.MakeList(lstVals...)
+	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymMeta)
 }
 
 func mapGetS[T comparable](t *Transformer, m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {

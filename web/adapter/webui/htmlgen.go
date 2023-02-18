@@ -11,13 +11,19 @@
 package webui
 
 import (
+	"io"
 	"strings"
 
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
+	"zettelstore.de/c/attrs"
+	"zettelstore.de/c/maps"
+	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/strfun"
 )
@@ -29,19 +35,20 @@ type urlBuilder interface {
 }
 
 type htmlGenerator struct {
+	tx        *sexprenc.Transformer
+	th        *shtml.Transformer
 	builder   urlBuilder
 	textEnc   *textenc.Encoder
 	extMarker string
-	env       *html.EncEnvironment
 }
 
 func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
-	env := html.NewEncEnvironment(nil, 1)
 	gen := &htmlGenerator{
+		tx:        sexprenc.NewTransformer(),
+		th:        shtml.NewTransformer(1),
 		builder:   builder,
 		textEnc:   textenc.Create(),
 		extMarker: extMarker,
-		env:       env,
 	}
 
 	// env.Builtins.Set(sexpr.SymLinkZettel, sxpf.NewBuiltin("linkZ", true, 2, -1, gen.generateLinkZettel))
@@ -65,70 +72,119 @@ var mapMetaKey = map[string]string{
 }
 
 func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
-	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
-	var buf strings.Builder
+	tm := g.tx.GetMeta(m, evalMeta)
+	hm, err := g.th.Transform(tm)
+	if err != nil {
+		return ""
+	}
 
+	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
+	metaMap := make(map[string]*sxpf.List, m.Length())
 	if tags, ok := m.Get(api.KeyTags); ok {
-		writeMetaTags(&buf, tags)
+		metaMap[api.KeyTags] = g.transformMetaTags(tags)
 		ignore.Set(api.KeyTags)
 	}
 
-	for _, p := range m.ComputedPairs() {
-		key := p.Key
-		if ignore.Has(key) {
+	for elem := hm; elem != nil; elem = elem.Tail() {
+		mlst, ok := elem.Head().(*sxpf.List)
+		if !ok {
 			continue
 		}
-		if altKey, found := mapMetaKey[key]; found {
-			buf.WriteString(`<meta name="`)
-			buf.WriteString(altKey)
-		} else {
-			buf.WriteString(`<meta name="zs-`)
-			buf.WriteString(key)
+		att, ok := mlst.Tail().Head().(*sxpf.List)
+		if !ok {
+			continue
 		}
-		buf.WriteString(`" content="`)
-		is := evalMeta(p.Value)
-		var sb strings.Builder
-		g.textEnc.WriteInlines(&sb, &is)
-		html.AttributeEscape(&buf, sb.String())
-		buf.WriteString("\">\n")
+		if !att.Head().IsEqual(g.th.Make("@")) {
+			continue
+		}
+		a := make(attrs.Attributes, 32)
+		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
+			if p, ok2 := aelem.Head().(*sxpf.Pair); ok2 {
+				a = a.Set(p.Car().String(), p.Cdr().String())
+			}
+		}
+		name, found := a.Get("name")
+		if !found || ignore.Has(name) {
+			continue
+		}
+		var newName string
+		if altName, found2 := mapMetaKey[name]; found2 {
+			newName = altName
+		} else {
+			newName = "zs-" + name
+		}
+		a = a.Set("name", newName)
+		metaMap[newName] = g.th.TransformMeta(a)
 	}
-	return buf.String()
+	result := sxpf.Nil()
+	keys := maps.Keys(metaMap)
+	for i := len(keys) - 1; i >= 0; i-- {
+		result = result.Cons(metaMap[keys[i]])
+	}
+
+	var sb strings.Builder
+	_ = generateHTML(&sb, result)
+	return sb.String()
 }
-func writeMetaTags(buf *strings.Builder, tags string) {
-	buf.WriteString(`<meta name="keywords" content="`)
+func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
+	var sb strings.Builder
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
-			buf.WriteString(", ")
+			sb.WriteString(", ")
 		}
-		html.AttributeEscape(buf, strings.TrimPrefix(val, "#"))
+		sb.WriteString(strings.TrimPrefix(val, "#"))
 	}
-	buf.WriteString("\">\n")
+	metaTags := sb.String()
+	if len(metaTags) == 0 {
+		return sxpf.Nil()
+	}
+	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
 }
 
 // BlocksString encodes a block slice.
 func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
-	return "<pre>No Block</pre>", nil
-	// if bs == nil || len(*bs) == 0 {
-	// 	return "", nil
-	// }
-	// lst := sexprenc.GetSexpr(bs)
-	// var sb strings.Builder
-	// g.env.ReplaceWriter(&sb)
-	// sxpf.Eval(g.env, lst)
-	// if g.env.GetError() == nil {
-	// 	g.env.WriteEndnotes()
-	// }
-	// g.env.ReplaceWriter(nil)
-	// return sb.String(), g.env.GetError()
+	if bs == nil || len(*bs) == 0 {
+		return "", nil
+	}
+	sx := g.tx.GetSexpr(bs)
+	sh, err := g.th.Transform(sx)
+	if err != nil {
+		return "", err
+	}
+	var sb strings.Builder
+	err = generateHTML(&sb, sh)
+	if err != nil {
+		return sb.String(), err
+	}
+
+	// WriteEndnotes
+	return sb.String(), nil
 }
 
 // InlinesString writes an inline slice to the writer
 func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
-	return "<span>No Inline</span>"
-	// if is == nil || len(*is) == 0 {
-	// 	return ""
-	// }
-	// return html.EvaluateInline(g.env, sexprenc.GetSexpr(is), true, false)
+	if is == nil || len(*is) == 0 {
+		return ""
+	}
+	sx := g.tx.GetSexpr(is)
+	sh, err := g.th.Transform(sx)
+	if err != nil {
+		return ""
+	}
+	var sb strings.Builder
+	_ = generateHTML(&sb, sh)
+	return sb.String()
+}
+
+func generateHTML(w io.Writer, hval *sxpf.List) error {
+	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
+	for elem := hval; elem != nil; elem = elem.Tail() {
+		_, err := gen.WriteHTML(w, elem.Head())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // func (g *htmlGenerator) generateLinkZettel(senv sxpf.Environment, args *sxpf.Pair, _ int) (sxpf.Value, error) {
