@@ -82,7 +82,12 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 		encdr := encoder.Create(enc)
 		got, err := pe.encode(encdr)
 		if err != nil {
-			t.Error("pe.encode:", err)
+			prefix := fmt.Sprintf("Test #%d", testNum)
+			if d := descr; d != "" {
+				prefix += "\nReason:   " + d
+			}
+			prefix += "\nMode:     " + pe.mode()
+			t.Errorf("%s\nError:    %v", prefix, err)
 			continue
 		}
 		if enc == api.EncoderZmk && exp == useZmk {

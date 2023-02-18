@@ -41,7 +41,7 @@ var pngTestCases = []blobTestCase{
 		},
 		expect: expectMap{
 			// encoderHTML:  `<p><img alt="PNG" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="></p>`,
-			encoderSexpr: `((BLOB ((TEXT "PNG")) "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
+			encoderSexpr: `(BLOCK (BLOB (INLINE (TEXT "PNG")) "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
 			encoderText:  "",
 			encoderZmk:   `%% Unable to display BLOB with description 'PNG' and syntax 'png'.`,
 		},
