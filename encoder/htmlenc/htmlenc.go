@@ -90,7 +90,7 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
 		length := 0
 		for elem := hval; elem != nil; elem = elem.Tail() {
-			length, err = gen.WriteHTML(w, elem.Head())
+			length, err = gen.WriteHTML(w, elem.Car())
 			if err != nil {
 				return length, err
 			}
@@ -108,7 +108,7 @@ func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
 		length := 0
 		for elem := hval; elem != nil; elem = elem.Tail() {
-			length, err = gen.WriteHTML(w, elem.Head())
+			length, err = gen.WriteHTML(w, elem.Car())
 			if err != nil {
 				return length, err
 			}

@@ -86,20 +86,20 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	}
 
 	for elem := hm; elem != nil; elem = elem.Tail() {
-		mlst, ok := elem.Head().(*sxpf.List)
+		mlst, ok := elem.Car().(*sxpf.List)
 		if !ok {
 			continue
 		}
-		att, ok := mlst.Tail().Head().(*sxpf.List)
+		att, ok := mlst.Tail().Car().(*sxpf.List)
 		if !ok {
 			continue
 		}
-		if !att.Head().IsEqual(g.th.Make("@")) {
+		if !att.Car().IsEqual(g.th.Make("@")) {
 			continue
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, ok2 := aelem.Head().(*sxpf.Pair); ok2 {
+			if p, ok2 := aelem.Car().(*sxpf.Pair); ok2 {
 				a = a.Set(p.Car().String(), p.Cdr().String())
 			}
 		}
@@ -179,7 +179,7 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
 func generateHTML(w io.Writer, hval *sxpf.List) error {
 	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
 	for elem := hval; elem != nil; elem = elem.Tail() {
-		_, err := gen.WriteHTML(w, elem.Head())
+		_, err := gen.WriteHTML(w, elem.Car())
 		if err != nil {
 			return err
 		}
