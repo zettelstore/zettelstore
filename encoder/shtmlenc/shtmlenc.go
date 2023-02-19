@@ -46,7 +46,7 @@ func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.Ev
 	if err != nil {
 		return 0, err
 	}
-	result := sxpf.MakePair(metaSHTML, contentSHTML)
+	result := sxpf.Cons(metaSHTML, contentSHTML)
 	return result.Print(w)
 }
 

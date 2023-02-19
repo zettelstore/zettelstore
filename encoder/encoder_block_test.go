@@ -52,7 +52,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			// encoderHTML:  "<!--\nRender\n-->",
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (ATTR {"-" ""}) "Render"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (ATTR ("-" . "")) "Render"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -64,7 +64,7 @@ var tcsBlock = []zmkTestCase{
 			encoderHTML:  "<h2 id=\"top\">Top</h2>",
 			encoderMD:    "# Top",
 			encoderSexpr: `(BLOCK (HEADING 1 () "top" "top" (TEXT "Top")))`,
-			encoderSHTML: `((h2 (@ {id "top"}) "Top"))`,
+			encoderSHTML: `((h2 (@ (id . "top")) "Top"))`,
 			encoderText:  `Top`,
 			encoderZmk:   useZmk,
 		},
@@ -123,8 +123,8 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<hr lang="zmk">`,
 			encoderMD:    "---",
-			encoderSexpr: `(BLOCK (THEMATIC (ATTR {"lang" "zmk"})))`,
-			encoderSHTML: `((hr (@ {lang "zmk"})))`,
+			encoderSexpr: `(BLOCK (THEMATIC (ATTR ("lang" . "zmk"))))`,
+			encoderSHTML: `((hr (@ (lang . "zmk"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -237,7 +237,7 @@ and much more
 		expect: expectMap{
 			// encoderHTML:  "<pre><code>Hello\u2423World</code></pre>",
 			encoderMD:    "    Hello World",
-			encoderSexpr: `(BLOCK (VERBATIM-CODE (ATTR {"-" ""}) "Hello World"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-CODE (ATTR ("-" . "")) "Hello World"))`,
 			encoderText:  "Hello World",
 			encoderZmk:   useZmk,
 		},
@@ -330,7 +330,7 @@ and much more
 		expect: expectMap{
 			// encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (TRANSCLUDE (ATTR {"width" "100px"}) (EXTERNAL "http://example.com/image")))`,
+			encoderSexpr: `(BLOCK (TRANSCLUDE (ATTR ("width" . "100px")) (EXTERNAL "http://example.com/image")))`,
 			encoderText:  "",
 			encoderZmk:   useZmk,
 		},

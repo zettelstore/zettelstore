@@ -367,7 +367,7 @@ func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Value {
 	keys := a.Keys()
 	lstVals := make([]sxpf.Value, 0, len(keys))
 	for _, k := range keys {
-		lstVals = append(lstVals, sxpf.MakePair(sxpf.MakeString(k), sxpf.MakeString(a[k])))
+		lstVals = append(lstVals, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
 	}
 	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymAttr)
 }

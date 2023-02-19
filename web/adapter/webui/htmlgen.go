@@ -99,8 +99,13 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, ok2 := aelem.Car().(*sxpf.Pair); ok2 {
-				a = a.Set(p.Car().String(), p.Cdr().String())
+			if p, ok2 := aelem.Car().(*sxpf.List); ok2 {
+				key := p.Car()
+				val := p.Cdr()
+				if tail, ok3 := val.(*sxpf.List); ok3 {
+					val = tail.Car()
+				}
+				a = a.Set(key.String(), val.String())
 			}
 		}
 		name, found := a.Get("name")
