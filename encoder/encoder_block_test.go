@@ -39,9 +39,10 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple block comment",
 		zmk:   "%%%\nNo\nrender\n%%%",
 		expect: expectMap{
-			// encoderHTML:  ``,
+			encoderHTML:  ``,
 			encoderMD:    "",
 			encoderSexpr: `(BLOCK (VERBATIM-COMMENT () "No\nrender"))`,
+			encoderSHTML: `(())`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -50,9 +51,10 @@ var tcsBlock = []zmkTestCase{
 		descr: "Rendered block comment",
 		zmk:   "%%%{-}\nRender\n%%%",
 		expect: expectMap{
-			// encoderHTML:  "<!--\nRender\n-->",
+			encoderHTML:  "<!-- \nRender\n -->",
 			encoderMD:    "",
 			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (ATTR ("-" . "")) "Render"))`,
+			encoderSHTML: "((@@ \"\\nRender\\n\"))",
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -268,9 +270,10 @@ and much more
 		descr: "Simple Description List",
 		zmk:   "; Zettel\n: Paper\n: Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{
-			// encoderHTML:  "<dl><dt>Zettel</dt><dd>Paper</dd><dd>Note</dd><dt>Zettelkasten</dt><dd>Slip box</dd></dl>",
+			encoderHTML:  "<dl><dt>Zettel</dt><dd><p>Paper</p></dd><dd><p>Note</p></dd><dt>Zettelkasten</dt><dd><p>Slip box</p></dd></dl>",
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (INLINE (TEXT "Paper")) (INLINE (TEXT "Note"))) (INLINE (TEXT "Zettelkasten")) (BLOCK (INLINE (TEXT "Slip") (SPACE) (TEXT "box")))))`,
+			encoderSexpr: `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper"))) (BLOCK (PARA (TEXT "Note")))) (INLINE (TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
+			encoderSHTML: `((dl (dt "Zettel") (dd (p "Paper")) (dd (p "Note")) (dt "Zettelkasten") (dd (p "Slip" " " "box"))))`,
 			encoderText:  "Zettel\nPaper\nNote\nZettelkasten\nSlip box",
 			encoderZmk:   useZmk,
 		},
@@ -279,9 +282,10 @@ and much more
 		descr: "Description List with paragraphs as item",
 		zmk:   "; Zettel\n: Paper\n\n  Note\n; Zettelkasten\n: Slip box",
 		expect: expectMap{
-			// encoderHTML:  "<dl><dt>Zettel</dt><dd>Paper</dd><dd>Note</dd><dt>Zettelkasten</dt><dd>Slip box</dd></dl>",
+			encoderHTML:  "<dl><dt>Zettel</dt><dd><p>Paper</p><p>Note</p></dd><dt>Zettelkasten</dt><dd><p>Slip box</p></dd></dl>",
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper")) (PARA (TEXT "Note")))) (INLINE (TEXT "Zettelkasten")) (BLOCK (INLINE (TEXT "Slip") (SPACE) (TEXT "box")))))`,
+			encoderSexpr: `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper")) (PARA (TEXT "Note")))) (INLINE (TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
+			encoderSHTML: `((dl (dt "Zettel") (dd (p "Paper") (p "Note")) (dt "Zettelkasten") (dd (p "Slip" " " "box"))))`,
 			encoderText:  "Zettel\nPaper\nNote\nZettelkasten\nSlip box",
 			encoderZmk:   useZmk,
 		},
@@ -290,9 +294,10 @@ and much more
 		descr: "Simple Table",
 		zmk:   "|c1|c2|c3\n|d1||d3",
 		expect: expectMap{
-			// encoderHTML:  `<table><tbody><tr><td>c1</td><td>c2</td><td>c3</td></tr><tr><td>d1</td><td></td><td>d3</td></tr></tbody></table>`,
+			encoderHTML:  `<table><tbody><tr><td>c1</td><td>c2</td><td>c3</td></tr><tr><td>d1</td><td></td><td>d3</td></tr></tbody></table>`,
 			encoderMD:    "",
 			encoderSexpr: `(BLOCK (TABLE () (ROW (CELL (TEXT "c1")) (CELL (TEXT "c2")) (CELL (TEXT "c3"))) (ROW (CELL (TEXT "d1")) (CELL) (CELL (TEXT "d3")))))`,
+			encoderSHTML: `((table (tbody (tr (td "c1") (td "c2") (td "c3")) (tr (td "d1") (td) (td "d3")))))`,
 			encoderText:  "c1 c2 c3\nd1  d3",
 			encoderZmk:   useZmk,
 		},
@@ -304,9 +309,10 @@ and much more
 |<c1|c2|:c3|
 |f1|f2|=f3`,
 		expect: expectMap{
-			// encoderHTML:  `<table><thead><tr><td class="right">h1</td><td>h2</td><td class="center">h3</td></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
+			encoderHTML:  `<table><thead><tr><td class="right">h1</td><td>h2</td><td class="center">h3</td></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
 			encoderMD:    "",
 			encoderSexpr: `(BLOCK (TABLE (ROW (CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) (ROW (CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) (ROW (CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
+			encoderSHTML: `((table (thead (tr (td (@ (class . "right")) "h1") (td "h2") (td (@ (class . "center")) "h3"))) (tbody (tr (td (@ (class . "left")) "c1") (td "c2") (td (@ (class . "center")) "c3")) (tr (td (@ (class . "right")) "f1") (td "f2") (td (@ (class . "center")) "=f3")))))`,
 			encoderText:  "h1 h2 h3\nc1 c2 c3\nf1 f2 =f3",
 			encoderZmk: `|=h1>|=h2|=h3:
 |<c1|c2|c3

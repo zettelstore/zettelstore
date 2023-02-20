@@ -271,10 +271,6 @@ func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List
 		dlVals[2*i+1] = t.getInlineSlice(def.Term)
 		descVals := make([]sxpf.Value, len(def.Descriptions))
 		for j, b := range def.Descriptions {
-			if len(b) == 1 {
-				descVals[j] = t.GetSexpr(b[0]).Tail().Cons(t.zetSyms.SymInline)
-				continue
-			}
 			dVal := make([]sxpf.Value, len(b))
 			for k, dn := range b {
 				dVal[k] = t.GetSexpr(dn)
