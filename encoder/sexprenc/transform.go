@@ -229,26 +229,26 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sxpf.List {
 }
 
 func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
-	nlistVals := make([]sxpf.Value, len(ln.Items)+1)
-	nlistVals[0] = mapGetS(t, t.mapNestedListKindS, ln.Kind)
+	nlistObjs := make([]sxpf.Object, len(ln.Items)+1)
+	nlistObjs[0] = mapGetS(t, t.mapNestedListKindS, ln.Kind)
 	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
 		if isCompact && len(item) > 0 {
 			paragraph := t.GetSexpr(item[0])
-			nlistVals[i+1] = paragraph.Tail().Cons(t.zetSyms.SymInline)
+			nlistObjs[i+1] = paragraph.Tail().Cons(t.zetSyms.SymInline)
 			continue
 		}
-		itemVals := make([]sxpf.Value, len(item))
+		itemObjs := make([]sxpf.Object, len(item))
 		for j, in := range item {
-			itemVals[j] = t.GetSexpr(in)
+			itemObjs[j] = t.GetSexpr(in)
 		}
 		if isCompact {
-			nlistVals[i+1] = sxpf.MakeList(itemVals...).Cons(t.zetSyms.SymInline)
+			nlistObjs[i+1] = sxpf.MakeList(itemObjs...).Cons(t.zetSyms.SymInline)
 		} else {
-			nlistVals[i+1] = sxpf.MakeList(itemVals...).Cons(t.zetSyms.SymBlock)
+			nlistObjs[i+1] = sxpf.MakeList(itemObjs...).Cons(t.zetSyms.SymBlock)
 		}
 	}
-	return sxpf.MakeList(nlistVals...)
+	return sxpf.MakeList(nlistObjs...)
 }
 func isCompactList(itemSlice []ast.ItemSlice) bool {
 	for _, items := range itemSlice {
@@ -265,31 +265,31 @@ func isCompactList(itemSlice []ast.ItemSlice) bool {
 }
 
 func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List {
-	dlVals := make([]sxpf.Value, 2*len(dn.Descriptions)+1)
-	dlVals[0] = t.zetSyms.SymDescription
+	dlObjs := make([]sxpf.Object, 2*len(dn.Descriptions)+1)
+	dlObjs[0] = t.zetSyms.SymDescription
 	for i, def := range dn.Descriptions {
-		dlVals[2*i+1] = t.getInlineSlice(def.Term)
-		descVals := make([]sxpf.Value, len(def.Descriptions))
+		dlObjs[2*i+1] = t.getInlineSlice(def.Term)
+		descObjs := make([]sxpf.Object, len(def.Descriptions))
 		for j, b := range def.Descriptions {
-			dVal := make([]sxpf.Value, len(b))
+			dVal := make([]sxpf.Object, len(b))
 			for k, dn := range b {
 				dVal[k] = t.GetSexpr(dn)
 			}
-			descVals[j] = sxpf.MakeList(dVal...).Cons(t.zetSyms.SymBlock)
+			descObjs[j] = sxpf.MakeList(dVal...).Cons(t.zetSyms.SymBlock)
 		}
-		dlVals[2*i+2] = sxpf.MakeList(descVals...).Cons(t.zetSyms.SymBlock)
+		dlObjs[2*i+2] = sxpf.MakeList(descObjs...).Cons(t.zetSyms.SymBlock)
 	}
-	return sxpf.MakeList(dlVals...)
+	return sxpf.MakeList(dlObjs...)
 }
 
 func (t *Transformer) getTable(tn *ast.TableNode) *sxpf.List {
-	tVals := make([]sxpf.Value, len(tn.Rows)+2)
-	tVals[0] = t.zetSyms.SymTable
-	tVals[1] = t.getHeader(tn.Header)
+	tObjs := make([]sxpf.Object, len(tn.Rows)+2)
+	tObjs[0] = t.zetSyms.SymTable
+	tObjs[1] = t.getHeader(tn.Header)
 	for i, row := range tn.Rows {
-		tVals[i+2] = t.getRow(row)
+		tObjs[i+2] = t.getRow(row)
 	}
-	return sxpf.MakeList(tVals...)
+	return sxpf.MakeList(tObjs...)
 }
 func (t *Transformer) getHeader(header ast.TableRow) *sxpf.List {
 	if len(header) == 0 {
@@ -298,11 +298,11 @@ func (t *Transformer) getHeader(header ast.TableRow) *sxpf.List {
 	return t.getRow(header)
 }
 func (t *Transformer) getRow(row ast.TableRow) *sxpf.List {
-	rVals := make([]sxpf.Value, len(row))
+	rObjs := make([]sxpf.Object, len(row))
 	for i, cell := range row {
-		rVals[i] = t.getCell(cell)
+		rObjs[i] = t.getCell(cell)
 	}
-	return sxpf.MakeList(rVals...).Cons(t.zetSyms.SymRow)
+	return sxpf.MakeList(rObjs...).Cons(t.zetSyms.SymRow)
 }
 
 func (t *Transformer) getCell(cell *ast.TableCell) *sxpf.List {
@@ -310,17 +310,17 @@ func (t *Transformer) getCell(cell *ast.TableCell) *sxpf.List {
 }
 
 func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sxpf.List {
-	var lastValue sxpf.Value
+	var lastObj sxpf.Object
 	if bn.Syntax == meta.SyntaxSVG {
-		lastValue = sxpf.MakeString(string(bn.Blob))
+		lastObj = sxpf.MakeString(string(bn.Blob))
 	} else {
-		lastValue = getBase64String(bn.Blob)
+		lastObj = getBase64String(bn.Blob)
 	}
 	return sxpf.MakeList(
 		t.zetSyms.SymBLOB,
 		t.getInlineSlice(bn.Description),
 		sxpf.MakeString(bn.Syntax),
-		lastValue,
+		lastObj,
 	)
 }
 
@@ -342,30 +342,30 @@ func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.List {
 }
 
 func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sxpf.List {
-	lstVals := make([]sxpf.Value, len(*bs))
+	objs := make([]sxpf.Object, len(*bs))
 	for i, n := range *bs {
-		lstVals[i] = t.GetSexpr(n)
+		objs[i] = t.GetSexpr(n)
 	}
-	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymBlock)
+	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymBlock)
 }
 func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sxpf.List {
-	lstVals := make([]sxpf.Value, len(is))
+	objs := make([]sxpf.Object, len(is))
 	for i, n := range is {
-		lstVals[i] = t.GetSexpr(n)
+		objs[i] = t.GetSexpr(n)
 	}
-	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymInline)
+	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymInline)
 }
 
-func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Value {
+func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Object {
 	if a.IsEmpty() {
 		return sxpf.Nil()
 	}
 	keys := a.Keys()
-	lstVals := make([]sxpf.Value, 0, len(keys))
+	objs := make([]sxpf.Object, 0, len(keys))
 	for _, k := range keys {
-		lstVals = append(lstVals, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
+		objs = append(objs, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
 	}
-	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymAttr)
+	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymAttr)
 }
 
 func (t *Transformer) getReference(ref *ast.Reference) *sxpf.List {
@@ -374,29 +374,29 @@ func (t *Transformer) getReference(ref *ast.Reference) *sxpf.List {
 
 func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
 	pairs := m.ComputedPairs()
-	lstVals := make([]sxpf.Value, 0, len(pairs))
+	objs := make([]sxpf.Object, 0, len(pairs))
 	for _, p := range pairs {
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(t, t.mapMetaTypeS, ty)
 		strKey := sxpf.MakeString(key)
-		var val sxpf.Value
+		var obj sxpf.Object
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
-			setVals := make([]sxpf.Value, len(setList))
+			setObjs := make([]sxpf.Object, len(setList))
 			for i, val := range setList {
-				setVals[i] = sxpf.MakeString(val)
+				setObjs[i] = sxpf.MakeString(val)
 			}
-			val = sxpf.MakeList(setVals...)
+			obj = sxpf.MakeList(setObjs...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
-			val = t.GetSexpr(&is)
+			obj = t.GetSexpr(&is)
 		} else {
-			val = sxpf.MakeString(p.Value)
+			obj = sxpf.MakeString(p.Value)
 		}
-		lstVals = append(lstVals, sxpf.Nil().Cons(val).Cons(strKey).Cons(symType))
+		objs = append(objs, sxpf.Nil().Cons(obj).Cons(strKey).Cons(symType))
 	}
-	return sxpf.MakeList(lstVals...).Cons(t.zetSyms.SymMeta)
+	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymMeta)
 }
 
 func mapGetS[T comparable](t *Transformer, m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {

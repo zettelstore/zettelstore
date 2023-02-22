@@ -3,7 +3,7 @@ module zettelstore.de/z
 go 1.19
 
 require (
-	codeberg.org/t73fde/sxpf v0.0.0-20230219225603-4f59629ed91d
+	codeberg.org/t73fde/sxpf v0.0.0-20230222145236-7ac5646ca485
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/pascaldekloe/jwt v1.12.0
 	github.com/yuin/goldmark v1.5.4
@@ -14,6 +14,6 @@ require (
 )
 
 require (
-	codeberg.org/t73fde/sxhtml v0.0.0-20230219225732-6dd7e1e0bd55 // indirect
+	codeberg.org/t73fde/sxhtml v0.0.0-20230222145726-b2f8b191227e // indirect
 	golang.org/x/sys v0.5.0 // indirect
 )

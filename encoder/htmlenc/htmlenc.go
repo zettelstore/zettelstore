@@ -85,11 +85,11 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks encodes a block slice.
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hval, err := shtmlenc.TransformSlice(bs)
+	hobj, err := shtmlenc.TransformSlice(bs)
 	if err == nil {
-		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
+		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
 		length := 0
-		for elem := hval; elem != nil; elem = elem.Tail() {
+		for elem := hobj; elem != nil; elem = elem.Tail() {
 			length, err = gen.WriteHTML(w, elem.Car())
 			if err != nil {
 				return length, err
@@ -103,11 +103,11 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hval, err := shtmlenc.TransformSlice(is)
+	hobj, err := shtmlenc.TransformSlice(is)
 	if err == nil {
-		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
+		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
 		length := 0
-		for elem := hval; elem != nil; elem = elem.Tail() {
+		for elem := hobj; elem != nil; elem = elem.Tail() {
 			length, err = gen.WriteHTML(w, elem.Car())
 			if err != nil {
 				return length, err
