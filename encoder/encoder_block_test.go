@@ -51,10 +51,10 @@ var tcsBlock = []zmkTestCase{
 		descr: "Rendered block comment",
 		zmk:   "%%%{-}\nRender\n%%%",
 		expect: expectMap{
-			encoderHTML:  "<!-- \nRender\n -->",
+			encoderHTML:  "<!--\nRender\n-->\n",
 			encoderMD:    "",
 			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (ATTR ("-" . "")) "Render"))`,
-			encoderSHTML: "((@@ \"\\nRender\\n\"))",
+			encoderSHTML: "((@@@ \"Render\"))",
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
