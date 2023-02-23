@@ -37,22 +37,23 @@ type urlBuilder interface {
 }
 
 type htmlGenerator struct {
-	tx *sexprenc.Transformer
-	th *shtml.Transformer
+	tx    *sexprenc.Transformer
+	th    *shtml.Transformer
+	symAt *sxpf.Symbol
 }
 
 func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 	th := shtml.NewTransformer(1)
 	symA := th.Make("a")
 	symSpan := th.Make("span")
-	symAt := th.Make("@")
+	symAt := th.Make(sxhtml.NameSymAttr)
 
 	symHref := th.Make("href")
 	symClass := th.Make("class")
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
 
-	sxExtMarker := sxpf.Nil().Cons(sxpf.MakeString(extMarker))
+	sxExtMarker := sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.MakeString(extMarker)).Cons(th.Make(sxhtml.NameSymNoEscape)))
 
 	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.List) {
 		lst, ok := obj.(*sxpf.List)
@@ -163,34 +164,36 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 				Cons(sxpf.Cons(symTarget, sxpf.MakeString("_blank"))).
 				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
 			aList := rest.Cons(assoc.Cons(symAt)).Cons(symA)
-			return sxExtMarker.Cons(aList).Cons(symSpan)
+			result := sxExtMarker.Cons(aList).Cons(symSpan)
+			return result
 		})
-		te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
-			obj, err := prevFn.Call(nil, args)
-			if err != nil {
-				return sxpf.Nil()
-			}
-			return obj
-			// func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
-			// 	return func(senv sxpf.Environment, args *sxpf.Pair, arity int) (sxpf.Value, error) {
-			// 		env := senv.(*html.EncEnvironment)
-			// 		ref := env.GetPair(args.GetTail())
-			// 		refValue := env.GetString(ref.GetTail())
-			// 		zid := api.ZettelID(refValue)
-			// 		if !zid.IsValid() {
-			// 			return oldFn(senv, args, arity)
-			// 		}
-			// 		u := g.builder.NewURLBuilder('z').SetZid(zid)
-			// 		env.WriteImageWithSource(args, u.String())
-			// 		return nil, nil
-			// 	}
-			// }
-		})
+		// te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
+		// 	obj, err := prevFn.Call(nil, args)
+		// 	if err != nil {
+		// 		return sxpf.Nil()
+		// 	}
+		// 	return obj
+		// 	// func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
+		// 	// 	return func(senv sxpf.Environment, args *sxpf.Pair, arity int) (sxpf.Value, error) {
+		// 	// 		env := senv.(*html.EncEnvironment)
+		// 	// 		ref := env.GetPair(args.GetTail())
+		// 	// 		refValue := env.GetString(ref.GetTail())
+		// 	// 		zid := api.ZettelID(refValue)
+		// 	// 		if !zid.IsValid() {
+		// 	// 			return oldFn(senv, args, arity)
+		// 	// 		}
+		// 	// 		u := g.builder.NewURLBuilder('z').SetZid(zid)
+		// 	// 		env.WriteImageWithSource(args, u.String())
+		// 	// 		return nil, nil
+		// 	// 	}
+		// 	// }
+		// })
 	})
 
 	return &htmlGenerator{
-		tx: sexprenc.NewTransformer(),
-		th: th,
+		tx:    sexprenc.NewTransformer(),
+		th:    th,
+		symAt: symAt,
 	}
 }
 
@@ -222,7 +225,7 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		if !ok {
 			continue
 		}
-		if !att.Car().IsEqual(g.th.Make("@")) {
+		if !att.Car().IsEqual(g.symAt) {
 			continue
 		}
 		a := make(attrs.Attributes, 32)
