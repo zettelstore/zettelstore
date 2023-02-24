@@ -350,9 +350,10 @@ var tcsInline = []zmkTestCase{
 		descr: "Simple footnote",
 		zmk:   `[^footnote]`,
 		expect: expectMap{
-			// encoderHTML:  `<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup>`,
+			encoderHTML:  `<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup>`,
 			encoderMD:    "",
 			encoderSexpr: `(INLINE (FOOTNOTE () (TEXT "footnote")))`,
+			encoderSHTML: `((sup (@ (id . "fnref:1")) (a (@ (class . "zs-noteref") (href . "#fn:1") (role . "doc-noteref")) "1")))`,
 			encoderText:  `footnote`,
 			encoderZmk:   useZmk,
 		},

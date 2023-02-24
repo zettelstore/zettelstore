@@ -259,7 +259,8 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	}
 
 	var sb strings.Builder
-	_ = generateHTML(&sb, result)
+	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(result))
+	_ = generateHTML(&sb, gen, result)
 	return sb.String()
 }
 func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
@@ -288,13 +289,14 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 		return "", err
 	}
 	var sb strings.Builder
-	err = generateHTML(&sb, sh)
+	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh))
+	err = generateHTML(&sb, gen, sh)
 	if err != nil {
 		return sb.String(), err
 	}
 
-	// WriteEndnotes
-	return sb.String(), nil
+	_, err = gen.WriteHTML(&sb, g.th.Endnotes())
+	return sb.String(), err
 }
 
 // InlinesString writes an inline slice to the writer
@@ -308,12 +310,12 @@ func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
 		return ""
 	}
 	var sb strings.Builder
-	_ = generateHTML(&sb, sh)
+	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh))
+	_ = generateHTML(&sb, gen, sh)
 	return sb.String()
 }
 
-func generateHTML(w io.Writer, hval *sxpf.List) error {
-	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hval))
+func generateHTML(w io.Writer, gen *sxhtml.Generator, hval *sxpf.List) error {
 	for elem := hval; elem != nil; elem = elem.Tail() {
 		_, err := gen.WriteHTML(w, elem.Car())
 		if err != nil {

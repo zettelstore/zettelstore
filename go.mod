@@ -14,6 +14,6 @@ require (
 )
 
 require (
-	codeberg.org/t73fde/sxhtml v0.0.0-20230223182750-135c02e7e85d // indirect
+	codeberg.org/t73fde/sxhtml v0.0.0-20230224181036-7877ce2c0b89 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 )

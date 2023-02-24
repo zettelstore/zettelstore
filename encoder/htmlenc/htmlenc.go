@@ -19,9 +19,11 @@ import (
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/html"
+	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/shtmlenc"
 	"zettelstore.de/z/encoder/textenc"
 )
@@ -85,18 +87,25 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks encodes a block slice.
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hobj, err := shtmlenc.TransformSlice(bs)
+	tx := sexprenc.NewTransformer()
+	xval := tx.GetSexpr(bs)
+	th := shtml.NewTransformer(1)
+	hobj, err := th.Transform(xval)
+
 	if err == nil {
 		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
 		length := 0
 		for elem := hobj; elem != nil; elem = elem.Tail() {
-			length, err = gen.WriteHTML(w, elem.Car())
-			if err != nil {
-				return length, err
+			l, err2 := gen.WriteHTML(w, elem.Car())
+			length += l
+			if err2 != nil {
+				return length, err2
 			}
 		}
-		// WriteEndNotes
-		return length, nil
+
+		l, err2 := gen.WriteHTML(w, th.Endnotes())
+		length += l
+		return length, err2
 	}
 	return 0, err
 }
