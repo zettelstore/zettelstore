@@ -18,7 +18,6 @@ import (
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
 	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -45,40 +44,82 @@ var mySHE = Encoder{
 
 // WriteZettel encodes a full zettel as HTML5.
 func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	io.WriteString(w, "<html>\n<head>\n<meta charset=\"utf-8\">\n")
-	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
-	if hasTitle {
-		io.WriteString(w, "<title>")
-		is := evalMeta(plainTitle)
-		he.textEnc.WriteInlines(w, &is)
-		io.WriteString(w, "</title>\n")
+	tx := sexprenc.NewTransformer()
+	xm := tx.GetMeta(zn.InhMeta, evalMeta)
+
+	th := shtml.NewTransformer(1)
+	hm, err := th.Transform(xm)
+	if err != nil {
+		return 0, err
 	}
 
-	acceptMeta(w, he.textEnc, zn.InhMeta, evalMeta)
-	io.WriteString(w, "</head>\n<body>\n")
-	env := html.NewEncEnvironment(w, 1)
+	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
+	evalTitle := evalMeta(plainTitle)
+	var htitle *sxpf.List
 	if hasTitle {
-		if isTitle := evalMeta(plainTitle); len(isTitle) > 0 {
-			io.WriteString(w, "<h1>")
-			if err := acceptInlines(env, &isTitle); err != nil {
-				return 0, err
-			}
-			io.WriteString(w, "</h1>\n")
+		xtitle := tx.GetSexpr(&evalTitle)
+		htitle, err = th.Transform(xtitle)
+		if err != nil {
+			return 0, err
 		}
 	}
 
-	err := acceptBlocks(env, &zn.Ast)
-	if err == nil {
-		// env.WriteEndnotes()
-		io.WriteString(w, "</body>\n</html>")
+	xast := tx.GetSexpr(&zn.Ast)
+	hast, err := th.Transform(xast)
+	if err != nil {
+		return 0, err
 	}
-	return 0, err
+	hen := th.Endnotes()
+
+	sf := th.SymbolFactory()
+	symAttr := sf.Make(sxhtml.NameSymAttr)
+
+	head := sxpf.Nil().Cons(sf.Make("head"))
+	curr := head
+	curr = curr.AppendBang(sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.Cons(sf.Make("charset"), sxpf.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.Make("meta")))
+	for elem := hm; elem != nil; elem = elem.Tail() {
+		curr = curr.AppendBang(elem.Car())
+	}
+	if hasTitle {
+		var sb strings.Builder
+		he.textEnc.WriteInlines(&sb, &evalTitle)
+		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.Make("title")))
+	}
+
+	body := sxpf.Nil().Cons(sf.Make("body"))
+	curr = body
+	if hasTitle {
+		curr = curr.AppendBang(htitle.Cons(sf.Make("h1")))
+	}
+	for elem := hast; elem != nil; elem = elem.Tail() {
+		curr = curr.AppendBang(elem.Car())
+	}
+	if hen != nil {
+		curr = curr.AppendBang(sxpf.Nil().Cons(sf.Make("hr")))
+		_ = curr.AppendBang(hen)
+	}
+
+	doc := sxpf.MakeList(
+		sf.Make(sxhtml.NameSymDoctype),
+		sxpf.MakeList(sf.Make("html"), head, body),
+	)
+
+	gen := sxhtml.NewGenerator(sf, sxhtml.WithNewline)
+	return gen.WriteHTML(w, doc)
 }
 
 // WriteMeta encodes meta data as HTML5.
 func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	acceptMeta(w, he.textEnc, m, evalMeta)
-	return 0, nil
+	tx := sexprenc.NewTransformer()
+	xm := tx.GetMeta(m, evalMeta)
+
+	th := shtml.NewTransformer(1)
+	hm, err := th.Transform(xm)
+	if err != nil {
+		return 0, err
+	}
+	gen := sxhtml.NewGenerator(th.SymbolFactory(), sxhtml.WithNewline)
+	return gen.WriteListHTML(w, hm)
 }
 
 func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -93,14 +134,10 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	hobj, err := th.Transform(xval)
 
 	if err == nil {
-		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
-		length := 0
-		for elem := hobj; elem != nil; elem = elem.Tail() {
-			l, err2 := gen.WriteHTML(w, elem.Car())
-			length += l
-			if err2 != nil {
-				return length, err2
-			}
+		gen := sxhtml.NewGenerator(th.SymbolFactory())
+		length, err2 := gen.WriteListHTML(w, hobj)
+		if err2 != nil {
+			return length, err2
 		}
 
 		l, err2 := gen.WriteHTML(w, th.Endnotes())
@@ -115,38 +152,11 @@ func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	hobj, err := shtmlenc.TransformSlice(is)
 	if err == nil {
 		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
-		length := 0
-		for elem := hobj; elem != nil; elem = elem.Tail() {
-			length, err = gen.WriteHTML(w, elem.Car())
-			if err != nil {
-				return length, err
-			}
+		length, err2 := gen.WriteListHTML(w, hobj)
+		if err2 != nil {
+			return length, err2
 		}
 		return length, nil
 	}
 	return 0, err
-}
-
-func acceptMeta(w io.Writer, textEnc encoder.Encoder, m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
-	for _, p := range m.ComputedPairs() {
-		io.WriteString(w, `<meta name="zs-`)
-		io.WriteString(w, p.Key)
-		io.WriteString(w, `" content="`)
-		is := evalMeta(p.Value)
-		var sb strings.Builder
-		textEnc.WriteInlines(&sb, &is)
-		html.AttributeEscape(w, sb.String())
-		io.WriteString(w, "\">\n")
-	}
-}
-
-func acceptBlocks(env *html.EncEnvironment, bs *ast.BlockSlice) error {
-	// lst := sexprenc.GetSexpr(bs)
-	// sxpf.Eval(env, lst)
-	return env.GetError()
-}
-func acceptInlines(env *html.EncEnvironment, is *ast.InlineSlice) error {
-	// lst := sexprenc.GetSexpr(is)
-	// sxpf.Eval(env, lst)
-	return env.GetError()
 }
