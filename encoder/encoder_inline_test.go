@@ -277,13 +277,13 @@ var tcsInline = []zmkTestCase{
 	},
 	{
 		descr: "Citation",
-		zmk:   `[@Stern18 wrote]`,
+		zmk:   `[@Stern18 p.23]`,
 		expect: expectMap{
-			encoderHTML:  `<span>Stern18, wrote</span>`, // TODO
-			encoderMD:    "wrote",
-			encoderSexpr: `(INLINE (CITE () "Stern18" (TEXT "wrote")))`,
-			encoderSHTML: `((span "Stern18" ", " "wrote"))`, // TODO
-			encoderText:  `wrote`,
+			encoderHTML:  `<span>Stern18, p.23</span>`, // TODO
+			encoderMD:    "p.23",
+			encoderSexpr: `(INLINE (CITE () "Stern18" (TEXT "p.23")))`,
+			encoderSHTML: `((span "Stern18" ", " "p.23"))`, // TODO
+			encoderText:  `p.23`,
 			encoderZmk:   useZmk,
 		},
 	}, {
@@ -566,9 +566,10 @@ var tcsInline = []zmkTestCase{
 		descr: "Dummy Embed",
 		zmk:   `{{abc}}`,
 		expect: expectMap{
-			// encoderHTML:  `<img alt="alternate description missing" src="abc">`,
+			encoderHTML:  `<img src="abc">`,
 			encoderMD:    "![abc](abc)",
 			encoderSexpr: `(INLINE (EMBED () (EXTERNAL "abc") ""))`,
+			encoderSHTML: `((img (@ (src . "abc"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},

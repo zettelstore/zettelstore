@@ -17,7 +17,6 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
-	"codeberg.org/t73fde/sxpf/eval"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/maps"
@@ -46,6 +45,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 	th := shtml.NewTransformer(1)
 	symA := th.Make("a")
 	symSpan := th.Make("span")
+	symImg := th.Make("img")
 	symAt := th.Make(sxhtml.NameSymAttr)
 
 	symHref := th.Make("href")
@@ -71,7 +71,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 		}
 		return attr, attr.Tail(), rest.Tail()
 	}
-	linkZettel := func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
+	linkZettel := func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 		obj, err := prevFn.Call(nil, args)
 		if err != nil {
 			return sxpf.Nil()
@@ -101,7 +101,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 	th.SetRebinder(func(te *shtml.TransformEnv) {
 		te.Rebind(sexpr.NameSymLinkZettel, linkZettel)
 		te.Rebind(sexpr.NameSymLinkFound, linkZettel)
-		te.Rebind(sexpr.NameSymLinkBased, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
+		te.Rebind(sexpr.NameSymLinkBased, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -122,7 +122,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sexpr.NameSymLinkQuery, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
+		te.Rebind(sexpr.NameSymLinkQuery, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -151,7 +151,7 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sexpr.NameSymLinkExternal, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
+		te.Rebind(sexpr.NameSymLinkExternal, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -167,27 +167,36 @@ func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
 			result := sxExtMarker.Cons(aList).Cons(symSpan)
 			return result
 		})
-		// te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn *eval.Special) sxpf.Object {
-		// 	obj, err := prevFn.Call(nil, args)
-		// 	if err != nil {
-		// 		return sxpf.Nil()
-		// 	}
-		// 	return obj
-		// 	// func (g *htmlGenerator) makeGenerateEmbed(oldFn sxpf.BuiltinFn) sxpf.BuiltinFn {
-		// 	// 	return func(senv sxpf.Environment, args *sxpf.Pair, arity int) (sxpf.Value, error) {
-		// 	// 		env := senv.(*html.EncEnvironment)
-		// 	// 		ref := env.GetPair(args.GetTail())
-		// 	// 		refValue := env.GetString(ref.GetTail())
-		// 	// 		zid := api.ZettelID(refValue)
-		// 	// 		if !zid.IsValid() {
-		// 	// 			return oldFn(senv, args, arity)
-		// 	// 		}
-		// 	// 		u := g.builder.NewURLBuilder('z').SetZid(zid)
-		// 	// 		env.WriteImageWithSource(args, u.String())
-		// 	// 		return nil, nil
-		// 	// 	}
-		// 	// }
-		// })
+		te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
+			obj, err := prevFn.Call(nil, args)
+			if err != nil {
+				return sxpf.Nil()
+			}
+			lst, ok := obj.(*sxpf.List)
+			if !ok || !symImg.IsEqual(lst.Car()) {
+				return obj
+			}
+			attr, ok := lst.Tail().Car().(*sxpf.List)
+			if !ok || !symAt.IsEqual(attr.Car()) {
+				return obj
+			}
+			symSrc := th.Make("src")
+			srcP := attr.Tail().Assoc(symSrc)
+			if srcP == nil {
+				return obj
+			}
+			src, ok := srcP.Cdr().(sxpf.String)
+			if !ok {
+				return obj
+			}
+			zid := api.ZettelID(src)
+			if !zid.IsValid() {
+				return obj
+			}
+			u := builder.NewURLBuilder('z').SetZid(zid)
+			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAt)
+			return lst.Tail().Tail().Cons(imgAttr).Cons(symImg)
+		})
 	})
 
 	return &htmlGenerator{
