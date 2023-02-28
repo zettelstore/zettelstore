@@ -1,7 +1,7 @@
-codeberg.org/t73fde/sxhtml v0.0.0-20230227174916-ef2ad81643c0 h1:18ZwtCFc3Er4z3vvnse+fY38pOp+ZQz6y7H+Gv7fuec=
-codeberg.org/t73fde/sxhtml v0.0.0-20230227174916-ef2ad81643c0/go.mod h1:z9naH+5WUsglj0LChmiMPpqsz0WHP+gNXQVaUA7F4x8=
-codeberg.org/t73fde/sxpf v0.0.0-20230222145236-7ac5646ca485 h1:yCfupv0yjIl3lQ782G5SR9K4nKINQG4/26guLqc7IAo=
-codeberg.org/t73fde/sxpf v0.0.0-20230222145236-7ac5646ca485/go.mod h1:iSbMygOmtRQYp8pryNKYzRuMibYDSR80smU2b6qm1bc=
+codeberg.org/t73fde/sxhtml v0.0.0-20230228125620-7fd1ce51f3e6 h1:Xu9EcEAyfcuM9LI8FPqySJf9uJ42l+kYHOduqppc+f8=
+codeberg.org/t73fde/sxhtml v0.0.0-20230228125620-7fd1ce51f3e6/go.mod h1:9aEOS8xHYcuRJmVYNm1y0PHj6FsQRYe7BGGHCa2fu/g=
+codeberg.org/t73fde/sxpf v0.0.0-20230228125420-0cca9b515bfc h1:SsruwG0dljmVeT9yCjkNzQjtDd9uLPARaufS12Q8lHo=
+codeberg.org/t73fde/sxpf v0.0.0-20230228125420-0cca9b515bfc/go.mod h1:iSbMygOmtRQYp8pryNKYzRuMibYDSR80smU2b6qm1bc=
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/pascaldekloe/jwt v1.12.0 h1:imQSkPOtAIBAXoKKjL9ZVJuF/rVqJ+ntiLGpLyeqMUQ=

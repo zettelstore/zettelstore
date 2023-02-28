@@ -15,7 +15,6 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/t73fde/sxpf"
 	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -112,7 +111,7 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := reader.MakeReader(strings.NewReader(exp), sxpf.MakeMappedFactory()).Read()
+	val, err := reader.MakeReader(strings.NewReader(exp)).Read()
 	if err != nil {
 		t.Error(err)
 		return
