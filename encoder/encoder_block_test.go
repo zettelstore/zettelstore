@@ -53,7 +53,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<!--\nRender\n-->\n",
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (quote ("-" . "")) "Render"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (quote (("-" . ""))) "Render"))`,
 			encoderSHTML: "((@@@ \"Render\"))",
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -125,7 +125,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<hr lang="zmk">`,
 			encoderMD:    "---",
-			encoderSexpr: `(BLOCK (THEMATIC (quote ("lang" . "zmk"))))`,
+			encoderSexpr: `(BLOCK (THEMATIC (quote (("lang" . "zmk")))))`,
 			encoderSHTML: `((hr (@ (lang . "zmk"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -245,7 +245,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<pre><code>Hello\u2423World</code></pre>",
 			encoderMD:    "    Hello World",
-			encoderSexpr: `(BLOCK (VERBATIM-CODE (quote ("-" . "")) "Hello World"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-CODE (quote (("-" . ""))) "Hello World"))`,
 			encoderSHTML: "((pre (code \"Hello\u2423World\")))",
 			encoderText:  "Hello World",
 			encoderZmk:   useZmk,
@@ -346,7 +346,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (TRANSCLUDE (quote ("width" . "100px")) (EXTERNAL "http://example.com/image")))`,
+			encoderSexpr: `(BLOCK (TRANSCLUDE (quote (("width" . "100px"))) (quote (EXTERNAL "http://example.com/image"))))`,
 			encoderSHTML: `((p (img (@ (class . "external") (src . "http://example.com/image") (width . "100px")))))`,
 			encoderText:  "",
 			encoderZmk:   useZmk,

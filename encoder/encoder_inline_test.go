@@ -161,7 +161,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<span lang="de"><q>quotes</q></span>`,
 			encoderMD:    "<q>quotes</q>",
-			encoderSexpr: `(INLINE (FORMAT-QUOTE (quote ("lang" . "de")) (TEXT "quotes")))`,
+			encoderSexpr: `(INLINE (FORMAT-QUOTE (quote (("lang" . "de"))) (TEXT "quotes")))`,
 			encoderSHTML: `((span (@ (lang . "de")) (q "quotes")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   `""quotes""{lang="de"}`,
@@ -197,7 +197,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<code>x\u2423y</code>",
 			encoderMD:    "`x y`",
-			encoderSexpr: `(INLINE (LITERAL-CODE (quote ("-" . "")) "x y"))`,
+			encoderSexpr: `(INLINE (LITERAL-CODE (quote (("-" . ""))) "x y"))`,
 			encoderSHTML: "((code \"x\u2423y\"))",
 			encoderText:  `x y`,
 			encoderZmk:   useZmk,
@@ -257,7 +257,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<span lang="fr"><q>abc</q></span>`,
 			encoderMD:    "<q>abc</q>",
-			encoderSexpr: `(INLINE (FORMAT-SPAN (quote ("lang" . "fr")) (FORMAT-QUOTE () (TEXT "abc"))))`,
+			encoderSexpr: `(INLINE (FORMAT-SPAN (quote (("lang" . "fr"))) (FORMAT-QUOTE () (TEXT "abc"))))`,
 			encoderSHTML: `((span (@ (lang . "fr")) (q "abc")))`,
 			encoderText:  `abc`,
 			encoderZmk:   `::""abc""::{lang="fr"}`,
@@ -316,7 +316,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<!-- line comment -->`,
 			encoderMD:    "",
-			encoderSexpr: `(INLINE (LITERAL-COMMENT (quote ("-" . "")) "line comment"))`,
+			encoderSexpr: `(INLINE (LITERAL-COMMENT (quote (("-" . ""))) "line comment"))`,
 			encoderSHTML: `((@@ "line comment"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -328,7 +328,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `Text<!-- comment -->`,
 			encoderMD:    "Text",
-			encoderSexpr: `(INLINE (TEXT "Text") (LITERAL-COMMENT (quote ("-" . "")) "comment"))`,
+			encoderSexpr: `(INLINE (TEXT "Text") (LITERAL-COMMENT (quote (("-" . ""))) "comment"))`,
 			encoderSHTML: `("Text" (@@ "comment"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
@@ -340,7 +340,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `Text<!-- comment --&gt; end -->`,
 			encoderMD:    "Text",
-			encoderSexpr: `(INLINE (TEXT "Text") (LITERAL-COMMENT (quote ("-" . "")) "comment --> end"))`,
+			encoderSexpr: `(INLINE (TEXT "Text") (LITERAL-COMMENT (quote (("-" . ""))) "comment --> end"))`,
 			encoderSHTML: `("Text" (@@ "comment --> end"))`,
 			encoderText:  `Text`,
 			encoderZmk:   useZmk,
@@ -398,10 +398,10 @@ var tcsInline = []zmkTestCase{
 		descr: "Invalid Simple Link",
 		zmk:   `[[00000000000000]]`,
 		expect: expectMap{
-			encoderHTML:  ``,
+			encoderHTML:  `<span>00000000000000</span>`,
 			encoderMD:    "[00000000000000](00000000000000)",
 			encoderSexpr: `(INLINE (LINK-INVALID () "00000000000000"))`,
-			encoderSHTML: `(())`,
+			encoderSHTML: `((span "00000000000000"))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
 		},
@@ -568,7 +568,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<img src="abc">`,
 			encoderMD:    "![abc](abc)",
-			encoderSexpr: `(INLINE (EMBED () (EXTERNAL "abc") ""))`,
+			encoderSexpr: `(INLINE (EMBED () (quote (EXTERNAL "abc")) ""))`,
 			encoderSHTML: `((img (@ (src . "abc"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -592,7 +592,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  ``,
 			encoderMD:    "<hr>",
-			encoderSexpr: `(INLINE (LITERAL-ZETTEL (quote ("" . "text")) "<hr>"))`,
+			encoderSexpr: `(INLINE (LITERAL-ZETTEL (quote (("" . "text"))) "<hr>"))`,
 			encoderSHTML: `(())`,
 			encoderText:  `<hr>`,
 			encoderZmk:   useZmk,

@@ -365,11 +365,17 @@ func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Object {
 	for _, k := range keys {
 		objs = append(objs, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
 	}
-	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymQuote)
+	return sxpf.Nil().Cons(sxpf.MakeList(objs...)).Cons(t.zetSyms.SymQuote)
 }
 
 func (t *Transformer) getReference(ref *ast.Reference) *sxpf.List {
-	return sxpf.Nil().Cons(sxpf.MakeString(ref.Value)).Cons(mapGetS(t, t.mapRefStateS, ref.State))
+	return sxpf.MakeList(
+		t.zetSyms.SymQuote,
+		sxpf.MakeList(
+			mapGetS(t, t.mapRefStateS, ref.State),
+			sxpf.MakeString(ref.Value),
+		),
+	)
 }
 
 func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
