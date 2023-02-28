@@ -53,7 +53,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<!--\nRender\n-->\n",
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (ATTR ("-" . "")) "Render"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-COMMENT (quote ("-" . "")) "Render"))`,
 			encoderSHTML: "((@@@ \"Render\"))",
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -125,7 +125,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<hr lang="zmk">`,
 			encoderMD:    "---",
-			encoderSexpr: `(BLOCK (THEMATIC (ATTR ("lang" . "zmk"))))`,
+			encoderSexpr: `(BLOCK (THEMATIC (quote ("lang" . "zmk"))))`,
 			encoderSHTML: `((hr (@ (lang . "zmk"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -245,7 +245,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<pre><code>Hello\u2423World</code></pre>",
 			encoderMD:    "    Hello World",
-			encoderSexpr: `(BLOCK (VERBATIM-CODE (ATTR ("-" . "")) "Hello World"))`,
+			encoderSexpr: `(BLOCK (VERBATIM-CODE (quote ("-" . "")) "Hello World"))`,
 			encoderSHTML: "((pre (code \"Hello\u2423World\")))",
 			encoderText:  "Hello World",
 			encoderZmk:   useZmk,
@@ -334,7 +334,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<p>Text<sup id=\"fnref:1\"><a class=\"zs-noteref\" href=\"#fn:1\" role=\"doc-noteref\">1</a></sup></p><ol class=\"zs-endnotes\"><li class=\"zs-endnote\" id=\"fn:1\" role=\"doc-endnote\" value=\"1\">Footnote <a class=\"zs-endnote-backref\" href=\"#fnref:1\" role=\"doc-backlink\">\u21a9\ufe0e</a></li></ol>",
 			encoderMD:    "Text",
-			encoderSexpr: `(BLOCK (PARA (TEXT "Text") (FOOTNOTE () (TEXT "Footnote"))))`,
+			encoderSexpr: `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (TEXT "Footnote"))))`,
 			encoderSHTML: "((p \"Text\" (sup (@ (id . \"fnref:1\")) (a (@ (class . \"zs-noteref\") (href . \"#fn:1\") (role . \"doc-noteref\")) \"1\"))))",
 			encoderText:  "Text Footnote",
 			encoderZmk:   useZmk,
@@ -346,7 +346,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (TRANSCLUDE (ATTR ("width" . "100px")) (EXTERNAL "http://example.com/image")))`,
+			encoderSexpr: `(BLOCK (TRANSCLUDE (quote ("width" . "100px")) (EXTERNAL "http://example.com/image")))`,
 			encoderSHTML: `((p (img (@ (class . "external") (src . "http://example.com/image") (width . "100px")))))`,
 			encoderText:  "",
 			encoderZmk:   useZmk,

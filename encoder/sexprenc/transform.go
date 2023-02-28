@@ -191,7 +191,7 @@ func (t *Transformer) GetSexpr(node ast.Node) *sxpf.List {
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymCite)
 	case *ast.FootnoteNode:
-		return t.getInlineSlice(n.Inlines).Tail().Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymFootnote)
+		return t.getInlineSlice(n.Inlines).Tail().Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().
 			Cons(sxpf.MakeString(n.Fragment)).
@@ -365,7 +365,7 @@ func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Object {
 	for _, k := range keys {
 		objs = append(objs, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
 	}
-	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymAttr)
+	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymQuote)
 }
 
 func (t *Transformer) getReference(ref *ast.Reference) *sxpf.List {
