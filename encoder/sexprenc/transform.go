@@ -191,7 +191,8 @@ func (t *Transformer) GetSexpr(node ast.Node) *sxpf.List {
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymCite)
 	case *ast.FootnoteNode:
-		return t.getInlineSlice(n.Inlines).Tail().Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymEndnote)
+		text := sxpf.Nil().Cons(sxpf.Nil().Cons(t.getInlineSlice(n.Inlines)).Cons(t.zetSyms.SymQuote))
+		return text.Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().
 			Cons(sxpf.MakeString(n.Fragment)).

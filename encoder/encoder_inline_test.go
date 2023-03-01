@@ -347,12 +347,12 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
-		descr: "Simple endnote",
+		descr: "Simple inline endnote",
 		zmk:   `[^endnote]`,
 		expect: expectMap{
 			encoderHTML:  `<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup>`,
 			encoderMD:    "",
-			encoderSexpr: `(INLINE (ENDNOTE () (TEXT "endnote")))`,
+			encoderSexpr: `(INLINE (ENDNOTE () (quote (INLINE (TEXT "endnote")))))`,
 			encoderSHTML: `((sup (@ (id . "fnref:1")) (a (@ (class . "zs-noteref") (href . "#fn:1") (role . "doc-noteref")) "1")))`,
 			encoderText:  `endnote`,
 			encoderZmk:   useZmk,
