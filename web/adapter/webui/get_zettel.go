@@ -14,8 +14,9 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -93,7 +94,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			PrecursorRefs   string
 			HasExtURL       bool
 			ExtURL          string
-			ExtNewWindow    string
 			Author          string
 			Content         string
 			NeedBottomNav   bool
@@ -120,7 +120,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			PrecursorRefs:   wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
 			ExtURL:          extURL,
 			HasExtURL:       hasExtURL,
-			ExtNewWindow:    htmlAttrNewWindow(hasExtURL),
 			Author:          zn.Meta.GetDefault(api.KeyAuthor, ""),
 			Content:         htmlContent,
 			NeedBottomNav:   folgeLinks.Has || backLinks.Has || successorLinks.Has,
@@ -136,11 +135,24 @@ func formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
 	if !found {
 		return "", false
 	}
-	if found && val == "" {
+	if val == "" {
 		return "", false
 	}
+	sf := sxpf.MakeMappedFactory()
+	attrs := sxpf.MakeList(
+		sf.Make(sxhtml.NameSymAttr),
+		sxpf.Cons(sf.Make("href"), sxpf.MakeString(val)),
+		sxpf.Cons(sf.Make("target"), sxpf.MakeString("_blank")),
+		sxpf.Cons(sf.Make("rel"), sxpf.MakeString("noopener noreferrer")),
+	)
+	a := sxpf.MakeList(
+		sf.Make("a"),
+		attrs,
+		sxpf.MakeString(val),
+	)
+
 	var sb strings.Builder
-	_, err := html.AttributeEscape(&sb, val)
+	_, err := sxhtml.NewGenerator(sf).WriteHTML(&sb, a)
 	if err != nil {
 		return "", false
 	}

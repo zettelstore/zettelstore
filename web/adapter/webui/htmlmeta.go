@@ -64,7 +64,6 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, gen))
 	default:
-		html.Escape(w, value)
 		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
 	}
 }
