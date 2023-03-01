@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
@@ -69,13 +70,15 @@ func (wui *WebUI) MakeGetInfoHandler(
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
 		for i, p := range pairs {
 			var sb strings.Builder
-			wui.writeHTMLMetaValue(
-				&sb, p.Key, p.Value,
+			if sval := wui.writeHTMLMetaValue(
+				p.Key, p.Value,
 				getTextTitle,
 				func(val string) ast.InlineSlice {
 					return evaluate.RunMetadata(ctx, val)
 				},
-				enc)
+				enc); !sxpf.IsNil(sval) {
+				wui.htmlGen.WriteHTML(&sb, sval)
+			}
 			metaData[i] = metaDataInfo{p.Key, sb.String()}
 		}
 		summary := collect.References(zn)

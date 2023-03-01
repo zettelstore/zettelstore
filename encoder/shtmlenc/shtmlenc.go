@@ -37,7 +37,7 @@ var mySE Encoder
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	tx := sexprenc.NewTransformer()
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	metaSHTML, err := th.Transform(tx.GetMeta(zn.InhMeta, evalMeta))
 	if err != nil {
 		return 0, err
@@ -53,7 +53,7 @@ func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.Ev
 // WriteMeta encodes meta data as s-expression.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
 	tx := sexprenc.NewTransformer()
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	metaSHTML, err := th.Transform(tx.GetMeta(m, evalMeta))
 	if err != nil {
 		return 0, err
@@ -87,6 +87,6 @@ func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 func TransformSlice(node ast.Node) (*sxpf.List, error) {
 	tx := sexprenc.NewTransformer()
 	xval := tx.GetSexpr(node)
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	return th.Transform(xval)
 }

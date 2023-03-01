@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2023 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -14,12 +14,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/url"
 	"time"
 
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -27,136 +27,149 @@ import (
 	"zettelstore.de/z/usecase"
 )
 
-var space = []byte{' '}
-
 func (wui *WebUI) writeHTMLMetaValue(
-	w io.Writer,
 	key, value string,
 	getTextTitle getTextTitleFunc,
 	evalMetadata evalMetadataFunc,
 	gen *htmlGenerator,
-) {
+) sxpf.Object {
+	var sval sxpf.Object = sxpf.Nil()
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
-		writeCredential(w, value)
+		sval = sxpf.MakeString(value)
 	case meta.TypeEmpty:
-		writeEmpty(w, value)
+		sval = sxpf.MakeString(value)
 	case meta.TypeID:
-		wui.writeIdentifier(w, value, getTextTitle)
+		sval = wui.transformIdentifier(value, getTextTitle)
 	case meta.TypeIDSet:
-		wui.writeIdentifierSet(w, meta.ListFromValue(value), getTextTitle)
+		sval = wui.transformIdentifierSet(meta.ListFromValue(value), getTextTitle)
 	case meta.TypeNumber:
-		wui.writeNumber(w, key, value)
+		sval = wui.transformLink(key, value, value)
 	case meta.TypeString:
-		writeString(w, value)
+		sval = sxpf.MakeString(value)
 	case meta.TypeTagSet:
-		wui.writeTagSet(w, key, meta.ListFromValue(value))
+		sval = wui.transformTagSet(key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
 		if ts, ok := meta.TimeValue(value); ok {
-			writeTimestamp(w, ts)
+			sval = wui.transformTimestamp(ts)
 		}
 	case meta.TypeURL:
-		writeURL(w, value)
+		sval = wui.transformURL(value)
 	case meta.TypeWord:
-		wui.writeWord(w, key, value)
+		sval = wui.transformWord(key, value)
 	case meta.TypeWordSet:
-		wui.writeWordSet(w, key, meta.ListFromValue(value))
+		sval = wui.transformWordSet(key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		io.WriteString(w, encodeZmkMetadata(value, evalMetadata, gen))
+		sval = wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		fmt.Fprintf(w, " <b>(Unhandled type: %v, key: %v)</b>", kt, key)
+		sval = sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.Make("b"))
 	}
+	return sval
 }
 
-func writeCredential(w io.Writer, val string) { html.Escape(w, val) }
-func writeEmpty(w io.Writer, val string)      { html.Escape(w, val) }
-
-func (wui *WebUI) writeIdentifier(w io.Writer, val string, getTextTitle getTextTitleFunc) {
+func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sxpf.Object {
+	text := sxpf.MakeString(val)
 	zid, err := id.Parse(val)
 	if err != nil {
-		html.Escape(w, val)
-		return
+		return text
 	}
 	title, found := getTextTitle(zid)
 	switch {
 	case found > 0:
 		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
-		if title == "" {
-			fmt.Fprintf(w, "<a href=\"%v\">%v</a>", ub, zid)
-		} else {
-			fmt.Fprintf(w, "<a href=\"%v\" title=\"%v\">%v</a>", ub, title, zid)
+		attrs := sxpf.Nil()
+		if title != "" {
+			attrs = attrs.Cons(sxpf.Cons(wui.sf.Make("title"), sxpf.MakeString(title)))
 		}
+		attrs = attrs.Cons(sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(ub.String()))).Cons(wui.sf.Make(sxhtml.NameSymAttr))
+		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.sf.Make("a"))
 	case found == 0:
-		fmt.Fprintf(w, "<s>%v</s>", val)
-	case found < 0:
-		io.WriteString(w, val)
+		return sxpf.Nil().Cons(text).Cons(wui.sf.Make("s"))
+	default: // case found < 0:
+		return text
 	}
 }
 
-func (wui *WebUI) writeIdentifierSet(w io.Writer, vals []string, getTextTitle getTextTitleFunc) {
-	for i, val := range vals {
-		if i > 0 {
-			w.Write(space)
-		}
-		wui.writeIdentifier(w, val, getTextTitle)
+func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) sxpf.Object {
+	if len(vals) == 0 {
+		return sxpf.Nil()
 	}
-}
-
-func (wui *WebUI) writeNumber(w io.Writer, key, val string) {
-	wui.writeLink(w, key, val, val)
-}
-
-func writeString(w io.Writer, val string) { html.Escape(w, val) }
-
-func (wui *WebUI) writeTagSet(w io.Writer, key string, tags []string) {
-	for i, tag := range tags {
-		if i > 0 {
-			w.Write(space)
-		}
-		wui.writeLink(w, key, tag, tag)
+	space := sxpf.MakeString(" ")
+	text := make([]sxpf.Object, 0, 2*len(vals))
+	for _, val := range vals {
+		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
 	}
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
 }
 
-func writeTimestamp(w io.Writer, ts time.Time) {
-	io.WriteString(w, `<time datetime="`)
-	io.WriteString(w, ts.Format("2006-01-02T15:04:05"))
-	io.WriteString(w, `">`)
-	io.WriteString(w, ts.Format("2006-01-02&nbsp;15:04:05"))
-	io.WriteString(w, `</time>`)
+func (wui *WebUI) transformTagSet(key string, tags []string) sxpf.Object {
+	if len(tags) == 0 {
+		return sxpf.Nil()
+	}
+	space := sxpf.MakeString(" ")
+	text := make([]sxpf.Object, 0, 2*len(tags))
+	for _, tag := range tags {
+		text = append(text, space, wui.transformLink(key, tag, tag))
+	}
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
 }
 
-func writeURL(w io.Writer, val string) {
+func (wui *WebUI) transformTimestamp(ts time.Time) sxpf.Object {
+	return sxpf.MakeList(
+		wui.sf.Make("time"),
+		sxpf.MakeList(
+			wui.sf.Make(sxhtml.NameSymAttr),
+			sxpf.Cons(wui.sf.Make("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
+		),
+		sxpf.MakeList(wui.sf.Make(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
+	)
+}
+
+func (wui *WebUI) transformURL(val string) sxpf.Object {
+	text := sxpf.MakeString(val)
 	u, err := url.Parse(val)
-	if err != nil {
-		html.Escape(w, val)
-		return
-	}
-	if us := u.String(); us != "" {
-		io.WriteString(w, `<a href="`)
-		html.AttributeEscape(w, us)
-		io.WriteString(w, `" target="_blank" rel="noopener noreferrer">`)
-		html.Escape(w, val)
-		io.WriteString(w, "</a>")
-	}
-}
-
-func (wui *WebUI) writeWord(w io.Writer, key, word string) {
-	wui.writeLink(w, key, word, word)
-}
-
-func (wui *WebUI) writeWordSet(w io.Writer, key string, words []string) {
-	for i, word := range words {
-		if i > 0 {
-			w.Write(space)
+	if err == nil {
+		if us := u.String(); us != "" {
+			return sxpf.MakeList(
+				wui.sf.Make("a"),
+				sxpf.MakeList(
+					wui.sf.Make(sxhtml.NameSymAttr),
+					sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(val)),
+					sxpf.Cons(wui.sf.Make("target"), sxpf.MakeString("_blank")),
+					sxpf.Cons(wui.sf.Make("rel"), sxpf.MakeString("noopener noreferrer")),
+				),
+				text,
+			)
 		}
-		wui.writeWord(w, key, word)
 	}
+	return text
 }
 
-func (wui *WebUI) writeLink(w io.Writer, key, value, text string) {
-	fmt.Fprintf(w, `<a href="%v">`, wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value))
-	html.Escape(w, text)
-	io.WriteString(w, "</a>")
+func (wui *WebUI) transformWord(key, word string) sxpf.Object {
+	return wui.transformLink(key, word, word)
+}
+
+func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
+	if len(words) == 0 {
+		return sxpf.Nil()
+	}
+	space := sxpf.MakeString(" ")
+	text := make([]sxpf.Object, 0, 2*len(words))
+	for _, tag := range words {
+		text = append(text, space, wui.transformWord(key, tag))
+	}
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
+}
+
+func (wui *WebUI) transformLink(key, value, text string) sxpf.Object {
+	return sxpf.MakeList(
+		wui.sf.Make("a"),
+		sxpf.MakeList(
+			wui.sf.Make(sxhtml.NameSymAttr),
+			sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+		),
+		sxpf.MakeString(text),
+	)
 }
 
 type getMetadataFunc func(id.Zid) (*meta.Meta, error)
@@ -186,7 +199,7 @@ func (wui *WebUI) makeGetTextTitle(getMetadata getMetadataFunc, evalMetadata eva
 	}
 }
 
-func encodeZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) string {
+func (wui *WebUI) transformZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) sxpf.Object {
 	is := evalMetadata(value)
-	return gen.InlinesString(&is)
+	return gen.InlinesSxHTML(&is).Cons(wui.sf.Make("span"))
 }

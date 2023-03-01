@@ -47,7 +47,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	tx := sexprenc.NewTransformer()
 	xm := tx.GetMeta(zn.InhMeta, evalMeta)
 
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	hm, err := th.Transform(xm)
 	if err != nil {
 		return 0, err
@@ -113,7 +113,7 @@ func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMet
 	tx := sexprenc.NewTransformer()
 	xm := tx.GetMeta(m, evalMeta)
 
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	hm, err := th.Transform(xm)
 	if err != nil {
 		return 0, err
@@ -130,7 +130,7 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	tx := sexprenc.NewTransformer()
 	xval := tx.GetSexpr(bs)
-	th := shtml.NewTransformer(1)
+	th := shtml.NewTransformer(1, nil)
 	hobj, err := th.Transform(xval)
 
 	if err == nil {

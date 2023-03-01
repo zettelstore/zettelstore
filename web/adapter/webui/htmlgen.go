@@ -40,8 +40,8 @@ type htmlGenerator struct {
 	symAt *sxpf.Symbol
 }
 
-func createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
-	th := shtml.NewTransformer(1)
+func (wui *WebUI) createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
+	th := shtml.NewTransformer(1, wui.sf)
 	symA := th.Make("a")
 	symSpan := th.Make("span")
 	symImg := th.Make("img")
@@ -307,18 +307,26 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 	return sb.String(), err
 }
 
-// InlinesString writes an inline slice to the writer
-func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
+// InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
+func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.List {
 	if is == nil || len(*is) == 0 {
-		return ""
+		return sxpf.Nil()
 	}
 	sx := g.tx.GetSexpr(is)
 	sh, err := g.th.Transform(sx)
 	if err != nil {
-		return ""
+		return sxpf.Nil()
 	}
-	var sb strings.Builder
-	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh))
-	_, _ = gen.WriteListHTML(&sb, sh)
-	return sb.String()
+	return sh
+}
+
+// InlinesString returns an inline slice, encoded as a HTML string.
+func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
+	if sh := g.InlinesSxHTML(is); !sxpf.IsNil(sh) {
+		var sb strings.Builder
+		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh))
+		_, _ = gen.WriteListHTML(&sb, sh)
+		return sb.String()
+	}
+	return ""
 }
