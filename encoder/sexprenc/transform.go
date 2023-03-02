@@ -303,7 +303,7 @@ func (t *Transformer) getRow(row ast.TableRow) *sxpf.List {
 	for i, cell := range row {
 		rObjs[i] = t.getCell(cell)
 	}
-	return sxpf.MakeList(rObjs...).Cons(t.zetSyms.SymRow)
+	return sxpf.MakeList(rObjs...).Cons(t.zetSyms.SymList)
 }
 
 func (t *Transformer) getCell(cell *ast.TableCell) *sxpf.List {
@@ -394,7 +394,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf
 			for i, val := range setList {
 				setObjs[i] = sxpf.MakeString(val)
 			}
-			obj = sxpf.MakeList(setObjs...)
+			obj = sxpf.MakeList(setObjs...).Cons(t.zetSyms.SymList)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			obj = t.GetSexpr(&is)

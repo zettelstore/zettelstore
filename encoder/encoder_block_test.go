@@ -305,7 +305,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<table><tbody><tr><td>c1</td><td>c2</td><td>c3</td></tr><tr><td>d1</td><td></td><td>d3</td></tr></tbody></table>`,
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (TABLE () (ROW (CELL (TEXT "c1")) (CELL (TEXT "c2")) (CELL (TEXT "c3"))) (ROW (CELL (TEXT "d1")) (CELL) (CELL (TEXT "d3")))))`,
+			encoderSexpr: `(BLOCK (TABLE () (LIST (CELL (TEXT "c1")) (CELL (TEXT "c2")) (CELL (TEXT "c3"))) (LIST (CELL (TEXT "d1")) (CELL) (CELL (TEXT "d3")))))`,
 			encoderSHTML: `((table (tbody (tr (td "c1") (td "c2") (td "c3")) (tr (td "d1") (td) (td "d3")))))`,
 			encoderText:  "c1 c2 c3\nd1  d3",
 			encoderZmk:   useZmk,
@@ -320,7 +320,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<table><thead><tr><td class="right">h1</td><td>h2</td><td class="center">h3</td></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
 			encoderMD:    "",
-			encoderSexpr: `(BLOCK (TABLE (ROW (CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) (ROW (CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) (ROW (CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
+			encoderSexpr: `(BLOCK (TABLE (LIST (CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) (LIST (CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) (LIST (CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
 			encoderSHTML: `((table (thead (tr (td (@ (class . "right")) "h1") (td "h2") (td (@ (class . "center")) "h3"))) (tbody (tr (td (@ (class . "left")) "c1") (td "c2") (td (@ (class . "center")) "c3")) (tr (td (@ (class . "right")) "f1") (td "f2") (td (@ (class . "center")) "=f3")))))`,
 			encoderText:  "h1 h2 h3\nc1 c2 c3\nf1 f2 =f3",
 			encoderZmk: `|=h1>|=h2|=h3:
