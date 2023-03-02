@@ -411,7 +411,7 @@ func mapGetS[T comparable](t *Transformer, m map[T]*sxpf.Symbol, k T) *sxpf.Symb
 		return result
 	}
 	log.Println("MISS", k, m)
-	return t.sf.Make(fmt.Sprintf("**%v:NOT-FOUND**", k))
+	return t.sf.MustMake(fmt.Sprintf("**%v:NOT-FOUND**", k))
 }
 
 func getBase64String(data []byte) sxpf.String {

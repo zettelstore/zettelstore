@@ -72,36 +72,36 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	hen := th.Endnotes()
 
 	sf := th.SymbolFactory()
-	symAttr := sf.Make(sxhtml.NameSymAttr)
+	symAttr := sf.MustMake(sxhtml.NameSymAttr)
 
-	head := sxpf.Nil().Cons(sf.Make("head"))
+	head := sxpf.Nil().Cons(sf.MustMake("head"))
 	curr := head
-	curr = curr.AppendBang(sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.Cons(sf.Make("charset"), sxpf.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.Make("meta")))
+	curr = curr.AppendBang(sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.Cons(sf.MustMake("charset"), sxpf.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
 	for elem := hm; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
 	if hasTitle {
 		var sb strings.Builder
 		he.textEnc.WriteInlines(&sb, &evalTitle)
-		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.Make("title")))
+		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
 	}
 
-	body := sxpf.Nil().Cons(sf.Make("body"))
+	body := sxpf.Nil().Cons(sf.MustMake("body"))
 	curr = body
 	if hasTitle {
-		curr = curr.AppendBang(htitle.Cons(sf.Make("h1")))
+		curr = curr.AppendBang(htitle.Cons(sf.MustMake("h1")))
 	}
 	for elem := hast; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
 	if hen != nil {
-		curr = curr.AppendBang(sxpf.Nil().Cons(sf.Make("hr")))
+		curr = curr.AppendBang(sxpf.Nil().Cons(sf.MustMake("hr")))
 		_ = curr.AppendBang(hen)
 	}
 
 	doc := sxpf.MakeList(
-		sf.Make(sxhtml.NameSymDoctype),
-		sxpf.MakeList(sf.Make("html"), head, body),
+		sf.MustMake(sxhtml.NameSymDoctype),
+		sxpf.MakeList(sf.MustMake("html"), head, body),
 	)
 
 	gen := sxhtml.NewGenerator(sf, sxhtml.WithNewline)

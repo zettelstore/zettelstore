@@ -62,7 +62,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		sval = wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		sval = sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.Make("b"))
+		sval = sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.MustMake("b"))
 	}
 	return sval
 }
@@ -79,12 +79,12 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
 		attrs := sxpf.Nil()
 		if title != "" {
-			attrs = attrs.Cons(sxpf.Cons(wui.sf.Make("title"), sxpf.MakeString(title)))
+			attrs = attrs.Cons(sxpf.Cons(wui.sf.MustMake("title"), sxpf.MakeString(title)))
 		}
-		attrs = attrs.Cons(sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(ub.String()))).Cons(wui.sf.Make(sxhtml.NameSymAttr))
-		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.sf.Make("a"))
+		attrs = attrs.Cons(sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(ub.String()))).Cons(wui.sf.MustMake(sxhtml.NameSymAttr))
+		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.sf.MustMake("a"))
 	case found == 0:
-		return sxpf.Nil().Cons(text).Cons(wui.sf.Make("s"))
+		return sxpf.Nil().Cons(text).Cons(wui.sf.MustMake("s"))
 	default: // case found < 0:
 		return text
 	}
@@ -99,7 +99,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
 func (wui *WebUI) transformTagSet(key string, tags []string) sxpf.Object {
@@ -111,17 +111,17 @@ func (wui *WebUI) transformTagSet(key string, tags []string) sxpf.Object {
 	for _, tag := range tags {
 		text = append(text, space, wui.transformLink(key, tag, tag))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
 func (wui *WebUI) transformTimestamp(ts time.Time) sxpf.Object {
 	return sxpf.MakeList(
-		wui.sf.Make("time"),
+		wui.sf.MustMake("time"),
 		sxpf.MakeList(
-			wui.sf.Make(sxhtml.NameSymAttr),
-			sxpf.Cons(wui.sf.Make("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
+			wui.sf.MustMake(sxhtml.NameSymAttr),
+			sxpf.Cons(wui.sf.MustMake("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
 		),
-		sxpf.MakeList(wui.sf.Make(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
+		sxpf.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
 	)
 }
 
@@ -131,12 +131,12 @@ func (wui *WebUI) transformURL(val string) sxpf.Object {
 	if err == nil {
 		if us := u.String(); us != "" {
 			return sxpf.MakeList(
-				wui.sf.Make("a"),
+				wui.sf.MustMake("a"),
 				sxpf.MakeList(
-					wui.sf.Make(sxhtml.NameSymAttr),
-					sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(val)),
-					sxpf.Cons(wui.sf.Make("target"), sxpf.MakeString("_blank")),
-					sxpf.Cons(wui.sf.Make("rel"), sxpf.MakeString("noopener noreferrer")),
+					wui.sf.MustMake(sxhtml.NameSymAttr),
+					sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(val)),
+					sxpf.Cons(wui.sf.MustMake("target"), sxpf.MakeString("_blank")),
+					sxpf.Cons(wui.sf.MustMake("rel"), sxpf.MakeString("noopener noreferrer")),
 				),
 				text,
 			)
@@ -158,15 +158,15 @@ func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	for _, tag := range words {
 		text = append(text, space, wui.transformWord(key, tag))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.Make("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
 func (wui *WebUI) transformLink(key, value, text string) sxpf.Object {
 	return sxpf.MakeList(
-		wui.sf.Make("a"),
+		wui.sf.MustMake("a"),
 		sxpf.MakeList(
-			wui.sf.Make(sxhtml.NameSymAttr),
-			sxpf.Cons(wui.sf.Make("href"), sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+			wui.sf.MustMake(sxhtml.NameSymAttr),
+			sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
 		),
 		sxpf.MakeString(text),
 	)
@@ -201,5 +201,5 @@ func (wui *WebUI) makeGetTextTitle(getMetadata getMetadataFunc, evalMetadata eva
 
 func (wui *WebUI) transformZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) sxpf.Object {
 	is := evalMetadata(value)
-	return gen.InlinesSxHTML(&is).Cons(wui.sf.Make("span"))
+	return gen.InlinesSxHTML(&is).Cons(wui.sf.MustMake("span"))
 }
