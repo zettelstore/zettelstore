@@ -145,12 +145,14 @@ func (t *Transformer) GetSexpr(node ast.Node) *sxpf.List {
 	case *ast.RegionNode:
 		return t.getRegion(n)
 	case *ast.HeadingNode:
-		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sxpf.MakeString(n.Fragment)).
-			Cons(sxpf.MakeString(n.Slug)).
-			Cons(t.getAttributes(n.Attrs)).
-			Cons(sxpf.MakeInteger64(int64(n.Level))).
-			Cons(t.zetSyms.SymHeading)
+		return sxpf.MakeList(
+			t.zetSyms.SymHeading,
+			sxpf.MakeInteger64(int64(n.Level)),
+			t.getAttributes(n.Attrs),
+			sxpf.MakeString(n.Slug),
+			sxpf.MakeString(n.Fragment),
+			t.getInlineSlice(n.Inlines),
+		)
 	case *ast.HRuleNode:
 		return sxpf.MakeList(t.zetSyms.SymThematic, t.getAttributes(n.Attrs))
 	case *ast.NestedListNode:

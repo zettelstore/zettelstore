@@ -65,7 +65,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<h2 id=\"top\">Top</h2>",
 			encoderMD:    "# Top",
-			encoderSexpr: `(BLOCK (HEADING 1 () "top" "top" (TEXT "Top")))`,
+			encoderSexpr: `(BLOCK (HEADING 1 () "top" "top" (INLINE (TEXT "Top"))))`,
 			encoderSHTML: `((h2 (@ (id . "top")) "Top"))`,
 			encoderText:  `Top`,
 			encoderZmk:   useZmk,
