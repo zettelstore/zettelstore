@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
@@ -71,6 +73,9 @@ type WebUI struct {
 	logoutURL     string
 	searchURL     string
 	createNewURL  string
+
+	sf      sxpf.SymbolFactory
+	htmlGen *sxhtml.Generator
 }
 
 type webuiBox interface {
@@ -86,6 +91,7 @@ type webuiBox interface {
 func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
+	sf := sxpf.MakeMappedFactory()
 	wui := &WebUI{
 		log:      log,
 		debug:    kernel.Main.GetConfig(kernel.CoreService, kernel.CoreDebug).(bool),
@@ -113,6 +119,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		logoutURL:     loginoutBase.AppendKVQuery("logout", "").String(),
 		searchURL:     ab.NewURLBuilder('h').String(),
 		createNewURL:  ab.NewURLBuilder('c').String(),
+
+		sf:      sf,
+		htmlGen: sxhtml.NewGenerator(sf),
 	}
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
@@ -317,9 +326,9 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.DebugMode = wui.debug
 }
 
-func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return createGenerator(wui, "") }
+func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return wui.createGenerator(wui, "") }
 func (wui *WebUI) createZettelEncoder(ctx context.Context, m *meta.Meta) *htmlGenerator {
-	return createGenerator(wui, wui.rtConfig.Get(ctx, m, config.KeyMarkerExternal))
+	return wui.createGenerator(wui, wui.rtConfig.Get(ctx, m, config.KeyMarkerExternal))
 }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.

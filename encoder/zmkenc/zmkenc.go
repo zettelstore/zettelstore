@@ -289,7 +289,12 @@ func (v *visitor) visitDescriptionList(dn *ast.DescriptionListNode) {
 
 		for _, b := range descr.Descriptions {
 			v.b.WriteString("\n: ")
-			ast.WalkDescriptionSlice(v, b)
+			for jj, dn := range b {
+				if jj > 0 {
+					v.b.WriteString("\n\n  ")
+				}
+				ast.Walk(v, dn)
+			}
 		}
 	}
 }
@@ -394,6 +399,9 @@ func (v *visitor) visitLink(ln *ast.LinkNode) {
 		ast.Walk(v, &ln.Inlines)
 		v.b.WriteByte('|')
 	}
+	if ln.Ref.State == ast.RefStateBased {
+		v.b.WriteByte('/')
+	}
 	v.b.WriteStrings(ln.Ref.String(), "]]")
 }
 
@@ -419,7 +427,7 @@ func (v *visitor) visitEmbedBLOB(en *ast.EmbedBLOBNode) {
 func (v *visitor) visitCite(cn *ast.CiteNode) {
 	v.b.WriteStrings("[@", cn.Key)
 	if len(cn.Inlines) > 0 {
-		v.b.WriteString(", ")
+		v.b.WriteByte(' ')
 		ast.Walk(v, &cn.Inlines)
 	}
 	v.b.WriteByte(']')

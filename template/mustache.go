@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -28,7 +28,8 @@ import (
 	"regexp"
 	"strings"
 
-	"zettelstore.de/c/html"
+	"codeberg.org/t73fde/sxhtml"
+	"codeberg.org/t73fde/sxpf"
 )
 
 // Node represents a node in the parse tree.
@@ -599,7 +600,7 @@ func (tmpl *Template) renderNode(w io.Writer, node node, stack []reflect.Value) 
 			if n.raw {
 				fmt.Fprint(w, val.Interface())
 			} else {
-				html.Escape(w, fmt.Sprint(val.Interface()))
+				sxhtml.NewGenerator(nil).WriteHTML(w, sxpf.MakeString(fmt.Sprint(val.Interface())))
 			}
 		}
 	case *sectionNode:

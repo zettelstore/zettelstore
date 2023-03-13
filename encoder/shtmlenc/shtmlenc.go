@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022 Detlef Stern
+// Copyright (c) 2023-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -8,24 +8,26 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package sexprenc encodes the abstract syntax tree into a s-expr.
-package sexprenc
+// Package shtmlenc encodes the abstract syntax tree into a s-expr which represents HTML.
+package shtmlenc
 
 import (
 	"io"
 
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/encoder/sexprenc"
 )
 
 func init() {
-	encoder.Register(api.EncoderSexpr, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderSHTML, func() encoder.Encoder { return Create() })
 }
 
-// Create a S-expr encoder
+// Create a SHTML encoder
 func Create() *Encoder { return &mySE }
 
 type Encoder struct{}
@@ -34,16 +36,29 @@ var mySE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := NewTransformer()
-	content := t.GetSexpr(&zn.Ast)
-	meta := t.GetMeta(zn.InhMeta, evalMeta)
-	return io.WriteString(w, sxpf.Nil().Cons(content).Cons(meta).Repr())
+	tx := sexprenc.NewTransformer()
+	th := shtml.NewTransformer(1, nil)
+	metaSHTML, err := th.Transform(tx.GetMeta(zn.InhMeta, evalMeta))
+	if err != nil {
+		return 0, err
+	}
+	contentSHTML, err := th.Transform(tx.GetSexpr(&zn.Ast))
+	if err != nil {
+		return 0, err
+	}
+	result := sxpf.Cons(metaSHTML, contentSHTML)
+	return result.Print(w)
 }
 
 // WriteMeta encodes meta data as s-expression.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetMeta(m, evalMeta).Repr())
+	tx := sexprenc.NewTransformer()
+	th := shtml.NewTransformer(1, nil)
+	metaSHTML, err := th.Transform(tx.GetMeta(m, evalMeta))
+	if err != nil {
+		return 0, err
+	}
+	return metaSHTML.Print(w)
 }
 
 func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -52,12 +67,26 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetSexpr(bs).Repr())
+	hval, err := TransformSlice(bs)
+	if err != nil {
+		return 0, err
+	}
+	return hval.Print(w)
 }
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetSexpr(is).Repr())
+	hval, err := TransformSlice(is)
+	if err != nil {
+		return 0, err
+	}
+	return hval.Print(w)
+}
+
+// TransformSlice transforms a AST slice into SHTML.
+func TransformSlice(node ast.Node) (*sxpf.List, error) {
+	tx := sexprenc.NewTransformer()
+	xval := tx.GetSexpr(node)
+	th := shtml.NewTransformer(1, nil)
+	return th.Transform(xval)
 }

@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/html"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
@@ -65,7 +64,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		roleText := zn.Meta.GetDefault(api.KeyRole, "")
 		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
-		extURL, hasExtURL := formatURLFromMeta(zn.Meta, api.KeyURL)
+		extURL, hasExtURL := wui.formatURLFromMeta(zn.Meta, api.KeyURL)
 		folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
 		backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
 		successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
@@ -93,7 +92,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			PrecursorRefs   string
 			HasExtURL       bool
 			ExtURL          string
-			ExtNewWindow    string
 			Author          string
 			Content         string
 			NeedBottomNav   bool
@@ -120,7 +118,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			PrecursorRefs:   wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
 			ExtURL:          extURL,
 			HasExtURL:       hasExtURL,
-			ExtNewWindow:    htmlAttrNewWindow(hasExtURL),
 			Author:          zn.Meta.GetDefault(api.KeyAuthor, ""),
 			Content:         htmlContent,
 			NeedBottomNav:   folgeLinks.Has || backLinks.Has || successorLinks.Has,
@@ -131,16 +128,17 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 	}
 }
 
-func formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
+func (wui *WebUI) formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
 	val, found := m.Get(key)
 	if !found {
 		return "", false
 	}
-	if found && val == "" {
+	if val == "" {
 		return "", false
 	}
+
 	var sb strings.Builder
-	_, err := html.AttributeEscape(&sb, val)
+	_, err := wui.htmlGen.WriteHTML(&sb, wui.transformURL(val))
 	if err != nil {
 		return "", false
 	}
@@ -175,8 +173,9 @@ func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {
 
 func (wui *WebUI) encodeIdentifierSet(m *meta.Meta, key string, getTextTitle getTextTitleFunc) string {
 	if value, ok := m.Get(key); ok {
+		sval := wui.transformIdentifierSet(meta.ListFromValue(value), getTextTitle)
 		var sb strings.Builder
-		wui.writeIdentifierSet(&sb, meta.ListFromValue(value), getTextTitle)
+		wui.htmlGen.WriteHTML(&sb, sval)
 		return sb.String()
 	}
 	return ""

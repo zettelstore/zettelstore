@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -16,7 +16,8 @@ import (
 )
 
 func encodeEvaluatedTitleHTML(m *meta.Meta, evalMetadata evalMetadataFunc, gen *htmlGenerator) string {
-	return encodeZmkMetadata(m.GetTitle(), evalMetadata, gen)
+	is := evalMetadata(m.GetTitle())
+	return gen.InlinesString(&is)
 }
 
 func encodeEvaluatedTitleText(m *meta.Meta, evalMetadata evalMetadataFunc, enc *textenc.Encoder) string {

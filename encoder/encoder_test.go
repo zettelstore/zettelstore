@@ -15,9 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/sexpr"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/domain/meta"
@@ -28,6 +27,7 @@ import (
 	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/mdenc"    // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
+	_ "zettelstore.de/z/encoder/shtmlenc" // Allow to use SHTML encoder.
 	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"   // Allow to use zmk encoder.
 	"zettelstore.de/z/parser/cleaner"
@@ -48,6 +48,7 @@ const (
 	encoderHTML  = api.EncoderHTML
 	encoderMD    = api.EncoderMD
 	encoderSexpr = api.EncoderSexpr
+	encoderSHTML = api.EncoderSHTML
 	encoderText  = api.EncoderText
 	encoderZmk   = api.EncoderZmk
 )
@@ -80,7 +81,12 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 		encdr := encoder.Create(enc)
 		got, err := pe.encode(encdr)
 		if err != nil {
-			t.Error("pe.encode:", err)
+			prefix := fmt.Sprintf("Test #%d", testNum)
+			if d := descr; d != "" {
+				prefix += "\nReason:   " + d
+			}
+			prefix += "\nMode:     " + pe.mode()
+			t.Errorf("%s\nEncoder:  %s\nError:    %v", prefix, enc, err)
 			continue
 		}
 		if enc == api.EncoderZmk && exp == useZmk {
@@ -105,16 +111,12 @@ func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := sxpf.ParseString(sexpr.Smk, exp)
+	val, err := reader.MakeReader(strings.NewReader(exp)).Read()
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	got, err := sxpf.Repr(val)
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	got := val.Repr()
 	if exp != got {
 		prefix := fmt.Sprintf("Test #%d", testNum)
 		if d := descr; d != "" {

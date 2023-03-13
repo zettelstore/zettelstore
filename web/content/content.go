@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2022-2023 Detlef Stern
+// Copyright (c) 2022-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -37,6 +37,7 @@ var encoding2mime = map[api.EncodingEnum]string{
 	api.EncoderHTML:  mimeHTML,
 	api.EncoderMD:    mimeMarkdown,
 	api.EncoderSexpr: PlainText,
+	api.EncoderSHTML: PlainText,
 	api.EncoderText:  PlainText,
 	api.EncoderZmk:   PlainText,
 }
