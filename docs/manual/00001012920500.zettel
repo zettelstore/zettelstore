@@ -4,12 +4,13 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230125222102
+modified: 20230316180859
 
 A zettel representation can be encoded in various formats for further processing.
 
 * [[html|00001012920510]]
 * [[md|00001012920513]]
 * [[sexpr|00001012920516]]
+* [[shtml|00001012920525]]
 * [[text|00001012920519]]
 * [[zmk|00001012920522]]

@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20220422181104
-modified: 20230125222210
+modified: 20230316182622
 
 A zettel representation that is a [[s-expression|https://en.wikipedia.org/wiki/S-expression]] (also known as symbolic expression).
 
@@ -22,6 +22,8 @@ There are only two types of elements: atoms and lists.
 
 A list always starts with the left parenthesis (""''(''"", U+0028) and ends with a right parenthesis (""'')''"", U+0029).
 A list may contain a possibly empty sequence of elements, i.e. lists and / or atoms.
+Before the last element of a list of at least to elements, a full stop character (""''.''"", U+002E) signal a pair as the last two elements.
+This allows a more space economic storage of data.
 
 There are three syntactic forms for an atom: numbers, symbols and strings.
 
