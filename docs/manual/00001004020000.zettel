@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221219175720
+modified: 20230317183435
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -51,12 +51,6 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
   It is also used to specify the language for all non-zettel content, e.g. lists or search results.
 
   Use values according to the language definition of [[RFC-5646|https://tools.ietf.org/html/rfc5646]].
-; [!marker-external|''marker-external'']
-: Some HTML code that is displayed after a [[reference to external material|00001007040310]].
-
-  May be [[overwritten|00001004020200]] in a user zettel.
-
-  Default: ""&\#10138;"", to display a ""&#10138;"" sign.
 ; [!max-transclusions|''max-transclusions'']
 : Maximum number of indirect transclusion.
   This is used to avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]].

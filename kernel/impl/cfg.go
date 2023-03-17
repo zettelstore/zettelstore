@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -83,11 +83,10 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 			}),
 			true,
 		},
-		api.KeyLang:              {"Language", parseString, true},
-		config.KeyMarkerExternal: {"Marker external URL", parseString, true},
-		keyMaxTransclusions:      {"Maximum transclusions", parseInt64, true},
-		keySiteName:              {"Site name", parseString, true},
-		keyYAMLHeader:            {"YAML header", parseBool, true},
+		api.KeyLang:         {"Language", parseString, true},
+		keyMaxTransclusions: {"Maximum transclusions", parseInt64, true},
+		keySiteName:         {"Site name", parseString, true},
+		keyYAMLHeader:       {"YAML header", parseBool, true},
 		keyZettelFileSyntax: {
 			"Zettel file syntax",
 			func(val string) (any, error) { return strings.Fields(val), nil },
@@ -104,7 +103,6 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		config.KeyHomeZettel:      id.DefaultHomeZid,
 		kernel.ConfigInsecureHTML: config.NoHTML,
 		api.KeyLang:               api.ValueLangEN,
-		config.KeyMarkerExternal:  "&#10138;",
 		keyMaxTransclusions:       int64(1024),
 		keySiteName:               "Zettelstore",
 		keyYAMLHeader:             false,

@@ -5,6 +5,13 @@
   *  Remove ZJSON encoding. It was announced in version 0.10.0. Use Sexpr
      encoding instead.
      (breaking)
+  *  Remove runtime configuration <tt>marker-external</tt>. It was added in
+     version [#0_0_6|0.0.6] and updated in [#0_0_10|0.0.10]. If you want to
+     change the marker for an external URL, you could modify zettel
+     00000000020001 (Zettelstore Base CSS) or zettel 00000000025001
+     (Zettelstore User CSS, preferred) by changing / adding a rule to add some
+     content after an external <tt><a ...></tt> tag.
+     (breaking: webui)
   *  Add SHTML encoding. This allows to ensure the quality of generated HTML
      code. In addition, clients might use it, because it is easier to parse and
      manipulate than ordinary HTML. In the future, HTML template zettel will
@@ -1011,7 +1018,7 @@ instead of GitHub. To access older versions, use the Git repository under
              receive a <i>local</i> marker, when encoded as &ldquo;djson&rdquo;
              or &ldquo;native&rdquo;. Local references are listed on the
              <i>Info page</i> of each zettel.
-  *  (minor) Change the default value for some visual sugar putd after an
+  *  (minor) Change the default value for some visual sugar put after an
              external URL to <tt>&\#8599;&\#xfe0e;</tt>
              (&ldquo;&#8599;&#xfe0e;&rdquo;). This affects the former key
              <tt>icon-material</tt> of the <i>Zettelstore Runtime

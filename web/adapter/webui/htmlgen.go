@@ -40,10 +40,9 @@ type htmlGenerator struct {
 	symAt *sxpf.Symbol
 }
 
-func (wui *WebUI) createGenerator(builder urlBuilder, extMarker string) *htmlGenerator {
+func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	th := shtml.NewTransformer(1, wui.sf)
 	symA := th.Make("a")
-	symSpan := th.Make("span")
 	symImg := th.Make("img")
 	symAt := th.Make(sxhtml.NameSymAttr)
 
@@ -51,8 +50,6 @@ func (wui *WebUI) createGenerator(builder urlBuilder, extMarker string) *htmlGen
 	symClass := th.Make("class")
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
-
-	sxExtMarker := sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.MakeString(extMarker)).Cons(th.Make(sxhtml.NameSymNoEscape)))
 
 	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.List) {
 		lst, ok := obj.(*sxpf.List)
@@ -162,9 +159,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, extMarker string) *htmlGen
 			assoc = assoc.Cons(sxpf.Cons(symClass, sxpf.MakeString("external"))).
 				Cons(sxpf.Cons(symTarget, sxpf.MakeString("_blank"))).
 				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
-			aList := rest.Cons(assoc.Cons(symAt)).Cons(symA)
-			result := sxExtMarker.Cons(aList).Cons(symSpan)
-			return result
+			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
 		te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)

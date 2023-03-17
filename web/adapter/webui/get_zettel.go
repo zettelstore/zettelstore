@@ -42,7 +42,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 
-		enc := wui.createZettelEncoder(ctx, zn.InhMeta)
+		enc := wui.getSimpleHTMLEncoder()
 		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
 		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
 		htmlTitle := encodeEvaluatedTitleHTML(zn.InhMeta, evalMetadata, enc)

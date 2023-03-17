@@ -326,10 +326,7 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.DebugMode = wui.debug
 }
 
-func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return wui.createGenerator(wui, "") }
-func (wui *WebUI) createZettelEncoder(ctx context.Context, m *meta.Meta) *htmlGenerator {
-	return wui.createGenerator(wui, wui.rtConfig.Get(ctx, m, config.KeyMarkerExternal))
-}
+func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return wui.createGenerator(wui) }
 
 // htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
 // If hasURL is false an empty string is returned.

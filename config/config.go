@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2020-2022 Detlef Stern
+// Copyright (c) 2020-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -22,7 +22,6 @@ const (
 	KeyFooterZettel = "footer-zettel"
 	KeyHomeZettel   = "home-zettel"
 	// api.KeyLang
-	KeyMarkerExternal = "marker-external"
 )
 
 // Config allows to retrieve all defined configuration values that can be changed during runtime.
