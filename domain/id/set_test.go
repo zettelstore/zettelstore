@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-2022 Detlef Stern
+// Copyright (c) 2021-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -135,12 +135,12 @@ func TestSetRemove(t *testing.T) {
 	}
 }
 
-// func BenchmarkSet(b *testing.B) {
-// 	s := id.Set{}
-// 	for i := 0; i < b.N; i++ {
-// 		s[id.Zid(i)] = true
-// 	}
-// }
+//	func BenchmarkSet(b *testing.B) {
+//		s := id.Set{}
+//		for i := 0; i < b.N; i++ {
+//			s[id.Zid(i)] = true
+//		}
+//	}
 func BenchmarkSet(b *testing.B) {
 	s := id.Set{}
 	for i := 0; i < b.N; i++ {

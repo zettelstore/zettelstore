@@ -31,7 +31,7 @@ In addition, you may provide a query parameter ''part=PART'' to select the relev
 <meta name="zs-back" content="00001006000000 00001012000000 00001012053600">
 <meta name="zs-backward" content="00001006000000 00001012000000 00001012053600 00001012920000">
 <meta name="zs-box-number" content="1">
-<meta name="zs-copyright" content="(c) 2020-2022 by Detlef Stern <ds@zettelstore.de>">
+<meta name="zs-copyright" content="(c) 2020-present by Detlef Stern <ds@zettelstore.de>">
 <meta name="zs-created" content="20210726174524">
 <meta name="zs-forward" content="00001006050000 00001010040100 00001012050200 00001012920000 00001012920500 00001012920503 00001012920510 00001012920519 00001012920800">
 <meta name="zs-lang" content="en">

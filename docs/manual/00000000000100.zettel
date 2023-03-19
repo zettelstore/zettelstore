@@ -3,7 +3,7 @@ title: Zettelstore Runtime Configuration
 role: configuration
 syntax: none
 created: 00010101000000
-default-copyright: (c) 2020-2022 by Detlef Stern <ds@zettelstore.de>
+default-copyright: (c) 2020-present by Detlef Stern <ds@zettelstore.de>
 default-license: EUPL-1.2-or-later
 default-visibility: public
 footer-zettel: 00001000000100
