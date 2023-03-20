@@ -130,6 +130,11 @@ func cmdCheck(forRelease bool) error {
 	if err := checkUnparam(forRelease); err != nil {
 		return err
 	}
+	if forRelease {
+		if err := checkGoVulncheck(); err != nil {
+			return err
+		}
+	}
 	return checkFossilExtra()
 }
 
@@ -203,6 +208,17 @@ func checkUnparam(forRelease bool) error {
 			if len(out2) > 0 {
 				fmt.Fprintln(os.Stderr, out2)
 			}
+		}
+	}
+	return err
+}
+
+func checkGoVulncheck() error {
+	out, err := executeCommand(nil, "govulncheck", "./...")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Some checks failed")
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
 		}
 	}
 	return err
