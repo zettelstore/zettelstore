@@ -244,15 +244,10 @@ func (ap *actionPara) createBlockNodeMeta(key string) ast.BlockNode {
 				continue
 			}
 		}
-		zid := m.Zid.String()
-		title, found := m.Get(api.KeyTitle)
-		if !found {
-			title = zid
-		}
 		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
 			Attrs:   nil,
-			Ref:     ast.ParseReference(zid),
-			Inlines: parser.ParseMetadataNoLink(title),
+			Ref:     ast.ParseReference(m.Zid.String()),
+			Inlines: parser.ParseSpacedText(m.GetTitle()),
 		})})
 	}
 	return &ast.NestedListNode{

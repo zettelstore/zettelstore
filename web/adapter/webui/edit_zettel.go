@@ -38,7 +38,7 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRo
 		}
 
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
-		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "Edit Zettel", "", roleData, syntaxData)
+		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "", roleData, syntaxData)
 	}
 }
 

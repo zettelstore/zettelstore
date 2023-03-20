@@ -13,22 +13,17 @@ package api
 import (
 	"bytes"
 	"net/http"
-	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".
-func (a *API) MakeListUnlinkedMetaHandler(
-	getMeta usecase.GetMeta,
-	unlinkedRefs usecase.UnlinkedReferences,
-	evaluate *usecase.Evaluate,
-) http.HandlerFunc {
+func (a *API) MakeListUnlinkedMetaHandler(getMeta usecase.GetMeta, unlinkedRefs usecase.UnlinkedReferences) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -45,14 +40,8 @@ func (a *API) MakeListUnlinkedMetaHandler(
 		que := r.URL.Query()
 		phrase := que.Get(api.QueryKeyPhrase)
 		if phrase == "" {
-			if zmkTitle, found := zm.Get(api.KeyTitle); found {
-				isTitle := evaluate.RunMetadata(ctx, zmkTitle)
-				encdr := textenc.Create()
-				var b strings.Builder
-				_, err = encdr.WriteInlines(&b, &isTitle)
-				if err == nil {
-					phrase = b.String()
-				}
+			if title, found := zm.Get(api.KeyTitle); found {
+				phrase = parser.NormalizedSpacedText(title)
 			}
 		}
 

@@ -14,6 +14,7 @@ package parser
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
@@ -124,27 +125,29 @@ func ParseMetadata(value string) ast.InlineSlice {
 	return ParseInlines(input.NewInput([]byte(value)), meta.SyntaxZmk)
 }
 
-// ParseMetadataNoLink parses a string as Zettelmarkup, resulting in an inline slice.
-// All link and footnote nodes will be removed.
-func ParseMetadataNoLink(value string) ast.InlineSlice {
-	in := ParseMetadata(value)
-	cleaner.CleanInlineLinks(&in)
-	return in
+// ParseSpacedText returns an inline slice that consists just of test and space node.
+// No Zettelmarkup parsing is done. It is typically used to transform the zettel title into an inline slice.
+func ParseSpacedText(s string) ast.InlineSlice {
+	return ast.CreateInlineSliceFromWords(meta.ListFromValue(s)...)
 }
+
+// NormalizedSpacedText returns the given string, but normalize multiple spaces to one space.
+func NormalizedSpacedText(s string) string { return strings.Join(meta.ListFromValue(s), " ") }
 
 // ParseDescription returns a suitable description stored in the metadata as an inline slice.
 func ParseDescription(m *meta.Meta) ast.InlineSlice {
 	if m == nil {
 		return nil
 	}
-	descr, found := m.Get(api.KeySummary)
-	if !found {
-		descr, found = m.Get(api.KeyTitle)
+	if descr, found := m.Get(api.KeySummary); found {
+		in := ParseMetadata(descr)
+		cleaner.CleanInlineLinks(&in)
+		return in
 	}
-	if !found {
-		return nil
+	if title, found := m.Get(api.KeyTitle); found {
+		return ParseSpacedText(title)
 	}
-	return ParseMetadataNoLink(descr)
+	return nil
 }
 
 // ParseZettel parses the zettel based on the syntax.

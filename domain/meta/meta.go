@@ -128,7 +128,7 @@ func GetSortedKeyDescriptions() []*DescriptionKey {
 // Supported keys.
 func init() {
 	registerKey(api.KeyID, TypeID, usageComputed, "")
-	registerKey(api.KeyTitle, TypeZettelmarkup, usageUser, "")
+	registerKey(api.KeyTitle, TypeEmpty, usageUser, "")
 	registerKey(api.KeyRole, TypeWord, usageUser, "")
 	registerKey(api.KeyTags, TypeTagSet, usageUser, "")
 	registerKey(api.KeySyntax, TypeWord, usageUser, "")

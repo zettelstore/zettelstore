@@ -51,21 +51,14 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
 		switch op {
 		case actionCopy:
-			wui.renderZettelForm(ctx, w, createZettel.PrepareCopy(origZettel), "Copy Zettel", "Copy Zettel", "", roleData, syntaxData)
+			wui.renderZettelForm(ctx, w, createZettel.PrepareCopy(origZettel), "Copy Zettel", "", roleData, syntaxData)
 		case actionVersion:
-			wui.renderZettelForm(ctx, w, createZettel.PrepareVersion(origZettel), "Version Zettel", "Versionzettel", "", roleData, syntaxData)
+			wui.renderZettelForm(ctx, w, createZettel.PrepareVersion(origZettel), "Version Zettel", "", roleData, syntaxData)
 		case actionFolge:
-			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "Folgezettel", "", roleData, syntaxData)
+			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "", roleData, syntaxData)
 		case actionNew:
-			m := origZettel.Meta
-			title := parser.ParseMetadata(m.GetTitle())
-			textTitle, err2 := encodeInlinesText(&title, wui.gentext)
-			if err2 != nil {
-				wui.reportError(ctx, w, err2)
-				return
-			}
-			htmlTitle := wui.getSimpleHTMLEncoder().InlinesString(&title)
-			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel), textTitle, htmlTitle, "", roleData, syntaxData)
+			title := parser.NormalizedSpacedText(origZettel.Meta.GetTitle())
+			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel), title, "", roleData, syntaxData)
 		}
 	}
 }
@@ -89,7 +82,7 @@ func (wui *WebUI) renderZettelForm(
 	ctx context.Context,
 	w http.ResponseWriter,
 	zettel domain.Zettel,
-	title, heading string,
+	title string,
 	formActionURL string,
 	roleData []string,
 	syntaxData []string,
@@ -99,7 +92,7 @@ func (wui *WebUI) renderZettelForm(
 	var base baseData
 	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), title, "", user, &base)
 	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
-		Heading:       heading,
+		Heading:       title,
 		FormActionURL: formActionURL,
 		MetaTitle:     m.GetDefault(api.KeyTitle, ""),
 		MetaTags:      m.GetDefault(api.KeyTags, ""),
@@ -176,6 +169,6 @@ func (wui *WebUI) MakeGetZettelFromListHandler(
 		}
 		zettel := domain.Zettel{Meta: m, Content: domain.NewContent(zmkContent.Bytes())}
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
-		wui.renderZettelForm(ctx, w, zettel, "Zettel from list", "Zettel From List", wui.createNewURL, roleData, syntaxData)
+		wui.renderZettelForm(ctx, w, zettel, "Zettel from list", wui.createNewURL, roleData, syntaxData)
 	}
 }

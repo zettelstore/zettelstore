@@ -5,6 +5,13 @@
   *  Remove ZJSON encoding. It was announced in version 0.10.0. Use Sexpr
      encoding instead.
      (breaking)
+  *  Title of a zettel is no longer interpreted as Zettelmarkup text. Now it is
+     just a plain string, possibly empty. Therefore, no inline formatting (like
+     bold text), no links, no footnotes, no citations (the latter made
+     rendering the title often questionable, in some contexts). If you used
+     special entities, please use the unicode characters directly. However, as
+     a good practice, it is often the best to printable ASCII characters.
+     (breaking)
   *  Remove runtime configuration <tt>marker-external</tt>. It was added in
      version [#0_0_6|0.0.6] and updated in [#0_0_10|0.0.10]. If you want to
      change the marker for an external URL, you could modify zettel

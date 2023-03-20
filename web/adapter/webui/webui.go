@@ -29,7 +29,6 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
@@ -51,8 +50,6 @@ type WebUI struct {
 	policy   auth.Policy
 
 	evalZettel *usecase.Evaluate
-
-	gentext *textenc.Encoder
 
 	mxCache       sync.RWMutex
 	templateCache map[id.Zid]*template.Template
@@ -103,8 +100,6 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		policy:   pol,
 
 		evalZettel: evalZettel,
-
-		gentext: textenc.Create(),
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
 		cssBaseURL:    ab.NewURLBuilder('z').SetZid(api.ZidBaseCSS).String(),
@@ -359,11 +354,8 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 		if !wui.policy.CanRead(user, m) {
 			continue
 		}
-		title := m.GetTitle()
-		astTitle := parser.ParseMetadataNoLink(title)
-		menuTitle := wui.getSimpleHTMLEncoder().InlinesString(&astTitle)
 		result = append(result, simpleLink{
-			Text: menuTitle,
+			Text: parser.NormalizedSpacedText(m.GetTitle()),
 			URL: wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
 				AppendKVQuery(queryKeyAction, valueActionNew).String(),
 		})

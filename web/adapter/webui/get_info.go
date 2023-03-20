@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -63,11 +64,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
 		enc := wui.getSimpleHTMLEncoder()
 		pairs := zn.Meta.ComputedPairs()
 		metaData := make([]metaDataInfo, len(pairs))
-		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 		for i, p := range pairs {
 			var sb strings.Builder
 			if sval := wui.writeHTMLMetaValue(
@@ -89,10 +89,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 			queryLinks[i].URL = wui.NewURLBuilder('h').AppendQuery(sq).String()
 		}
 
-		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
+		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		phrase := q.Get(api.QueryKeyPhrase)
 		if phrase == "" {
-			phrase = textTitle
+			phrase = title
 		}
 		phrase = strings.TrimSpace(phrase)
 		unlinkedMeta, err := unlinkedRefs.Run(
@@ -118,7 +118,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
 		var base baseData
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), textTitle, "", user, &base)
+		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, "", user, &base)
 		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
 			Zid            string
 			WebURL         string

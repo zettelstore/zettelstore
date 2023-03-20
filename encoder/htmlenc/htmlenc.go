@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/shtmlenc"
 	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/parser"
 )
 
 func init() {
@@ -53,11 +54,12 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 		return 0, err
 	}
 
-	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
-	evalTitle := evalMeta(plainTitle)
+	var isTitle ast.InlineSlice
 	var htitle *sxpf.List
+	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
-		xtitle := tx.GetSexpr(&evalTitle)
+		isTitle = parser.ParseSpacedText(plainTitle)
+		xtitle := tx.GetSexpr(&isTitle)
 		htitle, err = th.Transform(xtitle)
 		if err != nil {
 			return 0, err
@@ -82,7 +84,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	}
 	if hasTitle {
 		var sb strings.Builder
-		he.textEnc.WriteInlines(&sb, &evalTitle)
+		he.textEnc.WriteInlines(&sb, &isTitle)
 		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
 	}
 

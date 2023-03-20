@@ -15,11 +15,10 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder/textenc"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
 )
@@ -43,9 +42,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		enc := wui.getSimpleHTMLEncoder()
-		evalMetadata := createEvalMetadataFunc(ctx, evaluate)
-		textTitle := encodeEvaluatedTitleText(zn.InhMeta, evalMetadata, wui.gentext)
-		htmlTitle := encodeEvaluatedTitleHTML(zn.InhMeta, evalMetadata, enc)
 		htmlContent, err := enc.BlocksString(&zn.Ast)
 		if err != nil {
 			wui.reportError(ctx, w, err)
@@ -63,17 +59,19 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		user := server.GetUser(ctx)
 		roleText := zn.Meta.GetDefault(api.KeyRole, "")
 		canCreate := wui.canCreate(ctx, user)
-		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), evalMetadata)
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 		extURL, hasExtURL := wui.formatURLFromMeta(zn.Meta, api.KeyURL)
 		folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
 		backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
 		successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
 		apiZid := api.ZettelID(zid.String())
+
 		var base baseData
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), textTitle, roleCSSURL, user, &base)
-		base.MetaHeader = enc.MetaString(zn.InhMeta, evalMetadata)
+		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
+		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, roleCSSURL, user, &base)
+		base.MetaHeader = enc.MetaString(zn.InhMeta, createEvalMetadataFunc(ctx, evaluate))
 		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
-			HTMLTitle       string
+			Heading         string
 			RoleCSS         string
 			CanWrite        bool
 			EditURL         string
@@ -99,7 +97,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			BackLinks       simpleLinks
 			SuccessorLinks  simpleLinks
 		}{
-			HTMLTitle:       htmlTitle,
+			Heading:         title,
 			RoleCSS:         roleCSSURL,
 			CanWrite:        wui.canWrite(ctx, user, zn.Meta, zn.Content),
 			EditURL:         wui.NewURLBuilder('e').SetZid(apiZid).String(),
@@ -143,19 +141,6 @@ func (wui *WebUI) formatURLFromMeta(m *meta.Meta, key string) (string, bool) {
 		return "", false
 	}
 	return sb.String(), true
-}
-
-func encodeInlinesText(is *ast.InlineSlice, enc *textenc.Encoder) (string, error) {
-	if is == nil || len(*is) == 0 {
-		return "", nil
-	}
-
-	var sb strings.Builder
-	_, err := enc.WriteInlines(&sb, is)
-	if err != nil {
-		return "", err
-	}
-	return sb.String(), nil
 }
 
 func (wui *WebUI) buildTagInfos(m *meta.Meta) []simpleLink {

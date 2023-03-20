@@ -26,7 +26,7 @@ import (
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
 // HTML rename view of a zettel.
-func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
+func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -41,7 +41,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta, evaluate *
 			return
 		}
 
-		getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), createEvalMetadataFunc(ctx, evaluate))
+		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 		uselessFiles := retrieveUselessFiles(m)
 
 		user := server.GetUser(ctx)

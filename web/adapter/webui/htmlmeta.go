@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 )
 
@@ -172,12 +173,6 @@ func (wui *WebUI) transformLink(key, value, text string) sxpf.Object {
 	)
 }
 
-type getMetadataFunc func(id.Zid) (*meta.Meta, error)
-
-func createGetMetadataFunc(ctx context.Context, getMeta usecase.GetMeta) getMetadataFunc {
-	return func(zid id.Zid) (*meta.Meta, error) { return getMeta.Run(box.NoEnrichContext(ctx), zid) }
-}
-
 type evalMetadataFunc = func(string) ast.InlineSlice
 
 func createEvalMetadataFunc(ctx context.Context, evaluate *usecase.Evaluate) evalMetadataFunc {
@@ -186,16 +181,16 @@ func createEvalMetadataFunc(ctx context.Context, evaluate *usecase.Evaluate) eva
 
 type getTextTitleFunc func(id.Zid) (string, int)
 
-func (wui *WebUI) makeGetTextTitle(getMetadata getMetadataFunc, evalMetadata evalMetadataFunc) getTextTitleFunc {
+func (wui *WebUI) makeGetTextTitle(ctx context.Context, getMeta usecase.GetMeta) getTextTitleFunc {
 	return func(zid id.Zid) (string, int) {
-		m, err := getMetadata(zid)
+		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {
 				return "", -1
 			}
 			return "", 0
 		}
-		return encodeEvaluatedTitleText(m, evalMetadata, wui.gentext), 1
+		return parser.NormalizedSpacedText(m.GetTitle()), 1
 	}
 }
 

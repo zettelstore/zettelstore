@@ -25,11 +25,7 @@ import (
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
-func (wui *WebUI) MakeGetDeleteZettelHandler(
-	getMeta usecase.GetMeta,
-	getAllMeta usecase.GetAllMeta,
-	evaluate *usecase.Evaluate,
-) http.HandlerFunc {
+func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta usecase.GetAllMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -50,7 +46,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(
 		if len(ms) > 1 {
 			shadowedBox = ms[1].GetDefault(api.KeyBoxNumber, "???")
 		} else {
-			getTextTitle := wui.makeGetTextTitle(createGetMetadataFunc(ctx, getMeta), createEvalMetadataFunc(ctx, evaluate))
+			getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 			incomingLinks = wui.encodeIncoming(m, getTextTitle)
 		}
 		uselessFiles := retrieveUselessFiles(m)

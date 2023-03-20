@@ -12,13 +12,11 @@
 package encoding
 
 import (
-	"strings"
 	"time"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 )
 
@@ -40,14 +38,5 @@ func LastUpdated(ml []*meta.Meta, timeFormat string) string {
 	return ""
 }
 
-var textEnc = textenc.Create()
-
 // TitleAsText returns the title of a zettel as plain text
-func TitleAsText(m *meta.Meta) string {
-	var title strings.Builder
-	titleIns := parser.ParseMetadata(m.GetTitle())
-	if _, err := textEnc.WriteInlines(&title, &titleIns); err != nil {
-		return m.GetTitle()
-	}
-	return title.String()
-}
+func TitleAsText(m *meta.Meta) string { return parser.NormalizedSpacedText(m.GetTitle()) }
