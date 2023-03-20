@@ -11,6 +11,8 @@
 package box
 
 import (
+	"net/url"
+	"strconv"
 	"time"
 
 	"zettelstore.de/z/domain/id"
@@ -33,4 +35,29 @@ func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
 		withSeconds = true
 	}
 	return id.Invalid, ErrConflict
+}
+
+// GetQueryBool is a helper function to extract bool values from a box URI.
+func GetQueryBool(u *url.URL, key string) bool {
+	_, ok := u.Query()[key]
+	return ok
+}
+
+// GetQueryInt is a helper function to extract int values of a specified range from a box URI.
+func GetQueryInt(u *url.URL, key string, min, def, max int) int {
+	sVal := u.Query().Get(key)
+	if sVal == "" {
+		return def
+	}
+	iVal, err := strconv.Atoi(sVal)
+	if err != nil {
+		return def
+	}
+	if iVal < min {
+		return min
+	}
+	if iVal > max {
+		return max
+	}
+	return iVal
 }
