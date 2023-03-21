@@ -259,9 +259,9 @@ func TestGetZettelContext(t *testing.T) {
 		return
 	}
 	checkListZid(t, l, 0, allUserZid)
-	checkListZid(t, l, 1, writerZid)
-	checkListZid(t, l, 2, readerZid)
-	// checkListZid(t, l, 3, creatorZid)
+	// checkListZid(t, l, 1, writerZid)
+	// checkListZid(t, l, 2, readerZid)
+	checkListZid(t, l, 1, creatorZid)
 
 	rl, err = c.GetZettelContext(context.Background(), ownerZid, client.DirBackward, 0, 0)
 	if err != nil {
@@ -272,8 +272,8 @@ func TestGetZettelContext(t *testing.T) {
 		return
 	}
 	l = rl.List
-	if got := len(l); got != 1 {
-		t.Errorf("Expected list of length 1, got %d", got)
+	if got, exp := len(l), 4; got != exp {
+		t.Errorf("Expected list of length %d, got %d", exp, got)
 		return
 	}
 	checkListZid(t, l, 0, allUserZid)

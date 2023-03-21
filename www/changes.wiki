@@ -25,6 +25,14 @@
      probably also use SHTML, deprecating the current Mustache syntax (which
      was added in [#0_0_9|0.0.9]).
      (major)
+  *  Changed cost model for zettel context: a zettel with more
+     outgoing/incoming references has higher cost than a zettel with less
+     references. Also added support for traversing tags, with a similar cost
+     model. As an effect, zettel hubs (in many cases your home zettel) will
+     less likely add its references. Same for often used tags. The cost model
+     might change in some details in the future, but the idea of a penalty
+     applied to zettel / tags with many references will hold.
+     (minor)
 
 <a id="0_10"></a>
 <h2>Changes for Version 0.10.1 (2023-01-30)</h2>
