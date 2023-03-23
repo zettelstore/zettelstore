@@ -50,6 +50,7 @@ const (
 
 // DirService specifies a directory service for file based zettel.
 type DirService struct {
+	box      box.ManagedBox
 	log      *logger.Logger
 	dirPath  string
 	notifier Notifier
@@ -63,8 +64,9 @@ type DirService struct {
 var ErrNoDirectory = errors.New("unable to retrieve zettel directory information")
 
 // NewDirService creates a new directory service.
-func NewDirService(log *logger.Logger, notifier Notifier, chci chan<- box.UpdateInfo) *DirService {
+func NewDirService(box box.ManagedBox, log *logger.Logger, notifier Notifier, chci chan<- box.UpdateInfo) *DirService {
 	return &DirService{
+		box:      box,
 		log:      log,
 		notifier: notifier,
 		infos:    chci,
@@ -287,6 +289,12 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 		if zid != id.Invalid {
 			ds.notifyChange(zid)
 		}
+	case Ready:
+		if chci := ds.infos; chci != nil {
+			ds.log.Trace().Msg("notifyReady")
+			chci <- box.UpdateInfo{Box: ds.box, Reason: box.OnReady, Zid: id.Invalid}
+		}
+
 	default:
 		ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
 	}
@@ -595,6 +603,6 @@ func newExtIsBetter(oldExt, newExt string) bool {
 func (ds *DirService) notifyChange(zid id.Zid) {
 	if chci := ds.infos; chci != nil {
 		ds.log.Trace().Zid(zid).Msg("notifyChange")
-		chci <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
+		chci <- box.UpdateInfo{Box: ds.box, Reason: box.OnZettel, Zid: zid}
 	}
 }

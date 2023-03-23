@@ -81,15 +81,24 @@ func (mgr *Manager) idxIndexer() {
 		}
 	}()
 
+	hasWaited := false
+	for mgr.getState() != mgrStateStarted {
+		mgr.idxLog.Debug().Msg("Wait for started manager")
+		time.Sleep(time.Second)
+		hasWaited = true
+	}
+	if hasWaited {
+		mgr.idxLog.Debug().Msg("Indexer will start")
+	}
+
 	timerDuration := 15 * time.Second
 	timer := time.NewTimer(timerDuration)
 	ctx := box.NoEnrichContext(context.Background())
 	for {
-		// Sleep first, so the indexer will wait for boxes to initialize.
+		mgr.idxWorkService(ctx)
 		if !mgr.idxSleepService(timer, timerDuration) {
 			return
 		}
-		mgr.idxWorkService(ctx)
 	}
 }
 

@@ -143,10 +143,9 @@ func (*configService) GetStatistics() []kernel.KeyValue {
 
 func (cs *configService) setBox(mgr box.Manager) {
 	mgr.RegisterObserver(cs.observe)
-	cs.doUpdate(mgr)
 }
 
-func (cs *configService) doUpdate(p box.Box) error {
+func (cs *configService) doUpdate(p box.BaseBox) error {
 	m, err := p.GetMeta(context.Background(), cs.orig.Zid)
 	cs.logger.Trace().Err(err).Msg("got config meta")
 	if err != nil {
@@ -167,12 +166,16 @@ func (cs *configService) doUpdate(p box.Box) error {
 }
 
 func (cs *configService) observe(ci box.UpdateInfo) {
-	if ci.Reason == box.OnReload {
+	switch ci.Reason {
+	case box.OnReady:
+	case box.OnReload:
 		cs.logger.Debug().Msg("reload")
 		go func() { cs.doUpdate(ci.Box) }()
-	} else if ci.Zid == id.ConfigurationZid {
-		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
-		go func() { cs.doUpdate(ci.Box) }()
+	case box.OnZettel:
+		if ci.Zid == id.ConfigurationZid {
+			cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
+			go func() { cs.doUpdate(ci.Box) }()
+		}
 	}
 }
 

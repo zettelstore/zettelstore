@@ -82,11 +82,22 @@ func Register(scheme string, create createFunc) {
 // GetSchemes returns all registered scheme, ordered by scheme string.
 func GetSchemes() []string { return maps.Keys(registry) }
 
+type managerState uint8
+
+const (
+	mgrStateStopped managerState = iota
+	mgrStateStarting
+	mgrStateStarted
+	mgrStateStopping
+)
+
 // Manager is a coordinating box.
 type Manager struct {
 	mgrLog       *logger.Logger
+	stateMx      sync.RWMutex
+	state        managerState
+	boxReady     []bool
 	mgrMx        sync.RWMutex
-	started      bool
 	rtConfig     config.Config
 	boxes        []box.ManagedBox
 	observers    []box.UpdateFunc
@@ -106,6 +117,44 @@ type Manager struct {
 	idxLastReload  time.Time
 	idxDurReload   time.Duration
 	idxSinceReload uint64
+}
+
+func (mgr *Manager) setState(newState managerState) {
+	mgr.stateMx.Lock()
+	mgr.state = newState
+	mgr.stateMx.Unlock()
+}
+
+func (mgr *Manager) getState() managerState {
+	mgr.stateMx.RLock()
+	state := mgr.state
+	mgr.stateMx.RUnlock()
+	return state
+}
+
+func (mgr *Manager) clearBoxReady() {
+	mgr.stateMx.Lock()
+	for i := 0; i < len(mgr.boxReady); i++ {
+		mgr.boxReady[i] = false
+	}
+	mgr.stateMx.Unlock()
+}
+
+func (mgr *Manager) setBoxReady(i int, b bool) {
+	mgr.stateMx.Lock()
+	mgr.boxReady[i] = b
+	mgr.stateMx.Unlock()
+}
+
+func (mgr *Manager) allBoxReady() bool {
+	mgr.stateMx.RLock()
+	defer mgr.stateMx.RUnlock()
+	for _, b := range mgr.boxReady {
+		if !b {
+			return false
+		}
+	}
+	return true
 }
 
 // New creates a new managing box.
@@ -153,6 +202,7 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 	cdata.Number++
 	boxes = append(boxes, constbox, compbox)
 	mgr.boxes = boxes
+	mgr.boxReady = make([]bool, len(boxes))
 	return mgr, nil
 }
 
@@ -175,6 +225,8 @@ func (mgr *Manager) notifier() {
 		}
 	}()
 
+	doNotify := true
+	queueNotify := make([]box.UpdateInfo, 0, 16384)
 	tsLastEvent := time.Now()
 	cache := destutterCache{}
 	for {
@@ -195,11 +247,19 @@ func (mgr *Manager) notifier() {
 					mgr.mgrLog.Trace().Uint("reason", uint64(reason)).Zid(zid).Msg("notifier ignored")
 					continue
 				}
+
+				doNotify, queueNotify = mgr.onStartingManager(&ci, queueNotify)
+
 				mgr.idxEnqueue(reason, zid)
 				if ci.Box == nil {
 					ci.Box = mgr
 				}
-				mgr.notifyObserver(&ci)
+				if doNotify {
+					mgr.notifyObserver(&ci)
+				} else if reason != box.OnReady {
+					mgr.mgrLog.Trace().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("queue info")
+					queueNotify = append(queueNotify, ci)
+				}
 			}
 		case <-mgr.done:
 			return
@@ -226,13 +286,48 @@ func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, 
 	return false
 }
 
+func (mgr *Manager) onStartingManager(ci *box.UpdateInfo, queueNotify []box.UpdateInfo) (bool, []box.UpdateInfo) {
+	result := mgr.getState() == mgrStateStarting
+	if ci.Reason != box.OnReady {
+		return result, queueNotify
+	}
+	if i := mgr.boxIndex(ci.Box); i >= 0 {
+		mgr.setBoxReady(i, true)
+		if mgr.allBoxReady() {
+			mgr.setState(mgrStateStarted)
+			mgr.mgrLog.Debug().Msg("Manager started")
+			mgr.notifyObserver(&box.UpdateInfo{Box: mgr, Reason: box.OnReady})
+			for _, ci2 := range queueNotify {
+				mgr.mgrLog.Trace().Uint("reason", uint64(ci2.Reason)).Zid(ci2.Zid).Msg("queued notifier")
+				mgr.notifyObserver(&ci2)
+			}
+			return false, nil
+		}
+	}
+
+	return false, queueNotify
+}
+
+func (mgr *Manager) boxIndex(bx box.BaseBox) int {
+	boxes := mgr.boxes
+	for i, b := range boxes {
+		if mbox, ok := bx.(box.ManagedBox); ok && b == mbox {
+			return i
+		}
+	}
+	return -1
+}
+
 func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 	switch reason {
+	case box.OnReady:
+		return
 	case box.OnReload:
 		mgr.idxAr.Reset()
 	case box.OnZettel:
 		mgr.idxAr.EnqueueZettel(zid)
 	default:
+		mgr.mgrLog.Warn().Uint("reason", uint64(reason)).Zid(zid).Msg("Unknown notification reason")
 		return
 	}
 	select {
@@ -254,34 +349,42 @@ func (mgr *Manager) notifyObserver(ci *box.UpdateInfo) {
 // Starting an already started box is not allowed.
 func (mgr *Manager) Start(ctx context.Context) error {
 	mgr.mgrMx.Lock()
-	if mgr.started {
-		mgr.mgrMx.Unlock()
+	defer mgr.mgrMx.Unlock()
+	if mgr.getState() != mgrStateStopped {
 		return box.ErrStarted
 	}
+	mgr.setState(mgrStateStarting)
+	mgr.clearBoxReady()
+	noStartStopper := 0
 	for i := len(mgr.boxes) - 1; i >= 0; i-- {
 		ssi, ok := mgr.boxes[i].(box.StartStopper)
 		if !ok {
+			mgr.setBoxReady(i, true)
+			noStartStopper++
 			continue
 		}
 		err := ssi.Start(ctx)
 		if err == nil {
 			continue
 		}
+		mgr.setState(mgrStateStopping)
 		for j := i + 1; j < len(mgr.boxes); j++ {
 			if ssj, ok2 := mgr.boxes[j].(box.StartStopper); ok2 {
 				ssj.Stop(ctx)
 			}
 		}
-		mgr.mgrMx.Unlock()
+		mgr.clearBoxReady()
+		mgr.setState(mgrStateStopped)
 		return err
 	}
 	mgr.idxAr.Reset() // Ensure an initial index run
 	mgr.done = make(chan struct{})
 	go mgr.notifier()
-	go mgr.idxIndexer()
 
-	mgr.started = true
-	mgr.mgrMx.Unlock()
+	if noStartStopper == len(mgr.boxes) && mgr.allBoxReady() {
+		mgr.setState(mgrStateStarted)
+	}
+	go mgr.idxIndexer()
 	return nil
 }
 
@@ -289,26 +392,28 @@ func (mgr *Manager) Start(ctx context.Context) error {
 func (mgr *Manager) Stop(ctx context.Context) {
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
-	if !mgr.started {
+	if mgr.getState() != mgrStateStarted {
 		return
 	}
+	mgr.setState(mgrStateStopping)
 	close(mgr.done)
 	for _, p := range mgr.boxes {
 		if ss, ok := p.(box.StartStopper); ok {
 			ss.Stop(ctx)
 		}
 	}
-	mgr.started = false
+	mgr.clearBoxReady()
+	mgr.setState(mgrStateStopped)
 }
 
 // Refresh internal box data.
 func (mgr *Manager) Refresh(ctx context.Context) error {
 	mgr.mgrLog.Debug().Msg("Refresh")
-	mgr.mgrMx.Lock()
-	defer mgr.mgrMx.Unlock()
-	if !mgr.started {
+	if mgr.getState() != mgrStateStarted {
 		return box.ErrStopped
 	}
+	mgr.mgrMx.Lock()
+	defer mgr.mgrMx.Unlock()
 	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	for _, bx := range mgr.boxes {
 		if rb, ok := bx.(box.Refresher); ok {

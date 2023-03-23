@@ -93,6 +93,8 @@ type ManagedBoxStats struct {
 }
 
 // StartStopper performs simple lifecycle management.
+//
+// Every box that support this interface, must send an OnReady to its manager.
 type StartStopper interface {
 	// Start the box. Now all other functions of the box are allowed.
 	// Starting an already started box is not allowed.
@@ -181,13 +183,14 @@ type UpdateReason uint8
 // Values for Reason
 const (
 	_        UpdateReason = iota
+	OnReady               // Box is started and fully operational
 	OnReload              // Box was reloaded
 	OnZettel              // Something with a zettel happened
 )
 
 // UpdateInfo contains all the data about a changed zettel.
 type UpdateInfo struct {
-	Box    Box
+	Box    BaseBox
 	Reason UpdateReason
 	Zid    id.Zid
 }

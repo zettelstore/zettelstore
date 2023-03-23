@@ -49,7 +49,7 @@ func (zb *zipBox) Start(context.Context) error {
 	}
 	reader.Close()
 	zipNotifier := notify.NewSimpleZipNotifier(zb.log, zb.name)
-	zb.dirSrv = notify.NewDirService(zb.log, zipNotifier, zb.notify)
+	zb.dirSrv = notify.NewDirService(zb, zb.log, zipNotifier, zb.notify)
 	zb.dirSrv.Start()
 	return nil
 }
