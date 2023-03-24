@@ -52,7 +52,6 @@ const (
 	Destroy         // Destroy container
 	Update          // Update element
 	Delete          // Delete element
-	Ready           // Notifier is operational
 )
 
 // String representation of operation code.
@@ -70,8 +69,6 @@ func (c EventOp) String() string {
 		return "UPDATE"
 	case Delete:
 		return "DELETE"
-	case Ready:
-		return "READY"
 	default:
 		return fmt.Sprintf("UNKNOWN(%d)", c)
 	}

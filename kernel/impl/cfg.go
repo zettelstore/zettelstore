@@ -167,16 +167,9 @@ func (cs *configService) doUpdate(p box.BaseBox) error {
 }
 
 func (cs *configService) observe(ci box.UpdateInfo) {
-	switch ci.Reason {
-	case box.OnReady:
-	case box.OnReload:
-		cs.logger.Debug().Msg("reload")
+	if ci.Reason != box.OnZettel || ci.Zid == id.ConfigurationZid {
+		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 		go func() { cs.doUpdate(ci.Box) }()
-	case box.OnZettel:
-		if ci.Zid == id.ConfigurationZid {
-			cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
-			go func() { cs.doUpdate(ci.Box) }()
-		}
 	}
 }
 

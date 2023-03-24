@@ -297,12 +297,6 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 		if zid != id.Invalid {
 			ds.notifyChange(zid)
 		}
-	case Ready:
-		if chci := ds.infos; chci != nil {
-			ds.log.Trace().Msg("notifyReady")
-			chci <- box.UpdateInfo{Box: ds.box, Reason: box.OnReady, Zid: id.Invalid}
-		}
-
 	default:
 		ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
 	}

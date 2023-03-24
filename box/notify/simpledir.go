@@ -70,11 +70,6 @@ func (sdn *simpleDirNotifier) eventLoop() {
 	if !listDirElements(sdn.log, sdn.fetcher, sdn.events, sdn.done) {
 		return
 	}
-	select {
-	case sdn.events <- Event{Op: Ready}:
-	case <-sdn.done:
-		return
-	}
 	for {
 		select {
 		case <-sdn.done:

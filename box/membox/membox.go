@@ -77,9 +77,6 @@ func (mb *memBox) Start(context.Context) error {
 	mb.curBytes = 0
 	mb.mx.Unlock()
 	mb.log.Trace().Int("max-zettel", int64(mb.maxZettel)).Int("max-bytes", int64(mb.maxBytes)).Msg("Start Box")
-	if chci := mb.cdata.Notify; chci != nil {
-		chci <- box.UpdateInfo{Box: mb, Reason: box.OnReady}
-	}
 	return nil
 }
 

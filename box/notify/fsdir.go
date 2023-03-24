@@ -94,11 +94,6 @@ func (fsdn *fsdirNotifier) eventLoop() {
 	if !listDirElements(fsdn.log, fsdn.fetcher, fsdn.events, fsdn.done) {
 		return
 	}
-	select {
-	case fsdn.events <- Event{Op: Ready}:
-	case <-fsdn.done:
-		return
-	}
 
 	for fsdn.readAndProcessEvent() {
 	}
