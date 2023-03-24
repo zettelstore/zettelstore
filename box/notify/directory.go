@@ -29,7 +29,7 @@ import (
 
 type entrySet map[id.Zid]*DirEntry
 
-// directoryState signal the internal state of the service.
+// DirServiceState signal the internal state of the service.
 //
 // The following state transitions are possible:
 // --newDirService--> dsCreated
@@ -38,14 +38,14 @@ type entrySet map[id.Zid]*DirEntry
 // dsWorking --directory missing--> dsMissing
 // dsMissing --last list notification--> dsWorking
 // --Stop--> dsStopping
-type directoryState uint8
+type DirServiceState uint8
 
 const (
-	dsCreated  directoryState = iota
-	dsStarting                // Reading inital scan
-	dsWorking                 // Initial scan complete, fully operational
-	dsMissing                 // Directory is missing
-	dsStopping                // Service is shut down
+	DsCreated  DirServiceState = iota
+	DsStarting                 // Reading inital scan
+	DsWorking                  // Initial scan complete, fully operational
+	DsMissing                  // Directory is missing
+	DsStopping                 // Service is shut down
 )
 
 // DirService specifies a directory service for file based zettel.
@@ -56,7 +56,7 @@ type DirService struct {
 	notifier Notifier
 	infos    chan<- box.UpdateInfo
 	mx       sync.RWMutex // protects status, entries
-	state    directoryState
+	state    DirServiceState
 	entries  entrySet
 }
 
@@ -70,14 +70,22 @@ func NewDirService(box box.ManagedBox, log *logger.Logger, notifier Notifier, ch
 		log:      log,
 		notifier: notifier,
 		infos:    chci,
-		state:    dsCreated,
+		state:    DsCreated,
 	}
+}
+
+// State the current service state.
+func (ds *DirService) State() DirServiceState {
+	ds.mx.RLock()
+	state := ds.state
+	ds.mx.RUnlock()
+	return state
 }
 
 // Start the directory service.
 func (ds *DirService) Start() {
 	ds.mx.Lock()
-	ds.state = dsStarting
+	ds.state = DsStarting
 	ds.mx.Unlock()
 	var newEntries entrySet
 	go ds.updateEvents(newEntries)
@@ -91,7 +99,7 @@ func (ds *DirService) Refresh() {
 // Stop the directory service.
 func (ds *DirService) Stop() {
 	ds.mx.Lock()
-	ds.state = dsStopping
+	ds.state = DsStopping
 	ds.mx.Unlock()
 	ds.notifier.Close()
 }
@@ -241,14 +249,14 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 	if msg := ds.log.Trace(); msg.Enabled() {
 		msg.Uint("state", uint64(state)).Str("op", ev.Op.String()).Str("name", ev.Name).Msg("notifyEvent")
 	}
-	if state == dsStopping {
+	if state == DsStopping {
 		return nil, false
 	}
 
 	switch ev.Op {
 	case Error:
 		newEntries = nil
-		if state != dsMissing {
+		if state != DsMissing {
 			ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
 		}
 	case Make:
@@ -257,10 +265,10 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 		if ev.Name == "" {
 			zids := getNewZids(newEntries)
 			ds.mx.Lock()
-			fromMissing := ds.state == dsMissing
+			fromMissing := ds.state == DsMissing
 			prevEntries := ds.entries
 			ds.entries = newEntries
-			ds.state = dsWorking
+			ds.state = DsWorking
 			ds.mx.Unlock()
 			ds.onCreateDirectory(zids, prevEntries)
 			if fromMissing {
@@ -326,7 +334,7 @@ func (ds *DirService) onDestroyDirectory() {
 	ds.mx.Lock()
 	entries := ds.entries
 	ds.entries = nil
-	ds.state = dsMissing
+	ds.state = DsMissing
 	ds.mx.Unlock()
 	for zid := range entries {
 		ds.notifyChange(zid)

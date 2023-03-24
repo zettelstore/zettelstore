@@ -92,12 +92,28 @@ type ManagedBoxStats struct {
 	Zettel int
 }
 
-// StartStopper performs simple lifecycle management.
+// StartState enumerates the possible states of starting and stopping a box.
 //
-// Every box that support this interface, must send an OnReady to its manager.
+// StartStateStopped -> StartStateStarting -> StartStateStarted -> StateStateStopping -> StartStateStopped.
+//
+// Other transitions are also possible.
+type StartState uint8
+
+// Constant values of StartState
+const (
+	StartStateStopped StartState = iota
+	StartStateStarting
+	StartStateStarted
+	StartStateStopping
+)
+
+// StartStopper performs simple lifecycle management.
 type StartStopper interface {
+	// State the current status of the box.
+	State() StartState
+
 	// Start the box. Now all other functions of the box are allowed.
-	// Starting an already started box is not allowed.
+	// Starting a box, which is not in state StartStateStopped is not allowed.
 	Start(ctx context.Context) error
 
 	// Stop the started box. Now only the Start() function is allowed.

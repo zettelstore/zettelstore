@@ -143,6 +143,7 @@ func (*configService) GetStatistics() []kernel.KeyValue {
 
 func (cs *configService) setBox(mgr box.Manager) {
 	mgr.RegisterObserver(cs.observe)
+	cs.observe(box.UpdateInfo{Box: mgr, Reason: box.OnZettel, Zid: id.ConfigurationZid})
 }
 
 func (cs *configService) doUpdate(p box.BaseBox) error {

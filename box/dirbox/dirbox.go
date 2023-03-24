@@ -129,6 +129,24 @@ func (dp *dirBox) Location() string {
 	return dp.location
 }
 
+func (dp *dirBox) State() box.StartState {
+	if ds := dp.dirSrv; ds != nil {
+		switch ds.State() {
+		case notify.DsCreated:
+			return box.StartStateStopped
+		case notify.DsStarting:
+			return box.StartStateStarting
+		case notify.DsWorking:
+			return box.StartStateStarted
+		case notify.DsMissing:
+			return box.StartStateStarted
+		case notify.DsStopping:
+			return box.StartStateStopping
+		}
+	}
+	return box.StartStateStopped
+}
+
 func (dp *dirBox) Start(context.Context) error {
 	dp.mxCmds.Lock()
 	defer dp.mxCmds.Unlock()

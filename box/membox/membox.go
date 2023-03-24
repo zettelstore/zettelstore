@@ -62,6 +62,15 @@ func (mb *memBox) Location() string {
 	return mb.u.String()
 }
 
+func (mb *memBox) State() box.StartState {
+	mb.mx.RLock()
+	defer mb.mx.RUnlock()
+	if mb.zettel == nil {
+		return box.StartStateStopped
+	}
+	return box.StartStateStarted
+}
+
 func (mb *memBox) Start(context.Context) error {
 	mb.mx.Lock()
 	mb.zettel = make(map[id.Zid]domain.Zettel)

@@ -42,6 +42,24 @@ func (zb *zipBox) Location() string {
 	return "file:" + zb.name
 }
 
+func (zb *zipBox) State() box.StartState {
+	if ds := zb.dirSrv; ds != nil {
+		switch ds.State() {
+		case notify.DsCreated:
+			return box.StartStateStopped
+		case notify.DsStarting:
+			return box.StartStateStarting
+		case notify.DsWorking:
+			return box.StartStateStarted
+		case notify.DsMissing:
+			return box.StartStateStarted
+		case notify.DsStopping:
+			return box.StartStateStopping
+		}
+	}
+	return box.StartStateStopped
+}
+
 func (zb *zipBox) Start(context.Context) error {
 	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
@@ -61,6 +79,7 @@ func (zb *zipBox) Refresh(_ context.Context) {
 
 func (zb *zipBox) Stop(context.Context) {
 	zb.dirSrv.Stop()
+	zb.dirSrv = nil
 }
 
 func (*zipBox) CanCreateZettel(context.Context) bool { return false }
