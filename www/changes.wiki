@@ -25,6 +25,11 @@
      probably also use SHTML, deprecating the current Mustache syntax (which
      was added in [#0_0_9|0.0.9]).
      (major)
+  *  Search term <tt>PICK n</tt>, where <tt>n</tt> is an integer value greater
+     zero, will pick randomly <tt>n</tt> elements from the search result list.
+     Somehow similar (and faster) as <tt>RANDOM LIMIT n</tt>, but allows also
+     later ordering of the resulting list.
+     (minor)
   *  Changed cost model for zettel context: a zettel with more
      outgoing/incoming references has higher cost than a zettel with less
      references. Also added support for traversing tags, with a similar cost

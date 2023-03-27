@@ -47,6 +47,8 @@ type Query struct {
 	// Allow to create predictable randomness
 	seed int
 
+	pick int // Randomly pick elements, <= 0: no pick
+
 	// Fields to be used for sorting
 	order  []sortOrder
 	offset int // <= 0: no offset
@@ -146,6 +148,7 @@ func (q *Query) Clone() *Query {
 		}
 	}
 	c.seed = q.seed
+	c.pick = q.pick
 	if len(q.order) > 0 {
 		c.order = append([]sortOrder{}, q.order...)
 	}
@@ -378,16 +381,24 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 	}
 }
 
-// Sort applies the sorter to the slice of meta data.
-func (q *Query) Sort(metaList []*meta.Meta) []*meta.Meta {
+// AfterSearch applies all terms to the metadata list that was searched.
+//
+// This includes sorting, offset, limit, and picking.
+func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	if len(metaList) == 0 {
 		return metaList
 	}
 
-	if q == nil || len(q.order) == 0 {
+	if q == nil {
 		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
-		if q == nil {
-			return metaList
+		return metaList
+	}
+
+	metaList = q.doPick(metaList)
+
+	if len(q.order) == 0 {
+		if q.pick <= 0 {
+			sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
 		}
 	} else if q.order[0].isRandom() {
 		metaList = q.sortRandomly(metaList)
@@ -410,9 +421,40 @@ func (q *Query) setSeed() {
 	}
 }
 
-func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
+func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
+	pick := q.pick
+	if pick <= 0 {
+		return metaList
+	}
+	if limit := q.limit; limit > 0 && limit < pick {
+		pick = limit
+	}
+	if pick >= len(metaList) && len(q.order) == 0 {
+		return q.sortRandomly(metaList)
+	}
+	return q.doPickN(metaList, pick)
+}
+func (q *Query) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
 	q.setSeed()
+	rnd := rand.New(rand.NewSource(int64(q.seed)))
+	result := make([]*meta.Meta, pick)
+	for i := 0; i < pick; i++ {
+		n := rnd.Intn(pick - i)
+		result[i] = metaList[n]
+		metaList[n] = metaList[len(metaList)-i-1]
+		metaList[len(metaList)-i-1] = nil
+	}
+	return result
+}
+
+func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
+	// Optimization: RANDOM LIMIT n, where n < len(metaList) is essentially a PICK n.
+	if limit := q.limit; limit > 0 && limit < len(metaList) {
+		return q.doPickN(metaList, limit)
+	}
+
 	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
+	q.setSeed()
 	rnd := rand.New(rand.NewSource(int64(q.seed)))
 	rnd.Shuffle(
 		len(metaList),
@@ -426,8 +468,8 @@ func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
 	if q == nil {
 		return metaList
 	}
-	if q.limit > 0 && q.limit < len(metaList) {
-		return metaList[:q.limit]
+	if limit := q.limit; limit > 0 && limit < len(metaList) {
+		return metaList[:limit]
 	}
 	return metaList
 }

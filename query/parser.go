@@ -66,6 +66,7 @@ const (
 	kwOffset  = "OFFSET"
 	kwOr      = "OR"
 	kwOrder   = "ORDER"
+	kwPick    = "PICK"
 	kwRandom  = "RANDOM"
 	kwReverse = "REVERSE"
 )
@@ -88,10 +89,17 @@ func (ps *parserState) parse(q *Query) *Query {
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(kwRandom) {
 			q = createIfNeeded(q)
-			if len(q.order) == 0 {
+			if len(q.order) == 0 && q.pick <= 0 {
 				q.order = []sortOrder{{"", false}}
 			}
 			continue
+		}
+		inp.SetPos(pos)
+		if ps.acceptKwArgs(kwPick) {
+			if s, ok := ps.parsePick(q); ok {
+				q = s
+				continue
+			}
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(kwOrder) {
@@ -122,6 +130,21 @@ func (ps *parserState) parse(q *Query) *Query {
 		q = ps.parseText(q)
 	}
 	return q
+}
+
+func (ps *parserState) parsePick(q *Query) (*Query, bool) {
+	num, ok := ps.scanPosInt()
+	if !ok {
+		return q, false
+	}
+	q = createIfNeeded(q)
+	if q.pick == 0 || q.pick >= num {
+		q.pick = num
+	}
+	if len(q.order) == 1 && q.order[0].isRandom() {
+		q.order = nil
+	}
+	return q, true
 }
 
 func (ps *parserState) parseOrder(q *Query) (*Query, bool) {

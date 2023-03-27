@@ -43,6 +43,7 @@ func TestParser(t *testing.T) {
 		{`key1:a key2:b`, `key1:a key2:b`},
 		{`key1: key2:b`, `key1: key2:b`},
 		{"word key:a", "key:a word"},
+		{`PICK 3`, `PICK 3`}, {`PICK 9 PICK 11`, `PICK 9`}, {`PICK 5 RANDOM`, `PICK 5`}, {`RANDOM PICK 7`, `PICK 7`},
 		{`RANDOM`, `RANDOM`}, {`RANDOM a`, `a RANDOM`}, {`a RANDOM`, `a RANDOM`},
 		{`RANDOM RANDOM a`, `a RANDOM`},
 		{`RANDOMRANDOM a`, `RANDOMRANDOM a`}, {`a RANDOMRANDOM`, `a RANDOMRANDOM`},

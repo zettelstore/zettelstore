@@ -67,6 +67,7 @@ func (q *Query) Print(w io.Writer) {
 			env.printExprValues("", term.search)
 		}
 	}
+	env.printPosInt(kwPick, q.pick)
 	env.printOrder(q.order)
 	env.printPosInt(kwOffset, q.offset)
 	env.printPosInt(kwLimit, q.limit)
@@ -172,6 +173,7 @@ func (q *Query) PrintHuman(w io.Writer) {
 		}
 	}
 
+	env.printPosInt(kwPick, q.pick)
 	env.printOrder(q.order)
 	env.printPosInt(kwOffset, q.offset)
 	env.printPosInt(kwLimit, q.limit)
