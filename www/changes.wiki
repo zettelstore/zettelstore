@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_12"></a>
+<h2>Changes for Version 0.12.0 (pending)</h2>
+
 <a id="0_11"></a>
-<h2>Changes for Version 0.11.0 (pending)</h2>
+<h2>Changes for Version 0.11.0 (2023-03-27)</h2>
   *  Remove ZJSON encoding. It was announced in version 0.10.0. Use Sexpr
      encoding instead.
      (breaking)
@@ -38,6 +41,8 @@
      might change in some details in the future, but the idea of a penalty
      applied to zettel / tags with many references will hold.
      (minor)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_10"></a>
 <h2>Changes for Version 0.10.1 (2023-01-30)</h2>

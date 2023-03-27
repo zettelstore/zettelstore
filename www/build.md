@@ -6,6 +6,7 @@ You must install the following software:
 * [staticcheck](https://staticcheck.io/),
 * [shadow](https://pkg.go.dev/golang.org/x/tools/go/analysis/passes/shadow),
 * [unparam](https://mvdan.cc/unparam),
+* [govulncheck](https://golang.org/x/vuln/cmd/govulncheck),
 * [Fossil](https://fossil-scm.org/),
 * [Git](https://git-scm.org) (so that Go can download some dependencies).
 
