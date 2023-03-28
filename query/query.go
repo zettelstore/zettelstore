@@ -390,15 +390,14 @@ func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	}
 
 	if q == nil {
-		sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
-		return metaList
+		return sortMetaByZid(metaList)
 	}
 
 	metaList = q.doPick(metaList)
 
 	if len(q.order) == 0 {
 		if q.pick <= 0 {
-			sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
+			metaList = sortMetaByZid(metaList)
 		}
 	} else if q.order[0].isRandom() {
 		metaList = q.sortRandomly(metaList)
@@ -435,6 +434,7 @@ func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
 	return q.doPickN(metaList, pick)
 }
 func (q *Query) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
+	metaList = sortMetaByZid(metaList)
 	q.setSeed()
 	rnd := rand.New(rand.NewSource(int64(q.seed)))
 	result := make([]*meta.Meta, pick)
@@ -453,7 +453,7 @@ func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
 		return q.doPickN(metaList, limit)
 	}
 
-	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
+	metaList = sortMetaByZid(metaList)
 	q.setSeed()
 	rnd := rand.New(rand.NewSource(int64(q.seed)))
 	rnd.Shuffle(
@@ -471,5 +471,10 @@ func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
 	if limit := q.limit; limit > 0 && limit < len(metaList) {
 		return metaList[:limit]
 	}
+	return metaList
+}
+
+func sortMetaByZid(metaList []*meta.Meta) []*meta.Meta {
+	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
 	return metaList
 }

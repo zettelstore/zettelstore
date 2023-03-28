@@ -4,6 +4,11 @@
 <h2>Changes for Version 0.12.0 (pending)</h2>
 
 <a id="0_11"></a>
+<h2>Changes for Version 0.11.1 (2023-03-28)</h2>
+  *  Make <tt>PICK</tt> search term a little bit more deterministic so that the
+     &ldquo;Save As Zettel&rdquo; button produces the same list.
+     (fix: webui)
+
 <h2>Changes for Version 0.11.0 (2023-03-27)</h2>
   *  Remove ZJSON encoding. It was announced in version 0.10.0. Use Sexpr
      encoding instead.
