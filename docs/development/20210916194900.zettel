@@ -2,7 +2,8 @@ id: 20210916194900
 title: Checklist for Release
 role: zettel
 syntax: zmk
-modified: 20220309105459
+created: 20210916194900
+modified: 20230402181229
 
 # Sync with the official repository
 #* ``fossil sync -u``
@@ -49,7 +50,7 @@ modified: 20220309105459
 # Remove previous executables:
 #* ``fossil uv remove --glob '*-PREVVERSION*'``
 # Add executables for release:
-#* ``cd release``
+#* ``cd releases``
 #* ``fossil uv add *.zip``
 #* ``cd ..``
 #* Synchronize with main repository:
