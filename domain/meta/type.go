@@ -66,9 +66,11 @@ var (
 	cachedTypedKeys = make(map[string]*DescriptionType)
 	mxTypedKey      sync.RWMutex
 	suffixTypes     = map[string]*DescriptionType{
+		"-date":   TypeTimestamp,
 		"-number": TypeNumber,
 		"-role":   TypeWord,
 		"-set":    TypeWordSet,
+		"-time":   TypeTimestamp,
 		"-title":  TypeZettelmarkup,
 		"-url":    TypeURL,
 		"-zettel": TypeID,

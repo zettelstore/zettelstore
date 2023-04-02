@@ -3,16 +3,19 @@ title: Supported Key Types
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-modified: 20220304114106
+created: 20210126175322
+modified: 20230402183536
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
 User-defined metadata keys conform also to a type, based on the suffix of the key.
 
 |=Suffix|Type
+| ''-date'' | [[Timestamp|00001006034500]]
 | ''-number'' | [[Number|00001006033000]]
 | ''-role'' | [[Word|00001006035500]]
 | ''-set'' | [[WordSet|00001006036000]]
+| ''-time'' | [[Timestamp|00001006034500]]
 | ''-title'' | [[Zettelmarkup|00001006036500]]
 | ''-url'' | [[URL|00001006035000]]
 | ''-zettel''  | [[Identifier|00001006032000]]
