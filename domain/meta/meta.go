@@ -145,6 +145,7 @@ func init() {
 	registerKey(api.KeyCreated, TypeTimestamp, usageComputed, "")
 	registerKey(api.KeyCredential, TypeCredential, usageUser, "")
 	registerKey(api.KeyDead, TypeIDSet, usageProperty, "")
+	registerKey(api.KeyExpire, TypeTimestamp, usageUser, "")
 	registerKey(api.KeyForward, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyLang, TypeWord, usageUser, "")
 	registerKey(api.KeyLicense, TypeEmpty, usageUser, "")

@@ -2,6 +2,9 @@
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (pending)</h2>
+  *  New metadata key <<expire</tt> records a timestamp when a zettel should be
+     treated as, well, expired.
+     (minor)
 
 <a id="0_11"></a>
 <h2>Changes for Version 0.11.1 (2023-03-28)</h2>
