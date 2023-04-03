@@ -445,10 +445,11 @@ func (q *Query) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
 	rnd := q.newRandom()
 	result := make([]*meta.Meta, pick)
 	for i := 0; i < pick; i++ {
-		n := rnd.Intn(pick - i)
+		last := len(metaList) - i
+		n := rnd.Intn(last)
 		result[i] = metaList[n]
-		metaList[n] = metaList[len(metaList)-i-1]
-		metaList[len(metaList)-i-1] = nil
+		metaList[n] = metaList[last-1]
+		metaList[last-1] = nil
 	}
 	return result
 }
@@ -473,10 +474,11 @@ func (q *Query) doRandom(metaList []*meta.Meta) []*meta.Meta {
 }
 
 func (q *Query) newRandom() *rand.Rand {
-	if q.seed <= 0 {
-		return rand.New(rand.NewSource(int64(rand.Intn(10000) + 10001)))
+	seed := q.seed
+	if seed <= 0 {
+		seed = rand.Intn(10000) + 10001
 	}
-	return rand.New(rand.NewSource(int64(q.seed)))
+	return rand.New(rand.NewSource(int64(seed)))
 }
 
 // Limit returns only s.GetLimit() elements of the given list.
