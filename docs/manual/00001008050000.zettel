@@ -1,9 +1,10 @@
 id: 00001008050000
-title: The ""draw"" language
+title: The "draw" language
 role: manual
 tags: #graphic #manual #zettelstore
 syntax: zmk
-modified: 20220311120439
+created: 20220131142036
+modified: 20230403123738
 
 Sometimes, ""a picture is worth a thousand words"".
 To create some graphical representations, Zettelmarkup provides a simple mechanism.
