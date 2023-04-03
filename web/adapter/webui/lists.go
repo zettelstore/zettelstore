@@ -35,6 +35,7 @@ import (
 func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
+		q = q.SetDeterministic()
 		ctx := r.Context()
 		metaList, err := listMeta.Run(box.NoEnrichQuery(ctx, q), q)
 		if err != nil {

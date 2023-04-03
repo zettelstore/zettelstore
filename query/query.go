@@ -237,6 +237,17 @@ func (q *Query) GetSeed() (int, bool) {
 	return q.seed, q.seed > 0
 }
 
+// SetDeterministic signals that the result should be the same if the seed is the same.
+func (q *Query) SetDeterministic() *Query {
+	q = createIfNeeded(q)
+	if q.seed <= 0 {
+		q.seed = int(rand.Intn(10000) + 1)
+	}
+	return q
+}
+
+func (q *Query) isDeterministic() bool { return q.seed > 0 }
+
 // SetLimit sets the given limit of the query object.
 func (q *Query) SetLimit(limit int) *Query {
 	q = createIfNeeded(q)
@@ -414,12 +425,6 @@ func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	return q.Limit(metaList)
 }
 
-func (q *Query) setSeed() {
-	if q != nil && q.seed <= 0 {
-		q.seed = int(rand.Intn(10000) + 1)
-	}
-}
-
 func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
 	pick := q.pick
 	if pick <= 0 {
@@ -428,15 +433,16 @@ func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
 	if limit := q.limit; limit > 0 && limit < pick {
 		pick = limit
 	}
-	if pick >= len(metaList) && len(q.order) == 0 {
-		return q.sortRandomly(metaList)
+	if pick >= len(metaList) {
+		return q.doRandom(metaList)
 	}
 	return q.doPickN(metaList, pick)
 }
 func (q *Query) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
-	metaList = sortMetaByZid(metaList)
-	q.setSeed()
-	rnd := rand.New(rand.NewSource(int64(q.seed)))
+	if q.isDeterministic() {
+		metaList = sortMetaByZid(metaList)
+	}
+	rnd := q.newRandom()
 	result := make([]*meta.Meta, pick)
 	for i := 0; i < pick; i++ {
 		n := rnd.Intn(pick - i)
@@ -452,15 +458,25 @@ func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
 	if limit := q.limit; limit > 0 && limit < len(metaList) {
 		return q.doPickN(metaList, limit)
 	}
-
-	metaList = sortMetaByZid(metaList)
-	q.setSeed()
-	rnd := rand.New(rand.NewSource(int64(q.seed)))
+	return q.doRandom(metaList)
+}
+func (q *Query) doRandom(metaList []*meta.Meta) []*meta.Meta {
+	if q.isDeterministic() {
+		metaList = sortMetaByZid(metaList)
+	}
+	rnd := q.newRandom()
 	rnd.Shuffle(
 		len(metaList),
 		func(i, j int) { metaList[i], metaList[j] = metaList[j], metaList[i] },
 	)
 	return metaList
+}
+
+func (q *Query) newRandom() *rand.Rand {
+	if q.seed <= 0 {
+		return rand.New(rand.NewSource(int64(rand.Intn(10000) + 10001)))
+	}
+	return rand.New(rand.NewSource(int64(q.seed)))
 }
 
 // Limit returns only s.GetLimit() elements of the given list.
