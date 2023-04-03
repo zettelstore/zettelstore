@@ -1,0 +1,69 @@
+id: 00001012931000
+title: Encoding of Sexpr
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+created: 20230403153903
+modified: 20230403163340
+
+Zettel in a [[Sexpr encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
+To process these symbolic expressions, you need to know, how a specific part of a zettel is represented by a symbolic expression.
+
+Basically, each part of a zettel is represented as a list, often a nested list.
+The first element of that list is always an unique symbol, which denotes that part.
+The meaning / semantic of all other elements depend on that symbol.
+
+=== Zettel
+A full zettel is represented by a list of two elements.
+The first elements represents the metadata, the second element represents the zettel content.
+
+:::syntax
+__Zettel__ **=** ''('' [[__Metadata__|#metadata]] [[__Content__|#content]] '')''.
+:::
+
+=== Metadata
+
+Metadata is represented by a list, where the first element is the symbol ''META''.
+Following elements represent each metadatum[^""Metadatum"" is used as the singular form of metadata.] of a zettel in standard order.
+
+Standard order is: [[Title|00001006020000#title]], [[Role|00001006020000#role]], [[Tags|00001006020000#tags]], [[Syntax|00001006020000#syntax]], all other [[keys|00001006020000]] in alphabetic order.
+
+:::syntax
+__Metadata__ **=** ''(META'' [[__Metadatum__|00001012931200]] __Metadatum__ &hellip; __Metadatum__ '')''.
+:::
+=== Content
+
+Zettel content is represented by a block.
+:::syntax
+__Content__ **=** [[__Block__|#block]].
+:::
+
+==== Block
+A block is represented by a list with the symbol ''BLOCK'' as the first element.
+All following elements represent a nested [[block-structured element|00001007030000]].
+
+:::syntax
+[!block|__Block__] **=** ''(BLOCK'' [[__BlockElement__|00001012931400]] __BlockElement__ &hellip; __BlockElement__ '')''.
+:::
+
+==== Inline
+Both block-structured elements and some metadata values may contain [[inline-structured elements|00001007040000]].
+Similar, inline-structured elements are represented as follows:
+
+:::syntax
+__Inline__ **=** ''(INLINE'' [[__InlineElement__|00001012931600]] __InlineElement__ &hellip; __InlineElement__ '')''.
+:::
+
+==== Attribute
+[[Attributes|00001007050000]] may be specified for both block- and inline- structured elements.
+Attributes are represented by the following schema.
+Please note, the the symbol ''quote'' is lower-case by intention.
+
+:::syntax
+__Attribute__ **=** ''('' **[** ''quote'' ''('' [[__AttributeKeyValue__|00001012931800]] __AttributeKeyValue__ &hellip; __AttributeKeyValue__ '')'' **]** ')'.
+:::
+
+Either, there are no attributes.
+These are specified by the empty list ''()''.
+Or there are attributes.
+In this case, the first element of the list must be the symbol ''quote'': ''(quote'' ''('' A,,1,, A,,2,, &hellip; A,,n,, '')'''')''.

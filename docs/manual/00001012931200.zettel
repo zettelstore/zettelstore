@@ -1,0 +1,38 @@
+id: 00001012931200
+title: Encoding of Sexpr Metadata
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+created: 20230403161618
+modified: 20230403165057
+
+A single metadata (""metadatum"") is represented by a triple: a symbol representing the type, a string representing the key, and either a string or a list that represent the value.
+
+The symbol depends on the [[metadata key type|00001006030000]].
+The value also depends somehow on the key type: a set of values is represented as a list, all other values are represented by a string, even if it is a number.
+
+The following table maps key types to symbols and to the type of the value representation.
+
+|=Key Type<| Symbol<| Value<
+| [[Credential|00001006031000]] | ''CREDENTIAL'' | string
+| [[EString|00001006031500]] | ''EMPTY-STRING'' | string
+| [[Identifier|00001006032000]] | ''ZID'' | string
+| [[IdentifierSet|00001006032500]] | ''ZID-SET'' | list
+| [[Number|00001006033000]] | ''NUMBER'' | string
+| [[String|00001006033500]] | ''STRING'' | string
+| [[TagSet|00001006034000]] | ''TAG-SET'' | list
+| [[Timestamp|00001006034500]] | ''TIMESTAMP'' | string
+| [[URL|00001006035000]] | ''URL'' | string
+| [[Word|00001006035500]] | ''WORD'' | string
+| [[WordSet|00001006036000]] | ''WORD-SET'' | list
+| [[Zettelmarkup|00001006036500]] | ''ZETTELMARKUP'' | string
+
+If the value is represented as a list, its first element is the symbol ''list'', and all other elements are strings with the appropriate values.
+
+:::syntax
+__ListValue__ **=** ''(list'' String,,1,, String,,2,, &hellip; String,,n,, '')''.
+:::
+
+Examples:
+* The title of this zettel is represented as: ''(EMPTY-STRING "title" "Encoding of Sexpr Metadata")''
+* The tags of this zettel are represented as: ''(TAG-SET "tags" (list "#api" "#manual" "#reference" "#zettelstore"))''

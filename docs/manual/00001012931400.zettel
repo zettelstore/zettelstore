@@ -1,0 +1,35 @@
+id: 00001012931400
+title: Encoding of Sexpr Block Elements
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+created: 20230403161803
+modified: 20230403173145
+
+=== ''PARA''
+=== ''HEADING''
+=== ''THEMATIC''
+=== ''ORDERED''
+=== ''UNORDERED''
+=== ''DESCRIPTION''
+=== ''QUOTATION''
+=== ''TABLE''
+==== ''CELL''
+==== ''CELL-CENTER''
+==== ''CELL-LEFT''
+==== ''CELL-RIGHT''
+=== ''REGION-*''
+==== ''REGION-BLOCK''
+==== ''REGION-QUOTE''
+==== ''REGION-VERSE''
+=== ''VERBATIM-*''
+==== ''VERBATIM-COMMENT''
+==== ''VERBATIM-EVAL''
+==== ''VERBATIM-HTML''
+==== ''VERBATIM-MATH''
+==== ''VERBATIM-CODE''
+==== ''VERBATIM-ZETTEL''
+=== ''BLOB''
+=== ''TRANSCLUDE''
+
+Offen: ''UNKNOWN'' (&rarr; ''encoder/sexprenc/transform.go:216'')

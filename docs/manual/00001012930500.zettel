@@ -1,0 +1,77 @@
+id: 00001012930500
+title: Syntax of Symbolic Expressions
+role: manual
+tags: #manual #reference #zettelstore
+syntax: zmk
+created: 20230403151127
+modified: 20230403153609
+
+=== Syntax of lists
+A list always starts with the left parenthesis (""''(''"", U+0028) and ends with a right parenthesis (""'')''"", U+0029).
+A list may contain a possibly empty sequence of elements, i.e. lists and / or atoms.
+
+Internally, lists are composed of __cells__.
+A cell allows to store two values.
+The first value references the first element of a list.
+The second value references the rest of the list, or is the special value __nil__ if there is no rest of the list.
+
+However, it is possible to store an atom as the second value of the last cell.
+In this case, before the last element of a list of at least two elements, a full stop character (""''.''"", U+002E) signals such a cell as the last two elements.
+This allows a more space economic storage of data.
+
+A __proper__ list, which contains __nil__ as the second value of the last element might be pictured as follows:
+
+~~~draw
++---+---+   +---+---+         +---+---+
+| V | N +-->| V | N +-->   -->| V |   |
++-+-+---+   +-+-+---+         +-+-+---+
+  |           |                 |
+  v           v                 v
++-------+   +-------+    +-------+
+| Elem1 |   | Elem2 |    | ElemN |
++-------+   +-------+    +-------+
+~~~
+
+''V'' is a placeholder for a value, ''N'' is the reference to the next cell (also known as the rest / tail of the list).
+Above list will be represented as an symbolic expression as ''(Elem1 Elem2 ... ElemN)''
+
+An improper list will have a non-__nil__ reference to an atom as the very last element
+
+~~~draw
++---+---+   +---+---+         +---+---+
+| V | N +-->| V | N +-->   -->| V | V |
++-+-+---+   +-+-+---+         +-+-+-+-+
+  |           |                 |   |
+  v           v                 v   v
++-------+   +-------+    +-------+ +------+
+| Elem1 |   | Elem2 |    | ElemN | | Atom |
++-------+   +-------+    +-------+ +------+
+~~~
+
+Above improper list will be represented as an symbolic expression as ''(Elem1 Elem2 ... ElemN . Atom)''
+
+
+=== Syntax of numbers (atom)
+A number is a non-empty sequence of digits (""0"" ... ""9"").
+The smallest number is ``0``, there are no negative numbers.
+
+=== Syntax of symbols (atom)
+A symbol is a non-empty sequence of printable characters, except left or right parenthesis.
+Unicode characters of the following categories contains printable characters in the above sense: letter (L), number (N), punctuation (P), symbol (S).
+Symbols are case-sensitive, i.e. ""''ZETTEL''"" and ""''zettel''"" denote different symbols.
+
+=== Syntax of string (atom)
+
+A string starts with a quotation mark (""''"''"", U+0022), contains a possibly empty sequence of Unicode characters, and ends with a quotation mark.
+To allow a string to contain a quotations mark, it must be prefixed by one backslash (""''\\''"", U+005C).
+To allow a string to contain a backslash, it also must be prefixed by one backslash.
+Unicode characters with a code less than U+FF are encoded by by the sequence ""''\\xNM''"", where ''NM'' is the hex encoding of the character.
+Unicode characters with a code less than U+FFFF are encoded by by the sequence ""''\\uNMOP''"", where ''NMOP'' is the hex encoding of the character.
+Unicode characters with a code less than U+FFFFFF are encoded by by the sequence ""''\\UNMOPQR''"", where ''NMOPQR'' is the hex encoding of the character.
+In addition, the sequence ""''\\t''"" encodes a horizontal tab (U+0009), the sequence ""''\\n''"" encodes a line feed (U+000A).
+
+=== See also
+* Currently, Zettelstore uses [[Sxpf|https://codeberg.org/t73fde/sxpf]] (""Symbolic eXRression Framework"") to implement symbolic expression.
+  The project page might contain additional information about the full syntax.
+
+  Zettelstore only uses lists, numbers, string, and symbols to represent zettel.

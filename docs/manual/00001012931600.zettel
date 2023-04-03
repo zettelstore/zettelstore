@@ -1,0 +1,212 @@
+id: 00001012931600
+title: Encoding of Sexpr Inline Elements
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+created: 20230403161845
+modified: 20230403183750
+
+=== ''TEXT''
+:::syntax
+__Text__ **=** ''(TEXT'' String '')''.
+:::
+Specifies the string as some text content, typically a word.
+
+=== ''SPACE''
+:::syntax
+__Space__ **=** ''(SPACE'' **[** String **]** '')''.
+:::
+Specifies some space, typically white space.
+If the string is not given it is assumed to be ''" "'' (one space character).
+Otherwise it contains the space characters.
+
+=== ''SOFT''
+:::syntax
+__Soft__ **=** ''(SOFT)''.
+:::
+Denotes a soft line break.
+It is typically translated into a space character, but signals the point in the textual content, where a line break occurred.
+
+=== ''HARD''
+:::syntax
+__Hard__ **=** ''(HARD)''.
+:::
+Specifies a hard line break, i.e. the user wants to have a line break here.
+
+=== ''LINK-*''
+The following lists specify various links, based on the full reference.
+They all have the same structure, with a trailing sequence of __InlineElements__ that contain the linked text.
+
+:::syntax
+__InvalidLink__ **=** ''(LINK-INVALID'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains the invalid link specification.
+
+:::syntax
+__ZettelLink__ **=** ''(LINK-ZETTEL'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains the zettel identifier, a zettel reference.
+
+:::syntax
+__SelfLink__ **=** ''(LINK-SELF'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains the number sign character and the name of a zettel mark.
+It reference the same zettel where it occurs.
+
+:::syntax
+__FoundLink__ **=** ''(LINK-FOUND'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a zettel identifier, a zettel reference, of a zettel known to be included in the Zettelstore.
+
+:::syntax
+__BrokenLink__ **=** ''(LINK-BROKEN'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a zettel identifier, a zettel reference, of a zettel known to be __not__ included in the Zettelstore.
+
+:::syntax
+__HostedLink__ **=** ''(LINK-HOSTED'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a link starting with one slash character, denoting an absolute local reference.
+
+:::syntax
+__BasedLink__ **=** ''(LINK-BASED'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a link starting with two slash characters, denoting a local reference interpreted relative to the Zettelstore base URL.
+
+:::syntax
+__QueryLink__ **=** ''(LINK-BASED'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a [[query expression|00001007700000]].
+
+:::syntax
+__ExternalLink__ **=** ''(LINK-EXTERNAL'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains a full URL, referencing a resource outside of the Zettelstore server.
+
+=== ''EMBED''
+:::syntax
+__Embed__ **=** ''(EMBED'' [[__Attributes__|00001012931000#attribute]] __Reference__ String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+Specifies an embedded element, in most cases some image content or an inline transclusion.
+A transclusion will only be used, if the zettel content was not evaluated.
+
+__Reference__ denoted the referenced zettel.
+
+If the string value is empty, it is an inline transclusion.
+Otherwise it contains the syntax of an image.
+
+The __InlineElement__ at the end of the list is interpreted as describing text.
+
+=== ''EMBED-BLOB''
+:::syntax
+__EmbedBLOB__ **=** ''(EMBED-BLOB'' [[__Attributes__|00001012931000#attribute]] String,,1,, String,,2,, '')''.
+:::
+If used if some processed image has to be embedded inside some inline material.
+The first string specifies the syntax of the image content.
+The second string contains the image content.
+If the syntax is ""SVG"", the image content is not further encoded.
+Otherwise a base64 encoding is used.
+
+=== ''CITE''
+:::syntax
+__CiteBLOB__ **=** ''(CITE'' [[__Attributes__|00001012931000#attribute]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The string contains the citation key.
+
+=== ''MARK''
+:::syntax
+__Mark__ **=** ''(MARK'' String,,1,, String,,2,, String,,3,, [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The first string is the mark string used in the content.
+The second string is the mark string transformed to a slug, i.e. transformed to lower case, remove non-ASCII characters.
+The third string is the slug string, but made unique for the whole zettel.
+Then follows the marked text as a sequence of __InlineElement__s.
+
+=== ''ENDNOTE''
+:::syntax
+__Endnote__ **=** ''(ENDNOTE'' [[__Attributes__|00001012931000#attribute]] ''(quote'' [[__InlineElement__|00001012931600]] &hellip; '')'''')''.
+:::
+Specifies endnote / footnote text.
+
+=== ''FORMAT-*''
+The following lists specifies some inline text formatting.
+The structure is always the same, the initial symbol denotes the actual formatting.
+
+:::syntax
+__DeleteFormat__ **=** ''(FORMAT-DELETE'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as deleted.
+
+:::syntax
+__EmphasizeFormat__ **=** ''(FORMAT-EMPH'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as emphasized.
+
+:::syntax
+__InsertFormat__ **=** ''(FORMAT-INSERT'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as inserted.
+
+:::syntax
+__QuoteFormat__ **=** ''(FORMAT-QUOTE'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as quoted text.
+
+:::syntax
+__SpanFormat__ **=** ''(FORMAT-SPAN'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as belonging together in a certain, yet unspecified way.
+
+:::syntax
+__SubScriptFormat__ **=** ''(FORMAT-SUB'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as sub-scripted text.
+
+:::syntax
+__SuperScriptFormat__ **=** ''(FORMAT-SUPER'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as super-scripted text.
+
+:::syntax
+__StrongFormat__ **=** ''(FORMAT-STRONG'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as strongly emphasized.
+
+=== ''LITERAL-*''
+The following lists specifies some literal text.
+The structure is always the same, the initial symbol denotes the actual usage.
+
+:::syntax
+__CodeLiteral__ **=** ''(LITERAL-CODE'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as executable code.
+
+:::syntax
+__CommentLiteral__ **=** ''(LITERAL-COMMENT'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as an internal comment not to be interpreted further.
+
+:::syntax
+__HTMLLiteral__ **=** ''(LITERAL-HTML'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as HTML code.
+
+:::syntax
+__InputLiteral__ **=** ''(LITERAL-INPUT'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as input entered by an user.
+
+:::syntax
+__MathLiteral__ **=** ''(LITERAL-MATH'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as special code to be interpreted as mathematical formulas.
+
+:::syntax
+__OutputLiteral__ **=** ''(LITERAL-OUTPUT'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as computer output to be read by an user.
+
+:::syntax
+__ZettelLiteral__ **=** ''(LITERAL-ZETTEL'' [[__Attributes__|00001012931000#attribute]] String '')''.
+:::
+The string contains text that should be treated as (nested) zettel content.

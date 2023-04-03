@@ -1,0 +1,28 @@
+id: 00001012931800
+title: Encoding of Sexpr Attribute Values
+role: manual
+tags: #api #manual #reference #zettelstore
+syntax: zmk
+created: 20230403161923
+modified: 20230403163701
+
+An attribute is represented by a single cell.
+The first element of the cell references the attribute key, the second value the corresponding value.
+
+:::syntax
+__AttributeKeyValue__ **=** ''('' __AttributeKey__ ''.'' __AttributeValue__ '')''.
+:::
+
+__AttributeKey__ and __AttributeValue__ are [[string values|00001012930500]].
+
+An empty key denotes the generic attribute.
+
+A key with the value ''"-"'' specifies the default attribute.
+In this case, the attribute value is not interpreted.
+
+Some examples:
+* ''()'' represents the absence of attributes,
+* ''(quote (("-" . "")))'' represent the default attribute,
+* ''(quote (("-" . "") ("" . "syntax")))'' adds the generic attrribute with the value ""syntax"",
+* ''(quote ())'' will also represent the absence of attribute (in a more complicated way),
+* ''(quote (("lang" . "en")))'' denote the attribute key ""lang"" with a value ""en"".

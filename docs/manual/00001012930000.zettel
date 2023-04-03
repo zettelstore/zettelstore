@@ -1,0 +1,26 @@
+id: 00001012930000
+title: Symbolic Expression
+role: manual
+tags: #manual #reference #zettelstore
+syntax: zmk
+created: 20230403145644
+modified: 20230403154010
+
+A symbolic expression (also called __s-expression__) is a notation of a list-based tree.
+Inner nodes are lists of arbitrary length, outer nodes are primitive values (also called __atoms__) or the empty list.
+
+A symbolic expression is either
+* a primitive value (__atom__), or
+* a list of the form __(E,,1,, E,,2,, &hellip; E,,n,,)__, where __E,,i,,__ is itself a symbolic expression, separated by space characters.
+
+An atom is a number, a string, or a symbol.
+
+Symbolic expressions are used in programming languages like LISP or Scheme, where they denote both data structures and the program itself.
+This allows a LISP or Scheme program to process LISP or Scheme programs.
+That property is also used within Zettelstore.
+
+Symbolic expressions are relatively easy to read, to parse, and to process.
+
+=== See also
+* [[Syntax|00001012930500]] of symbolic expressions in the Zettelstore
+* [[S-expression @ Wikipedia|https://en.wikipedia.org/wiki/S-expression]]
