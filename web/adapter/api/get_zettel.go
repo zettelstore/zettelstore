@@ -16,10 +16,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/domain"
 	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
@@ -42,6 +45,9 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 		switch enc, encStr := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			a.writePlainData(w, ctx, zid, part, getMeta, getZettel)
+
+		case api.EncoderData:
+			a.writeSexprData(w, ctx, zid, part, getMeta, getZettel)
 
 		case api.EncoderJson:
 			a.writeJSONData(w, ctx, zid, part, getMeta, getZettel)
@@ -113,6 +119,68 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 	}
 	err = writeBuffer(w, &buf, contentType)
 	a.log.IfErr(err).Zid(zid).Msg("Write Plain data")
+}
+
+func (a *API) writeSexprData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
+	var obj sxpf.Object
+	switch part {
+	case partZettel:
+		z, err := getZettel.Run(ctx, zid)
+		if err != nil {
+			a.reportUsecaseError(w, err)
+			return
+		}
+		obj = zettel2sexpr(z, a.getRights(ctx, z.Meta))
+
+	case partMeta:
+		m, err := getMeta.Run(ctx, zid)
+		if err != nil {
+			a.reportUsecaseError(w, err)
+			return
+		}
+		obj = metaRights2sexpr(m, a.getRights(ctx, m))
+	}
+
+	var buf bytes.Buffer
+	_, err := sxpf.Print(&buf, obj)
+	if err != nil {
+		a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store zettel/part in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = writeBuffer(w, &buf, content.PlainText)
+	a.log.IfErr(err).Zid(zid).Msg("Write data")
+}
+
+func zettel2sexpr(z domain.Zettel, rights api.ZettelRights) sxpf.Object {
+	zContent, encoding := z.Content.Encode()
+	sf := sxpf.MakeMappedFactory()
+	return sxpf.MakeList(
+		sf.MustMake("zettel"),
+		sxpf.MakeList(sf.MustMake("id"), sxpf.MakeString(z.Meta.Zid.String())),
+		meta2sexpr(z.Meta, sf),
+		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
+		sxpf.MakeList(sf.MustMake("encoding"), sxpf.MakeString(encoding)),
+		sxpf.MakeList(sf.MustMake("content"), sxpf.MakeString(zContent)),
+	)
+}
+func metaRights2sexpr(m *meta.Meta, rights api.ZettelRights) sxpf.Object {
+	sf := sxpf.MakeMappedFactory()
+	return sxpf.MakeList(
+		sf.MustMake("list"),
+		meta2sexpr(m, sf),
+		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
+	)
+}
+func meta2sexpr(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
+	result := sxpf.Nil().Cons(sf.MustMake("meta"))
+	curr := result
+	for _, p := range m.ComputedPairs() {
+		val := sxpf.MakeList(sf.MustMake(p.Key), sxpf.MakeString(p.Value))
+		curr = curr.AppendBang(val)
+	}
+	return result
 }
 
 func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {

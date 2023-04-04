@@ -177,7 +177,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			UnLinksPhrase:  phrase,
 			QueryKeyPhrase: api.QueryKeyPhrase,
 			EvalMatrix:     wui.infoAPIMatrix(zid, false),
-			ParseMatrix:    wui.infoAPIMatrixPlain(zid),
+			ParseMatrix:    wui.infoAPIMatrixParsed(zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
 			Endnotes:       endnotes,
@@ -237,11 +237,11 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
 	return matrix
 }
 
-func (wui *WebUI) infoAPIMatrixPlain(zid id.Zid) []matrixLine {
+func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid) []matrixLine {
 	matrix := wui.infoAPIMatrix(zid, true)
 	apiZid := api.ZettelID(zid.String())
 
-	// Append plain and JSON format
+	// Append plain and data format
 	u := wui.NewURLBuilder('z').SetZid(apiZid)
 	for i, part := range getParts() {
 		u.AppendKVQuery(api.QueryKeyPart, part)
@@ -249,6 +249,16 @@ func (wui *WebUI) infoAPIMatrixPlain(zid id.Zid) []matrixLine {
 		u.ClearQuery()
 	}
 
+	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
+	u.AppendKVQuery(api.QueryKeyPart, api.PartZettel)
+	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"data", u.AttrString()})
+
+	u.ClearQuery()
+	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
+	u.AppendKVQuery(api.QueryKeyPart, api.PartMeta)
+	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"data", u.AttrString()})
+
+	u.ClearQuery()
 	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
 	u.AppendKVQuery(api.QueryKeyPart, api.PartZettel)
 	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.AttrString()})
@@ -257,6 +267,7 @@ func (wui *WebUI) infoAPIMatrixPlain(zid id.Zid) []matrixLine {
 	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
 	u.AppendKVQuery(api.QueryKeyPart, api.PartMeta)
 	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"json", u.AttrString()})
+
 	return matrix
 }
 
