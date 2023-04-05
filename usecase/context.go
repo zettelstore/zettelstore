@@ -45,26 +45,26 @@ func NewZettelContext(port ZettelContextPort, config ZettelContextConfig) Zettel
 	return ZettelContext{port: port, config: config}
 }
 
-// ZettelContextDirection determines the way, the context is calculated.
-type ZettelContextDirection int
+// ContextDirection determines the way, the context is calculated.
+type ContextDirection int
 
 // Constant values for ZettelContextDirection
 const (
-	_                     ZettelContextDirection = iota
-	ZettelContextForward                         // Traverse all forwarding links
-	ZettelContextBackward                        // Traverse all backwaring links
-	ZettelContextBoth                            // Traverse both directions
+	_               ContextDirection = iota
+	ContextForward                   // Traverse all forwarding links
+	ContextBackward                  // Traverse all backwaring links
+	ContextBoth                      // Traverse both directions
 )
 
 // Run executes the use case.
-func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ZettelContextDirection, maxCost, limit int) (result []*meta.Meta, err error) {
+func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ContextDirection, maxCost, limit int) (result []*meta.Meta, err error) {
 	start, err := uc.port.GetMeta(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
 	tasks := newQueue(start, maxCost, limit)
-	isBackward := dir == ZettelContextBoth || dir == ZettelContextBackward
-	isForward := dir == ZettelContextBoth || dir == ZettelContextForward
+	isBackward := dir == ContextBoth || dir == ContextBackward
+	isForward := dir == ContextBoth || dir == ContextForward
 	for {
 		m, cost := tasks.next()
 		if m == nil {

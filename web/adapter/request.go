@@ -67,14 +67,14 @@ func GetQuery(vals url.Values) (result *query.Query) {
 }
 
 // GetZCDirection returns a direction value for a given string.
-func GetZCDirection(s string) usecase.ZettelContextDirection {
+func GetZCDirection(s string) usecase.ContextDirection {
 	switch s {
 	case api.DirBackward:
-		return usecase.ZettelContextBackward
+		return usecase.ContextBackward
 	case api.DirForward:
-		return usecase.ZettelContextForward
+		return usecase.ContextForward
 	}
-	return usecase.ZettelContextBoth
+	return usecase.ContextBoth
 }
 
 // AddUnlinkedRefsToQuery inspects metadata and enhances the given query to ignore

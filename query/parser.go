@@ -13,6 +13,7 @@ package query
 import (
 	"strconv"
 
+	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 )
@@ -62,16 +63,22 @@ const (
 	searchOperatorSuffixChar = '<'
 	searchOperatorMatchChar  = '~'
 
-	kwLimit   = "LIMIT"
-	kwOffset  = "OFFSET"
-	kwOr      = "OR"
-	kwOrder   = "ORDER"
-	kwPick    = "PICK"
-	kwRandom  = "RANDOM"
-	kwReverse = "REVERSE"
+	kwBackward = "BACKWARD"
+	kwContext  = "CONTEXT"
+	kwCost     = "COST"
+	kwForward  = "FORWARD"
+	kwMax      = "MAX"
+	kwLimit    = "LIMIT"
+	kwOffset   = "OFFSET"
+	kwOr       = "OR"
+	kwOrder    = "ORDER"
+	kwPick     = "PICK"
+	kwRandom   = "RANDOM"
+	kwReverse  = "REVERSE"
 )
 
 func (ps *parserState) parse(q *Query) *Query {
+	q = ps.parseContext(q)
 	inp := ps.inp
 	for {
 		ps.skipSpace()
@@ -132,6 +139,87 @@ func (ps *parserState) parse(q *Query) *Query {
 	return q
 }
 
+func (ps *parserState) parseContext(q *Query) *Query {
+	inp := ps.inp
+	ps.skipSpace()
+	if ps.mustStop() {
+		return q
+	}
+	pos := inp.Pos
+	if !ps.acceptSingleKw(kwContext) {
+		inp.SetPos(pos)
+		return q
+	}
+	ps.skipSpace()
+	if ps.mustStop() {
+		inp.SetPos(pos)
+		return q
+	}
+	num, ok := ps.scanPosInt()
+	if !ok {
+		inp.SetPos(pos)
+		return q
+	}
+	zid := id.Zid(num)
+	if !zid.IsValid() {
+		inp.SetPos(pos)
+		return q
+	}
+	q = createIfNeeded(q)
+	q.zid = zid
+	q.dir = contextBoth
+
+	for {
+		ps.skipSpace()
+		if ps.mustStop() {
+			return q
+		}
+		pos = inp.Pos
+		if ps.acceptSingleKw(kwBackward) {
+			q.dir = contextBackward
+			continue
+		}
+		inp.SetPos(pos)
+		if ps.acceptSingleKw(kwForward) {
+			q.dir = contextForward
+			continue
+		}
+		inp.SetPos(pos)
+		if ps.acceptKwArgs(kwCost) {
+			if ps.parseCost(q) {
+				continue
+			}
+		}
+		inp.SetPos(pos)
+		if ps.acceptKwArgs(kwMax) {
+			if ps.parseCount(q) {
+				continue
+			}
+		}
+		inp.SetPos(pos)
+		return q
+	}
+}
+func (ps *parserState) parseCost(q *Query) bool {
+	num, ok := ps.scanPosInt()
+	if !ok {
+		return false
+	}
+	if q.maxCost == 0 || q.maxCost >= num {
+		q.maxCost = num
+	}
+	return true
+}
+func (ps *parserState) parseCount(q *Query) bool {
+	num, ok := ps.scanPosInt()
+	if !ok {
+		return false
+	}
+	if q.maxCount == 0 || q.maxCount >= num {
+		q.maxCount = num
+	}
+	return true
+}
 func (ps *parserState) parsePick(q *Query) (*Query, bool) {
 	num, ok := ps.scanPosInt()
 	if !ok {
@@ -288,15 +376,6 @@ func (ps *parserState) scanWord() []byte {
 }
 
 func (ps *parserState) scanPosInt() (int, bool) {
-	inp := ps.inp
-	ch := inp.Ch
-	if ch == '0' {
-		ch = inp.Next()
-		if isSpace(ch) || isActionSep(inp.Ch) || ps.mustStop() {
-			return 0, true
-		}
-		return 0, false
-	}
 	word := ps.scanWord()
 	if len(word) == 0 {
 		return 0, false

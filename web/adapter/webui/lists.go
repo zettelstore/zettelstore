@@ -160,9 +160,9 @@ func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, eva
 		for i, cost := range costs {
 			costURL.ClearQuery()
 			switch dir {
-			case usecase.ZettelContextBackward:
+			case usecase.ContextBackward:
 				costURL.AppendKVQuery(api.QueryKeyDir, api.DirBackward)
-			case usecase.ZettelContextForward:
+			case usecase.ContextForward:
 				costURL.AppendKVQuery(api.QueryKeyDir, api.DirForward)
 			}
 			costURL.AppendKVQuery(api.QueryKeyCost, cost)

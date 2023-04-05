@@ -38,8 +38,23 @@ type Searcher interface {
 	SearchContains(s string) id.Set
 }
 
+type contextDirection uint8
+
+const (
+	_ contextDirection = iota
+	contextForward
+	contextBackward
+	contextBoth
+)
+
 // Query specifies a mechanism for querying zettel.
 type Query struct {
+	// Fields for context. Only valid if zid.IsValid().
+	zid      id.Zid
+	dir      contextDirection
+	maxCost  int
+	maxCount int
+
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
 	terms    []conjTerms
@@ -128,6 +143,13 @@ func (q *Query) Clone() *Query {
 		return nil
 	}
 	c := new(Query)
+	c.zid = q.zid
+	if q.zid.IsValid() {
+		c.dir = q.dir
+		c.maxCost = q.maxCost
+		c.maxCount = q.maxCount
+	}
+
 	c.preMatch = q.preMatch
 	c.terms = make([]conjTerms, len(q.terms))
 	for i, term := range q.terms {
