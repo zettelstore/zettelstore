@@ -388,7 +388,6 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(t, t.mapMetaTypeS, ty)
-		strKey := sxpf.MakeString(key)
 		var obj sxpf.Object
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
@@ -403,7 +402,8 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf
 		} else {
 			obj = sxpf.MakeString(p.Value)
 		}
-		objs = append(objs, sxpf.Nil().Cons(obj).Cons(strKey).Cons(symType))
+		symKey := sxpf.MakeList(t.zetSyms.SymQuote, t.sf.MustMake(key))
+		objs = append(objs, sxpf.Nil().Cons(obj).Cons(symKey).Cons(symType))
 	}
 	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymMeta)
 }

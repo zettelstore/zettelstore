@@ -4,9 +4,12 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161618
-modified: 20230403165057
+modified: 20230405121932
 
-A single metadata (""metadatum"") is represented by a triple: a symbol representing the type, a string representing the key, and either a string or a list that represent the value.
+A single metadata (""metadatum"") is represented by a triple: a symbol representing the type, a symbol representing the key, and either a string or a list that represent the value.
+
+The key symbol must be ""quoted"", i.e. for the key ""title"": ''(quote title)''.
+This property may be relaxed in future versions of the Zettelstore.
 
 The symbol depends on the [[metadata key type|00001006030000]].
 The value also depends somehow on the key type: a set of values is represented as a list, all other values are represented by a string, even if it is a number.
@@ -34,5 +37,5 @@ __ListValue__ **=** ''(list'' String,,1,, String,,2,, &hellip; String,,n,, '')''
 :::
 
 Examples:
-* The title of this zettel is represented as: ''(EMPTY-STRING "title" "Encoding of Sexpr Metadata")''
-* The tags of this zettel are represented as: ''(TAG-SET "tags" (list "#api" "#manual" "#reference" "#zettelstore"))''
+* The title of this zettel is represented as: ''(EMPTY-STRING (quote title) "Encoding of Sexpr Metadata")''
+* The tags of this zettel are represented as: ''(TAG-SET (quote tags) (list "#api" "#manual" "#reference" "#zettelstore"))''

@@ -219,10 +219,8 @@ func (m *Meta) Map() map[string]string {
 
 var reKey = regexp.MustCompile("^[0-9a-z][-0-9a-z]{0,254}$")
 
-// KeyIsValid returns true, the the key is a valid string.
-func KeyIsValid(key string) bool {
-	return reKey.MatchString(key)
-}
+// KeyIsValid returns true, if the string is a valid metadata key.
+func KeyIsValid(s string) bool { return reKey.MatchString(s) }
 
 // Pair is one key-value-pair of a Zettel meta.
 type Pair struct {
