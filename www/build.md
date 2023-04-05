@@ -47,6 +47,8 @@ Some important `COMMAND`s are:
   release (or commit).
 * `clean`: removes the build directories and cleans the Go cache.
 * `version`: prints the current version information.
+* `tools`: installs / updates the tools described above: staticcheck, shadow,
+  unparam, govulncheck.
 
 Therefore, the easiest way to build your own version of the Zettelstore
 software is to execute the command

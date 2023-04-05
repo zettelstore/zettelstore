@@ -487,6 +487,32 @@ func addFileToZip(zipFile *zip.Writer, filepath, filename string) error {
 	return err
 }
 
+func cmdTools() error {
+	tools := []struct{ name, pack string }{
+		{"shadow", "golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest"},
+		{"unparam", "mvdan.cc/unparam@latest"},
+		{"staticcheck", "honnef.co/go/tools/cmd/staticcheck@latest"},
+		{"govulncheck", "golang.org/x/vuln/cmd/govulncheck@latest"},
+	}
+	for _, tool := range tools {
+		err := doGoInstall(tool.pack)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func doGoInstall(pack string) error {
+	out, err := executeCommand(nil, "go", "install", pack)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Unable to install package", pack)
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+	}
+	return err
+}
+
 func cmdClean() error {
 	for _, dir := range []string{"bin", "releases"} {
 		err := os.RemoveAll(dir)
@@ -529,14 +555,13 @@ Commands:
   release   Create the software for various platforms and put them in
             appropriate named ZIP files.
   testapi   Start a Zettelstore and execute API tests.
+  tools     Install/update tools needed for building Zettelstore.
   version   Print the current version of the software.
 
 All commands can be abbreviated as long as they remain unique.`)
 }
 
-var (
-	verbose bool
-)
+var verbose bool
 
 func main() {
 	flag.BoolVar(&verbose, "v", false, "Verbose output")
@@ -561,8 +586,10 @@ func main() {
 			err = cmdCheck(false)
 		case "relc", "relch", "relche", "relchec", "relcheck":
 			err = cmdCheck(true)
-		case "t", "te", "tes", "test", "testa", "testap", "testapi":
+		case "te", "tes", "test", "testa", "testap", "testapi":
 			cmdTestAPI()
+		case "to", "too", "tool", "tools":
+			err = cmdTools()
 		case "h", "he", "hel", "help":
 			cmdHelp()
 		default:
