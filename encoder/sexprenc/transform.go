@@ -13,7 +13,6 @@ package sexprenc
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 	"strings"
 
 	"codeberg.org/t73fde/sxpf"
@@ -212,7 +211,6 @@ func (t *Transformer) GetSexpr(node ast.Node) *sxpf.List {
 			sxpf.MakeString(string(n.Content)),
 		)
 	}
-	log.Printf("SEXPR %T %v\n", node, node)
 	return sxpf.MakeList(t.zetSyms.SymUnknown, sxpf.MakeString(fmt.Sprintf("%T %v", node, node)))
 }
 
@@ -412,7 +410,6 @@ func mapGetS[T comparable](t *Transformer, m map[T]*sxpf.Symbol, k T) *sxpf.Symb
 	if result, found := m[k]; found {
 		return result
 	}
-	log.Println("MISS", k, m)
 	return t.sf.MustMake(fmt.Sprintf("**%v:NOT-FOUND**", k))
 }
 

@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161845
-modified: 20230403183750
+modified: 20230405123222
 
 === ''TEXT''
 :::syntax
@@ -85,7 +85,7 @@ The string contains a full URL, referencing a resource outside of the Zettelstor
 
 === ''EMBED''
 :::syntax
-__Embed__ **=** ''(EMBED'' [[__Attributes__|00001012931000#attribute]] __Reference__ String [[__InlineElement__|00001012931600]] &hellip; '')''.
+__Embed__ **=** ''(EMBED'' [[__Attributes__|00001012931000#attribute]] [[__Reference__|00001012931900]] String [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 Specifies an embedded element, in most cases some image content or an inline transclusion.
 A transclusion will only be used, if the zettel content was not evaluated.

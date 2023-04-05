@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403153903
-modified: 20230403163340
+modified: 20230405133249
 
 Zettel in a [[Sexpr encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
 To process these symbolic expressions, you need to know, how a specific part of a zettel is represented by a symbolic expression.
@@ -67,3 +67,15 @@ Either, there are no attributes.
 These are specified by the empty list ''()''.
 Or there are attributes.
 In this case, the first element of the list must be the symbol ''quote'': ''(quote'' ''('' A,,1,, A,,2,, &hellip; A,,n,, '')'''')''.
+
+=== Other
+A list with ''UNKNOWN'' as its first element signals an internal error during transforming a zettel into the Sexpr encoding.
+It may be ignored, or it may produce an error.
+
+:::syntax
+__Unknown__ **=** ''(UNKNOWN'' Object &hellip; '')''.
+:::
+
+The list may only contain the symbol ''UNKNOWN'', or additionally an unlimited amount of other objects.
+
+Similar, any symbol with the pattern ''**xyz:NOT-FOUND**'', where ''xyz'' is any string, signals an internal error.
