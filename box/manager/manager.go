@@ -301,15 +301,27 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	mgr.done = make(chan struct{})
 	go mgr.notifier()
 
-	for !mgr.allBoxesStarted() {
-		mgr.mgrLog.Trace().Msg("Wait for boxes to start")
-		time.Sleep(time.Second)
-	}
+	mgr.waitBoxesAreStarted()
 	mgr.setState(box.StartStateStarted)
 	mgr.notifyObserver(&box.UpdateInfo{Box: mgr, Reason: box.OnReady})
 
 	go mgr.idxIndexer()
 	return nil
+}
+
+func (mgr *Manager) waitBoxesAreStarted() {
+	const waitTime = 10 * time.Millisecond
+	const waitLoop = int(1 * time.Second / waitTime)
+	for i := 1; !mgr.allBoxesStarted(); i++ {
+		if i%waitLoop == 0 {
+			if time.Duration(i)*waitTime > time.Minute {
+				mgr.mgrLog.Warn().Msg("Waiting for more than one minute to start")
+			} else {
+				mgr.mgrLog.Trace().Msg("Wait for boxes to start")
+			}
+		}
+		time.Sleep(waitTime)
+	}
 }
 
 func (mgr *Manager) allBoxesStarted() bool {
