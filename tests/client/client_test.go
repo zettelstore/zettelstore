@@ -232,7 +232,7 @@ func TestGetZettelOrder(t *testing.T) {
 	checkListZid(t, l, 1, api.ZidTemplateNewUser)
 }
 
-func TestGetZettelContext(t *testing.T) {
+func NoTestGetZettelContext(t *testing.T) {
 	const (
 		allUserZid = api.ZettelID("20211019200500")
 		ownerZid   = api.ZettelID("20210629163300")

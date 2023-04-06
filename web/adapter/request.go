@@ -20,7 +20,6 @@ import (
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/query"
-	"zettelstore.de/z/usecase"
 )
 
 // GetCredentialsViaForm retrieves the authentication credentions from a form.
@@ -39,17 +38,6 @@ func GetCredentialsViaForm(r *http.Request) (ident, cred string, ok bool) {
 	return ident, cred, true
 }
 
-// GetInteger returns the integer value of the named query key.
-func GetInteger(q url.Values, key string) (int, bool) {
-	s := q.Get(key)
-	if s != "" {
-		if val, err := strconv.Atoi(s); err == nil {
-			return val, true
-		}
-	}
-	return 0, false
-}
-
 // GetQuery retrieves the specified options from a query.
 func GetQuery(vals url.Values) (result *query.Query) {
 	if exprs, found := vals[api.QueryKeyQuery]; found {
@@ -64,17 +52,6 @@ func GetQuery(vals url.Values) (result *query.Query) {
 		}
 	}
 	return result
-}
-
-// GetZCDirection returns a direction value for a given string.
-func GetZCDirection(s string) usecase.ContextDirection {
-	switch s {
-	case api.DirBackward:
-		return usecase.ContextBackward
-	case api.DirForward:
-		return usecase.ContextForward
-	}
-	return usecase.ContextBoth
 }
 
 // AddUnlinkedRefsToQuery inspects metadata and enhances the given query to ignore

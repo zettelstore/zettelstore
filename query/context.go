@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2021-present Detlef Stern
+// Copyright (c) 2023-present Detlef Stern
 //
 // This file is part of Zettelstore.
 //
@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package usecase
+package query
 
 import (
 	"context"
@@ -16,55 +16,38 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
-	"zettelstore.de/z/query"
 )
 
-// ZettelContextPort is the interface used by this use case.
-type ZettelContextPort interface {
-	// GetMeta retrieves just the meta data of a specific zettel.
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+type contextDirection uint8
 
-	// SelectMeta returns all zettel metadata that match the selection criteria.
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
-}
-
-// ZettelContextConfig is the interface to allow the usecase to read some config data.
-type ZettelContextConfig interface {
-	// Get returns a config value that might be user-specific.
-	Get(ctx context.Context, m *meta.Meta, key string) string
-}
-
-// ZettelContext is the data for this use case.
-type ZettelContext struct {
-	port   ZettelContextPort
-	config ZettelContextConfig
-}
-
-// NewZettelContext creates a new use case.
-func NewZettelContext(port ZettelContextPort, config ZettelContextConfig) ZettelContext {
-	return ZettelContext{port: port, config: config}
-}
-
-// ContextDirection determines the way, the context is calculated.
-type ContextDirection int
-
-// Constant values for ZettelContextDirection
 const (
-	_               ContextDirection = iota
-	ContextForward                   // Traverse all forwarding links
-	ContextBackward                  // Traverse all backwaring links
-	ContextBoth                      // Traverse both directions
+	_ contextDirection = iota
+	dirForward
+	dirBackward
+	dirBoth
 )
 
-// Run executes the use case.
-func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ContextDirection, maxCost, limit int) (result []*meta.Meta, err error) {
-	start, err := uc.port.GetMeta(ctx, zid)
+func (q *Query) getContext(ctx context.Context, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
+	if !q.zid.IsValid() {
+		return nil, nil
+	}
+
+	start, err := getMeta(ctx, q.zid)
 	if err != nil {
 		return nil, err
 	}
-	tasks := newQueue(start, maxCost, limit)
-	isBackward := dir == ContextBoth || dir == ContextBackward
-	isForward := dir == ContextBoth || dir == ContextForward
+	maxCost := q.maxCost
+	if maxCost <= 0 {
+		maxCost = 17
+	}
+	maxCount := q.maxCount
+	if maxCount <= 0 {
+		maxCount = 200
+	}
+	tasks := newQueue(start, maxCost, maxCount)
+	isBackward := q.dir == dirBoth || q.dir == dirBackward
+	isForward := q.dir == dirBoth || q.dir == dirForward
+	result := []*meta.Meta{}
 	for {
 		m, cost := tasks.next()
 		if m == nil {
@@ -73,11 +56,11 @@ func (uc ZettelContext) Run(ctx context.Context, zid id.Zid, dir ContextDirectio
 		result = append(result, m)
 
 		for _, p := range m.ComputedPairsRest() {
-			tasks.addPair(ctx, uc.port, p.Key, p.Value, cost, isBackward, isForward)
+			tasks.addPair(ctx, getMeta, p.Key, p.Value, cost, isBackward, isForward)
 		}
 		if tags, found := m.GetList(api.KeyTags); found {
 			for _, tag := range tags {
-				tasks.addSameTag(ctx, uc.port, tag, cost)
+				tasks.addSameTag(ctx, selectMeta, tag, cost)
 			}
 		}
 	}
@@ -119,7 +102,7 @@ func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
 }
 
 func (zc *contextQueue) addPair(
-	ctx context.Context, port ZettelContextPort,
+	ctx context.Context, getMeta GetMetaFunc,
 	key, value string,
 	curCost int, isBackward, isForward bool,
 ) {
@@ -129,13 +112,13 @@ func (zc *contextQueue) addPair(
 	newCost := curCost + contextCost(key)
 	if key == api.KeyBackward {
 		if isBackward {
-			zc.addIDSet(ctx, port, newCost, value)
+			zc.addIDSet(ctx, getMeta, newCost, value)
 		}
 		return
 	}
 	if key == api.KeyForward {
 		if isForward {
-			zc.addIDSet(ctx, port, newCost, value)
+			zc.addIDSet(ctx, getMeta, newCost, value)
 		}
 		return
 	}
@@ -144,9 +127,9 @@ func (zc *contextQueue) addPair(
 		return
 	}
 	if t := meta.Type(key); t == meta.TypeID {
-		zc.addID(ctx, port, newCost, value)
+		zc.addID(ctx, getMeta, newCost, value)
 	} else if t == meta.TypeIDSet {
-		zc.addIDSet(ctx, port, newCost, value)
+		zc.addIDSet(ctx, getMeta, newCost, value)
 	}
 }
 
@@ -160,7 +143,7 @@ func contextCost(key string) int {
 	return 3
 }
 
-func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, newCost int, value string) {
+func (zc *contextQueue) addID(ctx context.Context, getMeta GetMetaFunc, newCost int, value string) {
 	if zc.costMaxed(newCost) {
 		return
 	}
@@ -169,7 +152,7 @@ func (zc *contextQueue) addID(ctx context.Context, port ZettelContextPort, newCo
 	if err != nil {
 		return
 	}
-	m, err := port.GetMeta(ctx, zid)
+	m, err := getMeta(ctx, zid)
 	if err != nil {
 		return
 	}
@@ -210,11 +193,11 @@ func (zc *contextQueue) costMaxed(newCost int) bool {
 	return (zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit()
 }
 
-func (zc *contextQueue) addIDSet(ctx context.Context, port ZettelContextPort, newCost int, value string) {
+func (zc *contextQueue) addIDSet(ctx context.Context, getMeta GetMetaFunc, newCost int, value string) {
 	elems := meta.ListFromValue(value)
 	refCost := referenceCost(newCost, len(elems))
 	for _, val := range elems {
-		zc.addID(ctx, port, refCost, val)
+		zc.addID(ctx, getMeta, refCost, val)
 	}
 }
 
@@ -238,11 +221,11 @@ func referenceCost(baseCost int, numReferences int) int {
 	return baseCost * numReferences / 8
 }
 
-func (zc *contextQueue) addSameTag(ctx context.Context, port ZettelContextPort, tag string, baseCost int) {
+func (zc *contextQueue) addSameTag(ctx context.Context, selectMeta SelectMetaFunc, tag string, baseCost int) {
 	tagMetas, found := zc.tagCost[tag]
 	if !found {
-		q := query.Parse(api.KeyTags + api.SearchOperatorHas + tag)
-		ml, err := port.SelectMeta(ctx, q)
+		q := Parse(api.KeyTags + api.SearchOperatorHas + tag)
+		ml, err := selectMeta(ctx, q)
 		if err != nil {
 			return
 		}

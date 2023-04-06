@@ -99,10 +99,10 @@ func (pe *printEnv) printContext(q *Query) {
 		pe.printSpace()
 		pe.writeString(zid.String())
 		switch q.dir {
-		case contextBackward:
+		case dirBackward:
 			pe.printSpace()
 			pe.writeString(kwBackward)
-		case contextForward:
+		case dirForward:
 			pe.printSpace()
 			pe.writeString(kwForward)
 		}

@@ -12,6 +12,7 @@
 package query
 
 import (
+	"context"
 	"math/rand"
 	"sort"
 
@@ -37,15 +38,6 @@ type Searcher interface {
 	// The string must be normalized through Unicode NKFD, trimmed and not empty.
 	SearchContains(s string) id.Set
 }
-
-type contextDirection uint8
-
-const (
-	_ contextDirection = iota
-	contextForward
-	contextBackward
-	contextBoth
-)
 
 // Query specifies a mechanism for querying zettel.
 type Query struct {
@@ -309,6 +301,9 @@ func (q *Query) EnrichNeeded() bool {
 	if q == nil {
 		return false
 	}
+	if q.zid.IsValid() {
+		return true
+	}
 	if len(q.actions) > 0 {
 		// Unknown, what an action will use. Example: RSS needs api.KeyPublished.
 		return true
@@ -333,16 +328,22 @@ func (q *Query) EnrichNeeded() bool {
 	return false
 }
 
+// GetMetaFunc is a function that allows to retieve the metadata for a specific zid.
+type GetMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
+
+// SelectMetaFunc is a function the returns a list of metadata based on a query.
+type SelectMetaFunc func(context.Context, *Query) ([]*meta.Meta, error)
+
 // RetrieveAndCompile queries the search index and returns a predicate
 // for its results and returns a matching predicate.
-func (q *Query) RetrieveAndCompile(searcher Searcher) Compiled {
+func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMeta GetMetaFunc, selectMeta SelectMetaFunc) (Compiled, error) {
 	if q == nil {
 		return Compiled{
 			PreMatch: matchAlways,
 			Terms: []CompiledTerm{{
 				Match:    matchAlways,
 				Retrieve: alwaysIncluded,
-			}}}
+			}}}, nil
 	}
 	q = q.Clone()
 
@@ -350,10 +351,21 @@ func (q *Query) RetrieveAndCompile(searcher Searcher) Compiled {
 	if preMatch == nil {
 		preMatch = matchAlways
 	}
+	contextMeta, err := q.getContext(
+		ctx, func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+			m, err := getMeta(ctx, zid)
+			return m, err
+		},
+		selectMeta,
+	)
+	if err != nil {
+		return Compiled{}, err
+	}
+	contextSet := metaList2idSet(contextMeta)
 	result := Compiled{PreMatch: preMatch}
 
 	for _, term := range q.terms {
-		cTerm := term.retrievAndCompileTerm(searcher)
+		cTerm := term.retrievAndCompileTerm(searcher, contextSet)
 		if cTerm.Retrieve == nil {
 			if cTerm.Match == nil {
 				// no restriction on match/retrieve -> all will match
@@ -362,7 +374,7 @@ func (q *Query) RetrieveAndCompile(searcher Searcher) Compiled {
 					Terms: []CompiledTerm{{
 						Match:    matchAlways,
 						Retrieve: alwaysIncluded,
-					}}}
+					}}}, nil
 			}
 			cTerm.Retrieve = alwaysIncluded
 		}
@@ -371,14 +383,38 @@ func (q *Query) RetrieveAndCompile(searcher Searcher) Compiled {
 		}
 		result.Terms = append(result.Terms, cTerm)
 	}
+	return result, nil
+}
+
+func metaList2idSet(ml []*meta.Meta) id.Set {
+	if ml == nil {
+		return nil
+	}
+	result := id.NewSetCap(len(ml))
+	for _, m := range ml {
+		result = result.Zid(m.Zid)
+	}
 	return result
 }
 
-func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher) CompiledTerm {
+func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher, contextSet id.Set) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
 	var pred RetrievePredicate
 	if searcher != nil {
 		pred = ct.retrieveIndex(searcher)
+		if contextSet != nil {
+			if pred == nil {
+				pred = contextSet.Contains
+			} else {
+				predSet := id.NewSetCap(len(contextSet))
+				for zid := range contextSet {
+					if pred(zid) {
+						predSet = predSet.Zid(zid)
+					}
+				}
+				pred = predSet.Contains
+			}
+		}
 	}
 	return CompiledTerm{Match: match, Retrieve: pred}
 }
@@ -409,6 +445,9 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 		return positives.Contains
 	}
 	negatives := retrieveNegatives(negCalls)
+	if negatives == nil {
+		return positives.Contains
+	}
 	return func(zid id.Zid) bool {
 		return positives.Contains(zid) && !negatives.Contains(zid)
 	}

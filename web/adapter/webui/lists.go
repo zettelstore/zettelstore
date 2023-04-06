@@ -14,7 +14,6 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"zettelstore.de/c/api"
@@ -126,72 +125,6 @@ func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.M
 	if err != nil {
 		wui.log.IfErr(err).Msg("unable to write Atom data")
 	}
-}
-
-// MakeZettelContextHandler creates a new HTTP handler for the use case "zettel context".
-func (wui *WebUI) MakeZettelContextHandler(getContext usecase.ZettelContext, evaluate *usecase.Evaluate) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		zid, err := id.Parse(r.URL.Path[1:])
-		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
-			return
-		}
-		q := r.URL.Query()
-		dir := adapter.GetZCDirection(q.Get(api.QueryKeyDir))
-		cost := getIntParameter(q, api.QueryKeyCost, 17)
-		limit := getIntParameter(q, api.QueryKeyLimit, 200)
-		metaList, err := getContext.Run(ctx, zid, dir, cost, limit)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, metaList, wui.rtConfig))
-		enc := wui.getSimpleHTMLEncoder()
-		htmlContent, err := enc.BlocksString(&bns)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-		apiZid := api.ZettelID(zid.String())
-		costs := []string{"2", "3", "5", "8", "13", "21", "34", "55", "89"}
-		costLinks := make([]simpleLink, len(costs))
-		costURL := wui.NewURLBuilder('k').SetZid(apiZid)
-		for i, cost := range costs {
-			costURL.ClearQuery()
-			switch dir {
-			case usecase.ContextBackward:
-				costURL.AppendKVQuery(api.QueryKeyDir, api.DirBackward)
-			case usecase.ContextForward:
-				costURL.AppendKVQuery(api.QueryKeyDir, api.DirForward)
-			}
-			costURL.AppendKVQuery(api.QueryKeyCost, cost)
-			costLinks[i].Text = cost
-			costLinks[i].URL = costURL.String()
-		}
-		var base baseData
-		user := server.GetUser(ctx)
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
-		wui.renderTemplate(ctx, w, id.ContextTemplateZid, &base, struct {
-			Title   string
-			InfoURL string
-			Costs   []simpleLink
-			Content string
-		}{
-			Title:   "Zettel Context",
-			InfoURL: wui.NewURLBuilder('i').SetZid(apiZid).String(),
-			Costs:   costLinks,
-			Content: htmlContent,
-		})
-	}
-}
-
-func getIntParameter(q url.Values, key string, minValue int) int {
-	val, ok := adapter.GetInteger(q, key)
-	if !ok || val < 0 {
-		return minValue
-	}
-	return val
 }
 
 func (wui *WebUI) listTitleQuery(q *query.Query) string {

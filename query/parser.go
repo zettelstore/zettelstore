@@ -167,7 +167,7 @@ func (ps *parserState) parseContext(q *Query) *Query {
 	}
 	q = createIfNeeded(q)
 	q.zid = zid
-	q.dir = contextBoth
+	q.dir = dirBoth
 
 	for {
 		ps.skipSpace()
@@ -176,12 +176,12 @@ func (ps *parserState) parseContext(q *Query) *Query {
 		}
 		pos = inp.Pos
 		if ps.acceptSingleKw(kwBackward) {
-			q.dir = contextBackward
+			q.dir = dirBackward
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(kwForward) {
-			q.dir = contextForward
+			q.dir = dirForward
 			continue
 		}
 		inp.SetPos(pos)

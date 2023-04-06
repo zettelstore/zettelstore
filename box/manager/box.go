@@ -166,8 +166,13 @@ func (mgr *Manager) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Met
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-
-	compSearch := q.RetrieveAndCompile(mgr)
+	return mgr.doSelectMeta(ctx, q)
+}
+func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+	compSearch, err := q.RetrieveAndCompile(ctx, mgr, mgr.doGetMeta, mgr.doSelectMeta)
+	if err != nil {
+		return nil, err
+	}
 	selected := metaMap{}
 	for _, term := range compSearch.Terms {
 		rejected := id.Set{}
@@ -190,8 +195,8 @@ func (mgr *Manager) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Met
 			}
 		}
 		for _, p := range mgr.boxes {
-			if err := p.ApplyMeta(ctx, handleMeta, term.Retrieve); err != nil {
-				return nil, err
+			if err2 := p.ApplyMeta(ctx, handleMeta, term.Retrieve); err2 != nil {
+				return nil, err2
 			}
 		}
 	}

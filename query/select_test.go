@@ -11,6 +11,7 @@
 package query_test
 
 import (
+	"context"
 	"testing"
 
 	"zettelstore.de/c/api"
@@ -21,7 +22,7 @@ import (
 
 func TestMatchZidNegate(t *testing.T) {
 	q := query.Parse(api.KeyID + api.SearchOperatorHasNot + string(api.ZidVersion) + " " + api.KeyID + api.SearchOperatorHasNot + string(api.ZidLicense))
-	compiled := q.RetrieveAndCompile(nil)
+	compiled, _ := q.RetrieveAndCompile(context.Background(), nil, nil, nil)
 
 	testCases := []struct {
 		zid api.ZettelID
