@@ -204,7 +204,7 @@ func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.M
 	for _, m := range selected {
 		result = append(result, m)
 	}
-	return q.AfterSearch(result), nil
+	return compSearch.AfterSearch(result), nil
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.

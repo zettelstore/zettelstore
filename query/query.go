@@ -67,8 +67,10 @@ type Query struct {
 
 // Compiled is a compiled query, to be used in a Box
 type Compiled struct {
-	PreMatch MetaMatchFunc // Precondition for Match and Retrieve
-	Terms    []CompiledTerm
+	query       *Query
+	contextMeta []*meta.Meta
+	PreMatch    MetaMatchFunc // Precondition for Match and Retrieve
+	Terms       []CompiledTerm
 }
 
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
@@ -362,7 +364,7 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		return Compiled{}, err
 	}
 	contextSet := metaList2idSet(contextMeta)
-	result := Compiled{PreMatch: preMatch}
+	result := Compiled{query: q, contextMeta: contextMeta, PreMatch: preMatch}
 
 	for _, term := range q.terms {
 		cTerm := term.retrievAndCompileTerm(searcher, contextSet)
@@ -370,7 +372,9 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 			if cTerm.Match == nil {
 				// no restriction on match/retrieve -> all will match
 				return Compiled{
-					PreMatch: preMatch,
+					query:       q,
+					contextMeta: contextMeta,
+					PreMatch:    preMatch,
 					Terms: []CompiledTerm{{
 						Match:    matchAlways,
 						Retrieve: alwaysIncluded,
@@ -456,11 +460,12 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 // AfterSearch applies all terms to the metadata list that was searched.
 //
 // This includes sorting, offset, limit, and picking.
-func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
+func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	if len(metaList) == 0 {
 		return metaList
 	}
 
+	q := c.query
 	if q == nil {
 		return sortMetaByZid(metaList)
 	}
@@ -469,7 +474,7 @@ func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 
 	if len(q.order) == 0 {
 		if q.pick <= 0 {
-			metaList = sortMetaByZid(metaList)
+			metaList = c.sortMetaByDefault(metaList)
 		}
 	} else if q.order[0].isRandom() {
 		metaList = q.sortRandomly(metaList)
@@ -484,6 +489,18 @@ func (q *Query) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 		metaList = metaList[q.offset:]
 	}
 	return q.Limit(metaList)
+}
+
+func (c *Compiled) sortMetaByDefault(metaList []*meta.Meta) []*meta.Meta {
+	if len(c.contextMeta) == 0 {
+		return sortMetaByZid(metaList)
+	}
+	contextOrder := make(map[id.Zid]int, len(c.contextMeta))
+	for pos, m := range c.contextMeta {
+		contextOrder[m.Zid] = pos + 1
+	}
+	sort.Slice(metaList, func(i, j int) bool { return contextOrder[metaList[i].Zid] < contextOrder[metaList[j].Zid] })
+	return metaList
 }
 
 func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
