@@ -49,10 +49,10 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 47
-		configRoleZettel = 29
-		writerZettel     = ownerZettel - 23
-		readerZettel     = ownerZettel - 23
+		ownerZettel      = 46
+		configRoleZettel = 28
+		writerZettel     = ownerZettel - 22
+		readerZettel     = ownerZettel - 22
 		creatorZettel    = 7
 		publicZettel     = 4
 	)
@@ -232,52 +232,52 @@ func TestGetZettelOrder(t *testing.T) {
 	checkListZid(t, l, 1, api.ZidTemplateNewUser)
 }
 
-func NoTestGetZettelContext(t *testing.T) {
-	const (
-		allUserZid = api.ZettelID("20211019200500")
-		ownerZid   = api.ZettelID("20210629163300")
-		writerZid  = api.ZettelID("20210629165000")
-		readerZid  = api.ZettelID("20210629165024")
-		creatorZid = api.ZettelID("20210629165050")
-		limitAll   = 3
-	)
-	t.Parallel()
-	c := getClient()
-	c.SetAuth("owner", "owner")
-	rl, err := c.GetZettelContext(context.Background(), ownerZid, client.DirBoth, 0, limitAll)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if !checkZid(t, ownerZid, rl.ID) {
-		return
-	}
-	l := rl.List
-	if got := len(l); got != limitAll {
-		t.Errorf("Expected list of length %d, got %d", limitAll, got)
-		t.Error(rl)
-		return
-	}
-	checkListZid(t, l, 0, allUserZid)
-	// checkListZid(t, l, 1, writerZid)
-	// checkListZid(t, l, 2, readerZid)
-	checkListZid(t, l, 1, creatorZid)
+// func TestGetZettelContext(t *testing.T) {
+// 	const (
+// 		allUserZid = api.ZettelID("20211019200500")
+// 		ownerZid   = api.ZettelID("20210629163300")
+// 		writerZid  = api.ZettelID("20210629165000")
+// 		readerZid  = api.ZettelID("20210629165024")
+// 		creatorZid = api.ZettelID("20210629165050")
+// 		limitAll   = 3
+// 	)
+// 	t.Parallel()
+// 	c := getClient()
+// 	c.SetAuth("owner", "owner")
+// 	rl, err := c.GetZettelContext(context.Background(), ownerZid, client.DirBoth, 0, limitAll)
+// 	if err != nil {
+// 		t.Error(err)
+// 		return
+// 	}
+// 	if !checkZid(t, ownerZid, rl.ID) {
+// 		return
+// 	}
+// 	l := rl.List
+// 	if got := len(l); got != limitAll {
+// 		t.Errorf("Expected list of length %d, got %d", limitAll, got)
+// 		t.Error(rl)
+// 		return
+// 	}
+// 	checkListZid(t, l, 0, allUserZid)
+// 	// checkListZid(t, l, 1, writerZid)
+// 	// checkListZid(t, l, 2, readerZid)
+// 	checkListZid(t, l, 1, creatorZid)
 
-	rl, err = c.GetZettelContext(context.Background(), ownerZid, client.DirBackward, 0, 0)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	if !checkZid(t, ownerZid, rl.ID) {
-		return
-	}
-	l = rl.List
-	if got, exp := len(l), 4; got != exp {
-		t.Errorf("Expected list of length %d, got %d", exp, got)
-		return
-	}
-	checkListZid(t, l, 0, allUserZid)
-}
+// 	rl, err = c.GetZettelContext(context.Background(), ownerZid, client.DirBackward, 0, 0)
+// 	if err != nil {
+// 		t.Error(err)
+// 		return
+// 	}
+// 	if !checkZid(t, ownerZid, rl.ID) {
+// 		return
+// 	}
+// 	l = rl.List
+// 	if got, exp := len(l), 4; got != exp {
+// 		t.Errorf("Expected list of length %d, got %d", exp, got)
+// 		return
+// 	}
+// 	checkListZid(t, l, 0, allUserZid)
+// }
 
 func TestGetUnlinkedReferences(t *testing.T) {
 	t.Parallel()

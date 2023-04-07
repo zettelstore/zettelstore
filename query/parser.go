@@ -13,6 +13,7 @@ package query
 import (
 	"strconv"
 
+	"zettelstore.de/c/api"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
@@ -64,7 +65,7 @@ const (
 	searchOperatorMatchChar  = '~'
 
 	kwBackward = "BACKWARD"
-	kwContext  = "CONTEXT"
+	kwContext  = api.ContextDirective
 	kwCost     = "COST"
 	kwForward  = "FORWARD"
 	kwMax      = "MAX"
@@ -155,16 +156,12 @@ func (ps *parserState) parseContext(q *Query) *Query {
 		inp.SetPos(pos)
 		return q
 	}
-	num, ok := ps.scanPosInt()
+	zid, ok := ps.scanZid()
 	if !ok {
 		inp.SetPos(pos)
 		return q
 	}
-	zid := id.Zid(num)
-	if !zid.IsValid() {
-		inp.SetPos(pos)
-		return q
-	}
+
 	q = createIfNeeded(q)
 	q.zid = zid
 	q.dir = dirBoth
@@ -385,6 +382,19 @@ func (ps *parserState) scanPosInt() (int, bool) {
 		return 0, false
 	}
 	return int(uval), true
+}
+
+func (ps *parserState) scanZid() (id.Zid, bool) {
+	word := ps.scanWord()
+	if len(word) == 0 {
+		return id.Invalid, false
+	}
+	uval, err := id.ParseUint(string(word))
+	if err != nil {
+		return id.Invalid, false
+	}
+	zid := id.Zid(uval)
+	return zid, zid.IsValid()
 }
 
 func (ps *parserState) scanSearchOp() (compareOp, bool) {

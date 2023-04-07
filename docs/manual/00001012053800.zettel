@@ -4,7 +4,11 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210222151131
-modified: 20221208165112
+modified: 20230407130001
+
+**TODO**: is outdated.
+Must move partly into description of [[query expressions|00001007700000]].
+---
 
 The context of an origin zettel consists of those zettel that are somehow connected to the origin zettel.
 Direct connections of an origin zettel to other zettel are visible via [[metadata values|00001006020000]], such as ''backward'', ''forward'' or other values with type [[identifier|00001006032000]] or [[set of identifier|00001006032500]].

@@ -4,7 +4,7 @@ role: manual
 tags: #example #manual #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20230402182821
+modified: 20230407130157
 
 |= Query Expression |= Meaning
 | [[query:role:configuration]] | Zettel that contains some configuration data for the Zettelstore
@@ -15,3 +15,4 @@ modified: 20230402182821
 | [[query:backward!? precursor!?]] | Zettel that are not referenced by other zettel
 | [[query:tags!?]] | Zettel without tags
 | [[query:expire? ORDER expire]] | Zettel with an expire date, ordered from the nearest to the latest
+| [[query:CONTEXT 00001007700000]] | Zettel within the context of the [[given zettel|00001007700000]]
