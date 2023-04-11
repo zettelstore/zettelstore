@@ -49,6 +49,24 @@ type RetrievePredicate func(id.Zid) bool
 
 func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 
+// Result returns a result of the compiled search, that is achievable without iterating through a box.
+func (c *Compiled) Result() []*meta.Meta {
+	if c.contextMeta == nil {
+		return nil
+	}
+	result := make([]*meta.Meta, 0, len(c.contextMeta))
+	for _, m := range c.contextMeta {
+		for _, term := range c.Terms {
+			if term.Match(m) {
+				result = append(result, m)
+				break
+			}
+		}
+	}
+	result = c.doPostprocessing(result, false)
+	return result
+}
+
 // AfterSearch applies all terms to the metadata list that was searched.
 //
 // This includes sorting, offset, limit, and picking.
@@ -60,15 +78,18 @@ func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	if !c.hasQuery {
 		return sortMetaByZid(metaList)
 	}
+	return c.doPostprocessing(metaList, true)
+}
 
-	metaList = c.doPick(metaList)
+func (c *Compiled) doPostprocessing(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
+	metaList = c.doPick(metaList, hasBoxApply)
 
 	if len(c.order) == 0 {
-		if c.pick <= 0 {
+		if c.pick <= 0 && hasBoxApply {
 			metaList = c.sortMetaByDefault(metaList)
 		}
 	} else if c.order[0].isRandom() {
-		metaList = c.sortRandomly(metaList)
+		metaList = c.sortRandomly(metaList, hasBoxApply)
 	} else {
 		sort.Slice(metaList, createSortFunc(c.order, metaList))
 	}
@@ -79,7 +100,7 @@ func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 		}
 		metaList = metaList[c.offset:]
 	}
-	return c.doLimit(metaList)
+	return doLimit(metaList, c.limit)
 }
 
 func (c *Compiled) sortMetaByDefault(metaList []*meta.Meta) []*meta.Meta {
@@ -94,7 +115,7 @@ func (c *Compiled) sortMetaByDefault(metaList []*meta.Meta) []*meta.Meta {
 	return metaList
 }
 
-func (c *Compiled) doPick(metaList []*meta.Meta) []*meta.Meta {
+func (c *Compiled) doPick(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
 	pick := c.pick
 	if pick <= 0 {
 		return metaList
@@ -103,12 +124,12 @@ func (c *Compiled) doPick(metaList []*meta.Meta) []*meta.Meta {
 		pick = limit
 	}
 	if pick >= len(metaList) {
-		return c.doRandom(metaList)
+		return c.doRandom(metaList, hasBoxApply)
 	}
-	return c.doPickN(metaList, pick)
+	return c.doPickN(metaList, pick, hasBoxApply)
 }
-func (c *Compiled) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
-	if c.isDeterministic() {
+func (c *Compiled) doPickN(metaList []*meta.Meta, pick int, hasBoxApply bool) []*meta.Meta {
+	if hasBoxApply && c.isDeterministic() {
 		metaList = sortMetaByZid(metaList)
 	}
 	rnd := c.newRandom()
@@ -123,16 +144,16 @@ func (c *Compiled) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
 	return result
 }
 
-func (c *Compiled) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
+func (c *Compiled) sortRandomly(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
 	// Optimization: RANDOM LIMIT n, where n < len(metaList) is essentially a PICK n.
 	if limit := c.limit; limit > 0 && limit < len(metaList) {
-		return c.doPickN(metaList, limit)
+		return c.doPickN(metaList, limit, hasBoxApply)
 	}
-	return c.doRandom(metaList)
+	return c.doRandom(metaList, hasBoxApply)
 }
 
-func (c *Compiled) doRandom(metaList []*meta.Meta) []*meta.Meta {
-	if c.isDeterministic() {
+func (c *Compiled) doRandom(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
+	if hasBoxApply && c.isDeterministic() {
 		metaList = sortMetaByZid(metaList)
 	}
 	rnd := c.newRandom()
@@ -151,12 +172,8 @@ func (c *Compiled) newRandom() *rand.Rand {
 	return rand.New(rand.NewSource(int64(seed)))
 }
 
-// doLimit returns only s.GetLimit() elements of the given list.
-func (c *Compiled) doLimit(metaList []*meta.Meta) []*meta.Meta {
-	if c == nil {
-		return metaList
-	}
-	if limit := c.limit; limit > 0 && limit < len(metaList) {
+func doLimit(metaList []*meta.Meta, limit int) []*meta.Meta {
+	if limit > 0 && limit < len(metaList) {
 		return metaList[:limit]
 	}
 	return metaList

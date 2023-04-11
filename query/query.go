@@ -443,8 +443,5 @@ func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
 	if q == nil {
 		return metaList
 	}
-	if limit := q.limit; limit > 0 && limit < len(metaList) {
-		return metaList[:limit]
-	}
-	return metaList
+	return doLimit(metaList, q.limit)
 }

@@ -173,6 +173,10 @@ func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.M
 	if err != nil {
 		return nil, err
 	}
+	if result := compSearch.Result(); result != nil {
+		mgr.mgrLog.Trace().Int("count", int64(len(result))).Msg("found without ApplyMeta")
+		return result, nil
+	}
 	selected := metaMap{}
 	for _, term := range compSearch.Terms {
 		rejected := id.Set{}
@@ -204,7 +208,9 @@ func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.M
 	for _, m := range selected {
 		result = append(result, m)
 	}
-	return compSearch.AfterSearch(result), nil
+	result = compSearch.AfterSearch(result)
+	mgr.mgrLog.Trace().Int("count", int64(len(result))).Msg("found with ApplyMeta")
+	return result, nil
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.
