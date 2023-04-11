@@ -14,7 +14,6 @@ package query
 import (
 	"context"
 	"math/rand"
-	"sort"
 
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
@@ -64,29 +63,6 @@ type Query struct {
 	// Execute specification
 	actions []string
 }
-
-// Compiled is a compiled query, to be used in a Box
-type Compiled struct {
-	query       *Query
-	contextMeta []*meta.Meta
-	PreMatch    MetaMatchFunc // Precondition for Match and Retrieve
-	Terms       []CompiledTerm
-}
-
-// MetaMatchFunc is a function determine whethe some metadata should be selected or not.
-type MetaMatchFunc func(*meta.Meta) bool
-
-func matchAlways(*meta.Meta) bool { return true }
-func matchNever(*meta.Meta) bool  { return false }
-
-// CompiledTerm is the preprocessed sequence of conjugated search terms.
-type CompiledTerm struct {
-	Match    MetaMatchFunc     // Match on metadata
-	Retrieve RetrievePredicate // Retrieve from full-text search
-}
-
-// RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
-type RetrievePredicate func(id.Zid) bool
 
 type keyExistMap map[string]compareOp
 type expMetaValues map[string][]expValue
@@ -262,8 +238,6 @@ func (q *Query) SetDeterministic() *Query {
 	return q
 }
 
-func (q *Query) isDeterministic() bool { return q.seed > 0 }
-
 // SetLimit sets the given limit of the query object.
 func (q *Query) SetLimit(limit int) *Query {
 	q = createIfNeeded(q)
@@ -364,21 +338,28 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		return Compiled{}, err
 	}
 	contextSet := metaList2idSet(contextMeta)
-	result := Compiled{query: q, contextMeta: contextMeta, PreMatch: preMatch}
+	result := Compiled{
+		hasQuery:    true,
+		seed:        q.seed,
+		pick:        q.pick,
+		order:       q.order,
+		offset:      q.offset,
+		limit:       q.limit,
+		contextMeta: contextMeta,
+		PreMatch:    preMatch,
+		Terms:       []CompiledTerm{},
+	}
 
 	for _, term := range q.terms {
-		cTerm := term.retrievAndCompileTerm(searcher, contextSet)
+		cTerm := term.retrieveAndCompileTerm(searcher, contextSet)
 		if cTerm.Retrieve == nil {
 			if cTerm.Match == nil {
 				// no restriction on match/retrieve -> all will match
-				return Compiled{
-					query:       q,
-					contextMeta: contextMeta,
-					PreMatch:    preMatch,
-					Terms: []CompiledTerm{{
-						Match:    matchAlways,
-						Retrieve: alwaysIncluded,
-					}}}, nil
+				result.Terms = []CompiledTerm{{
+					Match:    matchAlways,
+					Retrieve: alwaysIncluded,
+				}}
+				break
 			}
 			cTerm.Retrieve = alwaysIncluded
 		}
@@ -401,7 +382,7 @@ func metaList2idSet(ml []*meta.Meta) id.Set {
 	return result
 }
 
-func (ct *conjTerms) retrievAndCompileTerm(searcher Searcher, contextSet id.Set) CompiledTerm {
+func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, contextSet id.Set) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
 	var pred RetrievePredicate
 	if searcher != nil {
@@ -457,108 +438,6 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 	}
 }
 
-// AfterSearch applies all terms to the metadata list that was searched.
-//
-// This includes sorting, offset, limit, and picking.
-func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
-	if len(metaList) == 0 {
-		return metaList
-	}
-
-	q := c.query
-	if q == nil {
-		return sortMetaByZid(metaList)
-	}
-
-	metaList = q.doPick(metaList)
-
-	if len(q.order) == 0 {
-		if q.pick <= 0 {
-			metaList = c.sortMetaByDefault(metaList)
-		}
-	} else if q.order[0].isRandom() {
-		metaList = q.sortRandomly(metaList)
-	} else {
-		sort.Slice(metaList, createSortFunc(q.order, metaList))
-	}
-
-	if q.offset > 0 {
-		if q.offset > len(metaList) {
-			return nil
-		}
-		metaList = metaList[q.offset:]
-	}
-	return q.Limit(metaList)
-}
-
-func (c *Compiled) sortMetaByDefault(metaList []*meta.Meta) []*meta.Meta {
-	if len(c.contextMeta) == 0 {
-		return sortMetaByZid(metaList)
-	}
-	contextOrder := make(map[id.Zid]int, len(c.contextMeta))
-	for pos, m := range c.contextMeta {
-		contextOrder[m.Zid] = pos + 1
-	}
-	sort.Slice(metaList, func(i, j int) bool { return contextOrder[metaList[i].Zid] < contextOrder[metaList[j].Zid] })
-	return metaList
-}
-
-func (q *Query) doPick(metaList []*meta.Meta) []*meta.Meta {
-	pick := q.pick
-	if pick <= 0 {
-		return metaList
-	}
-	if limit := q.limit; limit > 0 && limit < pick {
-		pick = limit
-	}
-	if pick >= len(metaList) {
-		return q.doRandom(metaList)
-	}
-	return q.doPickN(metaList, pick)
-}
-func (q *Query) doPickN(metaList []*meta.Meta, pick int) []*meta.Meta {
-	if q.isDeterministic() {
-		metaList = sortMetaByZid(metaList)
-	}
-	rnd := q.newRandom()
-	result := make([]*meta.Meta, pick)
-	for i := 0; i < pick; i++ {
-		last := len(metaList) - i
-		n := rnd.Intn(last)
-		result[i] = metaList[n]
-		metaList[n] = metaList[last-1]
-		metaList[last-1] = nil
-	}
-	return result
-}
-
-func (q *Query) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
-	// Optimization: RANDOM LIMIT n, where n < len(metaList) is essentially a PICK n.
-	if limit := q.limit; limit > 0 && limit < len(metaList) {
-		return q.doPickN(metaList, limit)
-	}
-	return q.doRandom(metaList)
-}
-func (q *Query) doRandom(metaList []*meta.Meta) []*meta.Meta {
-	if q.isDeterministic() {
-		metaList = sortMetaByZid(metaList)
-	}
-	rnd := q.newRandom()
-	rnd.Shuffle(
-		len(metaList),
-		func(i, j int) { metaList[i], metaList[j] = metaList[j], metaList[i] },
-	)
-	return metaList
-}
-
-func (q *Query) newRandom() *rand.Rand {
-	seed := q.seed
-	if seed <= 0 {
-		seed = rand.Intn(10000) + 10001
-	}
-	return rand.New(rand.NewSource(int64(seed)))
-}
-
 // Limit returns only s.GetLimit() elements of the given list.
 func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
 	if q == nil {
@@ -567,10 +446,5 @@ func (q *Query) Limit(metaList []*meta.Meta) []*meta.Meta {
 	if limit := q.limit; limit > 0 && limit < len(metaList) {
 		return metaList[:limit]
 	}
-	return metaList
-}
-
-func sortMetaByZid(metaList []*meta.Meta) []*meta.Meta {
-	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
 	return metaList
 }

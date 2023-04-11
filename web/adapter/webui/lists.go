@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/box"
 	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding/atom"
@@ -36,7 +35,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 		q := adapter.GetQuery(r.URL.Query())
 		q = q.SetDeterministic()
 		ctx := r.Context()
-		metaList, err := listMeta.Run(box.NoEnrichQuery(ctx, q), q)
+		metaList, err := listMeta.Run(ctx, q)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
