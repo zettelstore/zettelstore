@@ -2,6 +2,10 @@
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (pending)</h2>
+  *  Query expression is allowed to search for the "context" of a zettel.
+     Previously, this was a separate call, without adding a search expression
+     / action expression.
+     (breaking)
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)
