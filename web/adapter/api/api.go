@@ -66,7 +66,7 @@ func (a *API) getAuthData(ctx context.Context) *server.AuthData {
 }
 func (a *API) withAuth() bool { return a.authz.WithAuth() }
 func (a *API) getToken(ident *meta.Meta) ([]byte, error) {
-	return a.token.GetToken(ident, a.tokenLifetime, auth.KindJSON)
+	return a.token.GetToken(ident, a.tokenLifetime, auth.KindAPI)
 }
 
 func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {

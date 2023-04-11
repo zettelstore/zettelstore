@@ -42,8 +42,8 @@ type TokenKind int
 // Allowed values of token kind
 const (
 	_ TokenKind = iota
-	KindJSON
-	KindHTML
+	KindAPI
+	KindwebUI
 )
 
 // TokenData contains some important elements from a token.

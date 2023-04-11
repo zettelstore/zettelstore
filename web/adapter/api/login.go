@@ -34,7 +34,7 @@ func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFun
 		var token []byte
 		if ident, cred := retrieveIdentCred(r); ident != "" {
 			var err error
-			token, err = ucAuth.Run(r.Context(), r, ident, cred, a.tokenLifetime, auth.KindJSON)
+			token, err = ucAuth.Run(r.Context(), r, ident, cred, a.tokenLifetime, auth.KindAPI)
 			if err != nil {
 				a.reportUsecaseError(w, err)
 				return

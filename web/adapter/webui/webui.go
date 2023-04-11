@@ -423,7 +423,7 @@ func (wui *WebUI) renderTemplateStatus(
 		return
 	}
 	if user := server.GetUser(ctx); user != nil {
-		if tok, err1 := wui.token.GetToken(user, wui.tokenLifetime, auth.KindHTML); err1 == nil {
+		if tok, err1 := wui.token.GetToken(user, wui.tokenLifetime, auth.KindwebUI); err1 == nil {
 			wui.setToken(w, tok)
 		}
 	}

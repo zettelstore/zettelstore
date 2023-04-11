@@ -173,11 +173,11 @@ func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
 		// No auth needed
 		return r
 	}
-	k := auth.KindJSON
+	k := auth.KindAPI
 	t := getHeaderToken(r)
 	if len(t) == 0 {
 		rt.log.Debug().Msg("no jwt token found") // IP already logged: ServeHTTP
-		k = auth.KindHTML
+		k = auth.KindwebUI
 		t = getSessionToken(r)
 	}
 	if len(t) == 0 {
