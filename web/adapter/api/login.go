@@ -12,11 +12,11 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http"
 	"time"
 
-	"zettelstore.de/c/api"
+	"codeberg.org/t73fde/sxpf"
+
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -27,7 +27,7 @@ import (
 func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.withAuth() {
-			err := a.writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
+			err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour)
 			a.log.IfErr(err).Msg("Login/free")
 			return
 		}
@@ -46,7 +46,7 @@ func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFun
 			return
 		}
 
-		err := a.writeJSONToken(w, string(token), a.tokenLifetime)
+		err := a.writeToken(w, string(token), a.tokenLifetime)
 		a.log.IfErr(err).Msg("Login")
 	}
 }
@@ -61,29 +61,12 @@ func retrieveIdentCred(r *http.Request) (string, string) {
 	return "", ""
 }
 
-func (a *API) writeJSONToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
-	var buf bytes.Buffer
-	je := json.NewEncoder(&buf)
-	err := je.Encode(api.AuthJSON{
-		Token:   token,
-		Type:    "Bearer",
-		Expires: int(lifetime / time.Second),
-	})
-	if err != nil {
-		a.log.Fatal().Err(err).Msg("Unable to store token in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return nil
-	}
-
-	return writeBuffer(w, &buf, content.JSON)
-}
-
 // MakeRenewAuthHandler creates a new HTTP handler to renew the authenticate of a user.
 func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if !a.withAuth() {
-			err := a.writeJSONToken(w, "freeaccess", 24*366*10*time.Hour)
+			err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour)
 			a.log.IfErr(err).Msg("Refresh/free")
 			return
 		}
@@ -96,7 +79,7 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			err := a.writeJSONToken(w, string(authData.Token), totalLifetime-currentLifetime)
+			err := a.writeToken(w, string(authData.Token), totalLifetime-currentLifetime)
 			a.log.IfErr(err).Msg("Write old token")
 			return
 		}
@@ -107,7 +90,24 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 			a.reportUsecaseError(w, err)
 			return
 		}
-		err = a.writeJSONToken(w, string(token), a.tokenLifetime)
+		err = a.writeToken(w, string(token), a.tokenLifetime)
 		a.log.IfErr(err).Msg("Write renewed token")
 	}
+}
+
+func (a *API) writeToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
+	lst := sxpf.MakeList(
+		sxpf.MakeString("Bearer"),
+		sxpf.MakeString(token),
+		sxpf.MakeInteger64(int64(lifetime/time.Second)),
+	)
+	var buf bytes.Buffer
+	_, err := sxpf.Print(&buf, lst)
+	if err != nil {
+		a.log.Fatal().Err(err).Msg("Unable to store token in buffer")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return nil
+	}
+
+	return writeBuffer(w, &buf, content.PlainText)
 }
