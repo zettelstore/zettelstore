@@ -4,28 +4,33 @@ role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20230327122634
+modified: 20230411162000
 
 ```
-QueryExpression  := SearchExpression ActionExpression?
-SearchExpression := SearchTerm (SPACE+ SearchTerm)*.
-SearchTerm       := SearchOperator? SearchValue
-                  | SearchKey SearchOperator SearchValue?
-                  | SearchKey ExistOperator
-                  | "OR"
-                  | "RANDOM"
-                  | "PICK" SPACE+ PosInt
-                  | "ORDER" SPACE+ ("REVERSE" SPACE+)? SearchKey
-                  | "OFFSET" SPACE+ PosInt
-                  | "LIMIT" SPACE+ PosInt.
-SearchValue      := Word.
-SearchKey        := MetadataKey.
-SearchOperator   := '!'
-                  | ('!')? ('~' | ':' | '<' | '>').
-ExistOperator    := '?'
-                  | '!' '?'.
-PosInt           := '0'
-                  | ('1' .. '9') DIGIT*.
-ActionExpression := '|' (Word (SPACE+ Word)*)?
-Word             := NO-SPACE NO-SPACE*
+QueryExpression   := ContextExpression? SearchExpression ActionExpression?
+ContextExpression := "CONTEXT" SPACE+ ZID (SPACE+ ContextDetail)*.
+ContextDetail     := "BACKWARD"
+                   | "FORWARD"
+                   | "COST" SPACE+ PosInt
+                   | "MAX" SPACE+ PosInt.
+SearchExpression  := SearchTerm (SPACE+ SearchTerm)*.
+SearchTerm        := SearchOperator? SearchValue
+                   | SearchKey SearchOperator SearchValue?
+                   | SearchKey ExistOperator
+                   | "OR"
+                   | "RANDOM"
+                   | "PICK" SPACE+ PosInt
+                   | "ORDER" SPACE+ ("REVERSE" SPACE+)? SearchKey
+                   | "OFFSET" SPACE+ PosInt
+                   | "LIMIT" SPACE+ PosInt.
+SearchValue       := Word.
+SearchKey         := MetadataKey.
+SearchOperator    := '!'
+                   | ('!')? ('~' | ':' | '<' | '>').
+ExistOperator     := '?'
+                   | '!' '?'.
+PosInt            := '0'
+                   | ('1' .. '9') DIGIT*.
+ActionExpression  := '|' (Word (SPACE+ Word)*)?
+Word              := NO-SPACE NO-SPACE*
 ```

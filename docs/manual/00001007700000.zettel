@@ -4,15 +4,37 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20220913135434
+modified: 20230411164556
 
 A query expression allows you to search for specific zettel and to perform some actions on them.
 You may select zettel based on a full-text search, based on specific metadata values, or both.
 
-A query expression consists of a __search expression__ and of an optional __action list__.
-Both are separated by a vertical bar character (""''|''"", U+007C).
+A query expression consists of an optional __context expression__, a __search expression__ and an optional __action list__.
+The latter two are separated by a vertical bar character (""''|''"", U+007C).
 
 A query expression follows a [[formal syntax|00001007780000]].
+
+=== Context expression
+
+An context expression starts with the keyword ''CONTEXT'', one or more space characters, and a [[zettel identifier|00001006050000]].
+
+Optionally you may specify some context details, separated by space character. These are:
+* ''BACKWARD'': search for context only though backward links,
+* ''FORWARD'': search for context only through forward links,
+* ''COST'', one or more space characters, and a positive integer: set the maximum __cost__ (default: 17),
+* ''MAX'', one or more space characters, and a positive integer: set the maximum number of context zettel (default: 200).
+
+If no ''BACKWARD'' and ''FORWARD'' is specified, a search for context zettel will be done though backward and forward links.
+
+The cost of a context zettel is calculated iteratively:
+* The specified zettel hast a cost of zero.
+* A zettel found as a single folge zettel or single precursor zettel has the cost of the originating zettel, plus one.
+* A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus two.
+* A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus three.
+* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the three choices above and multiplied with roughliy a logarithmic value based on the size of the set.
+* A zettel with the same tag, has the cost of the originating zettel, plus the number of zettel with the same tag (if it is less than five), or double the number of the originating zettel, plus number of zettel with the same tag plus one divied by four.
+
+Despite its possibly complicated structure, this algorithm ensures in practice that the zettel context is a list of zettel, where the first elements are ""near"" to the specified zettel and the last elements are more ""distant"" to the specified zettel.
 
 === Search expression
 
@@ -32,7 +54,7 @@ All terms of a select expression must be true so that a zettel is selected.
 * [[Search operator|00001007705000]]
 * [[Search value|00001007706000]]
 
-Here are [[some examples|00001007790000]] of search expressions, which can be used to manage a Zettelstore:
+Here are [[some examples|00001007790000]] of search / context expressions, which can be used to manage a Zettelstore:
 {{{00001007790000}}}
 
 === Action List
