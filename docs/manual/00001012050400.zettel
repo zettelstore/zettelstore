@@ -3,7 +3,8 @@ title: API: Renew an access token
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220107215751
+created: 20210126175322
+modified: 20230412160219
 
 An access token is only valid for a certain duration.
 Since the [[authentication process|00001012050200]] will need some processing time, there is a way to renew the token without providing full authentication data.
@@ -12,7 +13,7 @@ Send a HTTP PUT request to the [[endpoint|00001012920000]] ''/a'' and include th
 
 ```sh
 # curl -X PUT -H 'Authorization: Bearer TOKEN' http://127.0.0.1:23123/a
-{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":456}
+("Bearer" "eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTY4MTMwNDA4NiwiaWF0IjoxNjgxMzA0MDI2LCJzdWIiOiJvd25lciIsInppZCI6IjIwMjEwNjI5MTYzMzAwIn0.kZd3prYc79dt9efDsrYVHtKrjWyOWvfByjeeUB3hf_vs43V3SNJqmb8k-zTHVNWOK0-5orVPrg2tIAqbXqmkhg" 456)
 ```
 You may receive a new access token, or the current one if it was obtained not a long time ago.
 However, the lifetime of the returned [[access token|00001012921000]] is accurate.
@@ -21,14 +22,14 @@ If [[authentication is not enabled|00001010040100]] and you send a renew request
 
 ```sh
 # curl -X PUT -H 'Authorization: Bearer freeaccess' http://127.0.0.1:23123/a
-{"token":"freeaccess","token_type":"Bearer","expires_in":316224000}
+("Bearer" "freeaccess" 316224000)
 ```
 
 In this case, it is even possible to omit the access token.
 
 === HTTP Status codes
 ; ''200''
-: Renew process was successful, the body contains an [[appropriate JSON object|00001012921000]].
+: Renew process was successful, the body contains a [[list|00001012921000]] with the relevant data.
 ; ''400''
 : The renew process was not successful.
   There are several reasons for this.

@@ -3,7 +3,8 @@ title: API: Authenticate a client
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220107215844
+created: 20210126175322
+modified: 20230412150544
 
 Authentication for future API calls is done by sending a [[user identification|00001010040200]] and a password to the Zettelstore to obtain an [[access token|00001010040700]].
 This token has to be used for other API calls.
@@ -12,22 +13,22 @@ It is valid for a relatively short amount of time, as configured with the key ''
 The simplest way is to send user identification (''IDENT'') and password (''PASSWORD'') via [[HTTP Basic Authentication|https://tools.ietf.org/html/rfc7617]] and send them to the [[endpoint|00001012920000]] ''/a'' with a POST request:
 ```sh
 # curl -X POST -u IDENT:PASSWORD http://127.0.0.1:23123/a
-{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+("Bearer" "eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTY4MTMwNDA2MiwiaWF0IjoxNjgxMzA0MDAyLCJzdWIiOiJvd25lciIsInppZCI6IjIwMjEwNjI5MTYzMzAwIn0.kdF8PdiL50gIPkRD3ovgR6nUXR0-80EKAXcY2zVYgYvryF09iXnNR3zrvYnGzdrArMcnvAYqVvuXtqhQj2jG9g" 600)
 ```
 
 Some tools, like [[curl|https://curl.haxx.se/]], also allow to specify user identification and password as part of the URL:
 ```sh
 # curl -X POST http://IDENT:PASSWORD@127.0.0.1:23123/a
-{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+("Bearer" "eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTY4MTMwNDA4NiwiaWF0IjoxNjgxMzA0MDI2LCJzdWIiOiJvd25lciIsInppZCI6IjIwMjEwNjI5MTYzMzAwIn0.kZd3prYc79dt9efDsrYVHtKrjWyOWvfByjeeUB3hf_vs43V3SNJqmb8k-zTHVNWOK0-5orVPrg2tIAqbXqmkhg" 600)
 ```
 
 If you do not want to use Basic Authentication, you can also send user identification and password as HTML form data:
 ```sh
 # curl -X POST -d 'username=IDENT&password=PASSWORD' http://127.0.0.1:23123/a
-{"access_token":"eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTYwMTczMTI3NSwiaWF0IjoxNjAxNzMwNjc1LCJzdWIiOiJhYmMiLCJ6aWQiOiIyMDIwMTAwMzE1MDEwMCJ9.ekhXkvn146P2bMKFQcU-bNlvgbeO6sS39hs6U5EKfjIqnSInkuHYjYAIfUqf_clYRfr6YBlX5izii8XfxV8jhg","token_type":"Bearer","expires_in":600}
+("Bearer" "eyJhbGciOiJIUzUxMiJ9.eyJfdGsiOjEsImV4cCI6MTY4MTMwNDA4OCwiaWF0IjoxNjgxMzA0MDI4LCJzdWIiOiJvd25lciIsInppZCI6IjIwMjEwNjI5MTYzMzAwIn0.qIEyOMFXykCApWtBaqbSESwTL96stWl2LRICiRNAXUjcY-mwx_SSl9L5Fj2FvmrI1K1RBvWehjoq8KZUNjhJ9Q" 600)
 ```
 
-In all cases, you will receive an JSON object will all [[relevant data|00001012921000]] to be used for further API calls.
+In all cases, you will receive a list with three elements that will contain all [[relevant data|00001012921000]] to be used for further API calls.
 
 **Important:** obtaining a token is a time-intensive process.
 Zettelstore will delay every request to obtain a token for a certain amount of time.
@@ -37,13 +38,13 @@ However, if [[authentication is not enabled|00001010040100]] and you send an aut
 
 ```sh
 # curl -X POST -u IDENT:PASSWORD http://127.0.0.1:23123/a
-{"token":"freeaccess","token_type":"Bearer","expires_in":316224000}
+("Bearer" "freeaccess" 316224000)
 ```
 
 In this case, it is even possible to omit the user identification/password.
 
 === HTTP Status codes
-In all cases of successful authentication, a JSON object is returned, which contains the token under the key ''"token"''.
+In all cases of successful authentication, a list is returned, which contains the token as the second element.
 A successful authentication is signaled with the HTTP status code 200, as usual.
 
 Other status codes possibly send by the Zettelstore:
