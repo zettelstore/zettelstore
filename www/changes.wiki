@@ -6,6 +6,8 @@
      Previously, this was a separate call, without adding a search expression
      / action expression.
      (breaking)
+  *  Render footer zettel on all WebUI pages.
+     (fix: webui)
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)
