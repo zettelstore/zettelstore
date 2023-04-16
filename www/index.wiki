@@ -25,11 +25,11 @@ packages may be experimental.
 [https://twitter.com/zettelstore|Stay]
 <a rel="me" href="https://nerdculture.de/@zettelstore">tuned</a>&nbsp;&hellip;
 <hr>
-<h3>Latest Release: 0.11.1 (2023-03-28)</h3>
+<h3>Latest Release: 0.11.2 (2023-04-16)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_11|Change summary]
-  *  [/timeline?p=v0.11.1&bt=v0.10.0&y=ci|Check-ins for version 0.11.1],
-     [/vdiff?to=v0.11.1&from=v0.10.0|content diff]
+  *  [/timeline?p=v0.11.2&bt=v0.10.0&y=ci|Check-ins for version 0.11.2],
+     [/vdiff?to=v0.11.2&from=v0.10.0|content diff]
   *  [/timeline?df=v0.11.0&y=ci|Check-ins derived from the 0.11.0 release],
      [/vdiff?from=v0.11.0&to=trunk|content diff]
   *  [./plan.wiki|Limitations and planned improvements]

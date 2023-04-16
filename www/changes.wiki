@@ -25,6 +25,12 @@
      (deprecated: api)
 
 <a id="0_11"></a>
+<h2>Changes for Version 0.11.2 (2023-04-16)</h2>
+  *  Render footer zettel on all WebUI pages.
+     Backported from 0.12.0.
+     Many thanks to HK for reporting it!
+     (fix: webui)
+
 <h2>Changes for Version 0.11.1 (2023-03-28)</h2>
   *  Make <tt>PICK</tt> search term a little bit more deterministic so that the
      &ldquo;Save As Zettel&rdquo; button produces the same list.
