@@ -101,17 +101,17 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 	case meta.TypeTagSet:
 		return createMatchTagSetFunc(values, addSearch)
 	case meta.TypeWord:
-		return createMatchWordOrStringFunc(values, addSearch)
+		return createMatchWordFunc(values, addSearch)
 	case meta.TypeWordSet:
 		return createMatchWordSetFunc(values, addSearch)
 	case meta.TypeZettelmarkup:
 		return createMatchZmkFunc(values, addSearch)
 	}
-	return createMatchWordOrStringFunc(values, addSearch)
+	return createMatchStringFunc(values, addSearch)
 }
 
 func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToStringPredicates(values, addSearch)
+	preds := valuesToWordPredicates(values, addSearch)
 	return func(value string) bool {
 		for _, pred := range preds {
 			if !pred(value) {
@@ -123,7 +123,7 @@ func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFun
 }
 
 func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToStringSetPredicates(preprocessSet(values), addSearch)
+	predList := valuesToWordSetPredicates(preprocessSet(values), addSearch)
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
 		for _, preds := range predList {
@@ -138,7 +138,7 @@ func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValue
 }
 
 func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToStringSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
+	predList := valuesToWordSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
 	return func(value string) bool {
 		tags := meta.ListFromValue(value)
 		// Remove leading '#' from each tag
@@ -173,7 +173,20 @@ func processTagSet(valueSet [][]expValue) [][]expValue {
 	return result
 }
 
-func createMatchWordOrStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+func createMatchWordFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+	preds := valuesToWordPredicates(sliceToLower(values), addSearch)
+	return func(value string) bool {
+		value = strings.ToLower(value)
+		for _, pred := range preds {
+			if !pred(value) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	preds := valuesToStringPredicates(sliceToLower(values), addSearch)
 	return func(value string) bool {
 		value = strings.ToLower(value)
@@ -187,7 +200,7 @@ func createMatchWordOrStringFunc(values []expValue, addSearch addSearchFunc) mat
 }
 
 func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predsList := valuesToStringSetPredicates(preprocessSet(sliceToLower(values)), addSearch)
+	predsList := valuesToWordSetPredicates(preprocessSet(sliceToLower(values)), addSearch)
 	return func(value string) bool {
 		words := meta.ListFromValue(value)
 		for _, preds := range predsList {
@@ -219,9 +232,9 @@ func createMatchZmkFunc(values []expValue, addSearch addSearchFunc) matchValueFu
 		for _, word := range strfun.NormalizeWords(v.value) {
 			if cmpOp := v.op; cmpOp.isNegated() {
 				cmpOp = cmpOp.negate()
-				negPreds = append(negPreds, createStringCompareFunc(word, cmpOp))
+				negPreds = append(negPreds, createWordCompareFunc(word, cmpOp))
 			} else {
-				normPreds = append(normPreds, createStringCompareFunc(word, cmpOp))
+				normPreds = append(normPreds, createWordCompareFunc(word, cmpOp))
 				addSearch(expValue{word, cmpOp}) // addSearch only for positive selections
 			}
 		}
@@ -318,6 +331,28 @@ func valuesToStringPredicates(values []expValue, addSearch addSearchFunc) []stri
 func createStringCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 	switch cmpOp {
 	case cmpHas:
+		return createWordCompareFunc(cmpVal, cmpMatch)
+	case cmpHasNot:
+		return createWordCompareFunc(cmpVal, cmpNoMatch)
+	default:
+		return createWordCompareFunc(cmpVal, cmpOp)
+	}
+}
+
+func valuesToWordPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
+	result := make([]stringPredicate, len(values))
+	for i, v := range values {
+		if !v.op.isNegated() {
+			addSearch(v) // addSearch only for positive selections
+		}
+		result[i] = createWordCompareFunc(v.value, v.op)
+	}
+	return result
+}
+
+func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	switch cmpOp {
+	case cmpHas:
 		return func(metaVal string) bool { return metaVal == cmpVal }
 	case cmpHasNot:
 		return func(metaVal string) bool { return metaVal != cmpVal }
@@ -340,7 +375,7 @@ func createStringCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 
 type stringSetPredicate func(value []string) bool
 
-func valuesToStringSetPredicates(values [][]expValue, addSearch addSearchFunc) [][]stringSetPredicate {
+func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][]stringSetPredicate {
 	result := make([][]stringSetPredicate, len(values))
 	for i, val := range values {
 		elemPreds := make([]stringSetPredicate, len(val))
