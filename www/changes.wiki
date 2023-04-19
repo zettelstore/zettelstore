@@ -8,6 +8,9 @@
      (breaking)
   *  Render footer zettel on all WebUI pages.
      (fix: webui)
+  *  Query search operator "=" now compares for equality, ":" compares
+     depending on the value type.
+     (minor)
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)

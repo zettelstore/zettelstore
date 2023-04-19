@@ -156,6 +156,8 @@ const (
 	cmpUnknown compareOp = iota
 	cmpExist
 	cmpNotExist
+	cmpEqual
+	cmpNotEqual
 	cmpHas
 	cmpHasNot
 	cmpPrefix
@@ -169,6 +171,8 @@ const (
 var negateMap = map[compareOp]compareOp{
 	cmpUnknown:  cmpUnknown,
 	cmpExist:    cmpNotExist,
+	cmpEqual:    cmpNotEqual,
+	cmpNotEqual: cmpEqual,
 	cmpHas:      cmpHasNot,
 	cmpHasNot:   cmpHas,
 	cmpPrefix:   cmpNoPrefix,
@@ -183,6 +187,7 @@ func (op compareOp) negate() compareOp { return negateMap[op] }
 
 var negativeMap = map[compareOp]bool{
 	cmpNotExist: true,
+	cmpNotEqual: true,
 	cmpHasNot:   true,
 	cmpNoPrefix: true,
 	cmpNoSuffix: true,

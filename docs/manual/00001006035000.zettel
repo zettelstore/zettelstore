@@ -4,14 +4,14 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914130809
+modified: 20230419175725
 
 Values of this type denote an URL.
 
 === Allowed values
 All characters of an URL / URI are allowed.
 
-=== Query operator
+=== Query comparison
 All comparisons are done case-insensitive.
 For example, ""hello"" is the suffix of ""http://example.com/Hello"".
 

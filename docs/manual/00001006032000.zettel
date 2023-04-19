@@ -4,14 +4,14 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914134914
+modified: 20230419175535
 
 Values of this type denote a [[zettel identifier|00001006050000]].
 
 === Allowed values
 Must be a sequence of 14 digits (""0""--""9"").
 
-=== Query operator
+=== Query comparison
 Comparison is done with the string representation of the identifiers.
 For example, ""000010"" matches ""[[00001006032000]]"".
 

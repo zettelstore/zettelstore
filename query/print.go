@@ -22,6 +22,8 @@ import (
 var op2string = map[compareOp]string{
 	cmpExist:    api.ExistOperator,
 	cmpNotExist: api.ExistNotOperator,
+	cmpEqual:    api.SearchOperatorEqual,
+	cmpNotEqual: api.SearchOperatorNotEqual,
 	cmpHas:      api.SearchOperatorHas,
 	cmpHasNot:   api.SearchOperatorHasNot,
 	cmpPrefix:   api.SearchOperatorPrefix,
@@ -213,6 +215,10 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 			pe.writeString(" AND")
 		}
 		switch val.op {
+		case cmpEqual:
+			pe.writeString(" EQUALS ")
+		case cmpNotEqual:
+			pe.writeString(" EQUALS NOT ")
 		case cmpHas:
 			pe.writeString(" HAS ")
 		case cmpHasNot:

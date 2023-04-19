@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914131354
+modified: 20230419175551
 
 Values of this type denote a (sorted) set of [[zettel identifier|00001006050000]].
 
@@ -13,7 +13,7 @@ A set is different to a list, as no duplicate values are allowed.
 === Allowed values
 Must be at least one sequence of 14 digits (""0""--""9""), separated by space characters.
 
-=== Query operator
+=== Query comparison
 A value matches an identifier set value, if the value matches any of the identifier set values.
 
 For example, ""000010060325"" is a prefix ""[[00001006032000]] [[00001006032500]]"".

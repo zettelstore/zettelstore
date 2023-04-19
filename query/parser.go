@@ -59,6 +59,7 @@ const (
 	actionSeparatorChar      = '|'
 	existOperatorChar        = '?'
 	searchOperatorNotChar    = '!'
+	searchOperatorEqualChar  = '='
 	searchOperatorHasChar    = ':'
 	searchOperatorPrefixChar = '>'
 	searchOperatorSuffixChar = '<'
@@ -350,7 +351,8 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	for !ps.isSpace() && !isActionSep(inp.Ch) && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
-			case searchOperatorNotChar, existOperatorChar, searchOperatorHasChar,
+			case searchOperatorNotChar, existOperatorChar,
+				searchOperatorEqualChar, searchOperatorHasChar,
 				searchOperatorPrefixChar, searchOperatorSuffixChar, searchOperatorMatchChar:
 				allowKey = false
 				if key := inp.Src[pos:inp.Pos]; meta.KeyIsValid(string(key)) {
@@ -410,6 +412,9 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	case existOperatorChar:
 		inp.Next()
 		op = cmpExist
+	case searchOperatorEqualChar:
+		inp.Next()
+		op = cmpEqual
 	case searchOperatorHasChar:
 		inp.Next()
 		op = cmpHas

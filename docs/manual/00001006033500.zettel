@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914130505
+modified: 20230419175633
 
 Values of this type are just a sequence of character, but not an empty sequence.
 
@@ -12,7 +12,7 @@ Values of this type are just a sequence of character, but not an empty sequence.
 All printable characters are allowed.
 There must be at least one such character.
 
-=== Query operator
+=== Query comparison
 All comparisons are done case-insensitive, i.e. ""hell"" will be the prefix of ""Hello"".
 
 === Sorting

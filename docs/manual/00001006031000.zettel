@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914130324
+modified: 20230419175515
 
 Values of this type denote a credential value, e.g. an encrypted password.
 
@@ -12,7 +12,7 @@ Values of this type denote a credential value, e.g. an encrypted password.
 All printable characters are allowed.
 Since a credential contains some kind of secret, the sequence of characters might have some hidden syntax to be interpreted by other parts of Zettelstore.
 
-=== Query operators
+=== Query comparison
 A credential never compares to any other value.
 A comparison will never match in any way.
 

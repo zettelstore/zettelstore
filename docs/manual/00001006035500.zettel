@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914130655
+modified: 20230419175735
 
 Values of this type denote a single word.
 
@@ -13,7 +13,7 @@ Must be a non-empty sequence of characters, but without the space character.
 
 All characters are mapped to their lower case values.
 
-=== Query operator
+=== Query comparison
 All comparisons are done case-insensitive, i.e. ""hell"" will be the prefix of ""Hello"".
 
 === Sorting

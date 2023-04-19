@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914131048
+modified: 20230419175642
 
 Values of this type denote a (sorted) set of tags.
 
@@ -16,7 +16,7 @@ Tags are separated by space characters.
 
 All characters are mapped to their lower case values.
 
-=== Query operator
+=== Query comparison
 All comparisons are done case-sensitive, i.e. ""#hell"" will not be the prefix of ""#Hello"".
 
 === Sorting

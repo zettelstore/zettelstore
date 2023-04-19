@@ -320,41 +320,58 @@ type stringPredicate func(string) bool
 func valuesToStringPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
-		if !v.op.isNegated() {
+		op := disambiguatedStringOp(v.op)
+		if !op.isNegated() {
 			addSearch(v) // addSearch only for positive selections
 		}
-		result[i] = createStringCompareFunc(v.value, v.op)
+		result[i] = createStringCompareFunc(v.value, op)
 	}
 	return result
 }
 
-func createStringCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+func disambiguatedStringOp(cmpOp compareOp) compareOp {
 	switch cmpOp {
 	case cmpHas:
-		return createWordCompareFunc(cmpVal, cmpMatch)
+		return cmpMatch
 	case cmpHasNot:
-		return createWordCompareFunc(cmpVal, cmpNoMatch)
+		return cmpNoMatch
 	default:
-		return createWordCompareFunc(cmpVal, cmpOp)
+		return cmpOp
 	}
+}
+
+func createStringCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	return createWordCompareFunc(cmpVal, cmpOp)
 }
 
 func valuesToWordPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
-		if !v.op.isNegated() {
+		op := disambiguateWordOp(v.op)
+		if !op.isNegated() {
 			addSearch(v) // addSearch only for positive selections
 		}
-		result[i] = createWordCompareFunc(v.value, v.op)
+		result[i] = createWordCompareFunc(v.value, op)
 	}
 	return result
 }
 
-func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+func disambiguateWordOp(cmpOp compareOp) compareOp {
 	switch cmpOp {
 	case cmpHas:
-		return func(metaVal string) bool { return metaVal == cmpVal }
+		return cmpEqual
 	case cmpHasNot:
+		return cmpNotEqual
+	default:
+		return cmpOp
+	}
+}
+
+func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	switch cmpOp {
+	case cmpEqual:
+		return func(metaVal string) bool { return metaVal == cmpVal }
+	case cmpNotEqual:
 		return func(metaVal string) bool { return metaVal != cmpVal }
 	case cmpPrefix:
 		return func(metaVal string) bool { return strings.HasPrefix(metaVal, cmpVal) }
@@ -368,6 +385,8 @@ func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 		return func(metaVal string) bool { return strings.Contains(metaVal, cmpVal) }
 	case cmpNoMatch:
 		return func(metaVal string) bool { return !strings.Contains(metaVal, cmpVal) }
+	case cmpHas, cmpHasNot:
+		panic(fmt.Sprintf("operator %d not disambiguated with value %q", cmpOp, cmpVal))
 	default:
 		panic(fmt.Sprintf("Unknown compare operation %d with value %q", cmpOp, cmpVal))
 	}
@@ -381,11 +400,11 @@ func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][
 		elemPreds := make([]stringSetPredicate, len(val))
 		for j, v := range val {
 			opVal := v.value // loop variable is used in closure --> save needed value
-			switch v.op {
-			case cmpHas:
+			switch op := disambiguateWordOp(v.op); op {
+			case cmpEqual:
 				addSearch(v) // addSearch only for positive selections
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
-			case cmpHasNot:
+			case cmpNotEqual:
 				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
 			case cmpPrefix:
 				addSearch(v)
@@ -402,8 +421,10 @@ func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
 			case cmpNoMatch:
 				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
+			case cmpHas, cmpHasNot:
+				panic(fmt.Sprintf("operator %d not disambiguated with value %q", op, opVal))
 			default:
-				panic(fmt.Sprintf("Unknown compare operation %d with value %q", v.op, opVal))
+				panic(fmt.Sprintf("Unknown compare operation %d with value %q", op, opVal))
 			}
 		}
 		result[i] = elemPreds

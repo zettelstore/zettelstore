@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20220914130725
+modified: 20230419175745
 
 Values of this type denote a (sorted) set of [[words|00001006035500]].
 
@@ -13,7 +13,7 @@ A set is different to a list, as no duplicate values are allowed.
 === Allowed values
 Must be a sequence of at least one word, separated by space characters.
 
-=== Query operator
+=== Query comparison
 All comparisons are done case-insensitive, i.e. ""hell"" will be the prefix of ""World, Hello"".
 
 === Sorting
