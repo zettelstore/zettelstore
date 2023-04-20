@@ -98,7 +98,7 @@ func (ps *parserState) parse(q *Query) *Query {
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(kwRandom) {
 			q = createIfNeeded(q)
-			if len(q.order) == 0 && q.pick <= 0 {
+			if len(q.order) == 0 {
 				q.order = []sortOrder{{"", false}}
 			}
 			continue
@@ -226,9 +226,6 @@ func (ps *parserState) parsePick(q *Query) (*Query, bool) {
 	q = createIfNeeded(q)
 	if q.pick == 0 || q.pick >= num {
 		q.pick = num
-	}
-	if len(q.order) == 1 && q.order[0].isRandom() {
-		q.order = nil
 	}
 	return q, true
 }

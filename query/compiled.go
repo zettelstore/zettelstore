@@ -63,8 +63,10 @@ func (c *Compiled) Result() []*meta.Meta {
 			}
 		}
 	}
-	result = c.doPostprocessing(result, false)
-	return result
+	result = c.pickElements(result)
+	result = c.sortElements(result)
+	result = c.offsetElements(result)
+	return limitElements(result, c.limit)
 }
 
 // AfterSearch applies all terms to the metadata list that was searched.
@@ -78,84 +80,80 @@ func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	if !c.hasQuery {
 		return sortMetaByZid(metaList)
 	}
-	return c.doPostprocessing(metaList, true)
-}
 
-func (c *Compiled) doPostprocessing(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
-	metaList = c.doPick(metaList, hasBoxApply)
-
-	if len(c.order) == 0 {
-		if c.pick <= 0 && hasBoxApply {
-			metaList = c.sortMetaByDefault(metaList)
+	if c.isDeterministic() {
+		// We need to sort to make it deterministic
+		if len(c.order) == 0 || c.order[0].isRandom() {
+			metaList = sortMetaByZid(metaList)
+		} else {
+			sort.Slice(metaList, createSortFunc(c.order, metaList))
 		}
-	} else if c.order[0].isRandom() {
-		metaList = c.sortRandomly(metaList, hasBoxApply)
+	}
+	metaList = c.pickElements(metaList)
+	if c.isDeterministic() {
+		if len(c.order) > 0 && c.order[0].isRandom() {
+			metaList = c.sortRandomly(metaList)
+		}
 	} else {
-		sort.Slice(metaList, createSortFunc(c.order, metaList))
+		metaList = c.sortElements(metaList)
 	}
-
-	if c.offset > 0 {
-		if c.offset > len(metaList) {
-			return nil
-		}
-		metaList = metaList[c.offset:]
-	}
-	return doLimit(metaList, c.limit)
+	metaList = c.offsetElements(metaList)
+	return limitElements(metaList, c.limit)
 }
 
-func (c *Compiled) sortMetaByDefault(metaList []*meta.Meta) []*meta.Meta {
-	if len(c.contextMeta) == 0 {
-		return sortMetaByZid(metaList)
+func (c *Compiled) sortElements(metaList []*meta.Meta) []*meta.Meta {
+	if len(c.order) > 0 {
+		if c.order[0].isRandom() {
+			metaList = c.sortRandomly(metaList)
+		} else {
+			sort.Slice(metaList, createSortFunc(c.order, metaList))
+		}
 	}
-	contextOrder := make(map[id.Zid]int, len(c.contextMeta))
-	for pos, m := range c.contextMeta {
-		contextOrder[m.Zid] = pos + 1
-	}
-	sort.Slice(metaList, func(i, j int) bool { return contextOrder[metaList[i].Zid] < contextOrder[metaList[j].Zid] })
 	return metaList
 }
 
-func (c *Compiled) doPick(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
-	pick := c.pick
-	if pick <= 0 {
+func (c *Compiled) offsetElements(metaList []*meta.Meta) []*meta.Meta {
+	if c.offset == 0 {
 		return metaList
 	}
-	if limit := c.limit; limit > 0 && limit < pick {
-		pick = limit
+	if c.offset > len(metaList) {
+		return nil
 	}
-	if pick >= len(metaList) {
-		return c.doRandom(metaList, hasBoxApply)
-	}
-	return c.doPickN(metaList, pick, hasBoxApply)
+	return metaList[c.offset:]
 }
-func (c *Compiled) doPickN(metaList []*meta.Meta, pick int, hasBoxApply bool) []*meta.Meta {
-	if hasBoxApply && c.isDeterministic() {
-		metaList = sortMetaByZid(metaList)
+
+func (c *Compiled) pickElements(metaList []*meta.Meta) []*meta.Meta {
+	count := c.pick
+	if count <= 0 || count >= len(metaList) {
+		return metaList
+	}
+	if limit := c.limit; limit > 0 && limit < count {
+		count = limit
+		c.limit = 0
+	}
+
+	order := make([]int, len(metaList))
+	for i := 0; i < len(metaList); i++ {
+		order[i] = i
 	}
 	rnd := c.newRandom()
-	result := make([]*meta.Meta, pick)
-	for i := 0; i < pick; i++ {
-		last := len(metaList) - i
+	picked := make([]int, count)
+	for i := 0; i < count; i++ {
+		last := len(order) - i
 		n := rnd.Intn(last)
-		result[i] = metaList[n]
-		metaList[n] = metaList[last-1]
-		metaList[last-1] = nil
+		picked[i] = order[n]
+		order[n] = order[last-1]
+	}
+	order = nil
+	sort.Ints(picked)
+	result := make([]*meta.Meta, count)
+	for i, p := range picked {
+		result[i] = metaList[p]
 	}
 	return result
 }
 
-func (c *Compiled) sortRandomly(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
-	// Optimization: RANDOM LIMIT n, where n < len(metaList) is essentially a PICK n.
-	if limit := c.limit; limit > 0 && limit < len(metaList) {
-		return c.doPickN(metaList, limit, hasBoxApply)
-	}
-	return c.doRandom(metaList, hasBoxApply)
-}
-
-func (c *Compiled) doRandom(metaList []*meta.Meta, hasBoxApply bool) []*meta.Meta {
-	if hasBoxApply && c.isDeterministic() {
-		metaList = sortMetaByZid(metaList)
-	}
+func (c *Compiled) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
 	rnd := c.newRandom()
 	rnd.Shuffle(
 		len(metaList),
@@ -172,7 +170,7 @@ func (c *Compiled) newRandom() *rand.Rand {
 	return rand.New(rand.NewSource(int64(seed)))
 }
 
-func doLimit(metaList []*meta.Meta, limit int) []*meta.Meta {
+func limitElements(metaList []*meta.Meta, limit int) []*meta.Meta {
 	if limit > 0 && limit < len(metaList) {
 		return metaList[:limit]
 	}

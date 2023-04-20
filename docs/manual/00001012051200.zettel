@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221219154400
+modified: 20230420160640
 
 To list all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/z''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 Always use the endpoint ''/z'' to work with a list of zettel.
@@ -22,6 +22,10 @@ Separated by a space character, the title of the zettel follows:
 00001012050200 API: Authenticate a client
 ...
 ```
+
+The list is **not** sorted, even in the these examples where it appears to be sorted.
+If you want to have it ordered, you must specify it with the help of a [[query expression|00001007700000]] / [[search term|00001007702000]].
+See [[Query the list of all zettel|00001012051400]] how to do it.
 
 Alternatively, you may retrieve the list of all zettel as a JSON object by specifying the encoding with the query parameter ''enc=json'':
 
@@ -109,6 +113,8 @@ If you reformat the JSON output, you will see its structure better:
   ]
 }
 ```
+
+Again, the list is typically **not** sorted, for example by the zettel identifier.
 
 The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
 These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the [[zettel identifier|00001006050000]]), ''"meta"'' (value as a JSON object), and ''"rights"'' (encodes the [[access rights|00001012921200]] for the given zettel).

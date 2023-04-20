@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20230327123724
+modified: 20230420153154
 
 A search term allows you to specify one search restriction.
 The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
@@ -34,7 +34,7 @@ A search term can be one of the following (the first three term are collectively
   It has no effect on the following search terms initiated with a special uppercase word.
 * The string ''PICK'', followed by a non-empty sequence of spaces and a number greater zero (called ""N"").
 
-  This will pick randomly N elements of the result list.
+  This will pick randomly N elements of the result list, preserving the order of that list.
   A zero value of N will produce the same result as if nothing was specified.
   If specified multiple times, the lower value takes precedence.
 
@@ -59,9 +59,9 @@ A search term can be one of the following (the first three term are collectively
   Currently, only the first term specifying the order of the resulting list will be used.
   Other ordering terms will be ignored.
 
-  A random order specification will be ignored, if there is an explicit ordering given or if the specification contains a valid ''PICK''.
+  A random order specification will be ignored, if there is an explicit ordering given.
 
-  Example: ''RANDOM ORDER published'' will be interpreted as ''ORDER published'', ''PICK 3 RANDOM'' will be interpreted as ''PICK 3''.
+  Example: ''RANDOM ORDER published'' will be interpreted as ''ORDER published''.
 * The string ''OFFSET'', followed by a non-empty sequence of spaces and a number greater zero (called ""N"").
 
   This will ignore the first N elements of the result list, based on the specified sort order.
@@ -85,8 +85,4 @@ This is resolved by the following rule:
 * Otherwise, the search term is treated as a full-text search.
 
 If a term like ''PICK'', ''ORDER'', ''ORDER REVERSE'', ''OFFSET'', or ''LIMIT'' is not followed by an appropriate value, it is interpreted as a search value for a full-text search.
-For example, ''ORDER 123'' will search for a zettel conatining the strings ""ORDER"" (case-insensitive) and ""123"".
-
-A specification ''RANDOM LIMIT n'' (with some valid value of ''n'') will be interpreted as ''PICK n''.
-Similar, a specification ''PICK n'', where ''n'' is greater or equal to the length of the result list, will be interpreted as ''RANDOM''.
-A specification ''LIMIT n'', where ''n'' is greater or equal to the length of the result list, will be ignored effectively.
+For example, ''ORDER 123'' will search for a zettel containing the strings ""ORDER"" (case-insensitive) and ""123"".

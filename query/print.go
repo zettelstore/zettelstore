@@ -252,8 +252,6 @@ func (pe *printEnv) printOrder(order []sortOrder) {
 			pe.printSpace()
 			pe.writeString(kwRandom)
 			continue
-		} else if o.key == api.KeyID && o.descending {
-			continue
 		}
 		pe.printSpace()
 		pe.writeString(kwOrder)

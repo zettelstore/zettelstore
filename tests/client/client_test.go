@@ -90,16 +90,17 @@ func TestListZettel(t *testing.T) {
 			}
 		})
 	}
-	q, h, l, err := c.ListZettelJSON(context.Background(), api.KeyRole+api.SearchOperatorHas+api.ValueRoleConfiguration)
+	search := api.KeyRole + api.SearchOperatorHas + api.ValueRoleConfiguration + " ORDER id"
+	q, h, l, err := c.ListZettelJSON(context.Background(), search)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	expQ := "role:configuration"
+	expQ := "role:configuration ORDER id"
 	if q != expQ {
 		t.Errorf("Query should be %q, but is %q", expQ, q)
 	}
-	expH := "role HAS configuration"
+	expH := "role HAS configuration ORDER id"
 	if h != expH {
 		t.Errorf("Human should be %q, but is %q", expH, h)
 	}
@@ -108,7 +109,7 @@ func TestListZettel(t *testing.T) {
 		t.Errorf("List of length %d expected, but got %d\n%v", configRoleZettel, got, l)
 	}
 
-	pl, err := c.ListZettel(context.Background(), api.KeyRole+api.SearchOperatorHas+api.ValueRoleConfiguration)
+	pl, err := c.ListZettel(context.Background(), search)
 	if err != nil {
 		t.Error(err)
 		return

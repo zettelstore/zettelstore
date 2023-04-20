@@ -10,7 +10,12 @@
      (fix: webui)
   *  Query search operator "=" now compares for equality, ":" compares
      depending on the value type.
-     (minor)
+     (minor: api, webui)
+  *  Search term <tt>PICK</tt> now respects the original sort order. This makes
+     it more useful and orthogonal to <tt>RANDOM</tt> and <tt>LIMIT</tt>. As
+     a side effect, zettel lists retrieved via the API are no longer sorted. In
+     case you want a specific order, you must specify it explicit.
+     (minor: api, webui)
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)
