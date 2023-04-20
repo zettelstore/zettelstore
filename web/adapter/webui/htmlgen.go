@@ -200,6 +200,9 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	}
 }
 
+// SetUnique sets a prefix to make several HTML ids unique.
+func (g *htmlGenerator) SetUnique(s string) *htmlGenerator { g.th.SetUnique(s); return g }
+
 var mapMetaKey = map[string]string{
 	api.KeyCopyright: "copyright",
 	api.KeyLicense:   "license",

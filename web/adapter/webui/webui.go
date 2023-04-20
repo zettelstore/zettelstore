@@ -365,7 +365,7 @@ func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (resul
 func (wui *WebUI) calculateFooterHTML(ctx context.Context) string {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
-			htmlEnc := wui.getSimpleHTMLEncoder()
+			htmlEnc := wui.getSimpleHTMLEncoder().SetUnique("footer-")
 			if result, err3 := htmlEnc.BlocksString(&zn.Ast); err3 == nil {
 				return result
 			}
