@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20230411164556
+modified: 20230420190257
 
 A query expression allows you to search for specific zettel and to perform some actions on them.
 You may select zettel based on a full-text search, based on specific metadata values, or both.
@@ -27,14 +27,15 @@ Optionally you may specify some context details, separated by space character. T
 If no ''BACKWARD'' and ''FORWARD'' is specified, a search for context zettel will be done though backward and forward links.
 
 The cost of a context zettel is calculated iteratively:
-* The specified zettel hast a cost of zero.
+* The specified zettel hast a cost of one.
 * A zettel found as a single folge zettel or single precursor zettel has the cost of the originating zettel, plus one.
 * A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus two.
 * A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus three.
-* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the three choices above and multiplied with roughliy a logarithmic value based on the size of the set.
-* A zettel with the same tag, has the cost of the originating zettel, plus the number of zettel with the same tag (if it is less than five), or double the number of the originating zettel, plus number of zettel with the same tag plus one divied by four.
+* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the three choices above and multiplied with roughly a logarithmic value based on the size of the set.
+* A zettel with the same tag, has the cost of the originating zettel, plus the number of zettel with the same tag (if it is less than eight), or the cost of the originating zettel plus two, multiplied by number of zettel with the same tag divided by four.
 
 Despite its possibly complicated structure, this algorithm ensures in practice that the zettel context is a list of zettel, where the first elements are ""near"" to the specified zettel and the last elements are more ""distant"" to the specified zettel.
+It also penalties a zettel that acts as a ""hub"" to other zettel, to make it more likely that only relevant zettel appear on the context list.
 
 === Search expression
 

@@ -88,7 +88,7 @@ func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
 		next: nil,
 		prev: nil,
 		meta: m,
-		cost: 0,
+		cost: 1,
 	}
 	result := &contextQueue{
 		seen:    id.NewSet(),
@@ -102,9 +102,7 @@ func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
 }
 
 func (zc *contextQueue) addPair(
-	ctx context.Context, getMeta GetMetaFunc,
-	key, value string,
-	curCost int, isBackward, isForward bool,
+	ctx context.Context, getMeta GetMetaFunc, key, value string, curCost int, isBackward, isForward bool,
 ) {
 	if key == api.KeyBack {
 		return
@@ -202,9 +200,8 @@ func (zc *contextQueue) addIDSet(ctx context.Context, getMeta GetMetaFunc, newCo
 }
 
 func referenceCost(baseCost int, numReferences int) int {
-	baseCost++
 	if numReferences < 5 {
-		return baseCost
+		return baseCost + 1
 	}
 	if numReferences < 9 {
 		return baseCost * 2
@@ -224,7 +221,7 @@ func referenceCost(baseCost int, numReferences int) int {
 func (zc *contextQueue) addSameTag(ctx context.Context, selectMeta SelectMetaFunc, tag string, baseCost int) {
 	tagMetas, found := zc.tagCost[tag]
 	if !found {
-		q := Parse(api.KeyTags + api.SearchOperatorHas + tag)
+		q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
 		ml, err := selectMeta(ctx, q)
 		if err != nil {
 			return
@@ -242,10 +239,10 @@ func (zc *contextQueue) addSameTag(ctx context.Context, selectMeta SelectMetaFun
 }
 
 func tagCost(baseCost, numTags int) int {
-	if numTags < 5 {
-		return baseCost + numTags
+	if numTags < 8 {
+		return baseCost + numTags/2
 	}
-	return (baseCost + 2) * (numTags + 1) / 4
+	return (baseCost + 2) * (numTags / 4)
 }
 
 func (zc *contextQueue) next() (*meta.Meta, int) {
