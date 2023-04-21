@@ -12,8 +12,11 @@
 package plain
 
 import (
+	"bytes"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
@@ -64,8 +67,8 @@ func init() {
 		IsASTParser:   false,
 		IsTextFormat:  true,
 		IsImageFormat: false,
-		ParseBlocks:   parseBlocks,
-		ParseInlines:  parseInlines,
+		ParseBlocks:   parseSxnBlocks,
+		ParseInlines:  parseSxnInlines,
 	})
 	parser.Register(&parser.Info{
 		Name:          meta.SyntaxMustache,
@@ -138,4 +141,41 @@ func scanSVG(inp *input.Input) string {
 	}
 	// TODO: check proper end </svg>
 	return svgSrc
+}
+
+func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
+	rd := reader.MakeReader(bytes.NewReader(inp.Src))
+	objs, err := rd.ReadAll()
+	if err != nil {
+		return ast.BlockSlice{
+			&ast.VerbatimNode{
+				Kind:    ast.VerbatimProg,
+				Attrs:   attrs.Attributes{"": syntax},
+				Content: inp.ScanLineContent(),
+			},
+			ast.CreateParaNode(&ast.TextNode{
+				Text: err.Error(),
+			}),
+		}
+	}
+	result := make(ast.BlockSlice, len(objs))
+	for i, obj := range objs {
+		var buf bytes.Buffer
+		sxpf.Print(&buf, obj)
+		result[i] = &ast.VerbatimNode{
+			Kind:    ast.VerbatimProg,
+			Attrs:   attrs.Attributes{"": syntax},
+			Content: buf.Bytes(),
+		}
+	}
+	return result
+}
+
+func parseSxnInlines(inp *input.Input, syntax string) ast.InlineSlice {
+	inp.SkipToEOL()
+	return ast.InlineSlice{&ast.LiteralNode{
+		Kind:    ast.LiteralProg,
+		Attrs:   attrs.Attributes{"": syntax},
+		Content: append([]byte(nil), inp.Src[0:inp.Pos]...),
+	}}
 }
