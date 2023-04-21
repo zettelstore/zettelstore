@@ -64,8 +64,9 @@ var syntax2mime = map[string]string{
 	meta.SyntaxPlain:    PlainText,
 	meta.SyntaxPNG:      mimePNG,
 	meta.SyntaxSVG:      "image/svg+xml",
-	meta.SyntaxTxt:      PlainText,
+	meta.SyntaxSxn:      PlainText,
 	meta.SyntaxText:     PlainText,
+	meta.SyntaxTxt:      PlainText,
 	meta.SyntaxWebp:     mimeWEBP,
 	meta.SyntaxZmk:      "text/x-zmk; charset=utf-8",
 

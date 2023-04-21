@@ -59,6 +59,15 @@ func init() {
 		ParseInlines:  parseSVGInlines,
 	})
 	parser.Register(&parser.Info{
+		Name:          meta.SyntaxSxn,
+		AltNames:      []string{},
+		IsASTParser:   false,
+		IsTextFormat:  true,
+		IsImageFormat: false,
+		ParseBlocks:   parseBlocks,
+		ParseInlines:  parseInlines,
+	})
+	parser.Register(&parser.Info{
 		Name:          meta.SyntaxMustache,
 		AltNames:      []string{},
 		IsASTParser:   false,

@@ -31,6 +31,7 @@ const (
 	SyntaxPlain    = "plain"
 	SyntaxPNG      = "png"
 	SyntaxSVG      = api.ValueSyntaxSVG
+	SyntaxSxn      = api.ValueSyntaxSxn
 	SyntaxText     = api.ValueSyntaxText
 	SyntaxTxt      = "txt"
 	SyntaxWebp     = "webp"
