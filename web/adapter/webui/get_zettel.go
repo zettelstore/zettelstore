@@ -62,6 +62,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 		extURL, hasExtURL := wui.formatURLFromMeta(zn.Meta, api.KeyURL)
 		folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
+		subordinates := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
 		successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
 		apiZid := api.ZettelID(zid.String())
@@ -88,12 +89,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			FolgeURL        string
 			PredecessorRefs string
 			PrecursorRefs   string
+			SuperiorRefs    string
 			HasExtURL       bool
 			ExtURL          string
 			Author          string
 			Content         string
 			NeedBottomNav   bool
 			FolgeLinks      simpleLinks
+			Subordinates    simpleLinks
 			BackLinks       simpleLinks
 			SuccessorLinks  simpleLinks
 		}{
@@ -114,12 +117,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			FolgeURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
 			PredecessorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPredecessor, getTextTitle),
 			PrecursorRefs:   wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
+			SuperiorRefs:    wui.encodeIdentifierSet(zn.InhMeta, api.KeySuperior, getTextTitle),
 			ExtURL:          extURL,
 			HasExtURL:       hasExtURL,
 			Author:          zn.Meta.GetDefault(api.KeyAuthor, ""),
 			Content:         htmlContent,
-			NeedBottomNav:   folgeLinks.Has || backLinks.Has || successorLinks.Has,
+			NeedBottomNav:   folgeLinks.Has || subordinates.Has || backLinks.Has || successorLinks.Has,
 			FolgeLinks:      folgeLinks,
+			Subordinates:    subordinates,
 			BackLinks:       backLinks,
 			SuccessorLinks:  successorLinks,
 		})

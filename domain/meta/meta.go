@@ -136,7 +136,9 @@ func init() {
 	// Properties that are inverse keys
 	registerKey(api.KeyFolge, TypeIDSet, usageProperty, "")
 	registerKey(api.KeySuccessors, TypeIDSet, usageProperty, "")
+	registerKey(api.KeySubordinates, TypeIDSet, usageProperty, "")
 
+	// Non-inverse keys
 	registerKey(api.KeyAuthor, TypeString, usageUser, "")
 	registerKey(api.KeyBack, TypeIDSet, usageProperty, "")
 	registerKey(api.KeyBackward, TypeIDSet, usageProperty, "")
@@ -156,6 +158,7 @@ func init() {
 	registerKey(api.KeyQuery, TypeEmpty, usageUser, "")
 	registerKey(api.KeyReadOnly, TypeWord, usageUser, "")
 	registerKey(api.KeySummary, TypeZettelmarkup, usageUser, "")
+	registerKey(api.KeySuperior, TypeIDSet, usageUser, api.KeySubordinates)
 	registerKey(api.KeyURL, TypeURL, usageUser, "")
 	registerKey(api.KeyUselessFiles, TypeString, usageProperty, "")
 	registerKey(api.KeyUserID, TypeWord, usageUser, "")

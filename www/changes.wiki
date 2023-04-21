@@ -19,6 +19,10 @@
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)
+  *  New metadata kays <tt>superior</tt> and <tt>subordinate</tt> (calculated
+     from <tt>superior</tt>) allow to specify a hierarchy between zettel, if
+     needed.
+     (minor)
   *  Metadata keys with suffix <tt>-date</tt> and <tt>-time</tt> are treated as
      timestamp values.
      (minor)

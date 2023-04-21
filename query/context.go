@@ -135,7 +135,8 @@ func contextCost(key string) int {
 	switch key {
 	case api.KeyFolge, api.KeyPrecursor:
 		return 1
-	case api.KeySuccessors, api.KeyPredecessor:
+	case api.KeySuccessors, api.KeyPredecessor,
+		api.KeySubordinates, api.KeySuperior:
 		return 2
 	}
 	return 3
