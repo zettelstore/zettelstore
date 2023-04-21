@@ -173,7 +173,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	c.SetAuth("owner", "owner")
 	encodings := []api.EncodingEnum{
 		api.EncoderHTML,
-		api.EncoderSexpr,
+		api.EncoderSz,
 		api.EncoderText,
 	}
 	for _, enc := range encodings {

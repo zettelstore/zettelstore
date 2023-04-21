@@ -8,8 +8,8 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package sexprenc encodes the abstract syntax tree into a s-expr.
-package sexprenc
+// Package szenc encodes the abstract syntax tree into a s-expr for zettel.
+package szenc
 
 import (
 	"io"
@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderSexpr, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderSz, func() encoder.Encoder { return Create() })
 }
 
 // Create a S-expr encoder
@@ -35,7 +35,7 @@ var mySE Encoder
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	t := NewTransformer()
-	content := t.GetSexpr(&zn.Ast)
+	content := t.GetSz(&zn.Ast)
 	meta := t.GetMeta(zn.InhMeta, evalMeta)
 	return io.WriteString(w, sxpf.Nil().Cons(content).Cons(meta).Repr())
 }
@@ -53,11 +53,11 @@ func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 // WriteBlocks writes a block slice to the writer
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	t := NewTransformer()
-	return io.WriteString(w, t.GetSexpr(bs).Repr())
+	return io.WriteString(w, t.GetSz(bs).Repr())
 }
 
 // WriteInlines writes an inline slice to the writer
 func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	t := NewTransformer()
-	return io.WriteString(w, t.GetSexpr(is).Repr())
+	return io.WriteString(w, t.GetSz(is).Repr())
 }

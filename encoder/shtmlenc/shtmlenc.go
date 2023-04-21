@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/sexprenc"
+	"zettelstore.de/z/encoder/szenc"
 )
 
 func init() {
@@ -36,13 +36,13 @@ var mySE Encoder
 
 // WriteZettel writes the encoded zettel to the writer.
 func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := sexprenc.NewTransformer()
+	tx := szenc.NewTransformer()
 	th := shtml.NewTransformer(1, nil)
 	metaSHTML, err := th.Transform(tx.GetMeta(zn.InhMeta, evalMeta))
 	if err != nil {
 		return 0, err
 	}
-	contentSHTML, err := th.Transform(tx.GetSexpr(&zn.Ast))
+	contentSHTML, err := th.Transform(tx.GetSz(&zn.Ast))
 	if err != nil {
 		return 0, err
 	}
@@ -52,7 +52,7 @@ func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.Ev
 
 // WriteMeta encodes meta data as s-expression.
 func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := sexprenc.NewTransformer()
+	tx := szenc.NewTransformer()
 	th := shtml.NewTransformer(1, nil)
 	metaSHTML, err := th.Transform(tx.GetMeta(m, evalMeta))
 	if err != nil {
@@ -85,8 +85,8 @@ func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 
 // TransformSlice transforms a AST slice into SHTML.
 func TransformSlice(node ast.Node) (*sxpf.List, error) {
-	tx := sexprenc.NewTransformer()
-	xval := tx.GetSexpr(node)
+	tx := szenc.NewTransformer()
+	xval := tx.GetSz(node)
 	th := shtml.NewTransformer(1, nil)
 	return th.Transform(xval)
 }

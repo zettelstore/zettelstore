@@ -14,7 +14,7 @@ By using this endpoint, you are able to retrieve the structure of a zettel befor
 For example, to retrieve some data about this zettel you are currently viewing, just send a HTTP GET request to the endpoint ''/z/00001012053600''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header] with the query parameter ''parseonly'' (and other appropriate query parameter).
 For example:
 ```sh
-# curl 'http://127.0.0.1:23123/z/00001012053600?enc=sexpr&parseonly'
+# curl 'http://127.0.0.1:23123/z/00001012053600?enc=sz&parseonly'
 ((PARA (TEXT "The") (SPACE) (LINK-ZETTEL () "00001012920000" (TEXT "endpoint")) (SPACE) (TEXT "to") (SPACE) (TEXT "work") (SPACE) (TEXT "with") (SPACE) ...
 ```
 

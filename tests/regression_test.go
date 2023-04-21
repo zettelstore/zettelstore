@@ -36,7 +36,7 @@ import (
 
 var encodings = []api.EncodingEnum{
 	api.EncoderHTML,
-	api.EncoderSexpr,
+	api.EncoderSz,
 	api.EncoderText,
 }
 

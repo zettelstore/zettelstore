@@ -47,7 +47,7 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 			a.writePlainData(w, ctx, zid, part, getMeta, getZettel)
 
 		case api.EncoderData:
-			a.writeSexprData(w, ctx, zid, part, getMeta, getZettel)
+			a.writeSzData(w, ctx, zid, part, getMeta, getZettel)
 
 		case api.EncoderJson:
 			a.writeJSONData(w, ctx, zid, part, getMeta, getZettel)
@@ -121,7 +121,7 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 	a.log.IfErr(err).Zid(zid).Msg("Write Plain data")
 }
 
-func (a *API) writeSexprData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
+func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
 	var obj sxpf.Object
 	switch part {
 	case partZettel:
@@ -130,7 +130,7 @@ func (a *API) writeSexprData(w http.ResponseWriter, ctx context.Context, zid id.
 			a.reportUsecaseError(w, err)
 			return
 		}
-		obj = zettel2sexpr(z, a.getRights(ctx, z.Meta))
+		obj = zettel2sz(z, a.getRights(ctx, z.Meta))
 
 	case partMeta:
 		m, err := getMeta.Run(ctx, zid)
@@ -138,7 +138,7 @@ func (a *API) writeSexprData(w http.ResponseWriter, ctx context.Context, zid id.
 			a.reportUsecaseError(w, err)
 			return
 		}
-		obj = metaRights2sexpr(m, a.getRights(ctx, m))
+		obj = metaRights2sz(m, a.getRights(ctx, m))
 	}
 
 	var buf bytes.Buffer
@@ -153,27 +153,27 @@ func (a *API) writeSexprData(w http.ResponseWriter, ctx context.Context, zid id.
 	a.log.IfErr(err).Zid(zid).Msg("Write data")
 }
 
-func zettel2sexpr(z domain.Zettel, rights api.ZettelRights) sxpf.Object {
+func zettel2sz(z domain.Zettel, rights api.ZettelRights) sxpf.Object {
 	zContent, encoding := z.Content.Encode()
 	sf := sxpf.MakeMappedFactory()
 	return sxpf.MakeList(
 		sf.MustMake("zettel"),
 		sxpf.MakeList(sf.MustMake("id"), sxpf.MakeString(z.Meta.Zid.String())),
-		meta2sexpr(z.Meta, sf),
+		meta2sz(z.Meta, sf),
 		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
 		sxpf.MakeList(sf.MustMake("encoding"), sxpf.MakeString(encoding)),
 		sxpf.MakeList(sf.MustMake("content"), sxpf.MakeString(zContent)),
 	)
 }
-func metaRights2sexpr(m *meta.Meta, rights api.ZettelRights) sxpf.Object {
+func metaRights2sz(m *meta.Meta, rights api.ZettelRights) sxpf.Object {
 	sf := sxpf.MakeMappedFactory()
 	return sxpf.MakeList(
 		sf.MustMake("list"),
-		meta2sexpr(m, sf),
+		meta2sz(m, sf),
 		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
 	)
 }
-func meta2sexpr(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
+func meta2sz(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
 	result := sxpf.Nil().Cons(sf.MustMake("meta"))
 	curr := result
 	for _, p := range m.ComputedPairs() {

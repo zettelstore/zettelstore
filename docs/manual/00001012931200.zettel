@@ -1,5 +1,5 @@
 id: 00001012931200
-title: Encoding of Sexpr Metadata
+title: Encoding of Sz Metadata
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
@@ -37,5 +37,5 @@ __ListValue__ **=** ''(list'' String,,1,, String,,2,, &hellip; String,,n,, '')''
 :::
 
 Examples:
-* The title of this zettel is represented as: ''(EMPTY-STRING (quote title) "Encoding of Sexpr Metadata")''
+* The title of this zettel is represented as: ''(EMPTY-STRING (quote title) "Encoding of Sz Metadata")''
 * The tags of this zettel are represented as: ''(TAG-SET (quote tags) (list "#api" "#manual" "#reference" "#zettelstore"))''

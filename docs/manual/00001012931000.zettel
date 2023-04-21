@@ -1,12 +1,12 @@
 id: 00001012931000
-title: Encoding of Sexpr
+title: Encoding of Sz
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403153903
 modified: 20230405133249
 
-Zettel in a [[Sexpr encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
+Zettel in a [[Sz encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
 To process these symbolic expressions, you need to know, how a specific part of a zettel is represented by a symbolic expression.
 
 Basically, each part of a zettel is represented as a list, often a nested list.
@@ -69,7 +69,7 @@ Or there are attributes.
 In this case, the first element of the list must be the symbol ''quote'': ''(quote'' ''('' A,,1,, A,,2,, &hellip; A,,n,, '')'''')''.
 
 === Other
-A list with ''UNKNOWN'' as its first element signals an internal error during transforming a zettel into the Sexpr encoding.
+A list with ''UNKNOWN'' as its first element signals an internal error during transforming a zettel into the Sz encoding.
 It may be ignored, or it may produce an error.
 
 :::syntax

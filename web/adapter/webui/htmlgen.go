@@ -19,12 +19,12 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/maps"
-	"zettelstore.de/c/sexpr"
 	"zettelstore.de/c/shtml"
+	"zettelstore.de/c/sz"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/sexprenc"
+	"zettelstore.de/z/encoder/szenc"
 	"zettelstore.de/z/strfun"
 )
 
@@ -35,7 +35,7 @@ type urlBuilder interface {
 }
 
 type htmlGenerator struct {
-	tx    *sexprenc.Transformer
+	tx    *szenc.Transformer
 	th    *shtml.Transformer
 	symAt *sxpf.Symbol
 }
@@ -95,9 +95,9 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	}
 
 	th.SetRebinder(func(te *shtml.TransformEnv) {
-		te.Rebind(sexpr.NameSymLinkZettel, linkZettel)
-		te.Rebind(sexpr.NameSymLinkFound, linkZettel)
-		te.Rebind(sexpr.NameSymLinkBased, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkZettel, linkZettel)
+		te.Rebind(sz.NameSymLinkFound, linkZettel)
+		te.Rebind(sz.NameSymLinkBased, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -118,7 +118,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sexpr.NameSymLinkQuery, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkQuery, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -147,7 +147,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sexpr.NameSymLinkExternal, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkExternal, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -161,7 +161,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sexpr.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sxpf.Nil()
@@ -194,7 +194,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	})
 
 	return &htmlGenerator{
-		tx:    sexprenc.NewTransformer(),
+		tx:    szenc.NewTransformer(),
 		th:    th,
 		symAt: symAt,
 	}
@@ -289,7 +289,7 @@ func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
 	if bs == nil || len(*bs) == 0 {
 		return "", nil
 	}
-	sx := g.tx.GetSexpr(bs)
+	sx := g.tx.GetSz(bs)
 	sh, err := g.th.Transform(sx)
 	if err != nil {
 		return "", err
@@ -310,7 +310,7 @@ func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.List {
 	if is == nil || len(*is) == 0 {
 		return sxpf.Nil()
 	}
-	sx := g.tx.GetSexpr(is)
+	sx := g.tx.GetSz(is)
 	sh, err := g.th.Transform(sx)
 	if err != nil {
 		return sxpf.Nil()

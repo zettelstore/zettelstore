@@ -26,8 +26,8 @@ import (
 
 	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
 	_ "zettelstore.de/z/encoder/mdenc"    // Allow to use markdown encoder.
-	_ "zettelstore.de/z/encoder/sexprenc" // Allow to use sexpr encoder.
 	_ "zettelstore.de/z/encoder/shtmlenc" // Allow to use SHTML encoder.
+	_ "zettelstore.de/z/encoder/szenc"    // Allow to use sz encoder.
 	_ "zettelstore.de/z/encoder/textenc"  // Allow to use text encoder.
 	_ "zettelstore.de/z/encoder/zmkenc"   // Allow to use zmk encoder.
 	"zettelstore.de/z/parser/cleaner"
@@ -47,7 +47,7 @@ const useZmk = "\000"
 const (
 	encoderHTML  = api.EncoderHTML
 	encoderMD    = api.EncoderMD
-	encoderSexpr = api.EncoderSexpr
+	encoderSz    = api.EncoderSz
 	encoderSHTML = api.EncoderSHTML
 	encoderText  = api.EncoderText
 	encoderZmk   = api.EncoderZmk
@@ -72,7 +72,7 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 			pe = &peBlocks{bs: parser.ParseBlocks(inp, nil, meta.SyntaxZmk, config.NoHTML)}
 		}
 		checkEncodings(t, testNum, pe, tc.descr, tc.expect, tc.zmk)
-		checkSexpr(t, testNum, pe, tc.descr)
+		checkSz(t, testNum, pe, tc.descr)
 	}
 }
 
@@ -103,9 +103,9 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 	}
 }
 
-func checkSexpr(t *testing.T, testNum int, pe parserEncoder, descr string) {
+func checkSz(t *testing.T, testNum int, pe parserEncoder, descr string) {
 	t.Helper()
-	encdr := encoder.Create(encoderSexpr)
+	encdr := encoder.Create(encoderSz)
 	exp, err := pe.encode(encdr)
 	if err != nil {
 		t.Error(err)

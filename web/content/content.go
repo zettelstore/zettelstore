@@ -36,7 +36,7 @@ const (
 var encoding2mime = map[api.EncodingEnum]string{
 	api.EncoderHTML:  mimeHTML,
 	api.EncoderMD:    mimeMarkdown,
-	api.EncoderSexpr: PlainText,
+	api.EncoderSz:    PlainText,
 	api.EncoderSHTML: PlainText,
 	api.EncoderText:  PlainText,
 	api.EncoderZmk:   PlainText,

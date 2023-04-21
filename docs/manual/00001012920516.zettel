@@ -1,5 +1,5 @@
 id: 00001012920516
-title: Sexpr Encoding
+title: Sz Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
@@ -9,12 +9,12 @@ modified: 20230403161458
 A zettel representation that is a [[s-expression|00001012930000]] (also known as symbolic expression).
 
 It is (relatively) easy to parse and contain all relevant information of a zettel, metadata and content.
-For example, take a look at the Sexpr encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
+For example, take a look at the Sz encoding of this page, which is available via the ""Info"" sub-page of this zettel: 
 
-* [[//z/00001012920516?enc=sexpr&part=zettel]],
-* [[//z/00001012920516?enc=sexpr&part=meta]],
-* [[//z/00001012920516?enc=sexpr&part=content]].
+* [[//z/00001012920516?enc=sz&part=zettel]],
+* [[//z/00001012920516?enc=sz&part=meta]],
+* [[//z/00001012920516?enc=sz&part=content]].
 
-Some zettel describe the [[Sexpr encoding|00001012931000]] in a more detailed way.
+Some zettel describe the [[Sz encoding|00001012931000]] in a more detailed way.
 
 If transferred via HTTP, the content type will be ''text/plain''.

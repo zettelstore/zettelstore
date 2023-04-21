@@ -22,8 +22,8 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/sexprenc"
 	"zettelstore.de/z/encoder/shtmlenc"
+	"zettelstore.de/z/encoder/szenc"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 )
@@ -45,7 +45,7 @@ var mySHE = Encoder{
 
 // WriteZettel encodes a full zettel as HTML5.
 func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := sexprenc.NewTransformer()
+	tx := szenc.NewTransformer()
 	xm := tx.GetMeta(zn.InhMeta, evalMeta)
 
 	th := shtml.NewTransformer(1, nil)
@@ -59,14 +59,14 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		isTitle = parser.ParseSpacedText(plainTitle)
-		xtitle := tx.GetSexpr(&isTitle)
+		xtitle := tx.GetSz(&isTitle)
 		htitle, err = th.Transform(xtitle)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	xast := tx.GetSexpr(&zn.Ast)
+	xast := tx.GetSz(&zn.Ast)
 	hast, err := th.Transform(xast)
 	if err != nil {
 		return 0, err
@@ -112,7 +112,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 
 // WriteMeta encodes meta data as HTML5.
 func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := sexprenc.NewTransformer()
+	tx := szenc.NewTransformer()
 	xm := tx.GetMeta(m, evalMeta)
 
 	th := shtml.NewTransformer(1, nil)
@@ -130,8 +130,8 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks encodes a block slice.
 func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	tx := sexprenc.NewTransformer()
-	xval := tx.GetSexpr(bs)
+	tx := szenc.NewTransformer()
+	xval := tx.GetSz(bs)
 	th := shtml.NewTransformer(1, nil)
 	hobj, err := th.Transform(xval)
 

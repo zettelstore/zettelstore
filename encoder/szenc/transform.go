@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package sexprenc
+package szenc
 
 import (
 	"encoding/base64"
@@ -17,7 +17,7 @@ import (
 
 	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/attrs"
-	"zettelstore.de/c/sexpr"
+	"zettelstore.de/c/sz"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
@@ -114,7 +114,7 @@ func NewTransformer() *Transformer {
 
 type Transformer struct {
 	sf                 sxpf.SymbolFactory
-	zetSyms            sexpr.ZettelSymbols
+	zetSyms            sz.ZettelSymbols
 	mapVerbatimKindS   map[ast.VerbatimKind]*sxpf.Symbol
 	mapRegionKindS     map[ast.RegionKind]*sxpf.Symbol
 	mapNestedListKindS map[ast.NestedListKind]*sxpf.Symbol
@@ -127,7 +127,7 @@ type Transformer struct {
 	inVerse            bool
 }
 
-func (t *Transformer) GetSexpr(node ast.Node) *sxpf.List {
+func (t *Transformer) GetSz(node ast.Node) *sxpf.List {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		return t.getBlockSlice(n)
@@ -219,13 +219,13 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sxpf.List {
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
-	symBlocks := t.GetSexpr(&rn.Blocks)
+	symBlocks := t.GetSz(&rn.Blocks)
 	t.inVerse = saveInVerse
 	return sxpf.MakeList(
 		mapGetS(t, t.mapRegionKindS, rn.Kind),
 		t.getAttributes(rn.Attrs),
 		symBlocks,
-		t.GetSexpr(&rn.Inlines),
+		t.GetSz(&rn.Inlines),
 	)
 }
 
@@ -235,13 +235,13 @@ func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sxpf.List {
 	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
 		if isCompact && len(item) > 0 {
-			paragraph := t.GetSexpr(item[0])
+			paragraph := t.GetSz(item[0])
 			nlistObjs[i+1] = paragraph.Tail().Cons(t.zetSyms.SymInline)
 			continue
 		}
 		itemObjs := make([]sxpf.Object, len(item))
 		for j, in := range item {
-			itemObjs[j] = t.GetSexpr(in)
+			itemObjs[j] = t.GetSz(in)
 		}
 		if isCompact {
 			nlistObjs[i+1] = sxpf.MakeList(itemObjs...).Cons(t.zetSyms.SymInline)
@@ -274,7 +274,7 @@ func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.List
 		for j, b := range def.Descriptions {
 			dVal := make([]sxpf.Object, len(b))
 			for k, dn := range b {
-				dVal[k] = t.GetSexpr(dn)
+				dVal[k] = t.GetSz(dn)
 			}
 			descObjs[j] = sxpf.MakeList(dVal...).Cons(t.zetSyms.SymBlock)
 		}
@@ -345,14 +345,14 @@ func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.List {
 func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sxpf.List {
 	objs := make([]sxpf.Object, len(*bs))
 	for i, n := range *bs {
-		objs[i] = t.GetSexpr(n)
+		objs[i] = t.GetSz(n)
 	}
 	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymBlock)
 }
 func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sxpf.List {
 	objs := make([]sxpf.Object, len(is))
 	for i, n := range is {
-		objs[i] = t.GetSexpr(n)
+		objs[i] = t.GetSz(n)
 	}
 	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymInline)
 }
@@ -396,7 +396,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf
 			obj = sxpf.MakeList(setObjs...).Cons(t.zetSyms.SymList)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
-			obj = t.GetSexpr(&is)
+			obj = t.GetSz(&is)
 		} else {
 			obj = sxpf.MakeString(p.Value)
 		}

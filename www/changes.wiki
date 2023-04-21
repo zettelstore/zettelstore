@@ -6,6 +6,11 @@
      Previously, this was a separate call, without adding a search expression
      / action expression.
      (breaking)
+  *  "sexpr" encoding is renamed to "sz" encoding. This will affect mostly the
+     API. Additionally, all string "sexpr" are renamed to "sz" also. "Sz" is
+     the short form for "symbolic expression for zettel", similar to "shtml"
+     that is the short form for "symbolic expression for HTML".
+     (breaking)
   *  Render footer zettel on all WebUI pages.
      (fix: webui)
   *  Query search operator "=" now compares for equality, ":" compares
