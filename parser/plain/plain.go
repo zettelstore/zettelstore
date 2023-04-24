@@ -15,7 +15,8 @@ import (
 	"bytes"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/builtins/pprint"
+	"codeberg.org/t73fde/sxpf/builtins/quote"
 	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
@@ -145,6 +146,12 @@ func scanSVG(inp *input.Input) string {
 
 func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
 	rd := reader.MakeReader(bytes.NewReader(inp.Src))
+	sf := rd.SymbolFactory()
+	quote.InstallQuoteReader(rd, sf.MustMake("quote"), '\'')
+	quote.InstallQuasiQuoteReader(rd,
+		sf.MustMake("quasiquote"), '`',
+		sf.MustMake("unquote"), ',',
+		sf.MustMake("unquote-splicing"), '@')
 	objs, err := rd.ReadAll()
 	if err != nil {
 		return ast.BlockSlice{
@@ -161,7 +168,7 @@ func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlic
 	result := make(ast.BlockSlice, len(objs))
 	for i, obj := range objs {
 		var buf bytes.Buffer
-		sxpf.Print(&buf, obj)
+		pprint.Print(&buf, obj)
 		result[i] = &ast.VerbatimNode{
 			Kind:    ast.VerbatimProg,
 			Attrs:   attrs.Attributes{"": syntax},
