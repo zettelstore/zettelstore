@@ -28,21 +28,27 @@ func init() {
 }
 
 // Create a SHTML encoder
-func Create() *Encoder { return &mySE }
+func Create() *Encoder {
+	// We need a new transformer every time, because tx.inVerse must be unique.
+	// If we can refactor it out, the transformer can be created only once.
+	return &Encoder{
+		tx: szenc.NewTransformer(),
+		th: shtml.NewTransformer(1, nil),
+	}
+}
 
-type Encoder struct{}
-
-var mySE Encoder
+type Encoder struct {
+	tx *szenc.Transformer
+	th *shtml.Transformer
+}
 
 // WriteZettel writes the encoded zettel to the writer.
-func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := szenc.NewTransformer()
-	th := shtml.NewTransformer(1, nil)
-	metaSHTML, err := th.Transform(tx.GetMeta(zn.InhMeta, evalMeta))
+func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+	metaSHTML, err := enc.th.Transform(enc.tx.GetMeta(zn.InhMeta, evalMeta))
 	if err != nil {
 		return 0, err
 	}
-	contentSHTML, err := th.Transform(tx.GetSz(&zn.Ast))
+	contentSHTML, err := enc.th.Transform(enc.tx.GetSz(&zn.Ast))
 	if err != nil {
 		return 0, err
 	}
@@ -51,23 +57,21 @@ func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.Ev
 }
 
 // WriteMeta encodes meta data as s-expression.
-func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := szenc.NewTransformer()
-	th := shtml.NewTransformer(1, nil)
-	metaSHTML, err := th.Transform(tx.GetMeta(m, evalMeta))
+func (enc *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	metaSHTML, err := enc.th.Transform(enc.tx.GetMeta(m, evalMeta))
 	if err != nil {
 		return 0, err
 	}
 	return metaSHTML.Print(w)
 }
 
-func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return se.WriteBlocks(w, &zn.Ast)
+func (enc *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+	return enc.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hval, err := TransformSlice(bs)
+func (enc *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	hval, err := enc.th.Transform(enc.tx.GetSz(bs))
 	if err != nil {
 		return 0, err
 	}
@@ -75,18 +79,10 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hval, err := TransformSlice(is)
+func (enc *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	hval, err := enc.th.Transform(enc.tx.GetSz(is))
 	if err != nil {
 		return 0, err
 	}
 	return hval.Print(w)
-}
-
-// TransformSlice transforms a AST slice into SHTML.
-func TransformSlice(node ast.Node) (*sxpf.List, error) {
-	tx := szenc.NewTransformer()
-	xval := tx.GetSz(node)
-	th := shtml.NewTransformer(1, nil)
-	return th.Transform(xval)
 }

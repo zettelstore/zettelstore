@@ -22,7 +22,6 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
-	"zettelstore.de/z/encoder/shtmlenc"
 	"zettelstore.de/z/encoder/szenc"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
@@ -33,23 +32,25 @@ func init() {
 }
 
 // Create an encoder.
-func Create() *Encoder { return &mySHE }
-
-type Encoder struct {
-	textEnc *textenc.Encoder
+func Create() *Encoder {
+	// We need a new transformer every time, because tx.inVerse must be unique.
+	// If we can refactor it out, the transformer can be created only once.
+	return &Encoder{
+		tx:      szenc.NewTransformer(),
+		th:      shtml.NewTransformer(1, nil),
+		textEnc: textenc.Create(),
+	}
 }
 
-var mySHE = Encoder{
-	textEnc: textenc.Create(),
+type Encoder struct {
+	tx      *szenc.Transformer
+	th      *shtml.Transformer
+	textEnc *textenc.Encoder
 }
 
 // WriteZettel encodes a full zettel as HTML5.
 func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := szenc.NewTransformer()
-	xm := tx.GetMeta(zn.InhMeta, evalMeta)
-
-	th := shtml.NewTransformer(1, nil)
-	hm, err := th.Transform(xm)
+	hm, err := he.th.Transform(he.tx.GetMeta(zn.InhMeta, evalMeta))
 	if err != nil {
 		return 0, err
 	}
@@ -59,24 +60,24 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		isTitle = parser.ParseSpacedText(plainTitle)
-		xtitle := tx.GetSz(&isTitle)
-		htitle, err = th.Transform(xtitle)
+		xtitle := he.tx.GetSz(&isTitle)
+		htitle, err = he.th.Transform(xtitle)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	xast := tx.GetSz(&zn.Ast)
-	hast, err := th.Transform(xast)
+	xast := he.tx.GetSz(&zn.Ast)
+	hast, err := he.th.Transform(xast)
 	if err != nil {
 		return 0, err
 	}
-	hen := th.Endnotes()
+	hen := he.th.Endnotes()
 
-	sf := th.SymbolFactory()
+	sf := he.th.SymbolFactory()
 	symAttr := sf.MustMake(sxhtml.NameSymAttr)
 
-	head := sxpf.Nil().Cons(sf.MustMake("head"))
+	head := sxpf.MakeList(sf.MustMake("head"))
 	curr := head
 	curr = curr.AppendBang(sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.Cons(sf.MustMake("charset"), sxpf.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
 	for elem := hm; elem != nil; elem = elem.Tail() {
@@ -88,7 +89,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
 	}
 
-	body := sxpf.Nil().Cons(sf.MustMake("body"))
+	body := sxpf.MakeList(sf.MustMake("body"))
 	curr = body
 	if hasTitle {
 		curr = curr.AppendBang(htitle.Cons(sf.MustMake("h1")))
@@ -112,15 +113,11 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 
 // WriteMeta encodes meta data as HTML5.
 func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	tx := szenc.NewTransformer()
-	xm := tx.GetMeta(m, evalMeta)
-
-	th := shtml.NewTransformer(1, nil)
-	hm, err := th.Transform(xm)
+	hm, err := he.th.Transform(he.tx.GetMeta(m, evalMeta))
 	if err != nil {
 		return 0, err
 	}
-	gen := sxhtml.NewGenerator(th.SymbolFactory(), sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator(he.th.SymbolFactory(), sxhtml.WithNewline)
 	return gen.WriteListHTML(w, hm)
 }
 
@@ -129,20 +126,16 @@ func (he *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 }
 
 // WriteBlocks encodes a block slice.
-func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	tx := szenc.NewTransformer()
-	xval := tx.GetSz(bs)
-	th := shtml.NewTransformer(1, nil)
-	hobj, err := th.Transform(xval)
-
+func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	hobj, err := he.th.Transform(he.tx.GetSz(bs))
 	if err == nil {
-		gen := sxhtml.NewGenerator(th.SymbolFactory())
+		gen := sxhtml.NewGenerator(he.th.SymbolFactory())
 		length, err2 := gen.WriteListHTML(w, hobj)
 		if err2 != nil {
 			return length, err2
 		}
 
-		l, err2 := gen.WriteHTML(w, th.Endnotes())
+		l, err2 := gen.WriteHTML(w, he.th.Endnotes())
 		length += l
 		return length, err2
 	}
@@ -150,8 +143,8 @@ func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hobj, err := shtmlenc.TransformSlice(is)
+func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	hobj, err := he.th.Transform(he.tx.GetSz(is))
 	if err == nil {
 		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
 		length, err2 := gen.WriteListHTML(w, hobj)

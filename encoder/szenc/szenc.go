@@ -26,38 +26,38 @@ func init() {
 }
 
 // Create a S-expr encoder
-func Create() *Encoder { return &mySE }
+func Create() *Encoder {
+	// We need a new transformer every time, because trans.inVerse must be unique.
+	// If we can refactor it out, the transformer can be created only once.
+	return &Encoder{trans: NewTransformer()}
+}
 
-type Encoder struct{}
-
-var mySE Encoder
+type Encoder struct {
+	trans *Transformer
+}
 
 // WriteZettel writes the encoded zettel to the writer.
-func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := NewTransformer()
-	content := t.GetSz(&zn.Ast)
-	meta := t.GetMeta(zn.InhMeta, evalMeta)
-	return io.WriteString(w, sxpf.Nil().Cons(content).Cons(meta).Repr())
+func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+	content := enc.trans.GetSz(&zn.Ast)
+	meta := enc.trans.GetMeta(zn.InhMeta, evalMeta)
+	return sxpf.MakeList(meta, content).Print(w)
 }
 
 // WriteMeta encodes meta data as s-expression.
-func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetMeta(m, evalMeta).Repr())
+func (enc *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	return enc.trans.GetMeta(m, evalMeta).Print(w)
 }
 
-func (se *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return se.WriteBlocks(w, &zn.Ast)
+func (enc *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+	return enc.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes a block slice to the writer
-func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetSz(bs).Repr())
+func (enc *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	return enc.trans.GetSz(bs).Print(w)
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	t := NewTransformer()
-	return io.WriteString(w, t.GetSz(is).Repr())
+func (enc *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	return enc.trans.GetSz(is).Print(w)
 }
