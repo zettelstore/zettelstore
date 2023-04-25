@@ -15,10 +15,10 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 
 	_ "zettelstore.de/z/parser/blob" // Allow to use BLOB parser.
 )

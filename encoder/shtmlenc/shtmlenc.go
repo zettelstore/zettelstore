@@ -18,9 +18,9 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/shtml"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {

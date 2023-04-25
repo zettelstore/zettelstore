@@ -15,9 +15,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // ListMetaPort is the interface used by this use case.

@@ -8,10 +8,10 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package domain provides domain specific types, constants, and functions.
-package domain
+// Package zettel provides specific types, constants, and functions for zettel.
+package zettel
 
-import "zettelstore.de/z/domain/meta"
+import "zettelstore.de/z/zettel/meta"
 
 // Zettel is the main data object of a zettelstore.
 type Zettel struct {
@@ -19,7 +19,7 @@ type Zettel struct {
 	Content Content    // The content of the zettel itself.
 }
 
-// Length returns the number of bytes to store the zettel (in a domain view,
+// Length returns the number of bytes to store the zettel (in a zettel view,
 // not in a technical view).
 func (z Zettel) Length() int { return z.Meta.Length() + z.Content.Length() }
 

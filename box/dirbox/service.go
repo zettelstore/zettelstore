@@ -19,12 +19,12 @@ import (
 
 	"zettelstore.de/z/box/filebox"
 	"zettelstore.de/z/box/notify"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func fileService(i uint32, log *logger.Logger, dirPath string, cmds <-chan fileCmd) {
@@ -168,7 +168,7 @@ func (cmd *fileGetMetaContent) run(log *logger.Logger, dirPath string) {
 //
 // Writes a new or exsting zettel.
 
-func (dp *dirBox) srvSetZettel(ctx context.Context, entry *notify.DirEntry, zettel domain.Zettel) error {
+func (dp *dirBox) srvSetZettel(ctx context.Context, entry *notify.DirEntry, zettel zettel.Zettel) error {
 	rc := make(chan resSetZettel, 1)
 	dp.getFileChan(zettel.Meta.Zid) <- &fileSetZettel{entry, zettel, rc}
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
@@ -183,7 +183,7 @@ func (dp *dirBox) srvSetZettel(ctx context.Context, entry *notify.DirEntry, zett
 
 type fileSetZettel struct {
 	entry  *notify.DirEntry
-	zettel domain.Zettel
+	zettel zettel.Zettel
 	rc     chan<- resSetZettel
 }
 type resSetZettel = error

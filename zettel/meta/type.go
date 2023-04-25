@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 // DescriptionType is a description of a specific key type.

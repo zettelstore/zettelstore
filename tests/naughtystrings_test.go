@@ -18,10 +18,10 @@ import (
 	"testing"
 
 	_ "zettelstore.de/z/cmd"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Test all parser / encoder with a list of "naughty strings", i.e. unusual strings

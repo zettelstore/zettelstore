@@ -16,9 +16,9 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Use case: return user identified by meta key ident.

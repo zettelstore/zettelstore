@@ -14,9 +14,9 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Parse the query specification and return a Query object.

@@ -17,8 +17,6 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/encoding/xml"
@@ -27,6 +25,8 @@ import (
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.

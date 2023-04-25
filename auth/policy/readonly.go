@@ -10,7 +10,7 @@
 
 package policy
 
-import "zettelstore.de/z/domain/meta"
+import "zettelstore.de/z/zettel/meta"
 
 type roPolicy struct{}
 

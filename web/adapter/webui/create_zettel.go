@@ -17,15 +17,15 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/zmkenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
@@ -81,7 +81,7 @@ func dataListFromArrangement(ar meta.Arrangement, err error) []string {
 func (wui *WebUI) renderZettelForm(
 	ctx context.Context,
 	w http.ResponseWriter,
-	zettel domain.Zettel,
+	zettel zettel.Zettel,
 	title string,
 	formActionURL string,
 	roleData []string,
@@ -167,7 +167,7 @@ func (wui *WebUI) MakeGetZettelFromListHandler(
 		if qval := q.String(); qval != "" {
 			m.Set(api.KeyQuery, qval)
 		}
-		zettel := domain.Zettel{Meta: m, Content: domain.NewContent(zmkContent.Bytes())}
+		zettel := zettel.Zettel{Meta: m, Content: zettel.NewContent(zmkContent.Bytes())}
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
 		wui.renderZettelForm(ctx, w, zettel, "Zettel from list", wui.createNewURL, roleData, syntaxData)
 	}

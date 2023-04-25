@@ -15,8 +15,8 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 const testID = id.Zid(98765432101234)

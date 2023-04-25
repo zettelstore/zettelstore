@@ -16,9 +16,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeGetLoginOutHandler creates a new HTTP handler to display the HTML login view,

@@ -10,7 +10,7 @@
 
 package memstore
 
-import "zettelstore.de/z/domain/id"
+import "zettelstore.de/z/zettel/id"
 
 func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 	npos, opos := 0, 0

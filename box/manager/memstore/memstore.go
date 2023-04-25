@@ -22,8 +22,8 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box/manager/store"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type metaRefs struct {

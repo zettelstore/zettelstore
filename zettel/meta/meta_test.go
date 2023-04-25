@@ -8,7 +8,6 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta_test provides tests for the domain specific type 'meta'.
 package meta
 
 import (
@@ -16,7 +15,7 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 const testID = id.Zid(98765432101234)

@@ -16,10 +16,10 @@ import (
 	"strings"
 
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Conatains all box.Box related functions
@@ -47,7 +47,7 @@ func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 }
 
 // CreateZettel creates a new zettel.
-func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	mgr.mgrLog.Debug().Msg("CreateZettel")
 	if mgr.State() != box.StartStateStarted {
 		return id.Invalid, box.ErrStopped
@@ -58,10 +58,10 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.
 }
 
 // GetZettel retrieves a specific zettel.
-func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	mgr.mgrLog.Debug().Zid(zid).Msg("GetZettel")
 	if mgr.State() != box.StartStateStarted {
-		return domain.Zettel{}, box.ErrStopped
+		return zettel.Zettel{}, box.ErrStopped
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
@@ -73,18 +73,18 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, e
 			return z, err
 		}
 	}
-	return domain.Zettel{}, box.ErrNotFound
+	return zettel.Zettel{}, box.ErrNotFound
 }
 
 // GetAllZettel retrieves a specific zettel from all managed boxes.
-func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error) {
+func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error) {
 	mgr.mgrLog.Debug().Zid(zid).Msg("GetAllZettel")
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	var result []domain.Zettel
+	var result []zettel.Zettel
 	for i, p := range mgr.boxes {
 		if z, err := p.GetZettel(ctx, zid); err == nil {
 			mgr.Enrich(ctx, z.Meta, i+1)
@@ -214,14 +214,14 @@ func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.M
 }
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.
-func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	return mgr.State() == box.StartStateStarted && mgr.boxes[0].CanUpdateZettel(ctx, zettel)
 }
 
 // UpdateZettel updates an existing zettel.
-func (mgr *Manager) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error {
 	mgr.mgrLog.Debug().Zid(zettel.Meta.Zid).Msg("UpdateZettel")
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped

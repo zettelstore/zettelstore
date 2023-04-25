@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // BaseBox is implemented by all Zettel boxes.
@@ -36,19 +36,19 @@ type BaseBox interface {
 
 	// CreateZettel creates a new zettel.
 	// Returns the new zettel id (and an error indication).
-	CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error)
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
 
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
 	// GetMeta retrieves just the meta data of a specific zettel.
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 
 	// CanUpdateZettel returns true, if box could possibly update the given zettel.
-	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool
+	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
 
 	// UpdateZettel updates an existing zettel.
-	UpdateZettel(ctx context.Context, zettel domain.Zettel) error
+	UpdateZettel(ctx context.Context, zettel zettel.Zettel) error
 
 	// AllowRenameZettel returns true, if box will not disallow renaming the zettel.
 	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
@@ -137,7 +137,7 @@ type Box interface {
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 
 	// GetAllZettel retrieves a specific zettel from all managed boxes.
-	GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error)
+	GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error)
 
 	// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
 	GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error)

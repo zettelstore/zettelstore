@@ -18,7 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Level defines the possible log levels

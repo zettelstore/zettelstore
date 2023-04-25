@@ -18,13 +18,13 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding"
 	"zettelstore.de/z/encoding/xml"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 const ContentType = "application/rss+xml"

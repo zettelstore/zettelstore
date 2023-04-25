@@ -25,9 +25,6 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
@@ -35,6 +32,9 @@ import (
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // WebUI holds all data for delivering the web ui.
@@ -76,9 +76,9 @@ type WebUI struct {
 
 type webuiBox interface {
 	CanCreateZettel(ctx context.Context) bool
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool
+	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
 	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
 	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
 }
@@ -202,9 +202,9 @@ func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
 }
 
 func (wui *WebUI) canWrite(
-	ctx context.Context, user, meta *meta.Meta, content domain.Content) bool {
+	ctx context.Context, user, meta *meta.Meta, content zettel.Content) bool {
 	return wui.policy.CanWrite(user, meta, meta) &&
-		wui.box.CanUpdateZettel(ctx, domain.Zettel{Meta: meta, Content: content})
+		wui.box.CanUpdateZettel(ctx, zettel.Zettel{Meta: meta, Content: content})
 }
 
 func (wui *WebUI) canRename(ctx context.Context, user, m *meta.Meta) bool {

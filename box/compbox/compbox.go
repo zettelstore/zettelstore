@@ -18,12 +18,12 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
@@ -72,28 +72,28 @@ func (*compBox) Location() string { return "" }
 
 func (*compBox) CanCreateZettel(context.Context) bool { return false }
 
-func (cb *compBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (cb *compBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
 	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
 			if genContent := gen.content; genContent != nil {
 				cb.log.Trace().Msg("GetMeta/Content")
-				return domain.Zettel{
+				return zettel.Zettel{
 					Meta:    m,
-					Content: domain.NewContent(genContent(m)),
+					Content: zettel.NewContent(genContent(m)),
 				}, nil
 			}
 			cb.log.Trace().Msg("GetMeta/NoContent")
-			return domain.Zettel{Meta: m}, nil
+			return zettel.Zettel{Meta: m}, nil
 		}
 	}
 	cb.log.Trace().Err(box.ErrNotFound).Msg("GetZettel/Err")
-	return domain.Zettel{}, box.ErrNotFound
+	return zettel.Zettel{}, box.ErrNotFound
 }
 
 func (cb *compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
@@ -142,9 +142,9 @@ func (cb *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrain
 	return nil
 }
 
-func (*compBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
+func (*compBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
 
-func (cb *compBox) UpdateZettel(context.Context, domain.Zettel) error {
+func (cb *compBox) UpdateZettel(context.Context, zettel.Zettel) error {
 	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
 	return box.ErrReadOnly
 }

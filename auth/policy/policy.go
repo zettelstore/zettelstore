@@ -14,7 +14,7 @@ package policy
 import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // newPolicy creates a policy based on given constraints.

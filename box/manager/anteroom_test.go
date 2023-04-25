@@ -13,7 +13,7 @@ package manager
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 func TestSimple(t *testing.T) {

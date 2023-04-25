@@ -18,12 +18,12 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
@@ -48,7 +48,7 @@ type memBox struct {
 	maxZettel int
 	maxBytes  int
 	mx        sync.RWMutex // Protects the following fields
-	zettel    map[id.Zid]domain.Zettel
+	zettel    map[id.Zid]zettel.Zettel
 	curBytes  int
 }
 
@@ -73,7 +73,7 @@ func (mb *memBox) State() box.StartState {
 
 func (mb *memBox) Start(context.Context) error {
 	mb.mx.Lock()
-	mb.zettel = make(map[id.Zid]domain.Zettel)
+	mb.zettel = make(map[id.Zid]zettel.Zettel)
 	mb.curBytes = 0
 	mb.mx.Unlock()
 	mb.log.Trace().Int("max-zettel", int64(mb.maxZettel)).Int("max-bytes", int64(mb.maxBytes)).Msg("Start Box")
@@ -92,7 +92,7 @@ func (mb *memBox) CanCreateZettel(context.Context) bool {
 	return len(mb.zettel) < mb.maxZettel
 }
 
-func (mb *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	mb.mx.Lock()
 	newBytes := mb.curBytes + zettel.Length()
 	if mb.maxZettel < len(mb.zettel) || mb.maxBytes < newBytes {
@@ -118,16 +118,16 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel domain.Zettel) (id.Zid,
 	return zid, nil
 }
 
-func (mb *memBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (mb *memBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	mb.mx.RLock()
-	zettel, ok := mb.zettel[zid]
+	z, ok := mb.zettel[zid]
 	mb.mx.RUnlock()
 	if !ok {
-		return domain.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrNotFound
 	}
-	zettel.Meta = zettel.Meta.Clone()
+	z.Meta = z.Meta.Clone()
 	mb.log.Trace().Msg("GetZettel")
-	return zettel, nil
+	return z, nil
 }
 
 func (mb *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
@@ -167,7 +167,7 @@ func (mb *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 	return nil
 }
 
-func (mb *memBox) CanUpdateZettel(_ context.Context, zettel domain.Zettel) bool {
+func (mb *memBox) CanUpdateZettel(_ context.Context, zettel zettel.Zettel) bool {
 	mb.mx.RLock()
 	defer mb.mx.RUnlock()
 	zid := zettel.Meta.Zid
@@ -182,7 +182,7 @@ func (mb *memBox) CanUpdateZettel(_ context.Context, zettel domain.Zettel) bool 
 	return newBytes < mb.maxBytes
 }
 
-func (mb *memBox) UpdateZettel(_ context.Context, zettel domain.Zettel) error {
+func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	m := zettel.Meta.Clone()
 	if !m.Zid.IsValid() {
 		return &box.ErrInvalidID{Zid: m.Zid}

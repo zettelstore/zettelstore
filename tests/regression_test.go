@@ -26,10 +26,10 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/meta"
 
 	_ "zettelstore.de/z/box/dirbox"
 )

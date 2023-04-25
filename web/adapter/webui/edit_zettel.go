@@ -15,9 +15,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the

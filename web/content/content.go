@@ -17,8 +17,8 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/meta"
 )
 
 const (
@@ -112,7 +112,7 @@ func SyntaxFromMIME(m string, data []byte) string {
 		if ext, err := mime.ExtensionsByType(mt); err != nil && len(ext) > 0 {
 			return ext[0][1:]
 		}
-		if domain.IsBinary(data) {
+		if zettel.IsBinary(data) {
 			return "binary"
 		}
 	}

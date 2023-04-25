@@ -14,10 +14,10 @@ import (
 	"path/filepath"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 const (
@@ -48,7 +48,7 @@ func (e *DirEntry) HasMetaInContent() bool {
 }
 
 // SetupFromMetaContent fills entry data based on metadata and zettel content.
-func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content domain.Content, getZettelFileSyntax func() []string) {
+func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content zettel.Content, getZettelFileSyntax func() []string) {
 	if e.Zid != m.Zid {
 		panic("Zid differ")
 	}
@@ -80,7 +80,7 @@ func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content domain.Content, ge
 	}
 }
 
-func contentExtWithMeta(syntax string, content domain.Content) string {
+func contentExtWithMeta(syntax string, content zettel.Content) string {
 	p := parser.Get(syntax)
 	if content.IsBinary() {
 		if p.IsImageFormat {

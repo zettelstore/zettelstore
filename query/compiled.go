@@ -14,8 +14,8 @@ import (
 	"math/rand"
 	"sort"
 
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Compiled is a compiled query, to be used in a Box

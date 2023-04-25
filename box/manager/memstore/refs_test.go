@@ -13,7 +13,7 @@ package memstore
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 func assertRefs(t *testing.T, i int, got, exp id.Slice) {

@@ -15,9 +15,9 @@ import (
 	"sync"
 
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/zettel/id"
 )
 
 type authService struct {

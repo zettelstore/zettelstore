@@ -16,11 +16,11 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // BoxWithPolicy wraps the given box inside a policy box.
@@ -55,7 +55,7 @@ func (pp *polBox) CanCreateZettel(ctx context.Context) bool {
 	return pp.box.CanCreateZettel(ctx)
 }
 
-func (pp *polBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (pp *polBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	user := server.GetUser(ctx)
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.box.CreateZettel(ctx, zettel)
@@ -63,19 +63,19 @@ func (pp *polBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zi
 	return id.Invalid, box.NewErrNotAllowed("Create", user, id.Invalid)
 }
 
-func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
-	zettel, err := pp.box.GetZettel(ctx, zid)
+func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
+	z, err := pp.box.GetZettel(ctx, zid)
 	if err != nil {
-		return domain.Zettel{}, err
+		return zettel.Zettel{}, err
 	}
 	user := server.GetUser(ctx)
-	if pp.policy.CanRead(user, zettel.Meta) {
-		return zettel, nil
+	if pp.policy.CanRead(user, z.Meta) {
+		return z, nil
 	}
-	return domain.Zettel{}, box.NewErrNotAllowed("GetZettel", user, zid)
+	return zettel.Zettel{}, box.NewErrNotAllowed("GetZettel", user, zid)
 }
 
-func (pp *polBox) GetAllZettel(ctx context.Context, zid id.Zid) ([]domain.Zettel, error) {
+func (pp *polBox) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error) {
 	return pp.box.GetAllZettel(ctx, zid)
 }
 
@@ -106,11 +106,11 @@ func (pp *polBox) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta,
 	return pp.box.SelectMeta(ctx, q)
 }
 
-func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel domain.Zettel) bool {
+func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool {
 	return pp.box.CanUpdateZettel(ctx, zettel)
 }
 
-func (pp *polBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error {
 	zid := zettel.Meta.Zid
 	user := server.GetUser(ctx)
 	if !zid.IsValid() {

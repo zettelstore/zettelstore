@@ -13,9 +13,9 @@ package parser_test
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/meta"
 
 	_ "zettelstore.de/z/parser/blob"       // Allow to use BLOB parser.
 	_ "zettelstore.de/z/parser/draw"       // Allow to use draw parser.

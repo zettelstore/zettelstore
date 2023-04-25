@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package meta provides the domain specific type 'meta'.
+// Package meta provides the zettel specific type 'meta'.
 package meta
 
 import (
@@ -20,9 +20,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
 )
 
 type keyUsage int

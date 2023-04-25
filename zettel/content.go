@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package domain
+package zettel
 
 import (
 	"bytes"

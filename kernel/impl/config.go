@@ -19,9 +19,9 @@ import (
 	"sync"
 
 	"zettelstore.de/c/maps"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/zettel/id"
 )
 
 type parseFunc func(string) (any, error)

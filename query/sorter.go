@@ -14,7 +14,7 @@ import (
 	"strconv"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type sortFunc func(i, j int) bool

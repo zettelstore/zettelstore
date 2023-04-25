@@ -19,12 +19,12 @@ import (
 	"sync"
 
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
 )
 
 type entrySet map[id.Zid]*DirEntry

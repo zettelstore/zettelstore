@@ -18,12 +18,12 @@ import (
 	"os"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // ---------- Subcommand: file -----------------------------------------------
@@ -36,9 +36,9 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 	}
 	z := parser.ParseZettel(
 		context.Background(),
-		domain.Zettel{
+		zettel.Zettel{
 			Meta:    m,
-			Content: domain.NewContent(inp.Src[inp.Pos:]),
+			Content: zettel.NewContent(inp.Src[inp.Pos:]),
 		},
 		m.GetDefault(api.KeySyntax, meta.SyntaxZmk),
 		nil,

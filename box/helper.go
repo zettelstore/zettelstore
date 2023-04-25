@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"time"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 // GetNewZid calculates a new and unused zettel identifier, based on the current date and time.

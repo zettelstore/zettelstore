@@ -15,10 +15,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type matchValueFunc func(value string) bool

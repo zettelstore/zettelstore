@@ -24,11 +24,11 @@ import (
 	"zettelstore.de/z/box/manager/memstore"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // ConnectData contains all administration related values.

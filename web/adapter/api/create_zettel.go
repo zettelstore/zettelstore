@@ -15,11 +15,11 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
@@ -28,7 +28,7 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		enc, encStr := getEncoding(r, q)
-		var zettel domain.Zettel
+		var zettel zettel.Zettel
 		var err error
 		switch enc {
 		case api.EncoderPlain:

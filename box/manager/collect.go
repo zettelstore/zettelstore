@@ -15,8 +15,8 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box/manager/store"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
 )
 
 type collectData struct {

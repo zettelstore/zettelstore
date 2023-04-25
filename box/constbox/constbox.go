@@ -19,12 +19,12 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
@@ -45,7 +45,7 @@ type constHeader map[string]string
 
 type constZettel struct {
 	header  constHeader
-	content domain.Content
+	content zettel.Content
 }
 
 type constBox struct {
@@ -59,18 +59,18 @@ func (*constBox) Location() string { return "const:" }
 
 func (*constBox) CanCreateZettel(context.Context) bool { return false }
 
-func (cb *constBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (cb *constBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
 	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
 	return id.Invalid, box.ErrReadOnly
 }
 
-func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if z, ok := cb.zettel[zid]; ok {
 		cb.log.Trace().Msg("GetZettel")
-		return domain.Zettel{Meta: meta.NewWithData(zid, z.header), Content: z.content}, nil
+		return zettel.Zettel{Meta: meta.NewWithData(zid, z.header), Content: z.content}, nil
 	}
 	cb.log.Trace().Err(box.ErrNotFound).Msg("GetZettel")
-	return domain.Zettel{}, box.ErrNotFound
+	return zettel.Zettel{}, box.ErrNotFound
 }
 
 func (cb *constBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
@@ -104,9 +104,9 @@ func (cb *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrai
 	return nil
 }
 
-func (*constBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
+func (*constBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
 
-func (cb *constBox) UpdateZettel(context.Context, domain.Zettel) error {
+func (cb *constBox) UpdateZettel(context.Context, zettel.Zettel) error {
 	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
 	return box.ErrReadOnly
 }
@@ -151,7 +151,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityOwner,
 		},
-		domain.NewContent(nil)},
+		zettel.NewContent(nil)},
 	id.MustParse(api.ZidLicense): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore License",
@@ -163,7 +163,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
-		domain.NewContent(contentLicense)},
+		zettel.NewContent(contentLicense)},
 	id.MustParse(api.ZidAuthors): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Contributors",
@@ -174,7 +174,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
-		domain.NewContent(contentContributors)},
+		zettel.NewContent(contentContributors)},
 	id.MustParse(api.ZidDependencies): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Dependencies",
@@ -186,7 +186,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210504135842",
 			api.KeyModified:   "20221013105100",
 		},
-		domain.NewContent(contentDependencies)},
+		zettel.NewContent(contentDependencies)},
 	id.BaseTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base HTML Template",
@@ -195,7 +195,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210504135842",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentBaseMustache)},
+		zettel.NewContent(contentBaseMustache)},
 	id.LoginTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Login Form HTML Template",
@@ -204,7 +204,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentLoginMustache)},
+		zettel.NewContent(contentLoginMustache)},
 	id.ZettelTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
@@ -213,7 +213,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentZettelMustache)},
+		zettel.NewContent(contentZettelMustache)},
 	id.InfoTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Info HTML Template",
@@ -222,7 +222,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentInfoMustache)},
+		zettel.NewContent(contentInfoMustache)},
 	id.FormTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Form HTML Template",
@@ -231,7 +231,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentFormMustache)},
+		zettel.NewContent(contentFormMustache)},
 	id.RenameTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
@@ -240,7 +240,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentRenameMustache)},
+		zettel.NewContent(contentRenameMustache)},
 	id.DeleteTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
@@ -249,7 +249,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentDeleteMustache)},
+		zettel.NewContent(contentDeleteMustache)},
 	id.ListTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
@@ -258,7 +258,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentListZettelMustache)},
+		zettel.NewContent(contentListZettelMustache)},
 	id.ErrorTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
@@ -267,7 +267,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210305133215",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(contentErrorMustache)},
+		zettel.NewContent(contentErrorMustache)},
 	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
@@ -276,7 +276,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
-		domain.NewContent(contentBaseCSS)},
+		zettel.NewContent(contentBaseCSS)},
 	id.MustParse(api.ZidUserCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore User CSS",
@@ -285,7 +285,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210622110143",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
-		domain.NewContent([]byte("/* User-defined CSS */"))},
+		zettel.NewContent([]byte("/* User-defined CSS */"))},
 	id.RoleCSSMapZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Role to CSS Map",
@@ -294,7 +294,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20220321183214",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		domain.NewContent(nil)},
+		zettel.NewContent(nil)},
 	id.EmojiZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Generic Emoji",
@@ -304,7 +304,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210504175807",
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
-		domain.NewContent(contentEmoji)},
+		zettel.NewContent(contentEmoji)},
 	id.TOCNewTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "New Menu",
@@ -314,7 +314,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20210217161829",
 			api.KeyVisibility: api.ValueVisibilityCreator,
 		},
-		domain.NewContent(contentNewTOCZettel)},
+		zettel.NewContent(contentNewTOCZettel)},
 	id.MustParse(api.ZidTemplateNewZettel): {
 		constHeader{
 			api.KeyTitle:      "New Zettel",
@@ -323,7 +323,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyCreated:    "20201028185209",
 			api.KeyVisibility: api.ValueVisibilityCreator,
 		},
-		domain.NewContent(nil)},
+		zettel.NewContent(nil)},
 	id.MustParse(api.ZidTemplateNewUser): {
 		constHeader{
 			api.KeyTitle:                       "New User",
@@ -335,7 +335,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			meta.NewPrefix + api.KeyUserRole:   api.ValueUserRoleReader,
 			api.KeyVisibility:                  api.ValueVisibilityOwner,
 		},
-		domain.NewContent(nil)},
+		zettel.NewContent(nil)},
 	id.DefaultHomeZid: {
 		constHeader{
 			api.KeyTitle:   "Home",
@@ -344,7 +344,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyLang:    api.ValueLangEN,
 			api.KeyCreated: "20210210190757",
 		},
-		domain.NewContent(contentHomeZettel)},
+		zettel.NewContent(contentHomeZettel)},
 }
 
 //go:embed license.txt

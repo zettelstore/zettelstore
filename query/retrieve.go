@@ -16,8 +16,8 @@ import (
 	"fmt"
 	"strings"
 
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
 )
 
 type searchOp struct {

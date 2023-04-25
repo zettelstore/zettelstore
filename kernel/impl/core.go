@@ -19,10 +19,10 @@ import (
 	"time"
 
 	"zettelstore.de/c/maps"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
 )
 
 type coreService struct {

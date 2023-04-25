@@ -20,14 +20,14 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
@@ -153,7 +153,7 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 	a.log.IfErr(err).Zid(zid).Msg("Write data")
 }
 
-func zettel2sz(z domain.Zettel, rights api.ZettelRights) sxpf.Object {
+func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sxpf.Object {
 	zContent, encoding := z.Content.Encode()
 	sf := sxpf.MakeMappedFactory()
 	return sxpf.MakeList(

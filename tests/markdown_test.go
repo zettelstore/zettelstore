@@ -21,7 +21,6 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	_ "zettelstore.de/z/encoder/htmlenc"
 	_ "zettelstore.de/z/encoder/mdenc"
@@ -33,6 +32,7 @@ import (
 	"zettelstore.de/z/parser"
 	_ "zettelstore.de/z/parser/markdown"
 	_ "zettelstore.de/z/parser/zettelmark"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type markdownTestCase struct {

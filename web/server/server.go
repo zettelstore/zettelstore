@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // UserRetriever allows to retrieve user data based on a given zettel identifier.

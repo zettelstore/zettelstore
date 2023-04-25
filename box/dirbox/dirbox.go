@@ -22,12 +22,12 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/box/notify"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
@@ -223,7 +223,7 @@ func (dp *dirBox) CanCreateZettel(_ context.Context) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	if dp.readonly {
 		return id.Invalid, box.ErrReadOnly
 	}
@@ -246,16 +246,16 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zi
 	return meta.Zid, err
 }
 
-func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		return domain.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrNotFound
 	}
 	m, c, err := dp.srvGetMetaContent(ctx, entry, zid)
 	if err != nil {
-		return domain.Zettel{}, err
+		return zettel.Zettel{}, err
 	}
-	zettel := domain.Zettel{Meta: m, Content: domain.NewContent(c)}
+	zettel := zettel.Zettel{Meta: m, Content: zettel.NewContent(c)}
 	dp.log.Trace().Zid(zid).Msg("GetZettel")
 	return zettel, nil
 }
@@ -303,11 +303,11 @@ func (dp *dirBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 	return nil
 }
 
-func (dp *dirBox) CanUpdateZettel(context.Context, domain.Zettel) bool {
+func (dp *dirBox) CanUpdateZettel(context.Context, zettel.Zettel) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error {
+func (dp *dirBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}
@@ -332,7 +332,7 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel domain.Zettel) error 
 	return err
 }
 
-func (dp *dirBox) updateEntryFromMetaContent(entry *notify.DirEntry, m *meta.Meta, content domain.Content) {
+func (dp *dirBox) updateEntryFromMetaContent(entry *notify.DirEntry, m *meta.Meta, content zettel.Content) {
 	entry.SetupFromMetaContent(m, content, dp.cdata.Config.GetZettelFileSyntax)
 }
 
@@ -367,7 +367,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 		return err
 	}
 	oldMeta.Zid = newZid
-	newZettel := domain.Zettel{Meta: oldMeta, Content: domain.NewContent(oldContent)}
+	newZettel := zettel.Zettel{Meta: oldMeta, Content: zettel.NewContent(oldContent)}
 	if err = dp.srvSetZettel(ctx, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
 		dp.dirSrv.RenameDirEntry(&newEntry, curZid)

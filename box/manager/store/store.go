@@ -15,9 +15,9 @@ import (
 	"context"
 	"io"
 
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Stats records statistics about the store.

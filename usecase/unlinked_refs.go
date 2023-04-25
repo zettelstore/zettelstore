@@ -18,19 +18,19 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // UnlinkedReferencesPort is the interface used by this use case.
 type UnlinkedReferencesPort interface {
 	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 

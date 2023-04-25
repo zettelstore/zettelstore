@@ -13,7 +13,7 @@ package id_test
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 func TestSetContains(t *testing.T) {

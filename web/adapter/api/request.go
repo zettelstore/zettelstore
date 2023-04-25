@@ -16,10 +16,10 @@ import (
 	"net/url"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // getEncoding returns the data encoding selected by the caller.
@@ -100,16 +100,16 @@ func (p partType) DefString(defPart partType) string {
 	return p.String()
 }
 
-func buildZettelFromPlainData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
+func buildZettelFromPlainData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		return domain.Zettel{}, err
+		return zettel.Zettel{}, err
 	}
 	inp := input.NewInput(b)
 	m := meta.NewFromInput(zid, inp)
-	return domain.Zettel{
+	return zettel.Zettel{
 		Meta:    m,
-		Content: domain.NewContent(inp.Src[inp.Pos:]),
+		Content: zettel.NewContent(inp.Src[inp.Pos:]),
 	}, nil
 
 }

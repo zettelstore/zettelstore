@@ -15,12 +15,12 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Evaluate is the data for this use case.
@@ -79,7 +79,7 @@ func (uc *Evaluate) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 }
 
 // GetZettel retrieves the full zettel of a given zettel identifier.
-func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error) {
+func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	return uc.getZettel.Run(ctx, zid)
 }
 

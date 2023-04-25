@@ -15,8 +15,8 @@ import (
 	"testing"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func parseMetaStr(src string) *meta.Meta {

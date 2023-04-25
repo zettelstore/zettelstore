@@ -22,10 +22,10 @@ import (
 	"zettelstore.de/c/shtml"
 	"zettelstore.de/c/sz"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Builder allows to build new URLs for the web service.

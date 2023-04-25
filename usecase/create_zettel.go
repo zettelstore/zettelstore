@@ -16,16 +16,16 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // CreateZettelPort is the interface used by this use case.
 type CreateZettelPort interface {
 	// CreateZettel creates a new zettel.
-	CreateZettel(ctx context.Context, zettel domain.Zettel) (id.Zid, error)
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
 }
 
 // CreateZettel is the data for this use case.
@@ -45,7 +45,7 @@ func NewCreateZettel(log *logger.Logger, rtConfig config.Config, port CreateZett
 }
 
 // PrepareCopy the zettel for further modification.
-func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareCopy(origZettel zettel.Zettel) zettel.Zettel {
 	m := origZettel.Meta.Clone()
 	if title, found := m.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Copy", "Copy of "))
@@ -53,22 +53,22 @@ func (*CreateZettel) PrepareCopy(origZettel domain.Zettel) domain.Zettel {
 	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
-	return domain.Zettel{Meta: m, Content: content}
+	return zettel.Zettel{Meta: m, Content: content}
 }
 
 // PrepareVersion the zettel for further modification.
-func (*CreateZettel) PrepareVersion(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareVersion(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
 	m := origMeta.Clone()
 	m.Set(api.KeyPredecessor, origMeta.Zid.String())
 	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
-	return domain.Zettel{Meta: m, Content: content}
+	return zettel.Zettel{Meta: m, Content: content}
 }
 
 // PrepareFolge the zettel for further modification.
-func (*CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
 	m := meta.New(id.Invalid)
 	if title, found := origMeta.Get(api.KeyTitle); found {
@@ -78,11 +78,11 @@ func (*CreateZettel) PrepareFolge(origZettel domain.Zettel) domain.Zettel {
 	m.SetNonEmpty(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
 	m.SetNonEmpty(api.KeySyntax, origMeta.GetDefault(api.KeySyntax, ""))
 	m.Set(api.KeyPrecursor, origMeta.Zid.String())
-	return domain.Zettel{Meta: m, Content: domain.NewContent(nil)}
+	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
 // PrepareNew the zettel for further modification.
-func (*CreateZettel) PrepareNew(origZettel domain.Zettel) domain.Zettel {
+func (*CreateZettel) PrepareNew(origZettel zettel.Zettel) zettel.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
@@ -98,7 +98,7 @@ func (*CreateZettel) PrepareNew(origZettel domain.Zettel) domain.Zettel {
 	}
 	content := origZettel.Content
 	content.TrimSpace()
-	return domain.Zettel{Meta: m, Content: content}
+	return zettel.Zettel{Meta: m, Content: content}
 }
 
 func prependTitle(title, s0, s1 string) string {
@@ -120,7 +120,7 @@ func setReadonly(m *meta.Meta) {
 }
 
 // Run executes the use case.
-func (uc *CreateZettel) Run(ctx context.Context, zettel domain.Zettel) (id.Zid, error) {
+func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	m := zettel.Meta
 	if m.Zid.IsValid() {
 		return m.Zid, nil // TODO: new error: already exists

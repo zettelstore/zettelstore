@@ -14,10 +14,10 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeUpdateZettelHandler creates a new HTTP handler to update a zettel.
@@ -30,7 +30,7 @@ func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.H
 		}
 
 		q := r.URL.Query()
-		var zettel domain.Zettel
+		var zettel zettel.Zettel
 		switch enc, _ := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			zettel, err = buildZettelFromPlainData(r, zid)

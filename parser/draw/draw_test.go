@@ -14,9 +14,9 @@ import (
 	"testing"
 
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func FuzzParseBlocks(f *testing.F) {

@@ -29,12 +29,12 @@ import (
 	"zettelstore.de/z/box/compbox"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 const strRunSimple = "run-simple"

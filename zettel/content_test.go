@@ -8,12 +8,12 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-package domain_test
+package zettel_test
 
 import (
 	"testing"
 
-	"zettelstore.de/z/domain"
+	"zettelstore.de/z/zettel"
 )
 
 func TestContentIsBinary(t *testing.T) {
@@ -28,7 +28,7 @@ func TestContentIsBinary(t *testing.T) {
 		{string([]byte{0}), true},
 	}
 	for i, tc := range td {
-		content := domain.NewContent([]byte(tc.s))
+		content := zettel.NewContent([]byte(tc.s))
 		got := content.IsBinary()
 		if got != tc.exp {
 			t.Errorf("TC=%d: expected %v, got %v", i, tc.exp, got)
@@ -56,7 +56,7 @@ func TestTrimSpace(t *testing.T) {
 		{" \n \n abc \n \n ", " abc"},
 	}
 	for _, tc := range testcases {
-		c := domain.NewContent([]byte(tc.in))
+		c := zettel.NewContent([]byte(tc.in))
 		c.TrimSpace()
 		got := c.AsString()
 		if got != tc.exp {

@@ -18,12 +18,12 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/store"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // SearchEqual returns all zettel that contains the given exact word.
@@ -157,7 +157,7 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 	return true
 }
 
-func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel domain.Zettel) {
+func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel zettel.Zettel) {
 	var cData collectData
 	cData.initialize()
 	collectZettelIndexData(parser.ParseZettel(ctx, zettel, "", mgr.rtConfig), &cData)

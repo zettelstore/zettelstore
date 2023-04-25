@@ -14,9 +14,9 @@ import (
 	"bytes"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func genLogM(zid id.Zid) *meta.Meta {

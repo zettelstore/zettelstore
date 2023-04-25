@@ -15,11 +15,11 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".

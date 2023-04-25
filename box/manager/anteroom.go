@@ -13,7 +13,7 @@ package manager
 import (
 	"sync"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 type arAction int

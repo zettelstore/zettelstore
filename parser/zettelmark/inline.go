@@ -17,8 +17,8 @@ import (
 
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // parseInlineSlice parses a sequence of Inlines until EOS.

@@ -22,11 +22,11 @@ import (
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // QueryAction transforms a list of metadata according to query actions into a AST nested list.

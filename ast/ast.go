@@ -14,16 +14,16 @@ package ast
 import (
 	"net/url"
 
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // ZettelNode is the root node of the abstract syntax tree.
 // It is *not* part of the visitor pattern.
 type ZettelNode struct {
 	Meta    *meta.Meta     // Original metadata
-	Content domain.Content // Original content
+	Content zettel.Content // Original content
 	Zid     id.Zid         // Zettel identification.
 	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
 	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.

@@ -15,8 +15,8 @@ import (
 
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/id"
 )
 
 // ParseZettel is the data for this use case.

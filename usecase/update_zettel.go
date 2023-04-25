@@ -15,19 +15,19 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/logger"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // UpdateZettelPort is the interface used by this use case.
 type UpdateZettelPort interface {
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.Zid) (domain.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
 	// UpdateZettel updates an existing zettel.
-	UpdateZettel(ctx context.Context, zettel domain.Zettel) error
+	UpdateZettel(ctx context.Context, zettel zettel.Zettel) error
 }
 
 // UpdateZettel is the data for this use case.
@@ -42,7 +42,7 @@ func NewUpdateZettel(log *logger.Logger, port UpdateZettelPort) UpdateZettel {
 }
 
 // Run executes the use case.
-func (uc *UpdateZettel) Run(ctx context.Context, zettel domain.Zettel, hasContent bool) error {
+func (uc *UpdateZettel) Run(ctx context.Context, zettel zettel.Zettel, hasContent bool) error {
 	m := zettel.Meta
 	oldZettel, err := uc.port.GetZettel(box.NoEnrichContext(ctx), m.Zid)
 	if err != nil {

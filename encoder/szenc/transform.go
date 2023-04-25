@@ -19,8 +19,8 @@ import (
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/sz"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // NewTransformer returns a new transformer to create s-expressions from AST nodes.

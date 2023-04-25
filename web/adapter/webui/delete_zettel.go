@@ -16,11 +16,11 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the

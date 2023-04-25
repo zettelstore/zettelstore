@@ -15,8 +15,8 @@ import (
 	"net/url"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeRenameZettelHandler creates a new HTTP handler to update a zettel.

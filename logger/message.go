@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 // Message presents a message to log.

@@ -20,11 +20,11 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // API holds all data and methods for delivering API call results.

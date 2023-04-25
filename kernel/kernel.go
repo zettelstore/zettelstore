@@ -19,9 +19,9 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/id"
 )
 
 // Kernel is the main internal service.

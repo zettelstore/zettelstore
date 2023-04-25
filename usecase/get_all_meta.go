@@ -13,8 +13,8 @@ package usecase
 import (
 	"context"
 
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // GetAllMetaPort is the interface used by this use case.

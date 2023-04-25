@@ -13,8 +13,8 @@ package api
 import (
 	"net/http"
 
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeDeleteZettelHandler creates a new HTTP handler to delete a zettel.

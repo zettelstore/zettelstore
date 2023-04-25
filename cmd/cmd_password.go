@@ -19,7 +19,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth/cred"
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 // ---------- Subcommand: password -------------------------------------------

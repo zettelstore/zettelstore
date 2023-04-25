@@ -19,11 +19,11 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.

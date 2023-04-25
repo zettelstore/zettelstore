@@ -15,8 +15,8 @@ import (
 	"context"
 	"math/rand"
 
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Searcher is used to select zettel identifier based on search criteria.

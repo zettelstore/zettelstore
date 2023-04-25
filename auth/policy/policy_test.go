@@ -16,8 +16,8 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func TestPolicies(t *testing.T) {

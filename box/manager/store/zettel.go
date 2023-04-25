@@ -10,7 +10,7 @@
 
 package store
 
-import "zettelstore.de/z/domain/id"
+import "zettelstore.de/z/zettel/id"
 
 // ZettelIndex contains all index data of a zettel.
 type ZettelIndex struct {

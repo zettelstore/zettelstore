@@ -14,8 +14,8 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/id"
 	"zettelstore.de/z/usecase"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeGetOrderHandler creates a new API handler to return zettel references

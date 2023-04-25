@@ -18,10 +18,10 @@ import (
 	"net/http"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func encodeJSONData(w io.Writer, data interface{}) error {
@@ -54,8 +54,8 @@ func (a *API) writeMetaList(ctx context.Context, w http.ResponseWriter, m *meta.
 	return writeBuffer(w, &buf, content.JSON)
 }
 
-func buildZettelFromJSONData(r *http.Request, zid id.Zid) (domain.Zettel, error) {
-	var zettel domain.Zettel
+func buildZettelFromJSONData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
+	var zettel zettel.Zettel
 	dec := json.NewDecoder(r.Body)
 	var zettelData api.ZettelDataJSON
 	if err := dec.Decode(&zettelData); err != nil {

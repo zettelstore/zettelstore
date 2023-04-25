@@ -18,12 +18,12 @@ import (
 
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/notify"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type zipBox struct {
@@ -84,20 +84,20 @@ func (zb *zipBox) Stop(context.Context) {
 
 func (*zipBox) CanCreateZettel(context.Context) bool { return false }
 
-func (zb *zipBox) CreateZettel(context.Context, domain.Zettel) (id.Zid, error) {
+func (zb *zipBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
 	err := box.ErrReadOnly
 	zb.log.Trace().Err(err).Msg("CreateZettel")
 	return id.Invalid, err
 }
 
-func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error) {
+func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		return domain.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrNotFound
 	}
 	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
-		return domain.Zettel{}, err
+		return zettel.Zettel{}, err
 	}
 	defer reader.Close()
 
@@ -112,7 +112,7 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 		}
 		src, err = readZipFileContent(reader, entry.ContentName)
 		if err != nil {
-			return domain.Zettel{}, err
+			return zettel.Zettel{}, err
 		}
 		if entry.HasMetaInContent() {
 			inp := input.NewInput(src)
@@ -124,20 +124,20 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (domain.Zettel, error
 	} else {
 		m, err = readZipMetaFile(reader, zid, metaName)
 		if err != nil {
-			return domain.Zettel{}, err
+			return zettel.Zettel{}, err
 		}
 		inMeta = true
 		if contentName != "" {
 			src, err = readZipFileContent(reader, entry.ContentName)
 			if err != nil {
-				return domain.Zettel{}, err
+				return zettel.Zettel{}, err
 			}
 		}
 	}
 
 	CleanupMeta(m, zid, entry.ContentExt, inMeta, entry.UselessFiles)
 	zb.log.Trace().Zid(zid).Msg("GetZettel")
-	return domain.Zettel{Meta: m, Content: domain.NewContent(src)}, nil
+	return zettel.Zettel{Meta: m, Content: zettel.NewContent(src)}, nil
 }
 
 func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
@@ -186,9 +186,9 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 	return nil
 }
 
-func (*zipBox) CanUpdateZettel(context.Context, domain.Zettel) bool { return false }
+func (*zipBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
 
-func (zb *zipBox) UpdateZettel(context.Context, domain.Zettel) error {
+func (zb *zipBox) UpdateZettel(context.Context, zettel.Zettel) error {
 	err := box.ErrReadOnly
 	zb.log.Trace().Err(err).Msg("UpdateZettel")
 	return err

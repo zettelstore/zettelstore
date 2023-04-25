@@ -18,9 +18,9 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type myServer struct {

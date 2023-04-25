@@ -14,7 +14,7 @@ package id_test
 import (
 	"testing"
 
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 func TestIsValid(t *testing.T) {

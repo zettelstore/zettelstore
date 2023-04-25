@@ -8,7 +8,7 @@
 // under this license.
 //-----------------------------------------------------------------------------
 
-// Package id provides domain specific types, constants, and functions about
+// Package id provides zettel specific types, constants, and functions about
 // zettel identifier.
 package id
 

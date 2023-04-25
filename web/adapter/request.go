@@ -17,9 +17,9 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // GetCredentialsViaForm retrieves the authentication credentions from a form.

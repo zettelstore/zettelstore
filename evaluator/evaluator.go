@@ -24,20 +24,20 @@ import (
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/parser/cleaner"
 	"zettelstore.de/z/parser/draw"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
-	GetZettel(context.Context, id.Zid) (domain.Zettel, error)
+	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
@@ -167,9 +167,9 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
 	m := meta.New(id.Invalid)
 	m.Set(api.KeySyntax, getSyntax(vn.Attrs, meta.SyntaxText))
-	zettel := domain.Zettel{
+	zettel := zettel.Zettel{
 		Meta:    m,
-		Content: domain.NewContent(vn.Content),
+		Content: zettel.NewContent(vn.Content),
 	}
 	e.transcludeCount++
 	zn := e.evaluateEmbeddedZettel(zettel)
@@ -536,7 +536,7 @@ func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.In
 	return is
 }
 
-func (e *evaluator) evaluateEmbeddedZettel(zettel domain.Zettel) *ast.ZettelNode {
+func (e *evaluator) evaluateEmbeddedZettel(zettel zettel.Zettel) *ast.ZettelNode {
 	zn := parser.ParseZettel(e.ctx, zettel, zettel.Meta.GetDefault(api.KeySyntax, ""), e.rtConfig)
 	ast.Walk(e, &zn.Ast)
 	return zn

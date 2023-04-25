@@ -20,13 +20,13 @@ import (
 	"unicode"
 
 	"zettelstore.de/c/api"
-	"zettelstore.de/z/domain"
-	"zettelstore.de/z/domain/id"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 type formZettelData struct {
@@ -52,11 +52,11 @@ var (
 
 var errMissingContent = errors.New("missing zettel content")
 
-func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, error) {
+func parseZettelForm(r *http.Request, zid id.Zid) (bool, zettel.Zettel, error) {
 	maxRequestSize := kernel.Main.GetConfig(kernel.WebService, kernel.WebMaxRequestSize).(int64)
 	err := r.ParseMultipartForm(maxRequestSize)
 	if err != nil {
-		return false, domain.Zettel{}, err
+		return false, zettel.Zettel{}, err
 	}
 	_, doSave := r.Form["save"]
 
@@ -83,16 +83,16 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, domain.Zettel, error) {
 	}
 
 	if data := textContent(r); data != nil {
-		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(data)}, nil
+		return doSave, zettel.Zettel{Meta: m, Content: zettel.NewContent(data)}, nil
 	}
 	if data, m2 := uploadedContent(r, m); data != nil {
-		return doSave, domain.Zettel{Meta: m2, Content: domain.NewContent(data)}, nil
+		return doSave, zettel.Zettel{Meta: m2, Content: zettel.NewContent(data)}, nil
 	}
 
 	if allowEmptyContent(m) {
-		return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, nil
+		return doSave, zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}, nil
 	}
-	return doSave, domain.Zettel{Meta: m, Content: domain.NewContent(nil)}, errMissingContent
+	return doSave, zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}, errMissingContent
 }
 
 func trimmedFormValue(r *http.Request, key string) (string, bool) {

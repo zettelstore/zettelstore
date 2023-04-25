@@ -23,10 +23,10 @@ import (
 
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/z/ast"
-	"zettelstore.de/z/domain/meta"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {

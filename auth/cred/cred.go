@@ -15,7 +15,7 @@ import (
 	"bytes"
 
 	"golang.org/x/crypto/bcrypt"
-	"zettelstore.de/z/domain/id"
+	"zettelstore.de/z/zettel/id"
 )
 
 // HashCredential returns a hashed vesion of the given credential
