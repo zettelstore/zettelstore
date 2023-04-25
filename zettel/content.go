@@ -46,12 +46,6 @@ func (zc *Content) Equal(o *Content) bool {
 	return bytes.Equal(zc.data, o.data)
 }
 
-// Set content to new string value.
-func (zc *Content) Set(data []byte) {
-	zc.data = data
-	zc.isBinary = IsBinary(data)
-}
-
 // Write it to a Writer
 func (zc *Content) Write(w io.Writer) (int, error) {
 	return w.Write(zc.data)

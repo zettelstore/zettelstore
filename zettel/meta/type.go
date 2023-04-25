@@ -189,15 +189,6 @@ func CleanTag(tag string) string {
 	return tag
 }
 
-// GetListOrNil retrieves the string list value of a given key. If there was
-// nothing stores, a nil list is returned.
-func (m *Meta) GetListOrNil(key string) []string {
-	if value, ok := m.GetList(key); ok {
-		return value
-	}
-	return nil
-}
-
 // GetNumber retrieves the numeric value of a given key.
 func (m *Meta) GetNumber(key string, def int64) int64 {
 	if value, ok := m.Get(key); ok {

@@ -91,14 +91,6 @@ func IsProperty(name string) bool {
 	return false
 }
 
-// IsStoredComputed returns true, if key denotes a computed metadata key that is stored.
-func IsStoredComputed(name string) bool {
-	if kd, ok := registeredKeys[name]; ok {
-		return kd.IsStoredComputed()
-	}
-	return false
-}
-
 // Inverse returns the name of the inverse key.
 func Inverse(name string) string {
 	if kd, ok := registeredKeys[name]; ok {
