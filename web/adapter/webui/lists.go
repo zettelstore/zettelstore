@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
 	"zettelstore.de/z/encoding/xml"
@@ -30,7 +31,7 @@ import (
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *usecase.Evaluate) http.HandlerFunc {
+func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		q = q.SetDeterministic()
@@ -50,9 +51,9 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta, evaluate *u
 				return
 			}
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
+		bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig)
 		enc := wui.getSimpleHTMLEncoder()
-		htmlContent, err := enc.BlocksString(&bns)
+		htmlContent, err := enc.BlocksString(&ast.BlockSlice{bn})
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
