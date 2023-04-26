@@ -333,7 +333,8 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		preMatch = matchAlways
 	}
 	contextMeta, err := q.getContext(
-		ctx, func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+		ctx, preMatch,
+		func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 			m, err := getMeta(ctx, zid)
 			return m, err
 		},

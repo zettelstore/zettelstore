@@ -51,8 +51,10 @@ func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 
 // Result returns a result of the compiled search, that is achievable without iterating through a box.
 func (c *Compiled) Result() []*meta.Meta {
-	if c.contextMeta == nil {
-		return nil
+	if len(c.contextMeta) == 0 {
+		// nil -> no context
+		// empty slice -> nothing found
+		return c.contextMeta
 	}
 	result := make([]*meta.Meta, 0, len(c.contextMeta))
 	for _, m := range c.contextMeta {

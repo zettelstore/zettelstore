@@ -27,7 +27,7 @@ const (
 	dirBoth
 )
 
-func (q *Query) getContext(ctx context.Context, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
+func (q *Query) getContext(ctx context.Context, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
 	if !q.zid.IsValid() {
 		return nil, nil
 	}
@@ -35,6 +35,9 @@ func (q *Query) getContext(ctx context.Context, getMeta GetMetaFunc, selectMeta 
 	start, err := getMeta(ctx, q.zid)
 	if err != nil {
 		return nil, err
+	}
+	if !preMatch(start) {
+		return []*meta.Meta{}, nil
 	}
 	maxCost := q.maxCost
 	if maxCost <= 0 {
@@ -44,7 +47,7 @@ func (q *Query) getContext(ctx context.Context, getMeta GetMetaFunc, selectMeta 
 	if maxCount <= 0 {
 		maxCount = 200
 	}
-	tasks := newQueue(start, maxCost, maxCount)
+	tasks := newQueue(start, maxCost, maxCount, preMatch, getMeta, selectMeta)
 	isBackward := q.dir == dirBoth || q.dir == dirBackward
 	isForward := q.dir == dirBoth || q.dir == dirForward
 	result := []*meta.Meta{}
@@ -56,11 +59,11 @@ func (q *Query) getContext(ctx context.Context, getMeta GetMetaFunc, selectMeta 
 		result = append(result, m)
 
 		for _, p := range m.ComputedPairsRest() {
-			tasks.addPair(ctx, getMeta, p.Key, p.Value, cost, isBackward, isForward)
+			tasks.addPair(ctx, p.Key, p.Value, cost, isBackward, isForward)
 		}
 		if tags, found := m.GetList(api.KeyTags); found {
 			for _, tag := range tags {
-				tasks.addSameTag(ctx, selectMeta, tag, cost)
+				tasks.addSameTag(ctx, tag, cost)
 			}
 		}
 	}
@@ -75,15 +78,18 @@ type ztlCtxTask struct {
 }
 
 type contextQueue struct {
-	seen    id.Set
-	first   *ztlCtxTask
-	last    *ztlCtxTask
-	maxCost int
-	limit   int
-	tagCost map[string][]*meta.Meta
+	preMatch   MetaMatchFunc
+	getMeta    GetMetaFunc
+	selectMeta SelectMetaFunc
+	seen       id.Set
+	first      *ztlCtxTask
+	last       *ztlCtxTask
+	maxCost    int
+	limit      int
+	tagCost    map[string][]*meta.Meta
 }
 
-func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
+func newQueue(m *meta.Meta, maxCost, limit int, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) *contextQueue {
 	task := &ztlCtxTask{
 		next: nil,
 		prev: nil,
@@ -91,32 +97,33 @@ func newQueue(m *meta.Meta, maxCost, limit int) *contextQueue {
 		cost: 1,
 	}
 	result := &contextQueue{
-		seen:    id.NewSet(),
-		first:   task,
-		last:    task,
-		maxCost: maxCost,
-		limit:   limit,
-		tagCost: make(map[string][]*meta.Meta, 1024),
+		preMatch:   preMatch,
+		getMeta:    getMeta,
+		selectMeta: selectMeta,
+		seen:       id.NewSet(),
+		first:      task,
+		last:       task,
+		maxCost:    maxCost,
+		limit:      limit,
+		tagCost:    make(map[string][]*meta.Meta, 1024),
 	}
 	return result
 }
 
-func (zc *contextQueue) addPair(
-	ctx context.Context, getMeta GetMetaFunc, key, value string, curCost int, isBackward, isForward bool,
-) {
+func (zc *contextQueue) addPair(ctx context.Context, key, value string, curCost int, isBackward, isForward bool) {
 	if key == api.KeyBack {
 		return
 	}
 	newCost := curCost + contextCost(key)
 	if key == api.KeyBackward {
 		if isBackward {
-			zc.addIDSet(ctx, getMeta, newCost, value)
+			zc.addIDSet(ctx, newCost, value)
 		}
 		return
 	}
 	if key == api.KeyForward {
 		if isForward {
-			zc.addIDSet(ctx, getMeta, newCost, value)
+			zc.addIDSet(ctx, newCost, value)
 		}
 		return
 	}
@@ -125,9 +132,9 @@ func (zc *contextQueue) addPair(
 		return
 	}
 	if t := meta.Type(key); t == meta.TypeID {
-		zc.addID(ctx, getMeta, newCost, value)
+		zc.addID(ctx, newCost, value)
 	} else if t == meta.TypeIDSet {
-		zc.addIDSet(ctx, getMeta, newCost, value)
+		zc.addIDSet(ctx, newCost, value)
 	}
 }
 
@@ -142,7 +149,7 @@ func contextCost(key string) int {
 	return 3
 }
 
-func (zc *contextQueue) addID(ctx context.Context, getMeta GetMetaFunc, newCost int, value string) {
+func (zc *contextQueue) addID(ctx context.Context, newCost int, value string) {
 	if zc.costMaxed(newCost) {
 		return
 	}
@@ -151,11 +158,13 @@ func (zc *contextQueue) addID(ctx context.Context, getMeta GetMetaFunc, newCost 
 	if err != nil {
 		return
 	}
-	m, err := getMeta(ctx, zid)
+	m, err := zc.getMeta(ctx, zid)
 	if err != nil {
 		return
 	}
-	zc.addMeta(m, newCost)
+	if zc.preMatch(m) {
+		zc.addMeta(m, newCost)
+	}
 }
 func (zc *contextQueue) addMeta(m *meta.Meta, newCost int) {
 	task := &ztlCtxTask{next: nil, prev: nil, meta: m, cost: newCost}
@@ -192,11 +201,11 @@ func (zc *contextQueue) costMaxed(newCost int) bool {
 	return (zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit()
 }
 
-func (zc *contextQueue) addIDSet(ctx context.Context, getMeta GetMetaFunc, newCost int, value string) {
+func (zc *contextQueue) addIDSet(ctx context.Context, newCost int, value string) {
 	elems := meta.ListFromValue(value)
 	refCost := referenceCost(newCost, len(elems))
 	for _, val := range elems {
-		zc.addID(ctx, getMeta, refCost, val)
+		zc.addID(ctx, refCost, val)
 	}
 }
 
@@ -219,11 +228,11 @@ func referenceCost(baseCost int, numReferences int) int {
 	return baseCost * numReferences / 8
 }
 
-func (zc *contextQueue) addSameTag(ctx context.Context, selectMeta SelectMetaFunc, tag string, baseCost int) {
+func (zc *contextQueue) addSameTag(ctx context.Context, tag string, baseCost int) {
 	tagMetas, found := zc.tagCost[tag]
 	if !found {
 		q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
-		ml, err := selectMeta(ctx, q)
+		ml, err := zc.selectMeta(ctx, q)
 		if err != nil {
 			return
 		}
@@ -235,7 +244,9 @@ func (zc *contextQueue) addSameTag(ctx context.Context, selectMeta SelectMetaFun
 		return
 	}
 	for _, m := range tagMetas {
-		zc.addMeta(m, cost)
+		if zc.preMatch(m) { // selectMeta will not check preMatch
+			zc.addMeta(m, cost)
+		}
 	}
 }
 
