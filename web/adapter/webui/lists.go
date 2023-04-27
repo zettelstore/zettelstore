@@ -51,12 +51,14 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 				return
 			}
 		}
-		bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig)
-		enc := wui.getSimpleHTMLEncoder()
-		htmlContent, err := enc.BlocksString(&ast.BlockSlice{bn})
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
+		var htmlContent string
+		if bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig); bn != nil {
+			enc := wui.getSimpleHTMLEncoder()
+			htmlContent, err = enc.BlocksString(&ast.BlockSlice{bn})
+			if err != nil {
+				wui.reportError(ctx, w, err)
+				return
+			}
 		}
 		seed, found := q.GetSeed()
 		if !found {
