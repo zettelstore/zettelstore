@@ -16,6 +16,7 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/eval"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/attrs"
 	"zettelstore.de/c/maps"
@@ -67,8 +68,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		}
 		return attr, attr.Tail(), rest.Tail()
 	}
-	linkZettel := func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
-		obj, err := prevFn.Call(nil, args)
+	linkZettel := func(eng *eval.Engine, args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+		obj, err := prevFn.Call(eng, args)
 		if err != nil {
 			return sxpf.Nil()
 		}
@@ -97,8 +98,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	th.SetRebinder(func(te *shtml.TransformEnv) {
 		te.Rebind(sz.NameSymLinkZettel, linkZettel)
 		te.Rebind(sz.NameSymLinkFound, linkZettel)
-		te.Rebind(sz.NameSymLinkBased, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
-			obj, err := prevFn.Call(nil, args)
+		te.Rebind(sz.NameSymLinkBased, func(eng *eval.Engine, args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+			obj, err := prevFn.Call(eng, args)
 			if err != nil {
 				return sxpf.Nil()
 			}
@@ -118,8 +119,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymLinkQuery, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
-			obj, err := prevFn.Call(nil, args)
+		te.Rebind(sz.NameSymLinkQuery, func(eng *eval.Engine, args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+			obj, err := prevFn.Call(eng, args)
 			if err != nil {
 				return sxpf.Nil()
 			}
@@ -147,8 +148,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymLinkExternal, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
-			obj, err := prevFn.Call(nil, args)
+		te.Rebind(sz.NameSymLinkExternal, func(eng *eval.Engine, args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+			obj, err := prevFn.Call(eng, args)
 			if err != nil {
 				return sxpf.Nil()
 			}
@@ -161,8 +162,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
 			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymEmbed, func(_ sxpf.Environment, args *sxpf.List, prevFn sxpf.Callable) sxpf.Object {
-			obj, err := prevFn.Call(nil, args)
+		te.Rebind(sz.NameSymEmbed, func(eng *eval.Engine, args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+			obj, err := prevFn.Call(eng, args)
 			if err != nil {
 				return sxpf.Nil()
 			}
