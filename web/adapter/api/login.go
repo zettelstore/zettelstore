@@ -99,7 +99,7 @@ func (a *API) writeToken(w http.ResponseWriter, token string, lifetime time.Dura
 	lst := sxpf.MakeList(
 		sxpf.MakeString("Bearer"),
 		sxpf.MakeString(token),
-		sxpf.MakeInteger64(int64(lifetime/time.Second)),
+		sxpf.Int64(int64(lifetime/time.Second)),
 	)
 	var buf bytes.Buffer
 	_, err := sxpf.Print(&buf, lst)

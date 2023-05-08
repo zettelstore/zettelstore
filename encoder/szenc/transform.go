@@ -146,7 +146,7 @@ func (t *Transformer) GetSz(node ast.Node) *sxpf.List {
 	case *ast.HeadingNode:
 		return sxpf.MakeList(
 			t.zetSyms.SymHeading,
-			sxpf.MakeInteger64(int64(n.Level)),
+			sxpf.Int64(int64(n.Level)),
 			t.getAttributes(n.Attrs),
 			sxpf.MakeString(n.Slug),
 			sxpf.MakeString(n.Fragment),

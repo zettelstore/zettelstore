@@ -160,7 +160,7 @@ func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sxpf.Object {
 		sf.MustMake("zettel"),
 		sxpf.MakeList(sf.MustMake("id"), sxpf.MakeString(z.Meta.Zid.String())),
 		meta2sz(z.Meta, sf),
-		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
+		sxpf.MakeList(sf.MustMake("rights"), sxpf.Int64(int64(rights))),
 		sxpf.MakeList(sf.MustMake("encoding"), sxpf.MakeString(encoding)),
 		sxpf.MakeList(sf.MustMake("content"), sxpf.MakeString(zContent)),
 	)
@@ -170,7 +170,7 @@ func metaRights2sz(m *meta.Meta, rights api.ZettelRights) sxpf.Object {
 	return sxpf.MakeList(
 		sf.MustMake("list"),
 		meta2sz(m, sf),
-		sxpf.MakeList(sf.MustMake("rights"), sxpf.MakeInteger64(int64(rights))),
+		sxpf.MakeList(sf.MustMake("rights"), sxpf.Int64(int64(rights))),
 	)
 }
 func meta2sz(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
