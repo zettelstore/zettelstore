@@ -53,7 +53,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	symRel := th.Make("rel")
 
 	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.List) {
-		lst, ok := obj.(*sxpf.List)
+		lst, ok := sxpf.GetList(obj)
 		if !ok || !symA.IsEqual(lst.Car()) {
 			return nil, nil, nil
 		}
@@ -62,7 +62,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			return nil, nil, nil
 		}
 		objA := rest.Car()
-		attr, ok = objA.(*sxpf.List)
+		attr, ok = sxpf.GetList(objA)
 		if !ok || !symAt.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
@@ -82,7 +82,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		if hrefP == nil {
 			return obj
 		}
-		href, ok := hrefP.Cdr().(sxpf.String)
+		href, ok := sxpf.GetString(hrefP.Cdr())
 		if !ok {
 			return obj
 		}
@@ -111,7 +111,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if hrefP == nil {
 				return obj
 			}
-			href, ok := hrefP.Cdr().(sxpf.String)
+			href, ok := sxpf.GetString(hrefP.Cdr())
 			if !ok {
 				return obj
 			}
@@ -132,7 +132,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if hrefP == nil {
 				return obj
 			}
-			href, ok := hrefP.Cdr().(sxpf.String)
+			href, ok := sxpf.GetString(hrefP.Cdr())
 			if !ok {
 				return obj
 			}
@@ -167,11 +167,11 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if err != nil {
 				return sxpf.Nil()
 			}
-			lst, ok := obj.(*sxpf.List)
+			lst, ok := sxpf.GetList(obj)
 			if !ok || !symImg.IsEqual(lst.Car()) {
 				return obj
 			}
-			attr, ok := lst.Tail().Car().(*sxpf.List)
+			attr, ok := sxpf.GetList(lst.Tail().Car())
 			if !ok || !symAt.IsEqual(attr.Car()) {
 				return obj
 			}
@@ -180,7 +180,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if srcP == nil {
 				return obj
 			}
-			src, ok := srcP.Cdr().(sxpf.String)
+			src, ok := sxpf.GetString(srcP.Cdr())
 			if !ok {
 				return obj
 			}
@@ -224,11 +224,11 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	}
 
 	for elem := hm; elem != nil; elem = elem.Tail() {
-		mlst, ok := elem.Car().(*sxpf.List)
+		mlst, ok := sxpf.GetList(elem.Car())
 		if !ok {
 			continue
 		}
-		att, ok := mlst.Tail().Car().(*sxpf.List)
+		att, ok := sxpf.GetList(mlst.Tail().Car())
 		if !ok {
 			continue
 		}
@@ -237,10 +237,10 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, ok2 := aelem.Car().(*sxpf.List); ok2 {
+			if p, ok2 := sxpf.GetList(aelem.Car()); ok2 {
 				key := p.Car()
 				val := p.Cdr()
-				if tail, ok3 := val.(*sxpf.List); ok3 {
+				if tail, ok3 := sxpf.GetList(val); ok3 {
 					val = tail.Car()
 				}
 				a = a.Set(key.String(), val.String())
