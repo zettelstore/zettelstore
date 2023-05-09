@@ -250,11 +250,10 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 		if !found || ignore.Has(name) {
 			continue
 		}
-		var newName string
-		if altName, found2 := mapMetaKey[name]; found2 {
-			newName = altName
-		} else {
-			newName = "zs-" + name
+
+		newName, found := mapMetaKey[name]
+		if !found {
+			continue
 		}
 		a = a.Set("name", newName)
 		metaMap[newName] = g.th.TransformMeta(a)

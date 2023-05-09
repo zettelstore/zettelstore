@@ -36,6 +36,8 @@
   *  Build tool allows to install / update external Go tools needed to build
      the software.
      (minor)
+  *  Show only useful metadata on WebUI, not the internal metadata.
+     (minor: webui)
   *  The use of the <tt>json</tt> zettel encoding is deprecated. Support for
      this encoding may be removed in future versions. Please use the new
      <tt>data</tt> encoding instead.
