@@ -1,0 +1,31 @@
+(@@@@
+(html ,@(if lang `((@ (lang ,lang))))
+(head
+  (meta (@ (charset "utf-8")))
+  (meta (@ (name "viewport") (content "width=device-width, initial-scale=1.0")))
+  (meta (@ (name "generator") (content "Zettelstore")))
+  (meta (@ (name "format-detection") (content "telephone=no")))
+  ,@META-HEADER
+  (link (@ (rel "stylesheet") (href ,css-base-url)))
+  (link (@ (rel "stylesheet") (href ,css-user-url)))
+  ,@(if css-role-url `((link (@ (rel "stylesheet") (href ,css-role-url)))))
+  (title ,title))
+(body
+  (nav (@ (class "zs-menu"))
+    (a (@ (href ,home-url)) "Home")
+    (div (@ (class "zs-dropdown"))
+      (button "Lists")
+      (nav (@ (class "zs-dropdown-content"))
+        (a (@ (href ,list-zettel-url)) "List Zettel")
+        (a (@ (href ,list-roles-url)) "List Roles")
+        (a (@ (href ,list-tags-url)) "List Tags")
+        ,@(if can-refresh `((a (@ (href ,refresh-url)) "Refresh")))
+      )
+    )
+    (form (@ (action ,search-url))
+      (input (@ (type "text") (placeholder "Search..") (name ,query-key-query))))
+  )
+  (main (@ (class "content")) ,DETAIL)
+  ,@FOOTER
+  ,@(if debug-mode '((div (b "WARNING: Debug mode is enabled. DO NOT USE IN PRODUCTION!"))))
+)))

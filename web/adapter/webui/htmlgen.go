@@ -209,11 +209,11 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
+func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
 	tm := g.tx.GetMeta(m, evalMeta)
 	hm, err := g.th.Transform(tm)
 	if err != nil {
-		return ""
+		return nil
 	}
 
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
@@ -263,7 +263,11 @@ func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) 
 	for i := len(keys) - 1; i >= 0; i-- {
 		result = result.Cons(metaMap[keys[i]])
 	}
+	return result
+}
 
+func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
+	result := g.MetaSxn(m, evalMeta)
 	var sb strings.Builder
 	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(result))
 	_, _ = gen.WriteListHTML(&sb, result)
@@ -282,6 +286,18 @@ func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
 		return sxpf.Nil()
 	}
 	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
+}
+
+func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.List, _ error) {
+	if bs == nil || len(*bs) == 0 {
+		return nil, nil, nil
+	}
+	sx := g.tx.GetSz(bs)
+	sh, err := g.th.Transform(sx)
+	if err != nil {
+		return nil, nil, err
+	}
+	return sh, g.th.Endnotes(), nil
 }
 
 // BlocksString encodes a block slice.

@@ -11,9 +11,11 @@
 package webui
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/parser"
@@ -35,7 +37,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		q := r.URL.Query()
 		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
-
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -48,7 +49,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 			return
 		}
 		var roleCSSURL string
-		cssZid, err := wui.retrieveCSSZidFromRole(ctx, *zn.InhMeta)
+		cssZid, err := wui.retrieveCSSZidFromRole(ctx, zn.InhMeta)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -196,4 +197,149 @@ func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc)
 		}
 	}
 	return result
+}
+
+// --------------------------------------------------------------------------------------
+// Below is experimental code that will render a zettel with the help of an SXN template.
+//
+// If successful, it will replace above code.
+// --------------------------------------------------------------------------------------
+
+// MakeGetHTMLZettelHandlerSxn creates a new HTTP handler for the use case "get zettel".
+func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMeta usecase.GetMeta) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		zid, err := id.Parse(r.URL.Path[1:])
+		if err != nil {
+			wui.reportError(ctx, w, box.ErrNotFound)
+			return
+		}
+
+		q := r.URL.Query()
+		zn, err := evaluate.Run(ctx, zid, q.Get(api.KeySyntax))
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+
+		enc := wui.getSimpleHTMLEncoder()
+		metaObj := enc.MetaSxn(zn.InhMeta, createEvalMetadataFunc(ctx, evaluate))
+		content, endnotes, err := enc.BlocksSxn(&zn.Ast)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+
+		cssRoleURL, err := wui.getCSSRoleURL(ctx, zn.InhMeta)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+
+		user := server.GetUser(ctx)
+		apiZid := api.ZettelID(zid.String())
+		canCreate := wui.canCreate(ctx, user)
+		// getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
+
+		lang := wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang)
+		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
+		env, err := wui.createRenderEnv(wui.engine.RootEnvironment(), "zettel", lang, title, user)
+		if err == nil {
+			err = env.Bind(wui.symMetaHeader, metaObj)
+		}
+		sf := wui.sf
+		err = bindRenderEnv(err, env, sf, "css-role-url", sxpf.MakeString(cssRoleURL))
+		err = bindRenderEnv(err, env, sf, "heading", sxpf.MakeString(title))
+		err = bindRenderEnv(err, env, sf, "can-write", sxpf.MakeBoolean(wui.canWrite(ctx, user, zn.Meta, zn.Content)))
+		err = bindRenderEnv(err, env, sf, "edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
+		err = bindRenderEnv(err, env, sf, "info-url", sxpf.MakeString(wui.NewURLBuilder('i').SetZid(apiZid).String()))
+		err = bindRenderEnv(err, env, sf, "role-url",
+			sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+zn.Meta.GetDefault(api.KeyRole, "")).String()))
+		// 	Tags:            createSimpleLinks(wui.buildTagInfos(zn.Meta)),
+		err = bindRenderEnv(err, env, sf, "can-copy", sxpf.Boolean(canCreate && !zn.Content.IsBinary()))
+		err = bindRenderEnv(err, env, sf, "copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+		err = bindRenderEnv(err, env, sf, "can-version", sxpf.Boolean(canCreate))
+		err = bindRenderEnv(err, env, sf, "version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		err = bindRenderEnv(err, env, sf, "can-folge", sxpf.Boolean(canCreate))
+		err = bindRenderEnv(err, env, sf, "folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		// 	PredecessorRefs: wui.encodeIdentifierSet(zn.InhMeta, api.KeyPredecessor, getTextTitle),
+		// 	PrecursorRefs:   wui.encodeIdentifierSet(zn.InhMeta, api.KeyPrecursor, getTextTitle),
+		// 	SuperiorRefs:    wui.encodeIdentifierSet(zn.InhMeta, api.KeySuperior, getTextTitle),
+		err = bindRenderEnv(err, env, sf, "ext-url", wui.urlFromMeta(zn.InhMeta, api.KeyURL))
+		// 	Author:          zn.Meta.GetDefault(api.KeyAuthor, ""),
+
+		err = bindRenderEnv(err, env, sf, "content", content)
+		err = bindRenderEnv(err, env, sf, "endnotes", endnotes)
+		// folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
+		// subordinates := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySubordinates, getTextTitle))
+		// backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
+		// successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
+		// 	NeedBottomNav:   folgeLinks.Has || subordinates.Has || backLinks.Has || successorLinks.Has,
+		// 	FolgeLinks:      folgeLinks,
+		// 	Subordinates:    subordinates,
+		// 	BackLinks:       backLinks,
+		// 	SuccessorLinks:  successorLinks,
+		if err == nil {
+			err = bindMeta(zn.InhMeta, sf, env)
+		}
+		if err != nil {
+			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
+			return
+		}
+
+		err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid+30000, env)
+		if err != nil {
+			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
+			return
+		}
+	}
+}
+
+func (wui *WebUI) getCSSRoleURL(ctx context.Context, m *meta.Meta) (string, error) {
+	cssZid, err := wui.retrieveCSSZidFromRole(ctx, m)
+	if err != nil {
+		return "", err
+	}
+	if cssZid == id.Invalid {
+		return "", nil
+	}
+	return wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String(), nil
+}
+
+func (wui *WebUI) urlFromMeta(m *meta.Meta, key string) sxpf.Object {
+	val, found := m.Get(key)
+	if !found || val == "" {
+		return sxpf.Nil()
+	}
+	return wui.transformURL(val)
+}
+
+func bindMeta(m *meta.Meta, sf sxpf.SymbolFactory, env sxpf.Environment) error {
+	for _, p := range m.ComputedPairs() {
+		keySym, err := sf.Make("meta-" + p.Key)
+		if err != nil {
+			return err
+		}
+		if kt := meta.Type(p.Key); kt.IsSet {
+			values := meta.ListFromValue(p.Value)
+			if len(values) == 0 {
+				continue
+			}
+			sxValues := make([]sxpf.Object, len(values))
+			for i, v := range values {
+				sxValues[i] = sxpf.MakeString(v)
+			}
+			err = env.Bind(keySym, sxpf.MakeList(sxValues...))
+		} else {
+			err = env.Bind(keySym, sxpf.MakeString(p.Value))
+		}
+		if err != nil {
+			return err
+		}
+	}
+	symZid, err := sf.Make("zid")
+	if err != nil {
+		return err
+	}
+	return env.Bind(symZid, sxpf.MakeString(m.Zid.String()))
 }

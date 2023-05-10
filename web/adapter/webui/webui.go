@@ -20,6 +20,7 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/eval"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
@@ -50,8 +51,9 @@ type WebUI struct {
 
 	evalZettel *usecase.Evaluate
 
-	mxCache       sync.RWMutex
-	templateCache map[id.Zid]*template.Template
+	mxCache          sync.RWMutex
+	templateMusCache map[id.Zid]*template.Template
+	templateSxnCache map[id.Zid]*sxpf.List
 
 	mxRoleCSSMap sync.RWMutex
 	roleCSSMap   map[string]id.Zid
@@ -72,6 +74,15 @@ type WebUI struct {
 
 	sf      sxpf.SymbolFactory
 	htmlGen *sxhtml.Generator
+
+	engine        *eval.Engine
+	genHTML       *sxhtml.Generator
+	symQuote      *sxpf.Symbol
+	symQQ         *sxpf.Symbol
+	symUQ         *sxpf.Symbol
+	symUQS        *sxpf.Symbol
+	symMetaHeader *sxpf.Symbol
+	symDetail     *sxpf.Symbol
 }
 
 type webuiBox interface {
@@ -88,6 +99,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
 	sf := sxpf.MakeMappedFactory()
+
 	wui := &WebUI{
 		log:      log,
 		debug:    kernel.Main.GetConfig(kernel.CoreService, kernel.CoreDebug).(bool),
@@ -116,7 +128,16 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 
 		sf:      sf,
 		htmlGen: sxhtml.NewGenerator(sf),
+
+		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
+		symQuote:      sf.MustMake("quote"),
+		symQQ:         sf.MustMake("quasiquote"),
+		symUQ:         sf.MustMake("unquote"),
+		symUQS:        sf.MustMake("unquote-splicing"),
+		symDetail:     sf.MustMake("DETAIL"),
+		symMetaHeader: sf.MustMake("META-HEADER"),
 	}
+	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
@@ -124,10 +145,12 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
-	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid {
-		wui.templateCache = make(map[id.Zid]*template.Template, len(wui.templateCache))
+	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid || ci.Zid == id.BaseTemplateZid+30000 {
+		wui.templateMusCache = make(map[id.Zid]*template.Template, len(wui.templateMusCache))
+		wui.templateSxnCache = make(map[id.Zid]*sxpf.List, len(wui.templateSxnCache))
 	} else {
-		delete(wui.templateCache, ci.Zid)
+		delete(wui.templateMusCache, ci.Zid)
+		delete(wui.templateSxnCache, ci.Zid)
 	}
 	wui.mxCache.Unlock()
 	wui.mxRoleCSSMap.Lock()
@@ -139,18 +162,18 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 
 func (wui *WebUI) cacheSetTemplate(zid id.Zid, t *template.Template) {
 	wui.mxCache.Lock()
-	wui.templateCache[zid] = t
+	wui.templateMusCache[zid] = t
 	wui.mxCache.Unlock()
 }
 
 func (wui *WebUI) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
 	wui.mxCache.RLock()
-	t, ok := wui.templateCache[zid]
+	t, ok := wui.templateMusCache[zid]
 	wui.mxCache.RUnlock()
 	return t, ok
 }
 
-func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m meta.Meta) (id.Zid, error) {
+func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m *meta.Meta) (id.Zid, error) {
 	wui.mxRoleCSSMap.RLock()
 	if wui.roleCSSMap == nil {
 		wui.mxRoleCSSMap.RUnlock()
@@ -219,8 +242,7 @@ func (wui *WebUI) canRefresh(user *meta.Meta) bool {
 	return wui.policy.CanRefresh(user)
 }
 
-func (wui *WebUI) getTemplate(
-	ctx context.Context, templateID id.Zid) (*template.Template, error) {
+func (wui *WebUI) getTemplate(ctx context.Context, templateID id.Zid) (*template.Template, error) {
 	if t, ok := wui.cacheGetTemplate(templateID); ok {
 		return t, nil
 	}
@@ -277,7 +299,6 @@ type baseData struct {
 	SearchURL      string
 	QueryKeyQuery  string
 	QueryKeySeed   string
-	CreateNewURL   string
 	Content        string
 	FooterHTML     string
 	DebugMode      bool
@@ -315,7 +336,6 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.SearchURL = wui.searchURL
 	data.QueryKeyQuery = api.QueryKeyQuery
 	data.QueryKeySeed = api.QueryKeySeed
-	data.CreateNewURL = wui.createNewURL
 	data.FooterHTML = wui.calculateFooterHTML(ctx)
 	data.DebugMode = wui.debug
 }

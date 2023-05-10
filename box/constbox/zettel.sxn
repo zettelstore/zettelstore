@@ -1,0 +1,17 @@
+(article
+  (header
+    (h1 ,heading)
+    (div (@ (class "zs-meta"))
+      ,@(if can-write `((a (@ (href ,edit-url)) "Edit") (@H " &#183; ")))
+      ,zid (@H " &#183; ")
+      (a (@ (href ,info-url)) "Info") (@H " &#183; ")
+      "(" (a (@ (href ,role-url)) ,meta-role) ")"
+      ,@(if can-copy `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy")))
+      ,@(if can-version `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))
+      ,@(if can-folge `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge")))
+      ,@(if ext-url `((br) "URL: " ,ext-url))
+    )
+  )
+  ,@content
+  ,endnotes
+)
