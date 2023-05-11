@@ -82,8 +82,8 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		if title != "" {
 			attrs = attrs.Cons(sxpf.Cons(wui.sf.MustMake("title"), sxpf.MakeString(title)))
 		}
-		attrs = attrs.Cons(sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(ub.String()))).Cons(wui.sf.MustMake(sxhtml.NameSymAttr))
-		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.sf.MustMake("a"))
+		attrs = attrs.Cons(sxpf.Cons(wui.symHref, sxpf.MakeString(ub.String()))).Cons(wui.symAttr)
+		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.symA)
 	case found == 0:
 		return sxpf.Nil().Cons(text).Cons(wui.sf.MustMake("s"))
 	default: // case found < 0:
@@ -91,7 +91,7 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 	}
 }
 
-func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) sxpf.Object {
+func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.List {
 	if len(vals) == 0 {
 		return sxpf.Nil()
 	}
@@ -103,7 +103,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
-func (wui *WebUI) transformTagSet(key string, tags []string) sxpf.Object {
+func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.List {
 	if len(tags) == 0 {
 		return sxpf.Nil()
 	}
@@ -132,10 +132,10 @@ func (wui *WebUI) transformURL(val string) sxpf.Object {
 	if err == nil {
 		if us := u.String(); us != "" {
 			return sxpf.MakeList(
-				wui.sf.MustMake("a"),
+				wui.symA,
 				sxpf.MakeList(
-					wui.sf.MustMake(sxhtml.NameSymAttr),
-					sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(val)),
+					wui.symAttr,
+					sxpf.Cons(wui.symHref, sxpf.MakeString(val)),
 					sxpf.Cons(wui.sf.MustMake("target"), sxpf.MakeString("_blank")),
 					sxpf.Cons(wui.sf.MustMake("rel"), sxpf.MakeString("noopener noreferrer")),
 				),
@@ -162,12 +162,12 @@ func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
-func (wui *WebUI) transformLink(key, value, text string) sxpf.Object {
+func (wui *WebUI) transformLink(key, value, text string) *sxpf.List {
 	return sxpf.MakeList(
-		wui.sf.MustMake("a"),
+		wui.symA,
 		sxpf.MakeList(
-			wui.sf.MustMake(sxhtml.NameSymAttr),
-			sxpf.Cons(wui.sf.MustMake("href"), sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+			wui.symAttr,
+			sxpf.Cons(wui.symHref, sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
 		),
 		sxpf.MakeString(text),
 	)

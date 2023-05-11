@@ -83,6 +83,9 @@ type WebUI struct {
 	symUQS        *sxpf.Symbol
 	symMetaHeader *sxpf.Symbol
 	symDetail     *sxpf.Symbol
+	symA          *sxpf.Symbol
+	symAttr       *sxpf.Symbol
+	symHref       *sxpf.Symbol
 }
 
 type webuiBox interface {
@@ -136,6 +139,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symUQS:        sf.MustMake("unquote-splicing"),
 		symDetail:     sf.MustMake("DETAIL"),
 		symMetaHeader: sf.MustMake("META-HEADER"),
+		symA:          sf.MustMake("a"),
+		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
+		symHref:       sf.MustMake("href"),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
