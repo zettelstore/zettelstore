@@ -17,9 +17,11 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/builtins/binding"
 	"codeberg.org/t73fde/sxpf/builtins/boolean"
 	"codeberg.org/t73fde/sxpf/builtins/cond"
 	"codeberg.org/t73fde/sxpf/builtins/env"
+	"codeberg.org/t73fde/sxpf/builtins/list"
 	"codeberg.org/t73fde/sxpf/builtins/quote"
 	"codeberg.org/t73fde/sxpf/eval"
 	"codeberg.org/t73fde/sxpf/reader"
@@ -35,7 +37,9 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	engine.BindSyntax("if", cond.IfS)
 	engine.BindSyntax("and", boolean.AndS)
+	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
+	engine.BindBuiltinA("list", list.List)
 	return engine
 }
 
