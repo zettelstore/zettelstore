@@ -26,6 +26,6 @@
       (input (@ (type "text") (placeholder "Search..") (name ,query-key-query))))
   )
   (main (@ (class "content")) ,DETAIL)
-  ,@FOOTER
+  ,@(if FOOTER `((footer (hr) ,@FOOTER)))
   ,@(if debug-mode '((div (b "WARNING: Debug mode is enabled. DO NOT USE IN PRODUCTION!"))))
 )))

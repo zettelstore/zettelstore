@@ -243,7 +243,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 
 		lang := wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang)
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
-		env, err := wui.createRenderEnv(wui.engine.RootEnvironment(), "zettel", lang, title, user)
+		env, err := wui.createRenderEnv(ctx, wui.engine.RootEnvironment(), "zettel", lang, title, user)
 		if err == nil {
 			err = env.Bind(wui.symMetaHeader, metaObj)
 		}

@@ -26,6 +26,7 @@ import (
 	"codeberg.org/t73fde/sxpf/eval"
 	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -44,7 +45,7 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(parent sxpf.Environment, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, parent sxpf.Environment, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	sf := wui.sf
 	env := sxpf.MakeChildEnvironment(parent, name, 128)
@@ -71,10 +72,7 @@ func (wui *WebUI) createRenderEnv(parent sxpf.Environment, name, lang, title str
 	err = bindRenderEnv(err, env, sf, "search-url", sxpf.MakeString(wui.searchURL))
 	err = bindRenderEnv(err, env, sf, "query-key-query", sxpf.MakeString(api.QueryKeyQuery))
 	err = bindRenderEnv(err, env, sf, "query-key-seed", sxpf.MakeString(api.QueryKeySeed))
-
-	// data.FooterHTML = wui.calculateFooterHTML(ctx)
-	err = bindRenderEnv(err, env, sf, "FOOTER", sxpf.Nil()) // TODO: use real footer
-
+	err = bindRenderEnv(err, env, sf, "FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
 	err = bindRenderEnv(err, env, sf, "debug-mode", sxpf.MakeBoolean(wui.debug))
 	if err == nil {
 		err = env.Bind(wui.symMetaHeader, sxpf.Nil())
@@ -102,6 +100,21 @@ func bindRenderEnv(err error, env sxpf.Environment, sf sxpf.SymbolFactory, key s
 		return err
 	}
 	return env.Bind(sym, obj)
+}
+
+func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.List {
+	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
+		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
+			htmlEnc := wui.getSimpleHTMLEncoder().SetUnique("footer-")
+			if content, endnotes, err3 := htmlEnc.BlocksSxn(&zn.Ast); err3 == nil {
+				if content != nil && endnotes != nil {
+					content.LastPair().SetCdr(sxpf.Cons(endnotes, nil))
+				}
+				return content
+			}
+		}
+	}
+	return nil
 }
 
 func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (eval.Expr, error) {
