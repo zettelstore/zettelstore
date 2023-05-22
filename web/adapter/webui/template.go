@@ -104,7 +104,7 @@ func bindRenderEnv(err error, env sxpf.Environment, sf sxpf.SymbolFactory, key s
 	return env.Bind(sym, obj)
 }
 
-func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid) (*sxpf.List, error) {
+func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (eval.Expr, error) {
 	wui.mxCache.RLock()
 	t, ok := wui.templateSxnCache[zid]
 	wui.mxCache.RUnlock()
@@ -125,7 +125,11 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid) (*sxpf.List, e
 	if err != nil {
 		return nil, err
 	}
-	t = sxpf.MakeList(wui.symQQ, obj)
+	form := sxpf.MakeList(wui.symQQ, obj)
+	t, err = wui.engine.Parse(env, form)
+	if err != nil {
+		return nil, err
+	}
 
 	wui.mxCache.Lock()
 	wui.templateSxnCache[zid] = t
@@ -134,11 +138,11 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid) (*sxpf.List, e
 }
 
 func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (sxpf.Object, error) {
-	templateObj, err := wui.getSxnTemplate(ctx, zid)
+	templateExpr, err := wui.getSxnTemplate(ctx, zid, env)
 	if err != nil {
 		return nil, err
 	}
-	return wui.engine.Eval(env, templateObj)
+	return wui.engine.Execute(env, templateExpr)
 }
 
 func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sxpf.Environment) error {

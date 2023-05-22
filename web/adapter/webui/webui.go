@@ -53,7 +53,7 @@ type WebUI struct {
 
 	mxCache          sync.RWMutex
 	templateMusCache map[id.Zid]*template.Template
-	templateSxnCache map[id.Zid]*sxpf.List
+	templateSxnCache map[id.Zid]eval.Expr
 
 	mxRoleCSSMap sync.RWMutex
 	roleCSSMap   map[string]id.Zid
@@ -153,7 +153,7 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
 	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid || ci.Zid == id.BaseTemplateZid+30000 {
 		wui.templateMusCache = make(map[id.Zid]*template.Template, len(wui.templateMusCache))
-		wui.templateSxnCache = make(map[id.Zid]*sxpf.List, len(wui.templateSxnCache))
+		wui.templateSxnCache = make(map[id.Zid]eval.Expr, len(wui.templateSxnCache))
 	} else {
 		delete(wui.templateMusCache, ci.Zid)
 		delete(wui.templateSxnCache, ci.Zid)
