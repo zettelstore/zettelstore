@@ -14,7 +14,7 @@
       ,@(if precursor-refs `((br) "Precursor: " ,precursor-refs))
       ,@(if superior-refs `((br) "Superior: " ,superior-refs))
       ,@(if ext-url `((br) "URL: " ,ext-url))
-      ,@(let (author (and (bound? 'meta-author) meta-author)) (if author (list '(br) "By " author)))
+      ,@(let (author (and (bound? 'meta-author) meta-author)) (if author `((br) "By " ,author)))
     )
   )
   ,@content
