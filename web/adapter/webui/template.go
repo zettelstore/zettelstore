@@ -47,41 +47,36 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
 func (wui *WebUI) createRenderEnv(ctx context.Context, parent sxpf.Environment, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	sf := wui.sf
 	env := sxpf.MakeChildEnvironment(parent, name, 128)
-	err := bindRenderEnv(nil, env, sf, "lang", sxpf.MakeString(lang))
-	err = bindRenderEnv(err, env, sf, "css-base-url", sxpf.MakeString(wui.cssBaseURL))
-	err = bindRenderEnv(err, env, sf, "css-user-url", sxpf.MakeString(wui.cssUserURL))
-	err = bindRenderEnv(err, env, sf, "css-role-url", sxpf.MakeString(""))
-	err = bindRenderEnv(err, env, sf, "title", sxpf.MakeString(title))
-	err = bindRenderEnv(err, env, sf, "home-url", sxpf.MakeString(wui.homeURL))
-	err = bindRenderEnv(err, env, sf, "with-auth", sxpf.MakeBoolean(wui.withAuth))
-	err = bindRenderEnv(err, env, sf, "user-is-valid", sxpf.MakeBoolean(userIsValid))
-	err = bindRenderEnv(err, env, sf, "user-zettel-url", sxpf.MakeString(userZettelURL))
-	err = bindRenderEnv(err, env, sf, "user-ident", sxpf.MakeString(userIdent))
-	err = bindRenderEnv(err, env, sf, "login-url", sxpf.MakeString(wui.loginURL))
-	err = bindRenderEnv(err, env, sf, "logout-url", sxpf.MakeString(wui.logoutURL))
-	err = bindRenderEnv(err, env, sf, "list-zettel-url", sxpf.MakeString(wui.listZettelURL))
-	err = bindRenderEnv(err, env, sf, "list-roles-url", sxpf.MakeString(wui.listRolesURL))
-	err = bindRenderEnv(err, env, sf, "list-tags-url", sxpf.MakeString(wui.listTagsURL))
-	err = bindRenderEnv(err, env, sf, "can-refresh", sxpf.MakeBoolean(wui.canRefresh(user)))
-	err = bindRenderEnv(err, env, sf, "refresh-url", sxpf.MakeString(wui.refreshURL))
+	rb := makeRenderBinder(wui.sf, env)
+	rb.bindString("lang", sxpf.MakeString(lang))
+	rb.bindString("css-base-url", sxpf.MakeString(wui.cssBaseURL))
+	rb.bindString("css-user-url", sxpf.MakeString(wui.cssUserURL))
+	rb.bindString("css-role-url", sxpf.MakeString(""))
+	rb.bindString("title", sxpf.MakeString(title))
+	rb.bindString("home-url", sxpf.MakeString(wui.homeURL))
+	rb.bindString("with-auth", sxpf.MakeBoolean(wui.withAuth))
+	rb.bindString("user-is-valid", sxpf.MakeBoolean(userIsValid))
+	rb.bindString("user-zettel-url", sxpf.MakeString(userZettelURL))
+	rb.bindString("user-ident", sxpf.MakeString(userIdent))
+	rb.bindString("login-url", sxpf.MakeString(wui.loginURL))
+	rb.bindString("logout-url", sxpf.MakeString(wui.logoutURL))
+	rb.bindString("list-zettel-url", sxpf.MakeString(wui.listZettelURL))
+	rb.bindString("list-roles-url", sxpf.MakeString(wui.listRolesURL))
+	rb.bindString("list-tags-url", sxpf.MakeString(wui.listTagsURL))
+	rb.bindString("can-refresh", sxpf.MakeBoolean(wui.canRefresh(user)))
+	rb.bindString("refresh-url", sxpf.MakeString(wui.refreshURL))
 
 	// data.NewZettelLinks = createSimpleLinks(wui.fetchNewTemplates(ctx, user))
 
-	err = bindRenderEnv(err, env, sf, "search-url", sxpf.MakeString(wui.searchURL))
-	err = bindRenderEnv(err, env, sf, "query-key-query", sxpf.MakeString(api.QueryKeyQuery))
-	err = bindRenderEnv(err, env, sf, "query-key-seed", sxpf.MakeString(api.QueryKeySeed))
-	err = bindRenderEnv(err, env, sf, "FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
-	err = bindRenderEnv(err, env, sf, "debug-mode", sxpf.MakeBoolean(wui.debug))
-	if err == nil {
-		err = env.Bind(wui.symMetaHeader, sxpf.Nil())
-	}
-	if err == nil {
-		err = env.Bind(wui.symDetail, sxpf.Nil())
-	}
-
-	return env, err
+	rb.bindString("search-url", sxpf.MakeString(wui.searchURL))
+	rb.bindString("query-key-query", sxpf.MakeString(api.QueryKeyQuery))
+	rb.bindString("query-key-seed", sxpf.MakeString(api.QueryKeySeed))
+	rb.bindString("FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
+	rb.bindString("debug-mode", sxpf.MakeBoolean(wui.debug))
+	rb.bindSymbol(wui.symMetaHeader, sxpf.Nil())
+	rb.bindSymbol(wui.symDetail, sxpf.Nil())
+	return env, rb.err
 }
 
 func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
@@ -91,15 +86,29 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 	return true, wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String(), user.GetDefault(api.KeyUserID, "")
 }
 
-func bindRenderEnv(err error, env sxpf.Environment, sf sxpf.SymbolFactory, key string, obj sxpf.Object) error {
-	if err != nil {
-		return err
+type renderBinder struct {
+	err  error
+	make func(string) (*sxpf.Symbol, error)
+	bind func(*sxpf.Symbol, sxpf.Object) error
+}
+
+func makeRenderBinder(sf sxpf.SymbolFactory, env sxpf.Environment) renderBinder {
+	return renderBinder{make: sf.Make, bind: env.Bind, err: nil}
+}
+func (rb *renderBinder) bindString(key string, obj sxpf.Object) {
+	if rb.err == nil {
+		sym, err := rb.make(key)
+		if err == nil {
+			rb.err = rb.bind(sym, obj)
+			return
+		}
+		rb.err = err
 	}
-	sym, err := sf.Make(key)
-	if err != nil {
-		return err
+}
+func (rb *renderBinder) bindSymbol(sym *sxpf.Symbol, obj sxpf.Object) {
+	if rb.err == nil {
+		rb.err = rb.bind(sym, obj)
 	}
-	return env.Bind(sym, obj)
 }
 
 func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.List {

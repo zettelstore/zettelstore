@@ -244,30 +244,29 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 		lang := wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang)
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		env, err := wui.createRenderEnv(ctx, wui.engine.RootEnvironment(), "zettel", lang, title, user)
-		if err == nil {
-			err = env.Bind(wui.symMetaHeader, metaObj)
-		}
-		sf := wui.sf
-		err = bindRenderEnv(err, env, sf, "css-role-url", sxpf.MakeString(cssRoleURL))
-		err = bindRenderEnv(err, env, sf, "heading", sxpf.MakeString(title))
-		err = bindRenderEnv(err, env, sf, "can-write", sxpf.MakeBoolean(wui.canWrite(ctx, user, zn.Meta, zn.Content)))
-		err = bindRenderEnv(err, env, sf, "edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
-		err = bindRenderEnv(err, env, sf, "info-url", sxpf.MakeString(wui.NewURLBuilder('i').SetZid(apiZid).String()))
-		err = bindRenderEnv(err, env, sf, "role-url",
+		rb := makeRenderBinder(wui.sf, env)
+		rb.err = err
+		rb.bindSymbol(wui.symMetaHeader, metaObj)
+		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
+		rb.bindString("heading", sxpf.MakeString(title))
+		rb.bindString("can-write", sxpf.MakeBoolean(wui.canWrite(ctx, user, zn.Meta, zn.Content)))
+		rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
+		rb.bindString("info-url", sxpf.MakeString(wui.NewURLBuilder('i').SetZid(apiZid).String()))
+		rb.bindString("role-url",
 			sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+zn.Meta.GetDefault(api.KeyRole, "")).String()))
-		err = bindRenderEnv(err, env, sf, "tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
-		err = bindRenderEnv(err, env, sf, "can-copy", sxpf.Boolean(canCreate && !zn.Content.IsBinary()))
-		err = bindRenderEnv(err, env, sf, "copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
-		err = bindRenderEnv(err, env, sf, "can-version", sxpf.Boolean(canCreate))
-		err = bindRenderEnv(err, env, sf, "version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-		err = bindRenderEnv(err, env, sf, "can-folge", sxpf.Boolean(canCreate))
-		err = bindRenderEnv(err, env, sf, "folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
-		err = bindRenderEnv(err, env, sf, "predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
-		err = bindRenderEnv(err, env, sf, "precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
-		err = bindRenderEnv(err, env, sf, "superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
-		err = bindRenderEnv(err, env, sf, "ext-url", wui.urlFromMeta(zn.InhMeta, api.KeyURL))
-		err = bindRenderEnv(err, env, sf, "content", content)
-		err = bindRenderEnv(err, env, sf, "endnotes", endnotes)
+		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
+		rb.bindString("can-copy", sxpf.Boolean(canCreate && !zn.Content.IsBinary()))
+		rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+		rb.bindString("can-version", sxpf.Boolean(canCreate))
+		rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		rb.bindString("can-folge", sxpf.Boolean(canCreate))
+		rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
+		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
+		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
+		rb.bindString("ext-url", wui.urlFromMeta(zn.InhMeta, api.KeyURL))
+		rb.bindString("content", content)
+		rb.bindString("endnotes", endnotes)
 		// folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
 		// subordinates := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		// backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
@@ -277,8 +276,9 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 		// 	Subordinates:    subordinates,
 		// 	BackLinks:       backLinks,
 		// 	SuccessorLinks:  successorLinks,
+		err = rb.err
 		if err == nil {
-			err = bindMeta(zn.InhMeta, sf, env)
+			err = bindMeta(zn.InhMeta, wui.sf, env)
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
