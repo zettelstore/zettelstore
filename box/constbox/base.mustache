@@ -21,12 +21,10 @@
 {{#WithAuth}}
 {{#UserIsValid}}
 <a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
+<a href="{{{LogoutURL}}}">Logout</a>
 {{/UserIsValid}}
 {{^UserIsValid}}
 <a href="{{{LoginURL}}}">Login</a>
-{{/UserIsValid}}
-{{#UserIsValid}}
-<a href="{{{LogoutURL}}}">Logout</a>
 {{/UserIsValid}}
 {{/WithAuth}}
 </nav>
