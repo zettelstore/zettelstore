@@ -17,8 +17,10 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/builtins"
 	"codeberg.org/t73fde/sxpf/builtins/binding"
 	"codeberg.org/t73fde/sxpf/builtins/boolean"
+	"codeberg.org/t73fde/sxpf/builtins/callable"
 	"codeberg.org/t73fde/sxpf/builtins/cond"
 	"codeberg.org/t73fde/sxpf/builtins/env"
 	"codeberg.org/t73fde/sxpf/builtins/list"
@@ -26,7 +28,10 @@ import (
 	"codeberg.org/t73fde/sxpf/eval"
 	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
+	"zettelstore.de/z/box"
+	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -40,8 +45,24 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindSyntax("and", boolean.AndS)
 	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
+	engine.BindBuiltinEEA("map", callable.Map)
 	engine.BindBuiltinA("list", list.List)
+	engine.BindBuiltinA("pair-to-href", wui.makeHrefFromPair)
 	return engine
+}
+
+func (wui *WebUI) makeHrefFromPair(args []sxpf.Object) (sxpf.Object, error) {
+	err := builtins.CheckArgs(args, 1, 1)
+	pair, err := builtins.GetList(err, args, 0)
+	if err != nil {
+		return nil, err
+	}
+	href := sxpf.MakeList(
+		wui.symA,
+		sxpf.MakeList(wui.symAttr, sxpf.Cons(wui.symHref, pair.Cdr())),
+		pair.Car(),
+	)
+	return href, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
@@ -66,9 +87,7 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, parent sxpf.Environment, 
 	rb.bindString("list-tags-url", sxpf.MakeString(wui.listTagsURL))
 	rb.bindString("can-refresh", sxpf.MakeBoolean(wui.canRefresh(user)))
 	rb.bindString("refresh-url", sxpf.MakeString(wui.refreshURL))
-
-	// data.NewZettelLinks = createSimpleLinks(wui.fetchNewTemplates(ctx, user))
-
+	rb.bindString("new-zettel-links", wui.fetchNewTemplatesSxn(ctx, user))
 	rb.bindString("search-url", sxpf.MakeString(wui.searchURL))
 	rb.bindString("query-key-query", sxpf.MakeString(api.QueryKeyQuery))
 	rb.bindString("query-key-seed", sxpf.MakeString(api.QueryKeySeed))
@@ -111,6 +130,36 @@ func (rb *renderBinder) bindSymbol(sym *sxpf.Symbol, obj sxpf.Object) {
 	}
 }
 
+func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sxpf.List) {
+	if !wui.canCreate(ctx, user) {
+		return nil
+	}
+	ctx = box.NoEnrichContext(ctx)
+	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZid)
+	if err != nil {
+		return nil
+	}
+	refs := collect.Order(parser.ParseZettel(ctx, menu, "", wui.rtConfig))
+	for i := len(refs) - 1; i >= 0; i-- {
+		zid, err2 := id.Parse(refs[i].URL.Path)
+		if err2 != nil {
+			continue
+		}
+		m, err2 := wui.box.GetMeta(ctx, zid)
+		if err2 != nil {
+			continue
+		}
+		if !wui.policy.CanRead(user, m) {
+			continue
+		}
+		text := sxpf.MakeString(parser.NormalizedSpacedText(m.GetTitle()))
+		link := sxpf.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
+			AppendKVQuery(queryKeyAction, valueActionNew).String())
+
+		lst = lst.Cons(sxpf.Cons(text, link))
+	}
+	return lst
+}
 func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.List {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
