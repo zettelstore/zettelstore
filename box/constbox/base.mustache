@@ -14,11 +14,10 @@
 <body>
 <nav class="zs-menu">
 <a href="{{{HomeURL}}}">Home</a>
-{{#WithUser}}
+{{#WithAuth}}
 <div class="zs-dropdown">
 <button>User</button>
 <nav class="zs-dropdown-content">
-{{#WithAuth}}
 {{#UserIsValid}}
 <a href="{{{UserZettelURL}}}">{{UserIdent}}</a>
 <a href="{{{LogoutURL}}}">Logout</a>
@@ -26,10 +25,9 @@
 {{^UserIsValid}}
 <a href="{{{LoginURL}}}">Login</a>
 {{/UserIsValid}}
-{{/WithAuth}}
 </nav>
 </div>
-{{/WithUser}}
+{{/WithAuth}}
 <div class="zs-dropdown">
 <button>Lists</button>
 <nav class="zs-dropdown-content">

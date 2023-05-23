@@ -289,7 +289,6 @@ type baseData struct {
 	CSSRoleURL     string
 	Title          string
 	HomeURL        string
-	WithUser       bool
 	WithAuth       bool
 	UserIsValid    bool
 	UserZettelURL  string
@@ -327,7 +326,6 @@ func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL stri
 	data.Title = title
 	data.HomeURL = wui.homeURL
 	data.WithAuth = wui.withAuth
-	data.WithUser = data.WithAuth
 	data.UserIsValid = userIsValid
 	data.UserZettelURL = userZettelURL
 	data.UserIdent = userIdent
