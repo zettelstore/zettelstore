@@ -43,15 +43,17 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	engine.BindSyntax("if", cond.IfS)
 	engine.BindSyntax("and", boolean.AndS)
+	engine.BindSyntax("or", boolean.OrS)
 	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
 	engine.BindBuiltinEEA("map", callable.Map)
 	engine.BindBuiltinA("list", list.List)
-	engine.BindBuiltinA("pair-to-href", wui.makeHrefFromPair)
+	engine.BindBuiltinA("pair-to-href", wui.sxnPairToHref)
+	engine.BindBuiltinA("pair-to-href-li", wui.sxnPairToHrefLi)
 	return engine
 }
 
-func (wui *WebUI) makeHrefFromPair(args []sxpf.Object) (sxpf.Object, error) {
+func (wui *WebUI) sxnPairToHref(args []sxpf.Object) (sxpf.Object, error) {
 	err := builtins.CheckArgs(args, 1, 1)
 	pair, err := builtins.GetList(err, args, 0)
 	if err != nil {
@@ -63,6 +65,13 @@ func (wui *WebUI) makeHrefFromPair(args []sxpf.Object) (sxpf.Object, error) {
 		pair.Car(),
 	)
 	return href, nil
+}
+func (wui *WebUI) sxnPairToHrefLi(args []sxpf.Object) (sxpf.Object, error) {
+	href, err := wui.sxnPairToHref(args)
+	if err != nil {
+		return nil, err
+	}
+	return sxpf.MakeList(wui.symLi, href), nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.

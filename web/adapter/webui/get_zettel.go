@@ -25,8 +25,8 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-// MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
-func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta usecase.GetMeta) http.HandlerFunc {
+// MakeGetHTMLZettelHandlerMustache creates a new HTTP handler for the use case "get zettel".
+func (wui *WebUI) MakeGetHTMLZettelHandlerMustache(evaluate *usecase.Evaluate, getMeta usecase.GetMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -72,7 +72,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, roleCSSURL, user, &base)
 		base.MetaHeader = enc.MetaString(zn.InhMeta, createEvalMetadataFunc(ctx, evaluate))
-		wui.renderTemplate(ctx, w, id.ZettelTemplateZid, &base, struct {
+		wui.renderTemplate(ctx, w, id.ZettelTemplateZid+30000, &base, struct {
 			Heading         string
 			RoleCSS         string
 			CanWrite        bool
@@ -267,15 +267,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 		rb.bindString("ext-url", wui.urlFromMeta(zn.InhMeta, api.KeyURL))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
-		// folgeLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyFolge, getTextTitle))
-		// subordinates := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySubordinates, getTextTitle))
-		// backLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeyBack, getTextTitle))
-		// successorLinks := createSimpleLinks(wui.encodeZettelLinks(zn.InhMeta, api.KeySuccessors, getTextTitle))
-		// 	NeedBottomNav:   folgeLinks.Has || subordinates.Has || backLinks.Has || successorLinks.Has,
-		// 	FolgeLinks:      folgeLinks,
-		// 	Subordinates:    subordinates,
-		// 	BackLinks:       backLinks,
-		// 	SuccessorLinks:  successorLinks,
+		rb.bindString("folge-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyFolge, getTextTitle))
+		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
+		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
+		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
 		err = rb.err
 		if err == nil {
 			err = bindMeta(zn.InhMeta, wui.sf, env)
@@ -285,7 +280,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 			return
 		}
 
-		err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid+30000, env)
+		err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
 		if err != nil {
 			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
 			return
@@ -317,6 +312,33 @@ func (wui *WebUI) urlFromMeta(m *meta.Meta, key string) sxpf.Object {
 		return sxpf.Nil()
 	}
 	return wui.transformURL(val)
+}
+
+func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.List {
+	values, ok := m.GetList(key)
+	if !ok || len(values) == 0 {
+		return nil
+	}
+	return wui.zidLinksSxn(values, getTextTitle)
+}
+
+func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sxpf.List) {
+	for i := len(values) - 1; i >= 0; i-- {
+		val := values[i]
+		zid, err := id.Parse(val)
+		if err != nil {
+			continue
+		}
+		if title, found := getTextTitle(zid); found > 0 {
+			url := sxpf.MakeString(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
+			if title == "" {
+				lst = lst.Cons(sxpf.Cons(sxpf.MakeString(val), url))
+			} else {
+				lst = lst.Cons(sxpf.Cons(sxpf.MakeString(title), url))
+			}
+		}
+	}
+	return lst
 }
 
 func bindMeta(m *meta.Meta, sf sxpf.SymbolFactory, env sxpf.Environment) error {

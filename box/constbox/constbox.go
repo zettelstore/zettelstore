@@ -193,15 +193,17 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20210504135842",
+			api.KeyModified:   "20230523142249",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseMustache)},
 	id.BaseTemplateZid + 30000: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore Base HTML Template",
+			api.KeyTitle:      "Zettelstore Base HTML Template (Sxn)",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230510155100",
+			api.KeyModified:   "20230523144403",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseSxn)},
@@ -214,21 +216,22 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentLoginMustache)},
-	id.ZettelTemplateZid: {
+	id.ZettelTemplateZid + 30000: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore Zettel HTML Template",
+			api.KeyTitle:      "Zettelstore Zettel HTML Template (Mustache)",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentZettelMustache)},
-	id.ZettelTemplateZid + 30000: {
+	id.ZettelTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230510155300",
+			api.KeyModified:   "20230523212800",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentZettelSxn)},
