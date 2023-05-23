@@ -13,6 +13,17 @@
 (body
   (nav (@ (class "zs-menu"))
     (a (@ (href ,home-url)) "Home")
+    ,@(if with-auth
+      `((div (@ (class "zs-dropdown"))
+        (button "User")
+        (nav (@ (class "zs-dropdown-content"))
+          ,@(if user-is-valid
+            `((a (@ (href ,user-zettel-url)) ,user-ident)
+              (a (@ (href ,logout-url)) "Logout"))
+            `((a (@ (href ,login-url)) "Login"))
+          )
+      )))
+    )
     (div (@ (class "zs-dropdown"))
       (button "Lists")
       (nav (@ (class "zs-dropdown-content"))
