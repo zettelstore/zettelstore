@@ -75,10 +75,10 @@ func (wui *WebUI) sxnPairToHrefLi(args []sxpf.Object) (sxpf.Object, error) {
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(ctx context.Context, parent sxpf.Environment, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	env := sxpf.MakeChildEnvironment(parent, name, 128)
-	rb := makeRenderBinder(wui.sf, env)
+	env := sxpf.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
+	rb := makeRenderBinder(wui.sf, env, nil)
 	rb.bindString("lang", sxpf.MakeString(lang))
 	rb.bindString("css-base-url", sxpf.MakeString(wui.cssBaseURL))
 	rb.bindString("css-user-url", sxpf.MakeString(wui.cssUserURL))
@@ -120,8 +120,8 @@ type renderBinder struct {
 	bind func(*sxpf.Symbol, sxpf.Object) error
 }
 
-func makeRenderBinder(sf sxpf.SymbolFactory, env sxpf.Environment) renderBinder {
-	return renderBinder{make: sf.Make, bind: env.Bind, err: nil}
+func makeRenderBinder(sf sxpf.SymbolFactory, env sxpf.Environment, err error) renderBinder {
+	return renderBinder{make: sf.Make, bind: env.Bind, err: err}
 }
 func (rb *renderBinder) bindString(key string, obj sxpf.Object) {
 	if rb.err == nil {

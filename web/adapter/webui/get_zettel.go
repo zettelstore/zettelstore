@@ -243,9 +243,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 
 		lang := wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang)
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
-		env, err := wui.createRenderEnv(ctx, wui.engine.RootEnvironment(), "zettel", lang, title, user)
-		rb := makeRenderBinder(wui.sf, env)
-		rb.err = err
+		env, err := wui.createRenderEnv(ctx, "zettel", lang, title, user)
+		rb := makeRenderBinder(wui.sf, env, err)
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
 		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
 		rb.bindString("heading", sxpf.MakeString(title))

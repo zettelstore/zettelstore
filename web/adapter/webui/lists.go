@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
@@ -30,8 +31,8 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-// MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+// MakeListHTMLMetaHandlerMustache creates a HTTP handler for rendering the list of zettel as HTML.
+func (wui *WebUI) MakeListHTMLMetaHandlerMustache(listMeta usecase.ListMeta) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		q = q.SetDeterministic()
@@ -67,7 +68,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		user := server.GetUser(ctx)
 		var base baseData
 		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), wui.rtConfig.GetSiteName(), "", user, &base)
-		wui.renderTemplate(ctx, w, id.ListTemplateZid, &base, struct {
+		wui.renderTemplate(ctx, w, id.ListTemplateZid+30000, &base, struct {
 			Title         string
 			SearchURL     string
 			QueryValue    string
@@ -88,6 +89,67 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 			QueryKeySeed:  base.QueryKeySeed,
 			Seed:          seed,
 		})
+	}
+}
+
+// MakeListHTMLMetaHandlerSxn creates a HTTP handler for rendering the list of zettel as HTML.
+func (wui *WebUI) MakeListHTMLMetaHandlerSxn(listMeta usecase.ListMeta) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := adapter.GetQuery(r.URL.Query())
+		q = q.SetDeterministic()
+		ctx := r.Context()
+		metaList, err := listMeta.Run(ctx, q)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+		if actions := q.Actions(); len(actions) > 0 {
+			switch actions[0] {
+			case "ATOM":
+				wui.renderAtom(w, q, metaList)
+				return
+			case "RSS":
+				wui.renderRSS(ctx, w, q, metaList)
+				return
+			}
+		}
+		var content, endnotes *sxpf.List
+		if bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig); bn != nil {
+			enc := wui.getSimpleHTMLEncoder()
+			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})
+			if err != nil {
+				wui.reportError(ctx, w, err)
+				return
+			}
+		}
+		seed, found := q.GetSeed()
+		if !found {
+			seed = 0
+		}
+
+		user := server.GetUser(ctx)
+		lang := wui.rtConfig.Get(ctx, nil, api.KeyLang)
+		title := wui.rtConfig.GetSiteName()
+		env, err := wui.createRenderEnv(ctx, "list", lang, title, user)
+		rb := makeRenderBinder(wui.sf, env, err)
+		rb.bindString("heading", sxpf.MakeString(wui.listTitleQuery(q)))
+		rb.bindString("query-value", sxpf.MakeString(q.String()))
+		rb.bindString("content", content)
+		rb.bindString("endnotes", endnotes)
+		rb.bindString("can-create", sxpf.MakeBoolean(wui.canCreate(ctx, user)))
+		rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
+		rb.bindString("seed", sxpf.Int64(seed))
+		err = rb.err
+		if err != nil {
+			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
+			return
+		}
+
+		err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)
+		if err != nil {
+			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
+			return
+		}
 	}
 }
 
