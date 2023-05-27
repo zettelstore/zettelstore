@@ -13,6 +13,7 @@ package webui
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 
 	"codeberg.org/t73fde/sxhtml"
@@ -201,11 +202,15 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 	quote.InstallQuoteReader(reader, wui.symQuote, '\'')
 	quote.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
 
-	obj, err := reader.Read()
+	objs, err := reader.ReadAll()
 	if err != nil {
+		wui.log.IfErr(err).Zid(zid).Msg("reading sxn template")
 		return nil, err
 	}
-	form := sxpf.MakeList(wui.symQQ, obj)
+	if len(objs) != 1 {
+		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
+	}
+	form := sxpf.MakeList(wui.symQQ, objs[0])
 	t, err = wui.engine.Parse(env, form)
 	if err != nil {
 		return nil, err
