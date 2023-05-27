@@ -270,16 +270,12 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
 		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
-		err = rb.err
-		if err == nil {
+		if rb.err == nil {
 			err = bindMeta(zn.InhMeta, wui.sf, env)
 		}
-		if err != nil {
-			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
-			return
+		if err == nil {
+			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
 		}
-
-		err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
 		if err != nil {
 			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
 			return
