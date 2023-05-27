@@ -273,7 +273,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		zettel.NewContent(contentDeleteMustache)},
 	id.ListTemplateZid + 30000: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
+			api.KeyTitle:      "Zettelstore List Zettel HTML Template (Mustache)",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20200804111624",
@@ -284,7 +284,7 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
+			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230526221600",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
