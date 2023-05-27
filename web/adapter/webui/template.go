@@ -235,7 +235,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	}
 	env.Bind(wui.symDetail, detailObj)
 
-	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid+30000, env)
+	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid, env)
 	if err != nil {
 		return err
 	}

@@ -187,9 +187,9 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyModified:   "20221013105100",
 		},
 		zettel.NewContent(contentDependencies)},
-	id.BaseTemplateZid: {
+	id.BaseTemplateZid + 30000: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore Base HTML Template",
+			api.KeyTitle:      "Zettelstore Base HTML Template (Mustache)",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxMustache,
 			api.KeyCreated:    "20210504135842",
@@ -197,9 +197,9 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseMustache)},
-	id.BaseTemplateZid + 30000: {
+	id.BaseTemplateZid: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore Base HTML Template (Sxn)",
+			api.KeyTitle:      "Zettelstore Base HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230510155100",

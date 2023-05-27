@@ -434,9 +434,9 @@ func (wui *WebUI) renderTemplateStatus(
 	base *baseData,
 	data interface{}) {
 
-	bt, err := wui.getTemplate(ctx, id.BaseTemplateZid)
+	bt, err := wui.getTemplate(ctx, id.BaseTemplateZid+30000)
 	if err != nil {
-		wui.log.IfErr(err).Zid(id.BaseTemplateZid).Msg("Unable to get template")
+		wui.log.IfErr(err).Zid(id.BaseTemplateZid + 30000).Msg("Unable to get template")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
