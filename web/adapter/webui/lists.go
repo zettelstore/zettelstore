@@ -139,7 +139,7 @@ func (wui *WebUI) MakeListHTMLMetaHandlerSxn(listMeta usecase.ListMeta) http.Han
 		rb.bindString("can-create", sxpf.MakeBoolean(wui.canCreate(ctx, user)))
 		rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
 		rb.bindString("seed", sxpf.Int64(seed))
-		if rb.err != nil {
+		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)
 		}
 		if err != nil {
