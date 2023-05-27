@@ -1,0 +1,4 @@
+(article
+  (header (h1 ,heading))
+  ,message
+)

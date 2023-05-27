@@ -294,8 +294,9 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
+			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20210305133215",
+			api.KeyModified:   "20230527224800",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentErrorMustache)},
@@ -420,7 +421,7 @@ var contentListZettelMustache []byte
 //go:embed listzettel.sxn
 var contentListZettelSxn []byte
 
-//go:embed error.mustache
+//go:embed error.sxn
 var contentErrorMustache []byte
 
 //go:embed base.css

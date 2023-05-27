@@ -33,6 +33,8 @@ import (
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/web/adapter"
+	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -255,4 +257,22 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	_, err = w.Write(sb.Bytes())
 	wui.log.IfErr(err).Msg("Unable to write HTML via template")
 	return err
+}
+
+func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
+	code, text := adapter.CodeMessageFromError(err)
+	if code == http.StatusInternalServerError {
+		wui.log.Error().Msg(err.Error())
+	}
+	user := server.GetUser(ctx)
+	env, err := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
+	rb := makeRenderBinder(wui.sf, env, err)
+	rb.bindString("heading", sxpf.MakeString(http.StatusText(code)))
+	rb.bindString("message", sxpf.MakeString(text))
+	if rb.err == nil {
+		err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
+	}
+	if err != nil {
+		wui.log.Error().Err(err).Msg("while rendering error message")
+	}
 }

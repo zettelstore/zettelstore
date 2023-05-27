@@ -409,23 +409,6 @@ func (wui *WebUI) renderTemplate(
 	wui.renderTemplateStatus(ctx, w, http.StatusOK, templateID, base, data)
 }
 
-func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
-	code, text := adapter.CodeMessageFromError(err)
-	if code == http.StatusInternalServerError {
-		wui.log.Error().Msg(err.Error())
-	}
-	user := server.GetUser(ctx)
-	var base baseData
-	wui.makeBaseData(ctx, api.ValueLangEN, "Error", "", user, &base)
-	wui.renderTemplateStatus(ctx, w, code, id.ErrorTemplateZid, &base, struct {
-		ErrorTitle string
-		ErrorText  string
-	}{
-		ErrorTitle: http.StatusText(code),
-		ErrorText:  text,
-	})
-}
-
 func (wui *WebUI) renderTemplateStatus(
 	ctx context.Context,
 	w http.ResponseWriter,
