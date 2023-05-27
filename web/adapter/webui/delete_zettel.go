@@ -127,3 +127,21 @@ func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
 		}
 	}
 }
+func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc) []simpleLink {
+	result := make([]simpleLink, 0, len(values))
+	for _, val := range values {
+		zid, err := id.Parse(val)
+		if err != nil {
+			continue
+		}
+		if title, found := getTextTitle(zid); found > 0 {
+			url := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String()
+			if title == "" {
+				result = append(result, simpleLink{Text: val, URL: url})
+			} else {
+				result = append(result, simpleLink{Text: title, URL: url})
+			}
+		}
+	}
+	return result
+}
