@@ -45,8 +45,7 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 		err = wui.renderSxnTemplate(ctx, w, id.LoginTemplateZid, env)
 	}
 	if err != nil {
-		wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
-		return
+		wui.reportError(ctx, w, err)
 	}
 }
 

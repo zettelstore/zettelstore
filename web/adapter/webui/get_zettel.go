@@ -277,8 +277,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandlerSxn(evaluate *usecase.Evaluate, getMet
 			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
 		}
 		if err != nil {
-			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
-			return
+			wui.reportError(ctx, w, err)
 		}
 	}
 }

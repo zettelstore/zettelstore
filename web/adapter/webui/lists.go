@@ -143,8 +143,7 @@ func (wui *WebUI) MakeListHTMLMetaHandlerSxn(listMeta usecase.ListMeta) http.Han
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)
 		}
 		if err != nil {
-			wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
-			return
+			wui.reportError(ctx, w, err)
 		}
 	}
 }
