@@ -14,6 +14,7 @@ import (
 	"context"
 	"net/http"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
@@ -36,15 +37,17 @@ func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 }
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
-	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, nil, api.KeyLang), "Login", "", nil, &base)
-	wui.renderTemplate(ctx, w, id.LoginTemplateZid, &base, struct {
-		Title string
-		Retry bool
-	}{
-		Title: base.Title,
-		Retry: retry,
-	})
+	env, err := wui.createRenderEnv(ctx, "login", wui.rtConfig.Get(ctx, nil, api.KeyLang), "Login", nil)
+	rb := makeRenderBinder(wui.sf, env, err)
+	rb.bindString("heading", sxpf.MakeString("Login"))
+	rb.bindString("retry", sxpf.MakeBoolean(retry))
+	if rb.err == nil {
+		err = wui.renderSxnTemplate(ctx, w, id.LoginTemplateZid, env)
+	}
+	if err != nil {
+		wui.reportError(ctx, w, err) // TODO: template might throw error, write basic HTML page w/o template
+		return
+	}
 }
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user.

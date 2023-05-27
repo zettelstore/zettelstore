@@ -211,8 +211,9 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Login Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
+			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
+			api.KeyModified:   "20230527144100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentLoginMustache)},
@@ -392,7 +393,7 @@ var contentBaseMustache []byte
 //go:embed base.sxn
 var contentBaseSxn []byte
 
-//go:embed login.mustache
+//go:embed login.sxn
 var contentLoginMustache []byte
 
 //go:embed zettel.mustache
