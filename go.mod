@@ -3,7 +3,7 @@ module zettelstore.de/z
 go 1.19
 
 require (
-	codeberg.org/t73fde/sxhtml v0.0.0-20230524183754-f747d713562e
+	codeberg.org/t73fde/sxhtml v0.0.0-20230527203734-55c7edf4d8d9
 	codeberg.org/t73fde/sxpf v0.0.0-20230524183624-37758f88d90e
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/pascaldekloe/jwt v1.12.0
