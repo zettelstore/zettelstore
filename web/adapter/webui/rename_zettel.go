@@ -15,15 +15,13 @@ import (
 	"net/http"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
-	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/zettel/id"
-	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
@@ -43,72 +41,22 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
-		uselessFiles := retrieveUselessFilesMustache(m)
-
 		user := server.GetUser(ctx)
-		var base baseData
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), "Rename Zettel "+zid.String(), "", user, &base)
-		wui.renderTemplate(ctx, w, id.RenameTemplateZid, &base, struct {
-			Zid             string
-			MetaPairs       []meta.Pair
-			Incoming        simpleLinks
-			HasUselessFiles bool
-			UselessFiles    []string
-		}{
-			Zid:             zid.String(),
-			MetaPairs:       m.ComputedPairs(),
-			Incoming:        wui.encodeIncomingMustache(m, getTextTitle),
-			HasUselessFiles: len(uselessFiles) > 0,
-			UselessFiles:    uselessFiles,
-		})
-	}
-}
-
-func retrieveUselessFilesMustache(m *meta.Meta) []string {
-	if val, found := m.Get(api.KeyUselessFiles); found {
-		return []string{val}
-	}
-	return nil
-}
-
-func (wui *WebUI) encodeIncomingMustache(m *meta.Meta, getTextTitle getTextTitleFunc) simpleLinks {
-	zidMap := make(strfun.Set)
-	addListValues(zidMap, m, api.KeyBackward)
-	for _, kd := range meta.GetSortedKeyDescriptions() {
-		inverseKey := kd.Inverse
-		if inverseKey == "" {
-			continue
+		env, err := wui.createRenderEnv(
+			ctx, "rename",
+			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Rename Zettel "+m.Zid.String(), user)
+		rb := makeRenderBinder(wui.sf, env, err)
+		rb.bindString("zid", sxpf.MakeString(m.Zid.String()))
+		rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
+		rb.bindString("useless", retrieveUselessFiles(m))
+		rb.bindString("meta-pairs", makeMetaPairs(m))
+		if rb.err == nil {
+			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZid, env)
 		}
-		ikd := meta.GetDescription(inverseKey)
-		switch ikd.Type {
-		case meta.TypeID:
-			if val, ok := m.Get(inverseKey); ok {
-				zidMap.Set(val)
-			}
-		case meta.TypeIDSet:
-			addListValues(zidMap, m, inverseKey)
-		}
-	}
-	return createSimpleLinks(wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle))
-}
-func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc) []simpleLink {
-	result := make([]simpleLink, 0, len(values))
-	for _, val := range values {
-		zid, err := id.Parse(val)
 		if err != nil {
-			continue
-		}
-		if title, found := getTextTitle(zid); found > 0 {
-			url := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String()
-			if title == "" {
-				result = append(result, simpleLink{Text: val, URL: url})
-			} else {
-				result = append(result, simpleLink{Text: title, URL: url})
-			}
+			wui.reportError(ctx, w, err)
 		}
 	}
-	return result
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.
