@@ -109,10 +109,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
-		endnotes, err := enc.BlocksString(&ast.BlockSlice{})
-		if err != nil {
-			endnotes = ""
-		}
 
 		user := server.GetUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
@@ -149,7 +145,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ParseMatrix    []matrixLine
 			HasShadowLinks bool
 			ShadowLinks    []string
-			Endnotes       string
 		}{
 			Zid:            zid.String(),
 			WebURL:         wui.NewURLBuilder('h').SetZid(apiZid).String(),
@@ -180,7 +175,6 @@ func (wui *WebUI) MakeGetInfoHandler(
 			ParseMatrix:    wui.infoAPIMatrixParsed(zid),
 			HasShadowLinks: len(shadowLinks) > 0,
 			ShadowLinks:    shadowLinks,
-			Endnotes:       endnotes,
 		})
 	}
 }
