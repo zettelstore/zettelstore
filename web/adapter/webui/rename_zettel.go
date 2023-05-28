@@ -16,7 +16,9 @@ import (
 	"strings"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -42,7 +44,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 		}
 
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
-		uselessFiles := retrieveUselessFiles(m)
+		uselessFiles := retrieveUselessFilesMustache(m)
 
 		user := server.GetUser(ctx)
 		var base baseData
@@ -56,11 +58,57 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 		}{
 			Zid:             zid.String(),
 			MetaPairs:       m.ComputedPairs(),
-			Incoming:        wui.encodeIncoming(m, getTextTitle),
+			Incoming:        wui.encodeIncomingMustache(m, getTextTitle),
 			HasUselessFiles: len(uselessFiles) > 0,
 			UselessFiles:    uselessFiles,
 		})
 	}
+}
+
+func retrieveUselessFilesMustache(m *meta.Meta) []string {
+	if val, found := m.Get(api.KeyUselessFiles); found {
+		return []string{val}
+	}
+	return nil
+}
+
+func (wui *WebUI) encodeIncomingMustache(m *meta.Meta, getTextTitle getTextTitleFunc) simpleLinks {
+	zidMap := make(strfun.Set)
+	addListValues(zidMap, m, api.KeyBackward)
+	for _, kd := range meta.GetSortedKeyDescriptions() {
+		inverseKey := kd.Inverse
+		if inverseKey == "" {
+			continue
+		}
+		ikd := meta.GetDescription(inverseKey)
+		switch ikd.Type {
+		case meta.TypeID:
+			if val, ok := m.Get(inverseKey); ok {
+				zidMap.Set(val)
+			}
+		case meta.TypeIDSet:
+			addListValues(zidMap, m, inverseKey)
+		}
+	}
+	return createSimpleLinks(wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle))
+}
+func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc) []simpleLink {
+	result := make([]simpleLink, 0, len(values))
+	for _, val := range values {
+		zid, err := id.Parse(val)
+		if err != nil {
+			continue
+		}
+		if title, found := getTextTitle(zid); found > 0 {
+			url := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String()
+			if title == "" {
+				result = append(result, simpleLink{Text: val, URL: url})
+			} else {
+				result = append(result, simpleLink{Text: title, URL: url})
+			}
+		}
+	}
+	return result
 }
 
 // MakePostRenameZettelHandler creates a new HTTP handler to rename an existing zettel.

@@ -87,6 +87,9 @@ type WebUI struct {
 	symAttr       *sxpf.Symbol
 	symHref       *sxpf.Symbol
 	symLi         *sxpf.Symbol
+	symDl         *sxpf.Symbol
+	symDt         *sxpf.Symbol
+	symDd         *sxpf.Symbol
 }
 
 type webuiBox interface {
@@ -144,6 +147,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
 		symHref:       sf.MustMake("href"),
 		symLi:         sf.MustMake("li"),
+		symDl:         sf.MustMake("dl"),
+		symDt:         sf.MustMake("dt"),
+		symDd:         sf.MustMake("dd"),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})

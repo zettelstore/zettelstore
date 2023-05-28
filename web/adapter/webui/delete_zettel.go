@@ -13,6 +13,7 @@ package webui
 import (
 	"net/http"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
 	"zettelstore.de/z/box"
@@ -41,44 +42,73 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 		}
 		m := ms[0]
 
-		var shadowedBox string
-		var incomingLinks simpleLinks
-		if len(ms) > 1 {
-			shadowedBox = ms[1].GetDefault(api.KeyBoxNumber, "???")
-		} else {
-			getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
-			incomingLinks = wui.encodeIncoming(m, getTextTitle)
-		}
-		uselessFiles := retrieveUselessFiles(m)
-
 		user := server.GetUser(ctx)
-		var base baseData
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), "Delete Zettel "+m.Zid.String(), "", user, &base)
-		wui.renderTemplate(ctx, w, id.DeleteTemplateZid, &base, struct {
-			Zid             string
-			MetaPairs       []meta.Pair
-			HasShadows      bool
-			ShadowedBox     string
-			Incoming        simpleLinks
-			HasUselessFiles bool
-			UselessFiles    []string
-		}{
-			Zid:             zid.String(),
-			MetaPairs:       m.ComputedPairs(),
-			HasShadows:      shadowedBox != "",
-			ShadowedBox:     shadowedBox,
-			Incoming:        incomingLinks,
-			HasUselessFiles: len(uselessFiles) > 0,
-			UselessFiles:    uselessFiles,
-		})
+		env, err := wui.createRenderEnv(
+			ctx, "delete",
+			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
+		rb := makeRenderBinder(wui.sf, env, err)
+		rb.bindString("zid", sxpf.MakeString(m.Zid.String()))
+		if len(ms) > 1 {
+			rb.bindString("shadowed-box", sxpf.MakeString(ms[1].GetDefault(api.KeyBoxNumber, "???")))
+			rb.bindString("incoming", nil)
+		} else {
+			rb.bindString("shadowed-box", nil)
+			rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
+		}
+		rb.bindString("useless", retrieveUselessFiles(m))
+		rb.bindString("meta-pairs", makeMetaPairs(m))
+		if rb.err == nil {
+			err = wui.renderSxnTemplate(ctx, w, id.DeleteTemplateZid, env)
+		}
+		if err != nil {
+			wui.reportError(ctx, w, err)
+		}
 	}
 }
 
-func retrieveUselessFiles(m *meta.Meta) []string {
+func retrieveUselessFiles(m *meta.Meta) *sxpf.List {
 	if val, found := m.Get(api.KeyUselessFiles); found {
-		return []string{val}
+		return sxpf.Cons(sxpf.MakeString(val), nil)
 	}
 	return nil
+}
+
+func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sxpf.List {
+	zidMap := make(strfun.Set)
+	addListValues(zidMap, m, api.KeyBackward)
+	for _, kd := range meta.GetSortedKeyDescriptions() {
+		inverseKey := kd.Inverse
+		if inverseKey == "" {
+			continue
+		}
+		ikd := meta.GetDescription(inverseKey)
+		switch ikd.Type {
+		case meta.TypeID:
+			if val, ok := m.Get(inverseKey); ok {
+				zidMap.Set(val)
+			}
+		case meta.TypeIDSet:
+			addListValues(zidMap, m, inverseKey)
+		}
+	}
+	return wui.zidLinksSxn(maps.Keys(zidMap), getTextTitle)
+}
+
+func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
+	if values, ok := m.GetList(key); ok {
+		for _, val := range values {
+			zidMap.Set(val)
+		}
+	}
+}
+
+func makeMetaPairs(m *meta.Meta) *sxpf.List {
+	sentinel := sxpf.Cons(nil, nil)
+	curr := sentinel
+	for _, p := range m.ComputedPairs() {
+		curr = curr.AppendBang(sxpf.Cons(sxpf.MakeString(p.Key), sxpf.MakeString(p.Value)))
+	}
+	return sentinel.Tail()
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
@@ -97,51 +127,4 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel
 		}
 		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 	}
-}
-
-func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) simpleLinks {
-	zidMap := make(strfun.Set)
-	addListValues(zidMap, m, api.KeyBackward)
-	for _, kd := range meta.GetSortedKeyDescriptions() {
-		inverseKey := kd.Inverse
-		if inverseKey == "" {
-			continue
-		}
-		ikd := meta.GetDescription(inverseKey)
-		switch ikd.Type {
-		case meta.TypeID:
-			if val, ok := m.Get(inverseKey); ok {
-				zidMap.Set(val)
-			}
-		case meta.TypeIDSet:
-			addListValues(zidMap, m, inverseKey)
-		}
-	}
-	return createSimpleLinks(wui.encodeZidLinks(maps.Keys(zidMap), getTextTitle))
-}
-
-func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
-	if values, ok := m.GetList(key); ok {
-		for _, val := range values {
-			zidMap.Set(val)
-		}
-	}
-}
-func (wui *WebUI) encodeZidLinks(values []string, getTextTitle getTextTitleFunc) []simpleLink {
-	result := make([]simpleLink, 0, len(values))
-	for _, val := range values {
-		zid, err := id.Parse(val)
-		if err != nil {
-			continue
-		}
-		if title, found := getTextTitle(zid); found > 0 {
-			url := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String()
-			if title == "" {
-				result = append(result, simpleLink{Text: val, URL: url})
-			} else {
-				result = append(result, simpleLink{Text: title, URL: url})
-			}
-		}
-	}
-	return result
 }

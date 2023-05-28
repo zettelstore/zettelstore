@@ -47,12 +47,14 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindSyntax("if", cond.IfS)
 	engine.BindSyntax("and", boolean.AndS)
 	engine.BindSyntax("or", boolean.OrS)
+	engine.BindSyntax("lambda", callable.LambdaS)
 	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
 	engine.BindBuiltinEEA("map", callable.Map)
 	engine.BindBuiltinA("list", list.List)
 	engine.BindBuiltinA("pair-to-href", wui.sxnPairToHref)
 	engine.BindBuiltinA("pair-to-href-li", wui.sxnPairToHrefLi)
+	engine.BindBuiltinA("pairs-to-dl", wui.sxnPairsToDl)
 	return engine
 }
 
@@ -75,6 +77,22 @@ func (wui *WebUI) sxnPairToHrefLi(args []sxpf.Object) (sxpf.Object, error) {
 		return nil, err
 	}
 	return sxpf.MakeList(wui.symLi, href), nil
+}
+func (wui *WebUI) sxnPairsToDl(args []sxpf.Object) (sxpf.Object, error) {
+	err := builtins.CheckArgs(args, 1, 1)
+	pairs, err := builtins.GetList(err, args, 0)
+	if err != nil {
+		return nil, err
+	}
+	dl := sxpf.Cons(wui.symDl, nil)
+	curr := dl
+	for node := pairs; node != nil; node = node.Tail() {
+		if pair, isPair := sxpf.GetList(node.Car()); isPair {
+			curr = curr.AppendBang(sxpf.MakeList(wui.symDt, pair.Car()))
+			curr = curr.AppendBang(sxpf.MakeList(wui.symDd, pair.Cdr()))
+		}
+	}
+	return dl, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.

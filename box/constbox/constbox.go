@@ -216,7 +216,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyModified:   "20230527144100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentLoginMustache)},
+		zettel.NewContent(contentLoginSxn)},
 	id.ZettelTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
@@ -258,11 +258,12 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
+			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
+			api.KeyModified:   "20230528154900",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentDeleteMustache)},
+		zettel.NewContent(contentDeleteSxn)},
 	id.ListTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
@@ -281,7 +282,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyModified:   "20230527224800",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentErrorMustache)},
+		zettel.NewContent(contentErrorSxn)},
 	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
@@ -377,7 +378,7 @@ var contentBaseMustache []byte
 var contentBaseSxn []byte
 
 //go:embed login.sxn
-var contentLoginMustache []byte
+var contentLoginSxn []byte
 
 //go:embed zettel.sxn
 var contentZettelSxn []byte
@@ -391,14 +392,14 @@ var contentFormMustache []byte
 //go:embed rename.mustache
 var contentRenameMustache []byte
 
-//go:embed delete.mustache
-var contentDeleteMustache []byte
+//go:embed delete.sxn
+var contentDeleteSxn []byte
 
 //go:embed listzettel.sxn
 var contentListZettelSxn []byte
 
 //go:embed error.sxn
-var contentErrorMustache []byte
+var contentErrorSxn []byte
 
 //go:embed base.css
 var contentBaseCSS []byte
