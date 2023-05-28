@@ -240,11 +240,12 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
+			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
+			api.KeyModified:   "20230528210200",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentFormMustache)},
+		zettel.NewContent(contentFormSxn)},
 	id.RenameTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
@@ -387,8 +388,8 @@ var contentZettelSxn []byte
 //go:embed info.mustache
 var contentInfoMustache []byte
 
-//go:embed form.mustache
-var contentFormMustache []byte
+//go:embed form.sxn
+var contentFormSxn []byte
 
 //go:embed rename.sxn
 var contentRenameSxn []byte

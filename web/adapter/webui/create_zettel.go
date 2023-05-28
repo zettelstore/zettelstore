@@ -14,7 +14,9 @@ import (
 	"bytes"
 	"context"
 	"net/http"
+	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/encoder/zmkenc"
@@ -89,23 +91,34 @@ func (wui *WebUI) renderZettelForm(
 ) {
 	user := server.GetUser(ctx)
 	m := zettel.Meta
-	var base baseData
-	wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, m, api.KeyLang), title, "", user, &base)
-	wui.renderTemplate(ctx, w, id.FormTemplateZid, &base, formZettelData{
-		Heading:       title,
-		FormActionURL: formActionURL,
-		MetaTitle:     m.GetDefault(api.KeyTitle, ""),
-		MetaTags:      m.GetDefault(api.KeyTags, ""),
-		MetaRole:      m.GetDefault(api.KeyRole, ""),
-		HasRoleData:   len(roleData) > 0,
-		RoleData:      roleData,
-		HasSyntaxData: len(syntaxData) > 0,
-		SyntaxData:    syntaxData,
-		MetaSyntax:    m.GetDefault(api.KeySyntax, ""),
-		MetaPairsRest: m.PairsRest(),
-		IsTextContent: !zettel.Content.IsBinary(),
-		Content:       zettel.Content.AsString(),
-	})
+
+	var sb strings.Builder
+	for _, p := range m.PairsRest() {
+		sb.WriteString(p.Key)
+		sb.WriteString(": ")
+		sb.WriteString(p.Value)
+		sb.WriteByte('\n')
+	}
+	env, err := wui.createRenderEnv(ctx, "form", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
+	rb := makeRenderBinder(wui.sf, env, err)
+	rb.bindString("heading", sxpf.MakeString(title))
+	rb.bindString("form-action-url", sxpf.MakeString(formActionURL))
+	rb.bindString("meta-title", sxpf.MakeString(m.GetDefault(api.KeyTitle, "")))
+	rb.bindString("meta-role", sxpf.MakeString(m.GetDefault(api.KeyRole, "")))
+	rb.bindString("meta-tags", sxpf.MakeString(m.GetDefault(api.KeyTags, "")))
+	rb.bindString("meta-syntax", sxpf.MakeString(m.GetDefault(api.KeySyntax, "")))
+	rb.bindString("role-data", makeStringList(roleData))
+	rb.bindString("syntax-data", makeStringList(syntaxData))
+	rb.bindString("meta", sxpf.MakeString(sb.String()))
+	if !zettel.Content.IsBinary() {
+		rb.bindString("content", sxpf.MakeString(zettel.Content.AsString()))
+	}
+	if rb.err == nil {
+		err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZid, env)
+	}
+	if err != nil {
+		wui.reportError(ctx, w, err)
+	}
 }
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of

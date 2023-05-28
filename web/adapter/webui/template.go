@@ -295,3 +295,14 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 		fmt.Fprintf(w, "Error while rendering error message: %v", err)
 	}
 }
+
+func makeStringList(sl []string) *sxpf.List {
+	if len(sl) == 0 {
+		return nil
+	}
+	result := sxpf.Nil()
+	for i := len(sl) - 1; i >= 0; i-- {
+		result = result.Cons(sxpf.MakeString(sl[i]))
+	}
+	return result
+}

@@ -1,0 +1,46 @@
+(article
+  (header (h1 ,heading))
+  (form (@ (action ,form-action-url) (method "POST") (enctype "multipart/form-data"))
+  (div
+    (label (@ (for "zs-title")) "Title " (a (@ (title "Main heading of this zettel.")) (@H "&#9432;")))
+    (input (@ (class "zs-input") (type "text") (id "zs-title") (name "title") (placeholder "Title..") (value ,meta-title) (autofocus))))
+  (div
+    (label (@ (for "zs-role")) "Role " (a (@ (title "One word, without spaces, to set the main role of this zettel.")) (@H "&#9432;")))
+    (input (@ (class "zs-input") (type "text") (id "zs-role") (name "role") (placeholder "role..") (value ,meta-role)
+      ,@(if role-data '((list "zs-role-data")))
+    ))
+    ,@(if role-data
+      `((datalist (@ (id "zs-role-data"))
+        ,@(map (lambda (v) `(option (@ (value ,v)))) role-data)
+      ))
+    )
+  )
+  (div
+    (label (@ (for "zs-tags")) "Tags " (a (@ (title "Tags must begin with an '#' sign. They are separated by spaces.")) (@H "&#9432;")))
+    (input (@ (class "zs-input") (type "text") (id "zs-tags") (name "tags") (placeholder "#tag") (value ,meta-tags))))
+  (div
+    (label (@ (for "zs-meta")) "Metadata " (a (@ (title "Other metadata for this zettel. Each line contains a key/value pair, separated by a colon ':'.")) (@H "&#9432;")))
+    (textarea (@ (class "zs-input") (id "zs-meta") (name "meta") (rows "4") (placeholder "metakey: metavalue")) ,meta))
+  (div
+    (label (@ (for "zs-syntax")) "Syntax " (a (@ (title "Syntax of zettel content below, one word. Typically 'zmk' (for zettelmarkup).")) (@H "&#9432;")))
+    (input (@ (class "zs-input") (type "text") (id "zs-syntax") (name "syntax") (placeholder "syntax..") (value ,meta-syntax)
+      ,@(if syntax-data '((list "zs-syntax-data")))
+    ))
+    ,@(if syntax-data
+      `((datalist (@ (id "zs-syntax-data"))
+        ,@(map (lambda (v) `(option (@ (value ,v)))) syntax-data)
+      ))
+    )
+  )
+  ,@(if (bound? 'content)
+    `((div
+      (label (@ (for "zs-content")) "Content " (a (@ (title "Content for this zettel, according to above syntax.")) (@H "&#9432;")))
+      (textarea (@ (class "zs-input zs-content") (id "zs-content") (name "content") (rows "20") (placeholder "Zettel content..")) ,content)
+    ))
+  )
+  (div
+    (input (@ (class "zs-primary") (type "submit") (value "Submit")))
+    (input (@ (class "zs-secondary") (type "submit") (value "Save") (formaction "?save")))
+    (input (@ (class "zs-upload") (type "file") (id "zs-file") (name "file")))
+  ))
+)

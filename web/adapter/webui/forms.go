@@ -29,22 +29,6 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-type formZettelData struct {
-	Heading       string
-	FormActionURL string
-	MetaTitle     string
-	MetaRole      string
-	HasRoleData   bool
-	RoleData      []string
-	HasSyntaxData bool
-	SyntaxData    []string
-	MetaTags      string
-	MetaSyntax    string
-	MetaPairsRest []meta.Pair
-	IsTextContent bool
-	Content       string
-}
-
 var (
 	bsCRLF = []byte{'\r', '\n'}
 	bsLF   = []byte{'\n'}
