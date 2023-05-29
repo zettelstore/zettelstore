@@ -24,12 +24,9 @@ import (
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
-	"zettelstore.de/z/parser"
-	"zettelstore.de/z/template"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -51,9 +48,8 @@ type WebUI struct {
 
 	evalZettel *usecase.Evaluate
 
-	mxCache          sync.RWMutex
-	templateMusCache map[id.Zid]*template.Template
-	templateSxnCache map[id.Zid]eval.Expr
+	mxCache       sync.RWMutex
+	templateCache map[id.Zid]eval.Expr
 
 	mxRoleCSSMap sync.RWMutex
 	roleCSSMap   map[string]id.Zid
@@ -75,21 +71,19 @@ type WebUI struct {
 	sf      sxpf.SymbolFactory
 	htmlGen *sxhtml.Generator
 
-	engine        *eval.Engine
-	genHTML       *sxhtml.Generator
-	symQuote      *sxpf.Symbol
-	symQQ         *sxpf.Symbol
-	symUQ         *sxpf.Symbol
-	symUQS        *sxpf.Symbol
-	symMetaHeader *sxpf.Symbol
-	symDetail     *sxpf.Symbol
-	symA          *sxpf.Symbol
-	symAttr       *sxpf.Symbol
-	symHref       *sxpf.Symbol
-	symLi         *sxpf.Symbol
-	symDl         *sxpf.Symbol
-	symDt         *sxpf.Symbol
-	symDd         *sxpf.Symbol
+	engine  *eval.Engine
+	genHTML *sxhtml.Generator
+
+	symQuote             *sxpf.Symbol
+	symQQ, symUQ, symUQS *sxpf.Symbol
+	symMetaHeader        *sxpf.Symbol
+	symDetail            *sxpf.Symbol
+	symA, symHref        *sxpf.Symbol
+	symAttr              *sxpf.Symbol
+	symLi                *sxpf.Symbol
+	symDl, symDt, symDd  *sxpf.Symbol
+	symTable             *sxpf.Symbol
+	symTr, symTh, symTd  *sxpf.Symbol
 }
 
 type webuiBox interface {
@@ -150,6 +144,10 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symDl:         sf.MustMake("dl"),
 		symDt:         sf.MustMake("dt"),
 		symDd:         sf.MustMake("dd"),
+		symTable:      sf.MustMake("table"),
+		symTr:         sf.MustMake("tr"),
+		symTh:         sf.MustMake("th"),
+		symTd:         sf.MustMake("td"),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
@@ -160,11 +158,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
 	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid || ci.Zid == id.BaseTemplateZid+30000 {
-		wui.templateMusCache = make(map[id.Zid]*template.Template, len(wui.templateMusCache))
-		wui.templateSxnCache = make(map[id.Zid]eval.Expr, len(wui.templateSxnCache))
+		wui.templateCache = make(map[id.Zid]eval.Expr, len(wui.templateCache))
 	} else {
-		delete(wui.templateMusCache, ci.Zid)
-		delete(wui.templateSxnCache, ci.Zid)
+		delete(wui.templateCache, ci.Zid)
 	}
 	wui.mxCache.Unlock()
 	wui.mxRoleCSSMap.Lock()
@@ -172,19 +168,6 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 		wui.roleCSSMap = nil
 	}
 	wui.mxRoleCSSMap.Unlock()
-}
-
-func (wui *WebUI) cacheSetTemplate(zid id.Zid, t *template.Template) {
-	wui.mxCache.Lock()
-	wui.templateMusCache[zid] = t
-	wui.mxCache.Unlock()
-}
-
-func (wui *WebUI) cacheGetTemplate(zid id.Zid) (*template.Template, bool) {
-	wui.mxCache.RLock()
-	t, ok := wui.templateMusCache[zid]
-	wui.mxCache.RUnlock()
-	return t, ok
 }
 
 func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m *meta.Meta) (id.Zid, error) {
@@ -256,201 +239,7 @@ func (wui *WebUI) canRefresh(user *meta.Meta) bool {
 	return wui.policy.CanRefresh(user)
 }
 
-func (wui *WebUI) getTemplate(ctx context.Context, templateID id.Zid) (*template.Template, error) {
-	if t, ok := wui.cacheGetTemplate(templateID); ok {
-		return t, nil
-	}
-	realTemplateZettel, err := wui.box.GetZettel(ctx, templateID)
-	if err != nil {
-		return nil, err
-	}
-	t, err := template.ParseString(realTemplateZettel.Content.AsString(), nil)
-	if err == nil {
-		// t.SetErrorOnMissing()
-		wui.cacheSetTemplate(templateID, t)
-	}
-	return t, err
-}
-
-type simpleLink struct {
-	Text string
-	URL  string
-}
-
-type simpleLinks struct {
-	Has   bool
-	Links []simpleLink
-}
-
-func createSimpleLinks(ls []simpleLink) simpleLinks {
-	return simpleLinks{
-		Has:   len(ls) > 0,
-		Links: ls,
-	}
-}
-
-type baseData struct {
-	Lang           string
-	MetaHeader     string
-	CSSBaseURL     string
-	CSSUserURL     string
-	CSSRoleURL     string
-	Title          string
-	HomeURL        string
-	WithAuth       bool
-	UserIsValid    bool
-	UserZettelURL  string
-	UserIdent      string
-	LoginURL       string
-	LogoutURL      string
-	ListZettelURL  string
-	ListRolesURL   string
-	ListTagsURL    string
-	CanRefresh     bool
-	RefreshURL     string
-	NewZettelLinks simpleLinks
-	SearchURL      string
-	QueryKeyQuery  string
-	QueryKeySeed   string
-	Content        string
-	FooterHTML     string
-	DebugMode      bool
-}
-
-func (wui *WebUI) makeBaseData(ctx context.Context, lang, title, roleCSSURL string, user *meta.Meta, data *baseData) {
-	var userZettelURL string
-	var userIdent string
-
-	userIsValid := user != nil
-	if userIsValid {
-		userZettelURL = wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String()
-		userIdent = user.GetDefault(api.KeyUserID, "")
-	}
-
-	data.Lang = lang
-	data.CSSBaseURL = wui.cssBaseURL
-	data.CSSUserURL = wui.cssUserURL
-	data.CSSRoleURL = roleCSSURL
-	data.Title = title
-	data.HomeURL = wui.homeURL
-	data.WithAuth = wui.withAuth
-	data.UserIsValid = userIsValid
-	data.UserZettelURL = userZettelURL
-	data.UserIdent = userIdent
-	data.LoginURL = wui.loginURL
-	data.LogoutURL = wui.logoutURL
-	data.ListZettelURL = wui.listZettelURL
-	data.ListRolesURL = wui.listRolesURL
-	data.ListTagsURL = wui.listTagsURL
-	data.CanRefresh = wui.canRefresh(user)
-	data.RefreshURL = wui.refreshURL
-	data.NewZettelLinks = createSimpleLinks(wui.fetchNewTemplates(ctx, user))
-	data.SearchURL = wui.searchURL
-	data.QueryKeyQuery = api.QueryKeyQuery
-	data.QueryKeySeed = api.QueryKeySeed
-	data.FooterHTML = wui.calculateFooterHTML(ctx)
-	data.DebugMode = wui.debug
-}
-
 func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return wui.createGenerator(wui) }
-
-// htmlAttrNewWindow returns HTML attribute string for opening a link in a new window.
-// If hasURL is false an empty string is returned.
-func htmlAttrNewWindow(hasURL bool) string {
-	if hasURL {
-		return ` target="_blank" rel="noopener noreferrer"`
-	}
-	return ""
-}
-
-func (wui *WebUI) fetchNewTemplates(ctx context.Context, user *meta.Meta) (result []simpleLink) {
-	ctx = box.NoEnrichContext(ctx)
-	if !wui.canCreate(ctx, user) {
-		return nil
-	}
-	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZid)
-	if err != nil {
-		return nil
-	}
-	refs := collect.Order(parser.ParseZettel(ctx, menu, "", wui.rtConfig))
-	for _, ref := range refs {
-		zid, err2 := id.Parse(ref.URL.Path)
-		if err2 != nil {
-			continue
-		}
-		m, err2 := wui.box.GetMeta(ctx, zid)
-		if err2 != nil {
-			continue
-		}
-		if !wui.policy.CanRead(user, m) {
-			continue
-		}
-		result = append(result, simpleLink{
-			Text: parser.NormalizedSpacedText(m.GetTitle()),
-			URL: wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
-				AppendKVQuery(queryKeyAction, valueActionNew).String(),
-		})
-	}
-	return result
-}
-
-func (wui *WebUI) calculateFooterHTML(ctx context.Context) string {
-	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
-		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
-			htmlEnc := wui.getSimpleHTMLEncoder().SetUnique("footer-")
-			if result, err3 := htmlEnc.BlocksString(&zn.Ast); err3 == nil {
-				return result
-			}
-		}
-	}
-	return ""
-}
-
-func (wui *WebUI) renderTemplate(
-	ctx context.Context,
-	w http.ResponseWriter,
-	templateID id.Zid,
-	base *baseData,
-	data interface{}) {
-	wui.renderTemplateStatus(ctx, w, http.StatusOK, templateID, base, data)
-}
-
-func (wui *WebUI) renderTemplateStatus(
-	ctx context.Context,
-	w http.ResponseWriter,
-	code int,
-	templateID id.Zid,
-	base *baseData,
-	data interface{}) {
-
-	bt, err := wui.getTemplate(ctx, id.BaseTemplateZid+30000)
-	if err != nil {
-		wui.log.IfErr(err).Zid(id.BaseTemplateZid + 30000).Msg("Unable to get template")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	t, err := wui.getTemplate(ctx, templateID)
-	if err != nil {
-		wui.log.IfErr(err).Zid(templateID).Msg("Unable to get template")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	if user := server.GetUser(ctx); user != nil {
-		if tok, err1 := wui.token.GetToken(user, wui.tokenLifetime, auth.KindwebUI); err1 == nil {
-			wui.setToken(w, tok)
-		}
-	}
-	var content strings.Builder
-	err = t.Render(&content, data)
-	if err == nil {
-		wui.prepareAndWriteHeader(w, code)
-		base.Content = content.String()
-		err = bt.Render(w, base)
-	}
-	if err != nil {
-		wui.log.IfErr(err).Msg("Unable to write HTML via template")
-	}
-}
 
 // GetURLPrefix returns the configured URL prefix of the web server.
 func (wui *WebUI) GetURLPrefix() string { return wui.ab.GetURLPrefix() }

@@ -30,16 +30,6 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-type metaDataInfo struct {
-	Key   string
-	Value string
-}
-
-type matrixLine struct {
-	Header   string
-	Elements []simpleLink
-}
-
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
 func (wui *WebUI) MakeGetInfoHandler(
 	parseZettel usecase.ParseZettel,
@@ -65,29 +55,20 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		enc := wui.getSimpleHTMLEncoder()
-		pairs := zn.Meta.ComputedPairs()
-		metaData := make([]metaDataInfo, len(pairs))
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
-		for i, p := range pairs {
-			var sb strings.Builder
-			if sval := wui.writeHTMLMetaValue(
-				p.Key, p.Value,
-				getTextTitle,
-				func(val string) ast.InlineSlice {
-					return evaluate.RunMetadata(ctx, val)
-				},
-				enc); !sxpf.IsNil(sval) {
-				wui.htmlGen.WriteHTML(&sb, sval)
-			}
-			metaData[i] = metaDataInfo{p.Key, sb.String()}
+		evalMeta := func(val string) ast.InlineSlice {
+			return evaluate.RunMetadata(ctx, val)
 		}
+		pairs := zn.Meta.ComputedPairs()
+		metadata := sxpf.Nil()
+		for i := len(pairs) - 1; i >= 0; i-- {
+			key := pairs[i].Key
+			sxval := wui.writeHTMLMetaValue(key, pairs[i].Value, getTextTitle, evalMeta, enc)
+			metadata = metadata.Cons(sxpf.Cons(sxpf.MakeString(key), sxval))
+		}
+
 		summary := collect.References(zn)
-		locLinks, qLinks, extLinks := splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))
-		queryLinks := make([]simpleLink, len(qLinks))
-		for i, sq := range qLinks {
-			queryLinks[i].Text = sq
-			queryLinks[i].URL = wui.NewURLBuilder('h').AppendQuery(sq).String()
-		}
+		locLinks, queryLinks, extLinks := wui.splitLocSeaExtLinks(append(summary.Links, summary.Embeds...))
 
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		phrase := q.Get(api.QueryKeyPhrase)
@@ -95,189 +76,155 @@ func (wui *WebUI) MakeGetInfoHandler(
 			phrase = title
 		}
 		phrase = strings.TrimSpace(phrase)
-		unlinkedMeta, err := unlinkedRefs.Run(
-			ctx, phrase, adapter.AddUnlinkedRefsToQuery(nil, zn.InhMeta))
+		unlinkedMeta, err := unlinkedRefs.Run(ctx, phrase, adapter.AddUnlinkedRefsToQuery(nil, zn.InhMeta))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig))
-		unlinkedContent, err := enc.BlocksString(&bns)
+		unlinkedContent, _, err := enc.BlocksSxn(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-
+		encTexts := encodingTexts()
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 
 		user := server.GetUser(ctx)
 		canCreate := wui.canCreate(ctx, user)
 		apiZid := api.ZettelID(zid.String())
-		var base baseData
-		wui.makeBaseData(ctx, wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, "", user, &base)
-		wui.renderTemplate(ctx, w, id.InfoTemplateZid, &base, struct {
-			Zid            string
-			WebURL         string
-			ContextURL     string
-			CanWrite       bool
-			EditURL        string
-			CanCopy        bool
-			CopyURL        string
-			CanVersion     bool
-			VersionURL     string
-			CanFolge       bool
-			FolgeURL       string
-			CanRename      bool
-			RenameURL      string
-			CanDelete      bool
-			DeleteURL      string
-			MetaData       []metaDataInfo
-			HasLocLinks    bool
-			LocLinks       []localLink
-			QueryLinks     simpleLinks
-			HasExtLinks    bool
-			ExtLinks       []string
-			ExtNewWindow   string
-			UnLinksContent string
-			UnLinksPhrase  string
-			QueryKeyPhrase string
-			EvalMatrix     []matrixLine
-			ParseMatrix    []matrixLine
-			HasShadowLinks bool
-			ShadowLinks    []string
-		}{
-			Zid:            zid.String(),
-			WebURL:         wui.NewURLBuilder('h').SetZid(apiZid).String(),
-			ContextURL:     wui.NewURLBuilder('h').AppendQuery(api.ContextDirective + " " + zid.String()).String(),
-			CanWrite:       wui.canWrite(ctx, user, zn.Meta, zn.Content),
-			EditURL:        wui.NewURLBuilder('e').SetZid(apiZid).String(),
-			CanCopy:        canCreate && !zn.Content.IsBinary(),
-			CopyURL:        wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String(),
-			CanVersion:     canCreate,
-			VersionURL:     wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String(),
-			CanFolge:       canCreate,
-			FolgeURL:       wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String(),
-			CanRename:      wui.canRename(ctx, user, zn.Meta),
-			RenameURL:      wui.NewURLBuilder('b').SetZid(apiZid).String(),
-			CanDelete:      wui.canDelete(ctx, user, zn.Meta),
-			DeleteURL:      wui.NewURLBuilder('d').SetZid(apiZid).String(),
-			MetaData:       metaData,
-			HasLocLinks:    len(locLinks) > 0,
-			LocLinks:       locLinks,
-			QueryLinks:     createSimpleLinks(queryLinks),
-			HasExtLinks:    len(extLinks) > 0,
-			ExtLinks:       extLinks,
-			ExtNewWindow:   htmlAttrNewWindow(len(extLinks) > 0),
-			UnLinksContent: unlinkedContent,
-			UnLinksPhrase:  phrase,
-			QueryKeyPhrase: api.QueryKeyPhrase,
-			EvalMatrix:     wui.infoAPIMatrix(zid, false),
-			ParseMatrix:    wui.infoAPIMatrixParsed(zid),
-			HasShadowLinks: len(shadowLinks) > 0,
-			ShadowLinks:    shadowLinks,
-		})
+		env, err := wui.createRenderEnv(ctx, "info", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
+		rb := makeRenderBinder(wui.sf, env, err)
+		rb.bindString("zid", sxpf.MakeString(zid.String()))
+		rb.bindString("web-url", sxpf.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
+		rb.bindString("context-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.ContextDirective+" "+zid.String()).String()))
+		if wui.canWrite(ctx, user, zn.Meta, zn.Content) {
+			rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
+		}
+		if canCreate && !zn.Content.IsBinary() {
+			rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+		}
+		if canCreate {
+			rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+			rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		}
+		if wui.canRename(ctx, user, zn.Meta) {
+			rb.bindString("rename-url", sxpf.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
+		}
+		if wui.canDelete(ctx, user, zn.Meta) {
+			rb.bindString("delete-url", sxpf.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
+		}
+		rb.bindString("metadata", metadata)
+		rb.bindString("local-links", locLinks)
+		rb.bindString("query-links", queryLinks)
+		rb.bindString("ext-links", extLinks)
+		rb.bindString("unlinked-content", unlinkedContent)
+		rb.bindString("phrase", sxpf.MakeString(phrase))
+		rb.bindString("query-key-phrase", sxpf.MakeString(api.QueryKeyPhrase))
+		rb.bindString("enc-eval", wui.infoAPIMatrix(zid, false, encTexts))
+		rb.bindString("enc-parsed", wui.infoAPIMatrixParsed(zid, encTexts))
+		rb.bindString("shadow-links", shadowLinks)
+		if rb.err == nil {
+			err = wui.renderSxnTemplate(ctx, w, id.InfoTemplateZid, env)
+		}
+		if err != nil {
+			wui.reportError(ctx, w, err)
+		}
 	}
 }
 
-type localLink struct {
-	Valid bool
-	Zid   string
-}
-
-func splitLocSeaExtLinks(links []*ast.Reference) (locLinks []localLink, queries, extLinks []string) {
-	if len(links) == 0 {
-		return nil, nil, nil
-	}
-	for _, ref := range links {
+func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries, extLinks *sxpf.List) {
+	for i := len(links) - 1; i >= 0; i-- {
+		ref := links[i]
 		if ref.State == ast.RefStateSelf || ref.IsZettel() {
 			continue
 		}
 		if ref.State == ast.RefStateQuery {
-			queries = append(queries, ref.Value)
+			queries = queries.Cons(
+				sxpf.Cons(
+					sxpf.MakeString(ref.Value),
+					sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(ref.Value).String())))
 			continue
 		}
 		if ref.IsExternal() {
-			extLinks = append(extLinks, ref.String())
+			extLinks = extLinks.Cons(sxpf.MakeString(ref.String()))
 			continue
 		}
-		locLinks = append(locLinks, localLink{ref.IsValid(), ref.String()})
+		locLinks = locLinks.Cons(sxpf.Cons(sxpf.MakeBoolean(ref.IsValid()), sxpf.MakeString(ref.String())))
 	}
 	return locLinks, queries, extLinks
 }
 
-func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool) []matrixLine {
+func encodingTexts() []string {
 	encodings := encoder.GetEncodings()
 	encTexts := make([]string, 0, len(encodings))
 	for _, f := range encodings {
 		encTexts = append(encTexts, f.String())
 	}
 	sort.Strings(encTexts)
-	parts := getParts()
-	matrix := make([]matrixLine, 0, len(parts))
+	return encTexts
+}
+
+var apiParts = []string{api.PartZettel, api.PartMeta, api.PartContent}
+
+func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *sxpf.List {
+	matrix := sxpf.Nil()
 	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
-	for _, part := range parts {
-		row := make([]simpleLink, len(encTexts))
-		for j, enc := range encTexts {
+	for ip := len(apiParts) - 1; ip >= 0; ip-- {
+		part := apiParts[ip]
+		row := sxpf.Nil()
+		for je := len(encTexts) - 1; je >= 0; je-- {
+			enc := encTexts[je]
 			if parseOnly {
 				u.AppendKVQuery(api.QueryKeyParseOnly, "")
 			}
 			u.AppendKVQuery(api.QueryKeyPart, part)
 			u.AppendKVQuery(api.QueryKeyEncoding, enc)
-			row[j] = simpleLink{enc, u.AttrString()}
+			row = row.Cons(sxpf.Cons(sxpf.MakeString(enc), sxpf.MakeString(u.String())))
 			u.ClearQuery()
 		}
-		matrix = append(matrix, matrixLine{part, row})
+		matrix = matrix.Cons(sxpf.Cons(sxpf.MakeString(part), row))
 	}
 	return matrix
 }
 
-func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid) []matrixLine {
-	matrix := wui.infoAPIMatrix(zid, true)
-	apiZid := api.ZettelID(zid.String())
+func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.List {
+	matrix := wui.infoAPIMatrix(zid, true, encTexts)
+	// apiZid := api.ZettelID(zid.String())
+	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 
-	// Append plain and data format
-	u := wui.NewURLBuilder('z').SetZid(apiZid)
-	for i, part := range getParts() {
+	for i, row := 0, matrix; i < len(apiParts) && row != nil; row = row.Tail() {
+		line, isLine := sxpf.GetList(row.Car())
+		if !isLine || line == nil {
+			continue
+		}
+		last := line.LastPair()
+		part := apiParts[i]
 		u.AppendKVQuery(api.QueryKeyPart, part)
-		matrix[i].Elements = append(matrix[i].Elements, simpleLink{"plain", u.AttrString()})
+		last = last.AppendBang(sxpf.Cons(sxpf.MakeString("plain"), sxpf.MakeString(u.String())))
 		u.ClearQuery()
+		if i < 2 {
+			u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
+			u.AppendKVQuery(api.QueryKeyPart, part)
+			last = last.AppendBang(sxpf.Cons(sxpf.MakeString("data"), sxpf.MakeString(u.String())))
+			u.ClearQuery()
+			u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
+			u.AppendKVQuery(api.QueryKeyPart, part)
+			last.AppendBang(sxpf.Cons(sxpf.MakeString("json"), sxpf.MakeString(u.String())))
+			u.ClearQuery()
+		}
+		i++
 	}
-
-	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
-	u.AppendKVQuery(api.QueryKeyPart, api.PartZettel)
-	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"data", u.AttrString()})
-
-	u.ClearQuery()
-	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
-	u.AppendKVQuery(api.QueryKeyPart, api.PartMeta)
-	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"data", u.AttrString()})
-
-	u.ClearQuery()
-	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
-	u.AppendKVQuery(api.QueryKeyPart, api.PartZettel)
-	matrix[0].Elements = append(matrix[0].Elements, simpleLink{"json", u.AttrString()})
-
-	u.ClearQuery()
-	u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
-	u.AppendKVQuery(api.QueryKeyPart, api.PartMeta)
-	matrix[1].Elements = append(matrix[1].Elements, simpleLink{"json", u.AttrString()})
-
 	return matrix
 }
 
-func getParts() []string {
-	return []string{api.PartZettel, api.PartMeta, api.PartContent}
-}
-
-func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) []string {
-	ml, err := getAllMeta.Run(ctx, zid)
-	if err != nil || len(ml) < 2 {
-		return nil
-	}
-	result := make([]string, 0, len(ml)-1)
-	for _, m := range ml[1:] {
-		if boxNo, ok := m.Get(api.KeyBoxNumber); ok {
-			result = append(result, boxNo)
+func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) *sxpf.List {
+	result := sxpf.Nil()
+	if ml, err := getAllMeta.Run(ctx, zid); err == nil {
+		for i := len(ml) - 1; i >= 1; i-- {
+			if boxNo, ok := ml[i].Get(api.KeyBoxNumber); ok {
+				result = result.Cons(sxpf.MakeString(boxNo))
+			}
 		}
 	}
 	return result

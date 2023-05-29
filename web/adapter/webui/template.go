@@ -52,9 +52,12 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindBuiltinEEA("bound?", env.BoundP)
 	engine.BindBuiltinEEA("map", callable.Map)
 	engine.BindBuiltinA("list", list.List)
+	engine.BindBuiltinA("car", list.Car)
+	engine.BindBuiltinA("cdr", list.Cdr)
 	engine.BindBuiltinA("pair-to-href", wui.sxnPairToHref)
 	engine.BindBuiltinA("pair-to-href-li", wui.sxnPairToHrefLi)
 	engine.BindBuiltinA("pairs-to-dl", wui.sxnPairsToDl)
+	engine.BindBuiltinA("make-enc-matrix", wui.sxnEncMatrix)
 	return engine
 }
 
@@ -93,6 +96,41 @@ func (wui *WebUI) sxnPairsToDl(args []sxpf.Object) (sxpf.Object, error) {
 		}
 	}
 	return dl, nil
+}
+
+func (wui *WebUI) sxnEncMatrix(args []sxpf.Object) (sxpf.Object, error) {
+	err := builtins.CheckArgs(args, 1, 1)
+	rows, err := builtins.GetList(err, args, 0)
+	if err != nil {
+		return nil, err
+	}
+	table := sxpf.Cons(wui.symTable, nil)
+	currRow := table
+	for node := rows; node != nil; node = node.Tail() {
+		row, isRow := sxpf.GetList(node.Car())
+		if !isRow || row == nil {
+			continue
+		}
+		line := sxpf.Cons(sxpf.MakeList(wui.symTh, row.Car()), nil)
+		currLine := line
+		line = line.Cons(wui.symTr)
+		currRow = currRow.AppendBang(line)
+		for elem := row.Tail(); elem != nil; elem = elem.Tail() {
+			link, isLink := sxpf.GetList(elem.Car())
+			if !isLink || link == nil {
+				continue
+			}
+			currLine = currLine.AppendBang(sxpf.MakeList(
+				wui.symTd,
+				sxpf.MakeList(
+					wui.symA,
+					sxpf.MakeList(wui.symAttr, sxpf.Cons(wui.symHref, link.Cdr())),
+					link.Car(),
+				),
+			))
+		}
+	}
+	return table, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
@@ -207,7 +245,7 @@ func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.List {
 
 func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (eval.Expr, error) {
 	wui.mxCache.RLock()
-	t, ok := wui.templateSxnCache[zid]
+	t, ok := wui.templateCache[zid]
 	wui.mxCache.RUnlock()
 	if ok {
 		return t, nil
@@ -237,7 +275,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 	}
 
 	wui.mxCache.Lock()
-	wui.templateSxnCache[zid] = t
+	wui.templateCache[zid] = t
 	wui.mxCache.Unlock()
 	return t, nil
 }

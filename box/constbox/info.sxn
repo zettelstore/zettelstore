@@ -1,0 +1,67 @@
+(article
+  (header (h1 "Information for Zettel " ,zid)
+    (p
+      (a (@ (href ,web-url)) "Web")
+      (@H " &#183; ") (a (@ (href ,context-url)) "Context")
+      ,@(if (bound? 'edit-url) `((@H " &#183; ") (a (@ (href ,edit-url)) "Edit")))
+      ,@(if (bound? 'copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy")))
+      ,@(if (bound? 'version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))
+      ,@(if (bound? 'folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge")))
+      ,@(if (bound? 'rename-url) `((@H " &#183; ") (a (@ (href ,rename-url)) "Rename")))
+      ,@(if (bound? 'delete-url) `((@H " &#183; ") (a (@ (href ,delete-url)) "Delete")))
+    )
+  )
+  (h2 "Interpreted Metadata")
+  (table ,@(map (lambda (p) `(tr (td ,(car p)) (td ,(cdr p)))) metadata))
+  (h2 "References")
+  ,@(if local-links
+    `((h3 "Local")
+      (ul ,@(map (lambda (l) (if (car l) `(li (a (@ (href ,(cdr l))) ,(cdr l))) `(li ,(cdr l)))) local-links))
+    )
+  )
+  ,@(if query-links
+    `((h3 "Queries")
+      (ul ,@(map (lambda (q) `(li (a (@ (href ,(cdr q))) ,(car q)))) query-links))
+    )
+  )
+  ,@(if ext-links
+    `((h3 "External")
+      (ul ,@(map (lambda (e) `(li (a (@ (href ,e) (target "_blank") (rel "noopener noreferrer")) ,e))) ext-links))
+    )
+  )
+  (h3 "Unlinked")
+  ,@unlinked-content
+  (form
+    (label (@ (for "phrase")) "Search Phrase")
+    (input (@ (class "zs-input") (type "text") (id "phrase") (name ,query-key-phrase) (placeholder "Phrase..") (value ,phrase)))
+  )
+  (h2 "Parts and encodings")
+  ,(make-enc-matrix enc-eval)
+  (h3 "Parsed (not evaluated)")
+  ,(make-enc-matrix enc-parsed)
+  ,@(if shadow-links
+    `((h2 "Shadowed Boxes")
+      (ul ,@(map (lambda (s) `(li ,s)) shadow-links))
+    )
+  )
+)
+;<h2>Parts and encodings</h2>
+;<table>
+;{{#EvalMatrix}}
+;<tr>
+;<th>{{Header}}</th>
+;{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</a></td>
+;{{/Elements}}
+;</tr>
+;{{/EvalMatrix}}
+;</table>
+;<h3>Parsed (not evaluated)</h3>
+;<table>
+;{{#ParseMatrix}}
+;<tr>
+;<th>{{Header}}</th>
+;{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</a></td>
+;{{/Elements}}
+;</tr>
+;{{/ParseMatrix}}
+;</table>
