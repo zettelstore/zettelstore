@@ -71,15 +71,6 @@ func init() {
 		ParseBlocks:   parseSxnBlocks,
 		ParseInlines:  parseSxnInlines,
 	})
-	parser.Register(&parser.Info{
-		Name:          meta.SyntaxMustache,
-		AltNames:      []string{},
-		IsASTParser:   false,
-		IsTextFormat:  true,
-		IsImageFormat: false,
-		ParseBlocks:   parseBlocks,
-		ParseInlines:  parseInlines,
-	})
 }
 
 func parseBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {

@@ -2,6 +2,11 @@
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (pending)</h2>
+  *  Syntax of templates for the web user interface are changed from Mustache
+     to Sxn (S-Expressions). Mustache is no longer supported, nowhere in the
+     software. Mustache was marked deprecated in version 0.11.0. If you
+     modified the template zettel, you must adapt to the new syntax.
+     (breaking: webui)
   *  Query expression is allowed to search for the "context" of a zettel.
      Previously, this was a separate call, without adding a search expression
      / action expression.

@@ -51,8 +51,8 @@ func TestNewExtIsBetter(t *testing.T) {
 		// Main Formats
 		meta.SyntaxZmk, meta.SyntaxDraw, meta.SyntaxMarkdown, meta.SyntaxMD,
 		// Other supported text formats
-		meta.SyntaxCSS, meta.SyntaxTxt, meta.SyntaxHTML,
-		meta.SyntaxMustache, meta.SyntaxText, meta.SyntaxPlain,
+		meta.SyntaxCSS, meta.SyntaxSxn, meta.SyntaxTxt, meta.SyntaxHTML,
+		meta.SyntaxText, meta.SyntaxPlain,
 		// Supported text graphics formats
 		meta.SyntaxSVG,
 		meta.SyntaxNone,

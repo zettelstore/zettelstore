@@ -14,7 +14,6 @@ import (
 	"net/url"
 	"strings"
 
-	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
 	"codeberg.org/t73fde/sxpf/eval"
 	"zettelstore.de/c/api"
@@ -43,11 +42,11 @@ type htmlGenerator struct {
 
 func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	th := shtml.NewTransformer(1, wui.sf)
-	symA := th.Make("a")
+	symA := wui.symA
 	symImg := th.Make("img")
-	symAt := th.Make(sxhtml.NameSymAttr)
+	symAttr := wui.symAttr
 
-	symHref := th.Make("href")
+	symHref := wui.symHref
 	symClass := th.Make("class")
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
@@ -63,7 +62,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		}
 		objA := rest.Car()
 		attr, ok = sxpf.GetList(objA)
-		if !ok || !symAt.IsEqual(attr.Car()) {
+		if !ok || !symAttr.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
 		return attr, attr.Tail(), rest.Tail()
@@ -92,7 +91,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			u = u.SetFragment(fragment)
 		}
 		assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
-		return rest.Cons(assoc.Cons(symAt)).Cons(symA)
+		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 	}
 
 	th.SetRebinder(func(te *shtml.TransformEnv) {
@@ -117,7 +116,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			}
 			u := builder.NewURLBuilder('/').SetRawLocal(href.String())
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
-			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
+			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkQuery, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, nil, args)
@@ -146,7 +145,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			}
 			u := builder.NewURLBuilder('h').AppendQuery(q)
 			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
-			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
+			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkExternal, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, nil, args)
@@ -160,7 +159,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			assoc = assoc.Cons(sxpf.Cons(symClass, sxpf.MakeString("external"))).
 				Cons(sxpf.Cons(symTarget, sxpf.MakeString("_blank"))).
 				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
-			return rest.Cons(assoc.Cons(symAt)).Cons(symA)
+			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymEmbed, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
 			obj, err := prevFn.Call(nil, nil, args)
@@ -172,7 +171,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			attr, ok := sxpf.GetList(lst.Tail().Car())
-			if !ok || !symAt.IsEqual(attr.Car()) {
+			if !ok || !symAttr.IsEqual(attr.Car()) {
 				return obj
 			}
 			symSrc := th.Make("src")
@@ -189,7 +188,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('z').SetZid(zid)
-			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAt)
+			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAttr)
 			return lst.Tail().Tail().Cons(imgAttr).Cons(symImg)
 		})
 	})
@@ -197,7 +196,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	return &htmlGenerator{
 		tx:    szenc.NewTransformer(),
 		th:    th,
-		symAt: symAt,
+		symAt: symAttr,
 	}
 }
 
@@ -266,13 +265,6 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	return result
 }
 
-func (g *htmlGenerator) MetaString(m *meta.Meta, evalMeta encoder.EvalMetaFunc) string {
-	result := g.MetaSxn(m, evalMeta)
-	var sb strings.Builder
-	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(result))
-	_, _ = gen.WriteListHTML(&sb, result)
-	return sb.String()
-}
 func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
 	var sb strings.Builder
 	for i, val := range meta.ListFromValue(tags) {
@@ -300,27 +292,6 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.L
 	return sh, g.th.Endnotes(), nil
 }
 
-// BlocksString encodes a block slice.
-func (g *htmlGenerator) BlocksString(bs *ast.BlockSlice) (string, error) {
-	if bs == nil || len(*bs) == 0 {
-		return "", nil
-	}
-	sx := g.tx.GetSz(bs)
-	sh, err := g.th.Transform(sx)
-	if err != nil {
-		return "", err
-	}
-	var sb strings.Builder
-	gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh), sxhtml.WithNewline)
-	_, err = gen.WriteListHTML(&sb, sh)
-	if err != nil {
-		return sb.String(), err
-	}
-
-	_, err = gen.WriteHTML(&sb, g.th.Endnotes())
-	return sb.String(), err
-}
-
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
 func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.List {
 	if is == nil || len(*is) == 0 {
@@ -332,15 +303,4 @@ func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.List {
 		return sxpf.Nil()
 	}
 	return sh
-}
-
-// InlinesString returns an inline slice, encoded as a HTML string.
-func (g *htmlGenerator) InlinesString(is *ast.InlineSlice) string {
-	if sh := g.InlinesSxHTML(is); !sxpf.IsNil(sh) {
-		var sb strings.Builder
-		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(sh))
-		_, _ = gen.WriteListHTML(&sb, sh)
-		return sb.String()
-	}
-	return ""
 }

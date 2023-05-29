@@ -187,16 +187,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyModified:   "20221013105100",
 		},
 		zettel.NewContent(contentDependencies)},
-	id.BaseTemplateZid + 30000: {
-		constHeader{
-			api.KeyTitle:      "Zettelstore Base HTML Template (Mustache)",
-			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxMustache,
-			api.KeyCreated:    "20210504135842",
-			api.KeyModified:   "20230523142249",
-			api.KeyVisibility: api.ValueVisibilityExpert,
-		},
-		zettel.NewContent(contentBaseMustache)},
 	id.BaseTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base HTML Template",
@@ -373,9 +363,6 @@ var contentContributors []byte
 
 //go:embed dependencies.zettel
 var contentDependencies []byte
-
-//go:embed base.mustache
-var contentBaseMustache []byte
 
 //go:embed base.sxn
 var contentBaseSxn []byte

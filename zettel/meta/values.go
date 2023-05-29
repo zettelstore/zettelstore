@@ -26,7 +26,6 @@ const (
 	SyntaxJPG      = "jpg"
 	SyntaxMarkdown = api.ValueSyntaxMarkdown
 	SyntaxMD       = api.ValueSyntaxMD
-	SyntaxMustache = api.ValueSyntaxMustache
 	SyntaxNone     = api.ValueSyntaxNone
 	SyntaxPlain    = "plain"
 	SyntaxPNG      = "png"

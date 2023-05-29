@@ -59,7 +59,6 @@ var syntax2mime = map[string]string{
 	meta.SyntaxJPG:      mimeJPEG,
 	meta.SyntaxMarkdown: mimeMarkdown,
 	meta.SyntaxMD:       mimeMarkdown,
-	meta.SyntaxMustache: PlainText,
 	meta.SyntaxNone:     "",
 	meta.SyntaxPlain:    PlainText,
 	meta.SyntaxPNG:      mimePNG,

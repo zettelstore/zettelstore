@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelstore
 syntax: zmk
 created: 20210126175300
-modified: 20221112111148
+modified: 20230529223634
 
 [[Zettelmarkup|00001007000000]] is not the only markup language you can use to define your content.
 Zettelstore is quite agnostic with respect to markup languages.
@@ -41,8 +41,6 @@ The following syntax values are supported:
 : For those who desperately need [[Markdown|https://daringfireball.net/projects/markdown/]].
   Since the world of Markdown is so diverse, a [[CommonMark|00001008010500]] parser is used.
   See [[Use Markdown within Zettelstore|00001008010000]].
-; [!mustache|''mustache'']
-: A [[Mustache template|https://mustache.github.io/]], used when rendering a zettel as HTML for the [[web user interface|00001014000000]].
 ; [!none|''none'']
 : Only the metadata of a zettel is ""parsed"".
   Useful for displaying the full metadata.
@@ -50,6 +48,9 @@ The following syntax values are supported:
   The zettel content is ignored.
 ; [!svg|''svg'']
 : [[Scalable Vector Graphics|https://www.w3.org/TR/SVG2/]].
+; [!sxn|''sxn'']
+: S-Expressions, as implemented by [[sxpf|https://codeberg.org/t73fde/sxpf]].
+  Often used to specify templates when rendering a zettel as HTML for the [[web user interface|00001014000000]] (with the help of [[sxhtml|https://codeberg.org/t73fde/sxhtml]]).
 ; [!text|''text''], [!plain|''plain''], [!txt|''txt'']
 : Plain text that must not be interpreted further.
 ; [!zmk|''zmk'']

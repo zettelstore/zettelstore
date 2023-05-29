@@ -69,8 +69,6 @@ type WebUI struct {
 	createNewURL  string
 
 	sf      sxpf.SymbolFactory
-	htmlGen *sxhtml.Generator
-
 	engine  *eval.Engine
 	genHTML *sxhtml.Generator
 
@@ -127,9 +125,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		searchURL:     ab.NewURLBuilder('h').String(),
 		createNewURL:  ab.NewURLBuilder('c').String(),
 
-		sf:      sf,
-		htmlGen: sxhtml.NewGenerator(sf),
-
+		sf:            sf,
 		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
 		symQuote:      sf.MustMake("quote"),
 		symQQ:         sf.MustMake("quasiquote"),
