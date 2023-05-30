@@ -2,14 +2,14 @@
   (header
     (h1 ,heading)
     (div (@ (class "zs-meta"))
-      ,@(if can-write `((a (@ (href ,edit-url)) "Edit") (@H " &#183; ")))
+      ,@(if (bound? 'edit-url) `((a (@ (href ,edit-url)) "Edit") (@H " &#183; ")))
       ,zid (@H " &#183; ")
       (a (@ (href ,info-url)) "Info") (@H " &#183; ")
       "(" (a (@ (href ,role-url)) ,meta-role) ")"
       ,@(if tag-refs `((@H " &#183; ") ,@tag-refs))
-      ,@(if can-copy `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy")))
-      ,@(if can-version `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))
-      ,@(if can-folge `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge")))
+      ,@(if (bound? 'copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy")))
+      ,@(if (bound? 'version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))
+      ,@(if (bound? 'folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge")))
       ,@(if predecessor-refs `((br) "Predecessor: " ,predecessor-refs))
       ,@(if precursor-refs `((br) "Precursor: " ,precursor-refs))
       ,@(if superior-refs `((br) "Superior: " ,superior-refs))

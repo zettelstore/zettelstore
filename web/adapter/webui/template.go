@@ -153,8 +153,9 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	rb.bindString("list-zettel-url", sxpf.MakeString(wui.listZettelURL))
 	rb.bindString("list-roles-url", sxpf.MakeString(wui.listRolesURL))
 	rb.bindString("list-tags-url", sxpf.MakeString(wui.listTagsURL))
-	rb.bindString("can-refresh", sxpf.MakeBoolean(wui.canRefresh(user)))
-	rb.bindString("refresh-url", sxpf.MakeString(wui.refreshURL))
+	if wui.canRefresh(user) {
+		rb.bindString("refresh-url", sxpf.MakeString(wui.refreshURL))
+	}
 	rb.bindString("new-zettel-links", wui.fetchNewTemplatesSxn(ctx, user))
 	rb.bindString("search-url", sxpf.MakeString(wui.searchURL))
 	rb.bindString("query-key-query", sxpf.MakeString(api.QueryKeyQuery))

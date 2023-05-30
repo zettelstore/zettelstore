@@ -61,10 +61,6 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 				return
 			}
 		}
-		seed, found := q.GetSeed()
-		if !found {
-			seed = 0
-		}
 
 		user := server.GetUser(ctx)
 		env, err := wui.createRenderEnv(
@@ -82,9 +78,14 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		rb.bindString("query-value", sxpf.MakeString(q.String()))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
-		rb.bindString("can-create", sxpf.MakeBoolean(wui.canCreate(ctx, user)))
-		rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
-		rb.bindString("seed", sxpf.Int64(seed))
+		if wui.canCreate(ctx, user) {
+			seed, found := q.GetSeed()
+			if !found {
+				seed = 0
+			}
+			rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
+			rb.bindString("seed", sxpf.Int64(seed))
+		}
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)
 		}

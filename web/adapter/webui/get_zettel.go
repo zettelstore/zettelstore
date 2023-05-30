@@ -57,7 +57,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 
 		user := server.GetUser(ctx)
 		apiZid := api.ZettelID(zid.String())
-		canCreate := wui.canCreate(ctx, user)
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
@@ -66,18 +65,20 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
 		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
 		rb.bindString("heading", sxpf.MakeString(title))
-		rb.bindString("can-write", sxpf.MakeBoolean(wui.canWrite(ctx, user, zn.Meta, zn.Content)))
-		rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
+		if wui.canWrite(ctx, user, zn.Meta, zn.Content) {
+			rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
+		}
 		rb.bindString("info-url", sxpf.MakeString(wui.NewURLBuilder('i').SetZid(apiZid).String()))
 		rb.bindString("role-url",
 			sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+zn.Meta.GetDefault(api.KeyRole, "")).String()))
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
-		rb.bindString("can-copy", sxpf.Boolean(canCreate && !zn.Content.IsBinary()))
-		rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
-		rb.bindString("can-version", sxpf.Boolean(canCreate))
-		rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-		rb.bindString("can-folge", sxpf.Boolean(canCreate))
-		rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		if wui.canCreate(ctx, user) {
+			if !zn.Content.IsBinary() {
+				rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+			}
+			rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+			rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		}
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
 		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
 		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
