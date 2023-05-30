@@ -24,6 +24,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
@@ -76,7 +77,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			phrase = title
 		}
 		phrase = strings.TrimSpace(phrase)
-		unlinkedMeta, err := unlinkedRefs.Run(ctx, phrase, adapter.AddUnlinkedRefsToQuery(nil, zn.InhMeta))
+		unlinkedMeta, err := unlinkedRefs.Run(ctx, phrase, adapter.AddUnlinkedRefsToQuery(query.Parse("ORDER id"), zn.InhMeta))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
