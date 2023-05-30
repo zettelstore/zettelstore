@@ -11,7 +11,7 @@ require (
 	golang.org/x/crypto v0.9.0
 	golang.org/x/term v0.8.0
 	golang.org/x/text v0.9.0
-	zettelstore.de/c v0.11.1-0.20230524183919-7e89180c6b97
+	zettelstore.de/c v0.11.1-0.20230529211931-6ec414b627f9
 )
 
 require golang.org/x/sys v0.8.0 // indirect
