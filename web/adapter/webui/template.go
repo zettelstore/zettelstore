@@ -269,8 +269,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	form := sxpf.MakeList(wui.symQQ, objs[0])
-	t, err = wui.engine.Parse(env, form)
+	t, err = wui.engine.Parse(env, objs[0])
 	if err != nil {
 		return nil, err
 	}

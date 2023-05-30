@@ -1,4 +1,4 @@
-(article
+`(article
   (header (h1 "Information for Zettel " ,zid)
     (p
       (a (@ (href ,web-url)) "Web")
@@ -45,23 +45,3 @@
     )
   )
 )
-;<h2>Parts and encodings</h2>
-;<table>
-;{{#EvalMatrix}}
-;<tr>
-;<th>{{Header}}</th>
-;{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</a></td>
-;{{/Elements}}
-;</tr>
-;{{/EvalMatrix}}
-;</table>
-;<h3>Parsed (not evaluated)</h3>
-;<table>
-;{{#ParseMatrix}}
-;<tr>
-;<th>{{Header}}</th>
-;{{#Elements}}<td><a href="{{{URL}}}">{{Text}}</a></td>
-;{{/Elements}}
-;</tr>
-;{{/ParseMatrix}}
-;</table>
