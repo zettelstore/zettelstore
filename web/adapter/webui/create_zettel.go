@@ -83,14 +83,14 @@ func dataListFromArrangement(ar meta.Arrangement, err error) []string {
 func (wui *WebUI) renderZettelForm(
 	ctx context.Context,
 	w http.ResponseWriter,
-	zettel zettel.Zettel,
+	ztl zettel.Zettel,
 	title string,
 	formActionURL string,
 	roleData []string,
 	syntaxData []string,
 ) {
 	user := server.GetUser(ctx)
-	m := zettel.Meta
+	m := ztl.Meta
 
 	var sb strings.Builder
 	for _, p := range m.PairsRest() {
@@ -99,24 +99,20 @@ func (wui *WebUI) renderZettelForm(
 		sb.WriteString(p.Value)
 		sb.WriteByte('\n')
 	}
-	env, err := wui.createRenderEnv(ctx, "form", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
-	rb := makeRenderBinder(wui.sf, env, err)
+	env, rb := wui.createRenderEnv(ctx, "form", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
 	rb.bindString("heading", sxpf.MakeString(title))
 	rb.bindString("form-action-url", sxpf.MakeString(formActionURL))
-	rb.bindString("meta-title", sxpf.MakeString(m.GetDefault(api.KeyTitle, "")))
-	rb.bindString("meta-role", sxpf.MakeString(m.GetDefault(api.KeyRole, "")))
-	rb.bindString("meta-tags", sxpf.MakeString(m.GetDefault(api.KeyTags, "")))
-	rb.bindString("meta-syntax", sxpf.MakeString(m.GetDefault(api.KeySyntax, "")))
 	rb.bindString("role-data", makeStringList(roleData))
 	rb.bindString("syntax-data", makeStringList(syntaxData))
 	rb.bindString("meta", sxpf.MakeString(sb.String()))
-	if !zettel.Content.IsBinary() {
-		rb.bindString("content", sxpf.MakeString(zettel.Content.AsString()))
+	if !ztl.Content.IsBinary() {
+		rb.bindString("content", sxpf.MakeString(ztl.Content.AsString()))
 	}
+	wui.bindCommonZettelData(ctx, &rb, user, m, &ztl.Content)
 	if rb.err == nil {
-		err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZid, env)
+		rb.err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZid, env)
 	}
-	if err != nil {
+	if err := rb.err; err != nil {
 		wui.reportError(ctx, w, err)
 	}
 }

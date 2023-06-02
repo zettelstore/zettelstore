@@ -56,29 +56,14 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		}
 
 		user := server.GetUser(ctx)
-		apiZid := api.ZettelID(zid.String())
 		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
 
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
-		env, err := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
-		rb := makeRenderBinder(wui.sf, env, err)
+		env, rb := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
 		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
 		rb.bindString("heading", sxpf.MakeString(title))
-		if wui.canWrite(ctx, user, zn.Meta, zn.Content) {
-			rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
-		}
-		rb.bindString("info-url", sxpf.MakeString(wui.NewURLBuilder('i').SetZid(apiZid).String()))
-		rb.bindString("role-url",
-			sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+zn.Meta.GetDefault(api.KeyRole, "")).String()))
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
-		if wui.canCreate(ctx, user) {
-			if !zn.Content.IsBinary() {
-				rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
-			}
-			rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-			rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
-		}
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
 		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
 		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
@@ -89,10 +74,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
 		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
+		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
-			err = bindMeta(zn.InhMeta, wui.sf, env)
-		}
-		if err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
 		}
 		if err != nil {
@@ -152,34 +135,4 @@ func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (l
 		}
 	}
 	return lst
-}
-
-func bindMeta(m *meta.Meta, sf sxpf.SymbolFactory, env sxpf.Environment) error {
-	for _, p := range m.ComputedPairs() {
-		keySym, err := sf.Make("meta-" + p.Key)
-		if err != nil {
-			return err
-		}
-		if kt := meta.Type(p.Key); kt.IsSet {
-			values := meta.ListFromValue(p.Value)
-			if len(values) == 0 {
-				continue
-			}
-			sxValues := make([]sxpf.Object, len(values))
-			for i, v := range values {
-				sxValues[i] = sxpf.MakeString(v)
-			}
-			err = env.Bind(keySym, sxpf.MakeList(sxValues...))
-		} else {
-			err = env.Bind(keySym, sxpf.MakeString(p.Value))
-		}
-		if err != nil {
-			return err
-		}
-	}
-	symZid, err := sf.Make("zid")
-	if err != nil {
-		return err
-	}
-	return env.Bind(symZid, sxpf.MakeString(m.Zid.String()))
 }

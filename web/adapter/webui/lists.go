@@ -63,11 +63,10 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		}
 
 		user := server.GetUser(ctx)
-		env, err := wui.createRenderEnv(
+		env, rb := wui.createRenderEnv(
 			ctx, "list",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang),
 			wui.rtConfig.GetSiteName(), user)
-		rb := makeRenderBinder(wui.sf, env, err)
 		if q == nil {
 			rb.bindString("heading", sxpf.MakeString(wui.rtConfig.GetSiteName()))
 		} else {

@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/usecase"
@@ -42,14 +41,11 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 		}
 
 		user := server.GetUser(ctx)
-		env, err := wui.createRenderEnv(
+		env, rb := wui.createRenderEnv(
 			ctx, "rename",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Rename Zettel "+m.Zid.String(), user)
-		rb := makeRenderBinder(wui.sf, env, err)
-		rb.bindString("zid", sxpf.MakeString(m.Zid.String()))
 		rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
-		rb.bindString("useless", retrieveUselessFiles(m))
-		rb.bindString("meta-pairs", makeMetaPairs(m))
+		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZid, env)
 		}

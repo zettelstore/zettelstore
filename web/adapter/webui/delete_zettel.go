@@ -43,11 +43,9 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 		m := ms[0]
 
 		user := server.GetUser(ctx)
-		env, err := wui.createRenderEnv(
+		env, rb := wui.createRenderEnv(
 			ctx, "delete",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
-		rb := makeRenderBinder(wui.sf, env, err)
-		rb.bindString("zid", sxpf.MakeString(m.Zid.String()))
 		if len(ms) > 1 {
 			rb.bindString("shadowed-box", sxpf.MakeString(ms[1].GetDefault(api.KeyBoxNumber, "???")))
 			rb.bindString("incoming", nil)
@@ -55,8 +53,8 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 			rb.bindString("shadowed-box", nil)
 			rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
 		}
-		rb.bindString("useless", retrieveUselessFiles(m))
-		rb.bindString("meta-pairs", makeMetaPairs(m))
+		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
+
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.DeleteTemplateZid, env)
 		}
@@ -64,13 +62,6 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 			wui.reportError(ctx, w, err)
 		}
 	}
-}
-
-func retrieveUselessFiles(m *meta.Meta) *sxpf.List {
-	if val, found := m.Get(api.KeyUselessFiles); found {
-		return sxpf.Cons(sxpf.MakeString(val), nil)
-	}
-	return nil
 }
 
 func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sxpf.List {
@@ -100,15 +91,6 @@ func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
 			zidMap.Set(val)
 		}
 	}
-}
-
-func makeMetaPairs(m *meta.Meta) *sxpf.List {
-	sentinel := sxpf.Cons(nil, nil)
-	curr := sentinel
-	for _, p := range m.ComputedPairs() {
-		curr = curr.AppendBang(sxpf.Cons(sxpf.MakeString(p.Key), sxpf.MakeString(p.Value)))
-	}
-	return sentinel.Tail()
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.

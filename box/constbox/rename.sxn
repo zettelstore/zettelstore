@@ -8,7 +8,7 @@
       (ul ,@(map pair-to-href-li incoming))
     ))
   )
-  ,@(if useless
+  ,@(if (and (bound? 'useless) useless)
     `((div (@ (class "zs-warning"))
       (h2 "Warning!")
       (p "Renaming this zettel will also delete the following files, so that they will not be interpreted as content for this zettel.")
@@ -22,5 +22,5 @@
       (input (@ (class "zs-input") (type "text") (id "newid") (name "newid") (placeholder "ZID..") (value ,zid) (autofocus))))
     (div (input (@ (class "zs-primary") (type "submit") (value "Rename"))))
   )
-  ,(pairs-to-dl meta-pairs)
+  ,(pairs-to-dl metapairs)
 )

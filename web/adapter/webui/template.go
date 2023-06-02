@@ -35,6 +35,7 @@ import (
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -134,7 +135,7 @@ func (wui *WebUI) sxnEncMatrix(args []sxpf.Object) (sxpf.Object, error) {
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxpf.Environment, error) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxpf.Environment, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	env := sxpf.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
 	rb := makeRenderBinder(wui.sf, env, nil)
@@ -164,7 +165,7 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	rb.bindString("debug-mode", sxpf.MakeBoolean(wui.debug))
 	rb.bindSymbol(wui.symMetaHeader, sxpf.Nil())
 	rb.bindSymbol(wui.symDetail, sxpf.Nil())
-	return env, rb.err
+	return env, rb
 }
 
 func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
@@ -197,6 +198,75 @@ func (rb *renderBinder) bindSymbol(sym *sxpf.Symbol, obj sxpf.Object) {
 	if rb.err == nil {
 		rb.err = rb.bind(sym, obj)
 	}
+}
+func (rb *renderBinder) bindKeyValue(key string, value string) {
+	if rb.err != nil {
+		return
+	}
+	keySym, err := rb.make("meta-" + key)
+	if err != nil {
+		rb.err = err
+		return
+	}
+	if kt := meta.Type(key); kt.IsSet {
+		values := meta.ListFromValue(value)
+		if len(values) > 0 {
+			sxValues := make([]sxpf.Object, len(values))
+			for i, v := range values {
+				sxValues[i] = sxpf.MakeString(v)
+			}
+			rb.bindSymbol(keySym, sxpf.MakeList(sxValues...))
+			return
+		}
+	}
+	rb.bindSymbol(keySym, sxpf.MakeString(value))
+}
+
+func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, user, m *meta.Meta, content *zettel.Content) {
+	strZid := m.Zid.String()
+	apiZid := api.ZettelID(strZid)
+	newURLBuilder := wui.NewURLBuilder
+
+	rb.bindString("zid", sxpf.MakeString(strZid))
+	rb.bindString("web-url", sxpf.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
+	if content != nil && wui.canWrite(ctx, user, m, *content) {
+		rb.bindString("edit-url", sxpf.MakeString(newURLBuilder('e').SetZid(apiZid).String()))
+	}
+	rb.bindString("info-url", sxpf.MakeString(newURLBuilder('i').SetZid(apiZid).String()))
+	if wui.canCreate(ctx, user) {
+		if content != nil && !content.IsBinary() {
+			rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+		}
+		rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+	}
+	if wui.canRename(ctx, user, m) {
+		rb.bindString("rename-url", sxpf.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
+	}
+	if wui.canDelete(ctx, user, m) {
+		rb.bindString("delete-url", sxpf.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
+	}
+	if val, found := m.Get(api.KeyUselessFiles); found {
+		rb.bindString("useless", sxpf.Cons(sxpf.MakeString(val), nil))
+	}
+	rb.bindString("context-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.ContextDirective+" "+strZid).String()))
+	rb.bindString("role-url",
+		sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+m.GetDefault(api.KeyRole, "")).String()))
+
+	// Ensure to have title, role, tags, and syntax included as "meta-*"
+	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))
+	rb.bindKeyValue(api.KeyRole, m.GetDefault(api.KeyRole, ""))
+	rb.bindKeyValue(api.KeyTags, m.GetDefault(api.KeyTags, ""))
+	rb.bindKeyValue(api.KeySyntax, m.GetDefault(api.KeySyntax, ""))
+	sentinel := sxpf.Cons(nil, nil)
+	curr := sentinel
+	for _, p := range m.ComputedPairs() {
+		key, value := p.Key, p.Value
+		curr = curr.AppendBang(sxpf.Cons(sxpf.MakeString(key), sxpf.MakeString(value)))
+
+		rb.bindKeyValue(key, value)
+	}
+	rb.bindString("metapairs", sentinel.Tail())
 }
 
 func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sxpf.List) {
@@ -321,14 +391,13 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 		wui.log.Error().Msg(err.Error())
 	}
 	user := server.GetUser(ctx)
-	env, err := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
-	rb := makeRenderBinder(wui.sf, env, err)
+	env, rb := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
 	rb.bindString("heading", sxpf.MakeString(http.StatusText(code)))
 	rb.bindString("message", sxpf.MakeString(text))
 	if rb.err == nil {
-		err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
+		rb.err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
 	}
-	if err != nil {
+	if err := rb.err; err != nil {
 		wui.log.Error().Err(err).Msg("while rendering error message")
 		fmt.Fprintf(w, "Error while rendering error message: %v", err)
 	}

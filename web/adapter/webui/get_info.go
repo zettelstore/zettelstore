@@ -92,29 +92,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
 
 		user := server.GetUser(ctx)
-		canCreate := wui.canCreate(ctx, user)
-		apiZid := api.ZettelID(zid.String())
-		env, err := wui.createRenderEnv(ctx, "info", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
-		rb := makeRenderBinder(wui.sf, env, err)
-		rb.bindString("zid", sxpf.MakeString(zid.String()))
-		rb.bindString("web-url", sxpf.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
-		rb.bindString("context-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.ContextDirective+" "+zid.String()).String()))
-		if wui.canWrite(ctx, user, zn.Meta, zn.Content) {
-			rb.bindString("edit-url", sxpf.MakeString(wui.NewURLBuilder('e').SetZid(apiZid).String()))
-		}
-		if canCreate && !zn.Content.IsBinary() {
-			rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
-		}
-		if canCreate {
-			rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-			rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
-		}
-		if wui.canRename(ctx, user, zn.Meta) {
-			rb.bindString("rename-url", sxpf.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
-		}
-		if wui.canDelete(ctx, user, zn.Meta) {
-			rb.bindString("delete-url", sxpf.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
-		}
+		env, rb := wui.createRenderEnv(ctx, "info", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
 		rb.bindString("metadata", metadata)
 		rb.bindString("local-links", locLinks)
 		rb.bindString("query-links", queryLinks)
@@ -125,6 +103,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		rb.bindString("enc-eval", wui.infoAPIMatrix(zid, false, encTexts))
 		rb.bindString("enc-parsed", wui.infoAPIMatrixParsed(zid, encTexts))
 		rb.bindString("shadow-links", shadowLinks)
+		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.InfoTemplateZid, env)
 		}
