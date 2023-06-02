@@ -397,9 +397,9 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	if rb.err == nil {
 		rb.err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
 	}
-	if err := rb.err; err != nil {
-		wui.log.Error().Err(err).Msg("while rendering error message")
-		fmt.Fprintf(w, "Error while rendering error message: %v", err)
+	if errBind := rb.err; errBind != nil {
+		wui.log.Error().Err(errBind).Msg("while rendering error message")
+		fmt.Fprintf(w, "Error while rendering error message: %v", errBind)
 	}
 }
 
