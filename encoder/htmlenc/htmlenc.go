@@ -83,11 +83,13 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	for elem := hm; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
+	var sb strings.Builder
 	if hasTitle {
-		var sb strings.Builder
 		he.textEnc.WriteInlines(&sb, &isTitle)
-		_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
+	} else {
+		sb.Write(zn.Meta.Zid.Bytes())
 	}
+	_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
 
 	body := sxpf.MakeList(sf.MustMake("body"))
 	curr = body
