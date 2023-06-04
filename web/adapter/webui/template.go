@@ -200,26 +200,10 @@ func (rb *renderBinder) bindSymbol(sym *sxpf.Symbol, obj sxpf.Object) {
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
-	if rb.err != nil {
-		return
-	}
-	keySym, err := rb.make("meta-" + key)
-	if err != nil {
-		rb.err = err
-		return
-	}
+	rb.bindString("meta-"+key, sxpf.MakeString(value))
 	if kt := meta.Type(key); kt.IsSet {
-		values := meta.ListFromValue(value)
-		if len(values) > 0 {
-			sxValues := make([]sxpf.Object, len(values))
-			for i, v := range values {
-				sxValues[i] = sxpf.MakeString(v)
-			}
-			rb.bindSymbol(keySym, sxpf.MakeList(sxValues...))
-			return
-		}
+		rb.bindString("set-meta-"+key, makeStringList(meta.ListFromValue(value)))
 	}
-	rb.bindSymbol(keySym, sxpf.MakeString(value))
 }
 
 func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, user, m *meta.Meta, content *zettel.Content) {
