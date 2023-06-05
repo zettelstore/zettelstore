@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_13"></a>
+<h2>Changes for Version 0.13.0 (pending)</h2>
+
 <a id="0_12"></a>
-<h2>Changes for Version 0.12.0 (pending)</h2>
+<h2>Changes for Version 0.12.0 (2023-06-05)</h2>
   *  Syntax of templates for the web user interface are changed from Mustache
      to Sxn (S-Expressions). Mustache is no longer supported, nowhere in the
      software. Mustache was marked deprecated in version 0.11.0. If you
@@ -29,9 +32,8 @@
   *  New metadata key <tt>expire</tt> records a timestamp when a zettel should
      be treated as, well, expired.
      (minor)
-  *  New metadata kays <tt>superior</tt> and <tt>subordinate</tt> (calculated
-     from <tt>superior</tt>) allow to specify a hierarchy between zettel, if
-     needed.
+  *  New metadata keys <tt>superior</tt> and <tt>subordinate</tt> (calculated
+     from <tt>superior</tt>) allow to specify a hierarchy between zettel.
      (minor)
   *  Metadata keys with suffix <tt>-date</tt> and <tt>-time</tt> are treated as
      timestamp values.
@@ -47,6 +49,8 @@
      this encoding may be removed in future versions. Please use the new
      <tt>data</tt> encoding instead.
      (deprecated: api)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_11"></a>
 <h2>Changes for Version 0.11.2 (2023-04-16)</h2>
