@@ -42,7 +42,7 @@ import (
 
 func (wui *WebUI) createRenderEngine() *eval.Engine {
 	root := sxpf.MakeRootEnvironment()
-	engine := eval.MakeEngine(wui.sf, root, eval.MakeDefaultParser(), eval.MakeSimpleExecutor())
+	engine := eval.MakeEngine(wui.sf, root)
 	quote.InstallQuoteSyntax(root, wui.symQuote)
 	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	engine.BindSyntax("if", cond.IfS)
