@@ -1,5 +1,5 @@
 `(article
-  (header (h1 ,heading))
+  (header (h1 "Login"))
   ,@(if retry '((div (@ (class "zs-indication zs-error")) "Wrong user name / password. Try again.")))
   (form (@ (method "POST") (action ""))
     (div
