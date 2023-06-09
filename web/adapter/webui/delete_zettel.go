@@ -64,7 +64,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 	}
 }
 
-func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sxpf.List {
+func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sxpf.Cell {
 	zidMap := make(strfun.Set)
 	addListValues(zidMap, m, api.KeyBackward)
 	for _, kd := range meta.GetSortedKeyDescriptions() {

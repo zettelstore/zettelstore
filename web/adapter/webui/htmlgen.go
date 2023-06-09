@@ -51,7 +51,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
 
-	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.List) {
+	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.Cell) {
 		lst, ok := sxpf.GetList(obj)
 		if !ok || !symA.IsEqual(lst.Car()) {
 			return nil, nil, nil
@@ -208,7 +208,7 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.List {
+func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Cell {
 	tm := g.tx.GetMeta(m, evalMeta)
 	hm, err := g.th.Transform(tm)
 	if err != nil {
@@ -216,7 +216,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	}
 
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
-	metaMap := make(map[string]*sxpf.List, m.Length())
+	metaMap := make(map[string]*sxpf.Cell, m.Length())
 	if tags, ok := m.Get(api.KeyTags); ok {
 		metaMap[api.KeyTags] = g.transformMetaTags(tags)
 		ignore.Set(api.KeyTags)
@@ -265,7 +265,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	return result
 }
 
-func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
+func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Cell {
 	var sb strings.Builder
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -275,12 +275,12 @@ func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.List {
 	}
 	metaTags := sb.String()
 	if len(metaTags) == 0 {
-		return sxpf.Nil()
+		return nil
 	}
 	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
 }
 
-func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.List, _ error) {
+func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.Cell, _ error) {
 	if bs == nil || len(*bs) == 0 {
 		return nil, nil, nil
 	}
@@ -293,14 +293,14 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.L
 }
 
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
-func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.List {
+func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.Cell {
 	if is == nil || len(*is) == 0 {
-		return sxpf.Nil()
+		return nil
 	}
 	sx := g.tx.GetSz(is)
 	sh, err := g.th.Transform(sx)
 	if err != nil {
-		return sxpf.Nil()
+		return nil
 	}
 	return sh
 }

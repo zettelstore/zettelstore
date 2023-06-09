@@ -52,7 +52,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 				return
 			}
 		}
-		var content, endnotes *sxpf.List
+		var content, endnotes *sxpf.Cell
 		if bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig); bn != nil {
 			enc := wui.getSimpleHTMLEncoder()
 			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})

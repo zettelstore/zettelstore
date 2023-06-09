@@ -91,9 +91,9 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 	}
 }
 
-func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.List {
+func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.Cell {
 	if len(vals) == 0 {
-		return sxpf.Nil()
+		return nil
 	}
 	space := sxpf.MakeString(" ")
 	text := make([]sxpf.Object, 0, 2*len(vals))
@@ -103,9 +103,9 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
-func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.List {
+func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Cell {
 	if len(tags) == 0 {
-		return sxpf.Nil()
+		return nil
 	}
 	space := sxpf.MakeString(" ")
 	text := make([]sxpf.Object, 0, 2*len(tags))
@@ -162,7 +162,7 @@ func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
-func (wui *WebUI) transformLink(key, value, text string) *sxpf.List {
+func (wui *WebUI) transformLink(key, value, text string) *sxpf.Cell {
 	return sxpf.MakeList(
 		wui.symA,
 		sxpf.MakeList(
