@@ -18,7 +18,7 @@
   (form (@ (method "POST"))
     (input (@ (type "hidden" (id "curzid") (name "curzid") (value ,zid))))
     (div
-      (label (@ (for "newid") "New zettel id"))
+      (label (@ (for "newid")) "New zettel id")
       (input (@ (class "zs-input") (type "text") (id "newid") (name "newid") (placeholder "ZID..") (value ,zid) (autofocus))))
     (div (input (@ (class "zs-primary") (type "submit") (value "Rename"))))
   )
