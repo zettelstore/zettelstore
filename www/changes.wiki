@@ -2,6 +2,8 @@
 
 <a id="0_13"></a>
 <h2>Changes for Version 0.13.0 (pending)</h2>
+  *  Allow to create a child from a given zettel.
+     (minor: webui)
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (2023-06-05)</h2>

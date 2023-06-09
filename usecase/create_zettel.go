@@ -74,10 +74,20 @@ func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
-	m.SetNonEmpty(api.KeyRole, origMeta.GetDefault(api.KeyRole, ""))
-	m.SetNonEmpty(api.KeyTags, origMeta.GetDefault(api.KeyTags, ""))
-	m.SetNonEmpty(api.KeySyntax, origMeta.GetDefault(api.KeySyntax, ""))
+	updateMetaRoleTagsSyntax(m, origMeta)
 	m.Set(api.KeyPrecursor, origMeta.Zid.String())
+	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
+}
+
+// PrepareChild the zettel for further modification.
+func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
+	origMeta := origZettel.Meta
+	m := origMeta.Clone()
+	if title, found := m.Get(api.KeyTitle); found {
+		m.Set(api.KeyTitle, prependTitle(title, "Child", "Child of "))
+	}
+	updateMetaRoleTagsSyntax(m, origMeta)
+	m.Set(api.KeySuperior, origMeta.Zid.String())
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
@@ -86,9 +96,7 @@ func (*CreateZettel) PrepareNew(origZettel zettel.Zettel) zettel.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
-	m.SetNonEmpty(api.KeyRole, om.GetDefault(api.KeyRole, ""))
-	m.SetNonEmpty(api.KeyTags, om.GetDefault(api.KeyTags, ""))
-	m.SetNonEmpty(api.KeySyntax, om.GetDefault(api.KeySyntax, ""))
+	updateMetaRoleTagsSyntax(m, om)
 
 	const prefixLen = len(meta.NewPrefix)
 	for _, pair := range om.PairsRest() {
@@ -99,6 +107,12 @@ func (*CreateZettel) PrepareNew(origZettel zettel.Zettel) zettel.Zettel {
 	content := origZettel.Content
 	content.TrimSpace()
 	return zettel.Zettel{Meta: m, Content: content}
+}
+
+func updateMetaRoleTagsSyntax(m, orig *meta.Meta) {
+	m.SetNonEmpty(api.KeyRole, orig.GetDefault(api.KeyRole, ""))
+	m.SetNonEmpty(api.KeyTags, orig.GetDefault(api.KeyTags, ""))
+	m.SetNonEmpty(api.KeySyntax, orig.GetDefault(api.KeySyntax, ""))
 }
 
 func prependTitle(title, s0, s1 string) string {

@@ -16,6 +16,7 @@ const queryKeyAction = "action"
 
 // Values for queryKeyAction
 const (
+	valueActionChild   = "child"
 	valueActionCopy    = "copy"
 	valueActionFolge   = "folge"
 	valueActionNew     = "new"
@@ -26,23 +27,24 @@ const (
 type createAction uint8
 
 const (
-	actionCopy createAction = iota
+	actionChild createAction = iota
+	actionCopy
 	actionFolge
 	actionNew
 	actionVersion
 )
 
+var createActionMap = map[string]createAction{
+	valueActionChild:   actionChild,
+	valueActionCopy:    actionCopy,
+	valueActionFolge:   actionFolge,
+	valueActionNew:     actionNew,
+	valueActionVersion: actionVersion,
+}
+
 func getCreateAction(s string) createAction {
-	switch s {
-	case valueActionCopy:
-		return actionCopy
-	case valueActionFolge:
-		return actionFolge
-	case valueActionNew:
-		return actionNew
-	case valueActionVersion:
-		return actionVersion
-	default:
-		return actionCopy
+	if action, found := createActionMap[s]; found {
+		return action
 	}
+	return actionCopy
 }
