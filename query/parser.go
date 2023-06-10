@@ -61,8 +61,8 @@ const (
 	searchOperatorNotChar    = '!'
 	searchOperatorEqualChar  = '='
 	searchOperatorHasChar    = ':'
-	searchOperatorPrefixChar = '>'
-	searchOperatorSuffixChar = '<'
+	searchOperatorPrefixChar = '['
+	searchOperatorSuffixChar = ']'
 	searchOperatorMatchChar  = '~'
 
 	kwBackward = "BACKWARD"

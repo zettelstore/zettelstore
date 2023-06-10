@@ -4,20 +4,21 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20230419163812
+modified: 20230610154957
 
 A search operator specifies how the comparison of a search value and a zettel should be executed.
 Every comparison is done case-insensitive, treating all uppercase letters the same as lowercase letters.
 
 The following are allowed search operator characters:
-* The exclamation mark character (""''!''"", U+0021) negates the meaning
-* The equal sign character (""'' ''"", U+003D) compares on equal content (""equals operator"")
-* The tilde character (""''~''"", U+007E) compares on matching (""match operator"")
-* The greater-than sign character (""''>''"", U+003E) matches if there is some prefix (""prefix operator"")
-* The less-than sign character (""''<''"", U+003C) compares a suffix relationship (""suffix operator"")
+* The exclamation mark character (""''!''"", U+0021) negates the meaning.
+* The equal sign character (""''=''"", U+003D) compares on equal content (""equals operator"").
+* The tilde character (""''~''"", U+007E) compares on matching (""match operator"").
+* The left quare bracket character (""''[''"", U+005B) matches if there is some prefix (""prefix operator"").
+* The right quare bracket character (""'']''"", U+005D) compares a suffix relationship (""suffix operator"").
 * The colon character (""'':''"", U+003A) compares depending on the on the actual [[key type|00001006030000]] (""has operator"").
   In most cases, it acts as a equals operator, but for some type it acts as the match operator.
-* The question mark (""''?''"", U+003F) checks for an existing metadata key (""exist operator"")
+* The question mark (""''?''"", U+003F) checks for an existing metadata key (""exist operator"").
+  In this case no [[search value|00001007706000]] must be given.
 
 Since the exclamation mark character can be combined with the other, there are 14 possible combinations:
 # ""''!''"": is an abbreviation of the ""''!~''"" operator.
@@ -25,10 +26,10 @@ Since the exclamation mark character can be combined with the other, there are 1
 # ""''!~''"": is successful if the search value does not match the value to be compared.
 # ""''=''"": is successful if the search value is equal to one word of the value to be compared.
 # ""''!=''"": is successful if the search value is not equal to any word of the value to be compared.
-# ""''>''"": is successful if the search value is a prefix of the value to be compared.
-# ""''!>''"": is successful if the search value is not a prefix of the value to be compared.
-# ""''<''"": is successful if the search value is a suffix of the value to be compared.
-# ""''!<''"": is successful if the search value is not a suffix of the value to be compared.
+# ""''[''"": is successful if the search value is a prefix of the value to be compared.
+# ""''![''"": is successful if the search value is not a prefix of the value to be compared.
+# ""'']''"": is successful if the search value is a suffix of the value to be compared.
+# ""''!]''"": is successful if the search value is not a suffix of the value to be compared.
 # ""'':''"": is successful if the search value is has/match one word of the value to be compared.
 # ""''!:''"": is successful if the search value is not match/has to any word of the value to be compared.
 # ""''?''"": is successful if the metadata contains the given key.

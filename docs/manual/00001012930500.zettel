@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20230403151127
-modified: 20230403153609
+modified: 20230610155539
 
 === Syntax of lists
 A list always starts with the left parenthesis (""''(''"", U+0028) and ends with a right parenthesis (""'')''"", U+0029).
@@ -27,9 +27,9 @@ A __proper__ list, which contains __nil__ as the second value of the last elemen
 +-+-+---+   +-+-+---+         +-+-+---+
   |           |                 |
   v           v                 v
-+-------+   +-------+    +-------+
-| Elem1 |   | Elem2 |    | ElemN |
-+-------+   +-------+    +-------+
++-------+   +-------+         +-------+
+| Elem1 |   | Elem2 |         | ElemN |
++-------+   +-------+         +-------+
 ~~~
 
 ''V'' is a placeholder for a value, ''N'' is the reference to the next cell (also known as the rest / tail of the list).

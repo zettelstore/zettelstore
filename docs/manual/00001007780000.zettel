@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20230411162000
+modified: 20230610155135
 
 ```
 QueryExpression   := ContextExpression? SearchExpression ActionExpression?
@@ -26,7 +26,7 @@ SearchTerm        := SearchOperator? SearchValue
 SearchValue       := Word.
 SearchKey         := MetadataKey.
 SearchOperator    := '!'
-                   | ('!')? ('~' | ':' | '<' | '>').
+                   | ('!')? ('~' | ':' | '[' | '}').
 ExistOperator     := '?'
                    | '!' '?'.
 PosInt            := '0'
