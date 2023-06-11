@@ -55,15 +55,20 @@ func parseZettelForm(r *http.Request, zid id.Zid) (bool, zettel.Zettel, error) {
 		m.Set(api.KeyTitle, meta.RemoveNonGraphic(postTitle))
 	}
 	if postTags, ok := trimmedFormValue(r, "tags"); ok {
-		if tags := strings.Fields(meta.RemoveNonGraphic(postTags)); len(tags) > 0 {
+		if tags := meta.ListFromValue(meta.RemoveNonGraphic(postTags)); len(tags) > 0 {
+			for i, tag := range tags {
+				if tag[0] != '#' {
+					tags[i] = "#" + tag
+				}
+			}
 			m.SetList(api.KeyTags, tags)
 		}
 	}
 	if postRole, ok := trimmedFormValue(r, "role"); ok {
-		m.Set(api.KeyRole, meta.RemoveNonGraphic(postRole))
+		m.SetWord(api.KeyRole, meta.RemoveNonGraphic(postRole))
 	}
 	if postSyntax, ok := trimmedFormValue(r, "syntax"); ok {
-		m.Set(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
+		m.SetWord(api.KeySyntax, meta.RemoveNonGraphic(postSyntax))
 	}
 
 	if data := textContent(r); data != nil {

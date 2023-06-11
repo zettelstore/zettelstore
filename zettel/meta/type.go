@@ -112,6 +112,13 @@ func (m *Meta) SetList(key string, values []string) {
 	}
 }
 
+// SetWord stores the given word under the given key.
+func (m *Meta) SetWord(key, word string) {
+	if slist := ListFromValue(word); len(slist) > 0 {
+		m.Set(key, slist[0])
+	}
+}
+
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
 	m.Set(key, time.Now().Local().Format(id.ZidLayout))

@@ -242,8 +242,8 @@ func (m *Meta) Set(key, value string) {
 func (m *Meta) SetNonEmpty(key, value string) {
 	if value == "" {
 		delete(m.pairs, key)
-	} else if key != api.KeyID {
-		m.pairs[key] = trimValue(value)
+	} else {
+		m.Set(key, trimValue(value))
 	}
 }
 
