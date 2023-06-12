@@ -12,6 +12,7 @@ package query
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -98,6 +99,8 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 		return createMatchIDFunc(values, addSearch)
 	case meta.TypeIDSet:
 		return createMatchIDSetFunc(values, addSearch)
+	case meta.TypeNumber:
+		return createMatchNumberFunc(values, addSearch)
 	case meta.TypeTagSet:
 		return createMatchTagSetFunc(values, addSearch)
 	case meta.TypeWord:
@@ -111,7 +114,7 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 }
 
 func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	preds := valuesToWordPredicates(values, addSearch)
+	preds := valuesToIDPredicates(values, addSearch)
 	return func(value string) bool {
 		for _, pred := range preds {
 			if !pred(value) {
@@ -131,6 +134,18 @@ func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValue
 				if !pred(ids) {
 					return false
 				}
+			}
+		}
+		return true
+	}
+}
+
+func createMatchNumberFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+	preds := valuesToNumberPredicates(values, addSearch)
+	return func(value string) bool {
+		for _, pred := range preds {
+			if !pred(value) {
+				return false
 			}
 		}
 		return true
@@ -317,6 +332,102 @@ func preprocessSet(set []expValue) [][]expValue {
 
 type stringPredicate func(string) bool
 
+func valuesToIDPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
+	result := make([]stringPredicate, len(values))
+	for i, v := range values {
+		value := v.value
+		if len(value) > 14 {
+			value = value[:14]
+		}
+		switch op := disambiguatedIDOp(v.op); op {
+		case cmpLess, cmpNoLess, cmpGreater, cmpNoGreater:
+			if isDigits(value) {
+				// Never add the strValue to search.
+				// Append enough zeroes to make it comparable as string.
+				// (an ID and a timestamp always have 14 digits)
+				strValue := value + "00000000000000"[:14-len(value)]
+				result[i] = createIDCompareFunc(strValue, op)
+				continue
+			}
+			fallthrough
+		default:
+			// Otherwise compare as a word.
+			if !op.isNegated() {
+				addSearch(v) // addSearch only for positive selections
+			}
+			result[i] = createWordCompareFunc(value, op)
+		}
+	}
+	return result
+}
+
+func isDigits(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if ch := s[i]; ch < '0' || '9' < ch {
+			return false
+		}
+	}
+	return true
+}
+
+func disambiguatedIDOp(cmpOp compareOp) compareOp { return disambiguateWordOp(cmpOp) }
+
+func createIDCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	return createWordCompareFunc(cmpVal, cmpOp)
+}
+
+func valuesToNumberPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
+	result := make([]stringPredicate, len(values))
+	for i, v := range values {
+		switch op := disambiguatedNumberOp(v.op); op {
+		case cmpEqual, cmpNotEqual, cmpLess, cmpNoLess, cmpGreater, cmpNoGreater:
+			iValue, err := strconv.ParseInt(v.value, 10, 64)
+			if err == nil {
+				// Never add the strValue to search.
+				result[i] = createNumberCompareFunc(iValue, op)
+				continue
+			}
+			fallthrough
+		default:
+			// In all other cases, a number is treated like a word.
+			if !op.isNegated() {
+				addSearch(v) // addSearch only for positive selections
+			}
+			result[i] = createWordCompareFunc(v.value, op)
+		}
+	}
+	return result
+}
+
+func disambiguatedNumberOp(cmpOp compareOp) compareOp { return disambiguateWordOp(cmpOp) }
+
+func createNumberCompareFunc(cmpVal int64, cmpOp compareOp) stringPredicate {
+	var cmpFunc func(int64) bool
+	switch cmpOp {
+	case cmpEqual:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal == cmpVal }
+	case cmpNotEqual:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal != cmpVal }
+	case cmpLess:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal < cmpVal }
+	case cmpNoLess:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal >= cmpVal }
+	case cmpGreater:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal > cmpVal }
+	case cmpNoGreater:
+		cmpFunc = func(iMetaVal int64) bool { return iMetaVal <= cmpVal }
+	default:
+		panic(fmt.Sprintf("Unknown compare operation %d with value %q", cmpOp, cmpVal))
+	}
+	return func(metaVal string) bool {
+		iMetaVal, err := strconv.ParseInt(metaVal, 10, 64)
+		if err != nil {
+			return false
+		}
+		return cmpFunc(iMetaVal)
+	}
+}
+
 func valuesToStringPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
 	result := make([]stringPredicate, len(values))
 	for i, v := range values {
@@ -385,6 +496,14 @@ func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 		return func(metaVal string) bool { return strings.Contains(metaVal, cmpVal) }
 	case cmpNoMatch:
 		return func(metaVal string) bool { return !strings.Contains(metaVal, cmpVal) }
+	case cmpLess:
+		return func(metaVal string) bool { return metaVal < cmpVal }
+	case cmpNoLess:
+		return func(metaVal string) bool { return metaVal >= cmpVal }
+	case cmpGreater:
+		return func(metaVal string) bool { return metaVal > cmpVal }
+	case cmpNoGreater:
+		return func(metaVal string) bool { return metaVal <= cmpVal }
 	case cmpHas, cmpHasNot:
 		panic(fmt.Sprintf("operator %d not disambiguated with value %q", cmpOp, cmpVal))
 	default:
@@ -403,24 +522,28 @@ func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][
 			switch op := disambiguateWordOp(v.op); op {
 			case cmpEqual:
 				addSearch(v) // addSearch only for positive selections
-				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, true)
+				fallthrough
 			case cmpNotEqual:
-				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, stringEqual, op == cmpEqual)
 			case cmpPrefix:
 				addSearch(v)
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, true)
+				fallthrough
 			case cmpNoPrefix:
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasPrefix, op == cmpPrefix)
 			case cmpSuffix:
 				addSearch(v)
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, true)
+				fallthrough
 			case cmpNoSuffix:
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.HasSuffix, op == cmpSuffix)
 			case cmpMatch:
 				addSearch(v)
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, true)
+				fallthrough
 			case cmpNoMatch:
-				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, false)
+				elemPreds[j] = makeStringSetPredicate(opVal, strings.Contains, op == cmpMatch)
+			case cmpLess, cmpNoLess:
+				elemPreds[j] = makeStringSetPredicate(opVal, stringLess, op == cmpLess)
+			case cmpGreater, cmpNoGreater:
+				elemPreds[j] = makeStringSetPredicate(opVal, stringGreater, op == cmpGreater)
 			case cmpHas, cmpHasNot:
 				panic(fmt.Sprintf("operator %d not disambiguated with value %q", op, opVal))
 			default:
@@ -432,7 +555,9 @@ func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][
 	return result
 }
 
-func stringEqual(val1, val2 string) bool { return val1 == val2 }
+func stringEqual(val1, val2 string) bool   { return val1 == val2 }
+func stringLess(val1, val2 string) bool    { return val1 < val2 }
+func stringGreater(val1, val2 string) bool { return val1 > val2 }
 
 type compareStringFunc func(val1, val2 string) bool
 

@@ -20,18 +20,22 @@ import (
 )
 
 var op2string = map[compareOp]string{
-	cmpExist:    api.ExistOperator,
-	cmpNotExist: api.ExistNotOperator,
-	cmpEqual:    api.SearchOperatorEqual,
-	cmpNotEqual: api.SearchOperatorNotEqual,
-	cmpHas:      api.SearchOperatorHas,
-	cmpHasNot:   api.SearchOperatorHasNot,
-	cmpPrefix:   api.SearchOperatorPrefix,
-	cmpNoPrefix: api.SearchOperatorNoPrefix,
-	cmpSuffix:   api.SearchOperatorSuffix,
-	cmpNoSuffix: api.SearchOperatorNoSuffix,
-	cmpMatch:    api.SearchOperatorMatch,
-	cmpNoMatch:  api.SearchOperatorNoMatch,
+	cmpExist:     api.ExistOperator,
+	cmpNotExist:  api.ExistNotOperator,
+	cmpEqual:     api.SearchOperatorEqual,
+	cmpNotEqual:  api.SearchOperatorNotEqual,
+	cmpHas:       api.SearchOperatorHas,
+	cmpHasNot:    api.SearchOperatorHasNot,
+	cmpPrefix:    api.SearchOperatorPrefix,
+	cmpNoPrefix:  api.SearchOperatorNoPrefix,
+	cmpSuffix:    api.SearchOperatorSuffix,
+	cmpNoSuffix:  api.SearchOperatorNoSuffix,
+	cmpMatch:     api.SearchOperatorMatch,
+	cmpNoMatch:   api.SearchOperatorNoMatch,
+	cmpLess:      api.SearchOperatorLess,
+	cmpNoLess:    api.SearchOperatorNotLess,
+	cmpGreater:   api.SearchOperatorGreater,
+	cmpNoGreater: api.SearchOperatorNotGreater,
 }
 
 func (q *Query) String() string {
@@ -70,10 +74,10 @@ func (q *Query) Print(w io.Writer) {
 			env.printExprValues("", term.search)
 		}
 	}
-	env.printPosInt(kwPick, q.pick)
+	env.printPosInt(api.PickDirective, q.pick)
 	env.printOrder(q.order)
-	env.printPosInt(kwOffset, q.offset)
-	env.printPosInt(kwLimit, q.limit)
+	env.printPosInt(api.OffsetDirective, q.offset)
+	env.printPosInt(api.LimitDirective, q.limit)
 	env.printActions(q.actions)
 }
 
@@ -96,21 +100,20 @@ func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
 
 func (pe *printEnv) printContext(q *Query) {
 	if zid := q.zid; zid.IsValid() {
-		pe.writeString(kwContext)
+		pe.writeString(api.ContextDirective)
 		pe.space = true
 		pe.printSpace()
 		pe.writeString(zid.String())
 		switch q.dir {
 		case dirBackward:
 			pe.printSpace()
-			pe.writeString(kwBackward)
+			pe.writeString(api.BackwardDirective)
 		case dirForward:
 			pe.printSpace()
-			pe.writeString(kwForward)
+			pe.writeString(api.ForwardDirective)
 		}
-		pe.printPosInt(kwCost, q.maxCost)
-		pe.printPosInt(kwMax, q.maxCount)
-		// pe.writeString("!")
+		pe.printPosInt(api.CostDirective, q.maxCost)
+		pe.printPosInt(api.MaxDirective, q.maxCount)
 	}
 
 }
@@ -197,10 +200,10 @@ func (q *Query) PrintHuman(w io.Writer) {
 		}
 	}
 
-	env.printPosInt(kwPick, q.pick)
+	env.printPosInt(api.PickDirective, q.pick)
 	env.printOrder(q.order)
-	env.printPosInt(kwOffset, q.offset)
-	env.printPosInt(kwLimit, q.limit)
+	env.printPosInt(api.OffsetDirective, q.offset)
+	env.printPosInt(api.LimitDirective, q.limit)
 	env.printActions(q.actions)
 }
 
@@ -235,6 +238,14 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 			pe.writeString(" MATCH ")
 		case cmpNoMatch:
 			pe.writeString(" NOT MATCH ")
+		case cmpLess:
+			pe.writeString(" LESS ")
+		case cmpNoLess:
+			pe.writeString(" NOT LESS ")
+		case cmpGreater:
+			pe.writeString(" GREATER ")
+		case cmpNoGreater:
+			pe.writeString(" NOT GREATER ")
 		default:
 			pe.writeString(" MaTcH ")
 		}
@@ -250,14 +261,14 @@ func (pe *printEnv) printOrder(order []sortOrder) {
 	for _, o := range order {
 		if o.isRandom() {
 			pe.printSpace()
-			pe.writeString(kwRandom)
+			pe.writeString(api.RandomDirective)
 			continue
 		}
 		pe.printSpace()
-		pe.writeString(kwOrder)
+		pe.writeString(api.OrderDirective)
 		if o.descending {
 			pe.printSpace()
-			pe.writeString(kwReverse)
+			pe.writeString(api.ReverseDirective)
 		}
 		pe.printSpace()
 		pe.writeString(o.key)

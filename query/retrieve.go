@@ -28,11 +28,13 @@ type searchFunc func(string) id.Set
 type searchCallMap map[searchOp]searchFunc
 
 var cmpPred = map[compareOp]func(string, string) bool{
-	cmpEqual:  stringEqual,
-	cmpPrefix: strings.HasPrefix,
-	cmpSuffix: strings.HasSuffix,
-	cmpMatch:  strings.Contains,
-	cmpHas:    strings.Contains, // the "has" operator have string semantics here in a index search
+	cmpEqual:   stringEqual,
+	cmpPrefix:  strings.HasPrefix,
+	cmpSuffix:  strings.HasSuffix,
+	cmpMatch:   strings.Contains,
+	cmpHas:     strings.Contains, // the "has" operator have string semantics here in a index search
+	cmpLess:    strings.Contains, // in index search there is no "less", only "has"
+	cmpGreater: strings.Contains, // in index search there is no "greater", only "has"
 }
 
 func (scm searchCallMap) addSearch(s string, op compareOp, sf searchFunc) {
@@ -162,7 +164,7 @@ func getSearchFunc(searcher Searcher, op compareOp) searchFunc {
 		return searcher.SearchPrefix
 	case cmpSuffix:
 		return searcher.SearchSuffix
-	case cmpMatch, cmpHas: // for index search we assume string semantics
+	case cmpMatch, cmpHas, cmpLess, cmpGreater: // for index search we assume string semantics
 		return searcher.SearchContains
 	default:
 		panic(fmt.Sprintf("Unexpected value of comparison operation: %v", op))

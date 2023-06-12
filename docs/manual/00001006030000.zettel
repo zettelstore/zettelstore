@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230402183536
+modified: 20230612183742
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
@@ -26,7 +26,7 @@ User-defined metadata keys conform also to a type, based on the suffix of the ke
 The name of the metadata key is bound to the key type
 
 Every key type has an associated validation rule to check values of the given type.
-There is also a rule how values are matched, e.g. against a search term when selecting some zettel.
+There is also a rule how values are matched, e.g. against a [[search value|00001007706000]] when selecting some zettel.
 And there is a rule how values compare for sorting.
 
 * [[Credential|00001006031000]]

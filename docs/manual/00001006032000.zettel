@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20230419175535
+modified: 20230612183459
 
 Values of this type denote a [[zettel identifier|00001006050000]].
 
@@ -12,7 +12,17 @@ Values of this type denote a [[zettel identifier|00001006050000]].
 Must be a sequence of 14 digits (""0""--""9"").
 
 === Query comparison
-Comparison is done with the string representation of the identifiers.
+[[Search values|00001007706000]] with more than 14 characters are truncated to contain exactly 14 characters.
+
+When the [[search operators|00001007705000]] ""less"", ""not less"", ""greater"", and ""not greater"" are given, the length of the search value is checked.
+If it contains less than 14 digits, zero digits (""0"") are appended, until it contains exactly 14 digits.
+
+All other comparisons assume that up to 14 characters are given.
+
+Comparison is done through the string representation.
+
+In case of the search operators ""less"", ""not less"", ""greater"", and ""not greater"", this is the same as a numerical comparison.
+
 For example, ""000010"" matches ""[[00001006032000]]"".
 
 === Sorting

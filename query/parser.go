@@ -56,27 +56,16 @@ func (ps *parserState) acceptKwArgs(s string) bool {
 }
 
 const (
-	actionSeparatorChar      = '|'
-	existOperatorChar        = '?'
-	searchOperatorNotChar    = '!'
-	searchOperatorEqualChar  = '='
-	searchOperatorHasChar    = ':'
-	searchOperatorPrefixChar = '['
-	searchOperatorSuffixChar = ']'
-	searchOperatorMatchChar  = '~'
-
-	kwBackward = "BACKWARD"
-	kwContext  = api.ContextDirective
-	kwCost     = "COST"
-	kwForward  = "FORWARD"
-	kwMax      = "MAX"
-	kwLimit    = "LIMIT"
-	kwOffset   = "OFFSET"
-	kwOr       = "OR"
-	kwOrder    = "ORDER"
-	kwPick     = "PICK"
-	kwRandom   = "RANDOM"
-	kwReverse  = "REVERSE"
+	actionSeparatorChar       = '|'
+	existOperatorChar         = '?'
+	searchOperatorNotChar     = '!'
+	searchOperatorEqualChar   = '='
+	searchOperatorHasChar     = ':'
+	searchOperatorPrefixChar  = '['
+	searchOperatorSuffixChar  = ']'
+	searchOperatorMatchChar   = '~'
+	searchOperatorLessChar    = '<'
+	searchOperatorGreaterChar = '>'
 )
 
 func (ps *parserState) parse(q *Query) *Query {
@@ -88,7 +77,7 @@ func (ps *parserState) parse(q *Query) *Query {
 			break
 		}
 		pos := inp.Pos
-		if ps.acceptSingleKw(kwOr) {
+		if ps.acceptSingleKw(api.OrDirective) {
 			q = createIfNeeded(q)
 			if !q.terms[len(q.terms)-1].isEmpty() {
 				q.terms = append(q.terms, conjTerms{})
@@ -96,7 +85,7 @@ func (ps *parserState) parse(q *Query) *Query {
 			continue
 		}
 		inp.SetPos(pos)
-		if ps.acceptSingleKw(kwRandom) {
+		if ps.acceptSingleKw(api.RandomDirective) {
 			q = createIfNeeded(q)
 			if len(q.order) == 0 {
 				q.order = []sortOrder{{"", false}}
@@ -104,28 +93,28 @@ func (ps *parserState) parse(q *Query) *Query {
 			continue
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwPick) {
+		if ps.acceptKwArgs(api.PickDirective) {
 			if s, ok := ps.parsePick(q); ok {
 				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwOrder) {
+		if ps.acceptKwArgs(api.OrderDirective) {
 			if s, ok := ps.parseOrder(q); ok {
 				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwOffset) {
+		if ps.acceptKwArgs(api.OffsetDirective) {
 			if s, ok := ps.parseOffset(q); ok {
 				q = s
 				continue
 			}
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwLimit) {
+		if ps.acceptKwArgs(api.LimitDirective) {
 			if s, ok := ps.parseLimit(q); ok {
 				q = s
 				continue
@@ -148,7 +137,7 @@ func (ps *parserState) parseContext(q *Query) *Query {
 		return q
 	}
 	pos := inp.Pos
-	if !ps.acceptSingleKw(kwContext) {
+	if !ps.acceptSingleKw(api.ContextDirective) {
 		inp.SetPos(pos)
 		return q
 	}
@@ -173,23 +162,23 @@ func (ps *parserState) parseContext(q *Query) *Query {
 			return q
 		}
 		pos = inp.Pos
-		if ps.acceptSingleKw(kwBackward) {
+		if ps.acceptSingleKw(api.BackwardDirective) {
 			q.dir = dirBackward
 			continue
 		}
 		inp.SetPos(pos)
-		if ps.acceptSingleKw(kwForward) {
+		if ps.acceptSingleKw(api.ForwardDirective) {
 			q.dir = dirForward
 			continue
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwCost) {
+		if ps.acceptKwArgs(api.CostDirective) {
 			if ps.parseCost(q) {
 				continue
 			}
 		}
 		inp.SetPos(pos)
-		if ps.acceptKwArgs(kwMax) {
+		if ps.acceptKwArgs(api.MaxDirective) {
 			if ps.parseCount(q) {
 				continue
 			}
@@ -232,7 +221,7 @@ func (ps *parserState) parsePick(q *Query) (*Query, bool) {
 
 func (ps *parserState) parseOrder(q *Query) (*Query, bool) {
 	reverse := false
-	if ps.acceptKwArgs(kwReverse) {
+	if ps.acceptKwArgs(api.ReverseDirective) {
 		reverse = true
 	}
 	word := ps.scanWord()
@@ -350,7 +339,8 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 			switch inp.Ch {
 			case searchOperatorNotChar, existOperatorChar,
 				searchOperatorEqualChar, searchOperatorHasChar,
-				searchOperatorPrefixChar, searchOperatorSuffixChar, searchOperatorMatchChar:
+				searchOperatorPrefixChar, searchOperatorSuffixChar, searchOperatorMatchChar,
+				searchOperatorLessChar, searchOperatorGreaterChar:
 				allowKey = false
 				if key := inp.Src[pos:inp.Pos]; meta.KeyIsValid(string(key)) {
 					return nil, key
@@ -424,6 +414,12 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	case searchOperatorMatchChar:
 		inp.Next()
 		op = cmpMatch
+	case searchOperatorLessChar:
+		inp.Next()
+		op = cmpLess
+	case searchOperatorGreaterChar:
+		inp.Next()
+		op = cmpGreater
 	default:
 		if negate {
 			return cmpNoMatch, true

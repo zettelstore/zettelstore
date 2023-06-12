@@ -2,6 +2,13 @@
 
 <a id="0_13"></a>
 <h2>Changes for Version 0.13.0 (pending)</h2>
+  *  There are for new search operators: less, not less, greater, not greater.
+     These use the same syntax as the operators prefix, not prefix, suffix, not
+     suffix. The latter are no denoted as <tt>[</tt>, <tt>![</tt>, <tt>]</tt>,
+     and <tt>!]</tt>. The first may operate numerically for metadata like
+     numbers, timestamps, and zettel identifier. They are not supported for
+     full-test search.
+     (breaking: api, webui)
   *  Allow to create a child from a given zettel.
      (minor: webui)
   *  Make zettel entry/edit form a little friendlier: auto-prepend missing '#'
