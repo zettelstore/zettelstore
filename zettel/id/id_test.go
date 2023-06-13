@@ -37,6 +37,7 @@ func TestIsValid(t *testing.T) {
 		"99999999999999",
 		"00001007030200",
 		"20200310195100",
+		"12345678901234",
 	}
 
 	for i, sid := range validIDs {
@@ -57,6 +58,7 @@ func TestIsValid(t *testing.T) {
 		"0000000000000a",
 		"000000000000000",
 		"20200310T195100",
+		"+1234567890123",
 	}
 
 	for i, sid := range invalidIDs {
