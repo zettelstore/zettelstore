@@ -9,9 +9,9 @@ require (
 	github.com/pascaldekloe/jwt v1.12.0
 	github.com/yuin/goldmark v1.5.4
 	golang.org/x/crypto v0.9.0
-	golang.org/x/term v0.8.0
+	golang.org/x/term v0.9.0
 	golang.org/x/text v0.9.0
 	zettelstore.de/c v0.12.1-0.20230610135830-9aa6ca02fc35
 )
 
-require golang.org/x/sys v0.8.0 // indirect
+require golang.org/x/sys v0.9.0 // indirect
