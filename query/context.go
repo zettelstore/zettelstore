@@ -198,7 +198,10 @@ func (zc *contextQueue) addMeta(m *meta.Meta, newCost int) {
 }
 
 func (zc *contextQueue) costMaxed(newCost int) bool {
-	return (zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit()
+	// If len(zc.seen) <= 1, the initial zettel is processed. In this case allow all
+	// other zettel that are directly reachable, without taking the cost into account.
+	// Of course, the limit ist still relevant.
+	return (len(zc.seen) > 1 && zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit()
 }
 
 func (zc *contextQueue) addIDSet(ctx context.Context, newCost int, value string) {
@@ -283,5 +286,5 @@ func (zc *contextQueue) next() (*meta.Meta, int) {
 
 func (zc *contextQueue) hasLimit() bool {
 	limit := zc.limit
-	return limit > 0 && len(zc.seen) > limit
+	return limit > 0 && len(zc.seen) >= limit
 }
