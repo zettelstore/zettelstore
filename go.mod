@@ -8,7 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/pascaldekloe/jwt v1.12.0
 	github.com/yuin/goldmark v1.5.4
-	golang.org/x/crypto v0.9.0
+	golang.org/x/crypto v0.10.0
 	golang.org/x/term v0.9.0
 	golang.org/x/text v0.10.0
 	zettelstore.de/c v0.12.1-0.20230612164145-7bc564bccc3a
