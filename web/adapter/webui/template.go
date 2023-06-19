@@ -19,7 +19,6 @@ import (
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
-	"codeberg.org/t73fde/sxpf/builtins"
 	"codeberg.org/t73fde/sxpf/builtins/binding"
 	"codeberg.org/t73fde/sxpf/builtins/boolean"
 	"codeberg.org/t73fde/sxpf/builtins/callable"
@@ -55,86 +54,12 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
 	engine.BindBuiltinEEA("map", callable.Map)
+	engine.BindBuiltinEEA("apply", callable.Apply)
 	engine.BindBuiltinA("list", list.List)
+	engine.BindBuiltinA("append", list.Append)
 	engine.BindBuiltinA("car", list.Car)
 	engine.BindBuiltinA("cdr", list.Cdr)
-	engine.BindBuiltinA("pair-to-href", wui.sxnPairToHref)
-	engine.BindBuiltinA("pair-to-href-li", wui.sxnPairToHrefLi)
-	engine.BindBuiltinA("pairs-to-dl", wui.sxnPairsToDl)
-	engine.BindBuiltinA("make-enc-matrix", wui.sxnEncMatrix)
 	return engine
-}
-
-func (wui *WebUI) sxnPairToHref(args []sxpf.Object) (sxpf.Object, error) {
-	err := builtins.CheckArgs(args, 1, 1)
-	pair, err := builtins.GetList(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	href := sxpf.MakeList(
-		wui.symA,
-		sxpf.MakeList(wui.symAttr, sxpf.Cons(wui.symHref, pair.Cdr())),
-		pair.Car(),
-	)
-	return href, nil
-}
-func (wui *WebUI) sxnPairToHrefLi(args []sxpf.Object) (sxpf.Object, error) {
-	href, err := wui.sxnPairToHref(args)
-	if err != nil {
-		return nil, err
-	}
-	return sxpf.MakeList(wui.symLi, href), nil
-}
-func (wui *WebUI) sxnPairsToDl(args []sxpf.Object) (sxpf.Object, error) {
-	err := builtins.CheckArgs(args, 1, 1)
-	pairs, err := builtins.GetList(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	dl := sxpf.Cons(wui.symDl, nil)
-	curr := dl
-	for node := pairs; node != nil; node = node.Tail() {
-		if pair, isPair := sxpf.GetList(node.Car()); isPair {
-			curr = curr.AppendBang(sxpf.MakeList(wui.symDt, pair.Car()))
-			curr = curr.AppendBang(sxpf.MakeList(wui.symDd, pair.Cdr()))
-		}
-	}
-	return dl, nil
-}
-
-func (wui *WebUI) sxnEncMatrix(args []sxpf.Object) (sxpf.Object, error) {
-	err := builtins.CheckArgs(args, 1, 1)
-	rows, err := builtins.GetList(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	table := sxpf.Cons(wui.symTable, nil)
-	currRow := table
-	for node := rows; node != nil; node = node.Tail() {
-		row, isRow := sxpf.GetList(node.Car())
-		if !isRow || row == nil {
-			continue
-		}
-		line := sxpf.Cons(sxpf.MakeList(wui.symTh, row.Car()), nil)
-		currLine := line
-		line = line.Cons(wui.symTr)
-		currRow = currRow.AppendBang(line)
-		for elem := row.Tail(); elem != nil; elem = elem.Tail() {
-			link, isLink := sxpf.GetList(elem.Car())
-			if !isLink || link == nil {
-				continue
-			}
-			currLine = currLine.AppendBang(sxpf.MakeList(
-				wui.symTd,
-				sxpf.MakeList(
-					wui.symA,
-					sxpf.MakeList(wui.symAttr, sxpf.Cons(wui.symHref, link.Cdr())),
-					link.Car(),
-				),
-			))
-		}
-	}
-	return table, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
@@ -392,6 +317,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	if err != nil {
 		return err
 	}
+	wui.log.Debug().Str("page", pageObj.Repr()).Msg("render")
 
 	gen := sxhtml.NewGenerator(wui.sf, sxhtml.WithNewline)
 	var sb bytes.Buffer

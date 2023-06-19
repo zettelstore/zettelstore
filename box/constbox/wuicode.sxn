@@ -23,10 +23,17 @@
         `(li (a (@ (href ,(cdr l))) ,(cdr l)))
         `(li ,(cdr l))))
 
+;; wui-link taks an url and returns a HTML link inside.
+(define (wui-link q)
+    `(a (@ (href ,(cdr q))) ,(car q)))
+
 ;; wui-item-link taks a pair (text . url) and returns a HTML link inside
 ;; a list item.
-(define (wui-item-link q)
-    `(li (a (@ (href ,(cdr q))) ,(car q))))
+(define (wui-item-link q) `(li ,(wui-link q)))
+
+;; wui-tdata-link taks a pair (text . url) and returns a HTML link inside
+;; a table data item.
+(define (wui-tdata-link q) `(td ,(wui-link q)))
 
 ;; wui-item-popup-link is like 'wui-item-link, but the HTML link will open
 ;; a new tab / window.
@@ -41,3 +48,19 @@
 (define (wui-datalist id lst)
     (if lst
         `((datalist (@ (id ,id)) ,@(map wui-option-value lst)))))
+
+;; wui-pair-desc-item takes a pair '(term . text) and returns a list with
+;; a HTML description term and a HTML description data. 
+(define (wui-pair-desc-item p) `((dt ,(car p)) (dd ,(cdr p))))
+
+;; wui-meta-desc returns a HTML description list made from the list of pairs
+;; given.
+(define (wui-meta-desc l)
+    `(dl ,@(apply append (map wui-pair-desc-item l))))
+
+;; wui-enc-matrix returns the HTML table of all encodings and parts.
+(define (wui-enc-matrix matrix)
+    `(table
+      ,@(map
+         (lambda (row) `(tr (th ,(car row)) ,@(map wui-tdata-link (cdr row))))
+         matrix)))

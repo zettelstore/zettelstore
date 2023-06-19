@@ -25,9 +25,9 @@
     (input (@ (class "zs-input") (type "text") (id "phrase") (name ,query-key-phrase) (placeholder "Phrase..") (value ,phrase)))
   )
   (h2 "Parts and encodings")
-  ,(make-enc-matrix enc-eval)
+  ,(wui-enc-matrix enc-eval)
   (h3 "Parsed (not evaluated)")
-  ,(make-enc-matrix enc-parsed)
+  ,(wui-enc-matrix enc-parsed)
   ,@(if shadow-links
     `((h2 "Shadowed Boxes")
       (ul ,@(map wui-item shadow-links))

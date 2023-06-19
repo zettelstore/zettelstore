@@ -36,7 +36,7 @@
       `((div (@ (class "zs-dropdown"))
         (button "New")
         (nav (@ (class "zs-dropdown-content"))
-          ,@(map pair-to-href new-zettel-links)
+          ,@(map wui-link new-zettel-links)
        )))
     )
     (form (@ (action ,search-url))

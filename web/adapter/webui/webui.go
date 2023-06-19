@@ -72,16 +72,12 @@ type WebUI struct {
 	engine  *eval.Engine
 	genHTML *sxhtml.Generator
 
-	symQuote             *sxpf.Symbol
-	symQQ, symUQ, symUQS *sxpf.Symbol
-	symMetaHeader        *sxpf.Symbol
-	symDetail            *sxpf.Symbol
-	symA, symHref        *sxpf.Symbol
-	symAttr              *sxpf.Symbol
-	symLi                *sxpf.Symbol
-	symDl, symDt, symDd  *sxpf.Symbol
-	symTable             *sxpf.Symbol
-	symTr, symTh, symTd  *sxpf.Symbol
+	symQuote, symQQ *sxpf.Symbol
+	symUQ, symUQS   *sxpf.Symbol
+	symMetaHeader   *sxpf.Symbol
+	symDetail       *sxpf.Symbol
+	symA, symHref   *sxpf.Symbol
+	symAttr         *sxpf.Symbol
 }
 
 type webuiBox interface {
@@ -136,14 +132,6 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symA:          sf.MustMake("a"),
 		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
 		symHref:       sf.MustMake("href"),
-		symLi:         sf.MustMake("li"),
-		symDl:         sf.MustMake("dl"),
-		symDt:         sf.MustMake("dt"),
-		symDd:         sf.MustMake("dd"),
-		symTable:      sf.MustMake("table"),
-		symTr:         sf.MustMake("tr"),
-		symTh:         sf.MustMake("th"),
-		symTd:         sf.MustMake("td"),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
