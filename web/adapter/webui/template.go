@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"codeberg.org/t73fde/sxhtml"
@@ -23,6 +24,7 @@ import (
 	"codeberg.org/t73fde/sxpf/builtins/boolean"
 	"codeberg.org/t73fde/sxpf/builtins/callable"
 	"codeberg.org/t73fde/sxpf/builtins/cond"
+	"codeberg.org/t73fde/sxpf/builtins/define"
 	"codeberg.org/t73fde/sxpf/builtins/env"
 	"codeberg.org/t73fde/sxpf/builtins/list"
 	"codeberg.org/t73fde/sxpf/builtins/quote"
@@ -49,6 +51,7 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindSyntax("and", boolean.AndS)
 	engine.BindSyntax("or", boolean.OrS)
 	engine.BindSyntax("lambda", callable.LambdaS)
+	engine.BindSyntax("define", define.DefineS)
 	engine.BindSyntax("let", binding.LetS)
 	engine.BindBuiltinEEA("bound?", env.BoundP)
 	engine.BindBuiltinEEA("map", callable.Map)
@@ -299,22 +302,41 @@ func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.Cell {
 	return nil
 }
 
+func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
+	if expr := wui.getSxnCache(zid); expr != nil {
+		return nil
+	}
+	rdr, err := wui.makeZettelReader(ctx, zid)
+	if err != nil {
+		return err
+	}
+	for {
+		form, err2 := rdr.Read()
+		if err2 != nil {
+			if err2 == io.EOF {
+				wui.setSxnCache(zid, eval.TrueExpr) // Hack to load only once
+				return nil
+			}
+			return err2
+		}
+		wui.log.Trace().Str("form", form.Repr()).Msg("Load sxn code")
+
+		_, err2 = wui.engine.Eval(wui.engine.GetToplevelEnv(), form)
+		if err2 != nil {
+			return err2
+		}
+	}
+}
+
 func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (eval.Expr, error) {
-	wui.mxCache.RLock()
-	t, ok := wui.templateCache[zid]
-	wui.mxCache.RUnlock()
-	if ok {
+	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
 	}
 
-	templateZettel, err := wui.box.GetZettel(ctx, zid)
+	reader, err := wui.makeZettelReader(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
-
-	reader := reader.MakeReader(bytes.NewReader(templateZettel.Content.AsBytes()), reader.WithSymbolFactory(wui.sf))
-	quote.InstallQuoteReader(reader, wui.symQuote, '\'')
-	quote.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
 
 	objs, err := reader.ReadAll()
 	if err != nil {
@@ -324,15 +346,24 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	t, err = wui.engine.Parse(env, objs[0])
+	t, err := wui.engine.Parse(env, objs[0])
 	if err != nil {
 		return nil, err
 	}
 
-	wui.mxCache.Lock()
-	wui.templateCache[zid] = t
-	wui.mxCache.Unlock()
+	wui.setSxnCache(zid, t)
 	return t, nil
+}
+func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*reader.Reader, error) {
+	ztl, err := wui.box.GetZettel(ctx, zid)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := reader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), reader.WithSymbolFactory(wui.sf))
+	quote.InstallQuoteReader(reader, wui.symQuote, '\'')
+	quote.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
+	return reader, nil
 }
 
 func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (sxpf.Object, error) {
@@ -347,6 +378,10 @@ func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, 
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
 }
 func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxpf.Environment) error {
+	err := wui.loadSxnCodeZettel(ctx, id.TemplateSxnZid)
+	if err != nil {
+		return err
+	}
 	detailObj, err := wui.evalSxnTemplate(ctx, templateID, env)
 	if err != nil {
 		return err

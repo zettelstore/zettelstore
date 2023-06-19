@@ -9,11 +9,7 @@
     (input (@ (class "zs-input") (type "text") (id "zs-role") (name "role") (placeholder "role..") (value ,meta-role)
       ,@(if role-data '((list "zs-role-data")))
     ))
-    ,@(if role-data
-      `((datalist (@ (id "zs-role-data"))
-        ,@(map (lambda (v) `(option (@ (value ,v)))) role-data)
-      ))
-    )
+    ,@(wui-datalist "zs-role-data" role-data)
   )
   (div
     (label (@ (for "zs-tags")) "Tags " (a (@ (title "Tags must begin with an '#' sign. They are separated by spaces.")) (@H "&#9432;")))
@@ -26,11 +22,7 @@
     (input (@ (class "zs-input") (type "text") (id "zs-syntax") (name "syntax") (placeholder "syntax..") (value ,meta-syntax)
       ,@(if syntax-data '((list "zs-syntax-data")))
     ))
-    ,@(if syntax-data
-      `((datalist (@ (id "zs-syntax-data"))
-        ,@(map (lambda (v) `(option (@ (value ,v)))) syntax-data)
-      ))
-    )
+    ,@(wui-datalist "zs-syntax-data" syntax-data)
   )
   ,@(if (bound? 'content)
     `((div

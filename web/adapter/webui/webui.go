@@ -153,17 +153,33 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
-	if ci.Reason == box.OnReload || ci.Zid == id.BaseTemplateZid || ci.Zid == id.BaseTemplateZid+30000 {
+	if ci.Reason == box.OnReload {
 		wui.templateCache = make(map[id.Zid]eval.Expr, len(wui.templateCache))
 	} else {
 		delete(wui.templateCache, ci.Zid)
 	}
 	wui.mxCache.Unlock()
+
 	wui.mxRoleCSSMap.Lock()
 	if ci.Reason == box.OnReload || ci.Zid == id.RoleCSSMapZid {
 		wui.roleCSSMap = nil
 	}
 	wui.mxRoleCSSMap.Unlock()
+}
+
+func (wui *WebUI) setSxnCache(zid id.Zid, expr eval.Expr) {
+	wui.mxCache.Lock()
+	wui.templateCache[zid] = expr
+	wui.mxCache.Unlock()
+}
+func (wui *WebUI) getSxnCache(zid id.Zid) eval.Expr {
+	wui.mxCache.RLock()
+	expr, found := wui.templateCache[zid]
+	wui.mxCache.RUnlock()
+	if found {
+		return expr
+	}
+	return nil
 }
 
 func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m *meta.Meta) (id.Zid, error) {

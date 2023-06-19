@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220909180240
+modified: 20230619133707
 
 The following table lists all predefined zettel with their purpose.
 
@@ -29,6 +29,8 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000010403]] | Zettelstore Form HTML Template | Form that is used to create a new or to change an existing zettel that contains text
 | [[00000000010404]] | Zettelstore Rename Form HTML Template | View that is displayed to change the [[zettel identifier|00001006050000]]
 | [[00000000010405]] | Zettelstore Delete HTML Template | View to confirm the deletion of a zettel
+| [[00000000010700]] | Zettelstore Error HTML Template | View to show an error message
+| [[00000000019100]] | Zettelstore Sxn Code for Templates | Some helper functions to build the templates
 | [[00000000020001]] | Zettelstore Base CSS | System-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000025001]] | Zettelstore User CSS | User-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000029000]] | Zettelstore Role to CSS Map | [[Maps|00001017000000#role-css]] [[role|00001006020000#role]] to a zettel identifier that is included by the [[Base HTML Template|00000000010100]] as an CSS file 

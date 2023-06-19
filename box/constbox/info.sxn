@@ -13,23 +13,11 @@
     )
   )
   (h2 "Interpreted Metadata")
-  (table ,@(map (lambda (p) `(tr (td ,(car p)) (td ,(cdr p)))) metadata))
+  (table ,@(map wui-table-row metadata))
   (h2 "References")
-  ,@(if local-links
-    `((h3 "Local")
-      (ul ,@(map (lambda (l) (if (car l) `(li (a (@ (href ,(cdr l))) ,(cdr l))) `(li ,(cdr l)))) local-links))
-    )
-  )
-  ,@(if query-links
-    `((h3 "Queries")
-      (ul ,@(map (lambda (q) `(li (a (@ (href ,(cdr q))) ,(car q)))) query-links))
-    )
-  )
-  ,@(if ext-links
-    `((h3 "External")
-      (ul ,@(map (lambda (e) `(li (a (@ (href ,e) (target "_blank") (rel "noopener noreferrer")) ,e))) ext-links))
-    )
-  )
+  ,@(if local-links `((h3 "Local")    (ul ,@(map wui-valid-link local-links))))
+  ,@(if query-links `((h3 "Queries")  (ul ,@(map wui-item-link query-links))))
+  ,@(if ext-links   `((h3 "External") (ul ,@(map wui-item-popup-link ext-links))))
   (h3 "Unlinked")
   ,@unlinked-content
   (form
@@ -42,7 +30,7 @@
   ,(make-enc-matrix enc-parsed)
   ,@(if shadow-links
     `((h2 "Shadowed Boxes")
-      (ul ,@(map (lambda (s) `(li ,s)) shadow-links))
+      (ul ,@(map wui-item shadow-links))
     )
   )
 )

@@ -223,7 +223,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20230529125700",
+			api.KeyModified:   "20230621131500",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentInfoSxn)},
@@ -233,7 +233,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20230528210200",
+			api.KeyModified:   "20230621132600",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentFormSxn)},
@@ -243,7 +243,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20230602155600",
+			api.KeyModified:   "20230621132900",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentRenameSxn)},
@@ -253,7 +253,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20230602155500",
+			api.KeyModified:   "20230621133100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentDeleteSxn)},
@@ -276,6 +276,15 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentErrorSxn)},
+	id.TemplateSxnZid: {
+		constHeader{
+			api.KeyTitle:      "Zettelstore Sxn Code for Templates",
+			api.KeyRole:       api.ValueRoleConfiguration,
+			api.KeySyntax:     meta.SyntaxSxn,
+			api.KeyCreated:    "20230619132800",
+			api.KeyVisibility: api.ValueVisibilityExpert,
+		},
+		zettel.NewContent(contentTemplateCodeSxn)},
 	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
@@ -390,6 +399,9 @@ var contentListZettelSxn []byte
 
 //go:embed error.sxn
 var contentErrorSxn []byte
+
+//go:embed wuicode.sxn
+var contentTemplateCodeSxn []byte
 
 //go:embed base.css
 var contentBaseCSS []byte
