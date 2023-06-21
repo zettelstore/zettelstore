@@ -276,7 +276,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 		return nil, err
 	}
 
-	wui.setSxnCache(zid, t)
+	wui.setSxnCache(zid, wui.engine.Rework(env, t))
 	return t, nil
 }
 func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*reader.Reader, error) {
