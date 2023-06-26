@@ -129,7 +129,7 @@ func (kern *myKernel) Setup(progname, version string, versionTime time.Time) {
 	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Local().Format(id.ZidLayout))
 }
 
-func (kern *myKernel) Start(headline, lineServer bool) {
+func (kern *myKernel) Start(headline, lineServer bool, configFilename string) {
 	for _, srvD := range kern.srvs {
 		srvD.srv.Freeze()
 	}
@@ -160,6 +160,11 @@ func (kern *myKernel) Start(headline, lineServer bool) {
 			kern.core.GetCurConfig(kernel.CoreGoArch),
 		))
 		logger.Mandatory().Msg("Licensed under the latest version of the EUPL (European Union Public License)")
+		if configFilename != "" {
+			logger.Mandatory().Str("filename", configFilename).Msg("Configuration file found")
+		} else {
+			logger.Mandatory().Msg("No configuration file found / used")
+		}
 		if kern.core.GetCurConfig(kernel.CoreDebug).(bool) {
 			logger.Warn().Msg("----------------------------------------")
 			logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")

@@ -14,6 +14,10 @@
   *  Make zettel entry/edit form a little friendlier: auto-prepend missing '#'
      to tags; ensure that role and syntax receive just a word.
      (minor: webui)
+  *  Use a zettel that defines builtins for evaluating WebUI templates.
+     (minor: webui)
+  *  Always log the found configuration file.
+     (minor: server)
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (2023-06-05)</h2>

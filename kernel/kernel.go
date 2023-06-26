@@ -31,7 +31,7 @@ type Kernel interface {
 	Setup(progname, version string, versionTime time.Time)
 
 	// Start the service.
-	Start(headline bool, lineServer bool)
+	Start(headline bool, lineServer bool, configFile string)
 
 	// WaitForShutdown blocks the call until Shutdown is called.
 	WaitForShutdown()

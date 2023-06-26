@@ -88,15 +88,15 @@ func init() {
 	})
 }
 
-func fetchStartupConfiguration(fs *flag.FlagSet) (cfg *meta.Meta) {
+func fetchStartupConfiguration(fs *flag.FlagSet) (string, *meta.Meta) {
 	if configFlag := fs.Lookup("c"); configFlag != nil {
 		if filename := configFlag.Value.String(); filename != "" {
 			content, err := readConfiguration(filename)
-			return createConfiguration(content, err)
+			return filename, createConfiguration(content, err)
 		}
 	}
-	content, err := searchAndReadConfiguration()
-	return createConfiguration(content, err)
+	filename, content, err := searchAndReadConfiguration()
+	return filename, createConfiguration(content, err)
 }
 
 func createConfiguration(content []byte, err error) *meta.Meta {
@@ -108,17 +108,17 @@ func createConfiguration(content []byte, err error) *meta.Meta {
 
 func readConfiguration(filename string) ([]byte, error) { return os.ReadFile(filename) }
 
-func searchAndReadConfiguration() ([]byte, error) {
-	for _, filename := range []string{"zettelstore.cfg", "zsconfig.txt", "zscfg.txt", "_zscfg"} {
+func searchAndReadConfiguration() (string, []byte, error) {
+	for _, filename := range []string{"zettelstore.cfg", "zsconfig.txt", "zscfg.txt", "_zscfg", ".zscfg"} {
 		if content, err := readConfiguration(filename); err == nil {
-			return content, nil
+			return filename, content, nil
 		}
 	}
-	return readConfiguration(".zscfg")
+	return "", nil, os.ErrNotExist
 }
 
-func getConfig(fs *flag.FlagSet) *meta.Meta {
-	cfg := fetchStartupConfiguration(fs)
+func getConfig(fs *flag.FlagSet) (string, *meta.Meta) {
+	filename, cfg := fetchStartupConfiguration(fs)
 	fs.Visit(func(flg *flag.Flag) {
 		switch flg.Name {
 		case "p":
@@ -144,7 +144,7 @@ func getConfig(fs *flag.FlagSet) *meta.Meta {
 			cfg.Set(keyVerbose, flg.Value.String())
 		}
 	})
-	return cfg
+	return filename, cfg
 }
 
 func deleteConfiguredBoxes(cfg *meta.Meta) {
@@ -251,7 +251,7 @@ func executeCommand(name string, args ...string) int {
 		fmt.Fprintf(os.Stderr, "%s: unable to parse flags: %v %v\n", name, args, err)
 		return 1
 	}
-	cfg := getConfig(fs)
+	filename, cfg := getConfig(fs)
 	if !setServiceConfig(cfg) {
 		fs.Usage()
 		return 2
@@ -290,7 +290,7 @@ func executeCommand(name string, args ...string) int {
 	if command.Simple {
 		kern.SetConfig(kernel.ConfigService, kernel.ConfigSimpleMode, "true")
 	}
-	kern.Start(command.Header, command.LineServer)
+	kern.Start(command.Header, command.LineServer, filename)
 	exitCode, err := command.Func(fs)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", name, err)
@@ -302,7 +302,7 @@ func executeCommand(name string, args ...string) int {
 // runSimple is called, when the user just starts the software via a double click
 // or via a simple call “./zettelstore“ on the command line.
 func runSimple() int {
-	if _, err := searchAndReadConfiguration(); err == nil {
+	if _, _, err := searchAndReadConfiguration(); err == nil {
 		return executeCommand(strRunSimple)
 	}
 	dir := "./zettel"
