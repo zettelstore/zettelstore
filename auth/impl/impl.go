@@ -17,7 +17,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/pascaldekloe/jwt"
+	"codeberg.org/t73fde/sxpf"
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/auth"
@@ -67,7 +67,8 @@ func calcSecret(extSecret string) []byte {
 // IsReadonly returns true, if the systems is configured to run in read-only-mode.
 func (a *myAuth) IsReadonly() bool { return a.readonly }
 
-const reqHash = jwt.HS512
+// ErrMalformedToken signals a broken token.
+var ErrMalformedToken = errors.New("auth: malformed token")
 
 // ErrNoIdent signals that the 'ident' key is missing.
 var ErrNoIdent = errors.New("auth: missing ident")
@@ -86,64 +87,102 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 	}
 
 	now := time.Now().Round(time.Second)
-	claims := jwt.Claims{
-		Registered: jwt.Registered{
-			Subject: subject,
-			Expires: jwt.NewNumericTime(now.Add(d)),
-			Issued:  jwt.NewNumericTime(now),
-		},
-		Set: map[string]interface{}{
-			"zid": ident.Zid.String(),
-			"_tk": int(kind),
-		},
-	}
-	token, err := claims.HMACSign(reqHash, a.secret)
-	if err != nil {
-		return nil, err
-	}
-	return token, nil
+	sClaim := sxpf.MakeList(
+		sxpf.MakeString(subject),
+		sxpf.Int64(now.Unix()),
+		sxpf.Int64(now.Add(d).Unix()),
+		sxpf.Int64(ident.Zid),
+		sxpf.Int64(kind),
+	)
+	return sign(sClaim, a.secret)
 }
 
 // ErrTokenExpired signals an exired token
 var ErrTokenExpired = errors.New("auth: token expired")
 
 // CheckToken checks the validity of the token and returns relevant data.
-func (a *myAuth) CheckToken(token []byte, k auth.TokenKind) (auth.TokenData, error) {
-	h, err := jwt.NewHMAC(reqHash, a.secret)
+func (a *myAuth) CheckToken(tok []byte, k auth.TokenKind) (auth.TokenData, error) {
+	var tokenData auth.TokenData
+
+	obj, err := check(tok, a.secret)
 	if err != nil {
-		return auth.TokenData{}, err
+		return tokenData, err
 	}
-	claims, err := h.Check(token)
-	if err != nil {
-		return auth.TokenData{}, err
+
+	tokenData.Token = tok
+	err = setupTokenData(obj, k, &tokenData)
+	return tokenData, err
+}
+
+func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData) error {
+	lst, isList := sxpf.GetList(obj)
+	if !isList || lst == nil {
+		return ErrMalformedToken
+	}
+
+	ident, isString := sxpf.GetString(lst.Car())
+	if !isString {
+		return ErrMalformedToken
+	}
+	if ident == "" {
+		return ErrNoIdent
+	}
+
+	next := lst.Tail()
+	if next == nil {
+		return ErrMalformedToken
+	}
+	unixIssued, isInt64 := next.Car().(sxpf.Int64)
+	if !isInt64 {
+		return ErrMalformedToken
+	}
+
+	next = next.Tail()
+	if next == nil {
+		return ErrMalformedToken
+	}
+	unixExpires, isInisInt64 := next.Car().(sxpf.Int64)
+	if !isInisInt64 {
+		return ErrMalformedToken
 	}
 	now := time.Now().Round(time.Second)
-	expires := claims.Expires.Time()
+	expires := time.Unix(int64(unixExpires), 0)
 	if expires.Before(now) {
-		return auth.TokenData{}, ErrTokenExpired
+		return ErrTokenExpired
 	}
-	ident := claims.Subject
-	if ident == "" {
-		return auth.TokenData{}, ErrNoIdent
+
+	next = next.Tail()
+	if next == nil {
+		return ErrMalformedToken
 	}
-	if zidS, ok := claims.Set["zid"].(string); ok {
-		if zid, err2 := id.Parse(zidS); err2 == nil {
-			if kind, ok2 := claims.Set["_tk"].(float64); ok2 {
-				if auth.TokenKind(kind) == k {
-					return auth.TokenData{
-						Token:   token,
-						Now:     now,
-						Issued:  claims.Issued.Time(),
-						Expires: expires,
-						Ident:   ident,
-						Zid:     zid,
-					}, nil
-				}
-			}
-			return auth.TokenData{}, ErrOtherKind
-		}
+	sZid, isInt64 := next.Car().(sxpf.Int64)
+	if !isInt64 || sZid < 0 {
+		return ErrMalformedToken
 	}
-	return auth.TokenData{}, ErrNoZid
+	zid := id.Zid(sZid)
+	if !zid.IsValid() {
+		return ErrNoZid
+	}
+
+	next = next.Tail()
+	if next == nil {
+		return ErrMalformedToken
+	}
+	sKind, isInt64 := next.Car().(sxpf.Int64)
+	if !isInt64 {
+		return ErrMalformedToken
+	}
+	kind := auth.TokenKind(sKind)
+	if kind != k {
+		return ErrOtherKind
+	}
+
+	tokenData.Ident = ident.String()
+	tokenData.Issued = time.Unix(int64(unixIssued), 0)
+	tokenData.Now = now
+	tokenData.Expires = expires
+	tokenData.Zid = zid
+	return nil
 }
 
 func (a *myAuth) Owner() id.Zid { return a.owner }

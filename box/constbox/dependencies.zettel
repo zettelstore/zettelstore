@@ -101,19 +101,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-===  pascaldekloe/jwt
-; URL & Source
-: [[https://github.com/pascaldekloe/jwt]]
-; License
-: [[CC0 1.0 Universal|https://creativecommons.org/publicdomain/zero/1.0/legalcode]]
-```
-To the extent possible under law, Pascal S. de Kloe has waived all
-copyright and related or neighboring rights to JWT. This work is
-published from The Netherlands.
-
-https://creativecommons.org/publicdomain/zero/1.0/legalcode
-```
-
 === yuin/goldmark
 ; URL & Source
 : [[https://github.com/yuin/goldmark]]
