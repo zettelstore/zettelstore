@@ -16,9 +16,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
+	"codeberg.org/t73fde/sxpf/builtins"
 	"codeberg.org/t73fde/sxpf/builtins/binding"
 	"codeberg.org/t73fde/sxpf/builtins/boolean"
 	"codeberg.org/t73fde/sxpf/builtins/callable"
@@ -59,7 +61,31 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	engine.BindBuiltinA("append", list.Append)
 	engine.BindBuiltinA("car", list.Car)
 	engine.BindBuiltinA("cdr", list.Cdr)
+
+	engine.BindBuiltinA("url-to-html", wui.url2html)
 	return engine
+}
+
+func (wui *WebUI) url2html(args []sxpf.Object) (sxpf.Object, error) {
+	err := builtins.CheckArgs(args, 1, 1)
+	text, err := builtins.GetString(err, args, 0)
+	if err != nil {
+		return nil, err
+	}
+	if u, errURL := url.Parse(text.String()); errURL == nil {
+		if us := u.String(); us != "" {
+			return sxpf.MakeList(
+				wui.symA,
+				sxpf.MakeList(
+					wui.symAttr,
+					sxpf.Cons(wui.symHref, sxpf.MakeString(us)),
+					sxpf.Cons(wui.sf.MustMake("target"), sxpf.MakeString("_blank")),
+					sxpf.Cons(wui.sf.MustMake("rel"), sxpf.MakeString("noopener noreferrer")),
+				),
+				text), nil
+		}
+	}
+	return text, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.

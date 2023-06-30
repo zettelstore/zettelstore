@@ -67,7 +67,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
 		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
 		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
-		rb.bindString("ext-url", wui.urlFromMeta(zn.InhMeta, api.KeyURL))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
 		rb.bindString("folge-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyFolge, getTextTitle))
@@ -100,14 +99,6 @@ func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle ge
 		return wui.transformIdentifierSet(values, getTextTitle)
 	}
 	return nil
-}
-
-func (wui *WebUI) urlFromMeta(m *meta.Meta, key string) sxpf.Object {
-	val, found := m.Get(key)
-	if !found || val == "" {
-		return sxpf.Nil()
-	}
-	return wui.transformURL(val)
 }
 
 func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Cell {

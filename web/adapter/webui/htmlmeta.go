@@ -14,8 +14,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-	"time"
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
@@ -34,38 +32,48 @@ func (wui *WebUI) writeHTMLMetaValue(
 	evalMetadata evalMetadataFunc,
 	gen *htmlGenerator,
 ) sxpf.Object {
-	var sval sxpf.Object = sxpf.Nil()
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
-		sval = sxpf.MakeString(value)
+		return sxpf.MakeString(value)
 	case meta.TypeEmpty:
-		sval = sxpf.MakeString(value)
+		return sxpf.MakeString(value)
 	case meta.TypeID:
-		sval = wui.transformIdentifier(value, getTextTitle)
+		return wui.transformIdentifier(value, getTextTitle)
 	case meta.TypeIDSet:
-		sval = wui.transformIdentifierSet(meta.ListFromValue(value), getTextTitle)
+		return wui.transformIdentifierSet(meta.ListFromValue(value), getTextTitle)
 	case meta.TypeNumber:
-		sval = wui.transformLink(key, value, value)
+		return wui.transformLink(key, value, value)
 	case meta.TypeString:
-		sval = sxpf.MakeString(value)
+		return sxpf.MakeString(value)
 	case meta.TypeTagSet:
-		sval = wui.transformTagSet(key, meta.ListFromValue(value))
+		return wui.transformTagSet(key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
 		if ts, ok := meta.TimeValue(value); ok {
-			sval = wui.transformTimestamp(ts)
+			return sxpf.MakeList(
+				wui.sf.MustMake("time"),
+				sxpf.MakeList(
+					wui.sf.MustMake(sxhtml.NameSymAttr),
+					sxpf.Cons(wui.sf.MustMake("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
+				),
+				sxpf.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
+			)
 		}
+		return sxpf.Nil()
 	case meta.TypeURL:
-		sval = wui.transformURL(value)
+		text := sxpf.MakeString(value)
+		if res, err := wui.url2html([]sxpf.Object{text}); err == nil {
+			return res
+		}
+		return text
 	case meta.TypeWord:
-		sval = wui.transformWord(key, value)
+		return wui.transformLink(key, value, value)
 	case meta.TypeWordSet:
-		sval = wui.transformWordSet(key, meta.ListFromValue(value))
+		return wui.transformWordSet(key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
-		sval = wui.transformZmkMetadata(value, evalMetadata, gen)
+		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		sval = sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.MustMake("b"))
+		return sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.MustMake("b"))
 	}
-	return sval
 }
 
 func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sxpf.Object {
@@ -115,49 +123,14 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Cell {
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }
 
-func (wui *WebUI) transformTimestamp(ts time.Time) sxpf.Object {
-	return sxpf.MakeList(
-		wui.sf.MustMake("time"),
-		sxpf.MakeList(
-			wui.sf.MustMake(sxhtml.NameSymAttr),
-			sxpf.Cons(wui.sf.MustMake("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
-		),
-		sxpf.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
-	)
-}
-
-func (wui *WebUI) transformURL(val string) sxpf.Object {
-	text := sxpf.MakeString(val)
-	u, err := url.Parse(val)
-	if err == nil {
-		if us := u.String(); us != "" {
-			return sxpf.MakeList(
-				wui.symA,
-				sxpf.MakeList(
-					wui.symAttr,
-					sxpf.Cons(wui.symHref, sxpf.MakeString(val)),
-					sxpf.Cons(wui.sf.MustMake("target"), sxpf.MakeString("_blank")),
-					sxpf.Cons(wui.sf.MustMake("rel"), sxpf.MakeString("noopener noreferrer")),
-				),
-				text,
-			)
-		}
-	}
-	return text
-}
-
-func (wui *WebUI) transformWord(key, word string) sxpf.Object {
-	return wui.transformLink(key, word, word)
-}
-
 func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	if len(words) == 0 {
 		return sxpf.Nil()
 	}
 	space := sxpf.MakeString(" ")
 	text := make([]sxpf.Object, 0, 2*len(words))
-	for _, tag := range words {
-		text = append(text, space, wui.transformWord(key, tag))
+	for _, word := range words {
+		text = append(text, space, wui.transformLink(key, word, word))
 	}
 	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
 }

@@ -1,7 +1,7 @@
 codeberg.org/t73fde/sxhtml v0.1.2-0.20230630103411-04297c5fe584 h1:TRFIxC+1zZNKLWO+T74lQX6l+aJLwrkLv+rfoS7MgsE=
 codeberg.org/t73fde/sxhtml v0.1.2-0.20230630103411-04297c5fe584/go.mod h1:Hl6LWJdFe1qCYULrsqlSCUQ9fVWzUuxZF1FwzQQ9qRA=
-codeberg.org/t73fde/sxpf v0.2.1-0.20230630103028-cf1754ba472b h1:cqK3gCEWqro56xfQBvBWG9UGBoh89AgtbOTB15ZqUcM=
-codeberg.org/t73fde/sxpf v0.2.1-0.20230630103028-cf1754ba472b/go.mod h1:X+XmeukFGzykXmTnR1tyFmyB5kV7UdO8V1sX5gMwdRQ=
+codeberg.org/t73fde/sxpf v0.2.1-0.20230630130900-2d3104ccfcd7 h1:Or4nYgS+L9unDAQVIZzr0abmM7X7p+ReE6UeTcMSvTs=
+codeberg.org/t73fde/sxpf v0.2.1-0.20230630130900-2d3104ccfcd7/go.mod h1:X+XmeukFGzykXmTnR1tyFmyB5kV7UdO8V1sX5gMwdRQ=
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/yuin/goldmark v1.5.4 h1:2uY/xC0roWy8IBEGLgB1ywIoEJFGmRrX21YQcvGZzjU=
