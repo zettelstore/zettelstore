@@ -88,11 +88,11 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 
 	now := time.Now().Round(time.Second)
 	sClaim := sxpf.MakeList(
+		sxpf.Int64(kind),
 		sxpf.MakeString(subject),
 		sxpf.Int64(now.Unix()),
 		sxpf.Int64(now.Add(d).Unix()),
 		sxpf.Int64(ident.Zid),
-		sxpf.Int64(kind),
 	)
 	return sign(sClaim, a.secret)
 }
@@ -120,6 +120,15 @@ func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData
 		return ErrMalformedToken
 	}
 
+	if sKind, isInt64 := cell.Car().(sxpf.Int64); isInt64 {
+		if auth.TokenKind(sKind) != k {
+			return ErrOtherKind
+		}
+	} else {
+		return ErrMalformedToken
+	}
+
+	cell = cell.Tail()
 	ident, isString := sxpf.GetString(cell.Car())
 	if !isString {
 		return ErrMalformedToken
@@ -153,16 +162,6 @@ func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData
 	zid := id.Zid(sZid)
 	if !zid.IsValid() {
 		return ErrNoZid
-	}
-
-	cell = cell.Tail()
-	sKind, isInt64 := cell.Car().(sxpf.Int64)
-	if !isInt64 {
-		return ErrMalformedToken
-	}
-	kind := auth.TokenKind(sKind)
-	if kind != k {
-		return ErrOtherKind
 	}
 
 	tokenData.Ident = ident.String()
