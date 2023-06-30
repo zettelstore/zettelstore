@@ -13,7 +13,6 @@ package webui
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"codeberg.org/t73fde/sxhtml"
 	"codeberg.org/t73fde/sxpf"
@@ -52,7 +51,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 			return sxpf.MakeList(
 				wui.sf.MustMake("time"),
 				sxpf.MakeList(
-					wui.sf.MustMake(sxhtml.NameSymAttr),
+					wui.symAttr,
 					sxpf.Cons(wui.sf.MustMake("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
 				),
 				sxpf.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
@@ -72,7 +71,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		return sxpf.Nil().Cons(sxpf.MakeString(fmt.Sprintf(" <b>(Unhandled type: %v, key: %v)</b>", kt, key))).Cons(wui.sf.MustMake("b"))
+		return sxpf.MakeList(wui.sf.MustMake("b"), sxpf.MakeString("Unhandled type: "), sxpf.MakeString(kt.Name))
 	}
 }
 
@@ -93,7 +92,7 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		attrs = attrs.Cons(sxpf.Cons(wui.symHref, sxpf.MakeString(ub.String()))).Cons(wui.symAttr)
 		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.symA)
 	case found == 0:
-		return sxpf.Nil().Cons(text).Cons(wui.sf.MustMake("s"))
+		return sxpf.MakeList(wui.sf.MustMake("s"), text)
 	default: // case found < 0:
 		return text
 	}
@@ -108,7 +107,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
 func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Cell {
@@ -120,7 +119,7 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Cell {
 	for _, tag := range tags {
 		text = append(text, space, wui.transformLink(key, tag, tag))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
 func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
@@ -132,7 +131,7 @@ func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	for _, word := range words {
 		text = append(text, space, wui.transformLink(key, word, word))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.sf.MustMake("span"))
+	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
 func (wui *WebUI) transformLink(key, value, text string) *sxpf.Cell {
@@ -169,5 +168,5 @@ func (wui *WebUI) makeGetTextTitle(ctx context.Context, getMeta usecase.GetMeta)
 
 func (wui *WebUI) transformZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) sxpf.Object {
 	is := evalMetadata(value)
-	return gen.InlinesSxHTML(&is).Cons(wui.sf.MustMake("span"))
+	return gen.InlinesSxHTML(&is).Cons(wui.symSpan)
 }

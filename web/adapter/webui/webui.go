@@ -77,6 +77,7 @@ type WebUI struct {
 	symMetaHeader   *sxpf.Symbol
 	symDetail       *sxpf.Symbol
 	symA, symHref   *sxpf.Symbol
+	symSpan         *sxpf.Symbol
 	symAttr         *sxpf.Symbol
 }
 
@@ -130,8 +131,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symDetail:     sf.MustMake("DETAIL"),
 		symMetaHeader: sf.MustMake("META-HEADER"),
 		symA:          sf.MustMake("a"),
-		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
 		symHref:       sf.MustMake("href"),
+		symSpan:       sf.MustMake("span"),
+		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
