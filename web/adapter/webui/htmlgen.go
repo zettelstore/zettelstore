@@ -52,17 +52,17 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	symRel := th.Make("rel")
 
 	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.Cell) {
-		lst, ok := sxpf.GetList(obj)
-		if !ok || !symA.IsEqual(lst.Car()) {
+		cell, isCell := sxpf.GetCell(obj)
+		if !isCell || !symA.IsEqual(cell.Car()) {
 			return nil, nil, nil
 		}
-		rest = lst.Tail()
+		rest = cell.Tail()
 		if rest == nil {
 			return nil, nil, nil
 		}
 		objA := rest.Car()
-		attr, ok = sxpf.GetList(objA)
-		if !ok || !symAttr.IsEqual(attr.Car()) {
+		attr, isCell = sxpf.GetCell(objA)
+		if !isCell || !symAttr.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
 		return attr, attr.Tail(), rest.Tail()
@@ -166,12 +166,12 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if err != nil {
 				return sxpf.Nil()
 			}
-			lst, ok := sxpf.GetList(obj)
-			if !ok || !symImg.IsEqual(lst.Car()) {
+			cell, isCell := sxpf.GetCell(obj)
+			if !isCell || !symImg.IsEqual(cell.Car()) {
 				return obj
 			}
-			attr, ok := sxpf.GetList(lst.Tail().Car())
-			if !ok || !symAttr.IsEqual(attr.Car()) {
+			attr, isCell := sxpf.GetCell(cell.Tail().Car())
+			if !isCell || !symAttr.IsEqual(attr.Car()) {
 				return obj
 			}
 			symSrc := th.Make("src")
@@ -179,8 +179,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if srcP == nil {
 				return obj
 			}
-			src, ok := sxpf.GetString(srcP.Cdr())
-			if !ok {
+			src, isString := sxpf.GetString(srcP.Cdr())
+			if !isString {
 				return obj
 			}
 			zid := api.ZettelID(src)
@@ -189,7 +189,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			}
 			u := builder.NewURLBuilder('z').SetZid(zid)
 			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAttr)
-			return lst.Tail().Tail().Cons(imgAttr).Cons(symImg)
+			return cell.Tail().Tail().Cons(imgAttr).Cons(symImg)
 		})
 	})
 
@@ -223,12 +223,12 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	}
 
 	for elem := hm; elem != nil; elem = elem.Tail() {
-		mlst, ok := sxpf.GetList(elem.Car())
-		if !ok {
+		mlst, isCell := sxpf.GetCell(elem.Car())
+		if !isCell {
 			continue
 		}
-		att, ok := sxpf.GetList(mlst.Tail().Car())
-		if !ok {
+		att, isCell := sxpf.GetCell(mlst.Tail().Car())
+		if !isCell {
 			continue
 		}
 		if !att.Car().IsEqual(g.symAt) {
@@ -236,10 +236,10 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, ok2 := sxpf.GetList(aelem.Car()); ok2 {
+			if p, isPair := sxpf.GetCell(aelem.Car()); isPair {
 				key := p.Car()
 				val := p.Cdr()
-				if tail, ok3 := sxpf.GetList(val); ok3 {
+				if tail, isTail := sxpf.GetCell(val); isTail {
 					val = tail.Car()
 				}
 				a = a.Set(key.String(), val.String())

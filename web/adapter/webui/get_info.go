@@ -173,7 +173,7 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.Cell 
 	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 
 	for i, row := 0, matrix; i < len(apiParts) && row != nil; row = row.Tail() {
-		line, isLine := sxpf.GetList(row.Car())
+		line, isLine := sxpf.GetCell(row.Car())
 		if !isLine || line == nil {
 			continue
 		}

@@ -115,12 +115,12 @@ func (a *myAuth) CheckToken(tok []byte, k auth.TokenKind) (auth.TokenData, error
 }
 
 func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData) error {
-	lst, isList := sxpf.GetList(obj)
-	if !isList || lst == nil {
+	cell, isCell := sxpf.GetCell(obj)
+	if !isCell || cell == nil {
 		return ErrMalformedToken
 	}
 
-	ident, isString := sxpf.GetString(lst.Car())
+	ident, isString := sxpf.GetString(cell.Car())
 	if !isString {
 		return ErrMalformedToken
 	}
@@ -128,20 +128,14 @@ func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData
 		return ErrNoIdent
 	}
 
-	next := lst.Tail()
-	if next == nil {
-		return ErrMalformedToken
-	}
-	unixIssued, isInt64 := next.Car().(sxpf.Int64)
+	cell = cell.Tail()
+	unixIssued, isInt64 := cell.Car().(sxpf.Int64)
 	if !isInt64 {
 		return ErrMalformedToken
 	}
 
-	next = next.Tail()
-	if next == nil {
-		return ErrMalformedToken
-	}
-	unixExpires, isInisInt64 := next.Car().(sxpf.Int64)
+	cell = cell.Tail()
+	unixExpires, isInisInt64 := cell.Car().(sxpf.Int64)
 	if !isInisInt64 {
 		return ErrMalformedToken
 	}
@@ -151,11 +145,8 @@ func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData
 		return ErrTokenExpired
 	}
 
-	next = next.Tail()
-	if next == nil {
-		return ErrMalformedToken
-	}
-	sZid, isInt64 := next.Car().(sxpf.Int64)
+	cell = cell.Tail()
+	sZid, isInt64 := cell.Car().(sxpf.Int64)
 	if !isInt64 || sZid < 0 {
 		return ErrMalformedToken
 	}
@@ -164,11 +155,8 @@ func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData
 		return ErrNoZid
 	}
 
-	next = next.Tail()
-	if next == nil {
-		return ErrMalformedToken
-	}
-	sKind, isInt64 := next.Car().(sxpf.Int64)
+	cell = cell.Tail()
+	sKind, isInt64 := cell.Car().(sxpf.Int64)
 	if !isInt64 {
 		return ErrMalformedToken
 	}
