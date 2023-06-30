@@ -20,6 +20,7 @@ import (
 	"codeberg.org/t73fde/sxpf"
 
 	"zettelstore.de/c/api"
+	"zettelstore.de/c/sx"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/box"
@@ -115,57 +116,30 @@ func (a *myAuth) CheckToken(tok []byte, k auth.TokenKind) (auth.TokenData, error
 }
 
 func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData) error {
-	cell, isCell := sxpf.GetCell(obj)
-	if !isCell || cell == nil {
+	vals, err := sx.ParseObject(obj, "isiii")
+	if err != nil {
 		return ErrMalformedToken
 	}
-
-	if sKind, isInt64 := cell.Car().(sxpf.Int64); isInt64 {
-		if auth.TokenKind(sKind) != k {
-			return ErrOtherKind
-		}
-	} else {
-		return ErrMalformedToken
+	if auth.TokenKind(vals[0].(sxpf.Int64)) != k {
+		return ErrOtherKind
 	}
-
-	cell = cell.Tail()
-	ident, isString := sxpf.GetString(cell.Car())
-	if !isString {
-		return ErrMalformedToken
-	}
+	ident := vals[1].(sxpf.String)
 	if ident == "" {
 		return ErrNoIdent
 	}
-
-	cell = cell.Tail()
-	unixIssued, isInt64 := cell.Car().(sxpf.Int64)
-	if !isInt64 {
-		return ErrMalformedToken
-	}
-
-	cell = cell.Tail()
-	unixExpires, isInisInt64 := cell.Car().(sxpf.Int64)
-	if !isInisInt64 {
-		return ErrMalformedToken
-	}
+	issued := time.Unix(int64(vals[2].(sxpf.Int64)), 0)
+	expires := time.Unix(int64(vals[3].(sxpf.Int64)), 0)
 	now := time.Now().Round(time.Second)
-	expires := time.Unix(int64(unixExpires), 0)
 	if expires.Before(now) {
 		return ErrTokenExpired
 	}
-
-	cell = cell.Tail()
-	sZid, isInt64 := cell.Car().(sxpf.Int64)
-	if !isInt64 || sZid < 0 {
-		return ErrMalformedToken
-	}
-	zid := id.Zid(sZid)
+	zid := id.Zid(vals[4].(sxpf.Int64))
 	if !zid.IsValid() {
 		return ErrNoZid
 	}
 
 	tokenData.Ident = ident.String()
-	tokenData.Issued = time.Unix(int64(unixIssued), 0)
+	tokenData.Issued = issued
 	tokenData.Now = now
 	tokenData.Expires = expires
 	tokenData.Zid = zid
