@@ -11,34 +11,24 @@
 package api
 
 import (
-	"bytes"
 	"net/http"
 
-	"zettelstore.de/c/api"
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakeGetDataHandler creates a new HTTP handler to return zettelstore data.
 func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		version := ucVersion.Run()
-		result := api.VersionJSON{
-			Major: version.Major,
-			Minor: version.Minor,
-			Patch: version.Patch,
-			Info:  version.Info,
-			Hash:  version.Hash,
-		}
-		var buf bytes.Buffer
-		err := encodeJSONData(&buf, result)
-		if err != nil {
-			a.log.Fatal().Err(err).Msg("Unable to version info in buffer")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		err = writeBuffer(w, &buf, content.JSON)
+		err := a.writeObject(w, id.Invalid, sxpf.MakeList(
+			sxpf.Int64(version.Major),
+			sxpf.Int64(version.Minor),
+			sxpf.Int64(version.Patch),
+			sxpf.MakeString(version.Info),
+			sxpf.MakeString(version.Hash),
+		))
 		a.log.IfErr(err).Msg("Write Version Info")
 	}
 }

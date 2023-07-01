@@ -3,7 +3,8 @@ title: Retrieve administrative data
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
-modified: 20220805174216
+created: 00010101000000
+modified: 20230701160903
 
 The [[endpoint|00001012920000]] ''/x'' allows you to retrieve some (administrative) data.
 
@@ -11,17 +12,18 @@ Currently, you can only request Zettelstore version data.
 
 ````
 # curl 'http://127.0.0.1:23123/x'
-{"major":0,"minor":4,"patch":0,"info":"dev","hash":"cb121cc980-dirty"}
+(0 13 0 "dev" "f781dc384b-dirty")
 ````
 
-Zettelstore conforms somehow to the Standard [[Semantic Versioning|https://semver.org/]].
+* Zettelstore conforms somehow to the Standard [[Semantic Versioning|https://semver.org/]].
 
-The names ""major"", ""minor"", and ""patch"" are described in this standard.
+  The first three digits contain the major, minor, and patch version as described in this standard.
+* The first string contains additional information, e.g. ""dev"" for a development version, or ""preview"" for a preview version.
+* The second string contains data to identify the version from a developers perspective.
 
-The name ""info"" contains sometimes some additional information, e.g. ""dev"" for a development version, or ""preview"" for a preview version.
-
-The name ""hash"" contains some data to identify the version from a developers perspective.
+If any of the three digits has the value -1, its semantic value is unknown.
+Similar, the two string might be empty.
 
 === HTTP Status codes
 ; ''200''
-: Retrieval was successful, the body contains an appropriate JSON object.
+: Retrieval was successful, the body contains an appropriate object.

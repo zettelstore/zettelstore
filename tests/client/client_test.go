@@ -392,7 +392,7 @@ func TestListRoles(t *testing.T) {
 func TestVersion(t *testing.T) {
 	t.Parallel()
 	c := getClient()
-	ver, err := c.GetVersionJSON(context.Background())
+	ver, err := c.GetVersionInfo(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
