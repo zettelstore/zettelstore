@@ -11,7 +11,6 @@
 package api
 
 import (
-	"bytes"
 	"net/http"
 	"time"
 
@@ -20,7 +19,7 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
-	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel/id"
 )
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user via API.
@@ -96,18 +95,9 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 }
 
 func (a *API) writeToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
-	lst := sxpf.MakeList(
+	return a.writeObject(w, id.Invalid, sxpf.MakeList(
 		sxpf.MakeString("Bearer"),
 		sxpf.MakeString(token),
 		sxpf.Int64(int64(lifetime/time.Second)),
-	)
-	var buf bytes.Buffer
-	_, err := sxpf.Print(&buf, lst)
-	if err != nil {
-		a.log.Fatal().Err(err).Msg("Unable to store token in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return nil
-	}
-
-	return writeBuffer(w, &buf, content.PlainText)
+	))
 }

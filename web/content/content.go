@@ -30,14 +30,15 @@ const (
 	JSON         = "application/json"
 	PlainText    = "text/plain; charset=utf-8"
 	mimePNG      = "image/png"
+	SXPF         = PlainText
 	mimeWEBP     = "image/webp"
 )
 
 var encoding2mime = map[api.EncodingEnum]string{
 	api.EncoderHTML:  mimeHTML,
 	api.EncoderMD:    mimeMarkdown,
-	api.EncoderSz:    PlainText,
-	api.EncoderSHTML: PlainText,
+	api.EncoderSz:    SXPF,
+	api.EncoderSHTML: SXPF,
 	api.EncoderText:  PlainText,
 	api.EncoderZmk:   PlainText,
 }
@@ -63,7 +64,7 @@ var syntax2mime = map[string]string{
 	meta.SyntaxPlain:    PlainText,
 	meta.SyntaxPNG:      mimePNG,
 	meta.SyntaxSVG:      "image/svg+xml",
-	meta.SyntaxSxn:      PlainText,
+	meta.SyntaxSxn:      SXPF,
 	meta.SyntaxText:     PlainText,
 	meta.SyntaxTxt:      PlainText,
 	meta.SyntaxWebp:     mimeWEBP,

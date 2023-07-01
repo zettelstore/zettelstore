@@ -140,17 +140,8 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 		}
 		obj = metaRights2sz(m, a.getRights(ctx, m))
 	}
-
-	var buf bytes.Buffer
-	_, err := sxpf.Print(&buf, obj)
-	if err != nil {
-		a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store zettel/part in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	err = writeBuffer(w, &buf, content.PlainText)
-	a.log.IfErr(err).Zid(zid).Msg("Write data")
+	err := a.writeObject(w, zid, obj)
+	a.log.IfErr(err).Zid(zid).Msg("write sxpf data")
 }
 
 func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sxpf.Object {
