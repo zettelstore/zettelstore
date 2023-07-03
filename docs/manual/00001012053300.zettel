@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20211004093206
-modified: 20221219160613
+modified: 20230703174152
 
 The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -38,9 +38,46 @@ For example, to retrieve some data about this zettel you are currently viewing, 
 ...
 ````
 
-=== JSON output
+=== Data output
 
-Alternatively, you may retrieve the zettel as a JSON object by providinv the query parameter ''enc=json'':
+Alternatively, you may retrieve the zettel as a parseable object / a [[symbolic expression|00001012930500]] by providing the query parameter ''enc=data'':
+
+```sh
+# curl 'http://127.0.0.1:23123/z/00001012053300?enc=data&part=zettel'
+(zettel (id "00001012053300") (meta (title "API: Retrieve metadata and content of an existing zettel") (role "manual") (tags "#api #manual #zettelstore") (syntax "zmk") (back "00001006000000 00001012000000 00001012054400") (backward "00001006000000 00001012000000 00001012054400 00001012920000") (box-number "1") (created "20211004093206") (forward "00001006020000 00001006050000 00001010040100 00001012050200 00001012053400 00001012920000 00001012920800 00001012921200") (modified "20221219160613") (published "20221219160613")) (rights 62) (encoding "") (content "The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].\n\nFor example, ...
+```
+
+If you print the result a little bit nicer, you will see its structure:
+```
+(zettel (id "00001012053300")
+        (meta (title "API: Retrieve metadata and content of an existing zettel")
+              (role "manual")
+              (tags "#api #manual #zettelstore")
+              (syntax "zmk")
+              (back "00001006000000 00001012000000 00001012054400") (backward "00001006000000 00001012000000 00001012054400 00001012920000")
+              (box-number "1")
+              (created "20211004093206")
+              (forward "00001006020000 00001006050000 00001010040100 00001012050200 00001012053400 00001012920000 00001012920800 00001012921200")
+              (modified "20221219160613")
+              (published "20221219160613"))
+        (rights 62)
+        (encoding "")
+        (content "The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].\n\nFor example, ...
+```
+
+* The result is a list, starting with the symbol ''zettel''.
+* Then, some key/value pairs are following, also nested.
+* The key ''id'' contains the zettel identifier as a string value.
+* Nested in ''meta'' are the metadata, each as a key/value pair.
+* ''rights'' specifies the [[access rights|00001012921200]] the user has for this zettel.
+* ''"encoding"'' states how the content is encoded.
+  Currently, only two values are allowed: the empty string (''""'') that specifies an empty encoding, and the string ''"base64"'' that specifies the [[standard Base64 encoding|https://www.rfc-editor.org/rfc/rfc4648.txt]].
+* The zettel contents is stored as a value of the key ''content''.
+  Typically, text content is not encoded, and binary content is encoded via Base64.
+
+=== JSON output (deprecated)
+
+You may also retrieve the zettel as a JSON object by providing the query parameter ''enc=json'':
 ```sh
 # curl 'http://127.0.0.1:23123/z/00001012053300?enc=json&part=zettel'
 {"id":"00001012053300","meta":{"back":"00001012000000 00001012054400","backward":"00001012000000 00001012054400 00001012920000","box-number":"1","created":"20211004093206","forward":"00001006020000 00001006050000 00001010040100 00001012050200 00001012053400 00001012920000 00001012920800 00001012921200","modified":"20221219160211","published":"20221219160211","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Retrieve metadata and content of an existing zettel"},"encoding":"","content":"The [[endpoint|00001012920000]] to work with metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].\n\nFor example, ...
@@ -79,7 +116,6 @@ The following keys of the JSON object are used:
 ; ''"encoding"''
 : States how the content is encoded.
   Currently, only two values are allowed: the empty string (''""'') that specifies an empty encoding, and the string ''"base64"'' that specifies the [[standard Base64 encoding|https://www.rfc-editor.org/rfc/rfc4648.txt]].
-  Other values will result in a HTTP response status code ''400''.
 ; ''"content"''
 : Is a string value that contains the content of the zettel to be created.
   Typically, text content is not encoded, and binary content is encoded via Base64.

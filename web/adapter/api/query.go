@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 
+	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
@@ -46,7 +47,15 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 			encoder = &plainZettelEncoder{}
 			contentType = content.PlainText
 
-		case api.EncoderJson:
+		case api.EncoderData:
+			encoder = &dataZettelEncoder{
+				sf:        sxpf.MakeMappedFactory(),
+				sq:        sq,
+				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
+			}
+			contentType = content.SXPF
+
+		case api.EncoderJson: // DEPRECATED
 			encoder = &jsonZettelEncoder{
 				sq:        sq,
 				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
@@ -108,12 +117,12 @@ func encodeKeyArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, key s
 		}
 		arr[k0] = ml0
 	}
-	return enc.writeArrangement(w, arr)
+	return enc.writeArrangement(w, key, arr)
 }
 
 type zettelEncoder interface {
 	writeMetaList(w io.Writer, ml []*meta.Meta) error
-	writeArrangement(w io.Writer, arr meta.Arrangement) error
+	writeArrangement(w io.Writer, key string, arr meta.Arrangement) error
 }
 
 type plainZettelEncoder struct{}
@@ -127,7 +136,7 @@ func (*plainZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
 	}
 	return nil
 }
-func (*plainZettelEncoder) writeArrangement(w io.Writer, arr meta.Arrangement) error {
+func (*plainZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arrangement) error {
 	for key, ml := range arr {
 		_, err := io.WriteString(w, key)
 		if err != nil {
@@ -155,6 +164,53 @@ func (*plainZettelEncoder) writeArrangement(w io.Writer, arr meta.Arrangement) e
 	return nil
 }
 
+type dataZettelEncoder struct {
+	sf        sxpf.SymbolFactory
+	sq        *query.Query
+	getRights func(*meta.Meta) api.ZettelRights
+}
+
+func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
+	sf := dze.sf
+	result := make([]sxpf.Object, len(ml)+1)
+	result[0] = sf.MustMake("list")
+	symID, symZettel := sf.MustMake("id"), sf.MustMake("zettel")
+	for i, m := range ml {
+		msz := metaRights2sz(m, dze.getRights(m))
+		msz = sxpf.Cons(sxpf.MakeList(symID, sxpf.Int64(m.Zid)), msz.Cdr()).Cons(symZettel)
+		result[i+1] = msz
+	}
+
+	_, err := sxpf.Print(w, sxpf.MakeList(
+		sf.MustMake("meta-list"),
+		sxpf.MakeList(sf.MustMake("query"), sxpf.MakeString(dze.sq.String())),
+		sxpf.MakeList(sf.MustMake("human"), sxpf.MakeString(dze.sq.Human())),
+		sxpf.MakeList(result...),
+	))
+	return err
+}
+func (dze *dataZettelEncoder) writeArrangement(w io.Writer, key string, arr meta.Arrangement) error {
+	sf := dze.sf
+	result := sxpf.Nil()
+	for aggKey, metaList := range arr {
+		sxMeta := sxpf.Nil()
+		for i := len(metaList) - 1; i >= 0; i-- {
+			sxMeta = sxMeta.Cons(sxpf.Int64(metaList[i].Zid))
+		}
+		sxMeta = sxMeta.Cons(sxpf.MakeString(aggKey))
+		result = result.Cons(sxMeta)
+	}
+	_, err := sxpf.Print(w, sxpf.MakeList(
+		sf.MustMake("aggregate"),
+		sxpf.MakeString(key),
+		sxpf.MakeList(sf.MustMake("query"), sxpf.MakeString(dze.sq.String())),
+		sxpf.MakeList(sf.MustMake("human"), sxpf.MakeString(dze.sq.Human())),
+		result.Cons(sf.MustMake("list")),
+	))
+	return err
+}
+
+// jsonZettelEncoder is DEPRECATED
 type jsonZettelEncoder struct {
 	sq        *query.Query
 	getRights func(*meta.Meta) api.ZettelRights
@@ -177,7 +233,7 @@ func (jze *jsonZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	})
 	return err
 }
-func (*jsonZettelEncoder) writeArrangement(w io.Writer, arr meta.Arrangement) error {
+func (*jsonZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arrangement) error {
 	mm := make(api.MapMeta, len(arr))
 	for key, metaList := range arr {
 		zidList := make([]api.ZettelID, 0, len(metaList))

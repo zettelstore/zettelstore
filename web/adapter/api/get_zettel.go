@@ -156,7 +156,7 @@ func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sxpf.Object {
 		sxpf.MakeList(sf.MustMake("content"), sxpf.MakeString(zContent)),
 	)
 }
-func metaRights2sz(m *meta.Meta, rights api.ZettelRights) sxpf.Object {
+func metaRights2sz(m *meta.Meta, rights api.ZettelRights) *sxpf.Cell {
 	sf := sxpf.MakeMappedFactory()
 	return sxpf.MakeList(
 		sf.MustMake("list"),
