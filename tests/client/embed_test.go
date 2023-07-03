@@ -77,7 +77,7 @@ func TestZettelTransclusionNoPrivilegeEscalation(t *testing.T) {
 	c := getClient()
 	c.SetAuth("reader", "reader")
 
-	zettelData, err := c.GetZettelJSON(context.Background(), api.ZidEmoji)
+	zettelData, err := c.GetZettelData(context.Background(), api.ZidEmoji)
 	if err != nil {
 		t.Error(err)
 		return

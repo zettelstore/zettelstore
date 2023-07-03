@@ -130,11 +130,11 @@ func compareZettelList(t *testing.T, pl [][]byte, l []api.ZidMetaJSON) {
 	}
 }
 
-func TestGetZettelJSON(t *testing.T) {
+func TestGetZettelData(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	z, err := c.GetZettelJSON(context.Background(), api.ZidDefaultHome)
+	z, err := c.GetZettelData(context.Background(), api.ZidDefaultHome)
 	if err != nil {
 		t.Error(err)
 		return

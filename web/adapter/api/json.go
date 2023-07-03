@@ -57,7 +57,7 @@ func (a *API) writeMetaList(ctx context.Context, w http.ResponseWriter, m *meta.
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
 	var zettel zettel.Zettel
 	dec := json.NewDecoder(r.Body)
-	var zettelData api.ZettelDataJSON
+	var zettelData api.ZettelData
 	if err := dec.Decode(&zettelData); err != nil {
 		return zettel, err
 	}
