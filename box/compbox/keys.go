@@ -34,7 +34,7 @@ func genKeysC(*meta.Meta) []byte {
 	buf.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")
 	for _, kd := range keys {
 		fmt.Fprintf(&buf,
-			"|%v|%v|%v|%v\n", kd.Name, kd.Type.Name, kd.IsComputed(), kd.IsProperty())
+			"|[[%v|query:%v?]]|%v|%v|%v\n", kd.Name, kd.Name, kd.Type.Name, kd.IsComputed(), kd.IsProperty())
 	}
 	return buf.Bytes()
 }
