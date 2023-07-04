@@ -16,6 +16,8 @@
      (minor: webui)
   *  Use a zettel that defines builtins for evaluating WebUI templates.
      (minor: webui)
+  *  Add links to retrieve result of a query in other formats.
+     (minor: webui)
   *  Always log the found configuration file.
      (minor: server)
 

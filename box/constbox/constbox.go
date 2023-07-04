@@ -262,7 +262,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
-			api.KeyCreated:    "20230526221600",
+			api.KeyCreated:    "20230704122100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentListZettelSxn)},

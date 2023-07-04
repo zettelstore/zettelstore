@@ -4,11 +4,16 @@
     (input (@ (class "zs-input") (type "text") (placeholder "Search..") (name ,query-key-query) (value ,query-value))))
   ,@content
   ,@endnotes
-  ,@(if (bound? 'create-url)
-    `((form (@ (action ,create-url))
-      (input (@ (type "hidden") (name ,query-key-query) (value ,query-value)))
-      (input (@ (type "hidden") (name ,query-key-seed) (value ,seed)))
-      (input (@ (class "zs-primary") (type "submit") (value "Save As Zettel")))
-    ))
+  (form (@ (action ,(if (bound? 'create-url) create-url)))
+      "Other encodings: "
+      (a (@ (href ,data-url)) "data")
+      ", "
+      (a (@ (href ,plain-url)) "plain")
+      ,@(if (bound? 'create-url)
+        `((input (@ (type "hidden") (name ,query-key-query) (value ,query-value)))
+          (input (@ (type "hidden") (name ,query-key-seed) (value ,seed)))
+          (input (@ (class "zs-primary") (type "submit") (value "Save As Zettel")))
+        )
+      )
   )
 )

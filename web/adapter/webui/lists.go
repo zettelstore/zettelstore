@@ -14,6 +14,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"codeberg.org/t73fde/sxpf"
@@ -77,11 +78,16 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		rb.bindString("query-value", sxpf.MakeString(q.String()))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
+		apiURL := wui.NewURLBuilder('z').AppendQuery(q.String())
+		seed, found := q.GetSeed()
+		if found {
+			apiURL = apiURL.AppendKVQuery(api.QueryKeySeed, strconv.Itoa(seed))
+		} else {
+			seed = 0
+		}
+		rb.bindString("plain-url", sxpf.MakeString(apiURL.String()))
+		rb.bindString("data-url", sxpf.MakeString(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
 		if wui.canCreate(ctx, user) {
-			seed, found := q.GetSeed()
-			if !found {
-				seed = 0
-			}
 			rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
 			rb.bindString("seed", sxpf.Int64(seed))
 		}
