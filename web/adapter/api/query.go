@@ -98,17 +98,30 @@ func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Quer
 			acts = append(acts, act)
 		}
 		for _, act := range acts {
-			key := strings.ToLower(act)
-			switch meta.Type(key) {
+			switch act {
+			case "KEYS":
+				return encodeKeysArrangement(w, enc, ml, act)
+			}
+			switch key := strings.ToLower(act); meta.Type(key) {
 			case meta.TypeWord, meta.TypeTagSet:
-				return encodeKeyArrangement(w, enc, ml, key, min, max)
+				return encodeMetaKeyArrangement(w, enc, ml, key, min, max)
 			}
 		}
 	}
 	return enc.writeMetaList(w, ml)
 }
 
-func encodeKeyArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, key string, min, max int) error {
+func encodeKeysArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, act string) error {
+	arr := make(meta.Arrangement, 128)
+	for _, m := range ml {
+		for k := range m.Map() {
+			arr[k] = append(arr[k], m)
+		}
+	}
+	return enc.writeArrangement(w, act, arr)
+}
+
+func encodeMetaKeyArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, key string, min, max int) error {
 	arr0 := meta.CreateArrangement(ml, key)
 	arr := make(meta.Arrangement, len(arr0))
 	for k0, ml0 := range arr0 {
@@ -122,7 +135,7 @@ func encodeKeyArrangement(w io.Writer, enc zettelEncoder, ml []*meta.Meta, key s
 
 type zettelEncoder interface {
 	writeMetaList(w io.Writer, ml []*meta.Meta) error
-	writeArrangement(w io.Writer, key string, arr meta.Arrangement) error
+	writeArrangement(w io.Writer, act string, arr meta.Arrangement) error
 }
 
 type plainZettelEncoder struct{}
@@ -189,7 +202,7 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	))
 	return err
 }
-func (dze *dataZettelEncoder) writeArrangement(w io.Writer, key string, arr meta.Arrangement) error {
+func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta.Arrangement) error {
 	sf := dze.sf
 	result := sxpf.Nil()
 	for aggKey, metaList := range arr {
@@ -202,7 +215,7 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, key string, arr meta
 	}
 	_, err := sxpf.Print(w, sxpf.MakeList(
 		sf.MustMake("aggregate"),
-		sxpf.MakeString(key),
+		sxpf.MakeString(act),
 		sxpf.MakeList(sf.MustMake("query"), sxpf.MakeString(dze.sq.String())),
 		sxpf.MakeList(sf.MustMake("human"), sxpf.MakeString(dze.sq.Human())),
 		result.Cons(sf.MustMake("list")),
