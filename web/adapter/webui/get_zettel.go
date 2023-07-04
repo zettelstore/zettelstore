@@ -63,6 +63,12 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getMeta u
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
 		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
 		rb.bindString("heading", sxpf.MakeString(title))
+		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
+			rb.bindString("role-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+		}
+		if role, found := zn.InhMeta.Get(api.KeyFolgeRole); found && role != "" {
+			rb.bindString("folge-role-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+		}
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
 		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))

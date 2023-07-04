@@ -9,6 +9,8 @@
      numbers, timestamps, and zettel identifier. They are not supported for
      full-test search.
      (breaking: api, webui)
+  *  Add support for metadata key <tt>folge-role</tt>.
+     (minor)
   *  Allow to create a child from a given zettel.
      (minor: webui)
   *  Make zettel entry/edit form a little friendlier: auto-prepend missing '#'

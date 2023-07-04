@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230421155051
+modified: 20230704161159
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -53,6 +53,8 @@ Most keys conform to a [[type|00001006030000]].
   Alternatively, a Zettelstore client software could define some actions when it detects expired zettel.
 ; [!folge|''folge'']
 : Is a property that contains identifier of all zettel that reference this zettel through the [[''precursor''|#precursor]] value.
+; [!folge-role|''folge-role'']
+: Specifies a suggested [[''role''|#role]] the zettel should use in the future, if zettel currently has a preliminary role.
 ; [!forward|''forward'']
 : Property that contains all references that identify another zettel within the content of the zettel.
 ; [!id|''id'']

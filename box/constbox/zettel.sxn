@@ -5,7 +5,10 @@
       ,@(if (bound? 'edit-url) `((a (@ (href ,edit-url)) "Edit") (@H " &#183; ")))
       ,zid (@H " &#183; ")
       (a (@ (href ,info-url)) "Info") (@H " &#183; ")
-      "(" (a (@ (href ,role-url)) ,meta-role) ")"
+      "(" ,@(if (bound? 'role-url) `((a (@ (href ,role-url)) ,meta-role)))
+          ,@(if (and (bound? 'folge-role-url) (bound? 'meta-folge-role))
+                `((@H " &rarr; ") (a (@ (href ,folge-role-url)) ,meta-folge-role)))
+      ")"
       ,@(if tag-refs `((@H " &#183; ") ,@tag-refs))
       ,@(if (bound? 'copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy")))
       ,@(if (bound? 'version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))

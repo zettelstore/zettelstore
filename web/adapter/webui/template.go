@@ -189,8 +189,6 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 		rb.bindString("useless", sxpf.Cons(sxpf.MakeString(val), nil))
 	}
 	rb.bindString("context-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.ContextDirective+" "+strZid).String()))
-	rb.bindString("role-url",
-		sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+m.GetDefault(api.KeyRole, "")).String()))
 
 	// Ensure to have title, role, tags, and syntax included as "meta-*"
 	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))
