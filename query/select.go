@@ -33,9 +33,13 @@ type matchSpec struct {
 
 // compileMeta calculates a selection func based on the given select criteria.
 func (ct *conjTerms) compileMeta() MetaMatchFunc {
-	for key := range ct.mvals {
-		// All queried keys must exist
-		ct.addKey(key, cmpExist)
+	for key, vals := range ct.mvals {
+		// All queried keys must exist, if there is at least one non-negated compare operation
+		//
+		// This is only an optimization to make selection of metadata faster.
+		if countNegatedOps(vals) < len(vals) {
+			ct.addKey(key, cmpExist)
+		}
 	}
 	for _, op := range ct.keys {
 		if op != cmpExist && op != cmpNotExist {
@@ -47,6 +51,16 @@ func (ct *conjTerms) compileMeta() MetaMatchFunc {
 		return makeSearchMetaMatchFunc(posSpecs, negSpecs, ct.keys)
 	}
 	return nil
+}
+
+func countNegatedOps(vals []expValue) int {
+	count := 0
+	for _, val := range vals {
+		if val.op.isNegated() {
+			count++
+		}
+	}
+	return count
 }
 
 func (ct *conjTerms) createSelectSpecs() (posSpecs, negSpecs []matchSpec) {
