@@ -1,6 +1,6 @@
 module zettelstore.de/z
 
-go 1.19
+go 1.20
 
 require (
 	codeberg.org/t73fde/sxhtml v0.1.2-0.20230630103411-04297c5fe584
@@ -9,8 +9,8 @@ require (
 	github.com/yuin/goldmark v1.5.4
 	golang.org/x/crypto v0.10.0
 	golang.org/x/term v0.9.0
-	golang.org/x/text v0.10.0
+	golang.org/x/text v0.11.0
 	zettelstore.de/c v0.12.1-0.20230704135310-89965b46844a
 )
 
-require golang.org/x/sys v0.9.0 // indirect
+require golang.org/x/sys v0.10.0 // indirect
