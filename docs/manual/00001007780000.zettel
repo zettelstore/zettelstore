@@ -4,11 +4,11 @@ role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20230610155135
+modified: 20230706160310
 
 ```
 QueryExpression   := ContextExpression? SearchExpression ActionExpression?
-ContextExpression := "CONTEXT" SPACE+ ZID (SPACE+ ContextDetail)*.
+ContextExpression := (ZID (SPACE+ ZID)*)? "CONTEXT" (SPACE+ ContextDetail)*.
 ContextDetail     := "BACKWARD"
                    | "FORWARD"
                    | "COST" SPACE+ PosInt

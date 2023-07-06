@@ -17,6 +17,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
+	"zettelstore.de/z/zettel/id"
 )
 
 var op2string = map[compareOp]string{
@@ -50,7 +51,8 @@ func (q *Query) Print(w io.Writer) {
 		return
 	}
 	env := printEnv{w: w}
-	env.printContext(q)
+	env.printZids(q.zids)
+	env.printContext(q.context)
 	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR")
@@ -98,13 +100,20 @@ func (pe *printEnv) printSpace() {
 func (pe *printEnv) write(ch byte)        { pe.w.Write([]byte{ch}) }
 func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
 
-func (pe *printEnv) printContext(q *Query) {
-	if zid := q.zid; zid.IsValid() {
-		pe.writeString(api.ContextDirective)
-		pe.space = true
-		pe.printSpace()
+func (pe *printEnv) printZids(zids []id.Zid) {
+	for i, zid := range zids {
+		if i > 0 {
+			pe.printSpace()
+		}
 		pe.writeString(zid.String())
-		switch q.dir {
+		pe.space = true
+	}
+}
+func (pe *printEnv) printContext(spec *contextSpec) {
+	if spec != nil {
+		pe.printSpace()
+		pe.writeString(api.ContextDirective)
+		switch spec.dir {
 		case dirBackward:
 			pe.printSpace()
 			pe.writeString(api.BackwardDirective)
@@ -112,10 +121,9 @@ func (pe *printEnv) printContext(q *Query) {
 			pe.printSpace()
 			pe.writeString(api.ForwardDirective)
 		}
-		pe.printPosInt(api.CostDirective, q.maxCost)
-		pe.printPosInt(api.MaxDirective, q.maxCount)
+		pe.printPosInt(api.CostDirective, spec.maxCost)
+		pe.printPosInt(api.MaxDirective, spec.maxCount)
 	}
-
 }
 func (pe *printEnv) printExprValues(key string, values []expValue) {
 	for _, val := range values {
@@ -161,7 +169,8 @@ func (q *Query) PrintHuman(w io.Writer) {
 		return
 	}
 	env := printEnv{w: w}
-	env.printContext(q)
+	env.printZids(q.zids)
+	env.printContext(q.context)
 	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR ")

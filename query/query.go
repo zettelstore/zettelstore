@@ -40,11 +40,10 @@ type Searcher interface {
 
 // Query specifies a mechanism for querying zettel.
 type Query struct {
-	// Fields for context. Only valid if zid.IsValid().
-	zid      id.Zid
-	dir      contextDirection
-	maxCost  int
-	maxCount int
+	// Präfixed zettel identifier.
+	zids []id.Zid
+
+	context *contextSpec // Fields for context. Only valid if not nil.
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
@@ -113,11 +112,13 @@ func (q *Query) Clone() *Query {
 		return nil
 	}
 	c := new(Query)
-	c.zid = q.zid
-	if q.zid.IsValid() {
-		c.dir = q.dir
-		c.maxCost = q.maxCost
-		c.maxCount = q.maxCount
+	if len(q.zids) > 0 {
+		c.zids = make([]id.Zid, len(q.zids))
+		copy(c.zids, q.zids)
+	}
+	if spec := q.context; spec != nil {
+		c.context = new(contextSpec)
+		*c.context = *spec
 	}
 
 	c.preMatch = q.preMatch
@@ -292,7 +293,7 @@ func (q *Query) EnrichNeeded() bool {
 	if q == nil {
 		return false
 	}
-	if q.zid.IsValid() {
+	if len(q.zids) > 0 {
 		return true
 	}
 	if len(q.actions) > 0 {

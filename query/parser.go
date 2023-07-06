@@ -69,14 +69,43 @@ const (
 )
 
 func (ps *parserState) parse(q *Query) *Query {
-	q = ps.parseContext(q)
+	ps.skipSpace()
+	if ps.mustStop() {
+		return q
+	}
 	inp := ps.inp
+	zidSet := id.NewSet()
+	for {
+		pos := inp.Pos
+		zid, found := ps.scanZid()
+		if !found {
+			inp.SetPos(pos)
+			break
+		}
+		if !zidSet.Contains(zid) {
+			zidSet.Zid(zid)
+			q = createIfNeeded(q)
+			q.zids = append(q.zids, zid)
+		}
+		ps.skipSpace()
+		if ps.mustStop() {
+			return q
+		}
+	}
+
+	pos := inp.Pos
+	if ps.acceptSingleKw(api.ContextDirective) {
+		q = ps.parseContext(q, pos)
+	} else {
+		inp.SetPos(pos)
+	}
+
 	for {
 		ps.skipSpace()
 		if ps.mustStop() {
 			break
 		}
-		pos := inp.Pos
+		pos = inp.Pos
 		if ps.acceptSingleKw(api.OrDirective) {
 			q = createIfNeeded(q)
 			if !q.terms[len(q.terms)-1].isEmpty() {
@@ -130,31 +159,26 @@ func (ps *parserState) parse(q *Query) *Query {
 	return q
 }
 
-func (ps *parserState) parseContext(q *Query) *Query {
+func (ps *parserState) parseContext(q *Query, pos int) *Query {
 	inp := ps.inp
-	ps.skipSpace()
-	if ps.mustStop() {
-		return q
-	}
-	pos := inp.Pos
-	if !ps.acceptSingleKw(api.ContextDirective) {
-		inp.SetPos(pos)
-		return q
-	}
-	ps.skipSpace()
-	if ps.mustStop() {
-		inp.SetPos(pos)
-		return q
-	}
-	zid, ok := ps.scanZid()
-	if !ok {
-		inp.SetPos(pos)
-		return q
+
+	if q == nil || len(q.zids) == 0 {
+		ps.skipSpace()
+		if ps.mustStop() {
+			inp.SetPos(pos)
+			return q
+		}
+		zid, ok := ps.scanZid()
+		if !ok {
+			inp.SetPos(pos)
+			return q
+		}
+		q = createIfNeeded(q)
+		q.zids = append(q.zids, zid)
 	}
 
-	q = createIfNeeded(q)
-	q.zid = zid
-	q.dir = dirBoth
+	spec := &contextSpec{dir: dirBoth}
+	q.context = spec
 
 	for {
 		ps.skipSpace()
@@ -163,23 +187,23 @@ func (ps *parserState) parseContext(q *Query) *Query {
 		}
 		pos = inp.Pos
 		if ps.acceptSingleKw(api.BackwardDirective) {
-			q.dir = dirBackward
+			spec.dir = dirBackward
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(api.ForwardDirective) {
-			q.dir = dirForward
+			spec.dir = dirForward
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(api.CostDirective) {
-			if ps.parseCost(q) {
+			if ps.parseCost(spec) {
 				continue
 			}
 		}
 		inp.SetPos(pos)
 		if ps.acceptKwArgs(api.MaxDirective) {
-			if ps.parseCount(q) {
+			if ps.parseCount(spec) {
 				continue
 			}
 		}
@@ -187,23 +211,23 @@ func (ps *parserState) parseContext(q *Query) *Query {
 		return q
 	}
 }
-func (ps *parserState) parseCost(q *Query) bool {
+func (ps *parserState) parseCost(spec *contextSpec) bool {
 	num, ok := ps.scanPosInt()
 	if !ok {
 		return false
 	}
-	if q.maxCost == 0 || q.maxCost >= num {
-		q.maxCost = num
+	if spec.maxCost == 0 || spec.maxCost >= num {
+		spec.maxCost = num
 	}
 	return true
 }
-func (ps *parserState) parseCount(q *Query) bool {
+func (ps *parserState) parseCount(spec *contextSpec) bool {
 	num, ok := ps.scanPosInt()
 	if !ok {
 		return false
 	}
-	if q.maxCount == 0 || q.maxCount >= num {
-		q.maxCount = num
+	if spec.maxCount == 0 || spec.maxCount >= num {
+		spec.maxCount = num
 	}
 	return true
 }

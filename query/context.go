@@ -18,6 +18,12 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
+type contextSpec struct {
+	dir      contextDirection
+	maxCost  int
+	maxCount int
+}
+
 type contextDirection uint8
 
 const (
@@ -28,28 +34,36 @@ const (
 )
 
 func (q *Query) getContext(ctx context.Context, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
-	if !q.zid.IsValid() {
+	spec := q.context
+	if spec == nil {
 		return nil, nil
 	}
 
-	start, err := getMeta(ctx, q.zid)
-	if err != nil {
-		return nil, err
+	startSeq := make([]*meta.Meta, 0, len(q.zids))
+	for _, zid := range q.zids {
+		m, err := getMeta(ctx, zid)
+		if err != nil {
+			return nil, err
+		}
+		if preMatch(m) {
+			startSeq = append(startSeq, m)
+		}
 	}
-	if !preMatch(start) {
+	if len(startSeq) == 0 {
 		return []*meta.Meta{}, nil
 	}
-	maxCost := q.maxCost
+
+	maxCost := spec.maxCost
 	if maxCost <= 0 {
 		maxCost = 17
 	}
-	maxCount := q.maxCount
+	maxCount := spec.maxCount
 	if maxCount <= 0 {
 		maxCount = 200
 	}
-	tasks := newQueue(start, maxCost, maxCount, preMatch, getMeta, selectMeta)
-	isBackward := q.dir == dirBoth || q.dir == dirBackward
-	isForward := q.dir == dirBoth || q.dir == dirForward
+	tasks := newQueue(startSeq, maxCost, maxCount, preMatch, getMeta, selectMeta)
+	isBackward := spec.dir == dirBoth || spec.dir == dirBackward
+	isForward := spec.dir == dirBoth || spec.dir == dirForward
 	result := []*meta.Meta{}
 	for {
 		m, cost := tasks.next()
@@ -89,23 +103,29 @@ type contextQueue struct {
 	tagCost    map[string][]*meta.Meta
 }
 
-func newQueue(m *meta.Meta, maxCost, limit int, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) *contextQueue {
-	task := &ztlCtxTask{
-		next: nil,
-		prev: nil,
-		meta: m,
-		cost: 1,
-	}
+func newQueue(startSeq []*meta.Meta, maxCost, limit int, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) *contextQueue {
 	result := &contextQueue{
 		preMatch:   preMatch,
 		getMeta:    getMeta,
 		selectMeta: selectMeta,
 		seen:       id.NewSet(),
-		first:      task,
-		last:       task,
+		first:      nil,
+		last:       nil,
 		maxCost:    maxCost,
 		limit:      limit,
 		tagCost:    make(map[string][]*meta.Meta, 1024),
+	}
+
+	var prev *ztlCtxTask
+	for _, m := range startSeq {
+		task := &ztlCtxTask{next: nil, prev: prev, meta: m, cost: 1}
+		if prev == nil {
+			result.first = task
+		} else {
+			prev.next = task
+		}
+		result.last = task
+		prev = task
 	}
 	return result
 }
