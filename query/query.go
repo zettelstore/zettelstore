@@ -350,7 +350,7 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		preMatch = matchAlways
 	}
 	var startMeta []*meta.Meta
-	if dirs := q.directives; len(dirs) > 0 {
+	if numZids := len(q.zids); numZids > 0 {
 		startMeta = make([]*meta.Meta, 0, len(q.zids))
 		for _, zid := range q.zids {
 			m, err := getMeta(ctx, zid)
@@ -364,13 +364,13 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		if len(startMeta) == 0 {
 			startMeta = []*meta.Meta{}
 		}
+	}
 
-		for _, d := range dirs {
-			var err error
-			startMeta, err = d.retrieve(ctx, startMeta, preMatch, getMeta, selectMeta)
-			if err != nil {
-				return Compiled{}, err
-			}
+	for _, d := range q.directives {
+		var err error
+		startMeta, err = d.retrieve(ctx, startMeta, preMatch, getMeta, selectMeta)
+		if err != nil {
+			return Compiled{}, err
 		}
 	}
 

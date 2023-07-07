@@ -59,7 +59,7 @@ func (c *Compiled) Result() []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(c.startMeta))
 	for _, m := range c.startMeta {
 		for _, term := range c.Terms {
-			if term.Match(m) {
+			if term.Match(m) && term.Retrieve(m.Zid) {
 				result = append(result, m)
 				break
 			}

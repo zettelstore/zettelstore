@@ -1,75 +1,27 @@
 id: 00001007700000
-title: Query expression
+title: Query Expression
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20230706155605
+modified: 20230707205745
 
 A query expression allows you to search for specific zettel and to perform some actions on them.
-You may select zettel based on a full-text search, based on specific metadata values, or both.
+You may select zettel based on a list of [[zettel identifier|00001006050000]], based on a query directive, based on a full-text search, based on specific metadata values, or some or all of them.
 
-A query expression consists of an optional __context expression__, a __search expression__ and an optional __action list__.
+A query expression consists of an optional __[[zettel identifier list|00001007710000]]__, zero or more __[[query directives|00001007720000]]__, an optional __[[search expression|00001007701000]]__, and an optional __[[action list|00001007770000]]__.
 The latter two are separated by a vertical bar character (""''|''"", U+007C).
 
 A query expression follows a [[formal syntax|00001007780000]].
 
-=== Context expression
+* [[List of zettel identifier|00001007710000]]
+* [[Query directives|00001007720000]]
+** [[Context directive|00001007720300]]
+* [[Search expression|00001007701000]]
+** [[Search term|00001007702000]]
+** [[Search operator|00001007705000]]
+** [[Search value|00001007706000]]
+* [[Action list|00001007770000]]
 
-A context expression starts with a space-separated list of [[zettel identifier|00001006050000]], one or more space characters, followed by the keyword ''CONTEXT''.
-
-Optionally you may specify some context details, separated by space character. These are:
-* ''BACKWARD'': search for context only though backward links,
-* ''FORWARD'': search for context only through forward links,
-* ''COST'', one or more space characters, and a positive integer: set the maximum __cost__ (default: 17),
-* ''MAX'', one or more space characters, and a positive integer: set the maximum number of context zettel (default: 200).
-
-If no ''BACKWARD'' and ''FORWARD'' is specified, a search for context zettel will be done though backward and forward links.
-
-The cost of a context zettel is calculated iteratively:
-* Each of the specified zettel hast a cost of one.
-* A zettel found as a single folge zettel or single precursor zettel has the cost of the originating zettel, plus one.
-* A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus two.
-* A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus three.
-* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the three choices above and multiplied with roughly a logarithmic value based on the size of the set.
-* A zettel with the same tag, has the cost of the originating zettel, plus the number of zettel with the same tag (if it is less than eight), or the cost of the originating zettel plus two, multiplied by number of zettel with the same tag divided by four.
-
-The maximum cost is only checked for all zettel that are not directly reachable from the initial, specified list of zettel.
-This ensures that initial zettel that have only a highly used tag, will also produce some context zettel.
-
-Despite its possibly complicated structure, this algorithm ensures in practice that the zettel context is a list of zettel, where the first elements are ""near"" to the specified zettel and the last elements are more ""distant"" to the specified zettel.
-It also penalties a zettel that acts as a ""hub"" to other zettel, to make it more likely that only relevant zettel appear on the context list.
-
-=== Search expression
-
-In its simplest form, a search expression just contains a string to be search for with the help of a full-text search.
-For example, the string ''syntax'' will search for all zettel containing the word ""syntax"".
-
-If you want to search for all zettel with a title containing the word ""syntax"", you must specify ''title:syntax''.
-""title"" names the [[metadata key|00001006010000]], in this case the [[supported metadata key ""title""|00001006020000#title]].
-The colon character (""'':''"") is a [[search operator|00001007705000]], in this example to specify a match.
-""syntax"" is the [[search value|00001007706000]] that must match to the value of the given metadata key, here ""title"".
-
-A search expression may contain more than one search term, such as ''title:syntax''.
-Search terms must be separated by one or more space characters, for example ''title:syntax title:search''.
-All terms of a select expression must be true so that a zettel is selected.
-
-* [[Search term|00001007702000]]
-* [[Search operator|00001007705000]]
-* [[Search value|00001007706000]]
-
-Here are [[some examples|00001007790000]] of search / context expressions, which can be used to manage a Zettelstore:
+Here are [[some examples|00001007790000]], which can be used to manage a Zettelstore:
 {{{00001007790000}}}
-
-=== Action List
-
-With a search expression, a list of zettel is selected.
-Actions allow to modify this list to a certain degree.
-
-Which actions are allowed depends on the context.
-However, actions are further separated into __parameter action__ and __aggregate actions__.
-A parameter action just sets a parameter for an aggregate action.
-An aggregate action transforms the list of selected zettel into a different, aggregate form.
-Only the first aggregate form is executed, following aggregate actions are ignored.
-
-In most contexts, valid actions include the name of metadata keys, at least of type [[Word|00001006035500]], [[WordSet|00001006036000]], or [[TagSet|00001006034000]].

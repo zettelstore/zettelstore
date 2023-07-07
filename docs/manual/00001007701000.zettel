@@ -1,0 +1,26 @@
+id: 00001007701000
+title: Query: Search Expression
+role: manual
+tags: #manual #search #zettelstore
+syntax: zmk
+created: 20230707205043
+modified: 20230707210039
+
+In its simplest form, a search expression just contains a string to be search for with the help of a full-text search.
+For example, the string ''syntax'' will search for all zettel containing the word ""syntax"".
+
+If you want to search for all zettel with a title containing the word ""syntax"", you must specify ''title:syntax''.
+""title"" denotes the [[metadata key|00001006010000]], in this case the [[supported metadata key ""title""|00001006020000#title]].
+The colon character (""'':''"") is a [[search operator|00001007705000]], in this example to specify a match.
+""syntax"" is the [[search value|00001007706000]] that must match to the value of the given metadata key, here ""title"".
+
+A search expression may contain more than one search term, such as ''title:syntax''.
+Search terms must be separated by one or more space characters, for example ''title:syntax title:search''.
+All terms of a select expression must be true so that a zettel is selected.
+
+Above sequence of search expressions may be combined by specifying the keyword ''OR''.
+At most one of those sequences must be true so that a zettel is selected.
+
+* [[Search term|00001007702000]]
+* [[Search operator|00001007705000]]
+* [[Search value|00001007706000]]

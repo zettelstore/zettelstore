@@ -1,0 +1,17 @@
+id: 00001007720000
+title: Query Directives
+role: manual
+tags: #manual #search #zettelstore
+syntax: zmk
+created: 20230707203135
+modified: 20230707204800
+
+Currently, only one query directive is allowed, only a context directive.
+
+A query directive is only valid if a list of zettel identifier is specified at the beginning of the query expression.
+Otherwise the text of the directive is interpreted as a search expression.
+For example, ''CONTEXT'' is interpreted as a full-text search for the word ""context"".
+
+Every query directive therefore consumes a list of zettel, and it produces a list of zettel according to the specific directive.
+
+* [[Context directive|00001007720300]]
