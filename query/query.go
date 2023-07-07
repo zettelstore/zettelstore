@@ -43,7 +43,8 @@ type Query struct {
 	// Präfixed zettel identifier.
 	zids []id.Zid
 
-	context *contextSpec // Fields for context. Only valid if not nil.
+	// Querydirectives, like CONTEXT, ...
+	directives []queryDirective
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
@@ -61,6 +62,11 @@ type Query struct {
 
 	// Execute specification
 	actions []string
+}
+
+type queryDirective interface {
+	printToEnv(*printEnv)
+	retrieve(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error)
 }
 
 type keyExistMap map[string]compareOp
@@ -116,9 +122,9 @@ func (q *Query) Clone() *Query {
 		c.zids = make([]id.Zid, len(q.zids))
 		copy(c.zids, q.zids)
 	}
-	if spec := q.context; spec != nil {
-		c.context = new(contextSpec)
-		*c.context = *spec
+	if len(q.directives) > 0 {
+		c.directives = make([]queryDirective, len(q.directives))
+		copy(c.directives, q.directives)
 	}
 
 	c.preMatch = q.preMatch
@@ -343,32 +349,46 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 	if preMatch == nil {
 		preMatch = matchAlways
 	}
-	contextMeta, err := q.getContext(
-		ctx, preMatch,
-		func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	var startMeta []*meta.Meta
+	if dirs := q.directives; len(dirs) > 0 {
+		startMeta = make([]*meta.Meta, 0, len(q.zids))
+		for _, zid := range q.zids {
 			m, err := getMeta(ctx, zid)
-			return m, err
-		},
-		selectMeta,
-	)
-	if err != nil {
-		return Compiled{}, err
+			if err != nil {
+				return Compiled{}, err
+			}
+			if preMatch(m) {
+				startMeta = append(startMeta, m)
+			}
+		}
+		if len(startMeta) == 0 {
+			startMeta = []*meta.Meta{}
+		}
+
+		for _, d := range dirs {
+			var err error
+			startMeta, err = d.retrieve(ctx, startMeta, preMatch, getMeta, selectMeta)
+			if err != nil {
+				return Compiled{}, err
+			}
+		}
 	}
-	contextSet := metaList2idSet(contextMeta)
+
+	startSet := metaList2idSet(startMeta)
 	result := Compiled{
-		hasQuery:    true,
-		seed:        q.seed,
-		pick:        q.pick,
-		order:       q.order,
-		offset:      q.offset,
-		limit:       q.limit,
-		contextMeta: contextMeta,
-		PreMatch:    preMatch,
-		Terms:       []CompiledTerm{},
+		hasQuery:  true,
+		seed:      q.seed,
+		pick:      q.pick,
+		order:     q.order,
+		offset:    q.offset,
+		limit:     q.limit,
+		startMeta: startMeta,
+		PreMatch:  preMatch,
+		Terms:     []CompiledTerm{},
 	}
 
 	for _, term := range q.terms {
-		cTerm := term.retrieveAndCompileTerm(searcher, contextSet)
+		cTerm := term.retrieveAndCompileTerm(searcher, startSet)
 		if cTerm.Retrieve == nil {
 			if cTerm.Match == nil {
 				// no restriction on match/retrieve -> all will match
@@ -399,17 +419,17 @@ func metaList2idSet(ml []*meta.Meta) id.Set {
 	return result
 }
 
-func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, contextSet id.Set) CompiledTerm {
+func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet id.Set) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
 	var pred RetrievePredicate
 	if searcher != nil {
 		pred = ct.retrieveIndex(searcher)
-		if contextSet != nil {
+		if startSet != nil {
 			if pred == nil {
-				pred = contextSet.Contains
+				pred = startSet.Contains
 			} else {
-				predSet := id.NewSetCap(len(contextSet))
-				for zid := range contextSet {
+				predSet := id.NewSetCap(len(startSet))
+				for zid := range startSet {
 					if pred(zid) {
 						predSet = predSet.Zid(zid)
 					}

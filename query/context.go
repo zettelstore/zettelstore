@@ -33,26 +33,22 @@ const (
 	dirBoth
 )
 
-func (q *Query) getContext(ctx context.Context, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
-	spec := q.context
-	if spec == nil {
-		return nil, nil
+func (spec *contextSpec) printToEnv(pe *printEnv) {
+	pe.printSpace()
+	pe.writeString(api.ContextDirective)
+	switch spec.dir {
+	case dirBackward:
+		pe.printSpace()
+		pe.writeString(api.BackwardDirective)
+	case dirForward:
+		pe.printSpace()
+		pe.writeString(api.ForwardDirective)
 	}
+	pe.printPosInt(api.CostDirective, spec.maxCost)
+	pe.printPosInt(api.MaxDirective, spec.maxCount)
+}
 
-	startSeq := make([]*meta.Meta, 0, len(q.zids))
-	for _, zid := range q.zids {
-		m, err := getMeta(ctx, zid)
-		if err != nil {
-			return nil, err
-		}
-		if preMatch(m) {
-			startSeq = append(startSeq, m)
-		}
-	}
-	if len(startSeq) == 0 {
-		return []*meta.Meta{}, nil
-	}
-
+func (spec *contextSpec) retrieve(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
 	maxCost := spec.maxCost
 	if maxCost <= 0 {
 		maxCost = 17

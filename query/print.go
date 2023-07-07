@@ -52,7 +52,9 @@ func (q *Query) Print(w io.Writer) {
 	}
 	env := printEnv{w: w}
 	env.printZids(q.zids)
-	env.printContext(q.context)
+	for _, d := range q.directives {
+		d.printToEnv(&env)
+	}
 	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR")
@@ -109,22 +111,6 @@ func (pe *printEnv) printZids(zids []id.Zid) {
 		pe.space = true
 	}
 }
-func (pe *printEnv) printContext(spec *contextSpec) {
-	if spec != nil {
-		pe.printSpace()
-		pe.writeString(api.ContextDirective)
-		switch spec.dir {
-		case dirBackward:
-			pe.printSpace()
-			pe.writeString(api.BackwardDirective)
-		case dirForward:
-			pe.printSpace()
-			pe.writeString(api.ForwardDirective)
-		}
-		pe.printPosInt(api.CostDirective, spec.maxCost)
-		pe.printPosInt(api.MaxDirective, spec.maxCount)
-	}
-}
 func (pe *printEnv) printExprValues(key string, values []expValue) {
 	for _, val := range values {
 		pe.printSpace()
@@ -170,7 +156,9 @@ func (q *Query) PrintHuman(w io.Writer) {
 	}
 	env := printEnv{w: w}
 	env.printZids(q.zids)
-	env.printContext(q.context)
+	for _, d := range q.directives {
+		d.printToEnv(&env)
+	}
 	for i, term := range q.terms {
 		if i > 0 {
 			env.writeString(" OR ")

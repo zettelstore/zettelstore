@@ -178,12 +178,10 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 	}
 
 	spec := &contextSpec{dir: dirBoth}
-	q.context = spec
-
 	for {
 		ps.skipSpace()
 		if ps.mustStop() {
-			return q
+			break
 		}
 		pos = inp.Pos
 		if ps.acceptSingleKw(api.BackwardDirective) {
@@ -207,9 +205,12 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 				continue
 			}
 		}
+
 		inp.SetPos(pos)
-		return q
+		break
 	}
+	q.directives = append(q.directives, spec)
+	return q
 }
 func (ps *parserState) parseCost(spec *contextSpec) bool {
 	num, ok := ps.scanPosInt()

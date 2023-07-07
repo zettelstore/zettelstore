@@ -27,9 +27,9 @@ type Compiled struct {
 	offset   int // <= 0: no offset
 	limit    int // <= 0: no limit
 
-	contextMeta []*meta.Meta
-	PreMatch    MetaMatchFunc // Precondition for Match and Retrieve
-	Terms       []CompiledTerm
+	startMeta []*meta.Meta
+	PreMatch  MetaMatchFunc // Precondition for Match and Retrieve
+	Terms     []CompiledTerm
 }
 
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
@@ -51,13 +51,13 @@ func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 
 // Result returns a result of the compiled search, that is achievable without iterating through a box.
 func (c *Compiled) Result() []*meta.Meta {
-	if len(c.contextMeta) == 0 {
+	if len(c.startMeta) == 0 {
 		// nil -> no context
 		// empty slice -> nothing found
-		return c.contextMeta
+		return c.startMeta
 	}
-	result := make([]*meta.Meta, 0, len(c.contextMeta))
-	for _, m := range c.contextMeta {
+	result := make([]*meta.Meta, 0, len(c.startMeta))
+	for _, m := range c.startMeta {
 		for _, term := range c.Terms {
 			if term.Match(m) {
 				result = append(result, m)
