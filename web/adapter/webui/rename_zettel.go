@@ -66,11 +66,17 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel
 		}
 
 		if err = r.ParseForm(); err != nil {
+			wui.log.Trace().Err(err).Msg("unable to read rename zettel form")
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Unable to read rename zettel form"))
 			return
 		}
-		if formCurZid, err1 := id.Parse(
-			r.PostFormValue("curzid")); err1 != nil || formCurZid != curZid {
+		formCurZidStr := r.PostFormValue("curzid")
+		if formCurZid, err1 := id.Parse(formCurZidStr); err1 != nil || formCurZid != curZid {
+			if err1 != nil {
+				wui.log.Trace().Str("formCurzid", formCurZidStr).Err(err1).Msg("unable to parse as zid")
+			} else if formCurZid != curZid {
+				wui.log.Trace().Zid(formCurZid).Zid(curZid).Msg("zid differ (form/url)")
+			}
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Invalid value for current zettel id in form"))
 			return
 		}

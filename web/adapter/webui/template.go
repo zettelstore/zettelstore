@@ -359,6 +359,8 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
 		wui.log.Error().Msg(err.Error())
+	} else {
+		wui.log.Trace().Err(err).Msg("reportError")
 	}
 	user := server.GetUser(ctx)
 	env, rb := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)

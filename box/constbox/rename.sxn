@@ -16,10 +16,10 @@
     ))
   )
   (form (@ (method "POST"))
-    (input (@ (type "hidden" (id "curzid") (name "curzid") (value ,zid))))
+    (input (@ (type "hidden") (id "curzid") (name "curzid") (value ,zid)))
     (div
-      (label (@ (for "newid")) "New zettel id")
-      (input (@ (class "zs-input") (type "text") (id "newid") (name "newid") (placeholder "ZID..") (value ,zid) (autofocus))))
+      (label (@ (for "newzid")) "New zettel id")
+      (input (@ (class "zs-input") (type "text") (id "newzid") (name "newzid") (placeholder "ZID..") (value ,zid) (autofocus))))
     (div (input (@ (class "zs-primary") (type "submit") (value "Rename"))))
   )
   ,(wui-meta-desc metapairs)
