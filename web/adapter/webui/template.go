@@ -206,7 +206,7 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	rb.bindString("metapairs", sentinel.Tail())
 }
 
-func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sxpf.Cell) {
+func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sxpf.Pair) {
 	if !wui.canCreate(ctx, user) {
 		return nil
 	}
@@ -236,7 +236,7 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 	}
 	return lst
 }
-func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.Cell {
+func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.Pair {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
 			htmlEnc := wui.getSimpleHTMLEncoder().SetUnique("footer-")
@@ -375,7 +375,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 }
 
-func makeStringList(sl []string) *sxpf.Cell {
+func makeStringList(sl []string) *sxpf.Pair {
 	if len(sl) == 0 {
 		return nil
 	}

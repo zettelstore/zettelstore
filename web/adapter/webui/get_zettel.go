@@ -100,14 +100,14 @@ func (wui *WebUI) getCSSRoleURL(ctx context.Context, m *meta.Meta) (string, erro
 	return wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String(), nil
 }
 
-func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Cell {
+func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Pair {
 	if values, ok := m.GetList(key); ok {
 		return wui.transformIdentifierSet(values, getTextTitle)
 	}
 	return nil
 }
 
-func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Cell {
+func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Pair {
 	values, ok := m.GetList(key)
 	if !ok || len(values) == 0 {
 		return nil
@@ -115,7 +115,7 @@ func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextT
 	return wui.zidLinksSxn(values, getTextTitle)
 }
 
-func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sxpf.Cell) {
+func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sxpf.Pair) {
 	for i := len(values) - 1; i >= 0; i-- {
 		val := values[i]
 		zid, err := id.Parse(val)

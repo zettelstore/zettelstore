@@ -98,7 +98,7 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 	}
 }
 
-func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.Cell {
+func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.Pair {
 	if len(vals) == 0 {
 		return nil
 	}
@@ -110,7 +110,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
-func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Cell {
+func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Pair {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -134,7 +134,7 @@ func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
 	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
-func (wui *WebUI) transformLink(key, value, text string) *sxpf.Cell {
+func (wui *WebUI) transformLink(key, value, text string) *sxpf.Pair {
 	return sxpf.MakeList(
 		wui.symA,
 		sxpf.MakeList(

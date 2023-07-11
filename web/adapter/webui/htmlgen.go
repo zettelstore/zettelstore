@@ -51,18 +51,18 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
 
-	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.Cell) {
-		cell, isCell := sxpf.GetCell(obj)
-		if !isCell || !symA.IsEqual(cell.Car()) {
+	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.Pair) {
+		pair, isPair := sxpf.GetPair(obj)
+		if !isPair || !symA.IsEqual(pair.Car()) {
 			return nil, nil, nil
 		}
-		rest = cell.Tail()
+		rest = pair.Tail()
 		if rest == nil {
 			return nil, nil, nil
 		}
 		objA := rest.Car()
-		attr, isCell = sxpf.GetCell(objA)
-		if !isCell || !symAttr.IsEqual(attr.Car()) {
+		attr, isPair = sxpf.GetPair(objA)
+		if !isPair || !symAttr.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
 		return attr, attr.Tail(), rest.Tail()
@@ -166,12 +166,12 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if err != nil {
 				return sxpf.Nil()
 			}
-			cell, isCell := sxpf.GetCell(obj)
-			if !isCell || !symImg.IsEqual(cell.Car()) {
+			pair, isPair := sxpf.GetPair(obj)
+			if !isPair || !symImg.IsEqual(pair.Car()) {
 				return obj
 			}
-			attr, isCell := sxpf.GetCell(cell.Tail().Car())
-			if !isCell || !symAttr.IsEqual(attr.Car()) {
+			attr, isPair := sxpf.GetPair(pair.Tail().Car())
+			if !isPair || !symAttr.IsEqual(attr.Car()) {
 				return obj
 			}
 			symSrc := th.Make("src")
@@ -189,7 +189,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			}
 			u := builder.NewURLBuilder('z').SetZid(zid)
 			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAttr)
-			return cell.Tail().Tail().Cons(imgAttr).Cons(symImg)
+			return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
 		})
 	})
 
@@ -208,7 +208,7 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Cell {
+func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Pair {
 	tm := g.tx.GetMeta(m, evalMeta)
 	hm, err := g.th.Transform(tm)
 	if err != nil {
@@ -216,19 +216,19 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	}
 
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
-	metaMap := make(map[string]*sxpf.Cell, m.Length())
+	metaMap := make(map[string]*sxpf.Pair, m.Length())
 	if tags, ok := m.Get(api.KeyTags); ok {
 		metaMap[api.KeyTags] = g.transformMetaTags(tags)
 		ignore.Set(api.KeyTags)
 	}
 
 	for elem := hm; elem != nil; elem = elem.Tail() {
-		mlst, isCell := sxpf.GetCell(elem.Car())
-		if !isCell {
+		mlst, isPair := sxpf.GetPair(elem.Car())
+		if !isPair {
 			continue
 		}
-		att, isCell := sxpf.GetCell(mlst.Tail().Car())
-		if !isCell {
+		att, isPair := sxpf.GetPair(mlst.Tail().Car())
+		if !isPair {
 			continue
 		}
 		if !att.Car().IsEqual(g.symAt) {
@@ -236,10 +236,10 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, isPair := sxpf.GetCell(aelem.Car()); isPair {
+			if p, ok := sxpf.GetPair(aelem.Car()); ok {
 				key := p.Car()
 				val := p.Cdr()
-				if tail, isTail := sxpf.GetCell(val); isTail {
+				if tail, isTail := sxpf.GetPair(val); isTail {
 					val = tail.Car()
 				}
 				a = a.Set(key.String(), val.String())
@@ -265,7 +265,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	return result
 }
 
-func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Cell {
+func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Pair {
 	var sb strings.Builder
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -280,7 +280,7 @@ func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Cell {
 	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
 }
 
-func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.Cell, _ error) {
+func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.Pair, _ error) {
 	if bs == nil || len(*bs) == 0 {
 		return nil, nil, nil
 	}
@@ -293,7 +293,7 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.C
 }
 
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
-func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.Cell {
+func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.Pair {
 	if is == nil || len(*is) == 0 {
 		return nil
 	}

@@ -113,7 +113,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 	}
 }
 
-func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries, extLinks *sxpf.Cell) {
+func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries, extLinks *sxpf.Pair) {
 	for i := len(links) - 1; i >= 0; i-- {
 		ref := links[i]
 		if ref.State == ast.RefStateSelf || ref.IsZettel() {
@@ -147,7 +147,7 @@ func encodingTexts() []string {
 
 var apiParts = []string{api.PartZettel, api.PartMeta, api.PartContent}
 
-func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *sxpf.Cell {
+func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *sxpf.Pair {
 	matrix := sxpf.Nil()
 	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	for ip := len(apiParts) - 1; ip >= 0; ip-- {
@@ -168,12 +168,12 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *
 	return matrix
 }
 
-func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.Cell {
+func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.Pair {
 	matrix := wui.infoAPIMatrix(zid, true, encTexts)
 	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 
 	for i, row := 0, matrix; i < len(apiParts) && row != nil; row = row.Tail() {
-		line, isLine := sxpf.GetCell(row.Car())
+		line, isLine := sxpf.GetPair(row.Car())
 		if !isLine || line == nil {
 			continue
 		}
@@ -197,7 +197,7 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.Cell 
 	return matrix
 }
 
-func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) *sxpf.Cell {
+func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) *sxpf.Pair {
 	result := sxpf.Nil()
 	if ml, err := getAllMeta.Run(ctx, zid); err == nil {
 		for i := len(ml) - 1; i >= 1; i-- {

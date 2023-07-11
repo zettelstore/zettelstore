@@ -56,7 +56,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	}
 
 	var isTitle ast.InlineSlice
-	var htitle *sxpf.Cell
+	var htitle *sxpf.Pair
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		isTitle = parser.ParseSpacedText(plainTitle)
