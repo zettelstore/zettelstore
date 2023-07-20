@@ -45,7 +45,7 @@ type stringRefs map[string]id.Slice
 
 type memStore struct {
 	mx     sync.RWMutex
-	intern map[string]string
+	intern map[string]string // map to intern strings
 	idx    map[id.Zid]*zettelData
 	dead   map[id.Zid]id.Slice // map dead refs where they occur
 	words  stringRefs
@@ -258,6 +258,7 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 }
 
 func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.Set {
+	m := ms.makeMeta(zidx)
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	zi, ziExist := ms.idx[zidx.Zid]
@@ -274,7 +275,7 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 		delete(ms.dead, zidx.Zid)
 	}
 
-	ms.updateMeta(zidx, zi)
+	zi.meta = m
 	ms.updateDeadReferences(zidx, zi)
 	ms.updateForwardBackwardReferences(zidx, zi)
 	ms.updateMetadataReferences(zidx, zi)
@@ -298,7 +299,10 @@ var internableKeys = map[string]bool{
 }
 
 func isInternableKey(key string) bool {
-	return internableKeys[key]
+	if internableKeys[key] {
+		return true
+	}
+	return strings.HasSuffix(key, "-role")
 }
 
 func (ms *memStore) internString(s string) string {
@@ -309,7 +313,7 @@ func (ms *memStore) internString(s string) string {
 	return s
 }
 
-func (ms *memStore) updateMeta(zidx *store.ZettelIndex, zi *zettelData) {
+func (ms *memStore) makeMeta(zidx *store.ZettelIndex) *meta.Meta {
 	origM := zidx.GetMeta()
 	copyM := meta.New(origM.Zid)
 	for _, p := range origM.Pairs() {
@@ -320,7 +324,7 @@ func (ms *memStore) updateMeta(zidx *store.ZettelIndex, zi *zettelData) {
 			copyM.Set(key, p.Value)
 		}
 	}
-	zi.meta = copyM
+	return copyM
 }
 
 func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData) {
@@ -383,7 +387,6 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 }
 
 func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
-	// Must only be called if ms.mx is write-locked!
 	newWords, removeWords := next.Diff(prev)
 	for _, word := range newWords {
 		if refs, ok := srefs[word]; ok {
