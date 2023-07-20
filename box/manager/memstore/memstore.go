@@ -26,35 +26,30 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-type metaRefs struct {
+type bidiRefs struct {
 	forward  id.Slice
 	backward id.Slice
 }
 
-type zettelIndex struct {
-	dead     id.Slice
-	forward  id.Slice
-	backward id.Slice
-	meta     map[string]metaRefs
-	words    []string
-	urls     []string
-}
-
-func (zi *zettelIndex) isEmpty() bool {
-	if len(zi.forward) > 0 || len(zi.backward) > 0 || len(zi.dead) > 0 || len(zi.words) > 0 {
-		return false
-	}
-	return len(zi.meta) == 0
+type zettelData struct {
+	meta      *meta.Meta
+	dead      id.Slice
+	forward   id.Slice
+	backward  id.Slice
+	otherRefs map[string]bidiRefs
+	words     []string
+	urls      []string
 }
 
 type stringRefs map[string]id.Slice
 
 type memStore struct {
-	mx    sync.RWMutex
-	idx   map[id.Zid]*zettelIndex
-	dead  map[id.Zid]id.Slice // map dead refs where they occur
-	words stringRefs
-	urls  stringRefs
+	mx     sync.RWMutex
+	intern map[string]string
+	idx    map[id.Zid]*zettelData
+	dead   map[id.Zid]id.Slice // map dead refs where they occur
+	words  stringRefs
+	urls   stringRefs
 
 	// Stats
 	updates uint64
@@ -63,10 +58,11 @@ type memStore struct {
 // New returns a new memory-based index store.
 func New() store.Store {
 	return &memStore{
-		idx:   make(map[id.Zid]*zettelIndex),
-		dead:  make(map[id.Zid]id.Slice),
-		words: make(stringRefs),
-		urls:  make(stringRefs),
+		intern: make(map[string]string, 1024),
+		idx:    make(map[id.Zid]*zettelData),
+		dead:   make(map[id.Zid]id.Slice),
+		words:  make(stringRefs),
+		urls:   make(stringRefs),
 	}
 }
 
@@ -100,7 +96,7 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 		back = remRefs(back, zi.forward)
 		updated = true
 	}
-	for k, refs := range zi.meta {
+	for k, refs := range zi.otherRefs {
 		if len(refs.backward) > 0 {
 			m.Set(k, refs.backward.String())
 			back = remRefs(back, refs.backward)
@@ -234,11 +230,11 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 	return result
 }
 
-func addBackwardZids(result id.Set, zid id.Zid, zi *zettelIndex) {
+func addBackwardZids(result id.Set, zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is read-locked!
 	result.Zid(zid)
 	result.AddSlice(zi.backward)
-	for _, mref := range zi.meta {
+	for _, mref := range zi.otherRefs {
 		result.AddSlice(mref.backward)
 	}
 }
@@ -266,7 +262,7 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	defer ms.mx.Unlock()
 	zi, ziExist := ms.idx[zidx.Zid]
 	if !ziExist || zi == nil {
-		zi = &zettelIndex{}
+		zi = &zettelData{}
 		ziExist = false
 	}
 
@@ -278,6 +274,7 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 		delete(ms.dead, zidx.Zid)
 	}
 
+	ms.updateMeta(zidx, zi)
 	ms.updateDeadReferences(zidx, zi)
 	ms.updateForwardBackwardReferences(zidx, zi)
 	ms.updateMetadataReferences(zidx, zi)
@@ -285,14 +282,48 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	zi.urls = updateWordSet(zidx.Zid, ms.urls, zi.urls, zidx.GetUrls())
 
 	// Check if zi must be inserted into ms.idx
-	if !ziExist && !zi.isEmpty() {
+	if !ziExist {
 		ms.idx[zidx.Zid] = zi
 	}
 
 	return toCheck
 }
 
-func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
+var internableKeys = map[string]bool{
+	api.KeyRole:      true,
+	api.KeySyntax:    true,
+	api.KeyFolgeRole: true,
+	api.KeyLang:      true,
+	api.KeyReadOnly:  true,
+}
+
+func isInternableKey(key string) bool {
+	return internableKeys[key]
+}
+
+func (ms *memStore) internString(s string) string {
+	if is, found := ms.intern[s]; found {
+		return is
+	}
+	ms.intern[s] = s
+	return s
+}
+
+func (ms *memStore) updateMeta(zidx *store.ZettelIndex, zi *zettelData) {
+	origM := zidx.GetMeta()
+	copyM := meta.New(origM.Zid)
+	for _, p := range origM.Pairs() {
+		key := p.Key
+		if isInternableKey(key) {
+			copyM.Set(key, ms.internString(p.Value))
+		} else {
+			copyM.Set(key, p.Value)
+		}
+	}
+	zi.meta = copyM
+}
+
+func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
 	drefs := zidx.GetDeadRefs()
 	newRefs, remRefs := refsDiff(drefs, zi.dead)
@@ -305,7 +336,7 @@ func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelInde
 	}
 }
 
-func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
+func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := refsDiff(brefs, zi.forward)
@@ -320,32 +351,32 @@ func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 	}
 }
 
-func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelIndex) {
+func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
-	metarefs := zidx.GetMetaRefs()
-	for key, mr := range zi.meta {
-		if _, ok := metarefs[key]; ok {
+	inverseRefs := zidx.GetInverseRefs()
+	for key, mr := range zi.otherRefs {
+		if _, ok := inverseRefs[key]; ok {
 			continue
 		}
 		ms.removeInverseMeta(zidx.Zid, key, mr.forward)
 	}
-	if zi.meta == nil {
-		zi.meta = make(map[string]metaRefs)
+	if zi.otherRefs == nil {
+		zi.otherRefs = make(map[string]bidiRefs)
 	}
-	for key, mrefs := range metarefs {
-		mr := zi.meta[key]
+	for key, mrefs := range inverseRefs {
+		mr := zi.otherRefs[key]
 		newRefs, remRefs := refsDiff(mrefs, mr.forward)
 		mr.forward = mrefs
-		zi.meta[key] = mr
+		zi.otherRefs[key] = mr
 
 		for _, ref := range newRefs {
 			bzi := ms.getEntry(ref)
-			if bzi.meta == nil {
-				bzi.meta = make(map[string]metaRefs)
+			if bzi.otherRefs == nil {
+				bzi.otherRefs = make(map[string]bidiRefs)
 			}
-			bmr := bzi.meta[key]
+			bmr := bzi.otherRefs[key]
 			bmr.backward = addRef(bmr.backward, zidx.Zid)
-			bzi.meta[key] = bmr
+			bzi.otherRefs[key] = bmr
 		}
 		ms.removeInverseMeta(zidx.Zid, key, remRefs)
 	}
@@ -376,12 +407,12 @@ func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordS
 	return next.Words()
 }
 
-func (ms *memStore) getEntry(zid id.Zid) *zettelIndex {
+func (ms *memStore) getEntry(zid id.Zid) *zettelData {
 	// Must only be called if ms.mx is write-locked!
 	if zi, ok := ms.idx[zid]; ok {
 		return zi
 	}
-	zi := &zettelIndex{}
+	zi := &zettelData{}
 	ms.idx[zid] = zi
 	return zi
 }
@@ -397,8 +428,8 @@ func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) id.Set {
 
 	ms.deleteDeadSources(zid, zi)
 	toCheck := ms.deleteForwardBackward(zid, zi)
-	if len(zi.meta) > 0 {
-		for key, mrefs := range zi.meta {
+	if len(zi.otherRefs) > 0 {
+		for key, mrefs := range zi.otherRefs {
 			ms.removeInverseMeta(zid, key, mrefs.forward)
 		}
 	}
@@ -407,7 +438,7 @@ func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) id.Set {
 	return toCheck
 }
 
-func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelIndex) {
+func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range zi.dead {
 		if drefs, ok := ms.dead[ref]; ok {
@@ -421,7 +452,7 @@ func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelIndex) {
 	}
 }
 
-func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelIndex) id.Set {
+func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) id.Set {
 	// Must only be called if ms.mx is write-locked!
 	var toCheck id.Set
 	for _, ref := range zi.forward {
@@ -445,20 +476,20 @@ func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) 
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range forward {
 		bzi, ok := ms.idx[ref]
-		if !ok || bzi.meta == nil {
+		if !ok || bzi.otherRefs == nil {
 			continue
 		}
-		bmr, ok := bzi.meta[key]
+		bmr, ok := bzi.otherRefs[key]
 		if !ok {
 			continue
 		}
 		bmr.backward = remRef(bmr.backward, zid)
 		if len(bmr.backward) > 0 || len(bmr.forward) > 0 {
-			bzi.meta[key] = bmr
+			bzi.otherRefs[key] = bmr
 		} else {
-			delete(bzi.meta, key)
-			if len(bzi.meta) == 0 {
-				bzi.meta = nil
+			delete(bzi.otherRefs, key)
+			if len(bzi.otherRefs) == 0 {
+				bzi.otherRefs = nil
 			}
 		}
 	}
@@ -518,7 +549,7 @@ func (ms *memStore) dumpIndex(w io.Writer) {
 		}
 		dumpZids(w, "* Forward:", zi.forward)
 		dumpZids(w, "* Backward:", zi.backward)
-		for k, fb := range zi.meta {
+		for k, fb := range zi.otherRefs {
 			fmt.Fprintln(w, "* Meta", k)
 			dumpZids(w, "** Forward:", fb.forward)
 			dumpZids(w, "** Backward:", fb.backward)

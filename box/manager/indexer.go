@@ -163,7 +163,7 @@ func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel zettel.Zettel) {
 	collectZettelIndexData(parser.ParseZettel(ctx, zettel, "", mgr.rtConfig), &cData)
 
 	m := zettel.Meta
-	zi := store.NewZettelIndex(m.Zid)
+	zi := store.NewZettelIndex(m)
 	mgr.idxCollectFromMeta(ctx, m, zi, &cData)
 	mgr.idxProcessData(ctx, zi, &cData)
 	toCheck := mgr.idxStore.UpdateReferences(ctx, zi)
@@ -223,7 +223,7 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 		zi.AddBackRef(zid)
 		return
 	}
-	zi.AddMetaRef(inverseKey, zid)
+	zi.AddInverseRef(inverseKey, zid)
 }
 
 func (mgr *Manager) idxDeleteZettel(zid id.Zid) {
