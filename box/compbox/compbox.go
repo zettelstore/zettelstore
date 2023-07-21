@@ -111,7 +111,7 @@ func (cb *compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 }
 
 func (cb *compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {
-	cb.log.Trace().Int("entries", int64(len(myZettel))).Msg("ApplyMeta")
+	cb.log.Trace().Int("entries", int64(len(myZettel))).Msg("ApplyZid")
 	for zid, gen := range myZettel {
 		if !constraint(zid) {
 			continue
