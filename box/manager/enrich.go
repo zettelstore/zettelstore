@@ -34,7 +34,9 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 		return
 	}
 	computePublished(m)
-	m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
+	if boxNumber > 0 {
+		m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
+	}
 	mgr.idxStore.Enrich(ctx, m)
 }
 

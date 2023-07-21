@@ -95,17 +95,12 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zett
 }
 
 func (mgr *Manager) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	for i, p := range mgr.boxes {
-		if z, err := p.GetZettel(ctx, zid); err != box.ErrNotFound {
-			if err == nil {
-				m := z.Meta
-				mgr.Enrich(ctx, m, i+1)
-				return m, nil
-			}
-			return nil, err
-		}
+	m, err := mgr.idxStore.GetMeta(ctx, zid)
+	if err != nil {
+		return nil, err
 	}
-	return nil, box.ErrNotFound
+	mgr.Enrich(ctx, m, 0)
+	return m, nil
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.

@@ -40,6 +40,9 @@ type Stats struct {
 type Store interface {
 	query.Searcher
 
+	// GetMeta returns the metadata of the zettel with the given identifier.
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+
 	// Entrich metadata with data from store.
 	Enrich(ctx context.Context, m *meta.Meta)
 

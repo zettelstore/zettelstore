@@ -21,6 +21,7 @@ import (
 
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
+	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
@@ -64,6 +65,15 @@ func New() store.Store {
 		words:  make(stringRefs),
 		urls:   make(stringRefs),
 	}
+}
+
+func (ms *memStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+	ms.mx.RLock()
+	defer ms.mx.RUnlock()
+	if zi, found := ms.idx[zid]; found {
+		return zi.meta.Clone(), nil
+	}
+	return nil, box.ErrNotFound
 }
 
 func (ms *memStore) Enrich(_ context.Context, m *meta.Meta) {
@@ -320,7 +330,7 @@ func (ms *memStore) makeMeta(zidx *store.ZettelIndex) *meta.Meta {
 		key := p.Key
 		if isInternableKey(key) {
 			copyM.Set(key, ms.internString(p.Value))
-		} else {
+		} else if key == api.KeyBoxNumber || !meta.IsComputed(key) {
 			copyM.Set(key, p.Value)
 		}
 	}
