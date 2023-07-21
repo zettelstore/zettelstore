@@ -19,13 +19,12 @@ import (
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/web/server"
+	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
-	"zettelstore.de/z/zettel/meta"
 )
 
 type getRootStore interface {
-	// GetMeta retrieves just the meta data of a specific zettel.
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
@@ -39,13 +38,13 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
 		apiHomeZid := api.ZettelID(homeZid.String())
 		if homeZid != id.DefaultHomeZid {
-			if _, err := s.GetMeta(ctx, homeZid); err == nil {
+			if _, err := s.GetZettel(ctx, homeZid); err == nil {
 				wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(apiHomeZid))
 				return
 			}
 			homeZid = id.DefaultHomeZid
 		}
-		_, err := s.GetMeta(ctx, homeZid)
+		_, err := s.GetZettel(ctx, homeZid)
 		if err == nil {
 			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(apiHomeZid))
 			return

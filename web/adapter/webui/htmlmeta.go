@@ -153,16 +153,16 @@ func createEvalMetadataFunc(ctx context.Context, evaluate *usecase.Evaluate) eva
 
 type getTextTitleFunc func(id.Zid) (string, int)
 
-func (wui *WebUI) makeGetTextTitle(ctx context.Context, getMeta usecase.GetMeta) getTextTitleFunc {
+func (wui *WebUI) makeGetTextTitle(ctx context.Context, getZettel usecase.GetZettel) getTextTitleFunc {
 	return func(zid id.Zid) (string, int) {
-		m, err := getMeta.Run(box.NoEnrichContext(ctx), zid)
+		z, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {
 				return "", -1
 			}
 			return "", 0
 		}
-		return parser.NormalizedSpacedText(m.GetTitle()), 1
+		return parser.NormalizedSpacedText(z.Meta.GetTitle()), 1
 	}
 }
 

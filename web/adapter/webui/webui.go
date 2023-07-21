@@ -84,7 +84,6 @@ type WebUI struct {
 type webuiBox interface {
 	CanCreateZettel(ctx context.Context) bool
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
 	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
 	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
@@ -177,9 +176,9 @@ func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m *meta.Meta) (id.
 	if wui.roleCSSMap == nil {
 		wui.mxRoleCSSMap.RUnlock()
 		wui.mxRoleCSSMap.Lock()
-		mMap, err := wui.box.GetMeta(ctx, id.RoleCSSMapZid)
+		zMap, err := wui.box.GetZettel(ctx, id.RoleCSSMapZid)
 		if err == nil {
-			wui.roleCSSMap = createRoleCSSMap(mMap)
+			wui.roleCSSMap = createRoleCSSMap(zMap.Meta)
 		}
 		wui.mxRoleCSSMap.Unlock()
 		if err != nil {

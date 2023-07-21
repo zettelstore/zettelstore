@@ -73,13 +73,9 @@ func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, err
 	return zettel.Zettel{}, box.ErrNotFound
 }
 
-func (cb *constBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	if z, ok := cb.zettel[zid]; ok {
-		cb.log.Trace().Msg("GetMeta")
-		return meta.NewWithData(zid, z.header), nil
-	}
-	cb.log.Trace().Err(box.ErrNotFound).Msg("GetMeta")
-	return nil, box.ErrNotFound
+func (cb *constBox) HasZettel(_ context.Context, zid id.Zid) bool {
+	_, found := cb.zettel[zid]
+	return found
 }
 
 func (cb *constBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {

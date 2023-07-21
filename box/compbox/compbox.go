@@ -82,13 +82,13 @@ func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, erro
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
 			if genContent := gen.content; genContent != nil {
-				cb.log.Trace().Msg("GetMeta/Content")
+				cb.log.Trace().Msg("GetZettel/Content")
 				return zettel.Zettel{
 					Meta:    m,
 					Content: zettel.NewContent(genContent(m)),
 				}, nil
 			}
-			cb.log.Trace().Msg("GetMeta/NoContent")
+			cb.log.Trace().Msg("GetZettel/NoContent")
 			return zettel.Zettel{Meta: m}, nil
 		}
 	}
@@ -96,18 +96,9 @@ func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, erro
 	return zettel.Zettel{}, box.ErrNotFound
 }
 
-func (cb *compBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	if gen, ok := myZettel[zid]; ok {
-		if genMeta := gen.meta; genMeta != nil {
-			if m := genMeta(zid); m != nil {
-				updateMeta(m)
-				cb.log.Trace().Msg("GetMeta")
-				return m, nil
-			}
-		}
-	}
-	cb.log.Trace().Err(box.ErrNotFound).Msg("GetMeta/Err")
-	return nil, box.ErrNotFound
+func (*compBox) HasZettel(_ context.Context, zid id.Zid) bool {
+	_, found := myZettel[zid]
+	return found
 }
 
 func (cb *compBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {

@@ -36,7 +36,6 @@ import (
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
-	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
@@ -345,7 +344,7 @@ func (e *evaluator) evalLinkNode(ln *ast.LinkNode) ast.InlineNode {
 	}
 
 	zid := mustParseZid(ref)
-	_, err := e.port.GetMeta(box.NoEnrichContext(e.ctx), zid)
+	_, err := e.port.GetZettel(box.NoEnrichContext(e.ctx), zid)
 	if errors.Is(err, &box.ErrNotAllowed{}) {
 		return &ast.FormatNode{
 			Kind:    ast.FormatSpan,

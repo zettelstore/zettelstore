@@ -35,8 +35,8 @@ import (
 func (wui *WebUI) MakeGetInfoHandler(
 	parseZettel usecase.ParseZettel,
 	evaluate *usecase.Evaluate,
-	getMeta usecase.GetMeta,
-	getAllMeta usecase.GetAllMeta,
+	getZettel usecase.GetZettel,
+	getAllMeta usecase.GetAllZettel,
 	unlinkedRefs usecase.UnlinkedReferences,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		}
 
 		enc := wui.getSimpleHTMLEncoder()
-		getTextTitle := wui.makeGetTextTitle(ctx, getMeta)
+		getTextTitle := wui.makeGetTextTitle(ctx, getZettel)
 		evalMeta := func(val string) ast.InlineSlice {
 			return evaluate.RunMetadata(ctx, val)
 		}
@@ -197,11 +197,11 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sxpf.Pair 
 	return matrix
 }
 
-func getShadowLinks(ctx context.Context, zid id.Zid, getAllMeta usecase.GetAllMeta) *sxpf.Pair {
+func getShadowLinks(ctx context.Context, zid id.Zid, getAllZettel usecase.GetAllZettel) *sxpf.Pair {
 	result := sxpf.Nil()
-	if ml, err := getAllMeta.Run(ctx, zid); err == nil {
-		for i := len(ml) - 1; i >= 1; i-- {
-			if boxNo, ok := ml[i].Get(api.KeyBoxNumber); ok {
+	if zl, err := getAllZettel.Run(ctx, zid); err == nil {
+		for i := len(zl) - 1; i >= 1; i-- {
+			if boxNo, ok := zl[i].Meta.Get(api.KeyBoxNumber); ok {
 				result = result.Cons(sxpf.MakeString(boxNo))
 			}
 		}

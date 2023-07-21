@@ -200,7 +200,7 @@ func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *st
 
 func (mgr *Manager) idxProcessData(ctx context.Context, zi *store.ZettelIndex, cData *collectData) {
 	for ref := range cData.refs {
-		if _, err := mgr.GetMeta(ctx, ref); err == nil {
+		if mgr.HasZettel(ctx, ref) {
 			zi.AddBackRef(ref)
 		} else {
 			zi.AddDeadRef(ref)
@@ -215,7 +215,7 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 	if err != nil {
 		return
 	}
-	if _, err = mgr.GetMeta(ctx, zid); err != nil {
+	if !mgr.HasZettel(ctx, zid) {
 		zi.AddDeadRef(zid)
 		return
 	}

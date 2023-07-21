@@ -140,19 +140,8 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(src)}, nil
 }
 
-func (zb *zipBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry := zb.dirSrv.GetDirEntry(zid)
-	if !entry.IsValid() {
-		return nil, box.ErrNotFound
-	}
-	reader, err := zip.OpenReader(zb.name)
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
-	m, err := zb.readZipMeta(reader, zid, entry)
-	zb.log.Trace().Err(err).Zid(zid).Msg("GetMeta")
-	return m, err
+func (zb *zipBox) HasZettel(_ context.Context, zid id.Zid) bool {
+	return zb.dirSrv.GetDirEntry(zid).IsValid()
 }
 
 func (zb *zipBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {

@@ -27,16 +27,14 @@ import (
 type Evaluate struct {
 	rtConfig  config.Config
 	getZettel GetZettel
-	getMeta   GetMeta
 	listMeta  ListMeta
 }
 
 // NewEvaluate creates a new use case.
-func NewEvaluate(rtConfig config.Config, getZettel GetZettel, getMeta GetMeta, listMeta ListMeta) Evaluate {
+func NewEvaluate(rtConfig config.Config, getZettel GetZettel, listMeta ListMeta) Evaluate {
 	return Evaluate{
 		rtConfig:  rtConfig,
 		getZettel: getZettel,
-		getMeta:   getMeta,
 		listMeta:  listMeta,
 	}
 }
@@ -71,11 +69,6 @@ func (uc *Evaluate) RunMetadata(ctx context.Context, value string) ast.InlineSli
 	is := parser.ParseMetadata(value)
 	evaluator.EvaluateInline(ctx, uc, uc.rtConfig, &is)
 	return is
-}
-
-// GetMeta retrieves the metadata of a given zettel identifier.
-func (uc *Evaluate) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	return uc.getMeta.Run(ctx, zid)
 }
 
 // GetZettel retrieves the full zettel of a given zettel identifier.

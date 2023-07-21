@@ -14,14 +14,14 @@ import (
 	"context"
 
 	"zettelstore.de/z/collect"
+	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 // ZettelOrderPort is the interface used by this use case.
 type ZettelOrderPort interface {
-	// GetMeta retrieves just the meta data of a specific zettel.
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 }
 
 // ZettelOrder is the data for this use case.
@@ -45,8 +45,8 @@ func (uc ZettelOrder) Run(ctx context.Context, zid id.Zid, syntax string) (
 	}
 	for _, ref := range collect.Order(zn) {
 		if collectedZid, err2 := id.Parse(ref.URL.Path); err2 == nil {
-			if m, err3 := uc.port.GetMeta(ctx, collectedZid); err3 == nil {
-				result = append(result, m)
+			if z, err3 := uc.port.GetZettel(ctx, collectedZid); err3 == nil {
+				result = append(result, z.Meta)
 			}
 		}
 	}

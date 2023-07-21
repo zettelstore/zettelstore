@@ -94,45 +94,18 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zett
 	return result, nil
 }
 
-// GetMeta retrieves just the meta data of a specific zettel.
-func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	mgr.mgrLog.Debug().Zid(zid).Msg("GetMeta")
-	if mgr.State() != box.StartStateStarted {
-		return nil, box.ErrStopped
-	}
-	mgr.mgrMx.RLock()
-	defer mgr.mgrMx.RUnlock()
-	return mgr.doGetMeta(ctx, zid)
-}
-
 func (mgr *Manager) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	for i, p := range mgr.boxes {
-		if m, err := p.GetMeta(ctx, zid); err != box.ErrNotFound {
+		if z, err := p.GetZettel(ctx, zid); err != box.ErrNotFound {
 			if err == nil {
+				m := z.Meta
 				mgr.Enrich(ctx, m, i+1)
+				return m, nil
 			}
-			return m, err
+			return nil, err
 		}
 	}
 	return nil, box.ErrNotFound
-}
-
-// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
-func (mgr *Manager) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error) {
-	mgr.mgrLog.Debug().Zid(zid).Msg("GetAllMeta")
-	if mgr.State() != box.StartStateStarted {
-		return nil, box.ErrStopped
-	}
-	mgr.mgrMx.RLock()
-	defer mgr.mgrMx.RUnlock()
-	var result []*meta.Meta
-	for i, p := range mgr.boxes {
-		if m, err := p.GetMeta(ctx, zid); err == nil {
-			mgr.Enrich(ctx, m, i+1)
-			result = append(result, m)
-		}
-	}
-	return result, nil
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.
@@ -153,7 +126,20 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	return result, nil
 }
 
-type metaMap map[id.Zid]*meta.Meta
+func (mgr *Manager) HasZettel(ctx context.Context, zid id.Zid) bool {
+	mgr.mgrLog.Debug().Zid(zid).Msg("HasZettel")
+	if mgr.State() != box.StartStateStarted {
+		return false
+	}
+	mgr.mgrMx.RLock()
+	defer mgr.mgrMx.RUnlock()
+	for _, bx := range mgr.boxes {
+		if bx.HasZettel(ctx, zid) {
+			return true
+		}
+	}
+	return false
+}
 
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
@@ -177,7 +163,7 @@ func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.M
 		mgr.mgrLog.Trace().Int("count", int64(len(result))).Msg("found without ApplyMeta")
 		return result, nil
 	}
-	selected := metaMap{}
+	selected := map[id.Zid]*meta.Meta{}
 	for _, term := range compSearch.Terms {
 		rejected := id.Set{}
 		handleMeta := func(m *meta.Meta) {

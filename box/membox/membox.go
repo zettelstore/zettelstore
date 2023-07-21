@@ -23,7 +23,6 @@ import (
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
-	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
@@ -130,15 +129,11 @@ func (mb *memBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error
 	return z, nil
 }
 
-func (mb *memBox) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+func (mb *memBox) HasZettel(_ context.Context, zid id.Zid) bool {
 	mb.mx.RLock()
-	zettel, ok := mb.zettel[zid]
+	_, found := mb.zettel[zid]
 	mb.mx.RUnlock()
-	if !ok {
-		return nil, box.ErrNotFound
-	}
-	mb.log.Trace().Msg("GetMeta")
-	return zettel.Meta.Clone(), nil
+	return found
 }
 
 func (mb *memBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {

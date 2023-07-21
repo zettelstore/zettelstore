@@ -17,6 +17,7 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -26,7 +27,7 @@ import (
 
 // GetUserPort is the interface used by this use case.
 type GetUserPort interface {
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
@@ -48,9 +49,9 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	// It is important to try first with the owner. First, because another user
 	// could give herself the same ''ident''. Second, in most cases the owner
 	// will authenticate.
-	identMeta, err := uc.port.GetMeta(ctx, uc.authz.Owner())
-	if err == nil && identMeta.GetDefault(api.KeyUserID, "") == ident {
-		return identMeta, nil
+	identZettel, err := uc.port.GetZettel(ctx, uc.authz.Owner())
+	if err == nil && identZettel.Meta.GetDefault(api.KeyUserID, "") == ident {
+		return identZettel.Meta, nil
 	}
 	// Owner was not found or has another ident. Try via list search.
 	q := query.Parse(api.KeyUserID + api.SearchOperatorHas + ident + " " + api.SearchOperatorHas + ident)
@@ -69,7 +70,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 
 // GetUserByZidPort is the interface used by this use case.
 type GetUserByZidPort interface {
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 }
 
 // GetUserByZid is the data for this use case.
@@ -84,11 +85,12 @@ func NewGetUserByZid(port GetUserByZidPort) GetUserByZid {
 
 // GetUser executes the use case.
 func (uc GetUserByZid) GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error) {
-	userMeta, err := uc.port.GetMeta(box.NoEnrichContext(ctx), zid)
+	userZettel, err := uc.port.GetZettel(box.NoEnrichContext(ctx), zid)
 	if err != nil {
 		return nil, err
 	}
 
+	userMeta := userZettel.Meta
 	if val, ok := userMeta.Get(api.KeyUserID); !ok || val != ident {
 		return nil, nil
 	}

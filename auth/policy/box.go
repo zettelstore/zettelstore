@@ -79,22 +79,6 @@ func (pp *polBox) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel
 	return pp.box.GetAllZettel(ctx, zid)
 }
 
-func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	m, err := pp.box.GetMeta(ctx, zid)
-	if err != nil {
-		return nil, err
-	}
-	user := server.GetUser(ctx)
-	if pp.policy.CanRead(user, m) {
-		return m, nil
-	}
-	return nil, box.NewErrNotAllowed("GetMeta", user, zid)
-}
-
-func (pp *polBox) GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error) {
-	return pp.box.GetAllMeta(ctx, zid)
-}
-
 func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
 }
@@ -117,11 +101,11 @@ func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 		return &box.ErrInvalidID{Zid: zid}
 	}
 	// Write existing zettel
-	oldMeta, err := pp.box.GetMeta(ctx, zid)
+	oldZettel, err := pp.box.GetZettel(ctx, zid)
 	if err != nil {
 		return err
 	}
-	if pp.policy.CanWrite(user, oldMeta, zettel.Meta) {
+	if pp.policy.CanWrite(user, oldZettel.Meta, zettel.Meta) {
 		return pp.box.UpdateZettel(ctx, zettel)
 	}
 	return box.NewErrNotAllowed("Write", user, zid)
@@ -132,12 +116,12 @@ func (pp *polBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 }
 
 func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	meta, err := pp.box.GetMeta(ctx, curZid)
+	z, err := pp.box.GetZettel(ctx, curZid)
 	if err != nil {
 		return err
 	}
 	user := server.GetUser(ctx)
-	if pp.policy.CanRename(user, meta) {
+	if pp.policy.CanRename(user, z.Meta) {
 		return pp.box.RenameZettel(ctx, curZid, newZid)
 	}
 	return box.NewErrNotAllowed("Rename", user, curZid)
@@ -148,12 +132,12 @@ func (pp *polBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 }
 
 func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
-	meta, err := pp.box.GetMeta(ctx, zid)
+	z, err := pp.box.GetZettel(ctx, zid)
 	if err != nil {
 		return err
 	}
 	user := server.GetUser(ctx)
-	if pp.policy.CanDelete(user, meta) {
+	if pp.policy.CanDelete(user, z.Meta) {
 		return pp.box.DeleteZettel(ctx, zid)
 	}
 	return box.NewErrNotAllowed("Delete", user, zid)

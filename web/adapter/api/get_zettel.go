@@ -31,7 +31,7 @@ import (
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
-func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.GetZettel, parseZettel usecase.ParseZettel, evaluate usecase.Evaluate) http.HandlerFunc {
+func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usecase.ParseZettel, evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -44,13 +44,13 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 		ctx := r.Context()
 		switch enc, encStr := getEncoding(r, q); enc {
 		case api.EncoderPlain:
-			a.writePlainData(w, ctx, zid, part, getMeta, getZettel)
+			a.writePlainData(w, ctx, zid, part, getZettel)
 
 		case api.EncoderData:
-			a.writeSzData(w, ctx, zid, part, getMeta, getZettel)
+			a.writeSzData(w, ctx, zid, part, getZettel)
 
 		case api.EncoderJson:
-			a.writeJSONData(w, ctx, zid, part, getMeta, getZettel)
+			a.writeJSONData(w, ctx, zid, part, getZettel)
 
 		default:
 			var zn *ast.ZettelNode
@@ -73,41 +73,32 @@ func (a *API) MakeGetZettelHandler(getMeta usecase.GetMeta, getZettel usecase.Ge
 	}
 }
 
-func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
+func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
 	var buf bytes.Buffer
 	var contentType string
 	var err error
 
+	z, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
+	if err != nil {
+		a.reportUsecaseError(w, err)
+		return
+	}
+
 	switch part {
 	case partZettel:
-		z, err2 := getZettel.Run(box.NoEnrichContext(ctx), zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
+		_, err = z.Meta.Write(&buf)
+		if err == nil {
+			err = buf.WriteByte('\n')
 		}
-		_, err2 = z.Meta.Write(&buf)
-		if err2 == nil {
-			err2 = buf.WriteByte('\n')
-		}
-		if err2 == nil {
+		if err == nil {
 			_, err = z.Content.Write(&buf)
 		}
 
 	case partMeta:
-		m, err2 := getMeta.Run(box.NoEnrichContext(ctx), zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
-		}
 		contentType = content.PlainText
-		_, err = m.Write(&buf)
+		_, err = z.Meta.Write(&buf)
 
 	case partContent:
-		z, err2 := getZettel.Run(box.NoEnrichContext(ctx), zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
-		}
 		contentType = content.MIMEFromSyntax(z.Meta.GetDefault(api.KeySyntax, ""))
 		_, err = z.Content.Write(&buf)
 	}
@@ -121,26 +112,22 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 	a.log.IfErr(err).Zid(zid).Msg("Write Plain data")
 }
 
-func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
+func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
+	z, err := getZettel.Run(ctx, zid)
+	if err != nil {
+		a.reportUsecaseError(w, err)
+		return
+	}
 	var obj sxpf.Object
 	switch part {
 	case partZettel:
-		z, err := getZettel.Run(ctx, zid)
-		if err != nil {
-			a.reportUsecaseError(w, err)
-			return
-		}
 		obj = zettel2sz(z, a.getRights(ctx, z.Meta))
 
 	case partMeta:
-		m, err := getMeta.Run(ctx, zid)
-		if err != nil {
-			a.reportUsecaseError(w, err)
-			return
-		}
+		m := z.Meta
 		obj = metaRights2sz(m, a.getRights(ctx, m))
 	}
-	err := a.writeObject(w, zid, obj)
+	err = a.writeObject(w, zid, obj)
 	a.log.IfErr(err).Zid(zid).Msg("write sxpf data")
 }
 
@@ -174,17 +161,16 @@ func meta2sz(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
 	return result
 }
 
-func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getMeta usecase.GetMeta, getZettel usecase.GetZettel) {
-	var buf bytes.Buffer
-	var err error
+func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
+	z, err := getZettel.Run(ctx, zid)
+	if err != nil {
+		a.reportUsecaseError(w, err)
+		return
+	}
 
+	var buf bytes.Buffer
 	switch part {
 	case partZettel:
-		z, err2 := getZettel.Run(ctx, zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
-		}
 		zContent, encoding := z.Content.Encode()
 		err = encodeJSONData(&buf, api.ZettelJSON{
 			ID:       api.ZettelID(zid.String()),
@@ -195,22 +181,13 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 		})
 
 	case partMeta:
-		m, err2 := getMeta.Run(ctx, zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
-		}
+		m := z.Meta
 		err = encodeJSONData(&buf, api.MetaJSON{
 			Meta:   m.Map(),
 			Rights: a.getRights(ctx, m),
 		})
 
 	case partContent:
-		z, err2 := getZettel.Run(ctx, zid)
-		if err2 != nil {
-			a.reportUsecaseError(w, err2)
-			return
-		}
 		zContent, encoding := z.Content.Encode()
 		err = encodeJSONData(&buf, api.ZettelContentJSON{
 			Encoding: encoding,

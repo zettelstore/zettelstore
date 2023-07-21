@@ -260,21 +260,8 @@ func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, err
 	return zettel, nil
 }
 
-func (dp *dirBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	m, err := dp.doGetMeta(ctx, zid)
-	dp.log.Trace().Zid(zid).Err(err).Msg("GetMeta")
-	return m, err
-}
-func (dp *dirBox) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	entry := dp.dirSrv.GetDirEntry(zid)
-	if !entry.IsValid() {
-		return nil, box.ErrNotFound
-	}
-	m, err := dp.srvGetMeta(ctx, entry, zid)
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
+func (dp *dirBox) HasZettel(_ context.Context, zid id.Zid) bool {
+	return dp.dirSrv.GetDirEntry(zid).IsValid()
 }
 
 func (dp *dirBox) ApplyZid(_ context.Context, handle box.ZidFunc, constraint query.RetrievePredicate) error {
@@ -353,7 +340,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	}
 
 	// Check whether zettel with new ID already exists in this box.
-	if _, err := dp.doGetMeta(ctx, newZid); err == nil {
+	if dp.HasZettel(ctx, newZid) {
 		return &box.ErrInvalidID{Zid: newZid}
 	}
 

@@ -221,15 +221,15 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 		if err2 != nil {
 			continue
 		}
-		m, err2 := wui.box.GetMeta(ctx, zid)
+		z, err2 := wui.box.GetZettel(ctx, zid)
 		if err2 != nil {
 			continue
 		}
-		if !wui.policy.CanRead(user, m) {
+		if !wui.policy.CanRead(user, z.Meta) {
 			continue
 		}
-		text := sxpf.MakeString(parser.NormalizedSpacedText(m.GetTitle()))
-		link := sxpf.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(m.Zid.String())).
+		text := sxpf.MakeString(parser.NormalizedSpacedText(z.Meta.GetTitle()))
+		link := sxpf.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
 			AppendKVQuery(queryKeyAction, valueActionNew).String())
 
 		lst = lst.Cons(sxpf.Cons(text, link))

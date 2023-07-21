@@ -41,7 +41,7 @@ func (uc ListMeta) Run(ctx context.Context, q *query.Query) ([]*meta.Meta, error
 	return uc.port.SelectMeta(ctx, q)
 }
 
-// -------- List roles -------------------------------------------------------
+// -------- List syntax ------------------------------------------------------
 
 // ListSyntaxPort is the interface used by this use case.
 type ListSyntaxPort interface {

@@ -41,9 +41,6 @@ type BaseBox interface {
 	// GetZettel retrieves a specific zettel.
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
-	// GetMeta retrieves just the meta data of a specific zettel.
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
-
 	// CanUpdateZettel returns true, if box could possibly update the given zettel.
 	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
 
@@ -72,6 +69,9 @@ type MetaFunc func(*meta.Meta)
 // ManagedBox is the interface of managed boxes.
 type ManagedBox interface {
 	BaseBox
+
+	// HasZettel returns true, if box conains zettel with given identifier.
+	HasZettel(context.Context, id.Zid) bool
 
 	// Apply identifier of every zettel to the given function, if predicate returns true.
 	ApplyZid(context.Context, ZidFunc, query.RetrievePredicate) error
@@ -138,9 +138,6 @@ type Box interface {
 
 	// GetAllZettel retrieves a specific zettel from all managed boxes.
 	GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error)
-
-	// GetAllMeta retrieves the meta data of a specific zettel from all managed boxes.
-	GetAllMeta(ctx context.Context, zid id.Zid) ([]*meta.Meta, error)
 
 	// Refresh the data from the box and from its managed sub-boxes.
 	Refresh(context.Context) error

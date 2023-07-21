@@ -147,11 +147,12 @@ func (cs *configService) setBox(mgr box.Manager) {
 }
 
 func (cs *configService) doUpdate(p box.BaseBox) error {
-	m, err := p.GetMeta(context.Background(), cs.orig.Zid)
+	z, err := p.GetZettel(context.Background(), cs.orig.Zid)
 	cs.logger.Trace().Err(err).Msg("got config meta")
 	if err != nil {
 		return err
 	}
+	m := z.Meta
 	cs.mxService.Lock()
 	for _, pair := range cs.orig.Pairs() {
 		key := pair.Key

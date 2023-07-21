@@ -26,7 +26,7 @@ import (
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
-func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta usecase.GetAllMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAllZettel usecase.GetAllZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -35,23 +35,23 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getMeta usecase.GetMeta, getAllMeta
 			return
 		}
 
-		ms, err := getAllMeta.Run(ctx, zid)
+		zs, err := getAllZettel.Run(ctx, zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		m := ms[0]
+		m := zs[0].Meta
 
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(
 			ctx, "delete",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
-		if len(ms) > 1 {
-			rb.bindString("shadowed-box", sxpf.MakeString(ms[1].GetDefault(api.KeyBoxNumber, "???")))
+		if len(zs) > 1 {
+			rb.bindString("shadowed-box", sxpf.MakeString(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
 			rb.bindString("incoming", nil)
 		} else {
 			rb.bindString("shadowed-box", nil)
-			rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
+			rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getZettel)))
 		}
 		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 

@@ -25,7 +25,7 @@ import (
 
 // MakeGetRenameZettelHandler creates a new HTTP handler to display the
 // HTML rename view of a zettel.
-func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.HandlerFunc {
+func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		zid, err := id.Parse(r.URL.Path[1:])
@@ -34,17 +34,18 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getMeta usecase.GetMeta) http.Handl
 			return
 		}
 
-		m, err := getMeta.Run(ctx, zid)
+		z, err := getZettel.Run(ctx, zid)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
+		m := z.Meta
 
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(
 			ctx, "rename",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Rename Zettel "+m.Zid.String(), user)
-		rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getMeta)))
+		rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getZettel)))
 		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZid, env)

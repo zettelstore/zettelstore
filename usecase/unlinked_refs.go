@@ -29,7 +29,6 @@ import (
 
 // UnlinkedReferencesPort is the interface used by this use case.
 type UnlinkedReferencesPort interface {
-	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }

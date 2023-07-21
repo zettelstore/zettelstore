@@ -23,7 +23,7 @@ import (
 )
 
 // MakeListUnlinkedMetaHandler creates a new HTTP handler for the use case "list unlinked references".
-func (a *API) MakeListUnlinkedMetaHandler(getMeta usecase.GetMeta, unlinkedRefs usecase.UnlinkedReferences) http.HandlerFunc {
+func (a *API) MakeListUnlinkedMetaHandler(getZettel usecase.GetZettel, unlinkedRefs usecase.UnlinkedReferences) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
@@ -31,11 +31,12 @@ func (a *API) MakeListUnlinkedMetaHandler(getMeta usecase.GetMeta, unlinkedRefs 
 			return
 		}
 		ctx := r.Context()
-		zm, err := getMeta.Run(ctx, zid)
+		z, err := getZettel.Run(ctx, zid)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
 		}
+		zm := z.Meta
 
 		que := r.URL.Query()
 		phrase := que.Get(api.QueryKeyPhrase)
