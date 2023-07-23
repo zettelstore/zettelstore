@@ -53,6 +53,7 @@ type memStore struct {
 	urls   stringRefs
 
 	// Stats
+	mxStats sync.Mutex
 	updates uint64
 }
 
@@ -78,9 +79,9 @@ func (ms *memStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 
 func (ms *memStore) Enrich(_ context.Context, m *meta.Meta) {
 	if ms.doEnrich(m) {
-		ms.mx.Lock()
+		ms.mxStats.Lock()
 		ms.updates++
-		ms.mx.Unlock()
+		ms.mxStats.Unlock()
 	}
 }
 
@@ -527,10 +528,12 @@ func (ms *memStore) deleteWords(zid id.Zid, words []string) {
 func (ms *memStore) ReadStats(st *store.Stats) {
 	ms.mx.RLock()
 	st.Zettel = len(ms.idx)
-	st.Updates = ms.updates
 	st.Words = uint64(len(ms.words))
 	st.Urls = uint64(len(ms.urls))
 	ms.mx.RUnlock()
+	ms.mxStats.Lock()
+	st.Updates = ms.updates
+	ms.mxStats.Unlock()
 }
 
 func (ms *memStore) Dump(w io.Writer) {
