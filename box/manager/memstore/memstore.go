@@ -308,7 +308,7 @@ var internableKeys = map[string]bool{
 	api.KeyReadOnly:  true,
 }
 
-func isInternableKey(key string) bool {
+func isInternableValue(key string) bool {
 	if internableKeys[key] {
 		return true
 	}
@@ -327,8 +327,8 @@ func (ms *memStore) makeMeta(zidx *store.ZettelIndex) *meta.Meta {
 	origM := zidx.GetMeta()
 	copyM := meta.New(origM.Zid)
 	for _, p := range origM.Pairs() {
-		key := p.Key
-		if isInternableKey(key) {
+		key := ms.internString(p.Key)
+		if isInternableValue(key) {
 			copyM.Set(key, ms.internString(p.Value))
 		} else if key == api.KeyBoxNumber || !meta.IsComputed(key) {
 			copyM.Set(key, p.Value)
