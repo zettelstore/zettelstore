@@ -22,12 +22,18 @@ func TestParser(t *testing.T) {
 		spec string
 		exp  string
 	}{
+		{"1", "1"}, // Just a number will transform to search for that numer in all zettel
+
+		{"1 IDENT", "00000000000001 IDENT"},
+		{"IDENT", "IDENT"},
+
 		{"CONTEXT", "CONTEXT"}, {"CONTEXT a", "CONTEXT a"},
 		{"0 CONTEXT", "0 CONTEXT"}, {"1 CONTEXT", "00000000000001 CONTEXT"},
 		{"00000000000001 CONTEXT", "00000000000001 CONTEXT"},
 		{"100000000000001 CONTEXT", "100000000000001 CONTEXT"},
 		{"1 CONTEXT BACKWARD", "00000000000001 CONTEXT BACKWARD"},
 		{"1 CONTEXT FORWARD", "00000000000001 CONTEXT FORWARD"},
+		{"1 CONTEXT COST ", "00000000000001 CONTEXT COST"},
 		{"1 CONTEXT COST 3", "00000000000001 CONTEXT COST 3"}, {"1 CONTEXT COST x", "00000000000001 CONTEXT COST x"},
 		{"1 CONTEXT MAX 5", "00000000000001 CONTEXT MAX 5"}, {"1 CONTEXT MAX y", "00000000000001 CONTEXT MAX y"},
 		{"1 CONTEXT MAX 5 COST 7", "00000000000001 CONTEXT COST 7 MAX 5"},
@@ -46,13 +52,11 @@ func TestParser(t *testing.T) {
 		{"CONTEXT 1 MAX 5 COST 7", "00000000000001 CONTEXT COST 7 MAX 5"},
 		{"CONTEXT 1 |  N", "00000000000001 CONTEXT | N"},
 
-		{"1", "1"},
-
 		{"?", "?"}, {"!?", "!?"}, {"?a", "?a"}, {"!?a", "!?a"},
 		{"key?", "key?"}, {"key!?", "key!?"},
 		{"b key?", "key? b"}, {"b key!?", "key!? b"},
 		{"key?a", "key?a"}, {"key!?a", "key!?a"},
-		{"", ""}, {"!", ""}, {":", ""}, {"!:", ""}, {"[", ""}, {"![", ""}, {"]", ""}, {"!]", ""}, {"~", ""}, {"!~", ""},
+		{"", ""}, {"!", ""}, {":", ""}, {"!:", ""}, {"[", ""}, {"![", ""}, {"]", ""}, {"!]", ""}, {"~", ""}, {"!~", ""}, {"<", ""}, {"!<", ""}, {">", ""}, {"!>", ""},
 		{`a`, `a`}, {`!a`, `!a`},
 		{`=a`, `=a`}, {`!=a`, `!=a`},
 		{`:a`, `:a`}, {`!:a`, `!:a`},
@@ -64,11 +68,15 @@ func TestParser(t *testing.T) {
 		{`key[`, `key[`}, {`key![`, `key![`},
 		{`key]`, `key]`}, {`key!]`, `key!]`},
 		{`key~`, `key~`}, {`key!~`, `key!~`},
+		{`key<`, `key<`}, {`key!<`, `key!<`},
+		{`key>`, `key>`}, {`key!>`, `key!>`},
 		{`key=a`, `key=a`}, {`key!=a`, `key!=a`},
 		{`key:a`, `key:a`}, {`key!:a`, `key!:a`},
 		{`key[a`, `key[a`}, {`key![a`, `key![a`},
 		{`key]a`, `key]a`}, {`key!]a`, `key!]a`},
 		{`key~a`, `key~a`}, {`key!~a`, `key!~a`},
+		{`key<a`, `key<a`}, {`key!<a`, `key!<a`},
+		{`key>a`, `key>a`}, {`key!>a`, `key!>a`},
 		{`key1:a key2:b`, `key1:a key2:b`},
 		{`key1: key2:b`, `key1: key2:b`},
 		{"word key:a", "key:a word"},

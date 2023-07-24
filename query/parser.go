@@ -95,14 +95,36 @@ func (ps *parserState) parse(q *Query) *Query {
 		}
 	}
 
-	pos := inp.Pos
-	if ps.acceptSingleKw(api.ContextDirective) {
-		q = ps.parseContext(q, pos)
-	} else {
-		inp.SetPos(firstPos) // No directive -> restart at beginning
-		if q != nil {
-			q.zids = nil
+	hasContext := false
+	for {
+		ps.skipSpace()
+		if ps.mustStop() {
+			break
 		}
+		pos := inp.Pos
+		if ps.acceptSingleKw(api.ContextDirective) {
+			if hasContext {
+				inp.SetPos(pos)
+				break
+			}
+			q = ps.parseContext(q, pos)
+			hasContext = true
+			continue
+		}
+		inp.SetPos(pos)
+		if q == nil || len(q.zids) == 0 {
+			break
+		}
+		if ps.acceptSingleKw(api.IdentDirective) {
+			q.directives = append(q.directives, &identSpec{})
+			continue
+		}
+		inp.SetPos(pos)
+		break
+	}
+	if q != nil && len(q.directives) == 0 {
+		inp.SetPos(firstPos) // No directive -> restart at beginning
+		q.zids = nil
 	}
 
 	for {
@@ -110,7 +132,7 @@ func (ps *parserState) parse(q *Query) *Query {
 		if ps.mustStop() {
 			break
 		}
-		pos = inp.Pos
+		pos := inp.Pos
 		if ps.acceptSingleKw(api.OrDirective) {
 			q = createIfNeeded(q)
 			if !q.terms[len(q.terms)-1].isEmpty() {

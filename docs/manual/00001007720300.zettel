@@ -4,10 +4,12 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20230707204706
+modified: 20230724153832
 
-A context directive starts the keyword ''CONTEXT''.
+A context directive calculates the __context__ of a list of zettel identifier.
+It starts with the keyword ''CONTEXT''.
 
-Optionally you may specify some context details, afterthe keyword ''CONTEXT'', separated by space characters.
+Optionally you may specify some context details, after the keyword ''CONTEXT'', separated by space characters.
 These are:
 * ''BACKWARD'': search for context only though backward links,
 * ''FORWARD'': search for context only through forward links,
@@ -28,4 +30,8 @@ The maximum cost is only checked for all zettel that are not directly reachable 
 This ensures that initial zettel that have only a highly used tag, will also produce some context zettel.
 
 Despite its possibly complicated structure, this algorithm ensures in practice that the zettel context is a list of zettel, where the first elements are ""near"" to the specified zettel and the last elements are more ""distant"" to the specified zettel.
-It also penalties a zettel that acts as a ""hub"" to other zettel, to make it more likely that only relevant zettel appear on the context list.
+It also penalties zettel that acts as a ""hub"" to other zettel, to make it more likely that only relevant zettel appear on the context list.
+
+This directive may be specified only once as a query directive.
+A second occurence of ''CONTEXT'' is interpreted as a [[search expression|00001007701000]].
+In most cases it is easier to adjust the maximum cost than to perform another context search, which is relatively expensive in terms of retrieving power.
