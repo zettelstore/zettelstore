@@ -74,6 +74,7 @@ func (ps *parserState) parse(q *Query) *Query {
 		return q
 	}
 	inp := ps.inp
+	firstPos := inp.Pos
 	zidSet := id.NewSet()
 	for {
 		pos := inp.Pos
@@ -89,7 +90,8 @@ func (ps *parserState) parse(q *Query) *Query {
 		}
 		ps.skipSpace()
 		if ps.mustStop() {
-			return q
+			q.zids = nil
+			break
 		}
 	}
 
@@ -97,7 +99,10 @@ func (ps *parserState) parse(q *Query) *Query {
 	if ps.acceptSingleKw(api.ContextDirective) {
 		q = ps.parseContext(q, pos)
 	} else {
-		inp.SetPos(pos)
+		inp.SetPos(firstPos) // No directive -> restart at beginning
+		if q != nil {
+			q.zids = nil
+		}
 	}
 
 	for {

@@ -46,6 +46,8 @@ func TestParser(t *testing.T) {
 		{"CONTEXT 1 MAX 5 COST 7", "00000000000001 CONTEXT COST 7 MAX 5"},
 		{"CONTEXT 1 |  N", "00000000000001 CONTEXT | N"},
 
+		{"1", "1"},
+
 		{"?", "?"}, {"!?", "!?"}, {"?a", "?a"}, {"!?a", "!?a"},
 		{"key?", "key?"}, {"key!?", "key!?"},
 		{"b key?", "key? b"}, {"b key!?", "key!? b"},
