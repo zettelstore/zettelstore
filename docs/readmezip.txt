@@ -17,5 +17,4 @@ possible to make it directly available for your local Zettelstore.
 The software, including the manual, is licensed under the European Union Public
 License 1.2 (or later). See the separate file LICENSE.txt.
 
-To get in contact with the developer, send an email to ds@zettelstore.de or
-follow Zettelstore on Twitter: https://twitter.com/zettelstore.
+To get in contact with the developer, send an email to ds@zettelstore.de.

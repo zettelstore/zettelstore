@@ -23,4 +23,4 @@ The software, including the manual, is licensed
 under the [European Union Public License 1.2 (or
 later)](https://zettelstore.de/home/file?name=LICENSE.txt&ci=trunk).
 
-[Stay tuned](https://twitter.com/search?q=%40t73fde%20zettelstore&f=live)&nbsp;&hellip;
+[Stay tuned](https://mastodon.social/tags/Zettelstore)&nbsp;&hellip;
