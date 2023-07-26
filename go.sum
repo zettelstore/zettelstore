@@ -1,7 +1,3 @@
-codeberg.org/t73fde/sxhtml v0.1.2-0.20230711130603-ebbc9f711576 h1:0OMwsZCOStkf/RKPHGkbjnd5KbgZqxBDtX2IyJkw2Zc=
-codeberg.org/t73fde/sxhtml v0.1.2-0.20230711130603-ebbc9f711576/go.mod h1:qELH+ocPINeoXeUcAeMMC5RfbgPR404D7yDmlkpCKKY=
-codeberg.org/t73fde/sxpf v0.2.1-0.20230711125102-caf21103c6db h1:cT+EUjoZ7gjLRi69WQu+D7DWThmZJ1mjWFuFmUklmdo=
-codeberg.org/t73fde/sxpf v0.2.1-0.20230711125102-caf21103c6db/go.mod h1:X+XmeukFGzykXmTnR1tyFmyB5kV7UdO8V1sX5gMwdRQ=
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/yuin/goldmark v1.5.5 h1:IJznPe8wOzfIKETmMkd06F8nXkmlhaHqFRM9l1hAGsU=
@@ -15,5 +11,7 @@ golang.org/x/term v0.10.0 h1:3R7pNqamzBraeqj/Tj8qt1aQ2HpmlC+Cx/qL/7hn4/c=
 golang.org/x/term v0.10.0/go.mod h1:lpqdcUyK/oCiQxvxVrppt5ggO2KCZ5QblwqPnfZ6d5o=
 golang.org/x/text v0.11.0 h1:LAntKIrcmeSKERyiOh0XMV39LXS8IE9UL2yP7+f5ij4=
 golang.org/x/text v0.11.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
-zettelstore.de/c v0.12.1-0.20230724124351-7d4e7fbe80bc h1:hpVVxq2QXxCFpC3CqRDWMhRtr+W+5jSL5TWId9Cseyg=
-zettelstore.de/c v0.12.1-0.20230724124351-7d4e7fbe80bc/go.mod h1:jilRe+XdgLY7uA6Yl1cdQNQQOXcvOJuMgtc6O2xk76A=
+zettelstore.de/c v0.12.1-0.20230726110920-863b0ab8eca1 h1:23TlmNnPaW11pUQiT8GXnpYxJuAslOmHBzJgUyM4slA=
+zettelstore.de/c v0.12.1-0.20230726110920-863b0ab8eca1/go.mod h1:VozoDLf5/JeBo5PoWGgAs43J2VeVXKSYerRuMiVRHlE=
+zettelstore.de/sx.fossil v0.0.0-20230726100157-ef85a3d80e9d h1:VVPkVPg5bGYcqmPjTBfkLgHbk4sqAoU+IFGpg2xDzfo=
+zettelstore.de/sx.fossil v0.0.0-20230726100157-ef85a3d80e9d/go.mod h1:nsWXVrQG8RNKtoXzEMrWXNMdnpfIDU6Hb0pk56KpVKE=

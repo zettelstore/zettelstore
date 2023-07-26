@@ -14,8 +14,7 @@ import (
 	"net/http"
 	"time"
 
-	"codeberg.org/t73fde/sxpf"
-
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

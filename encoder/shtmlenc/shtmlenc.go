@@ -14,9 +14,9 @@ package shtmlenc
 import (
 	"io"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/shtml"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"

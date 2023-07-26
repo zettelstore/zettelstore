@@ -17,8 +17,8 @@ import (
 	"strconv"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"

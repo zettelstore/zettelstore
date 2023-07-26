@@ -13,9 +13,9 @@ package webui
 import (
 	"net/http"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/maps"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"

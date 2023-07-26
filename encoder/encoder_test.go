@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxpf/reader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"

@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
-	"codeberg.org/t73fde/sxhtml"
-	"codeberg.org/t73fde/sxpf"
-	"codeberg.org/t73fde/sxpf/eval"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxhtml"
+	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil/sxpf/eval"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"

@@ -49,8 +49,8 @@ The following syntax values are supported:
 ; [!svg|''svg'']
 : [[Scalable Vector Graphics|https://www.w3.org/TR/SVG2/]].
 ; [!sxn|''sxn'']
-: S-Expressions, as implemented by [[sxpf|https://codeberg.org/t73fde/sxpf]].
-  Often used to specify templates when rendering a zettel as HTML for the [[web user interface|00001014000000]] (with the help of [[sxhtml|https://codeberg.org/t73fde/sxhtml]]).
+: S-Expressions, as implemented by [[sx|https://zettelstore.de/sx]].
+  Often used to specify templates when rendering a zettel as HTML for the [[web user interface|00001014000000]] (with the help of sxhtml]).
 ; [!text|''text''], [!plain|''plain''], [!txt|''txt'']
 : Plain text that must not be interpreted further.
 ; [!zmk|''zmk'']

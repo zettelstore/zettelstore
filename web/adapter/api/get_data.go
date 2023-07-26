@@ -13,7 +13,7 @@ package api
 import (
 	"net/http"
 
-	"codeberg.org/t73fde/sxpf"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/zettel/id"
 )

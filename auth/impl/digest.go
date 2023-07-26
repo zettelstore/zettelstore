@@ -16,8 +16,8 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 
-	"codeberg.org/t73fde/sxpf"
-	"codeberg.org/t73fde/sxpf/reader"
+	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil/sxpf/reader"
 )
 
 var encoding = base64.RawURLEncoding

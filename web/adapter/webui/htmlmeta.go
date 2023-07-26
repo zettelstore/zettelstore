@@ -14,9 +14,9 @@ import (
 	"context"
 	"errors"
 
-	"codeberg.org/t73fde/sxhtml"
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxhtml"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/parser"

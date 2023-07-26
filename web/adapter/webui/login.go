@@ -14,8 +14,8 @@ import (
 	"context"
 	"net/http"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

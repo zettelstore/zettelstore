@@ -130,14 +130,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-=== t73fde/sxpf, t73fde/sxhtml, zettelstore-client
+=== sx, zettelstore-client
 These are companion projects, written by the current main developer of Zettelstore.
 They are published under the same license, [[EUPL v1.2, or later|00000000000004]].
 
-; URL & Source t73fde/sxpf
-: [[https://codeberg.org/t73fde/sxpf]]
-; URL & Source t73fde/sxhtml
-: [[https://codeberg.org/t73fde/sxhtml]]
+; URL & Source sx
+: [[https://zettelstore.de/sx]]
 ; URL & Source zettelstore-client
 : [[https://zettelstore.de/client/]]
 ; License:

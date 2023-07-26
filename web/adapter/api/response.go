@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"codeberg.org/t73fde/sxpf"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/web/content"
 	"zettelstore.de/z/zettel/id"
 )

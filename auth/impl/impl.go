@@ -17,10 +17,9 @@ import (
 	"io"
 	"time"
 
-	"codeberg.org/t73fde/sxpf"
-
 	"zettelstore.de/c/api"
 	"zettelstore.de/c/sx"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/box"

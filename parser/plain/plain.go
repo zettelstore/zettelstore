@@ -15,10 +15,10 @@ import (
 	"bytes"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf/builtins/pprint"
-	"codeberg.org/t73fde/sxpf/builtins/quote"
-	"codeberg.org/t73fde/sxpf/reader"
 	"zettelstore.de/c/attrs"
+	"zettelstore.de/sx.fossil/sxpf/builtins/pprint"
+	"zettelstore.de/sx.fossil/sxpf/builtins/quote"
+	"zettelstore.de/sx.fossil/sxpf/reader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"

@@ -18,8 +18,8 @@ import (
 	"strconv"
 	"strings"
 
-	"codeberg.org/t73fde/sxpf"
 	"zettelstore.de/c/api"
+	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
