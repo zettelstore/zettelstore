@@ -13,8 +13,8 @@ package webui
 import (
 	"net/http"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/maps"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/strfun"

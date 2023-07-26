@@ -15,7 +15,7 @@ import (
 	"errors"
 	"net/http"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/web/server"

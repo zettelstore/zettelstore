@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"

@@ -20,8 +20,8 @@ import (
 	"strconv"
 	"testing"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/client"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/client"
 	"zettelstore.de/z/kernel"
 )
 

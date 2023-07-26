@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/sx.fossil/sxpf/eval"

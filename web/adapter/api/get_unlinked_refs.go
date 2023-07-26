@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

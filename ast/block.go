@@ -10,7 +10,7 @@
 
 package ast
 
-import "zettelstore.de/c/attrs"
+import "zettelstore.de/client.fossil/attrs"
 
 // Definition of Block nodes.
 

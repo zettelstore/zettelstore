@@ -13,7 +13,7 @@ package cmd
 import (
 	"flag"
 
-	"zettelstore.de/c/maps"
+	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/z/logger"
 )
 

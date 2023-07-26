@@ -17,8 +17,8 @@ import (
 	"io"
 	"time"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/sx"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/sx"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"

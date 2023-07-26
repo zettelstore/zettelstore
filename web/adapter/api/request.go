@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"

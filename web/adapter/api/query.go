@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"

@@ -13,7 +13,7 @@ package webui
 import (
 	"net/http"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 )
 
 func (wui *WebUI) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder) {

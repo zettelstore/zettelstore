@@ -17,7 +17,7 @@ import (
 	"io"
 	"os"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"

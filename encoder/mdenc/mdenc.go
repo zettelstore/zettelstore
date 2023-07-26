@@ -14,7 +14,7 @@ package mdenc
 import (
 	"io"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"

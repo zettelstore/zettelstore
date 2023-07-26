@@ -16,7 +16,7 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel/id"

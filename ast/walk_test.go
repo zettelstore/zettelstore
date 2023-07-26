@@ -13,7 +13,7 @@ package ast_test
 import (
 	"testing"
 
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/z/ast"
 )
 

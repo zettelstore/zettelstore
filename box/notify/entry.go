@@ -13,7 +13,7 @@ package notify
 import (
 	"path/filepath"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"

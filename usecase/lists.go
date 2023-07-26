@@ -13,7 +13,7 @@ package usecase
 import (
 	"context"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"

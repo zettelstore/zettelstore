@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"

@@ -18,8 +18,8 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoding/atom"

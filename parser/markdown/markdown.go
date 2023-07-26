@@ -21,7 +21,7 @@ import (
 	gmAst "github.com/yuin/goldmark/ast"
 	gmText "github.com/yuin/goldmark/text"
 
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder/textenc"
 	"zettelstore.de/z/input"

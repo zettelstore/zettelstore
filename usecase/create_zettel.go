@@ -14,7 +14,7 @@ import (
 	"context"
 	"time"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/zettel"

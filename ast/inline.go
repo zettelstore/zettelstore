@@ -13,7 +13,7 @@ package ast
 import (
 	"unicode/utf8"
 
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/attrs"
 )
 
 // Definitions of inline nodes.

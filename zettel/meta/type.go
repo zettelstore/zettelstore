@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/zettel/id"
 )
 

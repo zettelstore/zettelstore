@@ -15,7 +15,7 @@ import (
 	"bytes"
 	"strings"
 
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/sx.fossil/sxpf/builtins/pprint"
 	"zettelstore.de/sx.fossil/sxpf/builtins/quote"
 	"zettelstore.de/sx.fossil/sxpf/reader"

@@ -13,7 +13,7 @@ package query
 import (
 	"strconv"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/zettel/meta"
 )
 

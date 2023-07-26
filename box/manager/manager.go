@@ -18,7 +18,7 @@ import (
 	"sync"
 	"time"
 
-	"zettelstore.de/c/maps"
+	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/memstore"

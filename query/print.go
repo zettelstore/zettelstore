@@ -15,8 +15,8 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/maps"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/z/zettel/id"
 )
 

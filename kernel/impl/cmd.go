@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/c/maps"
+	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"

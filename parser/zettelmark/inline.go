@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"strings"
 
-	"zettelstore.de/c/attrs"
+	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/zettel/meta"

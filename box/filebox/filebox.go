@@ -17,7 +17,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/kernel"

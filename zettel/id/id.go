@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 )
 
 // Zid is the internal identifier of a zettel. Typically, it is a

@@ -17,7 +17,7 @@ import (
 
 	"golang.org/x/term"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/zettel/id"
 )

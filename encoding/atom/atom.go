@@ -15,7 +15,7 @@ import (
 	"bytes"
 	"time"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoding"
 	"zettelstore.de/z/encoding/xml"

@@ -16,7 +16,7 @@ import (
 	"regexp"
 	"strings"
 
-	"zettelstore.de/c/api"
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"

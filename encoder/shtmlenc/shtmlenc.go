@@ -14,8 +14,8 @@ package shtmlenc
 import (
 	"io"
 
-	"zettelstore.de/c/api"
-	"zettelstore.de/c/shtml"
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
