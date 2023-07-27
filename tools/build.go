@@ -28,7 +28,8 @@ import (
 	"zettelstore.de/z/strfun"
 )
 
-var directProxy = []string{"GOPROXY=direct"}
+var envDirectProxy = []string{"GOPROXY=direct"}
+var envGoVCS = []string{"GOVCS=zettelstore.de:fossil"}
 
 func executeCommand(env []string, name string, arg ...string) (string, error) {
 	logCommand("EXEC", env, name, arg)
@@ -139,9 +140,12 @@ func cmdCheck(forRelease bool) error {
 }
 
 func checkGoTest(pkg string, testParams ...string) error {
+	var env []string
+	env = append(env, envDirectProxy...)
+	env = append(env, envGoVCS...)
 	args := []string{"test", pkg}
 	args = append(args, testParams...)
-	out, err := executeCommand(directProxy, "go", args...)
+	out, err := executeCommand(env, "go", args...)
 	if err != nil {
 		for _, line := range strfun.SplitLines(out) {
 			if strings.HasPrefix(line, "ok") || strings.HasPrefix(line, "?") {
@@ -154,7 +158,7 @@ func checkGoTest(pkg string, testParams ...string) error {
 }
 
 func checkGoVet() error {
-	out, err := executeCommand(nil, "go", "vet", "./...")
+	out, err := executeCommand(envGoVCS, "go", "vet", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some checks failed")
 		if len(out) > 0 {
@@ -169,7 +173,7 @@ func checkShadow(forRelease bool) error {
 	if path == "" {
 		return err
 	}
-	out, err := executeCommand(nil, path, "-strict", "./...")
+	out, err := executeCommand(envGoVCS, path, "-strict", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some shadowed variables found")
 		if len(out) > 0 {
@@ -180,7 +184,7 @@ func checkShadow(forRelease bool) error {
 }
 
 func checkStaticcheck() error {
-	out, err := executeCommand(nil, "staticcheck", "./...")
+	out, err := executeCommand(envGoVCS, "staticcheck", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some staticcheck problems found")
 		if len(out) > 0 {
@@ -195,7 +199,7 @@ func checkUnparam(forRelease bool) error {
 	if path == "" {
 		return err
 	}
-	out, err := executeCommand(nil, path, "./...")
+	out, err := executeCommand(envGoVCS, path, "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some unparam problems found")
 		if len(out) > 0 {
@@ -214,7 +218,7 @@ func checkUnparam(forRelease bool) error {
 }
 
 func checkGoVulncheck() error {
-	out, err := executeCommand(nil, "govulncheck", "./...")
+	out, err := executeCommand(envGoVCS, "govulncheck", "./...")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Some checks failed")
 		if len(out) > 0 {
@@ -321,7 +325,7 @@ func addressInUse(address string) bool {
 }
 
 func cmdBuild() error {
-	return doBuild(directProxy, getVersion(), "bin/zettelstore")
+	return doBuild(envDirectProxy, getVersion(), "bin/zettelstore")
 }
 
 func doBuild(env []string, version, target string) error {
@@ -427,7 +431,7 @@ func cmdRelease() error {
 	for _, rel := range releases {
 		env := append([]string{}, rel.env...)
 		env = append(env, "GOARCH="+rel.arch, "GOOS="+rel.os)
-		env = append(env, directProxy...)
+		env = append(env, envDirectProxy...)
 		zsName := filepath.Join("releases", rel.name)
 		if err := doBuild(env, base, zsName); err != nil {
 			return err
