@@ -52,7 +52,7 @@ func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 // Result returns a result of the compiled search, that is achievable without iterating through a box.
 func (c *Compiled) Result() []*meta.Meta {
 	if len(c.startMeta) == 0 {
-		// nil -> no context
+		// nil -> no directive
 		// empty slice -> nothing found
 		return c.startMeta
 	}

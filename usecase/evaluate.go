@@ -25,23 +25,23 @@ import (
 
 // Evaluate is the data for this use case.
 type Evaluate struct {
-	rtConfig  config.Config
-	getZettel GetZettel
-	listMeta  ListMeta
+	rtConfig    config.Config
+	ucGetZettel *GetZettel
+	ucQuery     *Query
 }
 
 // NewEvaluate creates a new use case.
-func NewEvaluate(rtConfig config.Config, getZettel GetZettel, listMeta ListMeta) Evaluate {
+func NewEvaluate(rtConfig config.Config, ucGetZettel *GetZettel, ucQuery *Query) Evaluate {
 	return Evaluate{
-		rtConfig:  rtConfig,
-		getZettel: getZettel,
-		listMeta:  listMeta,
+		rtConfig:    rtConfig,
+		ucGetZettel: ucGetZettel,
+		ucQuery:     ucQuery,
 	}
 }
 
 // Run executes the use case.
 func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.ZettelNode, error) {
-	zettel, err := uc.getZettel.Run(ctx, zid)
+	zettel, err := uc.ucGetZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
@@ -73,10 +73,10 @@ func (uc *Evaluate) RunMetadata(ctx context.Context, value string) ast.InlineSli
 
 // GetZettel retrieves the full zettel of a given zettel identifier.
 func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
-	return uc.getZettel.Run(ctx, zid)
+	return uc.ucGetZettel.Run(ctx, zid)
 }
 
-// SelectMeta returns a list of metadata that comply to the given selection criteria.
-func (uc *Evaluate) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
-	return uc.listMeta.Run(ctx, q)
+// QueryMeta returns a list of metadata that comply to the given selection criteria.
+func (uc *Evaluate) QueryMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+	return uc.ucQuery.Run(ctx, q)
 }

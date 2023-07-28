@@ -37,7 +37,7 @@ import (
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
 	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
+	QueryMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
 // EvaluateZettel evaluates the given zettel in the given context, with the
@@ -254,7 +254,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 
 func (e *evaluator) evalQueryTransclusion(expr string) ast.BlockNode {
 	q := query.Parse(expr)
-	ml, err := e.port.SelectMeta(e.ctx, q)
+	ml, err := e.port.QueryMeta(e.ctx, q)
 	if err != nil {
 		if errors.Is(err, &box.ErrNotAllowed{}) {
 			return nil

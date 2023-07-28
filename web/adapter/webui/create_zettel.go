@@ -152,18 +152,18 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel
 // MakeGetZettelFromListHandler creates a new HTTP handler to store content of
 // an existing zettel.
 func (wui *WebUI) MakeGetZettelFromListHandler(
-	listMeta usecase.ListMeta, evaluate *usecase.Evaluate,
+	queryMeta *usecase.Query, evaluate *usecase.Evaluate,
 	ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		ctx := r.Context()
-		metaList, err := listMeta.Run(box.NoEnrichQuery(ctx, q), q)
+		metaSeq, err := queryMeta.Run(box.NoEnrichQuery(ctx, q), q)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaList, wui.rtConfig))
+		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig))
 		enc := zmkenc.Create()
 		var zmkContent bytes.Buffer
 		_, err = enc.WriteBlocks(&zmkContent, &bns)

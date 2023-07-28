@@ -94,15 +94,6 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zett
 	return result, nil
 }
 
-func (mgr *Manager) doGetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
-	m, err := mgr.idxStore.GetMeta(ctx, zid)
-	if err != nil {
-		return nil, err
-	}
-	mgr.Enrich(ctx, m, 0)
-	return m, nil
-}
-
 // FetchZids returns the set of all zettel identifer managed by the box.
 func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	mgr.mgrLog.Debug().Msg("FetchZids")
@@ -136,9 +127,23 @@ func (mgr *Manager) HasZettel(ctx context.Context, zid id.Zid) bool {
 	return false
 }
 
+func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	mgr.mgrLog.Debug().Zid(zid).Msg("GetMeta")
+	if mgr.State() != box.StartStateStarted {
+		return nil, box.ErrStopped
+	}
+
+	m, err := mgr.idxStore.GetMeta(ctx, zid)
+	if err != nil {
+		return nil, err
+	}
+	mgr.Enrich(ctx, m, 0)
+	return m, nil
+}
+
 // SelectMeta returns all zettel meta data that match the selection
 // criteria. The result is ordered by descending zettel id.
-func (mgr *Manager) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error) {
 	if msg := mgr.mgrLog.Debug(); msg.Enabled() {
 		msg.Str("query", q.String()).Msg("SelectMeta")
 	}
@@ -147,13 +152,8 @@ func (mgr *Manager) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Met
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.doSelectMeta(ctx, q)
-}
-func (mgr *Manager) doSelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
-	compSearch, err := q.RetrieveAndCompile(ctx, mgr, mgr.doGetMeta, mgr.doSelectMeta)
-	if err != nil {
-		return nil, err
-	}
+
+	compSearch := q.RetrieveAndCompile(ctx, mgr, metaSeq)
 	if result := compSearch.Result(); result != nil {
 		mgr.mgrLog.Trace().Int("count", int64(len(result))).Msg("found without ApplyMeta")
 		return result, nil

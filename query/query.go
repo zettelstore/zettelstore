@@ -44,7 +44,7 @@ type Query struct {
 	zids []id.Zid
 
 	// Querydirectives, like CONTEXT, ...
-	directives []QueryDirective
+	directives []Directive
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
@@ -74,10 +74,19 @@ func (q *Query) GetZids() []id.Zid {
 	return result
 }
 
-// QueryDirective are executed to process the list of metadata.
-type QueryDirective interface {
+// Directive are executed to process the list of metadata.
+type Directive interface {
 	Print(*PrintEnv)
-	Process(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error)
+}
+
+// GetDirectives returns the slice of query directives.
+func (q *Query) GetDirectives() []Directive {
+	if q == nil || len(q.directives) == 0 {
+		return nil
+	}
+	result := make([]Directive, len(q.directives))
+	copy(result, q.directives)
+	return result
 }
 
 type keyExistMap map[string]compareOp
@@ -134,7 +143,7 @@ func (q *Query) Clone() *Query {
 		copy(c.zids, q.zids)
 	}
 	if len(q.directives) > 0 {
-		c.directives = make([]QueryDirective, len(q.directives))
+		c.directives = make([]Directive, len(q.directives))
 		copy(c.directives, q.directives)
 	}
 
@@ -337,22 +346,16 @@ func (q *Query) EnrichNeeded() bool {
 	return false
 }
 
-// GetMetaFunc is a function that allows to retieve the metadata for a specific zid.
-type GetMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
-
-// SelectMetaFunc is a function the returns a list of metadata based on a query.
-type SelectMetaFunc func(context.Context, *Query) ([]*meta.Meta, error)
-
 // RetrieveAndCompile queries the search index and returns a predicate
 // for its results and returns a matching predicate.
-func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMeta GetMetaFunc, selectMeta SelectMetaFunc) (Compiled, error) {
+func (q *Query) RetrieveAndCompile(_ context.Context, searcher Searcher, metaSeq []*meta.Meta) Compiled {
 	if q == nil {
 		return Compiled{
 			PreMatch: matchAlways,
 			Terms: []CompiledTerm{{
 				Match:    matchAlways,
 				Retrieve: alwaysIncluded,
-			}}}, nil
+			}}}
 	}
 	q = q.Clone()
 
@@ -360,32 +363,8 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 	if preMatch == nil {
 		preMatch = matchAlways
 	}
-	var startMeta []*meta.Meta
-	if numZids := len(q.zids); numZids > 0 {
-		startMeta = make([]*meta.Meta, 0, len(q.zids))
-		for _, zid := range q.zids {
-			m, err := getMeta(ctx, zid)
-			if err != nil {
-				return Compiled{}, err
-			}
-			if preMatch(m) {
-				startMeta = append(startMeta, m)
-			}
-		}
-		if len(startMeta) == 0 {
-			startMeta = []*meta.Meta{}
-		}
-	}
 
-	for _, d := range q.directives {
-		var err error
-		startMeta, err = d.Process(ctx, startMeta, preMatch, getMeta, selectMeta)
-		if err != nil {
-			return Compiled{}, err
-		}
-	}
-
-	startSet := metaList2idSet(startMeta)
+	startSet := metaList2idSet(metaSeq)
 	result := Compiled{
 		hasQuery:  true,
 		seed:      q.seed,
@@ -393,7 +372,7 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		order:     q.order,
 		offset:    q.offset,
 		limit:     q.limit,
-		startMeta: startMeta,
+		startMeta: metaSeq,
 		PreMatch:  preMatch,
 		Terms:     []CompiledTerm{},
 	}
@@ -416,7 +395,7 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 		}
 		result.Terms = append(result.Terms, cTerm)
 	}
-	return result, nil
+	return result
 }
 
 func metaList2idSet(ml []*meta.Meta) id.Set {

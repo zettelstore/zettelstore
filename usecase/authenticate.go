@@ -20,33 +20,23 @@ import (
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/logger"
-	"zettelstore.de/z/query"
-	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
-
-// AuthenticatePort is the interface used by this use case.
-type AuthenticatePort interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	SelectMeta(context.Context, *query.Query) ([]*meta.Meta, error)
-}
 
 // Authenticate is the data for this use case.
 type Authenticate struct {
 	log       *logger.Logger
 	token     auth.TokenManager
-	port      AuthenticatePort
-	ucGetUser GetUser
+	ucGetUser *GetUser
 }
 
 // NewAuthenticate creates a new use case.
-func NewAuthenticate(log *logger.Logger, token auth.TokenManager, authz auth.AuthzManager, port AuthenticatePort) Authenticate {
+func NewAuthenticate(log *logger.Logger, token auth.TokenManager, authz auth.AuthzManager, ucGetUser *GetUser) Authenticate {
 	return Authenticate{
 		log:       log,
 		token:     token,
-		port:      port,
-		ucGetUser: NewGetUser(authz, port),
+		ucGetUser: ucGetUser,
 	}
 }
 

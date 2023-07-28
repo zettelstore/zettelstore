@@ -33,12 +33,12 @@ import (
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		q = q.SetDeterministic()
 		ctx := r.Context()
-		metaList, err := listMeta.Run(ctx, q)
+		metaSeq, err := queryMeta.Run(ctx, q)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -46,15 +46,15 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		if actions := q.Actions(); len(actions) > 0 {
 			switch actions[0] {
 			case "ATOM":
-				wui.renderAtom(w, q, metaList)
+				wui.renderAtom(w, q, metaSeq)
 				return
 			case "RSS":
-				wui.renderRSS(ctx, w, q, metaList)
+				wui.renderRSS(ctx, w, q, metaSeq)
 				return
 			}
 		}
 		var content, endnotes *sx.Pair
-		if bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig); bn != nil {
+		if bn := evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig); bn != nil {
 			enc := wui.getSimpleHTMLEncoder()
 			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})
 			if err != nil {

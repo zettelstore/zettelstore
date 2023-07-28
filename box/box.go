@@ -133,8 +133,12 @@ type Box interface {
 	// FetchZids returns the set of all zettel identifer managed by the box.
 	FetchZids(ctx context.Context) (id.Set, error)
 
+	// GetMeta returns the metadata of the zettel with the given identifier.
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
+	// If `metaSeq` is `nil`, the box assumes metadata of all available zettel.
+	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 
 	// GetAllZettel retrieves a specific zettel from all managed boxes.
 	GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error)

@@ -10,12 +10,7 @@
 
 package query
 
-import (
-	"context"
-
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/z/zettel/meta"
-)
+import "zettelstore.de/client.fossil/api"
 
 // IdentSpec contains all specification values to calculate the ident directive.
 type IdentSpec struct{}
@@ -23,8 +18,4 @@ type IdentSpec struct{}
 func (spec *IdentSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.IdentDirective)
-}
-
-func (spec *IdentSpec) Process(_ context.Context, startSeq []*meta.Meta, _ MetaMatchFunc, _ GetMetaFunc, _ SelectMetaFunc) ([]*meta.Meta, error) {
-	return startSeq, nil
 }

@@ -28,7 +28,7 @@ import (
 // GetUserPort is the interface used by this use case.
 type GetUserPort interface {
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 }
 
 // GetUser is the data for this use case.
@@ -55,7 +55,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 	}
 	// Owner was not found or has another ident. Try via list search.
 	q := query.Parse(api.KeyUserID + api.SearchOperatorHas + ident + " " + api.SearchOperatorHas + ident)
-	metaList, err := uc.port.SelectMeta(ctx, q)
+	metaList, err := uc.port.SelectMeta(ctx, nil, q)
 	if err != nil {
 		return nil, err
 	}

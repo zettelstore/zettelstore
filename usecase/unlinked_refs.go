@@ -29,23 +29,26 @@ import (
 
 // UnlinkedReferencesPort is the interface used by this use case.
 type UnlinkedReferencesPort interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
+	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 }
 
 // UnlinkedReferences is the data for this use case.
 type UnlinkedReferences struct {
-	port     UnlinkedReferencesPort
-	rtConfig config.Config
-	encText  *textenc.Encoder
+	port        UnlinkedReferencesPort
+	ucGetZettel *GetZettel
+	ucQuery     *Query
+	rtConfig    config.Config
+	encText     *textenc.Encoder
 }
 
 // NewUnlinkedReferences creates a new use case.
-func NewUnlinkedReferences(port UnlinkedReferencesPort, rtConfig config.Config) UnlinkedReferences {
+func NewUnlinkedReferences(port UnlinkedReferencesPort, ucGetZettel *GetZettel, ucQuery *Query, rtConfig config.Config) UnlinkedReferences {
 	return UnlinkedReferences{
-		port:     port,
-		rtConfig: rtConfig,
-		encText:  textenc.Create(),
+		port:        port,
+		ucGetZettel: ucGetZettel,
+		ucQuery:     ucQuery,
+		rtConfig:    rtConfig,
+		encText:     textenc.Create(),
 	}
 }
 
@@ -66,7 +69,7 @@ func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, q *query.Q
 	limit := q.GetLimit()
 	q = q.SetLimit(0)
 
-	candidates, err := uc.port.SelectMeta(ctx, q)
+	candidates, err := uc.port.SelectMeta(ctx, nil, q)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +87,7 @@ func (uc *UnlinkedReferences) filterCandidates(ctx context.Context, candidates [
 	result := make([]*meta.Meta, 0, len(candidates))
 candLoop:
 	for _, cand := range candidates {
-		zettel, err := uc.port.GetZettel(ctx, cand.Zid)
+		zettel, err := uc.ucGetZettel.Run(ctx, cand.Zid)
 		if err != nil {
 			continue
 		}
@@ -99,7 +102,7 @@ candLoop:
 				continue
 			}
 			is := parser.ParseMetadata(pair.Value)
-			evaluator.EvaluateInline(ctx, uc.port, uc.rtConfig, &is)
+			evaluator.EvaluateInline(ctx, uc, uc.rtConfig, &is)
 			ast.Walk(&v, &is)
 			if v.found {
 				result = append(result, cand)
@@ -115,7 +118,7 @@ candLoop:
 		if err != nil {
 			continue
 		}
-		evaluator.EvaluateZettel(ctx, uc.port, uc.rtConfig, zn)
+		evaluator.EvaluateZettel(ctx, uc, uc.rtConfig, zn)
 		ast.Walk(&v, &zn.Ast)
 		if v.found {
 			result = append(result, cand)
@@ -177,4 +180,14 @@ func (v *unlinkedVisitor) splitInlineTextList(is *ast.InlineSlice) []string {
 		result = append(result, v.joinWords(curList))
 	}
 	return result
+}
+
+// GetZettel retrieves the full zettel of a given zettel identifier.
+func (uc *UnlinkedReferences) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
+	return uc.ucGetZettel.Run(ctx, zid)
+}
+
+// QueryMeta returns a list of metadata that comply to the given selection criteria.
+func (uc *UnlinkedReferences) QueryMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+	return uc.ucQuery.Run(ctx, q)
 }

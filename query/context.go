@@ -34,6 +34,12 @@ const (
 	ContextDirBackward
 )
 
+// ContextPort is the collection of box methods needed by this directive.
+type ContextPort interface {
+	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
+	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *Query) ([]*meta.Meta, error)
+}
+
 func (spec *ContextSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.ContextDirective)
@@ -49,7 +55,7 @@ func (spec *ContextSpec) Print(pe *PrintEnv) {
 	pe.printPosInt(api.MaxDirective, spec.MaxCount)
 }
 
-func (spec *ContextSpec) Process(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
+func (spec *ContextSpec) Execute(ctx context.Context, startSeq []*meta.Meta, port ContextPort) []*meta.Meta {
 	maxCost := spec.MaxCost
 	if maxCost <= 0 {
 		maxCost = 17
@@ -58,7 +64,7 @@ func (spec *ContextSpec) Process(ctx context.Context, startSeq []*meta.Meta, pre
 	if maxCount <= 0 {
 		maxCount = 200
 	}
-	tasks := newQueue(startSeq, maxCost, maxCount, preMatch, getMeta, selectMeta)
+	tasks := newQueue(startSeq, maxCost, maxCount, port)
 	isBackward := spec.Direction == ContextDirBoth || spec.Direction == ContextDirBackward
 	isForward := spec.Direction == ContextDirBoth || spec.Direction == ContextDirForward
 	result := []*meta.Meta{}
@@ -78,7 +84,7 @@ func (spec *ContextSpec) Process(ctx context.Context, startSeq []*meta.Meta, pre
 			}
 		}
 	}
-	return result, nil
+	return result
 }
 
 type ztlCtxTask struct {
@@ -89,28 +95,24 @@ type ztlCtxTask struct {
 }
 
 type contextQueue struct {
-	preMatch   MetaMatchFunc
-	getMeta    GetMetaFunc
-	selectMeta SelectMetaFunc
-	seen       id.Set
-	first      *ztlCtxTask
-	last       *ztlCtxTask
-	maxCost    int
-	limit      int
-	tagCost    map[string][]*meta.Meta
+	port    ContextPort
+	seen    id.Set
+	first   *ztlCtxTask
+	last    *ztlCtxTask
+	maxCost int
+	limit   int
+	tagCost map[string][]*meta.Meta
 }
 
-func newQueue(startSeq []*meta.Meta, maxCost, limit int, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) *contextQueue {
+func newQueue(startSeq []*meta.Meta, maxCost, limit int, port ContextPort) *contextQueue {
 	result := &contextQueue{
-		preMatch:   preMatch,
-		getMeta:    getMeta,
-		selectMeta: selectMeta,
-		seen:       id.NewSet(),
-		first:      nil,
-		last:       nil,
-		maxCost:    maxCost,
-		limit:      limit,
-		tagCost:    make(map[string][]*meta.Meta, 1024),
+		port:    port,
+		seen:    id.NewSet(),
+		first:   nil,
+		last:    nil,
+		maxCost: maxCost,
+		limit:   limit,
+		tagCost: make(map[string][]*meta.Meta, 1024),
 	}
 
 	var prev *ztlCtxTask
@@ -170,17 +172,10 @@ func (zc *contextQueue) addID(ctx context.Context, newCost int, value string) {
 	if zc.costMaxed(newCost) {
 		return
 	}
-
-	zid, err := id.Parse(value)
-	if err != nil {
-		return
-	}
-	m, err := zc.getMeta(ctx, zid)
-	if err != nil {
-		return
-	}
-	if zc.preMatch(m) {
-		zc.addMeta(m, newCost)
+	if zid, errParse := id.Parse(value); errParse == nil {
+		if m, errGetMeta := zc.port.GetMeta(ctx, zid); errGetMeta == nil {
+			zc.addMeta(m, newCost)
+		}
 	}
 }
 func (zc *contextQueue) addMeta(m *meta.Meta, newCost int) {
@@ -252,7 +247,7 @@ func (zc *contextQueue) addSameTag(ctx context.Context, tag string, baseCost int
 	tagMetas, found := zc.tagCost[tag]
 	if !found {
 		q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
-		ml, err := zc.selectMeta(ctx, q)
+		ml, err := zc.port.SelectMeta(ctx, nil, q)
 		if err != nil {
 			return
 		}
@@ -264,9 +259,7 @@ func (zc *contextQueue) addSameTag(ctx context.Context, tag string, baseCost int
 		return
 	}
 	for _, m := range tagMetas {
-		if zc.preMatch(m) { // selectMeta will not check preMatch
-			zc.addMeta(m, cost)
-		}
+		zc.addMeta(m, cost)
 	}
 }
 

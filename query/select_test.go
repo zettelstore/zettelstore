@@ -22,7 +22,7 @@ import (
 
 func TestMatchZidNegate(t *testing.T) {
 	q := query.Parse(api.KeyID + api.SearchOperatorHasNot + string(api.ZidVersion) + " " + api.KeyID + api.SearchOperatorHasNot + string(api.ZidLicense))
-	compiled, _ := q.RetrieveAndCompile(context.Background(), nil, nil, nil)
+	compiled := q.RetrieveAndCompile(context.Background(), nil, nil)
 
 	testCases := []struct {
 		zid api.ZettelID

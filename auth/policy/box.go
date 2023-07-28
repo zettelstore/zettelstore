@@ -83,11 +83,23 @@ func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {
 	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
 }
 
-func (pp *polBox) SelectMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error) {
+func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+	m, err := pp.box.GetMeta(ctx, zid)
+	if err != nil {
+		return nil, err
+	}
+	user := server.GetUser(ctx)
+	if pp.policy.CanRead(user, m) {
+		return m, nil
+	}
+	return nil, box.NewErrNotAllowed("GetMeta", user, zid)
+}
+
+func (pp *polBox) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error) {
 	user := server.GetUser(ctx)
 	canRead := pp.policy.CanRead
 	q = q.SetPreMatch(func(m *meta.Meta) bool { return canRead(user, m) })
-	return pp.box.SelectMeta(ctx, q)
+	return pp.box.SelectMeta(ctx, metaSeq, q)
 }
 
 func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool {

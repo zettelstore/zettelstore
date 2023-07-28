@@ -28,13 +28,13 @@ import (
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
-func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
+func (a *API) MakeQueryHandler(queryMeta *usecase.Query) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 		sq := adapter.GetQuery(q)
 
-		metaList, err := listMeta.Run(ctx, sq)
+		metaSeq, err := queryMeta.Run(ctx, sq)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
@@ -68,7 +68,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 		}
 
 		var buf bytes.Buffer
-		err = queryAction(&buf, encoder, metaList, sq)
+		err = queryAction(&buf, encoder, metaSeq, sq)
 		if err != nil {
 			a.log.Error().Err(err).Str("query", sq.String()).Msg("execute query action")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
