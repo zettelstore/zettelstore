@@ -17,13 +17,14 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-type identSpec struct{}
+// IdentSpec contains all specification values to calculate the ident directive.
+type IdentSpec struct{}
 
-func (spec *identSpec) printToEnv(pe *printEnv) {
+func (spec *IdentSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.IdentDirective)
 }
 
-func (spec *identSpec) retrieve(_ context.Context, startSeq []*meta.Meta, _ MetaMatchFunc, _ GetMetaFunc, _ SelectMetaFunc) ([]*meta.Meta, error) {
+func (spec *IdentSpec) Process(_ context.Context, startSeq []*meta.Meta, _ MetaMatchFunc, _ GetMetaFunc, _ SelectMetaFunc) ([]*meta.Meta, error) {
 	return startSeq, nil
 }

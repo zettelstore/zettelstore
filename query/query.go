@@ -44,7 +44,7 @@ type Query struct {
 	zids []id.Zid
 
 	// Querydirectives, like CONTEXT, ...
-	directives []queryDirective
+	directives []QueryDirective
 
 	// Fields to be used for selecting
 	preMatch MetaMatchFunc // Match that must be true
@@ -64,9 +64,20 @@ type Query struct {
 	actions []string
 }
 
-type queryDirective interface {
-	printToEnv(*printEnv)
-	retrieve(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error)
+// GetZids returns a slide of all specified zettel identifier.
+func (q *Query) GetZids() []id.Zid {
+	if q == nil || len(q.zids) == 0 {
+		return nil
+	}
+	result := make([]id.Zid, len(q.zids))
+	copy(result, q.zids)
+	return result
+}
+
+// QueryDirective are executed to process the list of metadata.
+type QueryDirective interface {
+	Print(*PrintEnv)
+	Process(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error)
 }
 
 type keyExistMap map[string]compareOp
@@ -123,7 +134,7 @@ func (q *Query) Clone() *Query {
 		copy(c.zids, q.zids)
 	}
 	if len(q.directives) > 0 {
-		c.directives = make([]queryDirective, len(q.directives))
+		c.directives = make([]QueryDirective, len(q.directives))
 		copy(c.directives, q.directives)
 	}
 
@@ -368,7 +379,7 @@ func (q *Query) RetrieveAndCompile(ctx context.Context, searcher Searcher, getMe
 
 	for _, d := range q.directives {
 		var err error
-		startMeta, err = d.retrieve(ctx, startMeta, preMatch, getMeta, selectMeta)
+		startMeta, err = d.Process(ctx, startMeta, preMatch, getMeta, selectMeta)
 		if err != nil {
 			return Compiled{}, err
 		}

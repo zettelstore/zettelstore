@@ -116,7 +116,7 @@ func (ps *parserState) parse(q *Query) *Query {
 			break
 		}
 		if ps.acceptSingleKw(api.IdentDirective) {
-			q.directives = append(q.directives, &identSpec{})
+			q.directives = append(q.directives, &IdentSpec{})
 			continue
 		}
 		inp.SetPos(pos)
@@ -204,7 +204,7 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 		q.zids = append(q.zids, zid)
 	}
 
-	spec := &contextSpec{dir: dirBoth}
+	spec := &ContextSpec{}
 	for {
 		ps.skipSpace()
 		if ps.mustStop() {
@@ -212,12 +212,12 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 		}
 		pos = inp.Pos
 		if ps.acceptSingleKw(api.BackwardDirective) {
-			spec.dir = dirBackward
+			spec.Direction = ContextDirBackward
 			continue
 		}
 		inp.SetPos(pos)
 		if ps.acceptSingleKw(api.ForwardDirective) {
-			spec.dir = dirForward
+			spec.Direction = ContextDirForward
 			continue
 		}
 		inp.SetPos(pos)
@@ -239,23 +239,23 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 	q.directives = append(q.directives, spec)
 	return q
 }
-func (ps *parserState) parseCost(spec *contextSpec) bool {
+func (ps *parserState) parseCost(spec *ContextSpec) bool {
 	num, ok := ps.scanPosInt()
 	if !ok {
 		return false
 	}
-	if spec.maxCost == 0 || spec.maxCost >= num {
-		spec.maxCost = num
+	if spec.MaxCost == 0 || spec.MaxCost >= num {
+		spec.MaxCost = num
 	}
 	return true
 }
-func (ps *parserState) parseCount(spec *contextSpec) bool {
+func (ps *parserState) parseCount(spec *ContextSpec) bool {
 	num, ok := ps.scanPosInt()
 	if !ok {
 		return false
 	}
-	if spec.maxCount == 0 || spec.maxCount >= num {
-		spec.maxCount = num
+	if spec.MaxCount == 0 || spec.MaxCount >= num {
+		spec.MaxCount = num
 	}
 	return true
 }

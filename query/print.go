@@ -50,10 +50,10 @@ func (q *Query) Print(w io.Writer) {
 	if q == nil {
 		return
 	}
-	env := printEnv{w: w}
+	env := PrintEnv{w: w}
 	env.printZids(q.zids)
 	for _, d := range q.directives {
-		d.printToEnv(&env)
+		d.Print(&env)
 	}
 	for i, term := range q.terms {
 		if i > 0 {
@@ -85,24 +85,25 @@ func (q *Query) Print(w io.Writer) {
 	env.printActions(q.actions)
 }
 
-type printEnv struct {
+// PrintEnv is an environment where queries are printed.
+type PrintEnv struct {
 	w     io.Writer
 	space bool
 }
 
 var bsSpace = []byte{' '}
 
-func (pe *printEnv) printSpace() {
+func (pe *PrintEnv) printSpace() {
 	if pe.space {
 		pe.w.Write(bsSpace)
 		return
 	}
 	pe.space = true
 }
-func (pe *printEnv) write(ch byte)        { pe.w.Write([]byte{ch}) }
-func (pe *printEnv) writeString(s string) { io.WriteString(pe.w, s) }
+func (pe *PrintEnv) write(ch byte)        { pe.w.Write([]byte{ch}) }
+func (pe *PrintEnv) writeString(s string) { io.WriteString(pe.w, s) }
 
-func (pe *printEnv) printZids(zids []id.Zid) {
+func (pe *PrintEnv) printZids(zids []id.Zid) {
 	for i, zid := range zids {
 		if i > 0 {
 			pe.printSpace()
@@ -111,7 +112,7 @@ func (pe *printEnv) printZids(zids []id.Zid) {
 		pe.space = true
 	}
 }
-func (pe *printEnv) printExprValues(key string, values []expValue) {
+func (pe *PrintEnv) printExprValues(key string, values []expValue) {
 	for _, val := range values {
 		pe.printSpace()
 		pe.writeString(key)
@@ -154,10 +155,10 @@ func (q *Query) PrintHuman(w io.Writer) {
 	if q == nil {
 		return
 	}
-	env := printEnv{w: w}
+	env := PrintEnv{w: w}
 	env.printZids(q.zids)
 	for _, d := range q.directives {
-		d.printToEnv(&env)
+		d.Print(&env)
 	}
 	for i, term := range q.terms {
 		if i > 0 {
@@ -204,7 +205,7 @@ func (q *Query) PrintHuman(w io.Writer) {
 	env.printActions(q.actions)
 }
 
-func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
+func (pe *PrintEnv) printHumanSelectExprValues(values []expValue) {
 	if len(values) == 0 {
 		pe.writeString(" MATCH ANY")
 		return
@@ -254,7 +255,7 @@ func (pe *printEnv) printHumanSelectExprValues(values []expValue) {
 	}
 }
 
-func (pe *printEnv) printOrder(order []sortOrder) {
+func (pe *PrintEnv) printOrder(order []sortOrder) {
 	for _, o := range order {
 		if o.isRandom() {
 			pe.printSpace()
@@ -272,7 +273,7 @@ func (pe *printEnv) printOrder(order []sortOrder) {
 	}
 }
 
-func (pe *printEnv) printPosInt(key string, val int) {
+func (pe *PrintEnv) printPosInt(key string, val int) {
 	if val > 0 {
 		pe.printSpace()
 		pe.writeString(key)
@@ -281,7 +282,7 @@ func (pe *printEnv) printPosInt(key string, val int) {
 	}
 }
 
-func (pe *printEnv) printActions(words []string) {
+func (pe *PrintEnv) printActions(words []string) {
 	if len(words) > 0 {
 		pe.printSpace()
 		pe.write(actionSeparatorChar)

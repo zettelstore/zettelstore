@@ -18,48 +18,49 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-type contextSpec struct {
-	dir      contextDirection
-	maxCost  int
-	maxCount int
+// ContextSpec contains all specification values for calculating a context.
+type ContextSpec struct {
+	Direction ContextDirection
+	MaxCost   int
+	MaxCount  int
 }
 
-type contextDirection uint8
+// ContextDirection specifies the direction a context should be calculated.
+type ContextDirection uint8
 
 const (
-	_ contextDirection = iota
-	dirForward
-	dirBackward
-	dirBoth
+	ContextDirBoth ContextDirection = iota
+	ContextDirForward
+	ContextDirBackward
 )
 
-func (spec *contextSpec) printToEnv(pe *printEnv) {
+func (spec *ContextSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.ContextDirective)
-	switch spec.dir {
-	case dirBackward:
+	switch spec.Direction {
+	case ContextDirBackward:
 		pe.printSpace()
 		pe.writeString(api.BackwardDirective)
-	case dirForward:
+	case ContextDirForward:
 		pe.printSpace()
 		pe.writeString(api.ForwardDirective)
 	}
-	pe.printPosInt(api.CostDirective, spec.maxCost)
-	pe.printPosInt(api.MaxDirective, spec.maxCount)
+	pe.printPosInt(api.CostDirective, spec.MaxCost)
+	pe.printPosInt(api.MaxDirective, spec.MaxCount)
 }
 
-func (spec *contextSpec) retrieve(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
-	maxCost := spec.maxCost
+func (spec *ContextSpec) Process(ctx context.Context, startSeq []*meta.Meta, preMatch MetaMatchFunc, getMeta GetMetaFunc, selectMeta SelectMetaFunc) ([]*meta.Meta, error) {
+	maxCost := spec.MaxCost
 	if maxCost <= 0 {
 		maxCost = 17
 	}
-	maxCount := spec.maxCount
+	maxCount := spec.MaxCount
 	if maxCount <= 0 {
 		maxCount = 200
 	}
 	tasks := newQueue(startSeq, maxCost, maxCount, preMatch, getMeta, selectMeta)
-	isBackward := spec.dir == dirBoth || spec.dir == dirBackward
-	isForward := spec.dir == dirBoth || spec.dir == dirForward
+	isBackward := spec.Direction == ContextDirBoth || spec.Direction == ContextDirBackward
+	isForward := spec.Direction == ContextDirBoth || spec.Direction == ContextDirForward
 	result := []*meta.Meta{}
 	for {
 		m, cost := tasks.next()
