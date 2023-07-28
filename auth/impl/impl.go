@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/sx"
-	sxpf "zettelstore.de/sx.fossil"
+	"zettelstore.de/client.fossil/sexp"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/box"
@@ -87,12 +87,12 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 	}
 
 	now := time.Now().Round(time.Second)
-	sClaim := sxpf.MakeList(
-		sxpf.Int64(kind),
-		sxpf.MakeString(subject),
-		sxpf.Int64(now.Unix()),
-		sxpf.Int64(now.Add(d).Unix()),
-		sxpf.Int64(ident.Zid),
+	sClaim := sx.MakeList(
+		sx.Int64(kind),
+		sx.MakeString(subject),
+		sx.Int64(now.Unix()),
+		sx.Int64(now.Add(d).Unix()),
+		sx.Int64(ident.Zid),
 	)
 	return sign(sClaim, a.secret)
 }
@@ -114,25 +114,25 @@ func (a *myAuth) CheckToken(tok []byte, k auth.TokenKind) (auth.TokenData, error
 	return tokenData, err
 }
 
-func setupTokenData(obj sxpf.Object, k auth.TokenKind, tokenData *auth.TokenData) error {
-	vals, err := sx.ParseObject(obj, "isiii")
+func setupTokenData(obj sx.Object, k auth.TokenKind, tokenData *auth.TokenData) error {
+	vals, err := sexp.ParseList(obj, "isiii")
 	if err != nil {
 		return ErrMalformedToken
 	}
-	if auth.TokenKind(vals[0].(sxpf.Int64)) != k {
+	if auth.TokenKind(vals[0].(sx.Int64)) != k {
 		return ErrOtherKind
 	}
-	ident := vals[1].(sxpf.String)
+	ident := vals[1].(sx.String)
 	if ident == "" {
 		return ErrNoIdent
 	}
-	issued := time.Unix(int64(vals[2].(sxpf.Int64)), 0)
-	expires := time.Unix(int64(vals[3].(sxpf.Int64)), 0)
+	issued := time.Unix(int64(vals[2].(sx.Int64)), 0)
+	expires := time.Unix(int64(vals[3].(sx.Int64)), 0)
 	now := time.Now().Round(time.Second)
 	if expires.Before(now) {
 		return ErrTokenExpired
 	}
-	zid := id.Zid(vals[4].(sxpf.Int64))
+	zid := id.Zid(vals[4].(sx.Int64))
 	if !zid.IsValid() {
 		return ErrNoZid
 	}
