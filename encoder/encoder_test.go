@@ -16,7 +16,7 @@ import (
 	"testing"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf/reader"
+	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoder"
@@ -111,7 +111,7 @@ func checkSz(t *testing.T, testNum int, pe parserEncoder, descr string) {
 		t.Error(err)
 		return
 	}
-	val, err := reader.MakeReader(strings.NewReader(exp)).Read()
+	val, err := sxreader.MakeReader(strings.NewReader(exp)).Read()
 	if err != nil {
 		t.Error(err)
 		return

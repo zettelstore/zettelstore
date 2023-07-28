@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
@@ -61,13 +61,13 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		env, rb := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
-		rb.bindString("css-role-url", sxpf.MakeString(cssRoleURL))
-		rb.bindString("heading", sxpf.MakeString(title))
+		rb.bindString("css-role-url", sx.MakeString(cssRoleURL))
+		rb.bindString("heading", sx.MakeString(title))
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
-			rb.bindString("role-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+			rb.bindString("role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
 		}
 		if role, found := zn.InhMeta.Get(api.KeyFolgeRole); found && role != "" {
-			rb.bindString("folge-role-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+			rb.bindString("folge-role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
 		}
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
@@ -100,14 +100,14 @@ func (wui *WebUI) getCSSRoleURL(ctx context.Context, m *meta.Meta) (string, erro
 	return wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String(), nil
 }
 
-func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Pair {
+func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sx.Pair {
 	if values, ok := m.GetList(key); ok {
 		return wui.transformIdentifierSet(values, getTextTitle)
 	}
 	return nil
 }
 
-func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sxpf.Pair {
+func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sx.Pair {
 	values, ok := m.GetList(key)
 	if !ok || len(values) == 0 {
 		return nil
@@ -115,7 +115,7 @@ func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextT
 	return wui.zidLinksSxn(values, getTextTitle)
 }
 
-func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sxpf.Pair) {
+func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sx.Pair) {
 	for i := len(values) - 1; i >= 0; i-- {
 		val := values[i]
 		zid, err := id.Parse(val)
@@ -123,11 +123,11 @@ func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (l
 			continue
 		}
 		if title, found := getTextTitle(zid); found > 0 {
-			url := sxpf.MakeString(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
+			url := sx.MakeString(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
 			if title == "" {
-				lst = lst.Cons(sxpf.Cons(sxpf.MakeString(val), url))
+				lst = lst.Cons(sx.Cons(sx.MakeString(val), url))
 			} else {
-				lst = lst.Cons(sxpf.Cons(sxpf.MakeString(title), url))
+				lst = lst.Cons(sx.Cons(sx.MakeString(title), url))
 			}
 		}
 	}

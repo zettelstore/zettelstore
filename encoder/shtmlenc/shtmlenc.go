@@ -16,7 +16,7 @@ import (
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/shtml"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
@@ -52,7 +52,7 @@ func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encode
 	if err != nil {
 		return 0, err
 	}
-	result := sxpf.Cons(metaSHTML, contentSHTML)
+	result := sx.Cons(metaSHTML, contentSHTML)
 	return result.Print(w)
 }
 

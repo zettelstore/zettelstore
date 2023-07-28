@@ -13,7 +13,7 @@ package api
 import (
 	"net/http"
 
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/zettel/id"
 )
@@ -22,12 +22,12 @@ import (
 func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		version := ucVersion.Run()
-		err := a.writeObject(w, id.Invalid, sxpf.MakeList(
-			sxpf.Int64(version.Major),
-			sxpf.Int64(version.Minor),
-			sxpf.Int64(version.Patch),
-			sxpf.MakeString(version.Info),
-			sxpf.MakeString(version.Hash),
+		err := a.writeObject(w, id.Invalid, sx.MakeList(
+			sx.Int64(version.Major),
+			sx.Int64(version.Minor),
+			sx.Int64(version.Patch),
+			sx.MakeString(version.Info),
+			sx.MakeString(version.Hash),
 		))
 		a.log.IfErr(err).Msg("Write Version Info")
 	}

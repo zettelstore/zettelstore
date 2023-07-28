@@ -16,17 +16,17 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 
-	"zettelstore.de/sx.fossil/sxpf"
-	"zettelstore.de/sx.fossil/sxpf/reader"
+	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxreader"
 )
 
 var encoding = base64.RawURLEncoding
 
 const digestAlg = crypto.SHA384
 
-func sign(claim sxpf.Object, secret []byte) ([]byte, error) {
+func sign(claim sx.Object, secret []byte) ([]byte, error) {
 	var buf bytes.Buffer
-	sxpf.Print(&buf, claim)
+	sx.Print(&buf, claim)
 	token := make([]byte, encoding.EncodedLen(buf.Len()))
 	encoding.Encode(token, buf.Bytes())
 
@@ -44,7 +44,7 @@ func sign(claim sxpf.Object, secret []byte) ([]byte, error) {
 	return token, nil
 }
 
-func check(token []byte, secret []byte) (sxpf.Object, error) {
+func check(token []byte, secret []byte) (sx.Object, error) {
 	i := bytes.IndexByte(token, '.')
 	if i <= 0 || 1024 < i {
 		return nil, ErrMalformedToken
@@ -54,14 +54,14 @@ func check(token []byte, secret []byte) (sxpf.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	rdr := reader.MakeReader(bytes.NewReader(buf[:n]))
+	rdr := sxreader.MakeReader(bytes.NewReader(buf[:n]))
 	obj, err := rdr.Read()
 	if err != nil {
 		return nil, err
 	}
 
 	var objBuf bytes.Buffer
-	_, err = sxpf.Print(&objBuf, obj)
+	_, err = sx.Print(&objBuf, obj)
 	if err != nil {
 		return nil, err
 	}

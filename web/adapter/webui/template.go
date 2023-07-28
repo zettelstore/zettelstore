@@ -19,19 +19,19 @@ import (
 	"net/url"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxbuiltins"
+	"zettelstore.de/sx.fossil/sxbuiltins/binding"
+	"zettelstore.de/sx.fossil/sxbuiltins/boolean"
+	"zettelstore.de/sx.fossil/sxbuiltins/callable"
+	"zettelstore.de/sx.fossil/sxbuiltins/cond"
+	"zettelstore.de/sx.fossil/sxbuiltins/define"
+	"zettelstore.de/sx.fossil/sxbuiltins/env"
+	"zettelstore.de/sx.fossil/sxbuiltins/list"
+	"zettelstore.de/sx.fossil/sxbuiltins/quote"
+	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/sx.fossil/sxhtml"
-	"zettelstore.de/sx.fossil/sxpf"
-	"zettelstore.de/sx.fossil/sxpf/builtins"
-	"zettelstore.de/sx.fossil/sxpf/builtins/binding"
-	"zettelstore.de/sx.fossil/sxpf/builtins/boolean"
-	"zettelstore.de/sx.fossil/sxpf/builtins/callable"
-	"zettelstore.de/sx.fossil/sxpf/builtins/cond"
-	"zettelstore.de/sx.fossil/sxpf/builtins/define"
-	"zettelstore.de/sx.fossil/sxpf/builtins/env"
-	"zettelstore.de/sx.fossil/sxpf/builtins/list"
-	"zettelstore.de/sx.fossil/sxpf/builtins/quote"
-	"zettelstore.de/sx.fossil/sxpf/eval"
-	"zettelstore.de/sx.fossil/sxpf/reader"
+	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
 	"zettelstore.de/z/config"
@@ -43,9 +43,9 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func (wui *WebUI) createRenderEngine() *eval.Engine {
-	root := sxpf.MakeRootEnvironment()
-	engine := eval.MakeEngine(wui.sf, root)
+func (wui *WebUI) createRenderEngine() *sxeval.Engine {
+	root := sx.MakeRootEnvironment()
+	engine := sxeval.MakeEngine(wui.sf, root)
 	quote.InstallQuoteSyntax(root, wui.symQuote)
 	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	engine.BindSyntax("if", cond.IfS)
@@ -66,21 +66,21 @@ func (wui *WebUI) createRenderEngine() *eval.Engine {
 	return engine
 }
 
-func (wui *WebUI) url2html(args []sxpf.Object) (sxpf.Object, error) {
-	err := builtins.CheckArgs(args, 1, 1)
-	text, err := builtins.GetString(err, args, 0)
+func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
+	err := sxbuiltins.CheckArgs(args, 1, 1)
+	text, err := sxbuiltins.GetString(err, args, 0)
 	if err != nil {
 		return nil, err
 	}
 	if u, errURL := url.Parse(text.String()); errURL == nil {
 		if us := u.String(); us != "" {
-			return sxpf.MakeList(
+			return sx.MakeList(
 				wui.symA,
-				sxpf.MakeList(
+				sx.MakeList(
 					wui.symAttr,
-					sxpf.Cons(wui.symHref, sxpf.MakeString(us)),
-					sxpf.Cons(wui.sf.MustMake("target"), sxpf.MakeString("_blank")),
-					sxpf.Cons(wui.sf.MustMake("rel"), sxpf.MakeString("noopener noreferrer")),
+					sx.Cons(wui.symHref, sx.MakeString(us)),
+					sx.Cons(wui.sf.MustMake("target"), sx.MakeString("_blank")),
+					sx.Cons(wui.sf.MustMake("rel"), sx.MakeString("noopener noreferrer")),
 				),
 				text), nil
 		}
@@ -89,36 +89,36 @@ func (wui *WebUI) url2html(args []sxpf.Object) (sxpf.Object, error) {
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxpf.Environment, renderBinder) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sx.Environment, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	env := sxpf.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
+	env := sx.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
 	rb := makeRenderBinder(wui.sf, env, nil)
-	rb.bindString("lang", sxpf.MakeString(lang))
-	rb.bindString("css-base-url", sxpf.MakeString(wui.cssBaseURL))
-	rb.bindString("css-user-url", sxpf.MakeString(wui.cssUserURL))
-	rb.bindString("css-role-url", sxpf.MakeString(""))
-	rb.bindString("title", sxpf.MakeString(title))
-	rb.bindString("home-url", sxpf.MakeString(wui.homeURL))
-	rb.bindString("with-auth", sxpf.MakeBoolean(wui.withAuth))
-	rb.bindString("user-is-valid", sxpf.MakeBoolean(userIsValid))
-	rb.bindString("user-zettel-url", sxpf.MakeString(userZettelURL))
-	rb.bindString("user-ident", sxpf.MakeString(userIdent))
-	rb.bindString("login-url", sxpf.MakeString(wui.loginURL))
-	rb.bindString("logout-url", sxpf.MakeString(wui.logoutURL))
-	rb.bindString("list-zettel-url", sxpf.MakeString(wui.listZettelURL))
-	rb.bindString("list-roles-url", sxpf.MakeString(wui.listRolesURL))
-	rb.bindString("list-tags-url", sxpf.MakeString(wui.listTagsURL))
+	rb.bindString("lang", sx.MakeString(lang))
+	rb.bindString("css-base-url", sx.MakeString(wui.cssBaseURL))
+	rb.bindString("css-user-url", sx.MakeString(wui.cssUserURL))
+	rb.bindString("css-role-url", sx.MakeString(""))
+	rb.bindString("title", sx.MakeString(title))
+	rb.bindString("home-url", sx.MakeString(wui.homeURL))
+	rb.bindString("with-auth", sx.MakeBoolean(wui.withAuth))
+	rb.bindString("user-is-valid", sx.MakeBoolean(userIsValid))
+	rb.bindString("user-zettel-url", sx.MakeString(userZettelURL))
+	rb.bindString("user-ident", sx.MakeString(userIdent))
+	rb.bindString("login-url", sx.MakeString(wui.loginURL))
+	rb.bindString("logout-url", sx.MakeString(wui.logoutURL))
+	rb.bindString("list-zettel-url", sx.MakeString(wui.listZettelURL))
+	rb.bindString("list-roles-url", sx.MakeString(wui.listRolesURL))
+	rb.bindString("list-tags-url", sx.MakeString(wui.listTagsURL))
 	if wui.canRefresh(user) {
-		rb.bindString("refresh-url", sxpf.MakeString(wui.refreshURL))
+		rb.bindString("refresh-url", sx.MakeString(wui.refreshURL))
 	}
 	rb.bindString("new-zettel-links", wui.fetchNewTemplatesSxn(ctx, user))
-	rb.bindString("search-url", sxpf.MakeString(wui.searchURL))
-	rb.bindString("query-key-query", sxpf.MakeString(api.QueryKeyQuery))
-	rb.bindString("query-key-seed", sxpf.MakeString(api.QueryKeySeed))
+	rb.bindString("search-url", sx.MakeString(wui.searchURL))
+	rb.bindString("query-key-query", sx.MakeString(api.QueryKeyQuery))
+	rb.bindString("query-key-seed", sx.MakeString(api.QueryKeySeed))
 	rb.bindString("FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
-	rb.bindString("debug-mode", sxpf.MakeBoolean(wui.debug))
-	rb.bindSymbol(wui.symMetaHeader, sxpf.Nil())
-	rb.bindSymbol(wui.symDetail, sxpf.Nil())
+	rb.bindString("debug-mode", sx.MakeBoolean(wui.debug))
+	rb.bindSymbol(wui.symMetaHeader, sx.Nil())
+	rb.bindSymbol(wui.symDetail, sx.Nil())
 	return env, rb
 }
 
@@ -131,14 +131,14 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 
 type renderBinder struct {
 	err  error
-	make func(string) (*sxpf.Symbol, error)
-	bind func(*sxpf.Symbol, sxpf.Object) error
+	make func(string) (*sx.Symbol, error)
+	bind func(*sx.Symbol, sx.Object) error
 }
 
-func makeRenderBinder(sf sxpf.SymbolFactory, env sxpf.Environment, err error) renderBinder {
+func makeRenderBinder(sf sx.SymbolFactory, env sx.Environment, err error) renderBinder {
 	return renderBinder{make: sf.Make, bind: env.Bind, err: err}
 }
-func (rb *renderBinder) bindString(key string, obj sxpf.Object) {
+func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
@@ -148,13 +148,13 @@ func (rb *renderBinder) bindString(key string, obj sxpf.Object) {
 		rb.err = err
 	}
 }
-func (rb *renderBinder) bindSymbol(sym *sxpf.Symbol, obj sxpf.Object) {
+func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
 		rb.err = rb.bind(sym, obj)
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
-	rb.bindString("meta-"+key, sxpf.MakeString(value))
+	rb.bindString("meta-"+key, sx.MakeString(value))
 	if kt := meta.Type(key); kt.IsSet {
 		rb.bindString("set-meta-"+key, makeStringList(meta.ListFromValue(value)))
 	}
@@ -165,48 +165,48 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	apiZid := api.ZettelID(strZid)
 	newURLBuilder := wui.NewURLBuilder
 
-	rb.bindString("zid", sxpf.MakeString(strZid))
-	rb.bindString("web-url", sxpf.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
+	rb.bindString("zid", sx.MakeString(strZid))
+	rb.bindString("web-url", sx.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
 	if content != nil && wui.canWrite(ctx, user, m, *content) {
-		rb.bindString("edit-url", sxpf.MakeString(newURLBuilder('e').SetZid(apiZid).String()))
+		rb.bindString("edit-url", sx.MakeString(newURLBuilder('e').SetZid(apiZid).String()))
 	}
-	rb.bindString("info-url", sxpf.MakeString(newURLBuilder('i').SetZid(apiZid).String()))
+	rb.bindString("info-url", sx.MakeString(newURLBuilder('i').SetZid(apiZid).String()))
 	if wui.canCreate(ctx, user) {
 		if content != nil && !content.IsBinary() {
-			rb.bindString("copy-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+			rb.bindString("copy-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
 		}
-		rb.bindString("version-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-		rb.bindString("child-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
-		rb.bindString("folge-url", sxpf.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		rb.bindString("version-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		rb.bindString("child-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
+		rb.bindString("folge-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
 	}
 	if wui.canRename(ctx, user, m) {
-		rb.bindString("rename-url", sxpf.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
+		rb.bindString("rename-url", sx.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
 	}
 	if wui.canDelete(ctx, user, m) {
-		rb.bindString("delete-url", sxpf.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
+		rb.bindString("delete-url", sx.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
 	}
 	if val, found := m.Get(api.KeyUselessFiles); found {
-		rb.bindString("useless", sxpf.Cons(sxpf.MakeString(val), nil))
+		rb.bindString("useless", sx.Cons(sx.MakeString(val), nil))
 	}
-	rb.bindString("context-url", sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
+	rb.bindString("context-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
 
 	// Ensure to have title, role, tags, and syntax included as "meta-*"
 	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))
 	rb.bindKeyValue(api.KeyRole, m.GetDefault(api.KeyRole, ""))
 	rb.bindKeyValue(api.KeyTags, m.GetDefault(api.KeyTags, ""))
 	rb.bindKeyValue(api.KeySyntax, m.GetDefault(api.KeySyntax, ""))
-	sentinel := sxpf.Cons(nil, nil)
+	sentinel := sx.Cons(nil, nil)
 	curr := sentinel
 	for _, p := range m.ComputedPairs() {
 		key, value := p.Key, p.Value
-		curr = curr.AppendBang(sxpf.Cons(sxpf.MakeString(key), sxpf.MakeString(value)))
+		curr = curr.AppendBang(sx.Cons(sx.MakeString(key), sx.MakeString(value)))
 
 		rb.bindKeyValue(key, value)
 	}
 	rb.bindString("metapairs", sentinel.Tail())
 }
 
-func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sxpf.Pair) {
+func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sx.Pair) {
 	if !wui.canCreate(ctx, user) {
 		return nil
 	}
@@ -228,21 +228,21 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 		if !wui.policy.CanRead(user, z.Meta) {
 			continue
 		}
-		text := sxpf.MakeString(parser.NormalizedSpacedText(z.Meta.GetTitle()))
-		link := sxpf.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
+		text := sx.MakeString(parser.NormalizedSpacedText(z.Meta.GetTitle()))
+		link := sx.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
 			AppendKVQuery(queryKeyAction, valueActionNew).String())
 
-		lst = lst.Cons(sxpf.Cons(text, link))
+		lst = lst.Cons(sx.Cons(text, link))
 	}
 	return lst
 }
-func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sxpf.Pair {
+func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sx.Pair {
 	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
 			htmlEnc := wui.getSimpleHTMLEncoder().SetUnique("footer-")
 			if content, endnotes, err3 := htmlEnc.BlocksSxn(&zn.Ast); err3 == nil {
 				if content != nil && endnotes != nil {
-					content.LastPair().SetCdr(sxpf.Cons(endnotes, nil))
+					content.LastPair().SetCdr(sx.Cons(endnotes, nil))
 				}
 				return content
 			}
@@ -263,7 +263,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
 		form, err2 := rdr.Read()
 		if err2 != nil {
 			if err2 == io.EOF {
-				wui.setSxnCache(zid, eval.TrueExpr) // Hack to load only once
+				wui.setSxnCache(zid, sxeval.TrueExpr) // Hack to load only once
 				return nil
 			}
 			return err2
@@ -277,7 +277,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
 	}
 }
 
-func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (eval.Expr, error) {
+func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sx.Environment) (sxeval.Expr, error) {
 	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
 	}
@@ -303,19 +303,19 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envir
 	wui.setSxnCache(zid, wui.engine.Rework(env, t))
 	return t, nil
 }
-func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*reader.Reader, error) {
+func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
 	ztl, err := wui.box.GetZettel(ctx, zid)
 	if err != nil {
 		return nil, err
 	}
 
-	reader := reader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), reader.WithSymbolFactory(wui.sf))
+	reader := sxreader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), sxreader.WithSymbolFactory(wui.sf))
 	quote.InstallQuoteReader(reader, wui.symQuote, '\'')
 	quote.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
 	return reader, nil
 }
 
-func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Environment) (sxpf.Object, error) {
+func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sx.Environment) (sx.Object, error) {
 	templateExpr, err := wui.getSxnTemplate(ctx, zid, env)
 	if err != nil {
 		return nil, err
@@ -323,10 +323,10 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxpf.Envi
 	return wui.engine.Execute(env, templateExpr)
 }
 
-func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sxpf.Environment) error {
+func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sx.Environment) error {
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
 }
-func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxpf.Environment) error {
+func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sx.Environment) error {
 	err := wui.loadSxnCodeZettel(ctx, id.TemplateSxnZid)
 	if err != nil {
 		return err
@@ -364,8 +364,8 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 	user := server.GetUser(ctx)
 	env, rb := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
-	rb.bindString("heading", sxpf.MakeString(http.StatusText(code)))
-	rb.bindString("message", sxpf.MakeString(text))
+	rb.bindString("heading", sx.MakeString(http.StatusText(code)))
+	rb.bindString("message", sx.MakeString(text))
 	if rb.err == nil {
 		rb.err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
 	}
@@ -375,13 +375,13 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 }
 
-func makeStringList(sl []string) *sxpf.Pair {
+func makeStringList(sl []string) *sx.Pair {
 	if len(sl) == 0 {
 		return nil
 	}
-	result := sxpf.Nil()
+	result := sx.Nil()
 	for i := len(sl) - 1; i >= 0; i-- {
-		result = result.Cons(sxpf.MakeString(sl[i]))
+		result = result.Cons(sx.MakeString(sl[i]))
 	}
 	return result
 }

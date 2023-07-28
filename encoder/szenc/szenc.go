@@ -15,7 +15,7 @@ import (
 	"io"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"
@@ -40,7 +40,7 @@ type Encoder struct {
 func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
 	content := enc.trans.GetSz(&zn.Ast)
 	meta := enc.trans.GetMeta(zn.InhMeta, evalMeta)
-	return sxpf.MakeList(meta, content).Print(w)
+	return sx.MakeList(meta, content).Print(w)
 }
 
 // WriteMeta encodes meta data as s-expression.

@@ -17,7 +17,7 @@ import (
 
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/sz"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"
@@ -25,11 +25,11 @@ import (
 
 // NewTransformer returns a new transformer to create s-expressions from AST nodes.
 func NewTransformer() *Transformer {
-	sf := sxpf.MakeMappedFactory()
+	sf := sx.MakeMappedFactory()
 	t := Transformer{sf: sf}
 	t.zetSyms.InitializeZettelSymbols(sf)
 
-	t.mapVerbatimKindS = map[ast.VerbatimKind]*sxpf.Symbol{
+	t.mapVerbatimKindS = map[ast.VerbatimKind]*sx.Symbol{
 		ast.VerbatimZettel:  t.zetSyms.SymVerbatimZettel,
 		ast.VerbatimProg:    t.zetSyms.SymVerbatimProg,
 		ast.VerbatimEval:    t.zetSyms.SymVerbatimEval,
@@ -38,23 +38,23 @@ func NewTransformer() *Transformer {
 		ast.VerbatimHTML:    t.zetSyms.SymVerbatimHTML,
 	}
 
-	t.mapRegionKindS = map[ast.RegionKind]*sxpf.Symbol{
+	t.mapRegionKindS = map[ast.RegionKind]*sx.Symbol{
 		ast.RegionSpan:  t.zetSyms.SymRegionBlock,
 		ast.RegionQuote: t.zetSyms.SymRegionQuote,
 		ast.RegionVerse: t.zetSyms.SymRegionVerse,
 	}
-	t.mapNestedListKindS = map[ast.NestedListKind]*sxpf.Symbol{
+	t.mapNestedListKindS = map[ast.NestedListKind]*sx.Symbol{
 		ast.NestedListOrdered:   t.zetSyms.SymListOrdered,
 		ast.NestedListUnordered: t.zetSyms.SymListUnordered,
 		ast.NestedListQuote:     t.zetSyms.SymListQuote,
 	}
-	t.alignmentSymbolS = map[ast.Alignment]*sxpf.Symbol{
+	t.alignmentSymbolS = map[ast.Alignment]*sx.Symbol{
 		ast.AlignDefault: t.zetSyms.SymCell,
 		ast.AlignLeft:    t.zetSyms.SymCellLeft,
 		ast.AlignCenter:  t.zetSyms.SymCellCenter,
 		ast.AlignRight:   t.zetSyms.SymCellRight,
 	}
-	t.mapRefStateLink = map[ast.RefState]*sxpf.Symbol{
+	t.mapRefStateLink = map[ast.RefState]*sx.Symbol{
 		ast.RefStateInvalid:  t.zetSyms.SymLinkInvalid,
 		ast.RefStateZettel:   t.zetSyms.SymLinkZettel,
 		ast.RefStateSelf:     t.zetSyms.SymLinkSelf,
@@ -65,7 +65,7 @@ func NewTransformer() *Transformer {
 		ast.RefStateQuery:    t.zetSyms.SymLinkQuery,
 		ast.RefStateExternal: t.zetSyms.SymLinkExternal,
 	}
-	t.mapFormatKindS = map[ast.FormatKind]*sxpf.Symbol{
+	t.mapFormatKindS = map[ast.FormatKind]*sx.Symbol{
 		ast.FormatEmph:   t.zetSyms.SymFormatEmph,
 		ast.FormatStrong: t.zetSyms.SymFormatStrong,
 		ast.FormatDelete: t.zetSyms.SymFormatDelete,
@@ -75,7 +75,7 @@ func NewTransformer() *Transformer {
 		ast.FormatQuote:  t.zetSyms.SymFormatQuote,
 		ast.FormatSpan:   t.zetSyms.SymFormatSpan,
 	}
-	t.mapLiteralKindS = map[ast.LiteralKind]*sxpf.Symbol{
+	t.mapLiteralKindS = map[ast.LiteralKind]*sx.Symbol{
 		ast.LiteralZettel:  t.zetSyms.SymLiteralZettel,
 		ast.LiteralProg:    t.zetSyms.SymLiteralProg,
 		ast.LiteralInput:   t.zetSyms.SymLiteralInput,
@@ -84,7 +84,7 @@ func NewTransformer() *Transformer {
 		ast.LiteralHTML:    t.zetSyms.SymLiteralHTML,
 		ast.LiteralMath:    t.zetSyms.SymLiteralMath,
 	}
-	t.mapRefStateS = map[ast.RefState]*sxpf.Symbol{
+	t.mapRefStateS = map[ast.RefState]*sx.Symbol{
 		ast.RefStateInvalid:  t.zetSyms.SymRefStateInvalid,
 		ast.RefStateZettel:   t.zetSyms.SymRefStateZettel,
 		ast.RefStateSelf:     t.zetSyms.SymRefStateSelf,
@@ -95,7 +95,7 @@ func NewTransformer() *Transformer {
 		ast.RefStateQuery:    t.zetSyms.SymRefStateQuery,
 		ast.RefStateExternal: t.zetSyms.SymRefStateExternal,
 	}
-	t.mapMetaTypeS = map[*meta.DescriptionType]*sxpf.Symbol{
+	t.mapMetaTypeS = map[*meta.DescriptionType]*sx.Symbol{
 		meta.TypeCredential:   t.zetSyms.SymTypeCredential,
 		meta.TypeEmpty:        t.zetSyms.SymTypeEmpty,
 		meta.TypeID:           t.zetSyms.SymTypeID,
@@ -113,21 +113,21 @@ func NewTransformer() *Transformer {
 }
 
 type Transformer struct {
-	sf                 sxpf.SymbolFactory
+	sf                 sx.SymbolFactory
 	zetSyms            sz.ZettelSymbols
-	mapVerbatimKindS   map[ast.VerbatimKind]*sxpf.Symbol
-	mapRegionKindS     map[ast.RegionKind]*sxpf.Symbol
-	mapNestedListKindS map[ast.NestedListKind]*sxpf.Symbol
-	alignmentSymbolS   map[ast.Alignment]*sxpf.Symbol
-	mapRefStateLink    map[ast.RefState]*sxpf.Symbol
-	mapFormatKindS     map[ast.FormatKind]*sxpf.Symbol
-	mapLiteralKindS    map[ast.LiteralKind]*sxpf.Symbol
-	mapRefStateS       map[ast.RefState]*sxpf.Symbol
-	mapMetaTypeS       map[*meta.DescriptionType]*sxpf.Symbol
+	mapVerbatimKindS   map[ast.VerbatimKind]*sx.Symbol
+	mapRegionKindS     map[ast.RegionKind]*sx.Symbol
+	mapNestedListKindS map[ast.NestedListKind]*sx.Symbol
+	alignmentSymbolS   map[ast.Alignment]*sx.Symbol
+	mapRefStateLink    map[ast.RefState]*sx.Symbol
+	mapFormatKindS     map[ast.FormatKind]*sx.Symbol
+	mapLiteralKindS    map[ast.LiteralKind]*sx.Symbol
+	mapRefStateS       map[ast.RefState]*sx.Symbol
+	mapMetaTypeS       map[*meta.DescriptionType]*sx.Symbol
 	inVerse            bool
 }
 
-func (t *Transformer) GetSz(node ast.Node) *sxpf.Pair {
+func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
 		return t.getBlockSlice(n)
@@ -136,24 +136,24 @@ func (t *Transformer) GetSz(node ast.Node) *sxpf.Pair {
 	case *ast.ParaNode:
 		return t.getInlineSlice(n.Inlines).Tail().Cons(t.zetSyms.SymPara)
 	case *ast.VerbatimNode:
-		return sxpf.MakeList(
+		return sx.MakeList(
 			mapGetS(t, t.mapVerbatimKindS, n.Kind),
 			t.getAttributes(n.Attrs),
-			sxpf.MakeString(string(n.Content)),
+			sx.MakeString(string(n.Content)),
 		)
 	case *ast.RegionNode:
 		return t.getRegion(n)
 	case *ast.HeadingNode:
-		return sxpf.MakeList(
+		return sx.MakeList(
 			t.zetSyms.SymHeading,
-			sxpf.Int64(int64(n.Level)),
+			sx.Int64(int64(n.Level)),
 			t.getAttributes(n.Attrs),
-			sxpf.MakeString(n.Slug),
-			sxpf.MakeString(n.Fragment),
+			sx.MakeString(n.Slug),
+			sx.MakeString(n.Fragment),
 			t.getInlineSlice(n.Inlines),
 		)
 	case *ast.HRuleNode:
-		return sxpf.MakeList(t.zetSyms.SymThematic, t.getAttributes(n.Attrs))
+		return sx.MakeList(t.zetSyms.SymThematic, t.getAttributes(n.Attrs))
 	case *ast.NestedListNode:
 		return t.getNestedList(n)
 	case *ast.DescriptionListNode:
@@ -161,26 +161,26 @@ func (t *Transformer) GetSz(node ast.Node) *sxpf.Pair {
 	case *ast.TableNode:
 		return t.getTable(n)
 	case *ast.TranscludeNode:
-		return sxpf.MakeList(t.zetSyms.SymTransclude, t.getAttributes(n.Attrs), t.getReference(n.Ref))
+		return sx.MakeList(t.zetSyms.SymTransclude, t.getAttributes(n.Attrs), t.getReference(n.Ref))
 	case *ast.BLOBNode:
 		return t.getBLOB(n)
 	case *ast.TextNode:
-		return sxpf.MakeList(t.zetSyms.SymText, sxpf.MakeString(n.Text))
+		return sx.MakeList(t.zetSyms.SymText, sx.MakeString(n.Text))
 	case *ast.SpaceNode:
 		if t.inVerse {
-			return sxpf.MakeList(t.zetSyms.SymSpace, sxpf.MakeString(n.Lexeme))
+			return sx.MakeList(t.zetSyms.SymSpace, sx.MakeString(n.Lexeme))
 		}
-		return sxpf.MakeList(t.zetSyms.SymSpace)
+		return sx.MakeList(t.zetSyms.SymSpace)
 	case *ast.BreakNode:
 		if n.Hard {
-			return sxpf.MakeList(t.zetSyms.SymHard)
+			return sx.MakeList(t.zetSyms.SymHard)
 		}
-		return sxpf.MakeList(t.zetSyms.SymSoft)
+		return sx.MakeList(t.zetSyms.SymSoft)
 	case *ast.LinkNode:
 		return t.getLink(n)
 	case *ast.EmbedRefNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sxpf.MakeString(n.Syntax)).
+			Cons(sx.MakeString(n.Syntax)).
 			Cons(t.getReference(n.Ref)).
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymEmbed)
@@ -188,40 +188,40 @@ func (t *Transformer) GetSz(node ast.Node) *sxpf.Pair {
 		return t.getEmbedBLOB(n)
 	case *ast.CiteNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sxpf.MakeString(n.Key)).
+			Cons(sx.MakeString(n.Key)).
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymCite)
 	case *ast.FootnoteNode:
-		text := sxpf.Nil().Cons(sxpf.Nil().Cons(t.getInlineSlice(n.Inlines)).Cons(t.zetSyms.SymQuote))
+		text := sx.Nil().Cons(sx.Nil().Cons(t.getInlineSlice(n.Inlines)).Cons(t.zetSyms.SymQuote))
 		return text.Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sxpf.MakeString(n.Fragment)).
-			Cons(sxpf.MakeString(n.Slug)).
-			Cons(sxpf.MakeString(n.Mark)).
+			Cons(sx.MakeString(n.Fragment)).
+			Cons(sx.MakeString(n.Slug)).
+			Cons(sx.MakeString(n.Mark)).
 			Cons(t.zetSyms.SymMark)
 	case *ast.FormatNode:
 		return t.getInlineSlice(n.Inlines).Tail().
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(mapGetS(t, t.mapFormatKindS, n.Kind))
 	case *ast.LiteralNode:
-		return sxpf.MakeList(
+		return sx.MakeList(
 			mapGetS(t, t.mapLiteralKindS, n.Kind),
 			t.getAttributes(n.Attrs),
-			sxpf.MakeString(string(n.Content)),
+			sx.MakeString(string(n.Content)),
 		)
 	}
-	return sxpf.MakeList(t.zetSyms.SymUnknown, sxpf.MakeString(fmt.Sprintf("%T %v", node, node)))
+	return sx.MakeList(t.zetSyms.SymUnknown, sx.MakeString(fmt.Sprintf("%T %v", node, node)))
 }
 
-func (t *Transformer) getRegion(rn *ast.RegionNode) *sxpf.Pair {
+func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
 	saveInVerse := t.inVerse
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
 	symBlocks := t.GetSz(&rn.Blocks)
 	t.inVerse = saveInVerse
-	return sxpf.MakeList(
+	return sx.MakeList(
 		mapGetS(t, t.mapRegionKindS, rn.Kind),
 		t.getAttributes(rn.Attrs),
 		symBlocks,
@@ -229,8 +229,8 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sxpf.Pair {
 	)
 }
 
-func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sxpf.Pair {
-	nlistObjs := make([]sxpf.Object, len(ln.Items)+1)
+func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sx.Pair {
+	nlistObjs := make([]sx.Object, len(ln.Items)+1)
 	nlistObjs[0] = mapGetS(t, t.mapNestedListKindS, ln.Kind)
 	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
@@ -239,17 +239,17 @@ func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sxpf.Pair {
 			nlistObjs[i+1] = paragraph.Tail().Cons(t.zetSyms.SymInline)
 			continue
 		}
-		itemObjs := make([]sxpf.Object, len(item))
+		itemObjs := make([]sx.Object, len(item))
 		for j, in := range item {
 			itemObjs[j] = t.GetSz(in)
 		}
 		if isCompact {
-			nlistObjs[i+1] = sxpf.MakeList(itemObjs...).Cons(t.zetSyms.SymInline)
+			nlistObjs[i+1] = sx.MakeList(itemObjs...).Cons(t.zetSyms.SymInline)
 		} else {
-			nlistObjs[i+1] = sxpf.MakeList(itemObjs...).Cons(t.zetSyms.SymBlock)
+			nlistObjs[i+1] = sx.MakeList(itemObjs...).Cons(t.zetSyms.SymBlock)
 		}
 	}
-	return sxpf.MakeList(nlistObjs...)
+	return sx.MakeList(nlistObjs...)
 }
 func isCompactList(itemSlice []ast.ItemSlice) bool {
 	for _, items := range itemSlice {
@@ -265,155 +265,155 @@ func isCompactList(itemSlice []ast.ItemSlice) bool {
 	return true
 }
 
-func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sxpf.Pair {
-	dlObjs := make([]sxpf.Object, 2*len(dn.Descriptions)+1)
+func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sx.Pair {
+	dlObjs := make([]sx.Object, 2*len(dn.Descriptions)+1)
 	dlObjs[0] = t.zetSyms.SymDescription
 	for i, def := range dn.Descriptions {
 		dlObjs[2*i+1] = t.getInlineSlice(def.Term)
-		descObjs := make([]sxpf.Object, len(def.Descriptions))
+		descObjs := make([]sx.Object, len(def.Descriptions))
 		for j, b := range def.Descriptions {
-			dVal := make([]sxpf.Object, len(b))
+			dVal := make([]sx.Object, len(b))
 			for k, dn := range b {
 				dVal[k] = t.GetSz(dn)
 			}
-			descObjs[j] = sxpf.MakeList(dVal...).Cons(t.zetSyms.SymBlock)
+			descObjs[j] = sx.MakeList(dVal...).Cons(t.zetSyms.SymBlock)
 		}
-		dlObjs[2*i+2] = sxpf.MakeList(descObjs...).Cons(t.zetSyms.SymBlock)
+		dlObjs[2*i+2] = sx.MakeList(descObjs...).Cons(t.zetSyms.SymBlock)
 	}
-	return sxpf.MakeList(dlObjs...)
+	return sx.MakeList(dlObjs...)
 }
 
-func (t *Transformer) getTable(tn *ast.TableNode) *sxpf.Pair {
-	tObjs := make([]sxpf.Object, len(tn.Rows)+2)
+func (t *Transformer) getTable(tn *ast.TableNode) *sx.Pair {
+	tObjs := make([]sx.Object, len(tn.Rows)+2)
 	tObjs[0] = t.zetSyms.SymTable
 	tObjs[1] = t.getHeader(tn.Header)
 	for i, row := range tn.Rows {
 		tObjs[i+2] = t.getRow(row)
 	}
-	return sxpf.MakeList(tObjs...)
+	return sx.MakeList(tObjs...)
 }
-func (t *Transformer) getHeader(header ast.TableRow) *sxpf.Pair {
+func (t *Transformer) getHeader(header ast.TableRow) *sx.Pair {
 	if len(header) == 0 {
 		return nil
 	}
 	return t.getRow(header)
 }
-func (t *Transformer) getRow(row ast.TableRow) *sxpf.Pair {
-	rObjs := make([]sxpf.Object, len(row))
+func (t *Transformer) getRow(row ast.TableRow) *sx.Pair {
+	rObjs := make([]sx.Object, len(row))
 	for i, cell := range row {
 		rObjs[i] = t.getCell(cell)
 	}
-	return sxpf.MakeList(rObjs...).Cons(t.zetSyms.SymList)
+	return sx.MakeList(rObjs...).Cons(t.zetSyms.SymList)
 }
 
-func (t *Transformer) getCell(cell *ast.TableCell) *sxpf.Pair {
+func (t *Transformer) getCell(cell *ast.TableCell) *sx.Pair {
 	return t.getInlineSlice(cell.Inlines).Tail().Cons(mapGetS(t, t.alignmentSymbolS, cell.Align))
 }
 
-func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sxpf.Pair {
-	var lastObj sxpf.Object
+func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
+	var lastObj sx.Object
 	if bn.Syntax == meta.SyntaxSVG {
-		lastObj = sxpf.MakeString(string(bn.Blob))
+		lastObj = sx.MakeString(string(bn.Blob))
 	} else {
 		lastObj = getBase64String(bn.Blob)
 	}
-	return sxpf.MakeList(
+	return sx.MakeList(
 		t.zetSyms.SymBLOB,
 		t.getInlineSlice(bn.Description),
-		sxpf.MakeString(bn.Syntax),
+		sx.MakeString(bn.Syntax),
 		lastObj,
 	)
 }
 
-func (t *Transformer) getLink(ln *ast.LinkNode) *sxpf.Pair {
+func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
 	return t.getInlineSlice(ln.Inlines).Tail().
-		Cons(sxpf.MakeString(ln.Ref.Value)).
+		Cons(sx.MakeString(ln.Ref.Value)).
 		Cons(t.getAttributes(ln.Attrs)).
 		Cons(mapGetS(t, t.mapRefStateLink, ln.Ref.State))
 }
 
-func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sxpf.Pair {
+func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
 	tail := t.getInlineSlice(en.Inlines).Tail()
 	if en.Syntax == meta.SyntaxSVG {
-		tail = tail.Cons(sxpf.MakeString(string(en.Blob)))
+		tail = tail.Cons(sx.MakeString(string(en.Blob)))
 	} else {
 		tail = tail.Cons(getBase64String(en.Blob))
 	}
-	return tail.Cons(sxpf.MakeString(en.Syntax)).Cons(t.getAttributes(en.Attrs)).Cons(t.zetSyms.SymEmbedBLOB)
+	return tail.Cons(sx.MakeString(en.Syntax)).Cons(t.getAttributes(en.Attrs)).Cons(t.zetSyms.SymEmbedBLOB)
 }
 
-func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sxpf.Pair {
-	objs := make([]sxpf.Object, len(*bs))
+func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sx.Pair {
+	objs := make([]sx.Object, len(*bs))
 	for i, n := range *bs {
 		objs[i] = t.GetSz(n)
 	}
-	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymBlock)
+	return sx.MakeList(objs...).Cons(t.zetSyms.SymBlock)
 }
-func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sxpf.Pair {
-	objs := make([]sxpf.Object, len(is))
+func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sx.Pair {
+	objs := make([]sx.Object, len(is))
 	for i, n := range is {
 		objs[i] = t.GetSz(n)
 	}
-	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymInline)
+	return sx.MakeList(objs...).Cons(t.zetSyms.SymInline)
 }
 
-func (t *Transformer) getAttributes(a attrs.Attributes) sxpf.Object {
+func (t *Transformer) getAttributes(a attrs.Attributes) sx.Object {
 	if a.IsEmpty() {
-		return sxpf.Nil()
+		return sx.Nil()
 	}
 	keys := a.Keys()
-	objs := make([]sxpf.Object, 0, len(keys))
+	objs := make([]sx.Object, 0, len(keys))
 	for _, k := range keys {
-		objs = append(objs, sxpf.Cons(sxpf.MakeString(k), sxpf.MakeString(a[k])))
+		objs = append(objs, sx.Cons(sx.MakeString(k), sx.MakeString(a[k])))
 	}
-	return sxpf.Nil().Cons(sxpf.MakeList(objs...)).Cons(t.zetSyms.SymQuote)
+	return sx.Nil().Cons(sx.MakeList(objs...)).Cons(t.zetSyms.SymQuote)
 }
 
-func (t *Transformer) getReference(ref *ast.Reference) *sxpf.Pair {
-	return sxpf.MakeList(
+func (t *Transformer) getReference(ref *ast.Reference) *sx.Pair {
+	return sx.MakeList(
 		t.zetSyms.SymQuote,
-		sxpf.MakeList(
+		sx.MakeList(
 			mapGetS(t, t.mapRefStateS, ref.State),
-			sxpf.MakeString(ref.Value),
+			sx.MakeString(ref.Value),
 		),
 	)
 }
 
-func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Pair {
+func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.Pair {
 	pairs := m.ComputedPairs()
-	objs := make([]sxpf.Object, 0, len(pairs))
+	objs := make([]sx.Object, 0, len(pairs))
 	for _, p := range pairs {
 		key := p.Key
 		ty := m.Type(key)
 		symType := mapGetS(t, t.mapMetaTypeS, ty)
-		var obj sxpf.Object
+		var obj sx.Object
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
-			setObjs := make([]sxpf.Object, len(setList))
+			setObjs := make([]sx.Object, len(setList))
 			for i, val := range setList {
-				setObjs[i] = sxpf.MakeString(val)
+				setObjs[i] = sx.MakeString(val)
 			}
-			obj = sxpf.MakeList(setObjs...).Cons(t.zetSyms.SymList)
+			obj = sx.MakeList(setObjs...).Cons(t.zetSyms.SymList)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			obj = t.GetSz(&is)
 		} else {
-			obj = sxpf.MakeString(p.Value)
+			obj = sx.MakeString(p.Value)
 		}
-		symKey := sxpf.MakeList(t.zetSyms.SymQuote, t.sf.MustMake(key))
-		objs = append(objs, sxpf.Nil().Cons(obj).Cons(symKey).Cons(symType))
+		symKey := sx.MakeList(t.zetSyms.SymQuote, t.sf.MustMake(key))
+		objs = append(objs, sx.Nil().Cons(obj).Cons(symKey).Cons(symType))
 	}
-	return sxpf.MakeList(objs...).Cons(t.zetSyms.SymMeta)
+	return sx.MakeList(objs...).Cons(t.zetSyms.SymMeta)
 }
 
-func mapGetS[T comparable](t *Transformer, m map[T]*sxpf.Symbol, k T) *sxpf.Symbol {
+func mapGetS[T comparable](t *Transformer, m map[T]*sx.Symbol, k T) *sx.Symbol {
 	if result, found := m[k]; found {
 		return result
 	}
 	return t.sf.MustMake(fmt.Sprintf("**%v:NOT-FOUND**", k))
 }
 
-func getBase64String(data []byte) sxpf.String {
+func getBase64String(data []byte) sx.String {
 	var sb strings.Builder
 	encoder := base64.NewEncoder(base64.StdEncoding, &sb)
 	_, err := encoder.Write(data)
@@ -421,7 +421,7 @@ func getBase64String(data []byte) sxpf.String {
 		err = encoder.Close()
 	}
 	if err == nil {
-		return sxpf.MakeString(sb.String())
+		return sx.MakeString(sb.String())
 	}
-	return sxpf.MakeString("")
+	return sx.MakeString("")
 }

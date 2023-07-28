@@ -16,9 +16,9 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/attrs"
-	"zettelstore.de/sx.fossil/sxpf/builtins/pprint"
-	"zettelstore.de/sx.fossil/sxpf/builtins/quote"
-	"zettelstore.de/sx.fossil/sxpf/reader"
+	"zettelstore.de/sx.fossil/sxbuiltins/pprint"
+	"zettelstore.de/sx.fossil/sxbuiltins/quote"
+	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser"
@@ -136,7 +136,7 @@ func scanSVG(inp *input.Input) string {
 }
 
 func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
-	rd := reader.MakeReader(bytes.NewReader(inp.Src))
+	rd := sxreader.MakeReader(bytes.NewReader(inp.Src))
 	sf := rd.SymbolFactory()
 	quote.InstallQuoteReader(rd, sf.MustMake("quote"), '\'')
 	quote.InstallQuasiQuoteReader(rd,

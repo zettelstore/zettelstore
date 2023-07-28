@@ -17,7 +17,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/encoder"
@@ -118,7 +118,7 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 		a.reportUsecaseError(w, err)
 		return
 	}
-	var obj sxpf.Object
+	var obj sx.Object
 	switch part {
 	case partZettel:
 		obj = zettel2sz(z, a.getRights(ctx, z.Meta))
@@ -128,34 +128,34 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 		obj = metaRights2sz(m, a.getRights(ctx, m))
 	}
 	err = a.writeObject(w, zid, obj)
-	a.log.IfErr(err).Zid(zid).Msg("write sxpf data")
+	a.log.IfErr(err).Zid(zid).Msg("write sx data")
 }
 
-func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sxpf.Object {
+func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sx.Object {
 	zContent, encoding := z.Content.Encode()
-	sf := sxpf.MakeMappedFactory()
-	return sxpf.MakeList(
+	sf := sx.MakeMappedFactory()
+	return sx.MakeList(
 		sf.MustMake("zettel"),
-		sxpf.MakeList(sf.MustMake("id"), sxpf.MakeString(z.Meta.Zid.String())),
+		sx.MakeList(sf.MustMake("id"), sx.MakeString(z.Meta.Zid.String())),
 		meta2sz(z.Meta, sf),
-		sxpf.MakeList(sf.MustMake("rights"), sxpf.Int64(int64(rights))),
-		sxpf.MakeList(sf.MustMake("encoding"), sxpf.MakeString(encoding)),
-		sxpf.MakeList(sf.MustMake("content"), sxpf.MakeString(zContent)),
+		sx.MakeList(sf.MustMake("rights"), sx.Int64(int64(rights))),
+		sx.MakeList(sf.MustMake("encoding"), sx.MakeString(encoding)),
+		sx.MakeList(sf.MustMake("content"), sx.MakeString(zContent)),
 	)
 }
-func metaRights2sz(m *meta.Meta, rights api.ZettelRights) *sxpf.Pair {
-	sf := sxpf.MakeMappedFactory()
-	return sxpf.MakeList(
+func metaRights2sz(m *meta.Meta, rights api.ZettelRights) *sx.Pair {
+	sf := sx.MakeMappedFactory()
+	return sx.MakeList(
 		sf.MustMake("list"),
 		meta2sz(m, sf),
-		sxpf.MakeList(sf.MustMake("rights"), sxpf.Int64(int64(rights))),
+		sx.MakeList(sf.MustMake("rights"), sx.Int64(int64(rights))),
 	)
 }
-func meta2sz(m *meta.Meta, sf sxpf.SymbolFactory) sxpf.Object {
-	result := sxpf.Nil().Cons(sf.MustMake("meta"))
+func meta2sz(m *meta.Meta, sf sx.SymbolFactory) sx.Object {
+	result := sx.Nil().Cons(sf.MustMake("meta"))
 	curr := result
 	for _, p := range m.ComputedPairs() {
-		val := sxpf.MakeList(sf.MustMake(p.Key), sxpf.MakeString(p.Value))
+		val := sx.MakeList(sf.MustMake(p.Key), sx.MakeString(p.Value))
 		curr = curr.AppendBang(val)
 	}
 	return result

@@ -19,9 +19,9 @@ import (
 	"time"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/sx.fossil/sxhtml"
-	"zettelstore.de/sx.fossil/sxpf"
-	"zettelstore.de/sx.fossil/sxpf/eval"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -49,7 +49,7 @@ type WebUI struct {
 	evalZettel *usecase.Evaluate
 
 	mxCache       sync.RWMutex
-	templateCache map[id.Zid]eval.Expr
+	templateCache map[id.Zid]sxeval.Expr
 
 	mxRoleCSSMap sync.RWMutex
 	roleCSSMap   map[string]id.Zid
@@ -68,17 +68,17 @@ type WebUI struct {
 	searchURL     string
 	createNewURL  string
 
-	sf      sxpf.SymbolFactory
-	engine  *eval.Engine
+	sf      sx.SymbolFactory
+	engine  *sxeval.Engine
 	genHTML *sxhtml.Generator
 
-	symQuote, symQQ *sxpf.Symbol
-	symUQ, symUQS   *sxpf.Symbol
-	symMetaHeader   *sxpf.Symbol
-	symDetail       *sxpf.Symbol
-	symA, symHref   *sxpf.Symbol
-	symSpan         *sxpf.Symbol
-	symAttr         *sxpf.Symbol
+	symQuote, symQQ *sx.Symbol
+	symUQ, symUQS   *sx.Symbol
+	symMetaHeader   *sx.Symbol
+	symDetail       *sx.Symbol
+	symA, symHref   *sx.Symbol
+	symSpan         *sx.Symbol
+	symAttr         *sx.Symbol
 }
 
 type webuiBox interface {
@@ -93,7 +93,7 @@ type webuiBox interface {
 func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
-	sf := sxpf.MakeMappedFactory()
+	sf := sx.MakeMappedFactory()
 
 	wui := &WebUI{
 		log:      log,
@@ -143,7 +143,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
 	if ci.Reason == box.OnReload {
-		wui.templateCache = make(map[id.Zid]eval.Expr, len(wui.templateCache))
+		wui.templateCache = make(map[id.Zid]sxeval.Expr, len(wui.templateCache))
 	} else {
 		delete(wui.templateCache, ci.Zid)
 	}
@@ -156,12 +156,12 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxRoleCSSMap.Unlock()
 }
 
-func (wui *WebUI) setSxnCache(zid id.Zid, expr eval.Expr) {
+func (wui *WebUI) setSxnCache(zid id.Zid, expr sxeval.Expr) {
 	wui.mxCache.Lock()
 	wui.templateCache[zid] = expr
 	wui.mxCache.Unlock()
 }
-func (wui *WebUI) getSxnCache(zid id.Zid) eval.Expr {
+func (wui *WebUI) getSxnCache(zid id.Zid) sxeval.Expr {
 	wui.mxCache.RLock()
 	expr, found := wui.templateCache[zid]
 	wui.mxCache.RUnlock()

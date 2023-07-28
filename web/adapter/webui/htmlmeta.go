@@ -15,8 +15,8 @@ import (
 	"errors"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxhtml"
-	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/parser"
@@ -30,12 +30,12 @@ func (wui *WebUI) writeHTMLMetaValue(
 	getTextTitle getTextTitleFunc,
 	evalMetadata evalMetadataFunc,
 	gen *htmlGenerator,
-) sxpf.Object {
+) sx.Object {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
-		return sxpf.MakeString(value)
+		return sx.MakeString(value)
 	case meta.TypeEmpty:
-		return sxpf.MakeString(value)
+		return sx.MakeString(value)
 	case meta.TypeID:
 		return wui.transformIdentifier(value, getTextTitle)
 	case meta.TypeIDSet:
@@ -43,24 +43,24 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeNumber:
 		return wui.transformLink(key, value, value)
 	case meta.TypeString:
-		return sxpf.MakeString(value)
+		return sx.MakeString(value)
 	case meta.TypeTagSet:
 		return wui.transformTagSet(key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
 		if ts, ok := meta.TimeValue(value); ok {
-			return sxpf.MakeList(
+			return sx.MakeList(
 				wui.sf.MustMake("time"),
-				sxpf.MakeList(
+				sx.MakeList(
 					wui.symAttr,
-					sxpf.Cons(wui.sf.MustMake("datetime"), sxpf.MakeString(ts.Format("2006-01-02T15:04:05"))),
+					sx.Cons(wui.sf.MustMake("datetime"), sx.MakeString(ts.Format("2006-01-02T15:04:05"))),
 				),
-				sxpf.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sxpf.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
+				sx.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sx.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
 			)
 		}
-		return sxpf.Nil()
+		return sx.Nil()
 	case meta.TypeURL:
-		text := sxpf.MakeString(value)
-		if res, err := wui.url2html([]sxpf.Object{text}); err == nil {
+		text := sx.MakeString(value)
+		if res, err := wui.url2html([]sx.Object{text}); err == nil {
 			return res
 		}
 		return text
@@ -71,12 +71,12 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		return sxpf.MakeList(wui.sf.MustMake("b"), sxpf.MakeString("Unhandled type: "), sxpf.MakeString(kt.Name))
+		return sx.MakeList(wui.sf.MustMake("b"), sx.MakeString("Unhandled type: "), sx.MakeString(kt.Name))
 	}
 }
 
-func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sxpf.Object {
-	text := sxpf.MakeString(val)
+func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sx.Object {
+	text := sx.MakeString(val)
 	zid, err := id.Parse(val)
 	if err != nil {
 		return text
@@ -85,63 +85,63 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 	switch {
 	case found > 0:
 		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
-		attrs := sxpf.Nil()
+		attrs := sx.Nil()
 		if title != "" {
-			attrs = attrs.Cons(sxpf.Cons(wui.sf.MustMake("title"), sxpf.MakeString(title)))
+			attrs = attrs.Cons(sx.Cons(wui.sf.MustMake("title"), sx.MakeString(title)))
 		}
-		attrs = attrs.Cons(sxpf.Cons(wui.symHref, sxpf.MakeString(ub.String()))).Cons(wui.symAttr)
-		return sxpf.Nil().Cons(sxpf.MakeString(zid.String())).Cons(attrs).Cons(wui.symA)
+		attrs = attrs.Cons(sx.Cons(wui.symHref, sx.MakeString(ub.String()))).Cons(wui.symAttr)
+		return sx.Nil().Cons(sx.MakeString(zid.String())).Cons(attrs).Cons(wui.symA)
 	case found == 0:
-		return sxpf.MakeList(wui.sf.MustMake("s"), text)
+		return sx.MakeList(wui.sf.MustMake("s"), text)
 	default: // case found < 0:
 		return text
 	}
 }
 
-func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sxpf.Pair {
+func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitleFunc) *sx.Pair {
 	if len(vals) == 0 {
 		return nil
 	}
-	space := sxpf.MakeString(" ")
-	text := make([]sxpf.Object, 0, 2*len(vals))
+	space := sx.MakeString(" ")
+	text := make([]sx.Object, 0, 2*len(vals))
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
+	return sx.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
-func (wui *WebUI) transformTagSet(key string, tags []string) *sxpf.Pair {
+func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 	if len(tags) == 0 {
 		return nil
 	}
-	space := sxpf.MakeString(" ")
-	text := make([]sxpf.Object, 0, 2*len(tags))
+	space := sx.MakeString(" ")
+	text := make([]sx.Object, 0, 2*len(tags))
 	for _, tag := range tags {
 		text = append(text, space, wui.transformLink(key, tag, tag))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
+	return sx.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
-func (wui *WebUI) transformWordSet(key string, words []string) sxpf.Object {
+func (wui *WebUI) transformWordSet(key string, words []string) sx.Object {
 	if len(words) == 0 {
-		return sxpf.Nil()
+		return sx.Nil()
 	}
-	space := sxpf.MakeString(" ")
-	text := make([]sxpf.Object, 0, 2*len(words))
+	space := sx.MakeString(" ")
+	text := make([]sx.Object, 0, 2*len(words))
 	for _, word := range words {
 		text = append(text, space, wui.transformLink(key, word, word))
 	}
-	return sxpf.MakeList(text[1:]...).Cons(wui.symSpan)
+	return sx.MakeList(text[1:]...).Cons(wui.symSpan)
 }
 
-func (wui *WebUI) transformLink(key, value, text string) *sxpf.Pair {
-	return sxpf.MakeList(
+func (wui *WebUI) transformLink(key, value, text string) *sx.Pair {
+	return sx.MakeList(
 		wui.symA,
-		sxpf.MakeList(
+		sx.MakeList(
 			wui.symAttr,
-			sxpf.Cons(wui.symHref, sxpf.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+			sx.Cons(wui.symHref, sx.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
 		),
-		sxpf.MakeString(text),
+		sx.MakeString(text),
 	)
 }
 
@@ -166,7 +166,7 @@ func (wui *WebUI) makeGetTextTitle(ctx context.Context, getZettel usecase.GetZet
 	}
 }
 
-func (wui *WebUI) transformZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) sxpf.Object {
+func (wui *WebUI) transformZmkMetadata(value string, evalMetadata evalMetadataFunc, gen *htmlGenerator) sx.Object {
 	is := evalMetadata(value)
 	return gen.InlinesSxHTML(&is).Cons(wui.symSpan)
 }

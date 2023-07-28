@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -94,9 +94,9 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 }
 
 func (a *API) writeToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
-	return a.writeObject(w, id.Invalid, sxpf.MakeList(
-		sxpf.MakeString("Bearer"),
-		sxpf.MakeString(token),
-		sxpf.Int64(int64(lifetime/time.Second)),
+	return a.writeObject(w, id.Invalid, sx.MakeList(
+		sx.MakeString("Bearer"),
+		sx.MakeString(token),
+		sx.Int64(int64(lifetime/time.Second)),
 	))
 }

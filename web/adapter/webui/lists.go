@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
@@ -53,7 +53,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 				return
 			}
 		}
-		var content, endnotes *sxpf.Pair
+		var content, endnotes *sx.Pair
 		if bn := evaluator.QueryAction(ctx, q, metaList, wui.rtConfig); bn != nil {
 			enc := wui.getSimpleHTMLEncoder()
 			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})
@@ -69,13 +69,13 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 			wui.rtConfig.Get(ctx, nil, api.KeyLang),
 			wui.rtConfig.GetSiteName(), user)
 		if q == nil {
-			rb.bindString("heading", sxpf.MakeString(wui.rtConfig.GetSiteName()))
+			rb.bindString("heading", sx.MakeString(wui.rtConfig.GetSiteName()))
 		} else {
 			var sb strings.Builder
 			q.PrintHuman(&sb)
-			rb.bindString("heading", sxpf.MakeString(sb.String()))
+			rb.bindString("heading", sx.MakeString(sb.String()))
 		}
-		rb.bindString("query-value", sxpf.MakeString(q.String()))
+		rb.bindString("query-value", sx.MakeString(q.String()))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
 		apiURL := wui.NewURLBuilder('z').AppendQuery(q.String())
@@ -85,11 +85,11 @@ func (wui *WebUI) MakeListHTMLMetaHandler(listMeta usecase.ListMeta) http.Handle
 		} else {
 			seed = 0
 		}
-		rb.bindString("plain-url", sxpf.MakeString(apiURL.String()))
-		rb.bindString("data-url", sxpf.MakeString(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
+		rb.bindString("plain-url", sx.MakeString(apiURL.String()))
+		rb.bindString("data-url", sx.MakeString(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
 		if wui.canCreate(ctx, user) {
-			rb.bindString("create-url", sxpf.MakeString(wui.createNewURL))
-			rb.bindString("seed", sxpf.Int64(seed))
+			rb.bindString("create-url", sx.MakeString(wui.createNewURL))
+			rb.bindString("seed", sx.Int64(seed))
 		}
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)

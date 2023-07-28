@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -49,7 +49,7 @@ func (a *API) MakeQueryHandler(listMeta usecase.ListMeta) http.HandlerFunc {
 
 		case api.EncoderData:
 			encoder = &dataZettelEncoder{
-				sf:        sxpf.MakeMappedFactory(),
+				sf:        sx.MakeMappedFactory(),
 				sq:        sq,
 				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
 			}
@@ -178,46 +178,46 @@ func (*plainZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arra
 }
 
 type dataZettelEncoder struct {
-	sf        sxpf.SymbolFactory
+	sf        sx.SymbolFactory
 	sq        *query.Query
 	getRights func(*meta.Meta) api.ZettelRights
 }
 
 func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
 	sf := dze.sf
-	result := make([]sxpf.Object, len(ml)+1)
+	result := make([]sx.Object, len(ml)+1)
 	result[0] = sf.MustMake("list")
 	symID, symZettel := sf.MustMake("id"), sf.MustMake("zettel")
 	for i, m := range ml {
 		msz := metaRights2sz(m, dze.getRights(m))
-		msz = sxpf.Cons(sxpf.MakeList(symID, sxpf.Int64(m.Zid)), msz.Cdr()).Cons(symZettel)
+		msz = sx.Cons(sx.MakeList(symID, sx.Int64(m.Zid)), msz.Cdr()).Cons(symZettel)
 		result[i+1] = msz
 	}
 
-	_, err := sxpf.Print(w, sxpf.MakeList(
+	_, err := sx.Print(w, sx.MakeList(
 		sf.MustMake("meta-list"),
-		sxpf.MakeList(sf.MustMake("query"), sxpf.MakeString(dze.sq.String())),
-		sxpf.MakeList(sf.MustMake("human"), sxpf.MakeString(dze.sq.Human())),
-		sxpf.MakeList(result...),
+		sx.MakeList(sf.MustMake("query"), sx.MakeString(dze.sq.String())),
+		sx.MakeList(sf.MustMake("human"), sx.MakeString(dze.sq.Human())),
+		sx.MakeList(result...),
 	))
 	return err
 }
 func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta.Arrangement) error {
 	sf := dze.sf
-	result := sxpf.Nil()
+	result := sx.Nil()
 	for aggKey, metaList := range arr {
-		sxMeta := sxpf.Nil()
+		sxMeta := sx.Nil()
 		for i := len(metaList) - 1; i >= 0; i-- {
-			sxMeta = sxMeta.Cons(sxpf.Int64(metaList[i].Zid))
+			sxMeta = sxMeta.Cons(sx.Int64(metaList[i].Zid))
 		}
-		sxMeta = sxMeta.Cons(sxpf.MakeString(aggKey))
+		sxMeta = sxMeta.Cons(sx.MakeString(aggKey))
 		result = result.Cons(sxMeta)
 	}
-	_, err := sxpf.Print(w, sxpf.MakeList(
+	_, err := sx.Print(w, sx.MakeList(
 		sf.MustMake("aggregate"),
-		sxpf.MakeString(act),
-		sxpf.MakeList(sf.MustMake("query"), sxpf.MakeString(dze.sq.String())),
-		sxpf.MakeList(sf.MustMake("human"), sxpf.MakeString(dze.sq.Human())),
+		sx.MakeString(act),
+		sx.MakeList(sf.MustMake("query"), sx.MakeString(dze.sq.String())),
+		sx.MakeList(sf.MustMake("human"), sx.MakeString(dze.sq.Human())),
 		result.Cons(sf.MustMake("list")),
 	))
 	return err

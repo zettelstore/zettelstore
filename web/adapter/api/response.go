@@ -14,14 +14,14 @@ import (
 	"bytes"
 	"net/http"
 
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/web/content"
 	"zettelstore.de/z/zettel/id"
 )
 
-func (a *API) writeObject(w http.ResponseWriter, zid id.Zid, obj sxpf.Object) error {
+func (a *API) writeObject(w http.ResponseWriter, zid id.Zid, obj sx.Object) error {
 	var buf bytes.Buffer
-	if _, err := sxpf.Print(&buf, obj); err != nil {
+	if _, err := sx.Print(&buf, obj); err != nil {
 		msg := a.log.Fatal().Err(err)
 		if msg != nil {
 			if zid.IsValid() {

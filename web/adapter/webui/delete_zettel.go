@@ -15,7 +15,7 @@ import (
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/maps"
-	"zettelstore.de/sx.fossil/sxpf"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
@@ -47,7 +47,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 			ctx, "delete",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
 		if len(zs) > 1 {
-			rb.bindString("shadowed-box", sxpf.MakeString(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
+			rb.bindString("shadowed-box", sx.MakeString(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
 			rb.bindString("incoming", nil)
 		} else {
 			rb.bindString("shadowed-box", nil)
@@ -64,7 +64,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 	}
 }
 
-func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sxpf.Pair {
+func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sx.Pair {
 	zidMap := make(strfun.Set)
 	addListValues(zidMap, m, api.KeyBackward)
 	for _, kd := range meta.GetSortedKeyDescriptions() {

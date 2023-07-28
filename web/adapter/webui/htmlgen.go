@@ -19,8 +19,8 @@ import (
 	"zettelstore.de/client.fossil/maps"
 	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/client.fossil/sz"
-	"zettelstore.de/sx.fossil/sxpf"
-	"zettelstore.de/sx.fossil/sxpf/eval"
+	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
@@ -37,7 +37,7 @@ type urlBuilder interface {
 type htmlGenerator struct {
 	tx    *szenc.Transformer
 	th    *shtml.Transformer
-	symAt *sxpf.Symbol
+	symAt *sx.Symbol
 }
 
 func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
@@ -51,8 +51,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 	symTarget := th.Make("target")
 	symRel := th.Make("rel")
 
-	findA := func(obj sxpf.Object) (attr, assoc, rest *sxpf.Pair) {
-		pair, isPair := sxpf.GetPair(obj)
+	findA := func(obj sx.Object) (attr, assoc, rest *sx.Pair) {
+		pair, isPair := sx.GetPair(obj)
 		if !isPair || !symA.IsEqual(pair.Car()) {
 			return nil, nil, nil
 		}
@@ -61,16 +61,16 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			return nil, nil, nil
 		}
 		objA := rest.Car()
-		attr, isPair = sxpf.GetPair(objA)
+		attr, isPair = sx.GetPair(objA)
 		if !isPair || !symAttr.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
 		return attr, attr.Tail(), rest.Tail()
 	}
-	linkZettel := func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+	linkZettel := func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
 		obj, err := prevFn.Call(nil, nil, args)
 		if err != nil {
-			return sxpf.Nil()
+			return sx.Nil()
 		}
 		attr, assoc, rest := findA(obj)
 		if attr == nil {
@@ -81,7 +81,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		if hrefP == nil {
 			return obj
 		}
-		href, ok := sxpf.GetString(hrefP.Cdr())
+		href, ok := sx.GetString(hrefP.Cdr())
 		if !ok {
 			return obj
 		}
@@ -90,17 +90,17 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		if hasFragment {
 			u = u.SetFragment(fragment)
 		}
-		assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
+		assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
 		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 	}
 
 	th.SetRebinder(func(te *shtml.TransformEnv) {
 		te.Rebind(sz.NameSymLinkZettel, linkZettel)
 		te.Rebind(sz.NameSymLinkFound, linkZettel)
-		te.Rebind(sz.NameSymLinkBased, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkBased, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
 			obj, err := prevFn.Call(nil, nil, args)
 			if err != nil {
-				return sxpf.Nil()
+				return sx.Nil()
 			}
 			attr, assoc, rest := findA(obj)
 			if attr == nil {
@@ -110,18 +110,18 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if hrefP == nil {
 				return obj
 			}
-			href, ok := sxpf.GetString(hrefP.Cdr())
+			href, ok := sx.GetString(hrefP.Cdr())
 			if !ok {
 				return obj
 			}
 			u := builder.NewURLBuilder('/').SetRawLocal(href.String())
-			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
+			assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymLinkQuery, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkQuery, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
 			obj, err := prevFn.Call(nil, nil, args)
 			if err != nil {
-				return sxpf.Nil()
+				return sx.Nil()
 			}
 			attr, assoc, rest := findA(obj)
 			if attr == nil {
@@ -131,7 +131,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if hrefP == nil {
 				return obj
 			}
-			href, ok := sxpf.GetString(hrefP.Cdr())
+			href, ok := sx.GetString(hrefP.Cdr())
 			if !ok {
 				return obj
 			}
@@ -144,33 +144,33 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('h').AppendQuery(q)
-			assoc = assoc.Cons(sxpf.Cons(symHref, sxpf.MakeString(u.String())))
+			assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymLinkExternal, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymLinkExternal, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
 			obj, err := prevFn.Call(nil, nil, args)
 			if err != nil {
-				return sxpf.Nil()
+				return sx.Nil()
 			}
 			attr, assoc, rest := findA(obj)
 			if attr == nil {
 				return obj
 			}
-			assoc = assoc.Cons(sxpf.Cons(symClass, sxpf.MakeString("external"))).
-				Cons(sxpf.Cons(symTarget, sxpf.MakeString("_blank"))).
-				Cons(sxpf.Cons(symRel, sxpf.MakeString("noopener noreferrer")))
+			assoc = assoc.Cons(sx.Cons(symClass, sx.MakeString("external"))).
+				Cons(sx.Cons(symTarget, sx.MakeString("_blank"))).
+				Cons(sx.Cons(symRel, sx.MakeString("noopener noreferrer")))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
-		te.Rebind(sz.NameSymEmbed, func(args []sxpf.Object, prevFn eval.Callable) sxpf.Object {
+		te.Rebind(sz.NameSymEmbed, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
 			obj, err := prevFn.Call(nil, nil, args)
 			if err != nil {
-				return sxpf.Nil()
+				return sx.Nil()
 			}
-			pair, isPair := sxpf.GetPair(obj)
+			pair, isPair := sx.GetPair(obj)
 			if !isPair || !symImg.IsEqual(pair.Car()) {
 				return obj
 			}
-			attr, isPair := sxpf.GetPair(pair.Tail().Car())
+			attr, isPair := sx.GetPair(pair.Tail().Car())
 			if !isPair || !symAttr.IsEqual(attr.Car()) {
 				return obj
 			}
@@ -179,7 +179,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if srcP == nil {
 				return obj
 			}
-			src, isString := sxpf.GetString(srcP.Cdr())
+			src, isString := sx.GetString(srcP.Cdr())
 			if !isString {
 				return obj
 			}
@@ -188,7 +188,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('z').SetZid(zid)
-			imgAttr := attr.Tail().Cons(sxpf.Cons(symSrc, sxpf.MakeString(u.String()))).Cons(symAttr)
+			imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.MakeString(u.String()))).Cons(symAttr)
 			return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
 		})
 	})
@@ -208,7 +208,7 @@ var mapMetaKey = map[string]string{
 	api.KeyLicense:   "license",
 }
 
-func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sxpf.Pair {
+func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.Pair {
 	tm := g.tx.GetMeta(m, evalMeta)
 	hm, err := g.th.Transform(tm)
 	if err != nil {
@@ -216,18 +216,18 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	}
 
 	ignore := strfun.NewSet(api.KeyTitle, api.KeyLang)
-	metaMap := make(map[string]*sxpf.Pair, m.Length())
+	metaMap := make(map[string]*sx.Pair, m.Length())
 	if tags, ok := m.Get(api.KeyTags); ok {
 		metaMap[api.KeyTags] = g.transformMetaTags(tags)
 		ignore.Set(api.KeyTags)
 	}
 
 	for elem := hm; elem != nil; elem = elem.Tail() {
-		mlst, isPair := sxpf.GetPair(elem.Car())
+		mlst, isPair := sx.GetPair(elem.Car())
 		if !isPair {
 			continue
 		}
-		att, isPair := sxpf.GetPair(mlst.Tail().Car())
+		att, isPair := sx.GetPair(mlst.Tail().Car())
 		if !isPair {
 			continue
 		}
@@ -236,10 +236,10 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		}
 		a := make(attrs.Attributes, 32)
 		for aelem := att.Tail(); aelem != nil; aelem = aelem.Tail() {
-			if p, ok := sxpf.GetPair(aelem.Car()); ok {
+			if p, ok := sx.GetPair(aelem.Car()); ok {
 				key := p.Car()
 				val := p.Cdr()
-				if tail, isTail := sxpf.GetPair(val); isTail {
+				if tail, isTail := sx.GetPair(val); isTail {
 					val = tail.Car()
 				}
 				a = a.Set(key.String(), val.String())
@@ -257,7 +257,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		a = a.Set("name", newName)
 		metaMap[newName] = g.th.TransformMeta(a)
 	}
-	result := sxpf.Nil()
+	result := sx.Nil()
 	keys := maps.Keys(metaMap)
 	for i := len(keys) - 1; i >= 0; i-- {
 		result = result.Cons(metaMap[keys[i]])
@@ -265,7 +265,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 	return result
 }
 
-func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Pair {
+func (g *htmlGenerator) transformMetaTags(tags string) *sx.Pair {
 	var sb strings.Builder
 	for i, val := range meta.ListFromValue(tags) {
 		if i > 0 {
@@ -280,7 +280,7 @@ func (g *htmlGenerator) transformMetaTags(tags string) *sxpf.Pair {
 	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
 }
 
-func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.Pair, _ error) {
+func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sx.Pair, _ error) {
 	if bs == nil || len(*bs) == 0 {
 		return nil, nil, nil
 	}
@@ -293,7 +293,7 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sxpf.P
 }
 
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
-func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sxpf.Pair {
+func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sx.Pair {
 	if is == nil || len(*is) == 0 {
 		return nil
 	}

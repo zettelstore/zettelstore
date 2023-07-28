@@ -17,8 +17,8 @@ import (
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/shtml"
+	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxhtml"
-	"zettelstore.de/sx.fossil/sxpf"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
@@ -56,7 +56,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	}
 
 	var isTitle ast.InlineSlice
-	var htitle *sxpf.Pair
+	var htitle *sx.Pair
 	plainTitle, hasTitle := zn.InhMeta.Get(api.KeyTitle)
 	if hasTitle {
 		isTitle = parser.ParseSpacedText(plainTitle)
@@ -77,9 +77,9 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	sf := he.th.SymbolFactory()
 	symAttr := sf.MustMake(sxhtml.NameSymAttr)
 
-	head := sxpf.MakeList(sf.MustMake("head"))
+	head := sx.MakeList(sf.MustMake("head"))
 	curr := head
-	curr = curr.AppendBang(sxpf.Nil().Cons(sxpf.Nil().Cons(sxpf.Cons(sf.MustMake("charset"), sxpf.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
+	curr = curr.AppendBang(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sf.MustMake("charset"), sx.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
 	for elem := hm; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
@@ -89,9 +89,9 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	} else {
 		sb.Write(zn.Meta.Zid.Bytes())
 	}
-	_ = curr.AppendBang(sxpf.Nil().Cons(sxpf.MakeString(sb.String())).Cons(sf.MustMake("title")))
+	_ = curr.AppendBang(sx.Nil().Cons(sx.MakeString(sb.String())).Cons(sf.MustMake("title")))
 
-	body := sxpf.MakeList(sf.MustMake("body"))
+	body := sx.MakeList(sf.MustMake("body"))
 	curr = body
 	if hasTitle {
 		curr = curr.AppendBang(htitle.Cons(sf.MustMake("h1")))
@@ -100,13 +100,13 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 		curr = curr.AppendBang(elem.Car())
 	}
 	if hen != nil {
-		curr = curr.AppendBang(sxpf.Nil().Cons(sf.MustMake("hr")))
+		curr = curr.AppendBang(sx.Nil().Cons(sf.MustMake("hr")))
 		_ = curr.AppendBang(hen)
 	}
 
-	doc := sxpf.MakeList(
+	doc := sx.MakeList(
 		sf.MustMake(sxhtml.NameSymDoctype),
-		sxpf.MakeList(sf.MustMake("html"), head, body),
+		sx.MakeList(sf.MustMake("html"), head, body),
 	)
 
 	gen := sxhtml.NewGenerator(sf, sxhtml.WithNewline)
@@ -148,7 +148,7 @@ func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	hobj, err := he.th.Transform(he.tx.GetSz(is))
 	if err == nil {
-		gen := sxhtml.NewGenerator(sxpf.FindSymbolFactory(hobj))
+		gen := sxhtml.NewGenerator(sx.FindSymbolFactory(hobj))
 		length, err2 := gen.WriteListHTML(w, hobj)
 		if err2 != nil {
 			return length, err2
