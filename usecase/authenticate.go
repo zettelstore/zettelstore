@@ -32,7 +32,7 @@ type Authenticate struct {
 }
 
 // NewAuthenticate creates a new use case.
-func NewAuthenticate(log *logger.Logger, token auth.TokenManager, authz auth.AuthzManager, ucGetUser *GetUser) Authenticate {
+func NewAuthenticate(log *logger.Logger, token auth.TokenManager, ucGetUser *GetUser) Authenticate {
 	return Authenticate{
 		log:       log,
 		token:     token,

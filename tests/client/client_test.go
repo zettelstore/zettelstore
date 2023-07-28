@@ -216,21 +216,17 @@ func TestGetZettelOrder(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	rl, err := c.GetZettelOrder(context.Background(), api.ZidTOCNewTemplate)
+	_, _, metaSeq, err := c.ListZettelJSON(context.Background(), string(api.ZidTOCNewTemplate)+" "+api.ItemsDirective)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if !checkZid(t, api.ZidTOCNewTemplate, rl.ID) {
-		return
-	}
-	l := rl.List
-	if got := len(l); got != 2 {
+	if got := len(metaSeq); got != 2 {
 		t.Errorf("Expected list of length 2, got %d", got)
 		return
 	}
-	checkListZid(t, l, 0, api.ZidTemplateNewZettel)
-	checkListZid(t, l, 1, api.ZidTemplateNewUser)
+	checkListZid(t, metaSeq, 0, api.ZidTemplateNewZettel)
+	checkListZid(t, metaSeq, 1, api.ZidTemplateNewUser)
 }
 
 // func TestGetZettelContext(t *testing.T) {

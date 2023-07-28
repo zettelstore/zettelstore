@@ -57,7 +57,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	logAuth := kern.GetLogger(kernel.AuthService)
 	logUc := kern.GetLogger(kernel.CoreService).WithUser(&getUser)
 	ucGetUser := usecase.NewGetUser(authManager, boxManager)
-	ucAuthenticate := usecase.NewAuthenticate(logAuth, authManager, authManager, &ucGetUser)
+	ucAuthenticate := usecase.NewAuthenticate(logAuth, authManager, &ucGetUser)
 	ucIsAuth := usecase.NewIsAuthenticated(logUc, &getUser, authManager)
 	ucCreateZettel := usecase.NewCreateZettel(logUc, rtConfig, protectedBoxManager)
 	ucGetAllZettel := usecase.NewGetAllZettel(protectedBoxManager)
@@ -65,6 +65,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucParseZettel := usecase.NewParseZettel(rtConfig, ucGetZettel)
 	ucQuery := usecase.NewQuery(protectedBoxManager)
 	ucEvaluate := usecase.NewEvaluate(rtConfig, &ucGetZettel, &ucQuery)
+	ucQuery.SetEvaluate(&ucEvaluate)
 	ucListSyntax := usecase.NewListSyntax(protectedBoxManager)
 	ucListRoles := usecase.NewListRoles(protectedBoxManager)
 	ucDelete := usecase.NewDeleteZettel(logUc, protectedBoxManager)
@@ -113,8 +114,6 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	// API
 	webSrv.AddListRoute('a', server.MethodPost, a.MakePostLoginHandler(&ucAuthenticate))
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
-	webSrv.AddZettelRoute('o', server.MethodGet, a.MakeGetOrderHandler(
-		usecase.NewZettelOrder(protectedBoxManager, ucEvaluate)))
 	webSrv.AddZettelRoute('u', server.MethodGet, a.MakeListUnlinkedMetaHandler(ucGetZettel, ucUnlinkedRefs))
 	webSrv.AddListRoute('x', server.MethodGet, a.MakeGetDataHandler(ucVersion))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))

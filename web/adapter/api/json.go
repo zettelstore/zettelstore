@@ -11,14 +11,11 @@
 package api
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/z/web/content"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
@@ -28,30 +25,6 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	return enc.Encode(data)
-}
-
-func (a *API) writeMetaList(ctx context.Context, w http.ResponseWriter, m *meta.Meta, metaList []*meta.Meta) error {
-	outList := make([]api.ZidMetaJSON, len(metaList))
-	for i, m := range metaList {
-		outList[i].ID = api.ZettelID(m.Zid.String())
-		outList[i].Meta = m.Map()
-		outList[i].Rights = a.getRights(ctx, m)
-	}
-
-	var buf bytes.Buffer
-	err := encodeJSONData(&buf, api.ZidMetaRelatedList{
-		ID:     api.ZettelID(m.Zid.String()),
-		Meta:   m.Map(),
-		Rights: a.getRights(ctx, m),
-		List:   outList,
-	})
-	if err != nil {
-		a.log.Fatal().Err(err).Zid(m.Zid).Msg("Unable to store meta list in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return nil
-	}
-
-	return writeBuffer(w, &buf, content.JSON)
 }
 
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {

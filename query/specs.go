@@ -19,3 +19,11 @@ func (spec *IdentSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.IdentDirective)
 }
+
+// ItemsSpec contains all specification values to calculate items.
+type ItemsSpec struct{}
+
+func (spec *ItemsSpec) Print(pe *PrintEnv) {
+	pe.printSpace()
+	pe.writeString(api.ItemsDirective)
+}

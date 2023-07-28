@@ -120,6 +120,11 @@ func (ps *parserState) parse(q *Query) *Query {
 			continue
 		}
 		inp.SetPos(pos)
+		if ps.acceptSingleKw(api.ItemsDirective) {
+			q.directives = append(q.directives, &ItemsSpec{})
+			continue
+		}
+		inp.SetPos(pos)
 		break
 	}
 	if q != nil && len(q.directives) == 0 {
