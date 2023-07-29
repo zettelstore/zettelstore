@@ -287,7 +287,7 @@ func startZettelstore(info *zsInfo) error {
 		"run", "cmd/zettelstore/main.go", "run",
 		"-c", "./testdata/testbox/19700101000000.zettel", "-a", info.adminAddress[1:]}
 	logCommand("FORK", nil, name, arg)
-	cmd := prepareCommand(nil, name, arg, &info.out)
+	cmd := prepareCommand(envGoVCS, name, arg, &info.out)
 	if !verbose {
 		cmd.Stderr = nil
 	}
@@ -330,6 +330,7 @@ func cmdBuild() error {
 
 func doBuild(env []string, version, target string) error {
 	env = append(env, "CGO_ENABLED=0")
+	env = append(env, envGoVCS...)
 	out, err := executeCommand(
 		env,
 		"go", "build",
@@ -432,6 +433,7 @@ func cmdRelease() error {
 		env := append([]string{}, rel.env...)
 		env = append(env, "GOARCH="+rel.arch, "GOOS="+rel.os)
 		env = append(env, envDirectProxy...)
+		env = append(env, envGoVCS...)
 		zsName := filepath.Join("releases", rel.name)
 		if err := doBuild(env, base, zsName); err != nil {
 			return err
