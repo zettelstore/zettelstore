@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20230703183419
+modified: 20230729115902
 
 The [[endpoint|00001012920000]] ''/z'' also allows you to filter the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header] and optionally to provide some actions.
 
@@ -29,7 +29,7 @@ For example, if you want to retrieve all zettel that contain the string ""API"" 
 ...
 ```
 
-If you want to retrieve a data document, a [[symbolic expression|00001012930500]]:
+If you want to retrieve a data document, as a [[symbolic expression|00001012930500]]:
 
 ```sh
 # curl 'http://127.0.0.1:23123/z?q=title%3AAPI+ORDER+REVERSE+id+OFFSET+1&enc=data'

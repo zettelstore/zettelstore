@@ -1,0 +1,39 @@
+id: 00001007720900
+title: Query: Items Directive
+role: manual
+tags: #manual #search #zettelstore
+syntax: zmk
+created: 00010101000000
+modified: 20230729120755
+
+The items directive works on zettel that act as a ""table of contents"" for other zettel.
+The [[initial zettel|00001000000000]] of this manual is one example, the [[general API description|00001012000000]] is another.
+Every zettel with a certain internal structure can act as the ""table of contents"" for others.
+
+What is a ""table of contents""?
+Basically, it is just a list of references to other zettel.
+
+To retrieve the items of a zettel, the software looks at first level [[list items|00001007030200]].
+If an item contains a valid reference to a zettel, this reference will be interpreted as an item in the items list, in the ""table of contents"".
+
+This applies only to first level list items (ordered or unordered list), but not to deeper levels.
+Only the first reference to a valid zettel is collected for the table of contents.
+Following references to zettel within such an list item are ignored.
+
+
+````
+# curl 'http://127.0.0.1:23123/z?q=00001000000000+ITEMS'
+00001001000000 Introduction to the Zettelstore
+00001002000000 Design goals for the Zettelstore
+00001003000000 Installation of the Zettelstore software
+00001004000000 Configuration of Zettelstore
+00001005000000 Structure of Zettelstore
+00001006000000 Layout of a Zettel
+00001007000000 Zettelmarkup
+00001008000000 Other Markup Languages
+00001010000000 Security
+00001012000000 API
+00001014000000 Web user interface
+00001017000000 Tips and Tricks
+00001018000000 Troubleshooting
+````
