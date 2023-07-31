@@ -66,14 +66,13 @@ func (uc *UnlinkedReferences) Run(ctx context.Context, phrase string, q *query.Q
 	q = q.Parse(sb.String())
 
 	// Limit applies to the filtering process, not to SelectMeta
-	limit := q.GetLimit()
-	q = q.SetLimit(0)
+	q, prevLimit := q.SetLimit(0)
 
 	candidates, err := uc.port.SelectMeta(ctx, nil, q)
 	if err != nil {
 		return nil, err
 	}
-	q = q.SetLimit(limit) // Restore limit
+	q, _ = q.SetLimit(prevLimit) // Restore limit
 	return q.Limit(uc.filterCandidates(ctx, candidates, words)), nil
 }
 

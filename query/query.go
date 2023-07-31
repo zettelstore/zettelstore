@@ -281,21 +281,17 @@ func (q *Query) SetDeterministic() *Query {
 }
 
 // SetLimit sets the given limit of the query object.
-func (q *Query) SetLimit(limit int) *Query {
-	q = createIfNeeded(q)
+func (q *Query) SetLimit(limit int) (*Query, int) {
 	if limit < 0 {
 		limit = 0
 	}
-	q.limit = limit
-	return q
-}
-
-// GetLimit returns the current offset value.
-func (q *Query) GetLimit() int {
-	if q == nil {
-		return 0
+	if q == nil && limit == 0 {
+		return nil, 0
 	}
-	return q.limit
+	q = createIfNeeded(q)
+	prevLimit := q.limit
+	q.limit = limit
+	return q, prevLimit
 }
 
 // Actions returns the slice of action specifications
