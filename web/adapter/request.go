@@ -19,7 +19,6 @@ import (
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/query"
-	"zettelstore.de/z/zettel/meta"
 )
 
 // GetCredentialsViaForm retrieves the authentication credentions from a form.
@@ -52,30 +51,4 @@ func GetQuery(vals url.Values) (result *query.Query) {
 		}
 	}
 	return result
-}
-
-// AddUnlinkedRefsToQuery inspects metadata and enhances the given query to ignore
-// some zettel identifier.
-func AddUnlinkedRefsToQuery(q *query.Query, m *meta.Meta) *query.Query {
-	var sb strings.Builder
-	sb.WriteString(api.KeyID)
-	sb.WriteString("!:")
-	sb.WriteString(m.Zid.String())
-	for _, pair := range m.ComputedPairsRest() {
-		switch meta.Type(pair.Key) {
-		case meta.TypeID:
-			sb.WriteByte(' ')
-			sb.WriteString(api.KeyID)
-			sb.WriteString("!:")
-			sb.WriteString(pair.Value)
-		case meta.TypeIDSet:
-			for _, value := range meta.ListFromValue(pair.Value) {
-				sb.WriteByte(' ')
-				sb.WriteString(api.KeyID)
-				sb.WriteString("!:")
-				sb.WriteString(value)
-			}
-		}
-	}
-	return q.Parse(sb.String())
 }

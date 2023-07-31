@@ -25,19 +25,19 @@ import (
 	"zettelstore.de/z/evaluator"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"
-	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/zettel/id"
 )
 
 // MakeGetInfoHandler creates a new HTTP handler for the use case "get zettel".
 func (wui *WebUI) MakeGetInfoHandler(
-	parseZettel usecase.ParseZettel,
-	evaluate *usecase.Evaluate,
-	getZettel usecase.GetZettel,
-	getAllMeta usecase.GetAllZettel,
-	unlinkedRefs usecase.UnlinkedReferences,
+	ucParseZettel usecase.ParseZettel,
+	ucEvaluate *usecase.Evaluate,
+	ucGetZettel usecase.GetZettel,
+	ucGetAllMeta usecase.GetAllZettel,
+	ucQuery *usecase.Query,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -49,16 +49,16 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		zn, err := parseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
+		zn, err := ucParseZettel.Run(ctx, zid, q.Get(api.KeySyntax))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 
 		enc := wui.getSimpleHTMLEncoder()
-		getTextTitle := wui.makeGetTextTitle(ctx, getZettel)
+		getTextTitle := wui.makeGetTextTitle(ctx, ucGetZettel)
 		evalMeta := func(val string) ast.InlineSlice {
-			return evaluate.RunMetadata(ctx, val)
+			return ucEvaluate.RunMetadata(ctx, val)
 		}
 		pairs := zn.Meta.ComputedPairs()
 		metadata := sx.Nil()
@@ -76,20 +76,20 @@ func (wui *WebUI) MakeGetInfoHandler(
 		if phrase == "" {
 			phrase = title
 		}
-		phrase = strings.TrimSpace(phrase)
-		unlinkedMeta, err := unlinkedRefs.Run(ctx, phrase, adapter.AddUnlinkedRefsToQuery(query.Parse("ORDER id"), zn.InhMeta))
+		unlinkedMeta, err := ucQuery.Run(ctx, createUnlinkedQuery(zid, phrase))
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
-		bns := evaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig))
+
+		bns := ucEvaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig))
 		unlinkedContent, _, err := enc.BlocksSxn(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
 		}
 		encTexts := encodingTexts()
-		shadowLinks := getShadowLinks(ctx, zid, getAllMeta)
+		shadowLinks := getShadowLinks(ctx, zid, ucGetAllMeta)
 
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(ctx, "info", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
@@ -133,6 +133,24 @@ func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries
 		locLinks = locLinks.Cons(sx.Cons(sx.MakeBoolean(ref.IsValid()), sx.MakeString(ref.String())))
 	}
 	return locLinks, queries, extLinks
+}
+
+func createUnlinkedQuery(zid id.Zid, phrase string) *query.Query {
+	var sb strings.Builder
+	sb.Write(zid.Bytes())
+	sb.WriteByte(' ')
+	sb.WriteString(api.UnlinkedDirective)
+	for _, word := range strfun.MakeWords(phrase) {
+		sb.WriteByte(' ')
+		sb.WriteString(api.PhraseDirective)
+		sb.WriteByte(' ')
+		sb.WriteString(word)
+	}
+	sb.WriteByte(' ')
+	sb.WriteString(api.OrderDirective)
+	sb.WriteByte(' ')
+	sb.WriteString(api.KeyID)
+	return query.Parse(sb.String())
 }
 
 func encodingTexts() []string {

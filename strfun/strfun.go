@@ -13,6 +13,7 @@ package strfun
 
 import (
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -49,5 +50,13 @@ func JustifyLeft(s string, maxLen int, pad rune) string {
 func SplitLines(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool {
 		return r == '\n' || r == '\r'
+	})
+}
+
+// MakeWords produces a list of words, i.e. string that were separated by
+// control character, space characters, or separator characters.
+func MakeWords(text string) []string {
+	return strings.FieldsFunc(text, func(r rune) bool {
+		return unicode.In(r, unicode.C, unicode.P, unicode.Z)
 	})
 }

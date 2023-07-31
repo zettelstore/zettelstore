@@ -125,6 +125,11 @@ func (ps *parserState) parse(q *Query) *Query {
 			continue
 		}
 		inp.SetPos(pos)
+		if ps.acceptSingleKw(api.UnlinkedDirective) {
+			q = ps.parseUnlinked(q)
+			continue
+		}
+		inp.SetPos(pos)
 		break
 	}
 	if q != nil && len(q.directives) == 0 {
@@ -264,6 +269,31 @@ func (ps *parserState) parseCount(spec *ContextSpec) bool {
 	}
 	return true
 }
+
+func (ps *parserState) parseUnlinked(q *Query) *Query {
+	inp := ps.inp
+
+	spec := &UnlinkedSpec{}
+	for {
+		ps.skipSpace()
+		if ps.mustStop() {
+			break
+		}
+		pos := inp.Pos
+		if ps.acceptKwArgs(api.PhraseDirective) {
+			if word := ps.scanWord(); len(word) > 0 {
+				spec.words = append(spec.words, string(word))
+				continue
+			}
+		}
+
+		inp.SetPos(pos)
+		break
+	}
+	q.directives = append(q.directives, spec)
+	return q
+}
+
 func (ps *parserState) parsePick(q *Query) (*Query, bool) {
 	num, ok := ps.scanPosInt()
 	if !ok {

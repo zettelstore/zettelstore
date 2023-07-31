@@ -196,15 +196,6 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	}
 }
 
-func checkZid(t *testing.T, expected, got api.ZettelID) bool {
-	t.Helper()
-	if expected != got {
-		t.Errorf("Expected a Zid %q, but got %q", expected, got)
-		return false
-	}
-	return true
-}
-
 func checkListZid(t *testing.T, l []api.ZidMetaJSON, pos int, expected api.ZettelID) {
 	t.Helper()
 	if got := api.ZettelID(l[pos].ID); got != expected {
@@ -280,16 +271,12 @@ func TestGetUnlinkedReferences(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	zl, err := c.GetUnlinkedReferences(context.Background(), api.ZidDefaultHome, nil)
+	_, _, metaSeq, err := c.ListZettelJSON(context.Background(), string(api.ZidDefaultHome)+" "+api.UnlinkedDirective)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if !checkZid(t, api.ZidDefaultHome, zl.ID) {
-		return
-	}
-	l := zl.List
-	if got := len(l); got != 1 {
+	if got := len(metaSeq); got != 1 {
 		t.Errorf("Expected list of length 1, got %d", got)
 		return
 	}

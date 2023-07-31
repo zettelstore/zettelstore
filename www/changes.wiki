@@ -12,6 +12,10 @@
   *  The API endpoint <tt>/o/{ID}</tt> (order of zettel ID) is no longer
      available. Please use the query expression <tt>{ID} ITEMS</tt> instead.
      (breaking: api)
+  *  The API endpoint <tt>/u/{ID}</tt> (unlinked references of zettel ID) is no
+     longer available. Please use the query expression <tt>{ID} UNLINKED</tt>
+     instead.
+     (breaking: api)
   *  Change syntax for context query to <tt>zid ... CONTEXT</tt>. This will
      allow to add more directives that operate on zettel identifier. Old syntax
      <tt>CONTEXT zid</tt> will be removed in 0.14.
@@ -20,6 +24,11 @@
      of all zettel that are referenced by the originating zettel in a top-level
      list. It replaces the API endpoint <tt>/o/{ID}</tt> (and makes it more
      useful).
+     (major: api, webui)
+  *  Add query directive <tt>UNLINKED</tt> that will produce a list of metadata
+     of all zettel that are mentioning the originating zettel in a top-level,
+     but do not mention them. It replaces the API endpoint <tt>/u/{ID}</tt>
+     (and makes it more useful).
      (major: api, webui)
   *  Add query directive <tt>IDENT</tt> to distinguish a search for a zettel
      identifier (&ldquo;{ID}&rdquo;), that will list all metadata of zettel

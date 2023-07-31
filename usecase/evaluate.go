@@ -45,13 +45,14 @@ func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.Ze
 	if err != nil {
 		return nil, err
 	}
-	zn, err := parser.ParseZettel(ctx, zettel, syntax, uc.rtConfig), nil
-	if err != nil {
-		return nil, err
-	}
+	return uc.RunZettel(ctx, zettel, syntax), nil
+}
 
+// RunZettel executes the use case for a given zettel.
+func (uc *Evaluate) RunZettel(ctx context.Context, zettel zettel.Zettel, syntax string) *ast.ZettelNode {
+	zn := parser.ParseZettel(ctx, zettel, syntax, uc.rtConfig)
 	evaluator.EvaluateZettel(ctx, uc, uc.rtConfig, zn)
-	return zn, nil
+	return zn
 }
 
 // RunBlockNode executes the use case for a metadata list.

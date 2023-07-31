@@ -280,20 +280,6 @@ func (q *Query) SetDeterministic() *Query {
 	return q
 }
 
-// SetLimit sets the given limit of the query object.
-func (q *Query) SetLimit(limit int) (*Query, int) {
-	if limit < 0 {
-		limit = 0
-	}
-	if q == nil && limit == 0 {
-		return nil, 0
-	}
-	q = createIfNeeded(q)
-	prevLimit := q.limit
-	q.limit = limit
-	return q, prevLimit
-}
-
 // Actions returns the slice of action specifications
 func (q *Query) Actions() []string {
 	if q == nil {

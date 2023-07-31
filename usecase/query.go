@@ -13,11 +13,16 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/collect"
+	"zettelstore.de/z/parser"
 	"zettelstore.de/z/query"
+	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
@@ -88,14 +93,16 @@ func (uc *Query) processDirectives(ctx context.Context, metaSeq []*meta.Meta, di
 			return nil
 		}
 		switch ds := dir.(type) {
+		case *query.ContextSpec:
+			metaSeq = uc.processContextDirective(ctx, ds, metaSeq)
 		case *query.IdentSpec:
 			// Nothing to do.
-		case *query.ContextSpec:
-			metaSeq = ds.Execute(ctx, metaSeq, uc.port)
 		case *query.ItemsSpec:
-			metaSeq = uc.processItemsDirective(ctx, metaSeq)
+			metaSeq = uc.processItemsDirective(ctx, ds, metaSeq)
+		case *query.UnlinkedSpec:
+			metaSeq = uc.processUnlinkedDirective(ctx, ds, metaSeq)
 		default:
-			continue
+			panic(fmt.Sprintf("Unknown directive %T", ds))
 		}
 	}
 	if len(metaSeq) == 0 {
@@ -103,8 +110,11 @@ func (uc *Query) processDirectives(ctx context.Context, metaSeq []*meta.Meta, di
 	}
 	return metaSeq
 }
+func (uc *Query) processContextDirective(ctx context.Context, spec *query.ContextSpec, metaSeq []*meta.Meta) []*meta.Meta {
+	return spec.Execute(ctx, metaSeq, uc.port)
+}
 
-func (uc *Query) processItemsDirective(ctx context.Context, metaSeq []*meta.Meta) []*meta.Meta {
+func (uc *Query) processItemsDirective(ctx context.Context, _ *query.ItemsSpec, metaSeq []*meta.Meta) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(metaSeq))
 	for _, m := range metaSeq {
 		zn, err := uc.ucEvaluate.Run(ctx, m.Zid, m.GetDefault(api.KeySyntax, ""))
@@ -118,6 +128,149 @@ func (uc *Query) processItemsDirective(ctx context.Context, metaSeq []*meta.Meta
 				}
 			}
 		}
+	}
+	return result
+}
+
+func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.UnlinkedSpec, metaSeq []*meta.Meta) []*meta.Meta {
+	words := spec.GetWords(metaSeq)
+	if len(words) == 0 {
+		return metaSeq
+	}
+	var sb strings.Builder
+	for _, word := range words {
+		sb.WriteString(" :")
+		sb.WriteString(word)
+	}
+	q := (*query.Query)(nil).Parse(sb.String())
+	candidates, err := uc.port.SelectMeta(ctx, nil, q)
+	if err != nil {
+		return nil
+	}
+	metaZids := id.NewSetCap(len(metaSeq))
+	refZids := id.NewSetCap(len(metaSeq) * 4) // Assumption: there are four zids per zettel
+	for _, m := range metaSeq {
+		metaZids.Zid(m.Zid)
+		refZids.Zid(m.Zid)
+		for _, pair := range m.ComputedPairsRest() {
+			switch meta.Type(pair.Key) {
+			case meta.TypeID:
+				if zid, errParse := id.Parse(pair.Value); errParse == nil {
+					refZids.Zid(zid)
+				}
+			case meta.TypeIDSet:
+				for _, value := range meta.ListFromValue(pair.Value) {
+					if zid, errParse := id.Parse(value); errParse == nil {
+						refZids.Zid(zid)
+					}
+				}
+			}
+		}
+	}
+	candidates = filterByZid(candidates, refZids)
+	return uc.filterCandidates(ctx, candidates, words)
+}
+
+func filterByZid(candidates []*meta.Meta, ignoreSeq id.Set) []*meta.Meta {
+	result := make([]*meta.Meta, 0, len(candidates))
+	for _, m := range candidates {
+		if !ignoreSeq.Contains(m.Zid) {
+			result = append(result, m)
+		}
+	}
+	return result
+}
+
+func (uc *Query) filterCandidates(ctx context.Context, candidates []*meta.Meta, words []string) []*meta.Meta {
+	result := make([]*meta.Meta, 0, len(candidates))
+candLoop:
+	for _, cand := range candidates {
+		zettel, err := uc.port.GetZettel(ctx, cand.Zid)
+		if err != nil {
+			continue
+		}
+		v := unlinkedVisitor{
+			words: words,
+			found: false,
+		}
+		v.text = v.joinWords(words)
+
+		for _, pair := range zettel.Meta.Pairs() {
+			if meta.Type(pair.Key) != meta.TypeZettelmarkup {
+				continue
+			}
+			is := uc.ucEvaluate.RunMetadata(ctx, pair.Value)
+			ast.Walk(&v, &is)
+			if v.found {
+				result = append(result, cand)
+				continue candLoop
+			}
+		}
+
+		syntax := zettel.Meta.GetDefault(api.KeySyntax, "")
+		if !parser.IsASTParser(syntax) {
+			continue
+		}
+		zn := uc.ucEvaluate.RunZettel(ctx, zettel, syntax)
+		ast.Walk(&v, &zn.Ast)
+		if v.found {
+			result = append(result, cand)
+		}
+	}
+	return result
+}
+
+func (*unlinkedVisitor) joinWords(words []string) string {
+	return " " + strings.ToLower(strings.Join(words, " ")) + " "
+}
+
+type unlinkedVisitor struct {
+	words []string
+	text  string
+	found bool
+}
+
+func (v *unlinkedVisitor) Visit(node ast.Node) ast.Visitor {
+	switch n := node.(type) {
+	case *ast.InlineSlice:
+		v.checkWords(n)
+		return nil
+	case *ast.HeadingNode:
+		return nil
+	case *ast.LinkNode, *ast.EmbedRefNode, *ast.EmbedBLOBNode, *ast.CiteNode:
+		return nil
+	}
+	return v
+}
+
+func (v *unlinkedVisitor) checkWords(is *ast.InlineSlice) {
+	if len(*is) < 2*len(v.words)-1 {
+		return
+	}
+	for _, text := range v.splitInlineTextList(is) {
+		if strings.Contains(text, v.text) {
+			v.found = true
+		}
+	}
+}
+
+func (v *unlinkedVisitor) splitInlineTextList(is *ast.InlineSlice) []string {
+	var result []string
+	var curList []string
+	for _, in := range *is {
+		switch n := in.(type) {
+		case *ast.TextNode:
+			curList = append(curList, strfun.MakeWords(n.Text)...)
+		case *ast.SpaceNode:
+		default:
+			if curList != nil {
+				result = append(result, v.joinWords(curList))
+				curList = nil
+			}
+		}
+	}
+	if curList != nil {
+		result = append(result, v.joinWords(curList))
 	}
 	return result
 }

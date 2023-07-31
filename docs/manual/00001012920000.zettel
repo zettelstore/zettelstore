@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230729115723
+modified: 20230731162343
 
 All API endpoints conform to the pattern ''[PREFIX]LETTER[/ZETTEL-ID]'', where:
 ; ''PREFIX''
@@ -19,11 +19,10 @@ The following letters are currently in use:
 |= Letter:| Without zettel identifier | With [[zettel identifier|00001006050000]] | Mnemonic
 | ''a'' | POST: [[client authentication|00001012050200]] | | **A**uthenticate
 |       | PUT: [[renew access token|00001012050400]] |
-| ''u'' |  | GET [[unlinked references|00001012053900]] | **U**nlinked
 | ''x'' | GET: [[retrieve administrative data|00001012070500]] | | E**x**ecute
 |       | POST: [[execute command|00001012080100]]
-| ''z'' | GET: [[list zettel|00001012051200]] | GET: [[retrieve zettel|00001012053300]] | **Z**ettel
-|       | POST: [[create new zettel|00001012053200]] | PUT: [[update a zettel|00001012054200]]
+| ''z'' | GET: [[list zettel|00001012051200]]/[[query zettel|00001012051400]] | GET: [[retrieve zettel|00001012053300]] | **Z**ettel
+|       | POST: [[create new zettel|00001012053200]] | PUT: [[update zettel|00001012054200]]
 |       |  | DELETE: [[delete zettel|00001012054600]]
 |       |  | MOVE: [[rename zettel|00001012054400]]
 

@@ -65,10 +65,7 @@ func (q *Query) Print(w io.Writer) {
 			if op := term.keys[name]; op == cmpExist || op == cmpNotExist {
 				env.writeString(op2string[op])
 			} else {
-				env.writeString(api.ExistOperator)
-				env.printSpace()
-				env.writeString(name)
-				env.writeString(api.ExistNotOperator)
+				env.writeStrings(api.ExistOperator, " ", name, api.ExistNotOperator)
 			}
 		}
 		for _, name := range maps.Keys(term.mvals) {
@@ -102,6 +99,11 @@ func (pe *PrintEnv) printSpace() {
 }
 func (pe *PrintEnv) write(ch byte)        { pe.w.Write([]byte{ch}) }
 func (pe *PrintEnv) writeString(s string) { io.WriteString(pe.w, s) }
+func (pe *PrintEnv) writeStrings(sSeq ...string) {
+	for _, s := range sSeq {
+		io.WriteString(pe.w, s)
+	}
+}
 
 func (pe *PrintEnv) printZids(zids []id.Zid) {
 	for i, zid := range zids {
@@ -276,9 +278,7 @@ func (pe *PrintEnv) printOrder(order []sortOrder) {
 func (pe *PrintEnv) printPosInt(key string, val int) {
 	if val > 0 {
 		pe.printSpace()
-		pe.writeString(key)
-		pe.writeString(" ")
-		pe.writeString(strconv.Itoa(val))
+		pe.writeStrings(key, " ", strconv.Itoa(val))
 	}
 }
 

@@ -1,0 +1,44 @@
+id: 00001007721200
+title: Query: Unlinked Directive
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+created: 20211119133357
+modified: 20230731163343
+
+The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
+If the number of zettel grow, some of these connections are missing.
+There are various reasons for this.
+Maybe, you forgot that a zettel exists.
+Or you add a zettel later, but forgot that previous zettel already mention its title.
+
+__Unlinked references__ are phrases in a zettel that mention the title of another, currently unlinked zettel.
+
+To retrieve unlinked references to an existing zettel, use the query ''{ID} UNLINKED''.
+
+````
+# curl 'http://127.0.0.1:23123/z?q=00001012000000+UNLINKED'
+00001012921200 API: Encoding of Zettel Access Rights
+````
+
+This returns all zettel (in this case: only one) that references the title of the given Zettel, but does not references it directly.
+
+In addition you may add __phrases__ if you do not want to scan for the title of the given zettel.
+
+```
+# curl 'http://localhost:23123/z?q=00001012054400+UNLINKED+PHRASE+API'
+00001012050600 API: Provide an access token
+00001012921200 API: Encoding of Zettel Access Rights
+00001012080200 API: Check for authentication
+00001012080500 API: Refresh internal data
+00001012050200 API: Authenticate a client
+00001010040700 Access token
+```
+
+This finds all zettel that does contain the phrase ""API"" but does not directly reference the given zettel.
+
+The directive searches within all zettel whether the title of the specified zettel occurs there.
+The other zettel must not link to the specified zettel.
+The title must not occur within a link (e.g. to another zettel), in a [[heading|00001007030300]], in a [[citation|00001007040340]], and must have a uniform formatting.
+The match must be exact, but is case-insensitive.
+For example ""API"" does not match ""API:"".
