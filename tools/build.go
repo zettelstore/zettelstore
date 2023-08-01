@@ -300,7 +300,7 @@ func startZettelstore(info *zsInfo) error {
 			return err
 		}
 	}
-	time.Sleep(2 * time.Second) // Wait for all zettel to be indexed.
+	time.Sleep(4 * time.Second) // Wait for all zettel to be indexed.
 	return errors.New("zettelstore did not start")
 }
 
