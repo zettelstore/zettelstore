@@ -318,40 +318,39 @@ func TestExecuteCommand(t *testing.T) {
 	}
 }
 
-// TODO: rework with QueryZettel
-// func TestListTags(t *testing.T) {
-// 	t.Parallel()
-// 	c := getClient()
-// 	c.SetAuth("owner", "owner")
-// 	tm, err := c.QueryMapMeta(context.Background(), api.ActionSeparator+api.KeyTags)
-// 	if err != nil {
-// 		t.Error(err)
-// 		return
-// 	}
-// 	tags := []struct {
-// 		key  string
-// 		size int
-// 	}{
-// 		{"#invisible", 1},
-// 		{"#user", 4},
-// 		{"#test", 4},
-// 	}
-// 	if len(tm) != len(tags) {
-// 		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(tm), tm)
-// 	}
-// 	for _, tag := range tags {
-// 		if zl, ok := tm[tag.key]; !ok {
-// 			t.Errorf("No tag %v: %v", tag.key, tm)
-// 		} else if len(zl) != tag.size {
-// 			t.Errorf("Expected %d zettel with tag %v, but got %v", tag.size, tag.key, zl)
-// 		}
-// 	}
-// 	for i, id := range tm["#user"] {
-// 		if id != tm["#test"][i] {
-// 			t.Errorf("Tags #user and #test have different content: %v vs %v", tm["#user"], tm["#test"])
-// 		}
-// 	}
-// }
+func TestListTags(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	agg, err := c.QueryAggregate(context.Background(), api.ActionSeparator+api.KeyTags)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	tags := []struct {
+		key  string
+		size int
+	}{
+		{"#invisible", 1},
+		{"#user", 4},
+		{"#test", 4},
+	}
+	if len(agg) != len(tags) {
+		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(agg), agg)
+	}
+	for _, tag := range tags {
+		if zl, ok := agg[tag.key]; !ok {
+			t.Errorf("No tag %v: %v", tag.key, agg)
+		} else if len(zl) != tag.size {
+			t.Errorf("Expected %d zettel with tag %v, but got %v", tag.size, tag.key, zl)
+		}
+	}
+	for i, id := range agg["#user"] {
+		if id != agg["#test"][i] {
+			t.Errorf("Tags #user and #test have different content: %v vs %v", agg["#user"], agg["#test"])
+		}
+	}
+}
 
 // TODO: rework with QueryZettel
 // func TestListRoles(t *testing.T) {

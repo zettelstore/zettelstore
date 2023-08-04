@@ -247,7 +247,7 @@ func (jze *jsonZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	return err
 }
 func (*jsonZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arrangement) error {
-	mm := make(api.MapMeta, len(arr))
+	mm := make(api.Aggregate, len(arr))
 	for key, metaList := range arr {
 		zidList := make([]api.ZettelID, 0, len(metaList))
 		for _, m := range metaList {
