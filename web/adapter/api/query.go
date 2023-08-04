@@ -229,23 +229,40 @@ type jsonZettelEncoder struct {
 	getRights func(*meta.Meta) api.ZettelRights
 }
 
+type zidMetaJSON struct {
+	ID     api.ZettelID     `json:"id"`
+	Meta   api.ZettelMeta   `json:"meta"`
+	Rights api.ZettelRights `json:"rights"`
+}
+
+type zettelListJSON struct {
+	Query string        `json:"query"`
+	Human string        `json:"human"`
+	List  []zidMetaJSON `json:"list"`
+}
+
 func (jze *jsonZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
-	result := make([]api.ZidMetaJSON, 0, len(ml))
+	result := make([]zidMetaJSON, 0, len(ml))
 	for _, m := range ml {
-		result = append(result, api.ZidMetaJSON{
+		result = append(result, zidMetaJSON{
 			ID:     api.ZettelID(m.Zid.String()),
 			Meta:   m.Map(),
 			Rights: jze.getRights(m),
 		})
 	}
 
-	err := encodeJSONData(w, api.ZettelListJSON{
+	err := encodeJSONData(w, zettelListJSON{
 		Query: jze.sq.String(),
 		Human: jze.sq.Human(),
 		List:  result,
 	})
 	return err
 }
+
+type mapListJSON struct {
+	Map api.Aggregate `json:"map"`
+}
+
 func (*jsonZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arrangement) error {
 	mm := make(api.Aggregate, len(arr))
 	for key, metaList := range arr {
@@ -255,5 +272,5 @@ func (*jsonZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arran
 		}
 		mm[key] = zidList
 	}
-	return encodeJSONData(w, api.MapListJSON{Map: mm})
+	return encodeJSONData(w, mapListJSON{Map: mm})
 }

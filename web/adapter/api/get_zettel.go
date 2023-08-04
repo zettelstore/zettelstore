@@ -161,6 +161,19 @@ func meta2sz(m *meta.Meta, sf sx.SymbolFactory) sx.Object {
 	return result
 }
 
+type zettelJSON struct {
+	ID       api.ZettelID     `json:"id"`
+	Meta     api.ZettelMeta   `json:"meta"`
+	Encoding string           `json:"encoding"`
+	Content  string           `json:"content"`
+	Rights   api.ZettelRights `json:"rights"`
+}
+
+type zettelContentJSON struct {
+	Encoding string `json:"encoding"`
+	Content  string `json:"content"`
+}
+
 func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
 	z, err := getZettel.Run(ctx, zid)
 	if err != nil {
@@ -172,7 +185,7 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 	switch part {
 	case partZettel:
 		zContent, encoding := z.Content.Encode()
-		err = encodeJSONData(&buf, api.ZettelJSON{
+		err = encodeJSONData(&buf, zettelJSON{
 			ID:       api.ZettelID(zid.String()),
 			Meta:     z.Meta.Map(),
 			Encoding: encoding,
@@ -189,7 +202,7 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 
 	case partContent:
 		zContent, encoding := z.Content.Encode()
-		err = encodeJSONData(&buf, api.ZettelContentJSON{
+		err = encodeJSONData(&buf, zettelContentJSON{
 			Encoding: encoding,
 			Content:  zContent,
 		})

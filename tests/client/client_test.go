@@ -73,7 +73,7 @@ func TestListZettel(t *testing.T) {
 	for i, tc := range testdata {
 		t.Run(fmt.Sprintf("User %d/%q", i, tc.user), func(tt *testing.T) {
 			c.SetAuth(tc.user, tc.user)
-			q, h, l, err := c.ListZettelJSON(context.Background(), "")
+			q, h, l, err := c.QueryZettelData(context.Background(), "")
 			if err != nil {
 				tt.Error(err)
 				return
@@ -91,7 +91,7 @@ func TestListZettel(t *testing.T) {
 		})
 	}
 	search := api.KeyRole + api.SearchOperatorHas + api.ValueRoleConfiguration + " ORDER id"
-	q, h, l, err := c.ListZettelJSON(context.Background(), search)
+	q, h, l, err := c.QueryZettelData(context.Background(), search)
 	if err != nil {
 		t.Error(err)
 		return
@@ -117,14 +117,14 @@ func TestListZettel(t *testing.T) {
 	compareZettelList(t, pl, l)
 }
 
-func compareZettelList(t *testing.T, pl [][]byte, l []api.ZidMetaJSON) {
+func compareZettelList(t *testing.T, pl [][]byte, l []api.ZidMetaRights) {
 	t.Helper()
 	if len(pl) != len(l) {
-		t.Errorf("Different list lenght: Plain=%d, JSON=%d", len(pl), len(l))
+		t.Errorf("Different list lenght: Plain=%d, Data=%d", len(pl), len(l))
 	} else {
 		for i, line := range pl {
 			if got := api.ZettelID(line[:14]); got != l[i].ID {
-				t.Errorf("%d: JSON=%q, got=%q", i, l[i].ID, got)
+				t.Errorf("%d: Data=%q, got=%q", i, l[i].ID, got)
 			}
 		}
 	}
@@ -196,7 +196,7 @@ func TestGetParsedEvaluatedZettel(t *testing.T) {
 	}
 }
 
-func checkListZid(t *testing.T, l []api.ZidMetaJSON, pos int, expected api.ZettelID) {
+func checkListZid(t *testing.T, l []api.ZidMetaRights, pos int, expected api.ZettelID) {
 	t.Helper()
 	if got := api.ZettelID(l[pos].ID); got != expected {
 		t.Errorf("Expected result[%d]=%v, but got %v", pos, expected, got)
@@ -207,7 +207,7 @@ func TestGetZettelOrder(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	_, _, metaSeq, err := c.ListZettelJSON(context.Background(), string(api.ZidTOCNewTemplate)+" "+api.ItemsDirective)
+	_, _, metaSeq, err := c.QueryZettelData(context.Background(), string(api.ZidTOCNewTemplate)+" "+api.ItemsDirective)
 	if err != nil {
 		t.Error(err)
 		return
@@ -271,7 +271,7 @@ func TestGetUnlinkedReferences(t *testing.T) {
 	t.Parallel()
 	c := getClient()
 	c.SetAuth("owner", "owner")
-	_, _, metaSeq, err := c.ListZettelJSON(context.Background(), string(api.ZidDefaultHome)+" "+api.UnlinkedDirective)
+	_, _, metaSeq, err := c.QueryZettelData(context.Background(), string(api.ZidDefaultHome)+" "+api.UnlinkedDirective)
 	if err != nil {
 		t.Error(err)
 		return
