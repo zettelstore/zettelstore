@@ -352,26 +352,25 @@ func TestListTags(t *testing.T) {
 	}
 }
 
-// TODO: rework with QueryZettel
-// func TestListRoles(t *testing.T) {
-// 	t.Parallel()
-// 	c := getClient()
-// 	c.SetAuth("owner", "owner")
-// 	rl, err := c.QueryMapMeta(context.Background(), api.ActionSeparator+api.KeyRole)
-// 	if err != nil {
-// 		t.Error(err)
-// 		return
-// 	}
-// 	exp := []string{"configuration", "user", "zettel"}
-// 	if len(rl) != len(exp) {
-// 		t.Errorf("Expected %d different tags, but got only %d (%v)", len(exp), len(rl), rl)
-// 	}
-// 	for _, id := range exp {
-// 		if _, found := rl[id]; !found {
-// 			t.Errorf("Role map expected key %q", id)
-// 		}
-// 	}
-// }
+func TestListRoles(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	agg, err := c.QueryAggregate(context.Background(), api.ActionSeparator+api.KeyRole)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	exp := []string{"configuration", "user", "zettel"}
+	if len(agg) != len(exp) {
+		t.Errorf("Expected %d different tags, but got only %d (%v)", len(exp), len(agg), agg)
+	}
+	for _, id := range exp {
+		if _, found := agg[id]; !found {
+			t.Errorf("Role map expected key %q", id)
+		}
+	}
+}
 
 func TestVersion(t *testing.T) {
 	t.Parallel()
