@@ -146,17 +146,20 @@ func TestGetZettelData(t *testing.T) {
 		t.Errorf("Expect non-empty content, but empty encoding (got %q)", z.Encoding)
 	}
 
-	m, err := c.GetMetaJSON(context.Background(), api.ZidDefaultHome)
+	mr, err := c.GetMetaData(context.Background(), api.ZidDefaultHome)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if len(m) != len(z.Meta) {
-		t.Errorf("Pure meta differs from zettel meta: %s vs %s", m, z.Meta)
+	if mr.Rights == api.ZettelCanNone {
+		t.Error("rights must be greater zero")
+	}
+	if len(mr.Meta) != len(z.Meta) {
+		t.Errorf("Pure meta differs from zettel meta: %s vs %s", mr.Meta, z.Meta)
 		return
 	}
 	for k, v := range z.Meta {
-		got, ok := m[k]
+		got, ok := mr.Meta[k]
 		if !ok {
 			t.Errorf("Pure meta has no key %q", k)
 			continue

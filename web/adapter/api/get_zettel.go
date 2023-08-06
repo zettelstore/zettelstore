@@ -168,7 +168,10 @@ type zettelJSON struct {
 	Content  string           `json:"content"`
 	Rights   api.ZettelRights `json:"rights"`
 }
-
+type zettelMetaJSON struct {
+	Meta   api.ZettelMeta   `json:"meta"`
+	Rights api.ZettelRights `json:"rights"`
+}
 type zettelContentJSON struct {
 	Encoding string `json:"encoding"`
 	Content  string `json:"content"`
@@ -195,7 +198,7 @@ func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Z
 
 	case partMeta:
 		m := z.Meta
-		err = encodeJSONData(&buf, api.MetaJSON{
+		err = encodeJSONData(&buf, zettelMetaJSON{
 			Meta:   m.Map(),
 			Rights: a.getRights(ctx, m),
 		})
