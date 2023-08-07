@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_14"></a>
+<h2>Changes for Version 0.14.0 (pending)</h2>
+
 <a id="0_13"></a>
-<h2>Changes for Version 0.13.0 (pending)</h2>
+<h2>Changes for Version 0.13.0 (2023-08-07)</h2>
   *  There are for new search operators: less, not less, greater, not greater.
      These use the same syntax as the operators prefix, not prefix, suffix, not
      suffix. The latter are no denoted as <tt>[</tt>, <tt>![</tt>, <tt>]</tt>,

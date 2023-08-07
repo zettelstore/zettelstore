@@ -3,10 +3,8 @@
 Here is a list of some shortcomings of Zettelstore.
 They are planned to be solved.
 
-<h3>Serious limitations</h3>
-  *  &hellip;
-
-<h3>Smaller limitations</h3>
+  *  Zettelstore must have indexed all zettel to make use of queries.
+     Otherwise not all zettel may be returned.
   *  Quoted attribute values are not yet supported in Zettelmarkup:
      <code>{key="value with space"}</code>.
   *  The horizontal tab character (<tt>U+0009</tt>) is not supported.
