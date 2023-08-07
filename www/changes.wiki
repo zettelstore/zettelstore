@@ -16,6 +16,9 @@
      longer available. Please use the query expression <tt>{ID} UNLINKED</tt>
      instead.
      (breaking: api)
+  *  All API endpoints allow to encode zettel data with the <tt>data</tt>
+     encodings, incl. creating, updating, retrieving, and querying zettel.
+     (major: api)
   *  Change syntax for context query to <tt>zid ... CONTEXT</tt>. This will
      allow to add more directives that operate on zettel identifier. Old syntax
      <tt>CONTEXT zid</tt> will be removed in 0.14.
@@ -49,6 +52,12 @@
      (minor: webui)
   *  Always log the found configuration file.
      (minor: server)
+  *  The use of the <tt>json</tt> zettel encoding is deprecated (since version
+     0.12.0). Support for this encoding will be removed in version 0.14.0.
+     Please use the new <tt>data</tt> encoding instead.
+     (deprecated: api)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_12"></a>
 <h2>Changes for Version 0.12.0 (2023-06-05)</h2>
