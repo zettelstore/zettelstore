@@ -107,7 +107,7 @@ func (ps *parserState) parse(q *Query) *Query {
 				inp.SetPos(pos)
 				break
 			}
-			q = ps.parseContext(q, pos)
+			q = ps.parseContext(q)
 			hasContext = true
 			continue
 		}
@@ -196,31 +196,15 @@ func (ps *parserState) parse(q *Query) *Query {
 	return q
 }
 
-func (ps *parserState) parseContext(q *Query, pos int) *Query {
+func (ps *parserState) parseContext(q *Query) *Query {
 	inp := ps.inp
-
-	if q == nil || len(q.zids) == 0 {
-		ps.skipSpace()
-		if ps.mustStop() {
-			inp.SetPos(pos)
-			return q
-		}
-		zid, ok := ps.scanZid()
-		if !ok {
-			inp.SetPos(pos)
-			return q
-		}
-		q = createIfNeeded(q)
-		q.zids = append(q.zids, zid)
-	}
-
 	spec := &ContextSpec{}
 	for {
 		ps.skipSpace()
 		if ps.mustStop() {
 			break
 		}
-		pos = inp.Pos
+		pos := inp.Pos
 		if ps.acceptSingleKw(api.BackwardDirective) {
 			spec.Direction = ContextDirBackward
 			continue
@@ -246,6 +230,7 @@ func (ps *parserState) parseContext(q *Query, pos int) *Query {
 		inp.SetPos(pos)
 		break
 	}
+	q = createIfNeeded(q)
 	q.directives = append(q.directives, spec)
 	return q
 }

@@ -5,6 +5,9 @@
   *  Remove support for JSON. This was marked deprecated in version 0.12.0. Use
      the <tt>data</tt> encoding instead, a form of symbolic expressions.
      (breaking: api; minor: webui)
+  *  Remove deprecated syntax for a context list: <tt>CONTEXT zid</tt>. Use
+     <tt>zid CONTEXT</tt> instead. It was deprecated in version 0.13.0.
+     (breaking: api, webui, zettelmarkup)
 
 <a id="0_13"></a>
 <h2>Changes for Version 0.13.0 (2023-08-07)</h2>
