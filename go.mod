@@ -7,7 +7,7 @@ require (
 	github.com/yuin/goldmark v1.5.5
 	golang.org/x/crypto v0.11.0
 	golang.org/x/term v0.10.0
-	golang.org/x/text v0.11.0
+	golang.org/x/text v0.12.0
 	zettelstore.de/client.fossil v0.0.0-20230804123922-415d591773f1
 	zettelstore.de/sx.fossil v0.0.0-20230727172325-adec5a7ba284
 )
