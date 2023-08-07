@@ -203,11 +203,7 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sx.Pair {
 		if i < 2 {
 			u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
 			u.AppendKVQuery(api.QueryKeyPart, part)
-			last = last.AppendBang(sx.Cons(sx.MakeString("data"), sx.MakeString(u.String())))
-			u.ClearQuery()
-			u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
-			u.AppendKVQuery(api.QueryKeyPart, part)
-			last.AppendBang(sx.Cons(sx.MakeString("json"), sx.MakeString(u.String())))
+			last.AppendBang(sx.Cons(sx.MakeString("data"), sx.MakeString(u.String())))
 			u.ClearQuery()
 		}
 		i++

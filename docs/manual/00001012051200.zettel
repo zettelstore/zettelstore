@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230703180113
+modified: 20230807170810
 
 To list all zettel just send a HTTP GET request to the [[endpoint|00001012920000]] ''/z''[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header].
 Always use the endpoint ''/z'' to work with a list of zettel.
@@ -65,103 +65,6 @@ Pretty-printed, this results in:
 * Nested in ''meta'' are the metadata, each as a key/value pair.
 * ''rights'' specifies the [[access rights|00001012921200]] the user has for this zettel.
 
-=== JSON output (deprecated)
-
-Alternatively, you may retrieve the list of all zettel as a JSON object by specifying the encoding with the query parameter ''enc=json'':
-
-```sh
-# curl 'http://127.0.0.1:23123/z?enc=json'
-{"query":"","human":"","list":[{"id":"00001012051200","meta":{"back":"00001012000000","backward":"00001012000000 00001012920000","box-number":"1","created":"20210126175322","forward":"00001006020000 00001006050000 00001007700000 00001010040100 00001012050200 00001012051400 00001012920000 00001012921000 00001014000000","modified":"20221219150626","published":"20221219150626","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: List all zettel"},"rights":62},{"id":"00001012050600","meta":{"back":"00001012000000 00001012080500","backward":"00001012000000 00001012080500","box-number":"1","created":"00010101000000","forward":"00001012050200 00001012921000","modified":"20220218130020","published":"20220218130020","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Provide an access token"},"rights":62},{"id":"00001012050400","meta":{"back":"00001010040700 00001012000000","backward":"00001010040700 00001012000000 00001012920000 00001012921000","box-number":"1","created":"00010101000000","forward":"00001010040100 00001012050200 00001012920000 00001012921000","modified":"20220107215751","published":"20220107215751","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Renew an access token"},"rights":62},{"id":"00001012050200","meta":{"back":"00001012000000 00001012050400 00001012050600 00001012051200 00001012051400 00001012053300 00001012053400 00001012053500 00001012053600 00001012080200","backward":"00001010040700 00001012000000 00001012050400 00001012050600 00001012051200 00001012051400 00001012053300 00001012053400 00001012053500 00001012053600 00001012080200 00001012920000 00001012921000","box-number":"1","created":"00010101000000","forward":"00001004010000 00001010040100 00001010040200 00001010040700 00001012920000 00001012921000","modified":"20220107215844","published":"20220107215844","role":"manual","syntax":"zmk","tags":"#api #manual #zettelstore","title":"API: Authenticate a client"},"rights":62}, ...]}
-```
-
-If you reformat the JSON output, you will see its structure better:
-```
-{
-  "query": "",
-  "human": "",
-  "list": [
-    {
-      "id": "00001012051200",
-      "meta": {
-        "back": "00001012000000",
-        "backward": "00001012000000 00001012920000",
-        "box-number": "1",
-        "created": "20210126175322",
-        "forward": "00001006020000 00001006050000 00001007700000 00001010040100 00001012050200 00001012051400 00001012920000 00001012921000 00001014000000",
-        "modified": "20221219151200",
-        "published": "20221219151200",
-        "role": "manual",
-        "syntax": "zmk",
-        "tags": "#api #manual #zettelstore",
-        "title": "API: List all zettel"
-      },
-      "rights": 62
-    },
-    {
-      "id": "00001012050600",
-      "meta": {
-        "back": "00001012000000 00001012080500",
-        "backward": "00001012000000 00001012080500",
-        "box-number": "1",
-        "created": "00010101000000",
-        "forward": "00001012050200 00001012921000",
-        "modified": "20220218130020",
-        "published": "20220218130020",
-        "role": "manual",
-        "syntax": "zmk",
-        "tags": "#api #manual #zettelstore",
-        "title": "API: Provide an access token"
-      },
-      "rights": 62
-    },
-    {
-      "id": "00001012050400",
-      "meta": {
-        "back": "00001010040700 00001012000000",
-        "backward": "00001010040700 00001012000000 00001012920000 00001012921000",
-        "box-number": "1",
-        "created": "00010101000000",
-        "forward": "00001010040100 00001012050200 00001012920000 00001012921000",
-        "modified": "20220107215751",
-        "published": "20220107215751",
-        "role": "manual",
-        "syntax": "zmk",
-        "tags": "#api #manual #zettelstore",
-        "title": "API: Renew an access token"
-      },
-      "rights": 62
-    },
-    {
-      "id": "00001012050200",
-      "meta": {
-        "back": "00001012000000 00001012050400 00001012050600 00001012051200 00001012051400 00001012053300 00001012053400 00001012053500 00001012053600 00001012
-080200",
-        "backward": "00001010040700 00001012000000 00001012050400 00001012050600 00001012051200 00001012051400 00001012053300 00001012053400 00001012053500 0000
-1012053600 00001012080200 00001012920000 00001012921000",
-        "box-number": "1",
-        "created": "00010101000000",
-        "forward": "00001004010000 00001010040100 00001010040200 00001010040700 00001012920000 00001012921000",
-        "modified": "20220107215844",
-        "published": "20220107215844",
-        "role": "manual",
-        "syntax": "zmk",
-        "tags": "#api #manual #zettelstore",
-        "title": "API: Authenticate a client"
-      },
-      "rights": 62
-    }
-  ]
-}
-```
-
-Again, the list is typically **not** sorted, for example by the zettel identifier.
-
-The JSON object contains a key ''"list"'' where its value is a list of zettel JSON objects.
-These zettel JSON objects themselves contains the keys ''"id"'' (value is a string containing the [[zettel identifier|00001006050000]]), ''"meta"'' (value as a JSON object), and ''"rights"'' (encodes the [[access rights|00001012921200]] for the given zettel).
-The value of key ''"meta"'' effectively contains all metadata of the identified zettel, where metadata keys are encoded as JSON object keys and metadata values encoded as JSON strings.
-
-The JSON objects keys ''"query"'' and ''"human"'' will be explained later in this manual.
-
 === Note
 This request (and similar others) will always return a list of metadata, provided the request was syntactically correct.
 There will never be a HTTP status code 403 (Forbidden), even if [[authentication was enabled|00001010040100]] and you did not provide a valid access token.
@@ -171,7 +74,7 @@ With this call, you cannot differentiate between an empty result list (e.g becau
 
 === HTTP Status codes
 ; ''200''
-: Retrieval was successful, the body contains an [[appropriate JSON object|00001012921000]].
+: Retrieval was successful, the body contains an appropriate data value.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.

@@ -11,7 +11,6 @@
 package api
 
 import (
-	"bytes"
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
@@ -22,10 +21,6 @@ import (
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 )
-
-type zidJSON struct {
-	ID api.ZettelID `json:"id"`
-}
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
@@ -40,8 +35,6 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 			zettel, err = buildZettelFromPlainData(r, id.Invalid)
 		case api.EncoderData:
 			zettel, err = buildZettelFromData(r, id.Invalid)
-		case api.EncoderJson:
-			zettel, err = buildZettelFromJSONData(r, id.Invalid)
 		default:
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
@@ -68,17 +61,6 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 		case api.EncoderData:
 			result = []byte(sx.Int64(newZid).Repr())
 			contentType = content.SXPF
-		case api.EncoderJson:
-			var buf bytes.Buffer
-			err = encodeJSONData(&buf, zidJSON{ID: api.ZettelID(newZid.String())})
-			if err != nil {
-				a.log.Fatal().Err(err).Zid(newZid).Msg("Unable to store new Zid in buffer")
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-			result = buf.Bytes()
-			contentType = content.JSON
-			location.AppendKVQuery(api.QueryKeyEncoding, api.EncodingJson)
 		default:
 			panic(encStr)
 		}

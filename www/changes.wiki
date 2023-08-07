@@ -2,6 +2,9 @@
 
 <a id="0_14"></a>
 <h2>Changes for Version 0.14.0 (pending)</h2>
+  *  Remove support for JSON. This was marked deprecated in version 0.12.0. Use
+     the <tt>data</tt> encoding instead, a form of symbolic expressions.
+     (breaking: api; minor: webui)
 
 <a id="0_13"></a>
 <h2>Changes for Version 0.13.0 (2023-08-07)</h2>

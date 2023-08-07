@@ -27,7 +27,6 @@ const (
 	mimeHTML     = "text/html; charset=utf-8"
 	mimeJPEG     = "image/jpeg"
 	mimeMarkdown = "text/markdown; charset=utf-8"
-	JSON         = "application/json"
 	PlainText    = "text/plain; charset=utf-8"
 	mimePNG      = "image/png"
 	SXPF         = PlainText

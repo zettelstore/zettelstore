@@ -56,13 +56,6 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query) http.HandlerFunc {
 			}
 			contentType = content.SXPF
 
-		case api.EncoderJson: // DEPRECATED
-			encoder = &jsonZettelEncoder{
-				sq:        sq,
-				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
-			}
-			contentType = content.JSON
-
 		default:
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
@@ -225,56 +218,4 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 		result.Cons(sf.MustMake("list")),
 	))
 	return err
-}
-
-// jsonZettelEncoder is DEPRECATED
-type jsonZettelEncoder struct {
-	sq        *query.Query
-	getRights func(*meta.Meta) api.ZettelRights
-}
-
-type zidMetaJSON struct {
-	ID     api.ZettelID     `json:"id"`
-	Meta   api.ZettelMeta   `json:"meta"`
-	Rights api.ZettelRights `json:"rights"`
-}
-
-type zettelListJSON struct {
-	Query string        `json:"query"`
-	Human string        `json:"human"`
-	List  []zidMetaJSON `json:"list"`
-}
-
-func (jze *jsonZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
-	result := make([]zidMetaJSON, 0, len(ml))
-	for _, m := range ml {
-		result = append(result, zidMetaJSON{
-			ID:     api.ZettelID(m.Zid.String()),
-			Meta:   m.Map(),
-			Rights: jze.getRights(m),
-		})
-	}
-
-	err := encodeJSONData(w, zettelListJSON{
-		Query: jze.sq.String(),
-		Human: jze.sq.Human(),
-		List:  result,
-	})
-	return err
-}
-
-type mapListJSON struct {
-	Map api.Aggregate `json:"map"`
-}
-
-func (*jsonZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arrangement) error {
-	mm := make(api.Aggregate, len(arr))
-	for key, metaList := range arr {
-		zidList := make([]api.ZettelID, 0, len(metaList))
-		for _, m := range metaList {
-			zidList = append(zidList, api.ZettelID(m.Zid.String()))
-		}
-		mm[key] = zidList
-	}
-	return encodeJSONData(w, mapListJSON{Map: mm})
 }

@@ -36,8 +36,6 @@ func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.H
 			zettel, err = buildZettelFromPlainData(r, zid)
 		case api.EncoderData:
 			zettel, err = buildZettelFromData(r, zid)
-		case api.EncoderJson:
-			zettel, err = buildZettelFromJSONData(r, zid)
 		default:
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return

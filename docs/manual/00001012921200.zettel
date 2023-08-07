@@ -3,10 +3,11 @@ title: API: Encoding of Zettel Access Rights
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
-modified: 20220201171959
+created: 20220201173115
+modified: 20230807164817
 
-Various API calls return a JSON key ''"rights"'' that encodes the access rights the user currently has.
-It is an integer number between 0 and 62.[^Not all values in this range are used.]
+Various API calls return a symbolic expression list ''(rights N)'', with ''N'' as a number, that encodes the access rights the user currently has.
+''N'' is an integer number between 0 and 62.[^Not all values in this range are used.]
 
 The value ""0"" signals that something went wrong internally while determining the access rights.
 

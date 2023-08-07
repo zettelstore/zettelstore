@@ -48,9 +48,6 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usec
 		case api.EncoderData:
 			a.writeSzData(w, ctx, zid, part, getZettel)
 
-		case api.EncoderJson:
-			a.writeJSONData(w, ctx, zid, part, getZettel)
-
 		default:
 			var zn *ast.ZettelNode
 			var em func(value string) ast.InlineSlice
@@ -136,64 +133,6 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 	}
 	err = a.writeObject(w, zid, obj)
 	a.log.IfErr(err).Zid(zid).Msg("write sx data")
-}
-
-type zettelJSON struct {
-	ID       api.ZettelID     `json:"id"`
-	Meta     api.ZettelMeta   `json:"meta"`
-	Encoding string           `json:"encoding"`
-	Content  string           `json:"content"`
-	Rights   api.ZettelRights `json:"rights"`
-}
-type zettelMetaJSON struct {
-	Meta   api.ZettelMeta   `json:"meta"`
-	Rights api.ZettelRights `json:"rights"`
-}
-type zettelContentJSON struct {
-	Encoding string `json:"encoding"`
-	Content  string `json:"content"`
-}
-
-func (a *API) writeJSONData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
-	z, err := getZettel.Run(ctx, zid)
-	if err != nil {
-		a.reportUsecaseError(w, err)
-		return
-	}
-
-	var buf bytes.Buffer
-	switch part {
-	case partZettel:
-		zContent, encoding := z.Content.Encode()
-		err = encodeJSONData(&buf, zettelJSON{
-			ID:       api.ZettelID(zid.String()),
-			Meta:     z.Meta.Map(),
-			Encoding: encoding,
-			Content:  zContent,
-			Rights:   a.getRights(ctx, z.Meta),
-		})
-
-	case partMeta:
-		m := z.Meta
-		err = encodeJSONData(&buf, zettelMetaJSON{
-			Meta:   m.Map(),
-			Rights: a.getRights(ctx, m),
-		})
-
-	case partContent:
-		zContent, encoding := z.Content.Encode()
-		err = encodeJSONData(&buf, zettelContentJSON{
-			Encoding: encoding,
-			Content:  zContent,
-		})
-	}
-	if err != nil {
-		a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store zettel in buffer")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	err = writeBuffer(w, &buf, content.JSON)
-	a.log.IfErr(err).Zid(zid).Msg("Write JSON data")
 }
 
 func (a *API) writeEncodedZettelPart(

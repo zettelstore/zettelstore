@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230109105034
+modified: 20230807170019
 
 The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -23,7 +23,7 @@ The same default values applies to this endpoint.
 
 === HTTP Status codes
 ; ''200''
-: Retrieval was successful, the body contains an appropriate JSON object.
+: Retrieval was successful, the body contains an appropriate data value.
 ; ''400''
 : Request was not valid. 
   There are several reasons for this.
