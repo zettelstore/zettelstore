@@ -17,6 +17,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/sexp"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
@@ -25,9 +26,7 @@ import (
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
-	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
-	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
@@ -121,44 +120,22 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 	var obj sx.Object
 	switch part {
 	case partZettel:
-		obj = zettel2sz(z, a.getRights(ctx, z.Meta))
+		zContent, zEncoding := z.Content.Encode()
+		obj = sexp.EncodeZettel(api.ZettelData{
+			Meta:     z.Meta.Map(),
+			Rights:   a.getRights(ctx, z.Meta),
+			Encoding: zEncoding,
+			Content:  zContent,
+		})
 
 	case partMeta:
-		m := z.Meta
-		obj = metaRights2sz(m, a.getRights(ctx, m))
+		obj = sexp.EncodeMetaRights(api.MetaRights{
+			Meta:   z.Meta.Map(),
+			Rights: a.getRights(ctx, z.Meta),
+		})
 	}
 	err = a.writeObject(w, zid, obj)
 	a.log.IfErr(err).Zid(zid).Msg("write sx data")
-}
-
-func zettel2sz(z zettel.Zettel, rights api.ZettelRights) sx.Object {
-	zContent, encoding := z.Content.Encode()
-	sf := sx.MakeMappedFactory()
-	return sx.MakeList(
-		sf.MustMake("zettel"),
-		sx.MakeList(sf.MustMake("id"), sx.MakeString(z.Meta.Zid.String())),
-		meta2sz(z.Meta, sf),
-		sx.MakeList(sf.MustMake("rights"), sx.Int64(int64(rights))),
-		sx.MakeList(sf.MustMake("encoding"), sx.MakeString(encoding)),
-		sx.MakeList(sf.MustMake("content"), sx.MakeString(zContent)),
-	)
-}
-func metaRights2sz(m *meta.Meta, rights api.ZettelRights) *sx.Pair {
-	sf := sx.MakeMappedFactory()
-	return sx.MakeList(
-		sf.MustMake("list"),
-		meta2sz(m, sf),
-		sx.MakeList(sf.MustMake("rights"), sx.Int64(int64(rights))),
-	)
-}
-func meta2sz(m *meta.Meta, sf sx.SymbolFactory) sx.Object {
-	result := sx.Nil().Cons(sf.MustMake("meta"))
-	curr := result
-	for _, p := range m.ComputedPairs() {
-		val := sx.MakeList(sf.MustMake(p.Key), sx.MakeString(p.Value))
-		curr = curr.AppendBang(val)
-	}
-	return result
 }
 
 type zettelJSON struct {

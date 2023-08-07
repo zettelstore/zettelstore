@@ -30,7 +30,7 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
 	var zettel zettel.Zettel
 	dec := json.NewDecoder(r.Body)
-	var zettelData api.ZettelData
+	var zettelData api.ZettelDataJSON
 	if err := dec.Decode(&zettelData); err != nil {
 		return zettel, err
 	}

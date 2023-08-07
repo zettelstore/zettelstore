@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/sexp"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
@@ -189,7 +190,10 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	result[0] = sf.MustMake("list")
 	symID, symZettel := sf.MustMake("id"), sf.MustMake("zettel")
 	for i, m := range ml {
-		msz := metaRights2sz(m, dze.getRights(m))
+		msz := sexp.EncodeMetaRights(api.MetaRights{
+			Meta:   m.Map(),
+			Rights: dze.getRights(m),
+		})
 		msz = sx.Cons(sx.MakeList(symID, sx.Int64(m.Zid)), msz.Cdr()).Cons(symZettel)
 		result[i+1] = msz
 	}
