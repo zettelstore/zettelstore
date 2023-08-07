@@ -24,7 +24,7 @@ packages may be experimental.
 
 [https://mastodon.social/tags/Zettelstore|Stay tuned]&nbsp;&hellip;
 <hr>
-<h3>Latest Release: 0.13.0 (2023-06-05)</h3>
+<h3>Latest Release: 0.13.0 (2023-08-07)</h3>
   *  [./download.wiki|Download]
   *  [./changes.wiki#0_13|Change summary]
   *  [/timeline?p=v0.13.0&bt=v0.12.0&y=ci|Check-ins for version 0.13.0],
