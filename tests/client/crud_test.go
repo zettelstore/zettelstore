@@ -63,7 +63,7 @@ func TestCreateGetRenameDeleteZettelData(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("creator", "creator")
-	zid, err := c.CreateZettelData(context.Background(), api.ZettelDataJSON{
+	zid, err := c.CreateZettelData(context.Background(), api.ZettelData{
 		Meta:     nil,
 		Encoding: "",
 		Content:  "Example",
@@ -93,7 +93,7 @@ func TestCreateGetDeleteZettelData(t *testing.T) {
 	c := getClient()
 	c.SetAuth("owner", "owner")
 	wrongModified := "19691231115959"
-	zid, err := c.CreateZettelData(context.Background(), api.ZettelDataJSON{
+	zid, err := c.CreateZettelData(context.Background(), api.ZettelData{
 		Meta: api.ZettelMeta{
 			api.KeyTitle:    "A\nTitle", // \n must be converted into a space
 			api.KeyModified: wrongModified,
@@ -168,12 +168,7 @@ func TestUpdateZettelData(t *testing.T) {
 	z.Meta[api.KeyTitle] = newTitle
 	wrongModified := "19691231235959"
 	z.Meta[api.KeyModified] = wrongModified
-	zj := api.ZettelDataJSON{
-		Meta:     z.Meta,
-		Encoding: z.Encoding,
-		Content:  z.Content,
-	}
-	err = c.UpdateZettelData(context.Background(), api.ZidDefaultHome, zj)
+	err = c.UpdateZettelData(context.Background(), api.ZidDefaultHome, z)
 	if err != nil {
 		t.Error(err)
 		return

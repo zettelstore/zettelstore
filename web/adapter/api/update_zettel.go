@@ -34,6 +34,8 @@ func (a *API) MakeUpdateZettelHandler(updateZettel *usecase.UpdateZettel) http.H
 		switch enc, _ := getEncoding(r, q); enc {
 		case api.EncoderPlain:
 			zettel, err = buildZettelFromPlainData(r, zid)
+		case api.EncoderData:
+			zettel, err = buildZettelFromData(r, zid)
 		case api.EncoderJson:
 			zettel, err = buildZettelFromJSONData(r, zid)
 		default:

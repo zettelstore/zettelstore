@@ -16,6 +16,8 @@ import (
 	"net/url"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/sexp"
+	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/input"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
@@ -101,6 +103,7 @@ func (p partType) DefString(defPart partType) string {
 }
 
 func buildZettelFromPlainData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
+	defer r.Body.Close()
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return zettel.Zettel{}, err
@@ -111,5 +114,34 @@ func buildZettelFromPlainData(r *http.Request, zid id.Zid) (zettel.Zettel, error
 		Meta:    m,
 		Content: zettel.NewContent(inp.Src[inp.Pos:]),
 	}, nil
+}
 
+func buildZettelFromData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
+	defer r.Body.Close()
+	rdr := sxreader.MakeReader(r.Body)
+	obj, err := rdr.Read()
+	if err != nil {
+		return zettel.Zettel{}, err
+	}
+	zd, err := sexp.ParseZettel(obj)
+	if err != nil {
+		return zettel.Zettel{}, err
+	}
+
+	m := meta.New(zid)
+	for k, v := range zd.Meta {
+		if !meta.IsComputed(k) {
+			m.Set(meta.RemoveNonGraphic(k), meta.RemoveNonGraphic(v))
+		}
+	}
+
+	var content zettel.Content
+	if err = content.SetDecoded(zd.Content, zd.Encoding); err != nil {
+		return zettel.Zettel{}, err
+	}
+
+	return zettel.Zettel{
+		Meta:    m,
+		Content: content,
+	}, nil
 }

@@ -27,10 +27,17 @@ func encodeJSONData(w io.Writer, data interface{}) error {
 	return enc.Encode(data)
 }
 
+type zettelDataJSON struct {
+	Meta     api.ZettelMeta `json:"meta"`
+	Encoding string         `json:"encoding"`
+	Content  string         `json:"content"`
+}
+
 func buildZettelFromJSONData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
 	var zettel zettel.Zettel
+	defer r.Body.Close()
 	dec := json.NewDecoder(r.Body)
-	var zettelData api.ZettelDataJSON
+	var zettelData zettelDataJSON
 	if err := dec.Decode(&zettelData); err != nil {
 		return zettel, err
 	}
