@@ -10,7 +10,11 @@
 
 package memstore
 
-import "zettelstore.de/z/zettel/id"
+import (
+	"slices"
+
+	"zettelstore.de/z/zettel/id"
+)
 
 func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 	npos, opos := 0, 0
@@ -50,9 +54,7 @@ func addRef(refs id.Slice, ref id.Zid) id.Slice {
 			hi = m
 		}
 	}
-	refs = append(refs, id.Invalid)
-	copy(refs[hi+1:], refs[hi:])
-	refs[hi] = ref
+	refs = slices.Insert(refs, hi, ref)
 	return refs
 }
 

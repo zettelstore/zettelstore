@@ -107,6 +107,8 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 
 		evalZettel: evalZettel,
 
+		templateCache: make(map[id.Zid]sxeval.Expr, 32),
+
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
 		cssBaseURL:    ab.NewURLBuilder('z').SetZid(api.ZidBaseCSS).String(),
 		cssUserURL:    ab.NewURLBuilder('z').SetZid(api.ZidUserCSS).String(),
@@ -143,7 +145,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()
 	if ci.Reason == box.OnReload {
-		wui.templateCache = make(map[id.Zid]sxeval.Expr, len(wui.templateCache))
+		clear(wui.templateCache)
 	} else {
 		delete(wui.templateCache, ci.Zid)
 	}

@@ -24,11 +24,7 @@ import (
 )
 
 // BoxWithPolicy wraps the given box inside a policy box.
-func BoxWithPolicy(
-	manager auth.AuthzManager,
-	box box.Box,
-	authConfig config.AuthConfig,
-) (box.Box, auth.Policy) {
+func BoxWithPolicy(manager auth.AuthzManager, box box.Box, authConfig config.AuthConfig) (box.Box, auth.Policy) {
 	pol := newPolicy(manager, authConfig)
 	return newBox(box, pol), pol
 }
