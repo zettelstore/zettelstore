@@ -29,10 +29,8 @@ func startLineServer(kern *myKernel, listenAddr string) error {
 func lineServer(ln net.Listener, kern *myKernel) {
 	// Something may panic. Ensure a running line service.
 	defer func() {
-		if r := recover(); r != nil {
-			kern.doLogRecover("Line", r)
-			go lineServer(ln, kern)
-		}
+		kern.doLogRecover("Line", recover())
+		go lineServer(ln, kern)
 	}()
 
 	for {
@@ -50,10 +48,8 @@ func lineServer(ln net.Listener, kern *myKernel) {
 func handleLineConnection(conn net.Conn, kern *myKernel) {
 	// Something may panic. Ensure a running connection.
 	defer func() {
-		if r := recover(); r != nil {
-			kern.doLogRecover("LineConn", r)
-			go handleLineConnection(conn, kern)
-		}
+		kern.doLogRecover("LineConn", recover())
+		go handleLineConnection(conn, kern)
 	}()
 
 	kern.logger.Mandatory().Str("from", conn.RemoteAddr().String()).Msg("Start session on administration console")

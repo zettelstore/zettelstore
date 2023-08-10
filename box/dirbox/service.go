@@ -30,10 +30,8 @@ import (
 func fileService(i uint32, log *logger.Logger, dirPath string, cmds <-chan fileCmd) {
 	// Something may panic. Ensure a running service.
 	defer func() {
-		if r := recover(); r != nil {
-			kernel.Main.LogRecover("FileService", r)
-			go fileService(i, log, dirPath, cmds)
-		}
+		kernel.Main.LogRecover("FileService", recover())
+		go fileService(i, log, dirPath, cmds)
 	}()
 
 	log.Trace().Uint("i", uint64(i)).Str("dirpath", dirPath).Msg("File service started")

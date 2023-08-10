@@ -42,11 +42,7 @@ func convertMetavalueToInlineSlice(value string, dt *meta.DescriptionType) ast.I
 	} else {
 		sliceData = []string{value}
 	}
-	var makeLink bool
-	switch dt {
-	case meta.TypeID, meta.TypeIDSet:
-		makeLink = true
-	}
+	makeLink := dt == meta.TypeID || dt == meta.TypeIDSet
 
 	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
 	for i, val := range sliceData {
