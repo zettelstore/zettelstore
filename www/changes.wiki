@@ -13,7 +13,7 @@
 <h2>Changes for Version 0.13.0 (2023-08-07)</h2>
   *  There are for new search operators: less, not less, greater, not greater.
      These use the same syntax as the operators prefix, not prefix, suffix, not
-     suffix. The latter are no denoted as <tt>[</tt>, <tt>![</tt>, <tt>]</tt>,
+     suffix. The latter are now denoted as <tt>[</tt>, <tt>![</tt>, <tt>]</tt>,
      and <tt>!]</tt>. The first may operate numerically for metadata like
      numbers, timestamps, and zettel identifier. They are not supported for
      full-test search.
