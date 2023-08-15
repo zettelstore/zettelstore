@@ -75,8 +75,10 @@ func (mgr *Manager) SearchContains(s string) id.Set {
 func (mgr *Manager) idxIndexer() {
 	// Something may panic. Ensure a running indexer.
 	defer func() {
-		kernel.Main.LogRecover("Indexer", recover())
-		go mgr.idxIndexer()
+		if ri := recover(); ri != nil {
+			kernel.Main.LogRecover("Indexer", ri)
+			go mgr.idxIndexer()
+		}
 	}()
 
 	timerDuration := 15 * time.Second

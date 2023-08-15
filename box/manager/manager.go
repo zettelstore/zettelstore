@@ -183,8 +183,10 @@ func (mgr *Manager) RegisterObserver(f box.UpdateFunc) {
 func (mgr *Manager) notifier() {
 	// The call to notify may panic. Ensure a running notifier.
 	defer func() {
-		kernel.Main.LogRecover("Notifier", recover())
-		go mgr.notifier()
+		if ri := recover(); ri != nil {
+			kernel.Main.LogRecover("Notifier", ri)
+			go mgr.notifier()
+		}
 	}()
 
 	tsLastEvent := time.Now()

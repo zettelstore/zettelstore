@@ -227,8 +227,10 @@ func (ds *DirService) DeleteDirEntry(zid id.Zid) error {
 func (ds *DirService) updateEvents(newEntries entrySet) {
 	// Something may panic. Ensure a running service.
 	defer func() {
-		kernel.Main.LogRecover("DirectoryService", recover())
-		go ds.updateEvents(newEntries)
+		if ri := recover(); ri != nil {
+			kernel.Main.LogRecover("DirectoryService", ri)
+			go ds.updateEvents(newEntries)
+		}
 	}()
 
 	for ev := range ds.notifier.Events() {

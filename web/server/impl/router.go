@@ -108,8 +108,10 @@ func (rt *httpRouter) Handle(pattern string, handler http.Handler) {
 func (rt *httpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Something may panic. Ensure a kernel log.
 	defer func() {
-		rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).HTTPIP(r).Msg("Recover context")
-		kernel.Main.LogRecover("Web", recover())
+		if ri := recover(); ri != nil {
+			rt.log.Error().Str("Method", r.Method).Str("URL", r.URL.String()).HTTPIP(r).Msg("Recover context")
+			kernel.Main.LogRecover("Web", ri)
+		}
 	}()
 
 	var withDebug bool
