@@ -11,6 +11,7 @@
 package query
 
 import (
+	"container/heap"
 	"context"
 
 	"zettelstore.de/client.fossil/api"
@@ -87,62 +88,66 @@ func (spec *ContextSpec) Execute(ctx context.Context, startSeq []*meta.Meta, por
 	return result
 }
 
-type ztlCtxTask struct {
-	next *ztlCtxTask
-	prev *ztlCtxTask
-	meta *meta.Meta
+type ztlCtxItem struct {
 	cost int
+	meta *meta.Meta
+}
+type ztlCtxQueue []ztlCtxItem
+
+func (q ztlCtxQueue) Len() int           { return len(q) }
+func (q ztlCtxQueue) Less(i, j int) bool { return q[i].cost < q[j].cost }
+func (q ztlCtxQueue) Swap(i, j int)      { q[i], q[j] = q[j], q[i] }
+func (q *ztlCtxQueue) Push(x any)        { *q = append(*q, x.(ztlCtxItem)) }
+func (q *ztlCtxQueue) Pop() any {
+	old := *q
+	n := len(old)
+	item := old[n-1]
+	old[n-1].meta = nil // avoid memory leak
+	*q = old[0 : n-1]
+	return item
 }
 
-type contextQueue struct {
+type contextTask struct {
 	port    ContextPort
 	seen    id.Set
-	first   *ztlCtxTask
-	last    *ztlCtxTask
+	queue   ztlCtxQueue
 	maxCost int
 	limit   int
 	tagCost map[string][]*meta.Meta
 }
 
-func newQueue(startSeq []*meta.Meta, maxCost, limit int, port ContextPort) *contextQueue {
-	result := &contextQueue{
+func newQueue(startSeq []*meta.Meta, maxCost, limit int, port ContextPort) *contextTask {
+	result := &contextTask{
 		port:    port,
 		seen:    id.NewSet(),
-		first:   nil,
-		last:    nil,
 		maxCost: maxCost,
 		limit:   limit,
 		tagCost: make(map[string][]*meta.Meta, 1024),
 	}
 
-	var prev *ztlCtxTask
+	queue := make(ztlCtxQueue, 0, len(startSeq))
 	for _, m := range startSeq {
-		task := &ztlCtxTask{next: nil, prev: prev, meta: m, cost: 1}
-		if prev == nil {
-			result.first = task
-		} else {
-			prev.next = task
-		}
-		result.last = task
-		prev = task
+		queue = append(queue, ztlCtxItem{cost: 1, meta: m})
 	}
+	heap.Init(&queue)
+	result.queue = queue
 	return result
 }
 
-func (zc *contextQueue) addPair(ctx context.Context, key, value string, curCost int, isBackward, isForward bool) {
+func (ct *contextTask) addPair(ctx context.Context, key, value string, curCost int, isBackward, isForward bool) {
 	if key == api.KeyBack {
 		return
 	}
 	newCost := curCost + contextCost(key)
 	if key == api.KeyBackward {
 		if isBackward {
-			zc.addIDSet(ctx, newCost, value)
+			ct.addIDSet(ctx, newCost, value)
 		}
 		return
 	}
 	if key == api.KeyForward {
 		if isForward {
-			zc.addIDSet(ctx, newCost, value)
+			ct.addIDSet(ctx, newCost, value)
 		}
 		return
 	}
@@ -151,9 +156,9 @@ func (zc *contextQueue) addPair(ctx context.Context, key, value string, curCost 
 		return
 	}
 	if t := meta.Type(key); t == meta.TypeID {
-		zc.addID(ctx, newCost, value)
+		ct.addID(ctx, newCost, value)
 	} else if t == meta.TypeIDSet {
-		zc.addIDSet(ctx, newCost, value)
+		ct.addIDSet(ctx, newCost, value)
 	}
 }
 
@@ -168,98 +173,70 @@ func contextCost(key string) int {
 	return 3
 }
 
-func (zc *contextQueue) addID(ctx context.Context, newCost int, value string) {
-	if zc.costMaxed(newCost) {
+func (ct *contextTask) addID(ctx context.Context, newCost int, value string) {
+	if ct.costMaxed(newCost) {
 		return
 	}
 	if zid, errParse := id.Parse(value); errParse == nil {
-		if m, errGetMeta := zc.port.GetMeta(ctx, zid); errGetMeta == nil {
-			zc.addMeta(m, newCost)
+		if m, errGetMeta := ct.port.GetMeta(ctx, zid); errGetMeta == nil {
+			ct.addMeta(m, newCost)
 		}
 	}
 }
-func (zc *contextQueue) addMeta(m *meta.Meta, newCost int) {
-	task := &ztlCtxTask{next: nil, prev: nil, meta: m, cost: newCost}
-	if zc.first == nil {
-		zc.first = task
-		zc.last = task
-		return
+func (ct *contextTask) addMeta(m *meta.Meta, newCost int) {
+	if _, found := ct.seen[m.Zid]; !found {
+		heap.Push(&ct.queue, ztlCtxItem{cost: newCost, meta: m})
 	}
-
-	// Search backward for a task t with at most the same cost
-	for t := zc.last; t != nil; t = t.prev {
-		if t.cost <= task.cost {
-			// Found!
-			if t.next != nil {
-				t.next.prev = task
-			}
-			task.next = t.next
-			t.next = task
-			task.prev = t
-			if task.next == nil {
-				zc.last = task
-			}
-			return
-		}
-	}
-
-	// We have not found a task, therefore the new task is the first one
-	task.next = zc.first
-	zc.first.prev = task
-	zc.first = task
 }
 
-func (zc *contextQueue) costMaxed(newCost int) bool {
+func (ct *contextTask) costMaxed(newCost int) bool {
 	// If len(zc.seen) <= 1, the initial zettel is processed. In this case allow all
 	// other zettel that are directly reachable, without taking the cost into account.
 	// Of course, the limit ist still relevant.
-	return (len(zc.seen) > 1 && zc.maxCost > 0 && newCost > zc.maxCost) || zc.hasLimit()
+	return (len(ct.seen) > 1 && ct.maxCost > 0 && newCost > ct.maxCost) || ct.hasLimit()
 }
 
-func (zc *contextQueue) addIDSet(ctx context.Context, newCost int, value string) {
+func (ct *contextTask) addIDSet(ctx context.Context, newCost int, value string) {
 	elems := meta.ListFromValue(value)
 	refCost := referenceCost(newCost, len(elems))
 	for _, val := range elems {
-		zc.addID(ctx, refCost, val)
+		ct.addID(ctx, refCost, val)
 	}
 }
 
 func referenceCost(baseCost int, numReferences int) int {
-	if numReferences < 5 {
+	switch {
+	case numReferences < 5:
 		return baseCost + 1
-	}
-	if numReferences < 9 {
+	case numReferences < 9:
 		return baseCost * 2
-	}
-	if numReferences < 17 {
+	case numReferences < 17:
 		return baseCost * 3
-	}
-	if numReferences < 33 {
+	case numReferences < 33:
 		return baseCost * 4
-	}
-	if numReferences < 65 {
+	case numReferences < 65:
 		return baseCost * 5
 	}
 	return baseCost * numReferences / 8
 }
 
-func (zc *contextQueue) addSameTag(ctx context.Context, tag string, baseCost int) {
-	tagMetas, found := zc.tagCost[tag]
+func (ct *contextTask) addSameTag(ctx context.Context, tag string, baseCost int) {
+	tagMetas, found := ct.tagCost[tag]
 	if !found {
 		q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
-		ml, err := zc.port.SelectMeta(ctx, nil, q)
+		ml, err := ct.port.SelectMeta(ctx, nil, q)
 		if err != nil {
 			return
 		}
 		tagMetas = ml
-		zc.tagCost[tag] = ml
+		ct.tagCost[tag] = ml
 	}
 	cost := tagCost(baseCost, len(tagMetas))
-	if zc.costMaxed(cost) {
+	if ct.costMaxed(cost) {
 		return
 	}
 	for _, m := range tagMetas {
-		zc.addMeta(m, cost)
+		ct.addMeta(m, cost)
 	}
 }
 
@@ -270,31 +247,24 @@ func tagCost(baseCost, numTags int) int {
 	return (baseCost + 2) * (numTags / 4)
 }
 
-func (zc *contextQueue) next() (*meta.Meta, int) {
-	if zc.hasLimit() {
+func (ct *contextTask) next() (*meta.Meta, int) {
+	if ct.hasLimit() {
 		return nil, -1
 	}
-	for zc.first != nil {
-		task := zc.first
-		zc.first = task.next
-		if zc.first == nil {
-			zc.last = nil
-		} else {
-			zc.first.prev = nil
-		}
-		m := task.meta
+	for len(ct.queue) > 0 {
+		item := heap.Pop(&ct.queue).(ztlCtxItem)
+		m := item.meta
 		zid := m.Zid
-		_, found := zc.seen[zid]
-		if found {
+		if _, found := ct.seen[zid]; found {
 			continue
 		}
-		zc.seen.Zid(zid)
-		return m, task.cost
+		ct.seen.Zid(zid)
+		return m, item.cost
 	}
 	return nil, -1
 }
 
-func (zc *contextQueue) hasLimit() bool {
-	limit := zc.limit
-	return limit > 0 && len(zc.seen) >= limit
+func (ct *contextTask) hasLimit() bool {
+	limit := ct.limit
+	return limit > 0 && len(ct.seen) >= limit
 }
