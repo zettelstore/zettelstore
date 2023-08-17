@@ -99,7 +99,7 @@ type Manager struct {
 	// Indexer data
 	idxLog   *logger.Logger
 	idxStore store.Store
-	idxAr    *anterooms
+	idxAr    *anteroomQueue
 	idxReady chan struct{} // Signal a non-empty anteroom to background task
 
 	// Indexer stats data
@@ -140,7 +140,7 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 
 		idxLog:   boxLog.Clone().Str("box", "index").Child(),
 		idxStore: memstore.New(),
-		idxAr:    newAnterooms(1000),
+		idxAr:    newAnteroomQueue(1000),
 		idxReady: make(chan struct{}, 1),
 	}
 	cdata := ConnectData{Number: 1, Config: rtConfig, Enricher: mgr, Notify: mgr.infos}

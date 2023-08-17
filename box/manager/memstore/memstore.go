@@ -71,7 +71,8 @@ func New() store.Store {
 func (ms *memStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	if zi, found := ms.idx[zid]; found {
+	if zi, found := ms.idx[zid]; found && zi.meta != nil {
+		// zi.meta is nil, if zettel was referenced, but is not indexed yet.
 		return zi.meta.Clone(), nil
 	}
 	return nil, box.ErrNotFound
@@ -288,8 +289,10 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 
 	zi.meta = m
 	ms.updateDeadReferences(zidx, zi)
-	ms.updateForwardBackwardReferences(zidx, zi)
-	ms.updateMetadataReferences(zidx, zi)
+	ids := ms.updateForwardBackwardReferences(zidx, zi)
+	toCheck = toCheck.Add(ids)
+	ids = ms.updateMetadataReferences(zidx, zi)
+	toCheck = toCheck.Add(ids)
 	zi.words = updateWordSet(zidx.Zid, ms.words, zi.words, zidx.GetWords())
 	zi.urls = updateWordSet(zidx.Zid, ms.urls, zi.urls, zidx.GetUrls())
 
@@ -351,22 +354,31 @@ func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData
 	}
 }
 
-func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) {
+func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := refsDiff(brefs, zi.forward)
 	zi.forward = brefs
+
+	var toCheck id.Set
 	for _, ref := range remRefs {
-		bzi := ms.getEntry(ref)
+		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = remRef(bzi.backward, zidx.Zid)
+		if bzi.meta == nil {
+			toCheck = toCheck.Zid(ref)
+		}
 	}
 	for _, ref := range newRefs {
-		bzi := ms.getEntry(ref)
+		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = addRef(bzi.backward, zidx.Zid)
+		if bzi.meta == nil {
+			toCheck = toCheck.Zid(ref)
+		}
 	}
+	return toCheck
 }
 
-func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) {
+func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
 	// Must only be called if ms.mx is write-locked!
 	inverseRefs := zidx.GetInverseRefs()
 	for key, mr := range zi.otherRefs {
@@ -378,6 +390,7 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	if zi.otherRefs == nil {
 		zi.otherRefs = make(map[string]bidiRefs)
 	}
+	var toCheck id.Set
 	for key, mrefs := range inverseRefs {
 		mr := zi.otherRefs[key]
 		newRefs, remRefs := refsDiff(mrefs, mr.forward)
@@ -385,16 +398,20 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 		zi.otherRefs[key] = mr
 
 		for _, ref := range newRefs {
-			bzi := ms.getEntry(ref)
+			bzi := ms.getOrCreateEntry(ref)
 			if bzi.otherRefs == nil {
 				bzi.otherRefs = make(map[string]bidiRefs)
 			}
 			bmr := bzi.otherRefs[key]
 			bmr.backward = addRef(bmr.backward, zidx.Zid)
 			bzi.otherRefs[key] = bmr
+			if bzi.meta == nil {
+				toCheck = toCheck.Zid(ref)
+			}
 		}
 		ms.removeInverseMeta(zidx.Zid, key, remRefs)
 	}
+	return toCheck
 }
 
 func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
@@ -421,7 +438,7 @@ func updateWordSet(zid id.Zid, srefs stringRefs, prev []string, next store.WordS
 	return next.Words()
 }
 
-func (ms *memStore) getEntry(zid id.Zid) *zettelData {
+func (ms *memStore) getOrCreateEntry(zid id.Zid) *zettelData {
 	// Must only be called if ms.mx is write-locked!
 	if zi, ok := ms.idx[zid]; ok {
 		return zi

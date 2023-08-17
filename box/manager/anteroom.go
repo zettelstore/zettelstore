@@ -32,7 +32,7 @@ type anteroom struct {
 	reload  bool
 }
 
-type anterooms struct {
+type anteroomQueue struct {
 	mx      sync.Mutex
 	nextNum uint64
 	first   *anteroom
@@ -40,9 +40,9 @@ type anterooms struct {
 	maxLoad int
 }
 
-func newAnterooms(maxLoad int) *anterooms { return &anterooms{maxLoad: maxLoad} }
+func newAnteroomQueue(maxLoad int) *anteroomQueue { return &anteroomQueue{maxLoad: maxLoad} }
 
-func (ar *anterooms) EnqueueZettel(zid id.Zid) {
+func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
 	if !zid.IsValid() {
 		return
 	}
@@ -72,7 +72,7 @@ func (ar *anterooms) EnqueueZettel(zid id.Zid) {
 	ar.last = room
 }
 
-func (ar *anterooms) makeAnteroom(zid id.Zid) *anteroom {
+func (ar *anteroomQueue) makeAnteroom(zid id.Zid) *anteroom {
 	ar.nextNum++
 	if zid == id.Invalid {
 		return &anteroom{num: ar.nextNum, next: nil, waiting: nil, curLoad: 0, reload: true}
@@ -85,21 +85,21 @@ func (ar *anterooms) makeAnteroom(zid id.Zid) *anteroom {
 	return &anteroom{num: ar.nextNum, next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
 
-func (ar *anterooms) Reset() {
+func (ar *anteroomQueue) Reset() {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	ar.first = ar.makeAnteroom(id.Invalid)
 	ar.last = ar.first
 }
 
-func (ar *anterooms) Reload(newZids id.Set) uint64 {
+func (ar *anteroomQueue) Reload(allZids id.Set) uint64 {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	ar.deleteReloadedRooms()
 
-	if ns := len(newZids); ns > 0 {
+	if ns := len(allZids); ns > 0 {
 		ar.nextNum++
-		ar.first = &anteroom{num: ar.nextNum, next: ar.first, waiting: newZids, curLoad: ns, reload: true}
+		ar.first = &anteroom{num: ar.nextNum, next: ar.first, waiting: allZids, curLoad: ns, reload: true}
 		if ar.first.next == nil {
 			ar.last = ar.first
 		}
@@ -111,7 +111,7 @@ func (ar *anterooms) Reload(newZids id.Set) uint64 {
 	return 0
 }
 
-func (ar *anterooms) deleteReloadedRooms() {
+func (ar *anteroomQueue) deleteReloadedRooms() {
 	room := ar.first
 	for room != nil && room.reload {
 		room = room.next
@@ -122,20 +122,21 @@ func (ar *anterooms) deleteReloadedRooms() {
 	}
 }
 
-func (ar *anterooms) Dequeue() (arAction, id.Zid, uint64) {
+func (ar *anteroomQueue) Dequeue() (arAction, id.Zid, uint64) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	if ar.first == nil {
+	first := ar.first
+	if first == nil {
 		return arNothing, id.Invalid, 0
 	}
-	roomNo := ar.first.num
-	if ar.first.waiting == nil {
+	roomNo := first.num
+	if first.waiting == nil && first.reload {
 		ar.removeFirst()
 		return arReload, id.Invalid, roomNo
 	}
-	for zid := range ar.first.waiting {
-		delete(ar.first.waiting, zid)
-		if len(ar.first.waiting) == 0 {
+	for zid := range first.waiting {
+		delete(first.waiting, zid)
+		if len(first.waiting) == 0 {
 			ar.removeFirst()
 		}
 		return arZettel, zid, roomNo
@@ -144,7 +145,7 @@ func (ar *anterooms) Dequeue() (arAction, id.Zid, uint64) {
 	return arNothing, id.Invalid, 0
 }
 
-func (ar *anterooms) removeFirst() {
+func (ar *anteroomQueue) removeFirst() {
 	ar.first = ar.first.next
 	if ar.first == nil {
 		ar.last = nil

@@ -18,7 +18,7 @@ import (
 
 func TestSimple(t *testing.T) {
 	t.Parallel()
-	ar := newAnterooms(2)
+	ar := newAnteroomQueue(2)
 	ar.EnqueueZettel(id.Zid(1))
 	action, zid, rno := ar.Dequeue()
 	if zid != id.Zid(1) || action != arZettel || rno != 1 {
@@ -52,7 +52,7 @@ func TestSimple(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	t.Parallel()
-	ar := newAnterooms(1)
+	ar := newAnteroomQueue(1)
 	ar.EnqueueZettel(id.Zid(1))
 	ar.Reset()
 	action, zid, _ := ar.Dequeue()
@@ -85,7 +85,7 @@ func TestReset(t *testing.T) {
 		t.Errorf("Expected nothing & invalid Zid, but got %v/%v", action, zid)
 	}
 
-	ar = newAnterooms(1)
+	ar = newAnteroomQueue(1)
 	ar.Reload(id.NewSet(id.Zid(6)))
 	action, zid, _ = ar.Dequeue()
 	if zid != id.Zid(6) || action != arZettel {
@@ -96,7 +96,7 @@ func TestReset(t *testing.T) {
 		t.Errorf("Expected nothing & invalid Zid, but got %v/%v", action, zid)
 	}
 
-	ar = newAnterooms(1)
+	ar = newAnteroomQueue(1)
 	ar.EnqueueZettel(id.Zid(8))
 	ar.Reload(nil)
 	action, zid, _ = ar.Dequeue()
