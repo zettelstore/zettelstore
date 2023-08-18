@@ -44,7 +44,7 @@ import (
 )
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
-	root := sx.MakeRootEnvironment()
+	root := sxeval.MakeRootEnvironment()
 	engine := sxeval.MakeEngine(wui.sf, root)
 	quote.InstallQuoteSyntax(root, wui.symQuote)
 	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
@@ -89,9 +89,9 @@ func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sx.Environment, renderBinder) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxeval.Environment, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	env := sx.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
+	env := sxeval.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
 	rb := makeRenderBinder(wui.sf, env, nil)
 	rb.bindString("lang", sx.MakeString(lang))
 	rb.bindString("css-base-url", sx.MakeString(wui.cssBaseURL))
@@ -135,7 +135,7 @@ type renderBinder struct {
 	bind func(*sx.Symbol, sx.Object) error
 }
 
-func makeRenderBinder(sf sx.SymbolFactory, env sx.Environment, err error) renderBinder {
+func makeRenderBinder(sf sx.SymbolFactory, env sxeval.Environment, err error) renderBinder {
 	return renderBinder{make: sf.Make, bind: env.Bind, err: err}
 }
 func (rb *renderBinder) bindString(key string, obj sx.Object) {
@@ -277,7 +277,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
 	}
 }
 
-func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sx.Environment) (sxeval.Expr, error) {
+func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sxeval.Expr, error) {
 	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
 	}
@@ -315,7 +315,7 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.R
 	return reader, nil
 }
 
-func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sx.Environment) (sx.Object, error) {
+func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sx.Object, error) {
 	templateExpr, err := wui.getSxnTemplate(ctx, zid, env)
 	if err != nil {
 		return nil, err
@@ -323,10 +323,10 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sx.Enviro
 	return wui.engine.Execute(env, templateExpr)
 }
 
-func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sx.Environment) error {
+func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sxeval.Environment) error {
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
 }
-func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sx.Environment) error {
+func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxeval.Environment) error {
 	err := wui.loadSxnCodeZettel(ctx, id.TemplateSxnZid)
 	if err != nil {
 		return err
