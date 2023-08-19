@@ -62,9 +62,6 @@ func (scm searchCallMap) addSearch(s string, op compareOp, sf searchFunc) {
 	scm[searchOp{s: s, op: op}] = sf
 }
 
-func alwaysIncluded(id.Zid) bool { return true }
-func neverIncluded(id.Zid) bool  { return false }
-
 func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plainCalls, negCalls searchCallMap) {
 	normCalls = make(searchCallMap, len(search))
 	negCalls = make(searchCallMap, len(search))

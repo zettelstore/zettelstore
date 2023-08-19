@@ -47,6 +47,10 @@ type CompiledTerm struct {
 // RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
 type RetrievePredicate func(id.Zid) bool
 
+// AlwaysIncluded is a RetrievePredicate that always returns true.
+func AlwaysIncluded(id.Zid) bool { return true }
+func neverIncluded(id.Zid) bool  { return false }
+
 func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 
 // Result returns a result of the compiled search, that is achievable without iterating through a box.

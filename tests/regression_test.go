@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/parser"
+	"zettelstore.de/z/query"
 	"zettelstore.de/z/zettel/meta"
 
 	_ "zettelstore.de/z/box/dirbox"
@@ -135,14 +136,15 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		panic(err)
 	}
 	metaList := []*meta.Meta{}
-	err := p.ApplyMeta(context.Background(), func(m *meta.Meta) { metaList = append(metaList, m) }, nil)
-	if err != nil {
+	if err := p.ApplyMeta(context.Background(),
+		func(m *meta.Meta) { metaList = append(metaList, m) },
+		query.AlwaysIncluded); err != nil {
 		panic(err)
 	}
 	for _, meta := range metaList {
-		zettel, err2 := p.GetZettel(context.Background(), meta.Zid)
-		if err2 != nil {
-			panic(err2)
+		zettel, err := p.GetZettel(context.Background(), meta.Zid)
+		if err != nil {
+			panic(err)
 		}
 		z := parser.ParseZettel(context.Background(), zettel, "", testConfig)
 		for _, enc := range encodings {

@@ -68,7 +68,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		return attr, attr.Tail(), rest.Tail()
 	}
 	linkZettel := func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-		obj, err := prevFn.Call(nil, nil, args)
+		obj, err := prevFn.Call(nil, args)
 		if err != nil {
 			return sx.Nil()
 		}
@@ -98,7 +98,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		te.Rebind(sz.NameSymLinkZettel, linkZettel)
 		te.Rebind(sz.NameSymLinkFound, linkZettel)
 		te.Rebind(sz.NameSymLinkBased, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, nil, args)
+			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sx.Nil()
 			}
@@ -119,7 +119,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkQuery, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, nil, args)
+			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sx.Nil()
 			}
@@ -148,7 +148,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkExternal, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, nil, args)
+			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sx.Nil()
 			}
@@ -162,7 +162,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymEmbed, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, nil, args)
+			obj, err := prevFn.Call(nil, args)
 			if err != nil {
 				return sx.Nil()
 			}

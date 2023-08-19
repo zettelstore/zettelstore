@@ -336,7 +336,7 @@ func (q *Query) RetrieveAndCompile(_ context.Context, searcher Searcher, metaSeq
 			PreMatch: matchAlways,
 			Terms: []CompiledTerm{{
 				Match:    matchAlways,
-				Retrieve: alwaysIncluded,
+				Retrieve: AlwaysIncluded,
 			}}}
 	}
 	q = q.Clone()
@@ -366,11 +366,11 @@ func (q *Query) RetrieveAndCompile(_ context.Context, searcher Searcher, metaSeq
 				// no restriction on match/retrieve -> all will match
 				result.Terms = []CompiledTerm{{
 					Match:    matchAlways,
-					Retrieve: alwaysIncluded,
+					Retrieve: AlwaysIncluded,
 				}}
 				break
 			}
-			cTerm.Retrieve = alwaysIncluded
+			cTerm.Retrieve = AlwaysIncluded
 		}
 		if cTerm.Match == nil {
 			cTerm.Match = matchAlways

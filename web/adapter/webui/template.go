@@ -54,9 +54,9 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	engine.BindSyntax("lambda", callable.LambdaS)
 	engine.BindSyntax("define", define.DefineS)
 	engine.BindSyntax("let", binding.LetS)
-	engine.BindBuiltinEEA("bound?", env.BoundP)
-	engine.BindBuiltinEEA("map", callable.Map)
-	engine.BindBuiltinEEA("apply", callable.Apply)
+	engine.BindBuiltinFA("bound?", env.BoundP)
+	engine.BindBuiltinFA("map", callable.Map)
+	engine.BindBuiltinFA("apply", callable.Apply)
 	engine.BindBuiltinA("list", list.List)
 	engine.BindBuiltinA("append", list.Append)
 	engine.BindBuiltinA("car", list.Car)
@@ -132,17 +132,17 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 type renderBinder struct {
 	err  error
 	make func(string) (*sx.Symbol, error)
-	bind func(*sx.Symbol, sx.Object) error
+	env  sxeval.Environment
 }
 
 func makeRenderBinder(sf sx.SymbolFactory, env sxeval.Environment, err error) renderBinder {
-	return renderBinder{make: sf.Make, bind: env.Bind, err: err}
+	return renderBinder{make: sf.Make, env: env, err: err}
 }
 func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
-			rb.err = rb.bind(sym, obj)
+			rb.env, rb.err = rb.env.Bind(sym, obj)
 			return
 		}
 		rb.err = err
@@ -150,7 +150,7 @@ func (rb *renderBinder) bindString(key string, obj sx.Object) {
 }
 func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
-		rb.err = rb.bind(sym, obj)
+		rb.env, rb.err = rb.env.Bind(sym, obj)
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
