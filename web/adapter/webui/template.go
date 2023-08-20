@@ -21,14 +21,6 @@ import (
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxbuiltins"
-	"zettelstore.de/sx.fossil/sxbuiltins/binding"
-	"zettelstore.de/sx.fossil/sxbuiltins/boolean"
-	"zettelstore.de/sx.fossil/sxbuiltins/callable"
-	"zettelstore.de/sx.fossil/sxbuiltins/cond"
-	"zettelstore.de/sx.fossil/sxbuiltins/define"
-	"zettelstore.de/sx.fossil/sxbuiltins/env"
-	"zettelstore.de/sx.fossil/sxbuiltins/list"
-	"zettelstore.de/sx.fossil/sxbuiltins/quote"
 	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/sx.fossil/sxreader"
@@ -46,21 +38,21 @@ import (
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	root := sxeval.MakeRootEnvironment()
 	engine := sxeval.MakeEngine(wui.sf, root)
-	quote.InstallQuoteSyntax(root, wui.symQuote)
-	quote.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
-	engine.BindSyntax("if", cond.IfS)
-	engine.BindSyntax("and", boolean.AndS)
-	engine.BindSyntax("or", boolean.OrS)
-	engine.BindSyntax("lambda", callable.LambdaS)
-	engine.BindSyntax("define", define.DefineS)
-	engine.BindSyntax("let", binding.LetS)
-	engine.BindBuiltinFA("bound?", env.BoundP)
-	engine.BindBuiltinFA("map", callable.Map)
-	engine.BindBuiltinFA("apply", callable.Apply)
-	engine.BindBuiltinA("list", list.List)
-	engine.BindBuiltinA("append", list.Append)
-	engine.BindBuiltinA("car", list.Car)
-	engine.BindBuiltinA("cdr", list.Cdr)
+	sxbuiltins.InstallQuoteSyntax(root, wui.symQuote)
+	sxbuiltins.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
+	engine.BindSyntax("if", sxbuiltins.IfS)
+	engine.BindSyntax("and", sxbuiltins.AndS)
+	engine.BindSyntax("or", sxbuiltins.OrS)
+	engine.BindSyntax("lambda", sxbuiltins.LambdaS)
+	engine.BindSyntax("define", sxbuiltins.DefineS)
+	engine.BindSyntax("let", sxbuiltins.LetS)
+	engine.BindBuiltinFA("bound?", sxbuiltins.BoundP)
+	engine.BindBuiltinFA("map", sxbuiltins.Map)
+	engine.BindBuiltinFA("apply", sxbuiltins.Apply)
+	engine.BindBuiltinA("list", sxbuiltins.List)
+	engine.BindBuiltinA("append", sxbuiltins.Append)
+	engine.BindBuiltinA("car", sxbuiltins.Car)
+	engine.BindBuiltinA("cdr", sxbuiltins.Cdr)
 
 	engine.BindBuiltinA("url-to-html", wui.url2html)
 	return engine
@@ -310,8 +302,8 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.R
 	}
 
 	reader := sxreader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), sxreader.WithSymbolFactory(wui.sf))
-	quote.InstallQuoteReader(reader, wui.symQuote, '\'')
-	quote.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
+	sxbuiltins.InstallQuoteReader(reader, wui.symQuote, '\'')
+	sxbuiltins.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
 	return reader, nil
 }
 
