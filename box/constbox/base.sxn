@@ -40,7 +40,7 @@
        )))
     )
     (form (@ (action ,search-url))
-      (input (@ (type "text") (placeholder "Search..") (name ,query-key-query))))
+      (input (@ (type "text") (placeholder "Search..") (name ,query-key-query) (dir "auto"))))
   )
   (main (@ (class "content")) ,DETAIL)
   ,@(if FOOTER `((footer (hr) ,@FOOTER)))
