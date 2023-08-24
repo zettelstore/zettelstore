@@ -148,7 +148,7 @@ func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
-			rb.env, rb.err = rb.env.Bind(sym, obj)
+			rb.err = rb.env.Bind(sym, obj)
 			return
 		}
 		rb.err = err
@@ -156,7 +156,7 @@ func (rb *renderBinder) bindString(key string, obj sx.Object) {
 }
 func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
-		rb.env, rb.err = rb.env.Bind(sym, obj)
+		rb.err = rb.env.Bind(sym, obj)
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
