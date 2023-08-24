@@ -262,11 +262,17 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
 		}
 		wui.log.Trace().Str("form", form.Repr()).Msg("Load sxn code")
 
-		_, err2 = wui.engine.Eval(wui.engine.GetToplevelEnv(), form)
-		if err2 != nil {
+		if _, err2 = wui.engine.Eval(wui.engine.GetToplevelEnv(), form); err2 != nil {
 			return err2
 		}
 	}
+}
+
+func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) error {
+	if err := wui.loadSxnCodeZettel(ctx, id.BaseSxnZid); err != nil {
+		return err
+	}
+	return wui.loadSxnCodeZettel(ctx, id.StartSxnZid)
 }
 
 func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sxeval.Expr, error) {
@@ -319,8 +325,7 @@ func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, 
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
 }
 func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxeval.Environment) error {
-	err := wui.loadSxnCodeZettel(ctx, id.TemplateSxnZid)
-	if err != nil {
+	if err := wui.loadAllSxnCodeZettel(ctx); err != nil {
 		return err
 	}
 	detailObj, err := wui.evalSxnTemplate(ctx, templateID, env)

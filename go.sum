@@ -13,5 +13,7 @@ golang.org/x/text v0.12.0 h1:k+n5B8goJNdU7hSvEtMUz3d1Q6D/XW4COJSJR6fN0mc=
 golang.org/x/text v0.12.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
 zettelstore.de/client.fossil v0.0.0-20230824134218-8784e3208ca6 h1:cNFhx2nolgnk12EzlilssfG5GpNVHffW/jgB7JKmGGw=
 zettelstore.de/client.fossil v0.0.0-20230824134218-8784e3208ca6/go.mod h1:fwEGUzlhP4l7u03eQ22bnqvvzCWe0mEK4RjX2A2h6YA=
+zettelstore.de/client.fossil v0.0.0-20230824140406-fc83d5fa00f0 h1:08P8tRr1suUH5Y73VCsiMbfiwPRiQ1OEWgf8clK7+HU=
+zettelstore.de/client.fossil v0.0.0-20230824140406-fc83d5fa00f0/go.mod h1:fwEGUzlhP4l7u03eQ22bnqvvzCWe0mEK4RjX2A2h6YA=
 zettelstore.de/sx.fossil v0.0.0-20230824131706-f35a09caa0cf h1:aFuQPyWq5nYuWyTSQVUyNue9YGLCKCnaRx7V4Ld2ZQg=
 zettelstore.de/sx.fossil v0.0.0-20230824131706-f35a09caa0cf/go.mod h1:Uw3OLM1ufOM4Xe0G51mvkTDUv2okd+HyDBMx+0ZG7ME=

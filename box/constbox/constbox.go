@@ -272,15 +272,25 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentErrorSxn)},
-	id.TemplateSxnZid: {
+	id.StartSxnZid: {
 		constHeader{
-			api.KeyTitle:      "Zettelstore Sxn Code for Templates",
+			api.KeyTitle:      "Zettelstore Sxn Start Code",
+			api.KeyRole:       api.ValueRoleConfiguration,
+			api.KeySyntax:     meta.SyntaxSxn,
+			api.KeyCreated:    "20230824160700",
+			api.KeyVisibility: api.ValueVisibilityExpert,
+			api.KeyPrecursor:  id.BaseSxnZid.String(),
+		},
+		zettel.NewContent(contentStartCodeSxn)},
+	id.BaseSxnZid: {
+		constHeader{
+			api.KeyTitle:      "Zettelstore Sxn Base Code",
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230619132800",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentTemplateCodeSxn)},
+		zettel.NewContent(contentBaseCodeSxn)},
 	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
@@ -396,8 +406,11 @@ var contentListZettelSxn []byte
 //go:embed error.sxn
 var contentErrorSxn []byte
 
+//go:embed start.sxn
+var contentStartCodeSxn []byte
+
 //go:embed wuicode.sxn
-var contentTemplateCodeSxn []byte
+var contentBaseCodeSxn []byte
 
 //go:embed base.css
 var contentBaseCSS []byte
