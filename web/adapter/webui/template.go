@@ -14,7 +14,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 
@@ -80,10 +79,25 @@ func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 	return text, nil
 }
 
+func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
+	wui.mxZettelEnv.Lock()
+	defer wui.mxZettelEnv.Unlock()
+	if parentEnv := wui.zettelEnv; parentEnv != nil {
+		return parentEnv
+	}
+	zettelEnv, err := wui.loadAllSxnCodeZettel(ctx)
+	if err != nil {
+		wui.log.IfErr(err).Msg("loading zettel sxn")
+		return wui.engine.RootEnvironment()
+	}
+	wui.zettelEnv = zettelEnv
+	return zettelEnv
+}
+
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
 func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxeval.Environment, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	env := sxeval.MakeChildEnvironment(wui.engine.RootEnvironment(), name, 128)
+	env := sxeval.MakeChildEnvironment(wui.getParentEnv(ctx), name, 128)
 	rb := makeRenderBinder(wui.sf, env, nil)
 	rb.bindString("lang", sx.MakeString(lang))
 	rb.bindString("css-base-url", sx.MakeString(wui.cssBaseURL))
@@ -243,38 +257,6 @@ func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sx.Pair {
 	return nil
 }
 
-func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid) error {
-	if expr := wui.getSxnCache(zid); expr != nil {
-		return nil
-	}
-	rdr, err := wui.makeZettelReader(ctx, zid)
-	if err != nil {
-		return err
-	}
-	for {
-		form, err2 := rdr.Read()
-		if err2 != nil {
-			if err2 == io.EOF {
-				wui.setSxnCache(zid, sxeval.TrueExpr) // Hack to load only once
-				return nil
-			}
-			return err2
-		}
-		wui.log.Trace().Str("form", form.Repr()).Msg("Load sxn code")
-
-		if _, err2 = wui.engine.Eval(wui.engine.GetToplevelEnv(), form); err2 != nil {
-			return err2
-		}
-	}
-}
-
-func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) error {
-	if err := wui.loadSxnCodeZettel(ctx, id.BaseSxnZid); err != nil {
-		return err
-	}
-	return wui.loadSxnCodeZettel(ctx, id.StartSxnZid)
-}
-
 func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sxeval.Expr, error) {
 	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
@@ -325,9 +307,6 @@ func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, 
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
 }
 func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxeval.Environment) error {
-	if err := wui.loadAllSxnCodeZettel(ctx); err != nil {
-		return err
-	}
 	detailObj, err := wui.evalSxnTemplate(ctx, templateID, env)
 	if err != nil {
 		return err

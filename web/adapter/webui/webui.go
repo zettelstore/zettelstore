@@ -68,9 +68,11 @@ type WebUI struct {
 	searchURL     string
 	createNewURL  string
 
-	sf      sx.SymbolFactory
-	engine  *sxeval.Engine
-	genHTML *sxhtml.Generator
+	sf          sx.SymbolFactory
+	engine      *sxeval.Engine
+	mxZettelEnv sync.Mutex
+	zettelEnv   sxeval.Environment
+	genHTML     *sxhtml.Generator
 
 	symQuote, symQQ *sx.Symbol
 	symUQ, symUQS   *sx.Symbol
@@ -124,6 +126,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		createNewURL:  ab.NewURLBuilder('c').String(),
 
 		sf:            sf,
+		zettelEnv:     nil,
 		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
 		symQuote:      sf.MustMake("quote"),
 		symQQ:         sf.MustMake("quasiquote"),
