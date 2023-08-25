@@ -63,7 +63,7 @@ func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
 		}
 	}
 	if room := ar.last; !room.reload && (ar.maxLoad == 0 || room.curLoad < ar.maxLoad) {
-		room.waiting.Zid(zid)
+		room.waiting.Add(zid)
 		room.curLoad++
 		return
 	}

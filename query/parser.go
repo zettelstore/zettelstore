@@ -83,8 +83,8 @@ func (ps *parserState) parse(q *Query) *Query {
 			inp.SetPos(pos)
 			break
 		}
-		if !zidSet.Contains(zid) {
-			zidSet.Zid(zid)
+		if !zidSet.ContainsOrNil(zid) {
+			zidSet.Add(zid)
 			q = createIfNeeded(q)
 			q.zids = append(q.zids, zid)
 		}

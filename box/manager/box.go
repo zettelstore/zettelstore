@@ -104,7 +104,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (id.Set, error) {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Zid(zid) }, func(id.Zid) bool { return true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Add(zid) }, func(id.Zid) bool { return true })
 		if err != nil {
 			return nil, err
 		}
@@ -163,7 +163,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *que
 		rejected := id.Set{}
 		handleMeta := func(m *meta.Meta) {
 			zid := m.Zid
-			if rejected.Contains(zid) {
+			if rejected.ContainsOrNil(zid) {
 				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 				return
 			}
@@ -175,7 +175,7 @@ func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *que
 				selected[zid] = m
 				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/match")
 			} else {
-				rejected.Zid(zid)
+				rejected.Add(zid)
 				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/reject")
 			}
 		}

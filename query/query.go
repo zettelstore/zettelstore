@@ -386,7 +386,7 @@ func metaList2idSet(ml []*meta.Meta) id.Set {
 	}
 	result := id.NewSetCap(len(ml))
 	for _, m := range ml {
-		result = result.Zid(m.Zid)
+		result = result.Add(m.Zid)
 	}
 	return result
 }
@@ -398,15 +398,15 @@ func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet id.Set) 
 		pred = ct.retrieveIndex(searcher)
 		if startSet != nil {
 			if pred == nil {
-				pred = startSet.Contains
+				pred = startSet.ContainsOrNil
 			} else {
 				predSet := id.NewSetCap(len(startSet))
 				for zid := range startSet {
 					if pred(zid) {
-						predSet = predSet.Zid(zid)
+						predSet = predSet.Add(zid)
 					}
 				}
-				pred = predSet.Contains
+				pred = predSet.ContainsOrNil
 			}
 		}
 	}
@@ -428,7 +428,7 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 		// No positive search for words, must contain only words for a negative search.
 		// Otherwise len(search) == 0 (see above)
 		negatives := retrieveNegatives(negCalls)
-		return func(zid id.Zid) bool { return !negatives.Contains(zid) }
+		return func(zid id.Zid) bool { return !negatives.ContainsOrNil(zid) }
 	}
 	if len(positives) == 0 {
 		// Positive search didn't found anything. We can omit the negative search.
@@ -436,14 +436,14 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 	}
 	if len(negCalls) == 0 {
 		// Positive search found something, but there is no negative search.
-		return positives.Contains
+		return positives.ContainsOrNil
 	}
 	negatives := retrieveNegatives(negCalls)
 	if negatives == nil {
-		return positives.Contains
+		return positives.ContainsOrNil
 	}
 	return func(zid id.Zid) bool {
-		return positives.Contains(zid) && !negatives.Contains(zid)
+		return positives.ContainsOrNil(zid) && !negatives.ContainsOrNil(zid)
 	}
 }
 

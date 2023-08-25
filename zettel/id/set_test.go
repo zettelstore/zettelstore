@@ -31,7 +31,7 @@ func TestSetContains(t *testing.T) {
 		{id.NewSet(1), 1, true},
 	}
 	for i, tc := range testcases {
-		got := tc.s.Contains(tc.zid)
+		got := tc.s.ContainsOrNil(tc.zid)
 		if got != tc.exp {
 			t.Errorf("%d: %v.Contains(%v) == %v, but got %v", i, tc.s, tc.zid, tc.exp, got)
 		}
@@ -56,7 +56,7 @@ func TestSetAdd(t *testing.T) {
 	for i, tc := range testcases {
 		sl1 := tc.s1.Sorted()
 		sl2 := tc.s2.Sorted()
-		got := tc.s1.Add(tc.s2).Sorted()
+		got := tc.s1.Copy(tc.s2).Sorted()
 		if !got.Equal(tc.exp) {
 			t.Errorf("%d: %v.Add(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
 		}
@@ -127,7 +127,7 @@ func TestSetRemove(t *testing.T) {
 		sl1 := tc.s1.Sorted()
 		sl2 := tc.s2.Sorted()
 		newS1 := id.NewSet(sl1...)
-		newS1.Remove(tc.s2)
+		newS1.Substract(tc.s2)
 		got := newS1.Sorted()
 		if !got.Equal(tc.exp) {
 			t.Errorf("%d: %v.Remove(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)

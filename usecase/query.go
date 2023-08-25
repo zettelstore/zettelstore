@@ -150,18 +150,18 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 	metaZids := id.NewSetCap(len(metaSeq))
 	refZids := id.NewSetCap(len(metaSeq) * 4) // Assumption: there are four zids per zettel
 	for _, m := range metaSeq {
-		metaZids.Zid(m.Zid)
-		refZids.Zid(m.Zid)
+		metaZids.Add(m.Zid)
+		refZids.Add(m.Zid)
 		for _, pair := range m.ComputedPairsRest() {
 			switch meta.Type(pair.Key) {
 			case meta.TypeID:
 				if zid, errParse := id.Parse(pair.Value); errParse == nil {
-					refZids.Zid(zid)
+					refZids.Add(zid)
 				}
 			case meta.TypeIDSet:
 				for _, value := range meta.ListFromValue(pair.Value) {
 					if zid, errParse := id.Parse(value); errParse == nil {
-						refZids.Zid(zid)
+						refZids.Add(zid)
 					}
 				}
 			}
@@ -174,7 +174,7 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 func filterByZid(candidates []*meta.Meta, ignoreSeq id.Set) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
 	for _, m := range candidates {
-		if !ignoreSeq.Contains(m.Zid) {
+		if !ignoreSeq.ContainsOrNil(m.Zid) {
 			result = append(result, m)
 		}
 	}

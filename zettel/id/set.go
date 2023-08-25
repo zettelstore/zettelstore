@@ -10,6 +10,8 @@
 
 package id
 
+import "maps"
+
 // Set is a set of zettel identifier
 type Set map[Zid]struct{}
 
@@ -20,7 +22,7 @@ func NewSet(zids ...Zid) Set {
 		l = 8
 	}
 	result := make(Set, l)
-	result.AddSlice(zids)
+	result.CopySlice(zids)
 	return result
 }
 
@@ -34,12 +36,12 @@ func NewSetCap(c int, zids ...Zid) Set {
 		c = 8
 	}
 	result := make(Set, c)
-	result.AddSlice(zids)
+	result.CopySlice(zids)
 	return result
 }
 
-// Zid adds a Zid to the set.
-func (s Set) Zid(zid Zid) Set {
+// Add adds a Add to the set.
+func (s Set) Add(zid Zid) Set {
 	if s == nil {
 		return NewSet(zid)
 	}
@@ -47,8 +49,17 @@ func (s Set) Zid(zid Zid) Set {
 	return s
 }
 
-// Contains return true if the set is nil or if the set contains the given Zettel identifier.
+// Contains return true if the set is non-nil and the set contains the given Zettel identifier.
 func (s Set) Contains(zid Zid) bool {
+	if s != nil {
+		_, found := s[zid]
+		return found
+	}
+	return false
+}
+
+// ContainsOrNil return true if the set is nil or if the set contains the given Zettel identifier.
+func (s Set) ContainsOrNil(zid Zid) bool {
 	if s != nil {
 		_, found := s[zid]
 		return found
@@ -56,19 +67,20 @@ func (s Set) Contains(zid Zid) bool {
 	return true
 }
 
-// Add all member from the other set.
-func (s Set) Add(other Set) Set {
+// Copy adds all member from the other set.
+func (s Set) Copy(other Set) Set {
 	if s == nil {
-		return other
+		s = NewSetCap(len(other))
 	}
-	for zid := range other {
-		s[zid] = struct{}{}
-	}
+	maps.Copy(s, other)
 	return s
 }
 
-// AddSlice adds all identifier of the given slice to the set.
-func (s Set) AddSlice(sl Slice) {
+// CopySlice adds all identifier of the given slice to the set.
+func (s Set) CopySlice(sl Slice) {
+	if s == nil {
+		s = NewSetCap(len(sl))
+	}
 	for _, zid := range sl {
 		s[zid] = struct{}{}
 	}
@@ -108,12 +120,17 @@ func (s Set) IntersectOrSet(other Set) Set {
 	return s
 }
 
-// Remove all zettel identifier from 's' that are in the set 'other'.
-func (s Set) Remove(other Set) {
+// Substract removes all zettel identifier from 's' that are in the set 'other'.
+func (s Set) Substract(other Set) {
 	if s == nil || other == nil {
 		return
 	}
 	for zid := range other {
 		delete(s, zid)
 	}
+}
+
+// IsEqual returns true if the other set is equal to the given set.
+func (s Set) IsEqual(other Set) bool {
+	return maps.Equal(s, other)
 }

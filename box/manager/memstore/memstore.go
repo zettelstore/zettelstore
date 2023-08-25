@@ -129,10 +129,10 @@ func (ms *memStore) SearchEqual(word string) id.Set {
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
 	if refs, ok := ms.words[word]; ok {
-		result.AddSlice(refs)
+		result.CopySlice(refs)
 	}
 	if refs, ok := ms.urls[word]; ok {
-		result.AddSlice(refs)
+		result.CopySlice(refs)
 	}
 	zid, err := id.Parse(word)
 	if err != nil {
@@ -231,23 +231,23 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 		if !pred(word, s) {
 			continue
 		}
-		result.AddSlice(refs)
+		result.CopySlice(refs)
 	}
 	for u, refs := range ms.urls {
 		if !pred(u, s) {
 			continue
 		}
-		result.AddSlice(refs)
+		result.CopySlice(refs)
 	}
 	return result
 }
 
 func addBackwardZids(result id.Set, zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is read-locked!
-	result.Zid(zid)
-	result.AddSlice(zi.backward)
+	result.Add(zid)
+	result.CopySlice(zi.backward)
 	for _, mref := range zi.otherRefs {
-		result.AddSlice(mref.backward)
+		result.CopySlice(mref.backward)
 	}
 }
 
@@ -290,9 +290,9 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	zi.meta = m
 	ms.updateDeadReferences(zidx, zi)
 	ids := ms.updateForwardBackwardReferences(zidx, zi)
-	toCheck = toCheck.Add(ids)
+	toCheck = toCheck.Copy(ids)
 	ids = ms.updateMetadataReferences(zidx, zi)
-	toCheck = toCheck.Add(ids)
+	toCheck = toCheck.Copy(ids)
 	zi.words = updateWordSet(zidx.Zid, ms.words, zi.words, zidx.GetWords())
 	zi.urls = updateWordSet(zidx.Zid, ms.urls, zi.urls, zidx.GetUrls())
 
@@ -365,14 +365,14 @@ func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = remRef(bzi.backward, zidx.Zid)
 		if bzi.meta == nil {
-			toCheck = toCheck.Zid(ref)
+			toCheck = toCheck.Add(ref)
 		}
 	}
 	for _, ref := range newRefs {
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = addRef(bzi.backward, zidx.Zid)
 		if bzi.meta == nil {
-			toCheck = toCheck.Zid(ref)
+			toCheck = toCheck.Add(ref)
 		}
 	}
 	return toCheck
@@ -406,7 +406,7 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 			bmr.backward = addRef(bmr.backward, zidx.Zid)
 			bzi.otherRefs[key] = bmr
 			if bzi.meta == nil {
-				toCheck = toCheck.Zid(ref)
+				toCheck = toCheck.Add(ref)
 			}
 		}
 		ms.removeInverseMeta(zidx.Zid, key, remRefs)
@@ -497,7 +497,7 @@ func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) id.Set {
 			if toCheck == nil {
 				toCheck = id.NewSet()
 			}
-			toCheck.Zid(ref)
+			toCheck.Add(ref)
 		}
 	}
 	return toCheck

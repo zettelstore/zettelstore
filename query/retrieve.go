@@ -133,7 +133,7 @@ func retrievePositives(normCalls, plainCalls searchCallMap) id.Set {
 		}
 		normResult = normResult.IntersectOrSet(sf(c.s))
 	}
-	return normResult.Add(plainResult)
+	return normResult.Copy(plainResult)
 }
 
 func isSuperset(normCalls, plainCalls searchCallMap) bool {
@@ -148,7 +148,7 @@ func isSuperset(normCalls, plainCalls searchCallMap) bool {
 func retrieveNegatives(negCalls searchCallMap) id.Set {
 	var negatives id.Set
 	for val, sf := range negCalls {
-		negatives = negatives.Add(sf(val.s))
+		negatives = negatives.Copy(sf(val.s))
 	}
 	return negatives
 }

@@ -258,7 +258,7 @@ func (ct *contextTask) next() (*meta.Meta, int) {
 		if _, found := ct.seen[zid]; found {
 			continue
 		}
-		ct.seen.Zid(zid)
+		ct.seen.Add(zid)
 		return m, item.cost
 	}
 	return nil, -1
