@@ -10,10 +10,30 @@
 
 package id
 
-import "maps"
+import (
+	"maps"
+	"strings"
+)
 
 // Set is a set of zettel identifier
 type Set map[Zid]struct{}
+
+// String returns a string representation of the map.
+func (s Set) String() string {
+	if s == nil {
+		return "{}"
+	}
+	var sb strings.Builder
+	sb.WriteByte('{')
+	for i, zid := range s.Sorted() {
+		if i > 0 {
+			sb.WriteByte(' ')
+		}
+		sb.Write(zid.Bytes())
+	}
+	sb.WriteByte('}')
+	return sb.String()
+}
 
 // NewSet returns a new set of identifier with the given initial values.
 func NewSet(zids ...Zid) Set {
@@ -38,6 +58,14 @@ func NewSetCap(c int, zids ...Zid) Set {
 	result := make(Set, c)
 	result.CopySlice(zids)
 	return result
+}
+
+// Clone returns a copy of the given set.
+func (s Set) Clone() Set {
+	if len(s) == 0 {
+		return nil
+	}
+	return maps.Clone(s)
 }
 
 // Add adds a Add to the set.
@@ -130,7 +158,17 @@ func (s Set) Substract(other Set) {
 	}
 }
 
-// IsEqual returns true if the other set is equal to the given set.
-func (s Set) IsEqual(other Set) bool {
-	return maps.Equal(s, other)
+// Remove the identifier from the set.
+func (s Set) Remove(zid Zid) Set {
+	if len(s) == 0 {
+		return nil
+	}
+	delete(s, zid)
+	if len(s) == 0 {
+		return nil
+	}
+	return s
 }
+
+// Equal returns true if the other set is equal to the given set.
+func (s Set) Equal(other Set) bool { return maps.Equal(s, other) }

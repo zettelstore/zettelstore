@@ -29,12 +29,12 @@ func TestSliceSort(t *testing.T) {
 func TestCopy(t *testing.T) {
 	t.Parallel()
 	var orig id.Slice
-	got := orig.Copy()
+	got := orig.Clone()
 	if got != nil {
 		t.Errorf("Nil copy resulted in %v", got)
 	}
 	orig = id.Slice{9, 4, 6, 1, 7}
-	got = orig.Copy()
+	got = orig.Clone()
 	if !orig.Equal(got) {
 		t.Errorf("Slice.Copy did not work. Expected %v, got %v", orig, got)
 	}

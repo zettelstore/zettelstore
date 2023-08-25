@@ -98,7 +98,7 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 		m.Set(api.KeyDead, zi.dead.String())
 		updated = true
 	}
-	back := removeOtherMetaRefs(m, zi.backward.Copy())
+	back := removeOtherMetaRefs(m, zi.backward.Clone())
 	if len(zi.backward) > 0 {
 		m.Set(api.KeyBackward, zi.backward.String())
 		updated = true

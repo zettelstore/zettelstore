@@ -11,46 +11,22 @@
 package id
 
 import (
-	"sort"
+	"slices"
 	"strings"
 )
 
 // Slice is a sequence of zettel identifier. A special case is a sorted slice.
 type Slice []Zid
 
-func (zs Slice) Len() int           { return len(zs) }
-func (zs Slice) Less(i, j int) bool { return zs[i] < zs[j] }
-func (zs Slice) Swap(i, j int)      { zs[i], zs[j] = zs[j], zs[i] }
-
 // Sort a slice of Zids.
-func (zs Slice) Sort() { sort.Sort(zs) }
+func (zs Slice) Sort() { slices.Sort(zs) }
 
-// Copy a zettel identifier slice
-func (zs Slice) Copy() Slice {
-	if zs == nil {
-		return nil
-	}
-	result := make(Slice, len(zs))
-	copy(result, zs)
-	return result
-}
+// Clone a zettel identifier slice
+func (zs Slice) Clone() Slice { return slices.Clone(zs) }
 
 // Equal reports whether zs and other are the same length and contain the samle zettel
 // identifier. A nil argument is equivalent to an empty slice.
-func (zs Slice) Equal(other Slice) bool {
-	if len(zs) != len(other) {
-		return false
-	}
-	if len(zs) == 0 {
-		return true
-	}
-	for i, e := range zs {
-		if e != other[i] {
-			return false
-		}
-	}
-	return true
-}
+func (zs Slice) Equal(other Slice) bool { return slices.Equal(zs, other) }
 
 func (zs Slice) String() string {
 	if len(zs) == 0 {
