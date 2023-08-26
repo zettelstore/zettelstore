@@ -33,7 +33,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if p := r.URL.Path; p != "/" {
-			wui.reportError(ctx, w, adapter.ErrRessourceNotFound{Path: p})
+			wui.reportError(ctx, w, adapter.ErrResourceNotFound{Path: p})
 			return
 		}
 		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))

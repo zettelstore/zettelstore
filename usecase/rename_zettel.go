@@ -34,7 +34,7 @@ type RenameZettel struct {
 // ErrZidInUse is returned if the zettel id is not appropriate for the box operation.
 type ErrZidInUse struct{ Zid id.Zid }
 
-func (err *ErrZidInUse) Error() string {
+func (err ErrZidInUse) Error() string {
 	return "Zettel id already in use: " + err.Zid.String()
 }
 
@@ -54,7 +54,7 @@ func (uc *RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
 		return nil
 	}
 	if _, err := uc.port.GetZettel(noEnrichCtx, newZid); err == nil {
-		return &ErrZidInUse{Zid: newZid}
+		return ErrZidInUse{Zid: newZid}
 	}
 	err := uc.port.RenameZettel(ctx, curZid, newZid)
 	uc.log.Info().User(ctx).Zid(curZid).Err(err).Zid(newZid).Msg("Rename zettel")

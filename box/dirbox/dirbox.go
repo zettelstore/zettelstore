@@ -249,7 +249,7 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zi
 func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		return zettel.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
 	}
 	m, c, err := dp.srvGetMetaContent(ctx, entry, zid)
 	if err != nil {
@@ -302,7 +302,7 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	meta := zettel.Meta
 	zid := meta.Zid
 	if !zid.IsValid() {
-		return &box.ErrInvalidID{Zid: zid}
+		return box.ErrInvalidZid{Zid: zid.String()}
 	}
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
@@ -333,7 +333,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	}
 	curEntry := dp.dirSrv.GetDirEntry(curZid)
 	if !curEntry.IsValid() {
-		return box.ErrNotFound
+		return box.ErrZettelNotFound{Zid: curZid}
 	}
 	if dp.readonly {
 		return box.ErrReadOnly
@@ -341,7 +341,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 
 	// Check whether zettel with new ID already exists in this box.
 	if dp.HasZettel(ctx, newZid) {
-		return &box.ErrInvalidID{Zid: newZid}
+		return box.ErrInvalidZid{Zid: newZid.String()}
 	}
 
 	oldMeta, oldContent, err := dp.srvGetMetaContent(ctx, curEntry, curZid)
@@ -384,7 +384,7 @@ func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		return box.ErrNotFound
+		return box.ErrZettelNotFound{Zid: zid}
 	}
 	err := dp.dirSrv.DeleteDirEntry(zid)
 	if err != nil {

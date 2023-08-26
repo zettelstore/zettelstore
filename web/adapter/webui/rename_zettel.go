@@ -28,9 +28,10 @@ import (
 func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 
@@ -60,9 +61,10 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.H
 func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		curZid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		curZid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 

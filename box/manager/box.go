@@ -66,14 +66,15 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, e
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for i, p := range mgr.boxes {
-		if z, err := p.GetZettel(ctx, zid); err != box.ErrNotFound {
+		var errZNF box.ErrZettelNotFound
+		if z, err := p.GetZettel(ctx, zid); !errors.As(err, &errZNF) {
 			if err == nil {
 				mgr.Enrich(ctx, z.Meta, i+1)
 			}
 			return z, err
 		}
 	}
-	return zettel.Zettel{}, box.ErrNotFound
+	return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
 }
 
 // GetAllZettel retrieves a specific zettel from all managed boxes.
@@ -242,7 +243,8 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 	defer mgr.mgrMx.RUnlock()
 	for i, p := range mgr.boxes {
 		err := p.RenameZettel(ctx, curZid, newZid)
-		if err != nil && !errors.Is(err, box.ErrNotFound) {
+		var errZNF box.ErrZettelNotFound
+		if err != nil && !errors.As(err, &errZNF) {
 			for j := 0; j < i; j++ {
 				mgr.boxes[j].RenameZettel(ctx, newZid, curZid)
 			}
@@ -280,9 +282,10 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		if err == nil {
 			return nil
 		}
-		if !errors.Is(err, box.ErrNotFound) && !errors.Is(err, box.ErrReadOnly) {
+		var errZNF box.ErrZettelNotFound
+		if !errors.As(err, &errZNF) && !errors.Is(err, box.ErrReadOnly) {
 			return err
 		}
 	}
-	return box.ErrNotFound
+	return box.ErrZettelNotFound{Zid: zid}
 }

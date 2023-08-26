@@ -75,7 +75,7 @@ func (ms *memStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 		// zi.meta is nil, if zettel was referenced, but is not indexed yet.
 		return zi.meta.Clone(), nil
 	}
-	return nil, box.ErrNotFound
+	return nil, box.ErrZettelNotFound{Zid: zid}
 }
 
 func (ms *memStore) Enrich(_ context.Context, m *meta.Meta) {

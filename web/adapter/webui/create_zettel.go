@@ -39,14 +39,15 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		ctx := r.Context()
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 		origZettel, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrZettelNotFound{Zid: zid})
 			return
 		}
 

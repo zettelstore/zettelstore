@@ -43,9 +43,10 @@ func (wui *WebUI) MakeGetInfoHandler(
 		ctx := r.Context()
 		q := r.URL.Query()
 
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 

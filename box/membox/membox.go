@@ -122,7 +122,7 @@ func (mb *memBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error
 	z, ok := mb.zettel[zid]
 	mb.mx.RUnlock()
 	if !ok {
-		return zettel.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
 	}
 	z.Meta = z.Meta.Clone()
 	mb.log.Trace().Msg("GetZettel")
@@ -180,7 +180,7 @@ func (mb *memBox) CanUpdateZettel(_ context.Context, zettel zettel.Zettel) bool 
 func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	m := zettel.Meta.Clone()
 	if !m.Zid.IsValid() {
-		return &box.ErrInvalidID{Zid: m.Zid}
+		return box.ErrInvalidZid{Zid: m.Zid.String()}
 	}
 
 	mb.mx.Lock()
@@ -209,13 +209,13 @@ func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	zettel, ok := mb.zettel[curZid]
 	if !ok {
 		mb.mx.Unlock()
-		return box.ErrNotFound
+		return box.ErrZettelNotFound{Zid: curZid}
 	}
 
 	// Check that there is no zettel with newZid
 	if _, ok = mb.zettel[newZid]; ok {
 		mb.mx.Unlock()
-		return &box.ErrInvalidID{Zid: newZid}
+		return box.ErrInvalidZid{Zid: newZid.String()}
 	}
 
 	meta := zettel.Meta.Clone()
@@ -242,7 +242,7 @@ func (mb *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	oldZettel, found := mb.zettel[zid]
 	if !found {
 		mb.mx.Unlock()
-		return box.ErrNotFound
+		return box.ErrZettelNotFound{Zid: zid}
 	}
 	delete(mb.zettel, zid)
 	mb.curBytes -= oldZettel.Length()

@@ -93,7 +93,7 @@ func (zb *zipBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
 func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		return zettel.Zettel{}, box.ErrNotFound
+		return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
 	}
 	reader, err := zip.OpenReader(zb.name)
 	if err != nil {
@@ -195,7 +195,7 @@ func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	}
 	curEntry := zb.dirSrv.GetDirEntry(curZid)
 	if !curEntry.IsValid() {
-		err = box.ErrNotFound
+		err = box.ErrZettelNotFound{Zid: curZid}
 	}
 	zb.log.Trace().Err(err).Msg("RenameZettel")
 	return err
@@ -207,7 +207,7 @@ func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	err := box.ErrReadOnly
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
-		err = box.ErrNotFound
+		err = box.ErrZettelNotFound{Zid: zid}
 	}
 	zb.log.Trace().Err(err).Msg("DeleteZettel")
 	return err

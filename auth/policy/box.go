@@ -106,7 +106,7 @@ func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	zid := zettel.Meta.Zid
 	user := server.GetUser(ctx)
 	if !zid.IsValid() {
-		return &box.ErrInvalidID{Zid: zid}
+		return box.ErrInvalidZid{Zid: zid.String()}
 	}
 	// Write existing zettel
 	oldZettel, err := pp.box.GetZettel(ctx, zid)

@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
@@ -47,26 +48,32 @@ type ErrBadRequest struct {
 }
 
 // NewErrBadRequest creates an new bad request error.
-func NewErrBadRequest(text string) error { return &ErrBadRequest{Text: text} }
+func NewErrBadRequest(text string) error { return ErrBadRequest{Text: text} }
 
-func (err *ErrBadRequest) Error() string { return err.Text }
+func (err ErrBadRequest) Error() string { return err.Text }
 
 // CodeMessageFromError returns an appropriate HTTP status code and text from a given error.
 func CodeMessageFromError(err error) (int, string) {
-	if err == box.ErrNotFound {
-		return http.StatusNotFound, http.StatusText(http.StatusNotFound)
+	var eznf box.ErrZettelNotFound
+	if errors.As(err, &eznf) {
+		return http.StatusNotFound, "Zettel not found: " + eznf.Zid.String()
 	}
-	if err1, ok := err.(*box.ErrNotAllowed); ok {
-		return http.StatusForbidden, err1.Error()
+	var ena *box.ErrNotAllowed
+	if errors.As(err, &ena) {
+		msg := ena.Error()
+		return http.StatusForbidden, strings.ToUpper(msg[:1]) + msg[1:]
 	}
-	if err1, ok := err.(*box.ErrInvalidID); ok {
-		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context", err1.Zid)
+	var eiz box.ErrInvalidZid
+	if errors.As(err, &eiz) {
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context", eiz.Zid)
 	}
-	if err1, ok := err.(*usecase.ErrZidInUse); ok {
-		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use", err1.Zid)
+	var ezin usecase.ErrZidInUse
+	if errors.As(err, &ezin) {
+		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use", ezin.Zid)
 	}
-	if err1, ok := err.(*ErrBadRequest); ok {
-		return http.StatusBadRequest, err1.Text
+	var ebr ErrBadRequest
+	if errors.As(err, &ebr) {
+		return http.StatusBadRequest, ebr.Text
 	}
 	if errors.Is(err, box.ErrStopped) {
 		return http.StatusInternalServerError, fmt.Sprintf("Zettelstore not operational: %v", err)
@@ -77,8 +84,9 @@ func CodeMessageFromError(err error) (int, string) {
 	if errors.Is(err, box.ErrCapacity) {
 		return http.StatusInsufficientStorage, "Zettelstore reached one of its storage limits"
 	}
-	if ernf, ok := err.(ErrRessourceNotFound); ok {
-		return http.StatusNotFound, ernf.Error()
+	var ernf ErrResourceNotFound
+	if errors.As(err, &ernf) {
+		return http.StatusNotFound, "Resource not found: " + ernf.Path
 	}
 	return http.StatusInternalServerError, err.Error()
 }

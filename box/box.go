@@ -301,8 +301,12 @@ var ErrStopped = errors.New("box is stopped")
 // ErrReadOnly is returned if there is an attepmt to write to a read-only box.
 var ErrReadOnly = errors.New("read-only box")
 
-// ErrNotFound is returned if a zettel was not found in the box.
-var ErrNotFound = errors.New("zettel not found")
+// ErrZettelNotFound is returned if a zettel was not found in the box.
+type ErrZettelNotFound struct{ Zid id.Zid }
+
+func (eznf ErrZettelNotFound) Error() string { return "zettel not found: " + eznf.Zid.String() }
+
+//var ErrZettelNotFound = errors.New("zettel not found")
 
 // ErrConflict is returned if a box operation detected a conflict..
 // One example: if calculating a new zettel identifier takes too long.
@@ -311,7 +315,7 @@ var ErrConflict = errors.New("conflict")
 // ErrCapacity is returned if a box has reached its capacity.
 var ErrCapacity = errors.New("capacity exceeded")
 
-// ErrInvalidID is returned if the zettel id is not appropriate for the box operation.
-type ErrInvalidID struct{ Zid id.Zid }
+// ErrInvalidZid is returned if the zettel id is not appropriate for the box operation.
+type ErrInvalidZid struct{ Zid string }
 
-func (err *ErrInvalidID) Error() string { return "invalid Zettel id: " + err.Zid.String() }
+func (err ErrInvalidZid) Error() string { return "invalid Zettel id: " + err.Zid }

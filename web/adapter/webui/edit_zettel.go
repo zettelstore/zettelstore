@@ -25,9 +25,10 @@ import (
 func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 
@@ -47,9 +48,10 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRo
 func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 

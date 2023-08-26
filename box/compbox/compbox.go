@@ -92,8 +92,9 @@ func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, erro
 			return zettel.Zettel{Meta: m}, nil
 		}
 	}
-	cb.log.Trace().Err(box.ErrNotFound).Msg("GetZettel/Err")
-	return zettel.Zettel{}, box.ErrNotFound
+	err := box.ErrZettelNotFound{Zid: zid}
+	cb.log.Trace().Err(err).Msg("GetZettel/Err")
+	return zettel.Zettel{}, err
 }
 
 func (*compBox) HasZettel(_ context.Context, zid id.Zid) bool {
@@ -145,10 +146,11 @@ func (*compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	return !ok
 }
 
-func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
-	err := box.ErrNotFound
+func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) (err error) {
 	if _, ok := myZettel[curZid]; ok {
 		err = box.ErrReadOnly
+	} else {
+		err = box.ErrZettelNotFound{Zid: curZid}
 	}
 	cb.log.Trace().Err(err).Msg("RenameZettel")
 	return err
@@ -156,10 +158,11 @@ func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) error {
 
 func (*compBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (cb *compBox) DeleteZettel(_ context.Context, zid id.Zid) error {
-	err := box.ErrNotFound
+func (cb *compBox) DeleteZettel(_ context.Context, zid id.Zid) (err error) {
 	if _, ok := myZettel[zid]; ok {
 		err = box.ErrReadOnly
+	} else {
+		err = box.ErrZettelNotFound{Zid: zid}
 	}
 	cb.log.Trace().Err(err).Msg("DeleteZettel")
 	return err

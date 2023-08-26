@@ -28,9 +28,10 @@ import (
 func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel usecase.GetZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		zid, err := id.Parse(r.URL.Path[1:])
+		path := r.URL.Path[1:]
+		zid, err := id.Parse(path)
 		if err != nil {
-			wui.reportError(ctx, w, box.ErrNotFound)
+			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
 		}
 

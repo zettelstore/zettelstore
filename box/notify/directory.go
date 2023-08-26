@@ -191,7 +191,7 @@ func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntr
 		return DirEntry{}, ds.logMissingEntry("rename")
 	}
 	if _, found := ds.entries[newZid]; found {
-		return DirEntry{}, &box.ErrInvalidID{Zid: newZid}
+		return DirEntry{}, box.ErrInvalidZid{Zid: newZid.String()}
 	}
 	oldZid := oldEntry.Zid
 	newEntry := DirEntry{
