@@ -72,6 +72,7 @@ type WebUI struct {
 	engine      *sxeval.Engine
 	mxZettelEnv sync.Mutex
 	zettelEnv   sxeval.Environment
+	dag         id.Digraph
 	genHTML     *sxhtml.Generator
 
 	symQuote, symQQ *sx.Symbol
@@ -83,12 +84,16 @@ type WebUI struct {
 	symAttr         *sx.Symbol
 }
 
+// webuiBox contains all box methods that are needed for WebUI operation.
+//
+// Note: these function must not do auth checking.
 type webuiBox interface {
-	CanCreateZettel(ctx context.Context) bool
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
-	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
-	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
+	CanCreateZettel(context.Context) bool
+	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+	CanUpdateZettel(context.Context, zettel.Zettel) bool
+	AllowRenameZettel(context.Context, id.Zid) bool
+	CanDeleteZettel(context.Context, id.Zid) bool
 }
 
 // New creates a new WebUI struct.
@@ -159,6 +164,13 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 		wui.roleCSSMap = nil
 	}
 	wui.mxRoleCSSMap.Unlock()
+
+	wui.mxZettelEnv.Lock()
+	if ci.Reason == box.OnReload || wui.dag.HasVertex(ci.Zid) {
+		wui.zettelEnv = nil
+		wui.dag = nil
+	}
+	wui.mxZettelEnv.Unlock()
 }
 
 func (wui *WebUI) setSxnCache(zid id.Zid, expr sxeval.Expr) {

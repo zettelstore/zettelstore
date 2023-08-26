@@ -85,11 +85,12 @@ func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
 	if parentEnv := wui.zettelEnv; parentEnv != nil {
 		return parentEnv
 	}
-	zettelEnv, err := wui.loadAllSxnCodeZettel(ctx)
+	dag, zettelEnv, err := wui.loadAllSxnCodeZettel(ctx)
 	if err != nil {
 		wui.log.IfErr(err).Msg("loading zettel sxn")
 		return wui.engine.RootEnvironment()
 	}
+	wui.dag = dag
 	wui.zettelEnv = zettelEnv
 	return zettelEnv
 }
