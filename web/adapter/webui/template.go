@@ -337,14 +337,14 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	if code == http.StatusInternalServerError {
 		wui.log.Error().Msg(err.Error())
 	} else {
-		wui.log.Trace().Err(err).Msg("reportError")
+		wui.log.Debug().Err(err).Msg("reportError")
 	}
 	user := server.GetUser(ctx)
 	env, rb := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
 	rb.bindString("heading", sx.MakeString(http.StatusText(code)))
 	rb.bindString("message", sx.MakeString(text))
 	if rb.err == nil {
-		rb.err = wui.renderSxnTemplate(ctx, w, id.ErrorTemplateZid, env)
+		rb.err = wui.renderSxnTemplateStatus(ctx, w, code, id.ErrorTemplateZid, env)
 	}
 	if errBind := rb.err; errBind != nil {
 		wui.log.Error().Err(errBind).Msg("while rendering error message")

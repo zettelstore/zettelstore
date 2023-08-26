@@ -27,3 +27,12 @@ func Forbidden(w http.ResponseWriter, text string) {
 func NotFound(w http.ResponseWriter, text string) {
 	http.Error(w, text, http.StatusNotFound)
 }
+
+// ErrRessourceNotFound is signalled when a web resource was not found.
+type ErrRessourceNotFound struct {
+	Path string
+}
+
+func (ernf ErrRessourceNotFound) Error() string {
+	return "Resource not found: " + ernf.Path
+}

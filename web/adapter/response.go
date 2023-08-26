@@ -77,5 +77,8 @@ func CodeMessageFromError(err error) (int, string) {
 	if errors.Is(err, box.ErrCapacity) {
 		return http.StatusInsufficientStorage, "Zettelstore reached one of its storage limits"
 	}
+	if ernf, ok := err.(ErrRessourceNotFound); ok {
+		return http.StatusNotFound, ernf.Error()
+	}
 	return http.StatusInternalServerError, err.Error()
 }

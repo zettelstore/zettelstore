@@ -18,6 +18,7 @@ import (
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
+	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/server"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
@@ -31,8 +32,8 @@ type getRootStore interface {
 func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		if r.URL.Path != "/" {
-			wui.reportError(ctx, w, box.ErrNotFound)
+		if p := r.URL.Path; p != "/" {
+			wui.reportError(ctx, w, adapter.ErrRessourceNotFound{Path: p})
 			return
 		}
 		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
