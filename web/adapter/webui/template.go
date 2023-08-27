@@ -35,27 +35,49 @@ import (
 )
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
-	root := sxeval.MakeRootEnvironment()
+	root := sxeval.MakeRootEnvironment(len(syntaxes) + len(builtinsFA) + len(builtinsA) + 1)
 	engine := sxeval.MakeEngine(wui.sf, root)
 	sxbuiltins.InstallQuoteSyntax(root, wui.symQuote)
 	sxbuiltins.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
-	engine.BindSyntax("if", sxbuiltins.IfS)
-	engine.BindSyntax("and", sxbuiltins.AndS)
-	engine.BindSyntax("or", sxbuiltins.OrS)
-	engine.BindSyntax("lambda", sxbuiltins.LambdaS)
-	engine.BindSyntax("define", sxbuiltins.DefineS)
-	engine.BindSyntax("let", sxbuiltins.LetS)
-	engine.BindBuiltinFA("bound?", sxbuiltins.BoundP)
-	engine.BindBuiltinFA("map", sxbuiltins.Map)
-	engine.BindBuiltinFA("apply", sxbuiltins.Apply)
-	engine.BindBuiltinA("list", sxbuiltins.List)
-	engine.BindBuiltinA("append", sxbuiltins.Append)
-	engine.BindBuiltinA("car", sxbuiltins.Car)
-	engine.BindBuiltinA("cdr", sxbuiltins.Cdr)
-
+	for _, b := range syntaxes {
+		engine.BindSyntax(b.name, b.fn)
+	}
+	for _, b := range builtinsFA {
+		engine.BindBuiltinFA(b.name, b.fn)
+	}
+	for _, b := range builtinsA {
+		engine.BindBuiltinA(b.name, b.fn)
+	}
 	engine.BindBuiltinA("url-to-html", wui.url2html)
+	root.Freeze()
 	return engine
 }
+
+var (
+	syntaxes = []struct {
+		name string
+		fn   sxeval.SyntaxFn
+	}{
+		{"if", sxbuiltins.IfS},
+		{"and", sxbuiltins.AndS}, {"or", sxbuiltins.OrS},
+		{"lambda", sxbuiltins.LambdaS}, {"let", sxbuiltins.LetS},
+		{"define", sxbuiltins.DefineS},
+	}
+	builtinsFA = []struct {
+		name string
+		fn   sxeval.BuiltinFA
+	}{
+		{"bound?", sxbuiltins.BoundP},
+		{"map", sxbuiltins.Map}, {"apply", sxbuiltins.Apply},
+	}
+	builtinsA = []struct {
+		name string
+		fn   sxeval.BuiltinA
+	}{
+		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
+		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
+	}
+)
 
 func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 	err := sxbuiltins.CheckArgs(args, 1, 1)
