@@ -49,6 +49,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		engine.BindBuiltinA(b.name, b.fn)
 	}
 	engine.BindBuiltinA("url-to-html", wui.url2html)
+	engine.BindBuiltinA("zid-content-path", wui.zidContentPath)
 	root.Freeze()
 	return engine
 }
@@ -67,15 +68,19 @@ var (
 		name string
 		fn   sxeval.BuiltinFA
 	}{
-		{"bound?", sxbuiltins.BoundP},
+		{"bound?", sxbuiltins.BoundP}, {"current-environment", sxbuiltins.CurrentEnv},
+		{"environment-lookup", sxbuiltins.EnvLookup},
 		{"map", sxbuiltins.Map}, {"apply", sxbuiltins.Apply},
 	}
 	builtinsA = []struct {
 		name string
 		fn   sxeval.BuiltinA
 	}{
+		{"pair?", sxbuiltins.PairP},
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
 		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
+		{"assoc", sxbuiltins.Assoc},
+		{"defined?", sxbuiltins.DefinedP},
 	}
 )
 
@@ -99,6 +104,19 @@ func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 		}
 	}
 	return text, nil
+}
+func (wui *WebUI) zidContentPath(args []sx.Object) (sx.Object, error) {
+	err := sxbuiltins.CheckArgs(args, 1, 1)
+	s, err := sxbuiltins.GetString(err, args, 0)
+	if err != nil {
+		return nil, err
+	}
+	zid, err := id.Parse(s.String())
+	if err != nil {
+		return nil, fmt.Errorf("parsing zettel identfier %q: %w", s, err)
+	}
+	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+	return sx.MakeString(ub.String()), nil
 }
 
 func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
@@ -125,7 +143,6 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	rb.bindString("lang", sx.MakeString(lang))
 	rb.bindString("css-base-url", sx.MakeString(wui.cssBaseURL))
 	rb.bindString("css-user-url", sx.MakeString(wui.cssUserURL))
-	rb.bindString("css-role-url", sx.MakeString(""))
 	rb.bindString("title", sx.MakeString(title))
 	rb.bindString("home-url", sx.MakeString(wui.homeURL))
 	rb.bindString("with-auth", sx.MakeBoolean(wui.withAuth))
@@ -186,6 +203,19 @@ func (rb *renderBinder) bindKeyValue(key string, value string) {
 	rb.bindString("meta-"+key, sx.MakeString(value))
 	if kt := meta.Type(key); kt.IsSet {
 		rb.bindString("set-meta-"+key, makeStringList(meta.ListFromValue(value)))
+	}
+}
+func (rb *renderBinder) rebindResolved(key, defKey string) {
+	if rb.err == nil {
+		sym, err := rb.make(key)
+		if err == nil {
+			if obj, found := sxeval.Resolve(rb.env, sym); found {
+				rb.bindString(defKey, obj)
+				return
+			}
+			return
+		}
+		rb.err = err
 	}
 }
 

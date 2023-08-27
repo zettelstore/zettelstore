@@ -11,7 +11,6 @@
 package webui
 
 import (
-	"context"
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
@@ -50,25 +49,18 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 			return
 		}
 
-		cssRoleURL, err := wui.getCSSRoleURL(ctx, zn.InhMeta)
-		if err != nil {
-			wui.reportError(ctx, w, err)
-			return
-		}
-
 		user := server.GetUser(ctx)
 		getTextTitle := wui.makeGetTextTitle(ctx, getZettel)
 
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		env, rb := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
-		rb.bindString("css-role-url", sx.MakeString(cssRoleURL))
 		rb.bindString("heading", sx.MakeString(title))
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
 			rb.bindString("role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
 		}
-		if role, found := zn.InhMeta.Get(api.KeyFolgeRole); found && role != "" {
-			rb.bindString("folge-role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+		if folgeRole, found := zn.InhMeta.Get(api.KeyFolgeRole); found && folgeRole != "" {
+			rb.bindString("folge-role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+folgeRole).String()))
 		}
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
@@ -80,6 +72,11 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
 		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
+		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
+			for _, part := range []string{"meta", "heading"} {
+				rb.rebindResolved("ROLE-"+role+"-"+part, "ROLE-DEFAULT-part"+part)
+			}
+		}
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
@@ -88,17 +85,6 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 			wui.reportError(ctx, w, err)
 		}
 	}
-}
-
-func (wui *WebUI) getCSSRoleURL(ctx context.Context, m *meta.Meta) (string, error) {
-	cssZid, err := wui.retrieveCSSZidFromRole(ctx, m)
-	if err != nil {
-		return "", err
-	}
-	if cssZid == id.Invalid {
-		return "", nil
-	}
-	return wui.NewURLBuilder('z').SetZid(api.ZettelID(cssZid.String())).String(), nil
 }
 
 func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sx.Pair {

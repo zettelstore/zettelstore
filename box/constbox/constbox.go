@@ -192,7 +192,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230510155100",
-			api.KeyModified:   "20230523144403",
+			api.KeyModified:   "20230827212200",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseSxn)},
@@ -212,7 +212,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230510155300",
-			api.KeyModified:   "20230523212800",
+			api.KeyModified:   "20230827193100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentZettelSxn)},
@@ -291,6 +291,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230619132800",
+			api.KeyModified:   "20230827212100",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseCodeSxn)},
@@ -312,15 +313,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		zettel.NewContent([]byte("/* User-defined CSS */"))},
-	id.RoleCSSMapZid: {
-		constHeader{
-			api.KeyTitle:      "Zettelstore Role to CSS Map",
-			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxNone,
-			api.KeyCreated:    "20220321183214",
-			api.KeyVisibility: api.ValueVisibilityExpert,
-		},
-		zettel.NewContent(nil)},
 	id.EmojiZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Generic Emoji",

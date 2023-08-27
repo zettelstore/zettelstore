@@ -8,6 +8,9 @@
   *  Remove deprecated syntax for a context list: <tt>CONTEXT zid</tt>. Use
      <tt>zid CONTEXT</tt> instead. It was deprecated in version 0.13.0.
      (breaking: api, webui, zettelmarkup)
+  *  Replace CSS-role-map mechanism with a more general Sx-based one: user
+     specific code may generates parts of resulting HTML document.
+     (breaking: webui)
   *  Allow to load sx code from multiple zettel; dependencies are specified
      using <tt>precursor</tt> metadata.
      (major: webui)

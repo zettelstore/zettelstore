@@ -48,7 +48,6 @@ var (
 	ErrorTemplateZid  = MustParse(api.ZidErrorTemplate)
 	StartSxnZid       = MustParse(api.ZidSxnStart)
 	BaseSxnZid        = MustParse(api.ZidSxnBase)
-	RoleCSSMapZid     = MustParse(api.ZidRoleCSSMap)
 	EmojiZid          = MustParse(api.ZidEmoji)
 	TOCNewTemplateZid = MustParse(api.ZidTOCNewTemplate)
 	DefaultHomeZid    = MustParse(api.ZidDefaultHome)

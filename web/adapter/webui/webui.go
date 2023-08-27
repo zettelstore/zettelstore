@@ -14,7 +14,6 @@ package webui
 import (
 	"context"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -50,9 +49,6 @@ type WebUI struct {
 
 	mxCache       sync.RWMutex
 	templateCache map[id.Zid]sxeval.Expr
-
-	mxRoleCSSMap sync.RWMutex
-	roleCSSMap   map[string]id.Zid
 
 	tokenLifetime time.Duration
 	cssBaseURL    string
@@ -159,12 +155,6 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 	}
 	wui.mxCache.Unlock()
 
-	wui.mxRoleCSSMap.Lock()
-	if ci.Reason == box.OnReload || ci.Zid == id.RoleCSSMapZid {
-		wui.roleCSSMap = nil
-	}
-	wui.mxRoleCSSMap.Unlock()
-
 	wui.mxZettelEnv.Lock()
 	if ci.Reason == box.OnReload || wui.dag.HasVertex(ci.Zid) {
 		wui.zettelEnv = nil
@@ -186,52 +176,6 @@ func (wui *WebUI) getSxnCache(zid id.Zid) sxeval.Expr {
 		return expr
 	}
 	return nil
-}
-
-func (wui *WebUI) retrieveCSSZidFromRole(ctx context.Context, m *meta.Meta) (id.Zid, error) {
-	wui.mxRoleCSSMap.RLock()
-	if wui.roleCSSMap == nil {
-		wui.mxRoleCSSMap.RUnlock()
-		wui.mxRoleCSSMap.Lock()
-		zMap, err := wui.box.GetZettel(ctx, id.RoleCSSMapZid)
-		if err == nil {
-			wui.roleCSSMap = createRoleCSSMap(zMap.Meta)
-		}
-		wui.mxRoleCSSMap.Unlock()
-		if err != nil {
-			return id.Invalid, err
-		}
-		wui.mxRoleCSSMap.RLock()
-	}
-
-	defer wui.mxRoleCSSMap.RUnlock()
-	if role, found := m.Get("css-role"); found {
-		if result, found2 := wui.roleCSSMap[role]; found2 {
-			return result, nil
-		}
-	}
-	if role, found := m.Get(api.KeyRole); found {
-		if result, found2 := wui.roleCSSMap[role]; found2 {
-			return result, nil
-		}
-	}
-	return id.Invalid, nil
-}
-
-func createRoleCSSMap(mMap *meta.Meta) map[string]id.Zid {
-	result := make(map[string]id.Zid)
-	for _, p := range mMap.PairsRest() {
-		key := p.Key
-		if len(key) < 9 || !strings.HasPrefix(key, "css-") || !strings.HasSuffix(key, "-zid") {
-			continue
-		}
-		zid, err2 := id.Parse(p.Value)
-		if err2 != nil {
-			continue
-		}
-		result[key[4:len(key)-4]] = zid
-	}
-	return result
 }
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {

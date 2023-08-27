@@ -64,3 +64,30 @@
       ,@(map
          (lambda (row) `(tr (th ,(car row)) ,@(map wui-tdata-link (cdr row))))
          matrix)))
+
+;; CSS-ROLE-map is a mapping (pair list, assoc list) of role names to zettel
+;; identifier. It is used in the base template to update the metadata of the
+;; HTML page to include some role specific CSS code.
+;; Referenced in function "ROLE-DEFAULT-meta".
+(define CSS-ROLE-map '())
+
+;; ROLE-DEFAULT-meta returns some metadata for the base template. Any role
+;; specific code should include the returned list of this function.
+(define (ROLE-DEFAULT-meta env)
+    `(,@(let (meta-role (environment-lookup 'meta-role env))
+             (let (entry (assoc CSS-ROLE-map meta-role))
+                  (if (pair? entry)
+                      `((link (@ (rel "stylesheet") (href ,(zid-content-path (cdr entry))))))
+                  )
+             )
+        )
+    )
+)
+
+(define (ROLE-DEFAULT-heading env)
+    `(,@(let (meta-url (environment-lookup 'meta-url env))
+           (if (defined? meta-url) `((br) "URL: " ,(url-to-html meta-url))))
+      ,@(let (meta-author (environment-lookup 'meta-author env))
+           (if (and (defined? meta-author) meta-author) `((br) "By " ,meta-author)))
+    )
+)

@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelstore
 syntax: zmk
 created: 20220803170112
-modified: 20221205154406
+modified: 20230827225202
 
 === Welcome Zettel
 * **Problem:** You want to put your Zettelstore into the public and need a starting zettel for your users.
@@ -29,24 +29,23 @@ modified: 20221205154406
 * **Problem:** You want to add some CSS when displaying zettel of a specific [[role|00001006020000#role]].
   For example, you might want to add a yellow background color for all [[configuration|00001006020100#configuration]] zettel.
   Or you want a multi-column layout.
-* **Solution:** If you enable [[''expert-mode''|00001004020000#expert-mode]], you will have access to a zettel called ""[[Zettelstore Role to CSS Map|00000000029000]]"" (its identifier is ''00000000029000'').
-  This zettel maps a role name to a zettel that must contain the role-specific CSS code.
+* **Solution:** If you enable [[''expert-mode''|00001004020000#expert-mode]], you will have access to a zettel called ""[[Zettelstore Sxn Start Code|00000000019000]]"" (its identifier is ''00000000019000'').
+  This zettel is the starting point for Sxn code, where you can place a definition for a variable named ""CSS-ROLE-map"".
 
-  First, create a zettel containing the needed CSS: give it any title, its role is preferably ""configuration"" (but this is not a must).
-  Set its [[''syntax''|00001006020000#syntax]] must be set to ""[[css|00001008000000#css]]"".
+  But first, create a zettel containing the needed CSS: give it any title, its role is preferably ""configuration"" (but this is not a must).
+  Its [[''syntax''|00001006020000#syntax]] must be set to ""[[css|00001008000000#css]]"".
   The content must contain the role-specific CSS code, for example ``body {background-color: #FFFFD0}``for a background in a light yellow color.
 
   Let's assume, the newly created CSS zettel got the identifier ''20220825200100''.
 
-  Now, you have to connect this zettel to the zettel called ""Zettelstore Role CSS Map"".
-  Since you have enabled ''expert-mode'', you are allowed to modify it.
-  Add the following metadata ''css-configuration-zid: 20220825200100'' to assign the role-specific CSS code for the role ""configuration"" to the CSS zettel containing that CSS.
+  Now, you have to map this freshly created zettel to a role, for example ""zettel"".
+  Since you have enabled ''expert-mode'', you are allowed to modify the zettel ""[[Zettelstore Sxn Start Code|00000000019000]]"".
+  Add the following code to the Sxn Start Code zettel: ``(define CSS-ROLE-map '(("zettel" . "20220825200100")))``.
 
-  In general, its role-assigning metadata must be like this pattern: ''css-ROLE-zid: ID'', where ''ROLE'' is the placeholder for the role, and ''ID'' for the zettel identifier containing CSS code.
-  It is allowed to assign more than one role to a specific CSS zettel.
+  In general, the mapping must follow the pattern: ``(ROLE . ID)``, where ''ROLE'' is the placeholder for the role, and ''ID'' for the zettel identifier containing CSS code.
+  For example, if you also want the role ""configuration"" to be rendered using that CSS, the code should be something like ``(define CSS-ROLE-map '(("zettel" . "20220825200100") ("configuration" . "20220825200100")))``.
 * **Discussion:** you have to ensure that the CSS zettel is allowed to be read by the intended audience of the zettel with that given role.
   For example, if you made zettel with a specific role public visible, the CSS zettel must also have a [[''visibility: public''|00001010070200]] metadata.
-* **Extension:** if you have already established a role-specific layout for zettel, but you additionally want just one another zettel with another role to be rendered with the same CSS, you have to add metadata to the one zettel: ''css-role: ROLE'', where ''ROLE'' is the placeholder for the role that already is assigned to a specific CSS-based layout.
 
 === Zettel synchronization with iCloud (Apple)
 * **Problem:** You use Zettelstore on various macOS computers and you want to use the sameset of zettel across all computers.
