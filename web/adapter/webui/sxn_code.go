@@ -22,7 +22,7 @@ import (
 )
 
 func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.Environment, error) {
-	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, wui.box.GetMeta)
+	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, id.BaseSxnZid, wui.box.GetMeta)
 	if dg == nil {
 		return nil, wui.engine.RootEnvironment(), nil
 	}
@@ -40,7 +40,7 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.
 
 type getMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
 
-func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFunc) id.Digraph {
+func buildSxnCodeDigraph(ctx context.Context, startZid, baseZid id.Zid, getMeta getMetaFunc) id.Digraph {
 	m, err := getMeta(ctx, startZid)
 	if err != nil {
 		return nil
@@ -69,6 +69,8 @@ func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFu
 			}
 		}
 	}
+	dg = dg.AddVertex(baseZid)
+	dg = dg.AddEdge(startZid, baseZid)
 	return dg.TransitiveClosure(startZid)
 }
 
