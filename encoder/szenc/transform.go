@@ -25,7 +25,7 @@ import (
 
 // NewTransformer returns a new transformer to create s-expressions from AST nodes.
 func NewTransformer() *Transformer {
-	sf := sx.MakeMappedFactory()
+	sf := sx.MakeMappedFactory(1024)
 	t := Transformer{sf: sf}
 	t.zetSyms.InitializeZettelSymbols(sf)
 

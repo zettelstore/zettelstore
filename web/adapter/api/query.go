@@ -50,7 +50,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query) http.HandlerFunc {
 
 		case api.EncoderData:
 			encoder = &dataZettelEncoder{
-				sf:        sx.MakeMappedFactory(),
+				sf:        sx.MakeMappedFactory(256),
 				sq:        sq,
 				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
 			}

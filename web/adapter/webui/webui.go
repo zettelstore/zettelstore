@@ -96,7 +96,7 @@ type webuiBox interface {
 func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
-	sf := sx.MakeMappedFactory()
+	sf := sx.MakeMappedFactory(256)
 
 	wui := &WebUI{
 		log:      log,
