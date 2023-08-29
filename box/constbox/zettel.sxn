@@ -14,6 +14,7 @@
       ,@(if (bound? 'version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version")))
       ,@(if (bound? 'child-url) `((@H " &#183; ") (a (@ (href ,child-url)) "Child")))
       ,@(if (bound? 'folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge")))
+      ,@(ROLE-DEFAULT-actions (current-environment))
       ,@(if predecessor-refs `((br) "Predecessor: " ,predecessor-refs))
       ,@(if precursor-refs `((br) "Precursor: " ,precursor-refs))
       ,@(if superior-refs `((br) "Superior: " ,superior-refs))

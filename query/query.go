@@ -14,6 +14,7 @@ package query
 import (
 	"context"
 	"math/rand"
+	"slices"
 
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
@@ -244,6 +245,21 @@ func (q *Query) addKey(key string, op compareOp) *Query {
 	q = createIfNeeded(q)
 	q.terms[len(q.terms)-1].addKey(key, op)
 	return q
+}
+
+func (q *Query) GetMetaValues(key string) (vals []string) {
+	if q == nil {
+		return nil
+	}
+	for _, term := range q.terms {
+		if mvs, hasMv := term.mvals[key]; hasMv {
+			for _, ev := range mvs {
+				vals = append(vals, ev.value)
+			}
+		}
+	}
+	slices.Sort(vals)
+	return slices.Compact(vals)
 }
 
 // SetPreMatch sets the pre-selection predicate.

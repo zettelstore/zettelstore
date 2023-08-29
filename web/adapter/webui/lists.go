@@ -14,6 +14,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -76,6 +77,9 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 			rb.bindString("heading", sx.MakeString(sb.String()))
 		}
 		rb.bindString("query-value", sx.MakeString(q.String()))
+		if tzl := q.GetMetaValues(api.KeyTags); len(tzl) > 0 {
+			rb.bindString("tag-zettel", wui.transformTagZettelList(tzl))
+		}
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
 		apiURL := wui.NewURLBuilder('z').AppendQuery(q.String())
@@ -98,6 +102,30 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 			wui.reportError(ctx, w, err)
 		}
 	}
+}
+
+func (wui *WebUI) transformTagZettelList(tags []string) *sx.Pair {
+	result := sx.Nil()
+	slices.Reverse(tags)
+	for _, tag := range tags {
+		u := wui.NewURLBuilder('h').AppendQuery(
+			api.KeyTitle + api.SearchOperatorEqual + tag + " " +
+				api.KeyRole + api.SearchOperatorHas + api.ValueRoleTag,
+		)
+		link := sx.MakeList(
+			wui.symA,
+			sx.MakeList(
+				wui.symAttr,
+				sx.Cons(wui.symHref, sx.MakeString(u.String())),
+			),
+			sx.MakeString(tag),
+		)
+		if result != nil {
+			result = result.Cons(sx.MakeString(", "))
+		}
+		result = result.Cons(link)
+	}
+	return result
 }
 
 func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {

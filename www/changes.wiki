@@ -11,6 +11,9 @@
   *  Replace CSS-role-map mechanism with a more general Sx-based one: user
      specific code may generates parts of resulting HTML document.
      (breaking: webui)
+  *  Allow meta-tags, i.e. zettel for a specific tag. Meta-tags have the tag
+     name as a title and specify the role "tag".
+     (major: webui)
   *  Allow to load sx code from multiple zettel; dependencies are specified
      using <tt>precursor</tt> metadata.
      (major: webui)

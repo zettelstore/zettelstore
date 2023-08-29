@@ -84,6 +84,27 @@
     )
 )
 
+;;; ACTION-SEPARATOR defines a HTML value that separates actions links.
+(define ACTION-SEPARATOR '(@H " &#183; "))
+
+;;; ROLE-DEFAULT-actions returns the default text for actions.
+(define (ROLE-DEFAULT-actions env)
+    `()
+)
+
+;;; ROLE-tag-actions returns an additional action "Zettel" for zettel with role "tag".
+(define (ROLE-tag-actions env)
+    `(,@(ROLE-DEFAULT-actions env)
+      ,@(let (title (environment-lookup 'title env))
+             (if (and (defined? title) title)
+                 `(,ACTION-SEPARATOR ,(link-query-tags title "Zettel"))
+             )
+        )
+    )
+)
+;;; ROLE-DEFAULT-heading returns the default text for headings, below the
+;;; references of a zettel. In most cases it should be called from an
+;;; overwriting function.
 (define (ROLE-DEFAULT-heading env)
     `(,@(let (meta-url (environment-lookup 'meta-url env))
            (if (defined? meta-url) `((br) "URL: " ,(url-to-html meta-url))))

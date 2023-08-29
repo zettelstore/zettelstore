@@ -73,8 +73,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
 		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
-			for _, part := range []string{"meta", "heading"} {
-				rb.rebindResolved("ROLE-"+role+"-"+part, "ROLE-DEFAULT-part"+part)
+			for _, part := range []string{"meta", "actions", "heading"} {
+				rb.rebindResolved("ROLE-"+role+"-"+part, "ROLE-DEFAULT-"+part)
 			}
 		}
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
