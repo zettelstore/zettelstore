@@ -23,7 +23,7 @@
         `(li (a (@ (href ,(cdr l))) ,(cdr l)))
         `(li ,(cdr l))))
 
-;; wui-link taks an url and returns a HTML link inside.
+;; wui-link takes a link (title . url) and returns a HTML reference.
 (define (wui-link q)
     `(a (@ (href ,(cdr q))) ,(car q)))
 
@@ -97,11 +97,12 @@
     `(,@(ROLE-DEFAULT-actions env)
       ,@(let (title (environment-lookup 'title env))
              (if (and (defined? title) title)
-                 `(,ACTION-SEPARATOR ,(link-query-tags title "Zettel"))
+                 `(,ACTION-SEPARATOR (a (@ (href ,(query->url (string-append "tags:" title)))) "Zettel"))
              )
         )
     )
 )
+
 ;;; ROLE-DEFAULT-heading returns the default text for headings, below the
 ;;; references of a zettel. In most cases it should be called from an
 ;;; overwriting function.

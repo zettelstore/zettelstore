@@ -50,7 +50,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	}
 	engine.BindBuiltinA("url-to-html", wui.url2html)
 	engine.BindBuiltinA("zid-content-path", wui.zidContentPath)
-	engine.BindBuiltinA("link-query-tags", wui.transformLinkQueryTags)
+	engine.BindBuiltinA("query->url", wui.queryToURL)
 	root.Freeze()
 	return engine
 }
@@ -81,6 +81,7 @@ var (
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
 		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
 		{"assoc", sxbuiltins.Assoc},
+		{"string-append", sxbuiltins.StringAppend},
 		{"defined?", sxbuiltins.DefinedP},
 	}
 )
@@ -119,22 +120,14 @@ func (wui *WebUI) zidContentPath(args []sx.Object) (sx.Object, error) {
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 	return sx.MakeString(ub.String()), nil
 }
-func (wui *WebUI) transformLinkQueryTags(args []sx.Object) (sx.Object, error) {
-	err := sxbuiltins.CheckArgs(args, 2, 2)
-	tag, err := sxbuiltins.GetString(err, args, 0)
-	title, err := sxbuiltins.GetString(err, args, 1)
+func (wui *WebUI) queryToURL(args []sx.Object) (sx.Object, error) {
+	err := sxbuiltins.CheckArgs(args, 1, 1)
+	qs, err := sxbuiltins.GetString(err, args, 0)
 	if err != nil {
 		return nil, err
 	}
-	u := wui.NewURLBuilder('h').AppendQuery(api.KeyTags + api.SearchOperatorHas + tag.String())
-	return sx.MakeList(
-		wui.symA,
-		sx.MakeList(
-			wui.symAttr,
-			sx.Cons(wui.symHref, sx.MakeString(u.String())),
-		),
-		title,
-	), nil
+	u := wui.NewURLBuilder('h').AppendQuery(qs.String())
+	return sx.MakeString(u.String()), nil
 }
 
 func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
