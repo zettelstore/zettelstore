@@ -89,7 +89,15 @@
 
 ;;; ROLE-DEFAULT-actions returns the default text for actions.
 (define (ROLE-DEFAULT-actions env)
-    `()
+    `(,@(let (copy-url (environment-lookup 'copy-url env))
+             (if (defined? copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy"))))
+      ,@(let (version-url (environment-lookup 'version-url env))
+             (if (defined? version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version"))))
+      ,@(let (child-url (environment-lookup 'child-url env))
+             (if (defined? child-url) `((@H " &#183; ") (a (@ (href ,child-url)) "Child"))))
+      ,@(let (folge-url (environment-lookup 'folge-url env))
+             (if (defined? folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge"))))
+    )
 )
 
 ;;; ROLE-tag-actions returns an additional action "Zettel" for zettel with role "tag".
