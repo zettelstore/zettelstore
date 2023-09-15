@@ -37,7 +37,7 @@ import (
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	root := sxeval.MakeRootEnvironment(len(syntaxes) + len(builtinsFA) + len(builtinsA) + 1)
 	engine := sxeval.MakeEngine(wui.sf, root)
-	sxbuiltins.InstallQuoteSyntax(root, wui.symQuote)
+	engine.SetQuote(wui.symQuote)
 	sxbuiltins.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	for _, b := range syntaxes {
 		engine.BindSyntax(b.name, b.fn)
@@ -354,7 +354,6 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.R
 	}
 
 	reader := sxreader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), sxreader.WithSymbolFactory(wui.sf))
-	sxbuiltins.InstallQuoteReader(reader, wui.symQuote, '\'')
 	sxbuiltins.InstallQuasiQuoteReader(reader, wui.symQQ, '`', wui.symUQ, ',', wui.symUQS, '@')
 	return reader, nil
 }

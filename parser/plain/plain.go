@@ -137,7 +137,6 @@ func scanSVG(inp *input.Input) string {
 func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
 	rd := sxreader.MakeReader(bytes.NewReader(inp.Src))
 	sf := rd.SymbolFactory()
-	sxbuiltins.InstallQuoteReader(rd, sf.MustMake("quote"), '\'')
 	sxbuiltins.InstallQuasiQuoteReader(rd,
 		sf.MustMake("quasiquote"), '`',
 		sf.MustMake("unquote"), ',',
