@@ -55,12 +55,12 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		env, rb := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
 		rb.bindSymbol(wui.symMetaHeader, metaObj)
-		rb.bindString("heading", sx.MakeString(title))
+		rb.bindString("heading", sx.String(title))
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
-			rb.bindString("role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
+			rb.bindString("role-url", sx.String(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
 		}
 		if folgeRole, found := zn.InhMeta.Get(api.KeyFolgeRole); found && folgeRole != "" {
-			rb.bindString("folge-role-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+folgeRole).String()))
+			rb.bindString("folge-role-url", sx.String(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+folgeRole).String()))
 		}
 		rb.bindString("tag-refs", wui.transformTagSet(api.KeyTags, meta.ListFromValue(zn.InhMeta.GetDefault(api.KeyTags, ""))))
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
@@ -110,11 +110,11 @@ func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (l
 			continue
 		}
 		if title, found := getTextTitle(zid); found > 0 {
-			url := sx.MakeString(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
+			url := sx.String(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
 			if title == "" {
-				lst = lst.Cons(sx.Cons(sx.MakeString(val), url))
+				lst = lst.Cons(sx.Cons(sx.String(val), url))
 			} else {
-				lst = lst.Cons(sx.Cons(sx.MakeString(title), url))
+				lst = lst.Cons(sx.Cons(sx.String(title), url))
 			}
 		}
 	}

@@ -33,9 +33,9 @@ func (wui *WebUI) writeHTMLMetaValue(
 ) sx.Object {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
-		return sx.MakeString(value)
+		return sx.String(value)
 	case meta.TypeEmpty:
-		return sx.MakeString(value)
+		return sx.String(value)
 	case meta.TypeID:
 		return wui.transformIdentifier(value, getTextTitle)
 	case meta.TypeIDSet:
@@ -43,7 +43,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeNumber:
 		return wui.transformLink(key, value, value)
 	case meta.TypeString:
-		return sx.MakeString(value)
+		return sx.String(value)
 	case meta.TypeTagSet:
 		return wui.transformTagSet(key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
@@ -52,14 +52,14 @@ func (wui *WebUI) writeHTMLMetaValue(
 				wui.sf.MustMake("time"),
 				sx.MakeList(
 					wui.symAttr,
-					sx.Cons(wui.sf.MustMake("datetime"), sx.MakeString(ts.Format("2006-01-02T15:04:05"))),
+					sx.Cons(wui.sf.MustMake("datetime"), sx.String(ts.Format("2006-01-02T15:04:05"))),
 				),
-				sx.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sx.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
+				sx.MakeList(wui.sf.MustMake(sxhtml.NameSymNoEscape), sx.String(ts.Format("2006-01-02&nbsp;15:04:05"))),
 			)
 		}
 		return sx.Nil()
 	case meta.TypeURL:
-		text := sx.MakeString(value)
+		text := sx.String(value)
 		if res, err := wui.url2html([]sx.Object{text}); err == nil {
 			return res
 		}
@@ -71,12 +71,12 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeZettelmarkup:
 		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		return sx.MakeList(wui.sf.MustMake("b"), sx.MakeString("Unhandled type: "), sx.MakeString(kt.Name))
+		return sx.MakeList(wui.sf.MustMake("b"), sx.String("Unhandled type: "), sx.String(kt.Name))
 	}
 }
 
 func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sx.Object {
-	text := sx.MakeString(val)
+	text := sx.String(val)
 	zid, err := id.Parse(val)
 	if err != nil {
 		return text
@@ -87,10 +87,10 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
 		attrs := sx.Nil()
 		if title != "" {
-			attrs = attrs.Cons(sx.Cons(wui.sf.MustMake("title"), sx.MakeString(title)))
+			attrs = attrs.Cons(sx.Cons(wui.sf.MustMake("title"), sx.String(title)))
 		}
-		attrs = attrs.Cons(sx.Cons(wui.symHref, sx.MakeString(ub.String()))).Cons(wui.symAttr)
-		return sx.Nil().Cons(sx.MakeString(zid.String())).Cons(attrs).Cons(wui.symA)
+		attrs = attrs.Cons(sx.Cons(wui.symHref, sx.String(ub.String()))).Cons(wui.symAttr)
+		return sx.Nil().Cons(sx.String(zid.String())).Cons(attrs).Cons(wui.symA)
 	case found == 0:
 		return sx.MakeList(wui.sf.MustMake("s"), text)
 	default: // case found < 0:
@@ -102,7 +102,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	if len(vals) == 0 {
 		return nil
 	}
-	space := sx.MakeString(" ")
+	space := sx.String(" ")
 	text := make([]sx.Object, 0, 2*len(vals))
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
@@ -114,7 +114,7 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 	if len(tags) == 0 {
 		return nil
 	}
-	space := sx.MakeString(" ")
+	space := sx.String(" ")
 	text := make([]sx.Object, 0, 2*len(tags))
 	for _, tag := range tags {
 		text = append(text, space, wui.transformLink(key, tag, tag))
@@ -126,7 +126,7 @@ func (wui *WebUI) transformWordSet(key string, words []string) sx.Object {
 	if len(words) == 0 {
 		return sx.Nil()
 	}
-	space := sx.MakeString(" ")
+	space := sx.String(" ")
 	text := make([]sx.Object, 0, 2*len(words))
 	for _, word := range words {
 		text = append(text, space, wui.transformLink(key, word, word))
@@ -139,9 +139,9 @@ func (wui *WebUI) transformLink(key, value, text string) *sx.Pair {
 		wui.symA,
 		sx.MakeList(
 			wui.symAttr,
-			sx.Cons(wui.symHref, sx.MakeString(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+			sx.Cons(wui.symHref, sx.String(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
 		),
-		sx.MakeString(text),
+		sx.String(text),
 	)
 }
 

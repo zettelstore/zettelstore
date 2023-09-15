@@ -48,7 +48,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 			ctx, "delete",
 			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
 		if len(zs) > 1 {
-			rb.bindString("shadowed-box", sx.MakeString(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
+			rb.bindString("shadowed-box", sx.String(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
 			rb.bindString("incoming", nil)
 		} else {
 			rb.bindString("shadowed-box", nil)

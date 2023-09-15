@@ -98,9 +98,9 @@ func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 				wui.symA,
 				sx.MakeList(
 					wui.symAttr,
-					sx.Cons(wui.symHref, sx.MakeString(us)),
-					sx.Cons(wui.sf.MustMake("target"), sx.MakeString("_blank")),
-					sx.Cons(wui.sf.MustMake("rel"), sx.MakeString("noopener noreferrer")),
+					sx.Cons(wui.symHref, sx.String(us)),
+					sx.Cons(wui.sf.MustMake("target"), sx.String("_blank")),
+					sx.Cons(wui.sf.MustMake("rel"), sx.String("noopener noreferrer")),
 				),
 				text), nil
 		}
@@ -118,7 +118,7 @@ func (wui *WebUI) zidContentPath(args []sx.Object) (sx.Object, error) {
 		return nil, fmt.Errorf("parsing zettel identfier %q: %w", s, err)
 	}
 	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
-	return sx.MakeString(ub.String()), nil
+	return sx.String(ub.String()), nil
 }
 func (wui *WebUI) queryToURL(args []sx.Object) (sx.Object, error) {
 	err := sxbuiltins.CheckArgs(args, 1, 1)
@@ -127,7 +127,7 @@ func (wui *WebUI) queryToURL(args []sx.Object) (sx.Object, error) {
 		return nil, err
 	}
 	u := wui.NewURLBuilder('h').AppendQuery(qs.String())
-	return sx.MakeString(u.String()), nil
+	return sx.String(u.String()), nil
 }
 
 func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
@@ -151,27 +151,27 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	env := sxeval.MakeChildEnvironment(wui.getParentEnv(ctx), name, 128)
 	rb := makeRenderBinder(wui.sf, env, nil)
-	rb.bindString("lang", sx.MakeString(lang))
-	rb.bindString("css-base-url", sx.MakeString(wui.cssBaseURL))
-	rb.bindString("css-user-url", sx.MakeString(wui.cssUserURL))
-	rb.bindString("title", sx.MakeString(title))
-	rb.bindString("home-url", sx.MakeString(wui.homeURL))
+	rb.bindString("lang", sx.String(lang))
+	rb.bindString("css-base-url", sx.String(wui.cssBaseURL))
+	rb.bindString("css-user-url", sx.String(wui.cssUserURL))
+	rb.bindString("title", sx.String(title))
+	rb.bindString("home-url", sx.String(wui.homeURL))
 	rb.bindString("with-auth", sx.MakeBoolean(wui.withAuth))
 	rb.bindString("user-is-valid", sx.MakeBoolean(userIsValid))
-	rb.bindString("user-zettel-url", sx.MakeString(userZettelURL))
-	rb.bindString("user-ident", sx.MakeString(userIdent))
-	rb.bindString("login-url", sx.MakeString(wui.loginURL))
-	rb.bindString("logout-url", sx.MakeString(wui.logoutURL))
-	rb.bindString("list-zettel-url", sx.MakeString(wui.listZettelURL))
-	rb.bindString("list-roles-url", sx.MakeString(wui.listRolesURL))
-	rb.bindString("list-tags-url", sx.MakeString(wui.listTagsURL))
+	rb.bindString("user-zettel-url", sx.String(userZettelURL))
+	rb.bindString("user-ident", sx.String(userIdent))
+	rb.bindString("login-url", sx.String(wui.loginURL))
+	rb.bindString("logout-url", sx.String(wui.logoutURL))
+	rb.bindString("list-zettel-url", sx.String(wui.listZettelURL))
+	rb.bindString("list-roles-url", sx.String(wui.listRolesURL))
+	rb.bindString("list-tags-url", sx.String(wui.listTagsURL))
 	if wui.canRefresh(user) {
-		rb.bindString("refresh-url", sx.MakeString(wui.refreshURL))
+		rb.bindString("refresh-url", sx.String(wui.refreshURL))
 	}
 	rb.bindString("new-zettel-links", wui.fetchNewTemplatesSxn(ctx, user))
-	rb.bindString("search-url", sx.MakeString(wui.searchURL))
-	rb.bindString("query-key-query", sx.MakeString(api.QueryKeyQuery))
-	rb.bindString("query-key-seed", sx.MakeString(api.QueryKeySeed))
+	rb.bindString("search-url", sx.String(wui.searchURL))
+	rb.bindString("query-key-query", sx.String(api.QueryKeyQuery))
+	rb.bindString("query-key-seed", sx.String(api.QueryKeySeed))
 	rb.bindString("FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
 	rb.bindString("debug-mode", sx.MakeBoolean(wui.debug))
 	rb.bindSymbol(wui.symMetaHeader, sx.Nil())
@@ -211,7 +211,7 @@ func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
-	rb.bindString("meta-"+key, sx.MakeString(value))
+	rb.bindString("meta-"+key, sx.String(value))
 	if kt := meta.Type(key); kt.IsSet {
 		rb.bindString("set-meta-"+key, makeStringList(meta.ListFromValue(value)))
 	}
@@ -235,30 +235,30 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	apiZid := api.ZettelID(strZid)
 	newURLBuilder := wui.NewURLBuilder
 
-	rb.bindString("zid", sx.MakeString(strZid))
-	rb.bindString("web-url", sx.MakeString(wui.NewURLBuilder('h').SetZid(apiZid).String()))
+	rb.bindString("zid", sx.String(strZid))
+	rb.bindString("web-url", sx.String(wui.NewURLBuilder('h').SetZid(apiZid).String()))
 	if content != nil && wui.canWrite(ctx, user, m, *content) {
-		rb.bindString("edit-url", sx.MakeString(newURLBuilder('e').SetZid(apiZid).String()))
+		rb.bindString("edit-url", sx.String(newURLBuilder('e').SetZid(apiZid).String()))
 	}
-	rb.bindString("info-url", sx.MakeString(newURLBuilder('i').SetZid(apiZid).String()))
+	rb.bindString("info-url", sx.String(newURLBuilder('i').SetZid(apiZid).String()))
 	if wui.canCreate(ctx, user) {
 		if content != nil && !content.IsBinary() {
-			rb.bindString("copy-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+			rb.bindString("copy-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
 		}
-		rb.bindString("version-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-		rb.bindString("child-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
-		rb.bindString("folge-url", sx.MakeString(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		rb.bindString("version-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		rb.bindString("child-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
+		rb.bindString("folge-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
 	}
 	if wui.canRename(ctx, user, m) {
-		rb.bindString("rename-url", sx.MakeString(wui.NewURLBuilder('b').SetZid(apiZid).String()))
+		rb.bindString("rename-url", sx.String(wui.NewURLBuilder('b').SetZid(apiZid).String()))
 	}
 	if wui.canDelete(ctx, user, m) {
-		rb.bindString("delete-url", sx.MakeString(wui.NewURLBuilder('d').SetZid(apiZid).String()))
+		rb.bindString("delete-url", sx.String(wui.NewURLBuilder('d').SetZid(apiZid).String()))
 	}
 	if val, found := m.Get(api.KeyUselessFiles); found {
-		rb.bindString("useless", sx.Cons(sx.MakeString(val), nil))
+		rb.bindString("useless", sx.Cons(sx.String(val), nil))
 	}
-	rb.bindString("context-url", sx.MakeString(wui.NewURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
+	rb.bindString("context-url", sx.String(wui.NewURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
 
 	// Ensure to have title, role, tags, and syntax included as "meta-*"
 	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))
@@ -269,7 +269,7 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	curr := sentinel
 	for _, p := range m.ComputedPairs() {
 		key, value := p.Key, p.Value
-		curr = curr.AppendBang(sx.Cons(sx.MakeString(key), sx.MakeString(value)))
+		curr = curr.AppendBang(sx.Cons(sx.String(key), sx.String(value)))
 
 		rb.bindKeyValue(key, value)
 	}
@@ -298,8 +298,8 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 		if !wui.policy.CanRead(user, z.Meta) {
 			continue
 		}
-		text := sx.MakeString(parser.NormalizedSpacedText(z.Meta.GetTitle()))
-		link := sx.MakeString(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
+		text := sx.String(parser.NormalizedSpacedText(z.Meta.GetTitle()))
+		link := sx.String(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
 			AppendKVQuery(queryKeyAction, valueActionNew).String())
 
 		lst = lst.Cons(sx.Cons(text, link))
@@ -404,8 +404,8 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	}
 	user := server.GetUser(ctx)
 	env, rb := wui.createRenderEnv(ctx, "error", api.ValueLangEN, "Error", user)
-	rb.bindString("heading", sx.MakeString(http.StatusText(code)))
-	rb.bindString("message", sx.MakeString(text))
+	rb.bindString("heading", sx.String(http.StatusText(code)))
+	rb.bindString("message", sx.String(text))
 	if rb.err == nil {
 		rb.err = wui.renderSxnTemplateStatus(ctx, w, code, id.ErrorTemplateZid, env)
 	}
@@ -421,7 +421,7 @@ func makeStringList(sl []string) *sx.Pair {
 	}
 	result := sx.Nil()
 	for i := len(sl) - 1; i >= 0; i-- {
-		result = result.Cons(sx.MakeString(sl[i]))
+		result = result.Cons(sx.String(sl[i]))
 	}
 	return result
 }

@@ -66,7 +66,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		for i := len(pairs) - 1; i >= 0; i-- {
 			key := pairs[i].Key
 			sxval := wui.writeHTMLMetaValue(key, pairs[i].Value, getTextTitle, evalMeta, enc)
-			metadata = metadata.Cons(sx.Cons(sx.MakeString(key), sxval))
+			metadata = metadata.Cons(sx.Cons(sx.String(key), sxval))
 		}
 
 		summary := collect.References(zn)
@@ -99,8 +99,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 		rb.bindString("query-links", queryLinks)
 		rb.bindString("ext-links", extLinks)
 		rb.bindString("unlinked-content", unlinkedContent)
-		rb.bindString("phrase", sx.MakeString(phrase))
-		rb.bindString("query-key-phrase", sx.MakeString(api.QueryKeyPhrase))
+		rb.bindString("phrase", sx.String(phrase))
+		rb.bindString("query-key-phrase", sx.String(api.QueryKeyPhrase))
 		rb.bindString("enc-eval", wui.infoAPIMatrix(zid, false, encTexts))
 		rb.bindString("enc-parsed", wui.infoAPIMatrixParsed(zid, encTexts))
 		rb.bindString("shadow-links", shadowLinks)
@@ -123,15 +123,15 @@ func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries
 		if ref.State == ast.RefStateQuery {
 			queries = queries.Cons(
 				sx.Cons(
-					sx.MakeString(ref.Value),
-					sx.MakeString(wui.NewURLBuilder('h').AppendQuery(ref.Value).String())))
+					sx.String(ref.Value),
+					sx.String(wui.NewURLBuilder('h').AppendQuery(ref.Value).String())))
 			continue
 		}
 		if ref.IsExternal() {
-			extLinks = extLinks.Cons(sx.MakeString(ref.String()))
+			extLinks = extLinks.Cons(sx.String(ref.String()))
 			continue
 		}
-		locLinks = locLinks.Cons(sx.Cons(sx.MakeBoolean(ref.IsValid()), sx.MakeString(ref.String())))
+		locLinks = locLinks.Cons(sx.Cons(sx.MakeBoolean(ref.IsValid()), sx.String(ref.String())))
 	}
 	return locLinks, queries, extLinks
 }
@@ -179,10 +179,10 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *
 			}
 			u.AppendKVQuery(api.QueryKeyPart, part)
 			u.AppendKVQuery(api.QueryKeyEncoding, enc)
-			row = row.Cons(sx.Cons(sx.MakeString(enc), sx.MakeString(u.String())))
+			row = row.Cons(sx.Cons(sx.String(enc), sx.String(u.String())))
 			u.ClearQuery()
 		}
-		matrix = matrix.Cons(sx.Cons(sx.MakeString(part), row))
+		matrix = matrix.Cons(sx.Cons(sx.String(part), row))
 	}
 	return matrix
 }
@@ -199,12 +199,12 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sx.Pair {
 		last := line.LastPair()
 		part := apiParts[i]
 		u.AppendKVQuery(api.QueryKeyPart, part)
-		last = last.AppendBang(sx.Cons(sx.MakeString("plain"), sx.MakeString(u.String())))
+		last = last.AppendBang(sx.Cons(sx.String("plain"), sx.String(u.String())))
 		u.ClearQuery()
 		if i < 2 {
 			u.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData)
 			u.AppendKVQuery(api.QueryKeyPart, part)
-			last.AppendBang(sx.Cons(sx.MakeString("data"), sx.MakeString(u.String())))
+			last.AppendBang(sx.Cons(sx.String("data"), sx.String(u.String())))
 			u.ClearQuery()
 		}
 		i++
@@ -217,7 +217,7 @@ func getShadowLinks(ctx context.Context, zid id.Zid, getAllZettel usecase.GetAll
 	if zl, err := getAllZettel.Run(ctx, zid); err == nil {
 		for i := len(zl) - 1; i >= 1; i-- {
 			if boxNo, ok := zl[i].Meta.Get(api.KeyBoxNumber); ok {
-				result = result.Cons(sx.MakeString(boxNo))
+				result = result.Cons(sx.String(boxNo))
 			}
 		}
 	}

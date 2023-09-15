@@ -79,7 +79,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 
 	head := sx.MakeList(sf.MustMake("head"))
 	curr := head
-	curr = curr.AppendBang(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sf.MustMake("charset"), sx.MakeString("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
+	curr = curr.AppendBang(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sf.MustMake("charset"), sx.String("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
 	for elem := hm; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
@@ -89,7 +89,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	} else {
 		sb.Write(zn.Meta.Zid.Bytes())
 	}
-	_ = curr.AppendBang(sx.Nil().Cons(sx.MakeString(sb.String())).Cons(sf.MustMake("title")))
+	_ = curr.AppendBang(sx.Nil().Cons(sx.String(sb.String())).Cons(sf.MustMake("title")))
 
 	body := sx.MakeList(sf.MustMake("body"))
 	curr = body

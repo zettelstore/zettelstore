@@ -139,7 +139,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return sx.MakeList(
 			mapGetS(t, t.mapVerbatimKindS, n.Kind),
 			t.getAttributes(n.Attrs),
-			sx.MakeString(string(n.Content)),
+			sx.String(string(n.Content)),
 		)
 	case *ast.RegionNode:
 		return t.getRegion(n)
@@ -148,8 +148,8 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 			t.zetSyms.SymHeading,
 			sx.Int64(int64(n.Level)),
 			t.getAttributes(n.Attrs),
-			sx.MakeString(n.Slug),
-			sx.MakeString(n.Fragment),
+			sx.String(n.Slug),
+			sx.String(n.Fragment),
 			t.getInlineSlice(n.Inlines),
 		)
 	case *ast.HRuleNode:
@@ -165,10 +165,10 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.BLOBNode:
 		return t.getBLOB(n)
 	case *ast.TextNode:
-		return sx.MakeList(t.zetSyms.SymText, sx.MakeString(n.Text))
+		return sx.MakeList(t.zetSyms.SymText, sx.String(n.Text))
 	case *ast.SpaceNode:
 		if t.inVerse {
-			return sx.MakeList(t.zetSyms.SymSpace, sx.MakeString(n.Lexeme))
+			return sx.MakeList(t.zetSyms.SymSpace, sx.String(n.Lexeme))
 		}
 		return sx.MakeList(t.zetSyms.SymSpace)
 	case *ast.BreakNode:
@@ -180,7 +180,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getLink(n)
 	case *ast.EmbedRefNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sx.MakeString(n.Syntax)).
+			Cons(sx.String(n.Syntax)).
 			Cons(t.getReference(n.Ref)).
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymEmbed)
@@ -188,7 +188,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getEmbedBLOB(n)
 	case *ast.CiteNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sx.MakeString(n.Key)).
+			Cons(sx.String(n.Key)).
 			Cons(t.getAttributes(n.Attrs)).
 			Cons(t.zetSyms.SymCite)
 	case *ast.FootnoteNode:
@@ -196,9 +196,9 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return text.Cons(t.getAttributes(n.Attrs)).Cons(t.zetSyms.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().
-			Cons(sx.MakeString(n.Fragment)).
-			Cons(sx.MakeString(n.Slug)).
-			Cons(sx.MakeString(n.Mark)).
+			Cons(sx.String(n.Fragment)).
+			Cons(sx.String(n.Slug)).
+			Cons(sx.String(n.Mark)).
 			Cons(t.zetSyms.SymMark)
 	case *ast.FormatNode:
 		return t.getInlineSlice(n.Inlines).Tail().
@@ -208,10 +208,10 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return sx.MakeList(
 			mapGetS(t, t.mapLiteralKindS, n.Kind),
 			t.getAttributes(n.Attrs),
-			sx.MakeString(string(n.Content)),
+			sx.String(string(n.Content)),
 		)
 	}
-	return sx.MakeList(t.zetSyms.SymUnknown, sx.MakeString(fmt.Sprintf("%T %v", node, node)))
+	return sx.MakeList(t.zetSyms.SymUnknown, sx.String(fmt.Sprintf("%T %v", node, node)))
 }
 
 func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
@@ -313,21 +313,21 @@ func (t *Transformer) getCell(cell *ast.TableCell) *sx.Pair {
 func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
 	var lastObj sx.Object
 	if bn.Syntax == meta.SyntaxSVG {
-		lastObj = sx.MakeString(string(bn.Blob))
+		lastObj = sx.String(string(bn.Blob))
 	} else {
 		lastObj = getBase64String(bn.Blob)
 	}
 	return sx.MakeList(
 		t.zetSyms.SymBLOB,
 		t.getInlineSlice(bn.Description),
-		sx.MakeString(bn.Syntax),
+		sx.String(bn.Syntax),
 		lastObj,
 	)
 }
 
 func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
 	return t.getInlineSlice(ln.Inlines).Tail().
-		Cons(sx.MakeString(ln.Ref.Value)).
+		Cons(sx.String(ln.Ref.Value)).
 		Cons(t.getAttributes(ln.Attrs)).
 		Cons(mapGetS(t, t.mapRefStateLink, ln.Ref.State))
 }
@@ -335,11 +335,11 @@ func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
 func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
 	tail := t.getInlineSlice(en.Inlines).Tail()
 	if en.Syntax == meta.SyntaxSVG {
-		tail = tail.Cons(sx.MakeString(string(en.Blob)))
+		tail = tail.Cons(sx.String(string(en.Blob)))
 	} else {
 		tail = tail.Cons(getBase64String(en.Blob))
 	}
-	return tail.Cons(sx.MakeString(en.Syntax)).Cons(t.getAttributes(en.Attrs)).Cons(t.zetSyms.SymEmbedBLOB)
+	return tail.Cons(sx.String(en.Syntax)).Cons(t.getAttributes(en.Attrs)).Cons(t.zetSyms.SymEmbedBLOB)
 }
 
 func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sx.Pair {
@@ -364,7 +364,7 @@ func (t *Transformer) getAttributes(a attrs.Attributes) sx.Object {
 	keys := a.Keys()
 	objs := make([]sx.Object, 0, len(keys))
 	for _, k := range keys {
-		objs = append(objs, sx.Cons(sx.MakeString(k), sx.MakeString(a[k])))
+		objs = append(objs, sx.Cons(sx.String(k), sx.String(a[k])))
 	}
 	return sx.Nil().Cons(sx.MakeList(objs...)).Cons(t.zetSyms.SymQuote)
 }
@@ -374,7 +374,7 @@ func (t *Transformer) getReference(ref *ast.Reference) *sx.Pair {
 		t.zetSyms.SymQuote,
 		sx.MakeList(
 			mapGetS(t, t.mapRefStateS, ref.State),
-			sx.MakeString(ref.Value),
+			sx.String(ref.Value),
 		),
 	)
 }
@@ -391,14 +391,14 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 			setList := meta.ListFromValue(p.Value)
 			setObjs := make([]sx.Object, len(setList))
 			for i, val := range setList {
-				setObjs[i] = sx.MakeString(val)
+				setObjs[i] = sx.String(val)
 			}
 			obj = sx.MakeList(setObjs...).Cons(t.zetSyms.SymList)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			obj = t.GetSz(&is)
 		} else {
-			obj = sx.MakeString(p.Value)
+			obj = sx.String(p.Value)
 		}
 		symKey := sx.MakeList(t.zetSyms.SymQuote, t.sf.MustMake(key))
 		objs = append(objs, sx.Nil().Cons(obj).Cons(symKey).Cons(symType))
@@ -421,7 +421,7 @@ func getBase64String(data []byte) sx.String {
 		err = encoder.Close()
 	}
 	if err == nil {
-		return sx.MakeString(sb.String())
+		return sx.String(sb.String())
 	}
-	return sx.MakeString("")
+	return sx.String("")
 }

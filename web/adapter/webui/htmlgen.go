@@ -90,7 +90,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		if hasFragment {
 			u = u.SetFragment(fragment)
 		}
-		assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
+		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
 		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 	}
 
@@ -115,7 +115,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('/').SetRawLocal(href.String())
-			assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
+			assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkQuery, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
@@ -144,7 +144,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('h').AppendQuery(q)
-			assoc = assoc.Cons(sx.Cons(symHref, sx.MakeString(u.String())))
+			assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymLinkExternal, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
@@ -156,9 +156,9 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 			if attr == nil {
 				return obj
 			}
-			assoc = assoc.Cons(sx.Cons(symClass, sx.MakeString("external"))).
-				Cons(sx.Cons(symTarget, sx.MakeString("_blank"))).
-				Cons(sx.Cons(symRel, sx.MakeString("noopener noreferrer")))
+			assoc = assoc.Cons(sx.Cons(symClass, sx.String("external"))).
+				Cons(sx.Cons(symTarget, sx.String("_blank"))).
+				Cons(sx.Cons(symRel, sx.String("noopener noreferrer")))
 			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 		})
 		te.Rebind(sz.NameSymEmbed, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
@@ -188,7 +188,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 				return obj
 			}
 			u := builder.NewURLBuilder('z').SetZid(zid)
-			imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.MakeString(u.String()))).Cons(symAttr)
+			imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.String(u.String()))).Cons(symAttr)
 			return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
 		})
 	})

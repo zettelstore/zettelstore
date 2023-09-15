@@ -89,7 +89,7 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 	now := time.Now().Round(time.Second)
 	sClaim := sx.MakeList(
 		sx.Int64(kind),
-		sx.MakeString(subject),
+		sx.String(subject),
 		sx.Int64(now.Unix()),
 		sx.Int64(now.Add(d).Unix()),
 		sx.Int64(ident.Zid),

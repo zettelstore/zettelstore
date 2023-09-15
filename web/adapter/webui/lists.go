@@ -70,13 +70,13 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 			wui.rtConfig.Get(ctx, nil, api.KeyLang),
 			wui.rtConfig.GetSiteName(), user)
 		if q == nil {
-			rb.bindString("heading", sx.MakeString(wui.rtConfig.GetSiteName()))
+			rb.bindString("heading", sx.String(wui.rtConfig.GetSiteName()))
 		} else {
 			var sb strings.Builder
 			q.PrintHuman(&sb)
-			rb.bindString("heading", sx.MakeString(sb.String()))
+			rb.bindString("heading", sx.String(sb.String()))
 		}
-		rb.bindString("query-value", sx.MakeString(q.String()))
+		rb.bindString("query-value", sx.String(q.String()))
 		if tzl := q.GetMetaValues(api.KeyTags); len(tzl) > 0 {
 			rb.bindString("tag-zettel", wui.transformTagZettelList(tzl))
 		}
@@ -89,10 +89,10 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 		} else {
 			seed = 0
 		}
-		rb.bindString("plain-url", sx.MakeString(apiURL.String()))
-		rb.bindString("data-url", sx.MakeString(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
+		rb.bindString("plain-url", sx.String(apiURL.String()))
+		rb.bindString("data-url", sx.String(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
 		if wui.canCreate(ctx, user) {
-			rb.bindString("create-url", sx.MakeString(wui.createNewURL))
+			rb.bindString("create-url", sx.String(wui.createNewURL))
 			rb.bindString("seed", sx.Int64(seed))
 		}
 		if rb.err == nil {
@@ -116,12 +116,12 @@ func (wui *WebUI) transformTagZettelList(tags []string) *sx.Pair {
 			wui.symA,
 			sx.MakeList(
 				wui.symAttr,
-				sx.Cons(wui.symHref, sx.MakeString(u.String())),
+				sx.Cons(wui.symHref, sx.String(u.String())),
 			),
-			sx.MakeString(tag),
+			sx.String(tag),
 		)
 		if result != nil {
-			result = result.Cons(sx.MakeString(", "))
+			result = result.Cons(sx.String(", "))
 		}
 		result = result.Cons(link)
 	}
