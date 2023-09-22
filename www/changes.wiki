@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_15"></a>
+<h2>Changes for Version 0.15.0 (pending)</h2>
+
 <a id="0_14"></a>
-<h2>Changes for Version 0.14.0 (pending)</h2>
+<h2>Changes for Version 0.14.0 (2023-09-22)</h2>
   *  Remove support for JSON. This was marked deprecated in version 0.12.0. Use
      the <tt>data</tt> encoding instead, a form of symbolic expressions.
      (breaking: api; minor: webui)
@@ -17,6 +20,12 @@
   *  Allow to load sx code from multiple zettel; dependencies are specified
      using <tt>precursor</tt> metadata.
      (major: webui)
+  *  Allow sx code to change WebUI for zettel with specified role.
+     (major: webui)
+  *  Some minor usability improvements.
+     (minor: webui)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_13"></a>
 <h2>Changes for Version 0.13.0 (2023-08-07)</h2>
