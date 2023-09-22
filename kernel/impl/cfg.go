@@ -32,6 +32,7 @@ type configService struct {
 	srvConfig
 	mxService sync.RWMutex
 	orig      *meta.Meta
+	manager   box.Manager
 }
 
 // Predefined Metadata keys for runtime configuration
@@ -134,6 +135,7 @@ func (cs *configService) Stop(*myKernel) {
 	cs.logger.Info().Msg("Stop Service")
 	cs.mxService.Lock()
 	cs.orig = nil
+	cs.manager = nil
 	cs.mxService.Unlock()
 }
 
@@ -142,12 +144,15 @@ func (*configService) GetStatistics() []kernel.KeyValue {
 }
 
 func (cs *configService) setBox(mgr box.Manager) {
+	cs.mxService.Lock()
+	cs.manager = mgr
+	cs.mxService.Unlock()
 	mgr.RegisterObserver(cs.observe)
 	cs.observe(box.UpdateInfo{Box: mgr, Reason: box.OnZettel, Zid: id.ConfigurationZid})
 }
 
 func (cs *configService) doUpdate(p box.BaseBox) error {
-	z, err := p.GetZettel(context.Background(), cs.orig.Zid)
+	z, err := p.GetZettel(context.Background(), id.ConfigurationZid)
 	cs.logger.Trace().Err(err).Msg("got config meta")
 	if err != nil {
 		return err
@@ -170,7 +175,16 @@ func (cs *configService) doUpdate(p box.BaseBox) error {
 func (cs *configService) observe(ci box.UpdateInfo) {
 	if ci.Reason != box.OnZettel || ci.Zid == id.ConfigurationZid {
 		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
-		go func() { cs.doUpdate(ci.Box) }()
+		go func() {
+			cs.mxService.RLock()
+			mgr := cs.manager
+			cs.mxService.RUnlock()
+			if mgr != nil {
+				cs.doUpdate(mgr)
+			} else {
+				cs.doUpdate(ci.Box)
+			}
+		}()
 	}
 }
 
