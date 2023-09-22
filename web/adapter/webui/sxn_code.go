@@ -22,7 +22,16 @@ import (
 )
 
 func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.Environment, error) {
-	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, id.BaseSxnZid, wui.box.GetMeta)
+	// getMeta MUST currently use GetZettel, because GetMeta just uses the
+	// Index, which might not be current.
+	getMeta := func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+		z, err := wui.box.GetZettel(ctx, zid)
+		if err != nil {
+			return nil, err
+		}
+		return z.Meta, nil
+	}
+	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, id.BaseSxnZid, getMeta)
 	if dg == nil {
 		return nil, wui.engine.RootEnvironment(), nil
 	}
