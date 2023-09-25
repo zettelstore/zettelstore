@@ -14,6 +14,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -37,8 +38,7 @@ import (
 func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
-		if tag := urlQuery.Get(api.QueryKeyTag); tag != "" {
-			wui.handleTagZettel(w, r, tagZettel, tag)
+		if wui.handleTagZettel(w, r, tagZettel, urlQuery) {
 			return
 		}
 		q := adapter.GetQuery(urlQuery)
@@ -173,12 +173,17 @@ func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.M
 	}
 }
 
-func (wui *WebUI) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel *usecase.TagZettel, tag string) {
+func (wui *WebUI) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel *usecase.TagZettel, vals url.Values) bool {
+	tag := vals.Get(api.QueryKeyTag)
+	if tag == "" {
+		return false
+	}
 	ctx := r.Context()
 	z, err := tagZettel.Run(ctx, tag)
 	if err != nil {
 		wui.reportError(ctx, w, err)
-		return
+		return true
 	}
 	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(z.Meta.Zid.String())))
+	return true
 }

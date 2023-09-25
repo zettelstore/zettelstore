@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -29,11 +30,15 @@ import (
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
-func (a *API) MakeQueryHandler(queryMeta *usecase.Query) http.HandlerFunc {
+func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		q := r.URL.Query()
-		sq := adapter.GetQuery(q)
+		urlQuery := r.URL.Query()
+		if a.handleTagZettel(w, r, tagZettel, urlQuery) {
+			return
+		}
+
+		sq := adapter.GetQuery(urlQuery)
 
 		metaSeq, err := queryMeta.Run(ctx, sq)
 		if err != nil {
@@ -43,7 +48,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query) http.HandlerFunc {
 
 		var encoder zettelEncoder
 		var contentType string
-		switch enc, _ := getEncoding(r, q); enc {
+		switch enc, _ := getEncoding(r, urlQuery); enc {
 		case api.EncoderPlain:
 			encoder = &plainZettelEncoder{}
 			contentType = content.PlainText
@@ -218,4 +223,19 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 		result.Cons(sf.MustMake("list")),
 	))
 	return err
+}
+
+func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel *usecase.TagZettel, vals url.Values) bool {
+	tag := vals.Get(api.QueryKeyTag)
+	if tag == "" {
+		return false
+	}
+	ctx := r.Context()
+	z, err := tagZettel.Run(ctx, tag)
+	if err != nil {
+		a.reportUsecaseError(w, err)
+		return true
+	}
+	http.Redirect(w, r, a.NewURLBuilder('z').SetZid(api.ZettelID(z.Meta.Zid.String())).String(), http.StatusFound)
+	return true
 }

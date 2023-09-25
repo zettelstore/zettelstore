@@ -116,7 +116,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
 	webSrv.AddListRoute('x', server.MethodGet, a.MakeGetDataHandler(ucVersion))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
-	webSrv.AddListRoute('z', server.MethodGet, a.MakeQueryHandler(&ucQuery))
+	webSrv.AddListRoute('z', server.MethodGet, a.MakeQueryHandler(&ucQuery, &ucTagZettel))
 	webSrv.AddZettelRoute('z', server.MethodGet, a.MakeGetZettelHandler(ucGetZettel, ucParseZettel, ucEvaluate))
 	if !authManager.IsReadonly() {
 		webSrv.AddListRoute('z', server.MethodPost, a.MakePostCreateZettelHandler(&ucCreateZettel))
