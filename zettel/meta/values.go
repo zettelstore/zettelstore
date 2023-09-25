@@ -12,6 +12,7 @@ package meta
 
 import (
 	"fmt"
+	"strings"
 
 	"zettelstore.de/client.fossil/api"
 )
@@ -107,4 +108,12 @@ func GetUserRole(val string) UserRole {
 		return ur
 	}
 	return UserRoleUnknown
+}
+
+// NormalizeTag adds a missing prefix "#" to the tag
+func NormalizeTag(tag string) string {
+	if strings.HasPrefix(tag, "#") {
+		return tag
+	}
+	return "#" + tag
 }

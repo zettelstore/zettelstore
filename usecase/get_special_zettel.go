@@ -12,13 +12,12 @@ package usecase
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // TagZettel is the usecase of retrieving a "tag zettel", i.e. a zettel that
@@ -44,7 +43,10 @@ func NewTagZettel(port GetZettelPort, query *Query) TagZettel {
 
 // Run executes the use case.
 func (uc TagZettel) Run(ctx context.Context, tag string) (zettel.Zettel, error) {
-	q := query.Parse(uc.CalcQueryString(tag))
+	tag = meta.NormalizeTag(tag)
+	q := query.Parse(
+		api.KeyTitle + api.SearchOperatorEqual + tag + " " +
+			api.KeyRole + api.SearchOperatorHas + api.ValueRoleTag)
 	ml, err := uc.query.Run(ctx, q)
 	if err != nil {
 		return zettel.Zettel{}, err
@@ -55,14 +57,10 @@ func (uc TagZettel) Run(ctx context.Context, tag string) (zettel.Zettel, error) 
 			return z, nil
 		}
 	}
-	return zettel.Zettel{}, fmt.Errorf("tag zettel %q not found", tag)
+	return zettel.Zettel{}, ErrTagZettelNotFound{Tag: tag}
 }
 
-// CalcQueryString returns the query string to retrieve the list of tag zettel.
-func (TagZettel) CalcQueryString(tag string) string {
-	if !strings.HasPrefix(tag, "#") {
-		tag = "#" + tag
-	}
-	return api.KeyTitle + api.SearchOperatorEqual + tag + " " +
-		api.KeyRole + api.SearchOperatorHas + api.ValueRoleTag
-}
+// ErrTagZettelNotFound is returned if a tag zettel was not found.
+type ErrTagZettelNotFound struct{ Tag string }
+
+func (etznf ErrTagZettelNotFound) Error() string { return "tag zettel not found: " + etznf.Tag }

@@ -36,7 +36,12 @@ import (
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
 func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := adapter.GetQuery(r.URL.Query())
+		urlQuery := r.URL.Query()
+		if tag := urlQuery.Get(api.QueryKeyTag); tag != "" {
+			wui.handleTagZettel(w, r, tagZettel, tag)
+			return
+		}
+		q := adapter.GetQuery(urlQuery)
 		q = q.SetDeterministic()
 		ctx := r.Context()
 		metaSeq, err := queryMeta.Run(ctx, q)
@@ -113,7 +118,7 @@ func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase
 		if _, err := tagZettel.Run(ctx, tag); err != nil {
 			continue
 		}
-		u := wui.NewURLBuilder('h').AppendQuery(tagZettel.CalcQueryString(tag))
+		u := wui.NewURLBuilder('h').AppendKVQuery(api.QueryKeyTag, tag)
 		link := sx.MakeList(
 			wui.symA,
 			sx.MakeList(
@@ -166,4 +171,14 @@ func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.M
 	if err != nil {
 		wui.log.IfErr(err).Msg("unable to write Atom data")
 	}
+}
+
+func (wui *WebUI) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel *usecase.TagZettel, tag string) {
+	ctx := r.Context()
+	z, err := tagZettel.Run(ctx, tag)
+	if err != nil {
+		wui.reportError(ctx, w, err)
+		return
+	}
+	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(z.Meta.Zid.String())))
 }

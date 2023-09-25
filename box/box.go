@@ -306,8 +306,6 @@ type ErrZettelNotFound struct{ Zid id.Zid }
 
 func (eznf ErrZettelNotFound) Error() string { return "zettel not found: " + eznf.Zid.String() }
 
-//var ErrZettelNotFound = errors.New("zettel not found")
-
 // ErrConflict is returned if a box operation detected a conflict..
 // One example: if calculating a new zettel identifier takes too long.
 var ErrConflict = errors.New("conflict")
