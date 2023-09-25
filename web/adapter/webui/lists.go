@@ -34,7 +34,7 @@ import (
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.HandlerFunc {
+func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		q = q.SetDeterministic()
@@ -78,7 +78,9 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 		}
 		rb.bindString("query-value", sx.String(q.String()))
 		if tzl := q.GetMetaValues(api.KeyTags); len(tzl) > 0 {
-			rb.bindString("tag-zettel", wui.transformTagZettelList(tzl))
+			if sxTzl := wui.transformTagZettelList(ctx, tagZettel, tzl); !sx.IsNil(sxTzl) {
+				rb.bindString("tag-zettel", sxTzl)
+			}
 		}
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
@@ -104,14 +106,14 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query) http.Handler
 	}
 }
 
-func (wui *WebUI) transformTagZettelList(tags []string) *sx.Pair {
+func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) *sx.Pair {
 	result := sx.Nil()
 	slices.Reverse(tags)
 	for _, tag := range tags {
-		u := wui.NewURLBuilder('h').AppendQuery(
-			api.KeyTitle + api.SearchOperatorEqual + tag + " " +
-				api.KeyRole + api.SearchOperatorHas + api.ValueRoleTag,
-		)
+		if _, err := tagZettel.Run(ctx, tag); err != nil {
+			continue
+		}
+		u := wui.NewURLBuilder('h').AppendQuery(tagZettel.CalcQueryString(tag))
 		link := sx.MakeList(
 			wui.symA,
 			sx.MakeList(
