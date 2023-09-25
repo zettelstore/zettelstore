@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20220805150154
-modified: 20230612180954
+modified: 20230925173539
 
 A search term allows you to specify one search restriction.
 The result [[search expression|00001007700000]], which contains more than one search term, will be the applications of all restrictions.
@@ -46,7 +46,7 @@ A search term can be one of the following (the first three term are collectively
 * The string ''ORDER'', followed by a non-empty sequence of spaces and the name of a metadata key, will specify an ordering of the result list.
   If you include the string ''REVERSE'' after ''ORDER'' but before the metadata key, the ordering will be reversed.
 
-  Example: ''ORDER published'' will order the resulting list based on the publishing data, while ''ORDER REVERSED published'' will return a reversed result order.
+  Example: ''ORDER published'' will order the resulting list based on the publishing data, while ''ORDER REVERSE published'' will return a reversed result order.
 
   An explicit order field will take precedence over the random order described below.
 
