@@ -1,0 +1,69 @@
+id: 00001012051600
+title: API: Determine a tag zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+created: 20230928183339
+modified: 20230928190457
+
+The [[endpoint|00001012920000]] ''/z'' also allows you to determine a ""tag zettel"", i.e. a zettel that documents a given tag.
+
+The query parameter ""''tag''"" allows you to specify a value that is interpreted as the name of a tag.
+Zettelstore tries to determine the corresponding tag zettel.
+
+A tag zettel is a zettel with the [[''role''|00001006020100]] value ""tag"" and a title that names the tag.
+If there is more than one zettel that qualifies, the zettel with the highest zettel identifier is used.
+
+For example, if you want to determine the tag zettel for the tag ""#api"", your request will be:
+```sh
+# curl -i 'http://127.0.0.1:23123/z?tag=%23api'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/00001019990010
+Content-Length: 14
+
+00001019990010
+```
+
+Alternatively, you can omit the ''#'' character at the beginning of the tag:
+```sh
+# curl -i 'http://127.0.0.1:23123/z?tag=api'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/00001019990010
+Content-Length: 14
+
+00001019990010
+```
+
+If there is a corresponding tag zettel, the response will use the HTTP status code 302 (""Found""), the HTTP response header ''Location'' will contain the URL of the tag zettel.
+Its zettel identifier will be returned in the HTTP response body.
+Otherwise, if no tag zettel was found, the response will use the HTTP status code 404 (""Not found"").
+
+```sh
+# curl -i 'http://127.0.0.1:23123/z?tag=notag'
+HTTP/1.1 404 Not Found
+Content-Type: text/plain; charset=utf-8
+Content-Length: 29
+
+Tag zettel not found: #notag
+```
+
+To fulfill this service, Zettelstore will evaluate internally the query ''role:tag title=TAG'', there ''TAG'' is the actual tag.
+
+Of course, if you are interested in the URL of the tag zettel, you can make use of the HTTP ''HEAD'' method:
+
+```sh
+# curl -I 'http://127.0.0.1:23123/z?tag=%23api'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/00001019990010
+Content-Length: 14
+```
+
+=== HTTP Status codes
+; ''302''
+: Tag zettel was found.
+  The HTTP header ''Location'' contains its URL, the body of the response contains its zettel identifier.
+; ''404''
+: No zettel for the given tag was found.

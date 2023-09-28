@@ -1,10 +1,10 @@
 id: 00001007721200
 title: Query: Unlinked Directive
 role: manual
-tags: #api #manual #zettelstore
+tags: #manual #zettelstore
 syntax: zmk
 created: 20211119133357
-modified: 20230731163343
+modified: 20230928190540
 
 The value of a personal Zettelstore is determined in part by explicit connections between related zettel.
 If the number of zettel grow, some of these connections are missing.

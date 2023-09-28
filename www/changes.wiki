@@ -2,6 +2,8 @@
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (pending)</h2>
+  *  Allow to determine a tag zettel for a given tag.
+     (minor: api, webui)
 
 <a id="0_14"></a>
 <h2>Changes for Version 0.14.0 (2023-09-22)</h2>

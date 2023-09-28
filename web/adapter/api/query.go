@@ -236,6 +236,10 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 		a.reportUsecaseError(w, err)
 		return true
 	}
-	http.Redirect(w, r, a.NewURLBuilder('z').SetZid(api.ZettelID(z.Meta.Zid.String())).String(), http.StatusFound)
+	zid := z.Meta.Zid.String()
+	w.Header().Set(api.HeaderContentType, content.PlainText)
+	http.Redirect(w, r, a.NewURLBuilder('z').SetZid(api.ZettelID(zid)).String(), http.StatusFound)
+	_, err = io.WriteString(w, zid)
+	a.log.IfErr(err).Msg("redirect body")
 	return true
 }
