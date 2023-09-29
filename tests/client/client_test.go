@@ -49,7 +49,7 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 47
+		ownerZettel      = 48
 		configRoleZettel = 29
 		writerZettel     = ownerZettel - 23
 		readerZettel     = ownerZettel - 23
@@ -339,7 +339,7 @@ func TestListTags(t *testing.T) {
 		{"#test", 4},
 	}
 	if len(agg) != len(tags) {
-		t.Errorf("Expected %d different tags, but got only %d (%v)", len(tags), len(agg), agg)
+		t.Errorf("Expected %d different tags, but got %d (%v)", len(tags), len(agg), agg)
 	}
 	for _, tag := range tags {
 		if zl, ok := agg[tag.key]; !ok {
@@ -355,6 +355,27 @@ func TestListTags(t *testing.T) {
 	}
 }
 
+func TestTagZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.AllowRedirect(true)
+	c.SetAuth("owner", "owner")
+	ctx := context.Background()
+	zid, err := c.TagZettel(ctx, "nosuchtag")
+	if err != nil {
+		t.Error(err)
+	} else if zid != "" {
+		t.Errorf("no zid expected, but got %q", zid)
+	}
+	zid, err = c.TagZettel(ctx, "#test")
+	exp := api.ZettelID("20230929102100")
+	if err != nil {
+		t.Error(err)
+	} else if zid != exp {
+		t.Errorf("tag zettel for #test should be %q, but got %q", exp, zid)
+	}
+}
+
 func TestListRoles(t *testing.T) {
 	t.Parallel()
 	c := getClient()
@@ -364,9 +385,9 @@ func TestListRoles(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	exp := []string{"configuration", "user", "zettel"}
+	exp := []string{"configuration", "user", "tag", "zettel"}
 	if len(agg) != len(exp) {
-		t.Errorf("Expected %d different tags, but got only %d (%v)", len(exp), len(agg), agg)
+		t.Errorf("Expected %d different roles, but got %d (%v)", len(exp), len(agg), agg)
 	}
 	for _, id := range exp {
 		if _, found := agg[id]; !found {
