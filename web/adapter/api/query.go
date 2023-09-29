@@ -238,8 +238,18 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 	}
 	zid := z.Meta.Zid.String()
 	w.Header().Set(api.HeaderContentType, content.PlainText)
-	http.Redirect(w, r, a.NewURLBuilder('z').SetZid(api.ZettelID(zid)).String(), http.StatusFound)
-	_, err = io.WriteString(w, zid)
-	a.log.IfErr(err).Msg("redirect body")
+	newURL := a.NewURLBuilder('z').SetZid(api.ZettelID(zid))
+	for key, slVals := range vals {
+		if key == api.QueryKeyTag {
+			continue
+		}
+		for _, val := range slVals {
+			newURL.AppendKVQuery(key, val)
+		}
+	}
+	http.Redirect(w, r, newURL.String(), http.StatusFound)
+	if _, err = io.WriteString(w, zid); err != nil {
+		a.log.Error().Err(err).Msg("redirect body")
+	}
 	return true
 }

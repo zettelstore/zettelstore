@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20230928183339
-modified: 20230928190457
+modified: 20230929114937
 
 The [[endpoint|00001012920000]] ''/z'' also allows you to determine a ""tag zettel"", i.e. a zettel that documents a given tag.
 
@@ -38,6 +38,19 @@ Content-Length: 14
 
 If there is a corresponding tag zettel, the response will use the HTTP status code 302 (""Found""), the HTTP response header ''Location'' will contain the URL of the tag zettel.
 Its zettel identifier will be returned in the HTTP response body.
+
+If you specified some more query parameter, these will be part of the URL in the response header ''Location'':
+
+```sh
+# curl -i 'http://127.0.0.1:23123/z?tag=%23api&part=zettel'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/00001019990010?part=zettel
+Content-Length: 14
+
+00001019990010
+```
+
 Otherwise, if no tag zettel was found, the response will use the HTTP status code 404 (""Not found"").
 
 ```sh
