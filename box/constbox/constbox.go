@@ -262,7 +262,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230704122100",
-			api.KeyModified:   "20230829223600",
+			api.KeyModified:   "20231002120600",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentListZettelSxn)},
@@ -337,11 +337,24 @@ var constZettelMap = map[id.Zid]constZettel{
 		zettel.NewContent(contentNewTOCZettel)},
 	id.MustParse(api.ZidTemplateNewZettel): {
 		constHeader{
-			api.KeyTitle:      "New Zettel",
-			api.KeyRole:       api.ValueRoleZettel,
-			api.KeySyntax:     meta.SyntaxZmk,
-			api.KeyCreated:    "20201028185209",
-			api.KeyVisibility: api.ValueVisibilityCreator,
+			api.KeyTitle:                 "New Zettel",
+			api.KeyRole:                  api.ValueRoleConfiguration,
+			api.KeySyntax:                meta.SyntaxZmk,
+			api.KeyCreated:               "20201028185209",
+			api.KeyModified:              "20230929132900",
+			meta.NewPrefix + api.KeyRole: api.ValueRoleZettel,
+			api.KeyVisibility:            api.ValueVisibilityCreator,
+		},
+		zettel.NewContent(nil)},
+	id.MustParse(api.ZidTemplateNewTag): {
+		constHeader{
+			api.KeyTitle:                  "New Tag",
+			api.KeyRole:                   api.ValueRoleConfiguration,
+			api.KeySyntax:                 meta.SyntaxZmk,
+			api.KeyCreated:                "20230929132400",
+			meta.NewPrefix + api.KeyRole:  api.ValueRoleTag,
+			meta.NewPrefix + api.KeyTitle: "#",
+			api.KeyVisibility:             api.ValueVisibilityCreator,
 		},
 		zettel.NewContent(nil)},
 	id.MustParse(api.ZidTemplateNewUser): {

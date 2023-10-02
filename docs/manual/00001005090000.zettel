@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230827212840
+modified: 20231002104819
 
 The following table lists all predefined zettel with their purpose.
 
@@ -36,8 +36,9 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000025001]] | Zettelstore User CSS | User-defined CSS file that is included by the [[Base HTML Template|00000000010100]]
 | [[00000000040001]] | Generic Emoji | Image that is shown if [[original image reference|00001007040322]] is invalid
 | [[00000000090000]] | New Menu | Contains items that should contain in the zettel template menu
-| [[00000000090001]] | New Zettel | Template for a new zettel with role ""[[zettel|00001006020100]]""
+| [[00000000090001]] | New Zettel | Template for a new zettel with role ""[[zettel|00001006020100#zettel]]""
 | [[00000000090002]] | New User | Template for a new [[user zettel|00001010040200]]
+| [[00000000090003]] | New Tag | Template for a new [[tag zettel|00001006020100#tag]]
 | [[00010000000000]] | Home | Default home zettel, contains some welcome information
 
 If a zettel is not linked, it is not accessible for the current user.

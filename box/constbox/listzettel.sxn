@@ -5,6 +5,9 @@
   ,@(if (bound? 'tag-zettel)
      `((p (@ (class "zs-tag-zettel")) "Tag zettel: " ,@tag-zettel))
     )
+  ,@(if (bound? 'create-tag-zettel)
+     `((p (@ (class "zs-tag-zettel")) "Create tag zettel: " ,@create-tag-zettel))
+    )
   ,@content
   ,@endnotes
   (form (@ (action ,(if (bound? 'create-url) create-url)))

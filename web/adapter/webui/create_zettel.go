@@ -61,7 +61,8 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 			wui.renderZettelForm(ctx, w, createZettel.PrepareFolge(origZettel), "Folge Zettel", "", roleData, syntaxData)
 		case actionNew:
 			title := parser.NormalizedSpacedText(origZettel.Meta.GetTitle())
-			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel), title, "", roleData, syntaxData)
+			newTitle := parser.NormalizedSpacedText(q.Get(api.KeyTitle))
+			wui.renderZettelForm(ctx, w, createZettel.PrepareNew(origZettel, newTitle), title, "", roleData, syntaxData)
 		case actionVersion:
 			wui.renderZettelForm(ctx, w, createZettel.PrepareVersion(origZettel), "Version Zettel", "", roleData, syntaxData)
 		}

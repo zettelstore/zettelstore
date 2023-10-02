@@ -83,8 +83,12 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		}
 		rb.bindString("query-value", sx.String(q.String()))
 		if tzl := q.GetMetaValues(api.KeyTags); len(tzl) > 0 {
-			if sxTzl := wui.transformTagZettelList(ctx, tagZettel, tzl); !sx.IsNil(sxTzl) {
+			sxTzl, sxNoTzl := wui.transformTagZettelList(ctx, tagZettel, tzl)
+			if !sx.IsNil(sxTzl) {
 				rb.bindString("tag-zettel", sxTzl)
+			}
+			if !sx.IsNil(sxNoTzl) {
+				rb.bindString("create-tag-zettel", sxNoTzl)
 			}
 		}
 		rb.bindString("content", content)
@@ -111,28 +115,33 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 	}
 }
 
-func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) *sx.Pair {
-	result := sx.Nil()
+func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) (withZettel, withoutZettel *sx.Pair) {
 	slices.Reverse(tags)
 	for _, tag := range tags {
-		if _, err := tagZettel.Run(ctx, tag); err != nil {
-			continue
+		if _, err := tagZettel.Run(ctx, tag); err == nil {
+			u := wui.NewURLBuilder('h').AppendKVQuery(api.QueryKeyTag, tag)
+			withZettel = wui.prependTagZettel(withZettel, tag, u)
+		} else {
+			u := wui.NewURLBuilder('c').SetZid(api.ZidTemplateNewTag).AppendKVQuery(queryKeyAction, valueActionNew).AppendKVQuery(api.KeyTitle, tag)
+			withoutZettel = wui.prependTagZettel(withoutZettel, tag, u)
 		}
-		u := wui.NewURLBuilder('h').AppendKVQuery(api.QueryKeyTag, tag)
-		link := sx.MakeList(
-			wui.symA,
-			sx.MakeList(
-				wui.symAttr,
-				sx.Cons(wui.symHref, sx.String(u.String())),
-			),
-			sx.String(tag),
-		)
-		if result != nil {
-			result = result.Cons(sx.String(", "))
-		}
-		result = result.Cons(link)
 	}
-	return result
+	return withZettel, withoutZettel
+}
+
+func (wui *WebUI) prependTagZettel(sxZtl *sx.Pair, tag string, u *api.URLBuilder) *sx.Pair {
+	link := sx.MakeList(
+		wui.symA,
+		sx.MakeList(
+			wui.symAttr,
+			sx.Cons(wui.symHref, sx.String(u.String())),
+		),
+		sx.String(tag),
+	)
+	if sxZtl != nil {
+		sxZtl = sxZtl.Cons(sx.String(", "))
+	}
+	return sxZtl.Cons(link)
 }
 
 func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {

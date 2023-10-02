@@ -12,7 +12,7 @@ package webui
 
 // WebUI related constants.
 
-const queryKeyAction = "action"
+const queryKeyAction = "_action"
 
 // Values for queryKeyAction
 const (

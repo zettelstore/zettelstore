@@ -92,7 +92,7 @@ func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 }
 
 // PrepareNew the zettel for further modification.
-func (*CreateZettel) PrepareNew(origZettel zettel.Zettel) zettel.Zettel {
+func (*CreateZettel) PrepareNew(origZettel zettel.Zettel, newTitle string) zettel.Zettel {
 	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
@@ -103,6 +103,9 @@ func (*CreateZettel) PrepareNew(origZettel zettel.Zettel) zettel.Zettel {
 		if key := pair.Key; len(key) > prefixLen && key[0:prefixLen] == meta.NewPrefix {
 			m.Set(key[prefixLen:], pair.Value)
 		}
+	}
+	if newTitle != "" {
+		m.Set(api.KeyTitle, newTitle)
 	}
 	content := origZettel.Content
 	content.TrimSpace()

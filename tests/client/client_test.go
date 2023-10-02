@@ -49,11 +49,11 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 48
-		configRoleZettel = 29
+		ownerZettel      = 49
+		configRoleZettel = 31
 		writerZettel     = ownerZettel - 23
 		readerZettel     = ownerZettel - 23
-		creatorZettel    = 7
+		creatorZettel    = 8
 		publicZettel     = 4
 	)
 
@@ -215,12 +215,13 @@ func TestGetZettelOrder(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if got := len(metaSeq); got != 2 {
-		t.Errorf("Expected list of length 2, got %d", got)
+	if got := len(metaSeq); got != 3 {
+		t.Errorf("Expected list of length 3, got %d", got)
 		return
 	}
 	checkListZid(t, metaSeq, 0, api.ZidTemplateNewZettel)
-	checkListZid(t, metaSeq, 1, api.ZidTemplateNewUser)
+	checkListZid(t, metaSeq, 1, api.ZidTemplateNewTag)
+	checkListZid(t, metaSeq, 2, api.ZidTemplateNewUser)
 }
 
 // func TestGetZettelContext(t *testing.T) {
