@@ -8,6 +8,10 @@
      Results in a new predefined zettel with identifier 00000000090003, which
      is a template for new tag zettel.
      (minor: webui)
+  *  ZIP file with manual now contains a zettel 00001000000000 that contains
+     its build date (metadata key <tt>created</tt>) and version (in the zettel
+     content)
+     (minor)
 
 <a id="0_14"></a>
 <h2>Changes for Version 0.14.0 (2023-09-22)</h2>

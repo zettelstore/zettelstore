@@ -13,6 +13,7 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -25,7 +26,11 @@ import (
 	"strings"
 	"time"
 
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 var envDirectProxy = []string{"GOPROXY=direct"}
@@ -378,6 +383,8 @@ func createManualZip(path, base string) error {
 	return nil
 }
 
+const versionZid = "00001000000001"
+
 func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer) error {
 	info, err := entry.Info()
 	if err != nil {
@@ -387,18 +394,44 @@ func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer)
 	if err != nil {
 		return err
 	}
-	fh.Name = entry.Name()
+	name := entry.Name()
+	fh.Name = name
 	fh.Method = zip.Deflate
 	w, err := zipWriter.CreateHeader(fh)
 	if err != nil {
 		return err
 	}
-	manualFile, err := os.Open(filepath.Join(path, entry.Name()))
+	manualFile, err := os.Open(filepath.Join(path, name))
 	if err != nil {
 		return err
 	}
 	defer manualFile.Close()
-	_, err = io.Copy(w, manualFile)
+
+	if name != versionZid+".zettel" {
+		_, err = io.Copy(w, manualFile)
+		return err
+	}
+
+	data, err := io.ReadAll(manualFile)
+	if err != nil {
+		return err
+	}
+	inp := input.NewInput(data)
+	m := meta.NewFromInput(id.MustParse(versionZid), inp)
+	m.SetNow(api.KeyModified)
+
+	var buf bytes.Buffer
+	if _, err = fmt.Fprintf(&buf, "id: %s\n", versionZid); err != nil {
+		return err
+	}
+	if _, err = m.WriteComputed(&buf); err != nil {
+		return err
+	}
+	version := getVersion()
+	if _, err = fmt.Fprintf(&buf, "\n%s", version); err != nil {
+		return err
+	}
+	_, err = io.Copy(w, &buf)
 	return err
 }
 

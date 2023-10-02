@@ -1,0 +1,8 @@
+id: 00001000000001
+title: Manual Version
+role: configuration
+syntax: zmk
+created: 20231002142915
+modified: 20231002142948
+
+To be set by build tool.

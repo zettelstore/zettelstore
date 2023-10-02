@@ -3,7 +3,8 @@ title: Zettelstore Manual
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-modified: 20220803183647
+created: 00010101000000
+modified: 20231002143058
 
 * [[Introduction|00001001000000]]
 * [[Design goals|00001002000000]]
@@ -19,5 +20,7 @@ modified: 20220803183647
 * [[Tips and Tricks|00001017000000]]
 * [[Troubleshooting|00001018000000]]
 * Frequently asked questions
+
+Version: {{00001000000001}}.
 
 Licensed under the EUPL-1.2-or-later.
