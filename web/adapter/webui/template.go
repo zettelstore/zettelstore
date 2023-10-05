@@ -408,10 +408,24 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	if rb.err == nil {
 		rb.err = wui.renderSxnTemplateStatus(ctx, w, code, id.ErrorTemplateZid, env)
 	}
-	if errBind := rb.err; errBind != nil {
-		wui.log.Error().Err(errBind).Msg("while rendering error message")
-		fmt.Fprintf(w, "Error while rendering error message: %v", errBind)
+	errSx := rb.err
+	if errSx == nil {
+		return
 	}
+	wui.log.Error().Err(errSx).Msg("while rendering error message")
+
+	// if errBind != nil, the HTTP header was not written
+	wui.prepareAndWriteHeader(w, http.StatusInternalServerError)
+	fmt.Fprintf(
+		w,
+		`<!DOCTYPE html>
+<html>
+<head><title>Internal server error</title></head>
+<body>
+<h1>Internal server error</h1>
+<p>When generating error code %d with message:</p><pre>%v</pre><p>an error occured:</p><pre>%v</pre>
+</body>
+</html>`, code, text, errSx)
 }
 
 func makeStringList(sl []string) *sx.Pair {
