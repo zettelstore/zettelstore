@@ -8,6 +8,9 @@
 ;;; obligations under this license.
 ;;;----------------------------------------------------------------------------
 
+;; let macro
+(defmacro let (bindings . body) `((lambda ,(map car bindings) ,@body) ,@(map cadr bindings)))
+
 ;; wui-list-item returns the argument as a HTML list item.
 (define (wui-item s) `(li ,s))
 
@@ -74,8 +77,8 @@
 ;; ROLE-DEFAULT-meta returns some metadata for the base template. Any role
 ;; specific code should include the returned list of this function.
 (define (ROLE-DEFAULT-meta env)
-    `(,@(let (meta-role (environment-lookup 'meta-role env))
-             (let (entry (assoc CSS-ROLE-map meta-role))
+    `(,@(let ((meta-role (environment-lookup 'meta-role env)))
+             (let ((entry (assoc CSS-ROLE-map meta-role)))
                   (if (pair? entry)
                       `((link (@ (rel "stylesheet") (href ,(zid-content-path (cdr entry))))))
                   )
@@ -89,13 +92,13 @@
 
 ;;; ROLE-DEFAULT-actions returns the default text for actions.
 (define (ROLE-DEFAULT-actions env)
-    `(,@(let (copy-url (environment-lookup 'copy-url env))
+    `(,@(let ((copy-url (environment-lookup 'copy-url env)))
              (if (defined? copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy"))))
-      ,@(let (version-url (environment-lookup 'version-url env))
+      ,@(let ((version-url (environment-lookup 'version-url env)))
              (if (defined? version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version"))))
-      ,@(let (child-url (environment-lookup 'child-url env))
+      ,@(let ((child-url (environment-lookup 'child-url env)))
              (if (defined? child-url) `((@H " &#183; ") (a (@ (href ,child-url)) "Child"))))
-      ,@(let (folge-url (environment-lookup 'folge-url env))
+      ,@(let ((folge-url (environment-lookup 'folge-url env)))
              (if (defined? folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge"))))
     )
 )
@@ -103,7 +106,7 @@
 ;;; ROLE-tag-actions returns an additional action "Zettel" for zettel with role "tag".
 (define (ROLE-tag-actions env)
     `(,@(ROLE-DEFAULT-actions env)
-      ,@(let (title (environment-lookup 'title env))
+      ,@(let ((title (environment-lookup 'title env)))
              (if (and (defined? title) title)
                  `(,ACTION-SEPARATOR (a (@ (href ,(query->url (string-append "tags:" title)))) "Zettel"))
              )
@@ -115,9 +118,9 @@
 ;;; references of a zettel. In most cases it should be called from an
 ;;; overwriting function.
 (define (ROLE-DEFAULT-heading env)
-    `(,@(let (meta-url (environment-lookup 'meta-url env))
+    `(,@(let ((meta-url (environment-lookup 'meta-url env)))
            (if (defined? meta-url) `((br) "URL: " ,(url-to-html meta-url))))
-      ,@(let (meta-author (environment-lookup 'meta-author env))
+      ,@(let ((meta-author (environment-lookup 'meta-author env)))
            (if (and (defined? meta-author) meta-author) `((br) "By " ,meta-author)))
     )
 )

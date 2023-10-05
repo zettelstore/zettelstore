@@ -62,7 +62,7 @@ var (
 	}{
 		{"if", sxbuiltins.IfS},
 		{"and", sxbuiltins.AndS}, {"or", sxbuiltins.OrS},
-		{"lambda", sxbuiltins.LambdaS}, {"let", sxbuiltins.LetS},
+		{"lambda", sxbuiltins.LambdaS}, {"defmacro", sxbuiltins.DefMacroS},
 		{"define", sxbuiltins.DefineS},
 	}
 	builtinsFA = []struct {
@@ -79,7 +79,7 @@ var (
 	}{
 		{"pair?", sxbuiltins.PairP},
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
-		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
+		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr}, {"cadr", sxbuiltins.Cadr},
 		{"assoc", sxbuiltins.Assoc},
 		{"string-append", sxbuiltins.StringAppend},
 		{"defined?", sxbuiltins.DefinedP},
