@@ -79,8 +79,7 @@ func (dg Digraph) Clone() Digraph {
 	}
 	copyDG := make(Digraph, len(dg))
 	for vertex, closure := range dg {
-		var s Set
-		copyDG[vertex] = s.Copy(closure)
+		copyDG[vertex] = closure.Clone()
 	}
 	return copyDG
 }
