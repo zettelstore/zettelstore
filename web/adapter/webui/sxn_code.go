@@ -31,10 +31,14 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.
 		}
 		return z.Meta, nil
 	}
-	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, id.BaseSxnZid, getMeta)
+	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, getMeta)
 	if dg == nil {
 		return nil, wui.engine.RootEnvironment(), nil
 	}
+	dg = dg.AddVertex(id.BaseSxnZid).AddEdge(id.StartSxnZid, id.BaseSxnZid)
+	dg = dg.AddVertex(id.PreludeSxnZid).AddEdge(id.BaseSxnZid, id.PreludeSxnZid)
+	dg = dg.TransitiveClosure(id.StartSxnZid)
+
 	if zid, isDAG := dg.IsDAG(); !isDAG {
 		return nil, nil, fmt.Errorf("zettel %v is part of a dependency cycle", zid)
 	}
@@ -49,7 +53,7 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.
 
 type getMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
 
-func buildSxnCodeDigraph(ctx context.Context, startZid, baseZid id.Zid, getMeta getMetaFunc) id.Digraph {
+func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFunc) id.Digraph {
 	m, err := getMeta(ctx, startZid)
 	if err != nil {
 		return nil
@@ -78,9 +82,7 @@ func buildSxnCodeDigraph(ctx context.Context, startZid, baseZid id.Zid, getMeta 
 			}
 		}
 	}
-	dg = dg.AddVertex(baseZid)
-	dg = dg.AddEdge(startZid, baseZid)
-	return dg.TransitiveClosure(startZid)
+	return dg
 }
 
 func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, env sxeval.Environment) error {

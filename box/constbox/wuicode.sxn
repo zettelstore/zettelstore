@@ -8,8 +8,7 @@
 ;;; obligations under this license.
 ;;;----------------------------------------------------------------------------
 
-;; let macro
-(defmacro let (bindings . body) `((lambda ,(map car bindings) ,@body) ,@(map cadr bindings)))
+;; Contains WebUI specific code, but not related to a specific template.
 
 ;; wui-list-item returns the argument as a HTML list item.
 (define (wui-item s) `(li ,s))

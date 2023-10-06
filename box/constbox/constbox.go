@@ -283,7 +283,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230824160700",
 			api.KeyVisibility: api.ValueVisibilityExpert,
-			api.KeyPrecursor:  id.BaseSxnZid.String(),
+			api.KeyPrecursor:  string(api.ZidSxnBase),
 		},
 		zettel.NewContent(contentStartCodeSxn)},
 	id.BaseSxnZid: {
@@ -292,11 +292,22 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230619132800",
-			api.KeyModified:   "20231005195300",
+			api.KeyModified:   "20231006181800",
+			api.KeyReadOnly:   api.ValueTrue,
+			api.KeyVisibility: api.ValueVisibilityExpert,
+			api.KeyPrecursor:  string(api.ZidSxnPrelude),
+		},
+		zettel.NewContent(contentBaseCodeSxn)},
+	id.PreludeSxnZid: {
+		constHeader{
+			api.KeyTitle:      "Zettelstore Sxn Prelude",
+			api.KeyRole:       api.ValueRoleConfiguration,
+			api.KeySyntax:     meta.SyntaxSxn,
+			api.KeyCreated:    "20231006181700",
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
-		zettel.NewContent(contentBaseCodeSxn)},
+		zettel.NewContent(contentPreludeSxn)},
 	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
@@ -421,6 +432,9 @@ var contentStartCodeSxn []byte
 
 //go:embed wuicode.sxn
 var contentBaseCodeSxn []byte
+
+//go:embed prelude.sxn
+var contentPreludeSxn []byte
 
 //go:embed base.css
 var contentBaseCSS []byte
