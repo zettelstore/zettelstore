@@ -98,6 +98,9 @@ func (s Set) ContainsOrNil(zid Zid) bool {
 // Copy adds all member from the other set.
 func (s Set) Copy(other Set) Set {
 	if s == nil {
+		if len(other) == 0 {
+			return nil
+		}
 		s = NewSetCap(len(other))
 	}
 	maps.Copy(s, other)

@@ -10,7 +10,10 @@
 
 package id
 
-import "maps"
+import (
+	"maps"
+	"slices"
+)
 
 // Digraph relates zettel identifier in a directional way.
 type Digraph map[Zid]Set
@@ -24,6 +27,16 @@ func (dg Digraph) AddVertex(zid Zid) Digraph {
 		dg[zid] = nil
 	}
 	return dg
+}
+
+// RemoveVertex removes a vertex and all its edges from the digraph.
+func (dg Digraph) RemoveVertex(zid Zid) {
+	if len(dg) > 0 {
+		delete(dg, zid)
+		for vertex, closure := range dg {
+			dg[vertex] = closure.Remove(zid)
+		}
+	}
 }
 
 // AddEdge adds a connection from `zid1` to `zid2`.
@@ -57,6 +70,19 @@ func (dg Digraph) AddEgdes(edges EdgeSlice) Digraph {
 // Equal returns true if both digraphs have the same vertices and edges.
 func (dg Digraph) Equal(other Digraph) bool {
 	return maps.EqualFunc(dg, other, func(cg, co Set) bool { return cg.Equal(co) })
+}
+
+// Clone a digraph.
+func (dg Digraph) Clone() Digraph {
+	if len(dg) == 0 {
+		return nil
+	}
+	copyDG := make(Digraph, len(dg))
+	for vertex, closure := range dg {
+		var s Set
+		copyDG[vertex] = s.Copy(closure)
+	}
+	return copyDG
 }
 
 // HasVertex returns true, if `zid` is a vertex of the digraph.
@@ -173,6 +199,18 @@ func (dg Digraph) IsDAG() (Zid, bool) {
 	return Invalid, true
 }
 
+// Reverse returns a graph with reversed edges.
+func (dg Digraph) Reverse() (revDg Digraph) {
+	for vertex, closure := range dg {
+		revDg = revDg.AddVertex(vertex)
+		for next := range closure {
+			revDg = revDg.AddVertex(next)
+			revDg = revDg.AddEdge(next, vertex)
+		}
+	}
+	return revDg
+}
+
 // SortReverse returns a deterministic, topological, reverse sort of the
 // digraph.
 //
@@ -182,26 +220,18 @@ func (dg Digraph) SortReverse() (sl Slice) {
 	if len(dg) == 0 {
 		return nil
 	}
-	var done Set
-	onStack := dg.Originators()
-	stack := onStack.Sorted()
-	for pos := len(stack) - 1; pos >= 0; pos = len(stack) - 1 {
-		curr := stack[pos]
-		closure := dg[curr]
-		for next := range closure {
-			if done.Contains(next) || onStack.Contains(next) {
-				closure = closure.Remove(next)
-			}
+	tempDg := dg.Clone()
+	for len(tempDg) > 0 {
+		terms := tempDg.Terminators()
+		if len(terms) == 0 {
+			break
 		}
-		if len(closure) == 0 {
-			sl = append(sl, curr)
-			done = done.Add(curr)
-			stack = stack[:pos]
-			onStack = onStack.Remove(curr)
-			continue
+		termSlice := terms.Sorted()
+		slices.Reverse(termSlice)
+		sl = append(sl, termSlice...)
+		for t := range terms {
+			tempDg.RemoveVertex(t)
 		}
-		stack = append(stack, closure.Sorted()...)
-		onStack.Copy(closure)
 	}
 	return sl
 }

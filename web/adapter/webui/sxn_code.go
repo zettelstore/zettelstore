@@ -63,7 +63,7 @@ func buildSxnCodeDigraph(ctx context.Context, startZid, baseZid id.Zid, getMeta 
 		if marked.Contains(curr.Zid) {
 			continue
 		}
-		marked.Add(curr.Zid)
+		marked = marked.Add(curr.Zid)
 		if precursors, hasPrecursor := curr.GetList(api.KeyPrecursor); hasPrecursor && len(precursors) > 0 {
 			for _, pre := range precursors {
 				if preZid, errParse := id.Parse(pre); errParse == nil {

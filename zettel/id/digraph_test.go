@@ -98,7 +98,6 @@ func TestDigraphTransitiveClosure(t *testing.T) {
 			if got := dg.TransitiveClosure(tc.start).Edges().Sort(); !got.Equal(tc.exp) {
 				t.Errorf("\n%v, but got:\n%v", tc.exp, got)
 			}
-
 		})
 	}
 }
@@ -124,6 +123,32 @@ func TestIsDAG(t *testing.T) {
 	}
 }
 
+func TestDigraphReverse(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name string
+		dg   id.EdgeSlice
+		exp  id.EdgeSlice
+	}{
+		{"empty", nil, nil},
+		{"single-edge", zps{{1, 2}}, zps{{2, 1}}},
+		{"single-loop", zps{{1, 1}}, zps{{1, 1}}},
+		{"end-loop", zps{{1, 2}, {2, 2}}, zps{{2, 1}, {2, 2}}},
+		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, zps{{2, 1}, {2, 5}, {3, 2}, {4, 3}, {5, 4}}},
+		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, zps{{2, 1}, {2, 4}, {3, 2}, {4, 3}, {5, 4}}},
+		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, zps{{2, 1}, {3, 2}, {5, 4}}},
+		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, zps{{2, 1}, {2, 3}, {3, 1}}},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			dg := createDigraph(tc.dg)
+			if got := dg.Reverse().Edges().Sort(); !got.Equal(tc.exp) {
+				t.Errorf("\n%v, but got:\n%v", tc.exp, got)
+			}
+		})
+	}
+}
+
 func TestDigraphSortReverse(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
@@ -134,10 +159,11 @@ func TestDigraphSortReverse(t *testing.T) {
 		{"empty", nil, nil},
 		{"single-edge", zps{{1, 2}}, id.Slice{2, 1}},
 		{"single-loop", zps{{1, 1}}, nil},
-		{"end-loop", zps{{1, 2}, {2, 2}}, id.Slice{2, 1}},
-		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.Slice{5, 4, 3, 2, 1}},
-		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.Slice{5, 4, 3, 2, 1}},
-		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.Slice{5, 4, 3, 2, 1}},
+		{"end-loop", zps{{1, 2}, {2, 2}}, id.Slice{}},
+		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.Slice{}},
+		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.Slice{5}},
+		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.Slice{5, 3, 4, 2, 1}},
+		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, id.Slice{2, 3, 1}},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
