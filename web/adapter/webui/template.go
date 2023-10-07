@@ -61,7 +61,6 @@ var (
 		fn   sxeval.SyntaxFn
 	}{
 		{"if", sxbuiltins.IfS},
-		{"and", sxbuiltins.AndS}, {"or", sxbuiltins.OrS},
 		{"lambda", sxbuiltins.LambdaS}, {"defmacro", sxbuiltins.DefMacroS},
 		{"define", sxbuiltins.DefineS},
 	}
@@ -77,7 +76,8 @@ var (
 		name string
 		fn   sxeval.BuiltinA
 	}{
-		{"pair?", sxbuiltins.PairP},
+		{"null?", sxbuiltins.NullP}, {"pair?", sxbuiltins.PairP},
+		{"not", sxbuiltins.Not},
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
 		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr}, {"cadr", sxbuiltins.Cadr},
 		{"assoc", sxbuiltins.Assoc},
