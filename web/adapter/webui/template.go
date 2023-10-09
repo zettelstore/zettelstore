@@ -76,10 +76,14 @@ var (
 		name string
 		fn   sxeval.BuiltinA
 	}{
-		{"null?", sxbuiltins.NullP}, {"pair?", sxbuiltins.PairP},
+		{"==", sxbuiltins.Identical},
 		{"not", sxbuiltins.Not},
+		{"null?", sxbuiltins.NullP}, {"pair?", sxbuiltins.PairP},
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
-		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr}, {"cadr", sxbuiltins.Cadr},
+		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
+		{"caar", sxbuiltins.Caar}, {"cadr", sxbuiltins.Cadr}, {"cdar", sxbuiltins.Cdar}, {"cddr", sxbuiltins.Cddr},
+		{"caaar", sxbuiltins.Caaar}, {"caadr", sxbuiltins.Caadr}, {"cadar", sxbuiltins.Cadar}, {"caddr", sxbuiltins.Caddr},
+		{"cdaar", sxbuiltins.Cdaar}, {"cdadr", sxbuiltins.Cdadr}, {"cddar", sxbuiltins.Cddar}, {"cdddr", sxbuiltins.Cdddr},
 		{"assoc", sxbuiltins.Assoc},
 		{"string-append", sxbuiltins.StringAppend},
 		{"defined?", sxbuiltins.DefinedP},
@@ -130,27 +134,28 @@ func (wui *WebUI) queryToURL(args []sx.Object) (sx.Object, error) {
 	return sx.String(u.String()), nil
 }
 
-func (wui *WebUI) getParentEnv(ctx context.Context) sxeval.Environment {
+func (wui *WebUI) getParentEnv(ctx context.Context) (sxeval.Environment, error) {
 	wui.mxZettelEnv.Lock()
 	defer wui.mxZettelEnv.Unlock()
 	if parentEnv := wui.zettelEnv; parentEnv != nil {
-		return parentEnv
+		return parentEnv, nil
 	}
 	dag, zettelEnv, err := wui.loadAllSxnCodeZettel(ctx)
 	if err != nil {
-		wui.log.IfErr(err).Msg("loading zettel sxn")
-		return wui.engine.RootEnvironment()
+		wui.log.Error().Err(err).Msg("loading zettel sxn")
+		return nil, err
 	}
 	wui.dag = dag
 	wui.zettelEnv = zettelEnv
-	return zettelEnv
+	return zettelEnv, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
 func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxeval.Environment, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
-	env := sxeval.MakeChildEnvironment(wui.getParentEnv(ctx), name, 128)
-	rb := makeRenderBinder(wui.sf, env, nil)
+	parentEnv, err := wui.getParentEnv(ctx)
+	env := sxeval.MakeChildEnvironment(parentEnv, name, 128)
+	rb := makeRenderBinder(wui.sf, env, err)
 	rb.bindString("lang", sx.String(lang))
 	rb.bindString("css-base-url", sx.String(wui.cssBaseURL))
 	rb.bindString("css-user-url", sx.String(wui.cssUserURL))

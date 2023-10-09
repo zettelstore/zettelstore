@@ -14,25 +14,48 @@
 
 ;; let macro
 ;;
-;; (let (BINDIG ...) EXPR ...), where BINDING is a list of two elements
+;; (let (BINDING ...) EXPR ...), where BINDING is a list of two elements
 ;;   (SYMBOL EXPR)
 (defmacro let (bindings . body)
     `((lambda ,(map car bindings) ,@body) ,@(map cadr bindings)))
+
+;; let* macro
+;;
+;; (let* (BINDING ...) EXPR ...), where SYMBOL may occur in later bindings.
+(defmacro let* (bindings . body)
+    (if (null? bindings)
+        `((lambda () ,@body))
+        `((lambda (,(caar bindings))
+                  (let* ,(cdr bindings) ,@body))
+                  ,(cadar bindings))))
+
+;; cond macro
+;;
+;; (cond ((COND EXPR) ...))
+(defmacro cond clauses
+    (if (null? clauses)
+        ()
+        (let* ((clause (car clauses))
+               (the-cond (car clause)))
+              (if (== the-cond 'else)
+                  (cadr clause)
+                  `(if ,the-cond
+                       ,(cadr clause)
+                       (cond ,@(cdr clauses)))))))
 
 ;; and macro
 ;;
 ;; (and EXPR ...)
 (defmacro and args
-    (if (null? args)
-        (not ())
-        (if (null? (cdr args))
-            (car args)
-            `(if ,(car args) (and ,@(cdr args))))))
+    (cond ((null? args)       (not ()))
+          ((null? (cdr args)) (car args))
+          (else               `(if ,(car args) (and ,@(cdr args))))))
+
 
 ;; or macro
+;;
+;; (or EXPR ...)
 (defmacro or args
-    (if (null? args)
-        ()
-        (if (null? (cdr args))
-            (car args)
-            `(if ,(car args) ,(not ()) (or ,@(cdr args))))))
+    (cond ((null? args)       ())
+          ((null? (cdr args)) (car args))
+          (else               `(if ,(car args) ,(not ()) (or ,@(cdr args))))))

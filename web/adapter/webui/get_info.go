@@ -107,6 +107,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.InfoTemplateZid, env)
+		} else {
+			err = rb.err
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err)

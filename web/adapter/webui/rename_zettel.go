@@ -50,6 +50,8 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.H
 		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZid, env)
+		} else {
+			err = rb.err
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err)

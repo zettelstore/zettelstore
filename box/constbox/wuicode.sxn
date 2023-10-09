@@ -76,12 +76,11 @@
 ;; ROLE-DEFAULT-meta returns some metadata for the base template. Any role
 ;; specific code should include the returned list of this function.
 (define (ROLE-DEFAULT-meta env)
-    `(,@(let ((meta-role (environment-lookup 'meta-role env)))
-             (let ((entry (assoc CSS-ROLE-map meta-role)))
-                  (if (pair? entry)
-                      `((link (@ (rel "stylesheet") (href ,(zid-content-path (cdr entry))))))
-                  )
-             )
+    `(,@(let* ((meta-role (environment-lookup 'meta-role env))
+               (entry (assoc CSS-ROLE-map meta-role)))
+              (if (pair? entry)
+                  `((link (@ (rel "stylesheet") (href ,(zid-content-path (cdr entry))))))
+              )
         )
     )
 )

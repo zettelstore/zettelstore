@@ -80,6 +80,8 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
+		} else {
+			err = rb.err
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err)

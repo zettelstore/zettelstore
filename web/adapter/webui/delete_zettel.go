@@ -58,6 +58,8 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.DeleteTemplateZid, env)
+		} else {
+			err = rb.err
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err)

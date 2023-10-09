@@ -108,6 +108,8 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		}
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)
+		} else {
+			err = rb.err
 		}
 		if err != nil {
 			wui.reportError(ctx, w, err)
