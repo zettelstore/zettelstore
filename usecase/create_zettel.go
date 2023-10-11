@@ -46,8 +46,9 @@ func NewCreateZettel(log *logger.Logger, rtConfig config.Config, port CreateZett
 
 // PrepareCopy the zettel for further modification.
 func (*CreateZettel) PrepareCopy(origZettel zettel.Zettel) zettel.Zettel {
-	m := origZettel.Meta.Clone()
-	if title, found := m.Get(api.KeyTitle); found {
+	origMeta := origZettel.Meta
+	m := origMeta.Clone()
+	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Copy", "Copy of "))
 	}
 	setReadonly(m)
@@ -82,8 +83,8 @@ func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 // PrepareChild the zettel for further modification.
 func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
-	m := origMeta.Clone()
-	if title, found := m.Get(api.KeyTitle); found {
+	m := meta.New(id.Invalid)
+	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Child", "Child of "))
 	}
 	updateMetaRoleTagsSyntax(m, origMeta)
