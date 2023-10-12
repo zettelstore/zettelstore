@@ -61,8 +61,10 @@ var (
 		fn   sxeval.SyntaxFn
 	}{
 		{"if", sxbuiltins.IfS},
-		{"lambda", sxbuiltins.LambdaS}, {"defmacro", sxbuiltins.DefMacroS},
-		{"define", sxbuiltins.DefineS},
+		{"defvar", sxbuiltins.DefVarS}, {"set!", sxbuiltins.SetXS},
+		{"defun", sxbuiltins.DefunS}, {"lambda", sxbuiltins.LambdaS},
+		{"defmacro", sxbuiltins.DefMacroS},
+		{"define", sxbuiltins.DefineS}, // Deprecated
 	}
 	builtinsFA = []struct {
 		name string

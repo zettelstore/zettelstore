@@ -4,7 +4,7 @@ role: manual
 tags: #manual #zettelstore
 syntax: zmk
 created: 20220803170112
-modified: 20230827225202
+modified: 20231012154803
 
 === Welcome Zettel
 * **Problem:** You want to put your Zettelstore into the public and need a starting zettel for your users.
@@ -40,10 +40,10 @@ modified: 20230827225202
 
   Now, you have to map this freshly created zettel to a role, for example ""zettel"".
   Since you have enabled ''expert-mode'', you are allowed to modify the zettel ""[[Zettelstore Sxn Start Code|00000000019000]]"".
-  Add the following code to the Sxn Start Code zettel: ``(define CSS-ROLE-map '(("zettel" . "20220825200100")))``.
+  Add the following code to the Sxn Start Code zettel: ``(set! CSS-ROLE-map '(("zettel" . "20220825200100")))``.
 
   In general, the mapping must follow the pattern: ``(ROLE . ID)``, where ''ROLE'' is the placeholder for the role, and ''ID'' for the zettel identifier containing CSS code.
-  For example, if you also want the role ""configuration"" to be rendered using that CSS, the code should be something like ``(define CSS-ROLE-map '(("zettel" . "20220825200100") ("configuration" . "20220825200100")))``.
+  For example, if you also want the role ""configuration"" to be rendered using that CSS, the code should be something like ``(set! CSS-ROLE-map '(("zettel" . "20220825200100") ("configuration" . "20220825200100")))``.
 * **Discussion:** you have to ensure that the CSS zettel is allowed to be read by the intended audience of the zettel with that given role.
   For example, if you made zettel with a specific role public visible, the CSS zettel must also have a [[''visibility: public''|00001010070200]] metadata.
 

@@ -2,6 +2,10 @@
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (pending)</h2>
+  *  Sx function <tt>define</tt> is now deprecated. It will be removed in
+     version 0.16. Use <tt>defvar</tt> or <tt>defun</tt> instead. Otherwise
+     the WebUI will not work in version 0.16.
+     (major: webui, deprecated)
   *  Allow to determine a tag zettel for a given tag.
      (minor: api, webui)
   *  Present user the option to create a (missing) tag zettel (in list view).
