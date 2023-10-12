@@ -12,6 +12,14 @@
 ;;; subsystems, such as WebUI, API, or other. It just contains generic code to
 ;;; be used elsewhere.
 
+;; Constants NIL and T
+(defconst NIL ())
+(defconst T   'T)
+
+;; Function not
+(defun not (x) (if x NIL T))
+(defconst not not)
+
 ;; let macro
 ;;
 ;; (let (BINDING ...) EXPR ...), where BINDING is a list of two elements
@@ -34,7 +42,7 @@
 ;; (cond ((COND EXPR) ...))
 (defmacro cond clauses
     (if (null? clauses)
-        ()
+        NIL
         (let* ((clause (car clauses))
                (the-cond (car clause)))
               (if (== the-cond 'else)
@@ -47,7 +55,7 @@
 ;;
 ;; (and EXPR ...)
 (defmacro and args
-    (cond ((null? args)       (not ()))
+    (cond ((null? args)       T)
           ((null? (cdr args)) (car args))
           (else               `(if ,(car args) (and ,@(cdr args))))))
 
@@ -56,6 +64,6 @@
 ;;
 ;; (or EXPR ...)
 (defmacro or args
-    (cond ((null? args)       ())
+    (cond ((null? args)       NIL)
           ((null? (cdr args)) (car args))
-          (else               `(if ,(car args) ,(not ()) (or ,@(cdr args))))))
+          (else               `(if ,(car args) T (or ,@(cdr args))))))

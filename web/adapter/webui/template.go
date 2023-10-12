@@ -62,6 +62,7 @@ var (
 	}{
 		{"if", sxbuiltins.IfS},
 		{"defvar", sxbuiltins.DefVarS}, {"set!", sxbuiltins.SetXS},
+		{"defconst", sxbuiltins.DefConstS},
 		{"defun", sxbuiltins.DefunS}, {"lambda", sxbuiltins.LambdaS},
 		{"defmacro", sxbuiltins.DefMacroS},
 		{"define", sxbuiltins.DefineS}, // Deprecated
@@ -79,7 +80,6 @@ var (
 		fn   sxeval.BuiltinA
 	}{
 		{"==", sxbuiltins.Identical},
-		{"not", sxbuiltins.Not},
 		{"null?", sxbuiltins.NullP}, {"pair?", sxbuiltins.PairP},
 		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
 		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
@@ -351,7 +351,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Env
 		return nil, err
 	}
 
-	wui.setSxnCache(zid, wui.engine.Rework(t))
+	wui.setSxnCache(zid, wui.engine.Rework(env, t))
 	return t, nil
 }
 func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
