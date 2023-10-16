@@ -39,8 +39,8 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	engine := sxeval.MakeEngine(wui.sf, root)
 	engine.SetQuote(wui.symQuote)
 	sxbuiltins.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
-	for _, b := range syntaxes {
-		engine.BindSyntax(b.name, b.fn)
+	for _, syntax := range syntaxes {
+		engine.BindSyntax(syntax)
 	}
 	for _, b := range builtins {
 		engine.BindBuiltin(b)
@@ -51,7 +51,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MaxArity: 1,
 		IsPure:   true,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
-			text, err := sxbuiltins.GetString(nil, args, 0)
+			text, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -64,7 +64,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MaxArity: 1,
 		IsPure:   true,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
-			s, err := sxbuiltins.GetString(nil, args, 0)
+			s, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -82,7 +82,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MaxArity: 1,
 		IsPure:   true,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
-			qs, err := sxbuiltins.GetString(nil, args, 0)
+			qs, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -95,16 +95,13 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 }
 
 var (
-	syntaxes = []struct {
-		name string
-		fn   sxeval.SyntaxFn
-	}{
-		{"if", sxbuiltins.IfS},
-		{"defvar", sxbuiltins.DefVarS}, {"set!", sxbuiltins.SetXS},
-		{"defconst", sxbuiltins.DefConstS},
-		{"defun", sxbuiltins.DefunS}, {"lambda", sxbuiltins.LambdaS},
-		{"defmacro", sxbuiltins.DefMacroS},
-		{"define", sxbuiltins.DefineS}, // Deprecated
+	syntaxes = []*sxeval.Syntax{
+		&sxbuiltins.DefVarS, &sxbuiltins.DefConstS, // defvar, defconst
+		&sxbuiltins.SetXS,                       // set!
+		&sxbuiltins.DefineS,                     // define (DEPRECATED)
+		&sxbuiltins.DefunS, &sxbuiltins.LambdaS, // defun, lambda
+		&sxbuiltins.IfS,       // if
+		&sxbuiltins.DefMacroS, // defmacro
 	}
 	builtins = []*sxeval.Builtin{
 		&sxbuiltins.Identical,            // ==
