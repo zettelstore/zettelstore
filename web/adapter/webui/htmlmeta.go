@@ -59,11 +59,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 		}
 		return sx.Nil()
 	case meta.TypeURL:
-		text := sx.String(value)
-		if res, err := wui.url2html([]sx.Object{text}); err == nil {
-			return res
-		}
-		return text
+		return wui.url2html(sx.String(value))
 	case meta.TypeWord:
 		return wui.transformLink(key, value, value)
 	case meta.TypeWordSet:

@@ -35,22 +35,61 @@ import (
 )
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
-	root := sxeval.MakeRootEnvironment(len(syntaxes) + len(builtinsFA) + len(builtinsA) + 1)
+	root := sxeval.MakeRootEnvironment(len(syntaxes) + len(builtins) + 3)
 	engine := sxeval.MakeEngine(wui.sf, root)
 	engine.SetQuote(wui.symQuote)
 	sxbuiltins.InstallQuasiQuoteSyntax(root, wui.symQQ, wui.symUQ, wui.symUQS)
 	for _, b := range syntaxes {
 		engine.BindSyntax(b.name, b.fn)
 	}
-	for _, b := range builtinsFA {
-		engine.BindBuiltinFA(b.name, b.fn)
+	for _, b := range builtins {
+		engine.BindBuiltin(b)
 	}
-	for _, b := range builtinsA {
-		engine.BindBuiltinA(b.name, b.fn)
-	}
-	engine.BindBuiltinA("url-to-html", wui.url2html)
-	engine.BindBuiltinA("zid-content-path", wui.zidContentPath)
-	engine.BindBuiltinA("query->url", wui.queryToURL)
+	engine.BindBuiltin(&sxeval.Builtin{
+		Name:     "url-to-html",
+		MinArity: 1,
+		MaxArity: 1,
+		IsPure:   true,
+		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+			text, err := sxbuiltins.GetString(nil, args, 0)
+			if err != nil {
+				return nil, err
+			}
+			return wui.url2html(text), nil
+		},
+	})
+	engine.BindBuiltin(&sxeval.Builtin{
+		Name:     "zid-content-path",
+		MinArity: 1,
+		MaxArity: 1,
+		IsPure:   true,
+		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+			s, err := sxbuiltins.GetString(nil, args, 0)
+			if err != nil {
+				return nil, err
+			}
+			zid, err := id.Parse(s.String())
+			if err != nil {
+				return nil, fmt.Errorf("parsing zettel identfier %q: %w", s, err)
+			}
+			ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+			return sx.String(ub.String()), nil
+		},
+	})
+	engine.BindBuiltin(&sxeval.Builtin{
+		Name:     "query->url",
+		MinArity: 1,
+		MaxArity: 1,
+		IsPure:   true,
+		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+			qs, err := sxbuiltins.GetString(nil, args, 0)
+			if err != nil {
+				return nil, err
+			}
+			u := wui.NewURLBuilder('h').AppendQuery(qs.String())
+			return sx.String(u.String()), nil
+		},
+	})
 	root.Freeze()
 	return engine
 }
@@ -67,37 +106,28 @@ var (
 		{"defmacro", sxbuiltins.DefMacroS},
 		{"define", sxbuiltins.DefineS}, // Deprecated
 	}
-	builtinsFA = []struct {
-		name string
-		fn   sxeval.BuiltinFA
-	}{
-		{"bound?", sxbuiltins.BoundP}, {"current-environment", sxbuiltins.CurrentEnv},
-		{"environment-lookup", sxbuiltins.EnvLookup},
-		{"map", sxbuiltins.Map}, {"apply", sxbuiltins.Apply},
-	}
-	builtinsA = []struct {
-		name string
-		fn   sxeval.BuiltinA
-	}{
-		{"==", sxbuiltins.Identical},
-		{"null?", sxbuiltins.NullP}, {"pair?", sxbuiltins.PairP},
-		{"list", sxbuiltins.List}, {"append", sxbuiltins.Append},
-		{"car", sxbuiltins.Car}, {"cdr", sxbuiltins.Cdr},
-		{"caar", sxbuiltins.Caar}, {"cadr", sxbuiltins.Cadr}, {"cdar", sxbuiltins.Cdar}, {"cddr", sxbuiltins.Cddr},
-		{"caaar", sxbuiltins.Caaar}, {"caadr", sxbuiltins.Caadr}, {"cadar", sxbuiltins.Cadar}, {"caddr", sxbuiltins.Caddr},
-		{"cdaar", sxbuiltins.Cdaar}, {"cdadr", sxbuiltins.Cdadr}, {"cddar", sxbuiltins.Cddar}, {"cdddr", sxbuiltins.Cdddr},
-		{"assoc", sxbuiltins.Assoc},
-		{"string-append", sxbuiltins.StringAppend},
-		{"defined?", sxbuiltins.DefinedP},
+	builtins = []*sxeval.Builtin{
+		&sxbuiltins.Identical,            // ==
+		&sxbuiltins.NullP,                // null?
+		&sxbuiltins.PairP,                // pair?
+		&sxbuiltins.Car, &sxbuiltins.Cdr, // car, cdr
+		&sxbuiltins.Caar, &sxbuiltins.Cadr, &sxbuiltins.Cdar, &sxbuiltins.Cddr,
+		&sxbuiltins.Caaar, &sxbuiltins.Caadr, &sxbuiltins.Cadar, &sxbuiltins.Caddr,
+		&sxbuiltins.Cdaar, &sxbuiltins.Cdadr, &sxbuiltins.Cddar, &sxbuiltins.Cdddr,
+		&sxbuiltins.List,         // list
+		&sxbuiltins.Append,       // append
+		&sxbuiltins.Assoc,        // assoc
+		&sxbuiltins.Map,          // map
+		&sxbuiltins.Apply,        // apply
+		&sxbuiltins.StringAppend, // string-append
+		&sxbuiltins.BoundP,       // bound?
+		&sxbuiltins.Defined,      // defined?
+		&sxbuiltins.CurrentEnv,   // current-environment
+		&sxbuiltins.EnvLookup,    // environment-lookup
 	}
 )
 
-func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
-	err := sxbuiltins.CheckArgs(args, 1, 1)
-	text, err := sxbuiltins.GetString(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
+func (wui *WebUI) url2html(text sx.String) sx.Object {
 	if u, errURL := url.Parse(text.String()); errURL == nil {
 		if us := u.String(); us != "" {
 			return sx.MakeList(
@@ -108,32 +138,10 @@ func (wui *WebUI) url2html(args []sx.Object) (sx.Object, error) {
 					sx.Cons(wui.sf.MustMake("target"), sx.String("_blank")),
 					sx.Cons(wui.sf.MustMake("rel"), sx.String("noopener noreferrer")),
 				),
-				text), nil
+				text)
 		}
 	}
-	return text, nil
-}
-func (wui *WebUI) zidContentPath(args []sx.Object) (sx.Object, error) {
-	err := sxbuiltins.CheckArgs(args, 1, 1)
-	s, err := sxbuiltins.GetString(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	zid, err := id.Parse(s.String())
-	if err != nil {
-		return nil, fmt.Errorf("parsing zettel identfier %q: %w", s, err)
-	}
-	ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
-	return sx.String(ub.String()), nil
-}
-func (wui *WebUI) queryToURL(args []sx.Object) (sx.Object, error) {
-	err := sxbuiltins.CheckArgs(args, 1, 1)
-	qs, err := sxbuiltins.GetString(err, args, 0)
-	if err != nil {
-		return nil, err
-	}
-	u := wui.NewURLBuilder('h').AppendQuery(qs.String())
-	return sx.String(u.String()), nil
+	return text
 }
 
 func (wui *WebUI) getParentEnv(ctx context.Context) (sxeval.Environment, error) {
