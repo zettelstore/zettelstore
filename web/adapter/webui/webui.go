@@ -71,13 +71,11 @@ type WebUI struct {
 	dag         id.Digraph
 	genHTML     *sxhtml.Generator
 
-	symQuote, symQQ *sx.Symbol
-	symUQ, symUQS   *sx.Symbol
-	symMetaHeader   *sx.Symbol
-	symDetail       *sx.Symbol
-	symA, symHref   *sx.Symbol
-	symSpan         *sx.Symbol
-	symAttr         *sx.Symbol
+	symMetaHeader *sx.Symbol
+	symDetail     *sx.Symbol
+	symA, symHref *sx.Symbol
+	symSpan       *sx.Symbol
+	symAttr       *sx.Symbol
 }
 
 // webuiBox contains all box methods that are needed for WebUI operation.
@@ -129,10 +127,6 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		sf:            sf,
 		zettelEnv:     nil,
 		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
-		symQuote:      sf.MustMake("quote"),
-		symQQ:         sf.MustMake("quasiquote"),
-		symUQ:         sf.MustMake("unquote"),
-		symUQS:        sf.MustMake("unquote-splicing"),
 		symDetail:     sf.MustMake("DETAIL"),
 		symMetaHeader: sf.MustMake("META-HEADER"),
 		symA:          sf.MustMake("a"),
