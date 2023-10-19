@@ -122,7 +122,7 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 				mgr.idxMx.Lock()
 				mgr.idxSinceReload++
 				mgr.idxMx.Unlock()
-				mgr.idxDeleteZettel(zid)
+				mgr.idxDeleteZettel(ctx, zid)
 				continue
 			}
 			mgr.idxLog.Trace().Zid(zid).Msg("update")
@@ -226,8 +226,13 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 	zi.AddInverseRef(inverseKey, zid)
 }
 
-func (mgr *Manager) idxDeleteZettel(zid id.Zid) {
-	toCheck := mgr.idxStore.DeleteZettel(context.Background(), zid)
+func (mgr *Manager) idxRenameZettel(ctx context.Context, curZid, newZid id.Zid) {
+	toCheck := mgr.idxStore.RenameZettel(ctx, curZid, newZid)
+	mgr.idxCheckZettel(toCheck)
+}
+
+func (mgr *Manager) idxDeleteZettel(ctx context.Context, zid id.Zid) {
+	toCheck := mgr.idxStore.DeleteZettel(ctx, zid)
 	mgr.idxCheckZettel(toCheck)
 }
 

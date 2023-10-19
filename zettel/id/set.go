@@ -108,13 +108,14 @@ func (s Set) Copy(other Set) Set {
 }
 
 // CopySlice adds all identifier of the given slice to the set.
-func (s Set) CopySlice(sl Slice) {
+func (s Set) CopySlice(sl Slice) Set {
 	if s == nil {
 		s = NewSetCap(len(sl))
 	}
 	for _, zid := range sl {
 		s[zid] = struct{}{}
 	}
+	return s
 }
 
 // Sorted returns the set as a sorted slice of zettel identifier.

@@ -54,7 +54,11 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.boxes[0].CreateZettel(ctx, zettel)
+	zid, err := mgr.boxes[0].CreateZettel(ctx, zettel)
+	if err == nil {
+		mgr.idxUpdateZettel(ctx, zettel)
+	}
+	return zid, err
 }
 
 // GetZettel retrieves a specific zettel.
@@ -215,7 +219,11 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) erro
 			zettel.Meta.Delete(p.Key)
 		}
 	}
-	return mgr.boxes[0].UpdateZettel(ctx, zettel)
+	if err := mgr.boxes[0].UpdateZettel(ctx, zettel); err != nil {
+		return err
+	}
+	mgr.idxUpdateZettel(ctx, zettel)
+	return nil
 }
 
 // AllowRenameZettel returns true, if box will not disallow renaming the zettel.
@@ -251,6 +259,7 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 			return err
 		}
 	}
+	mgr.idxRenameZettel(ctx, curZid, newZid)
 	return nil
 }
 
@@ -280,6 +289,7 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	for _, p := range mgr.boxes {
 		err := p.DeleteZettel(ctx, zid)
 		if err == nil {
+			mgr.idxDeleteZettel(ctx, zid)
 			return nil
 		}
 		var errZNF box.ErrZettelNotFound
