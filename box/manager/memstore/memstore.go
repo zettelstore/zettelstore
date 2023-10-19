@@ -459,7 +459,7 @@ func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) id.Se
 	}
 	newZi := &zettelData{
 		meta:      copyMeta(curZi.meta, newZid),
-		dead:      ms.copyDeadReferences(curZi.dead, newZid),
+		dead:      ms.copyDeadReferences(curZi.dead),
 		forward:   ms.copyForward(curZi.forward, newZid),
 		backward:  nil, // will be done through tocheck
 		otherRefs: nil, // TODO: check if this will be done through toCheck
@@ -479,7 +479,7 @@ func copyMeta(m *meta.Meta, newZid id.Zid) *meta.Meta {
 	result.Zid = newZid
 	return result
 }
-func (ms *memStore) copyDeadReferences(curDead id.Slice, newZid id.Zid) id.Slice {
+func (ms *memStore) copyDeadReferences(curDead id.Slice) id.Slice {
 	// Must only be called if ms.mx is write-locked!
 	if l := len(curDead); l > 0 {
 		result := make(id.Slice, l)
