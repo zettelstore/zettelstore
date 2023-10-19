@@ -70,13 +70,6 @@ func Setup(cfg *meta.Meta) { myConfig = cfg.Clone() }
 
 func (*compBox) Location() string { return "" }
 
-func (*compBox) CanCreateZettel(context.Context) bool { return false }
-
-func (cb *compBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
-	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
-	return id.Invalid, box.ErrReadOnly
-}
-
 func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
@@ -132,13 +125,6 @@ func (cb *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrain
 		}
 	}
 	return nil
-}
-
-func (*compBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
-
-func (cb *compBox) UpdateZettel(context.Context, zettel.Zettel) error {
-	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
-	return box.ErrReadOnly
 }
 
 func (*compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {

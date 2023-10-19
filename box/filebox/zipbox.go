@@ -82,14 +82,6 @@ func (zb *zipBox) Stop(context.Context) {
 	zb.dirSrv = nil
 }
 
-func (*zipBox) CanCreateZettel(context.Context) bool { return false }
-
-func (zb *zipBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
-	err := box.ErrReadOnly
-	zb.log.Trace().Err(err).Msg("CreateZettel")
-	return id.Invalid, err
-}
-
 func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
@@ -173,14 +165,6 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 		handle(m)
 	}
 	return nil
-}
-
-func (*zipBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
-
-func (zb *zipBox) UpdateZettel(context.Context, zettel.Zettel) error {
-	err := box.ErrReadOnly
-	zb.log.Trace().Err(err).Msg("UpdateZettel")
-	return err
 }
 
 func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {

@@ -57,13 +57,6 @@ type constBox struct {
 
 func (*constBox) Location() string { return "const:" }
 
-func (*constBox) CanCreateZettel(context.Context) bool { return false }
-
-func (cb *constBox) CreateZettel(context.Context, zettel.Zettel) (id.Zid, error) {
-	cb.log.Trace().Err(box.ErrReadOnly).Msg("CreateZettel")
-	return id.Invalid, box.ErrReadOnly
-}
-
 func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if z, ok := cb.zettel[zid]; ok {
 		cb.log.Trace().Msg("GetZettel")
@@ -99,13 +92,6 @@ func (cb *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrai
 		}
 	}
 	return nil
-}
-
-func (*constBox) CanUpdateZettel(context.Context, zettel.Zettel) bool { return false }
-
-func (cb *constBox) UpdateZettel(context.Context, zettel.Zettel) error {
-	cb.log.Trace().Err(box.ErrReadOnly).Msg("UpdateZettel")
-	return box.ErrReadOnly
 }
 
 func (cb *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {

@@ -31,21 +31,8 @@ type BaseBox interface {
 	// Format is dependent of the box.
 	Location() string
 
-	// CanCreateZettel returns true, if box could possibly create a new zettel.
-	CanCreateZettel(ctx context.Context) bool
-
-	// CreateZettel creates a new zettel.
-	// Returns the new zettel id (and an error indication).
-	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
-
 	// GetZettel retrieves a specific zettel.
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-
-	// CanUpdateZettel returns true, if box could possibly update the given zettel.
-	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
-
-	// UpdateZettel updates an existing zettel.
-	UpdateZettel(ctx context.Context, zettel zettel.Zettel) error
 
 	// AllowRenameZettel returns true, if box will not disallow renaming the zettel.
 	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
@@ -58,6 +45,22 @@ type BaseBox interface {
 
 	// DeleteZettel removes the zettel from the box.
 	DeleteZettel(ctx context.Context, zid id.Zid) error
+}
+
+// WriteBox is a box that can create / update zettel content.
+type WriteBox interface {
+	// CanCreateZettel returns true, if box could possibly create a new zettel.
+	CanCreateZettel(ctx context.Context) bool
+
+	// CreateZettel creates a new zettel.
+	// Returns the new zettel id (and an error indication).
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
+
+	// CanUpdateZettel returns true, if box could possibly update the given zettel.
+	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
+
+	// UpdateZettel updates an existing zettel.
+	UpdateZettel(ctx context.Context, zettel zettel.Zettel) error
 }
 
 // ZidFunc is a function that processes identifier of a zettel.
@@ -129,6 +132,7 @@ type Refresher interface {
 // Box is to be used outside the box package and its descendants.
 type Box interface {
 	BaseBox
+	WriteBox
 
 	// FetchZids returns the set of all zettel identifer managed by the box.
 	FetchZids(ctx context.Context) (id.Set, error)

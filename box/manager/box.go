@@ -41,9 +41,15 @@ func (mgr *Manager) Location() string {
 
 // CanCreateZettel returns true, if box could possibly create a new zettel.
 func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
+	if mgr.State() != box.StartStateStarted {
+		return false
+	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.State() == box.StartStateStarted && mgr.boxes[0].CanCreateZettel(ctx)
+	if box, isWriteBox := mgr.boxes[0].(box.WriteBox); isWriteBox {
+		return box.CanCreateZettel(ctx)
+	}
+	return false
 }
 
 // CreateZettel creates a new zettel.
@@ -54,11 +60,15 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	zid, err := mgr.boxes[0].CreateZettel(ctx, zettel)
-	if err == nil {
-		mgr.idxUpdateZettel(ctx, zettel)
+	if box, isWriteBox := mgr.boxes[0].(box.WriteBox); isWriteBox {
+		zettel.Meta = mgr.cleanMetaProperties(zettel.Meta)
+		zid, err := box.CreateZettel(ctx, zettel)
+		if err == nil {
+			mgr.idxUpdateZettel(ctx, zettel)
+		}
+		return zid, err
 	}
-	return zid, err
+	return id.Invalid, box.ErrReadOnly
 }
 
 // GetZettel retrieves a specific zettel.
@@ -201,9 +211,16 @@ func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *que
 
 // CanUpdateZettel returns true, if box could possibly update the given zettel.
 func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool {
+	if mgr.State() != box.StartStateStarted {
+		return false
+	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.State() == box.StartStateStarted && mgr.boxes[0].CanUpdateZettel(ctx, zettel)
+	if box, isWriteBox := mgr.boxes[0].(box.WriteBox); isWriteBox {
+		return box.CanUpdateZettel(ctx, zettel)
+	}
+	return false
+
 }
 
 // UpdateZettel updates an existing zettel.
@@ -212,18 +229,15 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) erro
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
-	// Remove all (computed) properties from metadata before storing the zettel.
-	zettel.Meta = zettel.Meta.Clone()
-	for _, p := range zettel.Meta.ComputedPairsRest() {
-		if mgr.propertyKeys.Has(p.Key) {
-			zettel.Meta.Delete(p.Key)
+	if box, isWriteBox := mgr.boxes[0].(box.WriteBox); isWriteBox {
+		zettel.Meta = mgr.cleanMetaProperties(zettel.Meta)
+		if err := box.UpdateZettel(ctx, zettel); err != nil {
+			return err
 		}
+		mgr.idxUpdateZettel(ctx, zettel)
+		return nil
 	}
-	if err := mgr.boxes[0].UpdateZettel(ctx, zettel); err != nil {
-		return err
-	}
-	mgr.idxUpdateZettel(ctx, zettel)
-	return nil
+	return box.ErrReadOnly
 }
 
 // AllowRenameZettel returns true, if box will not disallow renaming the zettel.
@@ -298,4 +312,15 @@ func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 		}
 	}
 	return box.ErrZettelNotFound{Zid: zid}
+}
+
+// Remove all (computed) properties from metadata before storing the zettel.
+func (mgr *Manager) cleanMetaProperties(m *meta.Meta) *meta.Meta {
+	result := m.Clone()
+	for _, p := range result.ComputedPairsRest() {
+		if mgr.propertyKeys.Has(p.Key) {
+			result.Delete(p.Key)
+		}
+	}
+	return result
 }
