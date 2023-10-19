@@ -100,6 +100,7 @@ var (
 		&sxbuiltins.SetXS,                       // set!
 		&sxbuiltins.DefineS,                     // define (DEPRECATED)
 		&sxbuiltins.DefunS, &sxbuiltins.LambdaS, // defun, lambda
+		&sxbuiltins.CondS,     // cond
 		&sxbuiltins.IfS,       // if
 		&sxbuiltins.DefMacroS, // defmacro
 	}
