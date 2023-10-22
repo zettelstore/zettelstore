@@ -300,6 +300,18 @@ and much more
 		},
 	},
 	{
+		descr: "Description List with keys, but no descriptions",
+		zmk:   "; K1\n: D11\n: D12\n; K2\n; K3\n: D31",
+		expect: expectMap{
+			encoderHTML:  "<dl><dt>K1</dt><dd><p>D11</p></dd><dd><p>D12</p></dd><dt>K2</dt><dt>K3</dt><dd><p>D31</p></dd></dl>",
+			encoderMD:    "",
+			encoderSz:    `(BLOCK (DESCRIPTION (INLINE (TEXT "K1")) (BLOCK (BLOCK (PARA (TEXT "D11"))) (BLOCK (PARA (TEXT "D12")))) (INLINE (TEXT "K2")) (BLOCK) (INLINE (TEXT "K3")) (BLOCK (BLOCK (PARA (TEXT "D31"))))))`,
+			encoderSHTML: `((dl (dt "K1") (dd (p "D11")) (dd (p "D12")) (dt "K2") (dt "K3") (dd (p "D31"))))`,
+			encoderText:  "K1\nD11\nD12\nK2\nK3\nD31",
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Simple Table",
 		zmk:   "|c1|c2|c3\n|d1||d3",
 		expect: expectMap{
