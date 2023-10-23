@@ -158,3 +158,11 @@ func (pp *polBox) Refresh(ctx context.Context) error {
 	}
 	return box.NewErrNotAllowed("Refresh", user, id.Invalid)
 }
+func (pp *polBox) ReIndex(ctx context.Context, zid id.Zid) error {
+	user := server.GetUser(ctx)
+	if pp.policy.CanRefresh(user) {
+		// If a user is allowed to refresh all data, it it also allowed to re-index a zettel.
+		return pp.box.ReIndex(ctx, zid)
+	}
+	return box.NewErrNotAllowed("ReIndex", user, zid)
+}

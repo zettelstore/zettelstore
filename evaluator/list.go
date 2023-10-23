@@ -67,6 +67,9 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 			ap.title = strings.Join(actions[i+1:], " ")
 			break
 		}
+		if act == "REINDEX" {
+			continue
+		}
 		acts = append(acts, act)
 	}
 	var firstUnknownKey string

@@ -356,14 +356,24 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
-	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	for _, bx := range mgr.boxes {
 		if rb, ok := bx.(box.Refresher); ok {
 			rb.Refresh(ctx)
 		}
 	}
+	return nil
+}
+
+// ReIndex data of the given zettel.
+func (mgr *Manager) ReIndex(_ context.Context, zid id.Zid) error {
+	mgr.mgrLog.Debug().Msg("ReIndex")
+	if mgr.State() != box.StartStateStarted {
+		return box.ErrStopped
+	}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: zid}
 	return nil
 }
 

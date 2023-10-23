@@ -35,7 +35,7 @@ import (
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
+func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
 		if wui.handleTagZettel(w, r, tagZettel, urlQuery) {
@@ -50,13 +50,29 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			return
 		}
 		if actions := q.Actions(); len(actions) > 0 {
-			switch actions[0] {
-			case "ATOM":
-				wui.renderAtom(w, q, metaSeq)
-				return
-			case "RSS":
-				wui.renderRSS(ctx, w, q, metaSeq)
-				return
+			var tempActions []string
+			for _, act := range actions {
+				if act == "REINDEX" {
+					for _, m := range metaSeq {
+						if err = reIndex.Run(ctx, m.Zid); err != nil {
+							wui.reportError(ctx, w, err)
+							return
+						}
+					}
+					continue
+				}
+				tempActions = append(tempActions, act)
+			}
+			actions = tempActions
+			if len(actions) > 0 {
+				switch actions[0] {
+				case "ATOM":
+					wui.renderAtom(w, q, metaSeq)
+					return
+				case "RSS":
+					wui.renderRSS(ctx, w, q, metaSeq)
+					return
+				}
 			}
 		}
 		var content, endnotes *sx.Pair

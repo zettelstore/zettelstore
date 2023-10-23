@@ -5,6 +5,7 @@
       (@H " &#183; ") (a (@ (href ,context-url)) "Context")
       ,@(if (bound? 'edit-url) `((@H " &#183; ") (a (@ (href ,edit-url)) "Edit")))
       ,@(ROLE-DEFAULT-actions (current-environment))
+      ,@(if (bound? 'reindex-url) `((@H " &#183; ") (a (@ (href ,reindex-url)) "Reindex")))
       ,@(if (bound? 'rename-url) `((@H " &#183; ") (a (@ (href ,rename-url)) "Rename")))
       ,@(if (bound? 'delete-url) `((@H " &#183; ") (a (@ (href ,delete-url)) "Delete")))
     )

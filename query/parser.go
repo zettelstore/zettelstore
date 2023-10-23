@@ -42,7 +42,7 @@ type parserState struct {
 
 func (ps *parserState) mustStop() bool { return ps.inp.Ch == input.EOS }
 func (ps *parserState) acceptSingleKw(s string) bool {
-	if ps.inp.Accept(s) && (ps.isSpace() || ps.mustStop()) {
+	if ps.inp.Accept(s) && (ps.isSpace() || ps.isActionSep() || ps.mustStop()) {
 		return true
 	}
 	return false
@@ -187,7 +187,7 @@ func (ps *parserState) parse(q *Query) *Query {
 			}
 		}
 		inp.SetPos(pos)
-		if isActionSep(inp.Ch) {
+		if ps.isActionSep() {
 			q = ps.parseActions(q)
 			break
 		}
@@ -367,7 +367,7 @@ func (ps *parserState) parseText(q *Query) *Query {
 		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
-			if ps.isSpace() || isActionSep(inp.Ch) || ps.mustStop() {
+			if ps.isSpace() || ps.isActionSep() || ps.mustStop() {
 				return q.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
@@ -406,7 +406,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	pos := inp.Pos
 	allowKey := !hasOp
 
-	for !ps.isSpace() && !isActionSep(inp.Ch) && !ps.mustStop() {
+	for !ps.isSpace() && !ps.isActionSep() && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
 			case searchOperatorNotChar, existOperatorChar,
@@ -427,7 +427,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
 	pos := inp.Pos
-	for !ps.isSpace() && !isActionSep(inp.Ch) && !ps.mustStop() {
+	for !ps.isSpace() && !ps.isActionSep() && !ps.mustStop() {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
@@ -504,24 +504,23 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 	return op, true
 }
 
-func (ps *parserState) isSpace() bool {
-	return isSpace(ps.inp.Ch)
-}
-
-func isSpace(ch rune) bool {
-	switch ch {
-	case input.EOS:
-		return false
-	case ' ', '\t', '\n', '\r':
-		return true
-	}
-	return input.IsSpace(ch)
-}
-
 func (ps *parserState) skipSpace() {
 	for ps.isSpace() {
 		ps.inp.Next()
 	}
 }
 
-func isActionSep(ch rune) bool { return ch == actionSeparatorChar }
+func (ps *parserState) isSpace() bool {
+	switch ch := ps.inp.Ch; ch {
+	case input.EOS:
+		return false
+	case ' ', '\t', '\n', '\r':
+		return true
+	default:
+		return input.IsSpace(ch)
+	}
+}
+
+func (ps *parserState) isActionSep() bool {
+	return ps.inp.Ch == actionSeparatorChar
+}

@@ -22,10 +22,11 @@ func TestParser(t *testing.T) {
 		spec string
 		exp  string
 	}{
-		{"1", "1"}, // Just a number will transform to search for that numer in all zettel
+		{"1", "1"}, // Just a number will transform to search for that number in all zettel
 
 		{"1 IDENT", "00000000000001 IDENT"},
 		{"IDENT", "IDENT"},
+		{"1 IDENT|REINDEX", "00000000000001 IDENT | REINDEX"},
 
 		{"1 ITEMS", "00000000000001 ITEMS"},
 		{"ITEMS", "ITEMS"},
@@ -44,6 +45,7 @@ func TestParser(t *testing.T) {
 		{"1 1 CONTEXT", "00000000000001 CONTEXT"},
 		{"1 2 CONTEXT", "00000000000001 00000000000002 CONTEXT"},
 		{"2 1 CONTEXT", "00000000000002 00000000000001 CONTEXT"},
+		{"1 CONTEXT|N", "00000000000001 CONTEXT | N"},
 
 		{"CONTEXT 0", "CONTEXT 0"},
 

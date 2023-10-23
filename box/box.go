@@ -149,6 +149,9 @@ type Box interface {
 
 	// Refresh the data from the box and from its managed sub-boxes.
 	Refresh(context.Context) error
+
+	// ReIndex one zettel to update its index data.
+	ReIndex(context.Context, id.Zid) error
 }
 
 // Stats record stattistics about a box.

@@ -26,11 +26,12 @@ import (
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
+	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
-func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel) http.HandlerFunc {
+func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		urlQuery := r.URL.Query()
@@ -67,17 +68,18 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 		}
 
 		var buf bytes.Buffer
-		err = queryAction(&buf, encoder, metaSeq, sq)
+		err = queryAction(&buf, encoder, metaSeq, sq, func(zid id.Zid) error { return reIndex.Run(ctx, zid) })
 		if err != nil {
 			a.log.Error().Err(err).Str("query", sq.String()).Msg("execute query action")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
 
-		err = writeBuffer(w, &buf, contentType)
-		a.log.IfErr(err).Msg("write result buffer")
+		if err = writeBuffer(w, &buf, contentType); err != nil {
+			a.log.Error().Err(err).Msg("write result buffer")
+		}
 	}
 }
-func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Query) error {
+func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Query, reindex func(id.Zid) error) error {
 	min, max := -1, -1
 	if actions := sq.Actions(); len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
@@ -100,6 +102,12 @@ func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Quer
 			switch act {
 			case "KEYS":
 				return encodeKeysArrangement(w, enc, ml, act)
+			case "REINDEX":
+				for _, m := range ml {
+					if err := reindex(m.Zid); err != nil {
+						return err
+					}
+				}
 			}
 			switch key := strings.ToLower(act); meta.Type(key) {
 			case meta.TypeWord, meta.TypeTagSet:

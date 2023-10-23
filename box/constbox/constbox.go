@@ -208,7 +208,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20230907203300",
+			api.KeyModified:   "20231023152000",
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentInfoSxn)},

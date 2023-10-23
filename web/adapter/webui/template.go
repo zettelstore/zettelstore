@@ -249,29 +249,32 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	newURLBuilder := wui.NewURLBuilder
 
 	rb.bindString("zid", sx.String(strZid))
-	rb.bindString("web-url", sx.String(wui.NewURLBuilder('h').SetZid(apiZid).String()))
+	rb.bindString("web-url", sx.String(newURLBuilder('h').SetZid(apiZid).String()))
 	if content != nil && wui.canWrite(ctx, user, m, *content) {
 		rb.bindString("edit-url", sx.String(newURLBuilder('e').SetZid(apiZid).String()))
 	}
 	rb.bindString("info-url", sx.String(newURLBuilder('i').SetZid(apiZid).String()))
 	if wui.canCreate(ctx, user) {
 		if content != nil && !content.IsBinary() {
-			rb.bindString("copy-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
+			rb.bindString("copy-url", sx.String(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionCopy).String()))
 		}
-		rb.bindString("version-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
-		rb.bindString("child-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
-		rb.bindString("folge-url", sx.String(wui.NewURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
+		rb.bindString("version-url", sx.String(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionVersion).String()))
+		rb.bindString("child-url", sx.String(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
+		rb.bindString("folge-url", sx.String(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
 	}
 	if wui.canRename(ctx, user, m) {
-		rb.bindString("rename-url", sx.String(wui.NewURLBuilder('b').SetZid(apiZid).String()))
+		rb.bindString("rename-url", sx.String(newURLBuilder('b').SetZid(apiZid).String()))
 	}
 	if wui.canDelete(ctx, user, m) {
-		rb.bindString("delete-url", sx.String(wui.NewURLBuilder('d').SetZid(apiZid).String()))
+		rb.bindString("delete-url", sx.String(newURLBuilder('d').SetZid(apiZid).String()))
 	}
 	if val, found := m.Get(api.KeyUselessFiles); found {
 		rb.bindString("useless", sx.Cons(sx.String(val), nil))
 	}
-	rb.bindString("context-url", sx.String(wui.NewURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
+	rb.bindString("context-url", sx.String(newURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
+	if wui.canRefresh(user) {
+		rb.bindString("reindex-url", sx.String(newURLBuilder('h').AppendQuery(strZid+" "+api.IdentDirective+api.ActionSeparator+"REINDEX").String()))
+	}
 
 	// Ensure to have title, role, tags, and syntax included as "meta-*"
 	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))

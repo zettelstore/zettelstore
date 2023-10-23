@@ -6,8 +6,12 @@
      version 0.16. Use <tt>defvar</tt> or <tt>defun</tt> instead. Otherwise
      the WebUI will not work in version 0.16.
      (major: webui, deprecated)
+  *  Zettel can be re-indexed via WebUI or API query action <tt>REINDEX</tt>.
+     The info page of a zettel contains a link to re-index the zettel. In
+     a query transclusion, this action is ignored.
+     (major: api, webui).
   *  Allow to determine a tag zettel for a given tag.
-     (minor: api, webui)
+     (major: api, webui)
   *  Present user the option to create a (missing) tag zettel (in list view).
      Results in a new predefined zettel with identifier 00000000090003, which
      is a template for new tag zettel.
@@ -16,6 +20,10 @@
      its build date (metadata key <tt>created</tt>) and version (in the zettel
      content)
      (minor)
+  *  If an error page cannot be created due to template errors (or similar), a
+     plain text error page is delivered instead. It shows the original error
+     and the error that occured durng rendering the original error page.
+     (minor: webui)
 
 <a id="0_14"></a>
 <h2>Changes for Version 0.14.0 (2023-09-22)</h2>
