@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_16"></a>
+<h2>Changes for Version 0.16.0 (pending)</h2>
+
 <a id="0_15"></a>
-<h2>Changes for Version 0.15.0 (pending)</h2>
+<h2>Changes for Version 0.15.0 (2023-10-26)</h2>
   *  Sx function <tt>define</tt> is now deprecated. It will be removed in
      version 0.16. Use <tt>defvar</tt> or <tt>defun</tt> instead. Otherwise
      the WebUI will not work in version 0.16.
@@ -24,6 +27,8 @@
      plain text error page is delivered instead. It shows the original error
      and the error that occured durng rendering the original error page.
      (minor: webui)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_14"></a>
 <h2>Changes for Version 0.14.0 (2023-09-22)</h2>
