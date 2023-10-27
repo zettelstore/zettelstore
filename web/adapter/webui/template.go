@@ -35,10 +35,10 @@ import (
 )
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
-	root := sxeval.MakeRootEnvironment(len(syntaxes) + len(builtins) + 3)
+	root := sxeval.MakeRootEnvironment(len(specials) + len(builtins) + 3)
 	engine := sxeval.MakeEngine(wui.sf, root)
-	for _, syntax := range syntaxes {
-		engine.BindSyntax(syntax)
+	for _, syntax := range specials {
+		engine.BindSpecial(syntax)
 	}
 	for _, b := range builtins {
 		engine.BindBuiltin(b)
@@ -93,13 +93,12 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 }
 
 var (
-	syntaxes = []*sxeval.Syntax{
+	specials = []*sxeval.Special{
 		&sxbuiltins.QuoteS, &sxbuiltins.QuasiquoteS, // quote, quasiquote
 		&sxbuiltins.UnquoteS, &sxbuiltins.UnquoteSplicingS, // unquote, unquote-splicing
 		&sxbuiltins.DefVarS, &sxbuiltins.DefConstS, // defvar, defconst
-		&sxbuiltins.SetXS,                       // set!
-		&sxbuiltins.DefineS,                     // define (DEPRECATED)
 		&sxbuiltins.DefunS, &sxbuiltins.LambdaS, // defun, lambda
+		&sxbuiltins.SetXS,     // set!
 		&sxbuiltins.CondS,     // cond
 		&sxbuiltins.IfS,       // if
 		&sxbuiltins.DefMacroS, // defmacro
