@@ -20,9 +20,9 @@ func TestSimple(t *testing.T) {
 	t.Parallel()
 	ar := newAnteroomQueue(2)
 	ar.EnqueueZettel(id.Zid(1))
-	action, zid, rno := ar.Dequeue()
-	if zid != id.Zid(1) || action != arZettel || rno != 1 {
-		t.Errorf("Expected arZettel/1/1, but got %v/%v/%v", action, zid, rno)
+	action, zid, lastReload := ar.Dequeue()
+	if zid != id.Zid(1) || action != arZettel || lastReload {
+		t.Errorf("Expected arZettel/1/false, but got %v/%v/%v", action, zid, lastReload)
 	}
 	_, zid, _ = ar.Dequeue()
 	if zid != id.Invalid {

@@ -93,21 +93,17 @@ func (mgr *Manager) idxIndexer() {
 }
 
 func (mgr *Manager) idxWorkService(ctx context.Context) {
-	var roomNum uint64
 	var start time.Time
 	for {
-		switch action, zid, arRoomNum := mgr.idxAr.Dequeue(); action {
+		switch action, zid, lastReload := mgr.idxAr.Dequeue(); action {
 		case arNothing:
 			return
 		case arReload:
 			mgr.idxLog.Debug().Msg("reload")
-			roomNum = 0
 			zids, err := mgr.FetchZids(ctx)
 			if err == nil {
 				start = time.Now()
-				if rno := mgr.idxAr.Reload(zids); rno > 0 {
-					roomNum = rno
-				}
+				mgr.idxAr.Reload(zids)
 				mgr.idxMx.Lock()
 				mgr.idxLastReload = time.Now().Local()
 				mgr.idxSinceReload = 0
@@ -119,20 +115,17 @@ func (mgr *Manager) idxWorkService(ctx context.Context) {
 			if err != nil {
 				// Zettel was deleted or is not accessible b/c of other reasons
 				mgr.idxLog.Trace().Zid(zid).Msg("delete")
-				mgr.idxMx.Lock()
-				mgr.idxSinceReload++
-				mgr.idxMx.Unlock()
 				mgr.idxDeleteZettel(ctx, zid)
 				continue
 			}
 			mgr.idxLog.Trace().Zid(zid).Msg("update")
+			mgr.idxUpdateZettel(ctx, zettel)
 			mgr.idxMx.Lock()
-			if arRoomNum == roomNum {
+			if lastReload {
 				mgr.idxDurReload = time.Since(start)
 			}
 			mgr.idxSinceReload++
 			mgr.idxMx.Unlock()
-			mgr.idxUpdateZettel(ctx, zettel)
 		}
 	}
 }

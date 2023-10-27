@@ -25,7 +25,6 @@ const (
 )
 
 type anteroom struct {
-	num     uint64
 	next    *anteroom
 	waiting id.Set
 	curLoad int
@@ -34,7 +33,6 @@ type anteroom struct {
 
 type anteroomQueue struct {
 	mx      sync.Mutex
-	nextNum uint64
 	first   *anteroom
 	last    *anteroom
 	maxLoad int
@@ -73,42 +71,34 @@ func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
 }
 
 func (ar *anteroomQueue) makeAnteroom(zid id.Zid) *anteroom {
-	ar.nextNum++
 	if zid == id.Invalid {
-		return &anteroom{num: ar.nextNum, next: nil, waiting: nil, curLoad: 0, reload: true}
+		panic(zid)
 	}
-	c := ar.maxLoad
-	if c == 0 {
-		c = 100
-	}
-	waiting := id.NewSetCap(ar.maxLoad, zid)
-	return &anteroom{num: ar.nextNum, next: nil, waiting: waiting, curLoad: 1, reload: false}
+	waiting := id.NewSetCap(max(ar.maxLoad, 100), zid)
+	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
 
 func (ar *anteroomQueue) Reset() {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
-	ar.first = ar.makeAnteroom(id.Invalid)
+	ar.first = &anteroom{next: nil, waiting: nil, curLoad: 0, reload: true}
 	ar.last = ar.first
 }
 
-func (ar *anteroomQueue) Reload(allZids id.Set) uint64 {
+func (ar *anteroomQueue) Reload(allZids id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	ar.deleteReloadedRooms()
 
 	if ns := len(allZids); ns > 0 {
-		ar.nextNum++
-		ar.first = &anteroom{num: ar.nextNum, next: ar.first, waiting: allZids, curLoad: ns, reload: true}
+		ar.first = &anteroom{next: ar.first, waiting: allZids, curLoad: ns, reload: true}
 		if ar.first.next == nil {
 			ar.last = ar.first
 		}
-		return ar.nextNum
+	} else {
+		ar.first = nil
+		ar.last = nil
 	}
-
-	ar.first = nil
-	ar.last = nil
-	return 0
 }
 
 func (ar *anteroomQueue) deleteReloadedRooms() {
@@ -122,27 +112,25 @@ func (ar *anteroomQueue) deleteReloadedRooms() {
 	}
 }
 
-func (ar *anteroomQueue) Dequeue() (arAction, id.Zid, uint64) {
+func (ar *anteroomQueue) Dequeue() (arAction, id.Zid, bool) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	first := ar.first
-	if first == nil {
-		return arNothing, id.Invalid, 0
-	}
-	roomNo := first.num
-	if first.waiting == nil && first.reload {
-		ar.removeFirst()
-		return arReload, id.Invalid, roomNo
-	}
-	for zid := range first.waiting {
-		delete(first.waiting, zid)
-		if len(first.waiting) == 0 {
+	if first != nil {
+		if first.waiting == nil && first.reload {
 			ar.removeFirst()
+			return arReload, id.Invalid, false
 		}
-		return arZettel, zid, roomNo
+		for zid := range first.waiting {
+			delete(first.waiting, zid)
+			if len(first.waiting) == 0 {
+				ar.removeFirst()
+			}
+			return arZettel, zid, first.reload
+		}
+		ar.removeFirst()
 	}
-	ar.removeFirst()
-	return arNothing, id.Invalid, 0
+	return arNothing, id.Invalid, false
 }
 
 func (ar *anteroomQueue) removeFirst() {
