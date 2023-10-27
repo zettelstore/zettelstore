@@ -101,6 +101,7 @@ var (
 		&sxbuiltins.SetXS,     // set!
 		&sxbuiltins.CondS,     // cond
 		&sxbuiltins.IfS,       // if
+		&sxbuiltins.BeginS,    // begin
 		&sxbuiltins.DefMacroS, // defmacro
 	}
 	builtins = []*sxeval.Builtin{

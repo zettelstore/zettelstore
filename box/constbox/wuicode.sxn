@@ -11,57 +11,57 @@
 ;; Contains WebUI specific code, but not related to a specific template.
 
 ;; wui-list-item returns the argument as a HTML list item.
-(defun wui-item (s) `(li ,s))
+(defunconst wui-item (s) `(li ,s))
 
 ;; wui-table-row takes a pair and translates it into a HTML table row with
 ;; two columns.
-(defun wui-table-row (p)
+(defunconst wui-table-row (p)
     `(tr (td ,(car p)) (td ,(cdr p))))
 
 ;; wui-valid-link translates a local link into a HTML link. A link is a pair
 ;; (valid . url). If valid is not truish, only the invalid url is returned.
-(defun wui-valid-link (l)
+(defunconst wui-valid-link (l)
     (if (car l)
         `(li (a (@ (href ,(cdr l))) ,(cdr l)))
         `(li ,(cdr l))))
 
 ;; wui-link takes a link (title . url) and returns a HTML reference.
-(defun wui-link (q)
+(defunconst wui-link (q)
     `(a (@ (href ,(cdr q))) ,(car q)))
 
 ;; wui-item-link taks a pair (text . url) and returns a HTML link inside
 ;; a list item.
-(defun wui-item-link (q) `(li ,(wui-link q)))
+(defunconst wui-item-link (q) `(li ,(wui-link q)))
 
 ;; wui-tdata-link taks a pair (text . url) and returns a HTML link inside
 ;; a table data item.
-(defun wui-tdata-link (q) `(td ,(wui-link q)))
+(defunconst wui-tdata-link (q) `(td ,(wui-link q)))
 
 ;; wui-item-popup-link is like 'wui-item-link, but the HTML link will open
 ;; a new tab / window.
-(defun wui-item-popup-link (e)
+(defunconst wui-item-popup-link (e)
     `(li (a (@ (href ,e) (target "_blank") (rel "noopener noreferrer")) ,e)))
 
 ;; wui-option-value returns a value for an HTML option element.
-(defun wui-option-value (v) `(option (@ (value ,v))))
+(defunconst wui-option-value (v) `(option (@ (value ,v))))
 
 ;; wui-datalist returns a HTML datalist with the given HTML identifier and a
 ;; list of values.
-(defun wui-datalist (id lst)
+(defunconst wui-datalist (id lst)
     (if lst
         `((datalist (@ (id ,id)) ,@(map wui-option-value lst)))))
 
 ;; wui-pair-desc-item takes a pair '(term . text) and returns a list with
 ;; a HTML description term and a HTML description data. 
-(defun wui-pair-desc-item (p) `((dt ,(car p)) (dd ,(cdr p))))
+(defunconst wui-pair-desc-item (p) `((dt ,(car p)) (dd ,(cdr p))))
 
 ;; wui-meta-desc returns a HTML description list made from the list of pairs
 ;; given.
-(defun wui-meta-desc (l)
+(defunconst wui-meta-desc (l)
     `(dl ,@(apply append (map wui-pair-desc-item l))))
 
 ;; wui-enc-matrix returns the HTML table of all encodings and parts.
-(defun wui-enc-matrix (matrix)
+(defunconst wui-enc-matrix (matrix)
     `(table
       ,@(map
          (lambda (row) `(tr (th ,(car row)) ,@(map wui-tdata-link (cdr row))))
@@ -75,7 +75,7 @@
 
 ;; ROLE-DEFAULT-meta returns some metadata for the base template. Any role
 ;; specific code should include the returned list of this function.
-(defun ROLE-DEFAULT-meta (env)
+(defunconst ROLE-DEFAULT-meta (env)
     `(,@(let* ((meta-role (environment-lookup 'meta-role env))
                (entry (assoc CSS-ROLE-map meta-role)))
               (if (pair? entry)
@@ -89,7 +89,7 @@
 (defvar ACTION-SEPARATOR '(@H " &#183; "))
 
 ;;; ROLE-DEFAULT-actions returns the default text for actions.
-(defun ROLE-DEFAULT-actions (env)
+(defunconst ROLE-DEFAULT-actions (env)
     `(,@(let ((copy-url (environment-lookup 'copy-url env)))
              (if (defined? copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy"))))
       ,@(let ((version-url (environment-lookup 'version-url env)))
@@ -102,7 +102,7 @@
 )
 
 ;;; ROLE-tag-actions returns an additional action "Zettel" for zettel with role "tag".
-(defun ROLE-tag-actions (env)
+(defunconst ROLE-tag-actions (env)
     `(,@(ROLE-DEFAULT-actions env)
       ,@(let ((title (environment-lookup 'title env)))
              (if (and (defined? title) title)
@@ -115,7 +115,7 @@
 ;;; ROLE-DEFAULT-heading returns the default text for headings, below the
 ;;; references of a zettel. In most cases it should be called from an
 ;;; overwriting function.
-(defun ROLE-DEFAULT-heading (env)
+(defunconst ROLE-DEFAULT-heading (env)
     `(,@(let ((meta-url (environment-lookup 'meta-url env)))
            (if (defined? meta-url) `((br) "URL: " ,(url-to-html meta-url))))
       ,@(let ((meta-author (environment-lookup 'meta-author env)))

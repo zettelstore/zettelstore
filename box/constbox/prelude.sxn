@@ -20,6 +20,12 @@
 (defun not (x) (if x NIL T))
 (defconst not not)
 
+;; defunconst macro to define functions that are bound as a constant.
+;;
+;; (defunconst NAME ARGS EXPR ...)
+(defmacro defunconst (name args . body)
+    `(begin (defun ,name ,args ,@body) (defconst ,name ,name)))
+
 ;; let macro
 ;;
 ;; (let (BINDING ...) EXPR ...), where BINDING is a list of two elements
