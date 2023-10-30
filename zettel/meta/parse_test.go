@@ -76,13 +76,14 @@ func TestTags(t *testing.T) {
 	}
 	for i, tc := range testcases {
 		m := parseMetaStr(tc.src)
-		tags, found := m.GetTags(api.KeyTags)
+		tagsString, found := m.Get(api.KeyTags)
 		if !found {
 			if tc.exp != "" {
 				t.Errorf("%d / %q: no %s found", i, tc.src, api.KeyTags)
 			}
 			continue
 		}
+		tags := meta.TagsFromValue(tagsString)
 		if tc.exp == "" && len(tags) > 0 {
 			t.Errorf("%d / %q: expected no %s, but got %v", i, tc.src, api.KeyTags, tags)
 			continue

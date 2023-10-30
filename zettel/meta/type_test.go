@@ -33,7 +33,7 @@ func TestNow(t *testing.T) {
 	if _, err := strconv.ParseInt(val, 10, 64); err != nil {
 		t.Errorf("Unable to parse %q as an int64: %v", val, err)
 	}
-	if _, ok = m.GetTime("key"); !ok {
+	if _, ok = meta.TimeValue(val); !ok {
 		t.Errorf("Unable to get time from value %q", val)
 	}
 }

@@ -66,9 +66,9 @@ func TestTitleHeader(t *testing.T) {
 	}
 }
 
-func checkSet(t *testing.T, exp []string, m *Meta, key string) {
+func checkTags(t *testing.T, exp []string, m *Meta) {
 	t.Helper()
-	got, _ := m.GetList(key)
+	got, _ := m.GetList(api.KeyTags)
 	for i, tag := range exp {
 		if i < len(got) {
 			if tag != got[i] {
@@ -86,19 +86,19 @@ func checkSet(t *testing.T, exp []string, m *Meta, key string) {
 func TestTagsHeader(t *testing.T) {
 	t.Parallel()
 	m := New(testID)
-	checkSet(t, []string{}, m, api.KeyTags)
+	checkTags(t, []string{}, m)
 
 	addToMeta(m, api.KeyTags, "")
-	checkSet(t, []string{}, m, api.KeyTags)
+	checkTags(t, []string{}, m)
 
 	addToMeta(m, api.KeyTags, "  #t1 #t2  #t3 #t4  ")
-	checkSet(t, []string{"#t1", "#t2", "#t3", "#t4"}, m, api.KeyTags)
+	checkTags(t, []string{"#t1", "#t2", "#t3", "#t4"}, m)
 
 	addToMeta(m, api.KeyTags, "#t5")
-	checkSet(t, []string{"#t1", "#t2", "#t3", "#t4", "#t5"}, m, api.KeyTags)
+	checkTags(t, []string{"#t1", "#t2", "#t3", "#t4", "#t5"}, m)
 
 	addToMeta(m, api.KeyTags, "t6")
-	checkSet(t, []string{"#t1", "#t2", "#t3", "#t4", "#t5"}, m, api.KeyTags)
+	checkTags(t, []string{"#t1", "#t2", "#t3", "#t4", "#t5"}, m)
 }
 
 func TestSyntax(t *testing.T) {

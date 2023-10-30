@@ -169,11 +169,7 @@ func createMatchNumberFunc(values []expValue, addSearch addSearchFunc) matchValu
 func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
 	predList := valuesToWordSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
 	return func(value string) bool {
-		tags := meta.ListFromValue(value)
-		// Remove leading '#' from each tag
-		for i, tag := range tags {
-			tags[i] = meta.CleanTag(tag)
-		}
+		tags := meta.TagsFromValue(value)
 		for _, preds := range predList {
 			for _, pred := range preds {
 				if !pred(tags) {

@@ -151,14 +151,6 @@ func TimeValue(value string) (time.Time, bool) {
 	return time.Time{}, false
 }
 
-// GetTime returns the time value of the given key.
-func (m *Meta) GetTime(key string) (time.Time, bool) {
-	if value, ok := m.Get(key); ok {
-		return TimeValue(value)
-	}
-	return time.Time{}, false
-}
-
 // ListFromValue transforms a string value into a list value.
 func ListFromValue(value string) []string {
 	return strings.Fields(value)
@@ -174,18 +166,15 @@ func (m *Meta) GetList(key string) ([]string, bool) {
 	return ListFromValue(value), true
 }
 
-// GetTags returns the list of tags as a string list. Each tag does not begin
-// with the '#' character, in contrast to `GetList`.
-func (m *Meta) GetTags(key string) ([]string, bool) {
-	tagsValue, ok := m.Get(key)
-	if !ok {
-		return nil, false
-	}
-	tags := ListFromValue(strings.ToLower(tagsValue))
+// TagsFromValue returns the value as a sequence of normalized tags.
+func TagsFromValue(value string) []string {
+	tags := ListFromValue(strings.ToLower(value))
 	for i, tag := range tags {
-		tags[i] = CleanTag(tag)
+		if len(tag) > 1 && tag[0] == '#' {
+			tags[i] = tag[1:]
+		}
 	}
-	return tags, len(tags) > 0
+	return tags
 }
 
 // CleanTag removes the number character ('#') from a tag value and lowercases it.
@@ -194,6 +183,14 @@ func CleanTag(tag string) string {
 		return tag[1:]
 	}
 	return tag
+}
+
+// NormalizeTag adds a missing prefix "#" to the tag
+func NormalizeTag(tag string) string {
+	if len(tag) > 0 && tag[0] == '#' {
+		return tag
+	}
+	return "#" + tag
 }
 
 // GetNumber retrieves the numeric value of a given key.
