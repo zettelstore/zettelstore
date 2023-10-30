@@ -4,12 +4,12 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210212135017
-modified: 20230612183509
+modified: 20231030182858
 
 Values of this type denote a point in time.
 
 === Allowed values
-Must be a sequence of 14 digits (""0""--""9"") (same as an [[Identifier|00001006032000]]), with the restriction that is conforms to the pattern ""YYYYMMDDhhmmss"".
+Must be a sequence of 4, 6, 8, 10, 12, or 14 digits (""0""--""9"") (similar to an [[Identifier|00001006032000]]), with the restriction that it must conform to the pattern ""YYYYMMDDhhmmss"".
 
 * YYYY is the year,
 * MM is the month,
@@ -18,18 +18,20 @@ Must be a sequence of 14 digits (""0""--""9"") (same as an [[Identifier|00001006
 * mm is the minute,
 * ss is the second.
 
+If the sequence is less than 14 digits, they are expanded with the following rule:
+
+* YYYY is expanded to YYYY0101000000
+* YYYYMM is expanded to YYYYMM01000000
+* YYYYMMDD is expanded to YYYYMMDD000000
+* YYYYMMDDhh is expanded to YYYYMMDDhh0000
+* YYYYMMDDhhmm is expanded to YYYYMMDDhhmm00
+
 === Query comparison
 [[Search values|00001007706000]] with more than 14 characters are truncated to contain exactly 14 characters.
-
-When the [[search operators|00001007705000]] ""less"", ""not less"", ""greater"", and ""not greater"" are given, the length of the search value is checked.
-If it contains less than 14 digits, zero digits (""0"") are appended, until it contains exactly 14 digits.
-
-All other comparisons assume that up to 14 characters are given.
+Then, they are treated as timestamp data, as describe above, if they contain 4, 6, 8, 10, or 12 digits.
 
 Comparison is done through the string representation.
 In case of the search operators ""less"", ""not less"", ""greater"", and ""not greater"", this is the same as a numerical comparison.
 
 === Sorting
-Sorting is done by comparing the [[String|00001006033500]] values.
-
-If both values are timestamp values, this works well because both have the same length.
+Sorting is done by comparing the possibly expanded values.

@@ -109,10 +109,12 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 	switch meta.Type(key) {
 	case meta.TypeCredential:
 		return matchValueNever
-	case meta.TypeID, meta.TypeTimestamp: // ID and timestamp use the same layout
+	case meta.TypeID:
 		return createMatchIDFunc(values, addSearch)
 	case meta.TypeIDSet:
 		return createMatchIDSetFunc(values, addSearch)
+	case meta.TypeTimestamp:
+		return createMatchTimestampFunc(values, addSearch)
 	case meta.TypeNumber:
 		return createMatchNumberFunc(values, addSearch)
 	case meta.TypeTagSet:
@@ -148,6 +150,18 @@ func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValue
 				if !pred(ids) {
 					return false
 				}
+			}
+		}
+		return true
+	}
+}
+func createMatchTimestampFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
+	preds := valuesToTimestampPredicates(values, addSearch)
+	return func(value string) bool {
+		value = meta.ExpandTimestamp(value)
+		for _, pred := range preds {
+			if !pred(value) {
+				return false
 			}
 		}
 		return true
@@ -383,6 +397,35 @@ func isDigits(s string) bool {
 func disambiguatedIDOp(cmpOp compareOp) compareOp { return disambiguateWordOp(cmpOp) }
 
 func createIDCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
+	return createWordCompareFunc(cmpVal, cmpOp)
+}
+
+func valuesToTimestampPredicates(values []expValue, addSearch addSearchFunc) []stringPredicate {
+	result := make([]stringPredicate, len(values))
+	for i, v := range values {
+		value := meta.ExpandTimestamp(v.value)
+		switch op := disambiguatedTimestampOp(v.op); op {
+		case cmpLess, cmpNoLess, cmpGreater, cmpNoGreater:
+			if isDigits(value) {
+				// Never add the value to search.
+				result[i] = createTimestampCompareFunc(value, op)
+				continue
+			}
+			fallthrough
+		default:
+			// Otherwise compare as a word.
+			if !op.isNegated() {
+				addSearch(v) // addSearch only for positive selections
+			}
+			result[i] = createWordCompareFunc(value, op)
+		}
+	}
+	return result
+}
+
+func disambiguatedTimestampOp(cmpOp compareOp) compareOp { return disambiguateWordOp(cmpOp) }
+
+func createTimestampCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 	return createWordCompareFunc(cmpVal, cmpOp)
 }
 

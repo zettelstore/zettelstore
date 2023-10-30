@@ -2,6 +2,13 @@
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.0 (pending)</h2>
+  *  Timestamp values can be abbrevated by omitting most of its components.
+     Previously, such values that are not in the format YYYYMMDDhhmmss were
+     ignored. Now the following formats are also allowed: YYYY, YYYYMM,
+     YYYYMMDD, YYYYMMDDhh, YYYYMMDDhhmm. Querying and sorting work accordingly.
+     Previously, only a sequences of zeroes were appended, resulting in illegal
+     timestamps, e.g. for YYYY or YYYYMM.
+     (minor)
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (2023-10-26)</h2>

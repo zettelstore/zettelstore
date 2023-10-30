@@ -145,21 +145,29 @@ func (m *Meta) GetBool(key string) bool {
 
 // TimeValue returns the time value of the given value.
 func TimeValue(value string) (time.Time, bool) {
-	switch l := len(value); l {
-	case 4: // YYYY
-		value = value + "0101000000"
-	case 6: // YYYYmm
-		value = value + "01000000"
-	case 8, 10, 12: // YYYYmmDD, YYYYmmDDHH, YYYYmmDDHHMM
-		value = value + "000000"[:14-l]
-	case 14: // YYYYmmDDHHMMSS
-	default:
-		return time.Time{}, false
-	}
-	if t, err := time.Parse(id.TimestampLayout, value); err == nil {
+	if t, err := time.Parse(id.TimestampLayout, ExpandTimestamp(value)); err == nil {
 		return t, true
 	}
 	return time.Time{}, false
+}
+
+// ExpandTimestamp makes a short-form timestamp larger.
+func ExpandTimestamp(value string) string {
+	switch l := len(value); l {
+	case 4: // YYYY
+		return value + "0101000000"
+	case 6: // YYYYMM
+		return value + "01000000"
+	case 8, 10, 12: // YYYYMMDD, YYYYMMDDhh, YYYYMMDDhhmm
+		return value + "000000"[:14-l]
+	case 14: // YYYYMMDDhhmmss
+		return value
+	default:
+		if l > 14 {
+			return value[:14]
+		}
+		return value
+	}
 }
 
 // ListFromValue transforms a string value into a list value.

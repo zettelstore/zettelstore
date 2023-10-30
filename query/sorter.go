@@ -57,10 +57,28 @@ func createOneSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
 		}
 		return func(i, j int) bool { return ml[i].Zid < ml[j].Zid }
 	}
+	if keyType == meta.TypeTimestamp {
+		return createSortTimestampFunc(ml, key, descending)
+	}
 	if keyType == meta.TypeNumber {
 		return createSortNumberFunc(ml, key, descending)
 	}
 	return createSortStringFunc(ml, key, descending)
+}
+
+func createSortTimestampFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+	if descending {
+		return func(i, j int) bool {
+			iVal, iOk := ml[i].Get(key)
+			jVal, jOk := ml[j].Get(key)
+			return (iOk && (!jOk || meta.ExpandTimestamp(iVal) > meta.ExpandTimestamp(jVal))) || !jOk
+		}
+	}
+	return func(i, j int) bool {
+		iVal, iOk := ml[i].Get(key)
+		jVal, jOk := ml[j].Get(key)
+		return (iOk && (!jOk || meta.ExpandTimestamp(iVal) < meta.ExpandTimestamp(jVal))) || !jOk
+	}
 }
 
 func createSortNumberFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
@@ -78,6 +96,15 @@ func createSortNumberFunc(ml []*meta.Meta, key string, descending bool) sortFunc
 	}
 }
 
+func getNum(m *meta.Meta, key string) (int64, bool) {
+	if s, ok := m.Get(key); ok {
+		if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
 func createSortStringFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
 	if descending {
 		return func(i, j int) bool {
@@ -91,13 +118,4 @@ func createSortStringFunc(ml []*meta.Meta, key string, descending bool) sortFunc
 		jVal, jOk := ml[j].Get(key)
 		return (iOk && (!jOk || iVal < jVal)) || !jOk
 	}
-}
-
-func getNum(m *meta.Meta, key string) (int64, bool) {
-	if s, ok := m.Get(key); ok {
-		if i, err := strconv.ParseInt(s, 10, 64); err == nil {
-			return i, true
-		}
-	}
-	return 0, false
 }
