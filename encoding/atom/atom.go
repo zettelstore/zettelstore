@@ -76,7 +76,7 @@ func (c *Configuration) Marshal(q *query.Query, ml []*meta.Meta) []byte {
 func (c *Configuration) marshalMeta(buf *bytes.Buffer, m *meta.Meta) {
 	entryUpdated := ""
 	if val, found := m.Get(api.KeyPublished); found {
-		if published, err := time.ParseInLocation(id.ZidLayout, val, time.Local); err == nil {
+		if published, err := time.ParseInLocation(id.TimestampLayout, val, time.Local); err == nil {
 			entryUpdated = published.UTC().Format(time.RFC3339)
 		}
 	}

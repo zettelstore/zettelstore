@@ -25,7 +25,7 @@ func LastUpdated(ml []*meta.Meta, timeFormat string) string {
 	maxPublished := time.Date(1, time.January, 1, 0, 0, 0, 0, time.Local)
 	for _, m := range ml {
 		if val, found := m.Get(api.KeyPublished); found {
-			if published, err := time.ParseInLocation(id.ZidLayout, val, time.Local); err == nil {
+			if published, err := time.ParseInLocation(id.TimestampLayout, val, time.Local); err == nil {
 				if maxPublished.Before(published) {
 					maxPublished = published
 				}

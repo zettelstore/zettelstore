@@ -38,7 +38,7 @@ func TestNow(t *testing.T) {
 	}
 }
 
-func TestGetTime(t *testing.T) {
+func TestTimeValue(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		value string
@@ -50,6 +50,18 @@ func TestGetTime(t *testing.T) {
 		{"00000000000000", false, time.Time{}},
 		{"98765432109876", false, time.Time{}},
 		{"20201221111905", true, time.Date(2020, time.December, 21, 11, 19, 5, 0, time.UTC)},
+		{"2023", true, time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC)},
+		{"20231", false, time.Time{}},
+		{"202310", true, time.Date(2023, time.October, 1, 0, 0, 0, 0, time.UTC)},
+		{"2023103", false, time.Time{}},
+		{"20231030", true, time.Date(2023, time.October, 30, 0, 0, 0, 0, time.UTC)},
+		{"202310301", false, time.Time{}},
+		{"2023103016", true, time.Date(2023, time.October, 30, 16, 0, 0, 0, time.UTC)},
+		{"20231030165", false, time.Time{}},
+		{"202310301654", true, time.Date(2023, time.October, 30, 16, 54, 0, 0, time.UTC)},
+		{"2023103016541", false, time.Time{}},
+		{"20231030165417", true, time.Date(2023, time.October, 30, 16, 54, 17, 0, time.UTC)},
+		{"2023103916541700", false, time.Time{}},
 	}
 	for i, tc := range testCases {
 		got, ok := meta.TimeValue(tc.value)

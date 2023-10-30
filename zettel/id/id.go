@@ -115,16 +115,13 @@ func (zid Zid) Bytes() []byte {
 func (zid Zid) toByteArray(result *[14]byte) {
 	date := uint64(zid) / 1000000
 	fullyear := date / 10000
-	century := fullyear / 100
-	year := fullyear % 100
+	century, year := fullyear/100, fullyear%100
 	monthday := date % 10000
-	month := monthday / 100
-	day := monthday % 100
+	month, day := monthday/100, monthday%100
 	time := uint64(zid) % 1000000
-	hmtime := time / 100
-	second := time % 100
-	hour := hmtime / 100
-	minute := hmtime % 100
+	hmtime, second := time/100, time%100
+	hour, minute := hmtime/100, hmtime%100
+
 	result[0] = byte(century/10) + '0'
 	result[1] = byte(century%10) + '0'
 	result[2] = byte(year/10) + '0'
@@ -144,15 +141,15 @@ func (zid Zid) toByteArray(result *[14]byte) {
 // IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
 func (zid Zid) IsValid() bool { return 0 < zid && zid <= maxZid }
 
-// ZidLayout to transform a date into a Zid and into other internal dates.
-const ZidLayout = "20060102150405"
+// TimestampLayout to transform a date into a Zid and into other internal dates.
+const TimestampLayout = "20060102150405"
 
 // New returns a new zettel id based on the current time.
 func New(withSeconds bool) Zid {
 	now := time.Now().Local()
 	var s string
 	if withSeconds {
-		s = now.Format(ZidLayout)
+		s = now.Format(TimestampLayout)
 	} else {
 		s = now.Format("20060102150400")
 	}

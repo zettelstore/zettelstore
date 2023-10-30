@@ -126,7 +126,7 @@ func createKernel() kernel.Kernel {
 func (kern *myKernel) Setup(progname, version string, versionTime time.Time) {
 	kern.SetConfig(kernel.CoreService, kernel.CoreProgname, progname)
 	kern.SetConfig(kernel.CoreService, kernel.CoreVersion, version)
-	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Local().Format(id.ZidLayout))
+	kern.SetConfig(kernel.CoreService, kernel.CoreVTime, versionTime.Local().Format(id.TimestampLayout))
 }
 
 func (kern *myKernel) Start(headline, lineServer bool, configFilename string) {

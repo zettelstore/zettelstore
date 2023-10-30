@@ -144,7 +144,7 @@ func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.Zid, 
 		return m.Zid, nil // TODO: new error: already exists
 	}
 
-	m.Set(api.KeyCreated, time.Now().Local().Format(id.ZidLayout))
+	m.Set(api.KeyCreated, time.Now().Local().Format(id.TimestampLayout))
 	m.Delete(api.KeyModified)
 	m.YamlSep = uc.rtConfig.GetYAMLHeader()
 

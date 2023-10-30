@@ -81,7 +81,7 @@ func (cs *coreService) Initialize(logger *logger.Logger) {
 		kernel.CoreGoVersion: runtime.Version(),
 		kernel.CoreHostname:  "*unknown host*",
 		kernel.CorePort:      0,
-		kernel.CoreStarted:   time.Now().Local().Format(id.ZidLayout),
+		kernel.CoreStarted:   time.Now().Local().Format(id.TimestampLayout),
 		kernel.CoreVerbose:   false,
 	}
 	if hn, err := os.Hostname(); err == nil {

@@ -121,7 +121,7 @@ func (m *Meta) SetWord(key, word string) {
 
 // SetNow stores the current timestamp under the given key.
 func (m *Meta) SetNow(key string) {
-	m.Set(key, time.Now().Local().Format(id.ZidLayout))
+	m.Set(key, time.Now().Local().Format(id.TimestampLayout))
 }
 
 // BoolValue returns the value interpreted as a bool.
@@ -145,7 +145,18 @@ func (m *Meta) GetBool(key string) bool {
 
 // TimeValue returns the time value of the given value.
 func TimeValue(value string) (time.Time, bool) {
-	if t, err := time.Parse(id.ZidLayout, value); err == nil {
+	switch l := len(value); l {
+	case 4: // YYYY
+		value = value + "0101000000"
+	case 6: // YYYYmm
+		value = value + "01000000"
+	case 8, 10, 12: // YYYYmmDD, YYYYmmDDHH, YYYYmmDDHHMM
+		value = value + "000000"[:14-l]
+	case 14: // YYYYmmDDHHMMSS
+	default:
+		return time.Time{}, false
+	}
+	if t, err := time.Parse(id.TimestampLayout, value); err == nil {
 		return t, true
 	}
 	return time.Time{}, false
