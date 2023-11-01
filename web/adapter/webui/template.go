@@ -355,12 +355,12 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Env
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	t, err := wui.engine.Parse(env, objs[0])
+	t, err := wui.engine.Parse(objs[0], env)
 	if err != nil {
 		return nil, err
 	}
 
-	wui.setSxnCache(zid, wui.engine.Rework(env, t))
+	wui.setSxnCache(zid, wui.engine.Rework(t, env, nil))
 	return t, nil
 }
 func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
@@ -378,7 +378,7 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.En
 	if err != nil {
 		return nil, err
 	}
-	return wui.engine.Execute(env, templateExpr)
+	return wui.engine.Execute(templateExpr, env, nil)
 }
 
 func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sxeval.Environment) error {

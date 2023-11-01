@@ -100,7 +100,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, env sxeval.
 		}
 		wui.log.Debug().Zid(zid).Str("form", form.Repr()).Msg("Loaded sxn code")
 
-		if _, err2 = wui.engine.Eval(env, form); err2 != nil {
+		if _, err2 = wui.engine.Eval(form, env, nil); err2 != nil {
 			return err2
 		}
 	}
