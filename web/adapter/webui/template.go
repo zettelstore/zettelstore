@@ -47,7 +47,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		Name:     "url-to-html",
 		MinArity: 1,
 		MaxArity: 1,
-		IsPure:   true,
+		TestPure: sxeval.AssertPure,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
 			text, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
@@ -60,7 +60,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		Name:     "zid-content-path",
 		MinArity: 1,
 		MaxArity: 1,
-		IsPure:   true,
+		TestPure: sxeval.AssertPure,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
 			s, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
@@ -78,7 +78,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		Name:     "query->url",
 		MinArity: 1,
 		MaxArity: 1,
-		IsPure:   true,
+		TestPure: sxeval.AssertPure,
 		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
 			qs, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
@@ -360,7 +360,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Env
 		return nil, err
 	}
 
-	wui.setSxnCache(zid, wui.engine.Rework(t, env, nil))
+	wui.setSxnCache(zid, wui.engine.Rework(t, env))
 	return t, nil
 }
 func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
