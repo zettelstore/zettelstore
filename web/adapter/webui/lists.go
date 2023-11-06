@@ -136,6 +136,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) (withZettel, withoutZettel *sx.Pair) {
 	slices.Reverse(tags)
 	for _, tag := range tags {
+		tag = meta.NormalizeTag(tag)
 		if _, err := tagZettel.Run(ctx, tag); err == nil {
 			u := wui.NewURLBuilder('h').AppendKVQuery(api.QueryKeyTag, tag)
 			withZettel = wui.prependTagZettel(withZettel, tag, u)
