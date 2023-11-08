@@ -25,6 +25,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 
 	_ "zettelstore.de/z/encoder/htmlenc"  // Allow to use HTML encoder.
+	_ "zettelstore.de/z/encoder/htmlsenc" // Allow to use HTMLS encoder.
 	_ "zettelstore.de/z/encoder/mdenc"    // Allow to use markdown encoder.
 	_ "zettelstore.de/z/encoder/shtmlenc" // Allow to use SHTML encoder.
 	_ "zettelstore.de/z/encoder/szenc"    // Allow to use sz encoder.
@@ -46,6 +47,7 @@ type expectMap map[api.EncodingEnum]string
 const useZmk = "\000"
 const (
 	encoderHTML  = api.EncoderHTML
+	encoderHTMLS = api.EncoderHTMLS
 	encoderMD    = api.EncoderMD
 	encoderSz    = api.EncoderSz
 	encoderSHTML = api.EncoderSHTML
@@ -77,6 +79,13 @@ func executeTestCases(t *testing.T, testCases []zmkTestCase) {
 }
 
 func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, expected expectMap, zmkDefault string) {
+	// The following if statement is only used in the transition phase when
+	// refactoring the transformation of Sz to SHTML.
+	if _, foundHTMLS := expected[encoderHTMLS]; !foundHTMLS {
+		if exp, foundSHTML := expected[encoderSHTML]; foundSHTML {
+			expected[encoderHTMLS] = exp
+		}
+	}
 	for enc, exp := range expected {
 		encdr := encoder.Create(enc)
 		got, err := pe.encode(encdr)

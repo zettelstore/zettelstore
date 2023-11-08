@@ -35,6 +35,7 @@ const (
 
 var encoding2mime = map[api.EncodingEnum]string{
 	api.EncoderHTML:  mimeHTML,
+	api.EncoderHTMLS: SXPF,
 	api.EncoderMD:    mimeMarkdown,
 	api.EncoderSz:    SXPF,
 	api.EncoderSHTML: SXPF,

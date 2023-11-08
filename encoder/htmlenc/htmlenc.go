@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/shtml"
+	"zettelstore.de/client.fossil/htmls"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/z/ast"
@@ -37,14 +37,14 @@ func Create() *Encoder {
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{
 		tx:      szenc.NewTransformer(),
-		th:      shtml.NewTransformer(1, nil),
+		th:      htmls.NewTransformer(1, nil),
 		textEnc: textenc.Create(),
 	}
 }
 
 type Encoder struct {
 	tx      *szenc.Transformer
-	th      *shtml.Transformer
+	th      *htmls.Transformer
 	textEnc *textenc.Encoder
 }
 

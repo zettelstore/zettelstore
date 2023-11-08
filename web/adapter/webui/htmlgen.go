@@ -16,8 +16,8 @@ import (
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/attrs"
+	"zettelstore.de/client.fossil/htmls"
 	"zettelstore.de/client.fossil/maps"
-	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/client.fossil/sz"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxeval"
@@ -36,12 +36,12 @@ type urlBuilder interface {
 
 type htmlGenerator struct {
 	tx    *szenc.Transformer
-	th    *shtml.Transformer
+	th    *htmls.Transformer
 	symAt *sx.Symbol
 }
 
 func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
-	th := shtml.NewTransformer(1, wui.sf)
+	th := htmls.NewTransformer(1, wui.sf)
 	symA := wui.symA
 	symImg := th.Make("img")
 	symAttr := wui.symAttr
@@ -94,7 +94,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 	}
 
-	th.SetRebinder(func(te *shtml.TransformEnv) {
+	th.SetRebinder(func(te *htmls.TransformEnv) {
 		te.Rebind(sz.NameSymLinkZettel, linkZettel)
 		te.Rebind(sz.NameSymLinkFound, linkZettel)
 		te.Rebind(sz.NameSymLinkBased, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
