@@ -44,11 +44,11 @@ type Encoder struct {
 
 // WriteZettel writes the encoded zettel to the writer.
 func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	metaSHTML, err := enc.th.Transform(enc.tx.GetMeta(zn.InhMeta, evalMeta))
+	metaSHTML, err := enc.th.TransformMetadata(enc.tx.GetMeta(zn.InhMeta, evalMeta))
 	if err != nil {
 		return 0, err
 	}
-	contentSHTML, err := enc.th.Transform(enc.tx.GetSz(&zn.Ast))
+	contentSHTML, err := enc.th.TransformBlock(enc.tx.GetSz(&zn.Ast))
 	if err != nil {
 		return 0, err
 	}
@@ -58,11 +58,11 @@ func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encode
 
 // WriteMeta encodes meta data as s-expression.
 func (enc *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	metaSHTML, err := enc.th.Transform(enc.tx.GetMeta(m, evalMeta))
+	metaSHTML, err := enc.th.TransformMetadata(enc.tx.GetMeta(m, evalMeta))
 	if err != nil {
 		return 0, err
 	}
-	return metaSHTML.Print(w)
+	return sx.Print(w, metaSHTML)
 }
 
 func (enc *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
@@ -71,18 +71,18 @@ func (enc *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (enc *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hval, err := enc.th.Transform(enc.tx.GetSz(bs))
+	hval, err := enc.th.TransformBlock(enc.tx.GetSz(bs))
 	if err != nil {
 		return 0, err
 	}
-	return hval.Print(w)
+	return sx.Print(w, hval)
 }
 
 // WriteInlines writes an inline slice to the writer
 func (enc *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hval, err := enc.th.Transform(enc.tx.GetSz(is))
+	hval, err := enc.th.TransformInline(enc.tx.GetSz(is))
 	if err != nil {
 		return 0, err
 	}
-	return hval.Print(w)
+	return sx.Print(w, hval)
 }
