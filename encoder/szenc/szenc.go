@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderSz, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderSz, func(*encoder.CreateParameter) encoder.Encoder { return Create() })
 }
 
 // Create a S-expr encoder

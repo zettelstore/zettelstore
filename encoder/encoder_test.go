@@ -87,7 +87,7 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 		}
 	}
 	for enc, exp := range expected {
-		encdr := encoder.Create(enc)
+		encdr := encoder.Create(enc, &encoder.CreateParameter{Lang: api.KeyLang})
 		got, err := pe.encode(encdr)
 		if err != nil {
 			prefix := fmt.Sprintf("Test #%d", testNum)
@@ -114,7 +114,7 @@ func checkEncodings(t *testing.T, testNum int, pe parserEncoder, descr string, e
 
 func checkSz(t *testing.T, testNum int, pe parserEncoder, descr string) {
 	t.Helper()
-	encdr := encoder.Create(encoderSz)
+	encdr := encoder.Create(encoderSz, nil)
 	exp, err := pe.encode(encdr)
 	if err != nil {
 		t.Error(err)

@@ -28,11 +28,11 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderHTML, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderHTML, func(params *encoder.CreateParameter) encoder.Encoder { return Create(params) })
 }
 
 // Create an encoder.
-func Create() *Encoder {
+func Create(*encoder.CreateParameter) *Encoder {
 	// We need a new transformer every time, because tx.inVerse must be unique.
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{

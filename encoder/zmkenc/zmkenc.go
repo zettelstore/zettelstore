@@ -26,7 +26,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderZmk, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderZmk, func(*encoder.CreateParameter) encoder.Encoder { return Create() })
 }
 
 // Create an encoder.

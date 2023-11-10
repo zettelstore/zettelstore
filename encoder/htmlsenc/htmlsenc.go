@@ -24,7 +24,7 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderHTMLS, func() encoder.Encoder { return Create() })
+	encoder.Register(api.EncoderHTMLS, func(*encoder.CreateParameter) encoder.Encoder { return Create() })
 }
 
 // Create a SHTML encoder
