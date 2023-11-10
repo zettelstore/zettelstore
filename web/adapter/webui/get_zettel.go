@@ -41,7 +41,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 			return
 		}
 
-		enc := wui.getSimpleHTMLEncoder()
+		enc := wui.getSimpleHTMLEncoder(wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang))
 		metaObj := enc.MetaSxn(zn.InhMeta, createEvalMetadataFunc(ctx, evaluate))
 		content, endnotes, err := enc.BlocksSxn(&zn.Ast)
 		if err != nil {

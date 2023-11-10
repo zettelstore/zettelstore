@@ -16,11 +16,10 @@ import (
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/attrs"
-	"zettelstore.de/client.fossil/htmls"
 	"zettelstore.de/client.fossil/maps"
+	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/client.fossil/sz"
 	"zettelstore.de/sx.fossil"
-	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
@@ -36,12 +35,13 @@ type urlBuilder interface {
 
 type htmlGenerator struct {
 	tx    *szenc.Transformer
-	th    *htmls.Transformer
+	th    *shtml.Evaluator
+	lang  string
 	symAt *sx.Symbol
 }
 
-func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
-	th := htmls.NewTransformer(1, wui.sf)
+func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerator {
+	th := shtml.NewEvaluator(1, wui.sf)
 	symA := wui.symA
 	symImg := th.Make("img")
 	symAttr := wui.symAttr
@@ -67,11 +67,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		}
 		return attr, attr.Tail(), rest.Tail()
 	}
-	linkZettel := func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-		obj, err := prevFn.Call(nil, args)
-		if err != nil {
-			return sx.Nil()
-		}
+	linkZettel := func(obj sx.Object) sx.Object {
 		attr, assoc, rest := findA(obj)
 		if attr == nil {
 			return obj
@@ -94,110 +90,104 @@ func (wui *WebUI) createGenerator(builder urlBuilder) *htmlGenerator {
 		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
 	}
 
-	th.SetRebinder(func(te *htmls.TransformEnv) {
-		te.Rebind(sz.NameSymLinkZettel, linkZettel)
-		te.Rebind(sz.NameSymLinkFound, linkZettel)
-		te.Rebind(sz.NameSymLinkBased, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, args)
-			if err != nil {
-				return sx.Nil()
-			}
-			attr, assoc, rest := findA(obj)
-			if attr == nil {
-				return obj
-			}
-			hrefP := assoc.Assoc(symHref)
-			if hrefP == nil {
-				return obj
-			}
-			href, ok := sx.GetString(hrefP.Cdr())
-			if !ok {
-				return obj
-			}
-			u := builder.NewURLBuilder('/').SetRawLocal(href.String())
-			assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
-			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
-		})
-		te.Rebind(sz.NameSymLinkQuery, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, args)
-			if err != nil {
-				return sx.Nil()
-			}
-			attr, assoc, rest := findA(obj)
-			if attr == nil {
-				return obj
-			}
-			hrefP := assoc.Assoc(symHref)
-			if hrefP == nil {
-				return obj
-			}
-			href, ok := sx.GetString(hrefP.Cdr())
-			if !ok {
-				return obj
-			}
-			ur, err := url.Parse(href.String())
-			if err != nil {
-				return obj
-			}
-			q := ur.Query().Get(api.QueryKeyQuery)
-			if q == "" {
-				return obj
-			}
-			u := builder.NewURLBuilder('h').AppendQuery(q)
-			assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
-			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
-		})
-		te.Rebind(sz.NameSymLinkExternal, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, args)
-			if err != nil {
-				return sx.Nil()
-			}
-			attr, assoc, rest := findA(obj)
-			if attr == nil {
-				return obj
-			}
-			assoc = assoc.Cons(sx.Cons(symClass, sx.String("external"))).
-				Cons(sx.Cons(symTarget, sx.String("_blank"))).
-				Cons(sx.Cons(symRel, sx.String("noopener noreferrer")))
-			return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
-		})
-		te.Rebind(sz.NameSymEmbed, func(args []sx.Object, prevFn sxeval.Callable) sx.Object {
-			obj, err := prevFn.Call(nil, args)
-			if err != nil {
-				return sx.Nil()
-			}
-			pair, isPair := sx.GetPair(obj)
-			if !isPair || !symImg.IsEqual(pair.Car()) {
-				return obj
-			}
-			attr, isPair := sx.GetPair(pair.Tail().Car())
-			if !isPair || !symAttr.IsEqual(attr.Car()) {
-				return obj
-			}
-			symSrc := th.Make("src")
-			srcP := attr.Tail().Assoc(symSrc)
-			if srcP == nil {
-				return obj
-			}
-			src, isString := sx.GetString(srcP.Cdr())
-			if !isString {
-				return obj
-			}
-			zid := api.ZettelID(src)
-			if !zid.IsValid() {
-				return obj
-			}
-			u := builder.NewURLBuilder('z').SetZid(zid)
-			imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.String(u.String()))).Cons(symAttr)
-			return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
-		})
+	rebind(th, sz.NameSymLinkZettel, linkZettel)
+	rebind(th, sz.NameSymLinkFound, linkZettel)
+	rebind(th, sz.NameSymLinkBased, func(obj sx.Object) sx.Object {
+		attr, assoc, rest := findA(obj)
+		if attr == nil {
+			return obj
+		}
+		hrefP := assoc.Assoc(symHref)
+		if hrefP == nil {
+			return obj
+		}
+		href, ok := sx.GetString(hrefP.Cdr())
+		if !ok {
+			return obj
+		}
+		u := builder.NewURLBuilder('/').SetRawLocal(href.String())
+		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
+		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+	})
+	rebind(th, sz.NameSymLinkQuery, func(obj sx.Object) sx.Object {
+		attr, assoc, rest := findA(obj)
+		if attr == nil {
+			return obj
+		}
+		hrefP := assoc.Assoc(symHref)
+		if hrefP == nil {
+			return obj
+		}
+		href, ok := sx.GetString(hrefP.Cdr())
+		if !ok {
+			return obj
+		}
+		ur, err := url.Parse(href.String())
+		if err != nil {
+			return obj
+		}
+		q := ur.Query().Get(api.QueryKeyQuery)
+		if q == "" {
+			return obj
+		}
+		u := builder.NewURLBuilder('h').AppendQuery(q)
+		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
+		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+	})
+	rebind(th, sz.NameSymLinkExternal, func(obj sx.Object) sx.Object {
+		attr, assoc, rest := findA(obj)
+		if attr == nil {
+			return obj
+		}
+		assoc = assoc.Cons(sx.Cons(symClass, sx.String("external"))).
+			Cons(sx.Cons(symTarget, sx.String("_blank"))).
+			Cons(sx.Cons(symRel, sx.String("noopener noreferrer")))
+		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+	})
+	rebind(th, sz.NameSymEmbed, func(obj sx.Object) sx.Object {
+		pair, isPair := sx.GetPair(obj)
+		if !isPair || !symImg.IsEqual(pair.Car()) {
+			return obj
+		}
+		attr, isPair := sx.GetPair(pair.Tail().Car())
+		if !isPair || !symAttr.IsEqual(attr.Car()) {
+			return obj
+		}
+		symSrc := th.Make("src")
+		srcP := attr.Tail().Assoc(symSrc)
+		if srcP == nil {
+			return obj
+		}
+		src, isString := sx.GetString(srcP.Cdr())
+		if !isString {
+			return obj
+		}
+		zid := api.ZettelID(src)
+		if !zid.IsValid() {
+			return obj
+		}
+		u := builder.NewURLBuilder('z').SetZid(zid)
+		imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.String(u.String()))).Cons(symAttr)
+		return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
 	})
 
 	return &htmlGenerator{
 		tx:    szenc.NewTransformer(),
 		th:    th,
+		lang:  lang,
 		symAt: symAttr,
 	}
+}
+
+func rebind(ev *shtml.Evaluator, name string, fn func(sx.Object) sx.Object) {
+	prevFn := ev.ResolveBinding(name)
+	ev.Rebind(name, func(args []sx.Object, env *shtml.Environment) sx.Object {
+		obj := prevFn(args, env)
+		if env.GetError() == nil {
+			return fn(obj)
+		}
+		return sx.Nil()
+	})
 }
 
 // SetUnique sets a prefix to make several HTML ids unique.
@@ -210,7 +200,8 @@ var mapMetaKey = map[string]string{
 
 func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.Pair {
 	tm := g.tx.GetMeta(m, evalMeta)
-	hm, err := g.th.Transform(tm)
+	env := shtml.MakeEnvironment(g.lang)
+	hm, err := g.th.Evaluate(tm, &env)
 	if err != nil {
 		return nil
 	}
@@ -255,7 +246,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 			continue
 		}
 		a = a.Set("name", newName)
-		metaMap[newName] = g.th.TransformMeta(a)
+		metaMap[newName] = g.th.EvaluateMeta(a)
 	}
 	result := sx.Nil()
 	keys := maps.Keys(metaMap)
@@ -277,7 +268,7 @@ func (g *htmlGenerator) transformMetaTags(tags string) *sx.Pair {
 	if len(metaTags) == 0 {
 		return nil
 	}
-	return g.th.TransformMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
+	return g.th.EvaluateMeta(attrs.Attributes{"name": "keywords", "content": metaTags})
 }
 
 func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sx.Pair, _ error) {
@@ -285,11 +276,12 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sx.Pai
 		return nil, nil, nil
 	}
 	sx := g.tx.GetSz(bs)
-	sh, err := g.th.Transform(sx)
+	env := shtml.MakeEnvironment(g.lang)
+	sh, err := g.th.Evaluate(sx, &env)
 	if err != nil {
 		return nil, nil, err
 	}
-	return sh, g.th.Endnotes(), nil
+	return sh, g.th.Endnotes(&env), nil
 }
 
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.
@@ -298,7 +290,8 @@ func (g *htmlGenerator) InlinesSxHTML(is *ast.InlineSlice) *sx.Pair {
 		return nil
 	}
 	sx := g.tx.GetSz(is)
-	sh, err := g.th.Transform(sx)
+	env := shtml.MakeEnvironment(g.lang)
+	sh, err := g.th.Evaluate(sx, &env)
 	if err != nil {
 		return nil
 	}

@@ -195,7 +195,9 @@ func (wui *WebUI) canRefresh(user *meta.Meta) bool {
 	return wui.policy.CanRefresh(user)
 }
 
-func (wui *WebUI) getSimpleHTMLEncoder() *htmlGenerator { return wui.createGenerator(wui) }
+func (wui *WebUI) getSimpleHTMLEncoder(lang string) *htmlGenerator {
+	return wui.createGenerator(wui, lang)
+}
 
 // GetURLPrefix returns the configured URL prefix of the web server.
 func (wui *WebUI) GetURLPrefix() string { return wui.ab.GetURLPrefix() }

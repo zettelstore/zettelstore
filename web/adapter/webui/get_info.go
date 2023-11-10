@@ -56,7 +56,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		enc := wui.getSimpleHTMLEncoder()
+		enc := wui.getSimpleHTMLEncoder(wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang))
 		getTextTitle := wui.makeGetTextTitle(ctx, ucGetZettel)
 		evalMeta := func(val string) ast.InlineSlice {
 			return ucEvaluate.RunMetadata(ctx, val)

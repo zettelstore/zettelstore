@@ -77,7 +77,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		}
 		var content, endnotes *sx.Pair
 		if bn := evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig); bn != nil {
-			enc := wui.getSimpleHTMLEncoder()
+			enc := wui.getSimpleHTMLEncoder(wui.rtConfig.Get(ctx, nil, api.KeyLang))
 			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})
 			if err != nil {
 				wui.reportError(ctx, w, err)
