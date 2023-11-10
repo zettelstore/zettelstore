@@ -147,7 +147,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotes formatting",
 		zmk:   `""quotes""`,
 		expect: expectMap{
-			encoderHTML:  "<q>quotes</q>",
+			encoderHTML:  "<span>&ldquo;quotes&rdquo;</span>",
 			encoderHTMLS: `((q "quotes"))`,
 			encoderMD:    "<q>quotes</q>",
 			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "quotes")))`,
@@ -160,7 +160,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotes formatting (german)",
 		zmk:   `""quotes""{lang=de}`,
 		expect: expectMap{
-			encoderHTML:  `<span lang="de"><q>quotes</q></span>`,
+			encoderHTML:  `<span lang="de">&bdquo;quotes&ldquo;</span>`,
 			encoderHTMLS: `((span (@ (lang . "de")) (q "quotes")))`,
 			encoderMD:    "<q>quotes</q>",
 			encoderSz:    `(INLINE (FORMAT-QUOTE (quote (("lang" . "de"))) (TEXT "quotes")))`,
@@ -173,7 +173,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Empty quotes (unknown)",
 		zmk:   `""""{lang=unknown}`,
 		expect: expectMap{
-			encoderHTML:  `<span lang="unknown"><q></q></span>`,
+			encoderHTML:  `<span lang="unknown">&quot;&quot;</span>`,
 			encoderHTMLS: `((span (@ (lang . "unknown")) (q)))`,
 			encoderMD:    "<q></q>",
 			encoderSz:    `(INLINE (FORMAT-QUOTE (quote (("lang" . "unknown")))))`,
@@ -270,7 +270,7 @@ var tcsInline = []zmkTestCase{
 		descr: "Nested Span Quote formatting",
 		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{
-			encoderHTML:  `<span lang="fr"><q>abc</q></span>`,
+			encoderHTML:  `<span lang="fr"><span>&laquo;&nbsp;abc&nbsp;&raquo;</span></span>`,
 			encoderHTMLS: `((span (@ (lang . "fr")) (q "abc")))`,
 			encoderMD:    "<q>abc</q>",
 			encoderSz:    `(INLINE (FORMAT-SPAN (quote (("lang" . "fr"))) (FORMAT-QUOTE () (TEXT "abc"))))`,

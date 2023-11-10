@@ -32,23 +32,26 @@ func Create(params *encoder.CreateParameter) *Encoder {
 	// We need a new transformer every time, because tx.inVerse must be unique.
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{
-		tx: szenc.NewTransformer(),
-		th: shtml.NewEvaluator(1, params.Lang, nil),
+		tx:   szenc.NewTransformer(),
+		th:   shtml.NewEvaluator(1, nil),
+		lang: params.Lang,
 	}
 }
 
 type Encoder struct {
-	tx *szenc.Transformer
-	th *shtml.Evaluator
+	tx   *szenc.Transformer
+	th   *shtml.Evaluator
+	lang string
 }
 
 // WriteZettel writes the encoded zettel to the writer.
 func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	metaSHTML, err := enc.th.Evaluate(enc.tx.GetMeta(zn.InhMeta, evalMeta))
+	env := shtml.MakeEnvironment(enc.lang)
+	metaSHTML, err := enc.th.Evaluate(enc.tx.GetMeta(zn.InhMeta, evalMeta), &env)
 	if err != nil {
 		return 0, err
 	}
-	contentSHTML, err := enc.th.Evaluate(enc.tx.GetSz(&zn.Ast))
+	contentSHTML, err := enc.th.Evaluate(enc.tx.GetSz(&zn.Ast), &env)
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +61,8 @@ func (enc *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encode
 
 // WriteMeta encodes meta data as s-expression.
 func (enc *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	metaSHTML, err := enc.th.Evaluate(enc.tx.GetMeta(m, evalMeta))
+	env := shtml.MakeEnvironment(enc.lang)
+	metaSHTML, err := enc.th.Evaluate(enc.tx.GetMeta(m, evalMeta), &env)
 	if err != nil {
 		return 0, err
 	}
@@ -71,7 +75,8 @@ func (enc *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
 
 // WriteBlocks writes a block slice to the writer
 func (enc *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	hval, err := enc.th.Evaluate(enc.tx.GetSz(bs))
+	env := shtml.MakeEnvironment(enc.lang)
+	hval, err := enc.th.Evaluate(enc.tx.GetSz(bs), &env)
 	if err != nil {
 		return 0, err
 	}
@@ -80,7 +85,8 @@ func (enc *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 
 // WriteInlines writes an inline slice to the writer
 func (enc *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	hval, err := enc.th.Evaluate(enc.tx.GetSz(is))
+	env := shtml.MakeEnvironment(enc.lang)
+	hval, err := enc.th.Evaluate(enc.tx.GetSz(is), &env)
 	if err != nil {
 		return 0, err
 	}
