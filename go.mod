@@ -8,7 +8,7 @@ require (
 	golang.org/x/crypto v0.14.0
 	golang.org/x/term v0.13.0
 	golang.org/x/text v0.14.0
-	zettelstore.de/client.fossil v0.0.0-20231110110100-d2a7ad796334
+	zettelstore.de/client.fossil v0.0.0-20231110132446-57abc4c9482a
 	zettelstore.de/sx.fossil v0.0.0-20231102104913-df3083fb9d0f
 )
 

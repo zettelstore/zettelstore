@@ -28,12 +28,12 @@ func init() {
 }
 
 // Create a SHTML encoder
-func Create(*encoder.CreateParameter) *Encoder {
+func Create(params *encoder.CreateParameter) *Encoder {
 	// We need a new transformer every time, because tx.inVerse must be unique.
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{
 		tx: szenc.NewTransformer(),
-		th: shtml.NewEvaluator(1, nil),
+		th: shtml.NewEvaluator(1, params.Lang, nil),
 	}
 }
 
