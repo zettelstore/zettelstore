@@ -147,10 +147,10 @@ var tcsInline = []zmkTestCase{
 		descr: "Quotes formatting",
 		zmk:   `""quotes""`,
 		expect: expectMap{
-			encoderHTML:  "<span>&ldquo;quotes&rdquo;</span>",
+			encoderHTML:  "&ldquo;quotes&rdquo;",
 			encoderMD:    "<q>quotes</q>",
 			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "quotes")))`,
-			encoderSHTML: `((span (@H "&ldquo;") "quotes" (@H "&rdquo;")))`,
+			encoderSHTML: `((@L (@H "&ldquo;") "quotes" (@H "&rdquo;")))`,
 			encoderText:  `quotes`,
 			encoderZmk:   useZmk,
 		},
@@ -168,6 +168,18 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Empty quotes (default)",
+		zmk:   `""""`,
+		expect: expectMap{
+			encoderHTML:  `&ldquo;&rdquo;`,
+			encoderMD:    "<q></q>",
+			encoderSz:    `(INLINE (FORMAT-QUOTE ()))`,
+			encoderSHTML: `((@L (@H "&ldquo;" "&rdquo;")))`,
+			encoderText:  ``,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Empty quotes (unknown)",
 		zmk:   `""""{lang=unknown}`,
 		expect: expectMap{
@@ -180,6 +192,17 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Nested quotes (default)",
+		zmk:   `""say: ::""yes, ::""or?""::""::""`,
+		expect: expectMap{
+			encoderHTML:  `&ldquo;say: <span>&lsquo;yes, <span>&ldquo;or?&rdquo;</span>&rsquo;</span>&rdquo;`,
+			encoderMD:    "<q>say: <q>yes, <q>or?</q></q></q>",
+			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "say:") (SPACE) (FORMAT-SPAN () (FORMAT-QUOTE () (TEXT "yes,") (SPACE) (FORMAT-SPAN () (FORMAT-QUOTE () (TEXT "or?")))))))`,
+			encoderSHTML: `((@L (@H "&ldquo;") "say:" " " (span (@L (@H "&lsquo;") "yes," " " (span (@L (@H "&ldquo;") "or?" (@H "&rdquo;"))) (@H "&rsquo;"))) (@H "&rdquo;")))`,
+			encoderText:  `say: yes, or?`,
+			encoderZmk:   useZmk,
+		},
+	}, {
 		descr: "Span formatting",
 		zmk:   `::span::`,
 		expect: expectMap{
@@ -267,10 +290,10 @@ var tcsInline = []zmkTestCase{
 		descr: "Nested Span Quote formatting",
 		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{
-			encoderHTML:  `<span lang="fr"><span>&laquo;&nbsp;abc&nbsp;&raquo;</span></span>`,
+			encoderHTML:  `<span lang="fr">&laquo;&nbsp;abc&nbsp;&raquo;</span>`,
 			encoderMD:    "<q>abc</q>",
 			encoderSz:    `(INLINE (FORMAT-SPAN (quote (("lang" . "fr"))) (FORMAT-QUOTE () (TEXT "abc"))))`,
-			encoderSHTML: `((span (@ (lang . "fr")) (span (@H "&laquo;&nbsp;") "abc" (@H "&nbsp;&raquo;"))))`,
+			encoderSHTML: `((span (@ (lang . "fr")) (@L (@H "&laquo;" "&nbsp;") "abc" (@H "&nbsp;" "&raquo;"))))`,
 			encoderText:  `abc`,
 			encoderZmk:   `::""abc""::{lang="fr"}`,
 		},
