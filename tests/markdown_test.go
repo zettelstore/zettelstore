@@ -48,7 +48,7 @@ func TestEncoderAvailability(t *testing.T) {
 	t.Parallel()
 	encoderMissing := false
 	for _, enc := range encodings {
-		enc := encoder.Create(enc)
+		enc := encoder.Create(enc, &encoder.CreateParameter{Lang: api.ValueLangEN})
 		if enc == nil {
 			t.Errorf("No encoder for %q found", enc)
 			encoderMissing = true
@@ -86,14 +86,14 @@ func testAllEncodings(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
 	testID := tc.Example*100 + 1
 	for _, enc := range encodings {
 		t.Run(fmt.Sprintf("Encode %v %v", enc, testID), func(st *testing.T) {
-			encoder.Create(enc).WriteBlocks(&sb, ast)
+			encoder.Create(enc, &encoder.CreateParameter{Lang: api.ValueLangEN}).WriteBlocks(&sb, ast)
 			sb.Reset()
 		})
 	}
 }
 
 func testZmkEncoding(t *testing.T, tc markdownTestCase, ast *ast.BlockSlice) {
-	zmkEncoder := encoder.Create(api.EncoderZmk)
+	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var buf bytes.Buffer
 	testID := tc.Example*100 + 1
 	t.Run(fmt.Sprintf("Encode zmk %14d", testID), func(st *testing.T) {
@@ -130,7 +130,7 @@ func TestAdditionalMarkdown(t *testing.T) {
 	}{
 		{`abc<br>def`, `abc@@<br>@@{="html"}def`},
 	}
-	zmkEncoder := encoder.Create(api.EncoderZmk)
+	zmkEncoder := encoder.Create(api.EncoderZmk, nil)
 	var sb strings.Builder
 	for i, tc := range testcases {
 		ast := createMDBlockSlice(tc.md, config.MarkdownHTML)

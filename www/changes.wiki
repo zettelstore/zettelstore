@@ -9,6 +9,11 @@
      Previously, only a sequences of zeroes were appended, resulting in illegal
      timestamps, e.g. for YYYY or YYYYMM.
      (minor)
+  *  SHTML encoder fixed w.r.t inline quoting. Previously, an &lt;q&gt; tag was
+     used, which is inappropriate. Restored smart quotes from version 0.3, but
+     with new SxHTML infrastructure. This affect the html encoder and the WebUI
+     too. Now, an empty quote should not result in a warning by HTML linters.
+     (minor: api, webui)
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (2023-10-26)</h2>

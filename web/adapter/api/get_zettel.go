@@ -64,7 +64,7 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usec
 				a.reportUsecaseError(w, err)
 				return
 			}
-			a.writeEncodedZettelPart(w, zn, em, enc, encStr, part)
+			a.writeEncodedZettelPart(ctx, w, zn, em, enc, encStr, part)
 		}
 	}
 }
@@ -136,11 +136,16 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 }
 
 func (a *API) writeEncodedZettelPart(
+	ctx context.Context,
 	w http.ResponseWriter, zn *ast.ZettelNode,
 	evalMeta encoder.EvalMetaFunc,
 	enc api.EncodingEnum, encStr string, part partType,
 ) {
-	encdr := encoder.Create(enc)
+	encdr := encoder.Create(
+		enc,
+		&encoder.CreateParameter{
+			Lang: a.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang),
+		})
 	if encdr == nil {
 		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid, encStr))
 		return

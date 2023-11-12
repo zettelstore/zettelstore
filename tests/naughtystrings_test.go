@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"zettelstore.de/client.fossil/api"
 	_ "zettelstore.de/z/cmd"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/input"
@@ -55,7 +56,7 @@ func getAllParser() (result []*parser.Info) {
 
 func getAllEncoder() (result []encoder.Encoder) {
 	for _, enc := range encoder.GetEncodings() {
-		e := encoder.Create(enc)
+		e := encoder.Create(enc, &encoder.CreateParameter{Lang: api.ValueLangEN})
 		result = append(result, e)
 	}
 	return result

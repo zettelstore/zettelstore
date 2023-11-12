@@ -45,15 +45,20 @@ var (
 )
 
 // Create builds a new encoder with the given options.
-func Create(enc api.EncodingEnum) Encoder {
+func Create(enc api.EncodingEnum, params *CreateParameter) Encoder {
 	if create, ok := registry[enc]; ok {
-		return create()
+		return create(params)
 	}
 	return nil
 }
 
 // CreateFunc produces a new encoder.
-type CreateFunc func() Encoder
+type CreateFunc func(*CreateParameter) Encoder
+
+// CreateParameter contains values that are needed to create an encoder.
+type CreateParameter struct {
+	Lang string // default language
+}
 
 var registry = map[api.EncodingEnum]CreateFunc{}
 
