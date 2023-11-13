@@ -3,14 +3,15 @@ title: Zettelmarkup: Summary of Formatting Characters
 role: manual
 tags: #manual #reference #zettelmarkup #zettelstore
 syntax: zmk
-modified: 20220810095559
+created: 20220805150154
+modified: 20231113132003
 
 The following table gives an overview about the use of all characters that begin a markup element.
 
 |= Character :|= [[Blocks|00001007030000]] <|= [[Inlines|00001007040000]] <
 | ''!''  | (free) | (free)
 | ''"''  | [[Verse block|00001007030700]] | [[Short inline quote|00001007040100]]
-| ''#''  | [[Ordered list|00001007030200]] | [[Tag|00001007040000]]
+| ''#''  | [[Ordered list|00001007030200]] | (free)
 | ''$''  | (reserved) | (reserved)
 | ''%''  | [[Comment block|00001007030900]] | [[Comment|00001007040000]]
 | ''&''  | (free) | [[Entity|00001007040000]]
