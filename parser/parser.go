@@ -135,6 +135,7 @@ func ParseSpacedText(s string) ast.InlineSlice {
 func NormalizedSpacedText(s string) string { return strings.Join(meta.ListFromValue(s), " ") }
 
 // ParseDescription returns a suitable description stored in the metadata as an inline slice.
+// This is done for an image in most cases.
 func ParseDescription(m *meta.Meta) ast.InlineSlice {
 	if m == nil {
 		return nil
@@ -147,7 +148,7 @@ func ParseDescription(m *meta.Meta) ast.InlineSlice {
 	if title, found := m.Get(api.KeyTitle); found {
 		return ParseSpacedText(title)
 	}
-	return nil
+	return ast.CreateInlineSliceFromWords("Zettel", "without", "title:", m.Zid.String())
 }
 
 // ParseZettel parses the zettel based on the syntax.
