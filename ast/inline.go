@@ -195,14 +195,15 @@ type FormatKind int
 // Constants for FormatCode
 const (
 	_            FormatKind = iota
-	FormatEmph              // Emphasized text.
-	FormatStrong            // Strongly emphasized text.
-	FormatInsert            // Inserted text.
-	FormatDelete            // Deleted text.
-	FormatSuper             // Superscripted text.
-	FormatSub               // SubscriptedText.
-	FormatQuote             // Quoted text.
-	FormatSpan              // Generic inline container.
+	FormatEmph              // Emphasized text
+	FormatStrong            // Strongly emphasized text
+	FormatInsert            // Inserted text
+	FormatDelete            // Deleted text
+	FormatSuper             // Superscripted text
+	FormatSub               // SubscriptedText
+	FormatQuote             // Quoted text
+	FormatMark              // Marked text
+	FormatSpan              // Generic inline container
 )
 
 func (*FormatNode) inlineNode() { /* Just a marker */ }

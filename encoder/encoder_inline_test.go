@@ -202,7 +202,20 @@ var tcsInline = []zmkTestCase{
 			encoderText:  `say: yes, or?`,
 			encoderZmk:   useZmk,
 		},
-	}, {
+	},
+	{
+		descr: "Mark formatting",
+		zmk:   `##marked##`,
+		expect: expectMap{
+			encoderHTML:  `<mark>marked</mark>`,
+			encoderMD:    "<mark>marked</mark>",
+			encoderSz:    `(INLINE (FORMAT-MARK () (TEXT "marked")))`,
+			encoderSHTML: `((mark "marked"))`,
+			encoderText:  `marked`,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Span formatting",
 		zmk:   `::span::`,
 		expect: expectMap{

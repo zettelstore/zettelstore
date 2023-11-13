@@ -14,6 +14,11 @@
      with new SxHTML infrastructure. This affect the html encoder and the WebUI
      too. Now, an empty quote should not result in a warning by HTML linters.
      (minor: api, webui)
+  *  Add new zettelmarkup inline formatting: <tt>##Text##</tt> will mark /
+     highlight the given Text. It is typically used to highlight some text,
+     which is important for you, but not for the original author. When rendered
+     as HTML, the &lt;mark&gt; tag is used.
+     (minor: zettelmarkup)
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (2023-10-26)</h2>

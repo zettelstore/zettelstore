@@ -331,6 +331,10 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		v.b.WriteString("<q>")
 		ast.Walk(v, &fn.Inlines)
 		v.b.WriteString("</q>")
+	case ast.FormatMark:
+		v.b.WriteString("<mark>")
+		ast.Walk(v, &fn.Inlines)
+		v.b.WriteString("</mark>")
 	default:
 		ast.Walk(v, &fn.Inlines)
 	}

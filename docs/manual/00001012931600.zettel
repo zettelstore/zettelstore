@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161845
-modified: 20230405123222
+modified: 20231113191203
 
 === ''TEXT''
 :::syntax
@@ -146,6 +146,11 @@ The inline text should be treated as emphasized.
 __InsertFormat__ **=** ''(FORMAT-INSERT'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 The inline text should be treated as inserted.
+
+:::syntax
+__MarkFormat__ **=** ''(FORMAT-MARK'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+:::
+The inline text should be treated as highlighted for the reader (but was not important fto the original author).
 
 :::syntax
 __QuoteFormat__ **=** ''(FORMAT-QUOTE'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.

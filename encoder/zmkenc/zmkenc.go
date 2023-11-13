@@ -356,7 +356,7 @@ func (v *visitor) visitBLOB(bn *ast.BLOBNode) {
 }
 
 var escapeSeqs = strfun.NewSet(
-	"\\", "__", "**", "~~", "^^", ",,", ">>", `""`, "::", "''", "``", "++", "==",
+	"\\", "__", "**", "~~", "^^", ",,", ">>", `""`, "::", "''", "``", "++", "==", "##",
 )
 
 func (v *visitor) visitText(tn *ast.TextNode) {
@@ -452,6 +452,7 @@ var mapFormatKind = map[ast.FormatKind][]byte{
 	ast.FormatSuper:  []byte("^^"),
 	ast.FormatSub:    []byte(",,"),
 	ast.FormatQuote:  []byte(`""`),
+	ast.FormatMark:   []byte("##"),
 	ast.FormatSpan:   []byte("::"),
 }
 

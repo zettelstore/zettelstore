@@ -73,6 +73,7 @@ func NewTransformer() *Transformer {
 		ast.FormatSuper:  t.zetSyms.SymFormatSuper,
 		ast.FormatSub:    t.zetSyms.SymFormatSub,
 		ast.FormatQuote:  t.zetSyms.SymFormatQuote,
+		ast.FormatMark:   t.zetSyms.SymFormatMark,
 		ast.FormatSpan:   t.zetSyms.SymFormatSpan,
 	}
 	t.mapLiteralKindS = map[ast.LiteralKind]*sx.Symbol{
