@@ -29,6 +29,8 @@ func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 			sx.String(version.Info),
 			sx.String(version.Hash),
 		))
-		a.log.IfErr(err).Msg("Write Version Info")
+		if err != nil {
+			a.log.Error().Err(err).Msg("Write Version Info")
+		}
 	}
 }

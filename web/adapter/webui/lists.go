@@ -178,7 +178,7 @@ func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query
 		_, err = w.Write(data)
 	}
 	if err != nil {
-		wui.log.IfErr(err).Msg("unable to write RSS data")
+		wui.log.Error().Err(err).Msg("unable to write RSS data")
 	}
 }
 
@@ -197,7 +197,7 @@ func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.M
 		_, err = w.Write(data)
 	}
 	if err != nil {
-		wui.log.IfErr(err).Msg("unable to write Atom data")
+		wui.log.Error().Err(err).Msg("unable to write Atom data")
 	}
 }
 

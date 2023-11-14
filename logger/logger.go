@@ -183,14 +183,6 @@ func (l *Logger) Warn() *Message { return newMessage(l, WarnLevel) }
 // Error creates a message suitable for errors.
 func (l *Logger) Error() *Message { return newMessage(l, ErrorLevel) }
 
-// IfErr creates an error message and sets the go error, if there is an error.
-func (l *Logger) IfErr(err error) *Message {
-	if err != nil {
-		return newMessage(l, ErrorLevel).Err(err)
-	}
-	return nil
-}
-
 // Fatal creates a message suitable for fatal errors.
 func (l *Logger) Fatal() *Message { return newMessage(l, FatalLevel) }
 

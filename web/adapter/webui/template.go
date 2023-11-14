@@ -349,7 +349,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Env
 
 	objs, err := reader.ReadAll()
 	if err != nil {
-		wui.log.IfErr(err).Zid(zid).Msg("reading sxn template")
+		wui.log.Error().Err(err).Zid(zid).Msg("reading sxn template")
 		return nil, err
 	}
 	if len(objs) != 1 {
@@ -404,8 +404,9 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 		return err
 	}
 	wui.prepareAndWriteHeader(w, code)
-	_, err = w.Write(sb.Bytes())
-	wui.log.IfErr(err).Msg("Unable to write HTML via template")
+	if _, err = w.Write(sb.Bytes()); err != nil {
+		wui.log.Error().Err(err).Msg("Unable to write HTML via template")
+	}
 	return nil // No error reporting, since we do not know what happended during write to client.
 }
 

@@ -68,7 +68,8 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 		h := adapter.PrepareHeader(w, contentType)
 		h.Set(api.HeaderLocation, location.String())
 		w.WriteHeader(http.StatusCreated)
-		_, err = w.Write(result)
-		a.log.IfErr(err).Zid(newZid).Msg("Create Zettel")
+		if _, err = w.Write(result); err != nil {
+			a.log.Error().Err(err).Zid(newZid).Msg("Create Zettel")
+		}
 	}
 }

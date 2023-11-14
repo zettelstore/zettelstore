@@ -167,7 +167,7 @@ func (fsdn *fsdirNotifier) processDirEvent(ev *fsnotify.Event) bool {
 	if ev.Has(fsnotify.Create) {
 		err := fsdn.base.Add(fsdn.path)
 		if err != nil {
-			fsdn.log.IfErr(err).Str("name", fsdn.path).Msg("Unable to add directory")
+			fsdn.log.Error().Err(err).Str("name", fsdn.path).Msg("Unable to add directory")
 			select {
 			case fsdn.events <- Event{Op: Error, Err: err}:
 			case <-fsdn.done:

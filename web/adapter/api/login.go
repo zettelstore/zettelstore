@@ -25,8 +25,9 @@ import (
 func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.withAuth() {
-			err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour)
-			a.log.IfErr(err).Msg("Login/free")
+			if err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour); err != nil {
+				a.log.Error().Err(err).Msg("Login/free")
+			}
 			return
 		}
 		var token []byte
@@ -44,8 +45,9 @@ func (a *API) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFun
 			return
 		}
 
-		err := a.writeToken(w, string(token), a.tokenLifetime)
-		a.log.IfErr(err).Msg("Login")
+		if err := a.writeToken(w, string(token), a.tokenLifetime); err != nil {
+			a.log.Error().Err(err).Msg("Login")
+		}
 	}
 }
 
@@ -64,8 +66,9 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if !a.withAuth() {
-			err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour)
-			a.log.IfErr(err).Msg("Refresh/free")
+			if err := a.writeToken(w, "freeaccess", 24*366*10*time.Hour); err != nil {
+				a.log.Error().Err(err).Msg("Refresh/free")
+			}
 			return
 		}
 		authData := a.getAuthData(ctx)
@@ -77,8 +80,9 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 		currentLifetime := authData.Now.Sub(authData.Issued)
 		// If we are in the first quarter of the tokens lifetime, return the token
 		if currentLifetime*4 < totalLifetime {
-			err := a.writeToken(w, string(authData.Token), totalLifetime-currentLifetime)
-			a.log.IfErr(err).Msg("Write old token")
+			if err := a.writeToken(w, string(authData.Token), totalLifetime-currentLifetime); err != nil {
+				a.log.Error().Err(err).Msg("Write old token")
+			}
 			return
 		}
 
@@ -88,8 +92,9 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 			a.reportUsecaseError(w, err)
 			return
 		}
-		err = a.writeToken(w, string(token), a.tokenLifetime)
-		a.log.IfErr(err).Msg("Write renewed token")
+		if err = a.writeToken(w, string(token), a.tokenLifetime); err != nil {
+			a.log.Error().Err(err).Msg("Write renewed token")
+		}
 	}
 }
 

@@ -72,7 +72,7 @@ func (a *API) getToken(ident *meta.Meta) ([]byte, error) {
 func (a *API) reportUsecaseError(w http.ResponseWriter, err error) {
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
-		a.log.IfErr(err).Msg(text)
+		a.log.Error().Err(err).Msg(text)
 		http.Error(w, http.StatusText(code), code)
 		return
 	}

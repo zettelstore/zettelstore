@@ -37,7 +37,8 @@ func (wui *WebUI) MakeFaviconHandler(baseDir string) http.HandlerFunc {
 			return
 		}
 
-		err = adapter.WriteData(w, data, "")
-		wui.log.IfErr(err).Msg("Write favicon")
+		if err = adapter.WriteData(w, data, ""); err != nil {
+			wui.log.Error().Err(err).Msg("Write favicon")
+		}
 	}
 }

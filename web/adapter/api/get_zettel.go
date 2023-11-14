@@ -104,8 +104,9 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	err = writeBuffer(w, &buf, contentType)
-	a.log.IfErr(err).Zid(zid).Msg("Write Plain data")
+	if err = writeBuffer(w, &buf, contentType); err != nil {
+		a.log.Error().Err(err).Zid(zid).Msg("Write Plain data")
+	}
 }
 
 func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
@@ -131,8 +132,9 @@ func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid
 			Rights: a.getRights(ctx, z.Meta),
 		})
 	}
-	err = a.writeObject(w, zid, obj)
-	a.log.IfErr(err).Zid(zid).Msg("write sx data")
+	if err = a.writeObject(w, zid, obj); err != nil {
+		a.log.Error().Err(err).Zid(zid).Msg("write sx data")
+	}
 }
 
 func (a *API) writeEncodedZettelPart(
@@ -170,6 +172,7 @@ func (a *API) writeEncodedZettelPart(
 		return
 	}
 
-	err = writeBuffer(w, &buf, content.MIMEFromEncoding(enc))
-	a.log.IfErr(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
+	if err = writeBuffer(w, &buf, content.MIMEFromEncoding(enc)); err != nil {
+		a.log.Error().Err(err).Zid(zn.Zid).Msg("Write Encoded Zettel")
+	}
 }
