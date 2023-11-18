@@ -204,6 +204,18 @@ var tcsInline = []zmkTestCase{
 		},
 	},
 	{
+		descr: "Two quotes",
+		zmk:   `""yes"" or ""no""`,
+		expect: expectMap{
+			encoderHTML:  `&ldquo;yes&rdquo; or &ldquo;no&rdquo;`,
+			encoderMD:    "<q>yes</q> or <q>no</q>",
+			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "yes")) (SPACE) (TEXT "or") (SPACE) (FORMAT-QUOTE () (TEXT "no")))`,
+			encoderSHTML: `((@L (@H "&ldquo;") "yes" (@H "&rdquo;")) " " "or" " " (@L (@H "&ldquo;") "no" (@H "&rdquo;")))`,
+			encoderText:  `yes or no`,
+			encoderZmk:   useZmk,
+		},
+	},
+	{
 		descr: "Mark formatting",
 		zmk:   `##marked##`,
 		expect: expectMap{
