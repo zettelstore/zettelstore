@@ -53,8 +53,8 @@ func TestListZettel(t *testing.T) {
 		configRoleZettel = 32
 		writerZettel     = ownerZettel - 24
 		readerZettel     = ownerZettel - 24
-		creatorZettel    = 8
-		publicZettel     = 4
+		creatorZettel    = 9
+		publicZettel     = 5
 	)
 
 	testdata := []struct {
