@@ -76,6 +76,7 @@ type WebUI struct {
 	symA, symHref *sx.Symbol
 	symSpan       *sx.Symbol
 	symAttr       *sx.Symbol
+	symAttrOpen   *sx.Symbol
 }
 
 // webuiBox contains all box methods that are needed for WebUI operation.
@@ -133,6 +134,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		symHref:       sf.MustMake("href"),
 		symSpan:       sf.MustMake("span"),
 		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
+		symAttrOpen:   sf.MustMake("open"),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})

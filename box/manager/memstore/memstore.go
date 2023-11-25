@@ -270,9 +270,9 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 }
 
 func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.Set {
-	m := ms.makeMeta(zidx)
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
+	m := ms.makeMeta(zidx)
 	zi, ziExist := ms.idx[zidx.Zid]
 	if !ziExist || zi == nil {
 		zi = &zettelData{}

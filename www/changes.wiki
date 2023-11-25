@@ -19,6 +19,12 @@
      which is important for you, but not for the original author. When rendered
      as HTML, the &lt;mark&gt; tag is used.
      (minor: zettelmarkup)
+  *  Add configuration keys to show, not to show, or show the closed list of
+     referencing zettel in the web user interface. You can set these
+     configurations system-wide, per user, or per zettel. Often it is used to
+     ensure a &ldquo;clean&rdquo; home zettel. Affects the list of incoming
+     / back links, folge zettel, subordinate zettel, and successor zettel.
+     (minor: webui)
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (2023-10-26)</h2>

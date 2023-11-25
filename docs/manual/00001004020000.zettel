@@ -4,7 +4,8 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230807171016
+modified: 20231125191418
+show-back-links: false
 
 You can configure a running Zettelstore by modifying the special zettel with the ID [[00000000000100]].
 This zettel is called __configuration zettel__.
@@ -20,13 +21,16 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
 ; [!default-license|''default-license'']
 : License value to be used when rendering content.
   Can be overwritten in a zettel with [[meta key|00001006020000]] ''license''.
+
   Default: (the empty string).
 ; [!default-visibility|''default-visibility'']
 : Visibility to be used, if zettel does not specify a value for the [[''visibility''|00001006020000#visibility]] metadata key.
+
   Default: ""login"".
 ; [!expert-mode|''expert-mode'']
 : If set to a [[boolean true value|00001006030500]], all zettel with [[visibility ""expert""|00001010070200]] will be shown (to the owner, if [[authentication is enabled|00001010040100]]; to all, otherwise).
   This affects most computed zettel.
+
   Default: ""False"".
 ; [!footer-zettel|''footer-zettel'']
 : Identifier of a zettel that is rendered as HTML and will be placed as the footer of every zettel in the [[web user interface|00001014000000]].
@@ -54,13 +58,30 @@ See the full list of [[metadata that may be overwritten|00001004020200]].
 ; [!max-transclusions|''max-transclusions'']
 : Maximum number of indirect transclusion.
   This is used to avoid an exploding ""transclusion bomb"", a form of a [[billion laughs attack|https://en.wikipedia.org/wiki/Billion_laughs_attack]].
+
   Default: ""1024"".
+; [!show-back-links|''show-back-links''], [!show-folge-links|''show-folge-links''], [!show-subordinates-links|''show-subordinates-links''], [!show-successors-links|''show-successors-links'']
+: When displaying a zettel in the web user interface, references to other zettel are normally shown below the content of the zettel.
+  This affects the metadata keys [[''back''|00001006020000#back]], [[''folge''|00001006020000#folge]], [[''subordinates''|00001006020000#subordinates]], and  [[''successors''|00001006020000#successors]].
+
+  These configuration keys may be used to show, not to show, or to close the list of referenced zettel.
+
+  Allowed values are: ""false"" (will not show the list), ""close"" (will show the list closed), and ""open"" / """" (will show the list).
+
+  Default: """".
+
+  May be [[overwritten|00001004020200]] in a user zettel, so that setting will only affect the given user.
+  Alternatively, it may be overwritten in a zettel, so that that the setting will affect only the given zettel.
+
+  This zettel is an example of a zettel that sets ''show-back-links'' to ""false"".
 ; [!site-name|''site-name'']
 : Name of the Zettelstore instance.
   Will be used when displaying some lists.
+
   Default: ""Zettelstore"".
 ; [!yaml-header|''yaml-header'']
 : If [[true|00001006030500]], metadata and content will be separated by ''---\\n'' instead of an empty line (''\\n\\n'').
+
   Default: ""False"".
 
   You will probably use this key, if you are working with another software processing [[Markdown|https://daringfireball.net/projects/markdown/]] that uses a subset of [[YAML|https://yaml.org/]] to specify metadata.

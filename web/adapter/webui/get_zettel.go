@@ -11,11 +11,13 @@
 package webui
 
 import (
+	"context"
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
+	"zettelstore.de/z/config"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/server"
@@ -70,8 +72,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		rb.bindString("endnotes", endnotes)
 		rb.bindString("folge-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyFolge, getTextTitle))
 		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
-		rb.bindString("back-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyBack, getTextTitle))
-		rb.bindString("successor-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySuccessors, getTextTitle))
+		wui.bindLinks(ctx, &rb, "folge", zn.InhMeta, api.KeyFolge, config.KeyShowFolgeLinks, getTextTitle)
+		wui.bindLinks(ctx, &rb, "subordinate", zn.InhMeta, api.KeySubordinates, config.KeyShowSubordinatesLinks, getTextTitle)
+		wui.bindLinks(ctx, &rb, "back", zn.InhMeta, api.KeyBack, config.KeyShowBackLinks, getTextTitle)
+		wui.bindLinks(ctx, &rb, "successor", zn.InhMeta, api.KeySuccessors, config.KeyShowSuccessorsLinks, getTextTitle)
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
 			for _, part := range []string{"meta", "actions", "heading"} {
 				rb.rebindResolved("ROLE-"+role+"-"+part, "ROLE-DEFAULT-"+part)
@@ -94,6 +98,25 @@ func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle ge
 		return wui.transformIdentifierSet(values, getTextTitle)
 	}
 	return nil
+}
+
+func (wui *WebUI) bindLinks(ctx context.Context, rb *renderBinder, varPrefix string, m *meta.Meta, key, configKey string, getTextTitle getTextTitleFunc) {
+	varLinks := varPrefix + "-links"
+	var symOpen *sx.Symbol
+	switch wui.rtConfig.Get(ctx, m, configKey) {
+	case "false", "no", "off":
+		rb.bindString(varLinks, sx.Nil())
+		return
+	case "close":
+	default:
+		symOpen = wui.symAttrOpen
+	}
+	lstLinks := wui.zettelLinksSxn(m, key, getTextTitle)
+	rb.bindString(varLinks, lstLinks)
+	if sx.IsNil(lstLinks) {
+		return
+	}
+	rb.bindString(varPrefix+"-open", symOpen)
 }
 
 func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sx.Pair {
