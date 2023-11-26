@@ -21,10 +21,10 @@
   ,endnotes
   ,@(if (or folge-links subordinate-links back-links successor-links)
     `((nav
-      ,@(if folge-links `((details (@ (open)) (summary "Folgezettel") (ul ,@(map wui-item-link folge-links)))))
-      ,@(if subordinate-links `((details (@ (open)) (summary "Subordinates") (ul ,@(map wui-item-link subordinate-links)))))
+      ,@(if folge-links `((details (@ (,folge-open)) (summary "Folgezettel") (ul ,@(map wui-item-link folge-links)))))
+      ,@(if subordinate-links `((details (@ (,subordinate-open)) (summary "Subordinates") (ul ,@(map wui-item-link subordinate-links)))))
       ,@(if back-links `((details (@ (,back-open)) (summary "Incoming") (ul ,@(map wui-item-link back-links)))))
-      ,@(if successor-links `((details (@ (open)) (summary "Successors") (ul ,@(map wui-item-link successor-links)))))
+      ,@(if successor-links `((details (@ (,successor-open)) (summary "Successors") (ul ,@(map wui-item-link successor-links)))))
      ))
   )
 )

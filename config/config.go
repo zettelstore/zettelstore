@@ -19,12 +19,12 @@ import (
 
 // Key values that are supported by Config.Get
 const (
-	KeyFooterZettel          = "footer-zettel"
-	KeyHomeZettel            = "home-zettel"
-	KeyShowBackLinks         = "show-back-links"
-	KeyShowFolgeLinks        = "show-folge-links"
-	KeyShowSubordinatesLinks = "show-subordinates-links"
-	KeyShowSuccessorsLinks   = "show-successors-links"
+	KeyFooterZettel         = "footer-zettel"
+	KeyHomeZettel           = "home-zettel"
+	KeyShowBackLinks        = "show-back-links"
+	KeyShowFolgeLinks       = "show-folge-links"
+	KeyShowSubordinateLinks = "show-subordinate-links"
+	KeyShowSuccessorLinks   = "show-successor-links"
 	// api.KeyLang
 )
 

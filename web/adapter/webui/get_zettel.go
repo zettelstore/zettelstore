@@ -70,12 +70,10 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
-		rb.bindString("folge-links", wui.zettelLinksSxn(zn.InhMeta, api.KeyFolge, getTextTitle))
-		rb.bindString("subordinate-links", wui.zettelLinksSxn(zn.InhMeta, api.KeySubordinates, getTextTitle))
 		wui.bindLinks(ctx, &rb, "folge", zn.InhMeta, api.KeyFolge, config.KeyShowFolgeLinks, getTextTitle)
-		wui.bindLinks(ctx, &rb, "subordinate", zn.InhMeta, api.KeySubordinates, config.KeyShowSubordinatesLinks, getTextTitle)
+		wui.bindLinks(ctx, &rb, "subordinate", zn.InhMeta, api.KeySubordinates, config.KeyShowSubordinateLinks, getTextTitle)
 		wui.bindLinks(ctx, &rb, "back", zn.InhMeta, api.KeyBack, config.KeyShowBackLinks, getTextTitle)
-		wui.bindLinks(ctx, &rb, "successor", zn.InhMeta, api.KeySuccessors, config.KeyShowSuccessorsLinks, getTextTitle)
+		wui.bindLinks(ctx, &rb, "successor", zn.InhMeta, api.KeySuccessors, config.KeyShowSuccessorLinks, getTextTitle)
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
 			for _, part := range []string{"meta", "actions", "heading"} {
 				rb.rebindResolved("ROLE-"+role+"-"+part, "ROLE-DEFAULT-"+part)
@@ -104,7 +102,7 @@ func (wui *WebUI) bindLinks(ctx context.Context, rb *renderBinder, varPrefix str
 	varLinks := varPrefix + "-links"
 	var symOpen *sx.Symbol
 	switch wui.rtConfig.Get(ctx, m, configKey) {
-	case "false", "no", "off":
+	case "false":
 		rb.bindString(varLinks, sx.Nil())
 		return
 	case "close":
