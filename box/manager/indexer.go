@@ -184,10 +184,24 @@ func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *st
 				cData.urls.Add(pair.Value)
 			}
 		default:
-			for _, word := range strfun.NormalizeWords(pair.Value) {
-				cData.words.Add(word)
+			if descr.Type.IsSet {
+				for _, val := range meta.ListFromValue(pair.Value) {
+					idxCollectMetaValue(cData.words, val)
+				}
+			} else {
+				idxCollectMetaValue(cData.words, pair.Value)
 			}
 		}
+	}
+}
+
+func idxCollectMetaValue(stWords store.WordSet, value string) {
+	if words := strfun.NormalizeWords(value); len(words) > 0 {
+		for _, word := range words {
+			stWords.Add(word)
+		}
+	} else {
+		stWords.Add(value)
 	}
 }
 
