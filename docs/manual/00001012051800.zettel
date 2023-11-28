@@ -1,0 +1,71 @@
+id: 00001012051800
+title: API: Determine a role zettel
+role: manual
+tags: #api #manual #zettelstore
+syntax: zmk
+created: 20231128183917
+modified: 20231128184701
+
+The [[endpoint|00001012920000]] ''/z'' also allows you to determine a ""role zettel"", i.e. a zettel that documents a given role.
+
+The query parameter ""''role''"" allows you to specify a value that is interpreted as the name of a role.
+Zettelstore tries to determine the corresponding role zettel.
+
+A role zettel is a zettel with the [[''role''|00001006020100]] value ""role"" and a title that names the role.
+If there is more than one zettel that qualifies, the zettel with the highest zettel identifier is used.
+
+For example, if you want to determine the role zettel for the role ""manual"", your request will be:
+```sh
+# curl -i 'http://127.0.0.1:23123/z?role=manual'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/20231128184200
+Content-Length: 14
+
+20231128184200
+```
+
+If there is a corresponding role zettel, the response will use the HTTP status code 302 (""Found""), the HTTP response header ''Location'' will contain the URL of the role zettel.
+Its zettel identifier will be returned in the HTTP response body.
+
+If you specified some more query parameter, these will be part of the URL in the response header ''Location'':
+
+```sh
+# curl -i 'http://127.0.0.1:23123/z?role=manual&part=zettel'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/20231128184200?part=zettel
+Content-Length: 14
+
+20231128184200
+```
+
+Otherwise, if no role zettel was found, the response will use the HTTP status code 404 (""Not found"").
+
+```sh
+# curl -i 'http://127.0.0.1:23123/z?role=norole'
+HTTP/1.1 404 Not Found
+Content-Type: text/plain; charset=utf-8
+Content-Length: 30
+
+Role zettel not found: norole
+```
+
+To fulfill this service, Zettelstore will evaluate internally the query ''role:role title=ROLE'', there ''ROLE'' is the actual role.
+
+Of course, if you are only interested in the URL of the role zettel, you can make use of the HTTP ''HEAD'' method:
+
+```sh
+# curl -I 'http://127.0.0.1:23123/z?role=manual'
+HTTP/1.1 302 Found
+Content-Type: text/plain; charset=utf-8
+Location: /z/20231128184200
+Content-Length: 14
+```
+
+=== HTTP Status codes
+; ''302''
+: Role zettel was found.
+  The HTTP header ''Location'' contains its URL, the body of the response contains its zettel identifier.
+; ''404''
+: No zettel for the given role was found.

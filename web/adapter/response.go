@@ -75,6 +75,10 @@ func CodeMessageFromError(err error) (int, string) {
 	if errors.As(err, &etznf) {
 		return http.StatusNotFound, "Tag zettel not found: " + etznf.Tag
 	}
+	var erznf usecase.ErrRoleZettelNotFound
+	if errors.As(err, &erznf) {
+		return http.StatusNotFound, "Role zettel not found: " + erznf.Role
+	}
 	var ebr ErrBadRequest
 	if errors.As(err, &ebr) {
 		return http.StatusBadRequest, ebr.Text

@@ -2,6 +2,8 @@
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.0 (pending)</h2>
+  *  Allow to determine a role zettel for a given role.
+     (major: api)
   *  Timestamp values can be abbrevated by omitting most of its components.
      Previously, such values that are not in the format YYYYMMDDhhmmss were
      ignored. Now the following formats are also allowed: YYYY, YYYYMM,

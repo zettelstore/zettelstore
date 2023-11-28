@@ -31,11 +31,14 @@ import (
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
-func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
+func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, roleZettel *usecase.RoleZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		urlQuery := r.URL.Query()
 		if a.handleTagZettel(w, r, tagZettel, urlQuery) {
+			return
+		}
+		if a.handleRoleZettel(w, r, roleZettel, urlQuery) {
 			return
 		}
 
@@ -249,6 +252,35 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 	newURL := a.NewURLBuilder('z').SetZid(api.ZettelID(zid))
 	for key, slVals := range vals {
 		if key == api.QueryKeyTag {
+			continue
+		}
+		for _, val := range slVals {
+			newURL.AppendKVQuery(key, val)
+		}
+	}
+	http.Redirect(w, r, newURL.String(), http.StatusFound)
+	if _, err = io.WriteString(w, zid); err != nil {
+		a.log.Error().Err(err).Msg("redirect body")
+	}
+	return true
+}
+
+func (a *API) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZettel *usecase.RoleZettel, vals url.Values) bool {
+	role := vals.Get(api.QueryKeyRole)
+	if role == "" {
+		return false
+	}
+	ctx := r.Context()
+	z, err := roleZettel.Run(ctx, role)
+	if err != nil {
+		a.reportUsecaseError(w, err)
+		return true
+	}
+	zid := z.Meta.Zid.String()
+	w.Header().Set(api.HeaderContentType, content.PlainText)
+	newURL := a.NewURLBuilder('z').SetZid(api.ZettelID(zid))
+	for key, slVals := range vals {
+		if key == api.QueryKeyRole {
 			continue
 		}
 		for _, val := range slVals {

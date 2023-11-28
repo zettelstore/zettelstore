@@ -67,6 +67,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	ucEvaluate := usecase.NewEvaluate(rtConfig, &ucGetZettel, &ucQuery)
 	ucQuery.SetEvaluate(&ucEvaluate)
 	ucTagZettel := usecase.NewTagZettel(protectedBoxManager, &ucQuery)
+	ucRoleZettel := usecase.NewRoleZettel(protectedBoxManager, &ucQuery)
 	ucListSyntax := usecase.NewListSyntax(protectedBoxManager)
 	ucListRoles := usecase.NewListRoles(protectedBoxManager)
 	ucDelete := usecase.NewDeleteZettel(logUc, protectedBoxManager)
@@ -117,7 +118,7 @@ func setupRouting(webSrv server.Server, boxManager box.Manager, authManager auth
 	webSrv.AddListRoute('a', server.MethodPut, a.MakeRenewAuthHandler())
 	webSrv.AddListRoute('x', server.MethodGet, a.MakeGetDataHandler(ucVersion))
 	webSrv.AddListRoute('x', server.MethodPost, a.MakePostCommandHandler(&ucIsAuth, &ucRefresh))
-	webSrv.AddListRoute('z', server.MethodGet, a.MakeQueryHandler(&ucQuery, &ucTagZettel, &ucReIndex))
+	webSrv.AddListRoute('z', server.MethodGet, a.MakeQueryHandler(&ucQuery, &ucTagZettel, &ucRoleZettel, &ucReIndex))
 	webSrv.AddZettelRoute('z', server.MethodGet, a.MakeGetZettelHandler(ucGetZettel, ucParseZettel, ucEvaluate))
 	if !authManager.IsReadonly() {
 		webSrv.AddListRoute('z', server.MethodPost, a.MakePostCreateZettelHandler(&ucCreateZettel))
