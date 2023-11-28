@@ -103,7 +103,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			if !sx.IsNil(sxTzl) {
 				rb.bindString("tag-zettel", sxTzl)
 			}
-			if !sx.IsNil(sxNoTzl) {
+			if !sx.IsNil(sxNoTzl) && wui.canCreate(ctx, user) {
 				rb.bindString("create-tag-zettel", sxNoTzl)
 			}
 		}
