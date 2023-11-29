@@ -380,6 +380,46 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility:                  api.ValueVisibilityOwner,
 		},
 		zettel.NewContent(nil)},
+	id.MustParse(api.ZidRoleZettelZettel): {
+		constHeader{
+			api.KeyTitle:      api.ValueRoleZettel,
+			api.KeyRole:       api.ValueRoleRole,
+			api.KeySyntax:     meta.SyntaxZmk,
+			api.KeyCreated:    "20231129161400",
+			api.KeyLang:       api.ValueLangEN,
+			api.KeyVisibility: api.ValueVisibilityLogin,
+		},
+		zettel.NewContent(contentRoleZettel)},
+	id.MustParse(api.ZidRoleConfigurationZettel): {
+		constHeader{
+			api.KeyTitle:      api.ValueRoleConfiguration,
+			api.KeyRole:       api.ValueRoleRole,
+			api.KeySyntax:     meta.SyntaxZmk,
+			api.KeyCreated:    "20231129162800",
+			api.KeyLang:       api.ValueLangEN,
+			api.KeyVisibility: api.ValueVisibilityLogin,
+		},
+		zettel.NewContent(contentRoleConfiguration)},
+	id.MustParse(api.ZidRoleRoleZettel): {
+		constHeader{
+			api.KeyTitle:      api.ValueRoleRole,
+			api.KeyRole:       api.ValueRoleRole,
+			api.KeySyntax:     meta.SyntaxZmk,
+			api.KeyCreated:    "20231129162900",
+			api.KeyLang:       api.ValueLangEN,
+			api.KeyVisibility: api.ValueVisibilityLogin,
+		},
+		zettel.NewContent(contentRoleRole)},
+	id.MustParse(api.ZidRoleTagZettel): {
+		constHeader{
+			api.KeyTitle:      api.ValueRoleTag,
+			api.KeyRole:       api.ValueRoleRole,
+			api.KeySyntax:     meta.SyntaxZmk,
+			api.KeyCreated:    "20231129162000",
+			api.KeyLang:       api.ValueLangEN,
+			api.KeyVisibility: api.ValueVisibilityLogin,
+		},
+		zettel.NewContent(contentRoleTag)},
 	id.DefaultHomeZid: {
 		constHeader{
 			api.KeyTitle:   "Home",
@@ -444,6 +484,18 @@ var contentEmoji []byte
 
 //go:embed newtoc.zettel
 var contentNewTOCZettel []byte
+
+//go:embed rolezettel.zettel
+var contentRoleZettel []byte
+
+//go:embed roleconfiguration.zettel
+var contentRoleConfiguration []byte
+
+//go:embed rolerole.zettel
+var contentRoleRole []byte
+
+//go:embed roletag.zettel
+var contentRoleTag []byte
 
 //go:embed home.zettel
 var contentHomeZettel []byte

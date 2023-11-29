@@ -1,0 +1,6 @@
+A zettel with role ""tag"" is a zettel that describes specific tag.
+The tag name must be the title of such a zettel.
+
+Such zettel are similar to this specific zettel: this zettel describes zettel with a role ""tag"".
+These zettel with the role ""tag"" describe specific tags.
+These might form a hierarchy of meta-tags (and meta-roles).

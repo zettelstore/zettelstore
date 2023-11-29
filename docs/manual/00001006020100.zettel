@@ -3,8 +3,8 @@ title: Supported Zettel Roles
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
-created: 00010101000000
-modified: 20231128184923
+created: 20210126175322
+modified: 20231129173620
 
 The [[''role'' key|00001006020000#role]] defines what kind of zettel you are writing.
 You are free to define your own roles.
@@ -13,7 +13,7 @@ It is allowed to set an empty value or to omit the role.
 Some roles are defined for technical reasons:
 
 ; [!configuration|''configuration'']
-: A zettel that contains some configuration data for the Zettelstore.
+: A zettel that contains some configuration data / information for the Zettelstore.
   Most prominent is [[00000000000100]], as described in [[00001004020000]].
 ; [!manual|''manual'']
 : All zettel that document the inner workings of the Zettelstore software.
@@ -24,6 +24,9 @@ Some roles are defined for technical reasons:
 ; [!tag|''tag'']
 : A zettel with the role ""tag"" and a title, which names a [[tag|00001006020000#tags]], is treated as a __tag zettel__.
   Basically, tag zettel describe the tag, and form a hierarchiy of meta-tags.
+; [!zettel|''zettel'']
+: A zettel that contains your own thoughts.
+  The real reason to use this software.
 
 If you adhere to the process outlined by Niklas Luhmann, a zettel could have one of the following three roles:
 
@@ -34,7 +37,7 @@ If you adhere to the process outlined by Niklas Luhmann, a zettel could have one
 ; [!literature|''literature'']
 : Contains some remarks about a book, a paper, a web page, etc.
   You should add a citation key for citing it.
-; [!zettel|''zettel'']
-: A real zettel that contains your own thoughts.
+; ''zettel''
+: (as described above)
 
 However, you are free to define additional roles, e.g. ''material'' for literature that is web-based only, ''slide'' for presentation slides, ''paper'' for the text of a scientific paper, ''project'' to define a project, ...

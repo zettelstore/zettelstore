@@ -49,7 +49,7 @@ func TestNextZid(t *testing.T) {
 
 func TestListZettel(t *testing.T) {
 	const (
-		ownerZettel      = 52
+		ownerZettel      = 55
 		configRoleZettel = 33
 		writerZettel     = ownerZettel - 24
 		readerZettel     = ownerZettel - 24
@@ -282,7 +282,7 @@ func TestGetUnlinkedReferences(t *testing.T) {
 		return
 	}
 	if got := len(metaSeq); got != 1 {
-		t.Errorf("Expected list of length 1, got %d", got)
+		t.Errorf("Expected list of length 1, got %d:\n%v", got, metaSeq)
 		return
 	}
 }
@@ -337,7 +337,6 @@ func TestListTags(t *testing.T) {
 		size int
 	}{
 		{"#invisible", 1},
-		{"#role_test", 1},
 		{"#user", 4},
 		{"#test", 4},
 	}
@@ -412,7 +411,7 @@ func TestRoleZettel(t *testing.T) {
 		t.Errorf("no zid expected, but got %q", zid)
 	}
 	zid, err = c.RoleZettel(ctx, "zettel")
-	exp := api.ZettelID("20231128180500")
+	exp := api.ZettelID("00000000060010")
 	if err != nil {
 		t.Error(err)
 	} else if zid != exp {
