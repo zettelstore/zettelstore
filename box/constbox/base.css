@@ -83,7 +83,7 @@
   h5 { font-size:1.05rem; margin:.8rem 0 }
   h6 { font-size:1.05rem; margin:.8rem 0; font-weight: lighter }
   p { margin: .5rem 0 0 0 }
-  p.zs-tag-zettel { margin-top: .5rem; margin-left: 0.5rem }
+  p.zs-meta-zettel { margin-top: .5rem; margin-left: 0.5rem }
   li,figure,figcaption,dl { margin: 0 }
   dt { margin: .5rem 0 0 0 }
   dt+dd { margin-top: 0 }

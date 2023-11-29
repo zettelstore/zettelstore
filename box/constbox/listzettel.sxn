@@ -3,10 +3,16 @@
   (form (@ (action ,search-url))
     (input (@ (class "zs-input") (type "text") (placeholder "Search..") (name ,query-key-query) (value ,query-value) (dir "auto"))))
   ,@(if (bound? 'tag-zettel)
-     `((p (@ (class "zs-tag-zettel")) "Tag zettel: " ,@tag-zettel))
+     `((p (@ (class "zs-meta-zettel")) "Tag zettel: " ,@tag-zettel))
     )
   ,@(if (bound? 'create-tag-zettel)
-     `((p (@ (class "zs-tag-zettel")) "Create tag zettel: " ,@create-tag-zettel))
+     `((p (@ (class "zs-meta-zettel")) "Create tag zettel: " ,@create-tag-zettel))
+    )
+  ,@(if (bound? 'role-zettel)
+     `((p (@ (class "zs-meta-zettel")) "Role zettel: " ,@role-zettel))
+    )
+  ,@(if (bound? 'create-role-zettel)
+     `((p (@ (class "zs-meta-zettel")) "Create role zettel: " ,@create-role-zettel))
     )
   ,@content
   ,@endnotes
