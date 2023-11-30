@@ -1,7 +1,16 @@
 <title>Change Log</title>
 
+<a id="0_17"></a>
+<h2>Changes for Version 0.17.0 (pending)</h2>
+
 <a id="0_16"></a>
-<h2>Changes for Version 0.16.0 (pending)</h2>
+<h2>Changes for Version 0.16.0 (2023-11-30)</h2>
+  *  Sx function <code>define</code> is removed, as announced for version
+     0.15.0. Use <code>defvar</code> (to define variables) or
+     <code>defun</code> (to define functions) instead. In addition
+     <code>defunconst</code> defines a constant function, which ensures a fixed
+     binding of its name to its function body (performance optimization).
+     (breaking: webui)
   *  Allow to determine a role zettel for a given role.
      (major: api, webui)
   *  Present user the option to create a (missing) role zettel (in list view).
@@ -31,6 +40,8 @@
      ensure a &ldquo;clean&rdquo; home zettel. Affects the list of incoming
      / back links, folge zettel, subordinate zettel, and successor zettel.
      (minor: webui)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_15"></a>
 <h2>Changes for Version 0.15.0 (2023-10-26)</h2>
