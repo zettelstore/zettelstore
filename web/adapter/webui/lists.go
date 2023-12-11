@@ -101,7 +101,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			rb.bindString("heading", sx.String(sb.String()))
 		}
 		rb.bindString("query-value", sx.String(q.String()))
-		if tzl := q.GetMetaValues(api.KeyTags); len(tzl) > 0 {
+		if tzl := q.GetMetaValues(api.KeyTags, false); len(tzl) > 0 {
 			sxTzl, sxNoTzl := wui.transformTagZettelList(ctx, tagZettel, tzl)
 			if !sx.IsNil(sxTzl) {
 				rb.bindString("tag-zettel", sxTzl)
@@ -110,7 +110,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 				rb.bindString("create-tag-zettel", sxNoTzl)
 			}
 		}
-		if rzl := q.GetMetaValues(api.KeyRole); len(rzl) > 0 {
+		if rzl := q.GetMetaValues(api.KeyRole, false); len(rzl) > 0 {
 			sxRzl, sxNoRzl := wui.transformRoleZettelList(ctx, roleZettel, rzl)
 			if !sx.IsNil(sxRzl) {
 				rb.bindString("role-zettel", sxRzl)

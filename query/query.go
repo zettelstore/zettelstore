@@ -247,14 +247,26 @@ func (q *Query) addKey(key string, op compareOp) *Query {
 	return q
 }
 
-func (q *Query) GetMetaValues(key string) (vals []string) {
+var missingMap = map[compareOp]bool{
+	cmpNotExist: true,
+	cmpNotEqual: true,
+	cmpHasNot:   true,
+	cmpNoMatch:  true,
+}
+
+// GetMetaValues returns the slice of all values specified for a given metadata key.
+// If `withMissing` is true, all values are returned. Otherwise only those,
+// where the comparison operator will positively search for a value.
+func (q *Query) GetMetaValues(key string, withMissing bool) (vals []string) {
 	if q == nil {
 		return nil
 	}
 	for _, term := range q.terms {
 		if mvs, hasMv := term.mvals[key]; hasMv {
 			for _, ev := range mvs {
-				vals = append(vals, ev.value)
+				if withMissing || !missingMap[ev.op] {
+					vals = append(vals, ev.value)
+				}
 			}
 		}
 	}
