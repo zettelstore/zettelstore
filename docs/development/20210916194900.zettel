@@ -3,7 +3,7 @@ title: Checklist for Release
 role: zettel
 syntax: zmk
 created: 20210916194900
-modified: 20230402181229
+modified: 20231213194631
 
 # Sync with the official repository
 #* ``fossil sync -u``
@@ -12,11 +12,11 @@ modified: 20230402181229
 # Make sure that all dependencies are up-to-date.
 #* ``cat go.mod``
 # Clean up your Go workspace:
-#* ``go run tools/build.go clean`` (alternatively: ``make clean``).
+#* ``go run tools/clean/clean.go`` (alternatively: ``make clean``).
 # All internal tests must succeed:
-#* ``go run tools/build.go relcheck`` (alternatively: ``make relcheck``).
+#* ``go run tools/check/check.go -r`` (alternatively: ``make relcheck``).
 # The API tests must succeed on every development platform:
-#* ``go run tools/build.go testapi`` (alternatively: ``make api``).
+#* ``go run tools/testapi/testapi.go`` (alternatively: ``make api``).
 # Run [[linkchecker|https://linkchecker.github.io/linkchecker/]] with the manual:
 #* ``go run -race cmd/zettelstore/main.go run -d docs/manual``
 #* ``linkchecker http://127.0.0.1:23123 2>&1 | tee lc.txt``
@@ -44,9 +44,9 @@ modified: 20230402181229
 #* **Important:** the tag must follow the given pattern, e.g. ''v0.0.15''.
    Otherwise client will not be able to import ''zettelkasten.de/z''.
 # Clean up your Go workspace:
-#* ``go run tools/build.go clean`` (alternatively: ``make clean``).
+#* ``go run tools/clean/clean.go`` (alternatively: ``make clean``).
 # Create the release:
-#* ``go run tools/build.go release`` (alternatively: ``make release``).
+#* ``go run tools/build/build.go release`` (alternatively: ``make release``).
 # Remove previous executables:
 #* ``fossil uv remove --glob '*-PREVVERSION*'``
 # Add executables for release:

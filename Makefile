@@ -7,25 +7,25 @@
 ## Public License). Please see file LICENSE.txt for your rights and obligations
 ## under this license.
 
-.PHONY:  check relcheck api build release clean
+.PHONY:  check relcheck api version build release clean
 
 check:
-	go run tools/build.go check
+	go run tools/check/check.go
 
 relcheck:
-	go run tools/build.go relcheck
+	go run tools/check/check.go -r
 
 api:
-	go run tools/build.go testapi
+	go run tools/testapi/testapi.go
 
 version:
-	@echo $(shell go run tools/build.go version)
+	@echo $(shell go run tools/build/build.go version)
 
 build:
-	go run tools/build.go build
+	go run tools/build/build.go build
 
 release:
-	go run tools/build.go release
+	go run tools/build/build.go release
 
 clean:
-	go run tools/build.go clean
+	go run tools/clean/clean.go

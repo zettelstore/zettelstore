@@ -3,7 +3,7 @@ title: Required Software
 role: zettel
 syntax: zmk
 created: 20210916193200
-modified: 20230405150541
+modified: 20231213194509
 
 The following software must be installed:
 
@@ -18,7 +18,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
 The internal build tool need the following software.
-It can be installed / updated via the build tool itself: ``go run tools/build.go tools``.
+It can be installed / updated via the build tool itself: ``go run tools/devtools/devtools.go``.
 
 Otherwise you can install the software by hand:
 
