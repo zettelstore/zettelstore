@@ -15,15 +15,25 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
+	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"time"
 
+	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 var envDirectProxy = []string{"GOPROXY=direct"}
@@ -366,4 +376,279 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
+}
+
+// --- API
+type zsInfo struct {
+	cmd          *exec.Cmd
+	out          strings.Builder
+	adminAddress string
+}
+
+func cmdTestAPI() error {
+	var err error
+	var info zsInfo
+	needServer := !addressInUse(":23123")
+	if needServer {
+		err = startZettelstore(&info)
+	}
+	if err != nil {
+		return err
+	}
+	err = checkGoTest("zettelstore.de/z/tests/client", "-base-url", "http://127.0.0.1:23123")
+	if needServer {
+		err1 := stopZettelstore(&info)
+		if err == nil {
+			err = err1
+		}
+	}
+	return err
+}
+
+func startZettelstore(info *zsInfo) error {
+	info.adminAddress = ":2323"
+	name, arg := "go", []string{
+		"run", "cmd/zettelstore/main.go", "run",
+		"-c", "./testdata/testbox/19700101000000.zettel", "-a", info.adminAddress[1:]}
+	logCommand("FORK", nil, name, arg)
+	cmd := prepareCommand(envGoVCS, name, arg, &info.out)
+	if !verbose {
+		cmd.Stderr = nil
+	}
+	err := cmd.Start()
+	time.Sleep(2 * time.Second)
+	for i := 0; i < 100; i++ {
+		time.Sleep(time.Millisecond * 100)
+		if addressInUse(info.adminAddress) {
+			info.cmd = cmd
+			return err
+		}
+	}
+	time.Sleep(4 * time.Second) // Wait for all zettel to be indexed.
+	return errors.New("zettelstore did not start")
+}
+
+func stopZettelstore(i *zsInfo) error {
+	conn, err := net.Dial("tcp", i.adminAddress)
+	if err != nil {
+		fmt.Println("Unable to stop Zettelstore")
+		return err
+	}
+	io.WriteString(conn, "shutdown\n")
+	conn.Close()
+	err = i.cmd.Wait()
+	return err
+}
+
+func addressInUse(address string) bool {
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
+}
+
+//--- tools
+
+func cmdTools() error {
+	tools := []struct{ name, pack string }{
+		{"shadow", "golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest"},
+		{"unparam", "mvdan.cc/unparam@latest"},
+		{"staticcheck", "honnef.co/go/tools/cmd/staticcheck@latest"},
+		{"govulncheck", "golang.org/x/vuln/cmd/govulncheck@latest"},
+	}
+	for _, tool := range tools {
+		err := doGoInstall(tool.pack)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func doGoInstall(pack string) error {
+	out, err := executeCommand(nil, "go", "install", pack)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Unable to install package", pack)
+		if len(out) > 0 {
+			fmt.Fprintln(os.Stderr, out)
+		}
+	}
+	return err
+}
+
+// --- manual
+
+func cmdManual() error {
+	base := getReleaseVersionData()
+	return createManualZip(".", base)
+}
+
+func createManualZip(path, base string) error {
+	manualPath := filepath.Join("docs", "manual")
+	entries, err := os.ReadDir(manualPath)
+	if err != nil {
+		return err
+	}
+	zipName := filepath.Join(path, "manual-"+base+".zip")
+	zipFile, err := os.OpenFile(zipName, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer zipFile.Close()
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	for _, entry := range entries {
+		if err = createManualZipEntry(manualPath, entry, zipWriter); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+const versionZid = "00001000000001"
+
+func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer) error {
+	info, err := entry.Info()
+	if err != nil {
+		return err
+	}
+	fh, err := zip.FileInfoHeader(info)
+	if err != nil {
+		return err
+	}
+	name := entry.Name()
+	fh.Name = name
+	fh.Method = zip.Deflate
+	w, err := zipWriter.CreateHeader(fh)
+	if err != nil {
+		return err
+	}
+	manualFile, err := os.Open(filepath.Join(path, name))
+	if err != nil {
+		return err
+	}
+	defer manualFile.Close()
+
+	if name != versionZid+".zettel" {
+		_, err = io.Copy(w, manualFile)
+		return err
+	}
+
+	data, err := io.ReadAll(manualFile)
+	if err != nil {
+		return err
+	}
+	inp := input.NewInput(data)
+	m := meta.NewFromInput(id.MustParse(versionZid), inp)
+	m.SetNow(api.KeyModified)
+
+	var buf bytes.Buffer
+	if _, err = fmt.Fprintf(&buf, "id: %s\n", versionZid); err != nil {
+		return err
+	}
+	if _, err = m.WriteComputed(&buf); err != nil {
+		return err
+	}
+	version := getVersion()
+	if _, err = fmt.Fprintf(&buf, "\n%s", version); err != nil {
+		return err
+	}
+	_, err = io.Copy(w, &buf)
+	return err
+}
+
+//--- release
+
+func cmdRelease() error {
+	if err := cmdCheck(true); err != nil {
+		return err
+	}
+	base := getReleaseVersionData()
+	releases := []struct {
+		arch string
+		os   string
+		env  []string
+		name string
+	}{
+		{"amd64", "linux", nil, "zettelstore"},
+		{"arm", "linux", []string{"GOARM=6"}, "zettelstore"},
+		{"amd64", "darwin", nil, "zettelstore"},
+		{"arm64", "darwin", nil, "zettelstore"},
+		{"amd64", "windows", nil, "zettelstore.exe"},
+	}
+	for _, rel := range releases {
+		env := append([]string{}, rel.env...)
+		env = append(env, "GOARCH="+rel.arch, "GOOS="+rel.os)
+		env = append(env, envDirectProxy...)
+		env = append(env, envGoVCS...)
+		zsName := filepath.Join("releases", rel.name)
+		if err := doBuild(env, base, zsName); err != nil {
+			return err
+		}
+		zipName := fmt.Sprintf("zettelstore-%v-%v-%v.zip", base, rel.os, rel.arch)
+		if err := createReleaseZip(zsName, zipName, rel.name); err != nil {
+			return err
+		}
+		if err := os.Remove(zsName); err != nil {
+			return err
+		}
+	}
+	return createManualZip("releases", base)
+}
+
+func getReleaseVersionData() string {
+	if fossil := getFossilDirty(); fossil != "" {
+		fmt.Fprintln(os.Stderr, "Warning: releasing a dirty version")
+	}
+	base := getVersion()
+	if strings.HasSuffix(base, "dev") {
+		return base[:len(base)-3] + "preview-" + time.Now().Local().Format("20060102")
+	}
+	return base
+}
+
+func createReleaseZip(zsName, zipName, fileName string) error {
+	zipFile, err := os.OpenFile(filepath.Join("releases", zipName), os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer zipFile.Close()
+	zw := zip.NewWriter(zipFile)
+	defer zw.Close()
+	err = addFileToZip(zw, zsName, fileName)
+	if err != nil {
+		return err
+	}
+	err = addFileToZip(zw, "LICENSE.txt", "LICENSE.txt")
+	if err != nil {
+		return err
+	}
+	err = addFileToZip(zw, "docs/readmezip.txt", "README.txt")
+	return err
+}
+
+func addFileToZip(zipFile *zip.Writer, filepath, filename string) error {
+	zsFile, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer zsFile.Close()
+	stat, err := zsFile.Stat()
+	if err != nil {
+		return err
+	}
+	fh, err := zip.FileInfoHeader(stat)
+	if err != nil {
+		return err
+	}
+	fh.Name = filename
+	fh.Method = zip.Deflate
+	w, err := zipFile.CreateHeader(fh)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, zsFile)
+	return err
 }
