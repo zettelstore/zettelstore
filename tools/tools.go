@@ -15,6 +15,7 @@
 package tools
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -32,18 +33,26 @@ var Verbose bool
 func ExecuteCommand(env []string, name string, arg ...string) (string, error) {
 	LogCommand("EXEC", env, name, arg)
 	var out strings.Builder
-	cmd := PrepareCommand(env, name, arg, &out)
+	cmd := PrepareCommand(env, name, arg, nil, &out)
 	err := cmd.Run()
 	return out.String(), err
 }
 
-func PrepareCommand(env []string, name string, arg []string, out io.Writer) *exec.Cmd {
+func ExecuteFilter(data []byte, env []string, name string, arg ...string) (string, error) {
+	LogCommand("EXEC", env, name, arg)
+	var out strings.Builder
+	cmd := PrepareCommand(env, name, arg, bytes.NewReader(data), &out)
+	err := cmd.Run()
+	return out.String(), err
+}
+
+func PrepareCommand(env []string, name string, arg []string, in io.Reader, out io.Writer) *exec.Cmd {
 	if len(env) > 0 {
 		env = append(env, os.Environ()...)
 	}
 	cmd := exec.Command(name, arg...)
 	cmd.Env = env
-	cmd.Stdin = nil
+	cmd.Stdin = in
 	cmd.Stdout = out
 	cmd.Stderr = os.Stderr
 	return cmd
