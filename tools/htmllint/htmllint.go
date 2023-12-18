@@ -17,10 +17,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"math/rand"
 	"net/url"
 	"os"
+	"regexp"
 	"sort"
+	"strings"
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/client"
@@ -37,8 +39,8 @@ func main() {
 }
 func cmdValidateHTML(args []string) error {
 	rawURL := "http://localhost:23123"
-	if len(args) > 1 {
-		rawURL = args[1]
+	if len(args) > 0 {
+		rawURL = args[0]
 	}
 	u, err := url.Parse(rawURL)
 	if err != nil {
@@ -49,33 +51,128 @@ func cmdValidateHTML(args []string) error {
 	if err != nil {
 		return err
 	}
-	zids := make([]string, len(metaList))
-	for i, m := range metaList {
-		zids[i] = string(m.ID)
-	}
-	sort.Strings(zids)
-	for _, zid := range zids {
-		err = validateHTML(client, api.ZettelID(zid))
-		if err != nil {
-			log.Printf("Error while validating zettel %v: %v", zid, err)
+	zids, perm := calculateZids(metaList)
+	for _, kd := range keyDescr {
+		msgCount := 0
+		fmt.Fprintf(os.Stderr, "Now checking: %s\n", kd.text)
+		for _, zid := range zidsToUse(zids, perm, kd.sampleSize) {
+			var nmsgs int
+			nmsgs, err = validateHTML(client, kd.uc, api.ZettelID(zid))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "* error while validating zettel %v with: %v\n", zid, err)
+				msgCount += 1
+			} else {
+				msgCount += nmsgs
+			}
+		}
+		if msgCount == 1 {
+			fmt.Fprintln(os.Stderr, "==> found 1 possible issue")
+		} else if msgCount > 1 {
+			fmt.Fprintf(os.Stderr, "==> found %v possible issues\n", msgCount)
 		}
 	}
 	return nil
 }
 
-func validateHTML(client *client.Client, zid api.ZettelID) error {
-	data, err := client.GetParsedZettel(context.Background(), zid, api.EncoderHTML)
-	if err != nil {
-		return err
+func calculateZids(metaList []api.ZidMetaRights) ([]string, []int) {
+	zids := make([]string, len(metaList))
+	for i, m := range metaList {
+		zids[i] = string(m.ID)
 	}
-	if len(data) == 0 {
+	sort.Strings(zids)
+	return zids, rand.Perm(len(metaList))
+}
+
+func zidsToUse(zids []string, perm []int, sampleSize int) []string {
+	if sampleSize < 0 {
+		return zids
+	}
+	if sampleSize == 0 {
 		return nil
 	}
-	log.Println("DATA", zid, len(data))
-	result, err := tools.ExecuteFilter(data, nil, "tidy", "-e", "-q")
-	if err != nil {
-		return err
+	if len(perm) < sampleSize {
+		sampleSize = len(perm)
 	}
-	log.Println("TIDY", result)
-	return nil
+	result := make([]string, sampleSize)
+	for i := 0; i < sampleSize; i++ {
+		result[i] = zids[perm[i]]
+	}
+	sort.Strings(result)
+	return result
+}
+
+var keyDescr = []struct {
+	uc         urlCreator
+	text       string
+	sampleSize int
+}{
+	{getHTMLZettel, "zettel HTML encoding", -1},
+	{createJustKey('h'), "zettel web view", -1},
+	{createJustKey('i'), "zettel info view", -1},
+	{createJustKey('e'), "zettel edit form", 100},
+	{createJustKey('c'), "zettel create form", 10},
+	{createJustKey('b'), "zettel rename form", 100},
+	{createJustKey('d'), "zettel delete dialog", 200},
+}
+
+type urlCreator func(*client.Client, api.ZettelID) *api.URLBuilder
+
+func createJustKey(key byte) urlCreator {
+	return func(c *client.Client, zid api.ZettelID) *api.URLBuilder {
+		return c.NewURLBuilder(key).SetZid(zid)
+	}
+}
+
+func getHTMLZettel(client *client.Client, zid api.ZettelID) *api.URLBuilder {
+	return client.NewURLBuilder('z').SetZid(zid).
+		AppendKVQuery(api.QueryKeyEncoding, api.EncodingHTML).
+		AppendKVQuery(api.QueryKeyPart, api.PartZettel)
+}
+
+func validateHTML(client *client.Client, uc urlCreator, zid api.ZettelID) (int, error) {
+	ub := uc(client, zid)
+	if tools.Verbose {
+		fmt.Fprintf(os.Stderr, "GET %v\n", ub)
+	}
+	data, err := client.Get(context.Background(), ub)
+	if err != nil {
+		return 0, err
+	}
+	if len(data) == 0 {
+		return 0, nil
+	}
+	_, stderr, err := tools.ExecuteFilter(data, nil, "tidy", "-e", "-q", "-lang", "en")
+	if err != nil && err.Error() != "exit status 1" {
+		return 0, err
+	}
+	if stderr == "" {
+		return 0, nil
+	}
+	if msgs := filterTidyMessages(strings.Split(stderr, "\n")); len(msgs) > 0 {
+		fmt.Fprintln(os.Stderr, zid)
+		for _, msg := range msgs {
+			fmt.Fprintln(os.Stderr, "-", msg)
+		}
+		return len(msgs), nil
+	}
+	return 0, nil
+}
+
+var reLine = regexp.MustCompile(`line \d+ column \d+ - (.+): (.+)`)
+
+func filterTidyMessages(lines []string) []string {
+	result := make([]string, 0, len(lines))
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		matches := reLine.FindStringSubmatch(line)
+		if len(matches) == 1 || matches[1] != "Warning" {
+			result = append(result, "!!!"+line)
+			continue
+		}
+		result = append(result, line)
+	}
+	return result
 }

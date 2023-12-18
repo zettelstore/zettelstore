@@ -69,7 +69,7 @@ func startZettelstore(info *zsInfo) error {
 		"run", "cmd/zettelstore/main.go", "run",
 		"-c", "./testdata/testbox/19700101000000.zettel", "-a", info.adminAddress[1:]}
 	tools.LogCommand("FORK", nil, name, arg)
-	cmd := tools.PrepareCommand(tools.EnvGoVCS, name, arg, nil, &info.out)
+	cmd := tools.PrepareCommand(tools.EnvGoVCS, name, arg, nil, &info.out, os.Stderr)
 	if !tools.Verbose {
 		cmd.Stderr = nil
 	}

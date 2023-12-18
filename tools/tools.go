@@ -33,28 +33,28 @@ var Verbose bool
 func ExecuteCommand(env []string, name string, arg ...string) (string, error) {
 	LogCommand("EXEC", env, name, arg)
 	var out strings.Builder
-	cmd := PrepareCommand(env, name, arg, nil, &out)
+	cmd := PrepareCommand(env, name, arg, nil, &out, os.Stderr)
 	err := cmd.Run()
 	return out.String(), err
 }
 
-func ExecuteFilter(data []byte, env []string, name string, arg ...string) (string, error) {
+func ExecuteFilter(data []byte, env []string, name string, arg ...string) (string, string, error) {
 	LogCommand("EXEC", env, name, arg)
-	var out strings.Builder
-	cmd := PrepareCommand(env, name, arg, bytes.NewReader(data), &out)
+	var stdout, stderr strings.Builder
+	cmd := PrepareCommand(env, name, arg, bytes.NewReader(data), &stdout, &stderr)
 	err := cmd.Run()
-	return out.String(), err
+	return stdout.String(), stderr.String(), err
 }
 
-func PrepareCommand(env []string, name string, arg []string, in io.Reader, out io.Writer) *exec.Cmd {
+func PrepareCommand(env []string, name string, arg []string, in io.Reader, stdout, stderr io.Writer) *exec.Cmd {
 	if len(env) > 0 {
 		env = append(env, os.Environ()...)
 	}
 	cmd := exec.Command(name, arg...)
 	cmd.Env = env
 	cmd.Stdin = in
-	cmd.Stdout = out
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 	return cmd
 }
 func LogCommand(exec string, env []string, name string, arg []string) {
