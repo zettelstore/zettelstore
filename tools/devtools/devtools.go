@@ -37,6 +37,7 @@ func cmdTools() error {
 		{"unparam", "mvdan.cc/unparam@latest"},
 		{"staticcheck", "honnef.co/go/tools/cmd/staticcheck@latest"},
 		{"govulncheck", "golang.org/x/vuln/cmd/govulncheck@latest"},
+		{"deadcode", "golang.org/x/tools/cmd/deadcode@latest"},
 	}
 	for _, tool := range tools {
 		err := doGoInstall(tool.pack)
