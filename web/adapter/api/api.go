@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package api provides api handlers for web requests.
@@ -54,9 +57,6 @@ func New(log *logger.Logger, b server.Builder, authz auth.AuthzManager, token au
 	}
 	return a
 }
-
-// GetURLPrefix returns the configured URL prefix of the web server.
-func (a *API) GetURLPrefix() string { return a.b.GetURLPrefix() }
 
 // NewURLBuilder creates a new URL builder object with the given key.
 func (a *API) NewURLBuilder(key byte) *api.URLBuilder { return a.b.NewURLBuilder(key) }

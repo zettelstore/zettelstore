@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package meta provides the zettel specific type 'meta'.
@@ -47,9 +50,6 @@ func (kd *DescriptionKey) IsComputed() bool { return kd.usage >= usageComputed }
 
 // IsProperty returns true, if metadata is a computed property.
 func (kd *DescriptionKey) IsProperty() bool { return kd.usage >= usageProperty }
-
-// IsStoredComputed retruns true, if metadata is computed, but also stored.
-func (kd *DescriptionKey) IsStoredComputed() bool { return kd.usage == usageComputed }
 
 var registeredKeys = make(map[string]*DescriptionKey)
 

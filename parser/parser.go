@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package parser provides a generic interface to a range of different parsers.
@@ -85,15 +88,6 @@ func IsASTParser(syntax string) bool {
 	return pi.IsASTParser
 }
 
-// IsTextFormat returns whether the given syntax is known to be a text format.
-func IsTextFormat(syntax string) bool {
-	pi, ok := registry[syntax]
-	if !ok {
-		return false
-	}
-	return pi.IsTextFormat
-}
-
 // IsImageFormat returns whether the given syntax is known to be an image format.
 func IsImageFormat(syntax string) bool {
 	pi, ok := registry[syntax]
@@ -105,9 +99,6 @@ func IsImageFormat(syntax string) bool {
 
 // ParseBlocks parses some input and returns a slice of block nodes.
 func ParseBlocks(inp *input.Input, m *meta.Meta, syntax string, hi config.HTMLInsecurity) ast.BlockSlice {
-	return parseBlocksAndClean(inp, m, syntax, hi)
-}
-func parseBlocksAndClean(inp *input.Input, m *meta.Meta, syntax string, hi config.HTMLInsecurity) ast.BlockSlice {
 	bs := Get(syntax).ParseBlocks(inp, m, syntax)
 	cleaner.CleanBlockSlice(&bs, hi.AllowHTML(syntax))
 	return bs
@@ -175,7 +166,7 @@ func ParseZettel(ctx context.Context, zettel zettel.Zettel, syntax string, rtCon
 		Content: zettel.Content,
 		Zid:     m.Zid,
 		InhMeta: inhMeta,
-		Ast:     parseBlocksAndClean(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax, hi),
+		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax, hi),
 		Syntax:  syntax,
 	}
 }

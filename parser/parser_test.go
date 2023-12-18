@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package parser_test
@@ -30,34 +33,30 @@ func TestParserType(t *testing.T) {
 	testCases := []struct {
 		syntax string
 		ast    bool
-		text   bool
 		image  bool
 	}{
-		{meta.SyntaxHTML, false, true, false},
-		{meta.SyntaxCSS, false, true, false},
-		{meta.SyntaxDraw, true, true, false},
-		{meta.SyntaxGif, false, false, true},
-		{meta.SyntaxJPEG, false, false, true},
-		{meta.SyntaxJPG, false, false, true},
-		{meta.SyntaxMarkdown, true, true, false},
-		{meta.SyntaxMD, true, true, false},
-		{meta.SyntaxNone, false, false, false},
-		{meta.SyntaxPlain, false, true, false},
-		{meta.SyntaxPNG, false, false, true},
-		{meta.SyntaxSVG, false, true, true},
-		{meta.SyntaxSxn, false, true, false},
-		{meta.SyntaxText, false, true, false},
-		{meta.SyntaxTxt, false, true, false},
-		{meta.SyntaxWebp, false, false, true},
-		{meta.SyntaxZmk, true, true, false},
+		{meta.SyntaxHTML, false, false},
+		{meta.SyntaxCSS, false, false},
+		{meta.SyntaxDraw, true, false},
+		{meta.SyntaxGif, false, true},
+		{meta.SyntaxJPEG, false, true},
+		{meta.SyntaxJPG, false, true},
+		{meta.SyntaxMarkdown, true, false},
+		{meta.SyntaxMD, true, false},
+		{meta.SyntaxNone, false, false},
+		{meta.SyntaxPlain, false, false},
+		{meta.SyntaxPNG, false, true},
+		{meta.SyntaxSVG, false, true},
+		{meta.SyntaxSxn, false, false},
+		{meta.SyntaxText, false, false},
+		{meta.SyntaxTxt, false, false},
+		{meta.SyntaxWebp, false, true},
+		{meta.SyntaxZmk, true, false},
 	}
 	for _, tc := range testCases {
 		delete(syntaxSet, tc.syntax)
 		if got := parser.IsASTParser(tc.syntax); got != tc.ast {
 			t.Errorf("Syntax %q is AST: %v, but got %v", tc.syntax, tc.ast, got)
-		}
-		if got := parser.IsTextFormat(tc.syntax); got != tc.text {
-			t.Errorf("Syntax %q is text: %v, but got %v", tc.syntax, tc.text, got)
 		}
 		if got := parser.IsImageFormat(tc.syntax); got != tc.image {
 			t.Errorf("Syntax %q is image: %v, but got %v", tc.syntax, tc.image, got)
