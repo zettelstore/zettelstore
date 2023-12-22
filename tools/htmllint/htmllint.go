@@ -17,6 +17,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/url"
 	"os"
@@ -84,14 +85,11 @@ func calculateZids(metaList []api.ZidMetaRights) ([]string, []int) {
 }
 
 func zidsToUse(zids []string, perm []int, sampleSize int) []string {
-	if sampleSize < 0 {
+	if sampleSize < 0 || len(perm) <= sampleSize {
 		return zids
 	}
 	if sampleSize == 0 {
 		return nil
-	}
-	if len(perm) < sampleSize {
-		sampleSize = len(perm)
 	}
 	result := make([]string, sampleSize)
 	for i := 0; i < sampleSize; i++ {
@@ -142,8 +140,14 @@ func validateHTML(client *client.Client, uc urlCreator, zid api.ZettelID) (int, 
 		return 0, nil
 	}
 	_, stderr, err := tools.ExecuteFilter(data, nil, "tidy", "-e", "-q", "-lang", "en")
-	if err != nil && err.Error() != "exit status 1" {
-		return 0, err
+	if err != nil {
+		switch err.Error() {
+		case "exit status 1":
+		case "exit status 2":
+		default:
+			log.Println("SERR", stderr)
+			return 0, err
+		}
 	}
 	if stderr == "" {
 		return 0, nil
@@ -168,9 +172,32 @@ func filterTidyMessages(lines []string) []string {
 			continue
 		}
 		matches := reLine.FindStringSubmatch(line)
-		if len(matches) == 1 || matches[1] != "Warning" {
+		if len(matches) <= 1 {
+			if line == "This document has errors that must be fixed before" ||
+				line == "using HTML Tidy to generate a tidied up version." {
+				continue
+			}
 			result = append(result, "!!!"+line)
 			continue
+		}
+		if matches[1] == "Error" {
+			if len(matches) > 2 {
+				if matches[2] == "<search> is not recognized!" {
+					continue
+				}
+			}
+		}
+		if matches[1] != "Warning" {
+			result = append(result, "???"+line)
+			continue
+		}
+		if len(matches) > 2 {
+			switch matches[2] {
+			case "discarding unexpected <search>",
+				"discarding unexpected </search>",
+				`<input> proprietary attribute "inputmode"`:
+				continue
+			}
 		}
 		result = append(result, line)
 	}
