@@ -2,6 +2,9 @@
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (pending)</h2>
+  *  Make WebUI form elements a little bit more accessible by using search tag
+     and inputmode attribute.
+     (minor: webui)
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.0 (2023-11-30)</h2>

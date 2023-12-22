@@ -19,7 +19,10 @@
     (input (@ (type "hidden") (id "curzid") (name "curzid") (value ,zid)))
     (div
       (label (@ (for "newzid")) "New zettel id")
-      (input (@ (class "zs-input") (type "text") (id "newzid") (name "newzid") (placeholder "ZID..") (value ,zid) (autofocus))))
+      (input (@ (class "zs-input") (type "text") (inputmode "numeric") (id "newzid") (name "newzid")
+                (pattern "\\d{14}")
+                (title "New zettel identifier, must be unique")
+                (placeholder "ZID..") (value ,zid) (autofocus))))
     (div (input (@ (class "zs-primary") (type "submit") (value "Rename"))))
   )
   ,(wui-meta-desc metapairs)
