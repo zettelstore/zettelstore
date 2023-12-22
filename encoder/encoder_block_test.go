@@ -159,10 +159,10 @@ var tcsBlock = []zmkTestCase{
 		descr: "Simple List Quote",
 		zmk:   "> ToBeOrNotToBe",
 		expect: expectMap{
-			encoderHTML:  "<blockquote><p>ToBeOrNotToBe</p></blockquote>",
+			encoderHTML:  "<blockquote>ToBeOrNotToBe</blockquote>",
 			encoderMD:    "> ToBeOrNotToBe",
 			encoderSz:    `(BLOCK (QUOTATION (INLINE (TEXT "ToBeOrNotToBe"))))`,
-			encoderSHTML: `((blockquote (p "ToBeOrNotToBe")))`,
+			encoderSHTML: `((blockquote (@L "ToBeOrNotToBe")))`,
 			encoderText:  "ToBeOrNotToBe",
 			encoderZmk:   useZmk,
 		},
