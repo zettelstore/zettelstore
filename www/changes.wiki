@@ -4,6 +4,10 @@
 <h2>Changes for Version 0.17.0 (pending)</h2>
 
 <a id="0_16"></a>
+<h2>Changes for Version 0.16.1 (2023-12-28)</h2>
+  *  Fix some Sxn definitions to allow role-based UI customizations.
+     (minor: webui)
+
 <h2>Changes for Version 0.16.0 (2023-11-30)</h2>
   *  Sx function <code>define</code> is removed, as announced for version
      0.15.0. Use <code>defvar</code> (to define variables) or
