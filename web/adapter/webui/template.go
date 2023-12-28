@@ -212,8 +212,7 @@ func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
-			rb.err = rb.env.Bind(sym, obj)
-			return
+			err = rb.env.Bind(sym, obj)
 		}
 		rb.err = err
 	}
@@ -235,9 +234,8 @@ func (rb *renderBinder) rebindResolved(key, defKey string) {
 		if err == nil {
 			if obj, found := sxeval.Resolve(rb.env, sym); found {
 				rb.bindString(defKey, obj)
-				return
+				return // bindString might set rb.err
 			}
-			return
 		}
 		rb.err = err
 	}
