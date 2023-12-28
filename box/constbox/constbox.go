@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package constbox puts zettel inside the executable.
@@ -278,7 +281,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20230619132800",
-			api.KeyModified:   "20231012154500",
+			api.KeyModified:   "20231228172200",
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 			api.KeyPrecursor:  string(api.ZidSxnPrelude),
@@ -290,7 +293,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyRole:       api.ValueRoleConfiguration,
 			api.KeySyntax:     meta.SyntaxSxn,
 			api.KeyCreated:    "20231006181700",
-			api.KeyModified:   "20231019140400",
+			api.KeyModified:   "20231228171900",
 			api.KeyReadOnly:   api.ValueTrue,
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
