@@ -19,10 +19,13 @@
   ,@content
   ,@endnotes
   (form (@ (action ,(if (bound? 'create-url) create-url)))
-      "Other encodings: "
-      (a (@ (href ,data-url)) "data")
-      ", "
-      (a (@ (href ,plain-url)) "plain")
+      ,(if (bound? 'data-url)
+          `(@L "Other encodings: "
+               (a (@ (href ,data-url)) "data")
+               ", "
+               (a (@ (href ,plain-url)) "plain")
+           )
+      )
       ,@(if (bound? 'create-url)
         `((input (@ (type "hidden") (name ,query-key-query) (value ,query-value)))
           (input (@ (type "hidden") (name ,query-key-seed) (value ,seed)))

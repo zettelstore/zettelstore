@@ -128,11 +128,13 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		} else {
 			seed = 0
 		}
-		rb.bindString("plain-url", sx.String(apiURL.String()))
-		rb.bindString("data-url", sx.String(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
-		if wui.canCreate(ctx, user) {
-			rb.bindString("create-url", sx.String(wui.createNewURL))
-			rb.bindString("seed", sx.Int64(seed))
+		if len(metaSeq) > 0 {
+			rb.bindString("plain-url", sx.String(apiURL.String()))
+			rb.bindString("data-url", sx.String(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
+			if wui.canCreate(ctx, user) {
+				rb.bindString("create-url", sx.String(wui.createNewURL))
+				rb.bindString("seed", sx.Int64(seed))
+			}
 		}
 		if rb.err == nil {
 			err = wui.renderSxnTemplate(ctx, w, id.ListTemplateZid, env)

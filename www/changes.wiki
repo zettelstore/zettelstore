@@ -8,6 +8,9 @@
   *  Add UI action for role zettel, similar to tag zettel. Obviously forgotten
      in release 0.16.0, but thanks to the bug fix v0.16.1 detected.
      (minor: webui)
+  *  Only when query list is not empty, allow to show data and plain encoding,
+     an optionally show the &ldquo;Save As Zettel&rdquo; button.
+     (minor: webui)
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.1 (2023-12-28)</h2>
