@@ -5,6 +5,9 @@
   *  Make WebUI form elements a little bit more accessible by using search tag
      and inputmode attribute.
      (minor: webui)
+  *  Add UI action for role zettel, similar to tag zettel. Obviously forgotten
+     in release 0.16.0, but thanks to the bug fix v0.16.1 detected.
+     (minor: webui)
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.1 (2023-12-28)</h2>

@@ -115,6 +115,17 @@
     )
 )
 
+;; ROLE-role-actions returns an additional action "Zettel" for zettel with role "role".
+(defun ROLE-role-actions (env)
+    `(,@(ROLE-DEFAULT-actions env)
+      ,@(let ((title (environment-lookup 'title env)))
+             (if (and (defined? title) title)
+                 `(,ACTION-SEPARATOR (a (@ (href ,(query->url (string-append "role:" title)))) "Zettel"))
+             )
+        )
+    )
+)
+
 ;; ROLE-DEFAULT-heading returns the default text for headings, below the
 ;; references of a zettel. In most cases it should be called from an
 ;; overwriting function.
