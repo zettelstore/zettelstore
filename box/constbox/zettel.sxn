@@ -10,11 +10,11 @@
                 `((@H " &rarr; ") (a (@ (href ,folge-role-url)) ,meta-folge-role)))
       ")"
       ,@(if tag-refs `((@H " &#183; ") ,@tag-refs))
-      ,@(ROLE-DEFAULT-actions (current-environment))
+      ,@(ROLE-DEFAULT-actions (current-binding))
       ,@(if predecessor-refs `((br) "Predecessor: " ,predecessor-refs))
       ,@(if precursor-refs `((br) "Precursor: " ,precursor-refs))
       ,@(if superior-refs `((br) "Superior: " ,superior-refs))
-      ,@(ROLE-DEFAULT-heading (current-environment))
+      ,@(ROLE-DEFAULT-heading (current-binding))
     )
   )
   ,@content

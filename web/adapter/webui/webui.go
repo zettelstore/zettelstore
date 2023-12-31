@@ -64,12 +64,12 @@ type WebUI struct {
 	searchURL     string
 	createNewURL  string
 
-	sf          sx.SymbolFactory
-	engine      *sxeval.Engine
-	mxZettelEnv sync.Mutex
-	zettelEnv   sxeval.Environment
-	dag         id.Digraph
-	genHTML     *sxhtml.Generator
+	sf              sx.SymbolFactory
+	engine          *sxeval.Engine
+	mxZettelBinding sync.Mutex
+	zettelBinding   *sxeval.Binding
+	dag             id.Digraph
+	genHTML         *sxhtml.Generator
 
 	symMetaHeader *sx.Symbol
 	symDetail     *sx.Symbol
@@ -126,7 +126,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		createNewURL:  ab.NewURLBuilder('c').String(),
 
 		sf:            sf,
-		zettelEnv:     nil,
+		zettelBinding: nil,
 		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
 		symDetail:     sf.MustMake("DETAIL"),
 		symMetaHeader: sf.MustMake("META-HEADER"),
@@ -151,12 +151,12 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 	}
 	wui.mxCache.Unlock()
 
-	wui.mxZettelEnv.Lock()
+	wui.mxZettelBinding.Lock()
 	if ci.Reason == box.OnReload || wui.dag.HasVertex(ci.Zid) {
-		wui.zettelEnv = nil
+		wui.zettelBinding = nil
 		wui.dag = nil
 	}
-	wui.mxZettelEnv.Unlock()
+	wui.mxZettelBinding.Unlock()
 }
 
 func (wui *WebUI) setSxnCache(zid id.Zid, expr sxeval.Expr) {

@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.Environment, error) {
+func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, *sxeval.Binding, error) {
 	// getMeta MUST currently use GetZettel, because GetMeta just uses the
 	// Index, which might not be current.
 	getMeta := func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
@@ -33,7 +33,7 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.
 	}
 	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, getMeta)
 	if dg == nil {
-		return nil, wui.engine.RootEnvironment(), nil
+		return nil, wui.engine.RootBinding(), nil
 	}
 	dg = dg.AddVertex(id.BaseSxnZid).AddEdge(id.StartSxnZid, id.BaseSxnZid)
 	dg = dg.AddVertex(id.PreludeSxnZid).AddEdge(id.BaseSxnZid, id.PreludeSxnZid)
@@ -42,13 +42,13 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, sxeval.
 	if zid, isDAG := dg.IsDAG(); !isDAG {
 		return nil, nil, fmt.Errorf("zettel %v is part of a dependency cycle", zid)
 	}
-	env := sxeval.MakeChildEnvironment(wui.engine.RootEnvironment(), "zettel", 128)
+	bind := sxeval.MakeChildBinding(wui.engine.RootBinding(), "zettel", 128)
 	for _, zid := range dg.SortReverse() {
-		if err := wui.loadSxnCodeZettel(ctx, zid, env); err != nil {
+		if err := wui.loadSxnCodeZettel(ctx, zid, bind); err != nil {
 			return nil, nil, err
 		}
 	}
-	return dg, env, nil
+	return dg, bind, nil
 }
 
 type getMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
@@ -85,11 +85,12 @@ func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFu
 	return dg
 }
 
-func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, env sxeval.Environment) error {
+func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, bind *sxeval.Binding) error {
 	rdr, err := wui.makeZettelReader(ctx, zid)
 	if err != nil {
 		return err
 	}
+	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
 	for {
 		form, err2 := rdr.Read()
 		if err2 != nil {
@@ -100,7 +101,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, env sxeval.
 		}
 		wui.log.Debug().Zid(zid).Str("form", form.Repr()).Msg("Loaded sxn code")
 
-		if _, err2 = wui.engine.Eval(form, env, nil); err2 != nil {
+		if _, err2 = env.Eval(form); err2 != nil {
 			return err2
 		}
 	}

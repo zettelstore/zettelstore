@@ -78,8 +78,8 @@
 
 ;; ROLE-DEFAULT-meta returns some metadata for the base template. Any role
 ;; specific code should include the returned list of this function.
-(defun ROLE-DEFAULT-meta (env)
-    `(,@(let* ((meta-role (environment-lookup 'meta-role env))
+(defun ROLE-DEFAULT-meta (binding)
+    `(,@(let* ((meta-role (binding-lookup 'meta-role binding))
                (entry (assoc CSS-ROLE-map meta-role)))
               (if (pair? entry)
                   `((link (@ (rel "stylesheet") (href ,(zid-content-path (cdr entry))))))
@@ -92,22 +92,22 @@
 (defvar ACTION-SEPARATOR '(@H " &#183; "))
 
 ;; ROLE-DEFAULT-actions returns the default text for actions.
-(defun ROLE-DEFAULT-actions (env)
-    `(,@(let ((copy-url (environment-lookup 'copy-url env)))
+(defun ROLE-DEFAULT-actions (binding)
+    `(,@(let ((copy-url (binding-lookup 'copy-url binding)))
              (if (defined? copy-url) `((@H " &#183; ") (a (@ (href ,copy-url)) "Copy"))))
-      ,@(let ((version-url (environment-lookup 'version-url env)))
+      ,@(let ((version-url (binding-lookup 'version-url binding)))
              (if (defined? version-url) `((@H " &#183; ") (a (@ (href ,version-url)) "Version"))))
-      ,@(let ((child-url (environment-lookup 'child-url env)))
+      ,@(let ((child-url (binding-lookup 'child-url binding)))
              (if (defined? child-url) `((@H " &#183; ") (a (@ (href ,child-url)) "Child"))))
-      ,@(let ((folge-url (environment-lookup 'folge-url env)))
+      ,@(let ((folge-url (binding-lookup 'folge-url binding)))
              (if (defined? folge-url) `((@H " &#183; ") (a (@ (href ,folge-url)) "Folge"))))
     )
 )
 
 ;; ROLE-tag-actions returns an additional action "Zettel" for zettel with role "tag".
-(defun ROLE-tag-actions (env)
-    `(,@(ROLE-DEFAULT-actions env)
-      ,@(let ((title (environment-lookup 'title env)))
+(defun ROLE-tag-actions (binding)
+    `(,@(ROLE-DEFAULT-actions binding)
+      ,@(let ((title (binding-lookup 'title binding)))
              (if (and (defined? title) title)
                  `(,ACTION-SEPARATOR (a (@ (href ,(query->url (string-append "tags:" title)))) "Zettel"))
              )
@@ -116,9 +116,9 @@
 )
 
 ;; ROLE-role-actions returns an additional action "Zettel" for zettel with role "role".
-(defun ROLE-role-actions (env)
-    `(,@(ROLE-DEFAULT-actions env)
-      ,@(let ((title (environment-lookup 'title env)))
+(defun ROLE-role-actions (binding)
+    `(,@(ROLE-DEFAULT-actions binding)
+      ,@(let ((title (binding-lookup 'title binding)))
              (if (and (defined? title) title)
                  `(,ACTION-SEPARATOR (a (@ (href ,(query->url (string-append "role:" title)))) "Zettel"))
              )
@@ -129,10 +129,10 @@
 ;; ROLE-DEFAULT-heading returns the default text for headings, below the
 ;; references of a zettel. In most cases it should be called from an
 ;; overwriting function.
-(defun ROLE-DEFAULT-heading (env)
-    `(,@(let ((meta-url (environment-lookup 'meta-url env)))
+(defun ROLE-DEFAULT-heading (binding)
+    `(,@(let ((meta-url (binding-lookup 'meta-url binding)))
            (if (defined? meta-url) `((br) "URL: " ,(url-to-html meta-url))))
-      ,@(let ((meta-author (environment-lookup 'meta-author env)))
+      ,@(let ((meta-author (binding-lookup 'meta-author binding)))
            (if (and (defined? meta-author) meta-author) `((br) "By " ,meta-author)))
     )
 )

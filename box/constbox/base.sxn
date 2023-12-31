@@ -8,7 +8,7 @@
   ,@META-HEADER
   (link (@ (rel "stylesheet") (href ,css-base-url)))
   (link (@ (rel "stylesheet") (href ,css-user-url)))
-  ,@(ROLE-DEFAULT-meta (current-environment))
+  ,@(ROLE-DEFAULT-meta (current-binding))
   (title ,title))
 (body
   (nav (@ (class "zs-menu"))

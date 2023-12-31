@@ -35,7 +35,7 @@ import (
 )
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
-	root := sxeval.MakeRootEnvironment(len(specials) + len(builtins) + 3)
+	root := sxeval.MakeRootBinding(len(specials) + len(builtins) + 3)
 	engine := sxeval.MakeEngine(wui.sf, root)
 	for _, syntax := range specials {
 		engine.BindSpecial(syntax)
@@ -48,7 +48,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
 			text, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
@@ -61,7 +61,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
 			s, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
@@ -79,7 +79,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Frame, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
 			qs, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
@@ -112,16 +112,16 @@ var (
 		&sxbuiltins.Caar, &sxbuiltins.Cadr, &sxbuiltins.Cdar, &sxbuiltins.Cddr,
 		&sxbuiltins.Caaar, &sxbuiltins.Caadr, &sxbuiltins.Cadar, &sxbuiltins.Caddr,
 		&sxbuiltins.Cdaar, &sxbuiltins.Cdadr, &sxbuiltins.Cddar, &sxbuiltins.Cdddr,
-		&sxbuiltins.List,         // list
-		&sxbuiltins.Append,       // append
-		&sxbuiltins.Assoc,        // assoc
-		&sxbuiltins.Map,          // map
-		&sxbuiltins.Apply,        // apply
-		&sxbuiltins.StringAppend, // string-append
-		&sxbuiltins.BoundP,       // bound?
-		&sxbuiltins.Defined,      // defined?
-		&sxbuiltins.CurrentEnv,   // current-environment
-		&sxbuiltins.EnvLookup,    // environment-lookup
+		&sxbuiltins.List,           // list
+		&sxbuiltins.Append,         // append
+		&sxbuiltins.Assoc,          // assoc
+		&sxbuiltins.Map,            // map
+		&sxbuiltins.Apply,          // apply
+		&sxbuiltins.StringAppend,   // string-append
+		&sxbuiltins.BoundP,         // bound?
+		&sxbuiltins.Defined,        // defined?
+		&sxbuiltins.CurrentBinding, // current-binding
+		&sxbuiltins.BindingLookup,  // binding-lookup
 	}
 )
 
@@ -142,10 +142,10 @@ func (wui *WebUI) url2html(text sx.String) sx.Object {
 	return text
 }
 
-func (wui *WebUI) getParentEnv(ctx context.Context) (sxeval.Environment, error) {
-	wui.mxZettelEnv.Lock()
-	defer wui.mxZettelEnv.Unlock()
-	if parentEnv := wui.zettelEnv; parentEnv != nil {
+func (wui *WebUI) getParentEnv(ctx context.Context) (*sxeval.Binding, error) {
+	wui.mxZettelBinding.Lock()
+	defer wui.mxZettelBinding.Unlock()
+	if parentEnv := wui.zettelBinding; parentEnv != nil {
 		return parentEnv, nil
 	}
 	dag, zettelEnv, err := wui.loadAllSxnCodeZettel(ctx)
@@ -154,16 +154,16 @@ func (wui *WebUI) getParentEnv(ctx context.Context) (sxeval.Environment, error) 
 		return nil, err
 	}
 	wui.dag = dag
-	wui.zettelEnv = zettelEnv
+	wui.zettelBinding = zettelEnv
 	return zettelEnv, nil
 }
 
 // createRenderEnv creates a new environment and populates it with all relevant data for the base template.
-func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (sxeval.Environment, renderBinder) {
+func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (*sxeval.Binding, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	parentEnv, err := wui.getParentEnv(ctx)
-	env := sxeval.MakeChildEnvironment(parentEnv, name, 128)
-	rb := makeRenderBinder(wui.sf, env, err)
+	bind := sxeval.MakeChildBinding(parentEnv, name, 128)
+	rb := makeRenderBinder(wui.sf, bind, err)
 	rb.bindString("lang", sx.String(lang))
 	rb.bindString("css-base-url", sx.String(wui.cssBaseURL))
 	rb.bindString("css-user-url", sx.String(wui.cssUserURL))
@@ -189,7 +189,7 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	rb.bindString("debug-mode", sx.MakeBoolean(wui.debug))
 	rb.bindSymbol(wui.symMetaHeader, sx.Nil())
 	rb.bindSymbol(wui.symDetail, sx.Nil())
-	return env, rb
+	return bind, rb
 }
 
 func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
@@ -200,26 +200,26 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 }
 
 type renderBinder struct {
-	err  error
-	make func(string) (*sx.Symbol, error)
-	env  sxeval.Environment
+	err     error
+	make    func(string) (*sx.Symbol, error)
+	binding *sxeval.Binding
 }
 
-func makeRenderBinder(sf sx.SymbolFactory, env sxeval.Environment, err error) renderBinder {
-	return renderBinder{make: sf.Make, env: env, err: err}
+func makeRenderBinder(sf sx.SymbolFactory, bind *sxeval.Binding, err error) renderBinder {
+	return renderBinder{make: sf.Make, binding: bind, err: err}
 }
 func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
-			err = rb.env.Bind(sym, obj)
+			err = rb.binding.Bind(sym, obj)
 		}
 		rb.err = err
 	}
 }
 func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
-		rb.err = rb.env.Bind(sym, obj)
+		rb.err = rb.binding.Bind(sym, obj)
 	}
 }
 func (rb *renderBinder) bindKeyValue(key string, value string) {
@@ -232,7 +232,7 @@ func (rb *renderBinder) rebindResolved(key, defKey string) {
 	if rb.err == nil {
 		sym, err := rb.make(key)
 		if err == nil {
-			if obj, found := sxeval.Resolve(rb.env, sym); found {
+			if obj, found := rb.binding.Resolve(sym); found {
 				rb.bindString(defKey, obj)
 				return // bindString might set rb.err
 			}
@@ -335,7 +335,7 @@ func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sx.Pair {
 	return nil
 }
 
-func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sxeval.Expr, error) {
+func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.Binding) (sxeval.Expr, error) {
 	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
 	}
@@ -353,12 +353,13 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Env
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	t, err := wui.engine.Parse(objs[0], env)
+	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
+	t, err := env.Parse(objs[0])
 	if err != nil {
 		return nil, err
 	}
 
-	wui.setSxnCache(zid, wui.engine.Rework(t, env))
+	wui.setSxnCache(zid, env.Rework(t))
 	return t, nil
 }
 func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
@@ -371,25 +372,26 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.R
 	return reader, nil
 }
 
-func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, env sxeval.Environment) (sx.Object, error) {
-	templateExpr, err := wui.getSxnTemplate(ctx, zid, env)
+func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.Binding) (sx.Object, error) {
+	templateExpr, err := wui.getSxnTemplate(ctx, zid, bind)
 	if err != nil {
 		return nil, err
 	}
-	return wui.engine.Execute(templateExpr, env, nil)
+	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
+	return env.Run(templateExpr)
 }
 
-func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, env sxeval.Environment) error {
-	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, env)
+func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, bind *sxeval.Binding) error {
+	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, bind)
 }
-func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, env sxeval.Environment) error {
-	detailObj, err := wui.evalSxnTemplate(ctx, templateID, env)
+func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, bind *sxeval.Binding) error {
+	detailObj, err := wui.evalSxnTemplate(ctx, templateID, bind)
 	if err != nil {
 		return err
 	}
-	env.Bind(wui.symDetail, detailObj)
+	bind.Bind(wui.symDetail, detailObj)
 
-	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid, env)
+	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid, bind)
 	if err != nil {
 		return err
 	}
