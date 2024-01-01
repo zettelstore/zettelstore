@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -15,6 +18,7 @@ import (
 	"net/http"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -56,7 +60,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 
 		title := parser.NormalizedSpacedText(zn.InhMeta.GetTitle())
 		env, rb := wui.createRenderEnv(ctx, "zettel", wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang), title, user)
-		rb.bindSymbol(wui.symMetaHeader, metaObj)
+		rb.bindSymbol(symMetaHeader, metaObj)
 		rb.bindString("heading", sx.String(title))
 		if role, found := zn.InhMeta.Get(api.KeyRole); found && role != "" {
 			rb.bindString("role-url", sx.String(wui.NewURLBuilder('h').AppendQuery(api.KeyRole+api.SearchOperatorHas+role).String()))
@@ -100,14 +104,14 @@ func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle ge
 
 func (wui *WebUI) bindLinks(ctx context.Context, rb *renderBinder, varPrefix string, m *meta.Meta, key, configKey string, getTextTitle getTextTitleFunc) {
 	varLinks := varPrefix + "-links"
-	var symOpen *sx.Symbol
+	var symOpen sx.Symbol
 	switch wui.rtConfig.Get(ctx, m, configKey) {
 	case "false":
 		rb.bindString(varLinks, sx.Nil())
 		return
 	case "close":
 	default:
-		symOpen = wui.symAttrOpen
+		symOpen = shtml.SymAttrOpen
 	}
 	lstLinks := wui.zettelLinksSxn(m, key, getTextTitle)
 	rb.bindString(varLinks, lstLinks)

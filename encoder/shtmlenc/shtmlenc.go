@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2023-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package shtmlenc encodes the abstract syntax tree into a s-expr which represents HTML.
@@ -33,7 +36,7 @@ func Create(params *encoder.CreateParameter) *Encoder {
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{
 		tx:   szenc.NewTransformer(),
-		th:   shtml.NewEvaluator(1, nil),
+		th:   shtml.NewEvaluator(1),
 		lang: params.Lang,
 	}
 }

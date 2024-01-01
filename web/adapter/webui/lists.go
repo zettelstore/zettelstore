@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -20,7 +23,9 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"
@@ -178,10 +183,10 @@ func (wui *WebUI) transformRoleZettelList(ctx context.Context, roleZettel *useca
 
 func (wui *WebUI) prependZettelLink(sxZtl *sx.Pair, name string, u *api.URLBuilder) *sx.Pair {
 	link := sx.MakeList(
-		wui.symA,
+		shtml.SymA,
 		sx.MakeList(
-			wui.symAttr,
-			sx.Cons(wui.symHref, sx.String(u.String())),
+			sxhtml.SymAttr,
+			sx.Cons(shtml.SymAttrHref, sx.String(u.String())),
 		),
 		sx.String(name),
 	)

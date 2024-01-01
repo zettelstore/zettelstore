@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -20,6 +23,7 @@ import (
 	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/client.fossil/sz"
 	"zettelstore.de/sx.fossil"
+	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"
@@ -41,19 +45,11 @@ type htmlGenerator struct {
 }
 
 func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerator {
-	th := shtml.NewEvaluator(1, wui.sf)
-	symA := wui.symA
-	symImg := th.Make("img")
-	symAttr := wui.symAttr
-
-	symHref := wui.symHref
-	symClass := th.Make("class")
-	symTarget := th.Make("target")
-	symRel := th.Make("rel")
+	th := shtml.NewEvaluator(1)
 
 	findA := func(obj sx.Object) (attr, assoc, rest *sx.Pair) {
 		pair, isPair := sx.GetPair(obj)
-		if !isPair || !symA.IsEqual(pair.Car()) {
+		if !isPair || !shtml.SymA.IsEqual(pair.Car()) {
 			return nil, nil, nil
 		}
 		rest = pair.Tail()
@@ -62,7 +58,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		}
 		objA := rest.Car()
 		attr, isPair = sx.GetPair(objA)
-		if !isPair || !symAttr.IsEqual(attr.Car()) {
+		if !isPair || !sxhtml.SymAttr.IsEqual(attr.Car()) {
 			return nil, nil, nil
 		}
 		return attr, attr.Tail(), rest.Tail()
@@ -73,7 +69,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 			return obj
 		}
 
-		hrefP := assoc.Assoc(symHref)
+		hrefP := assoc.Assoc(shtml.SymAttrHref)
 		if hrefP == nil {
 			return obj
 		}
@@ -86,18 +82,18 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if hasFragment {
 			u = u.SetFragment(fragment)
 		}
-		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
-		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	}
 
-	rebind(th, sz.NameSymLinkZettel, linkZettel)
-	rebind(th, sz.NameSymLinkFound, linkZettel)
-	rebind(th, sz.NameSymLinkBased, func(obj sx.Object) sx.Object {
+	rebind(th, sz.SymLinkZettel, linkZettel)
+	rebind(th, sz.SymLinkFound, linkZettel)
+	rebind(th, sz.SymLinkBased, func(obj sx.Object) sx.Object {
 		attr, assoc, rest := findA(obj)
 		if attr == nil {
 			return obj
 		}
-		hrefP := assoc.Assoc(symHref)
+		hrefP := assoc.Assoc(shtml.SymAttrHref)
 		if hrefP == nil {
 			return obj
 		}
@@ -106,15 +102,15 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 			return obj
 		}
 		u := builder.NewURLBuilder('/').SetRawLocal(href.String())
-		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
-		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
-	rebind(th, sz.NameSymLinkQuery, func(obj sx.Object) sx.Object {
+	rebind(th, sz.SymLinkQuery, func(obj sx.Object) sx.Object {
 		attr, assoc, rest := findA(obj)
 		if attr == nil {
 			return obj
 		}
-		hrefP := assoc.Assoc(symHref)
+		hrefP := assoc.Assoc(shtml.SymAttrHref)
 		if hrefP == nil {
 			return obj
 		}
@@ -131,30 +127,29 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 			return obj
 		}
 		u := builder.NewURLBuilder('h').AppendQuery(q)
-		assoc = assoc.Cons(sx.Cons(symHref, sx.String(u.String())))
-		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
-	rebind(th, sz.NameSymLinkExternal, func(obj sx.Object) sx.Object {
+	rebind(th, sz.SymLinkExternal, func(obj sx.Object) sx.Object {
 		attr, assoc, rest := findA(obj)
 		if attr == nil {
 			return obj
 		}
-		assoc = assoc.Cons(sx.Cons(symClass, sx.String("external"))).
-			Cons(sx.Cons(symTarget, sx.String("_blank"))).
-			Cons(sx.Cons(symRel, sx.String("noopener noreferrer")))
-		return rest.Cons(assoc.Cons(symAttr)).Cons(symA)
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrClass, sx.String("external"))).
+			Cons(sx.Cons(shtml.SymAttrTarget, sx.String("_blank"))).
+			Cons(sx.Cons(shtml.SymAttrRel, sx.String("noopener noreferrer")))
+		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
-	rebind(th, sz.NameSymEmbed, func(obj sx.Object) sx.Object {
+	rebind(th, sz.SymEmbed, func(obj sx.Object) sx.Object {
 		pair, isPair := sx.GetPair(obj)
-		if !isPair || !symImg.IsEqual(pair.Car()) {
+		if !isPair || !shtml.SymIMG.IsEqual(pair.Car()) {
 			return obj
 		}
 		attr, isPair := sx.GetPair(pair.Tail().Car())
-		if !isPair || !symAttr.IsEqual(attr.Car()) {
+		if !isPair || !sxhtml.SymAttr.IsEqual(attr.Car()) {
 			return obj
 		}
-		symSrc := th.Make("src")
-		srcP := attr.Tail().Assoc(symSrc)
+		srcP := attr.Tail().Assoc(shtml.SymAttrSrc)
 		if srcP == nil {
 			return obj
 		}
@@ -167,21 +162,20 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 			return obj
 		}
 		u := builder.NewURLBuilder('z').SetZid(zid)
-		imgAttr := attr.Tail().Cons(sx.Cons(symSrc, sx.String(u.String()))).Cons(symAttr)
-		return pair.Tail().Tail().Cons(imgAttr).Cons(symImg)
+		imgAttr := attr.Tail().Cons(sx.Cons(shtml.SymAttrSrc, sx.String(u.String()))).Cons(sxhtml.SymAttr)
+		return pair.Tail().Tail().Cons(imgAttr).Cons(shtml.SymIMG)
 	})
 
 	return &htmlGenerator{
-		tx:    szenc.NewTransformer(),
-		th:    th,
-		lang:  lang,
-		symAt: symAttr,
+		tx:   szenc.NewTransformer(),
+		th:   th,
+		lang: lang,
 	}
 }
 
-func rebind(ev *shtml.Evaluator, name string, fn func(sx.Object) sx.Object) {
-	prevFn := ev.ResolveBinding(name)
-	ev.Rebind(name, func(args []sx.Object, env *shtml.Environment) sx.Object {
+func rebind(ev *shtml.Evaluator, sym sx.Symbol, fn func(sx.Object) sx.Object) {
+	prevFn := ev.ResolveBinding(sym)
+	ev.Rebind(sym, func(args []sx.Object, env *shtml.Environment) sx.Object {
 		obj := prevFn(args, env)
 		if env.GetError() == nil {
 			return fn(obj)

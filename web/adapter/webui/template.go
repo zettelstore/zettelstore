@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -18,6 +21,7 @@ import (
 	"net/url"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/shtml"
 	"zettelstore.de/sx.fossil"
 	"zettelstore.de/sx.fossil/sxbuiltins"
 	"zettelstore.de/sx.fossil/sxeval"
@@ -36,7 +40,7 @@ import (
 
 func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 	root := sxeval.MakeRootBinding(len(specials) + len(builtins) + 3)
-	engine := sxeval.MakeEngine(wui.sf, root)
+	engine := sxeval.MakeEngine(root)
 	for _, syntax := range specials {
 		engine.BindSpecial(syntax)
 	}
@@ -129,12 +133,12 @@ func (wui *WebUI) url2html(text sx.String) sx.Object {
 	if u, errURL := url.Parse(text.String()); errURL == nil {
 		if us := u.String(); us != "" {
 			return sx.MakeList(
-				wui.symA,
+				shtml.SymA,
 				sx.MakeList(
-					wui.symAttr,
-					sx.Cons(wui.symHref, sx.String(us)),
-					sx.Cons(wui.sf.MustMake("target"), sx.String("_blank")),
-					sx.Cons(wui.sf.MustMake("rel"), sx.String("noopener noreferrer")),
+					sxhtml.SymAttr,
+					sx.Cons(shtml.SymAttrHref, sx.String(us)),
+					sx.Cons(shtml.SymAttrTarget, sx.String("_blank")),
+					sx.Cons(shtml.SymAttrRel, sx.String("noopener noreferrer")),
 				),
 				text)
 		}
@@ -163,7 +167,7 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	parentEnv, err := wui.getParentEnv(ctx)
 	bind := sxeval.MakeChildBinding(parentEnv, name, 128)
-	rb := makeRenderBinder(wui.sf, bind, err)
+	rb := makeRenderBinder(bind, err)
 	rb.bindString("lang", sx.String(lang))
 	rb.bindString("css-base-url", sx.String(wui.cssBaseURL))
 	rb.bindString("css-user-url", sx.String(wui.cssUserURL))
@@ -187,8 +191,8 @@ func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string,
 	rb.bindString("query-key-seed", sx.String(api.QueryKeySeed))
 	rb.bindString("FOOTER", wui.calculateFooterSxn(ctx)) // TODO: use real footer
 	rb.bindString("debug-mode", sx.MakeBoolean(wui.debug))
-	rb.bindSymbol(wui.symMetaHeader, sx.Nil())
-	rb.bindSymbol(wui.symDetail, sx.Nil())
+	rb.bindSymbol(symMetaHeader, sx.Nil())
+	rb.bindSymbol(symDetail, sx.Nil())
 	return bind, rb
 }
 
@@ -201,23 +205,18 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 
 type renderBinder struct {
 	err     error
-	make    func(string) (*sx.Symbol, error)
 	binding *sxeval.Binding
 }
 
-func makeRenderBinder(sf sx.SymbolFactory, bind *sxeval.Binding, err error) renderBinder {
-	return renderBinder{make: sf.Make, binding: bind, err: err}
+func makeRenderBinder(bind *sxeval.Binding, err error) renderBinder {
+	return renderBinder{binding: bind, err: err}
 }
 func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
-		sym, err := rb.make(key)
-		if err == nil {
-			err = rb.binding.Bind(sym, obj)
-		}
-		rb.err = err
+		rb.err = rb.binding.Bind(sx.Symbol(key), obj)
 	}
 }
-func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
+func (rb *renderBinder) bindSymbol(sym sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
 		rb.err = rb.binding.Bind(sym, obj)
 	}
@@ -230,14 +229,9 @@ func (rb *renderBinder) bindKeyValue(key string, value string) {
 }
 func (rb *renderBinder) rebindResolved(key, defKey string) {
 	if rb.err == nil {
-		sym, err := rb.make(key)
-		if err == nil {
-			if obj, found := rb.binding.Resolve(sym); found {
-				rb.bindString(defKey, obj)
-				return // bindString might set rb.err
-			}
+		if obj, found := rb.binding.Resolve(sx.Symbol(key)); found {
+			rb.bindString(defKey, obj)
 		}
-		rb.err = err
 	}
 }
 
@@ -368,7 +362,7 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.R
 		return nil, err
 	}
 
-	reader := sxreader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()), sxreader.WithSymbolFactory(wui.sf))
+	reader := sxreader.MakeReader(bytes.NewReader(ztl.Content.AsBytes()))
 	return reader, nil
 }
 
@@ -389,7 +383,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	if err != nil {
 		return err
 	}
-	bind.Bind(wui.symDetail, detailObj)
+	bind.Bind(symDetail, detailObj)
 
 	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid, bind)
 	if err != nil {
@@ -397,7 +391,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	}
 	wui.log.Debug().Str("page", pageObj.Repr()).Msg("render")
 
-	gen := sxhtml.NewGenerator(wui.sf, sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
 	var sb bytes.Buffer
 	_, err = gen.WriteHTML(&sb, pageObj)
 	if err != nil {

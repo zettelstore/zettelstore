@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package api
@@ -59,7 +62,6 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 
 		case api.EncoderData:
 			encoder = &dataZettelEncoder{
-				sf:        sx.MakeMappedFactory(256),
 				sq:        sq,
 				getRights: func(m *meta.Meta) api.ZettelRights { return a.getRights(ctx, m) },
 			}
@@ -188,16 +190,14 @@ func (*plainZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arra
 }
 
 type dataZettelEncoder struct {
-	sf        sx.SymbolFactory
 	sq        *query.Query
 	getRights func(*meta.Meta) api.ZettelRights
 }
 
 func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
-	sf := dze.sf
 	result := make([]sx.Object, len(ml)+1)
-	result[0] = sf.MustMake("list")
-	symID, symZettel := sf.MustMake("id"), sf.MustMake("zettel")
+	result[0] = sx.SymbolList
+	symID, symZettel := sx.Symbol("id"), sx.Symbol("zettel")
 	for i, m := range ml {
 		msz := sexp.EncodeMetaRights(api.MetaRights{
 			Meta:   m.Map(),
@@ -208,15 +208,14 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	}
 
 	_, err := sx.Print(w, sx.MakeList(
-		sf.MustMake("meta-list"),
-		sx.MakeList(sf.MustMake("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sf.MustMake("human"), sx.String(dze.sq.Human())),
+		sx.Symbol("meta-list"),
+		sx.MakeList(sx.Symbol("query"), sx.String(dze.sq.String())),
+		sx.MakeList(sx.Symbol("human"), sx.String(dze.sq.Human())),
 		sx.MakeList(result...),
 	))
 	return err
 }
 func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta.Arrangement) error {
-	sf := dze.sf
 	result := sx.Nil()
 	for aggKey, metaList := range arr {
 		sxMeta := sx.Nil()
@@ -227,11 +226,11 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 		result = result.Cons(sxMeta)
 	}
 	_, err := sx.Print(w, sx.MakeList(
-		sf.MustMake("aggregate"),
+		sx.Symbol("aggregate"),
 		sx.String(act),
-		sx.MakeList(sf.MustMake("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sf.MustMake("human"), sx.String(dze.sq.Human())),
-		result.Cons(sf.MustMake("list")),
+		sx.MakeList(sx.Symbol("query"), sx.String(dze.sq.String())),
+		sx.MakeList(sx.Symbol("human"), sx.String(dze.sq.Human())),
+		result.Cons(sx.SymbolList),
 	))
 	return err
 }

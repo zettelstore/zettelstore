@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package webui provides web-UI handlers for web requests.
@@ -64,19 +67,11 @@ type WebUI struct {
 	searchURL     string
 	createNewURL  string
 
-	sf              sx.SymbolFactory
 	engine          *sxeval.Engine
 	mxZettelBinding sync.Mutex
 	zettelBinding   *sxeval.Binding
 	dag             id.Digraph
 	genHTML         *sxhtml.Generator
-
-	symMetaHeader *sx.Symbol
-	symDetail     *sx.Symbol
-	symA, symHref *sx.Symbol
-	symSpan       *sx.Symbol
-	symAttr       *sx.Symbol
-	symAttrOpen   *sx.Symbol
 }
 
 // webuiBox contains all box methods that are needed for WebUI operation.
@@ -95,7 +90,6 @@ type webuiBox interface {
 func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtConfig config.Config, token auth.TokenManager,
 	mgr box.Manager, pol auth.Policy, evalZettel *usecase.Evaluate) *WebUI {
 	loginoutBase := ab.NewURLBuilder('i')
-	sf := sx.MakeMappedFactory(256)
 
 	wui := &WebUI{
 		log:      log,
@@ -125,22 +119,19 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		searchURL:     ab.NewURLBuilder('h').String(),
 		createNewURL:  ab.NewURLBuilder('c').String(),
 
-		sf:            sf,
 		zettelBinding: nil,
-		genHTML:       sxhtml.NewGenerator(sf, sxhtml.WithNewline),
-		symDetail:     sf.MustMake("DETAIL"),
-		symMetaHeader: sf.MustMake("META-HEADER"),
-		symA:          sf.MustMake("a"),
-		symHref:       sf.MustMake("href"),
-		symSpan:       sf.MustMake("span"),
-		symAttr:       sf.MustMake(sxhtml.NameSymAttr),
-		symAttrOpen:   sf.MustMake("open"),
+		genHTML:       sxhtml.NewGenerator(sxhtml.WithNewline),
 	}
 	wui.engine = wui.createRenderEngine()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }
+
+const (
+	symDetail     = sx.Symbol("DETAIL")
+	symMetaHeader = sx.Symbol("META-HEADER")
+)
 
 func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxCache.Lock()

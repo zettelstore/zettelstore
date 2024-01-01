@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package htmlenc encodes the abstract syntax tree into HTML5 via zettelstore-client.
@@ -37,7 +40,7 @@ func Create(params *encoder.CreateParameter) *Encoder {
 	// If we can refactor it out, the transformer can be created only once.
 	return &Encoder{
 		tx:      szenc.NewTransformer(),
-		th:      shtml.NewEvaluator(1, nil),
+		th:      shtml.NewEvaluator(1),
 		lang:    params.Lang,
 		textEnc: textenc.Create(),
 	}
@@ -77,12 +80,9 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	}
 	hen := he.th.Endnotes(&env)
 
-	sf := he.th.SymbolFactory()
-	symAttr := sf.MustMake(sxhtml.NameSymAttr)
-
-	head := sx.MakeList(sf.MustMake("head"))
+	head := sx.MakeList(shtml.SymHead)
 	curr := head
-	curr = curr.AppendBang(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sf.MustMake("charset"), sx.String("utf-8"))).Cons(symAttr)).Cons(sf.MustMake("meta")))
+	curr = curr.AppendBang(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sx.Symbol("charset"), sx.String("utf-8"))).Cons(sxhtml.SymAttr)).Cons(shtml.SymMeta))
 	for elem := hm; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
@@ -92,27 +92,27 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	} else {
 		sb.Write(zn.Meta.Zid.Bytes())
 	}
-	_ = curr.AppendBang(sx.Nil().Cons(sx.String(sb.String())).Cons(sf.MustMake("title")))
+	_ = curr.AppendBang(sx.Nil().Cons(sx.String(sb.String())).Cons(shtml.SymAttrTitle))
 
-	body := sx.MakeList(sf.MustMake("body"))
+	body := sx.MakeList(shtml.SymBody)
 	curr = body
 	if hasTitle {
-		curr = curr.AppendBang(htitle.Cons(sf.MustMake("h1")))
+		curr = curr.AppendBang(htitle.Cons(shtml.SymH1))
 	}
 	for elem := hast; elem != nil; elem = elem.Tail() {
 		curr = curr.AppendBang(elem.Car())
 	}
 	if hen != nil {
-		curr = curr.AppendBang(sx.Nil().Cons(sf.MustMake("hr")))
+		curr = curr.AppendBang(sx.Nil().Cons(shtml.SymHR))
 		_ = curr.AppendBang(hen)
 	}
 
 	doc := sx.MakeList(
-		sf.MustMake(sxhtml.NameSymDoctype),
-		sx.MakeList(sf.MustMake("html"), head, body),
+		sxhtml.SymDoctype,
+		sx.MakeList(shtml.SymHtml, head, body),
 	)
 
-	gen := sxhtml.NewGenerator(sf, sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
 	return gen.WriteHTML(w, doc)
 }
 
@@ -123,7 +123,7 @@ func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMet
 	if err != nil {
 		return 0, err
 	}
-	gen := sxhtml.NewGenerator(he.th.SymbolFactory(), sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
 	return gen.WriteListHTML(w, hm)
 }
 
@@ -136,7 +136,7 @@ func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 	env := shtml.MakeEnvironment(he.lang)
 	hobj, err := he.th.Evaluate(he.tx.GetSz(bs), &env)
 	if err == nil {
-		gen := sxhtml.NewGenerator(he.th.SymbolFactory())
+		gen := sxhtml.NewGenerator()
 		length, err2 := gen.WriteListHTML(w, hobj)
 		if err2 != nil {
 			return length, err2
@@ -154,7 +154,7 @@ func (he *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 	env := shtml.MakeEnvironment(he.lang)
 	hobj, err := he.th.Evaluate(he.tx.GetSz(is), &env)
 	if err == nil {
-		gen := sxhtml.NewGenerator(sx.FindSymbolFactory(hobj))
+		gen := sxhtml.NewGenerator()
 		length, err2 := gen.WriteListHTML(w, hobj)
 		if err2 != nil {
 			return length, err2
