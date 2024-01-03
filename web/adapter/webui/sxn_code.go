@@ -33,7 +33,7 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, *sxeval
 	}
 	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, getMeta)
 	if dg == nil {
-		return nil, wui.engine.RootBinding(), nil
+		return nil, wui.rootBinding, nil
 	}
 	dg = dg.AddVertex(id.BaseSxnZid).AddEdge(id.StartSxnZid, id.BaseSxnZid)
 	dg = dg.AddVertex(id.PreludeSxnZid).AddEdge(id.BaseSxnZid, id.PreludeSxnZid)
@@ -42,7 +42,7 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, *sxeval
 	if zid, isDAG := dg.IsDAG(); !isDAG {
 		return nil, nil, fmt.Errorf("zettel %v is part of a dependency cycle", zid)
 	}
-	bind := sxeval.MakeChildBinding(wui.engine.RootBinding(), "zettel", 128)
+	bind := sxeval.MakeChildBinding(wui.rootBinding, "zettel", 128)
 	for _, zid := range dg.SortReverse() {
 		if err := wui.loadSxnCodeZettel(ctx, zid, bind); err != nil {
 			return nil, nil, err
@@ -90,7 +90,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, bind *sxeva
 	if err != nil {
 		return err
 	}
-	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
+	env := sxeval.MakeExecutionEnvironment(bind, nil)
 	for {
 		form, err2 := rdr.Read()
 		if err2 != nil {

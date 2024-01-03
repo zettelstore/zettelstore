@@ -38,16 +38,15 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func (wui *WebUI) createRenderEngine() *sxeval.Engine {
+func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 	root := sxeval.MakeRootBinding(len(specials) + len(builtins) + 3)
-	engine := sxeval.MakeEngine(root)
 	for _, syntax := range specials {
-		engine.BindSpecial(syntax)
+		root.BindSpecial(syntax)
 	}
 	for _, b := range builtins {
-		engine.BindBuiltin(b)
+		root.BindBuiltin(b)
 	}
-	engine.BindBuiltin(&sxeval.Builtin{
+	root.BindBuiltin(&sxeval.Builtin{
 		Name:     "url-to-html",
 		MinArity: 1,
 		MaxArity: 1,
@@ -60,7 +59,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 			return wui.url2html(text), nil
 		},
 	})
-	engine.BindBuiltin(&sxeval.Builtin{
+	root.BindBuiltin(&sxeval.Builtin{
 		Name:     "zid-content-path",
 		MinArity: 1,
 		MaxArity: 1,
@@ -78,7 +77,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 			return sx.String(ub.String()), nil
 		},
 	})
-	engine.BindBuiltin(&sxeval.Builtin{
+	root.BindBuiltin(&sxeval.Builtin{
 		Name:     "query->url",
 		MinArity: 1,
 		MaxArity: 1,
@@ -93,7 +92,7 @@ func (wui *WebUI) createRenderEngine() *sxeval.Engine {
 		},
 	})
 	root.Freeze()
-	return engine
+	return root
 }
 
 var (
@@ -347,7 +346,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.B
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
+	env := sxeval.MakeExecutionEnvironment(bind, nil)
 	t, err := env.Parse(objs[0])
 	if err != nil {
 		return nil, err
@@ -371,7 +370,7 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.
 	if err != nil {
 		return nil, err
 	}
-	env := sxeval.MakeExecutionEnvironment(wui.engine, nil, bind)
+	env := sxeval.MakeExecutionEnvironment(bind, nil)
 	return env.Run(templateExpr)
 }
 

@@ -67,7 +67,7 @@ type WebUI struct {
 	searchURL     string
 	createNewURL  string
 
-	engine          *sxeval.Engine
+	rootBinding     *sxeval.Binding
 	mxZettelBinding sync.Mutex
 	zettelBinding   *sxeval.Binding
 	dag             id.Digraph
@@ -122,7 +122,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		zettelBinding: nil,
 		genHTML:       sxhtml.NewGenerator(sxhtml.WithNewline),
 	}
-	wui.engine = wui.createRenderEngine()
+	wui.rootBinding = wui.createRenderBinding()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
