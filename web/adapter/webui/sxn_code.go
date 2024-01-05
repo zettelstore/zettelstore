@@ -90,7 +90,7 @@ func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, bind *sxeva
 	if err != nil {
 		return err
 	}
-	env := sxeval.MakeExecutionEnvironment(bind, nil)
+	env := sxeval.MakeExecutionEnvironment(bind)
 	for {
 		form, err2 := rdr.Read()
 		if err2 != nil {

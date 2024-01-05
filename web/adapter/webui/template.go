@@ -346,7 +346,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.B
 	if len(objs) != 1 {
 		return nil, fmt.Errorf("expected 1 expression in template, but got %d", len(objs))
 	}
-	env := sxeval.MakeExecutionEnvironment(bind, nil)
+	env := sxeval.MakeExecutionEnvironment(bind)
 	t, err := env.Parse(objs[0])
 	if err != nil {
 		return nil, err
@@ -370,7 +370,7 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.
 	if err != nil {
 		return nil, err
 	}
-	env := sxeval.MakeExecutionEnvironment(bind, nil)
+	env := sxeval.MakeExecutionEnvironment(bind)
 	return env.Run(templateExpr)
 }
 
