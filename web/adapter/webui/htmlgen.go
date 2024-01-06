@@ -77,7 +77,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		zid, fragment, hasFragment := strings.Cut(href.String(), "#")
+		zid, fragment, hasFragment := strings.Cut(string(href), "#")
 		u := builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
 		if hasFragment {
 			u = u.SetFragment(fragment)
@@ -101,7 +101,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		u := builder.NewURLBuilder('/').SetRawLocal(href.String())
+		u := builder.NewURLBuilder('/').SetRawLocal(string(href))
 		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
@@ -118,7 +118,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		ur, err := url.Parse(href.String())
+		ur, err := url.Parse(string(href))
 		if err != nil {
 			return obj
 		}
@@ -227,7 +227,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 				if tail, isTail := sx.GetPair(val); isTail {
 					val = tail.Car()
 				}
-				a = a.Set(key.String(), val.String())
+				a = a.Set(goString(key), goString(val))
 			}
 		}
 		name, found := a.Get("name")
@@ -248,6 +248,17 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		result = result.Cons(metaMap[keys[i]])
 	}
 	return result
+}
+
+func goString(obj sx.Object) string {
+	switch o := obj.(type) {
+	case sx.String:
+		return string(o)
+	case sx.Symbol:
+		return string(o)
+	default:
+		return o.String()
+	}
 }
 
 func (g *htmlGenerator) transformMetaTags(tags string) *sx.Pair {
