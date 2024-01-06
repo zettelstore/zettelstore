@@ -26,12 +26,15 @@ const digestAlg = crypto.SHA384
 
 func sign(claim sx.Object, secret []byte) ([]byte, error) {
 	var buf bytes.Buffer
-	sx.Print(&buf, claim)
+	_, err := sx.Print(&buf, claim)
+	if err != nil {
+		return nil, err
+	}
 	token := make([]byte, encoding.EncodedLen(buf.Len()))
 	encoding.Encode(token, buf.Bytes())
 
 	digest := hmac.New(digestAlg.New, secret)
-	_, err := digest.Write(buf.Bytes())
+	_, err = digest.Write(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}

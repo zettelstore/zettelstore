@@ -137,7 +137,7 @@ func setupTokenData(obj sx.Object, k auth.TokenKind, tokenData *auth.TokenData) 
 		return ErrNoZid
 	}
 
-	tokenData.Ident = ident.String()
+	tokenData.Ident = string(ident)
 	tokenData.Issued = issued
 	tokenData.Now = now
 	tokenData.Expires = expires

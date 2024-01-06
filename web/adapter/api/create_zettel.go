@@ -59,7 +59,7 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 			result = newZid.Bytes()
 			contentType = content.PlainText
 		case api.EncoderData:
-			result = []byte(sx.Int64(newZid).Repr())
+			result = []byte(sx.Int64(newZid).String())
 			contentType = content.SXPF
 		default:
 			panic(encStr)
