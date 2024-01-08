@@ -69,9 +69,9 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 			if err != nil {
 				return nil, err
 			}
-			zid, err := id.Parse(s.String())
+			zid, err := id.Parse(string(s))
 			if err != nil {
-				return nil, fmt.Errorf("parsing zettel identfier %q: %w", s, err)
+				return nil, fmt.Errorf("parsing zettel identifier %q: %w", s, err)
 			}
 			ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
 			return sx.String(ub.String()), nil
@@ -129,7 +129,7 @@ var (
 )
 
 func (wui *WebUI) url2html(text sx.String) sx.Object {
-	if u, errURL := url.Parse(text.String()); errURL == nil {
+	if u, errURL := url.Parse(string(text)); errURL == nil {
 		if us := u.String(); us != "" {
 			return sx.MakeList(
 				shtml.SymA,
