@@ -407,7 +407,7 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 		return createInlineErrorImage(en)
 	}
 
-	if syntax := zettel.Meta.GetDefault(api.KeySyntax, ""); parser.IsImageFormat(syntax) {
+	if syntax := zettel.Meta.GetDefault(api.KeySyntax, meta.DefaultSyntax); parser.IsImageFormat(syntax) {
 		e.updateImageRefNode(en, zettel.Meta, syntax)
 		return en
 	} else if !parser.IsASTParser(syntax) {
@@ -536,7 +536,7 @@ func (e *evaluator) evaluateEmbeddedInline(content []byte, syntax string) ast.In
 }
 
 func (e *evaluator) evaluateEmbeddedZettel(zettel zettel.Zettel) *ast.ZettelNode {
-	zn := parser.ParseZettel(e.ctx, zettel, zettel.Meta.GetDefault(api.KeySyntax, ""), e.rtConfig)
+	zn := parser.ParseZettel(e.ctx, zettel, zettel.Meta.GetDefault(api.KeySyntax, meta.DefaultSyntax), e.rtConfig)
 	ast.Walk(e, &zn.Ast)
 	return zn
 }

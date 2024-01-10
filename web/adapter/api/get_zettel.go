@@ -27,6 +27,7 @@ import (
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"
 	"zettelstore.de/z/zettel/id"
+	"zettelstore.de/z/zettel/meta"
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
@@ -95,7 +96,7 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 		_, err = z.Meta.Write(&buf)
 
 	case partContent:
-		contentType = content.MIMEFromSyntax(z.Meta.GetDefault(api.KeySyntax, ""))
+		contentType = content.MIMEFromSyntax(z.Meta.GetDefault(api.KeySyntax, meta.DefaultSyntax))
 		_, err = z.Content.Write(&buf)
 	}
 

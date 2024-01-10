@@ -271,7 +271,7 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	rb.bindKeyValue(api.KeyTitle, m.GetDefault(api.KeyTitle, ""))
 	rb.bindKeyValue(api.KeyRole, m.GetDefault(api.KeyRole, ""))
 	rb.bindKeyValue(api.KeyTags, m.GetDefault(api.KeyTags, ""))
-	rb.bindKeyValue(api.KeySyntax, m.GetDefault(api.KeySyntax, ""))
+	rb.bindKeyValue(api.KeySyntax, m.GetDefault(api.KeySyntax, meta.DefaultSyntax))
 	sentinel := sx.Cons(nil, nil)
 	curr := sentinel
 	for _, p := range m.ComputedPairs() {

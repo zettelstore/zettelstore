@@ -117,7 +117,7 @@ func (uc *Query) processContextDirective(ctx context.Context, spec *query.Contex
 func (uc *Query) processItemsDirective(ctx context.Context, _ *query.ItemsSpec, metaSeq []*meta.Meta) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(metaSeq))
 	for _, m := range metaSeq {
-		zn, err := uc.ucEvaluate.Run(ctx, m.Zid, m.GetDefault(api.KeySyntax, ""))
+		zn, err := uc.ucEvaluate.Run(ctx, m.Zid, m.GetDefault(api.KeySyntax, meta.DefaultSyntax))
 		if err != nil {
 			continue
 		}
@@ -207,7 +207,7 @@ candLoop:
 			}
 		}
 
-		syntax := zettel.Meta.GetDefault(api.KeySyntax, "")
+		syntax := zettel.Meta.GetDefault(api.KeySyntax, meta.DefaultSyntax)
 		if !parser.IsASTParser(syntax) {
 			continue
 		}

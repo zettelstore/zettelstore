@@ -116,7 +116,7 @@ func (*CreateZettel) PrepareNew(origZettel zettel.Zettel, newTitle string) zette
 func updateMetaRoleTagsSyntax(m, orig *meta.Meta) {
 	m.SetNonEmpty(api.KeyRole, orig.GetDefault(api.KeyRole, ""))
 	m.SetNonEmpty(api.KeyTags, orig.GetDefault(api.KeyTags, ""))
-	m.SetNonEmpty(api.KeySyntax, orig.GetDefault(api.KeySyntax, ""))
+	m.SetNonEmpty(api.KeySyntax, orig.GetDefault(api.KeySyntax, meta.DefaultSyntax))
 }
 
 func prependTitle(title, s0, s1 string) string {

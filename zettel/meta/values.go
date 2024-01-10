@@ -35,6 +35,8 @@ const (
 	SyntaxTxt      = "txt"
 	SyntaxWebp     = "webp"
 	SyntaxZmk      = api.ValueSyntaxZmk
+
+	DefaultSyntax = SyntaxPlain
 )
 
 // Visibility enumerates the variations of the 'visibility' meta key.

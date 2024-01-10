@@ -40,7 +40,7 @@ func cmdFile(fs *flag.FlagSet) (int, error) {
 			Meta:    m,
 			Content: zettel.NewContent(inp.Src[inp.Pos:]),
 		},
-		m.GetDefault(api.KeySyntax, meta.SyntaxZmk),
+		m.GetDefault(api.KeySyntax, meta.DefaultSyntax),
 		nil,
 	)
 	encdr := encoder.Create(api.Encoder(enc), &encoder.CreateParameter{Lang: m.GetDefault(api.KeyLang, api.ValueLangEN)})

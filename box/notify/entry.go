@@ -59,7 +59,7 @@ func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content zettel.Content, ge
 		return
 	}
 
-	syntax := m.GetDefault(api.KeySyntax, "")
+	syntax := m.GetDefault(api.KeySyntax, meta.DefaultSyntax)
 	ext := calcContentExt(syntax, m.YamlSep, getZettelFileSyntax)
 	metaName := e.MetaName
 	eimc := extIsMetaAndContent(ext)

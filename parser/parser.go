@@ -150,7 +150,7 @@ func ParseZettel(ctx context.Context, zettel zettel.Zettel, syntax string, rtCon
 		inhMeta = rtConfig.AddDefaultValues(ctx, inhMeta)
 	}
 	if syntax == "" {
-		syntax, _ = inhMeta.Get(api.KeySyntax)
+		syntax = inhMeta.GetDefault(api.KeySyntax, meta.DefaultSyntax)
 	}
 	parseMeta := inhMeta
 	if syntax == meta.SyntaxNone {
