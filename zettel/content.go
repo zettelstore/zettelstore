@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package zettel
@@ -18,7 +21,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"zettelstore.de/z/input"
+	"zettelstore.de/client.fossil/input"
 )
 
 // Content is just the content of a zettel.

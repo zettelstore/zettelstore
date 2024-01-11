@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package cmd
@@ -23,13 +26,13 @@ import (
 	"time"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/input"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/impl"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/compbox"
 	"zettelstore.de/z/box/manager"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/web/server"

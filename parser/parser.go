@@ -20,9 +20,9 @@ import (
 	"strings"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/config"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/parser/cleaner"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/meta"

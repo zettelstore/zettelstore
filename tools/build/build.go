@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/z/input"
+	"zettelstore.de/client.fossil/input"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/tools"
 	"zettelstore.de/z/zettel/id"

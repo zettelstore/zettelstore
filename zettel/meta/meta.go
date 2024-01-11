@@ -22,8 +22,8 @@ import (
 	"unicode/utf8"
 
 	"zettelstore.de/client.fossil/api"
+	"zettelstore.de/client.fossil/input"
 	"zettelstore.de/client.fossil/maps"
-	"zettelstore.de/z/input"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/zettel/id"
 )
