@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package ast
@@ -14,11 +17,12 @@ import (
 	"net/url"
 	"strings"
 
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/zettel/id"
 )
 
 // QueryPrefix is the prefix that denotes a query expression.
-const QueryPrefix = "query:"
+const QueryPrefix = api.QueryPrefix
 
 // ParseReference parses a string and returns a reference.
 func ParseReference(s string) *Reference {
