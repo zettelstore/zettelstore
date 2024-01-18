@@ -87,7 +87,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 			if err != nil {
 				return nil, err
 			}
-			u := wui.NewURLBuilder('h').AppendQuery(qs.String())
+			u := wui.NewURLBuilder('h').AppendQuery(string(qs))
 			return sx.String(u.String()), nil
 		},
 	})
