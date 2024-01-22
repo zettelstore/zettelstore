@@ -29,7 +29,6 @@ import (
 // NewTransformer returns a new transformer to create s-expressions from AST nodes.
 func NewTransformer() *Transformer {
 	t := Transformer{}
-
 	return &t
 }
 
@@ -44,7 +43,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.InlineSlice:
 		return t.getInlineSlice(*n)
 	case *ast.ParaNode:
-		return t.getInlineSlice(n.Inlines).Tail().Cons(sz.SymPara)
+		return t.getInlineList(n.Inlines).Cons(sz.SymPara)
 	case *ast.VerbatimNode:
 		return sx.MakeList(
 			mapGetS(mapVerbatimKindS, n.Kind),
@@ -89,7 +88,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.LinkNode:
 		return t.getLink(n)
 	case *ast.EmbedRefNode:
-		return t.getInlineSlice(n.Inlines).Tail().
+		return t.getInlineList(n.Inlines).
 			Cons(sx.String(n.Syntax)).
 			Cons(getReference(n.Ref)).
 			Cons(getAttributes(n.Attrs)).
@@ -97,22 +96,21 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.EmbedBLOBNode:
 		return t.getEmbedBLOB(n)
 	case *ast.CiteNode:
-		return t.getInlineSlice(n.Inlines).Tail().
+		return t.getInlineList(n.Inlines).
 			Cons(sx.String(n.Key)).
 			Cons(getAttributes(n.Attrs)).
 			Cons(sz.SymCite)
 	case *ast.FootnoteNode:
 		// (ENDNODE attrs InlineElement ...)
-		text := t.getInlineSlice(n.Inlines).Tail()
-		return text.Cons(getAttributes(n.Attrs)).Cons(sz.SymEndnote)
+		return t.getInlineList(n.Inlines).Cons(getAttributes(n.Attrs)).Cons(sz.SymEndnote)
 	case *ast.MarkNode:
-		return t.getInlineSlice(n.Inlines).Tail().
+		return t.getInlineList(n.Inlines).
 			Cons(sx.String(n.Fragment)).
 			Cons(sx.String(n.Slug)).
 			Cons(sx.String(n.Mark)).
 			Cons(sz.SymMark)
 	case *ast.FormatNode:
-		return t.getInlineSlice(n.Inlines).Tail().
+		return t.getInlineList(n.Inlines).
 			Cons(getAttributes(n.Attrs)).
 			Cons(mapGetS(mapFormatKindS, n.Kind))
 	case *ast.LiteralNode:
@@ -167,13 +165,13 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
-	symBlocks := t.GetSz(&rn.Blocks)
+	symBlocks := t.getBlockSlice(&rn.Blocks)
 	t.inVerse = saveInVerse
 	return sx.MakeList(
 		mapGetS(mapRegionKindS, rn.Kind),
 		getAttributes(rn.Attrs),
 		symBlocks,
-		t.GetSz(&rn.Inlines),
+		t.getInlineSlice(rn.Inlines),
 	)
 }
 
@@ -268,7 +266,7 @@ var alignmentSymbolS = map[ast.Alignment]sx.Symbol{
 }
 
 func (t *Transformer) getCell(cell *ast.TableCell) *sx.Pair {
-	return t.getInlineSlice(cell.Inlines).Tail().Cons(mapGetS(alignmentSymbolS, cell.Align))
+	return t.getInlineList(cell.Inlines).Cons(mapGetS(alignmentSymbolS, cell.Align))
 }
 
 func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
@@ -299,14 +297,14 @@ var mapRefStateLink = map[ast.RefState]sx.Symbol{
 }
 
 func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
-	return t.getInlineSlice(ln.Inlines).Tail().
+	return t.getInlineList(ln.Inlines).
 		Cons(sx.String(ln.Ref.Value)).
 		Cons(getAttributes(ln.Attrs)).
 		Cons(mapGetS(mapRefStateLink, ln.Ref.State))
 }
 
 func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
-	tail := t.getInlineSlice(en.Inlines).Tail()
+	tail := t.getInlineList(en.Inlines)
 	if en.Syntax == meta.SyntaxSVG {
 		tail = tail.Cons(sx.String(string(en.Blob)))
 	} else {
@@ -323,11 +321,14 @@ func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sx.Pair {
 	return sx.MakeList(objs...).Cons(sz.SymBlock)
 }
 func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sx.Pair {
+	return t.getInlineList(is).Cons(sz.SymInline)
+}
+func (t *Transformer) getInlineList(is ast.InlineSlice) *sx.Pair {
 	objs := make([]sx.Object, len(is))
 	for i, n := range is {
 		objs[i] = t.GetSz(n)
 	}
-	return sx.MakeList(objs...).Cons(sz.SymInline)
+	return sx.MakeList(objs...)
 }
 
 func getAttributes(a attrs.Attributes) sx.Object {
@@ -390,7 +391,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 			obj = sx.MakeList(setObjs...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
-			obj = t.GetSz(&is)
+			obj = t.getInlineSlice(is)
 		} else {
 			obj = sx.String(p.Value)
 		}
