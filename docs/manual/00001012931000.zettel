@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403153903
-modified: 20230405133249
+modified: 20240122115137
 
 Zettel in a [[Sz encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
 To process these symbolic expressions, you need to know, how a specific part of a zettel is represented by a symbolic expression.
@@ -57,10 +57,9 @@ __Inline__ **=** ''(INLINE'' [[__InlineElement__|00001012931600]] __InlineElemen
 ==== Attribute
 [[Attributes|00001007050000]] may be specified for both block- and inline- structured elements.
 Attributes are represented by the following schema.
-Please note, the the symbol ''quote'' is lower-case by intention.
 
 :::syntax
-__Attribute__ **=** ''('' **[** ''quote'' ''('' [[__AttributeKeyValue__|00001012931800]] __AttributeKeyValue__ &hellip; __AttributeKeyValue__ '')'' **]** ')'.
+__Attribute__ **=** ''('' **[** [[__AttributeKeyValue__|00001012931800]] __AttributeKeyValue__ &hellip; __AttributeKeyValue__ **]** ')'.
 :::
 
 Either, there are no attributes.

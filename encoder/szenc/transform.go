@@ -102,7 +102,8 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 			Cons(getAttributes(n.Attrs)).
 			Cons(sz.SymCite)
 	case *ast.FootnoteNode:
-		text := sx.Nil().Cons(sx.Nil().Cons(t.getInlineSlice(n.Inlines)).Cons(sx.SymbolQuote))
+		// (ENDNODE attrs (INLINE InlineElement ...))
+		text := sx.Nil().Cons(t.getInlineSlice(n.Inlines))
 		return text.Cons(getAttributes(n.Attrs)).Cons(sz.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().
@@ -256,7 +257,7 @@ func (t *Transformer) getRow(row ast.TableRow) *sx.Pair {
 	for i, cell := range row {
 		rObjs[i] = t.getCell(cell)
 	}
-	return sx.MakeList(rObjs...).Cons(sx.SymbolList)
+	return sx.MakeList(rObjs...)
 }
 
 var alignmentSymbolS = map[ast.Alignment]sx.Symbol{
@@ -338,7 +339,7 @@ func getAttributes(a attrs.Attributes) sx.Object {
 	for _, k := range keys {
 		objs = append(objs, sx.Cons(sx.String(k), sx.String(a[k])))
 	}
-	return sx.Nil().Cons(sx.MakeList(objs...)).Cons(sx.SymbolQuote)
+	return sx.MakeList(objs...)
 }
 
 var mapRefStateS = map[ast.RefState]sx.Symbol{
@@ -386,15 +387,14 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 			for i, val := range setList {
 				setObjs[i] = sx.String(val)
 			}
-			obj = sx.MakeList(setObjs...).Cons(sx.SymbolList)
+			obj = sx.MakeList(setObjs...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			obj = t.GetSz(&is)
 		} else {
 			obj = sx.String(p.Value)
 		}
-		symKey := sx.MakeList(sx.SymbolQuote, sx.Symbol(key))
-		objs = append(objs, sx.Nil().Cons(obj).Cons(symKey).Cons(symType))
+		objs = append(objs, sx.Nil().Cons(obj).Cons(sx.Symbol(key)).Cons(symType))
 	}
 	return sx.MakeList(objs...).Cons(sz.SymMeta)
 }

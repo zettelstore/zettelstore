@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161923
-modified: 20230403163701
+modified: 20240122115245
 
 An attribute is represented by a single cell.
 The first element of the cell references the attribute key, the second value the corresponding value.
@@ -22,7 +22,6 @@ In this case, the attribute value is not interpreted.
 
 Some examples:
 * ''()'' represents the absence of attributes,
-* ''(quote (("-" . "")))'' represent the default attribute,
-* ''(quote (("-" . "") ("" . "syntax")))'' adds the generic attrribute with the value ""syntax"",
-* ''(quote ())'' will also represent the absence of attribute (in a more complicated way),
-* ''(quote (("lang" . "en")))'' denote the attribute key ""lang"" with a value ""en"".
+* ''(("-" . ""))'' represent the default attribute,
+* ''(("-" . "") ("" . "syntax"))'' adds the generic attribute with the value ""syntax"",
+* ''(("lang" . "en"))'' denotes the attribute key ""lang"" with a value ""en"".

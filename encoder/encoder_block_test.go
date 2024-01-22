@@ -53,7 +53,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<!--\nRender\n-->\n",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (VERBATIM-COMMENT (quote (("-" . ""))) "Render"))`,
+			encoderSz:    `(BLOCK (VERBATIM-COMMENT (("-" . "")) "Render"))`,
 			encoderSHTML: "((@@@ \"Render\"))",
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -125,7 +125,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<hr lang="zmk">`,
 			encoderMD:    "---",
-			encoderSz:    `(BLOCK (THEMATIC (quote (("lang" . "zmk")))))`,
+			encoderSz:    `(BLOCK (THEMATIC (("lang" . "zmk"))))`,
 			encoderSHTML: `((hr (@ (lang . "zmk"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,
@@ -245,7 +245,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<pre><code>Hello\u2423World</code></pre>",
 			encoderMD:    "    Hello World",
-			encoderSz:    `(BLOCK (VERBATIM-CODE (quote (("-" . ""))) "Hello World"))`,
+			encoderSz:    `(BLOCK (VERBATIM-CODE (("-" . "")) "Hello World"))`,
 			encoderSHTML: "((pre (code \"Hello\u2423World\")))",
 			encoderText:  "Hello World",
 			encoderZmk:   useZmk,
@@ -317,7 +317,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<table><tbody><tr><td>c1</td><td>c2</td><td>c3</td></tr><tr><td>d1</td><td></td><td>d3</td></tr></tbody></table>`,
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (TABLE () (list (CELL (TEXT "c1")) (CELL (TEXT "c2")) (CELL (TEXT "c3"))) (list (CELL (TEXT "d1")) (CELL) (CELL (TEXT "d3")))))`,
+			encoderSz:    `(BLOCK (TABLE () ((CELL (TEXT "c1")) (CELL (TEXT "c2")) (CELL (TEXT "c3"))) ((CELL (TEXT "d1")) (CELL) (CELL (TEXT "d3")))))`,
 			encoderSHTML: `((table (tbody (tr (td "c1") (td "c2") (td "c3")) (tr (td "d1") (td) (td "d3")))))`,
 			encoderText:  "c1 c2 c3\nd1  d3",
 			encoderZmk:   useZmk,
@@ -332,7 +332,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<table><thead><tr><td class="right">h1</td><td>h2</td><td class="center">h3</td></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (TABLE (list (CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) (list (CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) (list (CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
+			encoderSz:    `(BLOCK (TABLE ((CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) ((CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) ((CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
 			encoderSHTML: `((table (thead (tr (td (@ (class . "right")) "h1") (td "h2") (td (@ (class . "center")) "h3"))) (tbody (tr (td (@ (class . "left")) "c1") (td "c2") (td (@ (class . "center")) "c3")) (tr (td (@ (class . "right")) "f1") (td "f2") (td (@ (class . "center")) "=f3")))))`,
 			encoderText:  "h1 h2 h3\nc1 c2 c3\nf1 f2 =f3",
 			encoderZmk: `|=h1>|=h2|=h3:
@@ -346,7 +346,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<p>Text<sup id=\"fnref:1\"><a class=\"zs-noteref\" href=\"#fn:1\" role=\"doc-noteref\">1</a></sup></p><ol class=\"zs-endnotes\"><li class=\"zs-endnote\" id=\"fn:1\" role=\"doc-endnote\" value=\"1\">Endnote <a class=\"zs-endnote-backref\" href=\"#fnref:1\" role=\"doc-backlink\">\u21a9\ufe0e</a></li></ol>",
 			encoderMD:    "Text",
-			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (quote (INLINE (TEXT "Endnote"))))))`,
+			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (INLINE (TEXT "Endnote")))))`,
 			encoderSHTML: "((p \"Text\" (sup (@ (id . \"fnref:1\")) (a (@ (class . \"zs-noteref\") (href . \"#fn:1\") (role . \"doc-noteref\")) \"1\"))))",
 			encoderText:  "Text Endnote",
 			encoderZmk:   useZmk,
@@ -358,7 +358,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<p>Text<sup id=\"fnref:1\"><a class=\"zs-noteref\" href=\"#fn:1\" role=\"doc-noteref\">1</a></sup></p><ol class=\"zs-endnotes\"><li class=\"zs-endnote\" id=\"fn:1\" role=\"doc-endnote\" value=\"1\">Endnote<sup id=\"fnref:2\"><a class=\"zs-noteref\" href=\"#fn:2\" role=\"doc-noteref\">2</a></sup> <a class=\"zs-endnote-backref\" href=\"#fnref:1\" role=\"doc-backlink\">\u21a9\ufe0e</a></li><li class=\"zs-endnote\" id=\"fn:2\" role=\"doc-endnote\" value=\"2\">Nested <a class=\"zs-endnote-backref\" href=\"#fnref:2\" role=\"doc-backlink\">\u21a9\ufe0e</a></li></ol>",
 			encoderMD:    "Text",
-			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (quote (INLINE (TEXT "Endnote") (ENDNOTE () (quote (INLINE (TEXT "Nested")))))))))`,
+			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (INLINE (TEXT "Endnote") (ENDNOTE () (INLINE (TEXT "Nested")))))))`,
 			encoderSHTML: "((p \"Text\" (sup (@ (id . \"fnref:1\")) (a (@ (class . \"zs-noteref\") (href . \"#fn:1\") (role . \"doc-noteref\")) \"1\"))))",
 			encoderText:  "Text Endnote Nested",
 			encoderZmk:   useZmk,
@@ -370,7 +370,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (TRANSCLUDE (quote (("width" . "100px"))) (EXTERNAL "http://example.com/image")))`,
+			encoderSz:    `(BLOCK (TRANSCLUDE (("width" . "100px")) (EXTERNAL "http://example.com/image")))`,
 			encoderSHTML: `((p (img (@ (class . "external") (src . "http://example.com/image") (width . "100px")))))`,
 			encoderText:  "",
 			encoderZmk:   useZmk,

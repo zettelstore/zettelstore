@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161803
-modified: 20230405132916
+modified: 20240122114950
 
 === ''PARA''
 :::syntax
@@ -66,14 +66,14 @@ __Table__ **=** ''(TABLE'' __TableHeader__ __TableRow__ &hellip; '')''.
 A table is a table header and a sequence of table rows.
 
 :::syntax
-__TableHeader__ **=** ''()'' **|** ''(list'' __TableCell__ &hellip; '')''.
+__TableHeader__ **=** ''()'' **|** ''('' __TableCell__ &hellip; '')''.
 :::
-A table header is either the empty list or a list of table cells stating with the ''list'' symbol.
+A table header is either the empty list or a list of table cells.
 
 :::syntax
-__TableRow__ **=** ''(list'' __TableCell__ &hellip; '')''.
+__TableRow__ **=** ''('' __TableCell__ &hellip; '')''.
 :::
-A table row is a list with the initial symbol ''list'', followed by table cells.
+A table row is a list of table cells.
 
 === ''CELL'', ''CELL-*''
 There are four kinds of table cells, one for each possible cell alignment.
