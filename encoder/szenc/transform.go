@@ -41,7 +41,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.BlockSlice:
 		return t.getBlockSlice(n)
 	case *ast.InlineSlice:
-		return t.getInlineSlice(*n)
+		return t.getInlineList(*n).Cons(sz.SymInline)
 	case *ast.ParaNode:
 		return t.getInlineList(n.Inlines).Cons(sz.SymPara)
 	case *ast.VerbatimNode:
@@ -53,14 +53,12 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.RegionNode:
 		return t.getRegion(n)
 	case *ast.HeadingNode:
-		return sx.MakeList(
-			sz.SymHeading,
-			sx.Int64(int64(n.Level)),
-			getAttributes(n.Attrs),
-			sx.String(n.Slug),
-			sx.String(n.Fragment),
-			t.getInlineSlice(n.Inlines),
-		)
+		return t.getInlineList(n.Inlines).
+			Cons(sx.String(n.Fragment)).
+			Cons(sx.String(n.Slug)).
+			Cons(getAttributes(n.Attrs)).
+			Cons(sx.Int64(int64(n.Level))).
+			Cons(sz.SymHeading)
 	case *ast.HRuleNode:
 		return sx.MakeList(sz.SymThematic, getAttributes(n.Attrs))
 	case *ast.NestedListNode:
@@ -167,12 +165,10 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
 	}
 	symBlocks := t.getBlockSlice(&rn.Blocks)
 	t.inVerse = saveInVerse
-	return sx.MakeList(
-		mapGetS(mapRegionKindS, rn.Kind),
-		getAttributes(rn.Attrs),
-		symBlocks,
-		t.getInlineSlice(rn.Inlines),
-	)
+	return t.getInlineList(rn.Inlines).
+		Cons(symBlocks).
+		Cons(getAttributes(rn.Attrs)).
+		Cons(mapGetS(mapRegionKindS, rn.Kind))
 }
 
 var mapNestedListKindS = map[ast.NestedListKind]sx.Symbol{
@@ -221,7 +217,7 @@ func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sx.Pair {
 	dlObjs := make([]sx.Object, 2*len(dn.Descriptions)+1)
 	dlObjs[0] = sz.SymDescription
 	for i, def := range dn.Descriptions {
-		dlObjs[2*i+1] = t.getInlineSlice(def.Term)
+		dlObjs[2*i+1] = t.getInlineList(def.Term)
 		descObjs := make([]sx.Object, len(def.Descriptions))
 		for j, b := range def.Descriptions {
 			dVal := make([]sx.Object, len(b))
@@ -278,7 +274,7 @@ func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
 	}
 	return sx.MakeList(
 		sz.SymBLOB,
-		t.getInlineSlice(bn.Description),
+		t.getInlineList(bn.Description),
 		sx.String(bn.Syntax),
 		lastObj,
 	)
@@ -319,9 +315,6 @@ func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sx.Pair {
 		objs[i] = t.GetSz(n)
 	}
 	return sx.MakeList(objs...).Cons(sz.SymBlock)
-}
-func (t *Transformer) getInlineSlice(is ast.InlineSlice) *sx.Pair {
-	return t.getInlineList(is).Cons(sz.SymInline)
 }
 func (t *Transformer) getInlineList(is ast.InlineSlice) *sx.Pair {
 	objs := make([]sx.Object, len(is))
@@ -391,7 +384,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 			obj = sx.MakeList(setObjs...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
-			obj = t.getInlineSlice(is)
+			obj = t.getInlineList(is)
 		} else {
 			obj = sx.String(p.Value)
 		}

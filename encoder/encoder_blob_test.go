@@ -44,7 +44,7 @@ var pngTestCases = []blobTestCase{
 		},
 		expect: expectMap{
 			encoderHTML:  `<p><img alt="PNG" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="></p>`,
-			encoderSz:    `(BLOCK (BLOB (INLINE (TEXT "PNG")) "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
+			encoderSz:    `(BLOCK (BLOB ((TEXT "PNG")) "png" "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg=="))`,
 			encoderSHTML: `((p (img (@ (alt . "PNG") (src . "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==")))))`,
 			encoderText:  "",
 			encoderZmk:   `%% Unable to display BLOB with description 'PNG' and syntax 'png'.`,

@@ -61,13 +61,13 @@ var tcsBlock = []zmkTestCase{
 	},
 	{
 		descr: "Simple Heading",
-		zmk:   `=== Top`,
+		zmk:   `=== Top Job`,
 		expect: expectMap{
-			encoderHTML:  "<h2 id=\"top\">Top</h2>",
-			encoderMD:    "# Top",
-			encoderSz:    `(BLOCK (HEADING 1 () "top" "top" (INLINE (TEXT "Top"))))`,
-			encoderSHTML: `((h2 (@ (id . "top")) "Top"))`,
-			encoderText:  `Top`,
+			encoderHTML:  "<h2 id=\"top-job\">Top Job</h2>",
+			encoderMD:    "# Top Job",
+			encoderSz:    `(BLOCK (HEADING 1 () "top-job" "top-job" (TEXT "Top") (SPACE) (TEXT "Job")))`,
+			encoderSHTML: `((h2 (@ (id . "top-job")) "Top" " " "Job"))`,
+			encoderText:  `Top Job`,
 			encoderZmk:   useZmk,
 		},
 	},
@@ -169,13 +169,13 @@ var tcsBlock = []zmkTestCase{
 	},
 	{
 		descr: "Simple Quote Block",
-		zmk:   "<<<\nToBeOrNotToBe\n<<< Romeo",
+		zmk:   "<<<\nToBeOrNotToBe\n<<< Romeo Julia",
 		expect: expectMap{
-			encoderHTML:  "<blockquote><p>ToBeOrNotToBe</p><cite>Romeo</cite></blockquote>",
+			encoderHTML:  "<blockquote><p>ToBeOrNotToBe</p><cite>Romeo Julia</cite></blockquote>",
 			encoderMD:    "> ToBeOrNotToBe",
-			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOrNotToBe"))) (INLINE (TEXT "Romeo"))))`,
-			encoderSHTML: `((blockquote (p "ToBeOrNotToBe") (cite "Romeo")))`,
-			encoderText:  "ToBeOrNotToBe\nRomeo",
+			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOrNotToBe"))) (TEXT "Romeo") (SPACE) (TEXT "Julia")))`,
+			encoderSHTML: `((blockquote (p "ToBeOrNotToBe") (cite "Romeo" " " "Julia")))`,
+			encoderText:  "ToBeOrNotToBe\nRomeo Julia",
 			encoderZmk:   useZmk,
 		},
 	},
@@ -185,7 +185,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<blockquote><p>ToBeOr</p><p>NotToBe</p><cite>Romeo</cite></blockquote>",
 			encoderMD:    "> ToBeOr\n\n> NotToBe",
-			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOr")) (PARA (TEXT "NotToBe"))) (INLINE (TEXT "Romeo"))))`,
+			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOr")) (PARA (TEXT "NotToBe"))) (TEXT "Romeo")))`,
 			encoderSHTML: `((blockquote (p "ToBeOr") (p "NotToBe") (cite "Romeo")))`,
 			encoderText:  "ToBeOr\nNotToBe\nRomeo",
 			encoderZmk:   useZmk,
@@ -205,7 +205,7 @@ Paragraph
 		expect: expectMap{
 			encoderHTML:  "<div><p>A\u00a0line<br>\u00a0\u00a0another\u00a0line<br>Back</p><p>Paragraph</p><p>\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para</p><cite>Author</cite></div>",
 			encoderMD:    "",
-			encoderSz:    "(BLOCK (REGION-VERSE () (BLOCK (PARA (TEXT \"A\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (SPACE \"\u00a0\u00a0\") (TEXT \"another\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (TEXT \"Back\")) (PARA (TEXT \"Paragraph\")) (PARA (SPACE \"\u00a0\u00a0\u00a0\u00a0\") (TEXT \"Spacy\") (SPACE \"\u00a0\u00a0\") (TEXT \"Para\"))) (INLINE (TEXT \"Author\"))))",
+			encoderSz:    "(BLOCK (REGION-VERSE () (BLOCK (PARA (TEXT \"A\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (SPACE \"\u00a0\u00a0\") (TEXT \"another\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (TEXT \"Back\")) (PARA (TEXT \"Paragraph\")) (PARA (SPACE \"\u00a0\u00a0\u00a0\u00a0\") (TEXT \"Spacy\") (SPACE \"\u00a0\u00a0\") (TEXT \"Para\"))) (TEXT \"Author\")))",
 			encoderSHTML: "((div (p \"A\" \"\u00a0\" \"line\" (br) \"\u00a0\u00a0\" \"another\" \"\u00a0\" \"line\" (br) \"Back\") (p \"Paragraph\") (p \"\u00a0\u00a0\u00a0\u00a0\" \"Spacy\" \"\u00a0\u00a0\" \"Para\") (cite \"Author\")))",
 			encoderText:  "A line\n another line\nBack\nParagraph\n Spacy Para\nAuthor",
 			encoderZmk:   "\"\"\"\nA\u00a0line\\\n\u00a0\u00a0another\u00a0line\\\nBack\nParagraph\n\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\n\"\"\" Author",
@@ -221,7 +221,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<div><p>A simple  span and much more</p></div>",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (REGION-BLOCK () (BLOCK (PARA (TEXT "A") (SPACE) (TEXT "simple") (SOFT) (SPACE) (TEXT "span") (SOFT) (TEXT "and") (SPACE) (TEXT "much") (SPACE) (TEXT "more"))) (INLINE)))`,
+			encoderSz:    `(BLOCK (REGION-BLOCK () (BLOCK (PARA (TEXT "A") (SPACE) (TEXT "simple") (SOFT) (SPACE) (TEXT "span") (SOFT) (TEXT "and") (SPACE) (TEXT "much") (SPACE) (TEXT "more")))))`,
 			encoderSHTML: `((div (p "A" " " "simple" " " " " "span" " " "and" " " "much" " " "more")))`,
 			encoderText:  `A simple  span and much more`,
 			encoderZmk:   useZmk,
@@ -281,7 +281,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<dl><dt>Zettel</dt><dd><p>Paper</p></dd><dd><p>Note</p></dd><dt>Zettelkasten</dt><dd><p>Slip box</p></dd></dl>",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper"))) (BLOCK (PARA (TEXT "Note")))) (INLINE (TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
+			encoderSz:    `(BLOCK (DESCRIPTION ((TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper"))) (BLOCK (PARA (TEXT "Note")))) ((TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
 			encoderSHTML: `((dl (dt "Zettel") (dd (p "Paper")) (dd (p "Note")) (dt "Zettelkasten") (dd (p "Slip" " " "box"))))`,
 			encoderText:  "Zettel\nPaper\nNote\nZettelkasten\nSlip box",
 			encoderZmk:   useZmk,
@@ -293,7 +293,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<dl><dt>Zettel</dt><dd><p>Paper</p><p>Note</p></dd><dt>Zettelkasten</dt><dd><p>Slip box</p></dd></dl>",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (DESCRIPTION (INLINE (TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper")) (PARA (TEXT "Note")))) (INLINE (TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
+			encoderSz:    `(BLOCK (DESCRIPTION ((TEXT "Zettel")) (BLOCK (BLOCK (PARA (TEXT "Paper")) (PARA (TEXT "Note")))) ((TEXT "Zettelkasten")) (BLOCK (BLOCK (PARA (TEXT "Slip") (SPACE) (TEXT "box"))))))`,
 			encoderSHTML: `((dl (dt "Zettel") (dd (p "Paper") (p "Note")) (dt "Zettelkasten") (dd (p "Slip" " " "box"))))`,
 			encoderText:  "Zettel\nPaper\nNote\nZettelkasten\nSlip box",
 			encoderZmk:   useZmk,
@@ -305,7 +305,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<dl><dt>K1</dt><dd><p>D11</p></dd><dd><p>D12</p></dd><dt>K2</dt><dt>K3</dt><dd><p>D31</p></dd></dl>",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (DESCRIPTION (INLINE (TEXT "K1")) (BLOCK (BLOCK (PARA (TEXT "D11"))) (BLOCK (PARA (TEXT "D12")))) (INLINE (TEXT "K2")) (BLOCK) (INLINE (TEXT "K3")) (BLOCK (BLOCK (PARA (TEXT "D31"))))))`,
+			encoderSz:    `(BLOCK (DESCRIPTION ((TEXT "K1")) (BLOCK (BLOCK (PARA (TEXT "D11"))) (BLOCK (PARA (TEXT "D12")))) ((TEXT "K2")) (BLOCK) ((TEXT "K3")) (BLOCK (BLOCK (PARA (TEXT "D31"))))))`,
 			encoderSHTML: `((dl (dt "K1") (dd (p "D11")) (dd (p "D12")) (dt "K2") (dt "K3") (dd (p "D31"))))`,
 			encoderText:  "K1\nD11\nD12\nK2\nK3\nD31",
 			encoderZmk:   useZmk,

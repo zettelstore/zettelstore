@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161803
-modified: 20240122114950
+modified: 20240122145704
 
 === ''PARA''
 :::syntax
@@ -50,7 +50,7 @@ __Description__ **=** ''(DESCRIPTION'' __DescriptionTerm__ __DescriptionValues__
 A description is a sequence of one ore more terms and values.
 
 :::syntax
-__DescriptionTerm__ **=** [[__Inline__|00001012931000#inline]].
+__DescriptionTerm__ **=** ''('' [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A description term is just an inline-structured value.
 
@@ -109,21 +109,21 @@ A region treat a sequence of block elements to be belonging together in certain 
 The have a similar structure.
 
 :::syntax
-__BlockRegion__ **=** ''(REGION-BLOCK'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__Inline__|00001012931000#inline]] '')''.
+__BlockRegion__ **=** ''(REGION-BLOCK'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to belong in an unspecified way.
 Typically, the reason is given in the attributes.
 The inline describes the block.
 
 :::syntax
-__QuoteRegion__ **=** ''(REGION-QUOTE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__Inline__|00001012931000#inline]] '')''.
+__QuoteRegion__ **=** ''(REGION-QUOTE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to contain a longer quotation.
 Attributes may further specify the quotation.
 The inline typically describes author / source of the quotation.
 
 :::syntax
-__VerseRegion__ **=** ''(REGION-VERSE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__Inline__|00001012931000#inline]] '')''.
+__VerseRegion__ **=** ''(REGION-VERSE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to contain a verse.
 Soft line break are transformed into hard line breaks to save the structure of the verse / poem.
@@ -167,10 +167,10 @@ The string contains text that should be treated as (nested) zettel content.
 
 === ''BLOB''
 :::syntax
-__BLOB__ **=** ''(BLOB'' [[__Inline__|00001012931000#inline]] String,,1,, String,,2,, '')''.
+__BLOB__ **=** ''(BLOB'' ''('' [[__InlineElement__|00001012931600]] &hellip; '')'' String,,1,, String,,2,, '')''.
 :::
 A BLOB contains an image in block mode.
-The inline states some description.
+The inline elements states some description.
 The first string contains the syntax of the image.
 The second string contains the actual image.
 If the syntax is ""SVG"", then the second string contains the SVG code.
