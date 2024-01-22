@@ -628,7 +628,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<img src="abc">`,
 			encoderMD:    "![abc](abc)",
-			encoderSz:    `(INLINE (EMBED () (quote (EXTERNAL "abc")) ""))`,
+			encoderSz:    `(INLINE (EMBED () (EXTERNAL "abc") ""))`,
 			encoderSHTML: `((img (@ (src . "abc"))))`,
 			encoderText:  ``,
 			encoderZmk:   useZmk,

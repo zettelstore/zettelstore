@@ -354,13 +354,7 @@ var mapRefStateS = map[ast.RefState]sx.Symbol{
 }
 
 func getReference(ref *ast.Reference) *sx.Pair {
-	return sx.MakeList(
-		sx.SymbolQuote,
-		sx.MakeList(
-			mapGetS(mapRefStateS, ref.State),
-			sx.String(ref.Value),
-		),
-	)
+	return sx.MakeList(mapGetS(mapRefStateS, ref.State), sx.String(ref.Value))
 }
 
 var mapMetaTypeS = map[*meta.DescriptionType]sx.Symbol{

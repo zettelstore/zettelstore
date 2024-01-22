@@ -4,14 +4,14 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230405123046
-modified: 20230405124516
+modified: 20240122094720
 
 A reference is encoded as the actual reference value, and a symbol describing the state of that actual reference value.
 
 :::syntax
-__Reference__ **=** ''(quote'' __ReferenceState__ String '')''.
+__Reference__ **=** ''('' __ReferenceState__ String '')''.
 :::
-The ''quote'' is needed for internal reasons, the string contains the actual reference value.
+The string contains the actual reference value.
 
 :::syntax
 __ReferenceState__ **=** ''INVALID'' **|** ''ZETTEL'' **|** ''SELF'' **|** ''FOUND'' **|** ''BROKEN'' **|** ''HOSTED'' **|** ''BASED'' **|** ''QUERY'' **|** ''EXTERNAL''.
@@ -33,6 +33,10 @@ The meaning of the state symbols corresponds to that of the symbols used for the
 : The reference value is a valid reference to an missing zettel.
   This value is only possible after evaluating the zettel.
 ; ''HOSTED''
+: The reference value starts with one slash character, denoting an absolute local reference.
 ; ''BASED''
+: The reference value starts with two slash characters, denoting a local reference interpreted relative to the Zettelstore base URL.
 ; ''QUERY''
+: The reference value contains a query expression.
 ; ''EXTERNAL''
+: The reference value contains a full URL, referencing a resource outside of the Zettelstore server.

@@ -370,7 +370,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  `<p><img class="external" src="http://example.com/image" width="100px"></p>`,
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (TRANSCLUDE (quote (("width" . "100px"))) (quote (EXTERNAL "http://example.com/image"))))`,
+			encoderSz:    `(BLOCK (TRANSCLUDE (quote (("width" . "100px"))) (EXTERNAL "http://example.com/image")))`,
 			encoderSHTML: `((p (img (@ (class . "external") (src . "http://example.com/image") (width . "100px")))))`,
 			encoderText:  "",
 			encoderZmk:   useZmk,
