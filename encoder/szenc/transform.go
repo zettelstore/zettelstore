@@ -102,8 +102,8 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 			Cons(getAttributes(n.Attrs)).
 			Cons(sz.SymCite)
 	case *ast.FootnoteNode:
-		// (ENDNODE attrs (INLINE InlineElement ...))
-		text := sx.Nil().Cons(t.getInlineSlice(n.Inlines))
+		// (ENDNODE attrs InlineElement ...)
+		text := t.getInlineSlice(n.Inlines).Tail()
 		return text.Cons(getAttributes(n.Attrs)).Cons(sz.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineSlice(n.Inlines).Tail().

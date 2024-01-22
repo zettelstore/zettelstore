@@ -346,7 +346,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<p>Text<sup id=\"fnref:1\"><a class=\"zs-noteref\" href=\"#fn:1\" role=\"doc-noteref\">1</a></sup></p><ol class=\"zs-endnotes\"><li class=\"zs-endnote\" id=\"fn:1\" role=\"doc-endnote\" value=\"1\">Endnote <a class=\"zs-endnote-backref\" href=\"#fnref:1\" role=\"doc-backlink\">\u21a9\ufe0e</a></li></ol>",
 			encoderMD:    "Text",
-			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (INLINE (TEXT "Endnote")))))`,
+			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (TEXT "Endnote"))))`,
 			encoderSHTML: "((p \"Text\" (sup (@ (id . \"fnref:1\")) (a (@ (class . \"zs-noteref\") (href . \"#fn:1\") (role . \"doc-noteref\")) \"1\"))))",
 			encoderText:  "Text Endnote",
 			encoderZmk:   useZmk,
@@ -358,7 +358,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<p>Text<sup id=\"fnref:1\"><a class=\"zs-noteref\" href=\"#fn:1\" role=\"doc-noteref\">1</a></sup></p><ol class=\"zs-endnotes\"><li class=\"zs-endnote\" id=\"fn:1\" role=\"doc-endnote\" value=\"1\">Endnote<sup id=\"fnref:2\"><a class=\"zs-noteref\" href=\"#fn:2\" role=\"doc-noteref\">2</a></sup> <a class=\"zs-endnote-backref\" href=\"#fnref:1\" role=\"doc-backlink\">\u21a9\ufe0e</a></li><li class=\"zs-endnote\" id=\"fn:2\" role=\"doc-endnote\" value=\"2\">Nested <a class=\"zs-endnote-backref\" href=\"#fnref:2\" role=\"doc-backlink\">\u21a9\ufe0e</a></li></ol>",
 			encoderMD:    "Text",
-			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (INLINE (TEXT "Endnote") (ENDNOTE () (INLINE (TEXT "Nested")))))))`,
+			encoderSz:    `(BLOCK (PARA (TEXT "Text") (ENDNOTE () (TEXT "Endnote") (ENDNOTE () (TEXT "Nested")))))`,
 			encoderSHTML: "((p \"Text\" (sup (@ (id . \"fnref:1\")) (a (@ (class . \"zs-noteref\") (href . \"#fn:1\") (role . \"doc-noteref\")) \"1\"))))",
 			encoderText:  "Text Endnote Nested",
 			encoderZmk:   useZmk,

@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161845
-modified: 20240122115957
+modified: 20240122122448
 
 === ''TEXT''
 :::syntax
@@ -124,7 +124,7 @@ Then follows the marked text as a sequence of __InlineElement__s.
 
 === ''ENDNOTE''
 :::syntax
-__Endnote__ **=** ''(ENDNOTE'' [[__Attributes__|00001012931000#attribute]] [[__Inline__|00001012931000#inline]] '')''.
+__Endnote__ **=** ''(ENDNOTE'' [[__Attributes__|00001012931000#attribute]] [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 Specifies endnote / footnote text.
 

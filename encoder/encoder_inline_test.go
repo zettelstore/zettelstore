@@ -412,7 +412,7 @@ var tcsInline = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  `<sup id="fnref:1"><a class="zs-noteref" href="#fn:1" role="doc-noteref">1</a></sup>`,
 			encoderMD:    "",
-			encoderSz:    `(INLINE (ENDNOTE () (INLINE (TEXT "endnote"))))`,
+			encoderSz:    `(INLINE (ENDNOTE () (TEXT "endnote")))`,
 			encoderSHTML: `((sup (@ (id . "fnref:1")) (a (@ (class . "zs-noteref") (href . "#fn:1") (role . "doc-noteref")) "1")))`,
 			encoderText:  `endnote`,
 			encoderZmk:   useZmk,
