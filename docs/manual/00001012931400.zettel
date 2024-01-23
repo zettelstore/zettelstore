@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161803
-modified: 20240122145704
+modified: 20240123120132
 
 === ''PARA''
 :::syntax
@@ -109,21 +109,21 @@ A region treat a sequence of block elements to be belonging together in certain 
 The have a similar structure.
 
 :::syntax
-__BlockRegion__ **=** ''(REGION-BLOCK'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+__BlockRegion__ **=** ''(REGION-BLOCK'' [[__Attributes__|00001012931000#attribute]] ''('' [[__BlockElement__|00001012931400]] &hellip; '')'' [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to belong in an unspecified way.
 Typically, the reason is given in the attributes.
 The inline describes the block.
 
 :::syntax
-__QuoteRegion__ **=** ''(REGION-QUOTE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+__QuoteRegion__ **=** ''(REGION-QUOTE'' [[__Attributes__|00001012931000#attribute]] ''('' [[__BlockElement__|00001012931400]] &hellip; '')'' [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to contain a longer quotation.
 Attributes may further specify the quotation.
 The inline typically describes author / source of the quotation.
 
 :::syntax
-__VerseRegion__ **=** ''(REGION-VERSE'' [[__Attributes__|00001012931000#attribute]] [[__Block__|00001012931000#block]] [[__InlineElement__|00001012931600]] &hellip; '')''.
+__VerseRegion__ **=** ''(REGION-VERSE'' [[__Attributes__|00001012931000#attribute]] ''('' [[__BlockElement__|00001012931400]] &hellip; '')'' [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 A block region just treats the block to contain a verse.
 Soft line break are transformed into hard line breaks to save the structure of the verse / poem.

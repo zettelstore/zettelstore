@@ -39,7 +39,7 @@ type Transformer struct {
 func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	switch n := node.(type) {
 	case *ast.BlockSlice:
-		return t.getBlockSlice(n)
+		return t.getBlockList(n).Cons(sz.SymBlock)
 	case *ast.InlineSlice:
 		return t.getInlineList(*n).Cons(sz.SymInline)
 	case *ast.ParaNode:
@@ -163,7 +163,7 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
 	if rn.Kind == ast.RegionVerse {
 		t.inVerse = true
 	}
-	symBlocks := t.getBlockSlice(&rn.Blocks)
+	symBlocks := t.getBlockList(&rn.Blocks)
 	t.inVerse = saveInVerse
 	return t.getInlineList(rn.Inlines).
 		Cons(symBlocks).
@@ -309,12 +309,12 @@ func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
 	return tail.Cons(sx.String(en.Syntax)).Cons(getAttributes(en.Attrs)).Cons(sz.SymEmbedBLOB)
 }
 
-func (t *Transformer) getBlockSlice(bs *ast.BlockSlice) *sx.Pair {
+func (t *Transformer) getBlockList(bs *ast.BlockSlice) *sx.Pair {
 	objs := make([]sx.Object, len(*bs))
 	for i, n := range *bs {
 		objs[i] = t.GetSz(n)
 	}
-	return sx.MakeList(objs...).Cons(sz.SymBlock)
+	return sx.MakeList(objs...)
 }
 func (t *Transformer) getInlineList(is ast.InlineSlice) *sx.Pair {
 	objs := make([]sx.Object, len(is))

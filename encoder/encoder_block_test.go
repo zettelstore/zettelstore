@@ -173,7 +173,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<blockquote><p>ToBeOrNotToBe</p><cite>Romeo Julia</cite></blockquote>",
 			encoderMD:    "> ToBeOrNotToBe",
-			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOrNotToBe"))) (TEXT "Romeo") (SPACE) (TEXT "Julia")))`,
+			encoderSz:    `(BLOCK (REGION-QUOTE () ((PARA (TEXT "ToBeOrNotToBe"))) (TEXT "Romeo") (SPACE) (TEXT "Julia")))`,
 			encoderSHTML: `((blockquote (p "ToBeOrNotToBe") (cite "Romeo" " " "Julia")))`,
 			encoderText:  "ToBeOrNotToBe\nRomeo Julia",
 			encoderZmk:   useZmk,
@@ -185,7 +185,7 @@ var tcsBlock = []zmkTestCase{
 		expect: expectMap{
 			encoderHTML:  "<blockquote><p>ToBeOr</p><p>NotToBe</p><cite>Romeo</cite></blockquote>",
 			encoderMD:    "> ToBeOr\n\n> NotToBe",
-			encoderSz:    `(BLOCK (REGION-QUOTE () (BLOCK (PARA (TEXT "ToBeOr")) (PARA (TEXT "NotToBe"))) (TEXT "Romeo")))`,
+			encoderSz:    `(BLOCK (REGION-QUOTE () ((PARA (TEXT "ToBeOr")) (PARA (TEXT "NotToBe"))) (TEXT "Romeo")))`,
 			encoderSHTML: `((blockquote (p "ToBeOr") (p "NotToBe") (cite "Romeo")))`,
 			encoderText:  "ToBeOr\nNotToBe\nRomeo",
 			encoderZmk:   useZmk,
@@ -205,7 +205,7 @@ Paragraph
 		expect: expectMap{
 			encoderHTML:  "<div><p>A\u00a0line<br>\u00a0\u00a0another\u00a0line<br>Back</p><p>Paragraph</p><p>\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para</p><cite>Author</cite></div>",
 			encoderMD:    "",
-			encoderSz:    "(BLOCK (REGION-VERSE () (BLOCK (PARA (TEXT \"A\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (SPACE \"\u00a0\u00a0\") (TEXT \"another\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (TEXT \"Back\")) (PARA (TEXT \"Paragraph\")) (PARA (SPACE \"\u00a0\u00a0\u00a0\u00a0\") (TEXT \"Spacy\") (SPACE \"\u00a0\u00a0\") (TEXT \"Para\"))) (TEXT \"Author\")))",
+			encoderSz:    "(BLOCK (REGION-VERSE () ((PARA (TEXT \"A\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (SPACE \"\u00a0\u00a0\") (TEXT \"another\") (SPACE \"\u00a0\") (TEXT \"line\") (HARD) (TEXT \"Back\")) (PARA (TEXT \"Paragraph\")) (PARA (SPACE \"\u00a0\u00a0\u00a0\u00a0\") (TEXT \"Spacy\") (SPACE \"\u00a0\u00a0\") (TEXT \"Para\"))) (TEXT \"Author\")))",
 			encoderSHTML: "((div (p \"A\" \"\u00a0\" \"line\" (br) \"\u00a0\u00a0\" \"another\" \"\u00a0\" \"line\" (br) \"Back\") (p \"Paragraph\") (p \"\u00a0\u00a0\u00a0\u00a0\" \"Spacy\" \"\u00a0\u00a0\" \"Para\") (cite \"Author\")))",
 			encoderText:  "A line\n another line\nBack\nParagraph\n Spacy Para\nAuthor",
 			encoderZmk:   "\"\"\"\nA\u00a0line\\\n\u00a0\u00a0another\u00a0line\\\nBack\nParagraph\n\u00a0\u00a0\u00a0\u00a0Spacy\u00a0\u00a0Para\n\"\"\" Author",
@@ -221,7 +221,7 @@ and much more
 		expect: expectMap{
 			encoderHTML:  "<div><p>A simple  span and much more</p></div>",
 			encoderMD:    "",
-			encoderSz:    `(BLOCK (REGION-BLOCK () (BLOCK (PARA (TEXT "A") (SPACE) (TEXT "simple") (SOFT) (SPACE) (TEXT "span") (SOFT) (TEXT "and") (SPACE) (TEXT "much") (SPACE) (TEXT "more")))))`,
+			encoderSz:    `(BLOCK (REGION-BLOCK () ((PARA (TEXT "A") (SPACE) (TEXT "simple") (SOFT) (SPACE) (TEXT "span") (SOFT) (TEXT "and") (SPACE) (TEXT "much") (SPACE) (TEXT "more")))))`,
 			encoderSHTML: `((div (p "A" " " "simple" " " " " "span" " " "and" " " "much" " " "more")))`,
 			encoderText:  `A simple  span and much more`,
 			encoderZmk:   useZmk,

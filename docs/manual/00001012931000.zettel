@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403153903
-modified: 20240122115137
+modified: 20240123120319
 
 Zettel in a [[Sz encoding|00001012920516]] are represented as a [[symbolic expression|00001012930000]].
 To process these symbolic expressions, you need to know, how a specific part of a zettel is represented by a symbolic expression.
@@ -29,7 +29,7 @@ Following elements represent each metadatum[^""Metadatum"" is used as the singul
 Standard order is: [[Title|00001006020000#title]], [[Role|00001006020000#role]], [[Tags|00001006020000#tags]], [[Syntax|00001006020000#syntax]], all other [[keys|00001006020000]] in alphabetic order.
 
 :::syntax
-__Metadata__ **=** ''(META'' [[__Metadatum__|00001012931200]] __Metadatum__ &hellip; __Metadatum__ '')''.
+__Metadata__ **=** ''(META'' [[__Metadatum__|00001012931200]] &hellip; '')''.
 :::
 === Content
 
@@ -43,7 +43,7 @@ A block is represented by a list with the symbol ''BLOCK'' as the first element.
 All following elements represent a nested [[block-structured element|00001007030000]].
 
 :::syntax
-[!block|__Block__] **=** ''(BLOCK'' [[__BlockElement__|00001012931400]] __BlockElement__ &hellip; __BlockElement__ '')''.
+[!block|__Block__] **=** ''(BLOCK'' [[__BlockElement__|00001012931400]] &hellip; '')''.
 :::
 
 ==== Inline
@@ -51,7 +51,7 @@ Both block-structured elements and some metadata values may contain [[inline-str
 Similar, inline-structured elements are represented as follows:
 
 :::syntax
-__Inline__ **=** ''(INLINE'' [[__InlineElement__|00001012931600]] __InlineElement__ &hellip; __InlineElement__ '')''.
+__Inline__ **=** ''(INLINE'' [[__InlineElement__|00001012931600]] &hellip; '')''.
 :::
 
 ==== Attribute
@@ -59,7 +59,7 @@ __Inline__ **=** ''(INLINE'' [[__InlineElement__|00001012931600]] __InlineElemen
 Attributes are represented by the following schema.
 
 :::syntax
-__Attribute__ **=** ''('' **[** [[__AttributeKeyValue__|00001012931800]] __AttributeKeyValue__ &hellip; __AttributeKeyValue__ **]** ')'.
+__Attribute__ **=** ''('' **[** [[__AttributeKeyValue__|00001012931800]] &hellip; **]** ')'.
 :::
 
 Either, there are no attributes.
