@@ -195,7 +195,7 @@ type dataZettelEncoder struct {
 }
 
 func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
-	result := make([]sx.Object, len(ml)+1)
+	result := make(sx.Vector, len(ml)+1)
 	result[0] = sx.SymbolList
 	symID, symZettel := sx.Symbol("id"), sx.Symbol("zettel")
 	for i, m := range ml {

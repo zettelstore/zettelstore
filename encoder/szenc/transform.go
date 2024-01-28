@@ -178,7 +178,7 @@ var mapNestedListKindS = map[ast.NestedListKind]sx.Symbol{
 }
 
 func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sx.Pair {
-	nlistObjs := make([]sx.Object, len(ln.Items)+1)
+	nlistObjs := make(sx.Vector, len(ln.Items)+1)
 	nlistObjs[0] = mapGetS(mapNestedListKindS, ln.Kind)
 	isCompact := isCompactList(ln.Items)
 	for i, item := range ln.Items {
@@ -187,7 +187,7 @@ func (t *Transformer) getNestedList(ln *ast.NestedListNode) *sx.Pair {
 			nlistObjs[i+1] = paragraph.Tail().Cons(sz.SymInline)
 			continue
 		}
-		itemObjs := make([]sx.Object, len(item))
+		itemObjs := make(sx.Vector, len(item))
 		for j, in := range item {
 			itemObjs[j] = t.GetSz(in)
 		}
@@ -214,13 +214,13 @@ func isCompactList(itemSlice []ast.ItemSlice) bool {
 }
 
 func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sx.Pair {
-	dlObjs := make([]sx.Object, 2*len(dn.Descriptions)+1)
+	dlObjs := make(sx.Vector, 2*len(dn.Descriptions)+1)
 	dlObjs[0] = sz.SymDescription
 	for i, def := range dn.Descriptions {
 		dlObjs[2*i+1] = t.getInlineList(def.Term)
-		descObjs := make([]sx.Object, len(def.Descriptions))
+		descObjs := make(sx.Vector, len(def.Descriptions))
 		for j, b := range def.Descriptions {
-			dVal := make([]sx.Object, len(b))
+			dVal := make(sx.Vector, len(b))
 			for k, dn := range b {
 				dVal[k] = t.GetSz(dn)
 			}
@@ -232,7 +232,7 @@ func (t *Transformer) getDescriptionList(dn *ast.DescriptionListNode) *sx.Pair {
 }
 
 func (t *Transformer) getTable(tn *ast.TableNode) *sx.Pair {
-	tObjs := make([]sx.Object, len(tn.Rows)+2)
+	tObjs := make(sx.Vector, len(tn.Rows)+2)
 	tObjs[0] = sz.SymTable
 	tObjs[1] = t.getHeader(tn.Header)
 	for i, row := range tn.Rows {
@@ -247,7 +247,7 @@ func (t *Transformer) getHeader(header ast.TableRow) *sx.Pair {
 	return t.getRow(header)
 }
 func (t *Transformer) getRow(row ast.TableRow) *sx.Pair {
-	rObjs := make([]sx.Object, len(row))
+	rObjs := make(sx.Vector, len(row))
 	for i, cell := range row {
 		rObjs[i] = t.getCell(cell)
 	}
@@ -310,14 +310,14 @@ func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
 }
 
 func (t *Transformer) getBlockList(bs *ast.BlockSlice) *sx.Pair {
-	objs := make([]sx.Object, len(*bs))
+	objs := make(sx.Vector, len(*bs))
 	for i, n := range *bs {
 		objs[i] = t.GetSz(n)
 	}
 	return sx.MakeList(objs...)
 }
 func (t *Transformer) getInlineList(is ast.InlineSlice) *sx.Pair {
-	objs := make([]sx.Object, len(is))
+	objs := make(sx.Vector, len(is))
 	for i, n := range is {
 		objs[i] = t.GetSz(n)
 	}
@@ -329,7 +329,7 @@ func getAttributes(a attrs.Attributes) sx.Object {
 		return sx.Nil()
 	}
 	keys := a.Keys()
-	objs := make([]sx.Object, 0, len(keys))
+	objs := make(sx.Vector, 0, len(keys))
 	for _, k := range keys {
 		objs = append(objs, sx.Cons(sx.String(k), sx.String(a[k])))
 	}
@@ -369,7 +369,7 @@ var mapMetaTypeS = map[*meta.DescriptionType]sx.Symbol{
 
 func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.Pair {
 	pairs := m.ComputedPairs()
-	objs := make([]sx.Object, 0, len(pairs))
+	objs := make(sx.Vector, 0, len(pairs))
 	for _, p := range pairs {
 		key := p.Key
 		ty := m.Type(key)
@@ -377,7 +377,7 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 		var obj sx.Object
 		if ty.IsSet {
 			setList := meta.ListFromValue(p.Value)
-			setObjs := make([]sx.Object, len(setList))
+			setObjs := make(sx.Vector, len(setList))
 			for i, val := range setList {
 				setObjs[i] = sx.String(val)
 			}

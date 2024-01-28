@@ -103,7 +103,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 		return nil
 	}
 	space := sx.String(" ")
-	text := make([]sx.Object, 0, 2*len(vals))
+	text := make(sx.Vector, 0, 2*len(vals))
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
 	}
@@ -115,7 +115,7 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 		return nil
 	}
 	space := sx.String(" ")
-	text := make([]sx.Object, 0, 2*len(tags))
+	text := make(sx.Vector, 0, 2*len(tags))
 	for _, tag := range tags {
 		text = append(text, space, wui.transformLink(key, tag, tag))
 	}
@@ -127,7 +127,7 @@ func (wui *WebUI) transformWordSet(key string, words []string) sx.Object {
 		return sx.Nil()
 	}
 	space := sx.String(" ")
-	text := make([]sx.Object, 0, 2*len(words))
+	text := make(sx.Vector, 0, 2*len(words))
 	for _, word := range words {
 		text = append(text, space, wui.transformLink(key, word, word))
 	}

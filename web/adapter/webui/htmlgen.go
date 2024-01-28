@@ -175,7 +175,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 
 func rebind(ev *shtml.Evaluator, sym sx.Symbol, fn func(sx.Object) sx.Object) {
 	prevFn := ev.ResolveBinding(sym)
-	ev.Rebind(sym, func(args []sx.Object, env *shtml.Environment) sx.Object {
+	ev.Rebind(sym, func(args sx.Vector, env *shtml.Environment) sx.Object {
 		obj := prevFn(args, env)
 		if env.GetError() == nil {
 			return fn(obj)

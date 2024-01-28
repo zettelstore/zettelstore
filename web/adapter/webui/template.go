@@ -51,7 +51,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args sx.Vector) (sx.Object, error) {
 			text, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
@@ -64,7 +64,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args sx.Vector) (sx.Object, error) {
 			s, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
@@ -82,7 +82,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 		MinArity: 1,
 		MaxArity: 1,
 		TestPure: sxeval.AssertPure,
-		Fn: func(_ *sxeval.Environment, args []sx.Object) (sx.Object, error) {
+		Fn: func(_ *sxeval.Environment, args sx.Vector) (sx.Object, error) {
 			qs, err := sxbuiltins.GetString(args, 0)
 			if err != nil {
 				return nil, err
