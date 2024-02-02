@@ -120,7 +120,7 @@ var (
 		&sxbuiltins.Assoc,          // assoc
 		&sxbuiltins.Map,            // map
 		&sxbuiltins.Apply,          // apply
-		&sxbuiltins.StringAppend,   // string-append
+		&sxbuiltins.Concat,         // concat
 		&sxbuiltins.BoundP,         // bound?
 		&sxbuiltins.Defined,        // defined?
 		&sxbuiltins.CurrentBinding, // current-binding
@@ -272,15 +272,13 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	rb.bindKeyValue(api.KeyRole, m.GetDefault(api.KeyRole, ""))
 	rb.bindKeyValue(api.KeyTags, m.GetDefault(api.KeyTags, ""))
 	rb.bindKeyValue(api.KeySyntax, m.GetDefault(api.KeySyntax, meta.DefaultSyntax))
-	sentinel := sx.Cons(nil, nil)
-	curr := sentinel
+	var metaPairs sx.ListBuilder
 	for _, p := range m.ComputedPairs() {
 		key, value := p.Key, p.Value
-		curr = curr.AppendBang(sx.Cons(sx.String(key), sx.String(value)))
-
+		metaPairs.Add(sx.Cons(sx.String(key), sx.String(value)))
 		rb.bindKeyValue(key, value)
 	}
-	rb.bindString("metapairs", sentinel.Tail())
+	rb.bindString("metapairs", metaPairs.List())
 }
 
 func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (lst *sx.Pair) {
