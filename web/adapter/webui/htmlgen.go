@@ -227,7 +227,7 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 				if tail, isTail := sx.GetPair(val); isTail {
 					val = tail.Car()
 				}
-				a = a.Set(goString(key), goString(val))
+				a = a.Set(sz.GoValue(key), sz.GoValue(val))
 			}
 		}
 		name, found := a.Get("name")
@@ -248,17 +248,6 @@ func (g *htmlGenerator) MetaSxn(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx
 		result = result.Cons(metaMap[keys[i]])
 	}
 	return result
-}
-
-func goString(obj sx.Object) string {
-	switch o := obj.(type) {
-	case sx.String:
-		return string(o)
-	case sx.Symbol:
-		return string(o)
-	default:
-		return o.String()
-	}
 }
 
 func (g *htmlGenerator) transformMetaTags(tags string) *sx.Pair {
