@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package query provides a query for zettel.
@@ -13,7 +16,7 @@ package query
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"slices"
 
 	"zettelstore.de/z/zettel/id"
@@ -303,7 +306,7 @@ func (q *Query) GetSeed() (int, bool) {
 func (q *Query) SetDeterministic() *Query {
 	q = createIfNeeded(q)
 	if q.seed <= 0 {
-		q.seed = int(rand.Intn(10000) + 1)
+		q.seed = int(rand.IntN(10000) + 1)
 	}
 	return q
 }

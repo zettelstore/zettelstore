@@ -6,13 +6,16 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package usecase
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"time"
 
@@ -87,7 +90,7 @@ func compensateCompare() {
 // durDelay is the normal delay, if time spend for checking is smaller than
 // the minimum delay minDelay. In addition some jitter (+/- 50 ms) is added.
 func addDelay(start time.Time, durDelay, minDelay time.Duration) {
-	jitter := time.Duration(rand.Intn(100)-50) * time.Millisecond
+	jitter := time.Duration(rand.IntN(100)-50) * time.Millisecond
 	if elapsed := time.Since(start); elapsed+minDelay < durDelay {
 		time.Sleep(durDelay - elapsed + jitter)
 	} else {

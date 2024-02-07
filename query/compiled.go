@@ -14,7 +14,7 @@
 package query
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"sort"
 
 	"zettelstore.de/z/zettel/id"
@@ -149,7 +149,7 @@ func (c *Compiled) pickElements(metaList []*meta.Meta) []*meta.Meta {
 	picked := make([]int, count)
 	for i := range count {
 		last := len(order) - i
-		n := rnd.Intn(last)
+		n := rnd.IntN(last)
 		picked[i] = order[n]
 		order[n] = order[last-1]
 	}
@@ -174,9 +174,9 @@ func (c *Compiled) sortRandomly(metaList []*meta.Meta) []*meta.Meta {
 func (c *Compiled) newRandom() *rand.Rand {
 	seed := c.seed
 	if seed <= 0 {
-		seed = rand.Intn(10000) + 10001
+		seed = rand.IntN(10000) + 10001
 	}
-	return rand.New(rand.NewSource(int64(seed)))
+	return rand.New(rand.NewPCG(uint64(seed), uint64(seed)))
 }
 
 func limitElements(metaList []*meta.Meta, limit int) []*meta.Meta {
