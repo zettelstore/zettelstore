@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package zettelmark
@@ -131,7 +134,7 @@ func (pp *postProcessor) visitDescriptionList(dn *ast.DescriptionListNode) {
 func (pp *postProcessor) visitTable(tn *ast.TableNode) {
 	width := tableWidth(tn)
 	tn.Align = make([]ast.Alignment, width)
-	for i := 0; i < width; i++ {
+	for i := range width {
 		tn.Align[i] = ast.AlignDefault
 	}
 	if len(tn.Rows) > 0 && isHeaderRow(tn.Rows[0]) {

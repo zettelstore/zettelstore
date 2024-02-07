@@ -111,7 +111,7 @@ func (e *evaluator) Visit(node ast.Node) ast.Visitor {
 }
 
 func (e *evaluator) visitBlockSlice(bs *ast.BlockSlice) {
-	for i := 0; i < len(*bs); i++ {
+	for i := range len(*bs) {
 		bn := (*bs)[i]
 		ast.Walk(e, bn)
 		switch n := bn.(type) {
@@ -292,7 +292,7 @@ func setMetadataFromAttributes(m *meta.Meta, a attrs.Attributes) {
 }
 
 func (e *evaluator) visitInlineSlice(is *ast.InlineSlice) {
-	for i := 0; i < len(*is); i++ {
+	for i := range len(*is) {
 		in := (*is)[i]
 		ast.Walk(e, in)
 		switch n := in.(type) {

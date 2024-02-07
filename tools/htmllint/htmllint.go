@@ -92,7 +92,7 @@ func zidsToUse(zids []string, perm []int, sampleSize int) []string {
 		return nil
 	}
 	result := make([]string, sampleSize)
-	for i := 0; i < sampleSize; i++ {
+	for i := range sampleSize {
 		result[i] = zids[perm[i]]
 	}
 	sort.Strings(result)

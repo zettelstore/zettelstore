@@ -658,7 +658,7 @@ func BenchmarkT(b *testing.B) {
 	}
 	chunk := []byte(strings.Join(data, "\n"))
 	input := make([]byte, 0, len(chunk)*b.N)
-	for i := 0; i < b.N; i++ {
+	for range b.N {
 		input = append(input, chunk...)
 	}
 	expected := 30 * b.N

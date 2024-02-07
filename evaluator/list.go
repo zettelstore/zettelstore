@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package evaluator
@@ -294,7 +297,7 @@ const fontSizes64 = float64(fontSizes)
 func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attributes {
 	var fsAttrs [fontSizes]attrs.Attributes
 	var a attrs.Attributes
-	for i := 0; i < fontSizes; i++ {
+	for i := range fontSizes {
 		fsAttrs[i] = a.AddClass("zs-font-size-" + strconv.Itoa(i))
 	}
 

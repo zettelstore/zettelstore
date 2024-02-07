@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2023-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package query
@@ -139,12 +142,12 @@ func (c *Compiled) pickElements(metaList []*meta.Meta) []*meta.Meta {
 	}
 
 	order := make([]int, len(metaList))
-	for i := 0; i < len(metaList); i++ {
+	for i := range len(metaList) {
 		order[i] = i
 	}
 	rnd := c.newRandom()
 	picked := make([]int, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		last := len(order) - i
 		n := rnd.Intn(last)
 		picked[i] = order[n]

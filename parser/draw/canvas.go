@@ -97,9 +97,9 @@ func (c *canvas) findObjects() {
 // findPaths by starting with a point that wasn't yet visited, beginning at the top
 // left of the grid.
 func (c *canvas) findPaths() {
-	for y := 0; y < c.siz.Y; y++ {
+	for y := range c.siz.Y {
 		p := point{y: y}
-		for x := 0; x < c.siz.X; x++ {
+		for x := range c.siz.X {
 			p.x = x
 			if c.isVisited(p) {
 				continue
@@ -127,10 +127,10 @@ func (c *canvas) findPaths() {
 
 // findTexts with a second pass through the grid attempts to identify any text within the grid.
 func (c *canvas) findTexts() {
-	for y := 0; y < c.siz.Y; y++ {
+	for y := range c.siz.Y {
 		p := point{}
 		p.y = y
-		for x := 0; x < c.siz.X; x++ {
+		for x := range c.siz.X {
 			p.x = x
 			if c.isVisited(p) {
 				continue

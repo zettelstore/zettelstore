@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package meta
@@ -231,7 +234,7 @@ func TestEqual(t *testing.T) {
 
 func pairs2meta(pairs []string) *Meta {
 	m := New(testID)
-	for i := 0; i < len(pairs); i = i + 2 {
+	for i := 0; i < len(pairs); i += 2 {
 		m.Set(pairs[i], pairs[i+1])
 	}
 	return m

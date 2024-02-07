@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package logger_test
@@ -45,7 +48,7 @@ func TestParseLevel(t *testing.T) {
 
 func BenchmarkDisabled(b *testing.B) {
 	log := logger.New(&stderrLogWriter{}, "").SetLevel(logger.NeverLevel)
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		log.Info().Str("key", "val").Msg("Benchmark")
 	}
 }
@@ -65,21 +68,21 @@ func (*testLogWriter) WriteMessage(logger.Level, time.Time, string, string, []by
 
 func BenchmarkStrMessage(b *testing.B) {
 	log := logger.New(&testLogWriter{}, "")
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		log.Info().Str("key", "val").Msg("Benchmark")
 	}
 }
 
 func BenchmarkMessage(b *testing.B) {
 	log := logger.New(&testLogWriter{}, "")
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		log.Info().Msg("Benchmark")
 	}
 }
 
 func BenchmarkCloneStrMessage(b *testing.B) {
 	log := logger.New(&testLogWriter{}, "").Clone().Str("sss", "ttt").Child()
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		log.Info().Msg("123456789")
 	}
 }

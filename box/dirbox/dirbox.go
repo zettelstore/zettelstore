@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package dirbox provides a directory-based zettel box.
@@ -89,7 +92,7 @@ const (
 )
 
 func getDirSrvInfo(log *logger.Logger, notifyType string) notifyTypeSpec {
-	for count := 0; count < 2; count++ {
+	for range 2 {
 		switch notifyType {
 		case kernel.BoxDirTypeNotify:
 			return dirNotifyFS
@@ -151,7 +154,7 @@ func (dp *dirBox) Start(context.Context) error {
 	dp.mxCmds.Lock()
 	defer dp.mxCmds.Unlock()
 	dp.fCmds = make([]chan fileCmd, 0, dp.fSrvs)
-	for i := uint32(0); i < dp.fSrvs; i++ {
+	for i := range dp.fSrvs {
 		cc := make(chan fileCmd)
 		go fileService(i, dp.log.Clone().Str("sub", "file").Uint("fn", uint64(i)).Child(), dp.dir, cc)
 		dp.fCmds = append(dp.fCmds, cc)

@@ -75,7 +75,7 @@ func startZettelstore(info *zsInfo) error {
 	}
 	err := cmd.Start()
 	time.Sleep(2 * time.Second)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		time.Sleep(time.Millisecond * 100)
 		if addressInUse(info.adminAddress) {
 			info.cmd = cmd

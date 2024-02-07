@@ -140,7 +140,7 @@ func equalPairs(one, two []meta.Pair) bool {
 	if len(one) != len(two) {
 		return false
 	}
-	for i := 0; i < len(one); i++ {
+	for i := range len(one) {
 		if one[i].Key != two[i].Key || one[i].Value != two[i].Value {
 			return false
 		}

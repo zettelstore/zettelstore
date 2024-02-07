@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package box
@@ -21,7 +24,7 @@ import (
 // GetNewZid calculates a new and unused zettel identifier, based on the current date and time.
 func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
 	withSeconds := false
-	for i := 0; i < 90; i++ { // Must be completed within 9 seconds (less than web/server.writeTimeout)
+	for range 90 { // Must be completed within 9 seconds (less than web/server.writeTimeout)
 		zid := id.New(withSeconds)
 		found, err := testZid(zid)
 		if err != nil {

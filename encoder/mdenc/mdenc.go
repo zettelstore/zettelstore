@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package mdenc encodes the abstract syntax tree back into Markdown.
@@ -353,7 +356,7 @@ func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 }
 
 func (v *visitor) writeSpaces(n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		v.b.WriteByte(' ')
 	}
 }

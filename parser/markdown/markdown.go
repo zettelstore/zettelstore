@@ -152,7 +152,7 @@ func (p *mdP) acceptFencedCodeBlock(node *gmAst.FencedCodeBlock) *ast.VerbatimNo
 func (p *mdP) acceptRawText(node gmAst.Node) []byte {
 	lines := node.Lines()
 	result := make([]byte, 0, 512)
-	for i := 0; i < lines.Len(); i++ {
+	for i := range lines.Len() {
 		s := lines.At(i)
 		line := s.Value(p.source)
 		if l := len(line); l > 0 {
@@ -468,7 +468,7 @@ func (p *mdP) acceptAutoLink(node *gmAst.AutoLink) ast.InlineSlice {
 
 func (p *mdP) acceptRawHTML(node *gmAst.RawHTML) ast.InlineSlice {
 	segs := make([][]byte, 0, node.Segments.Len())
-	for i := 0; i < node.Segments.Len(); i++ {
+	for i := range node.Segments.Len() {
 		segment := node.Segments.At(i)
 		segs = append(segs, segment.Value(p.source))
 	}

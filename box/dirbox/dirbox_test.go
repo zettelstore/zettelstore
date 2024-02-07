@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package dirbox
@@ -32,7 +35,7 @@ func TestIsPrime(t *testing.T) {
 }
 
 func TestMakePrime(t *testing.T) {
-	for i := uint32(0); i < 1500; i++ {
+	for i := range uint32(1500) {
 		np := makePrime(i)
 		if np < i {
 			t.Errorf("makePrime(%d) < %d", i, np)

@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package id_test provides unit tests for testing zettel id specific functions.
@@ -72,7 +75,7 @@ var sResult string // to disable compiler optimization in loop below
 
 func BenchmarkString(b *testing.B) {
 	var s string
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		s = id.Zid(12345678901200).String()
 	}
 	sResult = s
@@ -82,7 +85,7 @@ var bResult []byte // to disable compiler optimization in loop below
 
 func BenchmarkBytes(b *testing.B) {
 	var bs []byte
-	for n := 0; n < b.N; n++ {
+	for range b.N {
 		bs = id.Zid(12345678901200).Bytes()
 	}
 	bResult = bs

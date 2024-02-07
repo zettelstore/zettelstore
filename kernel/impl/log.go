@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package impl
@@ -126,7 +129,7 @@ func (klw *kernelLogWriter) retrieveLogEntries() []kernel.LogEntry {
 			return nil
 		}
 		result := make([]kernel.LogEntry, klw.writePos)
-		for i := 0; i < klw.writePos; i++ {
+		for i := range klw.writePos {
 			copyE2E(&result[i], &klw.data[i])
 		}
 		return result
@@ -137,7 +140,7 @@ func (klw *kernelLogWriter) retrieveLogEntries() []kernel.LogEntry {
 		copyE2E(&result[pos], &klw.data[j])
 		pos++
 	}
-	for j := 0; j < klw.writePos; j++ {
+	for j := range klw.writePos {
 		copyE2E(&result[pos], &klw.data[j])
 		pos++
 	}

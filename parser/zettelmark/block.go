@@ -411,7 +411,7 @@ func (cp *zmkP) buildNestedList(kinds []ast.NestedListKind) (ln *ast.NestedListN
 
 func (cp *zmkP) cleanupParsedNestedList(newLnCount int) (res ast.BlockNode, success bool) {
 	listDepth := len(cp.lists)
-	for i := 0; i < newLnCount; i++ {
+	for i := range newLnCount {
 		childPos := listDepth - i - 1
 		parentPos := childPos - 1
 		if parentPos < 0 {

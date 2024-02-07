@@ -116,8 +116,7 @@ func IsBinary(data []byte) bool {
 	if !utf8.Valid(data) {
 		return true
 	}
-	l := len(data)
-	for i := 0; i < l; i++ {
+	for i := range len(data) {
 		if data[i] == 0 {
 			return true
 		}

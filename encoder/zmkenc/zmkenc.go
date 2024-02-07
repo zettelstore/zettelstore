@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package zmkenc encodes the abstract syntax tree back into Zettelmarkup.
@@ -372,7 +375,7 @@ func (v *visitor) visitText(tn *ast.TextNode) {
 			s := tn.Text[i : i+2]
 			if escapeSeqs.Has(s) {
 				v.b.WriteString(tn.Text[last:i])
-				for j := 0; j < len(s); j++ {
+				for j := range len(s) {
 					v.b.WriteBytes('\\', s[j])
 				}
 				i++
@@ -527,7 +530,7 @@ func (v *visitor) visitAttributes(a attrs.Attributes) {
 
 func (v *visitor) writeEscaped(s string, toEscape byte) {
 	last := 0
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if b := s[i]; b == toEscape || b == '\\' {
 			v.b.WriteString(s[last:i])
 			v.b.WriteBytes('\\', b)

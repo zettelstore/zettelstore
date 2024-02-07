@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package manager
@@ -30,7 +33,7 @@ func (mgr *Manager) Location() string {
 		return "NONE"
 	}
 	var sb strings.Builder
-	for i := 0; i < len(mgr.boxes)-2; i++ {
+	for i := range len(mgr.boxes) - 2 {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
@@ -267,7 +270,7 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) err
 		err := p.RenameZettel(ctx, curZid, newZid)
 		var errZNF box.ErrZettelNotFound
 		if err != nil && !errors.As(err, &errZNF) {
-			for j := 0; j < i; j++ {
+			for j := range i {
 				mgr.boxes[j].RenameZettel(ctx, newZid, curZid)
 			}
 			return err

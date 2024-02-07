@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package strfun provides some string functions.
@@ -40,7 +43,7 @@ func JustifyLeft(s string, maxLen int, pad rune) string {
 	for _, r := range runes {
 		sb.WriteRune(r)
 	}
-	for i := 0; i < maxLen-len(runes); i++ {
+	for range maxLen - len(runes) {
 		sb.WriteRune(pad)
 	}
 	return sb.String()
