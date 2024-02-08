@@ -11,6 +11,9 @@
   *  Only when query list is not empty, allow to show data and plain encoding,
      an optionally show the &ldquo;Save As Zettel&rdquo; button.
      (minor: webui)
+  *  If query list is greater than three elements, show the number of elements
+     at bottom (before other encodings).
+     (minor: webui)
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.1 (2023-12-28)</h2>

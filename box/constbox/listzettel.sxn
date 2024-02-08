@@ -20,7 +20,8 @@
   ,@endnotes
   (form (@ (action ,(if (bound? 'create-url) create-url)))
       ,(if (bound? 'data-url)
-          `(@L "Other encodings: "
+          `(@L "Other encodings"
+               ,(if (> num-entries 3) `(@L " of these " ,num-entries " entries: ") ": ")
                (a (@ (href ,data-url)) "data")
                ", "
                (a (@ (href ,plain-url)) "plain")

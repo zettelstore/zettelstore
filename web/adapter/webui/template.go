@@ -109,6 +109,7 @@ var (
 	}
 	builtins = []*sxeval.Builtin{
 		&sxbuiltins.Identical,            // ==
+		&sxbuiltins.NumGreater,           // >
 		&sxbuiltins.NullP,                // null?
 		&sxbuiltins.PairP,                // pair?
 		&sxbuiltins.Car, &sxbuiltins.Cdr, // car, cdr

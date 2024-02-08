@@ -133,6 +133,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		} else {
 			seed = 0
 		}
+		rb.bindString("num-entries", sx.Int64(len(metaSeq)))
 		if len(metaSeq) > 0 {
 			rb.bindString("plain-url", sx.String(apiURL.String()))
 			rb.bindString("data-url", sx.String(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))
