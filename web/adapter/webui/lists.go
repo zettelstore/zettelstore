@@ -84,13 +84,15 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			}
 		}
 		var content, endnotes *sx.Pair
-		if bn := evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig); bn != nil {
+		numEntries := 0
+		if bn, cnt := evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig); bn != nil {
 			enc := wui.getSimpleHTMLEncoder(wui.rtConfig.Get(ctx, nil, api.KeyLang))
 			content, endnotes, err = enc.BlocksSxn(&ast.BlockSlice{bn})
 			if err != nil {
 				wui.reportError(ctx, w, err)
 				return
 			}
+			numEntries = cnt
 		}
 
 		user := server.GetUser(ctx)
@@ -126,6 +128,8 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		}
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
+		rb.bindString("num-entries", sx.Int64(numEntries))
+		rb.bindString("num-meta", sx.Int64(len(metaSeq)))
 		apiURL := wui.NewURLBuilder('z').AppendQuery(q.String())
 		seed, found := q.GetSeed()
 		if found {
@@ -133,7 +137,6 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		} else {
 			seed = 0
 		}
-		rb.bindString("num-entries", sx.Int64(len(metaSeq)))
 		if len(metaSeq) > 0 {
 			rb.bindString("plain-url", sx.String(apiURL.String()))
 			rb.bindString("data-url", sx.String(apiURL.AppendKVQuery(api.QueryKeyEncoding, api.EncodingData).String()))

@@ -33,7 +33,7 @@ import (
 )
 
 // QueryAction transforms a list of metadata according to query actions into a AST nested list.
-func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig config.Config) ast.BlockNode {
+func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig config.Config) (ast.BlockNode, int) {
 	ap := actionPara{
 		ctx:   ctx,
 		q:     q,
@@ -109,11 +109,11 @@ type actionPara struct {
 	title string
 }
 
-func (ap *actionPara) createBlockNodeWord(key string) ast.BlockNode {
+func (ap *actionPara) createBlockNodeWord(key string) (ast.BlockNode, int) {
 	var buf bytes.Buffer
 	ccs, bufLen := ap.prepareCatAction(key, &buf)
 	if len(ccs) == 0 {
-		return nil
+		return nil, 0
 	}
 	items := make([]ast.ItemSlice, 0, len(ccs))
 	ccs.SortByName()
@@ -130,14 +130,14 @@ func (ap *actionPara) createBlockNodeWord(key string) ast.BlockNode {
 		Kind:  ap.kind,
 		Items: items,
 		Attrs: nil,
-	}
+	}, len(items)
 }
 
-func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
+func (ap *actionPara) createBlockNodeTagSet(key string) (ast.BlockNode, int) {
 	var buf bytes.Buffer
 	ccs, bufLen := ap.prepareCatAction(key, &buf)
 	if len(ccs) == 0 {
-		return nil
+		return nil, 0
 	}
 	ccs.SortByCount()
 	ccs = ap.limitTags(ccs)
@@ -166,7 +166,7 @@ func (ap *actionPara) createBlockNodeTagSet(key string) ast.BlockNode {
 		)
 		buf.Truncate(bufLen)
 	}
-	return &ast.ParaNode{Inlines: para}
+	return &ast.ParaNode{Inlines: para}, len(ccs)
 }
 
 func (ap *actionPara) limitTags(ccs meta.CountedCategories) meta.CountedCategories {
@@ -190,7 +190,7 @@ func (ap *actionPara) limitTags(ccs meta.CountedCategories) meta.CountedCategori
 	return ccs
 }
 
-func (ap *actionPara) createBlockNodeMetaKeys() ast.BlockNode {
+func (ap *actionPara) createBlockNodeMetaKeys() (ast.BlockNode, int) {
 	arr := make(meta.Arrangement, 128)
 	for _, m := range ap.ml {
 		for k := range m.Map() {
@@ -198,7 +198,7 @@ func (ap *actionPara) createBlockNodeMetaKeys() ast.BlockNode {
 		}
 	}
 	if len(arr) == 0 {
-		return nil
+		return nil, 0
 	}
 	ccs := arr.Counted()
 	ccs.SortByName()
@@ -236,12 +236,12 @@ func (ap *actionPara) createBlockNodeMetaKeys() ast.BlockNode {
 		Kind:  ap.kind,
 		Items: items,
 		Attrs: nil,
-	}
+	}, len(items)
 }
 
-func (ap *actionPara) createBlockNodeMeta(key string) ast.BlockNode {
+func (ap *actionPara) createBlockNodeMeta(key string) (ast.BlockNode, int) {
 	if len(ap.ml) == 0 {
-		return nil
+		return nil, 0
 	}
 	items := make([]ast.ItemSlice, 0, len(ap.ml))
 	for _, m := range ap.ml {
@@ -260,7 +260,7 @@ func (ap *actionPara) createBlockNodeMeta(key string) ast.BlockNode {
 		Kind:  ap.kind,
 		Items: items,
 		Attrs: nil,
-	}
+	}, len(items)
 }
 
 func (ap *actionPara) prepareCatAction(key string, buf *bytes.Buffer) (meta.CountedCategories, int) {
@@ -347,7 +347,7 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 
 func calcBudget(total, curSize float64) float64 { return math.Round(total / (fontSizes64 - curSize)) }
 
-func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
+func (ap *actionPara) createBlockNodeRSS(cfg config.Config) (ast.BlockNode, int) {
 	var rssConfig rss.Configuration
 	rssConfig.Setup(ap.ctx, cfg)
 	rssConfig.Title = ap.title
@@ -357,10 +357,10 @@ func (ap *actionPara) createBlockNodeRSS(cfg config.Config) ast.BlockNode {
 		Kind:    ast.VerbatimProg,
 		Attrs:   attrs.Attributes{"lang": "xml"},
 		Content: data,
-	}
+	}, len(ap.ml)
 }
 
-func (ap *actionPara) createBlockNodeAtom(cfg config.Config) ast.BlockNode {
+func (ap *actionPara) createBlockNodeAtom(cfg config.Config) (ast.BlockNode, int) {
 	var atomConfig atom.Configuration
 	atomConfig.Setup(cfg)
 	atomConfig.Title = ap.title
@@ -370,5 +370,5 @@ func (ap *actionPara) createBlockNodeAtom(cfg config.Config) ast.BlockNode {
 		Kind:    ast.VerbatimProg,
 		Attrs:   attrs.Attributes{"lang": "xml"},
 		Content: data,
-	}
+	}, len(ap.ml)
 }

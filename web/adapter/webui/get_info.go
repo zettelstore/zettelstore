@@ -83,7 +83,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 
-		bns := ucEvaluate.RunBlockNode(ctx, evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig))
+		entries, _ := evaluator.QueryAction(ctx, nil, unlinkedMeta, wui.rtConfig)
+		bns := ucEvaluate.RunBlockNode(ctx, entries)
 		unlinkedContent, _, err := enc.BlocksSxn(&bns)
 		if err != nil {
 			wui.reportError(ctx, w, err)
