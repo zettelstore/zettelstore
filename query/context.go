@@ -113,7 +113,6 @@ type contextTask struct {
 	limit    int
 	tagMetas map[string][]*meta.Meta
 	tagZids  map[string]id.Set     // just the zids of tagMetas
-	tagCost  map[string]int        // cost of tag
 	metaZid  map[id.Zid]*meta.Meta // maps zid to meta for all meta retrieved with tags
 }
 
@@ -125,7 +124,6 @@ func newQueue(startSeq []*meta.Meta, maxCost, limit int, port ContextPort) *cont
 		limit:    limit,
 		tagMetas: make(map[string][]*meta.Meta),
 		tagZids:  make(map[string]id.Set),
-		tagCost:  make(map[string]int),
 		metaZid:  make(map[id.Zid]*meta.Meta),
 	}
 
@@ -233,8 +231,9 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost int)
 	for _, zid := range zidSet.Sorted() { // .Sorted() to stay deterministic
 		minCost := 3000
 		for _, tag := range tags {
-			if ct.tagZids[tag].Contains(zid) {
-				cost := ct.tagCost[tag]
+			tagZids := ct.tagZids[tag]
+			if tagZids.Contains(zid) {
+				cost := tagCost(baseCost, len(tagZids))
 				if cost < minCost {
 					minCost = cost
 				}
@@ -265,7 +264,6 @@ func (ct *contextTask) updateTagData(ctx context.Context, tag string, baseCost i
 		}
 	}
 	ct.tagZids[tag] = zids
-	ct.tagCost[tag] = tagCost(baseCost, len(ml))
 	return zids
 }
 
