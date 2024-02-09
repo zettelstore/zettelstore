@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2023-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package query
@@ -25,6 +28,7 @@ type ContextSpec struct {
 	Direction ContextDirection
 	MaxCost   int
 	MaxCount  int
+	Full      bool
 }
 
 // ContextDirection specifies the direction a context should be calculated.
@@ -45,6 +49,10 @@ type ContextPort interface {
 func (spec *ContextSpec) Print(pe *PrintEnv) {
 	pe.printSpace()
 	pe.writeString(api.ContextDirective)
+	if spec.Full {
+		pe.printSpace()
+		pe.writeString(api.FullDirective)
+	}
 	switch spec.Direction {
 	case ContextDirBackward:
 		pe.printSpace()
@@ -79,6 +87,9 @@ func (spec *ContextSpec) Execute(ctx context.Context, startSeq []*meta.Meta, por
 
 		for _, p := range m.ComputedPairsRest() {
 			tasks.addPair(ctx, p.Key, p.Value, cost, isBackward, isForward)
+		}
+		if !spec.Full {
+			continue
 		}
 		if tags, found := m.GetList(api.KeyTags); found {
 			tasks.addTags(ctx, tags, cost)

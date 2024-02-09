@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package query_test
@@ -35,6 +38,7 @@ func TestParser(t *testing.T) {
 		{"0 CONTEXT", "0 CONTEXT"}, {"1 CONTEXT", "00000000000001 CONTEXT"},
 		{"00000000000001 CONTEXT", "00000000000001 CONTEXT"},
 		{"100000000000001 CONTEXT", "100000000000001 CONTEXT"},
+		{"1 CONTEXT FULL", "00000000000001 CONTEXT FULL"},
 		{"1 CONTEXT BACKWARD", "00000000000001 CONTEXT BACKWARD"},
 		{"1 CONTEXT FORWARD", "00000000000001 CONTEXT FORWARD"},
 		{"1 CONTEXT COST ", "00000000000001 CONTEXT COST"},

@@ -4,17 +4,18 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20230707204706
-modified: 20240209185508
+modified: 20240209191045
 
 A context directive calculates the __context__ of a list of zettel identifier.
 It starts with the keyword ''CONTEXT''.
 
 Optionally you may specify some context details, after the keyword ''CONTEXT'', separated by space characters.
 These are:
+* ''FULL'': additionally search for zettel with the same tags,
 * ''BACKWARD'': search for context only though backward links,
 * ''FORWARD'': search for context only through forward links,
-* ''COST'', one or more space characters, and a positive integer: set the maximum __cost__ (default: 17),
-* ''MAX'', one or more space characters, and a positive integer: set the maximum number of context zettel (default: 200).
+* ''COST'': one or more space characters, and a positive integer: set the maximum __cost__ (default: 17),
+* ''MAX'': one or more space characters, and a positive integer: set the maximum number of context zettel (default: 200).
 
 If no ''BACKWARD'' and ''FORWARD'' is specified, a search for context zettel will be done though backward and forward links.
 
@@ -25,7 +26,9 @@ The cost of a context zettel is calculated iteratively:
 * A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus seven.
 * A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus two.
 * A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the four choices above and multiplied with roughly a linear-logarithmic value based on the size of the set.
-* A zettel with the same tag, has the cost of the originating zettel, plus a linear-logarithmic number based on the number of zettel with this tag. If a zettel belongs to more than one tag compared with the current zettel, there is a discount of 90% per additional tag.
+* A zettel with the same tag, has the cost of the originating zettel, plus a linear-logarithmic number based on the number of zettel with this tag.
+  If a zettel belongs to more than one tag compared with the current zettel, there is a discount of 90% per additional tag.
+  This only applies if the ''FULL'' directive was specified.
 
 The maximum cost is only checked for all zettel that are not directly reachable from the initial, specified list of zettel.
 This ensures that initial zettel that have only a highly used tag, will also produce some context zettel.
@@ -35,4 +38,4 @@ It also penalties zettel that acts as a ""hub"" to other zettel, to make it more
 
 This directive may be specified only once as a query directive.
 A second occurence of ''CONTEXT'' is interpreted as a [[search expression|00001007701000]].
-In most cases it is easier to adjust the maximum cost than to perform another context search, which is relatively expensive in terms of retrieving power.
+In most cases it is easier to adjust the maximum cost than to perform another context search, which is relatively expensive in terms of retrieving effort.

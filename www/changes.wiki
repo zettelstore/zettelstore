@@ -2,6 +2,12 @@
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (pending)</h2>
+  *  Context search operates only on explicit references. Add the directive
+     <code>FULL</code> to follow zettel tags additionally.
+     (breaking)
+  *  Context cost calculation has been changed. Prepare to retrieve different
+     result.
+     (breaking)
   *  Make WebUI form elements a little bit more accessible by using search tag
      and inputmode attribute.
      (minor: webui)
