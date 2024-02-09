@@ -169,34 +169,31 @@ func contextCost(key string) float64 {
 	switch key {
 	case api.KeyFolge, api.KeyPrecursor:
 		return 1
-	case api.KeySuccessors, api.KeyPredecessor,
-		api.KeySubordinates, api.KeySuperior:
-		return 2
+	case api.KeySubordinates, api.KeySuperior:
+		return 1.5
+	case api.KeySuccessors, api.KeyPredecessor:
+		return 7
 	}
-	return 3
+	return 2
 }
 
 func (ct *contextTask) addID(ctx context.Context, newCost float64, value string) {
-	if ct.costMaxed(newCost) {
-		return
-	}
 	if zid, errParse := id.Parse(value); errParse == nil {
 		if m, errGetMeta := ct.port.GetMeta(ctx, zid); errGetMeta == nil {
 			ct.addMeta(m, newCost)
 		}
 	}
 }
-func (ct *contextTask) addMeta(m *meta.Meta, newCost float64) {
-	if _, found := ct.seen[m.Zid]; !found {
-		heap.Push(&ct.queue, ztlCtxItem{cost: newCost, meta: m})
-	}
-}
 
-func (ct *contextTask) costMaxed(newCost float64) bool {
+func (ct *contextTask) addMeta(m *meta.Meta, newCost float64) {
 	// If len(zc.seen) <= 1, the initial zettel is processed. In this case allow all
 	// other zettel that are directly reachable, without taking the cost into account.
 	// Of course, the limit ist still relevant.
-	return (len(ct.seen) > 1 && ct.maxCost > 0 && newCost > ct.maxCost) || ct.hasLimit()
+	if !ct.hasLimit() && (len(ct.seen) <= 1 || ct.maxCost == 0 || newCost <= ct.maxCost) {
+		if _, found := ct.seen[m.Zid]; !found {
+			heap.Push(&ct.queue, ztlCtxItem{cost: newCost, meta: m})
+		}
+	}
 }
 
 func (ct *contextTask) addIDSet(ctx context.Context, newCost float64, value string) {
@@ -208,19 +205,8 @@ func (ct *contextTask) addIDSet(ctx context.Context, newCost float64, value stri
 }
 
 func referenceCost(baseCost float64, numReferences int) float64 {
-	switch {
-	case numReferences < 5:
-		return baseCost + 1
-	case numReferences < 9:
-		return baseCost * 2
-	case numReferences < 17:
-		return baseCost * 3
-	case numReferences < 33:
-		return baseCost * 4
-	case numReferences < 65:
-		return baseCost * 5
-	}
-	return baseCost * float64(numReferences) / 8
+	nRefs := float64(numReferences)
+	return nRefs*math.Log2(nRefs+1) + baseCost
 }
 
 func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost float64) {
@@ -231,6 +217,7 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 	}
 	for _, zid := range zidSet.Sorted() { // .Sorted() to stay deterministic
 		minCost := math.MaxFloat64
+		costFactor := 1.1
 		for _, tag := range tags {
 			tagZids := ct.tagZids[tag]
 			if tagZids.Contains(zid) {
@@ -238,11 +225,10 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 				if cost < minCost {
 					minCost = cost
 				}
+				costFactor /= 1.1
 			}
 		}
-		if !ct.costMaxed(minCost) {
-			ct.addMeta(ct.metaZid[zid], minCost)
-		}
+		ct.addMeta(ct.metaZid[zid], minCost*costFactor)
 	}
 }
 
@@ -269,10 +255,8 @@ func (ct *contextTask) updateTagData(ctx context.Context, tag string) id.Set {
 }
 
 func tagCost(baseCost float64, numTags int) float64 {
-	if numTags < 8 {
-		return (baseCost + 1) + float64(numTags)/2
-	}
-	return (baseCost + 3) * (float64(numTags) / 4)
+	nTags := float64(numTags)
+	return nTags*math.Log2(nTags+1) + baseCost
 }
 
 func (ct *contextTask) next() (*meta.Meta, float64) {

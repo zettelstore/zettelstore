@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
 created: 20230707204706
-modified: 20230724153832
+modified: 20240209185508
 
 A context directive calculates the __context__ of a list of zettel identifier.
 It starts with the keyword ''CONTEXT''.
@@ -21,10 +21,11 @@ If no ''BACKWARD'' and ''FORWARD'' is specified, a search for context zettel wil
 The cost of a context zettel is calculated iteratively:
 * Each of the specified zettel hast a cost of one.
 * A zettel found as a single folge zettel or single precursor zettel has the cost of the originating zettel, plus one.
-* A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus two.
-* A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus three.
-* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the three choices above and multiplied with roughly a logarithmic value based on the size of the set.
-* A zettel with the same tag, has the cost of the originating zettel, plus the number of zettel with the same tag (if it is less than eight), or the cost of the originating zettel plus two, multiplied by number of zettel with the same tag divided by four.
+* A zettel found as a single subordinate zettel or single superior zettel has the cost of the originating zettel, plus 1.2.
+* A zettel found as a single successor zettel or single predecessor zettel has the cost of the originating zettel, plus seven.
+* A zettel found via another link without being part of a [[set of zettel identifier|00001006032500]], has the cost of the originating zettel, plus two.
+* A zettel which is part of a set of zettel identifier, has the cost of the originating zettel, plus one of the four choices above and multiplied with roughly a linear-logarithmic value based on the size of the set.
+* A zettel with the same tag, has the cost of the originating zettel, plus a linear-logarithmic number based on the number of zettel with this tag. If a zettel belongs to more than one tag compared with the current zettel, there is a discount of 90% per additional tag.
 
 The maximum cost is only checked for all zettel that are not directly reachable from the initial, specified list of zettel.
 This ensures that initial zettel that have only a highly used tag, will also produce some context zettel.
