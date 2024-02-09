@@ -80,9 +80,7 @@ func (spec *ContextSpec) Execute(ctx context.Context, startSeq []*meta.Meta, por
 			tasks.addPair(ctx, p.Key, p.Value, cost, isBackward, isForward)
 		}
 		if tags, found := m.GetList(api.KeyTags); found {
-			for _, tag := range tags {
-				tasks.addSameTag(ctx, tag, cost)
-			}
+			tasks.addTags(ctx, tags, cost)
 		}
 	}
 	return result
@@ -108,21 +106,27 @@ func (q *ztlCtxQueue) Pop() any {
 }
 
 type contextTask struct {
-	port    ContextPort
-	seen    id.Set
-	queue   ztlCtxQueue
-	maxCost int
-	limit   int
-	tagCost map[string][]*meta.Meta
+	port     ContextPort
+	seen     id.Set
+	queue    ztlCtxQueue
+	maxCost  int
+	limit    int
+	tagMetas map[string][]*meta.Meta
+	tagZids  map[string]id.Set     // just the zids of tagMetas
+	tagCost  map[string]int        // cost of tag
+	metaZid  map[id.Zid]*meta.Meta // maps zid to meta for all meta retrieved with tags
 }
 
 func newQueue(startSeq []*meta.Meta, maxCost, limit int, port ContextPort) *contextTask {
 	result := &contextTask{
-		port:    port,
-		seen:    id.NewSet(),
-		maxCost: maxCost,
-		limit:   limit,
-		tagCost: make(map[string][]*meta.Meta, 1024),
+		port:     port,
+		seen:     id.NewSet(),
+		maxCost:  maxCost,
+		limit:    limit,
+		tagMetas: make(map[string][]*meta.Meta),
+		tagZids:  make(map[string]id.Set),
+		tagCost:  make(map[string]int),
+		metaZid:  make(map[id.Zid]*meta.Meta),
 	}
 
 	queue := make(ztlCtxQueue, 0, len(startSeq))
@@ -220,31 +224,56 @@ func referenceCost(baseCost int, numReferences int) int {
 	return baseCost * numReferences / 8
 }
 
-func (ct *contextTask) addSameTag(ctx context.Context, tag string, baseCost int) {
-	tagMetas, found := ct.tagCost[tag]
-	if !found {
-		q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
-		ml, err := ct.port.SelectMeta(ctx, nil, q)
-		if err != nil {
-			return
+func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost int) {
+	var zidSet id.Set
+	for _, tag := range tags {
+		zs := ct.updateTagData(ctx, tag, baseCost)
+		zidSet = zidSet.Copy(zs)
+	}
+	for _, zid := range zidSet.Sorted() { // .Sorted() to stay deterministic
+		minCost := 3000
+		for _, tag := range tags {
+			if ct.tagZids[tag].Contains(zid) {
+				cost := ct.tagCost[tag]
+				if cost < minCost {
+					minCost = cost
+				}
+			}
 		}
-		tagMetas = ml
-		ct.tagCost[tag] = ml
+		if !ct.costMaxed(minCost) {
+			ct.addMeta(ct.metaZid[zid], minCost)
+		}
 	}
-	cost := tagCost(baseCost, len(tagMetas))
-	if ct.costMaxed(cost) {
-		return
+}
+
+func (ct *contextTask) updateTagData(ctx context.Context, tag string, baseCost int) id.Set {
+	if _, found := ct.tagMetas[tag]; found {
+		return ct.tagZids[tag]
 	}
-	for _, m := range tagMetas {
-		ct.addMeta(m, cost)
+	q := Parse(api.KeyTags + api.SearchOperatorHas + tag + " ORDER REVERSE " + api.KeyID)
+	ml, err := ct.port.SelectMeta(ctx, nil, q)
+	if err != nil {
+		ml = nil
 	}
+	ct.tagMetas[tag] = ml
+	zids := id.NewSetCap(len(ml))
+	for _, m := range ml {
+		zid := m.Zid
+		zids = zids.Add(zid)
+		if _, found := ct.metaZid[zid]; !found {
+			ct.metaZid[zid] = m
+		}
+	}
+	ct.tagZids[tag] = zids
+	ct.tagCost[tag] = tagCost(baseCost, len(ml))
+	return zids
 }
 
 func tagCost(baseCost, numTags int) int {
 	if numTags < 8 {
-		return baseCost + numTags/2
+		return (baseCost + 1) + numTags/2
 	}
-	return (baseCost + 2) * (numTags / 4)
+	return (baseCost + 3) * (numTags / 4)
 }
 
 func (ct *contextTask) next() (*meta.Meta, int) {
