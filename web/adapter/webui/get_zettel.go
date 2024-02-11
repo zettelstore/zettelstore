@@ -104,7 +104,7 @@ func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle ge
 
 func (wui *WebUI) bindLinks(ctx context.Context, rb *renderBinder, varPrefix string, m *meta.Meta, key, configKey string, getTextTitle getTextTitleFunc) {
 	varLinks := varPrefix + "-links"
-	var symOpen sx.Symbol
+	var symOpen *sx.Symbol
 	switch wui.rtConfig.Get(ctx, m, configKey) {
 	case "false":
 		rb.bindString(varLinks, sx.Nil())

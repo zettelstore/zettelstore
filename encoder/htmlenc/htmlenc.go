@@ -82,7 +82,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 
 	var head sx.ListBuilder
 	head.Add(shtml.SymHead)
-	head.Add(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sx.Symbol("charset"), sx.String("utf-8"))).Cons(sxhtml.SymAttr)).Cons(shtml.SymMeta))
+	head.Add(sx.Nil().Cons(sx.Nil().Cons(sx.Cons(sx.MakeSymbol("charset"), sx.String("utf-8"))).Cons(sxhtml.SymAttr)).Cons(shtml.SymMeta))
 	head.ExtendBang(hm)
 	var sb strings.Builder
 	if hasTitle {

@@ -213,10 +213,10 @@ func makeRenderBinder(bind *sxeval.Binding, err error) renderBinder {
 }
 func (rb *renderBinder) bindString(key string, obj sx.Object) {
 	if rb.err == nil {
-		rb.err = rb.binding.Bind(sx.Symbol(key), obj)
+		rb.err = rb.binding.Bind(sx.MakeSymbol(key), obj)
 	}
 }
-func (rb *renderBinder) bindSymbol(sym sx.Symbol, obj sx.Object) {
+func (rb *renderBinder) bindSymbol(sym *sx.Symbol, obj sx.Object) {
 	if rb.err == nil {
 		rb.err = rb.binding.Bind(sym, obj)
 	}
@@ -229,7 +229,7 @@ func (rb *renderBinder) bindKeyValue(key string, value string) {
 }
 func (rb *renderBinder) rebindResolved(key, defKey string) {
 	if rb.err == nil {
-		if obj, found := rb.binding.Resolve(sx.Symbol(key)); found {
+		if obj, found := rb.binding.Resolve(sx.MakeSymbol(key)); found {
 			rb.bindString(defKey, obj)
 		}
 	}

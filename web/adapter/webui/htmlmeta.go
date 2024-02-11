@@ -53,10 +53,10 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeTimestamp:
 		if ts, ok := meta.TimeValue(value); ok {
 			return sx.MakeList(
-				sx.Symbol("time"),
+				sx.MakeSymbol("time"),
 				sx.MakeList(
 					sxhtml.SymAttr,
-					sx.Cons(sx.Symbol("datetime"), sx.String(ts.Format("2006-01-02T15:04:05"))),
+					sx.Cons(sx.MakeSymbol("datetime"), sx.String(ts.Format("2006-01-02T15:04:05"))),
 				),
 				sx.MakeList(sxhtml.SymNoEscape, sx.String(ts.Format("2006-01-02&nbsp;15:04:05"))),
 			)
@@ -92,7 +92,7 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		attrs = attrs.Cons(sx.Cons(shtml.SymAttrHref, sx.String(ub.String()))).Cons(sxhtml.SymAttr)
 		return sx.Nil().Cons(sx.String(zid.String())).Cons(attrs).Cons(shtml.SymA)
 	case found == 0:
-		return sx.MakeList(sx.Symbol("s"), text)
+		return sx.MakeList(sx.MakeSymbol("s"), text)
 	default: // case found < 0:
 		return text
 	}

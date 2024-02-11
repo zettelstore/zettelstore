@@ -121,7 +121,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	return sx.MakeList(sz.SymUnknown, sx.String(fmt.Sprintf("%T %v", node, node)))
 }
 
-var mapVerbatimKindS = map[ast.VerbatimKind]sx.Symbol{
+var mapVerbatimKindS = map[ast.VerbatimKind]*sx.Symbol{
 	ast.VerbatimZettel:  sz.SymVerbatimZettel,
 	ast.VerbatimProg:    sz.SymVerbatimProg,
 	ast.VerbatimEval:    sz.SymVerbatimEval,
@@ -130,7 +130,7 @@ var mapVerbatimKindS = map[ast.VerbatimKind]sx.Symbol{
 	ast.VerbatimHTML:    sz.SymVerbatimHTML,
 }
 
-var mapFormatKindS = map[ast.FormatKind]sx.Symbol{
+var mapFormatKindS = map[ast.FormatKind]*sx.Symbol{
 	ast.FormatEmph:   sz.SymFormatEmph,
 	ast.FormatStrong: sz.SymFormatStrong,
 	ast.FormatDelete: sz.SymFormatDelete,
@@ -142,7 +142,7 @@ var mapFormatKindS = map[ast.FormatKind]sx.Symbol{
 	ast.FormatSpan:   sz.SymFormatSpan,
 }
 
-var mapLiteralKindS = map[ast.LiteralKind]sx.Symbol{
+var mapLiteralKindS = map[ast.LiteralKind]*sx.Symbol{
 	ast.LiteralZettel:  sz.SymLiteralZettel,
 	ast.LiteralProg:    sz.SymLiteralProg,
 	ast.LiteralInput:   sz.SymLiteralInput,
@@ -152,7 +152,7 @@ var mapLiteralKindS = map[ast.LiteralKind]sx.Symbol{
 	ast.LiteralMath:    sz.SymLiteralMath,
 }
 
-var mapRegionKindS = map[ast.RegionKind]sx.Symbol{
+var mapRegionKindS = map[ast.RegionKind]*sx.Symbol{
 	ast.RegionSpan:  sz.SymRegionBlock,
 	ast.RegionQuote: sz.SymRegionQuote,
 	ast.RegionVerse: sz.SymRegionVerse,
@@ -171,7 +171,7 @@ func (t *Transformer) getRegion(rn *ast.RegionNode) *sx.Pair {
 		Cons(mapGetS(mapRegionKindS, rn.Kind))
 }
 
-var mapNestedListKindS = map[ast.NestedListKind]sx.Symbol{
+var mapNestedListKindS = map[ast.NestedListKind]*sx.Symbol{
 	ast.NestedListOrdered:   sz.SymListOrdered,
 	ast.NestedListUnordered: sz.SymListUnordered,
 	ast.NestedListQuote:     sz.SymListQuote,
@@ -254,7 +254,7 @@ func (t *Transformer) getRow(row ast.TableRow) *sx.Pair {
 	return sx.MakeList(rObjs...)
 }
 
-var alignmentSymbolS = map[ast.Alignment]sx.Symbol{
+var alignmentSymbolS = map[ast.Alignment]*sx.Symbol{
 	ast.AlignDefault: sz.SymCell,
 	ast.AlignLeft:    sz.SymCellLeft,
 	ast.AlignCenter:  sz.SymCellCenter,
@@ -280,7 +280,7 @@ func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
 	)
 }
 
-var mapRefStateLink = map[ast.RefState]sx.Symbol{
+var mapRefStateLink = map[ast.RefState]*sx.Symbol{
 	ast.RefStateInvalid:  sz.SymLinkInvalid,
 	ast.RefStateZettel:   sz.SymLinkZettel,
 	ast.RefStateSelf:     sz.SymLinkSelf,
@@ -336,7 +336,7 @@ func getAttributes(a attrs.Attributes) sx.Object {
 	return sx.MakeList(objs...)
 }
 
-var mapRefStateS = map[ast.RefState]sx.Symbol{
+var mapRefStateS = map[ast.RefState]*sx.Symbol{
 	ast.RefStateInvalid:  sz.SymRefStateInvalid,
 	ast.RefStateZettel:   sz.SymRefStateZettel,
 	ast.RefStateSelf:     sz.SymRefStateSelf,
@@ -352,7 +352,7 @@ func getReference(ref *ast.Reference) *sx.Pair {
 	return sx.MakeList(mapGetS(mapRefStateS, ref.State), sx.String(ref.Value))
 }
 
-var mapMetaTypeS = map[*meta.DescriptionType]sx.Symbol{
+var mapMetaTypeS = map[*meta.DescriptionType]*sx.Symbol{
 	meta.TypeCredential:   sz.SymTypeCredential,
 	meta.TypeEmpty:        sz.SymTypeEmpty,
 	meta.TypeID:           sz.SymTypeID,
@@ -388,16 +388,16 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 		} else {
 			obj = sx.String(p.Value)
 		}
-		objs = append(objs, sx.Nil().Cons(obj).Cons(sx.Symbol(key)).Cons(symType))
+		objs = append(objs, sx.Nil().Cons(obj).Cons(sx.MakeSymbol(key)).Cons(symType))
 	}
 	return sx.MakeList(objs...).Cons(sz.SymMeta)
 }
 
-func mapGetS[T comparable](m map[T]sx.Symbol, k T) sx.Symbol {
+func mapGetS[T comparable](m map[T]*sx.Symbol, k T) *sx.Symbol {
 	if result, found := m[k]; found {
 		return result
 	}
-	return sx.Symbol(fmt.Sprintf("**%v:NOT-FOUND**", k))
+	return sx.MakeSymbol(fmt.Sprintf("**%v:NOT-FOUND**", k))
 }
 
 func getBase64String(data []byte) sx.String {

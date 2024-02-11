@@ -128,9 +128,9 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 	return wui
 }
 
-const (
-	symDetail     = sx.Symbol("DETAIL")
-	symMetaHeader = sx.Symbol("META-HEADER")
+var (
+	symDetail     = sx.MakeSymbol("DETAIL")
+	symMetaHeader = sx.MakeSymbol("META-HEADER")
 )
 
 func (wui *WebUI) observe(ci box.UpdateInfo) {

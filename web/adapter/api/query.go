@@ -197,7 +197,7 @@ type dataZettelEncoder struct {
 func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
 	result := make(sx.Vector, len(ml)+1)
 	result[0] = sx.SymbolList
-	symID, symZettel := sx.Symbol("id"), sx.Symbol("zettel")
+	symID, symZettel := sx.MakeSymbol("id"), sx.MakeSymbol("zettel")
 	for i, m := range ml {
 		msz := sexp.EncodeMetaRights(api.MetaRights{
 			Meta:   m.Map(),
@@ -208,9 +208,9 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 	}
 
 	_, err := sx.Print(w, sx.MakeList(
-		sx.Symbol("meta-list"),
-		sx.MakeList(sx.Symbol("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sx.Symbol("human"), sx.String(dze.sq.Human())),
+		sx.MakeSymbol("meta-list"),
+		sx.MakeList(sx.MakeSymbol("query"), sx.String(dze.sq.String())),
+		sx.MakeList(sx.MakeSymbol("human"), sx.String(dze.sq.Human())),
 		sx.MakeList(result...),
 	))
 	return err
@@ -226,10 +226,10 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 		result = result.Cons(sxMeta)
 	}
 	_, err := sx.Print(w, sx.MakeList(
-		sx.Symbol("aggregate"),
+		sx.MakeSymbol("aggregate"),
 		sx.String(act),
-		sx.MakeList(sx.Symbol("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sx.Symbol("human"), sx.String(dze.sq.Human())),
+		sx.MakeList(sx.MakeSymbol("query"), sx.String(dze.sq.String())),
+		sx.MakeList(sx.MakeSymbol("human"), sx.String(dze.sq.Human())),
 		result.Cons(sx.SymbolList),
 	))
 	return err
