@@ -387,7 +387,10 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 	if err != nil {
 		return err
 	}
-	wui.log.Debug().Str("page", pageObj.String()).Msg("render")
+	if msg := wui.log.Debug(); msg != nil {
+		// pageObj.String() can be expensive to calculate.
+		msg.Str("page", pageObj.String()).Msg("render")
+	}
 
 	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
 	var sb bytes.Buffer
