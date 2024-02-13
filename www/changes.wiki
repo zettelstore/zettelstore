@@ -8,6 +8,9 @@
   *  Context cost calculation has been changed. Prepare to retrieve different
      result.
      (breaking)
+  *  Add query action <code>REDIRECT</code> which redirects WebUI to zettel
+     that is the first in the query result list.
+     (minor: webui)
   *  Make WebUI form elements a little bit more accessible by using search tag
      and inputmode attribute.
      (minor: webui)

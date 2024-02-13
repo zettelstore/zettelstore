@@ -100,6 +100,9 @@ func (zid Zid) String() string {
 	return string(result[:])
 }
 
+// ZettelID return the zettel identification as a api.ZettelID.
+func (zid Zid) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
+
 // Bytes converts the zettel identification to a byte slice of 14 digits.
 // Only defined for valid ids.
 func (zid Zid) Bytes() []byte {

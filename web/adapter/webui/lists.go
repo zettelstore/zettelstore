@@ -43,10 +43,8 @@ import (
 func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, roleZettel *usecase.RoleZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
-		if wui.handleTagZettel(w, r, tagZettel, urlQuery) {
-			return
-		}
-		if wui.handleRoleZettel(w, r, roleZettel, urlQuery) {
+		if wui.handleTagZettel(w, r, tagZettel, urlQuery) ||
+			wui.handleRoleZettel(w, r, roleZettel, urlQuery) {
 			return
 		}
 		q := adapter.GetQuery(urlQuery)
@@ -57,32 +55,31 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			wui.reportError(ctx, w, err)
 			return
 		}
-		if actions := q.Actions(); len(actions) > 0 {
-			var tempActions []string
-			for _, act := range actions {
-				if act == "REINDEX" {
-					for _, m := range metaSeq {
-						if err = reIndex.Run(ctx, m.Zid); err != nil {
-							wui.reportError(ctx, w, err)
-							return
-						}
+		actions, err := tryReIndex(ctx, q.Actions(), metaSeq, reIndex)
+		if err != nil {
+			wui.reportError(ctx, w, err)
+			return
+		}
+		if len(actions) > 0 {
+			if len(metaSeq) > 0 {
+				for _, act := range actions {
+					if act == "REDIRECT" {
+						ub := wui.NewURLBuilder('h').SetZid(metaSeq[0].Zid.ZettelID())
+						wui.redirectFound(w, r, ub)
+						return
 					}
-					continue
 				}
-				tempActions = append(tempActions, act)
 			}
-			actions = tempActions
-			if len(actions) > 0 {
-				switch actions[0] {
-				case "ATOM":
-					wui.renderAtom(w, q, metaSeq)
-					return
-				case "RSS":
-					wui.renderRSS(ctx, w, q, metaSeq)
-					return
-				}
+			switch actions[0] {
+			case "ATOM":
+				wui.renderAtom(w, q, metaSeq)
+				return
+			case "RSS":
+				wui.renderRSS(ctx, w, q, metaSeq)
+				return
 			}
 		}
+
 		var content, endnotes *sx.Pair
 		numEntries := 0
 		if bn, cnt := evaluator.QueryAction(ctx, q, metaSeq, wui.rtConfig); bn != nil {
@@ -154,6 +151,31 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			wui.reportError(ctx, w, err)
 		}
 	}
+}
+
+func tryReIndex(ctx context.Context, actions []string, metaSeq []*meta.Meta, reIndex *usecase.ReIndex) ([]string, error) {
+	if lenActions := len(actions); lenActions > 0 {
+		tempActions := make([]string, 0, lenActions)
+		hasReIndex := false
+		for _, act := range actions {
+			if !hasReIndex && act == "REINDEX" {
+				hasReIndex = true
+				var errAction error
+				for _, m := range metaSeq {
+					if err := reIndex.Run(ctx, m.Zid); err != nil {
+						errAction = err
+					}
+				}
+				if errAction != nil {
+					return nil, errAction
+				}
+				continue
+			}
+			tempActions = append(tempActions, act)
+		}
+		return tempActions, nil
+	}
+	return nil, nil
 }
 
 func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) (withZettel, withoutZettel *sx.Pair) {
