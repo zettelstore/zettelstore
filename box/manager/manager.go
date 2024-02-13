@@ -372,7 +372,7 @@ func (mgr *Manager) ReIndex(_ context.Context, zid id.Zid) error {
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
-	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: zid}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
 	return nil
 }
 
