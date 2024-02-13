@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -15,7 +18,6 @@ import (
 	"errors"
 	"net/http"
 
-	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/web/adapter"
@@ -37,7 +39,7 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			return
 		}
 		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
-		apiHomeZid := api.ZettelID(homeZid.String())
+		apiHomeZid := homeZid.ZettelID()
 		if homeZid != id.DefaultHomeZid {
 			if _, err := s.GetZettel(ctx, homeZid); err == nil {
 				wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(apiHomeZid))

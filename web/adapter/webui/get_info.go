@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -171,7 +174,7 @@ var apiParts = []string{api.PartZettel, api.PartMeta, api.PartContent}
 
 func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *sx.Pair {
 	matrix := sx.Nil()
-	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+	u := wui.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for ip := len(apiParts) - 1; ip >= 0; ip-- {
 		part := apiParts[ip]
 		row := sx.Nil()
@@ -192,7 +195,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *
 
 func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sx.Pair {
 	matrix := wui.infoAPIMatrix(zid, true, encTexts)
-	u := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+	u := wui.NewURLBuilder('z').SetZid(zid.ZettelID())
 
 	for i, row := 0, matrix; i < len(apiParts) && row != nil; row = row.Tail() {
 		line, isLine := sx.GetPair(row.Car())

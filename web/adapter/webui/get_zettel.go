@@ -137,7 +137,7 @@ func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (l
 			continue
 		}
 		if title, found := getTextTitle(zid); found > 0 {
-			url := sx.String(wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())).String())
+			url := sx.String(wui.NewURLBuilder('h').SetZid(zid.ZettelID()).String())
 			if title == "" {
 				lst = lst.Cons(sx.Cons(sx.String(val), url))
 			} else {

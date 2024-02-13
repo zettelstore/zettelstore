@@ -73,7 +73,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 			if err != nil {
 				return nil, fmt.Errorf("parsing zettel identifier %q: %w", s, err)
 			}
-			ub := wui.NewURLBuilder('z').SetZid(api.ZettelID(zid.String()))
+			ub := wui.NewURLBuilder('z').SetZid(zid.ZettelID())
 			return sx.String(ub.String()), nil
 		},
 	})
@@ -200,7 +200,7 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 	if user == nil {
 		return false, "", ""
 	}
-	return true, wui.NewURLBuilder('h').SetZid(api.ZettelID(user.Zid.String())).String(), user.GetDefault(api.KeyUserID, "")
+	return true, wui.NewURLBuilder('h').SetZid(user.Zid.ZettelID()).String(), user.GetDefault(api.KeyUserID, "")
 }
 
 type renderBinder struct {
@@ -305,7 +305,7 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 			continue
 		}
 		text := sx.String(parser.NormalizedSpacedText(z.Meta.GetTitle()))
-		link := sx.String(wui.NewURLBuilder('c').SetZid(api.ZettelID(zid.String())).
+		link := sx.String(wui.NewURLBuilder('c').SetZid(zid.ZettelID()).
 			AppendKVQuery(queryKeyAction, valueActionNew).String())
 
 		lst = lst.Cons(sx.Cons(text, link))

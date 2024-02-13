@@ -271,7 +271,7 @@ func (wui *WebUI) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZet
 		wui.reportError(ctx, w, err)
 		return true
 	}
-	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(z.Meta.Zid.String())))
+	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(z.Meta.Zid.ZettelID()))
 	return true
 }
 
@@ -286,6 +286,6 @@ func (wui *WebUI) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZ
 		wui.reportError(ctx, w, err)
 		return true
 	}
-	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(z.Meta.Zid.String())))
+	wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(z.Meta.Zid.ZettelID()))
 	return true
 }

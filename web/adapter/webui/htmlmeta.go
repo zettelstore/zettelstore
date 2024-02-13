@@ -84,7 +84,7 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 	title, found := getTextTitle(zid)
 	switch {
 	case found > 0:
-		ub := wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String()))
+		ub := wui.NewURLBuilder('h').SetZid(zid.ZettelID())
 		attrs := sx.Nil()
 		if title != "" {
 			attrs = attrs.Cons(sx.Cons(shtml.SymAttrTitle, sx.String(title)))

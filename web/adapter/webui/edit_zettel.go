@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package webui
@@ -13,7 +16,6 @@ package webui
 import (
 	"net/http"
 
-	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
@@ -72,9 +74,9 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) h
 		}
 
 		if reEdit {
-			wui.redirectFound(w, r, wui.NewURLBuilder('e').SetZid(api.ZettelID(zid.String())))
+			wui.redirectFound(w, r, wui.NewURLBuilder('e').SetZid(zid.ZettelID()))
 		} else {
-			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(api.ZettelID(zid.String())))
+			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(zid.ZettelID()))
 		}
 	}
 }

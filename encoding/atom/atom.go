@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package atom provides an Atom encoding.
@@ -81,7 +84,7 @@ func (c *Configuration) marshalMeta(buf *bytes.Buffer, m *meta.Meta) {
 		}
 	}
 
-	link := c.NewURLBuilderAbs().SetZid(api.ZettelID(m.Zid.String())).String()
+	link := c.NewURLBuilderAbs().SetZid(m.Zid.ZettelID()).String()
 
 	buf.WriteString("  <entry>\n")
 	xml.WriteTag(buf, "    ", "title", encoding.TitleAsText(m))
