@@ -55,7 +55,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			wui.reportError(ctx, w, err)
 			return
 		}
-		actions, err := tryReIndex(ctx, q.Actions(), metaSeq, reIndex)
+		actions, err := adapter.TryReIndex(ctx, q.Actions(), metaSeq, reIndex)
 		if err != nil {
 			wui.reportError(ctx, w, err)
 			return
@@ -151,31 +151,6 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 			wui.reportError(ctx, w, err)
 		}
 	}
-}
-
-func tryReIndex(ctx context.Context, actions []string, metaSeq []*meta.Meta, reIndex *usecase.ReIndex) ([]string, error) {
-	if lenActions := len(actions); lenActions > 0 {
-		tempActions := make([]string, 0, lenActions)
-		hasReIndex := false
-		for _, act := range actions {
-			if !hasReIndex && act == "REINDEX" {
-				hasReIndex = true
-				var errAction error
-				for _, m := range metaSeq {
-					if err := reIndex.Run(ctx, m.Zid); err != nil {
-						errAction = err
-					}
-				}
-				if errAction != nil {
-					return nil, errAction
-				}
-				continue
-			}
-			tempActions = append(tempActions, act)
-		}
-		return tempActions, nil
-	}
-	return nil, nil
 }
 
 func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) (withZettel, withoutZettel *sx.Pair) {

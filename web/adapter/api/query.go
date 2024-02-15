@@ -38,19 +38,33 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		urlQuery := r.URL.Query()
-		if a.handleTagZettel(w, r, tagZettel, urlQuery) {
-			return
-		}
-		if a.handleRoleZettel(w, r, roleZettel, urlQuery) {
+		if a.handleTagZettel(w, r, tagZettel, urlQuery) || a.handleRoleZettel(w, r, roleZettel, urlQuery) {
 			return
 		}
 
 		sq := adapter.GetQuery(urlQuery)
-
 		metaSeq, err := queryMeta.Run(ctx, sq)
 		if err != nil {
 			a.reportUsecaseError(w, err)
 			return
+		}
+
+		actions, err := adapter.TryReIndex(ctx, sq.Actions(), metaSeq, reIndex)
+		if err != nil {
+			a.reportUsecaseError(w, err)
+			return
+		}
+		if len(actions) > 0 {
+			if len(metaSeq) > 0 {
+				for _, act := range actions {
+					if act == "REDIRECT" {
+						zid := metaSeq[0].Zid
+						ub := a.NewURLBuilder('z').SetZid(zid.ZettelID())
+						a.redirectFound(w, r, ub, zid)
+						return
+					}
+				}
+			}
 		}
 
 		var encoder zettelEncoder
@@ -73,7 +87,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 		}
 
 		var buf bytes.Buffer
-		err = queryAction(&buf, encoder, metaSeq, sq, func(zid id.Zid) error { return reIndex.Run(ctx, zid) })
+		err = queryAction(&buf, encoder, metaSeq, actions)
 		if err != nil {
 			a.log.Error().Err(err).Str("query", sq.String()).Msg("execute query action")
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -84,9 +98,9 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 		}
 	}
 }
-func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Query, reindex func(id.Zid) error) error {
+func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, actions []string) error {
 	min, max := -1, -1
-	if actions := sq.Actions(); len(actions) > 0 {
+	if len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
 		for _, act := range actions {
 			if strings.HasPrefix(act, "MIN") {
@@ -104,15 +118,8 @@ func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, sq *query.Quer
 			acts = append(acts, act)
 		}
 		for _, act := range acts {
-			switch act {
-			case "KEYS":
+			if act == "KEYS" {
 				return encodeKeysArrangement(w, enc, ml, act)
-			case "REINDEX":
-				for _, m := range ml {
-					if err := reindex(m.Zid); err != nil {
-						return err
-					}
-				}
 			}
 			switch key := strings.ToLower(act); meta.Type(key) {
 			case meta.TypeWord, meta.TypeTagSet:
@@ -246,9 +253,8 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 		a.reportUsecaseError(w, err)
 		return true
 	}
-	zid := z.Meta.Zid.String()
-	w.Header().Set(api.HeaderContentType, content.PlainText)
-	newURL := a.NewURLBuilder('z').SetZid(api.ZettelID(zid))
+	zid := z.Meta.Zid
+	newURL := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for key, slVals := range vals {
 		if key == api.QueryKeyTag {
 			continue
@@ -257,10 +263,7 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 			newURL.AppendKVQuery(key, val)
 		}
 	}
-	http.Redirect(w, r, newURL.String(), http.StatusFound)
-	if _, err = io.WriteString(w, zid); err != nil {
-		a.log.Error().Err(err).Msg("redirect body")
-	}
+	a.redirectFound(w, r, newURL, zid)
 	return true
 }
 
@@ -275,9 +278,8 @@ func (a *API) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZette
 		a.reportUsecaseError(w, err)
 		return true
 	}
-	zid := z.Meta.Zid.String()
-	w.Header().Set(api.HeaderContentType, content.PlainText)
-	newURL := a.NewURLBuilder('z').SetZid(api.ZettelID(zid))
+	zid := z.Meta.Zid
+	newURL := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for key, slVals := range vals {
 		if key == api.QueryKeyRole {
 			continue
@@ -286,9 +288,14 @@ func (a *API) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZette
 			newURL.AppendKVQuery(key, val)
 		}
 	}
-	http.Redirect(w, r, newURL.String(), http.StatusFound)
-	if _, err = io.WriteString(w, zid); err != nil {
+	a.redirectFound(w, r, newURL, zid)
+	return true
+}
+
+func (a *API) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder, zid id.Zid) {
+	w.Header().Set(api.HeaderContentType, content.PlainText)
+	http.Redirect(w, r, ub.String(), http.StatusFound)
+	if _, err := io.WriteString(w, zid.String()); err != nil {
 		a.log.Error().Err(err).Msg("redirect body")
 	}
-	return true
 }

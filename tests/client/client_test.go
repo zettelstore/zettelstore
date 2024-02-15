@@ -6,6 +6,9 @@
 // Zettelstore client is licensed under the latest version of the EUPL
 // (European Union Public License). Please see file LICENSE.txt for your rights
 // and obligations under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package client provides a client for accessing the Zettelstore via its API.
@@ -15,8 +18,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -398,6 +403,40 @@ func TestListRoles(t *testing.T) {
 	}
 }
 
+func TestRedirect(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	search := api.OrderDirective + " " + api.ReverseDirective + " id" + api.ActionSeparator + "REDIRECT"
+	ub := c.NewURLBuilder('z').AppendQuery(search)
+	respRedirect, err := http.Get(ub.String())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer respRedirect.Body.Close()
+	bodyRedirect, err := io.ReadAll(respRedirect.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	ub.ClearQuery().SetZid(api.ZidEmoji)
+	respEmoji, err := http.Get(ub.String())
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	defer respEmoji.Body.Close()
+	bodyEmoji, err := io.ReadAll(respEmoji.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if !slices.Equal(bodyRedirect, bodyEmoji) {
+		t.Error("Wrong redirect")
+		t.Error("REDIRECT", respRedirect)
+		t.Error("EXPECTED", respEmoji)
+	}
+}
 func TestRoleZettel(t *testing.T) {
 	t.Parallel()
 	c := getClient()

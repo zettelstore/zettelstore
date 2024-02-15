@@ -11,7 +11,6 @@
 // SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
-// Package adapter provides handlers for web requests.
 package adapter
 
 import "net/http"
