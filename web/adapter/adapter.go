@@ -17,6 +17,7 @@ package adapter
 import (
 	"context"
 
+	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -27,7 +28,7 @@ func TryReIndex(ctx context.Context, actions []string, metaSeq []*meta.Meta, reI
 		tempActions := make([]string, 0, lenActions)
 		hasReIndex := false
 		for _, act := range actions {
-			if !hasReIndex && act == "REINDEX" {
+			if !hasReIndex && act == api.ReIndexAction {
 				hasReIndex = true
 				var errAction error
 				for _, m := range metaSeq {

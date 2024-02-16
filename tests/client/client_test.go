@@ -403,10 +403,31 @@ func TestListRoles(t *testing.T) {
 	}
 }
 
+func TestRoleZettel(t *testing.T) {
+	t.Parallel()
+	c := getClient()
+	c.AllowRedirect(true)
+	c.SetAuth("owner", "owner")
+	ctx := context.Background()
+	zid, err := c.RoleZettel(ctx, "nosuchrole")
+	if err != nil {
+		t.Error("AAA", err)
+	} else if zid != "" {
+		t.Errorf("no zid expected, but got %q", zid)
+	}
+	zid, err = c.RoleZettel(ctx, "zettel")
+	exp := api.ZettelID("00000000060010")
+	if err != nil {
+		t.Error(err)
+	} else if zid != exp {
+		t.Errorf("role zettel for zettel should be %q, but got %q", exp, zid)
+	}
+}
+
 func TestRedirect(t *testing.T) {
 	t.Parallel()
 	c := getClient()
-	search := api.OrderDirective + " " + api.ReverseDirective + " id" + api.ActionSeparator + "REDIRECT"
+	search := api.OrderDirective + " " + api.ReverseDirective + " " + api.KeyID + api.ActionSeparator + api.RedirectAction
 	ub := c.NewURLBuilder('z').AppendQuery(search)
 	respRedirect, err := http.Get(ub.String())
 	if err != nil {
@@ -435,26 +456,6 @@ func TestRedirect(t *testing.T) {
 		t.Error("Wrong redirect")
 		t.Error("REDIRECT", respRedirect)
 		t.Error("EXPECTED", respEmoji)
-	}
-}
-func TestRoleZettel(t *testing.T) {
-	t.Parallel()
-	c := getClient()
-	c.AllowRedirect(true)
-	c.SetAuth("owner", "owner")
-	ctx := context.Background()
-	zid, err := c.RoleZettel(ctx, "nosuchrole")
-	if err != nil {
-		t.Error("AAA", err)
-	} else if zid != "" {
-		t.Errorf("no zid expected, but got %q", zid)
-	}
-	zid, err = c.RoleZettel(ctx, "zettel")
-	exp := api.ZettelID("00000000060010")
-	if err != nil {
-		t.Error(err)
-	} else if zid != exp {
-		t.Errorf("role zettel for zettel should be %q, but got %q", exp, zid)
 	}
 }
 

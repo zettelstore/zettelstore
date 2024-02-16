@@ -57,7 +57,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 		if len(actions) > 0 {
 			if len(metaSeq) > 0 {
 				for _, act := range actions {
-					if act == "REDIRECT" {
+					if act == api.RedirectAction {
 						zid := metaSeq[0].Zid
 						ub := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 						a.redirectFound(w, r, ub, zid)
@@ -103,13 +103,13 @@ func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, actions []stri
 	if len(actions) > 0 {
 		acts := make([]string, 0, len(actions))
 		for _, act := range actions {
-			if strings.HasPrefix(act, "MIN") {
+			if strings.HasPrefix(act, api.MinAction) {
 				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
 					min = num
 					continue
 				}
 			}
-			if strings.HasPrefix(act, "MAX") {
+			if strings.HasPrefix(act, api.MaxAction) {
 				if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
 					max = num
 					continue
@@ -118,7 +118,7 @@ func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, actions []stri
 			acts = append(acts, act)
 		}
 		for _, act := range acts {
-			if act == "KEYS" {
+			if act == api.KeysAction {
 				return encodeKeysArrangement(w, enc, ml, act)
 			}
 			switch key := strings.ToLower(act); meta.Type(key) {

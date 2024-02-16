@@ -50,27 +50,27 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 
 	acts := make([]string, 0, len(actions))
 	for i, act := range actions {
-		if strings.HasPrefix(act, "N") {
+		if strings.HasPrefix(act, api.NumberedAction[0:1]) {
 			ap.kind = ast.NestedListOrdered
 			continue
 		}
-		if strings.HasPrefix(act, "MIN") {
+		if strings.HasPrefix(act, api.MinAction) {
 			if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
 				ap.min = num
 				continue
 			}
 		}
-		if strings.HasPrefix(act, "MAX") {
+		if strings.HasPrefix(act, api.MaxAction) {
 			if num, err := strconv.Atoi(act[3:]); err == nil && num > 0 {
 				ap.max = num
 				continue
 			}
 		}
-		if act == "TITLE" && i+1 < len(actions) {
+		if act == api.TitleAction && i+1 < len(actions) {
 			ap.title = strings.Join(actions[i+1:], " ")
 			break
 		}
-		if act == "REINDEX" {
+		if act == api.ReIndexAction {
 			continue
 		}
 		acts = append(acts, act)
@@ -78,11 +78,11 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 	var firstUnknownKey string
 	for _, act := range acts {
 		switch act {
-		case "ATOM":
+		case api.AtomAction:
 			return ap.createBlockNodeAtom(rtConfig)
-		case "RSS":
+		case api.RSSAction:
 			return ap.createBlockNodeRSS(rtConfig)
-		case "KEYS":
+		case api.KeysAction:
 			return ap.createBlockNodeMetaKeys()
 		}
 		key := strings.ToLower(act)

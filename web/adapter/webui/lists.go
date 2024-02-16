@@ -63,7 +63,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		if len(actions) > 0 {
 			if len(metaSeq) > 0 {
 				for _, act := range actions {
-					if act == "REDIRECT" {
+					if act == api.RedirectAction {
 						ub := wui.NewURLBuilder('h').SetZid(metaSeq[0].Zid.ZettelID())
 						wui.redirectFound(w, r, ub)
 						return
@@ -71,10 +71,10 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 				}
 			}
 			switch actions[0] {
-			case "ATOM":
+			case api.AtomAction:
 				wui.renderAtom(w, q, metaSeq)
 				return
-			case "RSS":
+			case api.RSSAction:
 				wui.renderRSS(ctx, w, q, metaSeq)
 				return
 			}
@@ -200,7 +200,7 @@ func (wui *WebUI) prependZettelLink(sxZtl *sx.Pair, name string, u *api.URLBuild
 func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
 	var rssConfig rss.Configuration
 	rssConfig.Setup(ctx, wui.rtConfig)
-	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
+	if actions := q.Actions(); len(actions) > 2 && actions[1] == api.TitleAction {
 		rssConfig.Title = strings.Join(actions[2:], " ")
 	}
 	data := rssConfig.Marshal(q, ml)
@@ -219,7 +219,7 @@ func (wui *WebUI) renderRSS(ctx context.Context, w http.ResponseWriter, q *query
 func (wui *WebUI) renderAtom(w http.ResponseWriter, q *query.Query, ml []*meta.Meta) {
 	var atomConfig atom.Configuration
 	atomConfig.Setup(wui.rtConfig)
-	if actions := q.Actions(); len(actions) > 2 && actions[1] == "TITLE" {
+	if actions := q.Actions(); len(actions) > 2 && actions[1] == api.TitleAction {
 		atomConfig.Title = strings.Join(actions[2:], " ")
 	}
 	data := atomConfig.Marshal(q, ml)

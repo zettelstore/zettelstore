@@ -265,7 +265,8 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	}
 	rb.bindString("context-url", sx.String(newURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
 	if wui.canRefresh(user) {
-		rb.bindString("reindex-url", sx.String(newURLBuilder('h').AppendQuery(strZid+" "+api.IdentDirective+api.ActionSeparator+"REINDEX").String()))
+		rb.bindString("reindex-url", sx.String(newURLBuilder('h').AppendQuery(
+			strZid+" "+api.IdentDirective+api.ActionSeparator+api.ReIndexAction).String()))
 	}
 
 	// Ensure to have title, role, tags, and syntax included as "meta-*"
