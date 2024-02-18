@@ -263,7 +263,10 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	if val, found := m.Get(api.KeyUselessFiles); found {
 		rb.bindString("useless", sx.Cons(sx.String(val), nil))
 	}
-	rb.bindString("context-url", sx.String(newURLBuilder('h').AppendQuery(strZid+" "+api.ContextDirective).String()))
+	queryContext := strZid + " " + api.ContextDirective
+	rb.bindString("context-url", sx.String(newURLBuilder('h').AppendQuery(queryContext).String()))
+	queryContext += " " + api.FullDirective
+	rb.bindString("context-full-url", sx.String(newURLBuilder('h').AppendQuery(queryContext).String()))
 	if wui.canRefresh(user) {
 		rb.bindString("reindex-url", sx.String(newURLBuilder('h').AppendQuery(
 			strZid+" "+api.IdentDirective+api.ActionSeparator+api.ReIndexAction).String()))
