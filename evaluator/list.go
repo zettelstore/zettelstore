@@ -75,7 +75,7 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 		}
 		acts = append(acts, act)
 	}
-	var firstUnknownKey string
+	var firstUnknowAct string
 	for _, act := range acts {
 		switch act {
 		case api.AtomAction:
@@ -92,11 +92,15 @@ func QueryAction(ctx context.Context, q *query.Query, ml []*meta.Meta, rtConfig 
 		case meta.TypeTagSet:
 			return ap.createBlockNodeTagSet(key)
 		}
-		if firstUnknownKey == "" {
-			firstUnknownKey = key
+		if firstUnknowAct == "" {
+			firstUnknowAct = act
 		}
 	}
-	return ap.createBlockNodeMeta(firstUnknownKey)
+	bn, numItems := ap.createBlockNodeMeta(strings.ToLower(firstUnknowAct))
+	if bn != nil && numItems == 0 && firstUnknowAct == strings.ToUpper(firstUnknowAct) {
+		bn, numItems = ap.createBlockNodeMeta("")
+	}
+	return bn, numItems
 }
 
 type actionPara struct {

@@ -4,7 +4,7 @@ role: manual
 tags: #manual #search #zettelmarkup #zettelstore
 syntax: zmk
 created: 20220809132350
-modified: 20240216003925
+modified: 20240219160150
 
 A query transclusion is specified by the following sequence, starting at the first position in a line: ''{{{query:query-expression}}}''.
 The line must literally start with the sequence ''{{{query:''.
@@ -55,6 +55,9 @@ The following actions are supported, parameter and aggregate actions:
 ; Any [[metadata key|00001006020000]] of type [[Word|00001006035500]], [[WordSet|00001006036000]], or [[TagSet|00001006034000]] (aggregates)
 : Emit an aggregate of the given metadata key.
   The key can be given in any letter case[^Except if the key name collides with one of the above names. In this case use at least one lower case letter.].
+
+To allow some kind of backward compatibility, an action written in uppercase letters that leads to an empty result list, will be ignored.
+In this case the list of selected zettel is returned.
 
 Example:
 ```zmk

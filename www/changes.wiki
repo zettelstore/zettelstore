@@ -22,6 +22,10 @@
   *  Add UI action for role zettel, similar to tag zettel. Obviously forgotten
      in release 0.16.0, but thanks to the bug fix v0.16.1 detected.
      (minor: webui)
+  *  If an action, which is written in uppercase letters, results in an empty
+     list, the list of selected zettel is returned instead. This allows some
+     backward compatibility if a new action is introduced.
+     (minor)
   *  Only when query list is not empty, allow to show data and plain encoding,
      an optionally show the &ldquo;Save As Zettel&rdquo; button.
      (minor: webui)

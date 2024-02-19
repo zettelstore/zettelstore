@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #search #zettelstore
 syntax: zmk
 created: 20220810144539
-modified: 20240209190917
+modified: 20240219155949
 
 ```
 QueryExpression   := ZettelList? QueryDirective* SearchExpression ActionExpression?
@@ -43,5 +43,15 @@ ExistOperator     := '?'
 PosInt            := '0'
                    | ('1' .. '9') DIGIT*.
 ActionExpression  := '|' (Word (SPACE+ Word)*)?
+Action            := Word
+                   | 'ATOM'
+                   | 'KEYS'
+                   | 'N' NO-SPACE*
+                   | 'MAX' PosInt
+                   | 'MIN' PosInt
+                   | 'REDIRECT'
+                   | 'REINDEX'
+                   | 'RSS'
+                   | 'TITLE' (SPACE Word)* .
 Word              := NO-SPACE NO-SPACE*
 ```
