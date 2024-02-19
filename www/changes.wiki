@@ -13,6 +13,9 @@
      (minor: api, webui)
   *  Add link to <code>CONTEXT FULL</code> in the zettel info page.
      (minor: webui)
+  *  When generating HTML code to query set based meta data (esp. tags), also
+     generate a query that matches all values.
+     (minor: webui)
   *  Make WebUI form elements a little bit more accessible by using search tag
      and inputmode attribute.
      (minor: webui)

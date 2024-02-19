@@ -45,7 +45,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeIDSet:
 		return wui.transformIdentifierSet(meta.ListFromValue(value), getTextTitle)
 	case meta.TypeNumber:
-		return wui.transformLink(key, value, value)
+		return wui.transformKeyValueText(key, value, value)
 	case meta.TypeString:
 		return sx.String(value)
 	case meta.TypeTagSet:
@@ -65,7 +65,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeURL:
 		return wui.url2html(sx.String(value))
 	case meta.TypeWord:
-		return wui.transformLink(key, value, value)
+		return wui.transformKeyValueText(key, value, value)
 	case meta.TypeWordSet:
 		return wui.transformWordSet(key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
@@ -102,7 +102,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	if len(vals) == 0 {
 		return nil
 	}
-	space := sx.String(" ")
+	const space = sx.String(" ")
 	text := make(sx.Vector, 0, 2*len(vals))
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
@@ -114,10 +114,13 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 	if len(tags) == 0 {
 		return nil
 	}
-	space := sx.String(" ")
-	text := make(sx.Vector, 0, 2*len(tags))
+	const space = sx.String(" ")
+	text := make(sx.Vector, 0, 2*len(tags)+2)
 	for _, tag := range tags {
-		text = append(text, space, wui.transformLink(key, tag, tag))
+		text = append(text, space, wui.transformKeyValueText(key, tag, tag))
+	}
+	if len(tags) > 1 {
+		text = append(text, space, wui.transformKeyValuesText(key, tags, "(all)"))
 	}
 	return sx.MakeList(text[1:]...).Cons(shtml.SymSPAN)
 }
@@ -126,20 +129,36 @@ func (wui *WebUI) transformWordSet(key string, words []string) sx.Object {
 	if len(words) == 0 {
 		return sx.Nil()
 	}
-	space := sx.String(" ")
-	text := make(sx.Vector, 0, 2*len(words))
+	const space = sx.String(" ")
+	text := make(sx.Vector, 0, 2*len(words)+2)
 	for _, word := range words {
-		text = append(text, space, wui.transformLink(key, word, word))
+		text = append(text, space, wui.transformKeyValueText(key, word, word))
+	}
+	if len(words) > 1 {
+		text = append(text, space, wui.transformKeyValuesText(key, words, "(all)"))
 	}
 	return sx.MakeList(text[1:]...).Cons(shtml.SymSPAN)
 }
 
-func (wui *WebUI) transformLink(key, value, text string) *sx.Pair {
+func (wui *WebUI) transformKeyValueText(key, value, text string) *sx.Pair {
+	ub := wui.NewURLBuilder('h').AppendQuery(key + api.SearchOperatorHas + value)
+	return buildHref(ub, text)
+}
+
+func (wui *WebUI) transformKeyValuesText(key string, values []string, text string) *sx.Pair {
+	ub := wui.NewURLBuilder('h')
+	for _, val := range values {
+		ub = ub.AppendQuery(key + api.SearchOperatorHas + val)
+	}
+	return buildHref(ub, text)
+}
+
+func buildHref(ub *api.URLBuilder, text string) *sx.Pair {
 	return sx.MakeList(
 		shtml.SymA,
 		sx.MakeList(
 			sxhtml.SymAttr,
-			sx.Cons(shtml.SymAttrHref, sx.String(wui.NewURLBuilder('h').AppendQuery(key+api.SearchOperatorHas+value).String())),
+			sx.Cons(shtml.SymAttrHref, sx.String(ub.String())),
 		),
 		sx.String(text),
 	)
