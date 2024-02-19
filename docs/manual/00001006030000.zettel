@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230612183742
+modified: 20240219161909
 
 All [[supported metadata keys|00001006020000]] conform to a type.
 
@@ -14,7 +14,6 @@ User-defined metadata keys conform also to a type, based on the suffix of the ke
 | ''-date'' | [[Timestamp|00001006034500]]
 | ''-number'' | [[Number|00001006033000]]
 | ''-role'' | [[Word|00001006035500]]
-| ''-set'' | [[WordSet|00001006036000]]
 | ''-time'' | [[Timestamp|00001006034500]]
 | ''-title'' | [[Zettelmarkup|00001006036500]]
 | ''-url'' | [[URL|00001006035000]]
@@ -39,5 +38,4 @@ And there is a rule how values compare for sorting.
 * [[Timestamp|00001006034500]]
 * [[URL|00001006035000]]
 * [[Word|00001006035500]]
-* [[WordSet|00001006036000]]
 * [[Zettelmarkup|00001006036500]]

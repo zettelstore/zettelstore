@@ -66,8 +66,6 @@ func (wui *WebUI) writeHTMLMetaValue(
 		return wui.url2html(sx.String(value))
 	case meta.TypeWord:
 		return wui.transformKeyValueText(key, value, value)
-	case meta.TypeWordSet:
-		return wui.transformWordSet(key, meta.ListFromValue(value))
 	case meta.TypeZettelmarkup:
 		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
@@ -121,21 +119,6 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 	}
 	if len(tags) > 1 {
 		text = append(text, space, wui.transformKeyValuesText(key, tags, "(all)"))
-	}
-	return sx.MakeList(text[1:]...).Cons(shtml.SymSPAN)
-}
-
-func (wui *WebUI) transformWordSet(key string, words []string) sx.Object {
-	if len(words) == 0 {
-		return sx.Nil()
-	}
-	const space = sx.String(" ")
-	text := make(sx.Vector, 0, 2*len(words)+2)
-	for _, word := range words {
-		text = append(text, space, wui.transformKeyValueText(key, word, word))
-	}
-	if len(words) > 1 {
-		text = append(text, space, wui.transformKeyValuesText(key, words, "(all)"))
 	}
 	return sx.MakeList(text[1:]...).Cons(shtml.SymSPAN)
 }

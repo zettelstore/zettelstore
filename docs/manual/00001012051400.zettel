@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20220912111111
-modified: 20240219155529
+modified: 20240219161831
 precursor: 00001012051200
 
 The [[endpoint|00001012920000]] ''/z'' also allows you to filter the list of all zettel[^If [[authentication is enabled|00001010040100]], you must include the a valid [[access token|00001012050200]] in the ''Authorization'' header] and optionally to provide some actions.
@@ -116,7 +116,7 @@ The following actions are supported:
 : Updates the internal search index for the selected zettel, roughly similar to the [[refresh|00001012080500]] API call.
   It is not really an aggregate, since it is used only for its side effect.
   It is allowed to specify another aggregate.
-; Any [[metadata key|00001006020000]] of type [[Word|00001006035500]], [[WordSet|00001006036000]], or [[TagSet|00001006034000]] (aggregates)
+; Any [[metadata key|00001006020000]] of type [[Word|00001006035500]] or [[TagSet|00001006034000]] (aggregates)
 : Emit an aggregate of the given metadata key.
   The key can be given in any letter case.
 

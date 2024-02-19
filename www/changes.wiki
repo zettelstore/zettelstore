@@ -8,6 +8,9 @@
   *  Context cost calculation has been changed. Prepare to retrieve different
      result.
      (breaking)
+  *  Remove metadata type WordSet. It was never implemented completely, and
+     nobody complained about this.
+     (breaking)
   *  Add query action <code>REDIRECT</code> which redirects to zettel that is
      the first in the query result list.
      (minor: api, webui)

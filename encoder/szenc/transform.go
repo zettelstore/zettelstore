@@ -363,7 +363,6 @@ var mapMetaTypeS = map[*meta.DescriptionType]*sx.Symbol{
 	meta.TypeTimestamp:    sz.SymTypeTimestamp,
 	meta.TypeURL:          sz.SymTypeURL,
 	meta.TypeWord:         sz.SymTypeWord,
-	meta.TypeWordSet:      sz.SymTypeWordSet,
 	meta.TypeZettelmarkup: sz.SymTypeZettelmarkup,
 }
 

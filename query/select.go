@@ -124,8 +124,6 @@ func createMatchFunc(key string, values []expValue, addSearch addSearchFunc) mat
 		return createMatchTagSetFunc(values, addSearch)
 	case meta.TypeWord:
 		return createMatchWordFunc(values, addSearch)
-	case meta.TypeWordSet:
-		return createMatchWordSetFunc(values, addSearch)
 	case meta.TypeZettelmarkup:
 		return createMatchZmkFunc(values, addSearch)
 	}
@@ -145,7 +143,7 @@ func createMatchIDFunc(values []expValue, addSearch addSearchFunc) matchValueFun
 }
 
 func createMatchIDSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToWordSetPredicates(preprocessSet(values), addSearch)
+	predList := valuesToSetPredicates(preprocessSet(values), addSearch)
 	return func(value string) bool {
 		ids := meta.ListFromValue(value)
 		for _, preds := range predList {
@@ -184,7 +182,7 @@ func createMatchNumberFunc(values []expValue, addSearch addSearchFunc) matchValu
 }
 
 func createMatchTagSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predList := valuesToWordSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
+	predList := valuesToSetPredicates(processTagSet(preprocessSet(sliceToLower(values))), addSearch)
 	return func(value string) bool {
 		tags := meta.TagsFromValue(value)
 		for _, preds := range predList {
@@ -235,21 +233,6 @@ func createMatchStringFunc(values []expValue, addSearch addSearchFunc) matchValu
 		for _, pred := range preds {
 			if !pred(value) {
 				return false
-			}
-		}
-		return true
-	}
-}
-
-func createMatchWordSetFunc(values []expValue, addSearch addSearchFunc) matchValueFunc {
-	predsList := valuesToWordSetPredicates(preprocessSet(sliceToLower(values)), addSearch)
-	return func(value string) bool {
-		words := meta.ListFromValue(value)
-		for _, preds := range predsList {
-			for _, pred := range preds {
-				if !pred(words) {
-					return false
-				}
 			}
 		}
 		return true
@@ -569,7 +552,7 @@ func createWordCompareFunc(cmpVal string, cmpOp compareOp) stringPredicate {
 
 type stringSetPredicate func(value []string) bool
 
-func valuesToWordSetPredicates(values [][]expValue, addSearch addSearchFunc) [][]stringSetPredicate {
+func valuesToSetPredicates(values [][]expValue, addSearch addSearchFunc) [][]stringSetPredicate {
 	result := make([][]stringSetPredicate, len(values))
 	for i, val := range values {
 		elemPreds := make([]stringSetPredicate, len(val))

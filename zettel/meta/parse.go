@@ -159,8 +159,6 @@ func addToMeta(m *Meta, key, val string) {
 		addSet(m, key, strings.ToLower(v), func(s string) bool { return s[0] == '#' && len(s) > 1 })
 	case TypeWord:
 		m.Set(key, strings.ToLower(v))
-	case TypeWordSet:
-		addSet(m, key, strings.ToLower(v), func(s string) bool { return true })
 	case TypeID:
 		if _, err := id.Parse(v); err == nil {
 			m.Set(key, v)

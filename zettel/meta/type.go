@@ -52,7 +52,6 @@ var (
 	TypeTimestamp    = registerType(api.MetaTimestamp, false)
 	TypeURL          = registerType(api.MetaURL, false)
 	TypeWord         = registerType(api.MetaWord, false)
-	TypeWordSet      = registerType(api.MetaWordSet, true)
 	TypeZettelmarkup = registerType(api.MetaZettelmarkup, false)
 )
 
@@ -69,7 +68,6 @@ var (
 		"-date":   TypeTimestamp,
 		"-number": TypeNumber,
 		"-role":   TypeWord,
-		"-set":    TypeWordSet,
 		"-time":   TypeTimestamp,
 		"-title":  TypeZettelmarkup,
 		"-url":    TypeURL,
