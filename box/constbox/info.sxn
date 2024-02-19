@@ -12,7 +12,7 @@
     )
   )
   (h2 "Interpreted Metadata")
-  (table ,@(map wui-table-row metadata))
+  (table ,@(map wui-info-meta-table-row metadata))
   (h2 "References")
   ,@(if local-links `((h3 "Local")    (ul ,@(map wui-valid-link local-links))))
   ,@(if query-links `((h3 "Queries")  (ul ,@(map wui-item-link query-links))))
