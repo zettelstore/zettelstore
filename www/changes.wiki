@@ -28,6 +28,10 @@
   *  If query list is greater than three elements, show the number of elements
      at bottom (before other encodings).
      (minor: webui)
+  *  Zettel with syntax ldquo;sxn&rdquo; are pretty-printed during evaluation.
+     This allows to retrieve parsed zettel content, which checked for syntax,
+     but is not pretty-printed.
+     (minor)
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.1 (2023-12-28)</h2>

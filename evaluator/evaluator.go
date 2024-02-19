@@ -15,6 +15,7 @@
 package evaluator
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -25,6 +26,8 @@ import (
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/input"
+	"zettelstore.de/sx.fossil/sxbuiltins"
+	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
@@ -46,12 +49,41 @@ type Port interface {
 // EvaluateZettel evaluates the given zettel in the given context, with the
 // given ports, and the given environment.
 func EvaluateZettel(ctx context.Context, port Port, rtConfig config.Config, zn *ast.ZettelNode) {
-	if zn.Syntax == meta.SyntaxNone {
+	switch zn.Syntax {
+	case meta.SyntaxNone:
 		// AST is empty, evaluate to a description list of metadata.
 		zn.Ast = evaluateMetadata(zn.Meta)
-		return
+	case meta.SyntaxSxn:
+		zn.Ast = evaluateSxn(zn.Ast)
+	default:
+		EvaluateBlock(ctx, port, rtConfig, &zn.Ast)
 	}
-	EvaluateBlock(ctx, port, rtConfig, &zn.Ast)
+}
+
+func evaluateSxn(bs ast.BlockSlice) ast.BlockSlice {
+	// Check for structure made in parser/plain/plain.go:parseSxnBlocks
+	if len(bs) == 1 {
+		// If len(bs) > 1 --> an error was found during parsing
+		if vn, isVerbatim := bs[0].(*ast.VerbatimNode); isVerbatim && vn.Kind == ast.VerbatimProg {
+			if classAttr, hasClass := vn.Attrs.Get(""); hasClass && classAttr == meta.SyntaxSxn {
+				rd := sxreader.MakeReader(bytes.NewReader(vn.Content))
+				if objs, err := rd.ReadAll(); err == nil {
+					result := make(ast.BlockSlice, len(objs))
+					for i, obj := range objs {
+						var buf bytes.Buffer
+						sxbuiltins.Print(&buf, obj)
+						result[i] = &ast.VerbatimNode{
+							Kind:    ast.VerbatimProg,
+							Attrs:   attrs.Attributes{"": classAttr},
+							Content: buf.Bytes(),
+						}
+					}
+					return result
+				}
+			}
+		}
+	}
+	return bs
 }
 
 // EvaluateBlock evaluates the given block list in the given context, with

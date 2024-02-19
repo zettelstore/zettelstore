@@ -20,7 +20,6 @@ import (
 
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/input"
-	"zettelstore.de/sx.fossil/sxbuiltins"
 	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/parser"
@@ -139,28 +138,18 @@ func scanSVG(inp *input.Input) string {
 
 func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
 	rd := sxreader.MakeReader(bytes.NewReader(inp.Src))
-	objs, err := rd.ReadAll()
-	if err != nil {
-		return ast.BlockSlice{
-			&ast.VerbatimNode{
-				Kind:    ast.VerbatimProg,
-				Attrs:   attrs.Attributes{"": syntax},
-				Content: inp.ScanLineContent(),
-			},
-			ast.CreateParaNode(&ast.TextNode{
-				Text: err.Error(),
-			}),
-		}
-	}
-	result := make(ast.BlockSlice, len(objs))
-	for i, obj := range objs {
-		var buf bytes.Buffer
-		sxbuiltins.Print(&buf, obj)
-		result[i] = &ast.VerbatimNode{
+	_, err := rd.ReadAll()
+	result := ast.BlockSlice{
+		&ast.VerbatimNode{
 			Kind:    ast.VerbatimProg,
 			Attrs:   attrs.Attributes{"": syntax},
-			Content: buf.Bytes(),
-		}
+			Content: inp.ScanLineContent(),
+		},
+	}
+	if err != nil {
+		result = append(result, ast.CreateParaNode(&ast.TextNode{
+			Text: err.Error(),
+		}))
 	}
 	return result
 }
