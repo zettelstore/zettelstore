@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package usecase
@@ -70,6 +73,6 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel zettel.Zettel, hasConten
 	}
 	zettel.Content.TrimSpace()
 	err = uc.port.UpdateZettel(ctx, zettel)
-	uc.log.Sense().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
+	uc.log.Info().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
 	return err
 }

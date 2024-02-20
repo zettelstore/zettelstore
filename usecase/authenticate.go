@@ -133,13 +133,13 @@ const (
 // Run executes the use case.
 func (uc *IsAuthenticated) Run(ctx context.Context) IsAuthenticatedResult {
 	if !uc.authz.WithAuth() {
-		uc.log.Sense().Str("auth", "disabled").Msg("IsAuthenticated")
+		uc.log.Info().Str("auth", "disabled").Msg("IsAuthenticated")
 		return IsAuthenticatedDisabled
 	}
 	if uc.port.GetUser(ctx) == nil {
-		uc.log.Sense().Msg("IsAuthenticated is false")
+		uc.log.Info().Msg("IsAuthenticated is false")
 		return IsAuthenticatedAndInvalid
 	}
-	uc.log.Sense().Msg("IsAuthenticated is true")
+	uc.log.Info().Msg("IsAuthenticated is true")
 	return IsAuthenticatedAndValid
 }

@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package impl
@@ -186,13 +189,13 @@ func (rt *httpRouter) addUserContext(r *http.Request) *http.Request {
 	}
 	tokenData, err := rt.auth.CheckToken(t, k)
 	if err != nil {
-		rt.log.Sense().Err(err).HTTPIP(r).Msg("invalid auth token")
+		rt.log.Info().Err(err).HTTPIP(r).Msg("invalid auth token")
 		return r
 	}
 	ctx := r.Context()
 	user, err := rt.ur.GetUser(ctx, tokenData.Zid, tokenData.Ident)
 	if err != nil {
-		rt.log.Sense().Zid(tokenData.Zid).Str("ident", tokenData.Ident).Err(err).HTTPIP(r).Msg("auth user not found")
+		rt.log.Info().Zid(tokenData.Zid).Str("ident", tokenData.Ident).Err(err).HTTPIP(r).Msg("auth user not found")
 		return r
 	}
 	return r.WithContext(updateContext(ctx, user, &tokenData))

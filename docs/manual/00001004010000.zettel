@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20221128155143
+modified: 20240220190138
 
 The configuration file, as specified by the ''-c CONFIGFILE'' [[command line option|00001004051000]], allows you to specify some startup options.
 These options cannot be stored in a [[configuration zettel|00001004020000]] because either they are needed before Zettelstore can start or because of security reasons.
@@ -92,9 +92,9 @@ The following keys are supported:
 
   Default: ""info"".
 
-  Examples: ""sense"" will produce sensing messages (e.g. a little more than ""info""); ""sense;web:debug"" will emit debugging messages for the web component of Zettelstore while still producing sensing messages for all other components.
+  Examples: ""error"" will produce just error messages (e.g. no ""info"" messages); ""error;web:debug"" will emit debugging messages for the web component of Zettelstore while still producing error messages for all other components.
 
-  When you are familiar to operate the Zettelstore, you might set the level to ""warn"" or ""error"" to receive less noisy messages from the Zettelstore.
+  When you are familiar to operate the Zettelstore, you might set the level to ""error"" to receive less noisy messages from the Zettelstore.
 ; [!max-request-size|''max-request-size'']
 : Limits the maximum byte size of a web request body to prevent clients from accidentally or maliciously sending a large request and wasting server resources.
   The minimum value is 1024.
