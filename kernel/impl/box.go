@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package impl
@@ -82,12 +85,12 @@ func (ps *boxService) Start(kern *myKernel) error {
 	defer ps.mxService.Unlock()
 	mgr, err := ps.createManager(boxURIs, kern.auth.manager, &kern.cfg)
 	if err != nil {
-		ps.logger.Fatal().Err(err).Msg("Unable to create manager")
+		ps.logger.Error().Err(err).Msg("Unable to create manager")
 		return err
 	}
 	ps.logger.Info().Str("location", mgr.Location()).Msg("Start Manager")
 	if err = mgr.Start(context.Background()); err != nil {
-		ps.logger.Fatal().Err(err).Msg("Unable to start manager")
+		ps.logger.Error().Err(err).Msg("Unable to start manager")
 		return err
 	}
 	kern.cfg.setBox(mgr)

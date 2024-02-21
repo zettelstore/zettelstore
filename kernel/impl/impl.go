@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 // Package impl provides the kernel implementation.
@@ -71,7 +74,7 @@ type serviceDependency map[kernel.Service][]kernel.Service
 
 const (
 	defaultNormalLogLevel = logger.InfoLevel
-	defaultSimpleLogLevel = logger.WarnLevel
+	defaultSimpleLogLevel = logger.ErrorLevel
 )
 
 // create a new kernel.
@@ -99,7 +102,7 @@ func createKernel() kernel.Kernel {
 	kern.srvNames = make(map[string]serviceData, len(kern.srvs))
 	for key, srvD := range kern.srvs {
 		if _, ok := kern.srvNames[srvD.name]; ok {
-			kern.logger.Panic().Str("service", srvD.name).Msg("Service data already set")
+			kern.logger.Error().Str("service", srvD.name).Msg("Service data already set, ignore")
 		}
 		kern.srvNames[srvD.name] = serviceData{srvD.srv, key}
 		l := logger.New(lw, strings.ToUpper(srvD.name)).SetLevel(srvD.logLevel)
@@ -166,9 +169,9 @@ func (kern *myKernel) Start(headline, lineServer bool, configFilename string) {
 			logger.Mandatory().Msg("No configuration file found / used")
 		}
 		if kern.core.GetCurConfig(kernel.CoreDebug).(bool) {
-			logger.Warn().Msg("----------------------------------------")
-			logger.Warn().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
-			logger.Warn().Msg("----------------------------------------")
+			logger.Info().Msg("----------------------------------------")
+			logger.Info().Msg("DEBUG MODE, DO NO USE THIS IN PRODUCTION")
+			logger.Info().Msg("----------------------------------------")
 		}
 		if kern.auth.GetCurConfig(kernel.AuthReadonly).(bool) {
 			logger.Info().Msg("Read-only mode")
@@ -278,7 +281,7 @@ func (kern *myKernel) LogRecover(name string, recoverInfo interface{}) bool {
 }
 func (kern *myKernel) doLogRecover(name string, recoverInfo interface{}) bool {
 	stack := debug.Stack()
-	kern.logger.Fatal().Str("recovered_from", fmt.Sprint(recoverInfo)).Bytes("stack", stack).Msg(name)
+	kern.logger.Error().Str("recovered_from", fmt.Sprint(recoverInfo)).Bytes("stack", stack).Msg(name)
 	kern.core.updateRecoverInfo(name, recoverInfo, stack)
 	return true
 }

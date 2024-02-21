@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package impl
@@ -72,7 +75,7 @@ func (as *authService) Start(*myKernel) error {
 	owner := as.GetNextConfig(kernel.AuthOwner).(id.Zid)
 	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
-		as.logger.Fatal().Err(err).Msg("Unable to create manager")
+		as.logger.Error().Err(err).Msg("Unable to create manager")
 		return err
 	}
 	as.logger.Info().Msg("Start Manager")

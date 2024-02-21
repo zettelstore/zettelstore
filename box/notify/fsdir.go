@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package notify
@@ -55,14 +58,13 @@ func NewFSDirNotifier(log *logger.Logger, path string) (Notifier, error) {
 			watcher.Close()
 			return nil, err
 		}
-		log.Warn().
-			Str("parentDir", absParentDir).Err(errParent).
+		log.Info().Str("parentDir", absParentDir).Err(errParent).
 			Msg("Parent of Zettel directory cannot be supervised")
-		log.Warn().Str("path", absPath).
+		log.Info().Str("path", absPath).
 			Msg("Zettelstore might not detect a deletion or movement of the Zettel directory")
 	} else if err != nil {
 		// Not a problem, if container is not available. It might become available later.
-		log.Warn().Err(err).Str("path", absPath).Msg("Zettel directory not available")
+		log.Info().Err(err).Str("path", absPath).Msg("Zettel directory currently not available")
 	}
 
 	fsdn := &fsdirNotifier{

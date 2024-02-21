@@ -3,8 +3,8 @@ title: Troubleshooting
 role: manual
 tags: #manual #zettelstore
 syntax: zmk
-created: 00010101000000
-modified: 20221020132617
+created: 20211027105921
+modified: 20240221134749
 
 This page lists some problems and their solutions that may occur when using your Zettelstore.
 
@@ -28,7 +28,7 @@ This page lists some problems and their solutions that may occur when using your
 
 === Working with Zettel Files
 * **Problem:** When you delete a zettel file by removing it from the ""disk"", e.g. by dropping it into the trash folder, by dragging into another folder, or by removing it from the command line, Zettelstore sometimes did not detect that change.
-  If you access the zettel via Zettelstore, a fatal error is reported.
+  If you access the zettel via Zettelstore, an error is reported.
 ** **Explanation:** Sometimes, the operating system does not tell Zettelstore about the removed zettel.
    This occurs mostly under MacOS.
 ** **Solution 1:** If you are running Zettelstore in [[""simple-mode""|00001004051100]] or if you have enabled [[''expert-mode''|00001004020000#expert-mode]], you are allowed to refresh the internal data by selecting ""Refresh"" in the Web User Interface (you find it in the menu ""Lists"").

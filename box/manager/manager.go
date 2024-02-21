@@ -251,7 +251,7 @@ func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 	case box.OnZettel:
 		mgr.idxAr.EnqueueZettel(zid)
 	default:
-		mgr.mgrLog.Warn().Uint("reason", uint64(reason)).Zid(zid).Msg("Unknown notification reason")
+		mgr.mgrLog.Error().Uint("reason", uint64(reason)).Zid(zid).Msg("Unknown notification reason")
 		return
 	}
 	select {
@@ -314,7 +314,7 @@ func (mgr *Manager) waitBoxesAreStarted() {
 	for i := 1; !mgr.allBoxesStarted(); i++ {
 		if i%waitLoop == 0 {
 			if time.Duration(i)*waitTime > time.Minute {
-				mgr.mgrLog.Warn().Msg("Waiting for more than one minute to start")
+				mgr.mgrLog.Info().Msg("Waiting for more than one minute to start")
 			} else {
 				mgr.mgrLog.Trace().Msg("Wait for boxes to start")
 			}

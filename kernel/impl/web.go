@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package impl
@@ -146,26 +149,26 @@ func (ws *webService) Start(kern *myKernel) error {
 	}
 
 	if !strings.HasSuffix(baseURL, urlPrefix) {
-		ws.logger.Fatal().Str("base-url", baseURL).Str("url-prefix", urlPrefix).Msg(
+		ws.logger.Error().Str("base-url", baseURL).Str("url-prefix", urlPrefix).Msg(
 			"url-prefix is not a suffix of base-url")
 		return errWrongBasePrefix
 	}
 
 	if lap := netip.MustParseAddrPort(listenAddr); !kern.auth.manager.WithAuth() && !lap.Addr().IsLoopback() {
-		ws.logger.Warn().Str("listen", listenAddr).Msg("service may be reached from outside, but authentication is not enabled")
+		ws.logger.Info().Str("listen", listenAddr).Msg("service may be reached from outside, but authentication is not enabled")
 	}
 
 	srvw := impl.New(ws.logger, listenAddr, baseURL, urlPrefix, persistentCookie, secureCookie, maxRequestSize, kern.auth.manager)
 	err := kern.web.setupServer(srvw, kern.box.manager, kern.auth.manager, &kern.cfg)
 	if err != nil {
-		ws.logger.Fatal().Err(err).Msg("Unable to create")
+		ws.logger.Error().Err(err).Msg("Unable to create")
 		return err
 	}
 	if kern.core.GetNextConfig(kernel.CoreDebug).(bool) {
 		srvw.SetDebug()
 	}
 	if err = srvw.Run(); err != nil {
-		ws.logger.Fatal().Err(err).Msg("Unable to start")
+		ws.logger.Error().Err(err).Msg("Unable to start")
 		return err
 	}
 	ws.logger.Info().Str("listen", listenAddr).Str("base-url", baseURL).Msg("Start Service")

@@ -169,7 +169,7 @@ func (dp *dirBox) Start(context.Context) error {
 		notifier, err = notify.NewFSDirNotifier(dp.log.Clone().Str("notify", "fs").Child(), dp.dir)
 	}
 	if err != nil {
-		dp.log.Fatal().Err(err).Msg("Unable to create directory supervisor")
+		dp.log.Error().Err(err).Msg("Unable to create directory supervisor")
 		dp.stopFileServices()
 		return err
 	}

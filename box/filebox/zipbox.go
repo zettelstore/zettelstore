@@ -16,6 +16,7 @@ package filebox
 import (
 	"archive/zip"
 	"context"
+	"fmt"
 	"io"
 	"strings"
 
@@ -103,7 +104,8 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error
 	contentName := entry.ContentName
 	if metaName := entry.MetaName; metaName == "" {
 		if contentName == "" {
-			zb.log.Panic().Zid(zid).Msg("No meta, no content in zipBox.GetZettel")
+			err = fmt.Errorf("no meta, no content in getZettel, zid=%v", zid)
+			return zettel.Zettel{}, err
 		}
 		src, err = readZipFileContent(reader, entry.ContentName)
 		if err != nil {
@@ -212,9 +214,8 @@ func (zb *zipBox) readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.
 		contentName := entry.ContentName
 		contentExt := entry.ContentExt
 		if contentName == "" || contentExt == "" {
-			zb.log.Panic().Zid(zid).Msg("No meta, no content in getMeta")
-		}
-		if entry.HasMetaInContent() {
+			err = fmt.Errorf("no meta, no content in getMeta, zid=%v", zid)
+		} else if entry.HasMetaInContent() {
 			m, err = readZipMetaFile(reader, zid, contentName)
 		} else {
 			m = CalcDefaultMeta(zid, contentExt)

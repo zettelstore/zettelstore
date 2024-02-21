@@ -79,9 +79,6 @@ func (klw *kernelLogWriter) WriteMessage(level logger.Level, ts time.Time, prefi
 	_, err := os.Stdout.Write(buf)
 
 	klw.mx.Unlock()
-	if level == logger.PanicLevel {
-		panic(err)
-	}
 	return err
 }
 

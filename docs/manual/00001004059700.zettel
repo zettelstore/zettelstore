@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20211204182643
-modified: 20240220190206
+modified: 20240221134619
 
 Zettelstore supports various levels of logging output.
 This allows you to see the inner workings of Zettelstore, or to avoid it.
@@ -16,12 +16,9 @@ A lower number signals more logging output.
 | Trace | 1 | Show most of the inner workings
 | Debug | 2 | Show many internal values that might be interesting for a [[Zettelstore developer|00000000000005]].
 | Info  | 3 | Display information about an event. In most cases, there is no required action expected from you.
-| Warn  | 4 | Show a warning, i.e. an event that might become an error or more. Mostly invalid data.
-| Error | 5 | Notify about an error, which was handled automatically. Something is broken. User intervention is not required, in most cases. Monitor the application.
-| Fatal | 6 | Notify about a significant error that cannot be handled automatically. At least some important functionality is disabled.
-| Panic | 7 | The application is in an uncertain state and notifies you about its panic. At least some part of the application is possibly restarted.
-| Mandatory | 8 | Important message will be shown, e.g. the Zettelstore version at startup time.
-| Disabled | 9 | No messages will be shown
+| Error | 4 | Notify about an error, which was handled automatically. Something is broken. User intervention may be required, some important functionality may be disabled. Monitor the application.
+| Mandatory | 5 | Important message will be shown, e.g. the Zettelstore version at startup time.
+| Disabled | 6 | No messages will be shown
 
 If you set the logging level to a certain value, only messages with the same or higher numerical value will be shown.
-E.g. if you set the logging level to ""warn"", no ""trace"", ""debug"", and ""info"" messages are shown, but ""warn"", ""error"", ""fatal"", ""panic"", and ""mandatory"" messages.
+E.g. if you set the logging level to ""error"", no ""trace"", ""debug"", and ""info"" messages are shown, but ""error"" and ""mandatory"" messages.

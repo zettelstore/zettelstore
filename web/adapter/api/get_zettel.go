@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package api
@@ -101,7 +104,7 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 	}
 
 	if err != nil {
-		a.log.Fatal().Err(err).Zid(zid).Msg("Unable to store plain zettel/part in buffer")
+		a.log.Error().Err(err).Zid(zid).Msg("Unable to store plain zettel/part in buffer")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -164,7 +167,7 @@ func (a *API) writeEncodedZettelPart(
 		_, err = encdr.WriteContent(&buf, zn)
 	}
 	if err != nil {
-		a.log.Fatal().Err(err).Zid(zn.Zid).Msg("Unable to store data in buffer")
+		a.log.Error().Err(err).Zid(zn.Zid).Msg("Unable to store data in buffer")
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

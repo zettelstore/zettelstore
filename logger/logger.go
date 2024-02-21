@@ -33,10 +33,7 @@ const (
 	TraceLevel                  // Log most internal activities
 	DebugLevel                  // Log most data updates
 	InfoLevel                   // Log normal activities
-	WarnLevel                   // Log event that can be easily recovered
 	ErrorLevel                  // Log (persistent) errors
-	FatalLevel                  // Log event that cannot be recovered within an internal acitivty
-	PanicLevel                  // Log event that must stop the software
 	MandatoryLevel              // Log only mandatory events
 	NeverLevel                  // Logging is disabled
 )
@@ -46,10 +43,7 @@ var logLevel = [...]string{
 	"TRACE",
 	"DEBUG",
 	"INFO ",
-	"WARN ",
 	"ERROR",
-	"FATAL",
-	"PANIC",
 	">>>>>",
 	"NEVER",
 }
@@ -59,10 +53,7 @@ var strLevel = [...]string{
 	"trace",
 	"debug",
 	"info",
-	"warn",
 	"error",
-	"fatal",
-	"panic",
 	"mandatory",
 	"disabled",
 }
@@ -174,17 +165,8 @@ func (l *Logger) Debug() *Message { return newMessage(l, DebugLevel) }
 // Info creates a message suitable for information data.
 func (l *Logger) Info() *Message { return newMessage(l, InfoLevel) }
 
-// Warn creates a message suitable for warning the user.
-func (l *Logger) Warn() *Message { return newMessage(l, WarnLevel) }
-
 // Error creates a message suitable for errors.
 func (l *Logger) Error() *Message { return newMessage(l, ErrorLevel) }
-
-// Fatal creates a message suitable for fatal errors.
-func (l *Logger) Fatal() *Message { return newMessage(l, FatalLevel) }
-
-// Panic creates a message suitable for panicing.
-func (l *Logger) Panic() *Message { return newMessage(l, PanicLevel) }
 
 // Mandatory creates a message that will always logged, except when logging
 // is disabled.

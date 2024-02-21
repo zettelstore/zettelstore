@@ -15,6 +15,7 @@ package dirbox
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -39,15 +40,15 @@ func fileService(i uint32, log *logger.Logger, dirPath string, cmds <-chan fileC
 		}
 	}()
 
-	log.Trace().Uint("i", uint64(i)).Str("dirpath", dirPath).Msg("File service started")
+	log.Debug().Uint("i", uint64(i)).Str("dirpath", dirPath).Msg("File service started")
 	for cmd := range cmds {
-		cmd.run(log, dirPath)
+		cmd.run(dirPath)
 	}
-	log.Trace().Uint("i", uint64(i)).Str("dirpath", dirPath).Msg("File service stopped")
+	log.Debug().Uint("i", uint64(i)).Str("dirpath", dirPath).Msg("File service stopped")
 }
 
 type fileCmd interface {
-	run(*logger.Logger, string)
+	run(string)
 }
 
 const serviceTimeout = 5 * time.Second // must be shorter than the web servers timeout values for reading+writing.
@@ -78,7 +79,7 @@ type resGetMeta struct {
 	err  error
 }
 
-func (cmd *fileGetMeta) run(log *logger.Logger, dirPath string) {
+func (cmd *fileGetMeta) run(dirPath string) {
 	var m *meta.Meta
 	var err error
 
@@ -88,9 +89,8 @@ func (cmd *fileGetMeta) run(log *logger.Logger, dirPath string) {
 		contentName := entry.ContentName
 		contentExt := entry.ContentExt
 		if contentName == "" || contentExt == "" {
-			log.Panic().Zid(zid).Msg("No meta, no content in getMeta")
-		}
-		if entry.HasMetaInContent() {
+			err = fmt.Errorf("no meta, no content in getMeta, zid=%v", zid)
+		} else if entry.HasMetaInContent() {
 			m, _, err = parseMetaContentFile(zid, filepath.Join(dirPath, contentName))
 		} else {
 			m = filebox.CalcDefaultMeta(zid, contentExt)
@@ -131,7 +131,7 @@ type resGetMetaContent struct {
 	err     error
 }
 
-func (cmd *fileGetMetaContent) run(log *logger.Logger, dirPath string) {
+func (cmd *fileGetMetaContent) run(dirPath string) {
 	var m *meta.Meta
 	var content []byte
 	var err error
@@ -143,9 +143,8 @@ func (cmd *fileGetMetaContent) run(log *logger.Logger, dirPath string) {
 	contentPath := filepath.Join(dirPath, contentName)
 	if metaName := entry.MetaName; metaName == "" {
 		if contentName == "" || contentExt == "" {
-			log.Panic().Zid(zid).Msg("No meta, no content in getMetaContent")
-		}
-		if entry.HasMetaInContent() {
+			err = fmt.Errorf("no meta, no content in getMetaContent, zid=%v", zid)
+		} else if entry.HasMetaInContent() {
 			m, content, err = parseMetaContentFile(zid, contentPath)
 		} else {
 			m = filebox.CalcDefaultMeta(zid, contentExt)
@@ -191,7 +190,8 @@ type fileSetZettel struct {
 }
 type resSetZettel = error
 
-func (cmd *fileSetZettel) run(log *logger.Logger, dirPath string) {
+func (cmd *fileSetZettel) run(dirPath string) {
+	var err error
 	entry := cmd.entry
 	zid := entry.Zid
 	contentName := entry.ContentName
@@ -200,20 +200,21 @@ func (cmd *fileSetZettel) run(log *logger.Logger, dirPath string) {
 	metaName := entry.MetaName
 	if metaName == "" {
 		if contentName == "" {
-			log.Panic().Zid(zid).Msg("No meta, no content in setZettel")
+			err = fmt.Errorf("no meta, no content in setZettel, zid=%v", zid)
+		} else {
+			contentPath := filepath.Join(dirPath, contentName)
+			if entry.HasMetaInContent() {
+				err = writeZettelFile(contentPath, m, content)
+				cmd.rc <- err
+				return
+			}
+			err = writeFileContent(contentPath, content)
 		}
-		contentPath := filepath.Join(dirPath, contentName)
-		if entry.HasMetaInContent() {
-			err := writeZettelFile(contentPath, m, content)
-			cmd.rc <- err
-			return
-		}
-		err := writeFileContent(contentPath, content)
 		cmd.rc <- err
 		return
 	}
 
-	err := writeMetaFile(filepath.Join(dirPath, metaName), m)
+	err = writeMetaFile(filepath.Join(dirPath, metaName), m)
 	if err == nil && contentName != "" {
 		err = writeFileContent(filepath.Join(dirPath, contentName), content)
 	}
@@ -303,7 +304,7 @@ type fileDeleteZettel struct {
 }
 type resDeleteZettel = error
 
-func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
+func (cmd *fileDeleteZettel) run(dirPath string) {
 	var err error
 
 	entry := cmd.entry
@@ -311,9 +312,10 @@ func (cmd *fileDeleteZettel) run(log *logger.Logger, dirPath string) {
 	contentPath := filepath.Join(dirPath, contentName)
 	if metaName := entry.MetaName; metaName == "" {
 		if contentName == "" {
-			log.Panic().Zid(entry.Zid).Msg("No meta, no content in getMetaContent")
+			err = fmt.Errorf("no meta, no content in deleteZettel, zid=%v", entry.Zid)
+		} else {
+			err = os.Remove(contentPath)
 		}
-		err = os.Remove(contentPath)
 	} else {
 		if contentName != "" {
 			err = os.Remove(contentPath)

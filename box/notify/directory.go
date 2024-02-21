@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package notify
@@ -257,7 +260,7 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 	case Error:
 		newEntries = nil
 		if state != DsMissing {
-			ds.log.Warn().Err(ev.Err).Msg("Notifier confused")
+			ds.log.Error().Err(ev.Err).Msg("Notifier confused")
 		}
 	case Make:
 		newEntries = make(entrySet)
@@ -298,7 +301,7 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 			ds.notifyChange(zid)
 		}
 	default:
-		ds.log.Warn().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
+		ds.log.Error().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
 	}
 	return newEntries, true
 }
@@ -373,9 +376,9 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	entry := fetchdirEntry(entries, zid)
 	dupName1, dupName2 := ds.updateEntry(entry, name)
 	if dupName1 != "" {
-		ds.log.Warn().Str("name", dupName1).Msg("Duplicate content (is ignored)")
+		ds.log.Info().Str("name", dupName1).Msg("Duplicate content (is ignored)")
 		if dupName2 != "" {
-			ds.log.Warn().Str("name", dupName2).Msg("Duplicate content (is ignored)")
+			ds.log.Info().Str("name", dupName2).Msg("Duplicate content (is ignored)")
 		}
 		return id.Invalid
 	}
