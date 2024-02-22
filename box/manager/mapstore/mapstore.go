@@ -319,7 +319,7 @@ func isInternableValue(key string) bool {
 	if internableKeys[key] {
 		return true
 	}
-	return strings.HasSuffix(key, "-role")
+	return strings.HasSuffix(key, meta.SuffixKeyRole)
 }
 
 func (ms *memStore) internString(s string) string {

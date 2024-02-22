@@ -6,6 +6,9 @@
 // Zettelstore is licensed under the latest version of the EUPL (European Union
 // Public License). Please see file LICENSE.txt for your rights and obligations
 // under this license.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2020-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package meta
@@ -61,19 +64,25 @@ func (*Meta) Type(key string) *DescriptionType {
 	return Type(key)
 }
 
+// Some constants for key suffixes that determine a type.
+const (
+	SuffixKeyRole = "-role"
+	SuffixKeyURL  = "-url"
+)
+
 var (
 	cachedTypedKeys = make(map[string]*DescriptionType)
 	mxTypedKey      sync.RWMutex
 	suffixTypes     = map[string]*DescriptionType{
-		"-date":   TypeTimestamp,
-		"-number": TypeNumber,
-		"-role":   TypeWord,
-		"-time":   TypeTimestamp,
-		"-title":  TypeZettelmarkup,
-		"-url":    TypeURL,
-		"-zettel": TypeID,
-		"-zid":    TypeID,
-		"-zids":   TypeIDSet,
+		"-date":       TypeTimestamp,
+		"-number":     TypeNumber,
+		SuffixKeyRole: TypeWord,
+		"-time":       TypeTimestamp,
+		"-title":      TypeZettelmarkup,
+		SuffixKeyURL:  TypeURL,
+		"-zettel":     TypeID,
+		"-zid":        TypeID,
+		"-zids":       TypeIDSet,
 	}
 )
 

@@ -22,6 +22,8 @@
   *  When generating HTML code to query set based metadata (esp. tags), also
      generate a query that matches all values.
      (minor: webui)
+  *  Show all metadata with key ending &ldquo;-url&rdquo; on zettel view.
+     (minor: webui)
   *  Make WebUI form elements a little bit more accessible by using HTML
      <code>search</code> tag and <code>inputmode</code> attribute.
      (minor: webui)

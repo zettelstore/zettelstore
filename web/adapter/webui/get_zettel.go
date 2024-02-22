@@ -16,6 +16,7 @@ package webui
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/shtml"
@@ -72,6 +73,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		rb.bindString("predecessor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPredecessor, getTextTitle))
 		rb.bindString("precursor-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeyPrecursor, getTextTitle))
 		rb.bindString("superior-refs", wui.identifierSetAsLinks(zn.InhMeta, api.KeySuperior, getTextTitle))
+		rb.bindString("urls", metaURLAssoc(zn.InhMeta))
 		rb.bindString("content", content)
 		rb.bindString("endnotes", endnotes)
 		wui.bindLinks(ctx, &rb, "folge", zn.InhMeta, api.KeyFolge, config.KeyShowFolgeLinks, getTextTitle)
@@ -100,6 +102,18 @@ func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle ge
 		return wui.transformIdentifierSet(values, getTextTitle)
 	}
 	return nil
+}
+
+func metaURLAssoc(m *meta.Meta) *sx.Pair {
+	var result sx.ListBuilder
+	for _, p := range m.PairsRest() {
+		if key := p.Key; strings.HasSuffix(key, meta.SuffixKeyURL) {
+			if val := p.Value; val != "" {
+				result.Add(sx.Cons(sx.String(capitalizeMetaKey(key)), sx.String(val)))
+			}
+		}
+	}
+	return result.List()
 }
 
 func (wui *WebUI) bindLinks(ctx context.Context, rb *renderBinder, varPrefix string, m *meta.Meta, key, configKey string, getTextTitle getTextTitleFunc) {
