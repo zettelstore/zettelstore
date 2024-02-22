@@ -23,7 +23,7 @@ import (
 
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
-	"zettelstore.de/z/box/manager/memstore"
+	"zettelstore.de/z/box/manager/mapstore"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/kernel"
@@ -138,7 +138,7 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 		propertyKeys: propertyKeys,
 
 		idxLog:   boxLog.Clone().Str("box", "index").Child(),
-		idxStore: memstore.New(),
+		idxStore: createIdxStore(rtConfig),
 		idxAr:    newAnteroomQueue(1000),
 		idxReady: make(chan struct{}, 1),
 	}
@@ -167,6 +167,10 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 	boxes = append(boxes, constbox, compbox)
 	mgr.boxes = boxes
 	return mgr, nil
+}
+
+func createIdxStore(_ config.Config) store.Store {
+	return mapstore.New()
 }
 
 // RegisterObserver registers an observer that will be notified

@@ -11,8 +11,8 @@
 // SPDX-FileCopyrightText: 2021-present Detlef Stern
 //-----------------------------------------------------------------------------
 
-// Package memstore stored the index in main memory.
-package memstore
+// Package mapstore stored the index in main memory via a Go map.
+package mapstore
 
 import (
 	"context"
@@ -30,11 +30,6 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-type bidiRefs struct {
-	forward  id.Slice
-	backward id.Slice
-}
-
 type zettelData struct {
 	meta      *meta.Meta // a local copy of the metadata, without computed keys
 	dead      id.Slice   // list of dead references in this zettel
@@ -43,6 +38,11 @@ type zettelData struct {
 	otherRefs map[string]bidiRefs
 	words     []string // list of words of this zettel
 	urls      []string // list of urls of this zettel
+}
+
+type bidiRefs struct {
+	forward  id.Slice
+	backward id.Slice
 }
 
 type stringRefs map[string]id.Slice
