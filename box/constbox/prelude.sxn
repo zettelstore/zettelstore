@@ -25,8 +25,11 @@
 (defmacro defunconst (name args . body)
     `(begin (defun ,name ,args ,@body) (defconst ,name ,name)))
 
-;; Function not
-(defunconst not (x) (if x NIL T))
+;; not macro
+(defmacro not (x) `(if ,x NIL T))
+
+;; not= macro, to negate an equivalence
+(defmacro not= args `(not (= ,@args)))
 
 ;; let macro
 ;;
@@ -44,6 +47,20 @@
         `((lambda (,(caar bindings))
                   (let* ,(cdr bindings) ,@body))
                   ,(cadar bindings))))
+
+;; cond macro
+;;
+;; (cond ((COND EXPR) ...))
+(defmacro cond clauses
+    (if (null? clauses)
+        ()
+        (let* ((clause (car clauses))
+               (the-cond (car clause)))
+              (if (= the-cond T)
+                  (cadr clause)
+                  `(if ,the-cond
+                       ,(cadr clause)
+                       (cond ,@(cdr clauses)))))))
 
 ;; and macro
 ;;

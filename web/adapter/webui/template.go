@@ -102,13 +102,12 @@ var (
 		&sxbuiltins.DefVarS, &sxbuiltins.DefConstS, // defvar, defconst
 		&sxbuiltins.DefunS, &sxbuiltins.LambdaS, // defun, lambda
 		&sxbuiltins.SetXS,     // set!
-		&sxbuiltins.CondS,     // cond
 		&sxbuiltins.IfS,       // if
 		&sxbuiltins.BeginS,    // begin
 		&sxbuiltins.DefMacroS, // defmacro
 	}
 	builtins = []*sxeval.Builtin{
-		&sxbuiltins.Identical,            // ==
+		&sxbuiltins.Equal,                // =
 		&sxbuiltins.NumGreater,           // >
 		&sxbuiltins.NullP,                // null?
 		&sxbuiltins.PairP,                // pair?
