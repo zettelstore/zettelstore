@@ -24,14 +24,14 @@ Most of this is covered by the excellent Fossil
 1. Change into this directory: `cd $HOME/zettelstore`.
 1. Open development: `fossil open $HOME/fossils/zettelstore.fossil`.
 
-## The build tool
-In the directory `tools` there is a Go file called `build.go`.
-It automates most aspects, (hopefully) platform-independent.
+## Tools to build, test, and manage
+In the directory `tools` there are some Go files to automate most aspects of
+building and testing, (hopefully) platform-independent.
 
-The script is called as:
+The build script is called as:
 
 ```
-go run tools/build.go [-v] COMMAND
+go run tools/build/build.go [-v] COMMAND
 ```
 
 The flag `-v` enables the verbose mode.
@@ -43,23 +43,32 @@ Some important `COMMAND`s are:
   into a freshly created directory `bin`.
 * `check`: checks the current state of the working directory to be ready for
   release (or commit).
-* `clean`: removes the build directories and cleans the Go cache.
 * `version`: prints the current version information.
-* `tools`: installs / updates the tools described above: staticcheck, shadow,
-  unparam, govulncheck.
 
 Therefore, the easiest way to build your own version of the Zettelstore
 software is to execute the command
 
 ```
-go run tools/build.go build
+go run tools/build/build.go build
 ```
 
 In case of errors, please send the output of the verbose execution:
 
 ```
-go run tools/build.go -v build
+go run tools/build/build.go -v build
 ```
+
+Other tools are:
+
+* `go run tools/clean/clean.go` cleans your Go development worspace.
+* `go run tools/check/check.go` executes all linters and unit tests.
+  If you add the option `-r` linters are more strict, to be used for a
+  release version.
+* `go run tools/devtools/devtools.go` install all needed software (see above).
+* `go run tools/htmllint/htmllint.go [URL]` checks all generated HTML of a
+  Zettelstore accessible at the given URL (default: http://localhost:23123).
+* `go run tools/testapi/testapi.go` tests the API against a running
+  Zettelstore, which is started automatically.
 
 ## A note on the use of Fossil
 Zettelstore is managed by the Fossil version control system.

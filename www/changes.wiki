@@ -1,7 +1,10 @@
 <title>Change Log</title>
 
+<a id="0_18"></a>
+<h2>Changes for Version 0.18.0 (pending)</h2>
+
 <a id="0_17"></a>
-<h2>Changes for Version 0.17.0 (pending)</h2>
+<h2>Changes for Version 0.17.0 (2024-03-04)</h2>
   *  Context search operates only on explicit references. Add the directive
      <code>FULL</code> to follow zettel tags additionally.
      (breaking)
@@ -44,6 +47,8 @@
      This allows to retrieve parsed zettel content, which checked for syntax,
      but is not pretty-printed.
      (minor)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_16"></a>
 <h2>Changes for Version 0.16.1 (2023-12-28)</h2>
