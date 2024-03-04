@@ -241,9 +241,7 @@ func writeZettelFile(contentPath string, m *meta.Meta, content []byte) error {
 	if err != nil {
 		return err
 	}
-	if err == nil {
-		err = writeMetaHeader(zettelFile, m)
-	}
+	err = writeMetaHeader(zettelFile, m)
 	if err == nil {
 		_, err = zettelFile.Write(content)
 	}

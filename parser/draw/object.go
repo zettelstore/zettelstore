@@ -15,6 +15,9 @@
 //
 // Copyright 2012 - 2018 The ASCIIToSVG Contributors
 // All rights reserved.
+//
+// SPDX-License-Identifier: EUPL-1.2
+// SPDX-FileCopyrightText: 2022-present Detlef Stern
 //-----------------------------------------------------------------------------
 
 package draw

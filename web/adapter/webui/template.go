@@ -165,7 +165,7 @@ func (wui *WebUI) getParentEnv(ctx context.Context) (*sxeval.Binding, error) {
 func (wui *WebUI) createRenderEnv(ctx context.Context, name, lang, title string, user *meta.Meta) (*sxeval.Binding, renderBinder) {
 	userIsValid, userZettelURL, userIdent := wui.getUserRenderData(user)
 	parentEnv, err := wui.getParentEnv(ctx)
-	bind := sxeval.MakeChildBinding(parentEnv, name, 128)
+	bind := parentEnv.MakeChildBinding(name, 128)
 	rb := makeRenderBinder(bind, err)
 	rb.bindString("lang", sx.String(lang))
 	rb.bindString("css-base-url", sx.String(wui.cssBaseURL))
