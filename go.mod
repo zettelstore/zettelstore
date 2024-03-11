@@ -8,8 +8,8 @@ require (
 	golang.org/x/crypto v0.21.0
 	golang.org/x/term v0.18.0
 	golang.org/x/text v0.14.0
-	zettelstore.de/client.fossil v0.0.0-20240304164340-1f9d9b832cdd
-	zettelstore.de/sx.fossil v0.0.0-20240304124557-67e0a1799d1d
+	zettelstore.de/client.fossil v0.0.0-20240311134502-63a3a76d0f34
+	zettelstore.de/sx.fossil v0.0.0-20240311131600-9bfc3ef004f5
 )
 
 require golang.org/x/sys v0.18.0 // indirect

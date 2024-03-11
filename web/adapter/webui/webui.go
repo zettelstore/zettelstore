@@ -120,7 +120,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		createNewURL:  ab.NewURLBuilder('c').String(),
 
 		zettelBinding: nil,
-		genHTML:       sxhtml.NewGenerator(sxhtml.WithNewline),
+		genHTML:       sxhtml.NewGenerator().SetNewline(),
 	}
 	wui.rootBinding = wui.createRenderBinding()
 	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})

@@ -46,6 +46,8 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 	for _, b := range builtins {
 		root.BindBuiltin(b)
 	}
+	_ = root.Bind(sx.MakeSymbol("NIL"), sx.Nil())
+	_ = root.Bind(sx.MakeSymbol("T"), sx.MakeSymbol("T"))
 	root.BindBuiltin(&sxeval.Builtin{
 		Name:     "url-to-html",
 		MinArity: 1,
@@ -99,12 +101,13 @@ var (
 	specials = []*sxeval.Special{
 		&sxbuiltins.QuoteS, &sxbuiltins.QuasiquoteS, // quote, quasiquote
 		&sxbuiltins.UnquoteS, &sxbuiltins.UnquoteSplicingS, // unquote, unquote-splicing
-		&sxbuiltins.DefVarS, &sxbuiltins.DefConstS, // defvar, defconst
+		&sxbuiltins.DefVarS,                     // defvar
 		&sxbuiltins.DefunS, &sxbuiltins.LambdaS, // defun, lambda
 		&sxbuiltins.SetXS,     // set!
 		&sxbuiltins.IfS,       // if
 		&sxbuiltins.BeginS,    // begin
 		&sxbuiltins.DefMacroS, // defmacro
+		&sxbuiltins.LetS,      // let
 	}
 	builtins = []*sxeval.Builtin{
 		&sxbuiltins.Equal,                // =
@@ -395,7 +398,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 		msg.Str("page", pageObj.String()).Msg("render")
 	}
 
-	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator().SetNewline()
 	var sb bytes.Buffer
 	_, err = gen.WriteHTML(&sb, pageObj)
 	if err != nil {

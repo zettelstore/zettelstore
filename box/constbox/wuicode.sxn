@@ -14,57 +14,57 @@
 ;; Contains WebUI specific code, but not related to a specific template.
 
 ;; wui-list-item returns the argument as a HTML list item.
-(defunconst wui-item (s) `(li ,s))
+(defun wui-item (s) `(li ,s))
 
 ;; wui-info-meta-table-row takes a pair and translates it into a HTML table row
 ;; with two columns.
-(defunconst wui-info-meta-table-row (p)
+(defun wui-info-meta-table-row (p)
     `(tr (td (@ (class zs-info-meta-key)) ,(car p)) (td (@ (class zs-info-meta-value)) ,(cdr p))))
 
 ;; wui-valid-link translates a local link into a HTML link. A link is a pair
 ;; (valid . url). If valid is not truish, only the invalid url is returned.
-(defunconst wui-valid-link (l)
+(defun wui-valid-link (l)
     (if (car l)
         `(li (a (@ (href ,(cdr l))) ,(cdr l)))
         `(li ,(cdr l))))
 
 ;; wui-link takes a link (title . url) and returns a HTML reference.
-(defunconst wui-link (q)
+(defun wui-link (q)
     `(a (@ (href ,(cdr q))) ,(car q)))
 
 ;; wui-item-link taks a pair (text . url) and returns a HTML link inside
 ;; a list item.
-(defunconst wui-item-link (q) `(li ,(wui-link q)))
+(defun wui-item-link (q) `(li ,(wui-link q)))
 
 ;; wui-tdata-link taks a pair (text . url) and returns a HTML link inside
 ;; a table data item.
-(defunconst wui-tdata-link (q) `(td ,(wui-link q)))
+(defun wui-tdata-link (q) `(td ,(wui-link q)))
 
 ;; wui-item-popup-link is like 'wui-item-link, but the HTML link will open
 ;; a new tab / window.
-(defunconst wui-item-popup-link (e)
+(defun wui-item-popup-link (e)
     `(li (a (@ (href ,e) (target "_blank") (rel "noopener noreferrer")) ,e)))
 
 ;; wui-option-value returns a value for an HTML option element.
-(defunconst wui-option-value (v) `(option (@ (value ,v))))
+(defun wui-option-value (v) `(option (@ (value ,v))))
 
 ;; wui-datalist returns a HTML datalist with the given HTML identifier and a
 ;; list of values.
-(defunconst wui-datalist (id lst)
+(defun wui-datalist (id lst)
     (if lst
         `((datalist (@ (id ,id)) ,@(map wui-option-value lst)))))
 
 ;; wui-pair-desc-item takes a pair '(term . text) and returns a list with
 ;; a HTML description term and a HTML description data. 
-(defunconst wui-pair-desc-item (p) `((dt ,(car p)) (dd ,(cdr p))))
+(defun wui-pair-desc-item (p) `((dt ,(car p)) (dd ,(cdr p))))
 
 ;; wui-meta-desc returns a HTML description list made from the list of pairs
 ;; given.
-(defunconst wui-meta-desc (l)
+(defun wui-meta-desc (l)
     `(dl ,@(apply append (map wui-pair-desc-item l))))
 
 ;; wui-enc-matrix returns the HTML table of all encodings and parts.
-(defunconst wui-enc-matrix (matrix)
+(defun wui-enc-matrix (matrix)
     `(table
       ,@(map
          (lambda (row) `(tr (th ,(car row)) ,@(map wui-tdata-link (cdr row))))

@@ -108,7 +108,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 		sx.MakeList(shtml.SymHtml, head.List(), body.List()),
 	)
 
-	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator().SetNewline()
 	return gen.WriteHTML(w, doc)
 }
 
@@ -119,7 +119,7 @@ func (he *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMet
 	if err != nil {
 		return 0, err
 	}
-	gen := sxhtml.NewGenerator(sxhtml.WithNewline)
+	gen := sxhtml.NewGenerator().SetNewline()
 	return gen.WriteListHTML(w, hm)
 }
 

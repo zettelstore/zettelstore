@@ -2,6 +2,11 @@
 
 <a id="0_18"></a>
 <h2>Changes for Version 0.18.0 (pending)</h2>
+  *  Remove Sx macro <code>defunconst</code>. Use <code>defun</code> instead.
+     (breaking: webui)
+  *  Update Sx prelude: make macros more robust / more general. This might
+     break your code in the future.
+     (minor: webui)
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (2024-03-04)</h2>

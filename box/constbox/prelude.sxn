@@ -13,17 +13,7 @@
 
 ;;; This zettel contains sxn definitions that are independent of specific
 ;;; subsystems, such as WebUI, API, or other. It just contains generic code to
-;;; be used in all places.
-
-;; Constants NIL and T
-(defconst NIL ())
-(defconst T   'T)
-
-;; defunconst macro to define functions that are bound as a constant.
-;;
-;; (defunconst NAME ARGS EXPR ...)
-(defmacro defunconst (name args . body)
-    `(begin (defun ,name ,args ,@body) (defconst ,name ,name)))
+;;; be used in all places. It asumes that the symbols NIL and T are defined.
 
 ;; not macro
 (defmacro not (x) `(if ,x NIL T))
@@ -31,22 +21,14 @@
 ;; not= macro, to negate an equivalence
 (defmacro not= args `(not (= ,@args)))
 
-;; let macro
-;;
-;; (let (BINDING ...) EXPR ...), where BINDING is a list of two elements
-;;   (SYMBOL EXPR)
-(defmacro let (bindings . body)
-    `((lambda ,(map car bindings) ,@body) ,@(map cadr bindings)))
-
 ;; let* macro
 ;;
 ;; (let* (BINDING ...) EXPR ...), where SYMBOL may occur in later bindings.
 (defmacro let* (bindings . body)
     (if (null? bindings)
-        `((lambda () ,@body))
-        `((lambda (,(caar bindings))
-                  (let* ,(cdr bindings) ,@body))
-                  ,(cadar bindings))))
+        `(begin ,@body)
+        `(let ((,(caar bindings) ,(cadar bindings)))
+               (let* ,(cdr bindings) ,@body))))
 
 ;; cond macro
 ;;
@@ -57,9 +39,9 @@
         (let* ((clause (car clauses))
                (the-cond (car clause)))
               (if (= the-cond T)
-                  (cadr clause)
+                  `(begin ,@(cdr clause))
                   `(if ,the-cond
-                       ,(cadr clause)
+                       (begin ,@(cdr clause))
                        (cond ,@(cdr clauses)))))))
 
 ;; and macro
