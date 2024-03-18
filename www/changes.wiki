@@ -7,6 +7,10 @@
   *  Update Sx prelude: make macros more robust / more general. This might
      break your code in the future.
      (minor: webui)
+  *  Add computed zettel &ldquo;Zettelstore Memory&rdquo; with zettel
+     identifier <code>00000000000008</code>. It shows some statistics about
+     memory usage.
+     (minor: webui)
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (2024-03-04)</h2>
