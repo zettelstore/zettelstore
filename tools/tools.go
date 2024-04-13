@@ -27,7 +27,7 @@ import (
 )
 
 var EnvDirectProxy = []string{"GOPROXY=direct"}
-var EnvGoVCS = []string{"GOVCS=zettelstore.de:fossil"}
+var EnvGoVCS = []string{"GOVCS=zettelstore.de:fossil,t73f.de:fossil"}
 var Verbose bool
 
 func ExecuteCommand(env []string, name string, arg ...string) (string, error) {
