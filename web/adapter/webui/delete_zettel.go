@@ -16,9 +16,9 @@ package webui
 import (
 	"net/http"
 
+	"t73f.de/r/sx"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/maps"
-	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/strfun"
 	"zettelstore.de/z/usecase"

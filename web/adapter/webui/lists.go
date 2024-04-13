@@ -22,10 +22,10 @@ import (
 	"strconv"
 	"strings"
 
+	"t73f.de/r/sx"
+	"t73f.de/r/sx/sxhtml"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/shtml"
-	"zettelstore.de/sx.fossil"
-	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoding/atom"
 	"zettelstore.de/z/encoding/rss"

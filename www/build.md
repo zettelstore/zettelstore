@@ -71,26 +71,24 @@ Other tools are:
   Zettelstore, which is started automatically.
 
 ## A note on the use of Fossil
-Zettelstore is managed by the Fossil version control system.
-Fossil is an alternative to the ubiquitous Git version control system.
-However, Go seems to prefer Git and popular platforms that just support Git.
+Zettelstore is managed by the Fossil version control system. Fossil is an
+alternative to the ubiquitous Git version control system. However, Go seems to
+prefer Git and popular platforms that just support Git.
 
 Some dependencies of Zettelstore, namely [Zettelstore
-client](https://zettelstore.de/client) and [sx](https://zettelstore.de/sx), are
-also managed by Fossil.
-Depending on your development setup, some error messages might occur.
+client](https://zettelstore.de/client) and [Sx](https://t73f.de/r/sx), are also
+managed by Fossil. Depending on your development setup, some error messages
+might occur.
 
 If the error message mentions an environment variable called `GOVCS` you should
 set it to the value `GOVCS=zettelstore.de:fossil` (alternatively more generous
-to `GOVCS=*:all`).
-Since the Go build system is coupled with Git and some special platforms, you
-allow ot to download a Fossil repository from the host `zettelstore.de`.
-The build tool set `GOVCS` to the right value, but you may use other `go`
-commands that try to download a Fossil repository.
+to `GOVCS=*:all`). Since the Go build system is coupled with Git and some
+special platforms, you allow ot to download a Fossil repository from the host
+`zettelstore.de`. The build tool set `GOVCS` to the right value, but you may
+use other `go` commands that try to download a Fossil repository.
 
 On some operating systems, namely Termux on Android, an error message might
-state that an user cannot be determined (`cannot determine user`).
-In this case, Fossil is allowed to download the repository, but cannot
-associate it with an user name.
-Set the environment variable `USER` to any user name, like:
+state that an user cannot be determined (`cannot determine user`). In this
+case, Fossil is allowed to download the repository, but cannot associate it
+with an user name. Set the environment variable `USER` to any user name, like:
 `USER=nobody go run tools/build.go build`.

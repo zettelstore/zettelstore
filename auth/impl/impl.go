@@ -20,9 +20,9 @@ import (
 	"io"
 	"time"
 
+	"t73f.de/r/sx"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/sexp"
-	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/policy"
 	"zettelstore.de/z/box"

@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"t73f.de/r/sx"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/sexp"
-	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/encoder"

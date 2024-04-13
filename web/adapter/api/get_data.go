@@ -16,7 +16,7 @@ package api
 import (
 	"net/http"
 
-	"zettelstore.de/sx.fossil"
+	"t73f.de/r/sx"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/zettel/id"
 )

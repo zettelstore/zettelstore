@@ -23,11 +23,11 @@ import (
 	"strconv"
 	"strings"
 
+	"t73f.de/r/sx/sxbuiltins"
+	"t73f.de/r/sx/sxreader"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/input"
-	"zettelstore.de/sx.fossil/sxbuiltins"
-	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"

@@ -19,8 +19,8 @@ import (
 	"net/http"
 	"strings"
 
+	"t73f.de/r/sx"
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/encoder/zmkenc"
 	"zettelstore.de/z/evaluator"

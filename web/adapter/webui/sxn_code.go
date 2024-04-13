@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"io"
 
+	"t73f.de/r/sx/sxeval"
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil/sxeval"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )

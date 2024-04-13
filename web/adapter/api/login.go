@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/sx.fossil"
+	"t73f.de/r/sx"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

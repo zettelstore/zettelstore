@@ -18,10 +18,10 @@ import (
 	"net/http"
 	"net/url"
 
+	"t73f.de/r/sx/sxreader"
 	"zettelstore.de/client.fossil/api"
 	"zettelstore.de/client.fossil/input"
 	"zettelstore.de/client.fossil/sexp"
-	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"

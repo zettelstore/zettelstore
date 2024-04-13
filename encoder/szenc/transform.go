@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"strings"
 
+	"t73f.de/r/sx"
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/sz"
-	"zettelstore.de/sx.fossil"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"

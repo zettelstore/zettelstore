@@ -20,10 +20,10 @@ import (
 	"sync"
 	"time"
 
+	"t73f.de/r/sx"
+	"t73f.de/r/sx/sxeval"
+	"t73f.de/r/sx/sxhtml"
 	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/sx.fossil"
-	"zettelstore.de/sx.fossil/sxeval"
-	"zettelstore.de/sx.fossil/sxhtml"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"

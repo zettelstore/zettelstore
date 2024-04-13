@@ -18,9 +18,9 @@ import (
 	"bytes"
 	"strings"
 
+	"t73f.de/r/sx/sxreader"
 	"zettelstore.de/client.fossil/attrs"
 	"zettelstore.de/client.fossil/input"
-	"zettelstore.de/sx.fossil/sxreader"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel/meta"

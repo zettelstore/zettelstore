@@ -17,7 +17,7 @@ import (
 	"bytes"
 	"net/http"
 
-	"zettelstore.de/sx.fossil"
+	"t73f.de/r/sx"
 	"zettelstore.de/z/web/content"
 	"zettelstore.de/z/zettel/id"
 )

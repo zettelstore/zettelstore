@@ -19,8 +19,8 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 
-	"zettelstore.de/sx.fossil"
-	"zettelstore.de/sx.fossil/sxreader"
+	"t73f.de/r/sx"
+	"t73f.de/r/sx/sxreader"
 )
 
 var encoding = base64.RawURLEncoding
