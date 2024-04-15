@@ -37,9 +37,9 @@ func (wui *WebUI) writeHTMLMetaValue(
 ) sx.Object {
 	switch kt := meta.Type(key); kt {
 	case meta.TypeCredential:
-		return sx.String(value)
+		return sx.MakeString(value)
 	case meta.TypeEmpty:
-		return sx.String(value)
+		return sx.MakeString(value)
 	case meta.TypeID:
 		return wui.transformIdentifier(value, getTextTitle)
 	case meta.TypeIDSet:
@@ -47,7 +47,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 	case meta.TypeNumber:
 		return wui.transformKeyValueText(key, value, value)
 	case meta.TypeString:
-		return sx.String(value)
+		return sx.MakeString(value)
 	case meta.TypeTagSet:
 		return wui.transformTagSet(key, meta.ListFromValue(value))
 	case meta.TypeTimestamp:
@@ -56,25 +56,25 @@ func (wui *WebUI) writeHTMLMetaValue(
 				sx.MakeSymbol("time"),
 				sx.MakeList(
 					sxhtml.SymAttr,
-					sx.Cons(sx.MakeSymbol("datetime"), sx.String(ts.Format("2006-01-02T15:04:05"))),
+					sx.Cons(sx.MakeSymbol("datetime"), sx.MakeString(ts.Format("2006-01-02T15:04:05"))),
 				),
-				sx.MakeList(sxhtml.SymNoEscape, sx.String(ts.Format("2006-01-02&nbsp;15:04:05"))),
+				sx.MakeList(sxhtml.SymNoEscape, sx.MakeString(ts.Format("2006-01-02&nbsp;15:04:05"))),
 			)
 		}
 		return sx.Nil()
 	case meta.TypeURL:
-		return wui.url2html(sx.String(value))
+		return wui.url2html(sx.MakeString(value))
 	case meta.TypeWord:
 		return wui.transformKeyValueText(key, value, value)
 	case meta.TypeZettelmarkup:
 		return wui.transformZmkMetadata(value, evalMetadata, gen)
 	default:
-		return sx.MakeList(shtml.SymSTRONG, sx.String("Unhandled type: "), sx.String(kt.Name))
+		return sx.MakeList(shtml.SymSTRONG, sx.MakeString("Unhandled type: "), sx.MakeString(kt.Name))
 	}
 }
 
 func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sx.Object {
-	text := sx.String(val)
+	text := sx.MakeString(val)
 	zid, err := id.Parse(val)
 	if err != nil {
 		return text
@@ -85,10 +85,10 @@ func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc)
 		ub := wui.NewURLBuilder('h').SetZid(zid.ZettelID())
 		attrs := sx.Nil()
 		if title != "" {
-			attrs = attrs.Cons(sx.Cons(shtml.SymAttrTitle, sx.String(title)))
+			attrs = attrs.Cons(sx.Cons(shtml.SymAttrTitle, sx.MakeString(title)))
 		}
-		attrs = attrs.Cons(sx.Cons(shtml.SymAttrHref, sx.String(ub.String()))).Cons(sxhtml.SymAttr)
-		return sx.Nil().Cons(sx.String(zid.String())).Cons(attrs).Cons(shtml.SymA)
+		attrs = attrs.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(ub.String()))).Cons(sxhtml.SymAttr)
+		return sx.Nil().Cons(sx.MakeString(zid.String())).Cons(attrs).Cons(shtml.SymA)
 	case found == 0:
 		return sx.MakeList(sx.MakeSymbol("s"), text)
 	default: // case found < 0:
@@ -100,7 +100,7 @@ func (wui *WebUI) transformIdentifierSet(vals []string, getTextTitle getTextTitl
 	if len(vals) == 0 {
 		return nil
 	}
-	const space = sx.String(" ")
+	var space = sx.MakeString(" ")
 	text := make(sx.Vector, 0, 2*len(vals))
 	for _, val := range vals {
 		text = append(text, space, wui.transformIdentifier(val, getTextTitle))
@@ -112,7 +112,7 @@ func (wui *WebUI) transformTagSet(key string, tags []string) *sx.Pair {
 	if len(tags) == 0 {
 		return nil
 	}
-	const space = sx.String(" ")
+	var space = sx.MakeString(" ")
 	text := make(sx.Vector, 0, 2*len(tags)+2)
 	for _, tag := range tags {
 		text = append(text, space, wui.transformKeyValueText(key, tag, tag))
@@ -141,9 +141,9 @@ func buildHref(ub *api.URLBuilder, text string) *sx.Pair {
 		shtml.SymA,
 		sx.MakeList(
 			sxhtml.SymAttr,
-			sx.Cons(shtml.SymAttrHref, sx.String(ub.String())),
+			sx.Cons(shtml.SymAttrHref, sx.MakeString(ub.String())),
 		),
-		sx.String(text),
+		sx.MakeString(text),
 	)
 }
 

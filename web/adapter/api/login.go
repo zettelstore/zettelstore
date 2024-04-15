@@ -103,8 +103,8 @@ func (a *API) MakeRenewAuthHandler() http.HandlerFunc {
 
 func (a *API) writeToken(w http.ResponseWriter, token string, lifetime time.Duration) error {
 	return a.writeObject(w, id.Invalid, sx.MakeList(
-		sx.String("Bearer"),
-		sx.String(token),
+		sx.MakeString("Bearer"),
+		sx.MakeString(token),
 		sx.Int64(int64(lifetime/time.Second)),
 	))
 }

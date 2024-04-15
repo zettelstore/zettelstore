@@ -92,7 +92,7 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 	now := time.Now().Round(time.Second)
 	sClaim := sx.MakeList(
 		sx.Int64(kind),
-		sx.String(subject),
+		sx.MakeString(subject),
 		sx.Int64(now.Unix()),
 		sx.Int64(now.Add(d).Unix()),
 		sx.Int64(ident.Zid),
@@ -125,7 +125,7 @@ func setupTokenData(obj sx.Object, k auth.TokenKind, tokenData *auth.TokenData) 
 	if auth.TokenKind(vals[0].(sx.Int64)) != k {
 		return ErrOtherKind
 	}
-	ident := vals[1].(sx.String)
+	ident := vals[1].(sx.String).GetValue()
 	if ident == "" {
 		return ErrNoIdent
 	}

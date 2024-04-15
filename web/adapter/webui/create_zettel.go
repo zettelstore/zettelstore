@@ -107,13 +107,13 @@ func (wui *WebUI) renderZettelForm(
 		sb.WriteByte('\n')
 	}
 	env, rb := wui.createRenderEnv(ctx, "form", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
-	rb.bindString("heading", sx.String(title))
-	rb.bindString("form-action-url", sx.String(formActionURL))
+	rb.bindString("heading", sx.MakeString(title))
+	rb.bindString("form-action-url", sx.MakeString(formActionURL))
 	rb.bindString("role-data", makeStringList(roleData))
 	rb.bindString("syntax-data", makeStringList(syntaxData))
-	rb.bindString("meta", sx.String(sb.String()))
+	rb.bindString("meta", sx.MakeString(sb.String()))
 	if !ztl.Content.IsBinary() {
-		rb.bindString("content", sx.String(ztl.Content.AsString()))
+		rb.bindString("content", sx.MakeString(ztl.Content.AsString()))
 	}
 	wui.bindCommonZettelData(ctx, &rb, user, m, &ztl.Content)
 	if rb.err == nil {

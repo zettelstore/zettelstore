@@ -77,12 +77,12 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		zid, fragment, hasFragment := strings.Cut(string(href), "#")
+		zid, fragment, hasFragment := strings.Cut(href.GetValue(), "#")
 		u := builder.NewURLBuilder('h').SetZid(api.ZettelID(zid))
 		if hasFragment {
 			u = u.SetFragment(fragment)
 		}
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(u.String())))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	}
 
@@ -101,8 +101,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		u := builder.NewURLBuilder('/').SetRawLocal(string(href))
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		u := builder.NewURLBuilder('/').SetRawLocal(href.GetValue())
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(u.String())))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymLinkQuery, func(obj sx.Object) sx.Object {
@@ -118,7 +118,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		ur, err := url.Parse(string(href))
+		ur, err := url.Parse(href.GetValue())
 		if err != nil {
 			return obj
 		}
@@ -127,7 +127,7 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 			return obj
 		}
 		u := builder.NewURLBuilder('h').AppendQuery(q)
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.String(u.String())))
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(u.String())))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymLinkExternal, func(obj sx.Object) sx.Object {
@@ -135,9 +135,9 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if attr == nil {
 			return obj
 		}
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrClass, sx.String("external"))).
-			Cons(sx.Cons(shtml.SymAttrTarget, sx.String("_blank"))).
-			Cons(sx.Cons(shtml.SymAttrRel, sx.String("noopener noreferrer")))
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrClass, sx.MakeString("external"))).
+			Cons(sx.Cons(shtml.SymAttrTarget, sx.MakeString("_blank"))).
+			Cons(sx.Cons(shtml.SymAttrRel, sx.MakeString("noopener noreferrer")))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymEmbed, func(obj sx.Object) sx.Object {
@@ -157,12 +157,12 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !isString {
 			return obj
 		}
-		zid := api.ZettelID(src)
+		zid := api.ZettelID(src.GetValue())
 		if !zid.IsValid() {
 			return obj
 		}
 		u := builder.NewURLBuilder('z').SetZid(zid)
-		imgAttr := attr.Tail().Cons(sx.Cons(shtml.SymAttrSrc, sx.String(u.String()))).Cons(sxhtml.SymAttr)
+		imgAttr := attr.Tail().Cons(sx.Cons(shtml.SymAttrSrc, sx.MakeString(u.String()))).Cons(sxhtml.SymAttr)
 		return pair.Tail().Tail().Cons(imgAttr).Cons(shtml.SymIMG)
 	})
 

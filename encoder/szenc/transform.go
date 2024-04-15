@@ -48,14 +48,14 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return sx.MakeList(
 			mapGetS(mapVerbatimKindS, n.Kind),
 			getAttributes(n.Attrs),
-			sx.String(string(n.Content)),
+			sx.MakeString(string(n.Content)),
 		)
 	case *ast.RegionNode:
 		return t.getRegion(n)
 	case *ast.HeadingNode:
 		return t.getInlineList(n.Inlines).
-			Cons(sx.String(n.Fragment)).
-			Cons(sx.String(n.Slug)).
+			Cons(sx.MakeString(n.Fragment)).
+			Cons(sx.MakeString(n.Slug)).
 			Cons(getAttributes(n.Attrs)).
 			Cons(sx.Int64(int64(n.Level))).
 			Cons(sz.SymHeading)
@@ -72,10 +72,10 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 	case *ast.BLOBNode:
 		return t.getBLOB(n)
 	case *ast.TextNode:
-		return sx.MakeList(sz.SymText, sx.String(n.Text))
+		return sx.MakeList(sz.SymText, sx.MakeString(n.Text))
 	case *ast.SpaceNode:
 		if t.inVerse {
-			return sx.MakeList(sz.SymSpace, sx.String(n.Lexeme))
+			return sx.MakeList(sz.SymSpace, sx.MakeString(n.Lexeme))
 		}
 		return sx.MakeList(sz.SymSpace)
 	case *ast.BreakNode:
@@ -87,7 +87,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getLink(n)
 	case *ast.EmbedRefNode:
 		return t.getInlineList(n.Inlines).
-			Cons(sx.String(n.Syntax)).
+			Cons(sx.MakeString(n.Syntax)).
 			Cons(getReference(n.Ref)).
 			Cons(getAttributes(n.Attrs)).
 			Cons(sz.SymEmbed)
@@ -95,7 +95,7 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getEmbedBLOB(n)
 	case *ast.CiteNode:
 		return t.getInlineList(n.Inlines).
-			Cons(sx.String(n.Key)).
+			Cons(sx.MakeString(n.Key)).
 			Cons(getAttributes(n.Attrs)).
 			Cons(sz.SymCite)
 	case *ast.FootnoteNode:
@@ -103,9 +103,9 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getInlineList(n.Inlines).Cons(getAttributes(n.Attrs)).Cons(sz.SymEndnote)
 	case *ast.MarkNode:
 		return t.getInlineList(n.Inlines).
-			Cons(sx.String(n.Fragment)).
-			Cons(sx.String(n.Slug)).
-			Cons(sx.String(n.Mark)).
+			Cons(sx.MakeString(n.Fragment)).
+			Cons(sx.MakeString(n.Slug)).
+			Cons(sx.MakeString(n.Mark)).
 			Cons(sz.SymMark)
 	case *ast.FormatNode:
 		return t.getInlineList(n.Inlines).
@@ -115,10 +115,10 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return sx.MakeList(
 			mapGetS(mapLiteralKindS, n.Kind),
 			getAttributes(n.Attrs),
-			sx.String(string(n.Content)),
+			sx.MakeString(string(n.Content)),
 		)
 	}
-	return sx.MakeList(sz.SymUnknown, sx.String(fmt.Sprintf("%T %v", node, node)))
+	return sx.MakeList(sz.SymUnknown, sx.MakeString(fmt.Sprintf("%T %v", node, node)))
 }
 
 var mapVerbatimKindS = map[ast.VerbatimKind]*sx.Symbol{
@@ -268,14 +268,14 @@ func (t *Transformer) getCell(cell *ast.TableCell) *sx.Pair {
 func (t *Transformer) getBLOB(bn *ast.BLOBNode) *sx.Pair {
 	var lastObj sx.Object
 	if bn.Syntax == meta.SyntaxSVG {
-		lastObj = sx.String(string(bn.Blob))
+		lastObj = sx.MakeString(string(bn.Blob))
 	} else {
 		lastObj = getBase64String(bn.Blob)
 	}
 	return sx.MakeList(
 		sz.SymBLOB,
 		t.getInlineList(bn.Description),
-		sx.String(bn.Syntax),
+		sx.MakeString(bn.Syntax),
 		lastObj,
 	)
 }
@@ -294,7 +294,7 @@ var mapRefStateLink = map[ast.RefState]*sx.Symbol{
 
 func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
 	return t.getInlineList(ln.Inlines).
-		Cons(sx.String(ln.Ref.Value)).
+		Cons(sx.MakeString(ln.Ref.Value)).
 		Cons(getAttributes(ln.Attrs)).
 		Cons(mapGetS(mapRefStateLink, ln.Ref.State))
 }
@@ -302,11 +302,11 @@ func (t *Transformer) getLink(ln *ast.LinkNode) *sx.Pair {
 func (t *Transformer) getEmbedBLOB(en *ast.EmbedBLOBNode) *sx.Pair {
 	tail := t.getInlineList(en.Inlines)
 	if en.Syntax == meta.SyntaxSVG {
-		tail = tail.Cons(sx.String(string(en.Blob)))
+		tail = tail.Cons(sx.MakeString(string(en.Blob)))
 	} else {
 		tail = tail.Cons(getBase64String(en.Blob))
 	}
-	return tail.Cons(sx.String(en.Syntax)).Cons(getAttributes(en.Attrs)).Cons(sz.SymEmbedBLOB)
+	return tail.Cons(sx.MakeString(en.Syntax)).Cons(getAttributes(en.Attrs)).Cons(sz.SymEmbedBLOB)
 }
 
 func (t *Transformer) getBlockList(bs *ast.BlockSlice) *sx.Pair {
@@ -331,7 +331,7 @@ func getAttributes(a attrs.Attributes) sx.Object {
 	keys := a.Keys()
 	objs := make(sx.Vector, 0, len(keys))
 	for _, k := range keys {
-		objs = append(objs, sx.Cons(sx.String(k), sx.String(a[k])))
+		objs = append(objs, sx.Cons(sx.MakeString(k), sx.MakeString(a[k])))
 	}
 	return sx.MakeList(objs...)
 }
@@ -349,7 +349,7 @@ var mapRefStateS = map[ast.RefState]*sx.Symbol{
 }
 
 func getReference(ref *ast.Reference) *sx.Pair {
-	return sx.MakeList(mapGetS(mapRefStateS, ref.State), sx.String(ref.Value))
+	return sx.MakeList(mapGetS(mapRefStateS, ref.State), sx.MakeString(ref.Value))
 }
 
 var mapMetaTypeS = map[*meta.DescriptionType]*sx.Symbol{
@@ -378,14 +378,14 @@ func (t *Transformer) GetMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) *sx.P
 			setList := meta.ListFromValue(p.Value)
 			setObjs := make(sx.Vector, len(setList))
 			for i, val := range setList {
-				setObjs[i] = sx.String(val)
+				setObjs[i] = sx.MakeString(val)
 			}
 			obj = sx.MakeList(setObjs...)
 		} else if ty == meta.TypeZettelmarkup {
 			is := evalMeta(p.Value)
 			obj = t.getInlineList(is)
 		} else {
-			obj = sx.String(p.Value)
+			obj = sx.MakeString(p.Value)
 		}
 		objs = append(objs, sx.Nil().Cons(obj).Cons(sx.MakeSymbol(key)).Cons(symType))
 	}
@@ -407,7 +407,7 @@ func getBase64String(data []byte) sx.String {
 		err = encoder.Close()
 	}
 	if err == nil {
-		return sx.String(sb.String())
+		return sx.MakeString(sb.String())
 	}
-	return sx.String("")
+	return sx.MakeString("")
 }

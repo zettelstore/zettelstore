@@ -216,8 +216,8 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 
 	_, err := sx.Print(w, sx.MakeList(
 		sx.MakeSymbol("meta-list"),
-		sx.MakeList(sx.MakeSymbol("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sx.MakeSymbol("human"), sx.String(dze.sq.Human())),
+		sx.MakeList(sx.MakeSymbol("query"), sx.MakeString(dze.sq.String())),
+		sx.MakeList(sx.MakeSymbol("human"), sx.MakeString(dze.sq.Human())),
 		sx.MakeList(result...),
 	))
 	return err
@@ -229,14 +229,14 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 		for i := len(metaList) - 1; i >= 0; i-- {
 			sxMeta = sxMeta.Cons(sx.Int64(metaList[i].Zid))
 		}
-		sxMeta = sxMeta.Cons(sx.String(aggKey))
+		sxMeta = sxMeta.Cons(sx.MakeString(aggKey))
 		result = result.Cons(sxMeta)
 	}
 	_, err := sx.Print(w, sx.MakeList(
 		sx.MakeSymbol("aggregate"),
-		sx.String(act),
-		sx.MakeList(sx.MakeSymbol("query"), sx.String(dze.sq.String())),
-		sx.MakeList(sx.MakeSymbol("human"), sx.String(dze.sq.Human())),
+		sx.MakeString(act),
+		sx.MakeList(sx.MakeSymbol("query"), sx.MakeString(dze.sq.String())),
+		sx.MakeList(sx.MakeSymbol("human"), sx.MakeString(dze.sq.Human())),
 		result.Cons(sx.SymbolList),
 	))
 	return err
