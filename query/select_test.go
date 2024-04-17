@@ -17,7 +17,7 @@ import (
 	"context"
 	"testing"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"

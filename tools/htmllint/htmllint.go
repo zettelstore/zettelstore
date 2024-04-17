@@ -25,8 +25,8 @@ import (
 	"sort"
 	"strings"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/client"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/client"
 	"zettelstore.de/z/tools"
 )
 

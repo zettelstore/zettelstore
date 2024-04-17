@@ -19,7 +19,7 @@ import (
 	"os"
 	"runtime"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"

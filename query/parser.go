@@ -16,8 +16,8 @@ package query
 import (
 	"strconv"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )

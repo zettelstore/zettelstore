@@ -20,8 +20,8 @@ import (
 
 	"t73f.de/r/sx"
 	"t73f.de/r/sx/sxhtml"
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/shtml"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/szenc"

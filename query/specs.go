@@ -13,7 +13,7 @@
 
 package query
 
-import "zettelstore.de/client.fossil/api"
+import "t73f.de/r/zsc/api"
 
 // IdentSpec contains all specification values to calculate the ident directive.
 type IdentSpec struct{}

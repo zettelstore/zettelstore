@@ -17,7 +17,7 @@ import (
 	"net/http"
 
 	"t73f.de/r/sx"
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"
 	"zettelstore.de/z/web/content"

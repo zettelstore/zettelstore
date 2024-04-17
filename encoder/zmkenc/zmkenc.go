@@ -19,8 +19,8 @@ import (
 	"io"
 	"strings"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/attrs"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/attrs"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/encoder/textenc"

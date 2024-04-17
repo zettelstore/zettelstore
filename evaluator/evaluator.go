@@ -25,9 +25,9 @@ import (
 
 	"t73f.de/r/sx/sxbuiltins"
 	"t73f.de/r/sx/sxreader"
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/attrs"
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/attrs"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"

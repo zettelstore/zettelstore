@@ -23,7 +23,7 @@ import (
 	"t73f.de/r/sx"
 	"t73f.de/r/sx/sxeval"
 	"t73f.de/r/sx/sxhtml"
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"

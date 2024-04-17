@@ -14,7 +14,7 @@
 package policy
 
 import (
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/zettel/meta"
 )

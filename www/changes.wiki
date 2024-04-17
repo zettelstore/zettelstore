@@ -11,6 +11,8 @@
      identifier <code>00000000000008</code>. It shows some statistics about
      memory usage.
      (minor: webui)
+  *  Zettelstore client is now Go package t73f.de/r/zsc.
+     (minor)
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (2024-03-04)</h2>
@@ -797,8 +799,7 @@
      each zettel in the WebUI). Additionally, all deprecated uses of
      <code>//</code> will be rendered with a dashed box within the WebUI.
      (breaking: Zettelmarkup).
-  *  API client software is now a [https://zettelstore.de/client/|separate]
-     project.
+  *  API client software is now a separate project.
      (breaking)
   *  Initial support for HTTP security headers (Content-Security-Policy,
      Permissions-Policy, Referrer-Policy, X-Content-Type-Options,

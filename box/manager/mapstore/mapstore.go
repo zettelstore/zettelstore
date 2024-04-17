@@ -22,8 +22,8 @@ import (
 	"strings"
 	"sync"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/maps"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/maps"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/manager/store"
 	"zettelstore.de/z/zettel/id"

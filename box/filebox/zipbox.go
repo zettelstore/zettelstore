@@ -20,7 +20,7 @@ import (
 	"io"
 	"strings"
 
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/box/notify"
 	"zettelstore.de/z/logger"

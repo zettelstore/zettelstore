@@ -16,8 +16,8 @@ package encoder_test
 import (
 	"testing"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel/id"

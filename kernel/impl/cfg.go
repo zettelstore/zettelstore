@@ -21,7 +21,7 @@ import (
 	"strings"
 	"sync"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/box"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/kernel"

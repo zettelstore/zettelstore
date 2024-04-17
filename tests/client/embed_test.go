@@ -18,7 +18,7 @@ import (
 	"strings"
 	"testing"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 )
 
 const (

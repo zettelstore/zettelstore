@@ -12,5 +12,5 @@ golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=
 golang.org/x/text v0.14.0/go.mod h1:18ZOQIKpY8NJVqYksKHtTdi31H5itFRjB5/qKTNYzSU=
 t73f.de/r/sx v0.0.0-20240416143901-c53bc8133c74 h1:CytNgaY1V/ogI04xuCnbQ0quS9pWzq0Y4Ko/bZCfSs4=
 t73f.de/r/sx v0.0.0-20240416143901-c53bc8133c74/go.mod h1:G9pD1j2R6y9ZkPBb81mSnmwaAvTOg7r6jKp/OF7WeFA=
-zettelstore.de/client.fossil v0.0.0-20240416150427-88511414698a h1:YObBY2RKddNWBjIioGiKKZKBlVa1myGrVLElHKNj2y8=
-zettelstore.de/client.fossil v0.0.0-20240416150427-88511414698a/go.mod h1:XfqTCWffKLfjaj/4PTsf+l3dLI1U8b5EEMBaUwm9lHY=
+t73f.de/r/zsc v0.0.0-20240417160056-18303af46208 h1:TnPfqfp3tBRHmq+UufXH5dbazy40dImRBkLp0POK1EI=
+t73f.de/r/zsc v0.0.0-20240417160056-18303af46208/go.mod h1:bGv2uFncUF2nGkdxjYuNvP/AHHTONqyLeVn9xce6+Vo=

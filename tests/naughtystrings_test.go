@@ -20,8 +20,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/input"
 	_ "zettelstore.de/z/cmd"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/parser"

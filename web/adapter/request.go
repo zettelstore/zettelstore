@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/query"
 )

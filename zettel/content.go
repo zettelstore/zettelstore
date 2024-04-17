@@ -21,7 +21,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/input"
 )
 
 // Content is just the content of a zettel.

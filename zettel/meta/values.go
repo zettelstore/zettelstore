@@ -16,7 +16,7 @@ package meta
 import (
 	"fmt"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 )
 
 // Supported syntax values.

@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"t73f.de/r/sx"
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/sexp"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/sexp"
 	"zettelstore.de/z/query"
 	"zettelstore.de/z/usecase"
 	"zettelstore.de/z/web/adapter"

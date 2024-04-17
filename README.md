@@ -13,8 +13,8 @@ To get an initial impression, take a look at the
 [manual](https://zettelstore.de/manual/). It is a live example of the
 zettelstore software, running in read-only mode.
 
-[Zettelstore Client](https://zettelstore.de/client) provides client
-software to access Zettelstore via its API more easily, [Zettelstore
+[Zettelstore Client](https://t73f.de/r/zsc) provides client software to access
+Zettelstore via its API more easily, [Zettelstore
 Contrib](https://zettelstore.de/contrib) contains contributed software, which
 often connects to Zettelstore via its API. Some of the software packages may be
 experimental.

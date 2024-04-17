@@ -16,7 +16,7 @@ package zettelmark
 import (
 	"fmt"
 
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/ast"
 )
 

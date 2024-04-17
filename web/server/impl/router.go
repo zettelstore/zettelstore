@@ -19,7 +19,7 @@ import (
 	"regexp"
 	"strings"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"

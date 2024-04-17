@@ -19,7 +19,7 @@ import (
 	"context"
 	"time"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/config"
 	"zettelstore.de/z/encoding"
 	"zettelstore.de/z/encoding/xml"

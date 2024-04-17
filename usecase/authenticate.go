@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"time"
 
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/auth/cred"
 	"zettelstore.de/z/logger"

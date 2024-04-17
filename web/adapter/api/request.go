@@ -19,9 +19,9 @@ import (
 	"net/url"
 
 	"t73f.de/r/sx/sxreader"
-	"zettelstore.de/client.fossil/api"
-	"zettelstore.de/client.fossil/input"
-	"zettelstore.de/client.fossil/sexp"
+	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/input"
+	"t73f.de/r/zsc/sexp"
 	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"

@@ -18,8 +18,8 @@ import (
 	"strings"
 	"unicode"
 
-	"zettelstore.de/client.fossil/attrs"
-	"zettelstore.de/client.fossil/input"
+	"t73f.de/r/zsc/attrs"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/parser"
 	"zettelstore.de/z/zettel/meta"

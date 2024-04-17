@@ -18,7 +18,7 @@ import (
 	"io"
 
 	"t73f.de/r/sx"
-	"zettelstore.de/client.fossil/api"
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"

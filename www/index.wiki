@@ -16,8 +16,8 @@ zettelstore software, running in read-only mode.
 The software, including the manual, is licensed under the
 [/file?name=LICENSE.txt&ci=trunk|European Union Public License 1.2 (or later)].
 
-  *  [https://zettelstore.de/client|Zettelstore Client] provides client
-     software to access Zettelstore via its API more easily.
+  *  [https://t73f.de/r/zsc|Zettelstore Client] provides client software to
+     access Zettelstore via its API more easily.
   *  [https://zettelstore.de/contrib|Zettelstore Contrib] contains contributed
      software, which often connects to Zettelstore via its API. Some of the
      software packages may be experimental.
