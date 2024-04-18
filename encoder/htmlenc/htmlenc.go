@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"t73f.de/r/sx"
-	"t73f.de/r/sx/sxhtml"
+	"t73f.de/r/sxhtml"
 	"t73f.de/r/zsc/api"
 	"t73f.de/r/zsc/shtml"
 	"zettelstore.de/z/ast"
