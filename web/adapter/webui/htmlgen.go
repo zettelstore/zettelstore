@@ -101,8 +101,8 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		if !ok {
 			return obj
 		}
-		u := builder.NewURLBuilder('/').SetRawLocal(href.GetValue())
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(u.String())))
+		u := builder.NewURLBuilder('/')
+		assoc = assoc.Cons(sx.Cons(shtml.SymAttrHref, sx.MakeString(u.String()+href.GetValue()[1:])))
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymLinkQuery, func(obj sx.Object) sx.Object {
