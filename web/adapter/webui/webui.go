@@ -22,7 +22,7 @@ import (
 
 	"t73f.de/r/sx"
 	"t73f.de/r/sx/sxeval"
-	"t73f.de/r/sxhtml"
+	"t73f.de/r/sxwebs/sxhtml"
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/box"

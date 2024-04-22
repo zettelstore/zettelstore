@@ -24,7 +24,7 @@ import (
 	"t73f.de/r/sx/sxbuiltins"
 	"t73f.de/r/sx/sxeval"
 	"t73f.de/r/sx/sxreader"
-	"t73f.de/r/sxhtml"
+	"t73f.de/r/sxwebs/sxhtml"
 	"t73f.de/r/zsc/api"
 	"t73f.de/r/zsc/shtml"
 	"zettelstore.de/z/box"
