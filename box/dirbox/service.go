@@ -363,8 +363,14 @@ func cmdCleanupMeta(m *meta.Meta, entry *notify.DirEntry) {
 	)
 }
 
+// fileMode to create a new file: user, group, and all are allowed to read and write.
+//
+// If you want to forbid others or the group to read or to write, you must set
+// umask(1) accordingly.
+const fileMode os.FileMode = 0666 //
+
 func openFileWrite(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fileMode)
 }
 
 func writeFileZid(w io.Writer, zid id.Zid) error {

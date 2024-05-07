@@ -4,6 +4,11 @@
 <h2>Changes for Version 0.18.0 (pending)</h2>
   *  Remove Sx macro <code>defunconst</code>. Use <code>defun</code> instead.
      (breaking: webui)
+  *  New zettel are now created with the permission for others to read/write
+     them. This is important especially for Unix-like systems. If you want the
+     previous behaviour, set <code>umask</code> accordingly, for example
+     <code>umask 066</code>.
+     (major: dirbox)
   *  Update Sx prelude: make macros more robust / more general. This might
      break your code in the future.
      (minor: webui)
@@ -79,7 +84,7 @@
      Results in a new predefined zettel with identifier 00000000090004, which
      is a template for new role zettel.
      (minor: webui)
-  *  Timestamp values can be abbrevated by omitting most of its components.
+  *  Timestamp values can be abbreviated by omitting most of its components.
      Previously, such values that are not in the format YYYYMMDDhhmmss were
      ignored. Now the following formats are also allowed: YYYY, YYYYMM,
      YYYYMMDD, YYYYMMDDhh, YYYYMMDDhhmm. Querying and sorting work accordingly.
@@ -127,7 +132,7 @@
      (minor)
   *  If an error page cannot be created due to template errors (or similar), a
      plain text error page is delivered instead. It shows the original error
-     and the error that occured durng rendering the original error page.
+     and the error that occurred during rendering the original error page.
      (minor: webui)
   *  Some smaller bug fixes and improvements, to the software and to the
      documentation.
@@ -287,7 +292,7 @@
      just a plain string, possibly empty. Therefore, no inline formatting (like
      bold text), no links, no footnotes, no citations (the latter made
      rendering the title often questionable, in some contexts). If you used
-     special entities, please use the unicode characters directly. However, as
+     special entities, please use the Unicode characters directly. However, as
      a good practice, it is often the best to printable ASCII characters.
      (breaking)
   *  Remove runtime configuration <code>marker-external</code>. It was added in
@@ -365,11 +370,11 @@
   *  Interpret zettel files with extension <code>.webp</code> as an binary
      image file format.
      (minor)
-  *  Allow to specify service specific log level via statup configuration and
+  *  Allow to specify service specific log level via startup configuration and
      via command line.
      (minor)
   *  Allow to specify a zettel to serve footer content via runtime
-     comfiguration <code>footer-zettel</code>. Can be overwritten by user
+     configuration <code>footer-zettel</code>. Can be overwritten by user
      zettel.
      (minor: webui)
   *  Footer data is automatically separated by a thematic break / horizontal
@@ -390,7 +395,7 @@
      endpoint <code>/z</code>. Basically, the previous endpoint will be
      refactored as query parameter of endpoint <code>/z</code>. To reduce
      errors, there will be no version, where the previous endpoint are still
-     available and the new funnctionality is still there. This is a warning to
+     available and the new functionality is still there. This is a warning to
      prepare for some breaking changes in v0.10.0. This also affects the API
      client implementation.
      (warning: api)
@@ -496,7 +501,7 @@
   *  Add support for an asset directory, accessible via URL prefix
      <code>/assests/</code>.
      (minor: server)
-  *  Add support for metadata key <code>created</code>, a timestamp when the
+  *  Add support for metadata key <code>created</code>, a time stamp when the
      zettel was created. Since key <code>published</code> is now either
      <code>created</code> or <code>modified</code>, it will now always contains
      a valid time stamp.
@@ -513,7 +518,7 @@
   *  Tags within zettel content are deprecated in version 0.8. This affects the
      computed metadata keys <code>content-tags</code> and
      <code>all-tags</code>. They will be removed. The number sign of a content
-     tag introduces unintended tags, esp. in the english language; content tags
+     tag introduces unintended tags, esp. in the English language; content tags
      may occur within links &rarr; links within links, when rendered as HTML;
      content tags may occur in the title of a zettel; naming of content tags,
      zettel tags, and their union is confusing for many. Migration: use zettel
@@ -540,7 +545,7 @@
      &amp;hellip; instead.
      (breaking: zettelmarkup)
   *  Allow to specify search expressions, which allow to specify search
-     criterias by using a simple syntax. Can be specified in WebUI's search box
+     criteria by using a simple syntax. Can be specified in WebUI's search box
      and via the API by using query parameter "_s".
      (major: api, webui)
   *  A link reference is allowed to be a search expression. The WebUI will
@@ -558,7 +563,7 @@
      (minor)
   *  Added a small tutorial for Zettelmarkup.
      (minor: manual)
-  *  Using URL query parameter to search for metdata values, specify an
+  *  Using URL query parameter to search for metadata values, specify an
      ordering, an offset, and a limit for the resulting list, will be removed
      in version 0.7. Replace these with the more useable search expressions.
      Please be aware that the = search operator is also deprecated. It was only
@@ -620,7 +625,7 @@
      (minor: webui)
   *  Zettel role and zettel syntax are backed by a HTML5 data list element
      which lists supported and used values to help to enter a valid value.
-     (mirnor: webui)
+     (minor: webui)
   *  Allow to use startup configuration, even if started in simple mode.
      (minor)
   *  Log authentication issues in level "sense"; add caller IP address to some
@@ -641,8 +646,8 @@
      <code>&quot;&quot;...&quot;&quot;</code> generates the equivalent code.
      Typographical quotes are generated by the browser, not by Zettelstore.
      (breaking: Zettelmarkup)
-  *  Remove inline formatting for monospace. Its syntax is now used by the
-     similar syntax element of literal computer input. Monospace was just
+  *  Remove inline formatting for mono space. Its syntax is now used by the
+     similar syntax element of literal computer input. Mono space was just
      a visual element with no semantic association. Now, the syntax
      <kbd>++...++</kbd> is obsolete.
      (breaking: Zettelmarkup).
@@ -675,7 +680,7 @@
      (minor: api, webui)
   *  Make some metadata-based searches a little bit faster by executing
      a (in-memory-based) full-text search first. Now only those zettel are
-     loaded from file that contain the metdata value.
+     loaded from file that contain the metadata value.
      (minor: api, webui)
   *  Add an API call to retrieve the version of the Zettelstore.
      (minor: api)
@@ -691,7 +696,7 @@
 <a id="0_3"></a>
 <h2>Changes for Version 0.3 (2022-02-09)</h2>
   *  Zettel files with extension <code>.meta</code> are now treated as content
-     files. Previoulsy, they were interpreted as metadata files. The
+     files. Previously, they were interpreted as metadata files. The
      interpretation as metadata files was deprecated in version 0.2.
      (breaking: directory and file/zip box)
   *  Add syntax &ldquo;draw&rdquo; to produce some graphical representations.
@@ -764,7 +769,7 @@
   *  Add API call to check for enabled authentication.
      (minor: api)
   *  Renewing an API access token works even if authentication is not enabled.
-     This corresponds to the behaviour of optaining an access token.
+     This corresponds to the behaviour of obtaining an access token.
      (minor: api)
   *  If there is nothing to return, use HTTP status code 204, instead of 200 +
      <code>Content-Length: 0</code>.
@@ -772,7 +777,7 @@
   *  Metadata key <code>duplicates</code> stores the duplicate file names,
      instead of just a boolean value that there were duplicate file names.
      (minor)
-  *  Document autostarting Zettelstore on Windows, macOS, and Linux.
+  *  Document auto starting Zettelstore on Windows, macOS, and Linux.
      (minor)
   *  Many smaller bug fixes and improvements, to the software and to the
      documentation.
@@ -805,7 +810,7 @@
      Permissions-Policy, Referrer-Policy, X-Content-Type-Options,
      X-Frame-Options). Header values are currently some constant values.
      (possibly breaking: api, webui)
-  *  Remove visual Zettelmarkup (bold, striketrough). Semantic Zettelmarkup
+  *  Remove visual Zettelmarkup (bold, strike through). Semantic Zettelmarkup
      (strong, delete) is still allowed and replaces the visual elements
      syntactically. The visual appearance should not change (depends on your
      changes / additions to CSS zettel).
@@ -872,7 +877,7 @@
   *  Endpoint <code>/z/{ID}</code> allows the same methods as endpoint
      <code>/j/{ID}</code>: <code>GET</code> retrieves zettel (see above),
      <code>PUT</code> updates a zettel, <code>DELETE</code> deletes a zettel,
-     <code>MOVE</code> renames a zettel. In addtion, <code>POST /z</code> will
+     <code>MOVE</code> renames a zettel. In addition, <code>POST /z</code> will
      create a new zettel. When zettel data must be given, the format is plain
      text, with metadata separated from content by an empty line. See
      documentation for more details.
@@ -929,9 +934,9 @@
      software (e.g. on a mobile device) that automatically creates new zettel
      but, in case of a password loss, should not allow to read existing zettel.
      (minor, possibly breaking, because new zettel template zettel must always
-     prepend the string <code>new-</code> before metdata keys that should be
+     prepend the string <code>new-</code> before metadata keys that should be
      transferred to the new zettel)
-  *  New suported metadata key <code>box-number</code>, which gives an
+  *  New supported metadata key <code>box-number</code>, which gives an
      indication from which box the zettel was loaded.
      (minor)
   *  New supported syntax <code>html</code>.
@@ -1051,7 +1056,7 @@ A note for users of macOS: in the current release and with macOS's default
 values, a zettel directory must not contain more than approx. 250 files. There
 are three options to mitigate this limitation temporarily:
   #  You update the per-process limit of open files on macOS.
-  #  You setup a virtualization environment to run Zettelstore on Linux or
+  #  You setup a virtualisation environment to run Zettelstore on Linux or
      Windows.
   #  You wait for version 0.0.12 which addresses this issue.
 
@@ -1235,9 +1240,10 @@ instead of GitHub. To access older versions, use the Git repository under
              modified them.
   *  (major) Rename key <code>readonly</code> of <i>Zettelstore Startup
              Configuration</i> to <code>read-only-mode</code>. This was done to
-             avoid some confusion with the the zettel metadata key
-             <code>read-only</code>. <b>Please adapt your startup configuration.
-             Otherwise your Zettelstore will be accidentally writable.</b>
+             avoid some confusion with the zettel metadata key
+             <code>read-only</code>. <b>Please adapt your startup
+             configuration. Otherwise your Zettelstore will be accidentally
+             writable.</b>
   *  (minor) References starting with &ldquo;./&rdquo; and &ldquo;../&rdquo;
              are treated as a local reference. Previously, only the prefix
              &ldquo;/&rdquo; was treated as a local reference.
