@@ -123,21 +123,19 @@ func (wui *WebUI) MakeGetInfoHandler(
 func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries, extLinks *sx.Pair) {
 	for i := len(links) - 1; i >= 0; i-- {
 		ref := links[i]
-		if ref.State == ast.RefStateSelf || ref.IsZettel() {
-			continue
-		}
-		if ref.State == ast.RefStateQuery {
+		switch ref.State {
+		case ast.RefStateHosted, ast.RefStateBased: // Local
+			locLinks = locLinks.Cons(sx.MakeString(ref.String()))
+
+		case ast.RefStateQuery:
 			queries = queries.Cons(
 				sx.Cons(
 					sx.MakeString(ref.Value),
 					sx.MakeString(wui.NewURLBuilder('h').AppendQuery(ref.Value).String())))
-			continue
-		}
-		if ref.IsExternal() {
+
+		case ast.RefStateExternal:
 			extLinks = extLinks.Cons(sx.MakeString(ref.String()))
-			continue
 		}
-		locLinks = locLinks.Cons(sx.Cons(sx.MakeBoolean(ref.IsValid()), sx.MakeString(ref.String())))
 	}
 	return locLinks, queries, extLinks
 }

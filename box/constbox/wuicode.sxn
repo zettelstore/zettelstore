@@ -21,16 +21,11 @@
 (defun wui-info-meta-table-row (p)
     `(tr (td (@ (class zs-info-meta-key)) ,(car p)) (td (@ (class zs-info-meta-value)) ,(cdr p))))
 
-;; wui-valid-link translates a local link into a HTML link. A link is a pair
-;; (valid . url). If valid is not truish, only the invalid url is returned.
-(defun wui-valid-link (l)
-    (if (car l)
-        `(li (a (@ (href ,(cdr l))) ,(cdr l)))
-        `(li ,(cdr l))))
+;; wui-local-link translates a local link into HTML.
+(defun wui-local-link (l) `(li (a (@ (href ,l )) ,l)))
 
 ;; wui-link takes a link (title . url) and returns a HTML reference.
-(defun wui-link (q)
-    `(a (@ (href ,(cdr q))) ,(car q)))
+(defun wui-link (q) `(a (@ (href ,(cdr q))) ,(car q)))
 
 ;; wui-item-link taks a pair (text . url) and returns a HTML link inside
 ;; a list item.
