@@ -39,7 +39,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 	ucParseZettel usecase.ParseZettel,
 	ucEvaluate *usecase.Evaluate,
 	ucGetZettel usecase.GetZettel,
-	ucGetAllMeta usecase.GetAllZettel,
+	ucGetAllZettel usecase.GetAllZettel,
 	ucQuery *usecase.Query,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +94,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 			return
 		}
 		encTexts := encodingTexts()
-		shadowLinks := getShadowLinks(ctx, zid, ucGetAllMeta)
+		shadowLinks := getShadowLinks(ctx, zid, ucGetAllZettel)
 
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(ctx, "info", wui.rtConfig.Get(ctx, nil, api.KeyLang), title, user)
