@@ -120,7 +120,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TableNode:
 		return nil // Should write no content
 	case *ast.TextNode:
-		v.visitText(n)
+		v.b.WriteString(n.Text)
 	case *ast.SpaceNode:
 		v.b.WriteString(n.Lexeme)
 	case *ast.BreakNode:
@@ -264,10 +264,6 @@ func (v *visitor) writeListQuote(ln *ast.NestedListNode) {
 	}
 
 	v.listPrefix = prefix
-}
-
-func (v *visitor) visitText(tn *ast.TextNode) {
-	v.b.WriteString(tn.Text)
 }
 
 func (v *visitor) visitBreak(bn *ast.BreakNode) {
