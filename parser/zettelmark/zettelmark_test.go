@@ -74,7 +74,7 @@ func TestText(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"abcd", "(PARA abcd)"},
-		{"ab cd", "(PARA ab SP cd)"},
+		{"ab cd", "(PARA ab cd)"},
 		{"abcd ", "(PARA abcd)"},
 		{" abcd", "(PARA abcd)"},
 		{"\\", "(PARA \\)"},
@@ -89,7 +89,7 @@ func TestText(t *testing.T) {
 		{"a\\a", "(PARA aa)"},
 		{"\\+", "(PARA +)"},
 		{"\\ ", "(PARA \u00a0)"},
-		{"http://a, http://b", "(PARA http://a, SP http://b)"},
+		{"http://a, http://b", "(PARA http://a, http://b)"},
 	})
 }
 
@@ -132,10 +132,10 @@ func TestLink(t *testing.T) {
 		{"[[|]", "(PARA [[|])"},
 		{"[[]]", "(PARA [[]])"},
 		{"[[|]]", "(PARA [[|]])"},
-		{"[[ ]]", "(PARA [[ SP ]])"},
+		{"[[ ]]", "(PARA [[ ]])"},
 		{"[[\n]]", "(PARA [[ SB ]])"},
 		{"[[ a]]", "(PARA (LINK a))"},
-		{"[[a ]]", "(PARA [[a SP ]])"},
+		{"[[a ]]", "(PARA [[a ]])"},
 		{"[[a\n]]", "(PARA [[a SB ]])"},
 		{"[[a]]", "(PARA (LINK a))"},
 		{"[[12345678901234]]", "(PARA (LINK 12345678901234))"},
@@ -148,7 +148,7 @@ func TestLink(t *testing.T) {
 		{"[[b%%c|a]]", "(PARA [[b {% c|a]]})"},
 		{"[[b|a]", "(PARA [[b|a])"},
 		{"[[b\nc|a]]", "(PARA (LINK a b SB c))"},
-		{"[[b c|a#n]]", "(PARA (LINK a#n b SP c))"},
+		{"[[b c|a#n]]", "(PARA (LINK a#n b c))"},
 		{"[[a]]go", "(PARA (LINK a) go)"},
 		{"[[b|a]]{go}", "(PARA (LINK a b)[ATTR go])"},
 		{"[[[[a]]|b]]", "(PARA [[ (LINK a) |b]])"},
@@ -182,7 +182,7 @@ func TestCite(t *testing.T) {
 		{"[@", "(PARA [@)"},
 		{"[@]", "(PARA [@])"},
 		{"[@a]", "(PARA (CITE a))"},
-		{"[@ a]", "(PARA [@ SP a])"},
+		{"[@ a]", "(PARA [@ a])"},
 		{"[@a ]", "(PARA (CITE a))"},
 		{"[@a\n]", "(PARA (CITE a))"},
 		{"[@a\nx]", "(PARA (CITE a SB x))"},
@@ -220,9 +220,9 @@ func TestEmbed(t *testing.T) {
 		{"{{|}", "(PARA {{|})"},
 		{"{{}}", "(PARA {{}})"},
 		{"{{|}}", "(PARA {{|}})"},
-		{"{{ }}", "(PARA {{ SP }})"},
+		{"{{ }}", "(PARA {{ }})"},
 		{"{{\n}}", "(PARA {{ SB }})"},
-		{"{{a }}", "(PARA {{a SP }})"},
+		{"{{a }}", "(PARA {{a }})"},
 		{"{{a\n}}", "(PARA {{a SB }})"},
 		{"{{a}}", "(PARA (EMBED a))"},
 		{"{{12345678901234}}", "(PARA (EMBED 12345678901234))"},
@@ -234,7 +234,7 @@ func TestEmbed(t *testing.T) {
 		{"{{b| a}}", "(PARA (EMBED a b))"},
 		{"{{b|a}", "(PARA {{b|a})"},
 		{"{{b\nc|a}}", "(PARA (EMBED a b SB c))"},
-		{"{{b c|a#n}}", "(PARA (EMBED a#n b SP c))"},
+		{"{{b c|a#n}}", "(PARA (EMBED a#n b c))"},
 		{"{{a}}{go}", "(PARA (EMBED a)[ATTR go])"},
 		{"{{{{a}}|b}}", "(PARA {{ (EMBED a) |b}})"},
 		{"{{\\|}}", "(PARA (EMBED %5C%7C))"},
@@ -258,17 +258,17 @@ func TestMark(t *testing.T) {
 		{"[!\n", "(PARA [!)"},
 		{"[!]", "(PARA (MARK #*))"},
 		{"[!][!]", "(PARA (MARK #*) (MARK #*-1))"},
-		{"[! ]", "(PARA [! SP ])"},
+		{"[! ]", "(PARA [! ])"},
 		{"[!a]", "(PARA (MARK \"a\" #a))"},
 		{"[!a][!a]", "(PARA (MARK \"a\" #a) (MARK \"a\" #a-1))"},
-		{"[!a ]", "(PARA [!a SP ])"},
+		{"[!a ]", "(PARA [!a ])"},
 		{"[!a_]", "(PARA (MARK \"a_\" #a))"},
 		{"[!a_][!a]", "(PARA (MARK \"a_\" #a) (MARK \"a\" #a-1))"},
 		{"[!a-b]", "(PARA (MARK \"a-b\" #a-b))"},
 		{"[!a|b]", "(PARA (MARK \"a\" #a b))"},
 		{"[!a|]", "(PARA (MARK \"a\" #a))"},
 		{"[!|b]", "(PARA (MARK #* b))"},
-		{"[!|b c]", "(PARA (MARK #* b SP c))"},
+		{"[!|b c]", "(PARA (MARK #* b c))"},
 	})
 }
 
@@ -417,7 +417,7 @@ func TestEntity(t *testing.T) {
 		{"&#X4a;", "(PARA J)"},
 		{"&hellip;", "(PARA \u2026)"},
 		{"&nbsp;", "(PARA \u00a0)"},
-		{"E: &amp;,&#63;;&#x63;.", "(PARA E: SP &,?;c.)"},
+		{"E: &amp;,&#63;;&#x63;.", "(PARA E: &,?;c.)"},
 	})
 }
 
@@ -527,9 +527,9 @@ func TestHeading(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
 		{"=h", "(PARA =h)"},
-		{"= h", "(PARA = SP h)"},
+		{"= h", "(PARA = h)"},
 		{"==h", "(PARA ==h)"},
-		{"== h", "(PARA == SP h)"},
+		{"== h", "(PARA == h)"},
 		{"===h", "(PARA ===h)"},
 		{"=== h", "(H1 h #h)"},
 		{"===  h", "(H1 h #h)"},
@@ -544,12 +544,12 @@ func TestHeading(t *testing.T) {
 		{"a=", "(PARA a=)"},
 		{" =", "(PARA =)"},
 		{"=== h\na", "(H1 h #h)(PARA a)"},
-		{"=== h i {-}", "(H1 h SP i #h-i)[ATTR -]"},
-		{"=== h {{a}}", "(H1 h SP (EMBED a) #h)"},
+		{"=== h i {-}", "(H1 h i #h-i)[ATTR -]"},
+		{"=== h {{a}}", "(H1 h  (EMBED a) #h)"},
 		{"=== h{{a}}", "(H1 h (EMBED a) #h)"},
 		{"=== {{a}}", "(H1 (EMBED a))"},
-		{"=== h {{a}}{-}", "(H1 h SP (EMBED a)[ATTR -] #h)"},
-		{"=== h {{a}} {-}", "(H1 h SP (EMBED a) #h)[ATTR -]"},
+		{"=== h {{a}}{-}", "(H1 h  (EMBED a)[ATTR -] #h)"},
+		{"=== h {{a}} {-}", "(H1 h  (EMBED a) #h)[ATTR -]"},
 		{"=== h {-}{{a}}", "(H1 h #h)[ATTR -]"},
 		{"=== h{id=abc}", "(H1 h #h)[ATTR id=abc]"},
 		{"=== h\n=== h", "(H1 h #h)(H1 h #h-1)"},
@@ -621,7 +621,7 @@ func TestList(t *testing.T) {
 func TestQuoteList(t *testing.T) {
 	t.Parallel()
 	checkTcs(t, TestCases{
-		{"> w1 w2", "(QL {(PARA w1 SP w2)})"},
+		{"> w1 w2", "(QL {(PARA w1 w2)})"},
 		{"> w1\n> w2", "(QL {(PARA w1 SB w2)})"},
 		{"> w1\n>\n>w2", "(QL {(PARA w1)} {})(PARA >w2)"},
 	})
@@ -646,7 +646,7 @@ func TestDefinition(t *testing.T) {
 		{"; abc\n  def", "(DL (DT abc SB def))"},
 		{":", "(PARA :)"},
 		{": ", "(PARA :)"},
-		{": abc", "(PARA : SP abc)"},
+		{": abc", "(PARA : abc)"},
 		{"; abc\n: def", "(DL (DT abc) (DD (PARA def)))"},
 		{"; abc\n: def\nghi", "(DL (DT abc) (DD (PARA def)))(PARA ghi)"},
 		{"; abc\n: def\n ghi", "(DL (DT abc) (DD (PARA def)))(PARA ghi)"},
@@ -750,7 +750,7 @@ func TestInlineAttr(t *testing.T) {
 		{"::a::{py=$2\\$3$}", "(PARA {: a}[ATTR py=2$3])"},
 		{"::a::{py=2$3}", "(PARA {: a}[ATTR py=2$3])"},
 		{"::a::{py=$2\n3$}", "(PARA {: a}[ATTR py=$2\n3$])"},
-		{"::a::{py=$2 3}", "(PARA {: a} {py=$2 SP 3})"},
+		{"::a::{py=$2 3}", "(PARA {: a} {py=$2 3})"},
 
 		{"::a::{py=2 py=3}", "(PARA {: a}[ATTR py=$2 3$])"},
 		{"::a::{.go .py}", "(PARA {: a}[ATTR class=$go py$])"},
@@ -881,12 +881,6 @@ func (tv *TestVisitor) Visit(node ast.Node) ast.Visitor {
 		tv.sb.WriteString(")")
 	case *ast.TextNode:
 		tv.sb.WriteString(n.Text)
-	case *ast.SpaceNode:
-		if l := n.Count(); l == 1 {
-			tv.sb.WriteString("SP")
-		} else {
-			fmt.Fprintf(&tv.sb, "SP%d", l)
-		}
 	case *ast.BreakNode:
 		if n.Hard {
 			tv.sb.WriteString("HB")

@@ -264,7 +264,6 @@ func (v *unlinkedVisitor) splitInlineTextList(is *ast.InlineSlice) []string {
 		switch n := in.(type) {
 		case *ast.TextNode:
 			curList = append(curList, strfun.MakeWords(n.Text)...)
-		case *ast.SpaceNode:
 		default:
 			if curList != nil {
 				result = append(result, v.joinWords(curList))

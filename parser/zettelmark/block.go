@@ -114,9 +114,19 @@ func startsWithSpaceSoftBreak(pn *ast.ParaNode) bool {
 	if len(ins) < 2 {
 		return false
 	}
-	_, isSpace := ins[0].(*ast.SpaceNode)
 	_, isBreak := ins[1].(*ast.BreakNode)
-	return isSpace && isBreak
+	return isBreak && isSpaceText(ins[0])
+}
+func isSpaceText(node ast.InlineNode) bool {
+	if tn, isText := node.(*ast.TextNode); isText {
+		for _, ch := range tn.Text {
+			if !input.IsSpace(ch) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func (cp *zmkP) cleanupListsAfterEOL() {

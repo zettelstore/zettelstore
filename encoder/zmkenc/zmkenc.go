@@ -140,8 +140,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		v.visitBLOB(n)
 	case *ast.TextNode:
 		v.visitText(n)
-	case *ast.SpaceNode:
-		v.b.WriteString(n.Lexeme)
 	case *ast.BreakNode:
 		v.visitBreak(n)
 	case *ast.LinkNode:

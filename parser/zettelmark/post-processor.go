@@ -76,10 +76,10 @@ func (pp *postProcessor) visitRegion(rn *ast.RegionNode) {
 		pp.inVerse = true
 	}
 	pp.visitBlockSlice(&rn.Blocks)
+	pp.inVerse = oldVerse
 	if len(rn.Inlines) > 0 {
 		pp.visitInlineSlice(&rn.Inlines)
 	}
-	pp.inVerse = oldVerse
 }
 
 func (pp *postProcessor) visitNestedList(ln *ast.NestedListNode) {
@@ -368,12 +368,17 @@ func (pp *postProcessor) processInlineSliceHead(is *ast.InlineSlice) {
 	ins := *is
 	for i, in := range ins {
 		switch in := in.(type) {
-		case *ast.SpaceNode:
-			if pp.inVerse {
+		case *ast.TextNode:
+			if pp.inVerse && len(in.Text) > 0 {
 				*is = ins[i:]
 				return
 			}
-		case *ast.TextNode:
+			for len(in.Text) > 0 {
+				if ch := in.Text[0]; ch != ' ' && ch != '\t' {
+					break
+				}
+				in.Text = in.Text[1:]
+			}
 			if len(in.Text) > 0 {
 				*is = ins[i:]
 				return
@@ -410,12 +415,32 @@ func (pp *postProcessor) processInlineSliceCopyLoop(is *ast.InlineSlice, maxPos 
 		fromPos++
 		switch in := ins[toPos].(type) {
 		case *ast.TextNode:
-			fromPos = processTextNode(ins, maxPos, in, fromPos)
-		case *ast.SpaceNode:
-			if pp.inVerse {
-				in.Lexeme = strings.Repeat("\u00a0", in.Count())
+			// Merge following TextNodes
+			for fromPos < maxPos {
+				if tn, ok := ins[fromPos].(*ast.TextNode); ok {
+					in.Text = in.Text + tn.Text
+					fromPos++
+				} else {
+					break
+				}
 			}
-			fromPos = processSpaceNode(ins, maxPos, in, toPos, fromPos)
+			if in.Text == "" {
+				continue
+			}
+			if ch := in.Text[len(in.Text)-1]; ch == ' ' && fromPos < maxPos {
+				switch nn := ins[fromPos].(type) {
+				case *ast.BreakNode:
+					nn.Hard = true
+					in.Text = removeTrailingSpaces(in.Text)
+				case *ast.LiteralNode:
+					if nn.Kind == ast.LiteralComment {
+						in.Text = removeTrailingSpaces(in.Text)
+					}
+				}
+			}
+			if pp.inVerse {
+				in.Text = strings.ReplaceAll(in.Text, " ", "\u00a0")
+			}
 		case *ast.BreakNode:
 			if pp.inVerse {
 				in.Hard = true
@@ -426,48 +451,17 @@ func (pp *postProcessor) processInlineSliceCopyLoop(is *ast.InlineSlice, maxPos 
 	return toPos
 }
 
-func processTextNode(ins ast.InlineSlice, maxPos int, in *ast.TextNode, fromPos int) int {
-	for fromPos < maxPos {
-		if tn, ok := ins[fromPos].(*ast.TextNode); ok {
-			in.Text = in.Text + tn.Text
-			fromPos++
-		} else {
-			break
-		}
-	}
-	return fromPos
-}
-
-func processSpaceNode(ins ast.InlineSlice, maxPos int, in *ast.SpaceNode, toPos, fromPos int) int {
-	if fromPos < maxPos {
-		switch nn := ins[fromPos].(type) {
-		case *ast.BreakNode:
-			if in.Count() > 1 {
-				nn.Hard = true
-				ins[toPos] = nn
-				fromPos++
-			}
-		case *ast.LiteralNode:
-			if nn.Kind == ast.LiteralComment {
-				ins[toPos] = ins[fromPos]
-				fromPos++
-			}
-		}
-	}
-	return fromPos
-}
-
 // processInlineSliceTail removes empty text nodes, breaks and spaces at the end.
 func (*postProcessor) processInlineSliceTail(is *ast.InlineSlice, toPos int) int {
 	ins := *is
 	for toPos > 0 {
 		switch n := ins[toPos-1].(type) {
 		case *ast.TextNode:
+			n.Text = removeTrailingSpaces(n.Text)
 			if len(n.Text) > 0 {
 				return toPos
 			}
 		case *ast.BreakNode:
-		case *ast.SpaceNode:
 		default:
 			return toPos
 		}
@@ -475,4 +469,14 @@ func (*postProcessor) processInlineSliceTail(is *ast.InlineSlice, toPos int) int
 		ins[toPos] = nil // Kill node to enable garbage collection
 	}
 	return toPos
+}
+
+func removeTrailingSpaces(s string) string {
+	for len(s) > 0 {
+		if ch := s[len(s)-1]; ch != ' ' && ch != '\t' {
+			return s
+		}
+		s = s[0 : len(s)-1]
+	}
+	return ""
 }

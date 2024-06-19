@@ -14,8 +14,6 @@
 package ast
 
 import (
-	"unicode/utf8"
-
 	"t73f.de/r/zsc/attrs"
 )
 
@@ -25,19 +23,6 @@ import (
 type InlineSlice []InlineNode
 
 func (*InlineSlice) inlineNode() { /* Just a marker */ }
-
-// CreateInlineSliceFromWords makes a new inline list from words,
-// that will be space-separated.
-func CreateInlineSliceFromWords(words ...string) InlineSlice {
-	inl := make(InlineSlice, 0, 2*len(words)-1)
-	for i, word := range words {
-		if i > 0 {
-			inl = append(inl, &SpaceNode{Lexeme: " "})
-		}
-		inl = append(inl, &TextNode{Text: word})
-	}
-	return inl
-}
 
 // WalkChildren walks down to the list.
 func (is *InlineSlice) WalkChildren(v Visitor) {
@@ -57,23 +42,6 @@ func (*TextNode) inlineNode() { /* Just a marker */ }
 
 // WalkChildren does nothing.
 func (*TextNode) WalkChildren(Visitor) { /* No children*/ }
-
-// --------------------------------------------------------------------------
-
-// SpaceNode tracks inter-word space characters.
-type SpaceNode struct {
-	Lexeme string
-}
-
-func (*SpaceNode) inlineNode() { /* Just a marker */ }
-
-// WalkChildren does nothing.
-func (*SpaceNode) WalkChildren(Visitor) { /* No children*/ }
-
-// Count returns the number of space runes.
-func (sn *SpaceNode) Count() int {
-	return utf8.RuneCountInString(sn.Lexeme)
-}
 
 // --------------------------------------------------------------------------
 

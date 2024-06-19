@@ -50,7 +50,7 @@ func convertMetavalueToInlineSlice(value string, dt *meta.DescriptionType) ast.I
 	result := make(ast.InlineSlice, 0, 2*len(sliceData)-1)
 	for i, val := range sliceData {
 		if i > 0 {
-			result = append(result, &ast.SpaceNode{Lexeme: " "})
+			result = append(result, &ast.TextNode{Text: " "})
 		}
 		tn := &ast.TextNode{Text: val}
 		if makeLink {

@@ -635,10 +635,10 @@ func (fs *fragmentSearcher) visitBlockSlice(bs *ast.BlockSlice) {
 func (fs *fragmentSearcher) visitInlineSlice(is *ast.InlineSlice) {
 	for i, in := range *is {
 		if mn, ok := in.(*ast.MarkNode); ok && mn.Fragment == fs.fragment {
-			ris := skipSpaceNodes((*is)[i+1:])
+			ris := skipBreakeNodes((*is)[i+1:])
 			if len(mn.Inlines) > 0 {
 				fs.result = append(ast.InlineSlice{}, mn.Inlines...)
-				fs.result = append(fs.result, &ast.SpaceNode{Lexeme: " "})
+				fs.result = append(fs.result, &ast.TextNode{Text: " "})
 				fs.result = append(fs.result, ris...)
 			} else {
 				fs.result = ris
@@ -649,10 +649,9 @@ func (fs *fragmentSearcher) visitInlineSlice(is *ast.InlineSlice) {
 	}
 }
 
-func skipSpaceNodes(ins ast.InlineSlice) ast.InlineSlice {
+func skipBreakeNodes(ins ast.InlineSlice) ast.InlineSlice {
 	for i, in := range ins {
 		switch in.(type) {
-		case *ast.SpaceNode:
 		case *ast.BreakNode:
 		default:
 			return ins[i:]

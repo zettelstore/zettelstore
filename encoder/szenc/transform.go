@@ -73,11 +73,6 @@ func (t *Transformer) GetSz(node ast.Node) *sx.Pair {
 		return t.getBLOB(n)
 	case *ast.TextNode:
 		return sx.MakeList(sz.SymText, sx.MakeString(n.Text))
-	case *ast.SpaceNode:
-		if t.inVerse {
-			return sx.MakeList(sz.SymSpace, sx.MakeString(n.Lexeme))
-		}
-		return sx.MakeList(sz.SymSpace)
 	case *ast.BreakNode:
 		if n.Hard {
 			return sx.MakeList(sz.SymHard)

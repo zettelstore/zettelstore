@@ -38,6 +38,9 @@ func TestSlugify(t *testing.T) {
 }
 
 func eqStringSlide(got, exp []string) bool {
+	if got == nil {
+		return exp == nil
+	}
 	if len(got) != len(exp) {
 		return false
 	}
@@ -55,16 +58,16 @@ func TestNormalizeWord(t *testing.T) {
 		in  string
 		exp []string
 	}{
-		{"", []string{}},
-		{" ", []string{}},
-		{"ˋ", []string{}}, // No single diacritic char, such as U+02CB
+		{"", nil},
+		{" ", nil},
+		{"ˋ", nil}, // No single diacritic char, such as U+02CB
 		{"simple test", []string{"simple", "test"}},
 		{"I'm a go developer", []string{"i", "m", "a", "go", "developer"}},
 		{"-!->simple   test<-!-", []string{"simple", "test"}},
 		{"äöüÄÖÜß", []string{"aouaouß"}},
 		{"\"aèf", []string{"aef"}},
 		{"a#b", []string{"a", "b"}},
-		{"*", []string{}},
+		{"*", nil},
 		{"123", []string{"123"}},
 		{"1²3", []string{"123"}},
 		{"Period.", []string{"period"}},
