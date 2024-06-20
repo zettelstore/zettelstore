@@ -26,7 +26,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"sort"
+	"slices"
 	"unicode/utf8"
 )
 
@@ -94,7 +94,7 @@ func (c *canvas) size() image.Point { return c.siz }
 func (c *canvas) findObjects() {
 	c.findPaths()
 	c.findTexts()
-	sort.Sort(c.objs)
+	slices.SortFunc(c.objs, compare)
 }
 
 // findPaths by starting with a point that wasn't yet visited, beginning at the top

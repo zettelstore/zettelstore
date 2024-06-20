@@ -104,26 +104,20 @@ func (o *object) seal(c *canvas) {
 // objects implements a sortable collection of Object interfaces.
 type objects []*object
 
-func (o objects) Len() int      { return len(o) }
-func (o objects) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
-
-// Less returns in order top most, then left most.
-func (o objects) Less(i, j int) bool {
+func compare(l, r *object) int {
 	// TODO(dhobsd): This doesn't catch every z-index case we could possibly want. We should
 	// support z-indexing of objects through an a2s tag.
-	l := o[i]
-	r := o[j]
 	lt := l.isJustText()
 	rt := r.isJustText()
 	if lt != rt {
-		return rt
+		return 1
 	}
 	lp := l.Points()[0]
 	rp := r.Points()[0]
 	if lp.y != rp.y {
-		return lp.y < rp.y
+		return lp.y - rp.y
 	}
-	return lp.x < rp.x
+	return lp.x - rp.x
 }
 
 const (
