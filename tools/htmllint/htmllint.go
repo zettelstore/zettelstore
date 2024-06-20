@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"t73f.de/r/zsc/api"
@@ -80,7 +80,7 @@ func calculateZids(metaList []api.ZidMetaRights) ([]string, []int) {
 	for i, m := range metaList {
 		zids[i] = string(m.ID)
 	}
-	sort.Strings(zids)
+	slices.Sort(zids)
 	return zids, rand.Perm(len(metaList))
 }
 
@@ -95,7 +95,7 @@ func zidsToUse(zids []string, perm []int, sampleSize int) []string {
 	for i := range sampleSize {
 		result[i] = zids[perm[i]]
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }
 

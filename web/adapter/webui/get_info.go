@@ -16,7 +16,7 @@ package webui
 import (
 	"context"
 	"net/http"
-	"sort"
+	"slices"
 	"strings"
 
 	"t73f.de/r/sx"
@@ -164,7 +164,7 @@ func encodingTexts() []string {
 	for _, f := range encodings {
 		encTexts = append(encTexts, f.String())
 	}
-	sort.Strings(encTexts)
+	slices.Sort(encTexts)
 	return encTexts
 }
 

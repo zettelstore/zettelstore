@@ -16,7 +16,7 @@ package impl
 import (
 	"errors"
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -201,7 +201,7 @@ func (cfg *srvConfig) getSortedConfigKeys(all bool, getConfig func(string) inter
 			}
 		}
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	return keys
 }
 

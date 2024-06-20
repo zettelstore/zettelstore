@@ -17,7 +17,7 @@ import (
 	"bytes"
 	"context"
 	"math"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -314,7 +314,7 @@ func (*actionPara) calcFontSizes(ccs meta.CountedCategories) map[int]attrs.Attri
 	for count := range countMap {
 		countList = append(countList, count)
 	}
-	sort.Ints(countList)
+	slices.Sort(countList)
 
 	result := make(map[int]attrs.Attributes, len(countList))
 	if len(countList) <= fontSizes {

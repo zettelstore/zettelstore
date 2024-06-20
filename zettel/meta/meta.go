@@ -16,7 +16,7 @@ package meta
 
 import (
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -339,7 +339,7 @@ func (m *Meta) getKeysRest(addKeyPred func(string) bool) []string {
 			keys = append(keys, k)
 		}
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	return keys
 }
 
