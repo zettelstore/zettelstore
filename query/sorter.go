@@ -14,88 +14,100 @@
 package query
 
 import (
+	"cmp"
 	"strconv"
 
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/zettel/meta"
 )
 
-type sortFunc func(i, j int) bool
+type sortFunc func(i, j *meta.Meta) int
 
-func createSortFunc(order []sortOrder, ml []*meta.Meta) sortFunc {
+func buildSortFunc(order []sortOrder) sortFunc {
 	hasID := false
 	sortFuncs := make([]sortFunc, 0, len(order)+1)
 	for _, o := range order {
-		sortFuncs = append(sortFuncs, createOneSortFunc(o.key, o.descending, ml))
+		sortFuncs = append(sortFuncs, o.buildSortfunc())
 		if o.key == api.KeyID {
 			hasID = true
 			break
 		}
 	}
 	if !hasID {
-		sortFuncs = append(sortFuncs, func(i, j int) bool { return ml[i].Zid > ml[j].Zid })
+		sortFuncs = append(sortFuncs, defaultMetaSort)
 	}
-	// return sortFuncs[0]
 	if len(sortFuncs) == 1 {
 		return sortFuncs[0]
 	}
-	return func(i, j int) bool {
+	return func(i, j *meta.Meta) int {
 		for _, sf := range sortFuncs {
-			if sf(i, j) {
-				return true
-			}
-			if sf(j, i) {
-				return false
+			if result := sf(i, j); result != 0 {
+				return result
 			}
 		}
-		return false
+		return 0
 	}
 }
 
-func createOneSortFunc(key string, descending bool, ml []*meta.Meta) sortFunc {
+func (so *sortOrder) buildSortfunc() sortFunc {
+	key := so.key
 	keyType := meta.Type(key)
 	if key == api.KeyID || keyType == meta.TypeCredential {
-		if descending {
-			return func(i, j int) bool { return ml[i].Zid > ml[j].Zid }
+		if so.descending {
+			return defaultMetaSort
 		}
-		return func(i, j int) bool { return ml[i].Zid < ml[j].Zid }
+		return func(i, j *meta.Meta) int { return cmp.Compare(i.Zid, j.Zid) }
 	}
 	if keyType == meta.TypeTimestamp {
-		return createSortTimestampFunc(ml, key, descending)
+		return createSortTimestampFunc(key, so.descending)
 	}
 	if keyType == meta.TypeNumber {
-		return createSortNumberFunc(ml, key, descending)
+		return createSortNumberFunc(key, so.descending)
 	}
-	return createSortStringFunc(ml, key, descending)
+	return createSortStringFunc(key, so.descending)
 }
 
-func createSortTimestampFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+func defaultMetaSort(i, j *meta.Meta) int { return cmp.Compare(j.Zid, i.Zid) }
+
+func createSortTimestampFunc(key string, descending bool) sortFunc {
 	if descending {
-		return func(i, j int) bool {
-			iVal, iOk := ml[i].Get(key)
-			jVal, jOk := ml[j].Get(key)
-			return (iOk && (!jOk || meta.ExpandTimestamp(iVal) > meta.ExpandTimestamp(jVal))) || !jOk
+		return func(i, j *meta.Meta) int {
+			iVal, iOk := i.Get(key)
+			jVal, jOk := j.Get(key)
+			if result := compareFound(jOk, iOk); result != 0 {
+				return result
+			}
+			return cmp.Compare(meta.ExpandTimestamp(jVal), meta.ExpandTimestamp(iVal))
 		}
 	}
-	return func(i, j int) bool {
-		iVal, iOk := ml[i].Get(key)
-		jVal, jOk := ml[j].Get(key)
-		return (iOk && (!jOk || meta.ExpandTimestamp(iVal) < meta.ExpandTimestamp(jVal))) || !jOk
+	return func(i, j *meta.Meta) int {
+		iVal, iOk := i.Get(key)
+		jVal, jOk := j.Get(key)
+		if result := compareFound(iOk, jOk); result != 0 {
+			return result
+		}
+		return cmp.Compare(meta.ExpandTimestamp(iVal), meta.ExpandTimestamp(jVal))
 	}
 }
 
-func createSortNumberFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+func createSortNumberFunc(key string, descending bool) sortFunc {
 	if descending {
-		return func(i, j int) bool {
-			iVal, iOk := getNum(ml[i], key)
-			jVal, jOk := getNum(ml[j], key)
-			return (iOk && (!jOk || iVal > jVal)) || !jOk
+		return func(i, j *meta.Meta) int {
+			iVal, iOk := getNum(i, key)
+			jVal, jOk := getNum(j, key)
+			if result := compareFound(jOk, iOk); result != 0 {
+				return result
+			}
+			return cmp.Compare(jVal, iVal)
 		}
 	}
-	return func(i, j int) bool {
-		iVal, iOk := getNum(ml[i], key)
-		jVal, jOk := getNum(ml[j], key)
-		return (iOk && (!jOk || iVal < jVal)) || !jOk
+	return func(i, j *meta.Meta) int {
+		iVal, iOk := getNum(i, key)
+		jVal, jOk := getNum(j, key)
+		if result := compareFound(iOk, jOk); result != 0 {
+			return result
+		}
+		return cmp.Compare(iVal, jVal)
 	}
 }
 
@@ -108,17 +120,36 @@ func getNum(m *meta.Meta, key string) (int64, bool) {
 	return 0, false
 }
 
-func createSortStringFunc(ml []*meta.Meta, key string, descending bool) sortFunc {
+func createSortStringFunc(key string, descending bool) sortFunc {
 	if descending {
-		return func(i, j int) bool {
-			iVal, iOk := ml[i].Get(key)
-			jVal, jOk := ml[j].Get(key)
-			return (iOk && (!jOk || iVal > jVal)) || !jOk
+		return func(i, j *meta.Meta) int {
+			iVal, iOk := i.Get(key)
+			jVal, jOk := j.Get(key)
+			if result := compareFound(jOk, iOk); result != 0 {
+				return result
+			}
+			return cmp.Compare(jVal, iVal)
 		}
 	}
-	return func(i, j int) bool {
-		iVal, iOk := ml[i].Get(key)
-		jVal, jOk := ml[j].Get(key)
-		return (iOk && (!jOk || iVal < jVal)) || !jOk
+	return func(i, j *meta.Meta) int {
+		iVal, iOk := i.Get(key)
+		jVal, jOk := j.Get(key)
+		if result := compareFound(iOk, jOk); result != 0 {
+			return result
+		}
+		return cmp.Compare(iVal, jVal)
 	}
+}
+
+func compareFound(iOk, jOk bool) int {
+	if iOk {
+		if jOk {
+			return 0
+		}
+		return 1
+	}
+	if jOk {
+		return -1
+	}
+	return 0
 }

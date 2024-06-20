@@ -18,7 +18,7 @@ import (
 	"io"
 	"os"
 	"runtime/metrics"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -242,7 +242,7 @@ func showConfig(sess *cmdSession, args []string,
 		for k := range sess.kern.srvs {
 			keys = append(keys, int(k))
 		}
-		sort.Ints(keys)
+		slices.Sort(keys)
 		for i, k := range keys {
 			if i > 0 {
 				sess.println()
@@ -545,7 +545,7 @@ func cmdEnvironment(sess *cmdSession, _ string, _ []string) bool {
 		execName = err.Error()
 	}
 	envs := os.Environ()
-	sort.Strings(envs)
+	slices.Sort(envs)
 
 	table := [][]string{
 		{"Key", "Value"},

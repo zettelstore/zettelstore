@@ -18,7 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 
@@ -655,10 +655,16 @@ func (ms *memStore) dumpIndex(w io.Writer) {
 		}
 		dumpZids(w, "* Forward:", zi.forward)
 		dumpZids(w, "* Backward:", zi.backward)
-		for k, fb := range zi.otherRefs {
+
+		otherRefs := make([]string, 0, len(zi.otherRefs))
+		for k := range zi.otherRefs {
+			otherRefs = append(otherRefs, k)
+		}
+		slices.Sort(otherRefs)
+		for _, k := range otherRefs {
 			fmt.Fprintln(w, "* Meta", k)
-			dumpZids(w, "** Forward:", fb.forward)
-			dumpZids(w, "** Backward:", fb.backward)
+			dumpZids(w, "** Forward:", zi.otherRefs[k].forward)
+			dumpZids(w, "** Backward:", zi.otherRefs[k].backward)
 		}
 		dumpStrings(w, "* Words", "", "", zi.words)
 		dumpStrings(w, "* URLs", "[[", "]]", zi.urls)
@@ -696,13 +702,12 @@ func dumpStrings(w io.Writer, title, preString, postString string, slice []strin
 	if len(slice) > 0 {
 		sl := make([]string, len(slice))
 		copy(sl, slice)
-		sort.Strings(sl)
+		slices.Sort(sl)
 		fmt.Fprintln(w, title)
 		for _, s := range sl {
 			fmt.Fprintf(w, "** %s%s%s\n", preString, s, postString)
 		}
 	}
-
 }
 
 func dumpStringRefs(w io.Writer, title, preString, postString string, srefs stringRefs) {

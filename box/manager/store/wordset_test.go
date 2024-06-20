@@ -14,7 +14,7 @@
 package store_test
 
 import (
-	"sort"
+	"slices"
 	"testing"
 
 	"zettelstore.de/z/box/manager/store"
@@ -27,7 +27,7 @@ func equalWordList(exp, got []string) bool {
 	if len(got) == 0 {
 		return len(exp) == 0
 	}
-	sort.Strings(got)
+	slices.Sort(got)
 	for i, w := range exp {
 		if w != got[i] {
 			return false

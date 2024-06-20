@@ -13,7 +13,10 @@
 
 package meta
 
-import "sort"
+import (
+	"slices"
+	"strings"
+)
 
 // Arrangement stores metadata within its categories.
 // Typecally a category might be a tag name, a role name, a syntax value.
@@ -85,21 +88,21 @@ type CountedCategories []CountedCategory
 // Since each name must occur only once, two CountedCategories cannot have
 // the same name.
 func (ccs CountedCategories) SortByName() {
-	sort.Slice(ccs, func(i, j int) bool { return ccs[i].Name < ccs[j].Name })
+	slices.SortFunc(ccs, func(i, j CountedCategory) int { return strings.Compare(i.Name, j.Name) })
 }
 
 // SortByCount sorts the list by the count attribute, descending.
 // If two counts are equal, elements are sorted by name.
 func (ccs CountedCategories) SortByCount() {
-	sort.Slice(ccs, func(i, j int) bool {
-		iCount, jCount := ccs[i].Count, ccs[j].Count
+	slices.SortFunc(ccs, func(i, j CountedCategory) int {
+		iCount, jCount := i.Count, j.Count
 		if iCount > jCount {
-			return true
+			return -1
 		}
 		if iCount == jCount {
-			return ccs[i].Name < ccs[j].Name
+			return strings.Compare(i.Name, j.Name)
 		}
-		return false
+		return 1
 	})
 }
 

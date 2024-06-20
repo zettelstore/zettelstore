@@ -16,7 +16,7 @@ package compbox
 import (
 	"bytes"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 
 	"t73f.de/r/zsc/api"
@@ -38,14 +38,14 @@ func genParserC(*meta.Meta) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("|=Syntax<|=Alt. Value(s):|=Text Parser?:|=Text Format?:|=Image Format?:\n")
 	syntaxes := parser.GetSyntaxes()
-	sort.Strings(syntaxes)
+	slices.Sort(syntaxes)
 	for _, syntax := range syntaxes {
 		info := parser.Get(syntax)
 		if info.Name != syntax {
 			continue
 		}
 		altNames := info.AltNames
-		sort.Strings(altNames)
+		slices.Sort(altNames)
 		fmt.Fprintf(
 			&buf, "|%v|%v|%v|%v|%v\n",
 			syntax, strings.Join(altNames, ", "), info.IsASTParser, info.IsTextFormat, info.IsImageFormat)
