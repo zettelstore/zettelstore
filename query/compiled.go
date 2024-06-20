@@ -15,7 +15,7 @@ package query
 
 import (
 	"math/rand/v2"
-	"sort"
+	"slices"
 
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
@@ -33,6 +33,8 @@ type Compiled struct {
 	startMeta []*meta.Meta
 	PreMatch  MetaMatchFunc // Precondition for Match and Retrieve
 	Terms     []CompiledTerm
+
+	sortFunc sortFunc
 }
 
 // MetaMatchFunc is a function determine whethe some metadata should be selected or not.
@@ -73,9 +75,16 @@ func (c *Compiled) Result() []*meta.Meta {
 		}
 	}
 	result = c.pickElements(result)
+	c.ensureSortFunc()
 	result = c.sortElements(result)
 	result = c.offsetElements(result)
 	return limitElements(result, c.limit)
+}
+
+func (c *Compiled) ensureSortFunc() {
+	if c.sortFunc == nil {
+		c.sortFunc = buildSortFunc(c.order)
+	}
 }
 
 // AfterSearch applies all terms to the metadata list that was searched.
@@ -87,15 +96,17 @@ func (c *Compiled) AfterSearch(metaList []*meta.Meta) []*meta.Meta {
 	}
 
 	if !c.hasQuery {
-		return sortMetaByZid(metaList)
+		slices.SortFunc(metaList, defaultMetaSort)
+		return metaList
 	}
 
 	if c.isDeterministic() {
 		// We need to sort to make it deterministic
 		if len(c.order) == 0 || c.order[0].isRandom() {
-			metaList = sortMetaByZid(metaList)
+			slices.SortFunc(metaList, defaultMetaSort)
 		} else {
-			sort.Slice(metaList, createSortFunc(c.order, metaList))
+			c.ensureSortFunc()
+			slices.SortFunc(metaList, c.sortFunc)
 		}
 	}
 	metaList = c.pickElements(metaList)
@@ -115,7 +126,8 @@ func (c *Compiled) sortElements(metaList []*meta.Meta) []*meta.Meta {
 		if c.order[0].isRandom() {
 			metaList = c.sortRandomly(metaList)
 		} else {
-			sort.Slice(metaList, createSortFunc(c.order, metaList))
+			c.ensureSortFunc()
+			slices.SortFunc(metaList, c.sortFunc)
 		}
 	}
 	return metaList
@@ -154,7 +166,7 @@ func (c *Compiled) pickElements(metaList []*meta.Meta) []*meta.Meta {
 		order[n] = order[last-1]
 	}
 	order = nil
-	sort.Ints(picked)
+	slices.Sort(picked)
 	result := make([]*meta.Meta, count)
 	for i, p := range picked {
 		result[i] = metaList[p]
@@ -183,10 +195,5 @@ func limitElements(metaList []*meta.Meta, limit int) []*meta.Meta {
 	if limit > 0 && limit < len(metaList) {
 		return metaList[:limit]
 	}
-	return metaList
-}
-
-func sortMetaByZid(metaList []*meta.Meta) []*meta.Meta {
-	sort.Slice(metaList, func(i, j int) bool { return metaList[i].Zid > metaList[j].Zid })
 	return metaList
 }

@@ -22,7 +22,10 @@
 
 package draw
 
-import "fmt"
+import (
+	"cmp"
+	"fmt"
+)
 
 // object represents one of an open path, a closed path, or text.
 type object struct {
@@ -115,9 +118,9 @@ func compare(l, r *object) int {
 	lp := l.Points()[0]
 	rp := r.Points()[0]
 	if lp.y != rp.y {
-		return lp.y - rp.y
+		return cmp.Compare(lp.y, rp.y)
 	}
-	return lp.x - rp.x
+	return cmp.Compare(lp.x, rp.x)
 }
 
 const (
