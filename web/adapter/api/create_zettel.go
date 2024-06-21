@@ -35,9 +35,9 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 		var err error
 		switch enc {
 		case api.EncoderPlain:
-			zettel, err = buildZettelFromPlainData(r, id.Invalid)
+			zettel, err = buildZettelFromPlainData(r, id.InvalidO)
 		case api.EncoderData:
-			zettel, err = buildZettelFromData(r, id.Invalid)
+			zettel, err = buildZettelFromData(r, id.InvalidO)
 		default:
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return

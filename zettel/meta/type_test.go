@@ -24,7 +24,7 @@ import (
 
 func TestNow(t *testing.T) {
 	t.Parallel()
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	m.SetNow("key")
 	val, ok := m.Get("key")
 	if !ok {

@@ -199,7 +199,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 }
 
 func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	m.Set(api.KeySyntax, getSyntax(vn.Attrs, meta.SyntaxText))
 	zettel := zettel.Zettel{
 		Meta:    m,

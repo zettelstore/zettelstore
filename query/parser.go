@@ -456,11 +456,11 @@ func (ps *parserState) scanPosInt() (int, bool) {
 func (ps *parserState) scanZid() (id.ZidO, bool) {
 	word := ps.scanWord()
 	if len(word) == 0 {
-		return id.Invalid, false
+		return id.InvalidO, false
 	}
 	uval, err := id.ParseUintO(string(word))
 	if err != nil {
-		return id.Invalid, false
+		return id.InvalidO, false
 	}
 	zid := id.ZidO(uval)
 	return zid, zid.IsValid()

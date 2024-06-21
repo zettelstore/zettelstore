@@ -104,9 +104,9 @@ func fetchStartupConfiguration(fs *flag.FlagSet) (string, *meta.Meta) {
 
 func createConfiguration(content []byte, err error) *meta.Meta {
 	if err != nil {
-		return meta.New(id.Invalid)
+		return meta.New(id.InvalidO)
 	}
-	return meta.NewFromInput(id.Invalid, input.NewInput(content))
+	return meta.NewFromInput(id.InvalidO, input.NewInput(content))
 }
 
 func readConfiguration(filename string) ([]byte, error) { return os.ReadFile(filename) }

@@ -39,11 +39,11 @@ func (as *authService) Initialize(logger *logger.Logger) {
 		kernel.AuthOwner: {
 			"Owner's zettel id",
 			func(val string) (any, error) {
-				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.Invalid {
+				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.InvalidO {
 					return nil, errAlreadySetOwner
 				}
 				if val == "" {
-					return id.Invalid, nil
+					return id.InvalidO, nil
 				}
 				return parseZid(val)
 			},
@@ -61,7 +61,7 @@ func (as *authService) Initialize(logger *logger.Logger) {
 		},
 	}
 	as.next = interfaceMap{
-		kernel.AuthOwner:    id.Invalid,
+		kernel.AuthOwner:    id.InvalidO,
 		kernel.AuthReadonly: false,
 	}
 }

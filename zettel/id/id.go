@@ -30,7 +30,7 @@ type ZidO uint64
 
 // Some important ZettelIDs.
 const (
-	Invalid = ZidO(0) // Invalid is a Zid that will never be valid
+	InvalidO = ZidO(0) // Invalid is a Zid that will never be valid
 )
 
 // ZettelIDs that are used as Zid more than once.
@@ -76,11 +76,11 @@ func ParseUintO(s string) (uint64, error) {
 // returns its value.
 func ParseO(s string) (ZidO, error) {
 	if len(s) != 14 {
-		return Invalid, strconv.ErrSyntax
+		return InvalidO, strconv.ErrSyntax
 	}
 	res, err := ParseUintO(s)
 	if err != nil {
-		return Invalid, err
+		return InvalidO, err
 	}
 	return ZidO(res), nil
 }

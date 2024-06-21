@@ -107,7 +107,7 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultLicense:              "",
 		keyDefaultVisibility:           meta.VisibilityLogin,
 		keyExpertMode:                  false,
-		config.KeyFooterZettel:         id.Invalid,
+		config.KeyFooterZettel:         id.InvalidO,
 		config.KeyHomeZettel:           id.DefaultHomeZidO,
 		kernel.ConfigInsecureHTML:      config.NoHTML,
 		api.KeyLang:                    api.ValueLangEN,

@@ -123,7 +123,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		genHTML:       sxhtml.NewGenerator().SetNewline(),
 	}
 	wui.rootBinding = wui.createRenderBinding()
-	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
+	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.InvalidO})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }
@@ -166,7 +166,7 @@ func (wui *WebUI) getSxnCache(zid id.ZidO) sxeval.Expr {
 }
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	return wui.policy.CanCreate(user, m) && wui.box.CanCreateZettel(ctx)
 }
 

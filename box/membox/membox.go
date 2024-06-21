@@ -99,7 +99,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.ZidO
 	newBytes := mb.curBytes + zettel.Length()
 	if mb.maxZettel < len(mb.zettel) || mb.maxBytes < newBytes {
 		mb.mx.Unlock()
-		return id.Invalid, box.ErrCapacity
+		return id.InvalidO, box.ErrCapacity
 	}
 	zid, err := box.GetNewZid(func(zid id.ZidO) (bool, error) {
 		_, ok := mb.zettel[zid]
@@ -107,7 +107,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.ZidO
 	})
 	if err != nil {
 		mb.mx.Unlock()
-		return id.Invalid, err
+		return id.InvalidO, err
 	}
 	meta := zettel.Meta.Clone()
 	meta.ZidO = zid

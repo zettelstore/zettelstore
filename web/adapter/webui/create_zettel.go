@@ -129,7 +129,7 @@ func (wui *WebUI) renderZettelForm(
 func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		reEdit, zettel, err := parseZettelForm(r, id.Invalid)
+		reEdit, zettel, err := parseZettelForm(r, id.InvalidO)
 		if err == errMissingContent {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
 			return
@@ -178,7 +178,7 @@ func (wui *WebUI) MakeGetZettelFromListHandler(
 			return
 		}
 
-		m := meta.New(id.Invalid)
+		m := meta.New(id.InvalidO)
 		m.Set(api.KeyTitle, q.Human())
 		m.Set(api.KeySyntax, api.ValueSyntaxZmk)
 		if qval := q.String(); qval != "" {

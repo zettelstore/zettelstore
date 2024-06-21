@@ -244,7 +244,7 @@ func parseZid(val string) (any, error) {
 	if zid, err := id.ParseO(val); err == nil {
 		return zid, nil
 	} else {
-		return id.Invalid, err
+		return id.InvalidO, err
 	}
 }
 

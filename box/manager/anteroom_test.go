@@ -28,7 +28,7 @@ func TestSimple(t *testing.T) {
 		t.Errorf("Expected arZettel/1/false, but got %v/%v/%v", action, zid, lastReload)
 	}
 	_, zid, _ = ar.Dequeue()
-	if zid != id.Invalid {
+	if zid != id.InvalidO {
 		t.Errorf("Expected invalid Zid, but got %v", zid)
 	}
 	ar.EnqueueZettel(id.ZidO(1))
@@ -59,7 +59,7 @@ func TestReset(t *testing.T) {
 	ar.EnqueueZettel(id.ZidO(1))
 	ar.Reset()
 	action, zid, _ := ar.Dequeue()
-	if action != arReload || zid != id.Invalid {
+	if action != arReload || zid != id.InvalidO {
 		t.Errorf("Expected reload & invalid Zid, but got %v/%v", action, zid)
 	}
 	ar.Reload(id.NewSetO(3, 4))
@@ -84,7 +84,7 @@ func TestReset(t *testing.T) {
 		t.Errorf("Expected 5/arZettel, but got %v/%v", zid, action)
 	}
 	action, zid, _ = ar.Dequeue()
-	if action != arNothing || zid != id.Invalid {
+	if action != arNothing || zid != id.InvalidO {
 		t.Errorf("Expected nothing & invalid Zid, but got %v/%v", action, zid)
 	}
 
@@ -95,7 +95,7 @@ func TestReset(t *testing.T) {
 		t.Errorf("Expected 6/arZettel, but got %v/%v", zid, action)
 	}
 	action, zid, _ = ar.Dequeue()
-	if action != arNothing || zid != id.Invalid {
+	if action != arNothing || zid != id.InvalidO {
 		t.Errorf("Expected nothing & invalid Zid, but got %v/%v", action, zid)
 	}
 
@@ -103,7 +103,7 @@ func TestReset(t *testing.T) {
 	ar.EnqueueZettel(id.ZidO(8))
 	ar.Reload(nil)
 	action, zid, _ = ar.Dequeue()
-	if action != arNothing || zid != id.Invalid {
+	if action != arNothing || zid != id.InvalidO {
 		t.Errorf("Expected nothing & invalid Zid, but got %v/%v", action, zid)
 	}
 }

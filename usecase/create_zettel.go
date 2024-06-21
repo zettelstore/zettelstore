@@ -74,7 +74,7 @@ func (*CreateZettel) PrepareVersion(origZettel zettel.Zettel) zettel.Zettel {
 // PrepareFolge the zettel for further modification.
 func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
@@ -86,7 +86,7 @@ func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 // PrepareChild the zettel for further modification.
 func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Child", "Child of "))
 	}
@@ -97,7 +97,7 @@ func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 
 // PrepareNew the zettel for further modification.
 func (*CreateZettel) PrepareNew(origZettel zettel.Zettel, newTitle string) zettel.Zettel {
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	om := origZettel.Meta
 	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
 	updateMetaRoleTagsSyntax(m, om)

@@ -161,14 +161,14 @@ func (ds *DirService) SetNewDirEntry() (id.ZidO, error) {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
-		return id.Invalid, ds.logMissingEntry("new")
+		return id.InvalidO, ds.logMissingEntry("new")
 	}
 	zid, err := box.GetNewZid(func(zid id.ZidO) (bool, error) {
 		_, found := ds.entries[zid]
 		return !found, nil
 	})
 	if err != nil {
-		return id.Invalid, err
+		return id.InvalidO, err
 	}
 	ds.entries[zid] = &DirEntry{Zid: zid}
 	return zid, nil
@@ -290,14 +290,14 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 		ds.mx.Lock()
 		zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
 		ds.mx.Unlock()
-		if zid != id.Invalid {
+		if zid != id.InvalidO {
 			ds.notifyChange(zid)
 		}
 	case Delete:
 		ds.mx.Lock()
 		zid := ds.onDeleteFileEvent(ds.entries, ev.Name)
 		ds.mx.Unlock()
-		if zid != id.Invalid {
+		if zid != id.InvalidO {
 			ds.notifyChange(zid)
 		}
 	default:
@@ -347,11 +347,11 @@ func matchValidFileName(name string) []string {
 func seekZid(name string) id.ZidO {
 	match := matchValidFileName(name)
 	if len(match) == 0 {
-		return id.Invalid
+		return id.InvalidO
 	}
 	zid, err := id.ParseO(match[1])
 	if err != nil {
-		return id.Invalid
+		return id.InvalidO
 	}
 	return zid
 }
@@ -367,11 +367,11 @@ func fetchdirEntry(entries entrySet, zid id.ZidO) *DirEntry {
 
 func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.ZidO {
 	if entries == nil {
-		return id.Invalid
+		return id.InvalidO
 	}
 	zid := seekZid(name)
-	if zid == id.Invalid {
-		return id.Invalid
+	if zid == id.InvalidO {
+		return id.InvalidO
 	}
 	entry := fetchdirEntry(entries, zid)
 	dupName1, dupName2 := ds.updateEntry(entry, name)
@@ -380,18 +380,18 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.ZidO {
 		if dupName2 != "" {
 			ds.log.Info().Str("name", dupName2).Msg("Duplicate content (is ignored)")
 		}
-		return id.Invalid
+		return id.InvalidO
 	}
 	return zid
 }
 
 func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) id.ZidO {
 	if entries == nil {
-		return id.Invalid
+		return id.InvalidO
 	}
 	zid := seekZid(name)
-	if zid == id.Invalid {
-		return id.Invalid
+	if zid == id.InvalidO {
+		return id.InvalidO
 	}
 	entry, found := entries[zid]
 	if !found {

@@ -59,7 +59,7 @@ func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
 	mgr.mgrLog.Debug().Msg("CreateZettel")
 	if mgr.State() != box.StartStateStarted {
-		return id.Invalid, box.ErrStopped
+		return id.InvalidO, box.ErrStopped
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
@@ -71,7 +71,7 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.
 		}
 		return zid, err
 	}
-	return id.Invalid, box.ErrReadOnly
+	return id.InvalidO, box.ErrReadOnly
 }
 
 // GetZettel retrieves a specific zettel.

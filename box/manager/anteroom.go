@@ -74,7 +74,7 @@ func (ar *anteroomQueue) EnqueueZettel(zid id.ZidO) {
 }
 
 func (ar *anteroomQueue) makeAnteroom(zid id.ZidO) *anteroom {
-	if zid == id.Invalid {
+	if zid == id.InvalidO {
 		panic(zid)
 	}
 	waiting := id.NewSetCapO(max(ar.maxLoad, 100), zid)
@@ -122,7 +122,7 @@ func (ar *anteroomQueue) Dequeue() (arAction, id.ZidO, bool) {
 	if first != nil {
 		if first.waiting == nil && first.reload {
 			ar.removeFirst()
-			return arReload, id.Invalid, false
+			return arReload, id.InvalidO, false
 		}
 		for zid := range first.waiting {
 			delete(first.waiting, zid)
@@ -133,7 +133,7 @@ func (ar *anteroomQueue) Dequeue() (arAction, id.ZidO, bool) {
 		}
 		ar.removeFirst()
 	}
-	return arNothing, id.Invalid, false
+	return arNothing, id.InvalidO, false
 }
 
 func (ar *anteroomQueue) removeFirst() {

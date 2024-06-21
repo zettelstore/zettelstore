@@ -198,7 +198,7 @@ func (dg DigraphO) IsDAG() (ZidO, bool) {
 			return vertex, false
 		}
 	}
-	return Invalid, true
+	return InvalidO, true
 }
 
 // Reverse returns a graph with reversed edges.

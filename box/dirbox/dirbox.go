@@ -228,12 +228,12 @@ func (dp *dirBox) CanCreateZettel(_ context.Context) bool {
 
 func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
 	if dp.readonly {
-		return id.Invalid, box.ErrReadOnly
+		return id.InvalidO, box.ErrReadOnly
 	}
 
 	newZid, err := dp.dirSrv.SetNewDirEntry()
 	if err != nil {
-		return id.Invalid, err
+		return id.InvalidO, err
 	}
 	meta := zettel.Meta
 	meta.ZidO = newZid

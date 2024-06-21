@@ -154,7 +154,7 @@ func (a *myAuth) IsOwner(zid id.ZidO) bool {
 	return zid.IsValid() && zid == a.owner
 }
 
-func (a *myAuth) WithAuth() bool { return a.owner != id.Invalid }
+func (a *myAuth) WithAuth() bool { return a.owner != id.InvalidO }
 
 // GetUserRole role returns the user role of the given user zettel.
 func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {

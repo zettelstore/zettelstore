@@ -51,20 +51,20 @@ func getDestinationZid(r *http.Request) (id.ZidO, bool) {
 			}
 		}
 	}
-	return id.Invalid, false
+	return id.InvalidO, false
 }
 
 func getZidFromURL(val string) (id.ZidO, bool) {
 	u, err := url.Parse(val)
 	if err != nil {
-		return id.Invalid, false
+		return id.InvalidO, false
 	}
 	if len(u.Path) < len(api.ZidVersion) {
-		return id.Invalid, false
+		return id.InvalidO, false
 	}
 	zid, err := id.ParseO(u.Path[len(u.Path)-len(api.ZidVersion):])
 	if err != nil {
-		return id.Invalid, false
+		return id.InvalidO, false
 	}
 	return zid, true
 }

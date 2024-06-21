@@ -359,7 +359,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
-	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.InvalidO}
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
 	for _, bx := range mgr.boxes {

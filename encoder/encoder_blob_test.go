@@ -53,7 +53,7 @@ var pngTestCases = []blobTestCase{
 }
 
 func TestBlob(t *testing.T) {
-	m := meta.New(id.Invalid)
+	m := meta.New(id.InvalidO)
 	m.Set(api.KeyTitle, "PNG")
 	for testNum, tc := range pngTestCases {
 		inp := input.NewInput(tc.blob)

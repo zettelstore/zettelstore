@@ -31,10 +31,10 @@ func TestSeekZid(t *testing.T) {
 		name string
 		zid  id.ZidO
 	}{
-		{"", id.Invalid},
-		{"1", id.Invalid},
-		{"1234567890123", id.Invalid},
-		{" 12345678901234", id.Invalid},
+		{"", id.InvalidO},
+		{"1", id.InvalidO},
+		{"1234567890123", id.InvalidO},
+		{" 12345678901234", id.InvalidO},
 		{"12345678901234", id.ZidO(12345678901234)},
 		{"12345678901234.ext", id.ZidO(12345678901234)},
 		{"12345678901234 abc.ext", id.ZidO(12345678901234)},

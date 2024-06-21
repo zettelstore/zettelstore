@@ -26,11 +26,11 @@ func TestSetContainsO(t *testing.T) {
 		zid id.ZidO
 		exp bool
 	}{
-		{nil, id.Invalid, true},
+		{nil, id.InvalidO, true},
 		{nil, 14, true},
-		{id.NewSetO(), id.Invalid, false},
+		{id.NewSetO(), id.InvalidO, false},
 		{id.NewSetO(), 1, false},
-		{id.NewSetO(), id.Invalid, false},
+		{id.NewSetO(), id.InvalidO, false},
 		{id.NewSetO(1), 1, true},
 	}
 	for i, tc := range testcases {

@@ -28,7 +28,7 @@ func GetNewZid(testZid func(id.ZidO) (bool, error)) (id.ZidO, error) {
 		zid := id.NewO(withSeconds)
 		found, err := testZid(zid)
 		if err != nil {
-			return id.Invalid, err
+			return id.InvalidO, err
 		}
 		if found {
 			return zid, nil
@@ -37,7 +37,7 @@ func GetNewZid(testZid func(id.ZidO) (bool, error)) (id.ZidO, error) {
 		time.Sleep(100 * time.Millisecond)
 		withSeconds = true
 	}
-	return id.Invalid, ErrConflict
+	return id.InvalidO, ErrConflict
 }
 
 // GetQueryBool is a helper function to extract bool values from a box URI.

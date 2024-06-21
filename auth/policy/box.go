@@ -59,7 +59,7 @@ func (pp *polBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zi
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.box.CreateZettel(ctx, zettel)
 	}
-	return id.Invalid, box.NewErrNotAllowed("Create", user, id.Invalid)
+	return id.InvalidO, box.NewErrNotAllowed("Create", user, id.InvalidO)
 }
 
 func (pp *polBox) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error) {
@@ -79,7 +79,7 @@ func (pp *polBox) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zette
 }
 
 func (pp *polBox) FetchZids(ctx context.Context) (id.SetO, error) {
-	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
+	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.InvalidO)
 }
 
 func (pp *polBox) GetMeta(ctx context.Context, zid id.ZidO) (*meta.Meta, error) {
@@ -159,7 +159,7 @@ func (pp *polBox) Refresh(ctx context.Context) error {
 	if pp.policy.CanRefresh(user) {
 		return pp.box.Refresh(ctx)
 	}
-	return box.NewErrNotAllowed("Refresh", user, id.Invalid)
+	return box.NewErrNotAllowed("Refresh", user, id.InvalidO)
 }
 func (pp *polBox) ReIndex(ctx context.Context, zid id.ZidO) error {
 	user := server.GetUser(ctx)
