@@ -26,6 +26,7 @@ type ZidMigrator struct {
 	lastZidO         ZidO
 	nextZid          Zid
 	ranges           []zidRange
+	usedZids         map[Zid]struct{}
 }
 
 type zidRange struct {
@@ -79,6 +80,13 @@ func NewZidMigrator() *ZidMigrator {
 		9000000000:      MustParse("0u00"), // Externe Anwendungen (bis 0zzz)
 		DefaultHomeZidO: MustParse("1000"), // Default home zettel
 	}
+	usedZids := make(map[Zid]struct{}, len(defined))
+	for _, zid := range defined {
+		if _, found := usedZids[zid]; found {
+			panic("duplicate predefined zid")
+		}
+		usedZids[zid] = struct{}{}
+	}
 	return &ZidMigrator{
 		defined:  defined,
 		workset:  maps.Clone(defined),
@@ -92,6 +100,7 @@ func NewZidMigrator() *ZidMigrator {
 			{60000, 69999, MustParse("0040")},
 			{90000, 99999, MustParse("0050")},
 		},
+		usedZids: usedZids,
 	}
 }
 
@@ -118,7 +127,7 @@ func (zm *ZidMigrator) Migrate(zidO ZidO) (Zid, error) {
 		zid := zm.nextZid
 		zm.nextZid++
 		zm.workset[zidO] = zid
-		return zid, nil
+		return zm.checkZid(zid)
 	}
 	for _, zr := range zm.ranges {
 		if zidO < zr.lowO || zr.highO < zidO {
@@ -126,7 +135,7 @@ func (zm *ZidMigrator) Migrate(zidO ZidO) (Zid, error) {
 		}
 		zid := zm.retrieveNextInRange(zr.lowO, zr.highO)
 		zm.workset[zidO] = zid
-		return zid, nil
+		return zm.checkZid(zid)
 	}
 	return Invalid, nil
 }
@@ -139,4 +148,12 @@ func (zm *ZidMigrator) retrieveNextInRange(lowO, highO ZidO) Zid {
 		}
 	}
 	return currentMax + 1
+}
+
+func (zm *ZidMigrator) checkZid(zid Zid) (Zid, error) {
+	if _, found := zm.usedZids[zid]; found {
+		return Invalid, fmt.Errorf("zid %v alredy used", zid)
+	}
+	zm.usedZids[zid] = struct{}{}
+	return zid, nil
 }
