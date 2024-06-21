@@ -165,3 +165,94 @@ func NewO(withSeconds bool) ZidO {
 	}
 	return res
 }
+
+// ----- Base36 Zids
+
+// Zid is the internal identifier of a zettel. Typically, it is a number in
+// the range 1..36^4-1 (1..1679615). As an external representation, this
+// number is encode by four digits / lowercase letters.
+type Zid uint32
+
+// Some important ZettelIDs.
+const (
+	Invalid = Zid(0) // Invalid is a Zid that will never be valid
+)
+
+const maxZid = 36*36*36*36 - 1
+
+// ParseUint interprets a string as a possible zettel identifier
+// and returns its integer value.
+func ParseUint(s string) (uint64, error) {
+	res, err := strconv.ParseUint(s, 36, 21)
+	if err != nil {
+		return 0, err
+	}
+	if res == 0 || res > maxZid {
+		return res, strconv.ErrRange
+	}
+	return res, nil
+}
+
+// Parse interprets a string as a zettel identification and
+// returns its value.
+func Parse(s string) (Zid, error) {
+	if len(s) != 4 {
+		return Invalid, strconv.ErrSyntax
+	}
+	res, err := ParseUint(s)
+	if err != nil {
+		return Invalid, err
+	}
+	return Zid(res), nil
+}
+
+// MustParse tries to interpret a string as a zettel identifier and returns
+// its value or panics otherwise.
+func MustParse(s api.ZettelID) Zid {
+	zid, err := Parse(string(s))
+	if err == nil {
+		return zid
+	}
+	panic(err)
+}
+
+// String converts the zettel identification to a string of 14 digits.
+// Only defined for valid ids.
+func (zid Zid) String() string {
+	var result [4]byte
+	zid.toByteArray(&result)
+	return string(result[:])
+}
+
+// ZettelID return the zettel identification as a api.ZettelID.
+func (zid Zid) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
+
+// Bytes converts the zettel identification to a byte slice of 14 digits.
+// Only defined for valid ids.
+func (zid Zid) Bytes() []byte {
+	var result [4]byte
+	zid.toByteArray(&result)
+	return result[:]
+}
+
+// toByteArray converts the Zid into a fixed byte array, usable for printing.
+//
+// Based on idea by Daniel Lemire: "Converting integers to fix-digit representations quickly"
+// https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/
+func (zid Zid) toByteArray(result *[4]byte) {
+	d12 := uint32(zid) / (36 * 36)
+	d1 := d12 / 36
+	d2 := d12 % 36
+	d34 := uint32(zid) % (36 * 36)
+	d3 := d34 / 36
+	d4 := d34 % 36
+
+	const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+	result[0] = digits[d1]
+	result[1] = digits[d2]
+	result[2] = digits[d3]
+	result[3] = digits[d4]
+}
+
+// IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
+func (zid Zid) IsValid() bool { return 0 < zid && zid <= maxZid }
