@@ -58,7 +58,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 			if len(metaSeq) > 0 {
 				for _, act := range actions {
 					if act == api.RedirectAction {
-						zid := metaSeq[0].Zid
+						zid := metaSeq[0].ZidO
 						ub := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 						a.redirectFound(w, r, ub, zid)
 						return
@@ -161,7 +161,7 @@ type plainZettelEncoder struct{}
 
 func (*plainZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error {
 	for _, m := range ml {
-		_, err := fmt.Fprintln(w, m.Zid.String(), m.GetTitle())
+		_, err := fmt.Fprintln(w, m.ZidO.String(), m.GetTitle())
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func (*plainZettelEncoder) writeArrangement(w io.Writer, _ string, arr meta.Arra
 			if err != nil {
 				return err
 			}
-			_, err = io.WriteString(w, m.Zid.String())
+			_, err = io.WriteString(w, m.ZidO.String())
 			if err != nil {
 				return err
 			}
@@ -210,7 +210,7 @@ func (dze *dataZettelEncoder) writeMetaList(w io.Writer, ml []*meta.Meta) error 
 			Meta:   m.Map(),
 			Rights: dze.getRights(m),
 		})
-		msz = sx.Cons(sx.MakeList(symID, sx.Int64(m.Zid)), msz.Cdr()).Cons(symZettel)
+		msz = sx.Cons(sx.MakeList(symID, sx.Int64(m.ZidO)), msz.Cdr()).Cons(symZettel)
 		result[i+1] = msz
 	}
 
@@ -227,7 +227,7 @@ func (dze *dataZettelEncoder) writeArrangement(w io.Writer, act string, arr meta
 	for aggKey, metaList := range arr {
 		sxMeta := sx.Nil()
 		for i := len(metaList) - 1; i >= 0; i-- {
-			sxMeta = sxMeta.Cons(sx.Int64(metaList[i].Zid))
+			sxMeta = sxMeta.Cons(sx.Int64(metaList[i].ZidO))
 		}
 		sxMeta = sxMeta.Cons(sx.MakeString(aggKey))
 		result = result.Cons(sxMeta)
@@ -253,7 +253,7 @@ func (a *API) handleTagZettel(w http.ResponseWriter, r *http.Request, tagZettel 
 		a.reportUsecaseError(w, err)
 		return true
 	}
-	zid := z.Meta.Zid
+	zid := z.Meta.ZidO
 	newURL := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for key, slVals := range vals {
 		if key == api.QueryKeyTag {
@@ -278,7 +278,7 @@ func (a *API) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZette
 		a.reportUsecaseError(w, err)
 		return true
 	}
-	zid := z.Meta.Zid
+	zid := z.Meta.ZidO
 	newURL := a.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for key, slVals := range vals {
 		if key == api.QueryKeyRole {
@@ -292,7 +292,7 @@ func (a *API) handleRoleZettel(w http.ResponseWriter, r *http.Request, roleZette
 	return true
 }
 
-func (a *API) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder, zid id.Zid) {
+func (a *API) redirectFound(w http.ResponseWriter, r *http.Request, ub *api.URLBuilder, zid id.ZidO) {
 	w.Header().Set(api.HeaderContentType, content.PlainText)
 	http.Redirect(w, r, ub.String(), http.StatusFound)
 	if _, err := io.WriteString(w, zid.String()); err != nil {

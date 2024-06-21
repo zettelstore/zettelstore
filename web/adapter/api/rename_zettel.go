@@ -25,7 +25,7 @@ import (
 // MakeRenameZettelHandler creates a new HTTP handler to update a zettel.
 func (a *API) MakeRenameZettelHandler(renameZettel *usecase.RenameZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.Parse(r.URL.Path[1:])
+		zid, err := id.ParseO(r.URL.Path[1:])
 		if err != nil {
 			http.NotFound(w, r)
 			return
@@ -43,7 +43,7 @@ func (a *API) MakeRenameZettelHandler(renameZettel *usecase.RenameZettel) http.H
 	}
 }
 
-func getDestinationZid(r *http.Request) (id.Zid, bool) {
+func getDestinationZid(r *http.Request) (id.ZidO, bool) {
 	if values, ok := r.Header[api.HeaderDestination]; ok {
 		for _, value := range values {
 			if zid, ok2 := getZidFromURL(value); ok2 {
@@ -54,7 +54,7 @@ func getDestinationZid(r *http.Request) (id.Zid, bool) {
 	return id.Invalid, false
 }
 
-func getZidFromURL(val string) (id.Zid, bool) {
+func getZidFromURL(val string) (id.ZidO, bool) {
 	u, err := url.Parse(val)
 	if err != nil {
 		return id.Invalid, false
@@ -62,7 +62,7 @@ func getZidFromURL(val string) (id.Zid, bool) {
 	if len(u.Path) < len(api.ZidVersion) {
 		return id.Invalid, false
 	}
-	zid, err := id.Parse(u.Path[len(u.Path)-len(api.ZidVersion):])
+	zid, err := id.ParseO(u.Path[len(u.Path)-len(api.ZidVersion):])
 	if err != nil {
 		return id.Invalid, false
 	}

@@ -30,7 +30,7 @@ import (
 
 // GetUserPort is the interface used by this use case.
 type GetUserPort interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
 	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 }
 
@@ -73,7 +73,7 @@ func (uc GetUser) Run(ctx context.Context, ident string) (*meta.Meta, error) {
 
 // GetUserByZidPort is the interface used by this use case.
 type GetUserByZidPort interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
 }
 
 // GetUserByZid is the data for this use case.
@@ -87,7 +87,7 @@ func NewGetUserByZid(port GetUserByZidPort) GetUserByZid {
 }
 
 // GetUser executes the use case.
-func (uc GetUserByZid) GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error) {
+func (uc GetUserByZid) GetUser(ctx context.Context, zid id.ZidO, ident string) (*meta.Meta, error) {
 	userZettel, err := uc.port.GetZettel(box.NoEnrichContext(ctx), zid)
 	if err != nil {
 		return nil, err

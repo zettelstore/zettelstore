@@ -29,17 +29,17 @@ import (
 func TestSeekZid(t *testing.T) {
 	testcases := []struct {
 		name string
-		zid  id.Zid
+		zid  id.ZidO
 	}{
 		{"", id.Invalid},
 		{"1", id.Invalid},
 		{"1234567890123", id.Invalid},
 		{" 12345678901234", id.Invalid},
-		{"12345678901234", id.Zid(12345678901234)},
-		{"12345678901234.ext", id.Zid(12345678901234)},
-		{"12345678901234 abc.ext", id.Zid(12345678901234)},
-		{"12345678901234.abc.ext", id.Zid(12345678901234)},
-		{"12345678901234 def", id.Zid(12345678901234)},
+		{"12345678901234", id.ZidO(12345678901234)},
+		{"12345678901234.ext", id.ZidO(12345678901234)},
+		{"12345678901234 abc.ext", id.ZidO(12345678901234)},
+		{"12345678901234.abc.ext", id.ZidO(12345678901234)},
+		{"12345678901234 def", id.ZidO(12345678901234)},
 	}
 	for _, tc := range testcases {
 		gotZid := seekZid(tc.name)

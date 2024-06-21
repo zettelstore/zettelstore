@@ -54,7 +54,7 @@ func (pp *polBox) CanCreateZettel(ctx context.Context) bool {
 	return pp.box.CanCreateZettel(ctx)
 }
 
-func (pp *polBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
+func (pp *polBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
 	user := server.GetUser(ctx)
 	if pp.policy.CanCreate(user, zettel.Meta) {
 		return pp.box.CreateZettel(ctx, zettel)
@@ -62,7 +62,7 @@ func (pp *polBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zi
 	return id.Invalid, box.NewErrNotAllowed("Create", user, id.Invalid)
 }
 
-func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
+func (pp *polBox) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error) {
 	z, err := pp.box.GetZettel(ctx, zid)
 	if err != nil {
 		return zettel.Zettel{}, err
@@ -74,15 +74,15 @@ func (pp *polBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, err
 	return zettel.Zettel{}, box.NewErrNotAllowed("GetZettel", user, zid)
 }
 
-func (pp *polBox) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error) {
+func (pp *polBox) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zettel, error) {
 	return pp.box.GetAllZettel(ctx, zid)
 }
 
-func (pp *polBox) FetchZids(ctx context.Context) (id.Set, error) {
+func (pp *polBox) FetchZids(ctx context.Context) (id.SetO, error) {
 	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.Invalid)
 }
 
-func (pp *polBox) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
+func (pp *polBox) GetMeta(ctx context.Context, zid id.ZidO) (*meta.Meta, error) {
 	m, err := pp.box.GetMeta(ctx, zid)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (pp *polBox) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) boo
 }
 
 func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error {
-	zid := zettel.Meta.Zid
+	zid := zettel.Meta.ZidO
 	user := server.GetUser(ctx)
 	if !zid.IsValid() {
 		return box.ErrInvalidZid{Zid: zid.String()}
@@ -122,11 +122,11 @@ func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	return box.NewErrNotAllowed("Write", user, zid)
 }
 
-func (pp *polBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
+func (pp *polBox) AllowRenameZettel(ctx context.Context, zid id.ZidO) bool {
 	return pp.box.AllowRenameZettel(ctx, zid)
 }
 
-func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
+func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) error {
 	z, err := pp.box.GetZettel(ctx, curZid)
 	if err != nil {
 		return err
@@ -138,11 +138,11 @@ func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 	return box.NewErrNotAllowed("Rename", user, curZid)
 }
 
-func (pp *polBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
+func (pp *polBox) CanDeleteZettel(ctx context.Context, zid id.ZidO) bool {
 	return pp.box.CanDeleteZettel(ctx, zid)
 }
 
-func (pp *polBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
+func (pp *polBox) DeleteZettel(ctx context.Context, zid id.ZidO) error {
 	z, err := pp.box.GetZettel(ctx, zid)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (pp *polBox) Refresh(ctx context.Context) error {
 	}
 	return box.NewErrNotAllowed("Refresh", user, id.Invalid)
 }
-func (pp *polBox) ReIndex(ctx context.Context, zid id.Zid) error {
+func (pp *polBox) ReIndex(ctx context.Context, zid id.ZidO) error {
 	user := server.GetUser(ctx)
 	if pp.policy.CanRefresh(user) {
 		// If a user is allowed to refresh all data, it it also allowed to re-index a zettel.

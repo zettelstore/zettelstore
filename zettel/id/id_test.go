@@ -20,7 +20,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func TestIsValid(t *testing.T) {
+func TestIsValidO(t *testing.T) {
 	t.Parallel()
 	validIDs := []string{
 		"00000000000001",
@@ -44,7 +44,7 @@ func TestIsValid(t *testing.T) {
 	}
 
 	for i, sid := range validIDs {
-		zid, err := id.Parse(sid)
+		zid, err := id.ParseO(sid)
 		if err != nil {
 			t.Errorf("i=%d: sid=%q is not valid, but should be. err=%v", i, sid, err)
 		}
@@ -65,7 +65,7 @@ func TestIsValid(t *testing.T) {
 	}
 
 	for i, sid := range invalidIDs {
-		if zid, err := id.Parse(sid); err == nil {
+		if zid, err := id.ParseO(sid); err == nil {
 			t.Errorf("i=%d: sid=%q is valid (zid=%s), but should not be", i, sid, zid)
 		}
 	}
@@ -73,20 +73,20 @@ func TestIsValid(t *testing.T) {
 
 var sResult string // to disable compiler optimization in loop below
 
-func BenchmarkString(b *testing.B) {
+func BenchmarkStringO(b *testing.B) {
 	var s string
 	for range b.N {
-		s = id.Zid(12345678901200).String()
+		s = id.ZidO(12345678901200).String()
 	}
 	sResult = s
 }
 
 var bResult []byte // to disable compiler optimization in loop below
 
-func BenchmarkBytes(b *testing.B) {
+func BenchmarkBytesO(b *testing.B) {
 	var bs []byte
 	for range b.N {
-		bs = id.Zid(12345678901200).Bytes()
+		bs = id.ZidO(12345678901200).Bytes()
 	}
 	bResult = bs
 }

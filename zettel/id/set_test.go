@@ -19,19 +19,19 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func TestSetContains(t *testing.T) {
+func TestSetContainsO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s   id.Set
-		zid id.Zid
+		s   id.SetO
+		zid id.ZidO
 		exp bool
 	}{
 		{nil, id.Invalid, true},
 		{nil, 14, true},
-		{id.NewSet(), id.Invalid, false},
-		{id.NewSet(), 1, false},
-		{id.NewSet(), id.Invalid, false},
-		{id.NewSet(1), 1, true},
+		{id.NewSetO(), id.Invalid, false},
+		{id.NewSetO(), 1, false},
+		{id.NewSetO(), id.Invalid, false},
+		{id.NewSetO(1), 1, true},
 	}
 	for i, tc := range testcases {
 		got := tc.s.ContainsOrNil(tc.zid)
@@ -41,20 +41,20 @@ func TestSetContains(t *testing.T) {
 	}
 }
 
-func TestSetAdd(t *testing.T) {
+func TestSetAddO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
-		exp    id.Slice
+		s1, s2 id.SetO
+		exp    id.SliceO
 	}{
 		{nil, nil, nil},
-		{id.NewSet(), nil, nil},
-		{id.NewSet(), id.NewSet(), nil},
-		{nil, id.NewSet(1), id.Slice{1}},
-		{id.NewSet(1), nil, id.Slice{1}},
-		{id.NewSet(1), id.NewSet(), id.Slice{1}},
-		{id.NewSet(1), id.NewSet(2), id.Slice{1, 2}},
-		{id.NewSet(1), id.NewSet(1), id.Slice{1}},
+		{id.NewSetO(), nil, nil},
+		{id.NewSetO(), id.NewSetO(), nil},
+		{nil, id.NewSetO(1), id.SliceO{1}},
+		{id.NewSetO(1), nil, id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(), id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(2), id.SliceO{1, 2}},
+		{id.NewSetO(1), id.NewSetO(1), id.SliceO{1}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.Sorted()
@@ -66,15 +66,15 @@ func TestSetAdd(t *testing.T) {
 	}
 }
 
-func TestSetSorted(t *testing.T) {
+func TestSetSortedO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		set id.Set
-		exp id.Slice
+		set id.SetO
+		exp id.SliceO
 	}{
 		{nil, nil},
-		{id.NewSet(), nil},
-		{id.NewSet(9, 4, 6, 1, 7), id.Slice{1, 4, 6, 7, 9}},
+		{id.NewSetO(), nil},
+		{id.NewSetO(9, 4, 6, 1, 7), id.SliceO{1, 4, 6, 7, 9}},
 	}
 	for i, tc := range testcases {
 		got := tc.set.Sorted()
@@ -84,23 +84,23 @@ func TestSetSorted(t *testing.T) {
 	}
 }
 
-func TestSetIntersectOrSet(t *testing.T) {
+func TestSetIntersectOrSetO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
-		exp    id.Slice
+		s1, s2 id.SetO
+		exp    id.SliceO
 	}{
 		{nil, nil, nil},
-		{id.NewSet(), nil, nil},
-		{nil, id.NewSet(), nil},
-		{id.NewSet(), id.NewSet(), nil},
-		{id.NewSet(1), nil, nil},
-		{nil, id.NewSet(1), id.Slice{1}},
-		{id.NewSet(1), id.NewSet(), nil},
-		{id.NewSet(), id.NewSet(1), nil},
-		{id.NewSet(1), id.NewSet(2), nil},
-		{id.NewSet(2), id.NewSet(1), nil},
-		{id.NewSet(1), id.NewSet(1), id.Slice{1}},
+		{id.NewSetO(), nil, nil},
+		{nil, id.NewSetO(), nil},
+		{id.NewSetO(), id.NewSetO(), nil},
+		{id.NewSetO(1), nil, nil},
+		{nil, id.NewSetO(1), id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(), nil},
+		{id.NewSetO(), id.NewSetO(1), nil},
+		{id.NewSetO(1), id.NewSetO(2), nil},
+		{id.NewSetO(2), id.NewSetO(1), nil},
+		{id.NewSetO(1), id.NewSetO(1), id.SliceO{1}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.Sorted()
@@ -112,24 +112,24 @@ func TestSetIntersectOrSet(t *testing.T) {
 	}
 }
 
-func TestSetRemove(t *testing.T) {
+func TestSetRemoveO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
-		exp    id.Slice
+		s1, s2 id.SetO
+		exp    id.SliceO
 	}{
 		{nil, nil, nil},
-		{id.NewSet(), nil, nil},
-		{id.NewSet(), id.NewSet(), nil},
-		{id.NewSet(1), nil, id.Slice{1}},
-		{id.NewSet(1), id.NewSet(), id.Slice{1}},
-		{id.NewSet(1), id.NewSet(2), id.Slice{1}},
-		{id.NewSet(1), id.NewSet(1), id.Slice{}},
+		{id.NewSetO(), nil, nil},
+		{id.NewSetO(), id.NewSetO(), nil},
+		{id.NewSetO(1), nil, id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(), id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(2), id.SliceO{1}},
+		{id.NewSetO(1), id.NewSetO(1), id.SliceO{}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.Sorted()
 		sl2 := tc.s2.Sorted()
-		newS1 := id.NewSet(sl1...)
+		newS1 := id.NewSetO(sl1...)
 		newS1.Substract(tc.s2)
 		got := newS1.Sorted()
 		if !got.Equal(tc.exp) {
@@ -144,9 +144,9 @@ func TestSetRemove(t *testing.T) {
 //			s[id.Zid(i)] = true
 //		}
 //	}
-func BenchmarkSet(b *testing.B) {
-	s := id.Set{}
+func BenchmarkSetO(b *testing.B) {
+	s := id.SetO{}
 	for i := range b.N {
-		s[id.Zid(i)] = struct{}{}
+		s[id.ZidO(i)] = struct{}{}
 	}
 }

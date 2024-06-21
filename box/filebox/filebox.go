@@ -72,14 +72,14 @@ func calculateSyntax(ext string) string {
 }
 
 // CalcDefaultMeta returns metadata with default values for the given entry.
-func CalcDefaultMeta(zid id.Zid, ext string) *meta.Meta {
+func CalcDefaultMeta(zid id.ZidO, ext string) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeySyntax, calculateSyntax(ext))
 	return m
 }
 
 // CleanupMeta enhances the given metadata.
-func CleanupMeta(m *meta.Meta, zid id.Zid, ext string, inMeta bool, uselessFiles []string) {
+func CleanupMeta(m *meta.Meta, zid id.ZidO, ext string, inMeta bool, uselessFiles []string) {
 	if inMeta {
 		if syntax, ok := m.Get(api.KeySyntax); !ok || syntax == "" {
 			dm := CalcDefaultMeta(zid, ext)

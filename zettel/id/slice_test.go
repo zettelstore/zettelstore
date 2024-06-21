@@ -19,43 +19,43 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func TestSliceSort(t *testing.T) {
+func TestSliceSortO(t *testing.T) {
 	t.Parallel()
-	zs := id.Slice{9, 4, 6, 1, 7}
+	zs := id.SliceO{9, 4, 6, 1, 7}
 	zs.Sort()
-	exp := id.Slice{1, 4, 6, 7, 9}
+	exp := id.SliceO{1, 4, 6, 7, 9}
 	if !zs.Equal(exp) {
 		t.Errorf("Slice.Sort did not work. Expected %v, got %v", exp, zs)
 	}
 }
 
-func TestCopy(t *testing.T) {
+func TestCopyO(t *testing.T) {
 	t.Parallel()
-	var orig id.Slice
+	var orig id.SliceO
 	got := orig.Clone()
 	if got != nil {
 		t.Errorf("Nil copy resulted in %v", got)
 	}
-	orig = id.Slice{9, 4, 6, 1, 7}
+	orig = id.SliceO{9, 4, 6, 1, 7}
 	got = orig.Clone()
 	if !orig.Equal(got) {
 		t.Errorf("Slice.Copy did not work. Expected %v, got %v", orig, got)
 	}
 }
 
-func TestSliceEqual(t *testing.T) {
+func TestSliceEqualO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Slice
+		s1, s2 id.SliceO
 		exp    bool
 	}{
 		{nil, nil, true},
-		{nil, id.Slice{}, true},
-		{nil, id.Slice{1}, false},
-		{id.Slice{1}, id.Slice{1}, true},
-		{id.Slice{1}, id.Slice{2}, false},
-		{id.Slice{1, 2}, id.Slice{2, 1}, false},
-		{id.Slice{1, 2}, id.Slice{1, 2}, true},
+		{nil, id.SliceO{}, true},
+		{nil, id.SliceO{1}, false},
+		{id.SliceO{1}, id.SliceO{1}, true},
+		{id.SliceO{1}, id.SliceO{2}, false},
+		{id.SliceO{1, 2}, id.SliceO{2, 1}, false},
+		{id.SliceO{1, 2}, id.SliceO{1, 2}, true},
 	}
 	for i, tc := range testcases {
 		got := tc.s1.Equal(tc.s2)
@@ -69,16 +69,16 @@ func TestSliceEqual(t *testing.T) {
 	}
 }
 
-func TestSliceString(t *testing.T) {
+func TestSliceStringO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		in  id.Slice
+		in  id.SliceO
 		exp string
 	}{
 		{nil, ""},
-		{id.Slice{}, ""},
-		{id.Slice{1}, "00000000000001"},
-		{id.Slice{1, 2}, "00000000000001 00000000000002"},
+		{id.SliceO{}, ""},
+		{id.SliceO{1}, "00000000000001"},
+		{id.SliceO{1, 2}, "00000000000001 00000000000002"},
 	}
 	for i, tc := range testcases {
 		got := tc.in.String()

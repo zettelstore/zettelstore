@@ -50,11 +50,11 @@ type CompiledTerm struct {
 }
 
 // RetrievePredicate returns true, if the given Zid is contained in the (full-text) search.
-type RetrievePredicate func(id.Zid) bool
+type RetrievePredicate func(id.ZidO) bool
 
 // AlwaysIncluded is a RetrievePredicate that always returns true.
-func AlwaysIncluded(id.Zid) bool { return true }
-func neverIncluded(id.Zid) bool  { return false }
+func AlwaysIncluded(id.ZidO) bool { return true }
+func neverIncluded(id.ZidO) bool  { return false }
 
 func (c *Compiled) isDeterministic() bool { return c.seed > 0 }
 
@@ -68,7 +68,7 @@ func (c *Compiled) Result() []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(c.startMeta))
 	for _, m := range c.startMeta {
 		for _, term := range c.Terms {
-			if term.Match(m) && term.Retrieve(m.Zid) {
+			if term.Match(m) && term.Retrieve(m.ZidO) {
 				result = append(result, m)
 				break
 			}

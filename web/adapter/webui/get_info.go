@@ -47,7 +47,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		q := r.URL.Query()
 
 		path := r.URL.Path[1:]
-		zid, err := id.Parse(path)
+		zid, err := id.ParseO(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -110,7 +110,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		rb.bindString("shadow-links", shadowLinks)
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
-			err = wui.renderSxnTemplate(ctx, w, id.InfoTemplateZid, env)
+			err = wui.renderSxnTemplate(ctx, w, id.InfoTemplateZidO, env)
 		} else {
 			err = rb.err
 		}
@@ -140,7 +140,7 @@ func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries
 	return locLinks, queries, extLinks
 }
 
-func createUnlinkedQuery(zid id.Zid, phrase string) *query.Query {
+func createUnlinkedQuery(zid id.ZidO, phrase string) *query.Query {
 	var sb strings.Builder
 	sb.Write(zid.Bytes())
 	sb.WriteByte(' ')
@@ -170,7 +170,7 @@ func encodingTexts() []string {
 
 var apiParts = []string{api.PartZettel, api.PartMeta, api.PartContent}
 
-func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *sx.Pair {
+func (wui *WebUI) infoAPIMatrix(zid id.ZidO, parseOnly bool, encTexts []string) *sx.Pair {
 	matrix := sx.Nil()
 	u := wui.NewURLBuilder('z').SetZid(zid.ZettelID())
 	for ip := len(apiParts) - 1; ip >= 0; ip-- {
@@ -191,7 +191,7 @@ func (wui *WebUI) infoAPIMatrix(zid id.Zid, parseOnly bool, encTexts []string) *
 	return matrix
 }
 
-func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sx.Pair {
+func (wui *WebUI) infoAPIMatrixParsed(zid id.ZidO, encTexts []string) *sx.Pair {
 	matrix := wui.infoAPIMatrix(zid, true, encTexts)
 	u := wui.NewURLBuilder('z').SetZid(zid.ZettelID())
 
@@ -216,7 +216,7 @@ func (wui *WebUI) infoAPIMatrixParsed(zid id.Zid, encTexts []string) *sx.Pair {
 	return matrix
 }
 
-func getShadowLinks(ctx context.Context, zid id.Zid, getAllZettel usecase.GetAllZettel) *sx.Pair {
+func getShadowLinks(ctx context.Context, zid id.ZidO, getAllZettel usecase.GetAllZettel) *sx.Pair {
 	result := sx.Nil()
 	if zl, err := getAllZettel.Run(ctx, zid); err == nil {
 		for i := len(zl) - 1; i >= 1; i-- {

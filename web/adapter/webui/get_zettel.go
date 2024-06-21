@@ -35,7 +35,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
-		zid, err := id.Parse(path)
+		zid, err := id.ParseO(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -87,7 +87,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		}
 		wui.bindCommonZettelData(ctx, &rb, user, zn.InhMeta, &zn.Content)
 		if rb.err == nil {
-			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZid, env)
+			err = wui.renderSxnTemplate(ctx, w, id.ZettelTemplateZidO, env)
 		} else {
 			err = rb.err
 		}
@@ -146,7 +146,7 @@ func (wui *WebUI) zettelLinksSxn(m *meta.Meta, key string, getTextTitle getTextT
 func (wui *WebUI) zidLinksSxn(values []string, getTextTitle getTextTitleFunc) (lst *sx.Pair) {
 	for i := len(values) - 1; i >= 0; i-- {
 		val := values[i]
-		zid, err := id.Parse(val)
+		zid, err := id.ParseO(val)
 		if err != nil {
 			continue
 		}

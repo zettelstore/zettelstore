@@ -22,7 +22,7 @@ import (
 
 // GetAllZettelPort is the interface used by this use case.
 type GetAllZettelPort interface {
-	GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error)
+	GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zettel, error)
 }
 
 // GetAllZettel is the data for this use case.
@@ -36,6 +36,6 @@ func NewGetAllZettel(port GetAllZettelPort) GetAllZettel {
 }
 
 // Run executes the use case.
-func (uc GetAllZettel) Run(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error) {
+func (uc GetAllZettel) Run(ctx context.Context, zid id.ZidO) ([]zettel.Zettel, error) {
 	return uc.port.GetAllZettel(ctx, zid)
 }

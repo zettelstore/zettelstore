@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func assertRefs(t *testing.T, i int, got, exp id.Slice) {
+func assertRefs(t *testing.T, i int, got, exp id.SliceO) {
 	t.Helper()
 	if got == nil && exp != nil {
 		t.Errorf("%d: got nil, but expected %v", i, exp)
@@ -34,7 +34,7 @@ func assertRefs(t *testing.T, i int, got, exp id.Slice) {
 		return
 	}
 	for p, n := range exp {
-		if got := got[p]; got != id.Zid(n) {
+		if got := got[p]; got != id.ZidO(n) {
 			t.Errorf("%d: pos %d: expected %d, but got %d", i, p, n, got)
 		}
 	}
@@ -43,16 +43,16 @@ func assertRefs(t *testing.T, i int, got, exp id.Slice) {
 func TestRefsDiff(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		in1, in2   id.Slice
-		exp1, exp2 id.Slice
+		in1, in2   id.SliceO
+		exp1, exp2 id.SliceO
 	}{
 		{nil, nil, nil, nil},
-		{id.Slice{1}, nil, id.Slice{1}, nil},
-		{nil, id.Slice{1}, nil, id.Slice{1}},
-		{id.Slice{1}, id.Slice{1}, nil, nil},
-		{id.Slice{1, 2}, id.Slice{1}, id.Slice{2}, nil},
-		{id.Slice{1, 2}, id.Slice{1, 3}, id.Slice{2}, id.Slice{3}},
-		{id.Slice{1, 4}, id.Slice{1, 3}, id.Slice{4}, id.Slice{3}},
+		{id.SliceO{1}, nil, id.SliceO{1}, nil},
+		{nil, id.SliceO{1}, nil, id.SliceO{1}},
+		{id.SliceO{1}, id.SliceO{1}, nil, nil},
+		{id.SliceO{1, 2}, id.SliceO{1}, id.SliceO{2}, nil},
+		{id.SliceO{1, 2}, id.SliceO{1, 3}, id.SliceO{2}, id.SliceO{3}},
+		{id.SliceO{1, 4}, id.SliceO{1, 3}, id.SliceO{4}, id.SliceO{3}},
 	}
 	for i, tc := range testcases {
 		got1, got2 := refsDiff(tc.in1, tc.in2)
@@ -64,19 +64,19 @@ func TestRefsDiff(t *testing.T) {
 func TestAddRef(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		ref id.Slice
+		ref id.SliceO
 		zid uint
-		exp id.Slice
+		exp id.SliceO
 	}{
-		{nil, 5, id.Slice{5}},
-		{id.Slice{1}, 5, id.Slice{1, 5}},
-		{id.Slice{10}, 5, id.Slice{5, 10}},
-		{id.Slice{5}, 5, id.Slice{5}},
-		{id.Slice{1, 10}, 5, id.Slice{1, 5, 10}},
-		{id.Slice{1, 5, 10}, 5, id.Slice{1, 5, 10}},
+		{nil, 5, id.SliceO{5}},
+		{id.SliceO{1}, 5, id.SliceO{1, 5}},
+		{id.SliceO{10}, 5, id.SliceO{5, 10}},
+		{id.SliceO{5}, 5, id.SliceO{5}},
+		{id.SliceO{1, 10}, 5, id.SliceO{1, 5, 10}},
+		{id.SliceO{1, 5, 10}, 5, id.SliceO{1, 5, 10}},
 	}
 	for i, tc := range testcases {
-		got := addRef(tc.ref, id.Zid(tc.zid))
+		got := addRef(tc.ref, id.ZidO(tc.zid))
 		assertRefs(t, i, got, tc.exp)
 	}
 }
@@ -84,32 +84,32 @@ func TestAddRef(t *testing.T) {
 func TestRemRefs(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		in1, in2 id.Slice
-		exp      id.Slice
+		in1, in2 id.SliceO
+		exp      id.SliceO
 	}{
 		{nil, nil, nil},
-		{nil, id.Slice{}, nil},
-		{id.Slice{}, nil, id.Slice{}},
-		{id.Slice{}, id.Slice{}, id.Slice{}},
-		{id.Slice{1}, id.Slice{5}, id.Slice{1}},
-		{id.Slice{10}, id.Slice{5}, id.Slice{10}},
-		{id.Slice{1, 5}, id.Slice{5}, id.Slice{1}},
-		{id.Slice{5, 10}, id.Slice{5}, id.Slice{10}},
-		{id.Slice{1, 10}, id.Slice{5}, id.Slice{1, 10}},
-		{id.Slice{1}, id.Slice{2, 5}, id.Slice{1}},
-		{id.Slice{10}, id.Slice{2, 5}, id.Slice{10}},
-		{id.Slice{1, 5}, id.Slice{2, 5}, id.Slice{1}},
-		{id.Slice{5, 10}, id.Slice{2, 5}, id.Slice{10}},
-		{id.Slice{1, 2, 5}, id.Slice{2, 5}, id.Slice{1}},
-		{id.Slice{2, 5, 10}, id.Slice{2, 5}, id.Slice{10}},
-		{id.Slice{1, 10}, id.Slice{2, 5}, id.Slice{1, 10}},
-		{id.Slice{1}, id.Slice{5, 9}, id.Slice{1}},
-		{id.Slice{10}, id.Slice{5, 9}, id.Slice{10}},
-		{id.Slice{1, 5}, id.Slice{5, 9}, id.Slice{1}},
-		{id.Slice{5, 10}, id.Slice{5, 9}, id.Slice{10}},
-		{id.Slice{1, 5, 9}, id.Slice{5, 9}, id.Slice{1}},
-		{id.Slice{5, 9, 10}, id.Slice{5, 9}, id.Slice{10}},
-		{id.Slice{1, 10}, id.Slice{5, 9}, id.Slice{1, 10}},
+		{nil, id.SliceO{}, nil},
+		{id.SliceO{}, nil, id.SliceO{}},
+		{id.SliceO{}, id.SliceO{}, id.SliceO{}},
+		{id.SliceO{1}, id.SliceO{5}, id.SliceO{1}},
+		{id.SliceO{10}, id.SliceO{5}, id.SliceO{10}},
+		{id.SliceO{1, 5}, id.SliceO{5}, id.SliceO{1}},
+		{id.SliceO{5, 10}, id.SliceO{5}, id.SliceO{10}},
+		{id.SliceO{1, 10}, id.SliceO{5}, id.SliceO{1, 10}},
+		{id.SliceO{1}, id.SliceO{2, 5}, id.SliceO{1}},
+		{id.SliceO{10}, id.SliceO{2, 5}, id.SliceO{10}},
+		{id.SliceO{1, 5}, id.SliceO{2, 5}, id.SliceO{1}},
+		{id.SliceO{5, 10}, id.SliceO{2, 5}, id.SliceO{10}},
+		{id.SliceO{1, 2, 5}, id.SliceO{2, 5}, id.SliceO{1}},
+		{id.SliceO{2, 5, 10}, id.SliceO{2, 5}, id.SliceO{10}},
+		{id.SliceO{1, 10}, id.SliceO{2, 5}, id.SliceO{1, 10}},
+		{id.SliceO{1}, id.SliceO{5, 9}, id.SliceO{1}},
+		{id.SliceO{10}, id.SliceO{5, 9}, id.SliceO{10}},
+		{id.SliceO{1, 5}, id.SliceO{5, 9}, id.SliceO{1}},
+		{id.SliceO{5, 10}, id.SliceO{5, 9}, id.SliceO{10}},
+		{id.SliceO{1, 5, 9}, id.SliceO{5, 9}, id.SliceO{1}},
+		{id.SliceO{5, 9, 10}, id.SliceO{5, 9}, id.SliceO{10}},
+		{id.SliceO{1, 10}, id.SliceO{5, 9}, id.SliceO{1, 10}},
 	}
 	for i, tc := range testcases {
 		got := remRefs(tc.in1, tc.in2)
@@ -120,21 +120,21 @@ func TestRemRefs(t *testing.T) {
 func TestRemRef(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		ref id.Slice
+		ref id.SliceO
 		zid uint
-		exp id.Slice
+		exp id.SliceO
 	}{
 		{nil, 5, nil},
-		{id.Slice{}, 5, id.Slice{}},
-		{id.Slice{5}, 5, id.Slice{}},
-		{id.Slice{1}, 5, id.Slice{1}},
-		{id.Slice{10}, 5, id.Slice{10}},
-		{id.Slice{1, 5}, 5, id.Slice{1}},
-		{id.Slice{5, 10}, 5, id.Slice{10}},
-		{id.Slice{1, 5, 10}, 5, id.Slice{1, 10}},
+		{id.SliceO{}, 5, id.SliceO{}},
+		{id.SliceO{5}, 5, id.SliceO{}},
+		{id.SliceO{1}, 5, id.SliceO{1}},
+		{id.SliceO{10}, 5, id.SliceO{10}},
+		{id.SliceO{1, 5}, 5, id.SliceO{1}},
+		{id.SliceO{5, 10}, 5, id.SliceO{10}},
+		{id.SliceO{1, 5, 10}, 5, id.SliceO{1, 10}},
 	}
 	for i, tc := range testcases {
-		got := remRef(tc.ref, id.Zid(tc.zid))
+		got := remRef(tc.ref, id.ZidO(tc.zid))
 		assertRefs(t, i, got, tc.exp)
 	}
 }

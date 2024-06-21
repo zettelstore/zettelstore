@@ -216,7 +216,7 @@ func createManualZipEntry(path string, entry fs.DirEntry, zipWriter *zip.Writer)
 		return err
 	}
 	inp := input.NewInput(data)
-	m := meta.NewFromInput(id.MustParse(versionZid), inp)
+	m := meta.NewFromInput(id.MustParseO(versionZid), inp)
 	m.SetNow(api.KeyModified)
 
 	var buf bytes.Buffer

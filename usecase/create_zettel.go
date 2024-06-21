@@ -28,7 +28,7 @@ import (
 // CreateZettelPort is the interface used by this use case.
 type CreateZettelPort interface {
 	// CreateZettel creates a new zettel.
-	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error)
 }
 
 // CreateZettel is the data for this use case.
@@ -64,7 +64,7 @@ func (*CreateZettel) PrepareCopy(origZettel zettel.Zettel) zettel.Zettel {
 func (*CreateZettel) PrepareVersion(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
 	m := origMeta.Clone()
-	m.Set(api.KeyPredecessor, origMeta.Zid.String())
+	m.Set(api.KeyPredecessor, origMeta.ZidO.String())
 	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
@@ -79,7 +79,7 @@ func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
 	updateMetaRoleTagsSyntax(m, origMeta)
-	m.Set(api.KeyPrecursor, origMeta.Zid.String())
+	m.Set(api.KeyPrecursor, origMeta.ZidO.String())
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
@@ -91,7 +91,7 @@ func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 		m.Set(api.KeyTitle, prependTitle(title, "Child", "Child of "))
 	}
 	updateMetaRoleTagsSyntax(m, origMeta)
-	m.Set(api.KeySuperior, origMeta.Zid.String())
+	m.Set(api.KeySuperior, origMeta.ZidO.String())
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
@@ -141,10 +141,10 @@ func setReadonly(m *meta.Meta) {
 }
 
 // Run executes the use case.
-func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
+func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
 	m := zettel.Meta
-	if m.Zid.IsValid() {
-		return m.Zid, nil // TODO: new error: already exists
+	if m.ZidO.IsValid() {
+		return m.ZidO, nil // TODO: new error: already exists
 	}
 
 	m.Set(api.KeyCreated, time.Now().Local().Format(id.TimestampLayout))

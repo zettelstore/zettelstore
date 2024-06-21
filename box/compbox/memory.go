@@ -25,7 +25,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func genMemoryM(zid id.Zid) *meta.Meta {
+func genMemoryM(zid id.ZidO) *meta.Meta {
 	if myConfig == nil {
 		return nil
 	}

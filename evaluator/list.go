@@ -256,7 +256,7 @@ func (ap *actionPara) createBlockNodeMeta(key string) (ast.BlockNode, int) {
 		}
 		items = append(items, ast.ItemSlice{ast.CreateParaNode(&ast.LinkNode{
 			Attrs:   nil,
-			Ref:     ast.ParseReference(m.Zid.String()),
+			Ref:     ast.ParseReference(m.ZidO.String()),
 			Inlines: parser.ParseSpacedText(m.GetTitle()),
 		})})
 	}

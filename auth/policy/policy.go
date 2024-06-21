@@ -56,7 +56,7 @@ func (p *prePolicy) CanRead(user, m *meta.Meta) bool {
 }
 
 func (p *prePolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
-	return oldMeta != nil && newMeta != nil && oldMeta.Zid == newMeta.Zid &&
+	return oldMeta != nil && newMeta != nil && oldMeta.ZidO == newMeta.ZidO &&
 		p.post.CanWrite(user, oldMeta, newMeta)
 }
 

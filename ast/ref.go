@@ -46,7 +46,7 @@ func ParseReference(s string) *Reference {
 		return &Reference{URL: nil, Value: s, State: RefStateInvalid}
 	}
 	if !externalURL(u) {
-		if _, err = id.Parse(u.Path); err == nil {
+		if _, err = id.ParseO(u.Path); err == nil {
 			return &Reference{URL: u, Value: s, State: RefStateZettel}
 		}
 		if u.Path == "" && u.Fragment != "" {

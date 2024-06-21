@@ -43,7 +43,7 @@ func NewEvaluate(rtConfig config.Config, ucGetZettel *GetZettel, ucQuery *Query)
 }
 
 // Run executes the use case.
-func (uc *Evaluate) Run(ctx context.Context, zid id.Zid, syntax string) (*ast.ZettelNode, error) {
+func (uc *Evaluate) Run(ctx context.Context, zid id.ZidO, syntax string) (*ast.ZettelNode, error) {
 	zettel, err := uc.ucGetZettel.Run(ctx, zid)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (uc *Evaluate) RunMetadata(ctx context.Context, value string) ast.InlineSli
 }
 
 // GetZettel retrieves the full zettel of a given zettel identifier.
-func (uc *Evaluate) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
+func (uc *Evaluate) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error) {
 	return uc.ucGetZettel.Run(ctx, zid)
 }
 

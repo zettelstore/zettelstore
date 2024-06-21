@@ -22,10 +22,10 @@ import (
 )
 
 // GetNewZid calculates a new and unused zettel identifier, based on the current date and time.
-func GetNewZid(testZid func(id.Zid) (bool, error)) (id.Zid, error) {
+func GetNewZid(testZid func(id.ZidO) (bool, error)) (id.ZidO, error) {
 	withSeconds := false
 	for range 90 { // Must be completed within 9 seconds (less than web/server.writeTimeout)
-		zid := id.New(withSeconds)
+		zid := id.NewO(withSeconds)
 		found, err := testZid(zid)
 		if err != nil {
 			return id.Invalid, err

@@ -72,7 +72,7 @@ func (as *authService) Start(*myKernel) error {
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
 	readonlyMode := as.GetNextConfig(kernel.AuthReadonly).(bool)
-	owner := as.GetNextConfig(kernel.AuthOwner).(id.Zid)
+	owner := as.GetNextConfig(kernel.AuthOwner).(id.ZidO)
 	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
 		as.logger.Error().Err(err).Msg("Unable to create manager")

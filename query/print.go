@@ -108,7 +108,7 @@ func (pe *PrintEnv) writeStrings(sSeq ...string) {
 	}
 }
 
-func (pe *PrintEnv) printZids(zids []id.Zid) {
+func (pe *PrintEnv) printZids(zids []id.ZidO) {
 	for i, zid := range zids {
 		if i > 0 {
 			pe.printSpace()

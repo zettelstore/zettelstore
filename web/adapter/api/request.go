@@ -104,7 +104,7 @@ func (p partType) DefString(defPart partType) string {
 	return p.String()
 }
 
-func buildZettelFromPlainData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
+func buildZettelFromPlainData(r *http.Request, zid id.ZidO) (zettel.Zettel, error) {
 	defer r.Body.Close()
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -118,7 +118,7 @@ func buildZettelFromPlainData(r *http.Request, zid id.Zid) (zettel.Zettel, error
 	}, nil
 }
 
-func buildZettelFromData(r *http.Request, zid id.Zid) (zettel.Zettel, error) {
+func buildZettelFromData(r *http.Request, zid id.ZidO) (zettel.Zettel, error) {
 	defer r.Body.Close()
 	rdr := sxreader.MakeReader(r.Body)
 	obj, err := rdr.Read()

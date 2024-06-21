@@ -18,20 +18,20 @@ import (
 	"strings"
 )
 
-// Slice is a sequence of zettel identifier. A special case is a sorted slice.
-type Slice []Zid
+// SliceO is a sequence of zettel identifier. A special case is a sorted slice.
+type SliceO []ZidO
 
 // Sort a slice of Zids.
-func (zs Slice) Sort() { slices.Sort(zs) }
+func (zs SliceO) Sort() { slices.Sort(zs) }
 
 // Clone a zettel identifier slice
-func (zs Slice) Clone() Slice { return slices.Clone(zs) }
+func (zs SliceO) Clone() SliceO { return slices.Clone(zs) }
 
 // Equal reports whether zs and other are the same length and contain the samle zettel
 // identifier. A nil argument is equivalent to an empty slice.
-func (zs Slice) Equal(other Slice) bool { return slices.Equal(zs, other) }
+func (zs SliceO) Equal(other SliceO) bool { return slices.Equal(zs, other) }
 
-func (zs Slice) String() string {
+func (zs SliceO) String() string {
 	if len(zs) == 0 {
 		return ""
 	}

@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func (a *API) writeObject(w http.ResponseWriter, zid id.Zid, obj sx.Object) error {
+func (a *API) writeObject(w http.ResponseWriter, zid id.ZidO, obj sx.Object) error {
 	var buf bytes.Buffer
 	if _, err := sx.Print(&buf, obj); err != nil {
 		msg := a.log.Error().Err(err)

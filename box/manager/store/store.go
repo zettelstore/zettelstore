@@ -44,22 +44,22 @@ type Store interface {
 	query.Searcher
 
 	// GetMeta returns the metadata of the zettel with the given identifier.
-	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
+	GetMeta(context.Context, id.ZidO) (*meta.Meta, error)
 
 	// Entrich metadata with data from store.
 	Enrich(ctx context.Context, m *meta.Meta)
 
 	// UpdateReferences for a specific zettel.
 	// Returns set of zettel identifier that must also be checked for changes.
-	UpdateReferences(context.Context, *ZettelIndex) id.Set
+	UpdateReferences(context.Context, *ZettelIndex) id.SetO
 
 	// RenameZettel changes all references of current zettel identifier to new
 	// zettel identifier.
-	RenameZettel(_ context.Context, curZid, newZid id.Zid) id.Set
+	RenameZettel(_ context.Context, curZid, newZid id.ZidO) id.SetO
 
 	// DeleteZettel removes index data for given zettel.
 	// Returns set of zettel identifier that must also be checked for changes.
-	DeleteZettel(context.Context, id.Zid) id.Set
+	DeleteZettel(context.Context, id.ZidO) id.SetO
 
 	// ReadStats populates st with store statistics.
 	ReadStats(st *Stats)

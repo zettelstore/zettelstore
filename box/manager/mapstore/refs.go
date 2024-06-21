@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
+func refsDiff(refsN, refsO id.SliceO) (newRefs, remRefs id.SliceO) {
 	npos, opos := 0, 0
 	for npos < len(refsN) && opos < len(refsO) {
 		rn, ro := refsN[npos], refsO[opos]
@@ -45,7 +45,7 @@ func refsDiff(refsN, refsO id.Slice) (newRefs, remRefs id.Slice) {
 	return newRefs, remRefs
 }
 
-func addRef(refs id.Slice, ref id.Zid) id.Slice {
+func addRef(refs id.SliceO, ref id.ZidO) id.SliceO {
 	hi := len(refs)
 	for lo := 0; lo < hi; {
 		m := lo + (hi-lo)/2
@@ -61,11 +61,11 @@ func addRef(refs id.Slice, ref id.Zid) id.Slice {
 	return refs
 }
 
-func remRefs(refs, rem id.Slice) id.Slice {
+func remRefs(refs, rem id.SliceO) id.SliceO {
 	if len(refs) == 0 || len(rem) == 0 {
 		return refs
 	}
-	result := make(id.Slice, 0, len(refs))
+	result := make(id.SliceO, 0, len(refs))
 	rpos, dpos := 0, 0
 	for rpos < len(refs) && dpos < len(rem) {
 		rr, dr := refs[rpos], rem[dpos]
@@ -87,7 +87,7 @@ func remRefs(refs, rem id.Slice) id.Slice {
 	return result
 }
 
-func remRef(refs id.Slice, ref id.Zid) id.Slice {
+func remRef(refs id.SliceO, ref id.ZidO) id.SliceO {
 	hi := len(refs)
 	for lo := 0; lo < hi; {
 		m := lo + (hi-lo)/2

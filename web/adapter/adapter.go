@@ -32,7 +32,7 @@ func TryReIndex(ctx context.Context, actions []string, metaSeq []*meta.Meta, reI
 				hasReIndex = true
 				var errAction error
 				for _, m := range metaSeq {
-					if err := reIndex.Run(ctx, m.Zid); err != nil {
+					if err := reIndex.Run(ctx, m.ZidO); err != nil {
 						errAction = err
 					}
 				}

@@ -30,7 +30,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-type entrySet map[id.Zid]*DirEntry
+type entrySet map[id.ZidO]*DirEntry
 
 // DirServiceState signal the internal state of the service.
 //
@@ -141,7 +141,7 @@ func (ds *DirService) GetDirEntries(constraint query.RetrievePredicate) []*DirEn
 }
 
 // GetDirEntry returns a directory entry with the given zid, or nil if not found.
-func (ds *DirService) GetDirEntry(zid id.Zid) *DirEntry {
+func (ds *DirService) GetDirEntry(zid id.ZidO) *DirEntry {
 	ds.mx.RLock()
 	defer ds.mx.RUnlock()
 	if ds.entries == nil {
@@ -157,13 +157,13 @@ func (ds *DirService) GetDirEntry(zid id.Zid) *DirEntry {
 
 // SetNewDirEntry calculates an empty directory entry with an unused identifier and
 // stores it in the directory.
-func (ds *DirService) SetNewDirEntry() (id.Zid, error) {
+func (ds *DirService) SetNewDirEntry() (id.ZidO, error) {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
 		return id.Invalid, ds.logMissingEntry("new")
 	}
-	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
+	zid, err := box.GetNewZid(func(zid id.ZidO) (bool, error) {
 		_, found := ds.entries[zid]
 		return !found, nil
 	})
@@ -187,7 +187,7 @@ func (ds *DirService) UpdateDirEntry(updatedEntry *DirEntry) error {
 }
 
 // RenameDirEntry replaces an existing directory entry with a new one.
-func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntry, error) {
+func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.ZidO) (DirEntry, error) {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
@@ -209,7 +209,7 @@ func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntr
 	return newEntry, nil
 }
 
-func renameFilename(name string, curID, newID id.Zid) string {
+func renameFilename(name string, curID, newID id.ZidO) string {
 	if cur := curID.String(); strings.HasPrefix(name, cur) {
 		name = newID.String() + name[len(cur):]
 	}
@@ -217,7 +217,7 @@ func renameFilename(name string, curID, newID id.Zid) string {
 }
 
 // DeleteDirEntry removes a entry from the directory.
-func (ds *DirService) DeleteDirEntry(zid id.Zid) error {
+func (ds *DirService) DeleteDirEntry(zid id.ZidO) error {
 	ds.mx.Lock()
 	defer ds.mx.Unlock()
 	if ds.entries == nil {
@@ -306,15 +306,15 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 	return newEntries, true
 }
 
-func getNewZids(entries entrySet) id.Slice {
-	zids := make(id.Slice, 0, len(entries))
+func getNewZids(entries entrySet) id.SliceO {
+	zids := make(id.SliceO, 0, len(entries))
 	for zid := range entries {
 		zids = append(zids, zid)
 	}
 	return zids
 }
 
-func (ds *DirService) onCreateDirectory(zids id.Slice, prevEntries entrySet) {
+func (ds *DirService) onCreateDirectory(zids id.SliceO, prevEntries entrySet) {
 	for _, zid := range zids {
 		ds.notifyChange(zid)
 		delete(prevEntries, zid)
@@ -344,19 +344,19 @@ func matchValidFileName(name string) []string {
 	return validFileName.FindStringSubmatch(name)
 }
 
-func seekZid(name string) id.Zid {
+func seekZid(name string) id.ZidO {
 	match := matchValidFileName(name)
 	if len(match) == 0 {
 		return id.Invalid
 	}
-	zid, err := id.Parse(match[1])
+	zid, err := id.ParseO(match[1])
 	if err != nil {
 		return id.Invalid
 	}
 	return zid
 }
 
-func fetchdirEntry(entries entrySet, zid id.Zid) *DirEntry {
+func fetchdirEntry(entries entrySet, zid id.ZidO) *DirEntry {
 	if entry, found := entries[zid]; found {
 		return entry
 	}
@@ -365,7 +365,7 @@ func fetchdirEntry(entries entrySet, zid id.Zid) *DirEntry {
 	return entry
 }
 
-func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
+func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.ZidO {
 	if entries == nil {
 		return id.Invalid
 	}
@@ -385,7 +385,7 @@ func (ds *DirService) onUpdateFileEvent(entries entrySet, name string) id.Zid {
 	return zid
 }
 
-func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) id.Zid {
+func (ds *DirService) onDeleteFileEvent(entries entrySet, name string) id.ZidO {
 	if entries == nil {
 		return id.Invalid
 	}
@@ -605,7 +605,7 @@ func newExtIsBetter(oldExt, newExt string) bool {
 	return newExt < oldExt
 }
 
-func (ds *DirService) notifyChange(zid id.Zid) {
+func (ds *DirService) notifyChange(zid id.ZidO) {
 	if chci := ds.infos; chci != nil {
 		ds.log.Trace().Zid(zid).Msg("notifyChange")
 		chci <- box.UpdateInfo{Box: ds.box, Reason: box.OnZettel, Zid: zid}

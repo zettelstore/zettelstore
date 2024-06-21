@@ -57,7 +57,7 @@ const serviceTimeout = 5 * time.Second // must be shorter than the web servers t
 //
 // Retrieves the meta data from a zettel.
 
-func (dp *dirBox) srvGetMeta(ctx context.Context, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, error) {
+func (dp *dirBox) srvGetMeta(ctx context.Context, entry *notify.DirEntry, zid id.ZidO) (*meta.Meta, error) {
 	rc := make(chan resGetMeta, 1)
 	dp.getFileChan(zid) <- &fileGetMeta{entry, rc}
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
@@ -108,7 +108,7 @@ func (cmd *fileGetMeta) run(dirPath string) {
 //
 // Retrieves the meta data and the content of a zettel.
 
-func (dp *dirBox) srvGetMetaContent(ctx context.Context, entry *notify.DirEntry, zid id.Zid) (*meta.Meta, []byte, error) {
+func (dp *dirBox) srvGetMetaContent(ctx context.Context, entry *notify.DirEntry, zid id.ZidO) (*meta.Meta, []byte, error) {
 	rc := make(chan resGetMetaContent, 1)
 	dp.getFileChan(zid) <- &fileGetMetaContent{entry, rc}
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
@@ -172,7 +172,7 @@ func (cmd *fileGetMetaContent) run(dirPath string) {
 
 func (dp *dirBox) srvSetZettel(ctx context.Context, entry *notify.DirEntry, zettel zettel.Zettel) error {
 	rc := make(chan resSetZettel, 1)
-	dp.getFileChan(zettel.Meta.Zid) <- &fileSetZettel{entry, zettel, rc}
+	dp.getFileChan(zettel.Meta.ZidO) <- &fileSetZettel{entry, zettel, rc}
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
 	defer cancel()
 	select {
@@ -226,7 +226,7 @@ func writeMetaFile(metaPath string, m *meta.Meta) error {
 	if err != nil {
 		return err
 	}
-	err = writeFileZid(metaFile, m.Zid)
+	err = writeFileZid(metaFile, m.ZidO)
 	if err == nil {
 		_, err = m.WriteComputed(metaFile)
 	}
@@ -263,7 +263,7 @@ func writeMetaHeader(w io.Writer, m *meta.Meta) (err error) {
 			return err
 		}
 	}
-	err = writeFileZid(w, m.Zid)
+	err = writeFileZid(w, m.ZidO)
 	if err != nil {
 		return err
 	}
@@ -283,7 +283,7 @@ func writeMetaHeader(w io.Writer, m *meta.Meta) (err error) {
 //
 // Deletes an existing zettel.
 
-func (dp *dirBox) srvDeleteZettel(ctx context.Context, entry *notify.DirEntry, zid id.Zid) error {
+func (dp *dirBox) srvDeleteZettel(ctx context.Context, entry *notify.DirEntry, zid id.ZidO) error {
 	rc := make(chan resDeleteZettel, 1)
 	dp.getFileChan(zid) <- &fileDeleteZettel{entry, rc}
 	ctx, cancel := context.WithTimeout(ctx, serviceTimeout)
@@ -334,7 +334,7 @@ func (cmd *fileDeleteZettel) run(dirPath string) {
 
 // Utility functions ----------------------------------------
 
-func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
+func parseMetaFile(zid id.ZidO, path string) (*meta.Meta, error) {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -343,7 +343,7 @@ func parseMetaFile(zid id.Zid, path string) (*meta.Meta, error) {
 	return meta.NewFromInput(zid, inp), nil
 }
 
-func parseMetaContentFile(zid id.Zid, path string) (*meta.Meta, []byte, error) {
+func parseMetaContentFile(zid id.ZidO, path string) (*meta.Meta, []byte, error) {
 	src, err := os.ReadFile(path)
 	if err != nil {
 		return nil, nil, err
@@ -373,7 +373,7 @@ func openFileWrite(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fileMode)
 }
 
-func writeFileZid(w io.Writer, zid id.Zid) error {
+func writeFileZid(w io.Writer, zid id.ZidO) error {
 	_, err := io.WriteString(w, "id: ")
 	if err == nil {
 		_, err = w.Write(zid.Bytes())

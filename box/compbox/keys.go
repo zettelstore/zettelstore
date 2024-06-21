@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func genKeysM(zid id.Zid) *meta.Meta {
+func genKeysM(zid id.ZidO) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Supported Metadata Keys")
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVTime).(string))

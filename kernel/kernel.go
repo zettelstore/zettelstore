@@ -215,7 +215,7 @@ type LogEntry struct {
 }
 
 // CreateAuthManagerFunc is called to create a new auth manager.
-type CreateAuthManagerFunc func(readonly bool, owner id.Zid) (auth.Manager, error)
+type CreateAuthManagerFunc func(readonly bool, owner id.ZidO) (auth.Manager, error)
 
 // CreateBoxManagerFunc is called to create a new box manager.
 type CreateBoxManagerFunc func(

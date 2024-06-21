@@ -24,8 +24,8 @@ import (
 
 // RenameZettelPort is the interface used by this use case.
 type RenameZettelPort interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
-	RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
+	RenameZettel(ctx context.Context, curZid, newZid id.ZidO) error
 }
 
 // RenameZettel is the data for this use case.
@@ -35,7 +35,7 @@ type RenameZettel struct {
 }
 
 // ErrZidInUse is returned if the zettel id is not appropriate for the box operation.
-type ErrZidInUse struct{ Zid id.Zid }
+type ErrZidInUse struct{ Zid id.ZidO }
 
 func (err ErrZidInUse) Error() string {
 	return "Zettel id already in use: " + err.Zid.String()
@@ -47,7 +47,7 @@ func NewRenameZettel(log *logger.Logger, port RenameZettelPort) RenameZettel {
 }
 
 // Run executes the use case.
-func (uc *RenameZettel) Run(ctx context.Context, curZid, newZid id.Zid) error {
+func (uc *RenameZettel) Run(ctx context.Context, curZid, newZid id.ZidO) error {
 	noEnrichCtx := box.NoEnrichContext(ctx)
 	if _, err := uc.port.GetZettel(noEnrichCtx, curZid); err != nil {
 		return err

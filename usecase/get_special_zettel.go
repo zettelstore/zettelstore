@@ -30,7 +30,7 @@ import (
 // TagZettelPort is the interface used by this use case.
 type TagZettelPort interface {
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
 }
 
 // TagZettel is the data for this use case.
@@ -55,7 +55,7 @@ func (uc TagZettel) Run(ctx context.Context, tag string) (zettel.Zettel, error) 
 		return zettel.Zettel{}, err
 	}
 	for _, m := range ml {
-		z, errZ := uc.port.GetZettel(ctx, m.Zid)
+		z, errZ := uc.port.GetZettel(ctx, m.ZidO)
 		if errZ == nil {
 			return z, nil
 		}
@@ -75,7 +75,7 @@ func (etznf ErrTagZettelNotFound) Error() string { return "tag zettel not found:
 // RoleZettelPort is the interface used by this use case.
 type RoleZettelPort interface {
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
 }
 
 // RoleZettel is the data for this use case.
@@ -99,7 +99,7 @@ func (uc RoleZettel) Run(ctx context.Context, role string) (zettel.Zettel, error
 		return zettel.Zettel{}, err
 	}
 	for _, m := range ml {
-		z, errZ := uc.port.GetZettel(ctx, m.Zid)
+		z, errZ := uc.port.GetZettel(ctx, m.ZidO)
 		if errZ == nil {
 			return z, nil
 		}

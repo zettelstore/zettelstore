@@ -22,7 +22,7 @@ import (
 
 // ReIndexPort is the interface used by this use case.
 type ReIndexPort interface {
-	ReIndex(context.Context, id.Zid) error
+	ReIndex(context.Context, id.ZidO) error
 }
 
 // ReIndex is the data for this use case.
@@ -37,7 +37,7 @@ func NewReIndex(log *logger.Logger, port ReIndexPort) ReIndex {
 }
 
 // Run executes the use case.
-func (uc *ReIndex) Run(ctx context.Context, zid id.Zid) error {
+func (uc *ReIndex) Run(ctx context.Context, zid id.ZidO) error {
 	err := uc.port.ReIndex(ctx, zid)
 	uc.log.Info().User(ctx).Err(err).Zid(zid).Msg("ReIndex zettel")
 	return err

@@ -32,26 +32,26 @@ import (
 
 type zettelData struct {
 	meta      *meta.Meta // a local copy of the metadata, without computed keys
-	dead      id.Slice   // list of dead references in this zettel
-	forward   id.Slice   // list of forward references in this zettel
-	backward  id.Slice   // list of zettel that reference with zettel
+	dead      id.SliceO  // list of dead references in this zettel
+	forward   id.SliceO  // list of forward references in this zettel
+	backward  id.SliceO  // list of zettel that reference with zettel
 	otherRefs map[string]bidiRefs
 	words     []string // list of words of this zettel
 	urls      []string // list of urls of this zettel
 }
 
 type bidiRefs struct {
-	forward  id.Slice
-	backward id.Slice
+	forward  id.SliceO
+	backward id.SliceO
 }
 
-type stringRefs map[string]id.Slice
+type stringRefs map[string]id.SliceO
 
 type memStore struct {
 	mx     sync.RWMutex
 	intern map[string]string // map to intern strings
-	idx    map[id.Zid]*zettelData
-	dead   map[id.Zid]id.Slice // map dead refs where they occur
+	idx    map[id.ZidO]*zettelData
+	dead   map[id.ZidO]id.SliceO // map dead refs where they occur
 	words  stringRefs
 	urls   stringRefs
 
@@ -64,14 +64,14 @@ type memStore struct {
 func New() store.Store {
 	return &memStore{
 		intern: make(map[string]string, 1024),
-		idx:    make(map[id.Zid]*zettelData),
-		dead:   make(map[id.Zid]id.Slice),
+		idx:    make(map[id.ZidO]*zettelData),
+		dead:   make(map[id.ZidO]id.SliceO),
 		words:  make(stringRefs),
 		urls:   make(stringRefs),
 	}
 }
 
-func (ms *memStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
+func (ms *memStore) GetMeta(_ context.Context, zid id.ZidO) (*meta.Meta, error) {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	if zi, found := ms.idx[zid]; found && zi.meta != nil {
@@ -92,7 +92,7 @@ func (ms *memStore) Enrich(_ context.Context, m *meta.Meta) {
 func (ms *memStore) doEnrich(m *meta.Meta) bool {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	zi, ok := ms.idx[m.Zid]
+	zi, ok := ms.idx[m.ZidO]
 	if !ok {
 		return false
 	}
@@ -127,17 +127,17 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 
 // SearchEqual returns all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchEqual(word string) id.Set {
+func (ms *memStore) SearchEqual(word string) id.SetO {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	result := id.NewSet()
+	result := id.NewSetO()
 	if refs, ok := ms.words[word]; ok {
 		result.CopySlice(refs)
 	}
 	if refs, ok := ms.urls[word]; ok {
 		result.CopySlice(refs)
 	}
-	zid, err := id.Parse(word)
+	zid, err := id.ParseO(word)
 	if err != nil {
 		return result
 	}
@@ -152,7 +152,7 @@ func (ms *memStore) SearchEqual(word string) id.Set {
 
 // SearchPrefix returns all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchPrefix(prefix string) id.Set {
+func (ms *memStore) SearchPrefix(prefix string) id.SetO {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(prefix, strings.HasPrefix)
@@ -160,15 +160,15 @@ func (ms *memStore) SearchPrefix(prefix string) id.Set {
 	if l > 14 {
 		return result
 	}
-	maxZid, err := id.Parse(prefix + "99999999999999"[:14-l])
+	maxZid, err := id.ParseO(prefix + "99999999999999"[:14-l])
 	if err != nil {
 		return result
 	}
-	var minZid id.Zid
+	var minZid id.ZidO
 	if l < 14 && prefix == "0000000000000"[:l] {
-		minZid = id.Zid(1)
+		minZid = id.ZidO(1)
 	} else {
-		minZid, err = id.Parse(prefix + "00000000000000"[:14-l])
+		minZid, err = id.ParseO(prefix + "00000000000000"[:14-l])
 		if err != nil {
 			return result
 		}
@@ -183,7 +183,7 @@ func (ms *memStore) SearchPrefix(prefix string) id.Set {
 
 // SearchSuffix returns all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchSuffix(suffix string) id.Set {
+func (ms *memStore) SearchSuffix(suffix string) id.SetO {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(suffix, strings.HasSuffix)
@@ -191,7 +191,7 @@ func (ms *memStore) SearchSuffix(suffix string) id.Set {
 	if l > 14 {
 		return result
 	}
-	val, err := id.ParseUint(suffix)
+	val, err := id.ParseUintO(suffix)
 	if err != nil {
 		return result
 	}
@@ -209,14 +209,14 @@ func (ms *memStore) SearchSuffix(suffix string) id.Set {
 
 // SearchContains returns all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchContains(s string) id.Set {
+func (ms *memStore) SearchContains(s string) id.SetO {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(s, strings.Contains)
 	if len(s) > 14 {
 		return result
 	}
-	if _, err := id.ParseUint(s); err != nil {
+	if _, err := id.ParseUintO(s); err != nil {
 		return result
 	}
 	for zid, zi := range ms.idx {
@@ -227,9 +227,9 @@ func (ms *memStore) SearchContains(s string) id.Set {
 	return result
 }
 
-func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.Set {
+func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.SetO {
 	// Must only be called if ms.mx is read-locked!
-	result := id.NewSet()
+	result := id.NewSetO()
 	for word, refs := range ms.words {
 		if !pred(word, s) {
 			continue
@@ -245,7 +245,7 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 	return result
 }
 
-func addBackwardZids(result id.Set, zid id.Zid, zi *zettelData) {
+func addBackwardZids(result id.SetO, zid id.ZidO, zi *zettelData) {
 	// Must only be called if ms.mx is read-locked!
 	result.Add(zid)
 	result.CopySlice(zi.backward)
@@ -254,16 +254,16 @@ func addBackwardZids(result id.Set, zid id.Zid, zi *zettelData) {
 	}
 }
 
-func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
+func removeOtherMetaRefs(m *meta.Meta, back id.SliceO) id.SliceO {
 	for _, p := range m.PairsRest() {
 		switch meta.Type(p.Key) {
 		case meta.TypeID:
-			if zid, err := id.Parse(p.Value); err == nil {
+			if zid, err := id.ParseO(p.Value); err == nil {
 				back = remRef(back, zid)
 			}
 		case meta.TypeIDSet:
 			for _, val := range meta.ListFromValue(p.Value) {
-				if zid, err := id.Parse(val); err == nil {
+				if zid, err := id.ParseO(val); err == nil {
 					back = remRef(back, zid)
 				}
 			}
@@ -272,7 +272,7 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 	return back
 }
 
-func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.Set {
+func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.SetO {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	m := ms.makeMeta(zidx)
@@ -283,10 +283,10 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	}
 
 	// Is this zettel an old dead reference mentioned in other zettel?
-	var toCheck id.Set
+	var toCheck id.SetO
 	if refs, ok := ms.dead[zidx.Zid]; ok {
 		// These must be checked later again
-		toCheck = id.NewSet(refs...)
+		toCheck = id.NewSetO(refs...)
 		delete(ms.dead, zidx.Zid)
 	}
 
@@ -332,7 +332,7 @@ func (ms *memStore) internString(s string) string {
 
 func (ms *memStore) makeMeta(zidx *store.ZettelIndex) *meta.Meta {
 	origM := zidx.GetMeta()
-	copyM := meta.New(origM.Zid)
+	copyM := meta.New(origM.ZidO)
 	for _, p := range origM.Pairs() {
 		key := ms.internString(p.Key)
 		if isInternableValue(key) {
@@ -357,13 +357,13 @@ func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData
 	}
 }
 
-func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
+func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) id.SetO {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := refsDiff(brefs, zi.forward)
 	zi.forward = brefs
 
-	var toCheck id.Set
+	var toCheck id.SetO
 	for _, ref := range remRefs {
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = remRef(bzi.backward, zidx.Zid)
@@ -381,7 +381,7 @@ func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 	return toCheck
 }
 
-func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
+func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) id.SetO {
 	// Must only be called if ms.mx is write-locked!
 	inverseRefs := zidx.GetInverseRefs()
 	for key, mr := range zi.otherRefs {
@@ -393,7 +393,7 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	if zi.otherRefs == nil {
 		zi.otherRefs = make(map[string]bidiRefs)
 	}
-	var toCheck id.Set
+	var toCheck id.SetO
 	for key, mrefs := range inverseRefs {
 		mr := zi.otherRefs[key]
 		newRefs, remRefs := refsDiff(mrefs, mr.forward)
@@ -417,14 +417,14 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	return toCheck
 }
 
-func updateStrings(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
+func updateStrings(zid id.ZidO, srefs stringRefs, prev []string, next store.WordSet) []string {
 	newWords, removeWords := next.Diff(prev)
 	for _, word := range newWords {
 		if refs, ok := srefs[word]; ok {
 			srefs[word] = addRef(refs, zid)
 			continue
 		}
-		srefs[word] = id.Slice{zid}
+		srefs[word] = id.SliceO{zid}
 	}
 	for _, word := range removeWords {
 		refs, ok := srefs[word]
@@ -441,7 +441,7 @@ func updateStrings(zid id.Zid, srefs stringRefs, prev []string, next store.WordS
 	return next.Words()
 }
 
-func (ms *memStore) getOrCreateEntry(zid id.Zid) *zettelData {
+func (ms *memStore) getOrCreateEntry(zid id.ZidO) *zettelData {
 	// Must only be called if ms.mx is write-locked!
 	if zi, ok := ms.idx[zid]; ok {
 		return zi
@@ -451,7 +451,7 @@ func (ms *memStore) getOrCreateEntry(zid id.Zid) *zettelData {
 	return zi
 }
 
-func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) id.Set {
+func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.ZidO) id.SetO {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 
@@ -477,15 +477,15 @@ func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) id.Se
 	toCheck = toCheck.Add(newZid) // should update otherRefs
 	return toCheck
 }
-func copyMeta(m *meta.Meta, newZid id.Zid) *meta.Meta {
+func copyMeta(m *meta.Meta, newZid id.ZidO) *meta.Meta {
 	result := m.Clone()
-	result.Zid = newZid
+	result.ZidO = newZid
 	return result
 }
-func (ms *memStore) copyDeadReferences(curDead id.Slice) id.Slice {
+func (ms *memStore) copyDeadReferences(curDead id.SliceO) id.SliceO {
 	// Must only be called if ms.mx is write-locked!
 	if l := len(curDead); l > 0 {
-		result := make(id.Slice, l)
+		result := make(id.SliceO, l)
 		for i, ref := range curDead {
 			result[i] = ref
 			ms.dead[ref] = addRef(ms.dead[ref], ref)
@@ -494,10 +494,10 @@ func (ms *memStore) copyDeadReferences(curDead id.Slice) id.Slice {
 	}
 	return nil
 }
-func (ms *memStore) copyForward(curForward id.Slice, newZid id.Zid) id.Slice {
+func (ms *memStore) copyForward(curForward id.SliceO, newZid id.ZidO) id.SliceO {
 	// Must only be called if ms.mx is write-locked!
 	if l := len(curForward); l > 0 {
-		result := make(id.Slice, l)
+		result := make(id.SliceO, l)
 		for i, ref := range curForward {
 			result[i] = ref
 			if fzi, found := ms.idx[ref]; found {
@@ -508,7 +508,7 @@ func (ms *memStore) copyForward(curForward id.Slice, newZid id.Zid) id.Slice {
 	}
 	return nil
 }
-func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.Zid) []string {
+func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.ZidO) []string {
 	// Must only be called if ms.mx is write-locked!
 	if l := len(curStrings); l > 0 {
 		result := make([]string, l)
@@ -521,13 +521,13 @@ func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.Zid) []s
 	return nil
 }
 
-func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) id.Set {
+func (ms *memStore) DeleteZettel(_ context.Context, zid id.ZidO) id.SetO {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	return ms.doDeleteZettel(zid)
 }
 
-func (ms *memStore) doDeleteZettel(zid id.Zid) id.Set {
+func (ms *memStore) doDeleteZettel(zid id.ZidO) id.SetO {
 	// Must only be called if ms.mx is write-locked!
 	zi, ok := ms.idx[zid]
 	if !ok {
@@ -545,7 +545,7 @@ func (ms *memStore) doDeleteZettel(zid id.Zid) id.Set {
 	return toCheck
 }
 
-func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelData) {
+func (ms *memStore) deleteDeadSources(zid id.ZidO, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range zi.dead {
 		if drefs, ok := ms.dead[ref]; ok {
@@ -559,14 +559,14 @@ func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelData) {
 	}
 }
 
-func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) id.Set {
+func (ms *memStore) deleteForwardBackward(zid id.ZidO, zi *zettelData) id.SetO {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range zi.forward {
 		if fzi, ok := ms.idx[ref]; ok {
 			fzi.backward = remRef(fzi.backward, zid)
 		}
 	}
-	var toCheck id.Set
+	var toCheck id.SetO
 	for _, ref := range zi.backward {
 		if bzi, ok := ms.idx[ref]; ok {
 			bzi.forward = remRef(bzi.forward, zid)
@@ -576,7 +576,7 @@ func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) id.Set {
 	return toCheck
 }
 
-func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) {
+func (ms *memStore) removeInverseMeta(zid id.ZidO, key string, forward id.SliceO) {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range forward {
 		bzi, ok := ms.idx[ref]
@@ -599,7 +599,7 @@ func (ms *memStore) removeInverseMeta(zid id.Zid, key string, forward id.Slice) 
 	}
 }
 
-func deleteStrings(msStringMap stringRefs, curStrings []string, zid id.Zid) {
+func deleteStrings(msStringMap stringRefs, curStrings []string, zid id.ZidO) {
 	// Must only be called if ms.mx is write-locked!
 	for _, word := range curStrings {
 		refs, ok := msStringMap[word]
@@ -642,7 +642,7 @@ func (ms *memStore) dumpIndex(w io.Writer) {
 		return
 	}
 	io.WriteString(w, "==== Zettel Index\n")
-	zids := make(id.Slice, 0, len(ms.idx))
+	zids := make(id.SliceO, 0, len(ms.idx))
 	for id := range ms.idx {
 		zids = append(zids, id)
 	}
@@ -676,7 +676,7 @@ func (ms *memStore) dumpDead(w io.Writer) {
 		return
 	}
 	fmt.Fprintf(w, "==== Dead References\n")
-	zids := make(id.Slice, 0, len(ms.dead))
+	zids := make(id.SliceO, 0, len(ms.dead))
 	for id := range ms.dead {
 		zids = append(zids, id)
 	}
@@ -687,7 +687,7 @@ func (ms *memStore) dumpDead(w io.Writer) {
 	}
 }
 
-func dumpZids(w io.Writer, prefix string, zids id.Slice) {
+func dumpZids(w io.Writer, prefix string, zids id.SliceO) {
 	if len(zids) > 0 {
 		io.WriteString(w, prefix)
 		for _, zid := range zids {

@@ -18,13 +18,13 @@ import (
 	"slices"
 )
 
-// Digraph relates zettel identifier in a directional way.
-type Digraph map[Zid]Set
+// DigraphO relates zettel identifier in a directional way.
+type DigraphO map[ZidO]SetO
 
 // AddVertex adds an edge / vertex to the digraph.
-func (dg Digraph) AddVertex(zid Zid) Digraph {
+func (dg DigraphO) AddVertex(zid ZidO) DigraphO {
 	if dg == nil {
-		return Digraph{zid: nil}
+		return DigraphO{zid: nil}
 	}
 	if _, found := dg[zid]; !found {
 		dg[zid] = nil
@@ -33,7 +33,7 @@ func (dg Digraph) AddVertex(zid Zid) Digraph {
 }
 
 // RemoveVertex removes a vertex and all its edges from the digraph.
-func (dg Digraph) RemoveVertex(zid Zid) {
+func (dg DigraphO) RemoveVertex(zid ZidO) {
 	if len(dg) > 0 {
 		delete(dg, zid)
 		for vertex, closure := range dg {
@@ -44,9 +44,9 @@ func (dg Digraph) RemoveVertex(zid Zid) {
 
 // AddEdge adds a connection from `zid1` to `zid2`.
 // Both vertices must be added before. Otherwise the function may panic.
-func (dg Digraph) AddEdge(fromZid, toZid Zid) Digraph {
+func (dg DigraphO) AddEdge(fromZid, toZid ZidO) DigraphO {
 	if dg == nil {
-		return Digraph{fromZid: Set(nil).Add(toZid), toZid: nil}
+		return DigraphO{fromZid: SetO(nil).Add(toZid), toZid: nil}
 	}
 	dg[fromZid] = dg[fromZid].Add(toZid)
 	return dg
@@ -55,12 +55,12 @@ func (dg Digraph) AddEdge(fromZid, toZid Zid) Digraph {
 // AddEgdes adds all given `Edge`s to the digraph.
 //
 // In contrast to `AddEdge` the vertices must not exist before.
-func (dg Digraph) AddEgdes(edges EdgeSlice) Digraph {
+func (dg DigraphO) AddEgdes(edges EdgeSliceO) DigraphO {
 	if dg == nil {
 		if len(edges) == 0 {
 			return nil
 		}
-		dg = make(Digraph, len(edges))
+		dg = make(DigraphO, len(edges))
 	}
 	for _, edge := range edges {
 		dg = dg.AddVertex(edge.From)
@@ -71,16 +71,16 @@ func (dg Digraph) AddEgdes(edges EdgeSlice) Digraph {
 }
 
 // Equal returns true if both digraphs have the same vertices and edges.
-func (dg Digraph) Equal(other Digraph) bool {
-	return maps.EqualFunc(dg, other, func(cg, co Set) bool { return cg.Equal(co) })
+func (dg DigraphO) Equal(other DigraphO) bool {
+	return maps.EqualFunc(dg, other, func(cg, co SetO) bool { return cg.Equal(co) })
 }
 
 // Clone a digraph.
-func (dg Digraph) Clone() Digraph {
+func (dg DigraphO) Clone() DigraphO {
 	if len(dg) == 0 {
 		return nil
 	}
-	copyDG := make(Digraph, len(dg))
+	copyDG := make(DigraphO, len(dg))
 	for vertex, closure := range dg {
 		copyDG[vertex] = closure.Clone()
 	}
@@ -88,7 +88,7 @@ func (dg Digraph) Clone() Digraph {
 }
 
 // HasVertex returns true, if `zid` is a vertex of the digraph.
-func (dg Digraph) HasVertex(zid Zid) bool {
+func (dg DigraphO) HasVertex(zid ZidO) bool {
 	if len(dg) == 0 {
 		return false
 	}
@@ -97,11 +97,11 @@ func (dg Digraph) HasVertex(zid Zid) bool {
 }
 
 // Vertices returns the set of all vertices.
-func (dg Digraph) Vertices() Set {
+func (dg DigraphO) Vertices() SetO {
 	if len(dg) == 0 {
 		return nil
 	}
-	verts := NewSetCap(len(dg))
+	verts := NewSetCapO(len(dg))
 	for vert := range dg {
 		verts.Add(vert)
 	}
@@ -109,10 +109,10 @@ func (dg Digraph) Vertices() Set {
 }
 
 // Edges returns an unsorted slice of the edges of the digraph.
-func (dg Digraph) Edges() (es EdgeSlice) {
+func (dg DigraphO) Edges() (es EdgeSliceO) {
 	for vert, closure := range dg {
 		for next := range closure {
-			es = append(es, Edge{From: vert, To: next})
+			es = append(es, EdgeO{From: vert, To: next})
 		}
 	}
 	return es
@@ -120,7 +120,7 @@ func (dg Digraph) Edges() (es EdgeSlice) {
 
 // Originators will return the set of all vertices that are not referenced
 // a the to-part of an edge.
-func (dg Digraph) Originators() Set {
+func (dg DigraphO) Originators() SetO {
 	if len(dg) == 0 {
 		return nil
 	}
@@ -133,7 +133,7 @@ func (dg Digraph) Originators() Set {
 
 // Terminators returns the set of all vertices that does not reference
 // other vertices.
-func (dg Digraph) Terminators() (terms Set) {
+func (dg DigraphO) Terminators() (terms SetO) {
 	for vert, closure := range dg {
 		if len(closure) == 0 {
 			terms = terms.Add(vert)
@@ -143,12 +143,12 @@ func (dg Digraph) Terminators() (terms Set) {
 }
 
 // TransitiveClosure calculates the sub-graph that is reachable from `zid`.
-func (dg Digraph) TransitiveClosure(zid Zid) (tc Digraph) {
+func (dg DigraphO) TransitiveClosure(zid ZidO) (tc DigraphO) {
 	if len(dg) == 0 {
 		return nil
 	}
-	var marked Set
-	stack := Slice{zid}
+	var marked SetO
+	stack := SliceO{zid}
 	for pos := len(stack) - 1; pos >= 0; pos = len(stack) - 1 {
 		curr := stack[pos]
 		stack = stack[:pos]
@@ -168,7 +168,7 @@ func (dg Digraph) TransitiveClosure(zid Zid) (tc Digraph) {
 
 // ReachableVertices calculates the set of all vertices that are reachable
 // from the given `zid`.
-func (dg Digraph) ReachableVertices(zid Zid) (tc Set) {
+func (dg DigraphO) ReachableVertices(zid ZidO) (tc SetO) {
 	if len(dg) == 0 {
 		return nil
 	}
@@ -192,7 +192,7 @@ func (dg Digraph) ReachableVertices(zid Zid) (tc Set) {
 }
 
 // IsDAG returns a vertex and false, if the graph has a cycle containing the vertex.
-func (dg Digraph) IsDAG() (Zid, bool) {
+func (dg DigraphO) IsDAG() (ZidO, bool) {
 	for vertex := range dg {
 		if dg.ReachableVertices(vertex).Contains(vertex) {
 			return vertex, false
@@ -202,7 +202,7 @@ func (dg Digraph) IsDAG() (Zid, bool) {
 }
 
 // Reverse returns a graph with reversed edges.
-func (dg Digraph) Reverse() (revDg Digraph) {
+func (dg DigraphO) Reverse() (revDg DigraphO) {
 	for vertex, closure := range dg {
 		revDg = revDg.AddVertex(vertex)
 		for next := range closure {
@@ -218,7 +218,7 @@ func (dg Digraph) Reverse() (revDg Digraph) {
 //
 // Works only if digraph is a DAG. Otherwise the algorithm will not terminate
 // or returns an arbitrary value.
-func (dg Digraph) SortReverse() (sl Slice) {
+func (dg DigraphO) SortReverse() (sl SliceO) {
 	if len(dg) == 0 {
 		return nil
 	}

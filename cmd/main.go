@@ -280,7 +280,7 @@ func executeCommand(name string, args ...string) int {
 	secret = fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
 
 	kern.SetCreators(
-		func(readonly bool, owner id.Zid) (auth.Manager, error) {
+		func(readonly bool, owner id.ZidO) (auth.Manager, error) {
 			return impl.New(readonly, owner, secret), nil
 		},
 		createManager,

@@ -43,7 +43,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
 		path := r.URL.Path[1:]
-		zid, err := id.Parse(path)
+		zid, err := id.ParseO(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -117,7 +117,7 @@ func (wui *WebUI) renderZettelForm(
 	}
 	wui.bindCommonZettelData(ctx, &rb, user, m, &ztl.Content)
 	if rb.err == nil {
-		rb.err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZid, env)
+		rb.err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZidO, env)
 	}
 	if err := rb.err; err != nil {
 		wui.reportError(ctx, w, err)

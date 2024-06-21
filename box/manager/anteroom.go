@@ -29,7 +29,7 @@ const (
 
 type anteroom struct {
 	next    *anteroom
-	waiting id.Set
+	waiting id.SetO
 	curLoad int
 	reload  bool
 }
@@ -43,7 +43,7 @@ type anteroomQueue struct {
 
 func newAnteroomQueue(maxLoad int) *anteroomQueue { return &anteroomQueue{maxLoad: maxLoad} }
 
-func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
+func (ar *anteroomQueue) EnqueueZettel(zid id.ZidO) {
 	if !zid.IsValid() {
 		return
 	}
@@ -73,11 +73,11 @@ func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
 	ar.last = room
 }
 
-func (ar *anteroomQueue) makeAnteroom(zid id.Zid) *anteroom {
+func (ar *anteroomQueue) makeAnteroom(zid id.ZidO) *anteroom {
 	if zid == id.Invalid {
 		panic(zid)
 	}
-	waiting := id.NewSetCap(max(ar.maxLoad, 100), zid)
+	waiting := id.NewSetCapO(max(ar.maxLoad, 100), zid)
 	return &anteroom{next: nil, waiting: waiting, curLoad: 1, reload: false}
 }
 
@@ -88,7 +88,7 @@ func (ar *anteroomQueue) Reset() {
 	ar.last = ar.first
 }
 
-func (ar *anteroomQueue) Reload(allZids id.Set) {
+func (ar *anteroomQueue) Reload(allZids id.SetO) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	ar.deleteReloadedRooms()
@@ -115,7 +115,7 @@ func (ar *anteroomQueue) deleteReloadedRooms() {
 	}
 }
 
-func (ar *anteroomQueue) Dequeue() (arAction, id.Zid, bool) {
+func (ar *anteroomQueue) Dequeue() (arAction, id.ZidO, bool) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	first := ar.first

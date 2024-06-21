@@ -241,7 +241,7 @@ func parseInt64(val string) (any, error) {
 }
 
 func parseZid(val string) (any, error) {
-	if zid, err := id.Parse(val); err == nil {
+	if zid, err := id.ParseO(val); err == nil {
 		return zid, nil
 	} else {
 		return id.Invalid, err
@@ -249,6 +249,6 @@ func parseZid(val string) (any, error) {
 }
 
 func parseInvalidZid(val string) (any, error) {
-	zid, _ := id.Parse(val)
+	zid, _ := id.ParseO(val)
 	return zid, nil
 }

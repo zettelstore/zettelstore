@@ -19,27 +19,27 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-type zps = id.EdgeSlice
+type zps = id.EdgeSliceO
 
-func createDigraph(pairs zps) (dg id.Digraph) {
+func createDigraphO(pairs zps) (dg id.DigraphO) {
 	return dg.AddEgdes(pairs)
 }
 
-func TestDigraphOriginators(t *testing.T) {
+func TestDigraphOriginatorsO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSlice
-		orig id.Set
-		term id.Set
+		dg   id.EdgeSliceO
+		orig id.SetO
+		term id.SetO
 	}{
 		{"empty", nil, nil, nil},
-		{"single", zps{{0, 1}}, id.NewSet(0), id.NewSet(1)},
-		{"chain", zps{{0, 1}, {1, 2}, {2, 3}}, id.NewSet(0), id.NewSet(3)},
+		{"single", zps{{0, 1}}, id.NewSetO(0), id.NewSetO(1)},
+		{"chain", zps{{0, 1}, {1, 2}, {2, 3}}, id.NewSetO(0), id.NewSetO(3)},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := createDigraph(tc.dg)
+			dg := createDigraphO(tc.dg)
 			if got := dg.Originators(); !tc.orig.Equal(got) {
 				t.Errorf("Originators: expected:\n%v, but got:\n%v", tc.orig, got)
 			}
@@ -50,26 +50,26 @@ func TestDigraphOriginators(t *testing.T) {
 	}
 }
 
-func TestDigraphReachableVertices(t *testing.T) {
+func TestDigraphReachableVerticesO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name  string
-		pairs id.EdgeSlice
-		start id.Zid
-		exp   id.Set
+		pairs id.EdgeSliceO
+		start id.ZidO
+		exp   id.SetO
 	}{
 		{"nil", nil, 0, nil},
-		{"0-2", zps{{1, 2}, {2, 3}}, 1, id.NewSet(2, 3)},
-		{"1,2", zps{{1, 2}, {2, 3}}, 2, id.NewSet(3)},
-		{"0-2,1-2", zps{{1, 2}, {2, 3}, {1, 3}}, 1, id.NewSet(2, 3)},
-		{"0-2,1-2/1", zps{{1, 2}, {2, 3}, {1, 3}}, 2, id.NewSet(3)},
+		{"0-2", zps{{1, 2}, {2, 3}}, 1, id.NewSetO(2, 3)},
+		{"1,2", zps{{1, 2}, {2, 3}}, 2, id.NewSetO(3)},
+		{"0-2,1-2", zps{{1, 2}, {2, 3}, {1, 3}}, 1, id.NewSetO(2, 3)},
+		{"0-2,1-2/1", zps{{1, 2}, {2, 3}, {1, 3}}, 2, id.NewSetO(3)},
 		{"0-2,1-2/2", zps{{1, 2}, {2, 3}, {1, 3}}, 3, nil},
-		{"0-2,1-2,3*", zps{{1, 2}, {2, 3}, {1, 3}, {4, 4}}, 1, id.NewSet(2, 3)},
+		{"0-2,1-2,3*", zps{{1, 2}, {2, 3}, {1, 3}, {4, 4}}, 1, id.NewSetO(2, 3)},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := createDigraph(tc.pairs)
+			dg := createDigraphO(tc.pairs)
 			if got := dg.ReachableVertices(tc.start); !got.Equal(tc.exp) {
 				t.Errorf("\n%v, but got:\n%v", tc.exp, got)
 			}
@@ -78,13 +78,13 @@ func TestDigraphReachableVertices(t *testing.T) {
 	}
 }
 
-func TestDigraphTransitiveClosure(t *testing.T) {
+func TestDigraphTransitiveClosureO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name  string
-		pairs id.EdgeSlice
-		start id.Zid
-		exp   id.EdgeSlice
+		pairs id.EdgeSliceO
+		start id.ZidO
+		exp   id.EdgeSliceO
 	}{
 		{"nil", nil, 0, nil},
 		{"1-3", zps{{1, 2}, {2, 3}}, 1, zps{{1, 2}, {2, 3}}},
@@ -97,7 +97,7 @@ func TestDigraphTransitiveClosure(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := createDigraph(tc.pairs)
+			dg := createDigraphO(tc.pairs)
 			if got := dg.TransitiveClosure(tc.start).Edges().Sort(); !got.Equal(tc.exp) {
 				t.Errorf("\n%v, but got:\n%v", tc.exp, got)
 			}
@@ -105,11 +105,11 @@ func TestDigraphTransitiveClosure(t *testing.T) {
 	}
 }
 
-func TestIsDAG(t *testing.T) {
+func TestIsDAGO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSlice
+		dg   id.EdgeSliceO
 		exp  bool
 	}{
 		{"empty", nil, true},
@@ -119,19 +119,19 @@ func TestIsDAG(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			if zid, got := createDigraph(tc.dg).IsDAG(); got != tc.exp {
+			if zid, got := createDigraphO(tc.dg).IsDAG(); got != tc.exp {
 				t.Errorf("expected %v, but got %v (%v)", tc.exp, got, zid)
 			}
 		})
 	}
 }
 
-func TestDigraphReverse(t *testing.T) {
+func TestDigraphReverseO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSlice
-		exp  id.EdgeSlice
+		dg   id.EdgeSliceO
+		exp  id.EdgeSliceO
 	}{
 		{"empty", nil, nil},
 		{"single-edge", zps{{1, 2}}, zps{{2, 1}}},
@@ -144,7 +144,7 @@ func TestDigraphReverse(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			dg := createDigraph(tc.dg)
+			dg := createDigraphO(tc.dg)
 			if got := dg.Reverse().Edges().Sort(); !got.Equal(tc.exp) {
 				t.Errorf("\n%v, but got:\n%v", tc.exp, got)
 			}
@@ -152,25 +152,25 @@ func TestDigraphReverse(t *testing.T) {
 	}
 }
 
-func TestDigraphSortReverse(t *testing.T) {
+func TestDigraphSortReverseO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSlice
-		exp  id.Slice
+		dg   id.EdgeSliceO
+		exp  id.SliceO
 	}{
 		{"empty", nil, nil},
-		{"single-edge", zps{{1, 2}}, id.Slice{2, 1}},
+		{"single-edge", zps{{1, 2}}, id.SliceO{2, 1}},
 		{"single-loop", zps{{1, 1}}, nil},
-		{"end-loop", zps{{1, 2}, {2, 2}}, id.Slice{}},
-		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.Slice{}},
-		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.Slice{5}},
-		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.Slice{5, 3, 4, 2, 1}},
-		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, id.Slice{2, 3, 1}},
+		{"end-loop", zps{{1, 2}, {2, 2}}, id.SliceO{}},
+		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.SliceO{}},
+		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.SliceO{5}},
+		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.SliceO{5, 3, 4, 2, 1}},
+		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, id.SliceO{2, 3, 1}},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := createDigraph(tc.dg).SortReverse(); !got.Equal(tc.exp) {
+			if got := createDigraphO(tc.dg).SortReverse(); !got.Equal(tc.exp) {
 				t.Errorf("expected:\n%v, but got:\n%v", tc.exp, got)
 			}
 		})

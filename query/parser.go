@@ -78,7 +78,7 @@ func (ps *parserState) parse(q *Query) *Query {
 	}
 	inp := ps.inp
 	firstPos := inp.Pos
-	zidSet := id.NewSet()
+	zidSet := id.NewSetO()
 	for {
 		pos := inp.Pos
 		zid, found := ps.scanZid()
@@ -453,16 +453,16 @@ func (ps *parserState) scanPosInt() (int, bool) {
 	return int(uval), true
 }
 
-func (ps *parserState) scanZid() (id.Zid, bool) {
+func (ps *parserState) scanZid() (id.ZidO, bool) {
 	word := ps.scanWord()
 	if len(word) == 0 {
 		return id.Invalid, false
 	}
-	uval, err := id.ParseUint(string(word))
+	uval, err := id.ParseUintO(string(word))
 	if err != nil {
 		return id.Invalid, false
 	}
-	zid := id.Zid(uval)
+	zid := id.ZidO(uval)
 	return zid, zid.IsValid()
 }
 

@@ -27,7 +27,7 @@ import (
 )
 
 type getRootStore interface {
-	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
@@ -38,14 +38,14 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			wui.reportError(ctx, w, adapter.ErrResourceNotFound{Path: p})
 			return
 		}
-		homeZid, _ := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
+		homeZid, _ := id.ParseO(wui.rtConfig.Get(ctx, nil, config.KeyHomeZettel))
 		apiHomeZid := homeZid.ZettelID()
-		if homeZid != id.DefaultHomeZid {
+		if homeZid != id.DefaultHomeZidO {
 			if _, err := s.GetZettel(ctx, homeZid); err == nil {
 				wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(apiHomeZid))
 				return
 			}
-			homeZid = id.DefaultHomeZid
+			homeZid = id.DefaultHomeZidO
 		}
 		_, err := s.GetZettel(ctx, homeZid)
 		if err == nil {

@@ -23,7 +23,7 @@ import (
 // DeleteZettelPort is the interface used by this use case.
 type DeleteZettelPort interface {
 	// DeleteZettel removes the zettel from the box.
-	DeleteZettel(ctx context.Context, zid id.Zid) error
+	DeleteZettel(ctx context.Context, zid id.ZidO) error
 }
 
 // DeleteZettel is the data for this use case.
@@ -38,7 +38,7 @@ func NewDeleteZettel(log *logger.Logger, port DeleteZettelPort) DeleteZettel {
 }
 
 // Run executes the use case.
-func (uc *DeleteZettel) Run(ctx context.Context, zid id.Zid) error {
+func (uc *DeleteZettel) Run(ctx context.Context, zid id.ZidO) error {
 	err := uc.port.DeleteZettel(ctx, zid)
 	uc.log.Info().User(ctx).Zid(zid).Err(err).Msg("Delete zettel")
 	return err

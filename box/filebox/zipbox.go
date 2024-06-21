@@ -86,7 +86,7 @@ func (zb *zipBox) Stop(context.Context) {
 	zb.dirSrv = nil
 }
 
-func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
+func (zb *zipBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, error) {
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
 		return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
@@ -137,7 +137,7 @@ func (zb *zipBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(src)}, nil
 }
 
-func (zb *zipBox) HasZettel(_ context.Context, zid id.Zid) bool {
+func (zb *zipBox) HasZettel(_ context.Context, zid id.ZidO) bool {
 	return zb.dirSrv.GetDirEntry(zid).IsValid()
 }
 
@@ -172,12 +172,12 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 	return nil
 }
 
-func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
+func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.ZidO) bool {
 	entry := zb.dirSrv.GetDirEntry(zid)
 	return !entry.IsValid()
 }
 
-func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
+func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.ZidO) error {
 	err := box.ErrReadOnly
 	if curZid == newZid {
 		err = nil
@@ -190,9 +190,9 @@ func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	return err
 }
 
-func (*zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
+func (*zipBox) CanDeleteZettel(context.Context, id.ZidO) bool { return false }
 
-func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {
+func (zb *zipBox) DeleteZettel(_ context.Context, zid id.ZidO) error {
 	err := box.ErrReadOnly
 	entry := zb.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
@@ -208,7 +208,7 @@ func (zb *zipBox) ReadStats(st *box.ManagedBoxStats) {
 	zb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
-func (zb *zipBox) readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.DirEntry) (m *meta.Meta, err error) {
+func (zb *zipBox) readZipMeta(reader *zip.ReadCloser, zid id.ZidO, entry *notify.DirEntry) (m *meta.Meta, err error) {
 	var inMeta bool
 	if metaName := entry.MetaName; metaName == "" {
 		contentName := entry.ContentName
@@ -229,7 +229,7 @@ func (zb *zipBox) readZipMeta(reader *zip.ReadCloser, zid id.Zid, entry *notify.
 	return m, err
 }
 
-func readZipMetaFile(reader *zip.ReadCloser, zid id.Zid, name string) (*meta.Meta, error) {
+func readZipMetaFile(reader *zip.ReadCloser, zid id.ZidO, name string) (*meta.Meta, error) {
 	src, err := readZipFileContent(reader, name)
 	if err != nil {
 		return nil, err
