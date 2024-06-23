@@ -138,7 +138,7 @@ type Box interface {
 	WriteBox
 
 	// FetchZids returns the set of all zettel identifer managed by the box.
-	FetchZids(ctx context.Context) (id.Set, error)
+	FetchZids(ctx context.Context) (*id.Set, error)
 
 	// GetMeta returns the metadata of the zettel with the given identifier.
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)

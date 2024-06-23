@@ -127,7 +127,7 @@ func (ms *memStore) doEnrich(m *meta.Meta) bool {
 
 // SearchEqual returns all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchEqual(word string) id.Set {
+func (ms *memStore) SearchEqual(word string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
@@ -152,7 +152,7 @@ func (ms *memStore) SearchEqual(word string) id.Set {
 
 // SearchPrefix returns all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchPrefix(prefix string) id.Set {
+func (ms *memStore) SearchPrefix(prefix string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(prefix, strings.HasPrefix)
@@ -183,7 +183,7 @@ func (ms *memStore) SearchPrefix(prefix string) id.Set {
 
 // SearchSuffix returns all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchSuffix(suffix string) id.Set {
+func (ms *memStore) SearchSuffix(suffix string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(suffix, strings.HasSuffix)
@@ -209,7 +209,7 @@ func (ms *memStore) SearchSuffix(suffix string) id.Set {
 
 // SearchContains returns all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *memStore) SearchContains(s string) id.Set {
+func (ms *memStore) SearchContains(s string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(s, strings.Contains)
@@ -227,7 +227,7 @@ func (ms *memStore) SearchContains(s string) id.Set {
 	return result
 }
 
-func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.Set {
+func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) *id.Set {
 	// Must only be called if ms.mx is read-locked!
 	result := id.NewSet()
 	for word, refs := range ms.words {
@@ -245,7 +245,7 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) id.
 	return result
 }
 
-func addBackwardZids(result id.Set, zid id.Zid, zi *zettelData) {
+func addBackwardZids(result *id.Set, zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is read-locked!
 	result.Add(zid)
 	result.CopySlice(zi.backward)
@@ -272,7 +272,7 @@ func removeOtherMetaRefs(m *meta.Meta, back id.Slice) id.Slice {
 	return back
 }
 
-func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) id.Set {
+func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	m := ms.makeMeta(zidx)
@@ -283,7 +283,7 @@ func (ms *memStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	}
 
 	// Is this zettel an old dead reference mentioned in other zettel?
-	var toCheck id.Set
+	var toCheck *id.Set
 	if refs, ok := ms.dead[zidx.Zid]; ok {
 		// These must be checked later again
 		toCheck = id.NewSet(refs...)
@@ -357,13 +357,13 @@ func (ms *memStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData
 	}
 }
 
-func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
+func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := refsDiff(brefs, zi.forward)
 	zi.forward = brefs
 
-	var toCheck id.Set
+	var toCheck *id.Set
 	for _, ref := range remRefs {
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = remRef(bzi.backward, zidx.Zid)
@@ -381,7 +381,7 @@ func (ms *memStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 	return toCheck
 }
 
-func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) id.Set {
+func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	inverseRefs := zidx.GetInverseRefs()
 	for key, mr := range zi.otherRefs {
@@ -393,7 +393,7 @@ func (ms *memStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	if zi.otherRefs == nil {
 		zi.otherRefs = make(map[string]bidiRefs)
 	}
-	var toCheck id.Set
+	var toCheck *id.Set
 	for key, mrefs := range inverseRefs {
 		mr := zi.otherRefs[key]
 		newRefs, remRefs := refsDiff(mrefs, mr.forward)
@@ -451,7 +451,7 @@ func (ms *memStore) getOrCreateEntry(zid id.Zid) *zettelData {
 	return zi
 }
 
-func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) id.Set {
+func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 
@@ -521,13 +521,13 @@ func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.Zid) []s
 	return nil
 }
 
-func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) id.Set {
+func (ms *memStore) DeleteZettel(_ context.Context, zid id.Zid) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	return ms.doDeleteZettel(zid)
 }
 
-func (ms *memStore) doDeleteZettel(zid id.Zid) id.Set {
+func (ms *memStore) doDeleteZettel(zid id.Zid) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	zi, ok := ms.idx[zid]
 	if !ok {
@@ -559,14 +559,14 @@ func (ms *memStore) deleteDeadSources(zid id.Zid, zi *zettelData) {
 	}
 }
 
-func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) id.Set {
+func (ms *memStore) deleteForwardBackward(zid id.Zid, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	for _, ref := range zi.forward {
 		if fzi, ok := ms.idx[ref]; ok {
 			fzi.backward = remRef(fzi.backward, zid)
 		}
 	}
-	var toCheck id.Set
+	var toCheck *id.Set
 	for _, ref := range zi.backward {
 		if bzi, ok := ms.idx[ref]; ok {
 			bzi.forward = remRef(bzi.forward, zid)
