@@ -19,11 +19,13 @@ import (
 )
 
 // Set is a set of zettel identifier
-type Set map[Zid]struct{}
+type Set struct {
+	m map[Zid]struct{}
+}
 
 // String returns a string representation of the map.
-func (s Set) String() string {
-	if s == nil {
+func (s *Set) String() string {
+	if s == nil || len(s.m) == 0 {
 		return "{}"
 	}
 	var sb strings.Builder
@@ -39,93 +41,88 @@ func (s Set) String() string {
 }
 
 // NewSet returns a new set of identifier with the given initial values.
-func NewSet(zids ...Zid) Set {
-	l := len(zids)
-	if l < 8 {
-		l = 8
-	}
-	result := make(Set, l)
+func NewSet(zids ...Zid) *Set {
+	result := Set{m: make(map[Zid]struct{}, len(zids))}
 	result.CopySlice(zids)
-	return result
+	return &result
 }
 
 // NewSetCap returns a new set of identifier with the given capacity and initial values.
-func NewSetCap(c int, zids ...Zid) Set {
-	l := len(zids)
-	if c < l {
-		c = l
-	}
-	if c < 8 {
-		c = 8
-	}
-	result := make(Set, c)
+func NewSetCap(c int, zids ...Zid) *Set {
+	result := Set{m: make(map[Zid]struct{}, max(c, len(zids)))}
 	result.CopySlice(zids)
-	return result
+	return &result
+}
+
+// IsEmpty returns true, if the set conains no element.
+func (s *Set) IsEmpty() bool {
+	return s == nil || len(s.m) == 0
+}
+
+// Length returns the number of elements in this set.
+func (s *Set) Length() int {
+	if s == nil {
+		return 0
+	}
+	return len(s.m)
 }
 
 // Clone returns a copy of the given set.
-func (s Set) Clone() Set {
-	if len(s) == 0 {
+func (s *Set) Clone() *Set {
+	if s == nil || len(s.m) == 0 {
 		return nil
 	}
-	return maps.Clone(s)
+	return &Set{m: maps.Clone(s.m)}
 }
 
 // Add adds a Add to the set.
-func (s Set) Add(zid Zid) Set {
+func (s *Set) Add(zid Zid) *Set {
 	if s == nil {
 		return NewSet(zid)
 	}
-	s[zid] = struct{}{}
+	s.add(zid)
 	return s
 }
 
 // Contains return true if the set is non-nil and the set contains the given Zettel identifier.
-func (s Set) Contains(zid Zid) bool {
-	if s != nil {
-		_, found := s[zid]
-		return found
-	}
-	return false
-}
+func (s *Set) Contains(zid Zid) bool { return s != nil && s.contains(zid) }
 
 // ContainsOrNil return true if the set is nil or if the set contains the given Zettel identifier.
-func (s Set) ContainsOrNil(zid Zid) bool {
-	if s != nil {
-		_, found := s[zid]
-		return found
-	}
-	return true
-}
+func (s *Set) ContainsOrNil(zid Zid) bool { return s == nil || s.contains(zid) }
 
 // Copy adds all member from the other set.
-func (s Set) Copy(other Set) Set {
+func (s *Set) Copy(other *Set) *Set {
 	if s == nil {
-		if len(other) == 0 {
+		if other == nil || len(other.m) == 0 {
 			return nil
 		}
-		s = NewSetCap(len(other))
+		s = NewSetCap(len(other.m))
 	}
-	maps.Copy(s, other)
+	if other != nil {
+		maps.Copy(s.m, other.m)
+	}
 	return s
 }
 
 // CopySlice adds all identifier of the given slice to the set.
-func (s Set) CopySlice(sl Slice) Set {
+func (s *Set) CopySlice(sl Slice) *Set {
 	if s == nil {
-		s = NewSetCap(len(sl))
+		return NewSet(sl...)
 	}
 	for _, zid := range sl {
-		s[zid] = struct{}{}
+		s.add(zid)
 	}
 	return s
 }
 
 // Sorted returns the set as a sorted slice of zettel identifier.
-func (s Set) Sorted() Slice {
-	if l := len(s); l > 0 {
+func (s *Set) Sorted() Slice {
+	if s == nil {
+		return nil
+	}
+	if l := len(s.m); l > 0 {
 		result := make(Slice, 0, l)
-		for zid := range s {
+		for zid := range s.m {
 			result = append(result, zid)
 		}
 		result.Sort()
@@ -139,43 +136,88 @@ func (s Set) Sorted() Slice {
 // It contains the intersection of both, if s is not nil.
 //
 // If s == nil, then the other set is always returned.
-func (s Set) IntersectOrSet(other Set) Set {
+func (s *Set) IntersectOrSet(other *Set) *Set {
 	if s == nil {
 		return other
 	}
-	if len(s) > len(other) {
+	if other == nil {
+		return nil
+	}
+	if len(s.m) > len(other.m) {
 		s, other = other, s
 	}
-	for zid := range s {
-		_, otherOk := other[zid]
-		if !otherOk {
-			delete(s, zid)
+	for zid := range s.m {
+		if !other.contains(zid) {
+			s.remove(zid)
 		}
 	}
 	return s
 }
 
 // Substract removes all zettel identifier from 's' that are in the set 'other'.
-func (s Set) Substract(other Set) {
-	if s == nil || other == nil {
+func (s *Set) Substract(other *Set) {
+	if s == nil || len(s.m) == 0 || other == nil || len(other.m) == 0 {
 		return
 	}
-	for zid := range other {
-		delete(s, zid)
+	for zid := range other.m {
+		s.remove(zid)
 	}
 }
 
 // Remove the identifier from the set.
-func (s Set) Remove(zid Zid) Set {
-	if len(s) == 0 {
+func (s *Set) Remove(zid Zid) *Set {
+	if s == nil || len(s.m) == 0 {
 		return nil
 	}
-	delete(s, zid)
-	if len(s) == 0 {
+	s.remove(zid)
+	if len(s.m) == 0 {
 		return nil
 	}
 	return s
 }
 
 // Equal returns true if the other set is equal to the given set.
-func (s Set) Equal(other Set) bool { return maps.Equal(s, other) }
+func (s *Set) Equal(other *Set) bool {
+	if s == nil {
+		return other == nil
+	}
+	if other == nil {
+		return false
+	}
+	return maps.Equal(s.m, other.m)
+}
+
+// ForEach calls the given function for each element of the set.
+func (s *Set) ForEach(fn func(zid Zid)) {
+	if s != nil {
+		for zid := range s.m {
+			fn(zid)
+		}
+	}
+}
+
+// Pop return one arbitrary element of the set.
+func (s *Set) Pop() (Zid, bool) {
+	if s != nil {
+		for zid := range s.m {
+			s.remove(zid)
+			return zid, true
+		}
+	}
+	return Invalid, false
+}
+
+// ----- unchecked base operations
+
+func (s *Set) add(zid Zid) {
+	s.m[zid] = struct{}{}
+}
+
+func (s *Set) remove(zid Zid) {
+	delete(s.m, zid)
+}
+
+func (s *Set) contains(zid Zid) bool {
+	_, found := s.m[zid]
+	return found
+}

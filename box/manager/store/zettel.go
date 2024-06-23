@@ -20,11 +20,11 @@ import (
 
 // ZettelIndex contains all index data of a zettel.
 type ZettelIndex struct {
-	Zid         id.Zid            // zid of the indexed zettel
-	meta        *meta.Meta        // full metadata
-	backrefs    id.Set            // set of back references
-	inverseRefs map[string]id.Set // references of inverse keys
-	deadrefs    id.Set            // set of dead references
+	Zid         id.Zid             // zid of the indexed zettel
+	meta        *meta.Meta         // full metadata
+	backrefs    *id.Set            // set of back references
+	inverseRefs map[string]*id.Set // references of inverse keys
+	deadrefs    *id.Set            // set of dead references
 	words       WordSet
 	urls        WordSet
 }
@@ -35,7 +35,7 @@ func NewZettelIndex(m *meta.Meta) *ZettelIndex {
 		Zid:         m.Zid,
 		meta:        m,
 		backrefs:    id.NewSet(),
-		inverseRefs: make(map[string]id.Set),
+		inverseRefs: make(map[string]*id.Set),
 		deadrefs:    id.NewSet(),
 	}
 }

@@ -22,7 +22,7 @@ import (
 func TestSetContains(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s   id.Set
+		s   *id.Set
 		zid id.Zid
 		exp bool
 	}{
@@ -44,7 +44,7 @@ func TestSetContains(t *testing.T) {
 func TestSetAdd(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
+		s1, s2 *id.Set
 		exp    id.Slice
 	}{
 		{nil, nil, nil},
@@ -69,7 +69,7 @@ func TestSetAdd(t *testing.T) {
 func TestSetSorted(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		set id.Set
+		set *id.Set
 		exp id.Slice
 	}{
 		{nil, nil},
@@ -87,7 +87,7 @@ func TestSetSorted(t *testing.T) {
 func TestSetIntersectOrSet(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
+		s1, s2 *id.Set
 		exp    id.Slice
 	}{
 		{nil, nil, nil},
@@ -115,7 +115,7 @@ func TestSetIntersectOrSet(t *testing.T) {
 func TestSetRemove(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 id.Set
+		s1, s2 *id.Set
 		exp    id.Slice
 	}{
 		{nil, nil, nil},
@@ -147,6 +147,6 @@ func TestSetRemove(t *testing.T) {
 func BenchmarkSet(b *testing.B) {
 	s := id.Set{}
 	for i := range b.N {
-		s[id.Zid(i)] = struct{}{}
+		s.Add(id.Zid(i))
 	}
 }
