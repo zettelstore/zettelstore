@@ -126,7 +126,7 @@ func (dg Digraph) Originators() *Set {
 	}
 	origs := dg.Vertices()
 	for _, closure := range dg {
-		origs.Substract(closure)
+		origs.ISubstract(closure)
 	}
 	return origs
 }

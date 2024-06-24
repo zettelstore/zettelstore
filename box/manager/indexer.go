@@ -143,6 +143,7 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 		if !ok {
 			return false
 		}
+		mgr.idxStore.Optimize() // TODO: make it less often, for example once per 10 minutes
 		timer.Reset(timerDuration)
 	case <-mgr.done:
 		if !timer.Stop() {

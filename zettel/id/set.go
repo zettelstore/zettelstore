@@ -23,20 +23,23 @@ type Set struct {
 	seq []Zid
 }
 
-// String returns a string representation of the map.
+// String returns a string representation of the set.
 func (s *Set) String() string {
+	return "{" + s.MetaString() + "}"
+}
+
+// MetaString returns a string representation of the set to be stored as metadata.
+func (s *Set) MetaString() string {
 	if s == nil || len(s.seq) == 0 {
-		return "{}"
+		return ""
 	}
 	var sb strings.Builder
-	sb.WriteByte('{')
 	for i, zid := range s.seq {
 		if i > 0 {
 			sb.WriteByte(' ')
 		}
 		sb.Write(zid.Bytes())
 	}
-	sb.WriteByte('}')
 	return sb.String()
 }
 
@@ -97,20 +100,6 @@ func (s *Set) Contains(zid Zid) bool { return s != nil && s.contains(zid) }
 // ContainsOrNil return true if the set is nil or if the set contains the given Zettel identifier.
 func (s *Set) ContainsOrNil(zid Zid) bool { return s == nil || s.contains(zid) }
 
-// Copy adds all member from the other set.
-func (s *Set) Copy(other *Set) *Set {
-	if s == nil {
-		if other == nil || len(other.seq) == 0 {
-			return nil
-		}
-		s = NewSetCap(len(other.seq))
-	}
-	if other != nil {
-		return s.AddSlice(other.seq)
-	}
-	return s
-}
-
 // AddSlice adds all identifier of the given slice to the set.
 func (s *Set) AddSlice(sl Slice) *Set {
 	if s == nil {
@@ -160,8 +149,17 @@ func (s *Set) IntersectOrSet(other *Set) *Set {
 	return s
 }
 
-// Substract removes all zettel identifier from 's' that are in the set 'other'.
-func (s *Set) Substract(other *Set) {
+// IUnion adds the elements of set other to s.
+func (s *Set) IUnion(other *Set) *Set {
+	if other == nil || len(other.seq) == 0 {
+		return s
+	}
+	// TODO: if other is large enough (and s is not too small) -> optimize by swapping and/or loop through both
+	return s.AddSlice(other.seq)
+}
+
+// ISubstract removes all zettel identifier from 's' that are in the set 'other'.
+func (s *Set) ISubstract(other *Set) {
 	if s == nil || len(s.seq) == 0 || other == nil || len(other.seq) == 0 {
 		return
 	}
@@ -185,6 +183,47 @@ func (s *Set) Substract(other *Set) {
 		spos++
 	}
 	s.seq = s.seq[:topos]
+}
+
+// Diff returns the difference sets between the two sets: the first difference
+// set is the set of elements that are in other, but not in s; the second
+// difference set is the set of element that are in s but not in other.
+//
+// in other words: the first result is the set of elements from other that must
+// be added to s; the second result is the set of elements that must be removed
+// from s, so that s would have the same elemest as other.
+func (s *Set) Diff(other *Set) (newS, remS *Set) {
+	if s == nil || len(s.seq) == 0 {
+		return other.Clone(), nil
+	}
+	if other == nil || len(other.seq) == 0 {
+		return nil, s.Clone()
+	}
+	seqS, seqO := s.seq, other.seq
+	var newRefs, remRefs Slice
+	npos, opos := 0, 0
+	for npos < len(seqO) && opos < len(seqS) {
+		rn, ro := seqO[npos], seqS[opos]
+		if rn == ro {
+			npos++
+			opos++
+			continue
+		}
+		if rn < ro {
+			newRefs = append(newRefs, rn)
+			npos++
+			continue
+		}
+		remRefs = append(remRefs, ro)
+		opos++
+	}
+	if npos < len(seqO) {
+		newRefs = append(newRefs, seqO[npos:]...)
+	}
+	if opos < len(seqS) {
+		remRefs = append(remRefs, seqS[opos:]...)
+	}
+	return newFromSlice(newRefs), newFromSlice(remRefs)
 }
 
 // Remove the identifier from the set.
@@ -236,7 +275,22 @@ func (s *Set) Pop() (Zid, bool) {
 	return Invalid, false
 }
 
+// Optimize the amount of memory to store the set.
+func (s *Set) Optimize() {
+	if s != nil {
+		s.seq = slices.Clip(s.seq)
+	}
+}
+
 // ----- unchecked base operations
+
+func newFromSlice(seq Slice) *Set {
+	if l := len(seq); l == 0 {
+		return nil
+	} else {
+		return &Set{seq: seq}
+	}
+}
 
 func (s *Set) add(zid Zid) {
 	if pos, found := s.find(zid); !found {

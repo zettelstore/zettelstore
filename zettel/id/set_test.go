@@ -59,7 +59,7 @@ func TestSetAdd(t *testing.T) {
 	for i, tc := range testcases {
 		sl1 := tc.s1.SafeSorted()
 		sl2 := tc.s2.SafeSorted()
-		got := tc.s1.Copy(tc.s2).SafeSorted()
+		got := tc.s1.IUnion(tc.s2).SafeSorted()
 		if !got.Equal(tc.exp) {
 			t.Errorf("%d: %v.Add(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
 		}
@@ -112,7 +112,37 @@ func TestSetIntersectOrSet(t *testing.T) {
 	}
 }
 
-func TestSetSubtract(t *testing.T) {
+func TestSetIUnion(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		s1, s2 *id.Set
+		exp    *id.Set
+	}{
+		{nil, nil, nil},
+		{id.NewSet(), nil, nil},
+		{nil, id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, id.NewSet(1)},
+		{nil, id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1), id.NewSet(), id.NewSet(1)},
+		{id.NewSet(), id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1), id.NewSet(2), id.NewSet(1, 2)},
+		{id.NewSet(2), id.NewSet(1), id.NewSet(2, 1)},
+		{id.NewSet(1), id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1, 2, 3), id.NewSet(2, 3, 4), id.NewSet(1, 2, 3, 4)},
+	}
+	for i, tc := range testcases {
+		s1 := tc.s1.Clone()
+		sl1 := s1.SafeSorted()
+		sl2 := tc.s2.SafeSorted()
+		got := s1.IUnion(tc.s2)
+		if !got.Equal(tc.exp) {
+			t.Errorf("%d: %v.IUnion(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
+		}
+	}
+}
+
+func TestSetISubtract(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		s1, s2 *id.Set
@@ -140,10 +170,37 @@ func TestSetSubtract(t *testing.T) {
 		s1 := tc.s1.Clone()
 		sl1 := s1.SafeSorted()
 		sl2 := tc.s2.SafeSorted()
-		s1.Substract(tc.s2)
+		s1.ISubstract(tc.s2)
 		got := s1.SafeSorted()
 		if !got.Equal(tc.exp) {
-			t.Errorf("%d: %v.Substract(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
+			t.Errorf("%d: %v.ISubstract(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)
+		}
+	}
+}
+
+func TestSetDiff(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		in1, in2   *id.Set
+		exp1, exp2 *id.Set
+	}{
+		{nil, nil, nil, nil},
+		{id.NewSet(1), nil, nil, id.NewSet(1)},
+		{nil, id.NewSet(1), id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(1), nil, nil},
+		{id.NewSet(1, 2), id.NewSet(1), nil, id.NewSet(2)},
+		{id.NewSet(1), id.NewSet(1, 2), id.NewSet(2), nil},
+		{id.NewSet(1, 2), id.NewSet(1, 3), id.NewSet(3), id.NewSet(2)},
+		{id.NewSet(1, 2, 3), id.NewSet(2, 3, 4), id.NewSet(4), id.NewSet(1)},
+		{id.NewSet(2, 3, 4), id.NewSet(1, 2, 3), id.NewSet(1), id.NewSet(4)},
+	}
+	for i, tc := range testcases {
+		gotN, gotO := tc.in1.Diff(tc.in2)
+		if !tc.exp1.Equal(gotN) {
+			t.Errorf("%d: expected %v, but got: %v", i, tc.exp1, gotN)
+		}
+		if !tc.exp2.Equal(gotO) {
+			t.Errorf("%d: expected %v, but got: %v", i, tc.exp2, gotO)
 		}
 	}
 }
@@ -166,7 +223,7 @@ func TestSetRemove(t *testing.T) {
 		sl1 := tc.s1.SafeSorted()
 		sl2 := tc.s2.SafeSorted()
 		newS1 := id.NewSet(sl1...)
-		newS1.Substract(tc.s2)
+		newS1.ISubstract(tc.s2)
 		got := newS1.SafeSorted()
 		if !got.Equal(tc.exp) {
 			t.Errorf("%d: %v.Remove(%v) should be %v, but got %v", i, sl1, sl2, tc.exp, got)

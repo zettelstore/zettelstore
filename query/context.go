@@ -224,7 +224,7 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 	var zidSet *id.Set
 	for _, tag := range tags {
 		zs := ct.updateTagData(ctx, tag)
-		zidSet = zidSet.Copy(zs)
+		zidSet = zidSet.IUnion(zs)
 	}
 	zidSet.ForEach(func(zid id.Zid) {
 		minCost := math.MaxFloat64
