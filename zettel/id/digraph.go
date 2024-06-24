@@ -126,7 +126,7 @@ func (dg Digraph) Originators() *Set {
 	}
 	origs := dg.Vertices()
 	for _, closure := range dg {
-		origs.Substract(closure)
+		origs.ISubstract(closure)
 	}
 	return origs
 }
@@ -172,7 +172,7 @@ func (dg Digraph) ReachableVertices(zid Zid) (tc *Set) {
 	if len(dg) == 0 {
 		return nil
 	}
-	stack := dg[zid].Sorted()
+	stack := dg[zid].SafeSorted()
 	for last := len(stack) - 1; last >= 0; last = len(stack) - 1 {
 		curr := stack[last]
 		stack = stack[:last]
@@ -228,7 +228,7 @@ func (dg Digraph) SortReverse() (sl Slice) {
 		if terms.IsEmpty() {
 			break
 		}
-		termSlice := terms.Sorted()
+		termSlice := terms.SafeSorted()
 		slices.Reverse(termSlice)
 		sl = append(sl, termSlice...)
 		terms.ForEach(func(t Zid) {

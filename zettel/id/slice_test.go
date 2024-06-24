@@ -69,7 +69,7 @@ func TestSliceEqual(t *testing.T) {
 	}
 }
 
-func TestSliceString(t *testing.T) {
+func TestSliceMetaString(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		in  id.Slice
@@ -81,7 +81,7 @@ func TestSliceString(t *testing.T) {
 		{id.Slice{1, 2}, "00000000000001 00000000000002"},
 	}
 	for i, tc := range testcases {
-		got := tc.in.String()
+		got := tc.in.MetaString()
 		if got != tc.exp {
 			t.Errorf("%d/%v: expected %q, but got %q", i, tc.in, tc.exp, got)
 		}
