@@ -132,10 +132,10 @@ func (ms *memStore) SearchEqual(word string) *id.Set {
 	defer ms.mx.RUnlock()
 	result := id.NewSet()
 	if refs, ok := ms.words[word]; ok {
-		result.CopySlice(refs)
+		result.AddSlice(refs)
 	}
 	if refs, ok := ms.urls[word]; ok {
-		result.CopySlice(refs)
+		result.AddSlice(refs)
 	}
 	zid, err := id.Parse(word)
 	if err != nil {
@@ -234,13 +234,13 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) *id
 		if !pred(word, s) {
 			continue
 		}
-		result.CopySlice(refs)
+		result.AddSlice(refs)
 	}
 	for u, refs := range ms.urls {
 		if !pred(u, s) {
 			continue
 		}
-		result.CopySlice(refs)
+		result.AddSlice(refs)
 	}
 	return result
 }
@@ -248,9 +248,9 @@ func (ms *memStore) selectWithPred(s string, pred func(string, string) bool) *id
 func addBackwardZids(result *id.Set, zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is read-locked!
 	result.Add(zid)
-	result.CopySlice(zi.backward)
+	result.AddSlice(zi.backward)
 	for _, mref := range zi.otherRefs {
-		result.CopySlice(mref.backward)
+		result.AddSlice(mref.backward)
 	}
 }
 
@@ -472,7 +472,7 @@ func (ms *memStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) *id.S
 
 	ms.idx[newZid] = newZi
 	toCheck := ms.doDeleteZettel(curZid)
-	toCheck = toCheck.CopySlice(ms.dead[newZid])
+	toCheck = toCheck.AddSlice(ms.dead[newZid])
 	delete(ms.dead, newZid)
 	toCheck = toCheck.Add(newZid) // should update otherRefs
 	return toCheck

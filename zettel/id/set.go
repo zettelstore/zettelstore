@@ -14,23 +14,23 @@
 package id
 
 import (
-	"maps"
+	"slices"
 	"strings"
 )
 
 // Set is a set of zettel identifier
 type Set struct {
-	m map[Zid]struct{}
+	seq []Zid
 }
 
 // String returns a string representation of the map.
 func (s *Set) String() string {
-	if s == nil || len(s.m) == 0 {
+	if s == nil || len(s.seq) == 0 {
 		return "{}"
 	}
 	var sb strings.Builder
 	sb.WriteByte('{')
-	for i, zid := range s.Sorted() {
+	for i, zid := range s.seq {
 		if i > 0 {
 			sb.WriteByte(' ')
 		}
@@ -42,21 +42,28 @@ func (s *Set) String() string {
 
 // NewSet returns a new set of identifier with the given initial values.
 func NewSet(zids ...Zid) *Set {
-	result := Set{m: make(map[Zid]struct{}, len(zids))}
-	result.CopySlice(zids)
-	return &result
+	switch l := len(zids); l {
+	case 0:
+		return &Set{seq: nil}
+	case 1:
+		return &Set{seq: []Zid{zids[0]}}
+	default:
+		result := Set{seq: make(Slice, 0, l)}
+		result.AddSlice(zids)
+		return &result
+	}
 }
 
 // NewSetCap returns a new set of identifier with the given capacity and initial values.
 func NewSetCap(c int, zids ...Zid) *Set {
-	result := Set{m: make(map[Zid]struct{}, max(c, len(zids)))}
-	result.CopySlice(zids)
+	result := Set{seq: make(Slice, 0, max(c, len(zids)))}
+	result.AddSlice(zids)
 	return &result
 }
 
 // IsEmpty returns true, if the set conains no element.
 func (s *Set) IsEmpty() bool {
-	return s == nil || len(s.m) == 0
+	return s == nil || len(s.seq) == 0
 }
 
 // Length returns the number of elements in this set.
@@ -64,15 +71,15 @@ func (s *Set) Length() int {
 	if s == nil {
 		return 0
 	}
-	return len(s.m)
+	return len(s.seq)
 }
 
 // Clone returns a copy of the given set.
 func (s *Set) Clone() *Set {
-	if s == nil || len(s.m) == 0 {
+	if s == nil || len(s.seq) == 0 {
 		return nil
 	}
-	return &Set{m: maps.Clone(s.m)}
+	return &Set{seq: slices.Clone(s.seq)}
 }
 
 // Add adds a Add to the set.
@@ -93,42 +100,35 @@ func (s *Set) ContainsOrNil(zid Zid) bool { return s == nil || s.contains(zid) }
 // Copy adds all member from the other set.
 func (s *Set) Copy(other *Set) *Set {
 	if s == nil {
-		if other == nil || len(other.m) == 0 {
+		if other == nil || len(other.seq) == 0 {
 			return nil
 		}
-		s = NewSetCap(len(other.m))
+		s = NewSetCap(len(other.seq))
 	}
 	if other != nil {
-		maps.Copy(s.m, other.m)
+		return s.AddSlice(other.seq)
 	}
 	return s
 }
 
-// CopySlice adds all identifier of the given slice to the set.
-func (s *Set) CopySlice(sl Slice) *Set {
+// AddSlice adds all identifier of the given slice to the set.
+func (s *Set) AddSlice(sl Slice) *Set {
 	if s == nil {
 		return NewSet(sl...)
 	}
+	s.seq = slices.Grow(s.seq, len(sl))
 	for _, zid := range sl {
 		s.add(zid)
 	}
 	return s
 }
 
-// Sorted returns the set as a sorted slice of zettel identifier.
-func (s *Set) Sorted() Slice {
+// SafeSorted returns the set as a new sorted slice of zettel identifier.
+func (s *Set) SafeSorted() Slice {
 	if s == nil {
 		return nil
 	}
-	if l := len(s.m); l > 0 {
-		result := make(Slice, 0, l)
-		for zid := range s.m {
-			result = append(result, zid)
-		}
-		result.Sort()
-		return result
-	}
-	return nil
+	return slices.Clone(s.seq)
 }
 
 // IntersectOrSet removes all zettel identifier that are not in the other set.
@@ -137,40 +137,66 @@ func (s *Set) Sorted() Slice {
 //
 // If s == nil, then the other set is always returned.
 func (s *Set) IntersectOrSet(other *Set) *Set {
-	if s == nil {
+	if s == nil || other == nil {
 		return other
 	}
-	if other == nil {
-		return nil
-	}
-	if len(s.m) > len(other.m) {
-		s, other = other, s
-	}
-	for zid := range s.m {
-		if !other.contains(zid) {
-			s.remove(zid)
+	topos, spos, opos := 0, 0, 0
+	for spos < len(s.seq) && opos < len(other.seq) {
+		sz, oz := s.seq[spos], other.seq[opos]
+		if sz < oz {
+			spos++
+			continue
 		}
+		if sz > oz {
+			opos++
+			continue
+		}
+		s.seq[topos] = sz
+		topos++
+		spos++
+		opos++
 	}
+	s.seq = s.seq[:topos]
 	return s
 }
 
 // Substract removes all zettel identifier from 's' that are in the set 'other'.
 func (s *Set) Substract(other *Set) {
-	if s == nil || len(s.m) == 0 || other == nil || len(other.m) == 0 {
+	if s == nil || len(s.seq) == 0 || other == nil || len(other.seq) == 0 {
 		return
 	}
-	for zid := range other.m {
-		s.remove(zid)
+	topos, spos, opos := 0, 0, 0
+	for spos < len(s.seq) && opos < len(other.seq) {
+		sz, oz := s.seq[spos], other.seq[opos]
+		if sz < oz {
+			s.seq[topos] = sz
+			topos++
+			spos++
+			continue
+		}
+		if sz == oz {
+			spos++
+		}
+		opos++
 	}
+	for spos < len(s.seq) {
+		s.seq[topos] = s.seq[spos]
+		topos++
+		spos++
+	}
+	s.seq = s.seq[:topos]
 }
 
 // Remove the identifier from the set.
 func (s *Set) Remove(zid Zid) *Set {
-	if s == nil || len(s.m) == 0 {
+	if s == nil || len(s.seq) == 0 {
 		return nil
 	}
-	s.remove(zid)
-	if len(s.m) == 0 {
+	if pos, found := s.find(zid); found {
+		copy(s.seq[pos:], s.seq[pos+1:])
+		s.seq = s.seq[:len(s.seq)-1]
+	}
+	if len(s.seq) == 0 {
 		return nil
 	}
 	return s
@@ -184,13 +210,15 @@ func (s *Set) Equal(other *Set) bool {
 	if other == nil {
 		return false
 	}
-	return maps.Equal(s.m, other.m)
+	return slices.Equal(s.seq, other.seq)
 }
 
 // ForEach calls the given function for each element of the set.
+//
+// Every element is bigger than the previous one.
 func (s *Set) ForEach(fn func(zid Zid)) {
 	if s != nil {
-		for zid := range s.m {
+		for _, zid := range s.seq {
 			fn(zid)
 		}
 	}
@@ -199,8 +227,9 @@ func (s *Set) ForEach(fn func(zid Zid)) {
 // Pop return one arbitrary element of the set.
 func (s *Set) Pop() (Zid, bool) {
 	if s != nil {
-		for zid := range s.m {
-			s.remove(zid)
+		if l := len(s.seq); l > 0 {
+			zid := s.seq[l-1]
+			s.seq = s.seq[:l-1]
 			return zid, true
 		}
 	}
@@ -210,14 +239,27 @@ func (s *Set) Pop() (Zid, bool) {
 // ----- unchecked base operations
 
 func (s *Set) add(zid Zid) {
-	s.m[zid] = struct{}{}
-}
-
-func (s *Set) remove(zid Zid) {
-	delete(s.m, zid)
+	if pos, found := s.find(zid); !found {
+		s.seq = slices.Insert(s.seq, pos, zid)
+	}
 }
 
 func (s *Set) contains(zid Zid) bool {
-	_, found := s.m[zid]
+	_, found := s.find(zid)
 	return found
+}
+
+func (s *Set) find(zid Zid) (int, bool) {
+	hi := len(s.seq)
+	for lo := 0; lo < hi; {
+		m := lo + (hi-lo)/2
+		if z := s.seq[m]; z == zid {
+			return m, true
+		} else if z < zid {
+			lo = m + 1
+		} else {
+			hi = m
+		}
+	}
+	return hi, false
 }

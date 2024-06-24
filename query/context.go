@@ -226,7 +226,7 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 		zs := ct.updateTagData(ctx, tag)
 		zidSet = zidSet.Copy(zs)
 	}
-	for _, zid := range zidSet.Sorted() { // .Sorted() to stay deterministic
+	zidSet.ForEach(func(zid id.Zid) {
 		minCost := math.MaxFloat64
 		costFactor := 1.1
 		for _, tag := range tags {
@@ -240,7 +240,7 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 			}
 		}
 		ct.addMeta(ct.metaZid[zid], minCost*costFactor)
-	}
+	})
 }
 
 func (ct *contextTask) updateTagData(ctx context.Context, tag string) *id.Set {

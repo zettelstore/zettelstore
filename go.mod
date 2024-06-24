@@ -15,5 +15,5 @@ require (
 
 require (
 	golang.org/x/sys v0.21.0 // indirect
-	t73f.de/r/webs v0.0.0-20240607145146-ac6799458514 // indirect
+	t73f.de/r/webs v0.0.0-20240617100047-8730e9917915 // indirect
 )
