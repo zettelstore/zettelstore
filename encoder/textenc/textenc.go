@@ -18,6 +18,7 @@ import (
 	"io"
 
 	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"
@@ -132,10 +133,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.TranscludeNode, *ast.BLOBNode:
 		return nil
 	case *ast.TextNode:
-		v.b.WriteString(n.Text)
-		return nil
-	case *ast.SpaceNode:
-		v.b.WriteByte(' ')
+		v.visitText(n.Text)
 		return nil
 	case *ast.BreakNode:
 		if n.Hard {
@@ -229,6 +227,21 @@ func (v *visitor) visitInlineSlice(is *ast.InlineSlice) {
 		ast.Walk(v, in)
 	}
 	v.inlinePos = 0
+}
+
+func (v *visitor) visitText(s string) {
+	spaceFound := false
+	for _, ch := range s {
+		if input.IsSpace(ch) {
+			if !spaceFound {
+				v.b.WriteByte(' ')
+				spaceFound = true
+			}
+			continue
+		}
+		spaceFound = false
+		v.b.WriteString(string(ch))
+	}
 }
 
 func (v *visitor) writePosChar(pos int, ch byte) {

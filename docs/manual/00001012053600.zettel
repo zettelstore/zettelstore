@@ -4,7 +4,7 @@ role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20230807170019
+modified: 20240620170909
 
 The [[endpoint|00001012920000]] to work with parsed metadata and content of a specific zettel is ''/z/{ID}'', where ''{ID}'' is a placeholder for the [[zettel identifier|00001006050000]].
 
@@ -15,7 +15,7 @@ For example, to retrieve some data about this zettel you are currently viewing, 
 For example:
 ```sh
 # curl 'http://127.0.0.1:23123/z/00001012053600?enc=sz&parseonly'
-((PARA (TEXT "The") (SPACE) (LINK-ZETTEL () "00001012920000" (TEXT "endpoint")) (SPACE) (TEXT "to") (SPACE) (TEXT "work") (SPACE) (TEXT "with") (SPACE) ...
+(BLOCK (PARA (TEXT "The ") (LINK-ZETTEL () "00001012920000" (TEXT "endpoint")) (TEXT " to work with parsed metadata and content of a specific zettel is ") (LITERAL-INPUT () "/z/{ID}") (TEXT ", where ") ...
 ```
 
 Similar to [[retrieving an encoded zettel|00001012053500]], you can specify an [[encoding|00001012920500]] and state which [[part|00001012920800]] of a zettel you are interested in.

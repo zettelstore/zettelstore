@@ -61,7 +61,7 @@ func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFu
 	if err != nil {
 		return nil
 	}
-	var marked id.Set
+	var marked *id.Set
 	stack := []*meta.Meta{m}
 	dg := id.Digraph(nil).AddVertex(startZid)
 	for pos := len(stack) - 1; pos >= 0; pos = len(stack) - 1 {

@@ -19,7 +19,7 @@ import (
 )
 
 // Digraph relates zettel identifier in a directional way.
-type Digraph map[Zid]Set
+type Digraph map[Zid]*Set
 
 // AddVertex adds an edge / vertex to the digraph.
 func (dg Digraph) AddVertex(zid Zid) Digraph {
@@ -46,7 +46,7 @@ func (dg Digraph) RemoveVertex(zid Zid) {
 // Both vertices must be added before. Otherwise the function may panic.
 func (dg Digraph) AddEdge(fromZid, toZid Zid) Digraph {
 	if dg == nil {
-		return Digraph{fromZid: Set(nil).Add(toZid), toZid: nil}
+		return Digraph{fromZid: (*Set)(nil).Add(toZid), toZid: nil}
 	}
 	dg[fromZid] = dg[fromZid].Add(toZid)
 	return dg
@@ -72,7 +72,7 @@ func (dg Digraph) AddEgdes(edges EdgeSlice) Digraph {
 
 // Equal returns true if both digraphs have the same vertices and edges.
 func (dg Digraph) Equal(other Digraph) bool {
-	return maps.EqualFunc(dg, other, func(cg, co Set) bool { return cg.Equal(co) })
+	return maps.EqualFunc(dg, other, func(cg, co *Set) bool { return cg.Equal(co) })
 }
 
 // Clone a digraph.
@@ -97,7 +97,7 @@ func (dg Digraph) HasVertex(zid Zid) bool {
 }
 
 // Vertices returns the set of all vertices.
-func (dg Digraph) Vertices() Set {
+func (dg Digraph) Vertices() *Set {
 	if len(dg) == 0 {
 		return nil
 	}
@@ -111,31 +111,31 @@ func (dg Digraph) Vertices() Set {
 // Edges returns an unsorted slice of the edges of the digraph.
 func (dg Digraph) Edges() (es EdgeSlice) {
 	for vert, closure := range dg {
-		for next := range closure {
+		closure.ForEach(func(next Zid) {
 			es = append(es, Edge{From: vert, To: next})
-		}
+		})
 	}
 	return es
 }
 
 // Originators will return the set of all vertices that are not referenced
 // a the to-part of an edge.
-func (dg Digraph) Originators() Set {
+func (dg Digraph) Originators() *Set {
 	if len(dg) == 0 {
 		return nil
 	}
 	origs := dg.Vertices()
 	for _, closure := range dg {
-		origs.Substract(closure)
+		origs.ISubstract(closure)
 	}
 	return origs
 }
 
 // Terminators returns the set of all vertices that does not reference
 // other vertices.
-func (dg Digraph) Terminators() (terms Set) {
+func (dg Digraph) Terminators() (terms *Set) {
 	for vert, closure := range dg {
-		if len(closure) == 0 {
+		if closure.IsEmpty() {
 			terms = terms.Add(vert)
 		}
 	}
@@ -147,7 +147,7 @@ func (dg Digraph) TransitiveClosure(zid Zid) (tc Digraph) {
 	if len(dg) == 0 {
 		return nil
 	}
-	var marked Set
+	var marked *Set
 	stack := Slice{zid}
 	for pos := len(stack) - 1; pos >= 0; pos = len(stack) - 1 {
 		curr := stack[pos]
@@ -156,11 +156,11 @@ func (dg Digraph) TransitiveClosure(zid Zid) (tc Digraph) {
 			continue
 		}
 		tc = tc.AddVertex(curr)
-		for next := range dg[curr] {
+		dg[curr].ForEach(func(next Zid) {
 			tc = tc.AddVertex(next)
 			tc = tc.AddEdge(curr, next)
 			stack = append(stack, next)
-		}
+		})
 		marked = marked.Add(curr)
 	}
 	return tc
@@ -168,11 +168,11 @@ func (dg Digraph) TransitiveClosure(zid Zid) (tc Digraph) {
 
 // ReachableVertices calculates the set of all vertices that are reachable
 // from the given `zid`.
-func (dg Digraph) ReachableVertices(zid Zid) (tc Set) {
+func (dg Digraph) ReachableVertices(zid Zid) (tc *Set) {
 	if len(dg) == 0 {
 		return nil
 	}
-	stack := dg[zid].Sorted()
+	stack := dg[zid].SafeSorted()
 	for last := len(stack) - 1; last >= 0; last = len(stack) - 1 {
 		curr := stack[last]
 		stack = stack[:last]
@@ -184,9 +184,9 @@ func (dg Digraph) ReachableVertices(zid Zid) (tc Set) {
 			continue
 		}
 		tc = tc.Add(curr)
-		for next := range closure {
+		closure.ForEach(func(next Zid) {
 			stack = append(stack, next)
-		}
+		})
 	}
 	return tc
 }
@@ -205,10 +205,10 @@ func (dg Digraph) IsDAG() (Zid, bool) {
 func (dg Digraph) Reverse() (revDg Digraph) {
 	for vertex, closure := range dg {
 		revDg = revDg.AddVertex(vertex)
-		for next := range closure {
+		closure.ForEach(func(next Zid) {
 			revDg = revDg.AddVertex(next)
 			revDg = revDg.AddEdge(next, vertex)
-		}
+		})
 	}
 	return revDg
 }
@@ -225,15 +225,15 @@ func (dg Digraph) SortReverse() (sl Slice) {
 	tempDg := dg.Clone()
 	for len(tempDg) > 0 {
 		terms := tempDg.Terminators()
-		if len(terms) == 0 {
+		if terms.IsEmpty() {
 			break
 		}
-		termSlice := terms.Sorted()
+		termSlice := terms.SafeSorted()
 		slices.Reverse(termSlice)
 		sl = append(sl, termSlice...)
-		for t := range terms {
+		terms.ForEach(func(t Zid) {
 			tempDg.RemoveVertex(t)
-		}
+		})
 	}
 	return sl
 }

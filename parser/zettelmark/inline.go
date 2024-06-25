@@ -51,8 +51,6 @@ func (cp *zmkP) parseInline() ast.InlineNode {
 			return nil
 		case '\n', '\r':
 			return cp.parseSoftBreak()
-		case ' ', '\t':
-			return cp.parseSpace()
 		case '[':
 			inp.Next()
 			switch inp.Ch {
@@ -105,7 +103,7 @@ func (cp *zmkP) parseText() *ast.TextNode {
 		switch inp.Ch {
 		// The following case must contain all runes that occur in parseInline!
 		// Plus the closing brackets ] and } and ) and the middle |
-		case input.EOS, '\n', '\r', ' ', '\t', '[', ']', '{', '}', '(', ')', '|', '%', '_', '*', '>', '~', '^', ',', '"', '#', ':', '\'', '@', '`', runeModGrave, '$', '=', '\\', '-', '&':
+		case input.EOS, '\n', '\r', '[', ']', '{', '}', '(', ')', '|', '%', '_', '*', '>', '~', '^', ',', '"', '#', ':', '\'', '@', '`', runeModGrave, '$', '=', '\\', '-', '&':
 			return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
 		}
 	}
@@ -135,19 +133,6 @@ func (cp *zmkP) parseBackslashRest() *ast.TextNode {
 	pos := inp.Pos
 	inp.Next()
 	return &ast.TextNode{Text: string(inp.Src[pos:inp.Pos])}
-}
-
-func (cp *zmkP) parseSpace() *ast.SpaceNode {
-	inp := cp.inp
-	pos := inp.Pos
-	for {
-		inp.Next()
-		switch inp.Ch {
-		case ' ', '\t':
-		default:
-			return &ast.SpaceNode{Lexeme: string(inp.Src[pos:inp.Pos])}
-		}
-	}
 }
 
 func (cp *zmkP) parseSoftBreak() *ast.BreakNode {

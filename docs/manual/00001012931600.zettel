@@ -4,28 +4,20 @@ role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
 created: 20230403161845
-modified: 20240122122448
+modified: 20240620170546
 
 === ''TEXT''
 :::syntax
 __Text__ **=** ''(TEXT'' String '')''.
 :::
-Specifies the string as some text content, typically a word.
-
-=== ''SPACE''
-:::syntax
-__Space__ **=** ''(SPACE'' **[** String **]** '')''.
-:::
-Specifies some space, typically white space.
-If the string is not given it is assumed to be ''" "'' (one space character).
-Otherwise it contains the space characters.
+Specifies the string as some text content, including white space characters.
 
 === ''SOFT''
 :::syntax
 __Soft__ **=** ''(SOFT)''.
 :::
 Denotes a soft line break.
-It is typically translated into a space character, but signals the point in the textual content, where a line break occurred.
+It will be often encoded as a space character, but signals the point in the textual content, where a line break occurred.
 
 === ''HARD''
 :::syntax

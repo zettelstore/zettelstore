@@ -151,7 +151,7 @@ func (ap *actionPara) createBlockNodeTagSet(key string) (ast.BlockNode, int) {
 	ccs.SortByName()
 	for i, cat := range ccs {
 		if i > 0 {
-			para = append(para, &ast.SpaceNode{Lexeme: " "})
+			para = append(para, &ast.TextNode{Text: " "})
 		}
 		buf.WriteString(cat.Name)
 		para = append(para,
@@ -226,7 +226,7 @@ func (ap *actionPara) createBlockNodeMetaKeys() (ast.BlockNode, int) {
 				Ref:     ast.ParseReference(q1),
 				Inlines: ast.InlineSlice{&ast.TextNode{Text: cat.Name}},
 			},
-			&ast.SpaceNode{Lexeme: " "},
+			&ast.TextNode{Text: " "},
 			&ast.TextNode{Text: "(" + strconv.Itoa(cat.Count) + ", "},
 			&ast.LinkNode{
 				Attrs:   nil,

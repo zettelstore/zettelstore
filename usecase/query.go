@@ -174,10 +174,10 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 	return uc.filterCandidates(ctx, candidates, words)
 }
 
-func filterByZid(candidates []*meta.Meta, ignoreSeq id.Set) []*meta.Meta {
+func filterByZid(candidates []*meta.Meta, ignoreSeq *id.Set) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
 	for _, m := range candidates {
-		if !ignoreSeq.ContainsOrNil(m.Zid) {
+		if !ignoreSeq.Contains(m.Zid) {
 			result = append(result, m)
 		}
 	}
@@ -264,7 +264,6 @@ func (v *unlinkedVisitor) splitInlineTextList(is *ast.InlineSlice) []string {
 		switch n := in.(type) {
 		case *ast.TextNode:
 			curList = append(curList, strfun.MakeWords(n.Text)...)
-		case *ast.SpaceNode:
 		default:
 			if curList != nil {
 				result = append(result, v.joinWords(curList))

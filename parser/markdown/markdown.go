@@ -273,56 +273,20 @@ func (p *mdP) acceptInline(node gmAst.Node) ast.InlineSlice {
 
 func (p *mdP) acceptText(node *gmAst.Text) ast.InlineSlice {
 	segment := node.Segment
+	text := segment.Value(p.source)
+	if text == nil {
+		return nil
+	}
 	if node.IsRaw() {
-		return splitText(string(segment.Value(p.source)))
+		return ast.InlineSlice{&ast.TextNode{Text: string(text)}}
 	}
-	ins := splitText(string(segment.Value(p.source)))
-	result := make(ast.InlineSlice, 0, len(ins)+1)
-	for _, in := range ins {
-		if tn, ok := in.(*ast.TextNode); ok {
-			tn.Text = cleanText([]byte(tn.Text), true)
-		}
-		result = append(result, in)
-	}
+	result := make(ast.InlineSlice, 0, 2)
+	in := &ast.TextNode{Text: cleanText(text, true)}
+	result = append(result, in)
 	if node.HardLineBreak() {
 		result = append(result, &ast.BreakNode{Hard: true})
 	} else if node.SoftLineBreak() {
 		result = append(result, &ast.BreakNode{Hard: false})
-	}
-	return result
-}
-
-// splitText transform the text into a sequence of TextNode and SpaceNode
-func splitText(text string) ast.InlineSlice {
-	if text == "" {
-		return nil
-	}
-	result := make(ast.InlineSlice, 0, 1)
-
-	state := 0 // 0=unknown,1=non-spaces,2=spaces
-	lastPos := 0
-	for pos, ch := range text {
-		if input.IsSpace(ch) {
-			if state == 1 {
-				result = append(result, &ast.TextNode{Text: text[lastPos:pos]})
-				lastPos = pos
-			}
-			state = 2
-		} else {
-			if state == 2 {
-				result = append(result, &ast.SpaceNode{Lexeme: text[lastPos:pos]})
-				lastPos = pos
-			}
-			state = 1
-		}
-	}
-	switch state {
-	case 1:
-		result = append(result, &ast.TextNode{Text: text[lastPos:]})
-	case 2:
-		result = append(result, &ast.SpaceNode{Lexeme: text[lastPos:]})
-	default:
-		panic(fmt.Sprintf("Unexpected state %v", state))
 	}
 	return result
 }

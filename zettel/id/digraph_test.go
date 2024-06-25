@@ -30,8 +30,8 @@ func TestDigraphOriginators(t *testing.T) {
 	testcases := []struct {
 		name string
 		dg   id.EdgeSlice
-		orig id.Set
-		term id.Set
+		orig *id.Set
+		term *id.Set
 	}{
 		{"empty", nil, nil, nil},
 		{"single", zps{{0, 1}}, id.NewSet(0), id.NewSet(1)},
@@ -56,7 +56,7 @@ func TestDigraphReachableVertices(t *testing.T) {
 		name  string
 		pairs id.EdgeSlice
 		start id.Zid
-		exp   id.Set
+		exp   *id.Set
 	}{
 		{"nil", nil, 0, nil},
 		{"0-2", zps{{1, 2}, {2, 3}}, 1, id.NewSet(2, 3)},

@@ -121,8 +121,6 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return nil // Should write no content
 	case *ast.TextNode:
 		v.b.WriteString(n.Text)
-	case *ast.SpaceNode:
-		v.b.WriteString(n.Lexeme)
 	case *ast.BreakNode:
 		v.visitBreak(n)
 	case *ast.LinkNode:

@@ -119,7 +119,7 @@ func ParseMetadata(value string) ast.InlineSlice {
 // ParseSpacedText returns an inline slice that consists just of test and space node.
 // No Zettelmarkup parsing is done. It is typically used to transform the zettel title into an inline slice.
 func ParseSpacedText(s string) ast.InlineSlice {
-	return ast.CreateInlineSliceFromWords(meta.ListFromValue(s)...)
+	return ast.InlineSlice{&ast.TextNode{Text: strings.Join(meta.ListFromValue(s), " ")}}
 }
 
 // NormalizedSpacedText returns the given string, but normalize multiple spaces to one space.
@@ -139,7 +139,7 @@ func ParseDescription(m *meta.Meta) ast.InlineSlice {
 	if title, found := m.Get(api.KeyTitle); found {
 		return ParseSpacedText(title)
 	}
-	return ast.CreateInlineSliceFromWords("Zettel", "without", "title:", m.Zid.String())
+	return ast.InlineSlice{&ast.TextNode{Text: "Zettel without title: " + m.Zid.String()}}
 }
 
 // ParseZettel parses the zettel based on the syntax.

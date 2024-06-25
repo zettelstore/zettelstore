@@ -29,7 +29,7 @@ const (
 
 type anteroom struct {
 	next    *anteroom
-	waiting id.Set
+	waiting *id.Set
 	curLoad int
 	reload  bool
 }
@@ -58,7 +58,7 @@ func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
 		if room.reload {
 			continue // Do not put zettel in reload room
 		}
-		if _, ok := room.waiting[zid]; ok {
+		if room.waiting.Contains(zid) {
 			// Zettel is already waiting. Nothing to do.
 			return
 		}
@@ -88,13 +88,13 @@ func (ar *anteroomQueue) Reset() {
 	ar.last = ar.first
 }
 
-func (ar *anteroomQueue) Reload(allZids id.Set) {
+func (ar *anteroomQueue) Reload(allZids *id.Set) {
 	ar.mx.Lock()
 	defer ar.mx.Unlock()
 	ar.deleteReloadedRooms()
 
-	if ns := len(allZids); ns > 0 {
-		ar.first = &anteroom{next: ar.first, waiting: allZids, curLoad: ns, reload: true}
+	if !allZids.IsEmpty() {
+		ar.first = &anteroom{next: ar.first, waiting: allZids, curLoad: allZids.Length(), reload: true}
 		if ar.first.next == nil {
 			ar.last = ar.first
 		}
@@ -124,9 +124,8 @@ func (ar *anteroomQueue) Dequeue() (arAction, id.Zid, bool) {
 			ar.removeFirst()
 			return arReload, id.Invalid, false
 		}
-		for zid := range first.waiting {
-			delete(first.waiting, zid)
-			if len(first.waiting) == 0 {
+		if zid, found := first.waiting.Pop(); found {
+			if first.waiting.IsEmpty() {
 				ar.removeFirst()
 			}
 			return arZettel, zid, first.reload

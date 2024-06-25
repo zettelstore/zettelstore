@@ -128,9 +128,9 @@ func getScale(a attrs.Attributes, key string, defVal int) int {
 }
 
 func canvasErrMsg(err error) ast.InlineSlice {
-	return ast.CreateInlineSliceFromWords("Error:", err.Error())
+	return ast.InlineSlice{&ast.TextNode{Text: "Error: " + err.Error()}}
 }
 
 func noSVGErrMsg() ast.InlineSlice {
-	return ast.CreateInlineSliceFromWords("NO", "IMAGE")
+	return ast.InlineSlice{&ast.TextNode{Text: "NO IMAGE"}}
 }
