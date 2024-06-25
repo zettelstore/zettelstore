@@ -31,7 +31,8 @@ func (zs SliceO) Clone() SliceO { return slices.Clone(zs) }
 // identifier. A nil argument is equivalent to an empty slice.
 func (zs SliceO) Equal(other SliceO) bool { return slices.Equal(zs, other) }
 
-func (zs SliceO) String() string {
+// MetaString returns the slice as a string to be store in metadata.
+func (zs SliceO) MetaString() string {
 	if len(zs) == 0 {
 		return ""
 	}

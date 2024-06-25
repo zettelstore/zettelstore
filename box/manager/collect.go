@@ -23,7 +23,7 @@ import (
 )
 
 type collectData struct {
-	refs  id.SetO
+	refs  *id.SetO
 	words store.WordSet
 	urls  store.WordSet
 }

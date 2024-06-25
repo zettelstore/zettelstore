@@ -174,7 +174,7 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 	return uc.filterCandidates(ctx, candidates, words)
 }
 
-func filterByZid(candidates []*meta.Meta, ignoreSeq id.SetO) []*meta.Meta {
+func filterByZid(candidates []*meta.Meta, ignoreSeq *id.SetO) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
 	for _, m := range candidates {
 		if !ignoreSeq.ContainsOrNil(m.ZidO) {

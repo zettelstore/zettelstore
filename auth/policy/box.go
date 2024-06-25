@@ -78,7 +78,7 @@ func (pp *polBox) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zette
 	return pp.box.GetAllZettel(ctx, zid)
 }
 
-func (pp *polBox) FetchZids(ctx context.Context) (id.SetO, error) {
+func (pp *polBox) FetchZids(ctx context.Context) (*id.SetO, error) {
 	return nil, box.NewErrNotAllowed("fetch-zids", server.GetUser(ctx), id.InvalidO)
 }
 

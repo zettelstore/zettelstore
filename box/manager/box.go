@@ -113,12 +113,12 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zet
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.
-func (mgr *Manager) FetchZids(ctx context.Context) (id.SetO, error) {
+func (mgr *Manager) FetchZids(ctx context.Context) (*id.SetO, error) {
 	mgr.mgrLog.Debug().Msg("FetchZids")
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
 	}
-	result := id.SetO{}
+	result := id.NewSetO()
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for _, p := range mgr.boxes {
@@ -178,10 +178,10 @@ func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *que
 	}
 	selected := map[id.ZidO]*meta.Meta{}
 	for _, term := range compSearch.Terms {
-		rejected := id.SetO{}
+		rejected := id.NewSetO()
 		handleMeta := func(m *meta.Meta) {
 			zid := m.ZidO
-			if rejected.ContainsOrNil(zid) {
+			if rejected.Contains(zid) {
 				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 				return
 			}

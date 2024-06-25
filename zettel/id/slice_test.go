@@ -19,7 +19,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-func TestSliceSortO(t *testing.T) {
+func TestSliceOSort(t *testing.T) {
 	t.Parallel()
 	zs := id.SliceO{9, 4, 6, 1, 7}
 	zs.Sort()
@@ -29,7 +29,7 @@ func TestSliceSortO(t *testing.T) {
 	}
 }
 
-func TestCopyO(t *testing.T) {
+func TestSliceOCopy(t *testing.T) {
 	t.Parallel()
 	var orig id.SliceO
 	got := orig.Clone()
@@ -43,7 +43,7 @@ func TestCopyO(t *testing.T) {
 	}
 }
 
-func TestSliceEqualO(t *testing.T) {
+func TestSliceOEqual(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		s1, s2 id.SliceO
@@ -69,7 +69,7 @@ func TestSliceEqualO(t *testing.T) {
 	}
 }
 
-func TestSliceStringO(t *testing.T) {
+func TestSlice0MetaString(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		in  id.SliceO
@@ -81,7 +81,7 @@ func TestSliceStringO(t *testing.T) {
 		{id.SliceO{1, 2}, "00000000000001 00000000000002"},
 	}
 	for i, tc := range testcases {
-		got := tc.in.String()
+		got := tc.in.MetaString()
 		if got != tc.exp {
 			t.Errorf("%d/%v: expected %q, but got %q", i, tc.in, tc.exp, got)
 		}

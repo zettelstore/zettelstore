@@ -27,19 +27,19 @@ import (
 type Searcher interface {
 	// Select all zettel that contains the given exact word.
 	// The word must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchEqual(word string) id.SetO
+	SearchEqual(word string) *id.SetO
 
 	// Select all zettel that have a word with the given prefix.
 	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchPrefix(prefix string) id.SetO
+	SearchPrefix(prefix string) *id.SetO
 
 	// Select all zettel that have a word with the given suffix.
 	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchSuffix(suffix string) id.SetO
+	SearchSuffix(suffix string) *id.SetO
 
 	// Select all zettel that contains the given string.
 	// The string must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchContains(s string) id.SetO
+	SearchContains(s string) *id.SetO
 }
 
 // Query specifies a mechanism for querying zettel.
@@ -411,7 +411,7 @@ func (q *Query) RetrieveAndCompile(_ context.Context, searcher Searcher, metaSeq
 	return result
 }
 
-func metaList2idSet(ml []*meta.Meta) id.SetO {
+func metaList2idSet(ml []*meta.Meta) *id.SetO {
 	if ml == nil {
 		return nil
 	}
@@ -422,7 +422,7 @@ func metaList2idSet(ml []*meta.Meta) id.SetO {
 	return result
 }
 
-func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet id.SetO) CompiledTerm {
+func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet *id.SetO) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
 	var pred RetrievePredicate
 	if searcher != nil {
@@ -431,12 +431,12 @@ func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet id.SetO)
 			if pred == nil {
 				pred = startSet.ContainsOrNil
 			} else {
-				predSet := id.NewSetCapO(len(startSet))
-				for zid := range startSet {
+				predSet := id.NewSetCapO(startSet.Length())
+				startSet.ForEach(func(zid id.ZidO) {
 					if pred(zid) {
 						predSet = predSet.Add(zid)
 					}
-				}
+				})
 				pred = predSet.ContainsOrNil
 			}
 		}
@@ -461,20 +461,20 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 		negatives := retrieveNegatives(negCalls)
 		return func(zid id.ZidO) bool { return !negatives.ContainsOrNil(zid) }
 	}
-	if len(positives) == 0 {
+	if positives.IsEmpty() {
 		// Positive search didn't found anything. We can omit the negative search.
 		return neverIncluded
 	}
 	if len(negCalls) == 0 {
 		// Positive search found something, but there is no negative search.
-		return positives.ContainsOrNil
+		return positives.Contains
 	}
 	negatives := retrieveNegatives(negCalls)
 	if negatives == nil {
-		return positives.ContainsOrNil
+		return positives.Contains
 	}
 	return func(zid id.ZidO) bool {
-		return positives.ContainsOrNil(zid) && !negatives.ContainsOrNil(zid)
+		return positives.Contains(zid) && !negatives.ContainsOrNil(zid)
 	}
 }
 
