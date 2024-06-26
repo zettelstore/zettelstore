@@ -46,39 +46,40 @@ func NewZidMigrator() *ZidMigrator {
 		6:              MustParseN("0006"), // Zettelstore Dependencies
 		7:              MustParseN("0007"), // Zettelstore Log
 		8:              MustParseN("0008"), // Zettelstore Memory
-		20:             MustParseN("000g"), // Zettelstore Box Manager
-		90:             MustParseN("000t"), // Zettelstore Supported Metadata Keys
-		92:             MustParseN("000v"), // Zettelstore Supported Parser
-		96:             MustParseN("000x"), // Zettelstore Startup Configuration
-		100:            MustParseN("000z"), // Zettelstore Runtime Configuration
-		10100:          MustParseN("0010"), // Zettelstore Base HTML Template
-		10200:          MustParseN("0011"), // Zettelstore Login Form HTML Template
-		10300:          MustParseN("0012"), // Zettelstore List Zettel HTML Template
-		10401:          MustParseN("0013"), // Zettelstore Detail HTML Template
-		10402:          MustParseN("0014"), // Zettelstore Info HTML Template
-		10403:          MustParseN("0015"), // Zettelstore Form HTML Template
-		10404:          MustParseN("0016"), // Zettelstore Rename Form HTML Template
-		10405:          MustParseN("0017"), // Zettelstore Delete HTML Template
-		10700:          MustParseN("0018"), // Zettelstore Error HTML Template
-		19000:          MustParseN("0021"), // Zettelstore Sxn Start Code
-		19990:          MustParseN("0022"), // Zettelstore Sxn Base Code
-		20001:          MustParseN("0030"), // Zettelstore Base CSS
-		25001:          MustParseN("0031"), // Zettelstore User CSS
-		40001:          MustParseN("0032"), // Generic Emoji
-		59900:          MustParseN("0020"), // Zettelstore Sxn Prelude
-		60010:          MustParseN("0041"), // zettel
-		60020:          MustParseN("0042"), // confguration
-		60030:          MustParseN("0043"), // role
-		60040:          MustParseN("0044"), // tag
-		90000:          MustParseN("0050"), // New Menu
-		90001:          MustParseN("0051"), // New Zettel
-		90002:          MustParseN("0052"), // New User
-		90003:          MustParseN("0053"), // New Tag
-		90004:          MustParseN("0054"), // New Role
-		100000000:      MustParseN("0100"), // Zettelstore Manual (bis 02zz)
-		200000000:      MustParseN("0300"), // Reserviert (bis 0tzz)
-		9000000000:     MustParseN("0u00"), // Externe Anwendungen (bis 0zzz)
-		DefaultHomeZid: MustParseN("1000"), // Default home zettel
+		9:              MustParseN("0009"), // TODO Zettelstore Sx engine
+		10:             MustParseN("000a"), // TODO Zettelstore ID directory
+		20:             MustParseN("000b"), // Zettelstore Box Manager
+		90:             MustParseN("000c"), // Zettelstore Supported Metadata Keys
+		92:             MustParseN("000d"), // Zettelstore Supported Parser
+		96:             MustParseN("000e"), // Zettelstore Startup Configuration
+		100:            MustParseN("000f"), // Zettelstore Runtime Configuration
+		10100:          MustParseN("000g"), // Zettelstore Base HTML Template
+		10200:          MustParseN("000h"), // Zettelstore Login Form HTML Template
+		10300:          MustParseN("000i"), // Zettelstore List Zettel HTML Template
+		10401:          MustParseN("000j"), // Zettelstore Detail HTML Template
+		10402:          MustParseN("000k"), // Zettelstore Info HTML Template
+		10403:          MustParseN("000l"), // Zettelstore Form HTML Template
+		10404:          MustParseN("000m"), // Zettelstore Rename Form HTML Template
+		10405:          MustParseN("000n"), // Zettelstore Delete HTML Template
+		10700:          MustParseN("000o"), // Zettelstore Error HTML Template
+		19000:          MustParseN("000q"), // Zettelstore Sxn Start Code
+		19990:          MustParseN("000r"), // Zettelstore Sxn Base Code
+		20001:          MustParseN("000s"), // Zettelstore Base CSS
+		25001:          MustParseN("000t"), // Zettelstore User CSS
+		40001:          MustParseN("000u"), // Generic Emoji
+		59900:          MustParseN("000p"), // Zettelstore Sxn Prelude
+		60010:          MustParseN("000z"), // zettel
+		60020:          MustParseN("000w"), // confguration
+		60030:          MustParseN("000x"), // role
+		60040:          MustParseN("000y"), // tag
+		90000:          MustParseN("0010"), // New Menu
+		90001:          MustParseN("0011"), // New Zettel
+		90002:          MustParseN("0012"), // New User
+		90003:          MustParseN("0013"), // New Tag
+		90004:          MustParseN("0014"), // New Role
+		100000000:      MustParseN("0020"), // Zettelstore Manual (bis 00fz)
+		9000000000:     MustParseN("0uzz"), // Verzeichnis externer Anwendungen
+		DefaultHomeZid: MustParseN("0100"), // Default home zettel
 	}
 	usedZids := make(map[ZidN]struct{}, len(defined))
 	for _, zid := range defined {
