@@ -28,7 +28,7 @@ import (
 // CreateZettelPort is the interface used by this use case.
 type CreateZettelPort interface {
 	// CreateZettel creates a new zettel.
-	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error)
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
 }
 
 // CreateZettel is the data for this use case.
@@ -64,7 +64,7 @@ func (*CreateZettel) PrepareCopy(origZettel zettel.Zettel) zettel.Zettel {
 func (*CreateZettel) PrepareVersion(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
 	m := origMeta.Clone()
-	m.Set(api.KeyPredecessor, origMeta.ZidO.String())
+	m.Set(api.KeyPredecessor, origMeta.Zid.String())
 	setReadonly(m)
 	content := origZettel.Content
 	content.TrimSpace()
@@ -74,30 +74,30 @@ func (*CreateZettel) PrepareVersion(origZettel zettel.Zettel) zettel.Zettel {
 // PrepareFolge the zettel for further modification.
 func (*CreateZettel) PrepareFolge(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
-	m := meta.New(id.InvalidO)
+	m := meta.New(id.Invalid)
 	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Folge", "Folge of "))
 	}
 	updateMetaRoleTagsSyntax(m, origMeta)
-	m.Set(api.KeyPrecursor, origMeta.ZidO.String())
+	m.Set(api.KeyPrecursor, origMeta.Zid.String())
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
 // PrepareChild the zettel for further modification.
 func (*CreateZettel) PrepareChild(origZettel zettel.Zettel) zettel.Zettel {
 	origMeta := origZettel.Meta
-	m := meta.New(id.InvalidO)
+	m := meta.New(id.Invalid)
 	if title, found := origMeta.Get(api.KeyTitle); found {
 		m.Set(api.KeyTitle, prependTitle(title, "Child", "Child of "))
 	}
 	updateMetaRoleTagsSyntax(m, origMeta)
-	m.Set(api.KeySuperior, origMeta.ZidO.String())
+	m.Set(api.KeySuperior, origMeta.Zid.String())
 	return zettel.Zettel{Meta: m, Content: zettel.NewContent(nil)}
 }
 
 // PrepareNew the zettel for further modification.
 func (*CreateZettel) PrepareNew(origZettel zettel.Zettel, newTitle string) zettel.Zettel {
-	m := meta.New(id.InvalidO)
+	m := meta.New(id.Invalid)
 	om := origZettel.Meta
 	m.SetNonEmpty(api.KeyTitle, om.GetDefault(api.KeyTitle, ""))
 	updateMetaRoleTagsSyntax(m, om)
@@ -141,10 +141,10 @@ func setReadonly(m *meta.Meta) {
 }
 
 // Run executes the use case.
-func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
+func (uc *CreateZettel) Run(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	m := zettel.Meta
-	if m.ZidO.IsValid() {
-		return m.ZidO, nil // TODO: new error: already exists
+	if m.Zid.IsValid() {
+		return m.Zid, nil // TODO: new error: already exists
 	}
 
 	m.Set(api.KeyCreated, time.Now().Local().Format(id.TimestampLayout))

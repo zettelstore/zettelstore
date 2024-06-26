@@ -39,7 +39,7 @@ var (
 
 var errMissingContent = errors.New("missing zettel content")
 
-func parseZettelForm(r *http.Request, zid id.ZidO) (bool, zettel.Zettel, error) {
+func parseZettelForm(r *http.Request, zid id.Zid) (bool, zettel.Zettel, error) {
 	maxRequestSize := kernel.Main.GetConfig(kernel.WebService, kernel.WebMaxRequestSize).(int64)
 	err := r.ParseMultipartForm(maxRequestSize)
 	if err != nil {

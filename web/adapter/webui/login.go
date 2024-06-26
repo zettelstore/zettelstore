@@ -43,7 +43,7 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 	env, rb := wui.createRenderEnv(ctx, "login", wui.rtConfig.Get(ctx, nil, api.KeyLang), "Login", nil)
 	rb.bindString("retry", sx.MakeBoolean(retry))
 	if rb.err == nil {
-		rb.err = wui.renderSxnTemplate(ctx, w, id.LoginTemplateZidO, env)
+		rb.err = wui.renderSxnTemplate(ctx, w, id.LoginTemplateZid, env)
 	}
 	if err := rb.err; err != nil {
 		wui.reportError(ctx, w, err)

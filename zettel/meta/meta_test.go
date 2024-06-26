@@ -21,7 +21,7 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-const testID = id.ZidO(98765432101234)
+const testID = id.Zid(98765432101234)
 
 func TestKeyIsValid(t *testing.T) {
 	t.Parallel()

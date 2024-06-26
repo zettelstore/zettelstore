@@ -44,19 +44,19 @@ type compBox struct {
 }
 
 var myConfig *meta.Meta
-var myZettel = map[id.ZidO]struct {
-	meta    func(id.ZidO) *meta.Meta
+var myZettel = map[id.Zid]struct {
+	meta    func(id.Zid) *meta.Meta
 	content func(*meta.Meta) []byte
 }{
-	id.MustParseO(api.ZidVersion):              {genVersionBuildM, genVersionBuildC},
-	id.MustParseO(api.ZidHost):                 {genVersionHostM, genVersionHostC},
-	id.MustParseO(api.ZidOperatingSystem):      {genVersionOSM, genVersionOSC},
-	id.MustParseO(api.ZidLog):                  {genLogM, genLogC},
-	id.MustParseO(api.ZidMemory):               {genMemoryM, genMemoryC},
-	id.MustParseO(api.ZidBoxManager):           {genManagerM, genManagerC},
-	id.MustParseO(api.ZidMetadataKey):          {genKeysM, genKeysC},
-	id.MustParseO(api.ZidParser):               {genParserM, genParserC},
-	id.MustParseO(api.ZidStartupConfiguration): {genConfigZettelM, genConfigZettelC},
+	id.MustParse(api.ZidVersion):              {genVersionBuildM, genVersionBuildC},
+	id.MustParse(api.ZidHost):                 {genVersionHostM, genVersionHostC},
+	id.MustParse(api.ZidOperatingSystem):      {genVersionOSM, genVersionOSC},
+	id.MustParse(api.ZidLog):                  {genLogM, genLogC},
+	id.MustParse(api.ZidMemory):               {genMemoryM, genMemoryC},
+	id.MustParse(api.ZidBoxManager):           {genManagerM, genManagerC},
+	id.MustParse(api.ZidMetadataKey):          {genKeysM, genKeysC},
+	id.MustParse(api.ZidParser):               {genParserM, genParserC},
+	id.MustParse(api.ZidStartupConfiguration): {genConfigZettelM, genConfigZettelC},
 }
 
 // Get returns the one program box.
@@ -74,7 +74,7 @@ func Setup(cfg *meta.Meta) { myConfig = cfg.Clone() }
 
 func (*compBox) Location() string { return "" }
 
-func (cb *compBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, error) {
+func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if gen, ok := myZettel[zid]; ok && gen.meta != nil {
 		if m := gen.meta(zid); m != nil {
 			updateMeta(m)
@@ -94,7 +94,7 @@ func (cb *compBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, err
 	return zettel.Zettel{}, err
 }
 
-func (*compBox) HasZettel(_ context.Context, zid id.ZidO) bool {
+func (*compBox) HasZettel(_ context.Context, zid id.Zid) bool {
 	_, found := myZettel[zid]
 	return found
 }
@@ -131,12 +131,12 @@ func (cb *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrain
 	return nil
 }
 
-func (*compBox) AllowRenameZettel(_ context.Context, zid id.ZidO) bool {
+func (*compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := myZettel[zid]
 	return !ok
 }
 
-func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.ZidO) (err error) {
+func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) (err error) {
 	if _, ok := myZettel[curZid]; ok {
 		err = box.ErrReadOnly
 	} else {
@@ -146,9 +146,9 @@ func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.ZidO) (err error
 	return err
 }
 
-func (*compBox) CanDeleteZettel(context.Context, id.ZidO) bool { return false }
+func (*compBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (cb *compBox) DeleteZettel(_ context.Context, zid id.ZidO) (err error) {
+func (cb *compBox) DeleteZettel(_ context.Context, zid id.Zid) (err error) {
 	if _, ok := myZettel[zid]; ok {
 		err = box.ErrReadOnly
 	} else {

@@ -27,25 +27,25 @@ import (
 type Searcher interface {
 	// Select all zettel that contains the given exact word.
 	// The word must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchEqual(word string) *id.SetO
+	SearchEqual(word string) *id.Set
 
 	// Select all zettel that have a word with the given prefix.
 	// The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchPrefix(prefix string) *id.SetO
+	SearchPrefix(prefix string) *id.Set
 
 	// Select all zettel that have a word with the given suffix.
 	// The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchSuffix(suffix string) *id.SetO
+	SearchSuffix(suffix string) *id.Set
 
 	// Select all zettel that contains the given string.
 	// The string must be normalized through Unicode NKFD, trimmed and not empty.
-	SearchContains(s string) *id.SetO
+	SearchContains(s string) *id.Set
 }
 
 // Query specifies a mechanism for querying zettel.
 type Query struct {
 	// Präfixed zettel identifier.
-	zids []id.ZidO
+	zids []id.Zid
 
 	// Querydirectives, like CONTEXT, ...
 	directives []Directive
@@ -69,11 +69,11 @@ type Query struct {
 }
 
 // GetZids returns a slide of all specified zettel identifier.
-func (q *Query) GetZids() []id.ZidO {
+func (q *Query) GetZids() []id.Zid {
 	if q == nil || len(q.zids) == 0 {
 		return nil
 	}
-	result := make([]id.ZidO, len(q.zids))
+	result := make([]id.Zid, len(q.zids))
 	copy(result, q.zids)
 	return result
 }
@@ -143,7 +143,7 @@ func (q *Query) Clone() *Query {
 	}
 	c := new(Query)
 	if len(q.zids) > 0 {
-		c.zids = make([]id.ZidO, len(q.zids))
+		c.zids = make([]id.Zid, len(q.zids))
 		copy(c.zids, q.zids)
 	}
 	if len(q.directives) > 0 {
@@ -411,18 +411,18 @@ func (q *Query) RetrieveAndCompile(_ context.Context, searcher Searcher, metaSeq
 	return result
 }
 
-func metaList2idSet(ml []*meta.Meta) *id.SetO {
+func metaList2idSet(ml []*meta.Meta) *id.Set {
 	if ml == nil {
 		return nil
 	}
-	result := id.NewSetCapO(len(ml))
+	result := id.NewSetCap(len(ml))
 	for _, m := range ml {
-		result = result.Add(m.ZidO)
+		result = result.Add(m.Zid)
 	}
 	return result
 }
 
-func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet *id.SetO) CompiledTerm {
+func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet *id.Set) CompiledTerm {
 	match := ct.compileMeta() // Match might add some searches
 	var pred RetrievePredicate
 	if searcher != nil {
@@ -431,8 +431,8 @@ func (ct *conjTerms) retrieveAndCompileTerm(searcher Searcher, startSet *id.SetO
 			if pred == nil {
 				pred = startSet.ContainsOrNil
 			} else {
-				predSet := id.NewSetCapO(startSet.Length())
-				startSet.ForEach(func(zid id.ZidO) {
+				predSet := id.NewSetCap(startSet.Length())
+				startSet.ForEach(func(zid id.Zid) {
 					if pred(zid) {
 						predSet = predSet.Add(zid)
 					}
@@ -459,7 +459,7 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 		// No positive search for words, must contain only words for a negative search.
 		// Otherwise len(search) == 0 (see above)
 		negatives := retrieveNegatives(negCalls)
-		return func(zid id.ZidO) bool { return !negatives.ContainsOrNil(zid) }
+		return func(zid id.Zid) bool { return !negatives.ContainsOrNil(zid) }
 	}
 	if positives.IsEmpty() {
 		// Positive search didn't found anything. We can omit the negative search.
@@ -473,7 +473,7 @@ func (ct *conjTerms) retrieveIndex(searcher Searcher) RetrievePredicate {
 	if negatives == nil {
 		return positives.Contains
 	}
-	return func(zid id.ZidO) bool {
+	return func(zid id.Zid) bool {
 		return positives.Contains(zid) && !negatives.ContainsOrNil(zid)
 	}
 }

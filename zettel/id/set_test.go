@@ -22,16 +22,16 @@ import (
 func TestSetOContainsOrNil(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s   *id.SetO
-		zid id.ZidO
+		s   *id.Set
+		zid id.Zid
 		exp bool
 	}{
-		{nil, id.InvalidO, true},
+		{nil, id.Invalid, true},
 		{nil, 14, true},
-		{id.NewSetO(), id.InvalidO, false},
-		{id.NewSetO(), 1, false},
-		{id.NewSetO(), id.InvalidO, false},
-		{id.NewSetO(1), 1, true},
+		{id.NewSet(), id.Invalid, false},
+		{id.NewSet(), 1, false},
+		{id.NewSet(), id.Invalid, false},
+		{id.NewSet(1), 1, true},
 	}
 	for i, tc := range testcases {
 		got := tc.s.ContainsOrNil(tc.zid)
@@ -44,17 +44,17 @@ func TestSetOContainsOrNil(t *testing.T) {
 func TestSetOAdd(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 *id.SetO
-		exp    id.SliceO
+		s1, s2 *id.Set
+		exp    id.Slice
 	}{
 		{nil, nil, nil},
-		{id.NewSetO(), nil, nil},
-		{id.NewSetO(), id.NewSetO(), nil},
-		{nil, id.NewSetO(1), id.SliceO{1}},
-		{id.NewSetO(1), nil, id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(), id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(2), id.SliceO{1, 2}},
-		{id.NewSetO(1), id.NewSetO(1), id.SliceO{1}},
+		{id.NewSet(), nil, nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{nil, id.NewSet(1), id.Slice{1}},
+		{id.NewSet(1), nil, id.Slice{1}},
+		{id.NewSet(1), id.NewSet(), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(2), id.Slice{1, 2}},
+		{id.NewSet(1), id.NewSet(1), id.Slice{1}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.SafeSorted()
@@ -69,12 +69,12 @@ func TestSetOAdd(t *testing.T) {
 func TestSetOSafeSorted(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		set *id.SetO
-		exp id.SliceO
+		set *id.Set
+		exp id.Slice
 	}{
 		{nil, nil},
-		{id.NewSetO(), nil},
-		{id.NewSetO(9, 4, 6, 1, 7), id.SliceO{1, 4, 6, 7, 9}},
+		{id.NewSet(), nil},
+		{id.NewSet(9, 4, 6, 1, 7), id.Slice{1, 4, 6, 7, 9}},
 	}
 	for i, tc := range testcases {
 		got := tc.set.SafeSorted()
@@ -87,20 +87,20 @@ func TestSetOSafeSorted(t *testing.T) {
 func TestSetOIntersectOrSet(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 *id.SetO
-		exp    id.SliceO
+		s1, s2 *id.Set
+		exp    id.Slice
 	}{
 		{nil, nil, nil},
-		{id.NewSetO(), nil, nil},
-		{nil, id.NewSetO(), nil},
-		{id.NewSetO(), id.NewSetO(), nil},
-		{id.NewSetO(1), nil, nil},
-		{nil, id.NewSetO(1), id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(), nil},
-		{id.NewSetO(), id.NewSetO(1), nil},
-		{id.NewSetO(1), id.NewSetO(2), nil},
-		{id.NewSetO(2), id.NewSetO(1), nil},
-		{id.NewSetO(1), id.NewSetO(1), id.SliceO{1}},
+		{id.NewSet(), nil, nil},
+		{nil, id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, nil},
+		{nil, id.NewSet(1), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(2), nil},
+		{id.NewSet(2), id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(1), id.Slice{1}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.SafeSorted()
@@ -115,21 +115,21 @@ func TestSetOIntersectOrSet(t *testing.T) {
 func TestSetOIUnion(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 *id.SetO
-		exp    *id.SetO
+		s1, s2 *id.Set
+		exp    *id.Set
 	}{
 		{nil, nil, nil},
-		{id.NewSetO(), nil, nil},
-		{nil, id.NewSetO(), nil},
-		{id.NewSetO(), id.NewSetO(), nil},
-		{id.NewSetO(1), nil, id.NewSetO(1)},
-		{nil, id.NewSetO(1), id.NewSetO(1)},
-		{id.NewSetO(1), id.NewSetO(), id.NewSetO(1)},
-		{id.NewSetO(), id.NewSetO(1), id.NewSetO(1)},
-		{id.NewSetO(1), id.NewSetO(2), id.NewSetO(1, 2)},
-		{id.NewSetO(2), id.NewSetO(1), id.NewSetO(2, 1)},
-		{id.NewSetO(1), id.NewSetO(1), id.NewSetO(1)},
-		{id.NewSetO(1, 2, 3), id.NewSetO(2, 3, 4), id.NewSetO(1, 2, 3, 4)},
+		{id.NewSet(), nil, nil},
+		{nil, id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, id.NewSet(1)},
+		{nil, id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1), id.NewSet(), id.NewSet(1)},
+		{id.NewSet(), id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1), id.NewSet(2), id.NewSet(1, 2)},
+		{id.NewSet(2), id.NewSet(1), id.NewSet(2, 1)},
+		{id.NewSet(1), id.NewSet(1), id.NewSet(1)},
+		{id.NewSet(1, 2, 3), id.NewSet(2, 3, 4), id.NewSet(1, 2, 3, 4)},
 	}
 	for i, tc := range testcases {
 		s1 := tc.s1.Clone()
@@ -145,26 +145,26 @@ func TestSetOIUnion(t *testing.T) {
 func TestSetOISubtract(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 *id.SetO
-		exp    id.SliceO
+		s1, s2 *id.Set
+		exp    id.Slice
 	}{
 		{nil, nil, nil},
-		{id.NewSetO(), nil, nil},
-		{nil, id.NewSetO(), nil},
-		{id.NewSetO(), id.NewSetO(), nil},
-		{id.NewSetO(1), nil, id.SliceO{1}},
-		{nil, id.NewSetO(1), nil},
-		{id.NewSetO(1), id.NewSetO(), id.SliceO{1}},
-		{id.NewSetO(), id.NewSetO(1), nil},
-		{id.NewSetO(1), id.NewSetO(2), id.SliceO{1}},
-		{id.NewSetO(2), id.NewSetO(1), id.SliceO{2}},
-		{id.NewSetO(1), id.NewSetO(1), nil},
-		{id.NewSetO(1, 2, 3), id.NewSetO(1), id.SliceO{2, 3}},
-		{id.NewSetO(1, 2, 3), id.NewSetO(2), id.SliceO{1, 3}},
-		{id.NewSetO(1, 2, 3), id.NewSetO(3), id.SliceO{1, 2}},
-		{id.NewSetO(1, 2, 3), id.NewSetO(1, 2), id.SliceO{3}},
-		{id.NewSetO(1, 2, 3), id.NewSetO(1, 3), id.SliceO{2}},
-		{id.NewSetO(1, 2, 3), id.NewSetO(2, 3), id.SliceO{1}},
+		{id.NewSet(), nil, nil},
+		{nil, id.NewSet(), nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, id.Slice{1}},
+		{nil, id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(), id.Slice{1}},
+		{id.NewSet(), id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(2), id.Slice{1}},
+		{id.NewSet(2), id.NewSet(1), id.Slice{2}},
+		{id.NewSet(1), id.NewSet(1), nil},
+		{id.NewSet(1, 2, 3), id.NewSet(1), id.Slice{2, 3}},
+		{id.NewSet(1, 2, 3), id.NewSet(2), id.Slice{1, 3}},
+		{id.NewSet(1, 2, 3), id.NewSet(3), id.Slice{1, 2}},
+		{id.NewSet(1, 2, 3), id.NewSet(1, 2), id.Slice{3}},
+		{id.NewSet(1, 2, 3), id.NewSet(1, 3), id.Slice{2}},
+		{id.NewSet(1, 2, 3), id.NewSet(2, 3), id.Slice{1}},
 	}
 	for i, tc := range testcases {
 		s1 := tc.s1.Clone()
@@ -181,18 +181,18 @@ func TestSetOISubtract(t *testing.T) {
 func TestSetODiff(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		in1, in2   *id.SetO
-		exp1, exp2 *id.SetO
+		in1, in2   *id.Set
+		exp1, exp2 *id.Set
 	}{
 		{nil, nil, nil, nil},
-		{id.NewSetO(1), nil, nil, id.NewSetO(1)},
-		{nil, id.NewSetO(1), id.NewSetO(1), nil},
-		{id.NewSetO(1), id.NewSetO(1), nil, nil},
-		{id.NewSetO(1, 2), id.NewSetO(1), nil, id.NewSetO(2)},
-		{id.NewSetO(1), id.NewSetO(1, 2), id.NewSetO(2), nil},
-		{id.NewSetO(1, 2), id.NewSetO(1, 3), id.NewSetO(3), id.NewSetO(2)},
-		{id.NewSetO(1, 2, 3), id.NewSetO(2, 3, 4), id.NewSetO(4), id.NewSetO(1)},
-		{id.NewSetO(2, 3, 4), id.NewSetO(1, 2, 3), id.NewSetO(1), id.NewSetO(4)},
+		{id.NewSet(1), nil, nil, id.NewSet(1)},
+		{nil, id.NewSet(1), id.NewSet(1), nil},
+		{id.NewSet(1), id.NewSet(1), nil, nil},
+		{id.NewSet(1, 2), id.NewSet(1), nil, id.NewSet(2)},
+		{id.NewSet(1), id.NewSet(1, 2), id.NewSet(2), nil},
+		{id.NewSet(1, 2), id.NewSet(1, 3), id.NewSet(3), id.NewSet(2)},
+		{id.NewSet(1, 2, 3), id.NewSet(2, 3, 4), id.NewSet(4), id.NewSet(1)},
+		{id.NewSet(2, 3, 4), id.NewSet(1, 2, 3), id.NewSet(1), id.NewSet(4)},
 	}
 	for i, tc := range testcases {
 		gotN, gotO := tc.in1.Diff(tc.in2)
@@ -208,21 +208,21 @@ func TestSetODiff(t *testing.T) {
 func TestSetORemove(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		s1, s2 *id.SetO
-		exp    id.SliceO
+		s1, s2 *id.Set
+		exp    id.Slice
 	}{
 		{nil, nil, nil},
-		{id.NewSetO(), nil, nil},
-		{id.NewSetO(), id.NewSetO(), nil},
-		{id.NewSetO(1), nil, id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(), id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(2), id.SliceO{1}},
-		{id.NewSetO(1), id.NewSetO(1), id.SliceO{}},
+		{id.NewSet(), nil, nil},
+		{id.NewSet(), id.NewSet(), nil},
+		{id.NewSet(1), nil, id.Slice{1}},
+		{id.NewSet(1), id.NewSet(), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(2), id.Slice{1}},
+		{id.NewSet(1), id.NewSet(1), id.Slice{}},
 	}
 	for i, tc := range testcases {
 		sl1 := tc.s1.SafeSorted()
 		sl2 := tc.s2.SafeSorted()
-		newS1 := id.NewSetO(sl1...)
+		newS1 := id.NewSet(sl1...)
 		newS1.ISubstract(tc.s2)
 		got := newS1.SafeSorted()
 		if !got.Equal(tc.exp) {
@@ -231,8 +231,8 @@ func TestSetORemove(t *testing.T) {
 	}
 }
 func BenchmarkSetO(b *testing.B) {
-	s := id.NewSetCapO(b.N)
+	s := id.NewSetCap(b.N)
 	for i := range b.N {
-		s.Add(id.ZidO(i))
+		s.Add(id.Zid(i))
 	}
 }

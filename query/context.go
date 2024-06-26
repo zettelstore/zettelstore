@@ -42,7 +42,7 @@ const (
 
 // ContextPort is the collection of box methods needed by this directive.
 type ContextPort interface {
-	GetMeta(ctx context.Context, zid id.ZidO) (*meta.Meta, error)
+	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *Query) ([]*meta.Meta, error)
 }
 
@@ -119,24 +119,24 @@ func (q *ztlCtxQueue) Pop() any {
 
 type contextTask struct {
 	port     ContextPort
-	seen     *id.SetO
+	seen     *id.Set
 	queue    ztlCtxQueue
 	maxCost  float64
 	limit    int
 	tagMetas map[string][]*meta.Meta
-	tagZids  map[string]*id.SetO    // just the zids of tagMetas
-	metaZid  map[id.ZidO]*meta.Meta // maps zid to meta for all meta retrieved with tags
+	tagZids  map[string]*id.Set    // just the zids of tagMetas
+	metaZid  map[id.Zid]*meta.Meta // maps zid to meta for all meta retrieved with tags
 }
 
 func newQueue(startSeq []*meta.Meta, maxCost float64, limit int, port ContextPort) *contextTask {
 	result := &contextTask{
 		port:     port,
-		seen:     id.NewSetO(),
+		seen:     id.NewSet(),
 		maxCost:  maxCost,
 		limit:    limit,
 		tagMetas: make(map[string][]*meta.Meta),
-		tagZids:  make(map[string]*id.SetO),
-		metaZid:  make(map[id.ZidO]*meta.Meta),
+		tagZids:  make(map[string]*id.Set),
+		metaZid:  make(map[id.Zid]*meta.Meta),
 	}
 
 	queue := make(ztlCtxQueue, 0, len(startSeq))
@@ -189,7 +189,7 @@ func contextCost(key string) float64 {
 }
 
 func (ct *contextTask) addID(ctx context.Context, newCost float64, value string) {
-	if zid, errParse := id.ParseO(value); errParse == nil {
+	if zid, errParse := id.Parse(value); errParse == nil {
 		if m, errGetMeta := ct.port.GetMeta(ctx, zid); errGetMeta == nil {
 			ct.addMeta(m, newCost)
 		}
@@ -201,7 +201,7 @@ func (ct *contextTask) addMeta(m *meta.Meta, newCost float64) {
 	// other zettel that are directly reachable, without taking the cost into account.
 	// Of course, the limit ist still relevant.
 	if !ct.hasLimit() && (ct.seen.Length() <= 1 || ct.maxCost == 0 || newCost <= ct.maxCost) {
-		if ct.seen.Contains(m.ZidO) {
+		if ct.seen.Contains(m.Zid) {
 			heap.Push(&ct.queue, ztlCtxItem{cost: newCost, meta: m})
 		}
 	}
@@ -221,12 +221,12 @@ func referenceCost(baseCost float64, numReferences int) float64 {
 }
 
 func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost float64) {
-	var zidSet *id.SetO
+	var zidSet *id.Set
 	for _, tag := range tags {
 		zs := ct.updateTagData(ctx, tag)
 		zidSet = zidSet.IUnion(zs)
 	}
-	zidSet.ForEach(func(zid id.ZidO) {
+	zidSet.ForEach(func(zid id.Zid) {
 		minCost := math.MaxFloat64
 		costFactor := 1.1
 		for _, tag := range tags {
@@ -243,7 +243,7 @@ func (ct *contextTask) addTags(ctx context.Context, tags []string, baseCost floa
 	})
 }
 
-func (ct *contextTask) updateTagData(ctx context.Context, tag string) *id.SetO {
+func (ct *contextTask) updateTagData(ctx context.Context, tag string) *id.Set {
 	if _, found := ct.tagMetas[tag]; found {
 		return ct.tagZids[tag]
 	}
@@ -253,9 +253,9 @@ func (ct *contextTask) updateTagData(ctx context.Context, tag string) *id.SetO {
 		ml = nil
 	}
 	ct.tagMetas[tag] = ml
-	zids := id.NewSetCapO(len(ml))
+	zids := id.NewSetCap(len(ml))
 	for _, m := range ml {
-		zid := m.ZidO
+		zid := m.Zid
 		zids = zids.Add(zid)
 		if _, found := ct.metaZid[zid]; !found {
 			ct.metaZid[zid] = m
@@ -277,7 +277,7 @@ func (ct *contextTask) next() (*meta.Meta, float64) {
 	for len(ct.queue) > 0 {
 		item := heap.Pop(&ct.queue).(ztlCtxItem)
 		m := item.meta
-		zid := m.ZidO
+		zid := m.Zid
 		if ct.seen.Contains(zid) {
 			continue
 		}

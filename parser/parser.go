@@ -139,7 +139,7 @@ func ParseDescription(m *meta.Meta) ast.InlineSlice {
 	if title, found := m.Get(api.KeyTitle); found {
 		return ParseSpacedText(title)
 	}
-	return ast.InlineSlice{&ast.TextNode{Text: "Zettel without title: " + m.ZidO.String()}}
+	return ast.InlineSlice{&ast.TextNode{Text: "Zettel without title: " + m.Zid.String()}}
 }
 
 // ParseZettel parses the zettel based on the syntax.
@@ -164,7 +164,7 @@ func ParseZettel(ctx context.Context, zettel zettel.Zettel, syntax string, rtCon
 	return &ast.ZettelNode{
 		Meta:    m,
 		Content: zettel.Content,
-		Zid:     m.ZidO,
+		Zid:     m.Zid,
 		InhMeta: inhMeta,
 		Ast:     ParseBlocks(input.NewInput(zettel.Content.AsBytes()), parseMeta, syntax, hi),
 		Syntax:  syntax,

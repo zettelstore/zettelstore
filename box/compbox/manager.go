@@ -23,7 +23,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func genManagerM(zid id.ZidO) *meta.Meta {
+func genManagerM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Box Manager")
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))

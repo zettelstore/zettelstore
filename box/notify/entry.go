@@ -33,7 +33,7 @@ func extIsMetaAndContent(ext string) bool { return ext == extZettel }
 
 // DirEntry stores everything for a directory entry.
 type DirEntry struct {
-	Zid          id.ZidO
+	Zid          id.Zid
 	MetaName     string   // file name of meta information
 	ContentName  string   // file name of zettel content
 	ContentExt   string   // (normalized) file extension of zettel content
@@ -52,7 +52,7 @@ func (e *DirEntry) HasMetaInContent() bool {
 
 // SetupFromMetaContent fills entry data based on metadata and zettel content.
 func (e *DirEntry) SetupFromMetaContent(m *meta.Meta, content zettel.Content, getZettelFileSyntax func() []string) {
-	if e.Zid != m.ZidO {
+	if e.Zid != m.Zid {
 		panic("Zid differ")
 	}
 	if contentName := e.ContentName; contentName != "" {

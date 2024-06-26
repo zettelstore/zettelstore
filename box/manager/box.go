@@ -56,10 +56,10 @@ func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 }
 
 // CreateZettel creates a new zettel.
-func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
+func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	mgr.mgrLog.Debug().Msg("CreateZettel")
 	if mgr.State() != box.StartStateStarted {
-		return id.InvalidO, box.ErrStopped
+		return id.Invalid, box.ErrStopped
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
@@ -71,11 +71,11 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.
 		}
 		return zid, err
 	}
-	return id.InvalidO, box.ErrReadOnly
+	return id.Invalid, box.ErrReadOnly
 }
 
 // GetZettel retrieves a specific zettel.
-func (mgr *Manager) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error) {
+func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	mgr.mgrLog.Debug().Zid(zid).Msg("GetZettel")
 	if mgr.State() != box.StartStateStarted {
 		return zettel.Zettel{}, box.ErrStopped
@@ -95,7 +95,7 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, 
 }
 
 // GetAllZettel retrieves a specific zettel from all managed boxes.
-func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zettel, error) {
+func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error) {
 	mgr.mgrLog.Debug().Zid(zid).Msg("GetAllZettel")
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
@@ -113,16 +113,16 @@ func (mgr *Manager) GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zet
 }
 
 // FetchZids returns the set of all zettel identifer managed by the box.
-func (mgr *Manager) FetchZids(ctx context.Context) (*id.SetO, error) {
+func (mgr *Manager) FetchZids(ctx context.Context) (*id.Set, error) {
 	mgr.mgrLog.Debug().Msg("FetchZids")
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
 	}
-	result := id.NewSetO()
+	result := id.NewSet()
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.ZidO) { result.Add(zid) }, func(id.ZidO) bool { return true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Add(zid) }, func(id.Zid) bool { return true })
 		if err != nil {
 			return nil, err
 		}
@@ -130,7 +130,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (*id.SetO, error) {
 	return result, nil
 }
 
-func (mgr *Manager) HasZettel(ctx context.Context, zid id.ZidO) bool {
+func (mgr *Manager) HasZettel(ctx context.Context, zid id.Zid) bool {
 	mgr.mgrLog.Debug().Zid(zid).Msg("HasZettel")
 	if mgr.State() != box.StartStateStarted {
 		return false
@@ -145,7 +145,7 @@ func (mgr *Manager) HasZettel(ctx context.Context, zid id.ZidO) bool {
 	return false
 }
 
-func (mgr *Manager) GetMeta(ctx context.Context, zid id.ZidO) (*meta.Meta, error) {
+func (mgr *Manager) GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 	mgr.mgrLog.Debug().Zid(zid).Msg("GetMeta")
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
@@ -176,11 +176,11 @@ func (mgr *Manager) SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *que
 		mgr.mgrLog.Trace().Int("count", int64(len(result))).Msg("found without ApplyMeta")
 		return result, nil
 	}
-	selected := map[id.ZidO]*meta.Meta{}
+	selected := map[id.Zid]*meta.Meta{}
 	for _, term := range compSearch.Terms {
-		rejected := id.NewSetO()
+		rejected := id.NewSet()
 		handleMeta := func(m *meta.Meta) {
-			zid := m.ZidO
+			zid := m.Zid
 			if rejected.Contains(zid) {
 				mgr.mgrLog.Trace().Zid(zid).Msg("SelectMeta/alreadyRejected")
 				return
@@ -228,7 +228,7 @@ func (mgr *Manager) CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) b
 
 // UpdateZettel updates an existing zettel.
 func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error {
-	mgr.mgrLog.Debug().Zid(zettel.Meta.ZidO).Msg("UpdateZettel")
+	mgr.mgrLog.Debug().Zid(zettel.Meta.Zid).Msg("UpdateZettel")
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
@@ -244,7 +244,7 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) erro
 }
 
 // AllowRenameZettel returns true, if box will not disallow renaming the zettel.
-func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.ZidO) bool {
+func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
 	if mgr.State() != box.StartStateStarted {
 		return false
 	}
@@ -259,7 +259,7 @@ func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.ZidO) bool {
 }
 
 // RenameZettel changes the current zid to a new zid.
-func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) error {
+func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	mgr.mgrLog.Debug().Zid(curZid).Zid(newZid).Msg("RenameZettel")
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
@@ -281,7 +281,7 @@ func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) er
 }
 
 // CanDeleteZettel returns true, if box could possibly delete the given zettel.
-func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.ZidO) bool {
+func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	if mgr.State() != box.StartStateStarted {
 		return false
 	}
@@ -296,7 +296,7 @@ func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.ZidO) bool {
 }
 
 // DeleteZettel removes the zettel from the box.
-func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.ZidO) error {
+func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	mgr.mgrLog.Debug().Zid(zid).Msg("DeleteZettel")
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped

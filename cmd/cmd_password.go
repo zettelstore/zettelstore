@@ -38,7 +38,7 @@ func cmdPassword(fs *flag.FlagSet) (int, error) {
 	}
 
 	sid := fs.Arg(1)
-	zid, err := id.ParseO(sid)
+	zid, err := id.Parse(sid)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Given zettel identification is not valid: %q\n", sid)
 		return 2, err

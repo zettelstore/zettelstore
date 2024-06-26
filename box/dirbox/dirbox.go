@@ -203,14 +203,14 @@ func (dp *dirBox) stopFileServices() {
 	}
 }
 
-func (dp *dirBox) notifyChanged(zid id.ZidO) {
+func (dp *dirBox) notifyChanged(zid id.Zid) {
 	if chci := dp.cdata.Notify; chci != nil {
 		dp.log.Trace().Zid(zid).Msg("notifyChanged")
 		chci <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
 	}
 }
 
-func (dp *dirBox) getFileChan(zid id.ZidO) chan fileCmd {
+func (dp *dirBox) getFileChan(zid id.Zid) chan fileCmd {
 	// Based on https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 	sum := 2166136261 ^ uint32(zid)
 	sum *= 16777619
@@ -226,17 +226,17 @@ func (dp *dirBox) CanCreateZettel(_ context.Context) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error) {
+func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	if dp.readonly {
-		return id.InvalidO, box.ErrReadOnly
+		return id.Invalid, box.ErrReadOnly
 	}
 
 	newZid, err := dp.dirSrv.SetNewDirEntry()
 	if err != nil {
-		return id.InvalidO, err
+		return id.Invalid, err
 	}
 	meta := zettel.Meta
-	meta.ZidO = newZid
+	meta.Zid = newZid
 	entry := notify.DirEntry{Zid: newZid}
 	dp.updateEntryFromMetaContent(&entry, meta, zettel.Content)
 
@@ -244,12 +244,12 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zi
 	if err == nil {
 		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
-	dp.notifyChanged(meta.ZidO)
-	dp.log.Trace().Err(err).Zid(meta.ZidO).Msg("CreateZettel")
-	return meta.ZidO, err
+	dp.notifyChanged(meta.Zid)
+	dp.log.Trace().Err(err).Zid(meta.Zid).Msg("CreateZettel")
+	return meta.Zid, err
 }
 
-func (dp *dirBox) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error) {
+func (dp *dirBox) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	entry := dp.dirSrv.GetDirEntry(zid)
 	if !entry.IsValid() {
 		return zettel.Zettel{}, box.ErrZettelNotFound{Zid: zid}
@@ -263,7 +263,7 @@ func (dp *dirBox) GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, er
 	return zettel, nil
 }
 
-func (dp *dirBox) HasZettel(_ context.Context, zid id.ZidO) bool {
+func (dp *dirBox) HasZettel(_ context.Context, zid id.Zid) bool {
 	return dp.dirSrv.GetDirEntry(zid).IsValid()
 }
 
@@ -303,7 +303,7 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	}
 
 	meta := zettel.Meta
-	zid := meta.ZidO
+	zid := meta.Zid
 	if !zid.IsValid() {
 		return box.ErrInvalidZid{Zid: zid.String()}
 	}
@@ -326,11 +326,11 @@ func (dp *dirBox) updateEntryFromMetaContent(entry *notify.DirEntry, m *meta.Met
 	entry.SetupFromMetaContent(m, content, dp.cdata.Config.GetZettelFileSyntax)
 }
 
-func (dp *dirBox) AllowRenameZettel(context.Context, id.ZidO) bool {
+func (dp *dirBox) AllowRenameZettel(context.Context, id.Zid) bool {
 	return !dp.readonly
 }
 
-func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) error {
+func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
 	if curZid == newZid {
 		return nil
 	}
@@ -356,7 +356,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) erro
 	if err != nil {
 		return err
 	}
-	oldMeta.ZidO = newZid
+	oldMeta.Zid = newZid
 	newZettel := zettel.Zettel{Meta: oldMeta, Content: zettel.NewContent(oldContent)}
 	if err = dp.srvSetZettel(ctx, &newEntry, newZettel); err != nil {
 		// "Rollback" rename. No error checking...
@@ -372,7 +372,7 @@ func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.ZidO) erro
 	return err
 }
 
-func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.ZidO) bool {
+func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	if dp.readonly {
 		return false
 	}
@@ -380,7 +380,7 @@ func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.ZidO) bool {
 	return entry.IsValid()
 }
 
-func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.ZidO) error {
+func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	if dp.readonly {
 		return box.ErrReadOnly
 	}

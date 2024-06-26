@@ -104,9 +104,9 @@ func fetchStartupConfiguration(fs *flag.FlagSet) (string, *meta.Meta) {
 
 func createConfiguration(content []byte, err error) *meta.Meta {
 	if err != nil {
-		return meta.New(id.InvalidO)
+		return meta.New(id.Invalid)
 	}
-	return meta.NewFromInput(id.InvalidO, input.NewInput(content))
+	return meta.NewFromInput(id.Invalid, input.NewInput(content))
 }
 
 func readConfiguration(filename string) ([]byte, error) { return os.ReadFile(filename) }
@@ -280,7 +280,7 @@ func executeCommand(name string, args ...string) int {
 	secret = fmt.Sprintf("%x", sha256.Sum256([]byte(secret)))
 
 	kern.SetCreators(
-		func(readonly bool, owner id.ZidO) (auth.Manager, error) {
+		func(readonly bool, owner id.Zid) (auth.Manager, error) {
 			return impl.New(readonly, owner, secret), nil
 		},
 		createManager,

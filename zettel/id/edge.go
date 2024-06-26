@@ -15,22 +15,22 @@ package id
 
 import "slices"
 
-// EdgeO is a pair of to vertices.
-type EdgeO struct {
-	From, To ZidO
+// Edge is a pair of to vertices.
+type Edge struct {
+	From, To Zid
 }
 
-// EdgeSliceO is a slice of Edges
-type EdgeSliceO []EdgeO
+// EdgeSlice is a slice of Edges
+type EdgeSlice []Edge
 
 // Equal return true if both slices are the same.
-func (es EdgeSliceO) Equal(other EdgeSliceO) bool {
+func (es EdgeSlice) Equal(other EdgeSlice) bool {
 	return slices.Equal(es, other)
 }
 
 // Sort the slice.
-func (es EdgeSliceO) Sort() EdgeSliceO {
-	slices.SortFunc(es, func(e1, e2 EdgeO) int {
+func (es EdgeSlice) Sort() EdgeSlice {
+	slices.SortFunc(es, func(e1, e2 Edge) int {
 		if e1.From < e2.From {
 			return -1
 		}

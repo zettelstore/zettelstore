@@ -32,7 +32,7 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.H
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
-		zid, err := id.ParseO(path)
+		zid, err := id.Parse(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -48,11 +48,11 @@ func (wui *WebUI) MakeGetRenameZettelHandler(getZettel usecase.GetZettel) http.H
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(
 			ctx, "rename",
-			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Rename Zettel "+m.ZidO.String(), user)
+			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Rename Zettel "+m.Zid.String(), user)
 		rb.bindString("incoming", wui.encodeIncoming(m, wui.makeGetTextTitle(ctx, getZettel)))
 		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 		if rb.err == nil {
-			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZidO, env)
+			err = wui.renderSxnTemplate(ctx, w, id.RenameTemplateZid, env)
 		} else {
 			err = rb.err
 		}
@@ -67,7 +67,7 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
-		curZid, err := id.ParseO(path)
+		curZid, err := id.Parse(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -79,7 +79,7 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel
 			return
 		}
 		formCurZidStr := r.PostFormValue("curzid")
-		if formCurZid, err1 := id.ParseO(formCurZidStr); err1 != nil || formCurZid != curZid {
+		if formCurZid, err1 := id.Parse(formCurZidStr); err1 != nil || formCurZid != curZid {
 			if err1 != nil {
 				wui.log.Trace().Str("formCurzid", formCurZidStr).Err(err1).Msg("unable to parse as zid")
 			} else if formCurZid != curZid {
@@ -89,7 +89,7 @@ func (wui *WebUI) MakePostRenameZettelHandler(renameZettel *usecase.RenameZettel
 			return
 		}
 		formNewZid := strings.TrimSpace(r.PostFormValue("newzid"))
-		newZid, err := id.ParseO(formNewZid)
+		newZid, err := id.Parse(formNewZid)
 		if err != nil {
 			wui.reportError(
 				ctx, w, adapter.NewErrBadRequest(fmt.Sprintf("Invalid new zettel id %q", formNewZid)))

@@ -42,7 +42,7 @@ import (
 
 // Port contains all methods to retrieve zettel (or part of it) to evaluate a zettel.
 type Port interface {
-	GetZettel(context.Context, id.ZidO) (zettel.Zettel, error)
+	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
 	QueryMeta(ctx context.Context, q *query.Query) ([]*meta.Meta, error)
 }
 
@@ -107,7 +107,7 @@ func evaluateNode(ctx context.Context, port Port, rtConfig config.Config, n ast.
 		rtConfig:        rtConfig,
 		transcludeMax:   rtConfig.GetMaxTransclusions(),
 		transcludeCount: 0,
-		costMap:         map[id.ZidO]transcludeCost{},
+		costMap:         map[id.Zid]transcludeCost{},
 		embedMap:        map[string]ast.InlineSlice{},
 		marker:          &ast.ZettelNode{},
 	}
@@ -120,7 +120,7 @@ type evaluator struct {
 	rtConfig        config.Config
 	transcludeMax   int
 	transcludeCount int
-	costMap         map[id.ZidO]transcludeCost
+	costMap         map[id.Zid]transcludeCost
 	marker          *ast.ZettelNode
 	embedMap        map[string]ast.InlineSlice
 }
@@ -199,7 +199,7 @@ func (e *evaluator) evalVerbatimNode(vn *ast.VerbatimNode) ast.BlockNode {
 }
 
 func (e *evaluator) evalVerbatimZettel(vn *ast.VerbatimNode) ast.BlockNode {
-	m := meta.New(id.InvalidO)
+	m := meta.New(id.Invalid)
 	m.Set(api.KeySyntax, getSyntax(vn.Attrs, meta.SyntaxText))
 	zettel := zettel.Zettel{
 		Meta:    m,
@@ -253,7 +253,7 @@ func (e *evaluator) evalTransclusionNode(tn *ast.TranscludeNode) ast.BlockNode {
 		return makeBlockNode(createInlineErrorText(ref, "Illegal", "block", "state", strconv.Itoa(int(ref.State))))
 	}
 
-	zid, err := id.ParseO(ref.URL.Path)
+	zid, err := id.Parse(ref.URL.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -486,8 +486,8 @@ func (e *evaluator) evalEmbedRefNode(en *ast.EmbedRefNode) ast.InlineNode {
 	return &result
 }
 
-func mustParseZid(ref *ast.Reference) id.ZidO {
-	zid, err := id.ParseO(ref.URL.Path)
+func mustParseZid(ref *ast.Reference) id.Zid {
+	zid, err := id.Parse(ref.URL.Path)
 	if err != nil {
 		panic(fmt.Sprintf("%v: %q (state %v) -> %v", err, ref.URL.Path, ref.State, ref))
 	}
@@ -524,7 +524,7 @@ func (e *evaluator) evalLiteralNode(ln *ast.LiteralNode) ast.InlineNode {
 }
 
 func createInlineErrorImage(en *ast.EmbedRefNode) *ast.EmbedRefNode {
-	errorZid := id.EmojiZidO
+	errorZid := id.EmojiZid
 	en.Ref = ast.ParseReference(errorZid.String())
 	if len(en.Inlines) == 0 {
 		en.Inlines = parser.ParseMetadata("Error placeholder")

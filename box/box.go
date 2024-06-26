@@ -35,19 +35,19 @@ type BaseBox interface {
 	Location() string
 
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
 	// AllowRenameZettel returns true, if box will not disallow renaming the zettel.
-	AllowRenameZettel(ctx context.Context, zid id.ZidO) bool
+	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
 
 	// RenameZettel changes the current Zid to a new Zid.
-	RenameZettel(ctx context.Context, curZid, newZid id.ZidO) error
+	RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
 
 	// CanDeleteZettel returns true, if box could possibly delete the given zettel.
-	CanDeleteZettel(ctx context.Context, zid id.ZidO) bool
+	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
 
 	// DeleteZettel removes the zettel from the box.
-	DeleteZettel(ctx context.Context, zid id.ZidO) error
+	DeleteZettel(ctx context.Context, zid id.Zid) error
 }
 
 // WriteBox is a box that can create / update zettel content.
@@ -57,7 +57,7 @@ type WriteBox interface {
 
 	// CreateZettel creates a new zettel.
 	// Returns the new zettel id (and an error indication).
-	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.ZidO, error)
+	CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error)
 
 	// CanUpdateZettel returns true, if box could possibly update the given zettel.
 	CanUpdateZettel(ctx context.Context, zettel zettel.Zettel) bool
@@ -67,7 +67,7 @@ type WriteBox interface {
 }
 
 // ZidFunc is a function that processes identifier of a zettel.
-type ZidFunc func(id.ZidO)
+type ZidFunc func(id.Zid)
 
 // MetaFunc is a function that processes metadata of a zettel.
 type MetaFunc func(*meta.Meta)
@@ -77,7 +77,7 @@ type ManagedBox interface {
 	BaseBox
 
 	// HasZettel returns true, if box conains zettel with given identifier.
-	HasZettel(context.Context, id.ZidO) bool
+	HasZettel(context.Context, id.Zid) bool
 
 	// Apply identifier of every zettel to the given function, if predicate returns true.
 	ApplyZid(context.Context, ZidFunc, query.RetrievePredicate) error
@@ -138,23 +138,23 @@ type Box interface {
 	WriteBox
 
 	// FetchZids returns the set of all zettel identifer managed by the box.
-	FetchZids(ctx context.Context) (*id.SetO, error)
+	FetchZids(ctx context.Context) (*id.Set, error)
 
 	// GetMeta returns the metadata of the zettel with the given identifier.
-	GetMeta(context.Context, id.ZidO) (*meta.Meta, error)
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 
 	// SelectMeta returns a list of metadata that comply to the given selection criteria.
 	// If `metaSeq` is `nil`, the box assumes metadata of all available zettel.
 	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 
 	// GetAllZettel retrieves a specific zettel from all managed boxes.
-	GetAllZettel(ctx context.Context, zid id.ZidO) ([]zettel.Zettel, error)
+	GetAllZettel(ctx context.Context, zid id.Zid) ([]zettel.Zettel, error)
 
 	// Refresh the data from the box and from its managed sub-boxes.
 	Refresh(context.Context) error
 
 	// ReIndex one zettel to update its index data.
-	ReIndex(context.Context, id.ZidO) error
+	ReIndex(context.Context, id.Zid) error
 }
 
 // Stats record stattistics about a box.
@@ -219,7 +219,7 @@ const (
 type UpdateInfo struct {
 	Box    BaseBox
 	Reason UpdateReason
-	Zid    id.ZidO
+	Zid    id.Zid
 }
 
 // UpdateFunc is a function to be called when a change is detected.
@@ -268,11 +268,11 @@ func NoEnrichQuery(ctx context.Context, q *query.Query) context.Context {
 type ErrNotAllowed struct {
 	Op   string
 	User *meta.Meta
-	Zid  id.ZidO
+	Zid  id.Zid
 }
 
 // NewErrNotAllowed creates an new authorization error.
-func NewErrNotAllowed(op string, user *meta.Meta, zid id.ZidO) error {
+func NewErrNotAllowed(op string, user *meta.Meta, zid id.Zid) error {
 	return &ErrNotAllowed{
 		Op:   op,
 		User: user,
@@ -292,11 +292,11 @@ func (err *ErrNotAllowed) Error() string {
 	if err.Zid.IsValid() {
 		return fmt.Sprintf(
 			"operation %q on zettel %v not allowed for user %v/%v",
-			err.Op, err.Zid, err.User.GetDefault(api.KeyUserID, "?"), err.User.ZidO)
+			err.Op, err.Zid, err.User.GetDefault(api.KeyUserID, "?"), err.User.Zid)
 	}
 	return fmt.Sprintf(
 		"operation %q not allowed for user %v/%v",
-		err.Op, err.User.GetDefault(api.KeyUserID, "?"), err.User.ZidO)
+		err.Op, err.User.GetDefault(api.KeyUserID, "?"), err.User.Zid)
 }
 
 // Is return true, if the error is of type ErrNotAllowed.
@@ -312,7 +312,7 @@ var ErrStopped = errors.New("box is stopped")
 var ErrReadOnly = errors.New("read-only box")
 
 // ErrZettelNotFound is returned if a zettel was not found in the box.
-type ErrZettelNotFound struct{ Zid id.ZidO }
+type ErrZettelNotFound struct{ Zid id.Zid }
 
 func (eznf ErrZettelNotFound) Error() string { return "zettel not found: " + eznf.Zid.String() }
 

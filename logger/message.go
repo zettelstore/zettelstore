@@ -119,7 +119,7 @@ func (m *Message) User(ctx context.Context) *Message {
 				if userID, found := user.Get(api.KeyUserID); found {
 					m.buf = append(m.buf, userID...)
 				} else {
-					m.buf = append(m.buf, user.ZidO.Bytes()...)
+					m.buf = append(m.buf, user.Zid.Bytes()...)
 				}
 			}
 		}
@@ -139,7 +139,7 @@ func (m *Message) HTTPIP(r *http.Request) *Message {
 }
 
 // Zid adds a zettel identifier to the full message
-func (m *Message) Zid(zid id.ZidO) *Message {
+func (m *Message) Zid(zid id.Zid) *Message {
 	return m.Bytes("zid", zid.Bytes())
 }
 

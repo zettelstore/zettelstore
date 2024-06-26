@@ -22,15 +22,15 @@ import (
 	"t73f.de/r/zsc/api"
 )
 
-// ZidO is the internal identifier of a zettel. Typically, it is a
+// Zid is the internal identifier of a zettel. Typically, it is a
 // time stamp of the form "YYYYMMDDHHmmSS" converted to an unsigned integer.
 // A zettelstore implementation should try to set the last two digits to zero,
 // e.g. the seconds should be zero,
-type ZidO uint64
+type Zid uint64
 
 // Some important ZettelIDs.
 const (
-	InvalidO = ZidO(0) // Invalid is a Zid that will never be valid
+	Invalid = Zid(0) // Invalid is a Zid that will never be valid
 )
 
 // ZettelIDs that are used as Zid more than once.
@@ -39,56 +39,56 @@ const (
 // Constant box. They are mentioned there literally, because these
 // constants are not available there.
 var (
-	ConfigurationZidO  = MustParseO(api.ZidConfiguration)
-	BaseTemplateZidO   = MustParseO(api.ZidBaseTemplate)
-	LoginTemplateZidO  = MustParseO(api.ZidLoginTemplate)
-	ListTemplateZidO   = MustParseO(api.ZidListTemplate)
-	ZettelTemplateZidO = MustParseO(api.ZidZettelTemplate)
-	InfoTemplateZidO   = MustParseO(api.ZidInfoTemplate)
-	FormTemplateZidO   = MustParseO(api.ZidFormTemplate)
-	RenameTemplateZidO = MustParseO(api.ZidRenameTemplate)
-	DeleteTemplateZidO = MustParseO(api.ZidDeleteTemplate)
-	ErrorTemplateZidO  = MustParseO(api.ZidErrorTemplate)
-	StartSxnZidO       = MustParseO(api.ZidSxnStart)
-	BaseSxnZidO        = MustParseO(api.ZidSxnBase)
-	PreludeSxnZidO     = MustParseO(api.ZidSxnPrelude)
-	EmojiZidO          = MustParseO(api.ZidEmoji)
-	TOCNewTemplateZidO = MustParseO(api.ZidTOCNewTemplate)
-	DefaultHomeZidO    = MustParseO(api.ZidDefaultHome)
+	ConfigurationZid  = MustParse(api.ZidConfiguration)
+	BaseTemplateZid   = MustParse(api.ZidBaseTemplate)
+	LoginTemplateZid  = MustParse(api.ZidLoginTemplate)
+	ListTemplateZid   = MustParse(api.ZidListTemplate)
+	ZettelTemplateZid = MustParse(api.ZidZettelTemplate)
+	InfoTemplateZid   = MustParse(api.ZidInfoTemplate)
+	FormTemplateZid   = MustParse(api.ZidFormTemplate)
+	RenameTemplateZid = MustParse(api.ZidRenameTemplate)
+	DeleteTemplateZid = MustParse(api.ZidDeleteTemplate)
+	ErrorTemplateZid  = MustParse(api.ZidErrorTemplate)
+	StartSxnZid       = MustParse(api.ZidSxnStart)
+	BaseSxnZid        = MustParse(api.ZidSxnBase)
+	PreludeSxnZid     = MustParse(api.ZidSxnPrelude)
+	EmojiZid          = MustParse(api.ZidEmoji)
+	TOCNewTemplateZid = MustParse(api.ZidTOCNewTemplate)
+	DefaultHomeZid    = MustParse(api.ZidDefaultHome)
 )
 
-const maxZidO = 99999999999999
+const maxZid = 99999999999999
 
-// ParseUintO interprets a string as a possible zettel identifier
+// ParseUint interprets a string as a possible zettel identifier
 // and returns its integer value.
-func ParseUintO(s string) (uint64, error) {
+func ParseUint(s string) (uint64, error) {
 	res, err := strconv.ParseUint(s, 10, 47)
 	if err != nil {
 		return 0, err
 	}
-	if res == 0 || res > maxZidO {
+	if res == 0 || res > maxZid {
 		return res, strconv.ErrRange
 	}
 	return res, nil
 }
 
-// ParseO interprets a string as a zettel identification and
+// Parse interprets a string as a zettel identification and
 // returns its value.
-func ParseO(s string) (ZidO, error) {
+func Parse(s string) (Zid, error) {
 	if len(s) != 14 {
-		return InvalidO, strconv.ErrSyntax
+		return Invalid, strconv.ErrSyntax
 	}
-	res, err := ParseUintO(s)
+	res, err := ParseUint(s)
 	if err != nil {
-		return InvalidO, err
+		return Invalid, err
 	}
-	return ZidO(res), nil
+	return Zid(res), nil
 }
 
-// MustParseO tries to interpret a string as a zettel identifier and returns
+// MustParse tries to interpret a string as a zettel identifier and returns
 // its value or panics otherwise.
-func MustParseO(s api.ZettelID) ZidO {
-	zid, err := ParseO(string(s))
+func MustParse(s api.ZettelID) Zid {
+	zid, err := Parse(string(s))
 	if err == nil {
 		return zid
 	}
@@ -97,18 +97,18 @@ func MustParseO(s api.ZettelID) ZidO {
 
 // String converts the zettel identification to a string of 14 digits.
 // Only defined for valid ids.
-func (zid ZidO) String() string {
+func (zid Zid) String() string {
 	var result [14]byte
 	zid.toByteArray(&result)
 	return string(result[:])
 }
 
 // ZettelID return the zettel identification as a api.ZettelID.
-func (zid ZidO) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
+func (zid Zid) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
 
 // Bytes converts the zettel identification to a byte slice of 14 digits.
 // Only defined for valid ids.
-func (zid ZidO) Bytes() []byte {
+func (zid Zid) Bytes() []byte {
 	var result [14]byte
 	zid.toByteArray(&result)
 	return result[:]
@@ -118,7 +118,7 @@ func (zid ZidO) Bytes() []byte {
 //
 // Based on idea by Daniel Lemire: "Converting integers to fix-digit representations quickly"
 // https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/
-func (zid ZidO) toByteArray(result *[14]byte) {
+func (zid Zid) toByteArray(result *[14]byte) {
 	date := uint64(zid) / 1000000
 	fullyear := date / 10000
 	century, year := fullyear/100, fullyear%100
@@ -145,13 +145,13 @@ func (zid ZidO) toByteArray(result *[14]byte) {
 }
 
 // IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
-func (zid ZidO) IsValid() bool { return 0 < zid && zid <= maxZidO }
+func (zid Zid) IsValid() bool { return 0 < zid && zid <= maxZid }
 
 // TimestampLayout to transform a date into a Zid and into other internal dates.
 const TimestampLayout = "20060102150405"
 
-// NewO returns a new zettel id based on the current time.
-func NewO(withSeconds bool) ZidO {
+// New returns a new zettel id based on the current time.
+func New(withSeconds bool) Zid {
 	now := time.Now().Local()
 	var s string
 	if withSeconds {
@@ -159,7 +159,7 @@ func NewO(withSeconds bool) ZidO {
 	} else {
 		s = now.Format("20060102150400")
 	}
-	res, err := ParseO(s)
+	res, err := Parse(s)
 	if err != nil {
 		panic(err)
 	}
@@ -168,48 +168,48 @@ func NewO(withSeconds bool) ZidO {
 
 // ----- Base36 Zids
 
-// Zid is the internal identifier of a zettel. Typically, it is a number in
+// ZidN is the internal identifier of a zettel. Typically, it is a number in
 // the range 1..36^4-1 (1..1679615). As an external representation, this
 // number is encode by four digits / lowercase letters.
-type Zid uint32
+type ZidN uint32
 
 // Some important ZettelIDs.
 const (
-	Invalid = Zid(0) // Invalid is a Zid that will never be valid
+	InvalidN = ZidN(0) // Invalid is a Zid that will never be valid
 )
 
-const maxZid = 36*36*36*36 - 1
+const maxZidN = 36*36*36*36 - 1
 
-// ParseUint interprets a string as a possible zettel identifier
+// ParseUintN interprets a string as a possible zettel identifier
 // and returns its integer value.
-func ParseUint(s string) (uint64, error) {
+func ParseUintN(s string) (uint64, error) {
 	res, err := strconv.ParseUint(s, 36, 21)
 	if err != nil {
 		return 0, err
 	}
-	if res == 0 || res > maxZid {
+	if res == 0 || res > maxZidN {
 		return res, strconv.ErrRange
 	}
 	return res, nil
 }
 
-// Parse interprets a string as a zettel identification and
+// ParseN interprets a string as a zettel identification and
 // returns its value.
-func Parse(s string) (Zid, error) {
+func ParseN(s string) (ZidN, error) {
 	if len(s) != 4 {
-		return Invalid, strconv.ErrSyntax
+		return InvalidN, strconv.ErrSyntax
 	}
-	res, err := ParseUint(s)
+	res, err := ParseUintN(s)
 	if err != nil {
-		return Invalid, err
+		return InvalidN, err
 	}
-	return Zid(res), nil
+	return ZidN(res), nil
 }
 
-// MustParse tries to interpret a string as a zettel identifier and returns
+// MustParseN tries to interpret a string as a zettel identifier and returns
 // its value or panics otherwise.
-func MustParse(s api.ZettelID) Zid {
-	zid, err := Parse(string(s))
+func MustParseN(s api.ZettelID) ZidN {
+	zid, err := ParseN(string(s))
 	if err == nil {
 		return zid
 	}
@@ -218,18 +218,18 @@ func MustParse(s api.ZettelID) Zid {
 
 // String converts the zettel identification to a string of 14 digits.
 // Only defined for valid ids.
-func (zid Zid) String() string {
+func (zid ZidN) String() string {
 	var result [4]byte
 	zid.toByteArray(&result)
 	return string(result[:])
 }
 
 // ZettelID return the zettel identification as a api.ZettelID.
-func (zid Zid) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
+func (zid ZidN) ZettelID() api.ZettelID { return api.ZettelID(zid.String()) }
 
 // Bytes converts the zettel identification to a byte slice of 14 digits.
 // Only defined for valid ids.
-func (zid Zid) Bytes() []byte {
+func (zid ZidN) Bytes() []byte {
 	var result [4]byte
 	zid.toByteArray(&result)
 	return result[:]
@@ -239,7 +239,7 @@ func (zid Zid) Bytes() []byte {
 //
 // Based on idea by Daniel Lemire: "Converting integers to fix-digit representations quickly"
 // https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/
-func (zid Zid) toByteArray(result *[4]byte) {
+func (zid ZidN) toByteArray(result *[4]byte) {
 	d12 := uint32(zid) / (36 * 36)
 	d1 := d12 / 36
 	d2 := d12 % 36
@@ -255,4 +255,4 @@ func (zid Zid) toByteArray(result *[4]byte) {
 }
 
 // IsValid determines if zettel id is a valid one, e.g. consists of max. 14 digits.
-func (zid Zid) IsValid() bool { return 0 < zid && zid <= maxZid }
+func (zid ZidN) IsValid() bool { return 0 < zid && zid <= maxZidN }

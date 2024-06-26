@@ -145,13 +145,13 @@ func checkMetaBox(t *testing.T, p box.ManagedBox, wd, boxName string) {
 		panic(err)
 	}
 	for _, meta := range metaList {
-		zettel, err := p.GetZettel(context.Background(), meta.ZidO)
+		zettel, err := p.GetZettel(context.Background(), meta.Zid)
 		if err != nil {
 			panic(err)
 		}
 		z := parser.ParseZettel(context.Background(), zettel, "", testConfig)
 		for _, enc := range encodings {
-			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.ZidO, enc), func(st *testing.T) {
+			t.Run(fmt.Sprintf("%s::%d(%s)", p.Location(), meta.Zid, enc), func(st *testing.T) {
 				resultName := filepath.Join(wd, "result", "meta", boxName, z.Zid.String()+"."+enc.String())
 				checkMetaFile(st, resultName, z, enc)
 			})

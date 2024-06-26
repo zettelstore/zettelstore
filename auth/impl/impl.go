@@ -34,12 +34,12 @@ import (
 
 type myAuth struct {
 	readonly bool
-	owner    id.ZidO
+	owner    id.Zid
 	secret   []byte
 }
 
 // New creates a new auth object.
-func New(readonly bool, owner id.ZidO, extSecret string) auth.Manager {
+func New(readonly bool, owner id.Zid, extSecret string) auth.Manager {
 	return &myAuth{
 		readonly: readonly,
 		owner:    owner,
@@ -95,7 +95,7 @@ func (a *myAuth) GetToken(ident *meta.Meta, d time.Duration, kind auth.TokenKind
 		sx.MakeString(subject),
 		sx.Int64(now.Unix()),
 		sx.Int64(now.Add(d).Unix()),
-		sx.Int64(ident.ZidO),
+		sx.Int64(ident.Zid),
 	)
 	return sign(sClaim, a.secret)
 }
@@ -135,7 +135,7 @@ func setupTokenData(obj sx.Object, k auth.TokenKind, tokenData *auth.TokenData) 
 	if expires.Before(now) {
 		return ErrTokenExpired
 	}
-	zid := id.ZidO(vals[4].(sx.Int64))
+	zid := id.Zid(vals[4].(sx.Int64))
 	if !zid.IsValid() {
 		return ErrNoZid
 	}
@@ -148,13 +148,13 @@ func setupTokenData(obj sx.Object, k auth.TokenKind, tokenData *auth.TokenData) 
 	return nil
 }
 
-func (a *myAuth) Owner() id.ZidO { return a.owner }
+func (a *myAuth) Owner() id.Zid { return a.owner }
 
-func (a *myAuth) IsOwner(zid id.ZidO) bool {
+func (a *myAuth) IsOwner(zid id.Zid) bool {
 	return zid.IsValid() && zid == a.owner
 }
 
-func (a *myAuth) WithAuth() bool { return a.owner != id.InvalidO }
+func (a *myAuth) WithAuth() bool { return a.owner != id.Invalid }
 
 // GetUserRole role returns the user role of the given user zettel.
 func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
@@ -164,7 +164,7 @@ func (a *myAuth) GetUserRole(user *meta.Meta) meta.UserRole {
 		}
 		return meta.UserRoleOwner
 	}
-	if a.IsOwner(user.ZidO) {
+	if a.IsOwner(user.Zid) {
 		return meta.UserRoleOwner
 	}
 	if val, ok := user.Get(api.KeyUserRole); ok {

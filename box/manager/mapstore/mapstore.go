@@ -32,17 +32,17 @@ import (
 
 type zettelData struct {
 	meta      *meta.Meta // a local copy of the metadata, without computed keys
-	dead      *id.SetO   // set of dead references in this zettel
-	forward   *id.SetO   // set of forward references in this zettel
-	backward  *id.SetO   // set of zettel that reference with zettel
+	dead      *id.Set    // set of dead references in this zettel
+	forward   *id.Set    // set of forward references in this zettel
+	backward  *id.Set    // set of zettel that reference with zettel
 	otherRefs map[string]bidiRefs
 	words     []string // list of words of this zettel
 	urls      []string // list of urls of this zettel
 }
 
 type bidiRefs struct {
-	forward  *id.SetO
-	backward *id.SetO
+	forward  *id.Set
+	backward *id.Set
 }
 
 func (zd *zettelData) optimize() {
@@ -58,8 +58,8 @@ func (zd *zettelData) optimize() {
 type mapStore struct {
 	mx     sync.RWMutex
 	intern map[string]string // map to intern strings
-	idx    map[id.ZidO]*zettelData
-	dead   map[id.ZidO]*id.SetO // map dead refs where they occur
+	idx    map[id.Zid]*zettelData
+	dead   map[id.Zid]*id.Set // map dead refs where they occur
 	words  stringRefs
 	urls   stringRefs
 
@@ -67,20 +67,20 @@ type mapStore struct {
 	mxStats sync.Mutex
 	updates uint64
 }
-type stringRefs map[string]*id.SetO
+type stringRefs map[string]*id.Set
 
 // New returns a new memory-based index store.
 func New() store.Store {
 	return &mapStore{
 		intern: make(map[string]string, 1024),
-		idx:    make(map[id.ZidO]*zettelData),
-		dead:   make(map[id.ZidO]*id.SetO),
+		idx:    make(map[id.Zid]*zettelData),
+		dead:   make(map[id.Zid]*id.Set),
 		words:  make(stringRefs),
 		urls:   make(stringRefs),
 	}
 }
 
-func (ms *mapStore) GetMeta(_ context.Context, zid id.ZidO) (*meta.Meta, error) {
+func (ms *mapStore) GetMeta(_ context.Context, zid id.Zid) (*meta.Meta, error) {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	if zi, found := ms.idx[zid]; found && zi.meta != nil {
@@ -101,7 +101,7 @@ func (ms *mapStore) Enrich(_ context.Context, m *meta.Meta) {
 func (ms *mapStore) doEnrich(m *meta.Meta) bool {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	zi, ok := ms.idx[m.ZidO]
+	zi, ok := ms.idx[m.Zid]
 	if !ok {
 		return false
 	}
@@ -136,17 +136,17 @@ func (ms *mapStore) doEnrich(m *meta.Meta) bool {
 
 // SearchEqual returns all zettel that contains the given exact word.
 // The word must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *mapStore) SearchEqual(word string) *id.SetO {
+func (ms *mapStore) SearchEqual(word string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
-	result := id.NewSetO()
+	result := id.NewSet()
 	if refs, ok := ms.words[word]; ok {
 		result = result.IUnion(refs)
 	}
 	if refs, ok := ms.urls[word]; ok {
 		result = result.IUnion(refs)
 	}
-	zid, err := id.ParseO(word)
+	zid, err := id.Parse(word)
 	if err != nil {
 		return result
 	}
@@ -160,7 +160,7 @@ func (ms *mapStore) SearchEqual(word string) *id.SetO {
 
 // SearchPrefix returns all zettel that have a word with the given prefix.
 // The prefix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *mapStore) SearchPrefix(prefix string) *id.SetO {
+func (ms *mapStore) SearchPrefix(prefix string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(prefix, strings.HasPrefix)
@@ -168,15 +168,15 @@ func (ms *mapStore) SearchPrefix(prefix string) *id.SetO {
 	if l > 14 {
 		return result
 	}
-	maxZid, err := id.ParseO(prefix + "99999999999999"[:14-l])
+	maxZid, err := id.Parse(prefix + "99999999999999"[:14-l])
 	if err != nil {
 		return result
 	}
-	var minZid id.ZidO
+	var minZid id.Zid
 	if l < 14 && prefix == "0000000000000"[:l] {
-		minZid = id.ZidO(1)
+		minZid = id.Zid(1)
 	} else {
-		minZid, err = id.ParseO(prefix + "00000000000000"[:14-l])
+		minZid, err = id.Parse(prefix + "00000000000000"[:14-l])
 		if err != nil {
 			return result
 		}
@@ -191,7 +191,7 @@ func (ms *mapStore) SearchPrefix(prefix string) *id.SetO {
 
 // SearchSuffix returns all zettel that have a word with the given suffix.
 // The suffix must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *mapStore) SearchSuffix(suffix string) *id.SetO {
+func (ms *mapStore) SearchSuffix(suffix string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(suffix, strings.HasSuffix)
@@ -199,7 +199,7 @@ func (ms *mapStore) SearchSuffix(suffix string) *id.SetO {
 	if l > 14 {
 		return result
 	}
-	val, err := id.ParseUintO(suffix)
+	val, err := id.ParseUint(suffix)
 	if err != nil {
 		return result
 	}
@@ -217,14 +217,14 @@ func (ms *mapStore) SearchSuffix(suffix string) *id.SetO {
 
 // SearchContains returns all zettel that contains the given string.
 // The string must be normalized through Unicode NKFD, trimmed and not empty.
-func (ms *mapStore) SearchContains(s string) *id.SetO {
+func (ms *mapStore) SearchContains(s string) *id.Set {
 	ms.mx.RLock()
 	defer ms.mx.RUnlock()
 	result := ms.selectWithPred(s, strings.Contains)
 	if len(s) > 14 {
 		return result
 	}
-	if _, err := id.ParseUintO(s); err != nil {
+	if _, err := id.ParseUint(s); err != nil {
 		return result
 	}
 	for zid, zi := range ms.idx {
@@ -235,9 +235,9 @@ func (ms *mapStore) SearchContains(s string) *id.SetO {
 	return result
 }
 
-func (ms *mapStore) selectWithPred(s string, pred func(string, string) bool) *id.SetO {
+func (ms *mapStore) selectWithPred(s string, pred func(string, string) bool) *id.Set {
 	// Must only be called if ms.mx is read-locked!
-	result := id.NewSetO()
+	result := id.NewSet()
 	for word, refs := range ms.words {
 		if !pred(word, s) {
 			continue
@@ -253,7 +253,7 @@ func (ms *mapStore) selectWithPred(s string, pred func(string, string) bool) *id
 	return result
 }
 
-func addBackwardZids(result *id.SetO, zid id.ZidO, zi *zettelData) *id.SetO {
+func addBackwardZids(result *id.Set, zid id.Zid, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is read-locked!
 	result = result.Add(zid)
 	result = result.IUnion(zi.backward)
@@ -263,16 +263,16 @@ func addBackwardZids(result *id.SetO, zid id.ZidO, zi *zettelData) *id.SetO {
 	return result
 }
 
-func removeOtherMetaRefs(m *meta.Meta, back *id.SetO) *id.SetO {
+func removeOtherMetaRefs(m *meta.Meta, back *id.Set) *id.Set {
 	for _, p := range m.PairsRest() {
 		switch meta.Type(p.Key) {
 		case meta.TypeID:
-			if zid, err := id.ParseO(p.Value); err == nil {
+			if zid, err := id.Parse(p.Value); err == nil {
 				back = back.Remove(zid)
 			}
 		case meta.TypeIDSet:
 			for _, val := range meta.ListFromValue(p.Value) {
-				if zid, err := id.ParseO(val); err == nil {
+				if zid, err := id.Parse(val); err == nil {
 					back = back.Remove(zid)
 				}
 			}
@@ -281,7 +281,7 @@ func removeOtherMetaRefs(m *meta.Meta, back *id.SetO) *id.SetO {
 	return back
 }
 
-func (ms *mapStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) *id.SetO {
+func (ms *mapStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	m := ms.makeMeta(zidx)
@@ -292,7 +292,7 @@ func (ms *mapStore) UpdateReferences(_ context.Context, zidx *store.ZettelIndex)
 	}
 
 	// Is this zettel an old dead reference mentioned in other zettel?
-	var toCheck *id.SetO
+	var toCheck *id.Set
 	if refs, ok := ms.dead[zidx.Zid]; ok {
 		// These must be checked later again
 		toCheck = refs
@@ -341,7 +341,7 @@ func (ms *mapStore) internString(s string) string {
 
 func (ms *mapStore) makeMeta(zidx *store.ZettelIndex) *meta.Meta {
 	origM := zidx.GetMeta()
-	copyM := meta.New(origM.ZidO)
+	copyM := meta.New(origM.Zid)
 	for _, p := range origM.Pairs() {
 		key := ms.internString(p.Key)
 		if isInternableValue(key) {
@@ -358,29 +358,29 @@ func (ms *mapStore) updateDeadReferences(zidx *store.ZettelIndex, zi *zettelData
 	drefs := zidx.GetDeadRefs()
 	newRefs, remRefs := zi.dead.Diff(drefs)
 	zi.dead = drefs
-	remRefs.ForEach(func(ref id.ZidO) {
+	remRefs.ForEach(func(ref id.Zid) {
 		ms.dead[ref] = ms.dead[ref].Remove(zidx.Zid)
 	})
-	newRefs.ForEach(func(ref id.ZidO) {
+	newRefs.ForEach(func(ref id.Zid) {
 		ms.dead[ref] = ms.dead[ref].Add(zidx.Zid)
 	})
 }
 
-func (ms *mapStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) *id.SetO {
+func (ms *mapStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := zi.forward.Diff(brefs)
 	zi.forward = brefs
 
-	var toCheck *id.SetO
-	remRefs.ForEach(func(ref id.ZidO) {
+	var toCheck *id.Set
+	remRefs.ForEach(func(ref id.Zid) {
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = bzi.backward.Remove(zidx.Zid)
 		if bzi.meta == nil {
 			toCheck = toCheck.Add(ref)
 		}
 	})
-	newRefs.ForEach(func(ref id.ZidO) {
+	newRefs.ForEach(func(ref id.Zid) {
 		bzi := ms.getOrCreateEntry(ref)
 		bzi.backward = bzi.backward.Add(zidx.Zid)
 		if bzi.meta == nil {
@@ -390,7 +390,7 @@ func (ms *mapStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 	return toCheck
 }
 
-func (ms *mapStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) *id.SetO {
+func (ms *mapStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	inverseRefs := zidx.GetInverseRefs()
 	for key, mr := range zi.otherRefs {
@@ -402,14 +402,14 @@ func (ms *mapStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	if zi.otherRefs == nil {
 		zi.otherRefs = make(map[string]bidiRefs)
 	}
-	var toCheck *id.SetO
+	var toCheck *id.Set
 	for key, mrefs := range inverseRefs {
 		mr := zi.otherRefs[key]
 		newRefs, remRefs := mr.forward.Diff(mrefs)
 		mr.forward = mrefs
 		zi.otherRefs[key] = mr
 
-		newRefs.ForEach(func(ref id.ZidO) {
+		newRefs.ForEach(func(ref id.Zid) {
 			bzi := ms.getOrCreateEntry(ref)
 			if bzi.otherRefs == nil {
 				bzi.otherRefs = make(map[string]bidiRefs)
@@ -427,7 +427,7 @@ func (ms *mapStore) updateMetadataReferences(zidx *store.ZettelIndex, zi *zettel
 	return toCheck
 }
 
-func updateStrings(zid id.ZidO, srefs stringRefs, prev []string, next store.WordSet) []string {
+func updateStrings(zid id.Zid, srefs stringRefs, prev []string, next store.WordSet) []string {
 	newWords, removeWords := next.Diff(prev)
 	for _, word := range newWords {
 		srefs[word] = srefs[word].Add(zid)
@@ -447,7 +447,7 @@ func updateStrings(zid id.ZidO, srefs stringRefs, prev []string, next store.Word
 	return next.Words()
 }
 
-func (ms *mapStore) getOrCreateEntry(zid id.ZidO) *zettelData {
+func (ms *mapStore) getOrCreateEntry(zid id.Zid) *zettelData {
 	// Must only be called if ms.mx is write-locked!
 	if zi, ok := ms.idx[zid]; ok {
 		return zi
@@ -457,7 +457,7 @@ func (ms *mapStore) getOrCreateEntry(zid id.ZidO) *zettelData {
 	return zi
 }
 
-func (ms *mapStore) RenameZettel(_ context.Context, curZid, newZid id.ZidO) *id.SetO {
+func (ms *mapStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 
@@ -483,22 +483,22 @@ func (ms *mapStore) RenameZettel(_ context.Context, curZid, newZid id.ZidO) *id.
 	toCheck = toCheck.Add(newZid) // should update otherRefs
 	return toCheck
 }
-func copyMeta(m *meta.Meta, newZid id.ZidO) *meta.Meta {
+func copyMeta(m *meta.Meta, newZid id.Zid) *meta.Meta {
 	result := m.Clone()
-	result.ZidO = newZid
+	result.Zid = newZid
 	return result
 }
 
-func (ms *mapStore) copyDeadReferences(curDead *id.SetO) *id.SetO {
+func (ms *mapStore) copyDeadReferences(curDead *id.Set) *id.Set {
 	// Must only be called if ms.mx is write-locked!
-	curDead.ForEach(func(ref id.ZidO) {
+	curDead.ForEach(func(ref id.Zid) {
 		ms.dead[ref] = ms.dead[ref].Add(ref)
 	})
 	return curDead.Clone()
 }
-func (ms *mapStore) copyForward(curForward *id.SetO, newZid id.ZidO) *id.SetO {
+func (ms *mapStore) copyForward(curForward *id.Set, newZid id.Zid) *id.Set {
 	// Must only be called if ms.mx is write-locked!
-	curForward.ForEach(func(ref id.ZidO) {
+	curForward.ForEach(func(ref id.Zid) {
 		if fzi, found := ms.idx[ref]; found {
 			fzi.backward = fzi.backward.Add(newZid)
 		}
@@ -507,7 +507,7 @@ func (ms *mapStore) copyForward(curForward *id.SetO, newZid id.ZidO) *id.SetO {
 	return curForward.Clone()
 }
 
-func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.ZidO) []string {
+func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.Zid) []string {
 	// Must only be called if ms.mx is write-locked!
 	if l := len(curStrings); l > 0 {
 		result := make([]string, l)
@@ -520,13 +520,13 @@ func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.ZidO) []
 	return nil
 }
 
-func (ms *mapStore) DeleteZettel(_ context.Context, zid id.ZidO) *id.SetO {
+func (ms *mapStore) DeleteZettel(_ context.Context, zid id.Zid) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()
 	return ms.doDeleteZettel(zid)
 }
 
-func (ms *mapStore) doDeleteZettel(zid id.ZidO) *id.SetO {
+func (ms *mapStore) doDeleteZettel(zid id.Zid) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	zi, ok := ms.idx[zid]
 	if !ok {
@@ -544,9 +544,9 @@ func (ms *mapStore) doDeleteZettel(zid id.ZidO) *id.SetO {
 	return toCheck
 }
 
-func (ms *mapStore) deleteDeadSources(zid id.ZidO, zi *zettelData) {
+func (ms *mapStore) deleteDeadSources(zid id.Zid, zi *zettelData) {
 	// Must only be called if ms.mx is write-locked!
-	zi.dead.ForEach(func(ref id.ZidO) {
+	zi.dead.ForEach(func(ref id.Zid) {
 		if drefs, ok := ms.dead[ref]; ok {
 			if drefs = drefs.Remove(zid); drefs.IsEmpty() {
 				delete(ms.dead, ref)
@@ -557,16 +557,16 @@ func (ms *mapStore) deleteDeadSources(zid id.ZidO, zi *zettelData) {
 	})
 }
 
-func (ms *mapStore) deleteForwardBackward(zid id.ZidO, zi *zettelData) *id.SetO {
+func (ms *mapStore) deleteForwardBackward(zid id.Zid, zi *zettelData) *id.Set {
 	// Must only be called if ms.mx is write-locked!
-	zi.forward.ForEach(func(ref id.ZidO) {
+	zi.forward.ForEach(func(ref id.Zid) {
 		if fzi, ok := ms.idx[ref]; ok {
 			fzi.backward = fzi.backward.Remove(zid)
 		}
 	})
 
-	var toCheck *id.SetO
-	zi.backward.ForEach(func(ref id.ZidO) {
+	var toCheck *id.Set
+	zi.backward.ForEach(func(ref id.Zid) {
 		if bzi, ok := ms.idx[ref]; ok {
 			bzi.forward = bzi.forward.Remove(zid)
 			toCheck = toCheck.Add(ref)
@@ -575,9 +575,9 @@ func (ms *mapStore) deleteForwardBackward(zid id.ZidO, zi *zettelData) *id.SetO 
 	return toCheck
 }
 
-func (ms *mapStore) removeInverseMeta(zid id.ZidO, key string, forward *id.SetO) {
+func (ms *mapStore) removeInverseMeta(zid id.Zid, key string, forward *id.Set) {
 	// Must only be called if ms.mx is write-locked!
-	forward.ForEach(func(ref id.ZidO) {
+	forward.ForEach(func(ref id.Zid) {
 		bzi, ok := ms.idx[ref]
 		if !ok || bzi.otherRefs == nil {
 			return
@@ -598,7 +598,7 @@ func (ms *mapStore) removeInverseMeta(zid id.ZidO, key string, forward *id.SetO)
 	})
 }
 
-func deleteStrings(msStringMap stringRefs, curStrings []string, zid id.ZidO) {
+func deleteStrings(msStringMap stringRefs, curStrings []string, zid id.Zid) {
 	// Must only be called if ms.mx is write-locked!
 	for _, word := range curStrings {
 		refs, ok := msStringMap[word]
@@ -657,7 +657,7 @@ func (ms *mapStore) dumpIndex(w io.Writer) {
 		return
 	}
 	io.WriteString(w, "==== Zettel Index\n")
-	zids := make(id.SliceO, 0, len(ms.idx))
+	zids := make(id.Slice, 0, len(ms.idx))
 	for id := range ms.idx {
 		zids = append(zids, id)
 	}
@@ -691,7 +691,7 @@ func (ms *mapStore) dumpDead(w io.Writer) {
 		return
 	}
 	fmt.Fprintf(w, "==== Dead References\n")
-	zids := make(id.SliceO, 0, len(ms.dead))
+	zids := make(id.Slice, 0, len(ms.dead))
 	for id := range ms.dead {
 		zids = append(zids, id)
 	}
@@ -702,10 +702,10 @@ func (ms *mapStore) dumpDead(w io.Writer) {
 	}
 }
 
-func dumpSet(w io.Writer, prefix string, s *id.SetO) {
+func dumpSet(w io.Writer, prefix string, s *id.Set) {
 	if !s.IsEmpty() {
 		io.WriteString(w, prefix)
-		s.ForEach(func(zid id.ZidO) {
+		s.ForEach(func(zid id.Zid) {
 			io.WriteString(w, " ")
 			w.Write(zid.Bytes())
 		})

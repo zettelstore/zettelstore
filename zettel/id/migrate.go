@@ -22,65 +22,65 @@ import (
 
 // ZidMigrator does the actual migration.
 type ZidMigrator struct {
-	defined, workset map[ZidO]Zid
-	lastZidO         ZidO
-	nextZid          Zid
+	defined, workset map[Zid]ZidN
+	lastZid          Zid
+	nextZid          ZidN
 	ranges           []zidRange
-	usedZids         map[Zid]struct{}
+	usedZids         map[ZidN]struct{}
 }
 
 type zidRange struct {
-	lowO, highO ZidO
-	base        Zid
+	lowO, highO Zid
+	base        ZidN
 }
 
 // NewZidMigrator creates a new zid migrator.
 func NewZidMigrator() *ZidMigrator {
-	defined := map[ZidO]Zid{
-		0:               0,                 // Invalid
-		1:               MustParse("0001"), // Zettelstore Version
-		2:               MustParse("0002"), // Zettelstore Host
-		3:               MustParse("0003"), // Zettelstore Operating System
-		4:               MustParse("0004"), // Zettelstore License
-		5:               MustParse("0005"), // Zettelstore Contributors
-		6:               MustParse("0006"), // Zettelstore Dependencies
-		7:               MustParse("0007"), // Zettelstore Log
-		8:               MustParse("0008"), // Zettelstore Memory
-		20:              MustParse("000g"), // Zettelstore Box Manager
-		90:              MustParse("000t"), // Zettelstore Supported Metadata Keys
-		92:              MustParse("000v"), // Zettelstore Supported Parser
-		96:              MustParse("000x"), // Zettelstore Startup Configuration
-		100:             MustParse("000z"), // Zettelstore Runtime Configuration
-		10100:           MustParse("0010"), // Zettelstore Base HTML Template
-		10200:           MustParse("0011"), // Zettelstore Login Form HTML Template
-		10300:           MustParse("0012"), // Zettelstore List Zettel HTML Template
-		10401:           MustParse("0013"), // Zettelstore Detail HTML Template
-		10402:           MustParse("0014"), // Zettelstore Info HTML Template
-		10403:           MustParse("0015"), // Zettelstore Form HTML Template
-		10404:           MustParse("0016"), // Zettelstore Rename Form HTML Template
-		10405:           MustParse("0017"), // Zettelstore Delete HTML Template
-		10700:           MustParse("0018"), // Zettelstore Error HTML Template
-		19000:           MustParse("0021"), // Zettelstore Sxn Start Code
-		19990:           MustParse("0022"), // Zettelstore Sxn Base Code
-		20001:           MustParse("0030"), // Zettelstore Base CSS
-		25001:           MustParse("0031"), // Zettelstore User CSS
-		40001:           MustParse("0032"), // Generic Emoji
-		59900:           MustParse("0020"), // Zettelstore Sxn Prelude
-		60010:           MustParse("0041"), // zettel
-		60020:           MustParse("0042"), // confguration
-		60030:           MustParse("0043"), // role
-		60040:           MustParse("0044"), // tag
-		90000:           MustParse("0050"), // New Menu
-		90001:           MustParse("0051"), // New Zettel
-		90002:           MustParse("0052"), // New User
-		90003:           MustParse("0053"), // New Tag
-		90004:           MustParse("0054"), // New Role
-		100000000:       MustParse("0100"), // Zettelstore Manual (bis 02zz)
-		200000000:       MustParse("0300"), // Reserviert (bis 0tzz)
-		9000000000:      MustParse("0u00"), // Externe Anwendungen (bis 0zzz)
-		DefaultHomeZidO: MustParse("1000"), // Default home zettel
+	defined := map[Zid]ZidN{
+		0:              0,                  // Invalid
+		1:              MustParseN("0001"), // Zettelstore Version
+		2:              MustParseN("0002"), // Zettelstore Host
+		3:              MustParseN("0003"), // Zettelstore Operating System
+		4:              MustParseN("0004"), // Zettelstore License
+		5:              MustParseN("0005"), // Zettelstore Contributors
+		6:              MustParseN("0006"), // Zettelstore Dependencies
+		7:              MustParseN("0007"), // Zettelstore Log
+		8:              MustParseN("0008"), // Zettelstore Memory
+		20:             MustParseN("000g"), // Zettelstore Box Manager
+		90:             MustParseN("000t"), // Zettelstore Supported Metadata Keys
+		92:             MustParseN("000v"), // Zettelstore Supported Parser
+		96:             MustParseN("000x"), // Zettelstore Startup Configuration
+		100:            MustParseN("000z"), // Zettelstore Runtime Configuration
+		10100:          MustParseN("0010"), // Zettelstore Base HTML Template
+		10200:          MustParseN("0011"), // Zettelstore Login Form HTML Template
+		10300:          MustParseN("0012"), // Zettelstore List Zettel HTML Template
+		10401:          MustParseN("0013"), // Zettelstore Detail HTML Template
+		10402:          MustParseN("0014"), // Zettelstore Info HTML Template
+		10403:          MustParseN("0015"), // Zettelstore Form HTML Template
+		10404:          MustParseN("0016"), // Zettelstore Rename Form HTML Template
+		10405:          MustParseN("0017"), // Zettelstore Delete HTML Template
+		10700:          MustParseN("0018"), // Zettelstore Error HTML Template
+		19000:          MustParseN("0021"), // Zettelstore Sxn Start Code
+		19990:          MustParseN("0022"), // Zettelstore Sxn Base Code
+		20001:          MustParseN("0030"), // Zettelstore Base CSS
+		25001:          MustParseN("0031"), // Zettelstore User CSS
+		40001:          MustParseN("0032"), // Generic Emoji
+		59900:          MustParseN("0020"), // Zettelstore Sxn Prelude
+		60010:          MustParseN("0041"), // zettel
+		60020:          MustParseN("0042"), // confguration
+		60030:          MustParseN("0043"), // role
+		60040:          MustParseN("0044"), // tag
+		90000:          MustParseN("0050"), // New Menu
+		90001:          MustParseN("0051"), // New Zettel
+		90002:          MustParseN("0052"), // New User
+		90003:          MustParseN("0053"), // New Tag
+		90004:          MustParseN("0054"), // New Role
+		100000000:      MustParseN("0100"), // Zettelstore Manual (bis 02zz)
+		200000000:      MustParseN("0300"), // Reserviert (bis 0tzz)
+		9000000000:     MustParseN("0u00"), // Externe Anwendungen (bis 0zzz)
+		DefaultHomeZid: MustParseN("1000"), // Default home zettel
 	}
-	usedZids := make(map[Zid]struct{}, len(defined))
+	usedZids := make(map[ZidN]struct{}, len(defined))
 	for _, zid := range defined {
 		if _, found := usedZids[zid]; found {
 			panic("duplicate predefined zid")
@@ -88,17 +88,17 @@ func NewZidMigrator() *ZidMigrator {
 		usedZids[zid] = struct{}{}
 	}
 	return &ZidMigrator{
-		defined:  defined,
-		workset:  maps.Clone(defined),
-		lastZidO: InvalidO,
-		nextZid:  MustParse("1001"),
+		defined: defined,
+		workset: maps.Clone(defined),
+		lastZid: Invalid,
+		nextZid: MustParseN("1001"),
 		ranges: []zidRange{
-			{10000, 19999, MustParse("0010")},
-			{20000, 29999, MustParse("0030")},
-			{40000, 49999, MustParse("0032")},
-			{50000, 59999, MustParse("0020")},
-			{60000, 69999, MustParse("0040")},
-			{90000, 99999, MustParse("0050")},
+			{10000, 19999, MustParseN("0010")},
+			{20000, 29999, MustParseN("0030")},
+			{40000, 49999, MustParseN("0032")},
+			{50000, 59999, MustParseN("0020")},
+			{60000, 69999, MustParseN("0040")},
+			{90000, 99999, MustParseN("0050")},
 		},
 		usedZids: usedZids,
 	}
@@ -107,23 +107,23 @@ func NewZidMigrator() *ZidMigrator {
 // Migrate an old Zid to a new one.
 //
 // Old zids must increase.
-func (zm *ZidMigrator) Migrate(zidO ZidO) (Zid, error) {
+func (zm *ZidMigrator) Migrate(zidO Zid) (ZidN, error) {
 	if zid, found := zm.workset[zidO]; found {
 		return zid, nil
 	}
-	if zidO <= zm.lastZidO {
-		return Invalid, fmt.Errorf("out of sequence: %v", zidO)
+	if zidO <= zm.lastZid {
+		return InvalidN, fmt.Errorf("out of sequence: %v", zidO)
 	}
-	zm.lastZidO = zidO
+	zm.lastZid = zidO
 	if (zidO < 10000) ||
 		(30000 <= zidO && zidO < 40000) ||
 		(70000 <= zidO && zidO < 90000) ||
 		(100000 <= zidO && zidO < 100000000) ||
 		(200000000 <= zidO && zidO < 9000001000) ||
-		(9000002000 <= zidO && zidO < DefaultHomeZidO) {
+		(9000002000 <= zidO && zidO < DefaultHomeZid) {
 		return 0, fmt.Errorf("old Zid out of supported range: %v", zidO)
 	}
-	if DefaultHomeZidO < zidO {
+	if DefaultHomeZid < zidO {
 		zid := zm.nextZid
 		zm.nextZid++
 		zm.workset[zidO] = zid
@@ -137,11 +137,11 @@ func (zm *ZidMigrator) Migrate(zidO ZidO) (Zid, error) {
 		zm.workset[zidO] = zid
 		return zm.checkZid(zid)
 	}
-	return Invalid, nil
+	return InvalidN, nil
 }
 
-func (zm *ZidMigrator) retrieveNextInRange(lowO, highO ZidO) Zid {
-	var currentMax Zid
+func (zm *ZidMigrator) retrieveNextInRange(lowO, highO Zid) ZidN {
+	var currentMax ZidN
 	for zidO, zid := range zm.workset {
 		if lowO <= zidO && zidO <= highO && currentMax < zid {
 			currentMax = zid
@@ -150,9 +150,9 @@ func (zm *ZidMigrator) retrieveNextInRange(lowO, highO ZidO) Zid {
 	return currentMax + 1
 }
 
-func (zm *ZidMigrator) checkZid(zid Zid) (Zid, error) {
+func (zm *ZidMigrator) checkZid(zid ZidN) (ZidN, error) {
 	if _, found := zm.usedZids[zid]; found {
-		return Invalid, fmt.Errorf("zid %v alredy used", zid)
+		return InvalidN, fmt.Errorf("zid %v alredy used", zid)
 	}
 	zm.usedZids[zid] = struct{}{}
 	return zid, nil

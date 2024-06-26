@@ -164,23 +164,23 @@ const NewPrefix = "new-"
 
 // Meta contains all meta-data of a zettel.
 type Meta struct {
-	ZidO    id.ZidO
+	Zid     id.Zid
 	pairs   map[string]string
 	YamlSep bool
 }
 
 // New creates a new chunk for storing metadata.
-func New(zid id.ZidO) *Meta {
-	return &Meta{ZidO: zid, pairs: make(map[string]string, 5)}
+func New(zid id.Zid) *Meta {
+	return &Meta{Zid: zid, pairs: make(map[string]string, 5)}
 }
 
 // NewWithData creates metadata object with given data.
-func NewWithData(zid id.ZidO, data map[string]string) *Meta {
+func NewWithData(zid id.Zid, data map[string]string) *Meta {
 	pairs := make(map[string]string, len(data))
 	for k, v := range data {
 		pairs[k] = v
 	}
-	return &Meta{ZidO: zid, pairs: pairs}
+	return &Meta{Zid: zid, pairs: pairs}
 }
 
 // Length returns the number of bytes stored for the metadata.
@@ -198,7 +198,7 @@ func (m *Meta) Length() int {
 // Clone returns a new copy of the metadata.
 func (m *Meta) Clone() *Meta {
 	return &Meta{
-		ZidO:    m.ZidO,
+		Zid:     m.Zid,
 		pairs:   m.Map(),
 		YamlSep: m.YamlSep,
 	}
@@ -259,7 +259,7 @@ func (m *Meta) Get(key string) (string, bool) {
 		return "", false
 	}
 	if key == api.KeyID {
-		return m.ZidO.String(), true
+		return m.Zid.String(), true
 	}
 	value, ok := m.pairs[key]
 	return value, ok
@@ -280,7 +280,7 @@ func (m *Meta) GetTitle() string {
 	if title, found := m.Get(api.KeyTitle); found {
 		return title
 	}
-	return m.ZidO.String()
+	return m.Zid.String()
 }
 
 // Pairs returns not computed key/values pairs stored, in a specific order.
@@ -355,7 +355,7 @@ func (m *Meta) Equal(o *Meta, allowComputed bool) bool {
 	if m == nil && o == nil {
 		return true
 	}
-	if m == nil || o == nil || m.ZidO != o.ZidO {
+	if m == nil || o == nil || m.Zid != o.Zid {
 		return false
 	}
 	tested := make(strfun.Set, len(m.pairs))

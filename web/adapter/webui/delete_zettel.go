@@ -33,7 +33,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
-		zid, err := id.ParseO(path)
+		zid, err := id.Parse(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -49,7 +49,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 		user := server.GetUser(ctx)
 		env, rb := wui.createRenderEnv(
 			ctx, "delete",
-			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.ZidO.String(), user)
+			wui.rtConfig.Get(ctx, nil, api.KeyLang), "Delete Zettel "+m.Zid.String(), user)
 		if len(zs) > 1 {
 			rb.bindString("shadowed-box", sx.MakeString(zs[1].Meta.GetDefault(api.KeyBoxNumber, "???")))
 			rb.bindString("incoming", nil)
@@ -60,7 +60,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 		wui.bindCommonZettelData(ctx, &rb, user, m, nil)
 
 		if rb.err == nil {
-			err = wui.renderSxnTemplate(ctx, w, id.DeleteTemplateZidO, env)
+			err = wui.renderSxnTemplate(ctx, w, id.DeleteTemplateZid, env)
 		} else {
 			err = rb.err
 		}
@@ -104,7 +104,7 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
-		zid, err := id.ParseO(path)
+		zid, err := id.Parse(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return

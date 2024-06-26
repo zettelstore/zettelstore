@@ -26,7 +26,7 @@ import (
 
 // UserRetriever allows to retrieve user data based on a given zettel identifier.
 type UserRetriever interface {
-	GetUser(ctx context.Context, zid id.ZidO, ident string) (*meta.Meta, error)
+	GetUser(ctx context.Context, zid id.Zid, ident string) (*meta.Meta, error)
 }
 
 // Method enumerates the allowed HTTP methods.

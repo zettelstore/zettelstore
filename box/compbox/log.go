@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func genLogM(zid id.ZidO) *meta.Meta {
+func genLogM(zid id.Zid) *meta.Meta {
 	m := meta.New(zid)
 	m.Set(api.KeyTitle, "Zettelstore Log")
 	m.Set(api.KeySyntax, meta.SyntaxText)

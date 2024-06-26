@@ -56,7 +56,7 @@ func (so *sortOrder) buildSortfunc() sortFunc {
 		if so.descending {
 			return defaultMetaSort
 		}
-		return func(i, j *meta.Meta) int { return cmp.Compare(i.ZidO, j.ZidO) }
+		return func(i, j *meta.Meta) int { return cmp.Compare(i.Zid, j.Zid) }
 	}
 	if keyType == meta.TypeTimestamp {
 		return createSortTimestampFunc(key, so.descending)
@@ -67,7 +67,7 @@ func (so *sortOrder) buildSortfunc() sortFunc {
 	return createSortStringFunc(key, so.descending)
 }
 
-func defaultMetaSort(i, j *meta.Meta) int { return cmp.Compare(j.ZidO, i.ZidO) }
+func defaultMetaSort(i, j *meta.Meta) int { return cmp.Compare(j.Zid, i.Zid) }
 
 func createSortTimestampFunc(key string, descending bool) sortFunc {
 	if descending {

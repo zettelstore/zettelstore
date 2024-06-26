@@ -58,7 +58,7 @@ func (uc *Authenticate) Run(ctx context.Context, r *http.Request, ident, credent
 	}
 
 	if hashCred, ok := identMeta.Get(api.KeyCredential); ok {
-		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.ZidO, ident, credential)
+		ok, err = cred.CompareHashAndCredential(hashCred, identMeta.Zid, ident, credential)
 		if err != nil {
 			uc.log.Info().Str("ident", ident).Err(err).HTTPIP(r).Msg("Error while comparing credentials")
 			return nil, err
@@ -83,7 +83,7 @@ func (uc *Authenticate) Run(ctx context.Context, r *http.Request, ident, credent
 // compensateCompare if normal comapare is not possible, to avoid timing hints.
 func compensateCompare() {
 	cred.CompareHashAndCredential(
-		"$2a$10$WHcSO3G9afJ3zlOYQR1suuf83bCXED2jmzjti/MH4YH4l2mivDuze", id.InvalidO, "", "")
+		"$2a$10$WHcSO3G9afJ3zlOYQR1suuf83bCXED2jmzjti/MH4YH4l2mivDuze", id.Invalid, "", "")
 }
 
 // addDelay after credential checking to allow some CPU time for other tasks.

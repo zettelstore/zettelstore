@@ -71,9 +71,9 @@ type testAuthzManager struct {
 	withAuth bool
 }
 
-func (a *testAuthzManager) IsReadonly() bool       { return a.readOnly }
-func (*testAuthzManager) Owner() id.ZidO           { return ownerZid }
-func (*testAuthzManager) IsOwner(zid id.ZidO) bool { return zid == ownerZid }
+func (a *testAuthzManager) IsReadonly() bool      { return a.readOnly }
+func (*testAuthzManager) Owner() id.Zid           { return ownerZid }
+func (*testAuthzManager) IsOwner(zid id.Zid) bool { return zid == ownerZid }
 
 func (a *testAuthzManager) WithAuth() bool { return a.withAuth }
 
@@ -84,7 +84,7 @@ func (a *testAuthzManager) GetUserRole(user *meta.Meta) meta.UserRole {
 		}
 		return meta.UserRoleOwner
 	}
-	if a.IsOwner(user.ZidO) {
+	if a.IsOwner(user.Zid) {
 		return meta.UserRoleOwner
 	}
 	if val, ok := user.Get(api.KeyUserRole); ok {
@@ -601,14 +601,14 @@ func testRefresh(t *testing.T, pol auth.Policy, withAuth, expert, simple bool) {
 }
 
 const (
-	creatorZid = id.ZidO(1013)
-	readerZid  = id.ZidO(1013)
-	writerZid  = id.ZidO(1015)
-	ownerZid   = id.ZidO(1017)
-	owner2Zid  = id.ZidO(1019)
-	zettelZid  = id.ZidO(1021)
-	visZid     = id.ZidO(1023)
-	userZid    = id.ZidO(1025)
+	creatorZid = id.Zid(1013)
+	readerZid  = id.Zid(1013)
+	writerZid  = id.Zid(1015)
+	ownerZid   = id.Zid(1017)
+	owner2Zid  = id.Zid(1019)
+	zettelZid  = id.Zid(1021)
+	visZid     = id.Zid(1023)
+	userZid    = id.Zid(1025)
 )
 
 func newAnon() *meta.Meta { return nil }

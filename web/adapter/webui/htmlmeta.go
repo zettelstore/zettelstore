@@ -75,7 +75,7 @@ func (wui *WebUI) writeHTMLMetaValue(
 
 func (wui *WebUI) transformIdentifier(val string, getTextTitle getTextTitleFunc) sx.Object {
 	text := sx.MakeString(val)
-	zid, err := id.ParseO(val)
+	zid, err := id.Parse(val)
 	if err != nil {
 		return text
 	}
@@ -153,10 +153,10 @@ func createEvalMetadataFunc(ctx context.Context, evaluate *usecase.Evaluate) eva
 	return func(value string) ast.InlineSlice { return evaluate.RunMetadata(ctx, value) }
 }
 
-type getTextTitleFunc func(id.ZidO) (string, int)
+type getTextTitleFunc func(id.Zid) (string, int)
 
 func (wui *WebUI) makeGetTextTitle(ctx context.Context, getZettel usecase.GetZettel) getTextTitleFunc {
-	return func(zid id.ZidO) (string, int) {
+	return func(zid id.Zid) (string, int) {
 		z, err := getZettel.Run(box.NoEnrichContext(ctx), zid)
 		if err != nil {
 			if errors.Is(err, &box.ErrNotAllowed{}) {

@@ -27,7 +27,7 @@ import (
 // UpdateZettelPort is the interface used by this use case.
 type UpdateZettelPort interface {
 	// GetZettel retrieves a specific zettel.
-	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
 	// UpdateZettel updates an existing zettel.
 	UpdateZettel(ctx context.Context, zettel zettel.Zettel) error
@@ -47,7 +47,7 @@ func NewUpdateZettel(log *logger.Logger, port UpdateZettelPort) UpdateZettel {
 // Run executes the use case.
 func (uc *UpdateZettel) Run(ctx context.Context, zettel zettel.Zettel, hasContent bool) error {
 	m := zettel.Meta
-	oldZettel, err := uc.port.GetZettel(box.NoEnrichContext(ctx), m.ZidO)
+	oldZettel, err := uc.port.GetZettel(box.NoEnrichContext(ctx), m.Zid)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel zettel.Zettel, hasConten
 	m.SetNow(api.KeyModified)
 
 	m.YamlSep = oldZettel.Meta.YamlSep
-	if m.ZidO == id.ConfigurationZidO {
+	if m.Zid == id.ConfigurationZid {
 		m.Set(api.KeySyntax, meta.SyntaxNone)
 	}
 
@@ -73,6 +73,6 @@ func (uc *UpdateZettel) Run(ctx context.Context, zettel zettel.Zettel, hasConten
 	}
 	zettel.Content.TrimSpace()
 	err = uc.port.UpdateZettel(ctx, zettel)
-	uc.log.Info().User(ctx).Zid(m.ZidO).Err(err).Msg("Update zettel")
+	uc.log.Info().User(ctx).Zid(m.Zid).Err(err).Msg("Update zettel")
 	return err
 }

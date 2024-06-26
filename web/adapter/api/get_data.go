@@ -25,7 +25,7 @@ import (
 func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		version := ucVersion.Run()
-		err := a.writeObject(w, id.InvalidO, sx.MakeList(
+		err := a.writeObject(w, id.Invalid, sx.MakeList(
 			sx.Int64(version.Major),
 			sx.Int64(version.Minor),
 			sx.Int64(version.Patch),

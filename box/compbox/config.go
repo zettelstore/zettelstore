@@ -22,7 +22,7 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func genConfigZettelM(zid id.ZidO) *meta.Meta {
+func genConfigZettelM(zid id.Zid) *meta.Meta {
 	if myConfig == nil {
 		return nil
 	}

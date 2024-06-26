@@ -19,9 +19,9 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-type zps = id.EdgeSliceO
+type zps = id.EdgeSlice
 
-func createDigraphO(pairs zps) (dg id.DigraphO) {
+func createDigraphO(pairs zps) (dg id.Digraph) {
 	return dg.AddEgdes(pairs)
 }
 
@@ -29,13 +29,13 @@ func TestDigraphOriginatorsO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSliceO
-		orig *id.SetO
-		term *id.SetO
+		dg   id.EdgeSlice
+		orig *id.Set
+		term *id.Set
 	}{
 		{"empty", nil, nil, nil},
-		{"single", zps{{0, 1}}, id.NewSetO(0), id.NewSetO(1)},
-		{"chain", zps{{0, 1}, {1, 2}, {2, 3}}, id.NewSetO(0), id.NewSetO(3)},
+		{"single", zps{{0, 1}}, id.NewSet(0), id.NewSet(1)},
+		{"chain", zps{{0, 1}, {1, 2}, {2, 3}}, id.NewSet(0), id.NewSet(3)},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -54,17 +54,17 @@ func TestDigraphReachableVerticesO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name  string
-		pairs id.EdgeSliceO
-		start id.ZidO
-		exp   *id.SetO
+		pairs id.EdgeSlice
+		start id.Zid
+		exp   *id.Set
 	}{
 		{"nil", nil, 0, nil},
-		{"0-2", zps{{1, 2}, {2, 3}}, 1, id.NewSetO(2, 3)},
-		{"1,2", zps{{1, 2}, {2, 3}}, 2, id.NewSetO(3)},
-		{"0-2,1-2", zps{{1, 2}, {2, 3}, {1, 3}}, 1, id.NewSetO(2, 3)},
-		{"0-2,1-2/1", zps{{1, 2}, {2, 3}, {1, 3}}, 2, id.NewSetO(3)},
+		{"0-2", zps{{1, 2}, {2, 3}}, 1, id.NewSet(2, 3)},
+		{"1,2", zps{{1, 2}, {2, 3}}, 2, id.NewSet(3)},
+		{"0-2,1-2", zps{{1, 2}, {2, 3}, {1, 3}}, 1, id.NewSet(2, 3)},
+		{"0-2,1-2/1", zps{{1, 2}, {2, 3}, {1, 3}}, 2, id.NewSet(3)},
 		{"0-2,1-2/2", zps{{1, 2}, {2, 3}, {1, 3}}, 3, nil},
-		{"0-2,1-2,3*", zps{{1, 2}, {2, 3}, {1, 3}, {4, 4}}, 1, id.NewSetO(2, 3)},
+		{"0-2,1-2,3*", zps{{1, 2}, {2, 3}, {1, 3}, {4, 4}}, 1, id.NewSet(2, 3)},
 	}
 
 	for _, tc := range testcases {
@@ -82,9 +82,9 @@ func TestDigraphTransitiveClosureO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name  string
-		pairs id.EdgeSliceO
-		start id.ZidO
-		exp   id.EdgeSliceO
+		pairs id.EdgeSlice
+		start id.Zid
+		exp   id.EdgeSlice
 	}{
 		{"nil", nil, 0, nil},
 		{"1-3", zps{{1, 2}, {2, 3}}, 1, zps{{1, 2}, {2, 3}}},
@@ -109,7 +109,7 @@ func TestIsDAGO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSliceO
+		dg   id.EdgeSlice
 		exp  bool
 	}{
 		{"empty", nil, true},
@@ -130,8 +130,8 @@ func TestDigraphReverseO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSliceO
-		exp  id.EdgeSliceO
+		dg   id.EdgeSlice
+		exp  id.EdgeSlice
 	}{
 		{"empty", nil, nil},
 		{"single-edge", zps{{1, 2}}, zps{{2, 1}}},
@@ -156,17 +156,17 @@ func TestDigraphSortReverseO(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name string
-		dg   id.EdgeSliceO
-		exp  id.SliceO
+		dg   id.EdgeSlice
+		exp  id.Slice
 	}{
 		{"empty", nil, nil},
-		{"single-edge", zps{{1, 2}}, id.SliceO{2, 1}},
+		{"single-edge", zps{{1, 2}}, id.Slice{2, 1}},
 		{"single-loop", zps{{1, 1}}, nil},
-		{"end-loop", zps{{1, 2}, {2, 2}}, id.SliceO{}},
-		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.SliceO{}},
-		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.SliceO{5}},
-		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.SliceO{5, 3, 4, 2, 1}},
-		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, id.SliceO{2, 3, 1}},
+		{"end-loop", zps{{1, 2}, {2, 2}}, id.Slice{}},
+		{"long-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 2}}, id.Slice{}},
+		{"sect-loop", zps{{1, 2}, {2, 3}, {3, 4}, {4, 5}, {4, 2}}, id.Slice{5}},
+		{"two-islands", zps{{1, 2}, {2, 3}, {4, 5}}, id.Slice{5, 3, 4, 2, 1}},
+		{"direct-indirect", zps{{1, 2}, {1, 3}, {3, 2}}, id.Slice{2, 3, 1}},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -18,18 +18,18 @@ import (
 	"strings"
 )
 
-// SetO is a set of zettel identifier
-type SetO struct {
-	seq []ZidO
+// Set is a set of zettel identifier
+type Set struct {
+	seq []Zid
 }
 
 // String returns a string representation of the set.
-func (s *SetO) String() string {
+func (s *Set) String() string {
 	return "{" + s.MetaString() + "}"
 }
 
 // MetaString returns a string representation of the set to be stored as metadata.
-func (s *SetO) MetaString() string {
+func (s *Set) MetaString() string {
 	if s == nil || len(s.seq) == 0 {
 		return ""
 	}
@@ -43,34 +43,34 @@ func (s *SetO) MetaString() string {
 	return sb.String()
 }
 
-// NewSetO returns a new set of identifier with the given initial values.
-func NewSetO(zids ...ZidO) *SetO {
+// NewSet returns a new set of identifier with the given initial values.
+func NewSet(zids ...Zid) *Set {
 	switch l := len(zids); l {
 	case 0:
-		return &SetO{seq: nil}
+		return &Set{seq: nil}
 	case 1:
-		return &SetO{seq: []ZidO{zids[0]}}
+		return &Set{seq: []Zid{zids[0]}}
 	default:
-		result := SetO{seq: make([]ZidO, 0, l)}
+		result := Set{seq: make([]Zid, 0, l)}
 		result.AddSlice(zids)
 		return &result
 	}
 }
 
-// NewSetCapO returns a new set of identifier with the given capacity and initial values.
-func NewSetCapO(c int, zids ...ZidO) *SetO {
-	result := SetO{seq: make(SliceO, 0, max(c, len(zids)))}
+// NewSetCap returns a new set of identifier with the given capacity and initial values.
+func NewSetCap(c int, zids ...Zid) *Set {
+	result := Set{seq: make(Slice, 0, max(c, len(zids)))}
 	result.AddSlice(zids)
 	return &result
 }
 
 // IsEmpty returns true, if the set conains no element.
-func (s *SetO) IsEmpty() bool {
+func (s *Set) IsEmpty() bool {
 	return s == nil || len(s.seq) == 0
 }
 
 // Length returns the number of elements in this set.
-func (s *SetO) Length() int {
+func (s *Set) Length() int {
 	if s == nil {
 		return 0
 	}
@@ -78,32 +78,32 @@ func (s *SetO) Length() int {
 }
 
 // Clone returns a copy of the given set.
-func (s *SetO) Clone() *SetO {
+func (s *Set) Clone() *Set {
 	if s == nil || len(s.seq) == 0 {
 		return nil
 	}
-	return &SetO{seq: slices.Clone(s.seq)}
+	return &Set{seq: slices.Clone(s.seq)}
 }
 
 // Add adds a zid to the set.
-func (s *SetO) Add(zid ZidO) *SetO {
+func (s *Set) Add(zid Zid) *Set {
 	if s == nil {
-		return NewSetO(zid)
+		return NewSet(zid)
 	}
 	s.add(zid)
 	return s
 }
 
 // Contains return true if the set is non-nil and the set contains the given Zettel identifier.
-func (s *SetO) Contains(zid ZidO) bool { return s != nil && s.contains(zid) }
+func (s *Set) Contains(zid Zid) bool { return s != nil && s.contains(zid) }
 
 // ContainsOrNil return true if the set is nil or if the set contains the given Zettel identifier.
-func (s *SetO) ContainsOrNil(zid ZidO) bool { return s == nil || s.contains(zid) }
+func (s *Set) ContainsOrNil(zid Zid) bool { return s == nil || s.contains(zid) }
 
 // AddSlice adds all identifier of the given slice to the set.
-func (s *SetO) AddSlice(sl SliceO) *SetO {
+func (s *Set) AddSlice(sl Slice) *Set {
 	if s == nil {
-		return NewSetO(sl...)
+		return NewSet(sl...)
 	}
 	s.seq = slices.Grow(s.seq, len(sl))
 	for _, zid := range sl {
@@ -113,7 +113,7 @@ func (s *SetO) AddSlice(sl SliceO) *SetO {
 }
 
 // SafeSorted returns the set as a new sorted slice of zettel identifier.
-func (s *SetO) SafeSorted() SliceO {
+func (s *Set) SafeSorted() Slice {
 	if s == nil {
 		return nil
 	}
@@ -125,7 +125,7 @@ func (s *SetO) SafeSorted() SliceO {
 // It contains the intersection of both, if s is not nil.
 //
 // If s == nil, then the other set is always returned.
-func (s *SetO) IntersectOrSet(other *SetO) *SetO {
+func (s *Set) IntersectOrSet(other *Set) *Set {
 	if s == nil || other == nil {
 		return other
 	}
@@ -150,7 +150,7 @@ func (s *SetO) IntersectOrSet(other *SetO) *SetO {
 }
 
 // IUnion adds the elements of set other to s.
-func (s *SetO) IUnion(other *SetO) *SetO {
+func (s *Set) IUnion(other *Set) *Set {
 	if other == nil || len(other.seq) == 0 {
 		return s
 	}
@@ -159,7 +159,7 @@ func (s *SetO) IUnion(other *SetO) *SetO {
 }
 
 // ISubstract removes all zettel identifier from 's' that are in the set 'other'.
-func (s *SetO) ISubstract(other *SetO) {
+func (s *Set) ISubstract(other *Set) {
 	if s == nil || len(s.seq) == 0 || other == nil || len(other.seq) == 0 {
 		return
 	}
@@ -192,7 +192,7 @@ func (s *SetO) ISubstract(other *SetO) {
 // in other words: the first result is the set of elements from other that must
 // be added to s; the second result is the set of elements that must be removed
 // from s, so that s would have the same elemest as other.
-func (s *SetO) Diff(other *SetO) (newS, remS *SetO) {
+func (s *Set) Diff(other *Set) (newS, remS *Set) {
 	if s == nil || len(s.seq) == 0 {
 		return other.Clone(), nil
 	}
@@ -200,7 +200,7 @@ func (s *SetO) Diff(other *SetO) (newS, remS *SetO) {
 		return nil, s.Clone()
 	}
 	seqS, seqO := s.seq, other.seq
-	var newRefs, remRefs SliceO
+	var newRefs, remRefs Slice
 	npos, opos := 0, 0
 	for npos < len(seqO) && opos < len(seqS) {
 		rn, ro := seqO[npos], seqS[opos]
@@ -227,7 +227,7 @@ func (s *SetO) Diff(other *SetO) (newS, remS *SetO) {
 }
 
 // Remove the identifier from the set.
-func (s *SetO) Remove(zid ZidO) *SetO {
+func (s *Set) Remove(zid Zid) *Set {
 	if s == nil || len(s.seq) == 0 {
 		return nil
 	}
@@ -242,7 +242,7 @@ func (s *SetO) Remove(zid ZidO) *SetO {
 }
 
 // Equal returns true if the other set is equal to the given set.
-func (s *SetO) Equal(other *SetO) bool {
+func (s *Set) Equal(other *Set) bool {
 	if s == nil {
 		return other == nil
 	}
@@ -255,7 +255,7 @@ func (s *SetO) Equal(other *SetO) bool {
 // ForEach calls the given function for each element of the set.
 //
 // Every element is bigger than the previous one.
-func (s *SetO) ForEach(fn func(zid ZidO)) {
+func (s *Set) ForEach(fn func(zid Zid)) {
 	if s != nil {
 		for _, zid := range s.seq {
 			fn(zid)
@@ -264,7 +264,7 @@ func (s *SetO) ForEach(fn func(zid ZidO)) {
 }
 
 // Pop return one arbitrary element of the set.
-func (s *SetO) Pop() (ZidO, bool) {
+func (s *Set) Pop() (Zid, bool) {
 	if s != nil {
 		if l := len(s.seq); l > 0 {
 			zid := s.seq[l-1]
@@ -272,11 +272,11 @@ func (s *SetO) Pop() (ZidO, bool) {
 			return zid, true
 		}
 	}
-	return InvalidO, false
+	return Invalid, false
 }
 
 // Optimize the amount of memory to store the set.
-func (s *SetO) Optimize() {
+func (s *Set) Optimize() {
 	if s != nil {
 		s.seq = slices.Clip(s.seq)
 	}
@@ -284,26 +284,26 @@ func (s *SetO) Optimize() {
 
 // ----- unchecked base operations
 
-func newFromSlice(seq SliceO) *SetO {
+func newFromSlice(seq Slice) *Set {
 	if l := len(seq); l == 0 {
 		return nil
 	} else {
-		return &SetO{seq: seq}
+		return &Set{seq: seq}
 	}
 }
 
-func (s *SetO) add(zid ZidO) {
+func (s *Set) add(zid Zid) {
 	if pos, found := s.find(zid); !found {
 		s.seq = slices.Insert(s.seq, pos, zid)
 	}
 }
 
-func (s *SetO) contains(zid ZidO) bool {
+func (s *Set) contains(zid Zid) bool {
 	_, found := s.find(zid)
 	return found
 }
 
-func (s *SetO) find(zid ZidO) (int, bool) {
+func (s *Set) find(zid Zid) (int, bool) {
 	hi := len(s.seq)
 	for lo := 0; lo < hi; {
 		m := lo + (hi-lo)/2

@@ -24,23 +24,23 @@ import (
 	"zettelstore.de/z/zettel/meta"
 )
 
-func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.DigraphO, *sxeval.Binding, error) {
+func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.Digraph, *sxeval.Binding, error) {
 	// getMeta MUST currently use GetZettel, because GetMeta just uses the
 	// Index, which might not be current.
-	getMeta := func(ctx context.Context, zid id.ZidO) (*meta.Meta, error) {
+	getMeta := func(ctx context.Context, zid id.Zid) (*meta.Meta, error) {
 		z, err := wui.box.GetZettel(ctx, zid)
 		if err != nil {
 			return nil, err
 		}
 		return z.Meta, nil
 	}
-	dg := buildSxnCodeDigraph(ctx, id.StartSxnZidO, getMeta)
+	dg := buildSxnCodeDigraph(ctx, id.StartSxnZid, getMeta)
 	if dg == nil {
 		return nil, wui.rootBinding, nil
 	}
-	dg = dg.AddVertex(id.BaseSxnZidO).AddEdge(id.StartSxnZidO, id.BaseSxnZidO)
-	dg = dg.AddVertex(id.PreludeSxnZidO).AddEdge(id.BaseSxnZidO, id.PreludeSxnZidO)
-	dg = dg.TransitiveClosure(id.StartSxnZidO)
+	dg = dg.AddVertex(id.BaseSxnZid).AddEdge(id.StartSxnZid, id.BaseSxnZid)
+	dg = dg.AddVertex(id.PreludeSxnZid).AddEdge(id.BaseSxnZid, id.PreludeSxnZid)
+	dg = dg.TransitiveClosure(id.StartSxnZid)
 
 	if zid, isDAG := dg.IsDAG(); !isDAG {
 		return nil, nil, fmt.Errorf("zettel %v is part of a dependency cycle", zid)
@@ -54,33 +54,33 @@ func (wui *WebUI) loadAllSxnCodeZettel(ctx context.Context) (id.DigraphO, *sxeva
 	return dg, bind, nil
 }
 
-type getMetaFunc func(context.Context, id.ZidO) (*meta.Meta, error)
+type getMetaFunc func(context.Context, id.Zid) (*meta.Meta, error)
 
-func buildSxnCodeDigraph(ctx context.Context, startZid id.ZidO, getMeta getMetaFunc) id.DigraphO {
+func buildSxnCodeDigraph(ctx context.Context, startZid id.Zid, getMeta getMetaFunc) id.Digraph {
 	m, err := getMeta(ctx, startZid)
 	if err != nil {
 		return nil
 	}
-	var marked *id.SetO
+	var marked *id.Set
 	stack := []*meta.Meta{m}
-	dg := id.DigraphO(nil).AddVertex(startZid)
+	dg := id.Digraph(nil).AddVertex(startZid)
 	for pos := len(stack) - 1; pos >= 0; pos = len(stack) - 1 {
 		curr := stack[pos]
 		stack = stack[:pos]
-		if marked.Contains(curr.ZidO) {
+		if marked.Contains(curr.Zid) {
 			continue
 		}
-		marked = marked.Add(curr.ZidO)
+		marked = marked.Add(curr.Zid)
 		if precursors, hasPrecursor := curr.GetList(api.KeyPrecursor); hasPrecursor && len(precursors) > 0 {
 			for _, pre := range precursors {
-				if preZid, errParse := id.ParseO(pre); errParse == nil {
+				if preZid, errParse := id.Parse(pre); errParse == nil {
 					m, err = getMeta(ctx, preZid)
 					if err != nil {
 						continue
 					}
 					stack = append(stack, m)
 					dg.AddVertex(preZid)
-					dg.AddEdge(curr.ZidO, preZid)
+					dg.AddEdge(curr.Zid, preZid)
 				}
 			}
 		}
@@ -88,7 +88,7 @@ func buildSxnCodeDigraph(ctx context.Context, startZid id.ZidO, getMeta getMetaF
 	return dg
 }
 
-func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.ZidO, bind *sxeval.Binding) error {
+func (wui *WebUI) loadSxnCodeZettel(ctx context.Context, zid id.Zid, bind *sxeval.Binding) error {
 	rdr, err := wui.makeZettelReader(ctx, zid)
 	if err != nil {
 		return err

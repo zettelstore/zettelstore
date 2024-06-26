@@ -88,7 +88,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	if hasTitle {
 		he.textEnc.WriteInlines(&sb, &isTitle)
 	} else {
-		sb.Write(zn.Meta.ZidO.Bytes())
+		sb.Write(zn.Meta.Zid.Bytes())
 	}
 	head.Add(sx.MakeList(shtml.SymAttrTitle, sx.MakeString(sb.String())))
 

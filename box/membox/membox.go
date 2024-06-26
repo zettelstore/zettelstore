@@ -50,11 +50,11 @@ type memBox struct {
 	maxZettel int
 	maxBytes  int
 	mx        sync.RWMutex // Protects the following fields
-	zettel    map[id.ZidO]zettel.Zettel
+	zettel    map[id.Zid]zettel.Zettel
 	curBytes  int
 }
 
-func (mb *memBox) notifyChanged(zid id.ZidO) {
+func (mb *memBox) notifyChanged(zid id.Zid) {
 	if chci := mb.cdata.Notify; chci != nil {
 		chci <- box.UpdateInfo{Box: mb, Reason: box.OnZettel, Zid: zid}
 	}
@@ -75,7 +75,7 @@ func (mb *memBox) State() box.StartState {
 
 func (mb *memBox) Start(context.Context) error {
 	mb.mx.Lock()
-	mb.zettel = make(map[id.ZidO]zettel.Zettel)
+	mb.zettel = make(map[id.Zid]zettel.Zettel)
 	mb.curBytes = 0
 	mb.mx.Unlock()
 	mb.log.Trace().Int("max-zettel", int64(mb.maxZettel)).Int("max-bytes", int64(mb.maxBytes)).Msg("Start Box")
@@ -94,23 +94,23 @@ func (mb *memBox) CanCreateZettel(context.Context) bool {
 	return len(mb.zettel) < mb.maxZettel
 }
 
-func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.ZidO, error) {
+func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.Zid, error) {
 	mb.mx.Lock()
 	newBytes := mb.curBytes + zettel.Length()
 	if mb.maxZettel < len(mb.zettel) || mb.maxBytes < newBytes {
 		mb.mx.Unlock()
-		return id.InvalidO, box.ErrCapacity
+		return id.Invalid, box.ErrCapacity
 	}
-	zid, err := box.GetNewZid(func(zid id.ZidO) (bool, error) {
+	zid, err := box.GetNewZid(func(zid id.Zid) (bool, error) {
 		_, ok := mb.zettel[zid]
 		return !ok, nil
 	})
 	if err != nil {
 		mb.mx.Unlock()
-		return id.InvalidO, err
+		return id.Invalid, err
 	}
 	meta := zettel.Meta.Clone()
-	meta.ZidO = zid
+	meta.Zid = zid
 	zettel.Meta = meta
 	mb.zettel[zid] = zettel
 	mb.curBytes = newBytes
@@ -120,7 +120,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.ZidO
 	return zid, nil
 }
 
-func (mb *memBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, error) {
+func (mb *memBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	mb.mx.RLock()
 	z, ok := mb.zettel[zid]
 	mb.mx.RUnlock()
@@ -132,7 +132,7 @@ func (mb *memBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, erro
 	return z, nil
 }
 
-func (mb *memBox) HasZettel(_ context.Context, zid id.ZidO) bool {
+func (mb *memBox) HasZettel(_ context.Context, zid id.Zid) bool {
 	mb.mx.RLock()
 	_, found := mb.zettel[zid]
 	mb.mx.RUnlock()
@@ -168,7 +168,7 @@ func (mb *memBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 func (mb *memBox) CanUpdateZettel(_ context.Context, zettel zettel.Zettel) bool {
 	mb.mx.RLock()
 	defer mb.mx.RUnlock()
-	zid := zettel.Meta.ZidO
+	zid := zettel.Meta.Zid
 	if !zid.IsValid() {
 		return false
 	}
@@ -182,13 +182,13 @@ func (mb *memBox) CanUpdateZettel(_ context.Context, zettel zettel.Zettel) bool 
 
 func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	m := zettel.Meta.Clone()
-	if !m.ZidO.IsValid() {
-		return box.ErrInvalidZid{Zid: m.ZidO.String()}
+	if !m.Zid.IsValid() {
+		return box.ErrInvalidZid{Zid: m.Zid.String()}
 	}
 
 	mb.mx.Lock()
 	newBytes := mb.curBytes + zettel.Length()
-	if prevZettel, found := mb.zettel[m.ZidO]; found {
+	if prevZettel, found := mb.zettel[m.Zid]; found {
 		newBytes -= prevZettel.Length()
 	}
 	if mb.maxBytes < newBytes {
@@ -197,17 +197,17 @@ func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	}
 
 	zettel.Meta = m
-	mb.zettel[m.ZidO] = zettel
+	mb.zettel[m.Zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(m.ZidO)
+	mb.notifyChanged(m.Zid)
 	mb.log.Trace().Msg("UpdateZettel")
 	return nil
 }
 
-func (*memBox) AllowRenameZettel(context.Context, id.ZidO) bool { return true }
+func (*memBox) AllowRenameZettel(context.Context, id.Zid) bool { return true }
 
-func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.ZidO) error {
+func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
 	mb.mx.Lock()
 	zettel, ok := mb.zettel[curZid]
 	if !ok {
@@ -222,7 +222,7 @@ func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.ZidO) error 
 	}
 
 	meta := zettel.Meta.Clone()
-	meta.ZidO = newZid
+	meta.Zid = newZid
 	zettel.Meta = meta
 	mb.zettel[newZid] = zettel
 	delete(mb.zettel, curZid)
@@ -233,14 +233,14 @@ func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.ZidO) error 
 	return nil
 }
 
-func (mb *memBox) CanDeleteZettel(_ context.Context, zid id.ZidO) bool {
+func (mb *memBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	mb.mx.RLock()
 	_, ok := mb.zettel[zid]
 	mb.mx.RUnlock()
 	return ok
 }
 
-func (mb *memBox) DeleteZettel(_ context.Context, zid id.ZidO) error {
+func (mb *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	mb.mx.Lock()
 	oldZettel, found := mb.zettel[zid]
 	if !found {

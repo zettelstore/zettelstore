@@ -56,7 +56,7 @@ type TokenData struct {
 	Issued  time.Time
 	Expires time.Time
 	Ident   string
-	Zid     id.ZidO
+	Zid     id.Zid
 }
 
 // AuthzManager provides methods for authorization.
@@ -64,10 +64,10 @@ type AuthzManager interface {
 	BaseManager
 
 	// Owner returns the zettel identifier of the owner.
-	Owner() id.ZidO
+	Owner() id.Zid
 
 	// IsOwner returns true, if the given zettel identifier is that of the owner.
-	IsOwner(zid id.ZidO) bool
+	IsOwner(zid id.Zid) bool
 
 	// Returns true if authentication is enabled.
 	WithAuth() bool

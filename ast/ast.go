@@ -27,7 +27,7 @@ import (
 type ZettelNode struct {
 	Meta    *meta.Meta     // Original metadata
 	Content zettel.Content // Original content
-	Zid     id.ZidO        // Zettel identification.
+	Zid     id.Zid         // Zettel identification.
 	InhMeta *meta.Meta     // Metadata of the zettel, with inherited values.
 	Ast     BlockSlice     // Zettel abstract syntax tree is a sequence of block nodes.
 	Syntax  string         // Syntax / parser that produced the Ast

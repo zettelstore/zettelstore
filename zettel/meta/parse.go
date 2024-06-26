@@ -24,7 +24,7 @@ import (
 )
 
 // NewFromInput parses the meta data of a zettel.
-func NewFromInput(zid id.ZidO, inp *input.Input) *Meta {
+func NewFromInput(zid id.Zid, inp *input.Input) *Meta {
 	if inp.Ch == '-' && inp.PeekN(0) == '-' && inp.PeekN(1) == '-' {
 		skipToEOL(inp)
 		inp.EatEOL()
@@ -160,12 +160,12 @@ func addToMeta(m *Meta, key, val string) {
 	case TypeWord:
 		m.Set(key, strings.ToLower(v))
 	case TypeID:
-		if _, err := id.ParseO(v); err == nil {
+		if _, err := id.Parse(v); err == nil {
 			m.Set(key, v)
 		}
 	case TypeIDSet:
 		addSet(m, key, v, func(s string) bool {
-			_, err := id.ParseO(s)
+			_, err := id.Parse(s)
 			return err == nil
 		})
 	case TypeTimestamp:

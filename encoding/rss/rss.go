@@ -94,7 +94,7 @@ func (c *Configuration) marshalMeta(buf *bytes.Buffer, m *meta.Meta) {
 		}
 	}
 
-	link := c.NewURLBuilderAbs().SetZid(m.ZidO.ZettelID()).String()
+	link := c.NewURLBuilderAbs().SetZid(m.Zid.ZettelID()).String()
 
 	buf.WriteString("  <item>\n")
 	xml.WriteTag(buf, "    ", "title", encoding.TitleAsText(m))

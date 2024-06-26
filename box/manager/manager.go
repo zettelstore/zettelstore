@@ -231,9 +231,9 @@ type destutterData struct {
 	deadAt time.Time
 	reason box.UpdateReason
 }
-type destutterCache = map[id.ZidO]destutterData
+type destutterCache = map[id.Zid]destutterData
 
-func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, zid id.ZidO) bool {
+func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, zid id.Zid) bool {
 	if dsd, found := cache[zid]; found {
 		if dsd.reason == reason && dsd.deadAt.After(now) {
 			return true
@@ -246,7 +246,7 @@ func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, 
 	return false
 }
 
-func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.ZidO) {
+func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 	switch reason {
 	case box.OnReady:
 		return
@@ -359,7 +359,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped
 	}
-	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.InvalidO}
+	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
 	for _, bx := range mgr.boxes {
@@ -371,7 +371,7 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 }
 
 // ReIndex data of the given zettel.
-func (mgr *Manager) ReIndex(_ context.Context, zid id.ZidO) error {
+func (mgr *Manager) ReIndex(_ context.Context, zid id.Zid) error {
 	mgr.mgrLog.Debug().Msg("ReIndex")
 	if mgr.State() != box.StartStateStarted {
 		return box.ErrStopped

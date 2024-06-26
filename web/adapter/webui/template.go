@@ -71,7 +71,7 @@ func (wui *WebUI) createRenderBinding() *sxeval.Binding {
 			if err != nil {
 				return nil, err
 			}
-			zid, err := id.ParseO(s.GetValue())
+			zid, err := id.Parse(s.GetValue())
 			if err != nil {
 				return nil, fmt.Errorf("parsing zettel identifier %q: %w", s.GetValue(), err)
 			}
@@ -202,7 +202,7 @@ func (wui *WebUI) getUserRenderData(user *meta.Meta) (bool, string, string) {
 	if user == nil {
 		return false, "", ""
 	}
-	return true, wui.NewURLBuilder('h').SetZid(user.ZidO.ZettelID()).String(), user.GetDefault(api.KeyUserID, "")
+	return true, wui.NewURLBuilder('h').SetZid(user.Zid.ZettelID()).String(), user.GetDefault(api.KeyUserID, "")
 }
 
 type renderBinder struct {
@@ -238,7 +238,7 @@ func (rb *renderBinder) rebindResolved(key, defKey string) {
 }
 
 func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, user, m *meta.Meta, content *zettel.Content) {
-	strZid := m.ZidO.String()
+	strZid := m.Zid.String()
 	apiZid := api.ZettelID(strZid)
 	newURLBuilder := wui.NewURLBuilder
 
@@ -293,13 +293,13 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 		return nil
 	}
 	ctx = box.NoEnrichContext(ctx)
-	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZidO)
+	menu, err := wui.box.GetZettel(ctx, id.TOCNewTemplateZid)
 	if err != nil {
 		return nil
 	}
 	refs := collect.Order(parser.ParseZettel(ctx, menu, "", wui.rtConfig))
 	for i := len(refs) - 1; i >= 0; i-- {
-		zid, err2 := id.ParseO(refs[i].URL.Path)
+		zid, err2 := id.Parse(refs[i].URL.Path)
 		if err2 != nil {
 			continue
 		}
@@ -319,7 +319,7 @@ func (wui *WebUI) fetchNewTemplatesSxn(ctx context.Context, user *meta.Meta) (ls
 	return lst
 }
 func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sx.Pair {
-	if footerZid, err := id.ParseO(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
+	if footerZid, err := id.Parse(wui.rtConfig.Get(ctx, nil, config.KeyFooterZettel)); err == nil {
 		if zn, err2 := wui.evalZettel.Run(ctx, footerZid, ""); err2 == nil {
 			htmlEnc := wui.getSimpleHTMLEncoder(wui.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang)).SetUnique("footer-")
 			if content, endnotes, err3 := htmlEnc.BlocksSxn(&zn.Ast); err3 == nil {
@@ -333,7 +333,7 @@ func (wui *WebUI) calculateFooterSxn(ctx context.Context) *sx.Pair {
 	return nil
 }
 
-func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.ZidO, bind *sxeval.Binding) (sxeval.Expr, error) {
+func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.Binding) (sxeval.Expr, error) {
 	if t := wui.getSxnCache(zid); t != nil {
 		return t, nil
 	}
@@ -360,7 +360,7 @@ func (wui *WebUI) getSxnTemplate(ctx context.Context, zid id.ZidO, bind *sxeval.
 	wui.setSxnCache(zid, t)
 	return t, nil
 }
-func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.ZidO) (*sxreader.Reader, error) {
+func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.Zid) (*sxreader.Reader, error) {
 	ztl, err := wui.box.GetZettel(ctx, zid)
 	if err != nil {
 		return nil, err
@@ -370,7 +370,7 @@ func (wui *WebUI) makeZettelReader(ctx context.Context, zid id.ZidO) (*sxreader.
 	return reader, nil
 }
 
-func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.ZidO, bind *sxeval.Binding) (sx.Object, error) {
+func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.Zid, bind *sxeval.Binding) (sx.Object, error) {
 	templateExpr, err := wui.getSxnTemplate(ctx, zid, bind)
 	if err != nil {
 		return nil, err
@@ -379,17 +379,17 @@ func (wui *WebUI) evalSxnTemplate(ctx context.Context, zid id.ZidO, bind *sxeval
 	return env.Run(templateExpr)
 }
 
-func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.ZidO, bind *sxeval.Binding) error {
+func (wui *WebUI) renderSxnTemplate(ctx context.Context, w http.ResponseWriter, templateID id.Zid, bind *sxeval.Binding) error {
 	return wui.renderSxnTemplateStatus(ctx, w, http.StatusOK, templateID, bind)
 }
-func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.ZidO, bind *sxeval.Binding) error {
+func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWriter, code int, templateID id.Zid, bind *sxeval.Binding) error {
 	detailObj, err := wui.evalSxnTemplate(ctx, templateID, bind)
 	if err != nil {
 		return err
 	}
 	bind.Bind(symDetail, detailObj)
 
-	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZidO, bind)
+	pageObj, err := wui.evalSxnTemplate(ctx, id.BaseTemplateZid, bind)
 	if err != nil {
 		return err
 	}
@@ -423,7 +423,7 @@ func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err er
 	rb.bindString("heading", sx.MakeString(http.StatusText(code)))
 	rb.bindString("message", sx.MakeString(text))
 	if rb.err == nil {
-		rb.err = wui.renderSxnTemplateStatus(ctx, w, code, id.ErrorTemplateZidO, env)
+		rb.err = wui.renderSxnTemplateStatus(ctx, w, code, id.ErrorTemplateZid, env)
 	}
 	errSx := rb.err
 	if errSx == nil {

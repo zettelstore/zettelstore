@@ -54,13 +54,13 @@ type constZettel struct {
 type constBox struct {
 	log      *logger.Logger
 	number   int
-	zettel   map[id.ZidO]constZettel
+	zettel   map[id.Zid]constZettel
 	enricher box.Enricher
 }
 
 func (*constBox) Location() string { return "const:" }
 
-func (cb *constBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, error) {
+func (cb *constBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, error) {
 	if z, ok := cb.zettel[zid]; ok {
 		cb.log.Trace().Msg("GetZettel")
 		return zettel.Zettel{Meta: meta.NewWithData(zid, z.header), Content: z.content}, nil
@@ -70,7 +70,7 @@ func (cb *constBox) GetZettel(_ context.Context, zid id.ZidO) (zettel.Zettel, er
 	return zettel.Zettel{}, err
 }
 
-func (cb *constBox) HasZettel(_ context.Context, zid id.ZidO) bool {
+func (cb *constBox) HasZettel(_ context.Context, zid id.Zid) bool {
 	_, found := cb.zettel[zid]
 	return found
 }
@@ -97,12 +97,12 @@ func (cb *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrai
 	return nil
 }
 
-func (cb *constBox) AllowRenameZettel(_ context.Context, zid id.ZidO) bool {
+func (cb *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
 	_, ok := cb.zettel[zid]
 	return !ok
 }
 
-func (cb *constBox) RenameZettel(_ context.Context, curZid, _ id.ZidO) (err error) {
+func (cb *constBox) RenameZettel(_ context.Context, curZid, _ id.Zid) (err error) {
 	if _, ok := cb.zettel[curZid]; ok {
 		err = box.ErrReadOnly
 	} else {
@@ -112,9 +112,9 @@ func (cb *constBox) RenameZettel(_ context.Context, curZid, _ id.ZidO) (err erro
 	return err
 }
 
-func (*constBox) CanDeleteZettel(context.Context, id.ZidO) bool { return false }
+func (*constBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
-func (cb *constBox) DeleteZettel(_ context.Context, zid id.ZidO) (err error) {
+func (cb *constBox) DeleteZettel(_ context.Context, zid id.Zid) (err error) {
 	if _, ok := cb.zettel[zid]; ok {
 		err = box.ErrReadOnly
 	} else {
@@ -130,8 +130,8 @@ func (cb *constBox) ReadStats(st *box.ManagedBoxStats) {
 	cb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
-var constZettelMap = map[id.ZidO]constZettel{
-	id.ConfigurationZidO: {
+var constZettelMap = map[id.Zid]constZettel{
+	id.ConfigurationZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Runtime Configuration",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -140,7 +140,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityOwner,
 		},
 		zettel.NewContent(nil)},
-	id.MustParseO(api.ZidLicense): {
+	id.MustParse(api.ZidLicense): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore License",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -152,7 +152,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		zettel.NewContent(contentLicense)},
-	id.MustParseO(api.ZidAuthors): {
+	id.MustParse(api.ZidAuthors): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Contributors",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -163,7 +163,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentContributors)},
-	id.MustParseO(api.ZidDependencies): {
+	id.MustParse(api.ZidDependencies): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Dependencies",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -175,7 +175,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyModified:   "20240418095500",
 		},
 		zettel.NewContent(contentDependencies)},
-	id.BaseTemplateZidO: {
+	id.BaseTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -185,7 +185,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentBaseSxn)},
-	id.LoginTemplateZidO: {
+	id.LoginTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Login Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -195,7 +195,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentLoginSxn)},
-	id.ZettelTemplateZidO: {
+	id.ZettelTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -205,7 +205,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentZettelSxn)},
-	id.InfoTemplateZidO: {
+	id.InfoTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Info HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -215,7 +215,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentInfoSxn)},
-	id.FormTemplateZidO: {
+	id.FormTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -225,7 +225,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentFormSxn)},
-	id.RenameTemplateZidO: {
+	id.RenameTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -235,7 +235,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentRenameSxn)},
-	id.DeleteTemplateZidO: {
+	id.DeleteTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -245,7 +245,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentDeleteSxn)},
-	id.ListTemplateZidO: {
+	id.ListTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore List Zettel HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -255,7 +255,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentListZettelSxn)},
-	id.ErrorTemplateZidO: {
+	id.ErrorTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Error HTML Template",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -265,7 +265,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentErrorSxn)},
-	id.StartSxnZidO: {
+	id.StartSxnZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Sxn Start Code",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -276,7 +276,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyPrecursor:  string(api.ZidSxnBase),
 		},
 		zettel.NewContent(contentStartCodeSxn)},
-	id.BaseSxnZidO: {
+	id.BaseSxnZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Sxn Base Code",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -288,7 +288,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyPrecursor:  string(api.ZidSxnPrelude),
 		},
 		zettel.NewContent(contentBaseCodeSxn)},
-	id.PreludeSxnZidO: {
+	id.PreludeSxnZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Sxn Prelude",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -299,7 +299,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentPreludeSxn)},
-	id.MustParseO(api.ZidBaseCSS): {
+	id.MustParse(api.ZidBaseCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Base CSS",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -309,7 +309,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		zettel.NewContent(contentBaseCSS)},
-	id.MustParseO(api.ZidUserCSS): {
+	id.MustParse(api.ZidUserCSS): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore User CSS",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -318,7 +318,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		zettel.NewContent([]byte("/* User-defined CSS */"))},
-	id.EmojiZidO: {
+	id.EmojiZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Generic Emoji",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -328,7 +328,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityPublic,
 		},
 		zettel.NewContent(contentEmoji)},
-	id.TOCNewTemplateZidO: {
+	id.TOCNewTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "New Menu",
 			api.KeyRole:       api.ValueRoleConfiguration,
@@ -339,7 +339,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityCreator,
 		},
 		zettel.NewContent(contentNewTOCZettel)},
-	id.MustParseO(api.ZidTemplateNewZettel): {
+	id.MustParse(api.ZidTemplateNewZettel): {
 		constHeader{
 			api.KeyTitle:                 "New Zettel",
 			api.KeyRole:                  api.ValueRoleConfiguration,
@@ -350,7 +350,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility:            api.ValueVisibilityCreator,
 		},
 		zettel.NewContent(nil)},
-	id.MustParseO(api.ZidTemplateNewRole): {
+	id.MustParse(api.ZidTemplateNewRole): {
 		constHeader{
 			api.KeyTitle:                  "New Role",
 			api.KeyRole:                   api.ValueRoleConfiguration,
@@ -361,7 +361,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility:             api.ValueVisibilityCreator,
 		},
 		zettel.NewContent(nil)},
-	id.MustParseO(api.ZidTemplateNewTag): {
+	id.MustParse(api.ZidTemplateNewTag): {
 		constHeader{
 			api.KeyTitle:                  "New Tag",
 			api.KeyRole:                   api.ValueRoleConfiguration,
@@ -372,7 +372,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility:             api.ValueVisibilityCreator,
 		},
 		zettel.NewContent(nil)},
-	id.MustParseO(api.ZidTemplateNewUser): {
+	id.MustParse(api.ZidTemplateNewUser): {
 		constHeader{
 			api.KeyTitle:                       "New User",
 			api.KeyRole:                        api.ValueRoleConfiguration,
@@ -384,7 +384,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility:                  api.ValueVisibilityOwner,
 		},
 		zettel.NewContent(nil)},
-	id.MustParseO(api.ZidRoleZettelZettel): {
+	id.MustParse(api.ZidRoleZettelZettel): {
 		constHeader{
 			api.KeyTitle:      api.ValueRoleZettel,
 			api.KeyRole:       api.ValueRoleRole,
@@ -394,7 +394,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentRoleZettel)},
-	id.MustParseO(api.ZidRoleConfigurationZettel): {
+	id.MustParse(api.ZidRoleConfigurationZettel): {
 		constHeader{
 			api.KeyTitle:      api.ValueRoleConfiguration,
 			api.KeyRole:       api.ValueRoleRole,
@@ -404,7 +404,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentRoleConfiguration)},
-	id.MustParseO(api.ZidRoleRoleZettel): {
+	id.MustParse(api.ZidRoleRoleZettel): {
 		constHeader{
 			api.KeyTitle:      api.ValueRoleRole,
 			api.KeyRole:       api.ValueRoleRole,
@@ -414,7 +414,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentRoleRole)},
-	id.MustParseO(api.ZidRoleTagZettel): {
+	id.MustParse(api.ZidRoleTagZettel): {
 		constHeader{
 			api.KeyTitle:      api.ValueRoleTag,
 			api.KeyRole:       api.ValueRoleRole,
@@ -424,7 +424,7 @@ var constZettelMap = map[id.ZidO]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentRoleTag)},
-	id.DefaultHomeZidO: {
+	id.DefaultHomeZid: {
 		constHeader{
 			api.KeyTitle:   "Home",
 			api.KeyRole:    api.ValueRoleZettel,

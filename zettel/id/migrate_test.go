@@ -21,13 +21,13 @@ import (
 
 func TestMigrat(t *testing.T) {
 	testcases := []struct {
-		inp []id.ZidO
+		inp []id.Zid
 		err string
-		exp []id.Zid
+		exp []id.ZidN
 	}{
-		{[]id.ZidO{1, 2, 3}, "", []id.Zid{1, 2, 3}},
-		{[]id.ZidO{3, 2, 1}, "", []id.Zid{3, 2, 1}},
-		{[]id.ZidO{20240224123456, 19700101000000}, "out of sequence: 19700101000000", []id.Zid{46657, 1}},
+		{[]id.Zid{1, 2, 3}, "", []id.ZidN{1, 2, 3}},
+		{[]id.Zid{3, 2, 1}, "", []id.ZidN{3, 2, 1}},
+		{[]id.Zid{20240224123456, 19700101000000}, "out of sequence: 19700101000000", []id.ZidN{46657, 1}},
 	}
 	for i, tc := range testcases {
 		migrator := id.NewZidMigrator()

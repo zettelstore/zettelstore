@@ -33,8 +33,8 @@ import (
 
 // QueryPort is the interface used by this use case.
 type QueryPort interface {
-	GetZettel(ctx context.Context, zid id.ZidO) (zettel.Zettel, error)
-	GetMeta(ctx context.Context, zid id.ZidO) (*meta.Meta, error)
+	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
+	GetMeta(ctx context.Context, zid id.Zid) (*meta.Meta, error)
 	SelectMeta(ctx context.Context, metaSeq []*meta.Meta, q *query.Query) ([]*meta.Meta, error)
 }
 
@@ -71,7 +71,7 @@ func (uc *Query) Run(ctx context.Context, q *query.Query) ([]*meta.Meta, error) 
 	return nil, nil
 }
 
-func (uc *Query) getMetaZid(ctx context.Context, zids []id.ZidO) ([]*meta.Meta, error) {
+func (uc *Query) getMetaZid(ctx context.Context, zids []id.Zid) ([]*meta.Meta, error) {
 	metaSeq := make([]*meta.Meta, 0, len(zids))
 	for _, zid := range zids {
 		m, err := uc.port.GetMeta(ctx, zid)
@@ -120,12 +120,12 @@ func (uc *Query) processContextDirective(ctx context.Context, spec *query.Contex
 func (uc *Query) processItemsDirective(ctx context.Context, _ *query.ItemsSpec, metaSeq []*meta.Meta) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(metaSeq))
 	for _, m := range metaSeq {
-		zn, err := uc.ucEvaluate.Run(ctx, m.ZidO, m.GetDefault(api.KeySyntax, meta.DefaultSyntax))
+		zn, err := uc.ucEvaluate.Run(ctx, m.Zid, m.GetDefault(api.KeySyntax, meta.DefaultSyntax))
 		if err != nil {
 			continue
 		}
 		for _, ref := range collect.Order(zn) {
-			if collectedZid, err2 := id.ParseO(ref.URL.Path); err2 == nil {
+			if collectedZid, err2 := id.Parse(ref.URL.Path); err2 == nil {
 				if z, err3 := uc.port.GetZettel(ctx, collectedZid); err3 == nil {
 					result = append(result, z.Meta)
 				}
@@ -150,20 +150,20 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 	if err != nil {
 		return nil
 	}
-	metaZids := id.NewSetCapO(len(metaSeq))
-	refZids := id.NewSetCapO(len(metaSeq) * 4) // Assumption: there are four zids per zettel
+	metaZids := id.NewSetCap(len(metaSeq))
+	refZids := id.NewSetCap(len(metaSeq) * 4) // Assumption: there are four zids per zettel
 	for _, m := range metaSeq {
-		metaZids.Add(m.ZidO)
-		refZids.Add(m.ZidO)
+		metaZids.Add(m.Zid)
+		refZids.Add(m.Zid)
 		for _, pair := range m.ComputedPairsRest() {
 			switch meta.Type(pair.Key) {
 			case meta.TypeID:
-				if zid, errParse := id.ParseO(pair.Value); errParse == nil {
+				if zid, errParse := id.Parse(pair.Value); errParse == nil {
 					refZids.Add(zid)
 				}
 			case meta.TypeIDSet:
 				for _, value := range meta.ListFromValue(pair.Value) {
-					if zid, errParse := id.ParseO(value); errParse == nil {
+					if zid, errParse := id.Parse(value); errParse == nil {
 						refZids.Add(zid)
 					}
 				}
@@ -174,10 +174,10 @@ func (uc *Query) processUnlinkedDirective(ctx context.Context, spec *query.Unlin
 	return uc.filterCandidates(ctx, candidates, words)
 }
 
-func filterByZid(candidates []*meta.Meta, ignoreSeq *id.SetO) []*meta.Meta {
+func filterByZid(candidates []*meta.Meta, ignoreSeq *id.Set) []*meta.Meta {
 	result := make([]*meta.Meta, 0, len(candidates))
 	for _, m := range candidates {
-		if !ignoreSeq.ContainsOrNil(m.ZidO) {
+		if !ignoreSeq.ContainsOrNil(m.Zid) {
 			result = append(result, m)
 		}
 	}
@@ -188,7 +188,7 @@ func (uc *Query) filterCandidates(ctx context.Context, candidates []*meta.Meta, 
 	result := make([]*meta.Meta, 0, len(candidates))
 candLoop:
 	for _, cand := range candidates {
-		zettel, err := uc.port.GetZettel(ctx, cand.ZidO)
+		zettel, err := uc.port.GetZettel(ctx, cand.Zid)
 		if err != nil {
 			continue
 		}

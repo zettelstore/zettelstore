@@ -43,7 +43,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
 		path := r.URL.Path[1:]
-		zid, err := id.ParseO(path)
+		zid, err := id.Parse(path)
 		if err != nil {
 			wui.reportError(ctx, w, box.ErrInvalidZid{Zid: path})
 			return
@@ -117,7 +117,7 @@ func (wui *WebUI) renderZettelForm(
 	}
 	wui.bindCommonZettelData(ctx, &rb, user, m, &ztl.Content)
 	if rb.err == nil {
-		rb.err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZidO, env)
+		rb.err = wui.renderSxnTemplate(ctx, w, id.FormTemplateZid, env)
 	}
 	if err := rb.err; err != nil {
 		wui.reportError(ctx, w, err)
@@ -129,7 +129,7 @@ func (wui *WebUI) renderZettelForm(
 func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		reEdit, zettel, err := parseZettelForm(r, id.InvalidO)
+		reEdit, zettel, err := parseZettelForm(r, id.Invalid)
 		if err == errMissingContent {
 			wui.reportError(ctx, w, adapter.NewErrBadRequest("Content is missing"))
 			return
@@ -178,7 +178,7 @@ func (wui *WebUI) MakeGetZettelFromListHandler(
 			return
 		}
 
-		m := meta.New(id.InvalidO)
+		m := meta.New(id.Invalid)
 		m.Set(api.KeyTitle, q.Human())
 		m.Set(api.KeySyntax, api.ValueSyntaxZmk)
 		if qval := q.String(); qval != "" {

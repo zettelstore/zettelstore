@@ -23,13 +23,13 @@ import (
 )
 
 type collectData struct {
-	refs  *id.SetO
+	refs  *id.Set
 	words store.WordSet
 	urls  store.WordSet
 }
 
 func (data *collectData) initialize() {
-	data.refs = id.NewSetO()
+	data.refs = id.NewSet()
 	data.words = store.NewWordSet()
 	data.urls = store.NewWordSet()
 }
@@ -78,7 +78,7 @@ func (data *collectData) addRef(ref *ast.Reference) {
 	if !ref.IsZettel() {
 		return
 	}
-	if zid, err := id.ParseO(ref.URL.Path); err == nil {
+	if zid, err := id.Parse(ref.URL.Path); err == nil {
 		data.refs.Add(zid)
 	}
 }

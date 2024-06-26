@@ -51,7 +51,7 @@ type WebUI struct {
 	evalZettel *usecase.Evaluate
 
 	mxCache       sync.RWMutex
-	templateCache map[id.ZidO]sxeval.Expr
+	templateCache map[id.Zid]sxeval.Expr
 
 	tokenLifetime time.Duration
 	cssBaseURL    string
@@ -70,7 +70,7 @@ type WebUI struct {
 	rootBinding     *sxeval.Binding
 	mxZettelBinding sync.Mutex
 	zettelBinding   *sxeval.Binding
-	dag             id.DigraphO
+	dag             id.Digraph
 	genHTML         *sxhtml.Generator
 }
 
@@ -79,11 +79,11 @@ type WebUI struct {
 // Note: these function must not do auth checking.
 type webuiBox interface {
 	CanCreateZettel(context.Context) bool
-	GetZettel(context.Context, id.ZidO) (zettel.Zettel, error)
-	GetMeta(context.Context, id.ZidO) (*meta.Meta, error)
+	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
+	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	CanUpdateZettel(context.Context, zettel.Zettel) bool
-	AllowRenameZettel(context.Context, id.ZidO) bool
-	CanDeleteZettel(context.Context, id.ZidO) bool
+	AllowRenameZettel(context.Context, id.Zid) bool
+	CanDeleteZettel(context.Context, id.Zid) bool
 }
 
 // New creates a new WebUI struct.
@@ -103,7 +103,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 
 		evalZettel: evalZettel,
 
-		templateCache: make(map[id.ZidO]sxeval.Expr, 32),
+		templateCache: make(map[id.Zid]sxeval.Expr, 32),
 
 		tokenLifetime: kernel.Main.GetConfig(kernel.WebService, kernel.WebTokenLifetimeHTML).(time.Duration),
 		cssBaseURL:    ab.NewURLBuilder('z').SetZid(api.ZidBaseCSS).String(),
@@ -123,7 +123,7 @@ func New(log *logger.Logger, ab server.AuthBuilder, authz auth.AuthzManager, rtC
 		genHTML:       sxhtml.NewGenerator().SetNewline(),
 	}
 	wui.rootBinding = wui.createRenderBinding()
-	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.InvalidO})
+	wui.observe(box.UpdateInfo{Box: mgr, Reason: box.OnReload, Zid: id.Invalid})
 	mgr.RegisterObserver(wui.observe)
 	return wui
 }
@@ -150,12 +150,12 @@ func (wui *WebUI) observe(ci box.UpdateInfo) {
 	wui.mxZettelBinding.Unlock()
 }
 
-func (wui *WebUI) setSxnCache(zid id.ZidO, expr sxeval.Expr) {
+func (wui *WebUI) setSxnCache(zid id.Zid, expr sxeval.Expr) {
 	wui.mxCache.Lock()
 	wui.templateCache[zid] = expr
 	wui.mxCache.Unlock()
 }
-func (wui *WebUI) getSxnCache(zid id.ZidO) sxeval.Expr {
+func (wui *WebUI) getSxnCache(zid id.Zid) sxeval.Expr {
 	wui.mxCache.RLock()
 	expr, found := wui.templateCache[zid]
 	wui.mxCache.RUnlock()
@@ -166,7 +166,7 @@ func (wui *WebUI) getSxnCache(zid id.ZidO) sxeval.Expr {
 }
 
 func (wui *WebUI) canCreate(ctx context.Context, user *meta.Meta) bool {
-	m := meta.New(id.InvalidO)
+	m := meta.New(id.Invalid)
 	return wui.policy.CanCreate(user, m) && wui.box.CanCreateZettel(ctx)
 }
 
@@ -177,11 +177,11 @@ func (wui *WebUI) canWrite(
 }
 
 func (wui *WebUI) canRename(ctx context.Context, user, m *meta.Meta) bool {
-	return wui.policy.CanRename(user, m) && wui.box.AllowRenameZettel(ctx, m.ZidO)
+	return wui.policy.CanRename(user, m) && wui.box.AllowRenameZettel(ctx, m.Zid)
 }
 
 func (wui *WebUI) canDelete(ctx context.Context, user, m *meta.Meta) bool {
-	return wui.policy.CanDelete(user, m) && wui.box.CanDeleteZettel(ctx, m.ZidO)
+	return wui.policy.CanDelete(user, m) && wui.box.CanDeleteZettel(ctx, m.Zid)
 }
 
 func (wui *WebUI) canRefresh(user *meta.Meta) bool {

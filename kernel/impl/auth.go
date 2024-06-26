@@ -39,11 +39,11 @@ func (as *authService) Initialize(logger *logger.Logger) {
 		kernel.AuthOwner: {
 			"Owner's zettel id",
 			func(val string) (any, error) {
-				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.InvalidO {
+				if owner := as.cur[kernel.AuthOwner]; owner != nil && owner != id.Invalid {
 					return nil, errAlreadySetOwner
 				}
 				if val == "" {
-					return id.InvalidO, nil
+					return id.Invalid, nil
 				}
 				return parseZid(val)
 			},
@@ -61,7 +61,7 @@ func (as *authService) Initialize(logger *logger.Logger) {
 		},
 	}
 	as.next = interfaceMap{
-		kernel.AuthOwner:    id.InvalidO,
+		kernel.AuthOwner:    id.Invalid,
 		kernel.AuthReadonly: false,
 	}
 }
@@ -72,7 +72,7 @@ func (as *authService) Start(*myKernel) error {
 	as.mxService.Lock()
 	defer as.mxService.Unlock()
 	readonlyMode := as.GetNextConfig(kernel.AuthReadonly).(bool)
-	owner := as.GetNextConfig(kernel.AuthOwner).(id.ZidO)
+	owner := as.GetNextConfig(kernel.AuthOwner).(id.Zid)
 	authMgr, err := as.createManager(readonlyMode, owner)
 	if err != nil {
 		as.logger.Error().Err(err).Msg("Unable to create manager")

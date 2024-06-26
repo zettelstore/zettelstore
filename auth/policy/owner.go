@@ -65,7 +65,7 @@ func (o *ownerPolicy) userCanRead(user, m *meta.Meta, vis meta.Visibility) bool 
 	}
 	if _, ok := m.Get(api.KeyUserID); ok {
 		// Only the user can read its own zettel
-		return user.ZidO == m.ZidO
+		return user.Zid == m.Zid
 	}
 	switch o.manager.GetUserRole(user) {
 	case meta.UserRoleReader, meta.UserRoleWriter, meta.UserRoleOwner:
@@ -156,7 +156,7 @@ func (o *ownerPolicy) userIsOwner(user *meta.Meta) bool {
 	if user == nil {
 		return false
 	}
-	if o.manager.IsOwner(user.ZidO) {
+	if o.manager.IsOwner(user.Zid) {
 		return true
 	}
 	if val, ok := user.Get(api.KeyUserRole); ok && val == api.ValueUserRoleOwner {

@@ -28,7 +28,7 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 
 	// Calculate computed, but stored values.
 	if _, ok := m.Get(api.KeyCreated); !ok {
-		m.Set(api.KeyCreated, computeCreated(m.ZidO))
+		m.Set(api.KeyCreated, computeCreated(m.Zid))
 	}
 
 	if box.DoNotEnrich(ctx) {
@@ -43,7 +43,7 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 	mgr.idxStore.Enrich(ctx, m)
 }
 
-func computeCreated(zid id.ZidO) string {
+func computeCreated(zid id.Zid) string {
 	if zid <= 10101000000 {
 		// A year 0000 is not allowed and therefore an artificaial Zid.
 		// In the year 0001, the month must be > 0.
@@ -74,7 +74,7 @@ func computeCreated(zid id.ZidO) string {
 	return created.String()
 }
 
-func sanitizeMonthDay(year, month, day id.ZidO) (id.ZidO, id.ZidO) {
+func sanitizeMonthDay(year, month, day id.Zid) (id.Zid, id.Zid) {
 	if day < 1 {
 		day = 1
 	}
@@ -124,7 +124,7 @@ func computePublished(m *meta.Meta) {
 			return
 		}
 	}
-	zid := m.ZidO.String()
+	zid := m.Zid.String()
 	if _, ok := meta.TimeValue(zid); ok {
 		m.Set(api.KeyPublished, zid)
 		return

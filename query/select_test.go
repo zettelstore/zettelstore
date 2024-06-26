@@ -36,12 +36,12 @@ func TestMatchZidNegate(t *testing.T) {
 		{api.ZidAuthors, true},
 	}
 	for i, tc := range testCases {
-		m := meta.New(id.MustParseO(tc.zid))
+		m := meta.New(id.MustParse(tc.zid))
 		if compiled.Terms[0].Match(m) != tc.exp {
 			if tc.exp {
-				t.Errorf("%d: meta %v must match %q", i, m.ZidO, q)
+				t.Errorf("%d: meta %v must match %q", i, m.Zid, q)
 			} else {
-				t.Errorf("%d: meta %v must not match %q", i, m.ZidO, q)
+				t.Errorf("%d: meta %v must not match %q", i, m.Zid, q)
 			}
 		}
 	}

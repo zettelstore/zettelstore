@@ -45,7 +45,7 @@ func TestIsValidO(t *testing.T) {
 	}
 
 	for i, sid := range validIDs {
-		zid, err := id.ParseO(sid)
+		zid, err := id.Parse(sid)
 		if err != nil {
 			t.Errorf("i=%d: sid=%q is not valid, but should be. err=%v", i, sid, err)
 		}
@@ -66,7 +66,7 @@ func TestIsValidO(t *testing.T) {
 	}
 
 	for i, sid := range invalidIDs {
-		if zid, err := id.ParseO(sid); err == nil {
+		if zid, err := id.Parse(sid); err == nil {
 			t.Errorf("i=%d: sid=%q is valid (zid=%s), but should not be", i, sid, zid)
 		}
 	}
@@ -77,7 +77,7 @@ var sResult string // to disable compiler optimization in loop below
 func BenchmarkStringO(b *testing.B) {
 	var s string
 	for range b.N {
-		s = id.ZidO(12345678901200).String()
+		s = id.Zid(12345678901200).String()
 	}
 	sResult = s
 }
@@ -87,7 +87,7 @@ var bResult []byte // to disable compiler optimization in loop below
 func BenchmarkBytesO(b *testing.B) {
 	var bs []byte
 	for range b.N {
-		bs = id.ZidO(12345678901200).Bytes()
+		bs = id.Zid(12345678901200).Bytes()
 	}
 	bResult = bs
 }
@@ -102,7 +102,7 @@ func TestIsValid(t *testing.T) {
 	}
 
 	for i, sid := range validIDs {
-		zid, err := id.Parse(sid)
+		zid, err := id.ParseN(sid)
 		if err != nil {
 			t.Errorf("i=%d: sid=%q is not valid, but should be. err=%v", i, sid, err)
 		}
@@ -118,7 +118,7 @@ func TestIsValid(t *testing.T) {
 	}
 
 	for i, sid := range invalidIDs {
-		if zid, err := id.Parse(sid); err == nil {
+		if zid, err := id.ParseN(sid); err == nil {
 			t.Errorf("i=%d: sid=%q is valid (zid=%s), but should not be", i, sid, zid)
 		}
 	}

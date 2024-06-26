@@ -107,8 +107,8 @@ func (cs *configService) Initialize(logger *logger.Logger) {
 		keyDefaultLicense:              "",
 		keyDefaultVisibility:           meta.VisibilityLogin,
 		keyExpertMode:                  false,
-		config.KeyFooterZettel:         id.InvalidO,
-		config.KeyHomeZettel:           id.DefaultHomeZidO,
+		config.KeyFooterZettel:         id.Invalid,
+		config.KeyHomeZettel:           id.DefaultHomeZid,
 		kernel.ConfigInsecureHTML:      config.NoHTML,
 		api.KeyLang:                    api.ValueLangEN,
 		keyMaxTransclusions:            int64(1024),
@@ -126,7 +126,7 @@ func (cs *configService) GetLogger() *logger.Logger { return cs.logger }
 
 func (cs *configService) Start(*myKernel) error {
 	cs.logger.Info().Msg("Start Service")
-	data := meta.New(id.ConfigurationZidO)
+	data := meta.New(id.ConfigurationZid)
 	for _, kv := range cs.GetNextConfigList() {
 		data.Set(kv.Key, kv.Value)
 	}
@@ -159,11 +159,11 @@ func (cs *configService) setBox(mgr box.Manager) {
 	cs.manager = mgr
 	cs.mxService.Unlock()
 	mgr.RegisterObserver(cs.observe)
-	cs.observe(box.UpdateInfo{Box: mgr, Reason: box.OnZettel, Zid: id.ConfigurationZidO})
+	cs.observe(box.UpdateInfo{Box: mgr, Reason: box.OnZettel, Zid: id.ConfigurationZid})
 }
 
 func (cs *configService) doUpdate(p box.BaseBox) error {
-	z, err := p.GetZettel(context.Background(), id.ConfigurationZidO)
+	z, err := p.GetZettel(context.Background(), id.ConfigurationZid)
 	cs.logger.Trace().Err(err).Msg("got config meta")
 	if err != nil {
 		return err
@@ -184,7 +184,7 @@ func (cs *configService) doUpdate(p box.BaseBox) error {
 }
 
 func (cs *configService) observe(ci box.UpdateInfo) {
-	if ci.Reason != box.OnZettel || ci.Zid == id.ConfigurationZidO {
+	if ci.Reason != box.OnZettel || ci.Zid == id.ConfigurationZid {
 		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 		go func() {
 			cs.mxService.RLock()
@@ -224,7 +224,7 @@ func (cs *configService) Get(ctx context.Context, m *meta.Meta, key string) stri
 			return api.ValueTrue
 		}
 		return api.ValueFalse
-	case id.ZidO:
+	case id.Zid:
 		return val.String()
 	case int:
 		return strconv.Itoa(val)

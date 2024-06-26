@@ -36,7 +36,7 @@ import (
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
 func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usecase.ParseZettel, evaluate usecase.Evaluate) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		zid, err := id.ParseO(r.URL.Path[1:])
+		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			http.NotFound(w, r)
 			return
@@ -73,7 +73,7 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usec
 	}
 }
 
-func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.ZidO, part partType, getZettel usecase.GetZettel) {
+func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
 	var buf bytes.Buffer
 	var contentType string
 	var err error
@@ -113,7 +113,7 @@ func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.
 	}
 }
 
-func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.ZidO, part partType, getZettel usecase.GetZettel) {
+func (a *API) writeSzData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {
 	z, err := getZettel.Run(ctx, zid)
 	if err != nil {
 		a.reportUsecaseError(w, err)
@@ -153,7 +153,7 @@ func (a *API) writeEncodedZettelPart(
 			Lang: a.rtConfig.Get(ctx, zn.InhMeta, api.KeyLang),
 		})
 	if encdr == nil {
-		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.ZidO, encStr))
+		adapter.BadRequest(w, fmt.Sprintf("Zettel %q not available in encoding %q", zn.Meta.Zid, encStr))
 		return
 	}
 	var err error
