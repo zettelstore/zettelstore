@@ -43,7 +43,7 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 	}
 	if !hasCreated {
 		// Is just a property, no need to store it.
-		m.Set(meta.KeyCreatedMissing, "true")
+		m.Set(meta.KeyCreatedMissing, api.ValueTrue)
 	}
 	mgr.idxStore.Enrich(ctx, m)
 }

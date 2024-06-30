@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240318115839
+modified: 20240630212430
 
 The following table lists all predefined zettel with their purpose.
 
@@ -22,6 +22,7 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000000092]] | Zettelstore Supported Parser | Lists all supported values for metadata [[syntax|00001006020000#syntax]] that are recognized by Zettelstore
 | [[00000000000096]] | Zettelstore Startup Configuration | Contains the effective values of the [[startup configuration|00001004010000]]
 | [[00000000000100]] | Zettelstore Runtime Configuration | Allows to [[configure Zettelstore at runtime|00001004020000]]
+| [[00000000000102]] | Zettelstore Warnings | Warnings about potential problematic zettel identifier
 | [[00000000010100]] | Zettelstore Base HTML Template | Contains the general layout of the HTML view
 | [[00000000010200]] | Zettelstore Login Form HTML Template | Layout of the login form, when authentication is [[enabled|00001010040100]]
 | [[00000000010300]] | Zettelstore List Zettel HTML Template | Used when displaying a list of zettel

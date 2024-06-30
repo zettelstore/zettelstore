@@ -9,6 +9,9 @@
      previous behaviour, set <code>umask</code> accordingly, for example
      <code>umask 066</code>.
      (major: dirbox)
+  *  Add zettel &ldquo;Zettelstore Warnings&rdquo; to help identifying zettel
+     to upgrade for future migration to planned new zettel identifier format.
+     (minor: webui)
   *  Add metadata key <code>created-missing</code> to list zettel without
      stored metadata key <code>created</code>. Needed for migration to planned
      new zettelstore identifier format, which is not based on timestamp of

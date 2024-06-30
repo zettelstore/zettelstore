@@ -48,15 +48,23 @@ var myZettel = map[id.Zid]struct {
 	meta    func(id.Zid) *meta.Meta
 	content func(*meta.Meta) []byte
 }{
-	id.MustParse(api.ZidVersion):              {genVersionBuildM, genVersionBuildC},
-	id.MustParse(api.ZidHost):                 {genVersionHostM, genVersionHostC},
-	id.MustParse(api.ZidOperatingSystem):      {genVersionOSM, genVersionOSC},
-	id.MustParse(api.ZidLog):                  {genLogM, genLogC},
-	id.MustParse(api.ZidMemory):               {genMemoryM, genMemoryC},
-	id.MustParse(api.ZidBoxManager):           {genManagerM, genManagerC},
+	id.MustParse(api.ZidVersion):         {genVersionBuildM, genVersionBuildC},
+	id.MustParse(api.ZidHost):            {genVersionHostM, genVersionHostC},
+	id.MustParse(api.ZidOperatingSystem): {genVersionOSM, genVersionOSC},
+	id.MustParse(api.ZidLog):             {genLogM, genLogC},
+	id.MustParse(api.ZidMemory):          {genMemoryM, genMemoryC},
+	// id.MustParse(api.ZidSx):                   {genSxM, genSxC},
+	// id.MustParse(api.ZidHTTP):                 {genHttpM, genHttpC},
+	// id.MustParse(api.ZidAPI):                  {genApiM, genApiC},
+	// id.MustParse(api.ZidWebUI):                {genWebUiM, genWebUiC},
+	// id.MustParse(api.ZidConsole):              {genConsoleM, genConsoleC},
+	id.MustParse(api.ZidBoxManager): {genManagerM, genManagerC},
+	// id.MustParse(api.ZidIndex):                {genIndexM, genIndexC},
+	// id.MustParse(api.ZidQuery):                {genQueryM, genQueryC},
 	id.MustParse(api.ZidMetadataKey):          {genKeysM, genKeysC},
 	id.MustParse(api.ZidParser):               {genParserM, genParserC},
 	id.MustParse(api.ZidStartupConfiguration): {genConfigZettelM, genConfigZettelC},
+	id.MustParse(api.ZidWarnings):             {genWarningsM, genWarningsC},
 }
 
 // Get returns the one program box.
