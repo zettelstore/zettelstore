@@ -27,7 +27,8 @@ import (
 func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 
 	// Calculate computed, but stored values.
-	if _, ok := m.Get(api.KeyCreated); !ok {
+	_, hasCreated := m.Get(api.KeyCreated)
+	if !hasCreated {
 		m.Set(api.KeyCreated, computeCreated(m.Zid))
 	}
 
@@ -40,12 +41,16 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 	if boxNumber > 0 {
 		m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
 	}
+	if !hasCreated {
+		// Is just a property, no need to store it.
+		m.Set(meta.KeyCreatedMissing, "true")
+	}
 	mgr.idxStore.Enrich(ctx, m)
 }
 
 func computeCreated(zid id.Zid) string {
 	if zid <= 10101000000 {
-		// A year 0000 is not allowed and therefore an artificaial Zid.
+		// A year 0000 is not allowed and therefore an artificial Zid.
 		// In the year 0001, the month must be > 0.
 		// In the month 000101, the day must be > 0.
 		return "00010101000000"

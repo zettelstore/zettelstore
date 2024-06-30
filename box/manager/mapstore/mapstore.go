@@ -370,7 +370,6 @@ func (ms *mapStore) updateForwardBackwardReferences(zidx *store.ZettelIndex, zi 
 	// Must only be called if ms.mx is write-locked!
 	brefs := zidx.GetBackRefs()
 	newRefs, remRefs := zi.forward.Diff(brefs)
-	// newRefs, remRefs := refsDiff(brefs, zi.forward)
 	zi.forward = brefs
 
 	var toCheck *id.Set
@@ -489,6 +488,7 @@ func copyMeta(m *meta.Meta, newZid id.Zid) *meta.Meta {
 	result.Zid = newZid
 	return result
 }
+
 func (ms *mapStore) copyDeadReferences(curDead *id.Set) *id.Set {
 	// Must only be called if ms.mx is write-locked!
 	curDead.ForEach(func(ref id.Zid) {
