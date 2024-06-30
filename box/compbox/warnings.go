@@ -30,7 +30,7 @@ func genWarningsM(zid id.Zid) *meta.Meta {
 }
 func genWarningsC(*meta.Meta) []byte {
 	var buf bytes.Buffer
-	buf.WriteString("* [[Zettel without stored creation date|query:created-missing:true]]")
-	buf.WriteString("* [[Zettel with strange creation date|query:created-missing:true]]")
+	buf.WriteString("* [[Zettel without stored creation date|query:created-missing:true]]\n")
+	buf.WriteString("* [[Zettel with strange creation date|query:created-missing:true]]\n")
 	return buf.Bytes()
 }
