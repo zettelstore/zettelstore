@@ -3,6 +3,7 @@ title: Supported values for metadata key ''read-only''
 role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20211124132040
 
 A zettel can be marked as read-only, if it contains a metadata value for key

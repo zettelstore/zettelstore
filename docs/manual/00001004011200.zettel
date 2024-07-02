@@ -3,6 +3,7 @@ title: Zettelstore boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220307121547
 
 A Zettelstore must store its zettel somehow and somewhere.

@@ -3,6 +3,7 @@ title: API: Provide an access token
 role: manual
 tags: #api #manual #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218130020
 
 The [[authentication process|00001012050200]] provides you with an [[access token|00001012921000]].

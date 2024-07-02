@@ -3,6 +3,7 @@ title: Zettelmarkup: Verbatim Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218131500
 
 Verbatim blocks are used to enter text that should not be interpreted.

@@ -3,6 +3,7 @@ title: Zettelmarkup: Literal-like formatting
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220311185110
 
 There are some reasons to mark text that should be rendered as uninterpreted:

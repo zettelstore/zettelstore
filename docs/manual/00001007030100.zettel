@@ -3,6 +3,7 @@ title: Zettelmarkup: Description Lists
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218131155
 
 A description list is a sequence of terms to be described together with the descriptions of each term.

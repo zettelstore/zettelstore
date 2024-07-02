@@ -3,6 +3,7 @@ title: HTML Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20210726193034
 
 A zettel representation in HTML.

@@ -3,6 +3,7 @@ title: Enable Zettelstore to start automatically on macOS
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
+created: 20220114181521
 modified: 20220119124635
 
 There are several ways to automatically start Zettelstore.

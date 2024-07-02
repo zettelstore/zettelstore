@@ -3,6 +3,7 @@ title: Enable authentication
 role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220419192817
 
 To enable authentication, you must create a zettel that stores [[authentication data|00001010040200]] for the owner.

@@ -3,6 +3,7 @@ title: Installation of Zettelstore on a server
 role: manual
 tags: #installation #manual #zettelstore
 syntax: zmk
+created: 20211125191727
 modified: 20211125185833
 
 You want to provide a shared Zettelstore that can be used from your various devices.

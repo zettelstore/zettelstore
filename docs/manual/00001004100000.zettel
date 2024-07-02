@@ -3,6 +3,7 @@ title: Zettelstore Administrator Console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+created: 20210510141304
 modified: 20211103162926
 
 The administrator console is a service accessible only on the same computer on which Zettelstore is running.

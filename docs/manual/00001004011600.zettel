@@ -3,6 +3,7 @@ title: Configure memory boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+created: 20220307112918
 modified: 20220307122554
 
 Under most circumstances, it is preferable to further configure a memory box.

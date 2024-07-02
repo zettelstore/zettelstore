@@ -3,6 +3,7 @@ title: Configure file directory boxes
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220724200512
 
 Under certain circumstances, it is preferable to further configure a file directory box.

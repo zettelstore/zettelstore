@@ -3,6 +3,7 @@ title: Search value
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
+created: 20220805150154
 modified: 20220807162031
 
 A search value specifies a value to be searched for, depending on the [[search operator|00001007705000]].

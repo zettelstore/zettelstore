@@ -3,7 +3,7 @@ title: Query: Items Directive
 role: manual
 tags: #manual #search #zettelstore
 syntax: zmk
-created: 00010101000000
+created: 20230729102142
 modified: 20230729120755
 
 The items directive works on zettel that act as a ""table of contents"" for other zettel.

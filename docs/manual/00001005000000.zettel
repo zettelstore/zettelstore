@@ -3,6 +3,7 @@ title: Structure of Zettelstore
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220104213511
 
 Zettelstore is a software that manages your zettel.

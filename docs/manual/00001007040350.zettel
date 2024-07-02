@@ -3,6 +3,7 @@ title: Zettelmarkup: Mark
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210810155955
 modified: 20220218133206
 
 A mark allows to name a point within a zettel.

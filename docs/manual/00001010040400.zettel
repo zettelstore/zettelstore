@@ -3,6 +3,7 @@ title: Authentication process
 role: manual
 tags: #authentication #configuration #manual #security #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20211127174943
 
 When someone tries to authenticate itself with an user identifier / ""user name"" and a password, the following process is executed:

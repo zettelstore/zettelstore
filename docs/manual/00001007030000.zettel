@@ -3,6 +3,7 @@ title: Zettelmarkup: Block-Structured Elements
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220311181036
 
 Every markup for blocks-structured elements (""blocks"") begins at the very first position of a line.

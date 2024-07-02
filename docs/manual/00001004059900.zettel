@@ -3,6 +3,7 @@ title: Command line flags for profiling the application
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
+created: 20211122170506
 modified: 20211122174951
 
 If you want to measure potential bottlenecks within the software Zettelstore,

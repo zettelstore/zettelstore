@@ -3,6 +3,7 @@ title: User roles
 role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220214175212
 
 Every user is associated with some basic privileges.

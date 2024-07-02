@@ -3,6 +3,7 @@ title: Zettelmarkup: Basic Definitions
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218130713
 
 Every Zettelmarkup content consists of a sequence of Unicode code-points.

@@ -3,6 +3,7 @@ title: Zettelmarkup: Citation Key
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210810155955
 modified: 20220218133447
 
 A citation key references some external material that is part of a bibliographical collection.

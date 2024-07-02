@@ -3,6 +3,7 @@ title: Reserved zettel identifier
 role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
+created: 20210721105704
 modified: 20220311111751
 
 [[Zettel identifier|00001006050000]] are typically created by examine the current date and time.

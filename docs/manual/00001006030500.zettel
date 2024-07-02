@@ -3,6 +3,7 @@ title: Boolean Value
 role: manual
 tags: #manual #reference #zettel #zettelstore
 syntax: zmk
+created: 20210212135017
 modified: 20220304114040
 
 On some places, metadata values are interpreted as a truth value.

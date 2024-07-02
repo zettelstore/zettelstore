@@ -3,6 +3,7 @@ title: Zettelmarkup: Nested Lists
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218133902
 
 There are thee kinds of lists that can be nested: ordered lists, unordered lists, and quotation lists.

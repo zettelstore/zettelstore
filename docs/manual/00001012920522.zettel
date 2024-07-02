@@ -3,6 +3,7 @@ title: Zmk Encoding
 role: manual
 tags: #api #manual #reference #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20211124140857
 
 A zettel representation that tries to recreate a [[Zettelmarkup|00001007000000]] representation of the zettel.

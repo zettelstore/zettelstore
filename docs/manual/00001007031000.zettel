@@ -3,6 +3,7 @@ title: Zettelmarkup: Tables
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218131107
 
 Tables are used to show some data in a two-dimensional fashion.

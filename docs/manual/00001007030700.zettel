@@ -3,6 +3,7 @@ title: Zettelmarkup: Verse Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218132432
 
 Sometimes, you want to enter text with significant space characters at the beginning of each line and with significant line endings.

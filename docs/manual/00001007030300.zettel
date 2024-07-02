@@ -3,6 +3,7 @@ title: Zettelmarkup: Headings
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218133755
 
 To specify a (sub-) section of a zettel, you should use the headings syntax: at

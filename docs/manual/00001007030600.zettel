@@ -3,6 +3,7 @@ title: Zettelmarkup: Quotation Blocks
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220218131806
 
 A simple way to enter a quotation is to use the [[quotation list|00001007030200]].

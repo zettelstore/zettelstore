@@ -3,6 +3,7 @@ title: The ''run'' sub-command
 role: manual
 tags: #command #configuration #manual #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20220724162050
 
 === ``zettelstore run``

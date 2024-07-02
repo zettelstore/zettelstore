@@ -3,6 +3,7 @@ title: List of supported commands of the administrator console
 role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
+created: 20210510141304
 modified: 20220823194553
 
 ; [!bye|''bye'']

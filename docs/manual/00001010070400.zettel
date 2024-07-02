@@ -3,6 +3,7 @@ title: Authorization and read-only mode
 role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20211103164251
 
 It is possible to enable both the read-only mode of the Zettelstore __and__ authentication/authorization.

@@ -3,6 +3,7 @@ title: Zettelmarkup: General Principles
 role: manual
 tags: #manual #zettelmarkup #zettelstore
 syntax: zmk
+created: 20210126175322
 modified: 20211124175047
 
 Any document can be thought as a sequence of paragraphs and other [[block-structured elements|00001007030000]] (""blocks""), such as [[headings|00001007030300]], [[lists|00001007030200]], quotations, and code blocks.
