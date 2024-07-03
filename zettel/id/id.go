@@ -54,6 +54,7 @@ var (
 	PreludeSxnZid     = MustParse(api.ZidSxnPrelude)
 	EmojiZid          = MustParse(api.ZidEmoji)
 	TOCNewTemplateZid = MustParse(api.ZidTOCNewTemplate)
+	AppDirZid         = MustParse(api.ZidAppDirectory)
 	DefaultHomeZid    = MustParse(api.ZidDefaultHome)
 )
 

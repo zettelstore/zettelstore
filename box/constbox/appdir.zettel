@@ -1,0 +1,3 @@
+This zettel works as a directory for zettel to be used by Zettelstore client applications.
+For every used application named ''APP'', there should be a metadata key ''APP-zid''.
+Its value must contain the identifier of an application specific zettel.

@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240630212430
+modified: 20240704001110
 
 The following table lists all predefined zettel with their purpose.
 
@@ -46,6 +46,7 @@ The following table lists all predefined zettel with their purpose.
 | [[00000000090002]] | New User | Template for a new [[user zettel|00001010040200]]
 | [[00000000090003]] | New Tag | Template for a new [[tag zettel|00001006020100#tag]]
 | [[00000000090004]] | New Role | Template for a new [[role zettel|00001006020100#role]]
+| [[00009999999998]] | Zettelstore Application Directory | Maps application name to application specific zettel
 | [[00010000000000]] | Home | Default home zettel, contains some welcome information
 
 If a zettel is not linked, it is not accessible for the current user.

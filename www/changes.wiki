@@ -17,6 +17,10 @@
      new zettelstore identifier format, which is not based on timestamp of
      zettel creation date.
      (minor)
+  *  Add zettel &ldquo;Zettelstore Application Directory&rdquo;, which contains
+     identifier for application specific zettel. Needed for planned new
+     identifier format.
+     (minor)
   *  Update Sx prelude: make macros more robust / more general. This might
      break your code in the future.
      (minor: webui)
