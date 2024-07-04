@@ -424,7 +424,7 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
 		zettel.NewContent(contentRoleTag)},
-	id.AppDirZid: {
+	id.MustParse(api.ZidAppDirectory): {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Application Directory",
 			api.KeyRole:       api.ValueRoleConfiguration,
