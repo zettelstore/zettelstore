@@ -122,7 +122,7 @@ func (mgr *Manager) FetchZids(ctx context.Context) (*id.Set, error) {
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for _, p := range mgr.boxes {
-		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Add(zid) }, func(id.Zid) bool { return true })
+		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Add(zid) }, query.AlwaysIncluded)
 		if err != nil {
 			return nil, err
 		}

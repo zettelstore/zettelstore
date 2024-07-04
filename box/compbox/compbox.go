@@ -68,7 +68,7 @@ var myZettel = map[id.Zid]struct {
 }
 
 // Get returns the one program box.
-func getCompBox(boxNumber int, mf box.Enricher) box.ManagedBox {
+func getCompBox(boxNumber int, mf box.Enricher) *compBox {
 	return &compBox{
 		log: kernel.Main.GetLogger(kernel.BoxService).Clone().
 			Str("box", "comp").Int("boxnum", int64(boxNumber)).Child(),
