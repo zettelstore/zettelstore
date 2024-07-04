@@ -34,7 +34,7 @@ func genParserM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genParserC(*meta.Meta) []byte {
+func genParserC(*compBox) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("|=Syntax<|=Alt. Value(s):|=Text Parser?:|=Text Format?:|=Image Format?:\n")
 	syntaxes := parser.GetSyntaxes()

@@ -36,7 +36,7 @@ func genMemoryM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genMemoryC(*meta.Meta) []byte {
+func genMemoryC(*compBox) []byte {
 	pageSize := os.Getpagesize()
 	var m runtime.MemStats
 	runtime.GC()

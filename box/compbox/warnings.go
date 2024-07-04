@@ -28,9 +28,22 @@ func genWarningsM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }
-func genWarningsC(*meta.Meta) []byte {
+
+func genWarningsC(cb *compBox) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("* [[Zettel without stored creation date|query:created-missing:true]]\n")
 	buf.WriteString("* [[Zettel with strange creation date|query:created-missing:true]]\n")
+
+	first := true
+	cb.mapper.Warnings().ForEach(func(zid id.Zid) {
+		if first {
+			first = false
+			buf.WriteString("=== Mapper Warnings\n")
+		}
+		buf.WriteString("* [[")
+		buf.WriteString(zid.String())
+		buf.WriteString("]]\n")
+	})
+
 	return buf.Bytes()
 }

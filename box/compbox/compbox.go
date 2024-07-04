@@ -33,7 +33,7 @@ func init() {
 	manager.Register(
 		" comp",
 		func(u *url.URL, cdata *manager.ConnectData) (box.ManagedBox, error) {
-			return getCompBox(cdata.Number, cdata.Enricher), nil
+			return getCompBox(cdata.Number, cdata.Enricher, cdata.Mapper), nil
 		})
 }
 
@@ -41,12 +41,13 @@ type compBox struct {
 	log      *logger.Logger
 	number   int
 	enricher box.Enricher
+	mapper   manager.Mapper
 }
 
 var myConfig *meta.Meta
 var myZettel = map[id.Zid]struct {
 	meta    func(id.Zid) *meta.Meta
-	content func(*meta.Meta) []byte
+	content func(*compBox) []byte
 }{
 	id.MustParse(api.ZidVersion):         {genVersionBuildM, genVersionBuildC},
 	id.MustParse(api.ZidHost):            {genVersionHostM, genVersionHostC},
@@ -68,12 +69,13 @@ var myZettel = map[id.Zid]struct {
 }
 
 // Get returns the one program box.
-func getCompBox(boxNumber int, mf box.Enricher) *compBox {
+func getCompBox(boxNumber int, mf box.Enricher, mapper manager.Mapper) *compBox {
 	return &compBox{
 		log: kernel.Main.GetLogger(kernel.BoxService).Clone().
 			Str("box", "comp").Int("boxnum", int64(boxNumber)).Child(),
 		number:   boxNumber,
 		enricher: mf,
+		mapper:   mapper,
 	}
 }
 
@@ -90,7 +92,7 @@ func (cb *compBox) GetZettel(_ context.Context, zid id.Zid) (zettel.Zettel, erro
 				cb.log.Trace().Msg("GetZettel/Content")
 				return zettel.Zettel{
 					Meta:    m,
-					Content: zettel.NewContent(genContent(m)),
+					Content: zettel.NewContent(genContent(cb)),
 				}, nil
 			}
 			cb.log.Trace().Msg("GetZettel/NoContent")

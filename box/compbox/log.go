@@ -31,7 +31,7 @@ func genLogM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genLogC(*meta.Meta) []byte {
+func genLogC(*compBox) []byte {
 	const tsFormat = "2006-01-02 15:04:05.999999"
 	entries := kernel.Main.RetrieveLogEntries()
 	var buf bytes.Buffer

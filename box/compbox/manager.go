@@ -30,7 +30,7 @@ func genManagerM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genManagerC(*meta.Meta) []byte {
+func genManagerC(*compBox) []byte {
 	kvl := kernel.Main.GetServiceStatistics(kernel.BoxService)
 	if len(kvl) == 0 {
 		return nil

@@ -118,9 +118,19 @@ func (mgr *Manager) FetchZids(ctx context.Context) (*id.Set, error) {
 	if mgr.State() != box.StartStateStarted {
 		return nil, box.ErrStopped
 	}
-	result := id.NewSet()
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
+	return mgr.fetchZids(ctx)
+}
+
+func (mgr *Manager) fetchZids(ctx context.Context) (*id.Set, error) {
+	numZettel := 0
+	for _, p := range mgr.boxes {
+		var mbstats box.ManagedBoxStats
+		p.ReadStats(&mbstats)
+		numZettel += mbstats.Zettel
+	}
+	result := id.NewSetCap(numZettel)
 	for _, p := range mgr.boxes {
 		err := p.ApplyZid(ctx, func(zid id.Zid) { result.Add(zid) }, query.AlwaysIncluded)
 		if err != nil {

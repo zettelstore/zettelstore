@@ -33,7 +33,7 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
-func genVersionBuildC(*meta.Meta) []byte {
+func genVersionBuildC(*compBox) []byte {
 	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 }
 
@@ -42,7 +42,7 @@ func genVersionHostM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	return m
 }
-func genVersionHostC(*meta.Meta) []byte {
+func genVersionHostC(*compBox) []byte {
 	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string))
 }
 
@@ -51,7 +51,7 @@ func genVersionOSM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	return m
 }
-func genVersionOSC(*meta.Meta) []byte {
+func genVersionOSC(*compBox) []byte {
 	goOS := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string)
 	goArch := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoArch).(string)
 	result := make([]byte, 0, len(goOS)+len(goArch)+1)

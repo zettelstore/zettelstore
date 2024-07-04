@@ -31,7 +31,7 @@ func genKeysM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genKeysC(*meta.Meta) []byte {
+func genKeysC(*compBox) []byte {
 	keys := meta.GetSortedKeyDescriptions()
 	var buf bytes.Buffer
 	buf.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")

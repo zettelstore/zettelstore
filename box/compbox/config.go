@@ -33,7 +33,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genConfigZettelC(*meta.Meta) []byte {
+func genConfigZettelC(*compBox) []byte {
 	var buf bytes.Buffer
 	for i, p := range myConfig.Pairs() {
 		if i > 0 {
