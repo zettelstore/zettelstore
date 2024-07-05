@@ -15,6 +15,7 @@ package manager
 
 import (
 	"context"
+	"maps"
 
 	"zettelstore.de/z/zettel/id"
 )
@@ -27,7 +28,9 @@ import (
 // This will change in later versions.
 type zidMapper struct {
 	fetcher zidfetcher
-	defined *id.Set // supported old-style identifier
+	defined map[id.Zid]id.ZidN // predefined mapping, constant after creation
+	toNew   map[id.Zid]id.ZidN // working mapping old->new
+	toOld   map[id.ZidN]id.Zid
 }
 
 type zidfetcher interface {
@@ -36,62 +39,73 @@ type zidfetcher interface {
 
 // NewZidMapper creates a new ZipMapper.
 func NewZidMapper(fetcher zidfetcher) *zidMapper {
-	defined := id.NewSet(
-		id.Invalid,
-		1,     // ZidVersion           -> 0001
-		2,     // ZidHost              -> 0002
-		3,     // ZidOperatingSystem   -> 0003
-		4,     // ZidLicense           -> 0004
-		5,     // ZidAuthors           -> 0005
-		6,     // ZidDependencies      -> 0006
-		7,     // ZidLog               -> 0007
-		8,     // ZidMemory            -> 0008
-		9,     // ZidSx                -> 0009
-		10,    // ZidHTTP              -> 000a
-		11,    // ZidAPI               -> 000b
-		12,    // ZidWebUI             -> 000c
-		13,    // ZidConsole           -> 000d
-		20,    // ZidBoxManager        -> 000e
-		21,    // ZidIndex             -> 000f
-		22,    // ZidQuery             -> 000g
-		90,    // ZidMetadataKey       -> 000h
-		92,    // ZidParser            -> 000i
-		96,    // ZidStartupConfig     -> 000j
-		100,   // ZidRuntimeConfig     -> 000k
-		101,   // ZidDirectory         -> 000k
-		102,   // ZidWarnings          -> 000m
-		10100, // Base HTML Template   -> 000r
-		10200, // Login Form Template  -> 000s
-		10300, // List Zettel Template -> 000t
-		10401, // Detail Template      -> 000u
-		10402, // Info Template        -> 000v
-		10403, // Form Template        -> 000w
-		10404, // Rename Form Template (will be removed in the future)
-		10405, // Delete Template      -> 000x
-		10700, // Error Template       -> 000y
-		19000, // Sxn Start Code       -> 000p
-		19990, // Sxn Base Code        -> 000q
-		20001, // Base CSS             -> 000z
-		25001, // User CSS             -> 0010
-		40001, // Generic Emoji        -> 000n
-		59900, // Sxn Prelude          -> 000o
-		60010, // zettel               -> 0011
-		60020, // confguration         -> 0012
-		60030, // role                 -> 0013
-		60040, // tag                  -> 0014
-		90000, // New Menu             -> 0015
-		90001, // New Zettel           -> 0016
-		90002, // New User             -> 0017
-		90003, // New Tag              -> 0018
-		90004, // New Role             -> 0019
+	defined := map[id.Zid]id.ZidN{
+		id.Invalid: id.InvalidN,
+		1:          id.MustParseN("0001"), // ZidVersion
+		2:          id.MustParseN("0002"), // ZidHost
+		3:          id.MustParseN("0003"), // ZidOperatingSystem
+		4:          id.MustParseN("0004"), // ZidLicense
+		5:          id.MustParseN("0005"), // ZidAuthors
+		6:          id.MustParseN("0006"), // ZidDependencies
+		7:          id.MustParseN("0007"), // ZidLog
+		8:          id.MustParseN("0008"), // ZidMemory
+		9:          id.MustParseN("0009"), // ZidSx
+		10:         id.MustParseN("000a"), // ZidHTTP
+		11:         id.MustParseN("000b"), // ZidAPI
+		12:         id.MustParseN("000c"), // ZidWebUI
+		13:         id.MustParseN("000d"), // ZidConsole
+		20:         id.MustParseN("000e"), // ZidBoxManager
+		21:         id.MustParseN("000f"), // ZidIndex
+		22:         id.MustParseN("000g"), // ZidQuery
+		90:         id.MustParseN("000h"), // ZidMetadataKey
+		92:         id.MustParseN("000i"), // ZidParser
+		96:         id.MustParseN("000j"), // ZidStartupConfiguration
+		100:        id.MustParseN("000k"), // ZidRuntimeConfiguration
+		101:        id.MustParseN("000l"), // ZidDirectory
+		102:        id.MustParseN("000m"), // ZidWarnings
+		10100:      id.MustParseN("000r"), // Base HTML Template
+		10200:      id.MustParseN("000s"), // Login Form Template
+		10300:      id.MustParseN("000t"), // List Zettel Template
+		10401:      id.MustParseN("000u"), // Detail Template
+		10402:      id.MustParseN("000v"), // Info Template
+		10403:      id.MustParseN("000w"), // Form Template
+		10404:      id.MustParseN("001z"), // Rename Form Template (will be removed in the future)
+		10405:      id.MustParseN("000x"), // Delete Template
+		10700:      id.MustParseN("000y"), // Error Template
+		19000:      id.MustParseN("000p"), // Sxn Start Code
+		19990:      id.MustParseN("000q"), // Sxn Base Code
+		20001:      id.MustParseN("000z"), // Base CSS
+		25001:      id.MustParseN("0010"), // User CSS
+		40001:      id.MustParseN("000n"), // Generic Emoji
+		59900:      id.MustParseN("000o"), // Sxn Prelude
+		60010:      id.MustParseN("0011"), // zettel
+		60020:      id.MustParseN("0012"), // confguration
+		60030:      id.MustParseN("0013"), // role
+		60040:      id.MustParseN("0014"), // tag
+		90000:      id.MustParseN("0015"), // New Menu
+		90001:      id.MustParseN("0016"), // New Zettel
+		90002:      id.MustParseN("0017"), // New User
+		90003:      id.MustParseN("0018"), // New Tag
+		90004:      id.MustParseN("0019"), // New Role
 		// 100000000,   // Manual               -> 0020-00yz
-		9999999998,  // ZidAppDirectory      -> 00zy
-		9999999999,  // ZidMapping           -> 00zz
-		10000000000, // ZidDefaultHome       -> 0100
-	)
+		9999999998:  id.MustParseN("00zy"), // ZidAppDirectory
+		9999999999:  id.MustParseN("00zz"), // ZidMapping
+		10000000000: id.MustParseN("0100"), // ZidDefaultHome
+	}
+	toNew := maps.Clone(defined)
+	toOld := make(map[id.ZidN]id.Zid, len(toNew))
+	for o, n := range toNew {
+		if _, found := toOld[n]; found {
+			panic("duplicate predefined zid")
+		}
+		toOld[n] = o
+	}
+
 	return &zidMapper{
 		fetcher: fetcher,
 		defined: defined,
+		toNew:   toNew,
+		toOld:   toOld,
 	}
 }
 
@@ -102,7 +116,8 @@ func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
 	if 19700000000000 <= zid || (1000000000 <= zid && zid <= 1099999999) {
 		return true
 	}
-	return zm.defined.Contains(zid)
+	_, found := zm.defined[zid]
+	return found
 }
 
 // Warnings returns all zettel identifier with warnings.
