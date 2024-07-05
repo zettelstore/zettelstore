@@ -99,10 +99,7 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 // (as stated in the manual), or is part of the manual itself, or is greater than
 // 19699999999999.
 func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
-	if 19700000000000 <= zid {
-		return true
-	}
-	if 1000000000 <= zid && zid <= 1999999999 {
+	if 19700000000000 <= zid || (1000000000 <= zid && zid <= 1099999999) {
 		return true
 	}
 	return zm.defined.Contains(zid)
