@@ -30,7 +30,7 @@ type zidMapper struct {
 	fetcher zidfetcher
 	defined map[id.Zid]id.ZidN // predefined mapping, constant after creation
 	toNew   map[id.Zid]id.ZidN // working mapping old->new
-	toOld   map[id.ZidN]id.Zid
+	toOld   map[id.ZidN]id.Zid // working mapping new->old
 }
 
 type zidfetcher interface {
@@ -133,4 +133,43 @@ func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
 		}
 	})
 	return warnings, nil
+}
+
+// OldToNewMapping returns the mapping of old format identifier to new format identifier.
+func (zm *zidMapper) OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error) {
+	allZids, err := zm.fetcher.FetchZids(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	nextZidN := id.MustParseN("0101")
+	nextZidM := id.MustParseN("0020")
+	manualFound := false
+
+	result := make(map[id.Zid]id.ZidN, allZids.Length())
+	allZids.ForEach(func(zidO id.Zid) {
+		if zidN, found := zm.toNew[zidO]; found {
+			result[zidO] = zidN
+			return
+		}
+
+		if 1000000000 <= zidO && zidO <= 1099999999 {
+			if zidO == 1000000000 {
+				manualFound = true
+			}
+			if manualFound {
+				zm.toNew[zidO] = nextZidM
+				zm.toOld[nextZidM] = zidO
+				result[zidO] = nextZidM
+				nextZidM++
+				return
+			}
+		}
+
+		zm.toNew[zidO] = nextZidN
+		zm.toOld[nextZidN] = zidO
+		result[zidO] = nextZidN
+		nextZidN++
+	})
+	return result, err
 }

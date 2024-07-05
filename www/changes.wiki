@@ -12,6 +12,10 @@
   *  Add zettel &ldquo;Zettelstore Warnings&rdquo; to help identifying zettel
      to upgrade for future migration to planned new zettel identifier format.
      (minor: webui)
+  *  Add zettel &ldquo;Zettelstore Identifier Mapping&rdquo; to show a possible
+     mapping from the old identifier format to the new one. This should help
+     users to possibly rename some zettel for a metter mapping.
+     (minor: webui)
   *  Add metadata key <code>created-missing</code> to list zettel without
      stored metadata key <code>created</code>. Needed for migration to planned
      new zettelstore identifier format, which is not based on timestamp of

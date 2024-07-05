@@ -4,7 +4,7 @@ role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
 created: 20240705200557
-modified: 20240705201421
+modified: 20240706003608
 precursor: 00001006050000
 
 Timestamp-based zettel identifier (14 digits) will be migrated to a new format.
@@ -29,11 +29,13 @@ Plans tend to be revised if they get in contact with reality.
   You should update your zettel to remove these warnings to ensure a smooth migration.
 
   If you have developed an application, that defines a specific zettel identifier to be used as application configuration, you should must the new zettel [[Zettelstore Application Directory|00009999999998]] (''00009999999998'').
+
+  There is an explicit, but preliminary mapping of the old format to the new one, and vice versa.
+  This mapping will be calculated with the order of the identifier in the old format.
+  The zettel [[Zettelstore Identifier Mapping|00009999999999]] (''00009999999999'') will show this mapping.
+
 ; Version 0.19
 : The new identifier format will be used initially internal.
-  There will be an explicit mapping of the old format to the new one, and vice versa.
-  This mapping will be calculated with the order of the identifier in the old format.
-  A zettel will show this mapping.
 
   You will have some time to update your zettel data if you detect some issues.
 

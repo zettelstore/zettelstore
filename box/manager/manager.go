@@ -45,6 +45,8 @@ type ConnectData struct {
 // Mapper allows to inspect the mapping between old-style and new-style zettel identifier.
 type Mapper interface {
 	Warnings(context.Context) (*id.Set, error) // Fetch problematic zettel identifier
+
+	OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error)
 }
 
 // Connect returns a handle to the specified box.
