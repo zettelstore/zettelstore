@@ -15,6 +15,7 @@ package compbox
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"t73f.de/r/zsc/api"
@@ -30,7 +31,7 @@ func genManagerM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genManagerC(*compBox) []byte {
+func genManagerC(context.Context, *compBox) []byte {
 	kvl := kernel.Main.GetServiceStatistics(kernel.BoxService)
 	if len(kvl) == 0 {
 		return nil

@@ -15,6 +15,7 @@ package compbox
 
 import (
 	"bytes"
+	"context"
 
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
@@ -31,7 +32,7 @@ func genLogM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genLogC(*compBox) []byte {
+func genLogC(context.Context, *compBox) []byte {
 	const tsFormat = "2006-01-02 15:04:05.999999"
 	entries := kernel.Main.RetrieveLogEntries()
 	var buf bytes.Buffer

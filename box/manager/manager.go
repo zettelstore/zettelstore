@@ -44,7 +44,7 @@ type ConnectData struct {
 
 // Mapper allows to inspect the mapping between old-style and new-style zettel identifier.
 type Mapper interface {
-	Warnings() *id.Set // Fetch problematic zettel identifier
+	Warnings(context.Context) (*id.Set, error) // Fetch problematic zettel identifier
 }
 
 // Connect returns a handle to the specified box.
@@ -143,13 +143,14 @@ func New(boxURIs []*url.URL, authManager auth.BaseManager, rtConfig config.Confi
 		rtConfig:     rtConfig,
 		infos:        make(chan box.UpdateInfo, len(boxURIs)*10),
 		propertyKeys: propertyKeys,
-		zidMapper:    NewZidMapper(),
 
 		idxLog:   boxLog.Clone().Str("box", "index").Child(),
 		idxStore: createIdxStore(rtConfig),
 		idxAr:    newAnteroomQueue(1000),
 		idxReady: make(chan struct{}, 1),
 	}
+	mgr.zidMapper = NewZidMapper(mgr)
+
 	cdata := ConnectData{Number: 1, Config: rtConfig, Enricher: mgr, Notify: mgr.infos, Mapper: mgr.zidMapper}
 	boxes := make([]box.ManagedBox, 0, len(boxURIs)+2)
 	for _, uri := range boxURIs {
@@ -313,11 +314,6 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	go mgr.notifier()
 
 	mgr.waitBoxesAreStarted()
-	if allZids, err := mgr.fetchZids(context.Background()); err == nil {
-		mgr.zidMapper.initialize(allZids)
-	} else {
-		mgr.mgrLog.Error().Err(err)
-	}
 	mgr.setState(box.StartStateStarted)
 	mgr.notifyObserver(&box.UpdateInfo{Box: mgr, Reason: box.OnReady})
 

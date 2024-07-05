@@ -120,10 +120,6 @@ func (mgr *Manager) FetchZids(ctx context.Context) (*id.Set, error) {
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
-	return mgr.fetchZids(ctx)
-}
-
-func (mgr *Manager) fetchZids(ctx context.Context) (*id.Set, error) {
 	numZettel := 0
 	for _, p := range mgr.boxes {
 		var mbstats box.ManagedBoxStats

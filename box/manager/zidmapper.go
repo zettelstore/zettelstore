@@ -14,6 +14,8 @@
 package manager
 
 import (
+	"context"
+
 	"zettelstore.de/z/zettel/id"
 )
 
@@ -24,12 +26,16 @@ import (
 //
 // This will change in later versions.
 type zidMapper struct {
-	defined  *id.Set // supported old-style identifier
-	warnings *id.Set // found old-style problematic identifier
+	fetcher zidfetcher
+	defined *id.Set // supported old-style identifier
+}
+
+type zidfetcher interface {
+	FetchZids(context.Context) (*id.Set, error)
 }
 
 // NewZidMapper creates a new ZipMapper.
-func NewZidMapper() *zidMapper {
+func NewZidMapper(fetcher zidfetcher) *zidMapper {
 	defined := id.NewSet(
 		id.Invalid,
 		1,     // ZidVersion           -> 0001
@@ -84,8 +90,8 @@ func NewZidMapper() *zidMapper {
 		10000000000, // ZidDefaultHome       -> 0100
 	)
 	return &zidMapper{
-		defined:  defined,
-		warnings: nil,
+		fetcher: fetcher,
+		defined: defined,
 	}
 }
 
@@ -93,7 +99,7 @@ func NewZidMapper() *zidMapper {
 // (as stated in the manual), or is part of the manual itself, or is greater than
 // 19699999999999.
 func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
-	if zid > 19699999999999 {
+	if 19700000000000 <= zid {
 		return true
 	}
 	if 1000000000 <= zid && zid <= 1999999999 {
@@ -102,16 +108,17 @@ func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
 	return zm.defined.Contains(zid)
 }
 
-// initialize with all found zettel to build mapping.
-func (zm *zidMapper) initialize(allZids *id.Set) {
+// Warnings returns all zettel identifier with warnings.
+func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
+	allZids, err := zm.fetcher.FetchZids(ctx)
+	if err != nil {
+		return nil, err
+	}
 	warnings := id.NewSet()
 	allZids.ForEach(func(zid id.Zid) {
 		if !zm.isWellDefined(zid) {
 			warnings = warnings.Add(zid)
 		}
 	})
-	zm.warnings = warnings
+	return warnings, nil
 }
-
-// Warnings returns all zettel identifier with warnings.
-func (zm *zidMapper) Warnings() *id.Set { return zm.warnings.Clone() }

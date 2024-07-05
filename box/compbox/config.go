@@ -15,6 +15,7 @@ package compbox
 
 import (
 	"bytes"
+	"context"
 
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
@@ -33,7 +34,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genConfigZettelC(*compBox) []byte {
+func genConfigZettelC(context.Context, *compBox) []byte {
 	var buf bytes.Buffer
 	for i, p := range myConfig.Pairs() {
 		if i > 0 {

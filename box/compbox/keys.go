@@ -15,6 +15,7 @@ package compbox
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 
 	"t73f.de/r/zsc/api"
@@ -31,7 +32,7 @@ func genKeysM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genKeysC(*compBox) []byte {
+func genKeysC(context.Context, *compBox) []byte {
 	keys := meta.GetSortedKeyDescriptions()
 	var buf bytes.Buffer
 	buf.WriteString("|=Name<|=Type<|=Computed?:|=Property?:\n")

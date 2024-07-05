@@ -14,6 +14,8 @@
 package compbox
 
 import (
+	"context"
+
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
@@ -33,7 +35,7 @@ func genVersionBuildM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
-func genVersionBuildC(*compBox) []byte {
+func genVersionBuildC(context.Context, *compBox) []byte {
 	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreVersion).(string))
 }
 
@@ -42,7 +44,7 @@ func genVersionHostM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	return m
 }
-func genVersionHostC(*compBox) []byte {
+func genVersionHostC(context.Context, *compBox) []byte {
 	return []byte(kernel.Main.GetConfig(kernel.CoreService, kernel.CoreHostname).(string))
 }
 
@@ -51,7 +53,7 @@ func genVersionOSM(zid id.Zid) *meta.Meta {
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
 	return m
 }
-func genVersionOSC(*compBox) []byte {
+func genVersionOSC(context.Context, *compBox) []byte {
 	goOS := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoOS).(string)
 	goArch := kernel.Main.GetConfig(kernel.CoreService, kernel.CoreGoArch).(string)
 	result := make([]byte, 0, len(goOS)+len(goArch)+1)

@@ -15,6 +15,7 @@ package compbox
 
 import (
 	"bytes"
+	"context"
 
 	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
@@ -29,13 +30,20 @@ func genWarningsM(zid id.Zid) *meta.Meta {
 	return m
 }
 
-func genWarningsC(cb *compBox) []byte {
+func genWarningsC(ctx context.Context, cb *compBox) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("* [[Zettel without stored creation date|query:created-missing:true]]\n")
-	buf.WriteString("* [[Zettel with strange creation date|query:created-missing:true]]\n")
+	buf.WriteString("* [[Zettel with strange creation date|query:created<19700000000000]]\n")
 
+	ws, err := cb.mapper.Warnings(ctx)
+	if err != nil {
+		buf.WriteString("**Error while fetching: ")
+		buf.WriteString(err.Error())
+		buf.WriteString("**\n")
+		return buf.Bytes()
+	}
 	first := true
-	cb.mapper.Warnings().ForEach(func(zid id.Zid) {
+	ws.ForEach(func(zid id.Zid) {
 		if first {
 			first = false
 			buf.WriteString("=== Mapper Warnings\n")
