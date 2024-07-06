@@ -15,7 +15,9 @@ package manager
 
 import (
 	"context"
+	"fmt"
 	"maps"
+	"sync"
 
 	"zettelstore.de/z/zettel/id"
 )
@@ -27,10 +29,15 @@ import (
 //
 // This will change in later versions.
 type zidMapper struct {
-	fetcher zidfetcher
-	defined map[id.Zid]id.ZidN // predefined mapping, constant after creation
-	toNew   map[id.Zid]id.ZidN // working mapping old->new
-	toOld   map[id.ZidN]id.Zid // working mapping new->old
+	fetcher   zidfetcher
+	defined   map[id.Zid]id.ZidN // predefined mapping, constant after creation
+	mx        sync.RWMutex       // protect toNew ... nextZidN
+	toNew     map[id.Zid]id.ZidN // working mapping old->new
+	toOld     map[id.ZidN]id.Zid // working mapping new->old
+	lastZidO  id.Zid             // last zidO when calling GetZidN(zidO)
+	nextZidM  id.ZidN            // next zid for manual
+	hadManual bool
+	nextZidN  id.ZidN // next zid for normal zettel
 }
 
 type zidfetcher interface {
@@ -102,10 +109,14 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 	}
 
 	return &zidMapper{
-		fetcher: fetcher,
-		defined: defined,
-		toNew:   toNew,
-		toOld:   toOld,
+		fetcher:   fetcher,
+		defined:   defined,
+		toNew:     toNew,
+		toOld:     toOld,
+		lastZidO:  id.Invalid,
+		nextZidM:  id.MustParseN("0020"),
+		hadManual: false,
+		nextZidN:  id.MustParseN("0101"),
 	}
 }
 
@@ -135,6 +146,42 @@ func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
 	return warnings, nil
 }
 
+func (zm *zidMapper) GetZidN(zidO id.Zid) (id.ZidN, error) {
+	zm.mx.RLock()
+	if zidN, found := zm.toNew[zidO]; found {
+		zm.mx.RUnlock()
+		return zidN, nil
+	}
+	zm.mx.RUnlock()
+	if zidO <= zm.lastZidO {
+		return id.InvalidN, fmt.Errorf("zid out of sequence: %v/%v", zidO, zm.lastZidO)
+	}
+	zm.lastZidO = zidO
+
+	if 1000000000 <= zidO && zidO <= 1099999999 {
+		if zidO == 1000000000 {
+			zm.hadManual = true
+		}
+		if zm.hadManual {
+			zm.mx.Lock()
+			zidN := zm.nextZidM
+			zm.nextZidM++
+			zm.toNew[zidO] = zidN
+			zm.toOld[zidN] = zidO
+			zm.mx.Unlock()
+			return zidN, nil
+		}
+	}
+
+	zm.mx.Lock()
+	zidN := zm.nextZidN
+	zm.nextZidN++
+	zm.toNew[zidO] = zidN
+	zm.toOld[zidN] = zidO
+	zm.mx.Unlock()
+	return zidN, nil
+}
+
 // OldToNewMapping returns the mapping of old format identifier to new format identifier.
 func (zm *zidMapper) OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error) {
 	allZids, err := zm.fetcher.FetchZids(ctx)
@@ -142,34 +189,16 @@ func (zm *zidMapper) OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, e
 		return nil, err
 	}
 
-	nextZidN := id.MustParseN("0101")
-	nextZidM := id.MustParseN("0020")
-	manualFound := false
-
 	result := make(map[id.Zid]id.ZidN, allZids.Length())
 	allZids.ForEach(func(zidO id.Zid) {
-		if zidN, found := zm.toNew[zidO]; found {
-			result[zidO] = zidN
+		if err != nil {
 			return
 		}
-
-		if 1000000000 <= zidO && zidO <= 1099999999 {
-			if zidO == 1000000000 {
-				manualFound = true
-			}
-			if manualFound {
-				zm.toNew[zidO] = nextZidM
-				zm.toOld[nextZidM] = zidO
-				result[zidO] = nextZidM
-				nextZidM++
-				return
-			}
+		var zidN id.ZidN
+		zidN, err = zm.GetZidN(zidO)
+		if err == nil {
+			result[zidO] = zidN
 		}
-
-		zm.toNew[zidO] = nextZidN
-		zm.toOld[nextZidN] = zidO
-		result[zidO] = nextZidN
-		nextZidN++
 	})
 	return result, err
 }
