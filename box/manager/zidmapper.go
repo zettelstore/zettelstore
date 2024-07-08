@@ -95,6 +95,7 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 		90003:      id.MustParseN("0018"), // New Tag
 		90004:      id.MustParseN("0019"), // New Role
 		// 100000000,   // Manual               -> 0020-00yz
+		9999999997:  id.MustParseN("00zx"), // ZidSession
 		9999999998:  id.MustParseN("00zy"), // ZidAppDirectory
 		9999999999:  id.MustParseN("00zz"), // ZidMapping
 		10000000000: id.MustParseN("0100"), // ZidDefaultHome
