@@ -1,9 +1,18 @@
 <title>Change Log</title>
 
-<a id="0_18"></a>
-<h2>Changes for Version 0.18.0 (pending)</h2>
+<a id="0_18"></a> <h2>Changes for Version 0.18.0 (pending)</h2>
   *  Remove Sx macro <code>defunconst</code>. Use <code>defun</code> instead.
      (breaking: webui)
+  *  Format of zettel identifier will be changed in the future to a new format,
+     instead of the current timestamp-based format. The usage of zettel
+     identifier that are before 1970-01-01T00:00:00 is not allowed any more
+     (with the exception of predefined identifier)
+     (deprecation)
+  *  Due to the planned format of zettel identifier, the &ldquo;rename&rdquo;
+     operation is deprecated. It will be removed in version 0.19 or later. If
+     you have a significant use case for the rename operation, please contact
+     the maintainer immediate.
+     (deprecation)
   *  New zettel are now created with the permission for others to read/write
      them. This is important especially for Unix-like systems. If you want the
      previous behaviour, set <code>umask</code> accordingly, for example
