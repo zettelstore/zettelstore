@@ -17,6 +17,7 @@ import (
 	"context"
 	"maps"
 	"sync"
+	"time"
 
 	"zettelstore.de/z/zettel/id"
 )
@@ -122,11 +123,13 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 // (as stated in the manual), or is part of the manual itself, or is greater than
 // 19699999999999.
 func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
-	if 19700000000000 <= zid || (1000000000 <= zid && zid <= 1099999999) {
+	if _, found := zm.defined[zid]; found || (1000000000 <= zid && zid <= 1099999999) {
 		return true
 	}
-	_, found := zm.defined[zid]
-	return found
+	if _, err := time.Parse("20060102150405", zid.String()); err != nil {
+		return false
+	}
+	return 19700000000000 <= zid
 }
 
 // Warnings returns all zettel identifier with warnings.
