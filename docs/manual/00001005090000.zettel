@@ -4,9 +4,9 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240704001110
+modified: 20240708154640
 
-The following table lists all predefined zettel with their purpose.
+The following table lists all predefined zettel with their purpose.[^Zettel identifier format will be migrated to a new format after version 0.19.]
 
 |= Identifier :|= Title | Purpose
 | [[00000000000001]] | Zettelstore Version | Contains the version string of the running Zettelstore

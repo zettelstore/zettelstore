@@ -4,7 +4,7 @@ role: manual
 tags: #manual #meta #reference #zettel #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240630180756
+modified: 20240708154737
 
 Although you are free to define your own metadata, by using any key (according to the [[syntax|00001006010000]]), some keys have a special meaning that is enforced by Zettelstore.
 See the [[computed list of supported metadata keys|00000000000090]] for details.
@@ -142,7 +142,7 @@ Most keys conform to a [[type|00001006030000]].
 ; [!useless-files|''useless-files'']
 : Contains the file names that are rejected to serve the content of a zettel.
   Is used for [[directory boxes|00001004011400]] and [[file boxes|00001004011200#file]].
-  If a zettel is renamed or deleted, these files will be deleted.
+  If a zettel is renamed[^Renaming a zettel is deprecated. This feature will be removed in version 0.19 or later.] or deleted, these files will be deleted.
 ; [!user-id|''user-id'']
 : Provides some unique user identification for an [[user zettel|00001010040200]].
   It is used as a user name for authentication.

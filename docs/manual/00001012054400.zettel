@@ -1,10 +1,18 @@
 id: 00001012054400
 title: API: Rename a zettel
 role: manual
-tags: #api #manual #zettelstore
+tags: #api #manual #zettelstore #deprecated
 syntax: zmk
 created: 20210713150005
-modified: 20221219154659
+modified: 20240708154151
+
+**Note:** this operation is deprecated and will be removed in version 0.19 (or later).
+Do not use it anymore.
+
+If your client application depends on this operation, please get in contact with the [[author/maintainer|00000000000005]] of Zettelstore to find a solution.
+
+---
+**Deprecated**
 
 Renaming a zettel is effectively just specifying a new identifier for the zettel.
 Since more than one [[box|00001004011200]] might contain a zettel with the old identifier, the rename operation must success in every relevant box to be overall successful.

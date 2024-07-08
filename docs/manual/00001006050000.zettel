@@ -4,7 +4,7 @@ role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240630180338
+modified: 20240708154551
 
 Each zettel is given a unique identifier.
 To some degree, the zettel identifier is part of the metadata.
@@ -14,7 +14,7 @@ Basically, the identifier is given by the [[Zettelstore|00001005000000]] softwar
 
 Every zettel identifier consists of 14 digits.
 They resemble a timestamp: the first four digits could represent the year, the
-next two represent the month, following by day, hour, minute, and second.
+next two represent the month, following by day, hour, minute, and second.[^Zettel identifier format will be migrated to a new format after version 0.19, without reference to the creation date.]
 
 This allows to order zettel chronologically in a canonical way.
 
