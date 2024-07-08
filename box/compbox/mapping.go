@@ -32,7 +32,7 @@ import (
 func genMappingM(zid id.Zid) *meta.Meta {
 	m := getVersionMeta(zid, "Zettelstore Identifier Mapping")
 	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
-	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
+	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
 	return m
 }
 
