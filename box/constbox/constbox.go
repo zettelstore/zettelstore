@@ -428,12 +428,12 @@ var constZettelMap = map[id.Zid]constZettel{
 		constHeader{
 			api.KeyTitle:      "Zettelstore Application Directory",
 			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxZmk,
+			api.KeySyntax:     meta.SyntaxNone,
 			api.KeyLang:       api.ValueLangEN,
 			api.KeyCreated:    "20240703235900",
 			api.KeyVisibility: api.ValueVisibilityLogin,
 		},
-		zettel.NewContent(contentAppDir)},
+		zettel.NewContent(nil)},
 	id.DefaultHomeZid: {
 		constHeader{
 			api.KeyTitle:   "Home",
@@ -513,6 +513,3 @@ var contentRoleTag []byte
 
 //go:embed home.zettel
 var contentHomeZettel []byte
-
-//go:embed appdir.zettel
-var contentAppDir []byte

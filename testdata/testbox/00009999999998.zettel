@@ -1,0 +1,12 @@
+id: 00009999999998
+title: Zettelstore Application Directory
+role: configuration
+syntax: none
+app-zid: 00009999999998
+created: 20240703235900
+lang: en
+modified: 20240708125724
+nozid-zid: 9999999998
+noappzid: 00009999999998
+visibility: login
+

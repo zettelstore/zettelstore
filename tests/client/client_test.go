@@ -472,6 +472,25 @@ func TestVersion(t *testing.T) {
 	}
 }
 
+func TestApplicationZid(t *testing.T) {
+	c := getClient()
+	c.SetAuth("reader", "reader")
+	zid, err := c.GetApplicationZid(context.Background(), "app")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if zid != api.ZidAppDirectory {
+		t.Errorf("c.GetApplicationZid(\"app\") should result in %q, but got: %q", api.ZidAppDirectory, zid)
+	}
+	if zid, err = c.GetApplicationZid(context.Background(), "noappzid"); err == nil {
+		t.Errorf(`c.GetApplicationZid("nozid") should result in error, but got: %v`, zid)
+	}
+	if zid, err = c.GetApplicationZid(context.Background(), "nozid"); err == nil {
+		t.Errorf(`c.GetApplicationZid("nozid") should result in error, but got: %v`, zid)
+	}
+}
+
 var baseURL string
 
 func init() {
