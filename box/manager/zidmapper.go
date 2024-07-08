@@ -40,7 +40,7 @@ type zidMapper struct {
 }
 
 type zidfetcher interface {
-	FetchZids(context.Context) (*id.Set, error)
+	fetchZids(context.Context) (*id.Set, error)
 }
 
 // NewZidMapper creates a new ZipMapper.
@@ -134,7 +134,7 @@ func (zm *zidMapper) isWellDefined(zid id.Zid) bool {
 
 // Warnings returns all zettel identifier with warnings.
 func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
-	allZids, err := zm.fetcher.FetchZids(ctx)
+	allZids, err := zm.fetcher.fetchZids(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -147,11 +147,11 @@ func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
 	return warnings, nil
 }
 
-func (zm *zidMapper) GetZidN(zidO id.Zid) (id.ZidN, error) {
+func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
 	zm.mx.RLock()
 	if zidN, found := zm.toNew[zidO]; found {
 		zm.mx.RUnlock()
-		return zidN, nil
+		return zidN
 	}
 	zm.mx.RUnlock()
 
@@ -166,7 +166,7 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) (id.ZidN, error) {
 			zm.toNew[zidO] = zidN
 			zm.toOld[zidN] = zidO
 			zm.mx.Unlock()
-			return zidN, nil
+			return zidN
 		}
 	}
 
@@ -176,26 +176,20 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) (id.ZidN, error) {
 	zm.toNew[zidO] = zidN
 	zm.toOld[zidN] = zidO
 	zm.mx.Unlock()
-	return zidN, nil
+	return zidN
 }
 
 // OldToNewMapping returns the mapping of old format identifier to new format identifier.
 func (zm *zidMapper) OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error) {
-	allZids, err := zm.fetcher.FetchZids(ctx)
+	allZids, err := zm.fetcher.fetchZids(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make(map[id.Zid]id.ZidN, allZids.Length())
 	allZids.ForEach(func(zidO id.Zid) {
-		if err != nil {
-			return
-		}
-		var zidN id.ZidN
-		zidN, err = zm.GetZidN(zidO)
-		if err == nil {
-			result[zidO] = zidN
-		}
+		zidN := zm.GetZidN(zidO)
+		result[zidO] = zidN
 	})
-	return result, err
+	return result, nil
 }
