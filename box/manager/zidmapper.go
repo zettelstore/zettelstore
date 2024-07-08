@@ -15,7 +15,6 @@ package manager
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"sync"
 
@@ -34,7 +33,6 @@ type zidMapper struct {
 	mx        sync.RWMutex       // protect toNew ... nextZidN
 	toNew     map[id.Zid]id.ZidN // working mapping old->new
 	toOld     map[id.ZidN]id.Zid // working mapping new->old
-	lastZidO  id.Zid             // last zidO when calling GetZidN(zidO)
 	nextZidM  id.ZidN            // next zid for manual
 	hadManual bool
 	nextZidN  id.ZidN // next zid for normal zettel
@@ -114,7 +112,6 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 		defined:   defined,
 		toNew:     toNew,
 		toOld:     toOld,
-		lastZidO:  id.Invalid,
 		nextZidM:  id.MustParseN("0020"),
 		hadManual: false,
 		nextZidN:  id.MustParseN("0101"),
@@ -154,10 +151,6 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) (id.ZidN, error) {
 		return zidN, nil
 	}
 	zm.mx.RUnlock()
-	if zidO <= zm.lastZidO {
-		return id.InvalidN, fmt.Errorf("zid out of sequence: %v/%v", zidO, zm.lastZidO)
-	}
-	zm.lastZidO = zidO
 
 	if 1000000000 <= zidO && zidO <= 1099999999 {
 		if zidO == 1000000000 {
