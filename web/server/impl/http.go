@@ -24,13 +24,15 @@ import (
 const (
 	shutdownTimeout = 5 * time.Second
 	readTimeout     = 5 * time.Second
-	writeTimeout    = 10 * time.Second
+	writeTimeout    = 15 * time.Second
 	idleTimeout     = 120 * time.Second
 )
 
 // httpServer is a HTTP server.
 type httpServer struct {
 	http.Server
+
+	origHandler http.Handler
 }
 
 // initializeHTTPServer creates a new HTTP server object.
@@ -40,13 +42,14 @@ func (srv *httpServer) initializeHTTPServer(addr string, handler http.Handler) {
 	}
 	srv.Server = http.Server{
 		Addr:    addr,
-		Handler: handler,
+		Handler: http.TimeoutHandler(handler, writeTimeout, "Timeout"),
 
 		// See: https://blog.cloudflare.com/exposing-go-on-the-internet/
 		ReadTimeout:  readTimeout,
-		WriteTimeout: writeTimeout,
+		WriteTimeout: writeTimeout + 200*time.Millisecond, // Give some time to detect timeout and to write an appropriate error message.
 		IdleTimeout:  idleTimeout,
 	}
+	srv.origHandler = handler
 }
 
 // SetDebug enables debugging goroutines that are started by the server.
@@ -56,6 +59,7 @@ func (srv *httpServer) SetDebug() {
 	srv.ReadTimeout = 0
 	srv.WriteTimeout = 0
 	srv.IdleTimeout = 0
+	srv.Handler = srv.origHandler
 }
 
 // Run starts the web server, but does not wait for its completion.

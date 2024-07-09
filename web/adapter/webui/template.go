@@ -412,6 +412,7 @@ func (wui *WebUI) renderSxnTemplateStatus(ctx context.Context, w http.ResponseWr
 }
 
 func (wui *WebUI) reportError(ctx context.Context, w http.ResponseWriter, err error) {
+	ctx = context.WithoutCancel(ctx) // Ignore any cancel / timeouts to write an error message.
 	code, text := adapter.CodeMessageFromError(err)
 	if code == http.StatusInternalServerError {
 		wui.log.Error().Msg(err.Error())

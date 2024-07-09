@@ -351,7 +351,7 @@ func (mgr *Manager) allBoxesStarted() bool {
 func (mgr *Manager) Stop(ctx context.Context) {
 	mgr.mgrMx.Lock()
 	defer mgr.mgrMx.Unlock()
-	if mgr.State() != box.StartStateStarted {
+	if err := mgr.checkContinue(ctx); err != nil {
 		return
 	}
 	mgr.setState(box.StartStateStopping)
@@ -367,8 +367,8 @@ func (mgr *Manager) Stop(ctx context.Context) {
 // Refresh internal box data.
 func (mgr *Manager) Refresh(ctx context.Context) error {
 	mgr.mgrLog.Debug().Msg("Refresh")
-	if mgr.State() != box.StartStateStarted {
-		return box.ErrStopped
+	if err := mgr.checkContinue(ctx); err != nil {
+		return err
 	}
 	mgr.infos <- box.UpdateInfo{Reason: box.OnReload, Zid: id.Invalid}
 	mgr.mgrMx.Lock()
@@ -382,10 +382,10 @@ func (mgr *Manager) Refresh(ctx context.Context) error {
 }
 
 // ReIndex data of the given zettel.
-func (mgr *Manager) ReIndex(_ context.Context, zid id.Zid) error {
+func (mgr *Manager) ReIndex(ctx context.Context, zid id.Zid) error {
 	mgr.mgrLog.Debug().Msg("ReIndex")
-	if mgr.State() != box.StartStateStarted {
-		return box.ErrStopped
+	if err := mgr.checkContinue(ctx); err != nil {
+		return err
 	}
 	mgr.infos <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
 	return nil
@@ -429,4 +429,11 @@ func (mgr *Manager) ReadStats(st *box.Stats) {
 // Dump internal data structures to a Writer.
 func (mgr *Manager) Dump(w io.Writer) {
 	mgr.idxStore.Dump(w)
+}
+
+func (mgr *Manager) checkContinue(ctx context.Context) error {
+	if mgr.State() != box.StartStateStarted {
+		return box.ErrStopped
+	}
+	return ctx.Err()
 }
