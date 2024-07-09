@@ -18,17 +18,13 @@ import (
 	"context"
 	"fmt"
 
-	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 func genManagerM(zid id.Zid) *meta.Meta {
-	m := meta.New(zid)
-	m.Set(api.KeyTitle, "Zettelstore Box Manager")
-	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
-	return m
+	return getTitledMeta(zid, "Zettelstore Box Manager")
 }
 
 func genManagerC(context.Context, *compBox) []byte {

@@ -17,8 +17,6 @@ import (
 	"bytes"
 	"context"
 
-	"t73f.de/r/zsc/api"
-	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -27,11 +25,7 @@ func genConfigZettelM(zid id.Zid) *meta.Meta {
 	if myConfig == nil {
 		return nil
 	}
-	m := meta.New(zid)
-	m.Set(api.KeyTitle, "Zettelstore Startup Configuration")
-	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
-	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
-	return m
+	return getTitledMeta(zid, "Zettelstore Startup Configuration")
 }
 
 func genConfigZettelC(context.Context, *compBox) []byte {

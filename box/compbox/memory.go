@@ -20,21 +20,13 @@ import (
 	"os"
 	"runtime"
 
-	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 func genMemoryM(zid id.Zid) *meta.Meta {
-	if myConfig == nil {
-		return nil
-	}
-	m := meta.New(zid)
-	m.Set(api.KeyTitle, "Zettelstore Memory")
-	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
-	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
-	return m
+	return getTitledMeta(zid, "Zettelstore Memory")
 }
 
 func genMemoryC(context.Context, *compBox) []byte {

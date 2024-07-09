@@ -19,18 +19,12 @@ import (
 	"fmt"
 
 	"t73f.de/r/sx"
-	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 func genSxM(zid id.Zid) *meta.Meta {
-	if myConfig == nil {
-		return nil
-	}
-	m := meta.New(zid)
-	m.Set(api.KeyTitle, "Zettelstore Sx Engine")
-	return m
+	return getTitledMeta(zid, "Zettelstore Sx Engine")
 }
 
 func genSxC(context.Context, *compBox) []byte {

@@ -17,8 +17,6 @@ import (
 	"bytes"
 	"context"
 
-	"t73f.de/r/zsc/api"
-	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -30,10 +28,7 @@ import (
 // that is updated when a new zettel is created or an old zettel is deleted.
 
 func genMappingM(zid id.Zid) *meta.Meta {
-	m := getVersionMeta(zid, "Zettelstore Identifier Mapping")
-	m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
-	m.Set(api.KeyVisibility, api.ValueVisibilityExpert)
-	return m
+	return getTitledMeta(zid, "Zettelstore Identifier Mapping")
 }
 
 func genMappingC(ctx context.Context, cb *compBox) []byte {

@@ -175,6 +175,12 @@ func (cb *compBox) ReadStats(st *box.ManagedBoxStats) {
 	cb.log.Trace().Int("zettel", int64(st.Zettel)).Msg("ReadStats")
 }
 
+func getTitledMeta(zid id.Zid, title string) *meta.Meta {
+	m := meta.New(zid)
+	m.Set(api.KeyTitle, title)
+	return m
+}
+
 func updateMeta(m *meta.Meta) {
 	if _, ok := m.Get(api.KeySyntax); !ok {
 		m.Set(api.KeySyntax, meta.SyntaxZmk)
