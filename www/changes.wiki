@@ -33,13 +33,18 @@
   *  Add zettel &ldquo;Zettelstore Application Directory&rdquo;, which contains
      identifier for application specific zettel. Needed for planned new
      identifier format.
-     (minor)
+     (minor: webui)
   *  Update Sx prelude: make macros more robust / more general. This might
      break your code in the future.
      (minor: webui)
   *  Add computed zettel &ldquo;Zettelstore Memory&rdquo; with zettel
      identifier <code>00000000000008</code>. It shows some statistics about
      memory usage.
+     (minor: webui)
+  *  Add computed zettel &ldquo;Zettelstore Sx Engine&rdquo; with zettel
+     identifier <code>00000000000009</code>. It shows some statistics about the
+     internal Sx engine. (Currently only the number of used symbols, but this
+     will change in the future.)
      (minor: webui)
   *  Zettelstore client is now Go package t73f.de/r/zsc.
      (minor)

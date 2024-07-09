@@ -54,7 +54,7 @@ var myZettel = map[id.Zid]struct {
 	id.MustParse(api.ZidOperatingSystem): {genVersionOSM, genVersionOSC},
 	id.MustParse(api.ZidLog):             {genLogM, genLogC},
 	id.MustParse(api.ZidMemory):          {genMemoryM, genMemoryC},
-	// id.MustParse(api.ZidSx):                   {genSxM, genSxC},
+	id.MustParse(api.ZidSx):              {genSxM, genSxC},
 	// id.MustParse(api.ZidHTTP):                 {genHttpM, genHttpC},
 	// id.MustParse(api.ZidAPI):                  {genApiM, genApiC},
 	// id.MustParse(api.ZidWebUI):                {genWebUiM, genWebUiC},
@@ -180,6 +180,9 @@ func updateMeta(m *meta.Meta) {
 		m.Set(api.KeySyntax, meta.SyntaxZmk)
 	}
 	m.Set(api.KeyRole, api.ValueRoleConfiguration)
+	if _, ok := m.Get(api.KeyCreated); !ok {
+		m.Set(api.KeyCreated, kernel.Main.GetConfig(kernel.CoreService, kernel.CoreStarted).(string))
+	}
 	m.Set(api.KeyLang, api.ValueLangEN)
 	m.Set(api.KeyReadOnly, api.ValueTrue)
 	if _, ok := m.Get(api.KeyVisibility); !ok {
