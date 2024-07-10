@@ -28,7 +28,7 @@ func genWarningsM(zid id.Zid) *meta.Meta {
 func genWarningsC(ctx context.Context, cb *compBox) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("* [[Zettel without stored creation date|query:created-missing:true]]\n")
-	buf.WriteString("* [[Zettel with strange creation date|query:created<19700000000000]]\n")
+	buf.WriteString("* [[Zettel with strange creation date|query:created<19700101000000]]\n")
 
 	ws, err := cb.mapper.Warnings(ctx)
 	if err != nil {
