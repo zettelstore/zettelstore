@@ -115,6 +115,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.Zid,
 	mb.zettel[zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
+
 	mb.notifyChanged(zid)
 	mb.log.Trace().Zid(zid).Msg("CreateZettel")
 	return zid, nil

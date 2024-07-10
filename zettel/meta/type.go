@@ -93,16 +93,20 @@ func Type(key string) *DescriptionType {
 		return k.Type
 	}
 	mxTypedKey.RLock()
-	k, ok := cachedTypedKeys[key]
+	k, found := cachedTypedKeys[key]
 	mxTypedKey.RUnlock()
-	if ok {
+	if found {
 		return k
 	}
+
 	for suffix, t := range suffixTypes {
 		if strings.HasSuffix(key, suffix) {
 			mxTypedKey.Lock()
 			defer mxTypedKey.Unlock()
-			cachedTypedKeys[key] = t
+			// Double check to avoid races
+			if _, found = cachedTypedKeys[key]; !found {
+				cachedTypedKeys[key] = t
+			}
 			return t
 		}
 	}

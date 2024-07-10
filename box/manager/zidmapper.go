@@ -155,27 +155,30 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
 	}
 	zm.mx.RUnlock()
 
+	zm.mx.Lock()
+	defer zm.mx.Unlock()
+	// Double check to avoid races
+	if zidN, found := zm.toNew[zidO]; found {
+		return zidN
+	}
+
 	if 1000000000 <= zidO && zidO <= 1099999999 {
 		if zidO == 1000000000 {
 			zm.hadManual = true
 		}
 		if zm.hadManual {
-			zm.mx.Lock()
 			zidN := zm.nextZidM
 			zm.nextZidM++
 			zm.toNew[zidO] = zidN
 			zm.toOld[zidN] = zidO
-			zm.mx.Unlock()
 			return zidN
 		}
 	}
 
-	zm.mx.Lock()
 	zidN := zm.nextZidN
 	zm.nextZidN++
 	zm.toNew[zidO] = zidN
 	zm.toOld[zidN] = zidO
-	zm.mx.Unlock()
 	return zidN
 }
 
