@@ -61,38 +61,39 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 		12:         id.MustParseN("000c"), // ZidWebUI
 		13:         id.MustParseN("000d"), // ZidConsole
 		20:         id.MustParseN("000e"), // ZidBoxManager
-		21:         id.MustParseN("000f"), // ZidIndex
-		22:         id.MustParseN("000g"), // ZidQuery
-		90:         id.MustParseN("000h"), // ZidMetadataKey
-		92:         id.MustParseN("000i"), // ZidParser
-		96:         id.MustParseN("000j"), // ZidStartupConfiguration
-		100:        id.MustParseN("000k"), // ZidRuntimeConfiguration
-		101:        id.MustParseN("000l"), // ZidDirectory
-		102:        id.MustParseN("000m"), // ZidWarnings
-		10100:      id.MustParseN("000r"), // Base HTML Template
-		10200:      id.MustParseN("000s"), // Login Form Template
-		10300:      id.MustParseN("000t"), // List Zettel Template
-		10401:      id.MustParseN("000u"), // Detail Template
-		10402:      id.MustParseN("000v"), // Info Template
-		10403:      id.MustParseN("000w"), // Form Template
+		21:         id.MustParseN("000f"), // ZidZettel
+		22:         id.MustParseN("000g"), // ZidIndex
+		23:         id.MustParseN("000h"), // ZidQuery
+		90:         id.MustParseN("000i"), // ZidMetadataKey
+		92:         id.MustParseN("000j"), // ZidParser
+		96:         id.MustParseN("000k"), // ZidStartupConfiguration
+		100:        id.MustParseN("000l"), // ZidRuntimeConfiguration
+		101:        id.MustParseN("000m"), // ZidDirectory
+		102:        id.MustParseN("000n"), // ZidWarnings
+		10100:      id.MustParseN("000s"), // Base HTML Template
+		10200:      id.MustParseN("000t"), // Login Form Template
+		10300:      id.MustParseN("000u"), // List Zettel Template
+		10401:      id.MustParseN("000v"), // Detail Template
+		10402:      id.MustParseN("000w"), // Info Template
+		10403:      id.MustParseN("000x"), // Form Template
 		10404:      id.MustParseN("001z"), // Rename Form Template (will be removed in the future)
-		10405:      id.MustParseN("000x"), // Delete Template
-		10700:      id.MustParseN("000y"), // Error Template
-		19000:      id.MustParseN("000p"), // Sxn Start Code
-		19990:      id.MustParseN("000q"), // Sxn Base Code
-		20001:      id.MustParseN("000z"), // Base CSS
-		25001:      id.MustParseN("0010"), // User CSS
-		40001:      id.MustParseN("000n"), // Generic Emoji
-		59900:      id.MustParseN("000o"), // Sxn Prelude
-		60010:      id.MustParseN("0011"), // zettel
-		60020:      id.MustParseN("0012"), // confguration
-		60030:      id.MustParseN("0013"), // role
-		60040:      id.MustParseN("0014"), // tag
-		90000:      id.MustParseN("0015"), // New Menu
-		90001:      id.MustParseN("0016"), // New Zettel
-		90002:      id.MustParseN("0017"), // New User
-		90003:      id.MustParseN("0018"), // New Tag
-		90004:      id.MustParseN("0019"), // New Role
+		10405:      id.MustParseN("000y"), // Delete Template
+		10700:      id.MustParseN("000z"), // Error Template
+		19000:      id.MustParseN("000q"), // Sxn Start Code
+		19990:      id.MustParseN("000r"), // Sxn Base Code
+		20001:      id.MustParseN("0010"), // Base CSS
+		25001:      id.MustParseN("0011"), // User CSS
+		40001:      id.MustParseN("000o"), // Generic Emoji
+		59900:      id.MustParseN("000p"), // Sxn Prelude
+		60010:      id.MustParseN("0012"), // zettel
+		60020:      id.MustParseN("0013"), // confguration
+		60030:      id.MustParseN("0014"), // role
+		60040:      id.MustParseN("0015"), // tag
+		90000:      id.MustParseN("0016"), // New Menu
+		90001:      id.MustParseN("0017"), // New Zettel
+		90002:      id.MustParseN("0018"), // New User
+		90003:      id.MustParseN("0019"), // New Tag
+		90004:      id.MustParseN("001a"), // New Role
 		// 100000000,   // Manual               -> 0020-00yz
 		9999999997:  id.MustParseN("00zx"), // ZidSession
 		9999999998:  id.MustParseN("00zy"), // ZidAppDirectory
