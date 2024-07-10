@@ -4,23 +4,14 @@ role: manual
 tags: #introduction #manual #zettelstore
 syntax: zmk
 created: 20210126175322
+modified: 20240710184612
 
-[[Personal knowledge
-management|https://en.wikipedia.org/wiki/Personal_knowledge_management]] is
-about collecting, classifying, storing, searching, retrieving, assessing,
-evaluating, and sharing knowledge as a daily activity. Personal knowledge
-management is done by most people, not necessarily as part of their main
-business. It is essential for knowledge workers, like students, researchers,
-lecturers, software developers, scientists, engineers, architects, to name
-a few. Many hobbyists build up a significant amount of knowledge, even if the
-do not need to think for a living. Personal knowledge management can be seen as
-a prerequisite for many kinds of collaboration.
+[[Personal knowledge management|https://en.wikipedia.org/wiki/Personal_knowledge_management]] involves collecting, classifying, storing, searching, retrieving, assessing, evaluating, and sharing knowledge as a daily activity.
+It's done by most individuals, not necessarily as part of their main business.
+It's essential for knowledge workers, such as students, researchers, lecturers, software developers, scientists, engineers, architects, etc.
+Many hobbyists build up a significant amount of knowledge, even if they do not need to think for a living.
+Personal knowledge management can be seen as a prerequisite for many kinds of collaboration.
 
-Zettelstore is a software that collects and relates your notes (""zettel"")
-to represent and enhance your knowledge. It helps with many tasks of personal
-knowledge management by explicitly supporting the ""[[Zettelkasten
-method|https://en.wikipedia.org/wiki/Zettelkasten]]"". The method is based on
-creating many individual notes, each with one idea or information, that are
-related to each other. Since knowledge is typically build up gradually, one
-major focus is a long-term store of these notes, hence the name
-""Zettelstore"".
+Zettelstore is software that collects and relates your notes (""zettel"") to represent and enhance your knowledge, supporting the ""[[Zettelkasten method|https://en.wikipedia.org/wiki/Zettelkasten]]"".
+The method is based on creating many individual notes, each with one idea or piece of information, that is related to each other.
+Since knowledge is typically built up gradually, one major focus is a long-term store of these notes, hence the name ""Zettelstore"".

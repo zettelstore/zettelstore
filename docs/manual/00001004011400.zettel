@@ -4,7 +4,7 @@ role: manual
 tags: #configuration #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20220724200512
+modified: 20240710180215
 
 Under certain circumstances, it is preferable to further configure a file directory box.
 This is done by appending query parameters after the base box URI ''dir:\//DIR''.
@@ -57,4 +57,4 @@ If you provide the query parameter ''readonly'' (with or without a corresponding
 ```
 box-uri-1: dir:///home/zettel?readonly
 ```
-If you put the whole Zettelstore in [[read-only|00001004010000]] [[mode|00001004051000]], all configured file directory boxes will be in read-only mode too, even if not explicitly configured.
+If you put the whole Zettelstore in [[read-only|00001004010000#read-only-mode]] [[mode|00001004051000]], all configured file directory boxes will be in read-only mode too, even if not explicitly configured.
