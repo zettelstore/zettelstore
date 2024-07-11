@@ -250,10 +250,10 @@ type ctxNoEnrichType struct{}
 
 var ctxNoEnrichKey ctxNoEnrichType
 
-// DoNotEnrich determines if the context is marked to not enrich metadata.
-func DoNotEnrich(ctx context.Context) bool {
+// DoEnrich determines if the context is not marked to not enrich metadata.
+func DoEnrich(ctx context.Context) bool {
 	_, ok := ctx.Value(ctxNoEnrichKey).(*ctxNoEnrichType)
-	return ok
+	return !ok
 }
 
 // NoEnrichQuery provides a context that signals not to enrich, if the query does not need this.

@@ -32,20 +32,17 @@ func (mgr *Manager) Enrich(ctx context.Context, m *meta.Meta, boxNumber int) {
 		m.Set(api.KeyCreated, computeCreated(m.Zid))
 	}
 
-	if box.DoNotEnrich(ctx) {
-		// Enrich is called indirectly via indexer or enrichment is not requested
-		// because of other reasons -> ignore this call, do not update metadata
-		return
+	if box.DoEnrich(ctx) {
+		computePublished(m)
+		if boxNumber > 0 {
+			m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
+		}
+		mgr.idxStore.Enrich(ctx, m)
 	}
-	computePublished(m)
-	if boxNumber > 0 {
-		m.Set(api.KeyBoxNumber, strconv.Itoa(boxNumber))
-	}
+
 	if !hasCreated {
-		// Is just a property, no need to store it.
 		m.Set(meta.KeyCreatedMissing, api.ValueTrue)
 	}
-	mgr.idxStore.Enrich(ctx, m)
 }
 
 func computeCreated(zid id.Zid) string {
