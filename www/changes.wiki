@@ -1,8 +1,17 @@
 <title>Change Log</title>
 
-<a id="0_18"></a> <h2>Changes for Version 0.18.0 (pending)</h2>
+<a id="0_19"></a>
+<h2>Changes for Version 0.19.0 (pending)</h2>
+
+<a id="0_18"></a>
+<h2>Changes for Version 0.18.0 (2024-07-11)</h2>
   *  Remove Sx macro <code>defunconst</code>. Use <code>defun</code> instead.
      (breaking: webui)
+  *  The sz encoding of zettel does not make use of <code>(SPACE)</code>
+     elements any more. Instead, space characters are encoded within the
+     <code>(TEXT "...")</code> element. This might affect any client that works
+     with the sz encoding to produce some output.
+     (breaking)
   *  Format of zettel identifier will be changed in the future to a new format,
      instead of the current timestamp-based format. The usage of zettel
      identifier that are before 1970-01-01T00:00:00 is not allowed any more
@@ -18,12 +27,14 @@
      previous behaviour, set <code>umask</code> accordingly, for example
      <code>umask 066</code>.
      (major: dirbox)
-  *  Add zettel &ldquo;Zettelstore Warnings&rdquo; to help identifying zettel
-     to upgrade for future migration to planned new zettel identifier format.
+  *  Add expert-mode zettel &ldquo;Zettelstore Warnings&rdquo; to help
+     identifying zettel to upgrade for future migration to planned new zettel
+     identifier format.
      (minor: webui)
-  *  Add zettel &ldquo;Zettelstore Identifier Mapping&rdquo; to show a possible
-     mapping from the old identifier format to the new one. This should help
-     users to possibly rename some zettel for a metter mapping.
+  *  Add expert-mode zettel &ldquo;Zettelstore Identifier Mapping&rdquo; to
+     show a possible mapping from the old identifier format to the new one.
+     This should help users to possibly rename some zettel for a metter
+     mapping.
      (minor: webui)
   *  Add metadata key <code>created-missing</code> to list zettel without
      stored metadata key <code>created</code>. Needed for migration to planned
@@ -37,17 +48,19 @@
   *  Update Sx prelude: make macros more robust / more general. This might
      break your code in the future.
      (minor: webui)
-  *  Add computed zettel &ldquo;Zettelstore Memory&rdquo; with zettel
-     identifier <code>00000000000008</code>. It shows some statistics about
-     memory usage.
+  *  Add computed expert-mode zettel &ldquo;Zettelstore Memory&rdquo; with
+     zettel identifier <code>00000000000008</code>. It shows some statistics
+     about memory usage.
      (minor: webui)
-  *  Add computed zettel &ldquo;Zettelstore Sx Engine&rdquo; with zettel
-     identifier <code>00000000000009</code>. It shows some statistics about the
-     internal Sx engine. (Currently only the number of used symbols, but this
-     will change in the future.)
+  *  Add computed expert-mode zettel &ldquo;Zettelstore Sx Engine&rdquo; with
+     zettel identifier <code>00000000000009</code>. It shows some statistics
+     about the internal Sx engine. (Currently only the number of used symbols,
+     but this will change in the future.)
      (minor: webui)
   *  Zettelstore client is now Go package t73f.de/r/zsc.
      (minor)
+  *  Some smaller bug fixes and improvements, to the software and to the
+     documentation.
 
 <a id="0_17"></a>
 <h2>Changes for Version 0.17.0 (2024-03-04)</h2>

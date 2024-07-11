@@ -76,7 +76,8 @@ alternative to the ubiquitous Git version control system. However, Go seems to
 prefer Git and popular platforms that just support Git.
 
 Some dependencies of Zettelstore, namely [Zettelstore
-client](https://t73f.de/r/zsc) and [Sx](https://t73f.de/r/sx), are also
+client](https://t73f.de/r/zsc), [webs](https://t73f.de/r/webs),
+[sx](https://t73f.de/r/sx), and [sxwebs](https://t73f.de/r/sxwebs) are also
 managed by Fossil. Depending on your development setup, some error messages
 might occur.
 
