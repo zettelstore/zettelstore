@@ -230,52 +230,44 @@ func TestGetZettelOrder(t *testing.T) {
 	checkListZid(t, metaSeq, 3, api.ZidTemplateNewUser)
 }
 
-// func TestGetZettelContext(t *testing.T) {
-// 	const (
-// 		allUserZid = api.ZettelID("20211019200500")
-// 		ownerZid   = api.ZettelID("20210629163300")
-// 		writerZid  = api.ZettelID("20210629165000")
-// 		readerZid  = api.ZettelID("20210629165024")
-// 		creatorZid = api.ZettelID("20210629165050")
-// 		limitAll   = 3
-// 	)
-// 	t.Parallel()
-// 	c := getClient()
-// 	c.SetAuth("owner", "owner")
-// 	rl, err := c.GetZettelContext(context.Background(), ownerZid, client.DirBoth, 0, limitAll)
-// 	if err != nil {
-// 		t.Error(err)
-// 		return
-// 	}
-// 	if !checkZid(t, ownerZid, rl.ID) {
-// 		return
-// 	}
-// 	l := rl.List
-// 	if got := len(l); got != limitAll {
-// 		t.Errorf("Expected list of length %d, got %d", limitAll, got)
-// 		t.Error(rl)
-// 		return
-// 	}
-// 	checkListZid(t, l, 0, allUserZid)
-// 	// checkListZid(t, l, 1, writerZid)
-// 	// checkListZid(t, l, 2, readerZid)
-// 	checkListZid(t, l, 1, creatorZid)
+func TestGetZettelContext(t *testing.T) {
+	const (
+		allUserZid = api.ZettelID("20211019200500")
+		ownerZid   = api.ZettelID("20210629163300")
+		writerZid  = api.ZettelID("20210629165000")
+		readerZid  = api.ZettelID("20210629165024")
+		creatorZid = api.ZettelID("20210629165050")
+		limitAll   = 3
+	)
+	t.Parallel()
+	c := getClient()
+	c.SetAuth("owner", "owner")
+	rl, err := c.QueryZettel(context.Background(), string(ownerZid)+" CONTEXT LIMIT "+strconv.Itoa(limitAll))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	checkZidList(t, []api.ZettelID{ownerZid, allUserZid, writerZid}, rl)
 
-// 	rl, err = c.GetZettelContext(context.Background(), ownerZid, client.DirBackward, 0, 0)
-// 	if err != nil {
-// 		t.Error(err)
-// 		return
-// 	}
-// 	if !checkZid(t, ownerZid, rl.ID) {
-// 		return
-// 	}
-// 	l = rl.List
-// 	if got, exp := len(l), 4; got != exp {
-// 		t.Errorf("Expected list of length %d, got %d", exp, got)
-// 		return
-// 	}
-// 	checkListZid(t, l, 0, allUserZid)
-// }
+	rl, err = c.QueryZettel(context.Background(), string(ownerZid)+" CONTEXT BACKWARD")
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	checkZidList(t, []api.ZettelID{ownerZid, allUserZid}, rl)
+}
+func checkZidList(t *testing.T, exp []api.ZettelID, got [][]byte) {
+	t.Helper()
+	if len(exp) != len(got) {
+		t.Errorf("expected a list fo length %d, but got %d", len(exp), len(got))
+		return
+	}
+	for i, expZid := range exp {
+		if gotZid := api.ZettelID(got[i][:14]); expZid != gotZid {
+			t.Errorf("lists differ at pos %d: expected id %v, but got %v", i, expZid, gotZid)
+		}
+	}
+}
 
 func TestGetUnlinkedReferences(t *testing.T) {
 	t.Parallel()

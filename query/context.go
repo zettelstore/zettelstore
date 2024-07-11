@@ -201,7 +201,7 @@ func (ct *contextTask) addMeta(m *meta.Meta, newCost float64) {
 	// other zettel that are directly reachable, without taking the cost into account.
 	// Of course, the limit ist still relevant.
 	if !ct.hasLimit() && (ct.seen.Length() <= 1 || ct.maxCost == 0 || newCost <= ct.maxCost) {
-		if ct.seen.Contains(m.Zid) {
+		if !ct.seen.Contains(m.Zid) {
 			heap.Push(&ct.queue, ztlCtxItem{cost: newCost, meta: m})
 		}
 	}
