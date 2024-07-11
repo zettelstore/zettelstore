@@ -206,34 +206,6 @@ func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	return nil
 }
 
-func (*memBox) AllowRenameZettel(context.Context, id.Zid) bool { return true }
-
-func (mb *memBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
-	mb.mx.Lock()
-	zettel, ok := mb.zettel[curZid]
-	if !ok {
-		mb.mx.Unlock()
-		return box.ErrZettelNotFound{Zid: curZid}
-	}
-
-	// Check that there is no zettel with newZid
-	if _, ok = mb.zettel[newZid]; ok {
-		mb.mx.Unlock()
-		return box.ErrInvalidZid{Zid: newZid.String()}
-	}
-
-	meta := zettel.Meta.Clone()
-	meta.Zid = newZid
-	zettel.Meta = meta
-	mb.zettel[newZid] = zettel
-	delete(mb.zettel, curZid)
-	mb.mx.Unlock()
-	mb.notifyChanged(curZid)
-	mb.notifyChanged(newZid)
-	mb.log.Trace().Msg("RenameZettel")
-	return nil
-}
-
 func (mb *memBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	mb.mx.RLock()
 	_, ok := mb.zettel[zid]

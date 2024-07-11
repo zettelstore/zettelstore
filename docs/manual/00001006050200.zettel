@@ -4,7 +4,7 @@ role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
 created: 20240705200557
-modified: 20240710173133
+modified: 20240711183512
 precursor: 00001006050000
 
 Timestamp-based zettel identifier (14 digits) will be migrated to a new format.
@@ -20,7 +20,7 @@ The characters ''A'' &hellip; ''Z'' are mapped to the lower-case ''a'' &hellip; 
 Please note: the following is just a plan.
 Plans tend to be revised if they get in contact with reality.
 
-; Version 0.18
+; Version 0.18 (current)
 : Provides some tools to check your own zettelstore for problematic zettel identifier.
   For example, zettel without metadata key ''created'' should be updated by the user, especially if the zettel identifier is below ''19700101000000''.
   Most likely, this is the case for zettel created before version 0.7 (2022-08-17).
@@ -36,11 +36,11 @@ Plans tend to be revised if they get in contact with reality.
 
 ; Version 0.19
 : The new identifier format will be used initially internal.
+  Operation to rename a zettel, i.e. assigning a new identifier to a zettel, is removed permanently.
+
   The old format with 14 digits is still used to create URIs and to link zettel.
 
   You will have some time to update your zettel data if you detect some issues.
-
-  Operation to rename a zettel, i.e. assigning a new identifier to a zettel, is remove permanently.
 ; Version 0.20
 : The internal search index is based on the new format identifier.
 ; Version 0.21

@@ -256,9 +256,6 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 		rb.bindString("child-url", sx.MakeString(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionChild).String()))
 		rb.bindString("folge-url", sx.MakeString(newURLBuilder('c').SetZid(apiZid).AppendKVQuery(queryKeyAction, valueActionFolge).String()))
 	}
-	if wui.canRename(ctx, user, m) {
-		rb.bindString("rename-url", sx.MakeString(newURLBuilder('b').SetZid(apiZid).String()))
-	}
 	if wui.canDelete(ctx, user, m) {
 		rb.bindString("delete-url", sx.MakeString(newURLBuilder('d').SetZid(apiZid).String()))
 	}

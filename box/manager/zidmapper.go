@@ -76,7 +76,6 @@ func NewZidMapper(fetcher zidfetcher) *zidMapper {
 		10401:      id.MustParseN("000v"), // Detail Template
 		10402:      id.MustParseN("000w"), // Info Template
 		10403:      id.MustParseN("000x"), // Form Template
-		10404:      id.MustParseN("001z"), // Rename Form Template (will be removed in the future)
 		10405:      id.MustParseN("000y"), // Delete Template
 		10700:      id.MustParseN("000z"), // Error Template
 		19000:      id.MustParseN("000q"), // Sxn Start Code

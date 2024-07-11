@@ -457,68 +457,6 @@ func (ms *mapStore) getOrCreateEntry(zid id.Zid) *zettelData {
 	return zi
 }
 
-func (ms *mapStore) RenameZettel(_ context.Context, curZid, newZid id.Zid) *id.Set {
-	ms.mx.Lock()
-	defer ms.mx.Unlock()
-
-	curZi, curFound := ms.idx[curZid]
-	_, newFound := ms.idx[newZid]
-	if !curFound || newFound {
-		return nil
-	}
-	newZi := &zettelData{
-		meta:      copyMeta(curZi.meta, newZid),
-		dead:      ms.copyDeadReferences(curZi.dead),
-		forward:   ms.copyForward(curZi.forward, newZid),
-		backward:  nil, // will be done through tocheck
-		otherRefs: nil, // TODO: check if this will be done through toCheck
-		words:     copyStrings(ms.words, curZi.words, newZid),
-		urls:      copyStrings(ms.urls, curZi.urls, newZid),
-	}
-
-	ms.idx[newZid] = newZi
-	toCheck := ms.doDeleteZettel(curZid)
-	toCheck = toCheck.IUnion(ms.dead[newZid])
-	delete(ms.dead, newZid)
-	toCheck = toCheck.Add(newZid) // should update otherRefs
-	return toCheck
-}
-func copyMeta(m *meta.Meta, newZid id.Zid) *meta.Meta {
-	result := m.Clone()
-	result.Zid = newZid
-	return result
-}
-
-func (ms *mapStore) copyDeadReferences(curDead *id.Set) *id.Set {
-	// Must only be called if ms.mx is write-locked!
-	curDead.ForEach(func(ref id.Zid) {
-		ms.dead[ref] = ms.dead[ref].Add(ref)
-	})
-	return curDead.Clone()
-}
-func (ms *mapStore) copyForward(curForward *id.Set, newZid id.Zid) *id.Set {
-	// Must only be called if ms.mx is write-locked!
-	curForward.ForEach(func(ref id.Zid) {
-		if fzi, found := ms.idx[ref]; found {
-			fzi.backward = fzi.backward.Add(newZid)
-		}
-
-	})
-	return curForward.Clone()
-}
-func copyStrings(msStringMap stringRefs, curStrings []string, newZid id.Zid) []string {
-	// Must only be called if ms.mx is write-locked!
-	if l := len(curStrings); l > 0 {
-		result := make([]string, l)
-		for i, s := range curStrings {
-			result[i] = s
-			msStringMap[s] = msStringMap[s].Add(newZid)
-		}
-		return result
-	}
-	return nil
-}
-
 func (ms *mapStore) DeleteZettel(_ context.Context, zid id.Zid) *id.Set {
 	ms.mx.Lock()
 	defer ms.mx.Unlock()

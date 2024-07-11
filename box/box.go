@@ -37,12 +37,6 @@ type BaseBox interface {
 	// GetZettel retrieves a specific zettel.
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 
-	// AllowRenameZettel returns true, if box will not disallow renaming the zettel.
-	AllowRenameZettel(ctx context.Context, zid id.Zid) bool
-
-	// RenameZettel changes the current Zid to a new Zid.
-	RenameZettel(ctx context.Context, curZid, newZid id.Zid) error
-
 	// CanDeleteZettel returns true, if box could possibly delete the given zettel.
 	CanDeleteZettel(ctx context.Context, zid id.Zid) bool
 

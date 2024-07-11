@@ -172,24 +172,6 @@ func (zb *zipBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constraint
 	return nil
 }
 
-func (zb *zipBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	entry := zb.dirSrv.GetDirEntry(zid)
-	return !entry.IsValid()
-}
-
-func (zb *zipBox) RenameZettel(_ context.Context, curZid, newZid id.Zid) error {
-	err := box.ErrReadOnly
-	if curZid == newZid {
-		err = nil
-	}
-	curEntry := zb.dirSrv.GetDirEntry(curZid)
-	if !curEntry.IsValid() {
-		err = box.ErrZettelNotFound{Zid: curZid}
-	}
-	zb.log.Trace().Err(err).Msg("RenameZettel")
-	return err
-}
-
 func (*zipBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (zb *zipBox) DeleteZettel(_ context.Context, zid id.Zid) error {

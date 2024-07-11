@@ -36,10 +36,6 @@ func (ap *anonPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	return ap.pre.CanWrite(user, oldMeta, newMeta) && ap.checkVisibility(oldMeta)
 }
 
-func (ap *anonPolicy) CanRename(user, m *meta.Meta) bool {
-	return ap.pre.CanRename(user, m) && ap.checkVisibility(m)
-}
-
 func (ap *anonPolicy) CanDelete(user, m *meta.Meta) bool {
 	return ap.pre.CanDelete(user, m) && ap.checkVisibility(m)
 }

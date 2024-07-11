@@ -25,7 +25,7 @@ import (
 // ---------------------------------------------------------------------------
 // Tests that change the Zettelstore must nor run parallel to other tests.
 
-func TestCreateGetRenameDeleteZettel(t *testing.T) {
+func TestCreateGetDeleteZettel(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	zettel := `title: A Test
 
@@ -52,17 +52,11 @@ Example content.`
 	if string(data) != exp {
 		t.Errorf("Expected zettel data: %q, but got %q", exp, data)
 	}
-	newZid := nextZid(zid)
-	err = c.RenameZettel(context.Background(), zid, newZid)
-	if err != nil {
-		t.Error("Cannot rename", zid, ":", err)
-		newZid = zid
-	}
 
-	doDelete(t, c, newZid)
+	doDelete(t, c, zid)
 }
 
-func TestCreateGetRenameDeleteZettelData(t *testing.T) {
+func TestCreateGetDeleteZettelDataCreator(t *testing.T) {
 	// Is not to be allowed to run in parallel with other tests.
 	c := getClient()
 	c.SetAuth("creator", "creator")
@@ -79,16 +73,9 @@ func TestCreateGetRenameDeleteZettelData(t *testing.T) {
 		t.Error("Invalid zettel ID", zid)
 		return
 	}
-	newZid := nextZid(zid)
-	c.SetAuth("owner", "owner")
-	err = c.RenameZettel(context.Background(), zid, newZid)
-	if err != nil {
-		t.Error("Cannot rename", zid, ":", err)
-		newZid = zid
-	}
 
 	c.SetAuth("owner", "owner")
-	doDelete(t, c, newZid)
+	doDelete(t, c, zid)
 }
 
 func TestCreateGetDeleteZettelData(t *testing.T) {

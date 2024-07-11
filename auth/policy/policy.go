@@ -60,10 +60,6 @@ func (p *prePolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 		p.post.CanWrite(user, oldMeta, newMeta)
 }
 
-func (p *prePolicy) CanRename(user, m *meta.Meta) bool {
-	return m != nil && p.post.CanRename(user, m)
-}
-
 func (p *prePolicy) CanDelete(user, m *meta.Meta) bool {
 	return m != nil && p.post.CanDelete(user, m)
 }

@@ -28,7 +28,6 @@ func (*defaultPolicy) CanRead(_, _ *meta.Meta) bool   { return true }
 func (d *defaultPolicy) CanWrite(user, oldMeta, _ *meta.Meta) bool {
 	return d.canChange(user, oldMeta)
 }
-func (d *defaultPolicy) CanRename(user, m *meta.Meta) bool { return d.canChange(user, m) }
 func (d *defaultPolicy) CanDelete(user, m *meta.Meta) bool { return d.canChange(user, m) }
 
 func (*defaultPolicy) CanRefresh(user *meta.Meta) bool { return user != nil }

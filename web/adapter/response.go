@@ -70,10 +70,6 @@ func CodeMessageFromError(err error) (int, string) {
 	if errors.As(err, &eiz) {
 		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q not appropriate in this context", eiz.Zid)
 	}
-	var ezin usecase.ErrZidInUse
-	if errors.As(err, &ezin) {
-		return http.StatusBadRequest, fmt.Sprintf("Zettel-ID %q already in use", ezin.Zid)
-	}
 	var etznf usecase.ErrTagZettelNotFound
 	if errors.As(err, &etznf) {
 		return http.StatusNotFound, "Tag zettel not found: " + etznf.Tag

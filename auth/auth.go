@@ -95,9 +95,6 @@ type Policy interface {
 	// User is allowed to write zettel.
 	CanWrite(user, oldMeta, newMeta *meta.Meta) bool
 
-	// User is allowed to rename zettel
-	CanRename(user, m *meta.Meta) bool
-
 	// User is allowed to delete zettel.
 	CanDelete(user, m *meta.Meta) bool
 

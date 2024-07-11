@@ -109,7 +109,6 @@ var keyDescr = []struct {
 	{createJustKey('i'), "zettel info view", -1},
 	{createJustKey('e'), "zettel edit form", 100},
 	{createJustKey('c'), "zettel create form", 10},
-	{createJustKey('b'), "zettel rename form", 100},
 	{createJustKey('d'), "zettel delete dialog", 200},
 }
 

@@ -10,7 +10,7 @@ require (
 	golang.org/x/text v0.16.0
 	t73f.de/r/sx v0.0.0-20240513163553-ec4fcc6539ca
 	t73f.de/r/sxwebs v0.0.0-20240613142113-66fc5a284245
-	t73f.de/r/zsc v0.0.0-20240711144034-b141c81ad9b7
+	t73f.de/r/zsc v0.0.0-20240711162949-a203b14b7e50
 )
 
 require (

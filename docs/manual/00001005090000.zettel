@@ -4,7 +4,7 @@ role: manual
 tags: #manual #reference #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240709180005
+modified: 20240711183318
 
 The following table lists all predefined zettel with their purpose.[^Zettel identifier format will be migrated to a new format after version 0.19.]
 
@@ -30,7 +30,6 @@ The following table lists all predefined zettel with their purpose.[^Zettel iden
 | [[00000000010401]] | Zettelstore Detail HTML Template | Layout for the HTML detail view of one zettel
 | [[00000000010402]] | Zettelstore Info HTML Template | Layout for the information view of a specific zettel
 | [[00000000010403]] | Zettelstore Form HTML Template | Form that is used to create a new or to change an existing zettel that contains text
-| [[00000000010404]] | Zettelstore Rename Form HTML Template | View that is displayed to change the [[zettel identifier|00001006050000]]
 | [[00000000010405]] | Zettelstore Delete HTML Template | View to confirm the deletion of a zettel
 | [[00000000010700]] | Zettelstore Error HTML Template | View to show an error message
 | [[00000000019000]] | Zettelstore Sxn Start Code | Starting point of sxn functions to build the templates

@@ -4,7 +4,7 @@ role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240710173506
+modified: 20240711183257
 
 Zettelstore is a software that manages your zettel.
 Since every zettel must be readable without any special tool, most zettel has to be stored as ordinary files within specific directories.
@@ -33,7 +33,7 @@ This allows zettel to be sorted naturally by creation time.[^Zettel identifier f
 
 Since the only restriction on zettel identifiers are the 14 digits, you are free to use other digit sequences.[^Zettel identifier format will be migrated to a new format after version 0.19, without reference to the creation date.]
 The [[configuration zettel|00001004020000]] is one prominent example, as well as these manual zettel.
-You can create these special zettel identifiers either with the __rename__[^Renaming is deprecated als will be removed in version 0.19 or after.] function of Zettelstore or by manually renaming the underlying zettel files.
+You can create these special zettel by manually renaming the underlying zettel files.
 
 It is allowed that the file name contains other characters after the 14 digits.
 These are ignored by Zettelstore.
@@ -74,7 +74,7 @@ If a zettel is requested, Zettelstore will first try to read that zettel from a 
 If such a file was not found, the internal zettel store is searched secondly.
 
 Therefore, the file store ""shadows"" the internal zettel store.
-If you want to read the original zettel, you either have to delete the zettel (which removes it from the file directory), or you have to rename[^Renaming is deprecated als will be removed in version 0.19 or after.] it to another zettel identifier.
+If you want to read the original zettel, you have to delete the zettel (which removes it from the file directory).
 Now we have two places where zettel are stored: in the specific directory and within the Zettelstore software.
 
 * [[List of predefined zettel|00001005090000]]

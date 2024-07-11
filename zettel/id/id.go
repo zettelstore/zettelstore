@@ -46,7 +46,6 @@ var (
 	ZettelTemplateZid = MustParse(api.ZidZettelTemplate)
 	InfoTemplateZid   = MustParse(api.ZidInfoTemplate)
 	FormTemplateZid   = MustParse(api.ZidFormTemplate)
-	RenameTemplateZid = MustParse(api.ZidRenameTemplate)
 	DeleteTemplateZid = MustParse(api.ZidDeleteTemplate)
 	ErrorTemplateZid  = MustParse(api.ZidErrorTemplate)
 	StartSxnZid       = MustParse(api.ZidSxnStart)

@@ -115,16 +115,6 @@ func (o *ownerPolicy) CanWrite(user, oldMeta, newMeta *meta.Meta) bool {
 	return o.userCanCreate(user, newMeta)
 }
 
-func (o *ownerPolicy) CanRename(user, m *meta.Meta) bool {
-	if user == nil || !o.pre.CanRename(user, m) {
-		return false
-	}
-	if res, ok := o.checkVisibility(user, o.authConfig.GetVisibility(m)); ok {
-		return res
-	}
-	return o.userIsOwner(user)
-}
-
 func (o *ownerPolicy) CanDelete(user, m *meta.Meta) bool {
 	if user == nil || !o.pre.CanDelete(user, m) {
 		return false

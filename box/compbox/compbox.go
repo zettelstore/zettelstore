@@ -142,21 +142,6 @@ func (cb *compBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrain
 	return nil
 }
 
-func (*compBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	_, ok := myZettel[zid]
-	return !ok
-}
-
-func (cb *compBox) RenameZettel(_ context.Context, curZid, _ id.Zid) (err error) {
-	if _, ok := myZettel[curZid]; ok {
-		err = box.ErrReadOnly
-	} else {
-		err = box.ErrZettelNotFound{Zid: curZid}
-	}
-	cb.log.Trace().Err(err).Msg("RenameZettel")
-	return err
-}
-
 func (*compBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (cb *compBox) DeleteZettel(_ context.Context, zid id.Zid) (err error) {

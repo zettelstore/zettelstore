@@ -139,7 +139,7 @@ func (mgr *Manager) fetchZids(ctx context.Context) (*id.Set, error) {
 	return result, nil
 }
 
-func (mgr *Manager) HasZettel(ctx context.Context, zid id.Zid) bool {
+func (mgr *Manager) hasZettel(ctx context.Context, zid id.Zid) bool {
 	mgr.mgrLog.Debug().Zid(zid).Msg("HasZettel")
 	if err := mgr.checkContinue(ctx); err != nil {
 		return false
@@ -250,43 +250,6 @@ func (mgr *Manager) UpdateZettel(ctx context.Context, zettel zettel.Zettel) erro
 		return nil
 	}
 	return box.ErrReadOnly
-}
-
-// AllowRenameZettel returns true, if box will not disallow renaming the zettel.
-func (mgr *Manager) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
-	if err := mgr.checkContinue(ctx); err != nil {
-		return false
-	}
-	mgr.mgrMx.RLock()
-	defer mgr.mgrMx.RUnlock()
-	for _, p := range mgr.boxes {
-		if !p.AllowRenameZettel(ctx, zid) {
-			return false
-		}
-	}
-	return true
-}
-
-// RenameZettel changes the current zid to a new zid.
-func (mgr *Manager) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	mgr.mgrLog.Debug().Zid(curZid).Zid(newZid).Msg("RenameZettel")
-	if err := mgr.checkContinue(ctx); err != nil {
-		return err
-	}
-	mgr.mgrMx.RLock()
-	defer mgr.mgrMx.RUnlock()
-	for i, p := range mgr.boxes {
-		err := p.RenameZettel(ctx, curZid, newZid)
-		var errZNF box.ErrZettelNotFound
-		if err != nil && !errors.As(err, &errZNF) {
-			for j := range i {
-				mgr.boxes[j].RenameZettel(ctx, newZid, curZid)
-			}
-			return err
-		}
-	}
-	mgr.idxRenameZettel(ctx, curZid, newZid)
-	return nil
 }
 
 // CanDeleteZettel returns true, if box could possibly delete the given zettel.

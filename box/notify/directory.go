@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"sync"
 
 	"zettelstore.de/z/box"
@@ -184,36 +183,6 @@ func (ds *DirService) UpdateDirEntry(updatedEntry *DirEntry) error {
 	}
 	ds.entries[entry.Zid] = &entry
 	return nil
-}
-
-// RenameDirEntry replaces an existing directory entry with a new one.
-func (ds *DirService) RenameDirEntry(oldEntry *DirEntry, newZid id.Zid) (DirEntry, error) {
-	ds.mx.Lock()
-	defer ds.mx.Unlock()
-	if ds.entries == nil {
-		return DirEntry{}, ds.logMissingEntry("rename")
-	}
-	if _, found := ds.entries[newZid]; found {
-		return DirEntry{}, box.ErrInvalidZid{Zid: newZid.String()}
-	}
-	oldZid := oldEntry.Zid
-	newEntry := DirEntry{
-		Zid:         newZid,
-		MetaName:    renameFilename(oldEntry.MetaName, oldZid, newZid),
-		ContentName: renameFilename(oldEntry.ContentName, oldZid, newZid),
-		ContentExt:  oldEntry.ContentExt,
-		// Duplicates must not be set, because duplicates will be deleted
-	}
-	delete(ds.entries, oldZid)
-	ds.entries[newZid] = &newEntry
-	return newEntry, nil
-}
-
-func renameFilename(name string, curID, newID id.Zid) string {
-	if cur := curID.String(); strings.HasPrefix(name, cur) {
-		name = newID.String() + name[len(cur):]
-	}
-	return name
 }
 
 // DeleteDirEntry removes a entry from the directory.

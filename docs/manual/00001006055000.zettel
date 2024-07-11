@@ -4,11 +4,10 @@ role: manual
 tags: #design #manual #zettelstore
 syntax: zmk
 created: 20210721105704
-modified: 20240708154858
+modified: 20240711183638
 
 [[Zettel identifier|00001006050000]] are typically created by examine the current date and time.
-By renaming[^The rename operation id deprecated and will be removed in version 0.19 or later.] a zettel, you are able to provide any sequence of 14 digits[^Zettel identifier format will be migrated to a new format after version 0.19.].
-If no other zettel has the same identifier, you are allowed to rename a zettel.
+By renaming the name of the underlying zettel file, you are able to provide any sequence of 14 digits[^Zettel identifier format will be migrated to a new format after version 0.19.].
 
 To make things easier, you must not use zettel identifier that begin with four zeroes (''0000'').
 

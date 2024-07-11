@@ -19,7 +19,6 @@ import (
 	"regexp"
 	"strings"
 
-	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/auth"
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
@@ -37,7 +36,6 @@ var mapMethod = map[string]server.Method{
 	http.MethodPost:   server.MethodPost,
 	http.MethodPut:    server.MethodPut,
 	http.MethodDelete: server.MethodDelete,
-	api.MethodMove:    server.MethodMove,
 }
 
 // httpRouter handles all routing for zettelstore.

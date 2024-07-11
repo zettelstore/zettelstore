@@ -122,22 +122,6 @@ func (pp *polBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	return box.NewErrNotAllowed("Write", user, zid)
 }
 
-func (pp *polBox) AllowRenameZettel(ctx context.Context, zid id.Zid) bool {
-	return pp.box.AllowRenameZettel(ctx, zid)
-}
-
-func (pp *polBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	z, err := pp.box.GetZettel(ctx, curZid)
-	if err != nil {
-		return err
-	}
-	user := server.GetUser(ctx)
-	if pp.policy.CanRename(user, z.Meta) {
-		return pp.box.RenameZettel(ctx, curZid, newZid)
-	}
-	return box.NewErrNotAllowed("Rename", user, curZid)
-}
-
 func (pp *polBox) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 	return pp.box.CanDeleteZettel(ctx, zid)
 }

@@ -211,7 +211,7 @@ func idxCollectMetaValue(stWords store.WordSet, value string) {
 
 func (mgr *Manager) idxProcessData(ctx context.Context, zi *store.ZettelIndex, cData *collectData) {
 	cData.refs.ForEach(func(ref id.Zid) {
-		if mgr.HasZettel(ctx, ref) {
+		if mgr.hasZettel(ctx, ref) {
 			zi.AddBackRef(ref)
 		} else {
 			zi.AddDeadRef(ref)
@@ -226,7 +226,7 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 	if err != nil {
 		return
 	}
-	if !mgr.HasZettel(ctx, zid) {
+	if !mgr.hasZettel(ctx, zid) {
 		zi.AddDeadRef(zid)
 		return
 	}
@@ -235,11 +235,6 @@ func (mgr *Manager) idxUpdateValue(ctx context.Context, inverseKey, value string
 		return
 	}
 	zi.AddInverseRef(inverseKey, zid)
-}
-
-func (mgr *Manager) idxRenameZettel(ctx context.Context, curZid, newZid id.Zid) {
-	toCheck := mgr.idxStore.RenameZettel(ctx, curZid, newZid)
-	mgr.idxCheckZettel(toCheck)
 }
 
 func (mgr *Manager) idxDeleteZettel(ctx context.Context, zid id.Zid) {

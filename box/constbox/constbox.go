@@ -97,21 +97,6 @@ func (cb *constBox) ApplyMeta(ctx context.Context, handle box.MetaFunc, constrai
 	return nil
 }
 
-func (cb *constBox) AllowRenameZettel(_ context.Context, zid id.Zid) bool {
-	_, ok := cb.zettel[zid]
-	return !ok
-}
-
-func (cb *constBox) RenameZettel(_ context.Context, curZid, _ id.Zid) (err error) {
-	if _, ok := cb.zettel[curZid]; ok {
-		err = box.ErrReadOnly
-	} else {
-		err = box.ErrZettelNotFound{Zid: curZid}
-	}
-	cb.log.Trace().Err(err).Msg("RenameZettel")
-	return err
-}
-
 func (*constBox) CanDeleteZettel(context.Context, id.Zid) bool { return false }
 
 func (cb *constBox) DeleteZettel(_ context.Context, zid id.Zid) (err error) {
@@ -225,16 +210,6 @@ var constZettelMap = map[id.Zid]constZettel{
 			api.KeyVisibility: api.ValueVisibilityExpert,
 		},
 		zettel.NewContent(contentFormSxn)},
-	id.RenameTemplateZid: {
-		constHeader{
-			api.KeyTitle:      "Zettelstore Rename Form HTML Template",
-			api.KeyRole:       api.ValueRoleConfiguration,
-			api.KeySyntax:     meta.SyntaxSxn,
-			api.KeyCreated:    "20200804111624",
-			api.KeyModified:   "20240219145200",
-			api.KeyVisibility: api.ValueVisibilityExpert,
-		},
-		zettel.NewContent(contentRenameSxn)},
 	id.DeleteTemplateZid: {
 		constHeader{
 			api.KeyTitle:      "Zettelstore Delete HTML Template",
@@ -468,9 +443,6 @@ var contentInfoSxn []byte
 
 //go:embed form.sxn
 var contentFormSxn []byte
-
-//go:embed rename.sxn
-var contentRenameSxn []byte
 
 //go:embed delete.sxn
 var contentDeleteSxn []byte

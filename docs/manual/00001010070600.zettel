@@ -4,7 +4,7 @@ role: manual
 tags: #authorization #configuration #manual #security #zettelstore
 syntax: zmk
 created: 20210126175322
-modified: 20240708154954
+modified: 20240711183714
 
 Whether an operation of the Zettelstore is allowed or rejected, depends on various factors.
 
@@ -43,9 +43,6 @@ In the second step, when [[authentication is enabled|00001010040100]] and the re
 ** If the ''user-role'' of the user is ""reader"", reject the access.
 ** If the user is not allowed to create a new zettel, reject the access.
 ** Otherwise grant the access.
-* Rename a zettel[^Renaming is deprecated. This operation will be removed in version 0.19 or later.]
-** Reject the access.
-   Only the owner of the Zettelstore is currently allowed to give a new identifier for a zettel.
 * Delete a zettel
 ** Reject the access.
    Only the owner of the Zettelstore is allowed to delete a zettel.

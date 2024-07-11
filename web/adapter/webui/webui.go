@@ -82,7 +82,6 @@ type webuiBox interface {
 	GetZettel(context.Context, id.Zid) (zettel.Zettel, error)
 	GetMeta(context.Context, id.Zid) (*meta.Meta, error)
 	CanUpdateZettel(context.Context, zettel.Zettel) bool
-	AllowRenameZettel(context.Context, id.Zid) bool
 	CanDeleteZettel(context.Context, id.Zid) bool
 }
 
@@ -174,10 +173,6 @@ func (wui *WebUI) canWrite(
 	ctx context.Context, user, meta *meta.Meta, content zettel.Content) bool {
 	return wui.policy.CanWrite(user, meta, meta) &&
 		wui.box.CanUpdateZettel(ctx, zettel.Zettel{Meta: meta, Content: content})
-}
-
-func (wui *WebUI) canRename(ctx context.Context, user, m *meta.Meta) bool {
-	return wui.policy.CanRename(user, m) && wui.box.AllowRenameZettel(ctx, m.Zid)
 }
 
 func (wui *WebUI) canDelete(ctx context.Context, user, m *meta.Meta) bool {

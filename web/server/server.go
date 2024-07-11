@@ -38,7 +38,6 @@ const (
 	MethodHead
 	MethodPost
 	MethodPut
-	MethodMove
 	MethodDelete
 	MethodLAST // must always be the last one
 )

@@ -71,7 +71,6 @@ This list is used to check the generated HTML code (''ZID'' is the paceholder fo
 * The info page of all zettel is checked, via path ''/i/ZID''
 * A subset of max. 100 zettel will be checked for the validity of their edit page, via ''/e/ZID''
 * 10 random zettel are checked for a valid create form, via ''/c/ZID''
-* The zettel rename form will be checked for 100 zettel, via ''/b/ZID''
 * A maximum of 200 random zettel are checked for a valid delete dialog, via ''/d/ZID''
 
 Depending on the selected Zettelstore, the command might take a long time.

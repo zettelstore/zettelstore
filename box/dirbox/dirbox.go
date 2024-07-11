@@ -326,52 +326,6 @@ func (dp *dirBox) updateEntryFromMetaContent(entry *notify.DirEntry, m *meta.Met
 	entry.SetupFromMetaContent(m, content, dp.cdata.Config.GetZettelFileSyntax)
 }
 
-func (dp *dirBox) AllowRenameZettel(context.Context, id.Zid) bool {
-	return !dp.readonly
-}
-
-func (dp *dirBox) RenameZettel(ctx context.Context, curZid, newZid id.Zid) error {
-	if curZid == newZid {
-		return nil
-	}
-	curEntry := dp.dirSrv.GetDirEntry(curZid)
-	if !curEntry.IsValid() {
-		return box.ErrZettelNotFound{Zid: curZid}
-	}
-	if dp.readonly {
-		return box.ErrReadOnly
-	}
-
-	// Check whether zettel with new ID already exists in this box.
-	if dp.HasZettel(ctx, newZid) {
-		return box.ErrInvalidZid{Zid: newZid.String()}
-	}
-
-	oldMeta, oldContent, err := dp.srvGetMetaContent(ctx, curEntry, curZid)
-	if err != nil {
-		return err
-	}
-
-	newEntry, err := dp.dirSrv.RenameDirEntry(curEntry, newZid)
-	if err != nil {
-		return err
-	}
-	oldMeta.Zid = newZid
-	newZettel := zettel.Zettel{Meta: oldMeta, Content: zettel.NewContent(oldContent)}
-	if err = dp.srvSetZettel(ctx, &newEntry, newZettel); err != nil {
-		// "Rollback" rename. No error checking...
-		dp.dirSrv.RenameDirEntry(&newEntry, curZid)
-		return err
-	}
-	err = dp.srvDeleteZettel(ctx, curEntry, curZid)
-	if err == nil {
-		dp.notifyChanged(curZid)
-		dp.notifyChanged(newZid)
-	}
-	dp.log.Trace().Zid(curZid).Zid(newZid).Err(err).Msg("RenameZettel")
-	return err
-}
-
 func (dp *dirBox) CanDeleteZettel(_ context.Context, zid id.Zid) bool {
 	if dp.readonly {
 		return false
