@@ -29,8 +29,11 @@ import (
 
 // MakeGetDeleteZettelHandler creates a new HTTP handler to display the
 // HTML delete view of a zettel.
-func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAllZettel usecase.GetAllZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeGetDeleteZettelHandler(
+	getZettel usecase.GetZettel,
+	getAllZettel usecase.GetAllZettel,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
 		zid, err := id.Parse(path)
@@ -67,7 +70,7 @@ func (wui *WebUI) MakeGetDeleteZettelHandler(getZettel usecase.GetZettel, getAll
 		if err != nil {
 			wui.reportError(ctx, w, err)
 		}
-	}
+	})
 }
 
 func (wui *WebUI) encodeIncoming(m *meta.Meta, getTextTitle getTextTitleFunc) *sx.Pair {
@@ -100,8 +103,8 @@ func addListValues(zidMap strfun.Set, m *meta.Meta, key string) {
 }
 
 // MakePostDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
 		zid, err := id.Parse(path)
@@ -115,5 +118,5 @@ func (wui *WebUI) MakePostDeleteZettelHandler(deleteZettel *usecase.DeleteZettel
 			return
 		}
 		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
-	}
+	})
 }

@@ -26,13 +26,13 @@ import (
 	"zettelstore.de/z/zettel/id"
 )
 
-type getRootStore interface {
+type getRootPort interface {
 	GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error)
 }
 
 // MakeGetRootHandler creates a new HTTP handler to show the root URL.
-func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeGetRootHandler(s getRootPort) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if p := r.URL.Path; p != "/" {
 			wui.reportError(ctx, w, adapter.ErrResourceNotFound{Path: p})
@@ -57,5 +57,5 @@ func (wui *WebUI) MakeGetRootHandler(s getRootStore) http.HandlerFunc {
 			return
 		}
 		wui.redirectFound(w, r, wui.NewURLBuilder('h'))
-	}
+	})
 }

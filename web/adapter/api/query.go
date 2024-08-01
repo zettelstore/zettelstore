@@ -34,8 +34,13 @@ import (
 )
 
 // MakeQueryHandler creates a new HTTP handler to perform a query.
-func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, roleZettel *usecase.RoleZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (a *API) MakeQueryHandler(
+	queryMeta *usecase.Query,
+	tagZettel *usecase.TagZettel,
+	roleZettel *usecase.RoleZettel,
+	reIndex *usecase.ReIndex,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		urlQuery := r.URL.Query()
 		if a.handleTagZettel(w, r, tagZettel, urlQuery) || a.handleRoleZettel(w, r, roleZettel, urlQuery) {
@@ -96,7 +101,7 @@ func (a *API) MakeQueryHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZ
 		if err = writeBuffer(w, &buf, contentType); err != nil {
 			a.log.Error().Err(err).Msg("write result buffer")
 		}
-	}
+	})
 }
 func queryAction(w io.Writer, enc zettelEncoder, ml []*meta.Meta, actions []string) error {
 	min, max := -1, -1

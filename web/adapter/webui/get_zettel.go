@@ -31,8 +31,11 @@ import (
 )
 
 // MakeGetHTMLZettelHandler creates a new HTTP handler for the use case "get zettel".
-func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel usecase.GetZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeGetHTMLZettelHandler(
+	evaluate *usecase.Evaluate,
+	getZettel usecase.GetZettel,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
 		zid, err := id.Parse(path)
@@ -94,7 +97,7 @@ func (wui *WebUI) MakeGetHTMLZettelHandler(evaluate *usecase.Evaluate, getZettel
 		if err != nil {
 			wui.reportError(ctx, w, err)
 		}
-	}
+	})
 }
 
 func (wui *WebUI) identifierSetAsLinks(m *meta.Meta, key string, getTextTitle getTextTitleFunc) *sx.Pair {

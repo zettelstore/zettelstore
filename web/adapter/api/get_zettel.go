@@ -34,8 +34,12 @@ import (
 )
 
 // MakeGetZettelHandler creates a new HTTP handler to return a zettel in various encodings.
-func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usecase.ParseZettel, evaluate usecase.Evaluate) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (a *API) MakeGetZettelHandler(
+	getZettel usecase.GetZettel,
+	parseZettel usecase.ParseZettel,
+	evaluate usecase.Evaluate,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			http.NotFound(w, r)
@@ -70,7 +74,7 @@ func (a *API) MakeGetZettelHandler(getZettel usecase.GetZettel, parseZettel usec
 			}
 			a.writeEncodedZettelPart(ctx, w, zn, em, enc, encStr, part)
 		}
-	}
+	})
 }
 
 func (a *API) writePlainData(w http.ResponseWriter, ctx context.Context, zid id.Zid, part partType, getZettel usecase.GetZettel) {

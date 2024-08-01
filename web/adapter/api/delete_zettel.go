@@ -21,8 +21,8 @@ import (
 )
 
 // MakeDeleteZettelHandler creates a new HTTP handler to delete a zettel.
-func (a *API) MakeDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (a *API) MakeDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		zid, err := id.Parse(r.URL.Path[1:])
 		if err != nil {
 			http.NotFound(w, r)
@@ -34,5 +34,5 @@ func (a *API) MakeDeleteZettelHandler(deleteZettel *usecase.DeleteZettel) http.H
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
-	}
+	})
 }

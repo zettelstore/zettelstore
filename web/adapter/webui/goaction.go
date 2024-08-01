@@ -20,8 +20,8 @@ import (
 )
 
 // MakeGetGoActionHandler creates a new HTTP handler to execute certain commands.
-func (wui *WebUI) MakeGetGoActionHandler(ucRefresh *usecase.Refresh) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeGetGoActionHandler(ucRefresh *usecase.Refresh) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		// Currently, command "refresh" is the only command to be executed.
@@ -31,5 +31,5 @@ func (wui *WebUI) MakeGetGoActionHandler(ucRefresh *usecase.Refresh) http.Handle
 			return
 		}
 		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
-	}
+	})
 }

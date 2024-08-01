@@ -22,8 +22,8 @@ import (
 )
 
 // MakeGetDataHandler creates a new HTTP handler to return zettelstore data.
-func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		version := ucVersion.Run()
 		err := a.writeObject(w, id.Invalid, sx.MakeList(
 			sx.Int64(version.Major),
@@ -35,5 +35,5 @@ func (a *API) MakeGetDataHandler(ucVersion usecase.Version) http.HandlerFunc {
 		if err != nil {
 			a.log.Error().Err(err).Msg("Write Version Info")
 		}
-	}
+	})
 }

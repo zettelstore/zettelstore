@@ -24,8 +24,12 @@ import (
 
 // MakeEditGetZettelHandler creates a new HTTP handler to display the
 // HTML edit view of a zettel.
-func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeEditGetZettelHandler(
+	getZettel usecase.GetZettel,
+	ucListRoles usecase.ListRoles,
+	ucListSyntax usecase.ListSyntax,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
 		zid, err := id.Parse(path)
@@ -42,13 +46,13 @@ func (wui *WebUI) MakeEditGetZettelHandler(getZettel usecase.GetZettel, ucListRo
 
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
 		wui.renderZettelForm(ctx, w, zettel, "Edit Zettel", "", roleData, syntaxData)
-	}
+	})
 }
 
 // MakeEditSetZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		path := r.URL.Path[1:]
 		zid, err := id.Parse(path)
@@ -78,5 +82,5 @@ func (wui *WebUI) MakeEditSetZettelHandler(updateZettel *usecase.UpdateZettel) h
 		} else {
 			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(zid.ZettelID()))
 		}
-	}
+	})
 }

@@ -27,8 +27,8 @@ import (
 
 // MakeGetLoginOutHandler creates a new HTTP handler to display the HTML login view,
 // or to execute a logout.
-func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeGetLoginOutHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		if query.Has("logout") {
 			wui.clearToken(r.Context(), w)
@@ -36,7 +36,7 @@ func (wui *WebUI) MakeGetLoginOutHandler() http.HandlerFunc {
 			return
 		}
 		wui.renderLoginForm(wui.clearToken(r.Context(), w), w, false)
-	}
+	})
 }
 
 func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, retry bool) {
@@ -51,8 +51,8 @@ func (wui *WebUI) renderLoginForm(ctx context.Context, w http.ResponseWriter, re
 }
 
 // MakePostLoginHandler creates a new HTTP handler to authenticate the given user.
-func (wui *WebUI) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !wui.authz.WithAuth() {
 			wui.redirectFound(w, r, wui.NewURLBuilder('/'))
 			return
@@ -75,5 +75,5 @@ func (wui *WebUI) MakePostLoginHandler(ucAuth *usecase.Authenticate) http.Handle
 
 		wui.setToken(w, token)
 		wui.redirectFound(w, r, wui.NewURLBuilder('/'))
-	}
+	})
 }

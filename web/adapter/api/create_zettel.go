@@ -27,8 +27,8 @@ import (
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		enc, encStr := getEncoding(r, q)
 		var zettel zettel.Zettel
@@ -74,5 +74,5 @@ func (a *API) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) ht
 		if _, err = w.Write(result); err != nil {
 			a.log.Error().Err(err).Zid(newZid).Msg("Create Zettel")
 		}
-	}
+	})
 }

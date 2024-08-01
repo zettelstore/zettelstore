@@ -22,8 +22,8 @@ import (
 	"zettelstore.de/z/web/adapter"
 )
 
-func (wui *WebUI) MakeFaviconHandler(baseDir string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeFaviconHandler(baseDir string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		filename := filepath.Join(baseDir, "favicon.ico")
 		f, err := os.Open(filename)
 		if err != nil {
@@ -43,5 +43,5 @@ func (wui *WebUI) MakeFaviconHandler(baseDir string) http.HandlerFunc {
 		if err = adapter.WriteData(w, data, ""); err != nil {
 			wui.log.Error().Err(err).Msg("Write favicon")
 		}
-	}
+	})
 }

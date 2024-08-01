@@ -40,8 +40,12 @@ import (
 )
 
 // MakeListHTMLMetaHandler creates a HTTP handler for rendering the list of zettel as HTML.
-func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *usecase.TagZettel, roleZettel *usecase.RoleZettel, reIndex *usecase.ReIndex) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakeListHTMLMetaHandler(
+	queryMeta *usecase.Query,
+	tagZettel *usecase.TagZettel,
+	roleZettel *usecase.RoleZettel,
+	reIndex *usecase.ReIndex) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urlQuery := r.URL.Query()
 		if wui.handleTagZettel(w, r, tagZettel, urlQuery) ||
 			wui.handleRoleZettel(w, r, roleZettel, urlQuery) {
@@ -150,7 +154,7 @@ func (wui *WebUI) MakeListHTMLMetaHandler(queryMeta *usecase.Query, tagZettel *u
 		if err != nil {
 			wui.reportError(ctx, w, err)
 		}
-	}
+	})
 }
 
 func (wui *WebUI) transformTagZettelList(ctx context.Context, tagZettel *usecase.TagZettel, tags []string) (withZettel, withoutZettel *sx.Pair) {

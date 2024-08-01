@@ -41,8 +41,8 @@ func (wui *WebUI) MakeGetInfoHandler(
 	ucGetZettel usecase.GetZettel,
 	ucGetAllZettel usecase.GetAllZettel,
 	ucQuery *usecase.Query,
-) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 
@@ -117,7 +117,7 @@ func (wui *WebUI) MakeGetInfoHandler(
 		if err != nil {
 			wui.reportError(ctx, w, err)
 		}
-	}
+	})
 }
 
 func (wui *WebUI) splitLocSeaExtLinks(links []*ast.Reference) (locLinks, queries, extLinks *sx.Pair) {

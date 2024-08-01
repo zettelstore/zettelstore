@@ -25,8 +25,8 @@ import (
 func (a *API) MakePostCommandHandler(
 	ucIsAuth *usecase.IsAuthenticated,
 	ucRefresh *usecase.Refresh,
-) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		switch api.Command(r.URL.Query().Get(api.QueryKeyCommand)) {
 		case api.CommandAuthenticated:
@@ -42,7 +42,7 @@ func (a *API) MakePostCommandHandler(
 			return
 		}
 		http.Error(w, "Unknown command", http.StatusBadRequest)
-	}
+	})
 }
 
 func handleIsAuthenticated(ctx context.Context, w http.ResponseWriter, ucIsAuth *usecase.IsAuthenticated) {

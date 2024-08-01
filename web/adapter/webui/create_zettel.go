@@ -36,9 +36,12 @@ import (
 // MakeGetCreateZettelHandler creates a new HTTP handler to display the
 // HTML edit view for the various zettel creation methods.
 func (wui *WebUI) MakeGetCreateZettelHandler(
-	getZettel usecase.GetZettel, createZettel *usecase.CreateZettel,
-	ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	getZettel usecase.GetZettel,
+	createZettel *usecase.CreateZettel,
+	ucListRoles usecase.ListRoles,
+	ucListSyntax usecase.ListSyntax,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		q := r.URL.Query()
 		op := getCreateAction(q.Get(queryKeyAction))
@@ -69,7 +72,7 @@ func (wui *WebUI) MakeGetCreateZettelHandler(
 		case actionVersion:
 			wui.renderZettelForm(ctx, w, createZettel.PrepareVersion(origZettel), "Version Zettel", "", roleData, syntaxData)
 		}
-	}
+	})
 }
 
 func retrieveDataLists(ctx context.Context, ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) ([]string, []string) {
@@ -126,8 +129,8 @@ func (wui *WebUI) renderZettelForm(
 
 // MakePostCreateZettelHandler creates a new HTTP handler to store content of
 // an existing zettel.
-func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		reEdit, zettel, err := parseZettelForm(r, id.Invalid)
 		if err == errMissingContent {
@@ -151,16 +154,18 @@ func (wui *WebUI) MakePostCreateZettelHandler(createZettel *usecase.CreateZettel
 		} else {
 			wui.redirectFound(w, r, wui.NewURLBuilder('h').SetZid(newZid.ZettelID()))
 		}
-	}
+	})
 }
 
 // MakeGetZettelFromListHandler creates a new HTTP handler to store content of
 // an existing zettel.
 func (wui *WebUI) MakeGetZettelFromListHandler(
-	queryMeta *usecase.Query, evaluate *usecase.Evaluate,
-	ucListRoles usecase.ListRoles, ucListSyntax usecase.ListSyntax) http.HandlerFunc {
-
-	return func(w http.ResponseWriter, r *http.Request) {
+	queryMeta *usecase.Query,
+	evaluate *usecase.Evaluate,
+	ucListRoles usecase.ListRoles,
+	ucListSyntax usecase.ListSyntax,
+) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := adapter.GetQuery(r.URL.Query())
 		ctx := r.Context()
 		metaSeq, err := queryMeta.Run(box.NoEnrichQuery(ctx, q), q)
@@ -187,5 +192,5 @@ func (wui *WebUI) MakeGetZettelFromListHandler(
 		zettel := zettel.Zettel{Meta: m, Content: zettel.NewContent(zmkContent.Bytes())}
 		roleData, syntaxData := retrieveDataLists(ctx, ucListRoles, ucListSyntax)
 		wui.renderZettelForm(ctx, w, zettel, "Zettel from list", wui.createNewURL, roleData, syntaxData)
-	}
+	})
 }
