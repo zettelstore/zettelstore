@@ -5,6 +5,8 @@
   *  Remove support for renaming zettel, i.e. changing zettel identifier. Was
      announced as deprecated in version 0.18.
      (breaking: api, webui)
+  *  Fix wrong quote translation for markdown encoder.
+     (minor)
 
 <a id="0_18"></a>
 <h2>Changes for Version 0.18.0 (2024-07-11)</h2>

@@ -31,7 +31,10 @@ import (
 )
 
 func init() {
-	encoder.Register(api.EncoderHTML, func(params *encoder.CreateParameter) encoder.Encoder { return Create(params) })
+	encoder.Register(
+		api.EncoderHTML,
+		func(params *encoder.CreateParameter) encoder.Encoder { return Create(params) },
+	)
 }
 
 // Create an encoder.

@@ -151,7 +151,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""quotes""`,
 		expect: expectMap{
 			encoderHTML:  "&ldquo;quotes&rdquo;",
-			encoderMD:    "<q>quotes</q>",
+			encoderMD:    "&ldquo;quotes&rdquo;",
 			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "quotes")))`,
 			encoderSHTML: `((@L (@H "&ldquo;") "quotes" (@H "&rdquo;")))`,
 			encoderText:  `quotes`,
@@ -163,7 +163,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""quotes""{lang=de}`,
 		expect: expectMap{
 			encoderHTML:  `<span lang="de">&bdquo;quotes&ldquo;</span>`,
-			encoderMD:    "<q>quotes</q>",
+			encoderMD:    "&bdquo;quotes&ldquo;",
 			encoderSz:    `(INLINE (FORMAT-QUOTE (("lang" . "de")) (TEXT "quotes")))`,
 			encoderSHTML: `((span (@ (lang . "de")) (@H "&bdquo;") "quotes" (@H "&ldquo;")))`,
 			encoderText:  `quotes`,
@@ -175,7 +175,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""""`,
 		expect: expectMap{
 			encoderHTML:  `&ldquo;&rdquo;`,
-			encoderMD:    "<q></q>",
+			encoderMD:    "&ldquo;&rdquo;",
 			encoderSz:    `(INLINE (FORMAT-QUOTE ()))`,
 			encoderSHTML: `((@L (@H "&ldquo;" "&rdquo;")))`,
 			encoderText:  ``,
@@ -187,7 +187,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""""{lang=unknown}`,
 		expect: expectMap{
 			encoderHTML:  `<span lang="unknown">&quot;&quot;</span>`,
-			encoderMD:    "<q></q>",
+			encoderMD:    "&quot;&quot;",
 			encoderSz:    `(INLINE (FORMAT-QUOTE (("lang" . "unknown"))))`,
 			encoderSHTML: `((span (@ (lang . "unknown")) (@H "&quot;" "&quot;")))`,
 			encoderText:  ``,
@@ -199,7 +199,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""say: ::""yes, ::""or?""::""::""`,
 		expect: expectMap{
 			encoderHTML:  `&ldquo;say: <span>&lsquo;yes, <span>&ldquo;or?&rdquo;</span>&rsquo;</span>&rdquo;`,
-			encoderMD:    "<q>say: <q>yes, <q>or?</q></q></q>",
+			encoderMD:    `&ldquo;say: &lsquo;yes, &ldquo;or?&rdquo;&rsquo;&rdquo;`,
 			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "say: ") (FORMAT-SPAN () (FORMAT-QUOTE () (TEXT "yes, ") (FORMAT-SPAN () (FORMAT-QUOTE () (TEXT "or?")))))))`,
 			encoderSHTML: `((@L (@H "&ldquo;") "say: " (span (@L (@H "&lsquo;") "yes, " (span (@L (@H "&ldquo;") "or?" (@H "&rdquo;"))) (@H "&rsquo;"))) (@H "&rdquo;")))`,
 			encoderText:  `say: yes, or?`,
@@ -211,7 +211,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `""yes"" or ""no""`,
 		expect: expectMap{
 			encoderHTML:  `&ldquo;yes&rdquo; or &ldquo;no&rdquo;`,
-			encoderMD:    "<q>yes</q> or <q>no</q>",
+			encoderMD:    `&ldquo;yes&rdquo; or &ldquo;no&rdquo;`,
 			encoderSz:    `(INLINE (FORMAT-QUOTE () (TEXT "yes")) (TEXT " or ") (FORMAT-QUOTE () (TEXT "no")))`,
 			encoderSHTML: `((@L (@H "&ldquo;") "yes" (@H "&rdquo;")) " or " (@L (@H "&ldquo;") "no" (@H "&rdquo;")))`,
 			encoderText:  `yes or no`,
@@ -283,7 +283,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `''input''`,
 		expect: expectMap{
 			encoderHTML:  `<kbd>input</kbd>`,
-			encoderMD:    "input",
+			encoderMD:    "`input`",
 			encoderSz:    `(INLINE (LITERAL-INPUT () "input"))`,
 			encoderSHTML: `((kbd "input"))`,
 			encoderText:  `input`,
@@ -295,7 +295,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `==output==`,
 		expect: expectMap{
 			encoderHTML:  `<samp>output</samp>`,
-			encoderMD:    "output",
+			encoderMD:    "`output`",
 			encoderSz:    `(INLINE (LITERAL-OUTPUT () "output"))`,
 			encoderSHTML: `((samp "output"))`,
 			encoderText:  `output`,
@@ -319,7 +319,7 @@ var tcsInline = []zmkTestCase{
 		zmk:   `::""abc""::{lang=fr}`,
 		expect: expectMap{
 			encoderHTML:  `<span lang="fr">&laquo;&nbsp;abc&nbsp;&raquo;</span>`,
-			encoderMD:    "<q>abc</q>",
+			encoderMD:    "&laquo;&nbsp;abc&nbsp;&raquo;",
 			encoderSz:    `(INLINE (FORMAT-SPAN (("lang" . "fr")) (FORMAT-QUOTE () (TEXT "abc"))))`,
 			encoderSHTML: `((span (@ (lang . "fr")) (@L (@H "&laquo;" "&nbsp;") "abc" (@H "&nbsp;" "&raquo;"))))`,
 			encoderText:  `abc`,

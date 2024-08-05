@@ -18,25 +18,32 @@ import (
 	"io"
 
 	"t73f.de/r/zsc/api"
+	"t73f.de/r/zsc/attrs"
+	"t73f.de/r/zsc/shtml"
 	"zettelstore.de/z/ast"
 	"zettelstore.de/z/encoder"
 	"zettelstore.de/z/zettel/meta"
 )
 
 func init() {
-	encoder.Register(api.EncoderMD, func(*encoder.CreateParameter) encoder.Encoder { return Create() })
+	encoder.Register(
+		api.EncoderMD,
+		func(params *encoder.CreateParameter) encoder.Encoder { return Create(params) },
+	)
 }
 
 // Create an encoder.
-func Create() *Encoder { return &myME }
+func Create(params *encoder.CreateParameter) *Encoder {
+	return &Encoder{lang: params.Lang}
+}
 
-type Encoder struct{}
-
-var myME Encoder
+type Encoder struct {
+	lang string
+}
 
 // WriteZettel writes the encoded zettel to the writer.
-func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(w)
+func (me *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newVisitor(w, me.lang)
 	v.acceptMeta(zn.InhMeta, evalMeta)
 	if zn.InhMeta.YamlSep {
 		v.b.WriteString("---\n")
@@ -49,8 +56,8 @@ func (*Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder.Ev
 }
 
 // WriteMeta encodes meta data as markdown.
-func (*Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
-	v := newVisitor(w)
+func (me *Encoder) WriteMeta(w io.Writer, m *meta.Meta, evalMeta encoder.EvalMetaFunc) (int, error) {
+	v := newVisitor(w, me.lang)
 	v.acceptMeta(m, evalMeta)
 	length, err := v.b.Flush()
 	return length, err
@@ -70,21 +77,21 @@ func (v *visitor) acceptMeta(m *meta.Meta, evalMeta encoder.EvalMetaFunc) {
 	}
 }
 
-func (ze *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
-	return ze.WriteBlocks(w, &zn.Ast)
+func (me *Encoder) WriteContent(w io.Writer, zn *ast.ZettelNode) (int, error) {
+	return me.WriteBlocks(w, &zn.Ast)
 }
 
 // WriteBlocks writes the content of a block slice to the writer.
-func (*Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
-	v := newVisitor(w)
+func (me *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
+	v := newVisitor(w, me.lang)
 	ast.Walk(v, bs)
 	length, err := v.b.Flush()
 	return length, err
 }
 
 // WriteInlines writes an inline slice to the writer
-func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
-	v := newVisitor(w)
+func (me *Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
+	v := newVisitor(w, me.lang)
 	ast.Walk(v, is)
 	length, err := v.b.Flush()
 	return length, err
@@ -92,13 +99,36 @@ func (*Encoder) WriteInlines(w io.Writer, is *ast.InlineSlice) (int, error) {
 
 // visitor writes the abstract syntax tree to an EncWriter.
 type visitor struct {
-	b          encoder.EncWriter
-	listInfo   []int
-	listPrefix string
+	b            encoder.EncWriter
+	listInfo     []int
+	listPrefix   string
+	langStack    shtml.LangStack
+	quoteNesting uint
 }
 
-func newVisitor(w io.Writer) *visitor {
-	return &visitor{b: encoder.NewEncWriter(w)}
+func newVisitor(w io.Writer, lang string) *visitor {
+	return &visitor{b: encoder.NewEncWriter(w), langStack: shtml.NewLangStack(lang)}
+}
+
+// pushAttribute adds the current attributes to the visitor.
+func (v *visitor) pushAttributes(a attrs.Attributes) {
+	if value, ok := a.Get("lang"); ok {
+		v.langStack.Push(value)
+	} else {
+		v.langStack.Dup()
+	}
+}
+
+// popAttributes removes the current attributes from the visitor.
+func (v *visitor) popAttributes() { v.langStack.Pop() }
+
+// getLanguage returns the current language,
+func (v *visitor) getLanguage() string { return v.langStack.Top() }
+
+func (v *visitor) getQuotes() (string, string, bool) {
+	qi := shtml.GetQuoteInfo(v.getLanguage())
+	leftQ, rightQ := qi.GetQuotes(v.quoteNesting)
+	return leftQ, rightQ, qi.GetNBSp()
 }
 
 func (v *visitor) Visit(node ast.Node) ast.Visitor {
@@ -181,6 +211,9 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 	if rn.Kind != ast.RegionQuote {
 		return
 	}
+	v.pushAttributes(rn.Attrs)
+	defer v.popAttributes()
+
 	first := true
 	for _, bn := range rn.Blocks {
 		pn, ok := bn.(*ast.ParaNode)
@@ -197,6 +230,9 @@ func (v *visitor) visitRegion(rn *ast.RegionNode) {
 }
 
 func (v *visitor) visitHeading(hn *ast.HeadingNode) {
+	v.pushAttributes(hn.Attrs)
+	defer v.popAttributes()
+
 	const headingSigns = "###### "
 	v.b.WriteString(headingSigns[len(headingSigns)-hn.Level-1:])
 	ast.Walk(v, &hn.Inlines)
@@ -281,10 +317,16 @@ func (v *visitor) visitBreak(bn *ast.BreakNode) {
 }
 
 func (v *visitor) visitLink(ln *ast.LinkNode) {
+	v.pushAttributes(ln.Attrs)
+	defer v.popAttributes()
+
 	v.writeReference(ln.Ref, ln.Inlines)
 }
 
 func (v *visitor) visitEmbedRef(en *ast.EmbedRefNode) {
+	v.pushAttributes(en.Attrs)
+	defer v.popAttributes()
+
 	v.b.WriteByte('!')
 	v.writeReference(en.Ref, en.Inlines)
 }
@@ -315,6 +357,9 @@ func isAutoLinkable(ref *ast.Reference) bool {
 }
 
 func (v *visitor) visitFormat(fn *ast.FormatNode) {
+	v.pushAttributes(fn.Attrs)
+	defer v.popAttributes()
+
 	switch fn.Kind {
 	case ast.FormatEmph:
 		v.b.WriteByte('*')
@@ -325,9 +370,7 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 		ast.Walk(v, &fn.Inlines)
 		v.b.WriteString("__")
 	case ast.FormatQuote:
-		v.b.WriteString("<q>")
-		ast.Walk(v, &fn.Inlines)
-		v.b.WriteString("</q>")
+		v.writeQuote(fn)
 	case ast.FormatMark:
 		v.b.WriteString("<mark>")
 		ast.Walk(v, &fn.Inlines)
@@ -337,9 +380,24 @@ func (v *visitor) visitFormat(fn *ast.FormatNode) {
 	}
 }
 
+func (v *visitor) writeQuote(fn *ast.FormatNode) {
+	leftQ, rightQ, withNbsp := v.getQuotes()
+	v.b.WriteString(leftQ)
+	if withNbsp {
+		v.b.WriteString("&nbsp;")
+	}
+	v.quoteNesting++
+	ast.Walk(v, &fn.Inlines)
+	v.quoteNesting--
+	if withNbsp {
+		v.b.WriteString("&nbsp;")
+	}
+	v.b.WriteString(rightQ)
+}
+
 func (v *visitor) visitLiteral(ln *ast.LiteralNode) {
 	switch ln.Kind {
-	case ast.LiteralProg:
+	case ast.LiteralProg, ast.LiteralInput, ast.LiteralOutput:
 		v.b.WriteByte('`')
 		v.b.Write(ln.Content)
 		v.b.WriteByte('`')
