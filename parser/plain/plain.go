@@ -125,9 +125,7 @@ func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 }
 
 func scanSVG(inp *input.Input) string {
-	for input.IsSpace(inp.Ch) {
-		inp.Next()
-	}
+	inp.SkipSpace()
 	svgSrc := string(inp.Src[inp.Pos:])
 	if !strings.HasPrefix(svgSrc, "<svg ") {
 		return ""

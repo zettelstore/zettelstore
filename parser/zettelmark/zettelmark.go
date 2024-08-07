@@ -156,7 +156,7 @@ func (cp *zmkP) parseBlockAttributes() attrs.Attributes {
 	}
 
 	// No immediate name: skip spaces
-	cp.skipSpace()
+	inp.SkipSpace()
 	return cp.parseInlineAttributes()
 }
 
@@ -237,12 +237,6 @@ func (cp *zmkP) skipSpaceLine() {
 		default:
 			return
 		}
-	}
-}
-
-func (cp *zmkP) skipSpace() {
-	for inp := cp.inp; inp.Ch == ' '; {
-		inp.Next()
 	}
 }
 

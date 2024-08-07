@@ -288,10 +288,11 @@ func (cp *zmkP) parseRegion() (rn *ast.RegionNode, success bool) {
 }
 
 func (cp *zmkP) parseRegionLastLine(rn *ast.RegionNode) {
+	inp := cp.inp
 	cp.clearStacked() // remove any lists defined in the region
-	cp.skipSpace()
+	inp.SkipSpace()
 	for {
-		switch cp.inp.Ch {
+		switch inp.Ch {
 		case input.EOS, '\n', '\r':
 			return
 		}
@@ -314,7 +315,7 @@ func (cp *zmkP) parseHeading() (hn *ast.HeadingNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	cp.skipSpace()
+	inp.SkipSpace()
 	if delims > 7 {
 		delims = 7
 	}
@@ -361,7 +362,7 @@ func (cp *zmkP) parseNestedList() (res ast.BlockNode, success bool) {
 	if kinds == nil {
 		return nil, false
 	}
-	cp.skipSpace()
+	inp.SkipSpace()
 	if kinds[len(kinds)-1] != ast.NestedListQuote && input.IsEOLEOS(inp.Ch) {
 		return nil, false
 	}
@@ -446,7 +447,7 @@ func (cp *zmkP) parseDefTerm() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	cp.skipSpace()
+	inp.SkipSpace()
 	descrl := cp.descrl
 	if descrl == nil {
 		descrl = &ast.DescriptionListNode{}
@@ -480,7 +481,7 @@ func (cp *zmkP) parseDefDescr() (res ast.BlockNode, success bool) {
 		return nil, false
 	}
 	inp.Next()
-	cp.skipSpace()
+	inp.SkipSpace()
 	descrl := cp.descrl
 	if descrl == nil || len(descrl.Descriptions) == 0 {
 		return nil, false

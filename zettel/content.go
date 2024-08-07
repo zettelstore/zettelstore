@@ -77,7 +77,7 @@ func (zc *Content) TrimSpace() {
 			pos = inp.Pos
 			continue
 		}
-		if !input.IsSpace(inp.Ch) {
+		if !inp.IsSpace() {
 			break
 		}
 		inp.Next()

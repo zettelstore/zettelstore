@@ -45,14 +45,16 @@ type parserState struct {
 
 func (ps *parserState) mustStop() bool { return ps.inp.Ch == input.EOS }
 func (ps *parserState) acceptSingleKw(s string) bool {
-	if ps.inp.Accept(s) && (ps.isSpace() || ps.isActionSep() || ps.mustStop()) {
+	inp := ps.inp
+	if inp.Accept(s) && (inp.IsSpace() || ps.isActionSep() || ps.mustStop()) {
 		return true
 	}
 	return false
 }
 func (ps *parserState) acceptKwArgs(s string) bool {
-	if ps.inp.Accept(s) && ps.isSpace() {
-		ps.skipSpace()
+	inp := ps.inp
+	if inp.Accept(s) && inp.IsSpace() {
+		inp.SkipSpace()
 		return true
 	}
 	return false
@@ -72,11 +74,11 @@ const (
 )
 
 func (ps *parserState) parse(q *Query) *Query {
-	ps.skipSpace()
+	inp := ps.inp
+	inp.SkipSpace()
 	if ps.mustStop() {
 		return q
 	}
-	inp := ps.inp
 	firstPos := inp.Pos
 	zidSet := id.NewSet()
 	for {
@@ -91,7 +93,7 @@ func (ps *parserState) parse(q *Query) *Query {
 			q = createIfNeeded(q)
 			q.zids = append(q.zids, zid)
 		}
-		ps.skipSpace()
+		inp.SkipSpace()
 		if ps.mustStop() {
 			q.zids = nil
 			break
@@ -100,7 +102,7 @@ func (ps *parserState) parse(q *Query) *Query {
 
 	hasContext := false
 	for {
-		ps.skipSpace()
+		inp.SkipSpace()
 		if ps.mustStop() {
 			break
 		}
@@ -141,7 +143,7 @@ func (ps *parserState) parse(q *Query) *Query {
 	}
 
 	for {
-		ps.skipSpace()
+		inp.SkipSpace()
 		if ps.mustStop() {
 			break
 		}
@@ -203,7 +205,7 @@ func (ps *parserState) parseContext(q *Query) *Query {
 	inp := ps.inp
 	spec := &ContextSpec{}
 	for {
-		ps.skipSpace()
+		inp.SkipSpace()
 		if ps.mustStop() {
 			break
 		}
@@ -268,7 +270,7 @@ func (ps *parserState) parseUnlinked(q *Query) *Query {
 
 	spec := &UnlinkedSpec{}
 	for {
-		ps.skipSpace()
+		inp.SkipSpace()
 		if ps.mustStop() {
 			break
 		}
@@ -344,10 +346,11 @@ func (ps *parserState) parseLimit(q *Query) (*Query, bool) {
 }
 
 func (ps *parserState) parseActions(q *Query) *Query {
-	ps.inp.Next()
+	inp := ps.inp
+	inp.Next()
 	var words []string
 	for {
-		ps.skipSpace()
+		inp.SkipSpace()
 		word := ps.scanWord()
 		if len(word) == 0 {
 			break
@@ -375,7 +378,7 @@ func (ps *parserState) parseText(q *Query) *Query {
 		op, hasOp = ps.scanSearchOp()
 		// Assert hasOp == true
 		if op == cmpExist || op == cmpNotExist {
-			if ps.isSpace() || ps.isActionSep() || ps.mustStop() {
+			if inp.IsSpace() || ps.isActionSep() || ps.mustStop() {
 				return q.addKey(string(key), op)
 			}
 			ps.inp.SetPos(pos)
@@ -414,7 +417,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 	pos := inp.Pos
 	allowKey := !hasOp
 
-	for !ps.isSpace() && !ps.isActionSep() && !ps.mustStop() {
+	for !inp.IsSpace() && !ps.isActionSep() && !ps.mustStop() {
 		if allowKey {
 			switch inp.Ch {
 			case searchOperatorNotChar, existOperatorChar,
@@ -435,7 +438,7 @@ func (ps *parserState) scanSearchTextOrKey(hasOp bool) ([]byte, []byte) {
 func (ps *parserState) scanWord() []byte {
 	inp := ps.inp
 	pos := inp.Pos
-	for !ps.isSpace() && !ps.isActionSep() && !ps.mustStop() {
+	for !inp.IsSpace() && !ps.isActionSep() && !ps.mustStop() {
 		inp.Next()
 	}
 	return inp.Src[pos:inp.Pos]
@@ -510,23 +513,6 @@ func (ps *parserState) scanSearchOp() (compareOp, bool) {
 		return op.negate(), true
 	}
 	return op, true
-}
-
-func (ps *parserState) skipSpace() {
-	for ps.isSpace() {
-		ps.inp.Next()
-	}
-}
-
-func (ps *parserState) isSpace() bool {
-	switch ch := ps.inp.Ch; ch {
-	case input.EOS:
-		return false
-	case ' ', '\t', '\n', '\r':
-		return true
-	default:
-		return input.IsSpace(ch)
-	}
 }
 
 func (ps *parserState) isActionSep() bool {

@@ -31,7 +31,7 @@ func NewFromInput(zid id.Zid, inp *input.Input) *Meta {
 	}
 	meta := New(zid)
 	for {
-		skipSpace(inp)
+		inp.SkipSpace()
 		switch inp.Ch {
 		case '\r':
 			if inp.Peek() == '\n' {
@@ -64,29 +64,23 @@ func parseHeader(m *Meta, inp *input.Input) {
 		inp.Next()
 	}
 	key := inp.Src[pos:inp.Pos]
-	skipSpace(inp)
+	inp.SkipSpace()
 	if inp.Ch == ':' {
 		inp.Next()
 	}
 	var val []byte
 	for {
-		skipSpace(inp)
+		inp.SkipSpace()
 		pos = inp.Pos
 		skipToEOL(inp)
 		val = append(val, inp.Src[pos:inp.Pos]...)
 		inp.EatEOL()
-		if !input.IsSpace(inp.Ch) {
+		if !inp.IsSpace() {
 			break
 		}
 		val = append(val, ' ')
 	}
 	addToMeta(m, string(key), string(val))
-}
-
-func skipSpace(inp *input.Input) {
-	for input.IsSpace(inp.Ch) {
-		inp.Next()
-	}
 }
 
 func skipToEOL(inp *input.Input) {

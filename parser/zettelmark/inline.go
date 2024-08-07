@@ -161,7 +161,7 @@ func hasQueryPrefix(src []byte) bool {
 func (cp *zmkP) parseReference(openCh, closeCh rune) (ref string, is ast.InlineSlice, _ bool) {
 	inp := cp.inp
 	inp.Next()
-	cp.skipSpace()
+	inp.SkipSpace()
 	if inp.Ch == openCh {
 		// Additional opening chars result in a fail
 		return "", nil, false
@@ -194,7 +194,7 @@ func (cp *zmkP) parseReference(openCh, closeCh rune) (ref string, is ast.InlineS
 		}
 	}
 
-	cp.skipSpace()
+	inp.SkipSpace()
 	pos = inp.Pos
 	if !cp.readReferenceToClose(closeCh) {
 		return "", nil, false
@@ -313,9 +313,9 @@ func (cp *zmkP) parseFootnote() (*ast.FootnoteNode, bool) {
 }
 
 func (cp *zmkP) parseLinkLikeRest() (ast.InlineSlice, bool) {
-	cp.skipSpace()
-	ins := ast.InlineSlice{}
 	inp := cp.inp
+	inp.SkipSpace()
+	ins := ast.InlineSlice{}
 	for inp.Ch != ']' {
 		in := cp.parseInline()
 		if in == nil {
@@ -384,7 +384,7 @@ func (cp *zmkP) parseComment() (res *ast.LiteralNode, success bool) {
 		inp.Next()
 	}
 	attrs := cp.parseInlineAttributes()
-	cp.skipSpace()
+	inp.SkipSpace()
 	pos := inp.Pos
 	for {
 		if input.IsEOLEOS(inp.Ch) {

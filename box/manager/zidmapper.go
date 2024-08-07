@@ -213,7 +213,7 @@ func (zm *zidMapper) parseAndUpdate(content []byte) (err error) {
 	defer zm.mx.Unlock()
 	inp := input.NewInput(content)
 	for inp.Ch != input.EOS {
-		skipSpace(inp)
+		inp.SkipSpace()
 		pos := inp.Pos
 		zidO := readZidO(inp)
 		if !zidO.IsValid() {
@@ -224,7 +224,7 @@ func (zm *zidMapper) parseAndUpdate(content []byte) (err error) {
 			}
 			continue
 		}
-		skipSpace(inp)
+		inp.SkipSpace()
 		zidN := readZidN(inp)
 		if !zidN.IsValid() {
 			inp.SkipToEOL()
@@ -248,12 +248,6 @@ func (zm *zidMapper) parseAndUpdate(content []byte) (err error) {
 		zm.nextZidN = max(zm.nextZidN, zidN+1)
 	}
 	return err
-}
-
-func skipSpace(inp *input.Input) {
-	for input.IsSpace(inp.Ch) {
-		inp.Next()
-	}
 }
 
 func readZidO(inp *input.Input) id.Zid {
