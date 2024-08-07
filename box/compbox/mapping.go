@@ -35,23 +35,13 @@ func genMappingM(zid id.Zid) *meta.Meta {
 }
 
 func genMappingC(ctx context.Context, cb *compBox) []byte {
-	var buf bytes.Buffer
-	toNew, err := cb.mapper.OldToNewMapping(ctx)
+	src, err := cb.mapper.AsBytes(ctx)
 	if err != nil {
+		var buf bytes.Buffer
 		buf.WriteString("**Error while fetching: ")
 		buf.WriteString(err.Error())
 		buf.WriteString("**\n")
 		return buf.Bytes()
 	}
-	oldZids := id.NewSetCap(len(toNew))
-	for zidO := range toNew {
-		oldZids.Add(zidO)
-	}
-	oldZids.ForEach(func(zidO id.Zid) {
-		buf.WriteString(zidO.String())
-		buf.WriteByte(' ')
-		buf.WriteString(toNew[zidO].String())
-		buf.WriteByte('\n')
-	})
-	return buf.Bytes()
+	return src
 }

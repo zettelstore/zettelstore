@@ -53,6 +53,7 @@ var (
 	PreludeSxnZid     = MustParse(api.ZidSxnPrelude)
 	EmojiZid          = MustParse(api.ZidEmoji)
 	TOCNewTemplateZid = MustParse(api.ZidTOCNewTemplate)
+	MappingZid        = MustParse(api.ZidMapping)
 	DefaultHomeZid    = MustParse(api.ZidDefaultHome)
 )
 

@@ -14,11 +14,14 @@
 package manager
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"maps"
 	"sync"
 	"time"
 
+	"t73f.de/r/zsc/input"
 	"zettelstore.de/z/zettel/id"
 )
 
@@ -183,17 +186,89 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
 	return zidN
 }
 
-// OldToNewMapping returns the mapping of old format identifier to new format identifier.
-func (zm *zidMapper) OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error) {
+// AsBytes returns the mapping as lines, where each line contains
+// the old zid and the new zid.
+func (zm *zidMapper) AsBytes(ctx context.Context) ([]byte, error) {
 	allZids, err := zm.fetcher.fetchZids(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	result := make(map[id.Zid]id.ZidN, allZids.Length())
+	var buf bytes.Buffer
+	first := true
 	allZids.ForEach(func(zidO id.Zid) {
+		if !first {
+			buf.WriteByte('\n')
+		}
+		first = false
 		zidN := zm.GetZidN(zidO)
-		result[zidO] = zidN
+		buf.WriteString(zidO.String())
+		buf.WriteByte(' ')
+		buf.WriteString(zidN.String())
 	})
-	return result, nil
+	return buf.Bytes(), nil
+}
+
+func (zm *zidMapper) parseAndUpdate(content []byte) (err error) {
+	zm.mx.Lock()
+	defer zm.mx.Unlock()
+	inp := input.NewInput(content)
+	for inp.Ch != input.EOS {
+		skipSpace(inp)
+		pos := inp.Pos
+		zidO := readZidO(inp)
+		if !zidO.IsValid() {
+			inp.SkipToEOL()
+			inp.EatEOL()
+			if err == nil {
+				err = fmt.Errorf("unable to parse old zid: %q", string(inp.Src[pos:inp.Pos]))
+			}
+			continue
+		}
+		skipSpace(inp)
+		zidN := readZidN(inp)
+		if !zidN.IsValid() {
+			inp.SkipToEOL()
+			inp.EatEOL()
+			if err == nil {
+				err = fmt.Errorf("unable to parse new zid: %q", string(inp.Src[pos:inp.Pos]))
+			}
+			continue
+		}
+		inp.SkipToEOL()
+		inp.EatEOL()
+
+		if oldZidN, found := zm.toNew[zidO]; found {
+			if oldZidN != zidN {
+				err = fmt.Errorf("old zid %v already mapped to %v, overwrite: %v", zidO, oldZidN, zidN)
+			}
+			continue
+		}
+		zm.toNew[zidO] = zidN
+		zm.toOld[zidN] = zidO
+		zm.nextZidN = max(zm.nextZidN, zidN+1)
+	}
+	return err
+}
+
+func skipSpace(inp *input.Input) {
+	for input.IsSpace(inp.Ch) {
+		inp.Next()
+	}
+}
+
+func readZidO(inp *input.Input) id.Zid {
+	pos := inp.Pos
+	for '0' <= inp.Ch && inp.Ch <= '9' {
+		inp.Next()
+	}
+	zidO, _ := id.Parse(string(inp.Src[pos:inp.Pos]))
+	return zidO
+}
+func readZidN(inp *input.Input) id.ZidN {
+	pos := inp.Pos
+	for ('0' <= inp.Ch && inp.Ch <= '9') || ('a' <= inp.Ch && inp.Ch <= 'z') || ('A' <= inp.Ch && inp.Ch <= 'Z') {
+		inp.Next()
+	}
+	zidN, _ := id.ParseN(string(inp.Src[pos:inp.Pos]))
+	return zidN
 }

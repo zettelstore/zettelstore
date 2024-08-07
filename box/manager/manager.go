@@ -29,6 +29,7 @@ import (
 	"zettelstore.de/z/kernel"
 	"zettelstore.de/z/logger"
 	"zettelstore.de/z/strfun"
+	"zettelstore.de/z/zettel"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -46,7 +47,7 @@ type ConnectData struct {
 type Mapper interface {
 	Warnings(context.Context) (*id.Set, error) // Fetch problematic zettel identifier
 
-	OldToNewMapping(ctx context.Context) (map[id.Zid]id.ZidN, error)
+	AsBytes(context.Context) ([]byte, error)
 }
 
 // Connect returns a handle to the specified box.
@@ -317,6 +318,9 @@ func (mgr *Manager) Start(ctx context.Context) error {
 
 	mgr.waitBoxesAreStarted()
 	mgr.setState(box.StartStateStarted)
+
+	mgr.setupIdentifierMapping()
+
 	mgr.notifyObserver(&box.UpdateInfo{Box: mgr, Reason: box.OnReady})
 
 	go mgr.idxIndexer()
@@ -345,6 +349,38 @@ func (mgr *Manager) allBoxesStarted() bool {
 		}
 	}
 	return true
+}
+
+func (mgr *Manager) setupIdentifierMapping() {
+	ctx := context.Background()
+	z, err := mgr.getZettel(ctx, id.MappingZid)
+	if err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("unable to get identifier mapping zettel")
+		return
+	}
+	if z.Content.IsBinary() {
+		mgr.mgrLog.Error().Msg("identifier mapping is non-text zettel")
+		return
+	}
+	z.Content.TrimSpace()
+	if mapping := z.Content.AsBytes(); len(mapping) > 0 {
+		err = mgr.zidMapper.parseAndUpdate(mapping)
+		if err != nil {
+			mgr.mgrLog.Error().Err(err).Msg("identifier zettel parsing")
+		}
+	}
+
+	mapping, err := mgr.zidMapper.AsBytes(ctx)
+	if err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("unable to get current identifier mapping")
+		return
+	}
+
+	z.Content = zettel.NewContent(mapping)
+	err = mgr.UpdateZettel(ctx, z)
+	if err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("unable to write identifier mapping zettel")
+	}
 }
 
 // Stop the started box. Now only the Start() function is allowed.

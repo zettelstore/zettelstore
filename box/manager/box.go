@@ -82,6 +82,9 @@ func (mgr *Manager) GetZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, e
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
+	return mgr.getZettel(ctx, zid)
+}
+func (mgr *Manager) getZettel(ctx context.Context, zid id.Zid) (zettel.Zettel, error) {
 	for i, p := range mgr.boxes {
 		var errZNF box.ErrZettelNotFound
 		if z, err := p.GetZettel(ctx, zid); !errors.As(err, &errZNF) {
