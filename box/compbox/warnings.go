@@ -17,12 +17,15 @@ import (
 	"bytes"
 	"context"
 
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
 
 func genWarningsM(zid id.Zid) *meta.Meta {
-	return getTitledMeta(zid, "Zettelstore Warnings")
+	m := getTitledMeta(zid, "Zettelstore Warnings")
+	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
+	return m
 }
 
 func genWarningsC(ctx context.Context, cb *compBox) []byte {

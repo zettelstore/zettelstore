@@ -31,6 +31,7 @@ import (
 func genMappingM(zid id.Zid) *meta.Meta {
 	m := getTitledMeta(zid, "Zettelstore Identifier Mapping View (TEMP for v0.19-dev)")
 	m.Set(api.KeySyntax, meta.SyntaxText)
+	m.Set(api.KeyVisibility, api.ValueVisibilityLogin)
 	return m
 }
 
