@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"context"
 
+	"t73f.de/r/zsc/api"
 	"zettelstore.de/z/zettel/id"
 	"zettelstore.de/z/zettel/meta"
 )
@@ -28,7 +29,9 @@ import (
 // that is updated when a new zettel is created or an old zettel is deleted.
 
 func genMappingM(zid id.Zid) *meta.Meta {
-	return getTitledMeta(zid, "Zettelstore Identifier Mapping")
+	m := getTitledMeta(zid, "Zettelstore Identifier Mapping View (TEMP for v0.19-dev)")
+	m.Set(api.KeySyntax, meta.SyntaxText)
+	return m
 }
 
 func genMappingC(ctx context.Context, cb *compBox) []byte {
@@ -44,22 +47,11 @@ func genMappingC(ctx context.Context, cb *compBox) []byte {
 	for zidO := range toNew {
 		oldZids.Add(zidO)
 	}
-	first := true
 	oldZids.ForEach(func(zidO id.Zid) {
-		if first {
-			buf.WriteString("**Note**: this mapping is preliminary.\n")
-			buf.WriteString("It only shows you how it could look if the migration is done.\n")
-			buf.WriteString("Use this page to update your zettel if something strange is shown.\n")
-			buf.WriteString("```\n")
-			first = false
-		}
 		buf.WriteString(zidO.String())
 		buf.WriteByte(' ')
 		buf.WriteString(toNew[zidO].String())
 		buf.WriteByte('\n')
 	})
-	if !first {
-		buf.WriteString("```")
-	}
 	return buf.Bytes()
 }
