@@ -56,8 +56,8 @@ func TestListZettel(t *testing.T) {
 	const (
 		ownerZettel      = 60
 		configRoleZettel = 38
-		writerZettel     = ownerZettel - 27
-		readerZettel     = ownerZettel - 27
+		writerZettel     = ownerZettel - 25
+		readerZettel     = ownerZettel - 25
 		creatorZettel    = 10
 		publicZettel     = 5
 	)
