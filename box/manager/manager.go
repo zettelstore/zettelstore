@@ -15,6 +15,7 @@
 package manager
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"net/url"
@@ -363,11 +364,9 @@ func (mgr *Manager) setupIdentifierMapping() {
 		return
 	}
 	z.Content.TrimSpace()
-	if mapping := z.Content.AsBytes(); len(mapping) > 0 {
-		err = mgr.zidMapper.parseAndUpdate(mapping)
-		if err != nil {
-			mgr.mgrLog.Error().Err(err).Msg("identifier zettel parsing")
-		}
+	content := z.Content.AsBytes()
+	if err = mgr.zidMapper.parseAndUpdate(content); err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("identifier zettel parsing")
 	}
 
 	mapping, err := mgr.zidMapper.AsBytes(ctx)
@@ -376,10 +375,15 @@ func (mgr *Manager) setupIdentifierMapping() {
 		return
 	}
 
-	z.Content = zettel.NewContent(mapping)
-	err = mgr.UpdateZettel(ctx, z)
-	if err != nil {
-		mgr.mgrLog.Error().Err(err).Msg("unable to write identifier mapping zettel")
+	if !bytes.Equal(content, mapping) {
+		z.Content = zettel.NewContent(mapping)
+		if err = mgr.UpdateZettel(ctx, z); err != nil {
+			mgr.mgrLog.Error().Err(err).Msg("unable to write identifier mapping zettel")
+		} else {
+			mgr.mgrLog.Info().Msg("Mapping was updated")
+		}
+	} else {
+		mgr.mgrLog.Info().Msg("No mapping update")
 	}
 }
 
