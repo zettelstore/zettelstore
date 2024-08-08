@@ -152,6 +152,9 @@ func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
 }
 
 func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
+	if !zidO.IsValid() {
+		panic(zidO)
+	}
 	zm.mx.RLock()
 	if zidN, found := zm.toNew[zidO]; found {
 		zm.mx.RUnlock()
@@ -186,26 +189,67 @@ func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
 	return zidN
 }
 
-// AsBytes returns the mapping as lines, where each line contains
-// the old zid and the new zid.
-func (zm *zidMapper) AsBytes(ctx context.Context) ([]byte, error) {
-	allZids, err := zm.fetcher.fetchZids(ctx)
-	if err != nil {
-		return nil, err
+func (zm *zidMapper) DeleteO(zidO id.Zid) {
+	if _, found := zm.defined[zidO]; found {
+		return
+	}
+	zm.mx.Lock()
+	if zidN, found := zm.toNew[zidO]; found {
+		delete(zm.toNew, zidO)
+		delete(zm.toOld, zidN)
+	}
+	zm.mx.Unlock()
+}
+
+// AsBytes returns the current mapping as lines, where each line contains the
+// old and the new zettel identifier.
+func (zm *zidMapper) AsBytes() []byte {
+	zm.mx.RLock()
+	defer zm.mx.RUnlock()
+	return zm.asBytes()
+}
+func (zm *zidMapper) asBytes() []byte {
+	allZidsO := id.NewSetCap(len(zm.toNew))
+	for zidO := range zm.toNew {
+		allZidsO = allZidsO.Add(zidO)
 	}
 	var buf bytes.Buffer
 	first := true
-	allZids.ForEach(func(zidO id.Zid) {
+	allZidsO.ForEach(func(zidO id.Zid) {
 		if !first {
 			buf.WriteByte('\n')
 		}
 		first = false
-		zidN := zm.GetZidN(zidO)
+		zidN := zm.toNew[zidO]
 		buf.WriteString(zidO.String())
 		buf.WriteByte(' ')
 		buf.WriteString(zidN.String())
 	})
-	return buf.Bytes(), nil
+	return buf.Bytes()
+}
+
+// FetchAsBytes fetches all zettel identifier and returns the mapping as lines,
+// where each line contains the old zid and the new zid.
+func (zm *zidMapper) FetchAsBytes(ctx context.Context) ([]byte, error) {
+	allZids, err := zm.fetcher.fetchZids(ctx)
+	if err != nil {
+		return nil, err
+	}
+	allZids.ForEach(func(zidO id.Zid) {
+		_ = zm.GetZidN(zidO)
+	})
+	zm.mx.Lock()
+	defer zm.mx.Unlock()
+	if len(zm.toNew) != allZids.Length() {
+		for zidO, zidN := range zm.toNew {
+			if allZids.Contains(zidO) {
+				continue
+			}
+			delete(zm.toNew, zidO)
+			delete(zm.toOld, zidN)
+		}
+	}
+	return zm.asBytes(), nil
 }
 
 func (zm *zidMapper) parseAndUpdate(content []byte) (err error) {

@@ -36,7 +36,7 @@ func genMappingM(zid id.Zid) *meta.Meta {
 }
 
 func genMappingC(ctx context.Context, cb *compBox) []byte {
-	src, err := cb.mapper.AsBytes(ctx)
+	src, err := cb.mapper.FetchAsBytes(ctx)
 	if err != nil {
 		var buf bytes.Buffer
 		buf.WriteString("**Error while fetching: ")

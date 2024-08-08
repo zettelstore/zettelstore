@@ -56,7 +56,7 @@ func (mgr *Manager) CanCreateZettel(ctx context.Context) bool {
 }
 
 // CreateZettel creates a new zettel.
-func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zid, error) {
+func (mgr *Manager) CreateZettel(ctx context.Context, ztl zettel.Zettel) (id.Zid, error) {
 	mgr.mgrLog.Debug().Msg("CreateZettel")
 	if err := mgr.checkContinue(ctx); err != nil {
 		return id.Invalid, err
@@ -64,14 +64,32 @@ func (mgr *Manager) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	if box, isWriteBox := mgr.boxes[0].(box.WriteBox); isWriteBox {
-		zettel.Meta = mgr.cleanMetaProperties(zettel.Meta)
-		zid, err := box.CreateZettel(ctx, zettel)
+		ztl.Meta = mgr.cleanMetaProperties(ztl.Meta)
+		zidO, err := box.CreateZettel(ctx, ztl)
 		if err == nil {
-			mgr.idxUpdateZettel(ctx, zettel)
+			mgr.idxUpdateZettel(ctx, ztl)
+
+			err = mgr.createMapping(ctx, zidO)
 		}
-		return zid, err
+		return zidO, err
 	}
 	return id.Invalid, box.ErrReadOnly
+}
+func (mgr *Manager) createMapping(ctx context.Context, zidO id.Zid) error {
+	mgr.mappingMx.Lock()
+	defer mgr.mappingMx.Unlock()
+	mappingZettel, err := mgr.getZettel(ctx, id.MappingZid)
+	if err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("Unable to get mapping zettel")
+		return err
+	}
+
+	zidN := mgr.zidMapper.GetZidN(zidO)
+	mappingZettel.Content = zettel.NewContent(mgr.zidMapper.AsBytes())
+	if err = mgr.UpdateZettel(ctx, mappingZettel); err != nil {
+		mgr.mgrLog.Error().Err(err).Zid(zidO).Uint("zidN", uint64(zidN)).Msg("Unable to update mapping zettel")
+	}
+	return err
 }
 
 // GetZettel retrieves a specific zettel.
@@ -271,25 +289,42 @@ func (mgr *Manager) CanDeleteZettel(ctx context.Context, zid id.Zid) bool {
 }
 
 // DeleteZettel removes the zettel from the box.
-func (mgr *Manager) DeleteZettel(ctx context.Context, zid id.Zid) error {
-	mgr.mgrLog.Debug().Zid(zid).Msg("DeleteZettel")
+func (mgr *Manager) DeleteZettel(ctx context.Context, zidO id.Zid) error {
+	mgr.mgrLog.Debug().Zid(zidO).Msg("DeleteZettel")
 	if err := mgr.checkContinue(ctx); err != nil {
 		return err
 	}
 	mgr.mgrMx.RLock()
 	defer mgr.mgrMx.RUnlock()
 	for _, p := range mgr.boxes {
-		err := p.DeleteZettel(ctx, zid)
+		err := p.DeleteZettel(ctx, zidO)
 		if err == nil {
-			mgr.idxDeleteZettel(ctx, zid)
-			return nil
+			mgr.idxDeleteZettel(ctx, zidO)
+
+			err = mgr.deleteMapping(ctx, zidO)
+			return err
 		}
 		var errZNF box.ErrZettelNotFound
 		if !errors.As(err, &errZNF) && !errors.Is(err, box.ErrReadOnly) {
 			return err
 		}
 	}
-	return box.ErrZettelNotFound{Zid: zid}
+	return box.ErrZettelNotFound{Zid: zidO}
+}
+func (mgr *Manager) deleteMapping(ctx context.Context, zidO id.Zid) error {
+	mgr.mappingMx.Lock()
+	defer mgr.mappingMx.Unlock()
+	mappingZettel, err := mgr.getZettel(ctx, id.MappingZid)
+	if err != nil {
+		mgr.mgrLog.Error().Err(err).Msg("Unable to get mapping zettel")
+		return err
+	}
+	mgr.zidMapper.DeleteO(zidO)
+	mappingZettel.Content = zettel.NewContent(mgr.zidMapper.AsBytes())
+	if err = mgr.UpdateZettel(ctx, mappingZettel); err != nil {
+		mgr.mgrLog.Error().Err(err).Zid(zidO).Msg("Unable to update mapping zettel")
+	}
+	return err
 }
 
 // Remove all (computed) properties from metadata before storing the zettel.

@@ -48,7 +48,7 @@ type ConnectData struct {
 type Mapper interface {
 	Warnings(context.Context) (*id.Set, error) // Fetch problematic zettel identifier
 
-	AsBytes(context.Context) ([]byte, error)
+	FetchAsBytes(context.Context) ([]byte, error)
 }
 
 // Connect returns a handle to the specified box.
@@ -105,6 +105,7 @@ type Manager struct {
 	infos        chan box.UpdateInfo
 	propertyKeys strfun.Set // Set of property key names
 	zidMapper    *zidMapper
+	mappingMx    sync.Mutex // protects updates to mapping zettel
 
 	// Indexer data
 	idxLog   *logger.Logger
@@ -369,7 +370,7 @@ func (mgr *Manager) setupIdentifierMapping() {
 		mgr.mgrLog.Error().Err(err).Msg("identifier zettel parsing")
 	}
 
-	mapping, err := mgr.zidMapper.AsBytes(ctx)
+	mapping, err := mgr.zidMapper.FetchAsBytes(ctx)
 	if err != nil {
 		mgr.mgrLog.Error().Err(err).Msg("unable to get current identifier mapping")
 		return
