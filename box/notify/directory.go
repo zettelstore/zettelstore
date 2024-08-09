@@ -260,14 +260,14 @@ func (ds *DirService) handleEvent(ev Event, newEntries entrySet) (entrySet, bool
 		zid := ds.onUpdateFileEvent(ds.entries, ev.Name)
 		ds.mx.Unlock()
 		if zid != id.Invalid {
-			ds.notifyChange(zid)
+			ds.notifyChange(zid, box.OnZettel)
 		}
 	case Delete:
 		ds.mx.Lock()
 		zid := ds.onDeleteFileEvent(ds.entries, ev.Name)
 		ds.mx.Unlock()
 		if zid != id.Invalid {
-			ds.notifyChange(zid)
+			ds.notifyChange(zid, box.OnDelete)
 		}
 	default:
 		ds.log.Error().Str("event", fmt.Sprintf("%v", ev)).Msg("Unknown zettel notification event")
@@ -285,14 +285,14 @@ func getNewZids(entries entrySet) id.Slice {
 
 func (ds *DirService) onCreateDirectory(zids id.Slice, prevEntries entrySet) {
 	for _, zid := range zids {
-		ds.notifyChange(zid)
+		ds.notifyChange(zid, box.OnZettel)
 		delete(prevEntries, zid)
 	}
 
 	// These were previously stored, by are not found now.
 	// Notify system that these were deleted, e.g. for updating the index.
 	for zid := range prevEntries {
-		ds.notifyChange(zid)
+		ds.notifyChange(zid, box.OnDelete)
 	}
 }
 
@@ -303,7 +303,7 @@ func (ds *DirService) onDestroyDirectory() {
 	ds.state = DsMissing
 	ds.mx.Unlock()
 	for zid := range entries {
-		ds.notifyChange(zid)
+		ds.notifyChange(zid, box.OnDelete)
 	}
 }
 
@@ -574,9 +574,9 @@ func newExtIsBetter(oldExt, newExt string) bool {
 	return newExt < oldExt
 }
 
-func (ds *DirService) notifyChange(zid id.Zid) {
+func (ds *DirService) notifyChange(zid id.Zid, reason box.UpdateReason) {
 	if chci := ds.infos; chci != nil {
-		ds.log.Trace().Zid(zid).Msg("notifyChange")
-		chci <- box.UpdateInfo{Box: ds.box, Reason: box.OnZettel, Zid: zid}
+		ds.log.Trace().Zid(zid).Uint("reason", uint64(reason)).Msg("notifyChange")
+		chci <- box.UpdateInfo{Box: ds.box, Reason: reason, Zid: zid}
 	}
 }

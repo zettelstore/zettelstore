@@ -44,7 +44,7 @@ type anteroomQueue struct {
 func newAnteroomQueue(maxLoad int) *anteroomQueue { return &anteroomQueue{maxLoad: maxLoad} }
 
 func (ar *anteroomQueue) EnqueueZettel(zid id.Zid) {
-	if !zid.IsValid() {
+	if !zid.IsValid() || zid == id.MappingZid || zid == 9999999996 {
 		return
 	}
 	ar.mx.Lock()

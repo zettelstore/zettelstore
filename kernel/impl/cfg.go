@@ -184,7 +184,7 @@ func (cs *configService) doUpdate(p box.BaseBox) error {
 }
 
 func (cs *configService) observe(ci box.UpdateInfo) {
-	if ci.Reason != box.OnZettel || ci.Zid == id.ConfigurationZid {
+	if (ci.Reason != box.OnZettel && ci.Reason != box.OnDelete) || ci.Zid == id.ConfigurationZid {
 		cs.logger.Debug().Uint("reason", uint64(ci.Reason)).Zid(ci.Zid).Msg("observe")
 		go func() {
 			cs.mxService.RLock()

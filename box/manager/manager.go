@@ -266,7 +266,7 @@ func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
 		return
 	case box.OnReload:
 		mgr.idxAr.Reset()
-	case box.OnZettel:
+	case box.OnZettel, box.OnDelete:
 		mgr.idxAr.EnqueueZettel(zid)
 	default:
 		mgr.mgrLog.Error().Uint("reason", uint64(reason)).Zid(zid).Msg("Unknown notification reason")
@@ -428,7 +428,7 @@ func (mgr *Manager) ReIndex(ctx context.Context, zid id.Zid) error {
 	if err := mgr.checkContinue(ctx); err != nil {
 		return err
 	}
-	mgr.infos <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
+	mgr.infos <- box.UpdateInfo{Box: mgr, Reason: box.OnZettel, Zid: zid}
 	return nil
 }
 

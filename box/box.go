@@ -206,7 +206,8 @@ const (
 	_        UpdateReason = iota
 	OnReady               // Box is started and fully operational
 	OnReload              // Box was reloaded
-	OnZettel              // Something with a zettel happened
+	OnZettel              // Something with an existing zettel happened
+	OnDelete              // A zettel was deleted
 )
 
 // UpdateInfo contains all the data about a changed zettel.

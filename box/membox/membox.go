@@ -54,9 +54,9 @@ type memBox struct {
 	curBytes  int
 }
 
-func (mb *memBox) notifyChanged(zid id.Zid) {
+func (mb *memBox) notifyChanged(zid id.Zid, reason box.UpdateReason) {
 	if chci := mb.cdata.Notify; chci != nil {
-		chci <- box.UpdateInfo{Box: mb, Reason: box.OnZettel, Zid: zid}
+		chci <- box.UpdateInfo{Box: mb, Reason: reason, Zid: zid}
 	}
 }
 
@@ -116,7 +116,7 @@ func (mb *memBox) CreateZettel(_ context.Context, zettel zettel.Zettel) (id.Zid,
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
 
-	mb.notifyChanged(zid)
+	mb.notifyChanged(zid, box.OnZettel)
 	mb.log.Trace().Zid(zid).Msg("CreateZettel")
 	return zid, nil
 }
@@ -201,7 +201,7 @@ func (mb *memBox) UpdateZettel(_ context.Context, zettel zettel.Zettel) error {
 	mb.zettel[m.Zid] = zettel
 	mb.curBytes = newBytes
 	mb.mx.Unlock()
-	mb.notifyChanged(m.Zid)
+	mb.notifyChanged(m.Zid, box.OnZettel)
 	mb.log.Trace().Msg("UpdateZettel")
 	return nil
 }
@@ -223,7 +223,7 @@ func (mb *memBox) DeleteZettel(_ context.Context, zid id.Zid) error {
 	delete(mb.zettel, zid)
 	mb.curBytes -= oldZettel.Length()
 	mb.mx.Unlock()
-	mb.notifyChanged(zid)
+	mb.notifyChanged(zid, box.OnDelete)
 	mb.log.Trace().Msg("DeleteZettel")
 	return nil
 }

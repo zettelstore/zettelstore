@@ -203,10 +203,10 @@ func (dp *dirBox) stopFileServices() {
 	}
 }
 
-func (dp *dirBox) notifyChanged(zid id.Zid) {
+func (dp *dirBox) notifyChanged(zid id.Zid, reason box.UpdateReason) {
 	if chci := dp.cdata.Notify; chci != nil {
-		dp.log.Trace().Zid(zid).Msg("notifyChanged")
-		chci <- box.UpdateInfo{Reason: box.OnZettel, Zid: zid}
+		dp.log.Trace().Zid(zid).Uint("reason", uint64(reason)).Msg("notifyChanged")
+		chci <- box.UpdateInfo{Box: dp, Reason: reason, Zid: zid}
 	}
 }
 
@@ -244,7 +244,7 @@ func (dp *dirBox) CreateZettel(ctx context.Context, zettel zettel.Zettel) (id.Zi
 	if err == nil {
 		err = dp.dirSrv.UpdateDirEntry(&entry)
 	}
-	dp.notifyChanged(meta.Zid)
+	dp.notifyChanged(meta.Zid, box.OnZettel)
 	dp.log.Trace().Err(err).Zid(meta.Zid).Msg("CreateZettel")
 	return meta.Zid, err
 }
@@ -316,7 +316,7 @@ func (dp *dirBox) UpdateZettel(ctx context.Context, zettel zettel.Zettel) error 
 	dp.dirSrv.UpdateDirEntry(entry)
 	err := dp.srvSetZettel(ctx, entry, zettel)
 	if err == nil {
-		dp.notifyChanged(zid)
+		dp.notifyChanged(zid, box.OnZettel)
 	}
 	dp.log.Trace().Zid(zid).Err(err).Msg("UpdateZettel")
 	return err
@@ -349,7 +349,7 @@ func (dp *dirBox) DeleteZettel(ctx context.Context, zid id.Zid) error {
 	}
 	err = dp.srvDeleteZettel(ctx, entry, zid)
 	if err == nil {
-		dp.notifyChanged(zid)
+		dp.notifyChanged(zid, box.OnDelete)
 	}
 	dp.log.Trace().Zid(zid).Err(err).Msg("DeleteZettel")
 	return err
