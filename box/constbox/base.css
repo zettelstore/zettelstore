@@ -108,10 +108,8 @@
     padding-left: 1rem;
     margin-left: 1rem;
     margin-right: 2rem;
-    font-style: italic;
   }
   blockquote p { margin-bottom: .5rem }
-  blockquote cite { font-style: normal }
   table {
     border-collapse: collapse;
     border-spacing: 0;
