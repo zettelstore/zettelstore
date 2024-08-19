@@ -16,7 +16,6 @@
     box-sizing: border-box;
   }
   html {
-    font-size: 1rem;
     font-family: serif;
     scroll-behavior: smooth;
     height: 100%;
@@ -89,39 +88,35 @@
     padding: 0;
     margin: 0;
   }
-  h1,h2,h3,h4,h5,h6 { font-family:sans-serif; font-weight:normal }
-  h1 { font-size:1.5rem;  margin:.65rem 0 }
-  h2 { font-size:1.25rem; margin:.70rem 0 }
-  h3 { font-size:1.15rem; margin:.75rem 0 }
-  h4 { font-size:1.05rem; margin:.8rem 0; font-weight: bold }
-  h5 { font-size:1.05rem; margin:.8rem 0 }
-  h6 { font-size:1.05rem; margin:.8rem 0; font-weight: lighter }
-  p { margin: .5rem 0 0 0 }
-  p.zs-meta-zettel { margin-top: .5rem; margin-left: 0.5rem }
+  h1,h2,h3,h4,h5,h6 { font-family:sans-serif; font-weight:normal; margin:.4em 0 }
+  h1 { font-size:1.5em }
+  h2 { font-size:1.25em }
+  h3 { font-size:1.15em }
+  h4 { font-size:1.05em; font-weight: bold }
+  h5 { font-size:1.05em }
+  h6 { font-size:1.05em; font-weight: lighter }
+  p { margin: .5em 0 0 0 }
+  p.zs-meta-zettel { margin-top: .5em; margin-left: .5em }
   li,figure,figcaption,dl { margin: 0 }
-  dt { margin: .5rem 0 0 0 }
+  dt { margin: .5em 0 0 0 }
   dt+dd { margin-top: 0 }
-  dd { margin: .5rem 0 0 2rem }
+  dd { margin: .5em 0 0 2em }
   dd > p:first-child { margin: 0 0 0 0 }
   blockquote {
-    border-left: 0.5rem solid lightgray;
-    padding-left: 1rem;
-    margin-left: 1rem;
-    margin-right: 2rem;
+    border-left: .5em solid lightgray;
+    padding-left: 1em;
+    margin-left: 1em;
+    margin-right: 2em;
   }
-  blockquote p { margin-bottom: .5rem }
+  blockquote p { margin-bottom: .5em }
   table {
     border-collapse: collapse;
     border-spacing: 0;
     max-width: 100%;
   }
-  thead>tr>td { border-bottom: 2px solid hsl(0, 0%, 70%); font-weight: bold }
-  tfoot>tr>td { border-top: 2px solid hsl(0, 0%, 70%); font-weight: bold }
-  td {
-    text-align: left;
-    padding: .25rem .5rem;
-    border-bottom: 1px solid hsl(0, 0%, 85%)
-  }
+  td, th {text-align: left; padding: .25em .5em;}
+  th { border-bottom: 2px solid hsl(0, 0%, 70%); font-weight: bold }
+  td { border-bottom: 1px solid hsl(0, 0%, 85%) }
   main form {
     padding: 0 .5em;
     margin: .5em 0 0 0;
@@ -161,7 +156,7 @@
   img { max-width: 100% }
   img.right { float: right }
   ol.zs-endnotes {
-    padding-top: .5rem;
+    padding-top: .5em;
     border-top: 1px solid;
   }
   kbd { font-family:monospace }
@@ -170,17 +165,17 @@
     font-size: 85%;
   }
   code {
-    padding: .1rem .2rem;
+    padding: .1em .2em;
     background: #f0f0f0;
     border: 1px solid #ccc;
-    border-radius: .25rem;
+    border-radius: .25em;
   }
   pre {
-    padding: .5rem .7rem;
+    padding: .5em .7em;
     max-width: 100%;
     overflow: auto;
     border: 1px solid #ccc;
-    border-radius: .5rem;
+    border-radius: .5em;
     background: #f0f0f0;
   }
   pre code {
@@ -190,49 +185,49 @@
     border: none;
   }
   div.zs-indication {
-    padding: .5rem .7rem;
+    padding: .5em .7em;
     max-width: 100%;
-    border-radius: .5rem;
+    border-radius: .5em;
     border: 1px solid black;
   }
   div.zs-indication p:first-child { margin-top: 0 }
   span.zs-indication {
     border: 1px solid black;
-    border-radius: .25rem;
-    padding: .1rem .2rem;
+    border-radius: .25em;
+    padding: .1rem .2em;
     font-size: 95%;
   }
   .zs-info {
     background-color: lightblue;
-    padding: .5rem 1rem;
+    padding: .5em 1em;
   }
   .zs-warning {
     background-color: lightyellow;
-    padding: .5rem 1rem;
+    padding: .5em 1em;
   }
   .zs-error {
     background-color: lightpink;
     border-style: none !important;
     font-weight: bold;
   }
-  td.left { text-align:left }
-  td.center { text-align:center }
-  td.right { text-align:right }
+  td.left, th.left { text-align:left }
+  td.center, th.center { text-align:center }
+  td.right, th.right { text-align:right }
   .zs-font-size-0 { font-size:75% }
   .zs-font-size-1 { font-size:83% }
   .zs-font-size-2 { font-size:100% }
   .zs-font-size-3 { font-size:117% }
   .zs-font-size-4 { font-size:150% }
   .zs-font-size-5 { font-size:200% }
-  .zs-deprecated { border-style: dashed; padding: .2rem }
+  .zs-deprecated { border-style: dashed; padding: .2em }
   .zs-meta {
     font-size:.75rem;
     color:#444;
-    margin-bottom:1rem;
+    margin-bottom:1em;
   }
   .zs-meta a { color:#444 }
-  h1+.zs-meta { margin-top:-1rem }
-  nav > details { margin-top:1rem }
+  h1+.zs-meta { margin-top:-1em }
+  nav > details { margin-top:1em }
   details > summary {
     width: 100%;
     background-color: #eee;
@@ -240,10 +235,10 @@
   }
   details > ul {
     margin-top:0;
-    padding-left:2rem;
+    padding-left:2em;
     background-color: #eee;
   }
-  footer { padding: 0 1rem }
+  footer { padding: 0 1em }
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;
