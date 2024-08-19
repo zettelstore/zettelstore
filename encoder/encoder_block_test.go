@@ -333,10 +333,10 @@ and much more
 |<c1|c2|:c3|
 |f1|f2|=f3`,
 		expect: expectMap{
-			encoderHTML:  `<table><thead><tr><td class="right">h1</td><td>h2</td><td class="center">h3</td></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
+			encoderHTML:  `<table><thead><tr><th class="right">h1</th><th>h2</th><th class="center">h3</th></tr></thead><tbody><tr><td class="left">c1</td><td>c2</td><td class="center">c3</td></tr><tr><td class="right">f1</td><td>f2</td><td class="center">=f3</td></tr></tbody></table>`,
 			encoderMD:    "",
 			encoderSz:    `(BLOCK (TABLE ((CELL-RIGHT (TEXT "h1")) (CELL (TEXT "h2")) (CELL-CENTER (TEXT "h3"))) ((CELL-LEFT (TEXT "c1")) (CELL (TEXT "c2")) (CELL-CENTER (TEXT "c3"))) ((CELL-RIGHT (TEXT "f1")) (CELL (TEXT "f2")) (CELL-CENTER (TEXT "=f3")))))`,
-			encoderSHTML: `((table (thead (tr (td (@ (class . "right")) "h1") (td "h2") (td (@ (class . "center")) "h3"))) (tbody (tr (td (@ (class . "left")) "c1") (td "c2") (td (@ (class . "center")) "c3")) (tr (td (@ (class . "right")) "f1") (td "f2") (td (@ (class . "center")) "=f3")))))`,
+			encoderSHTML: `((table (thead (tr (th (@ (class . "right")) "h1") (th "h2") (th (@ (class . "center")) "h3"))) (tbody (tr (td (@ (class . "left")) "c1") (td "c2") (td (@ (class . "center")) "c3")) (tr (td (@ (class . "right")) "f1") (td "f2") (td (@ (class . "center")) "=f3")))))`,
 			encoderText:  "h1 h2 h3\nc1 c2 c3\nf1 f2 =f3",
 			encoderZmk: `|=h1>|=h2|=h3:
 |<c1|c2|c3

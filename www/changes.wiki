@@ -7,6 +7,8 @@
      (breaking: api, webui)
   *  Fix wrong quote translation for markdown encoder.
      (minor)
+  *  Generate <th> in table header (was: <td>). Also applies to SHTML encoder.
+     (minor: webui, api)
 
 <a id="0_18"></a>
 <h2>Changes for Version 0.18.0 (2024-07-11)</h2>
