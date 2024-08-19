@@ -197,6 +197,9 @@ func (zm *zidMapper) DeleteO(zidO id.Zid) {
 	if zidN, found := zm.toNew[zidO]; found {
 		delete(zm.toNew, zidO)
 		delete(zm.toOld, zidN)
+		if lastZidN := zm.nextZidN - 1; zidN == lastZidN {
+			zm.nextZidN = lastZidN
+		}
 	}
 	zm.mx.Unlock()
 }
