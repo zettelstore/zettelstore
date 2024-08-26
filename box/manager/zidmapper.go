@@ -151,16 +151,20 @@ func (zm *zidMapper) Warnings(ctx context.Context) (*id.Set, error) {
 	return warnings, nil
 }
 
-func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
+func (zm *zidMapper) LookupZidN(zidO id.Zid) (id.ZidN, bool) {
 	if !zidO.IsValid() {
 		panic(zidO)
 	}
 	zm.mx.RLock()
-	if zidN, found := zm.toNew[zidO]; found {
-		zm.mx.RUnlock()
+	zidN, found := zm.toNew[zidO]
+	zm.mx.RUnlock()
+	return zidN, found
+}
+
+func (zm *zidMapper) GetZidN(zidO id.Zid) id.ZidN {
+	if zidN, found := zm.LookupZidN(zidO); found {
 		return zidN
 	}
-	zm.mx.RUnlock()
 
 	zm.mx.Lock()
 	defer zm.mx.Unlock()

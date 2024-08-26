@@ -243,6 +243,7 @@ func (wui *WebUI) bindCommonZettelData(ctx context.Context, rb *renderBinder, us
 	newURLBuilder := wui.NewURLBuilder
 
 	rb.bindString("zid", sx.MakeString(strZid))
+	rb.bindString("zid-n", sx.MakeString(m.ZidN.String()))
 	rb.bindString("web-url", sx.MakeString(newURLBuilder('h').SetZid(apiZid).String()))
 	if content != nil && wui.canWrite(ctx, user, m, *content) {
 		rb.bindString("edit-url", sx.MakeString(newURLBuilder('e').SetZid(apiZid).String()))

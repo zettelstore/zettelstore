@@ -12,7 +12,7 @@
 ;;;----------------------------------------------------------------------------
 
 `(article
-  (header (h1 "Information for Zettel " ,zid)
+  (header (h1 "Information for Zettel " ,zid " / " ,zid-n)
     (p
       (a (@ (href ,web-url)) "Web")
       (@H " &#183; ") (a (@ (href ,context-url)) "Context")

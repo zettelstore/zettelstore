@@ -170,6 +170,7 @@ const NewPrefix = "new-"
 // Meta contains all meta-data of a zettel.
 type Meta struct {
 	Zid     id.Zid
+	ZidN    id.ZidN
 	pairs   map[string]string
 	YamlSep bool
 }
@@ -204,6 +205,7 @@ func (m *Meta) Length() int {
 func (m *Meta) Clone() *Meta {
 	return &Meta{
 		Zid:     m.Zid,
+		ZidN:    m.ZidN,
 		pairs:   m.Map(),
 		YamlSep: m.YamlSep,
 	}

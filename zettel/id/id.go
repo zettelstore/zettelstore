@@ -247,7 +247,7 @@ func (zid ZidN) toByteArray(result *[4]byte) {
 	d3 := d34 / 36
 	d4 := d34 % 36
 
-	const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+	const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	result[0] = digits[d1]
 	result[1] = digits[d2]
 	result[2] = digits[d3]
