@@ -81,7 +81,7 @@ func (he *Encoder) WriteZettel(w io.Writer, zn *ast.ZettelNode, evalMeta encoder
 	if err != nil {
 		return 0, err
 	}
-	hen := he.th.Endnotes(&env)
+	hen := shtml.Endnotes(&env)
 
 	var head sx.ListBuilder
 	head.Add(shtml.SymHead)
@@ -141,7 +141,7 @@ func (he *Encoder) WriteBlocks(w io.Writer, bs *ast.BlockSlice) (int, error) {
 			return length, err2
 		}
 
-		l, err2 := gen.WriteHTML(w, he.th.Endnotes(&env))
+		l, err2 := gen.WriteHTML(w, shtml.Endnotes(&env))
 		length += l
 		return length, err2
 	}

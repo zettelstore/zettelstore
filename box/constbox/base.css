@@ -152,7 +152,7 @@
   }
   a:not([class]) { text-decoration-skip-ink: auto }
   a.broken { text-decoration: line-through }
-  a.external::after { content: "➚"; display: inline-block }
+  a[rel~="external"]::after { content: "➚"; display: inline-block }
   img { max-width: 100% }
   img.right { float: right }
   ol.zs-endnotes {

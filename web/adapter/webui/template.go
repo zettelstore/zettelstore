@@ -140,7 +140,7 @@ func (wui *WebUI) url2html(text sx.String) sx.Object {
 					sxhtml.SymAttr,
 					sx.Cons(shtml.SymAttrHref, sx.MakeString(us)),
 					sx.Cons(shtml.SymAttrTarget, sx.MakeString("_blank")),
-					sx.Cons(shtml.SymAttrRel, sx.MakeString("noopener noreferrer")),
+					sx.Cons(shtml.SymAttrRel, sx.MakeString("external noreferrer")),
 				),
 				text)
 		}

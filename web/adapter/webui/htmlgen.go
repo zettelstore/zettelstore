@@ -131,14 +131,14 @@ func (wui *WebUI) createGenerator(builder urlBuilder, lang string) *htmlGenerato
 		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymLinkExternal, func(obj sx.Object) sx.Object {
-		attr, assoc, rest := findA(obj)
+		attr, _, rest := findA(obj)
 		if attr == nil {
 			return obj
 		}
-		assoc = assoc.Cons(sx.Cons(shtml.SymAttrClass, sx.MakeString("external"))).
-			Cons(sx.Cons(shtml.SymAttrTarget, sx.MakeString("_blank"))).
-			Cons(sx.Cons(shtml.SymAttrRel, sx.MakeString("noopener noreferrer")))
-		return rest.Cons(assoc.Cons(sxhtml.SymAttr)).Cons(shtml.SymA)
+		a := sz.GetAttributes(attr)
+		a = a.Set("target", "_blank")
+		a = a.Add("rel", "external").Add("rel", "noreferrer")
+		return rest.Cons(shtml.EvaluateAttrbute(a)).Cons(shtml.SymA)
 	})
 	rebind(th, sz.SymEmbed, func(obj sx.Object) sx.Object {
 		pair, isPair := sx.GetPair(obj)
@@ -275,7 +275,7 @@ func (g *htmlGenerator) BlocksSxn(bs *ast.BlockSlice) (content, endnotes *sx.Pai
 	if err != nil {
 		return nil, nil, err
 	}
-	return sh, g.th.Endnotes(&env), nil
+	return sh, shtml.Endnotes(&env), nil
 }
 
 // InlinesSxHTML returns an inline slice, encoded as a SxHTML object.

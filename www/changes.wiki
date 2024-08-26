@@ -9,6 +9,9 @@
      (minor)
   *  Generate <th> in table header (was: <td>). Also applies to SHTML encoder.
      (minor: webui, api)
+  *  External links are now generatd in shtml and html with attribute
+     rel="external" (previously: class="external").
+     (minor: webui, api)
   *  Show new format zettel identifier in zettel view, info view and delete
      view.
      (minor: webui)

@@ -38,7 +38,7 @@
 ;; wui-item-popup-link is like 'wui-item-link, but the HTML link will open
 ;; a new tab / window.
 (defun wui-item-popup-link (e)
-    `(li (a (@ (href ,e) (target "_blank") (rel "noopener noreferrer")) ,e)))
+    `(li (a (@ (href ,e) (target "_blank") (rel "external noreferrer")) ,e)))
 
 ;; wui-option-value returns a value for an HTML option element.
 (defun wui-option-value (v) `(option (@ (value ,v))))
