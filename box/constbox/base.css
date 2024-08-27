@@ -115,7 +115,8 @@
     max-width: 100%;
   }
   td, th {text-align: left; padding: .25em .5em;}
-  th { border-bottom: 2px solid hsl(0, 0%, 70%); font-weight: bold }
+  th { font-weight: bold }
+  thead th { border-bottom: 2px solid hsl(0, 0%, 70%) }
   td { border-bottom: 1px solid hsl(0, 0%, 85%) }
   main form {
     padding: 0 .5em;
