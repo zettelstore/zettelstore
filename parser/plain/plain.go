@@ -16,7 +16,6 @@ package plain
 
 import (
 	"bytes"
-	"strings"
 
 	"t73f.de/r/sx/sxreader"
 	"t73f.de/r/zsc/attrs"
@@ -126,12 +125,16 @@ func parseSVGInlines(inp *input.Input, syntax string) ast.InlineSlice {
 
 func scanSVG(inp *input.Input) string {
 	inp.SkipSpace()
-	svgSrc := string(inp.Src[inp.Pos:])
-	if !strings.HasPrefix(svgSrc, "<svg ") {
+	pos := inp.Pos
+	if !inp.Accept("<svg") {
 		return ""
 	}
-	// TODO: check proper end </svg>
-	return svgSrc
+	ch := inp.Ch
+	if input.IsSpace(ch) || input.IsEOLEOS(ch) || ch == '>' {
+		// TODO: check proper end </svg>
+		return string(inp.Src[pos:])
+	}
+	return ""
 }
 
 func parseSxnBlocks(inp *input.Input, _ *meta.Meta, syntax string) ast.BlockSlice {
