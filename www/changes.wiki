@@ -5,6 +5,10 @@
   *  Remove support for renaming zettel, i.e. changing zettel identifier. Was
      announced as deprecated in version 0.18.
      (breaking: api, webui)
+  *  Zettel content for zettel with ID starting with 0000 is not indexed any
+     more. If you search / query for zettel content, these zettel will not be
+     returned.
+     (breaking: api, webui)
   *  Fix wrong quote translation for markdown encoder.
      (minor)
   *  Generate <th> in table header (was: <td>). Also applies to SHTML encoder.

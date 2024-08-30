@@ -157,7 +157,9 @@ func (mgr *Manager) idxSleepService(timer *time.Timer, timerDuration time.Durati
 func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel zettel.Zettel) {
 	var cData collectData
 	cData.initialize()
-	collectZettelIndexData(parser.ParseZettel(ctx, zettel, "", mgr.rtConfig), &cData)
+	if mustIndexZettel(zettel.Meta) {
+		collectZettelIndexData(parser.ParseZettel(ctx, zettel, "", mgr.rtConfig), &cData)
+	}
 
 	m := zettel.Meta
 	zi := store.NewZettelIndex(m)
@@ -165,6 +167,10 @@ func (mgr *Manager) idxUpdateZettel(ctx context.Context, zettel zettel.Zettel) {
 	mgr.idxProcessData(ctx, zi, &cData)
 	toCheck := mgr.idxStore.UpdateReferences(ctx, zi)
 	mgr.idxCheckZettel(toCheck)
+}
+
+func mustIndexZettel(m *meta.Meta) bool {
+	return m.Zid >= id.DefaultHomeZid
 }
 
 func (mgr *Manager) idxCollectFromMeta(ctx context.Context, m *meta.Meta, zi *store.ZettelIndex, cData *collectData) {
