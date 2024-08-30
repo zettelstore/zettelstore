@@ -88,8 +88,10 @@ func (mgr *Manager) createMapping(ctx context.Context, zidO id.Zid) error {
 	mappingZettel.Content = zettel.NewContent(mgr.zidMapper.AsBytes())
 	if err = mgr.UpdateZettel(ctx, mappingZettel); err != nil {
 		mgr.mgrLog.Error().Err(err).Zid(zidO).Uint("zidN", uint64(zidN)).Msg("Unable to update mapping zettel")
+		return err
 	}
-	return err
+	mgr.mgrLog.Debug().Zid(zidO).Msg("add to mapping zettel")
+	return nil
 }
 
 // GetZettel retrieves a specific zettel.
@@ -323,8 +325,10 @@ func (mgr *Manager) deleteMapping(ctx context.Context, zidO id.Zid) error {
 	mappingZettel.Content = zettel.NewContent(mgr.zidMapper.AsBytes())
 	if err = mgr.UpdateZettel(ctx, mappingZettel); err != nil {
 		mgr.mgrLog.Error().Err(err).Zid(zidO).Msg("Unable to update mapping zettel")
+		return err
 	}
-	return err
+	mgr.mgrLog.Debug().Zid(zidO).Msg("remove from mapping zettel")
+	return nil
 }
 
 // Remove all (computed) properties from metadata before storing the zettel.

@@ -227,11 +227,12 @@ func (mgr *Manager) notifier() {
 					continue
 				}
 
-				mgr.idxEnqueue(reason, zid)
+				isStarted := mgr.State() == box.StartStateStarted
+				mgr.idxEnqueue(reason, zid, isStarted)
 				if ci.Box == nil {
 					ci.Box = mgr
 				}
-				if mgr.State() == box.StartStateStarted {
+				if isStarted {
 					mgr.notifyObserver(&ci)
 				}
 			}
@@ -260,16 +261,26 @@ func ignoreUpdate(cache destutterCache, now time.Time, reason box.UpdateReason, 
 	return false
 }
 
-func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zid id.Zid) {
+func (mgr *Manager) idxEnqueue(reason box.UpdateReason, zidO id.Zid, isStarted bool) {
 	switch reason {
 	case box.OnReady:
 		return
 	case box.OnReload:
 		mgr.idxAr.Reset()
-	case box.OnZettel, box.OnDelete:
-		mgr.idxAr.EnqueueZettel(zid)
+	case box.OnZettel:
+		if isStarted && zidO != id.MappingZid {
+			if _, found := mgr.zidMapper.LookupZidN(zidO); !found {
+				mgr.createMapping(context.Background(), zidO)
+			}
+		}
+		mgr.idxAr.EnqueueZettel(zidO)
+	case box.OnDelete:
+		if isStarted && zidO != id.MappingZid {
+			mgr.deleteMapping(context.Background(), zidO)
+		}
+		mgr.idxAr.EnqueueZettel(zidO)
 	default:
-		mgr.mgrLog.Error().Uint("reason", uint64(reason)).Zid(zid).Msg("Unknown notification reason")
+		mgr.mgrLog.Error().Uint("reason", uint64(reason)).Zid(zidO).Msg("Unknown notification reason")
 		return
 	}
 	select {
@@ -319,9 +330,8 @@ func (mgr *Manager) Start(ctx context.Context) error {
 	go mgr.notifier()
 
 	mgr.waitBoxesAreStarted()
-	mgr.setState(box.StartStateStarted)
-
 	mgr.setupIdentifierMapping()
+	mgr.setState(box.StartStateStarted)
 
 	mgr.notifyObserver(&box.UpdateInfo{Box: mgr, Reason: box.OnReady})
 
