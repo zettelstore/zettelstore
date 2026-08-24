@@ -204,8 +204,8 @@ func contentFromMetadata(m *meta.Meta) *sx.Pair {
 			}
 		}
 
-		lbDescription.Add(sx.MakeList(zsx.MakeText(key)))
-		lbDescription.Add(zsx.MakeBlock(zsx.MakeBlock(zsx.MakeParaList(lb.List()))))
+		lbDescription.Add(zsx.MakeTerm(sx.Nil(), sx.MakeList(zsx.MakeText(key))))
+		lbDescription.Add(sx.MakeList(zsx.SymDetail, zsx.MakeEntry(sx.Nil(), zsx.MakeParaList(lb.List()))))
 	}
 	return zsx.MakeBlock(lbDescription.List())
 }
