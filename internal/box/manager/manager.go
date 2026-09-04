@@ -22,7 +22,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -168,7 +167,7 @@ func setupBoxURIs(boxURIs []*url.URL, isReadonly bool) error {
 	for i, u := range boxURIs {
 		q := u.Query()
 		if name := q.Get(QueryName); name != "" {
-			if s := strings.Join(zerostrings.NormalizeWords(name), ""); s != "" {
+			if s := zerostrings.JoinSeq(zerostrings.NormalizeWordsSeq(name), ""); s != "" {
 				if boxNames.Contains(s) {
 					if name == s {
 						return fmt.Errorf("name %q in box-uri-%d %v already used", s, i+1, u)
@@ -239,7 +238,7 @@ func nameFromPath(path string) string {
 	if ext := filepath.Ext(name); ext != "" {
 		name = name[0 : len(name)-len(ext)]
 	}
-	return strings.Join(zerostrings.NormalizeWords(name), "")
+	return zerostrings.JoinSeq(zerostrings.NormalizeWordsSeq(name), "")
 }
 
 func createIdxStore(_ config.Config) store.Store { return mapstore.New() }

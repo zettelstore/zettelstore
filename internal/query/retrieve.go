@@ -68,7 +68,7 @@ func prepareRetrieveCalls(searcher Searcher, search []expValue) (normCalls, plai
 	normCalls = make(searchCallMap, len(search))
 	negCalls = make(searchCallMap, len(search))
 	for _, val := range search {
-		for _, word := range zerostrings.NormalizeWords(string(val.value)) {
+		for word := range zerostrings.NormalizeWordsSeq(string(val.value)) {
 			if cmpOp := val.op; cmpOp.isNegated() {
 				cmpOp = cmpOp.negate()
 				negCalls.addSearch(word, cmpOp, getSearchFunc(searcher, cmpOp))
