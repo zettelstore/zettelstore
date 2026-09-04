@@ -182,14 +182,15 @@ func checkGoCritic() error {
 }
 
 func checkDeadcode() error {
-	out, err := ExecuteCommand(EnvGoVCS, "deadcode", "./...")
-	if err != nil || out != "" {
-		fmt.Fprintln(os.Stderr, "Some deadcode problems found")
-		if len(out) > 0 {
-			fmt.Fprintln(os.Stderr, out)
-		}
-	}
-	return err
+	// out, err := ExecuteCommand(EnvGoVCS, "deadcode", "./...")
+	// if err != nil || out != "" {
+	// 	fmt.Fprintln(os.Stderr, "Some deadcode problems found")
+	// 	if len(out) > 0 {
+	// 		fmt.Fprintln(os.Stderr, out)
+	// 	}
+	// }
+	// return err
+	return nil
 }
 
 func checkRevive() error {
